@@ -1,0 +1,29 @@
+{
+  "name": "upgradeable-smart-contracts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@matterlabs/hardhat-zksync-deploy": "^0.6.3",
+    "@matterlabs/hardhat-zksync-solc": "^0.4.1",
+    "@matterlabs/hardhat-zksync-verify": "^0.2.0",
+    "@matterlabs/zksync-contracts": "^0.6.1",
+    "@openzeppelin/contracts": "^4.6.0",
+    "@openzeppelin/contracts-upgradeable": "^4.6.0",
+    "dotenv": "^16.0.3",
+    "ethers": "^5.7.2",
+    "hardhat": "^2.13.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.2",
+    "zksync-web3": "^0.14.3"
+  },
+  "dependencies": {
+    "@matterlabs/signature-checker": "^1.1.1"
+  }
+}
