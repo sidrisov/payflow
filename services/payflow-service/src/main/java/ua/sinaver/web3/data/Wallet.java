@@ -37,10 +37,10 @@ public class Wallet {
     public Wallet() {
     }
 
-    public Wallet(String address, String network, Flow flow) {
+    public Wallet(String address, String network, boolean smart) {
         this.address = address;
         this.network = network;
-        this.flow = flow;
+        this.smart = smart;
     }
 
     public Integer getId() {

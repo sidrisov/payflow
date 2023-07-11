@@ -9,4 +9,5 @@ export interface FlowType {
 export interface FlowWalletType {
   address: `0x${string}`;
   network: string;
+  smart: boolean;
 }

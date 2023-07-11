@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.transaction.Transactional;
 import ua.sinaver.web3.dto.FlowDto;
+import ua.sinaver.web3.dto.WalletDto;
 import ua.sinaver.web3.service.IFlowService;
 
 @RestController
@@ -41,5 +42,10 @@ class FlowController {
     @GetMapping("/{uuid}")
     public FlowDto getFlowByUUID(@PathVariable String uuid) {
         return flowService.findByUUID(uuid);
+    }
+
+    @PostMapping("/{uuid}/wallet")
+    public void addFlowWallet(@PathVariable String uuid, @RequestBody WalletDto wallet) throws Exception {
+        flowService.addFlowWallet(uuid, wallet);
     }
 }

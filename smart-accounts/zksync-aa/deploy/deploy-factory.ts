@@ -12,16 +12,11 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   // Getting the bytecodeHash of the account
   const bytecodeHash = utils.hashBytecode(aaArtifact.bytecode);
 
-  const factory = await deployer.deploy(
-    factoryArtifact,
-    [bytecodeHash],
-    undefined,
-    [
-      // Since the factory requires the code of the multisig to be available,
-      // we should pass it here as well.
-      aaArtifact.bytecode,
-    ]
-  );
+  const factory = await deployer.deploy(factoryArtifact, [bytecodeHash], undefined, [
+    // Since the factory requires the code of the multisig to be available,
+    // we should pass it here as well.
+    aaArtifact.bytecode
+  ]);
 
   console.log(`AA factory address: ${factory.address}`);
 
@@ -31,6 +26,6 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   await hre.run('verify:verify', {
     address: factory.address,
     contract: 'contracts/PayFlowMasterFactory.sol:PayFlowMasterFactory',
-    constructorArguments: [bytecodeHash],
+    constructorArguments: [bytecodeHash]
   });
 }

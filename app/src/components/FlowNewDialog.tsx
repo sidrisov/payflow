@@ -19,6 +19,7 @@ import { CloseCallbackType } from '../types/CloseCallbackType';
 import axios from 'axios';
 import { useAccount, useNetwork } from 'wagmi';
 import { useState } from 'react';
+import { smartAccountCompatibleChains } from '../utils/smartAccountCompatibleChains';
 
 export type FlowNewDialogProps = DialogProps & CloseCallbackType;
 
@@ -50,7 +51,8 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
           wallets: paymentOnLoggedAddress
             ? paymentNetworks.map((network) => ({
                 address: address,
-                network: network
+                network: network,
+                smart: false
               }))
             : []
         }
@@ -123,9 +125,15 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
                 onChange={(event, value) => {
                   setPaymentNetworks(value);
                 }}
-                options={chains.map((c) => c.name)}
+                options={chains
+                  .filter((c) => !smartAccountCompatibleChains().includes(c.name))
+                  .map((c) => c.name)}
                 renderInput={(params) => (
-                  <TextField variant="outlined" {...params} label="Supported Networks" />
+                  <TextField
+                    variant="outlined"
+                    {...params}
+                    label="Supported External Account Networks"
+                  />
                 )}
                 sx={{ '& fieldset': { borderRadius: 3 } }}
               />

@@ -41,8 +41,19 @@ public class FlowService implements IFlowService {
         return null;
     }
 
+    public void addFlowWallet(String uuid, WalletDto walletDto) throws Exception {
+        Flow flow = flowRepository.findByUuid(uuid);
+        if (flow != null) {
+            Wallet wallet = convert(walletDto);
+            wallet.setFlow(flow);
+            flow.getWallets().add(wallet);
+        } else {
+            throw new Exception("Flow doesn't exist");
+        }
+    }
+
     private static FlowDto convert(Flow flow) {
-        List<WalletDto> wallets = flow.getWallets().stream().map(w -> new WalletDto(w.getAddress(), w.getNetwork()))
+        List<WalletDto> wallets = flow.getWallets().stream().map(w -> convert(w))
                 .toList();
         return new FlowDto(flow.getAccount(), flow.getTitle(), flow.getDescription(), flow.getUUID(),
                 wallets);
@@ -50,8 +61,20 @@ public class FlowService implements IFlowService {
 
     private static Flow convert(FlowDto flowDto) {
         Flow flow = new Flow(flowDto.account(), flowDto.title(), flowDto.description());
-        List<Wallet> wallets = flowDto.wallets().stream().map(w -> new Wallet(w.address(), w.network(), flow)).toList();
+        List<Wallet> wallets = flowDto.wallets().stream().map(w -> {
+            Wallet wallet = convert(w);
+            wallet.setFlow(flow);
+            return wallet;
+        }).toList();
         flow.setWallets(wallets);
         return flow;
+    }
+
+    private static Wallet convert(WalletDto walletDto) {
+        return new Wallet(walletDto.address(), walletDto.network(), walletDto.smart());
+    }
+
+    private static WalletDto convert(Wallet wallet) {
+        return new WalletDto(wallet.getAddress(), wallet.getNetwork(), wallet.isSmart());
     }
 }
