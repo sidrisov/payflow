@@ -13,4 +13,6 @@ public interface IFlowService {
     FlowDto findByUUID(String uuid);
 
     void addFlowWallet(String uuid, WalletDto wallet) throws Exception;
+
+    void deleteFlowWallet(String uuid, WalletDto wallet) throws Exception;
 }

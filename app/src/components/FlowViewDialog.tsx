@@ -16,11 +16,21 @@ import {
   TextField
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
-import { FlowType } from '../types/FlowType';
+import { FlowType, FlowWalletType } from '../types/FlowType';
 import { useMemo, useState } from 'react';
 import { getTotalBalance, getWalletBalance } from '../utils/getFlowBalance';
-import { useAccount, useContractWrite, useNetwork, usePrepareContractWrite } from 'wagmi';
-import { AutoFixHigh, ContentCopy, Edit } from '@mui/icons-material';
+import {
+  useAccount,
+  useContractWrite,
+  usePrepareContractWrite,
+  useSwitchNetwork
+} from 'wagmi';
+import {
+  AutoFixHigh,
+  ContentCopy,
+  DeleteForever,
+  Download,
+  Edit} from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { copyToClipboard } from '../utils/copyToClipboard';
@@ -58,7 +68,8 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const [newAccountAddress, setNewAccountAddress] = useState('');
   const [flowSalt, setFlowSalt] = useState('' as `0x${string}`);
 
-  const { chains } = useNetwork();
+  const { chains, switchNetwork } = useSwitchNetwork();
+
   const { address } = useAccount();
 
   const { config } = usePrepareContractWrite({
@@ -155,6 +166,27 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
     handleCloseCampaignDialog();
   }
 
+  async function deleteExternalAccount(wallet: FlowWalletType) {
+    try {
+      const response = await axios.delete(
+        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${flow.uuid}/wallet`,
+        {
+          data: {
+            address: wallet.address,
+            network: wallet.network
+          }
+        }
+      );
+      console.log(response.status);
+      toast.success(`Successfully deleted external account: ${wallet.address}`);
+    } catch (error) {
+      console.log(error);
+      toast.error('Operation failed!');
+    }
+
+    handleCloseCampaignDialog();
+  }
+
   return (
     <Dialog
       fullScreen={fullScreen}
@@ -169,16 +201,6 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
           <Typography justifySelf="center" variant="h6">
             {flow.title}
           </Typography>
-          {!editFlow && (
-            <IconButton
-              size="small"
-              color="primary"
-              onClick={() => {
-                setEditFlow(!editFlow);
-              }}>
-              <Edit fontSize="small" />
-            </IconButton>
-          )}
         </Stack>
       </DialogTitle>
       <DialogContent sx={{ minWidth: 350 }}>
@@ -188,42 +210,6 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
           </Typography>
           <Typography variant="h5"> 💸 ${flowTotalBalance}</Typography>
 
-          {flow && flow.wallets && flow.wallets.filter((wallet) => !wallet.smart).length > 0 && (
-            <>
-              <Divider flexItem>
-                <Typography variant="subtitle2"> External Accounts </Typography>
-              </Divider>
-              {flow.wallets
-                .filter((wallet) => !wallet.smart)
-                .map((wallet, index) => (
-                  <Box
-                    mt={1}
-                    display="flex"
-                    flexDirection="row"
-                    alignItems="center"
-                    alignSelf="stretch"
-                    justifyContent="space-between"
-                    sx={{ border: 1, borderRadius: 3, p: 1 }}>
-                    <Box display="flex" flexDirection="row" alignItems="center">
-                      <Avatar
-                        src={'/public/networks/' + wallet.network + '.png'}
-                        sx={{ width: 24, height: 24 }}
-                      />
-                      <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
-                      <IconButton
-                        size="small"
-                        onClick={() => {
-                          copyToClipboard(wallet.address);
-                          toast.success('Wallet address is copied to clipboard!');
-                        }}>
-                        <ContentCopy fontSize="small" />
-                      </IconButton>
-                    </Box>
-                    <Typography variant="subtitle2">${walletBalances[index]}</Typography>
-                  </Box>
-                ))}
-            </>
-          )}
           {flow && flow.wallets && flow.wallets.filter((wallet) => wallet.smart).length > 0 && (
             <>
               <Divider flexItem>
@@ -261,6 +247,59 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
             </>
           )}
 
+          {flow && flow.wallets && flow.wallets.filter((wallet) => !wallet.smart).length > 0 && (
+            <>
+              <Divider flexItem>
+                <Typography variant="subtitle2"> External Accounts </Typography>
+              </Divider>
+              {flow.wallets
+                .filter((wallet) => !wallet.smart)
+                .map((wallet, index) => (
+                  <Box
+                    mt={1}
+                    display="flex"
+                    flexDirection="row"
+                    alignItems="center"
+                    alignSelf="stretch"
+                    justifyContent="space-between">
+                    <Box
+                      display="flex"
+                      flexDirection="row"
+                      alignItems="center"
+                      flexGrow={1}
+                      justifyContent="space-between"
+                      sx={{ border: 1, borderRadius: 3, p: 1 }}>
+                      <Box display="flex" flexDirection="row" alignItems="center">
+                        <Avatar
+                          src={'/public/networks/' + wallet.network + '.png'}
+                          sx={{ width: 24, height: 24 }}
+                        />
+                        <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            copyToClipboard(wallet.address);
+                            toast.success('Wallet address is copied to clipboard!');
+                          }}>
+                          <ContentCopy fontSize="small" />
+                        </IconButton>
+                      </Box>
+                      <Typography variant="subtitle2">${walletBalances[index]}</Typography>
+                    </Box>
+                    {editFlow && (
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          deleteExternalAccount(wallet);
+                        }}>
+                        <DeleteForever fontSize="small" />
+                      </IconButton>
+                    )}
+                  </Box>
+                ))}
+            </>
+          )}
+
           {editFlow &&
             (availableNetworksToAddAccount.length > 0 ? (
               <>
@@ -274,6 +313,11 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                   onChange={(event, value) => {
                     if (value) {
                       setNewAccountNetwork(value);
+                      // switch netwrok only for smart accounts,
+                      // as those will require signing transaction
+                      if (smartAccountCompatibleChains().includes(value)) {
+                        switchNetwork?.(chains.find((c) => c?.name === value)?.id);
+                      }
                     } else {
                       setNewAccountNetwork('');
                       setNewAccountAddress('');
@@ -334,6 +378,34 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                 <Typography>You have configured accounts for all networks</Typography>
               </>
             ))}
+          {!editFlow && (
+            <Stack direction="row" alignSelf="flex-end">
+              <IconButton
+                size="small"
+                color="inherit"
+                onClick={() => {
+                  setEditFlow(!editFlow);
+                }}>
+                <Edit fontSize="small" />
+              </IconButton>
+              <IconButton
+                size="small"
+                color="inherit"
+                onClick={() => {
+                  toast.error('Feature not supported yet!');
+                }}>
+                <Download fontSize="small" />
+              </IconButton>
+              <IconButton
+                size="small"
+                color="inherit"
+                onClick={() => {
+                  toast.error('Feature not supported yet!');
+                }}>
+                <DeleteForever fontSize="small" />
+              </IconButton>
+            </Stack>
+          )}
         </Stack>
       </DialogContent>
     </Dialog>

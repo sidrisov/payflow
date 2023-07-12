@@ -6,7 +6,9 @@ import {
   useTheme,
   DialogProps,
   Stack,
-  Chip
+  Chip,
+  Typography,
+  Box
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import QRCode from 'react-qr-code';
@@ -37,7 +39,11 @@ export default function FlowShareDialog({ closeStateCallback, ...props }: FlowSh
       sx={{
         backdropFilter: 'blur(5px)'
       }}>
-      <DialogTitle>{props.title}</DialogTitle>
+      <DialogTitle>
+        <Box display="flex" justifyContent="center">
+          <Typography variant="h6">{props.title}</Typography>
+        </Box>
+      </DialogTitle>
       <DialogContent>
         <Stack m={1} direction="column" spacing={2} component="form" id="flow" sx={{ width: 250 }}>
           <Stack spacing={1} justifyItems="center">

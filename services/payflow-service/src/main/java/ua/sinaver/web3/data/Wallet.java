@@ -9,10 +9,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 
 @Entity
-@Table
+@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "network", "address" }) })
 public class Wallet {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -89,6 +90,12 @@ public class Wallet {
 
     public void setFlow(Flow flow) {
         this.flow = flow;
+    }
+
+    @Override
+    public String toString() {
+        return "Wallet [id=" + id + ", address=" + address + ", network=" + network + ", smart=" + smart + ", flow="
+                + flow.getUUID() + "]";
     }
 
 }

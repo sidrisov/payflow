@@ -1,7 +1,10 @@
 package ua.sinaver.web3.service;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,13 +18,16 @@ import ua.sinaver.web3.repository.FlowRepository;
 @Service
 @Transactional
 public class FlowService implements IFlowService {
+    public static final Logger LOGGER = LoggerFactory.getLogger(FlowService.class);
 
     @Autowired
     private FlowRepository flowRepository;
 
     @Override
     public void saveFlow(FlowDto flowDto) {
-        flowRepository.save(convert(flowDto));
+        Flow flow = convert(flowDto);
+        flowRepository.save(flow);
+        LOGGER.info("Saved flow {}", flow);
     }
 
     @Override
@@ -41,12 +47,43 @@ public class FlowService implements IFlowService {
         return null;
     }
 
+    @Override
+    public void deleteFlowWallet(String uuid, WalletDto walletDto) throws Exception {
+        Flow flow = flowRepository.findByUuid(uuid);
+        if (flow != null) {
+            String network = walletDto.network();
+            String address = walletDto.address();
+
+            Optional<Wallet> walletOptional = flow.getWallets().stream()
+                    .filter(w -> w.getNetwork().equals(network) && w.getAddress().equals(address))
+                    .findFirst();
+            if (!walletOptional.isPresent()) {
+                return;
+            }
+
+            Wallet wallet = walletOptional.get();
+            // deleting smart wallets from flow doesn't make sense
+            if (wallet.isSmart()) {
+                throw new Exception("Not allowed!");
+            }
+
+            flow.getWallets().remove(wallet);
+
+            LOGGER.info("Removed wallet {} from flow {}", wallet, flow);
+        } else {
+            throw new Exception("Flow doesn't exist");
+        }
+    }
+
+    @Override
     public void addFlowWallet(String uuid, WalletDto walletDto) throws Exception {
         Flow flow = flowRepository.findByUuid(uuid);
         if (flow != null) {
             Wallet wallet = convert(walletDto);
             wallet.setFlow(flow);
             flow.getWallets().add(wallet);
+
+            LOGGER.info("Added wallet {} to flow {}", wallet, flow);
         } else {
             throw new Exception("Flow doesn't exist");
         }

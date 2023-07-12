@@ -37,7 +37,7 @@ public class Flow {
     @Column
     private String uuid;
 
-    @OneToMany(mappedBy = "flow", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "flow", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Wallet> wallets;
 
     @Version
@@ -116,4 +116,11 @@ public class Flow {
     public void setWallets(List<Wallet> wallets) {
         this.wallets = wallets;
     }
+
+    @Override
+    public String toString() {
+        return "Flow [id=" + id + ", account=" + account + ", title=" + title + ", description=" + description
+                + ", shareable=" + shareable + ", uuid=" + uuid + ", wallets=" + wallets + "]";
+    }
+
 }
