@@ -114,6 +114,7 @@ export default function Flows() {
             </Card>
             {flows.map((flow, index) => (
               <Card
+                key={`flow_card_${flow.uuid}`}
                 elevation={10}
                 sx={{
                   m: 2,
@@ -163,6 +164,7 @@ export default function Flows() {
                     }}>
                     {[...Array(Math.min(4, flow.wallets.length))].map((item, i) => (
                       <Avatar
+                        key={`wallet_avatar_${flow.uuid}_${i}`}
                         src={'/public/networks/' + flow.wallets[i].network.toLowerCase() + '.png'}
                       />
                     ))}

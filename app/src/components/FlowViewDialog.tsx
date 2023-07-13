@@ -23,18 +23,14 @@ import {
   useAccount,
   useContractWrite,
   usePrepareContractWrite,
+  usePublicClient,
   useSwitchNetwork
 } from 'wagmi';
-import {
-  AutoFixHigh,
-  ContentCopy,
-  DeleteForever,
-  Download,
-  Edit} from '@mui/icons-material';
+import { AutoFixHigh, ContentCopy, DeleteForever, Download, Edit } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { copyToClipboard } from '../utils/copyToClipboard';
-import { encodeAbiParameters, formatEther, keccak256, parseAbiParameters, toHex } from 'viem';
+import { Hash, encodeAbiParameters, formatEther, keccak256, parseAbiParameters, toHex } from 'viem';
 
 import PayFlowMasterFactoryArtifact from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/PayFlowMasterFactory.sol/PayFlowMasterFactory.json';
 import { readContract } from 'wagmi/actions';
@@ -42,6 +38,7 @@ import { zkSyncTestnet } from 'wagmi/chains';
 import { smartAccountCompatibleChains } from '../utils/smartAccountCompatibleChains';
 import axios from 'axios';
 import create2Address from '../utils/create2Address';
+import FlowWithdrawalDialog from './FlowWithdrawalDialog';
 
 export type FlowViewDialogProps = DialogProps &
   CloseCallbackType & {
@@ -60,6 +57,8 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const [walletBalances, setWalletBalances] = useState([] as string[]);
 
   const [editFlow, setEditFlow] = useState(false);
+  const [openWithdrawalDialog, setOpenWithdrawalDialog] = useState(false);
+  const [selectedWithdrawalWallet, setSelectedWithdrawalWallet] = useState({} as FlowWalletType);
 
   const [availableNetworksToAddAccount, setAvailableNetworksToAddAccount] = useState(
     [] as string[]
@@ -69,17 +68,19 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const [flowSalt, setFlowSalt] = useState('' as `0x${string}`);
 
   const { chains, switchNetwork } = useSwitchNetwork();
-
+  const publicClient = usePublicClient();
   const { address } = useAccount();
 
   const { config } = usePrepareContractWrite({
+    enabled: smartAccountCompatibleChains().includes(newAccountNetwork),
     address: ZKSYNC_AA_FACTORY_ADDRESS,
     abi: PayFlowMasterFactoryArtifact.abi,
     functionName: 'deployAccount',
     args: [flowSalt, address, address],
     chainId: zkSyncTestnet.id
   });
-  const { isSuccess, write } = useContractWrite(config);
+  const { isSuccess, data, write } = useContractWrite(config);
+  const [txHash, setTxHash] = useState<Hash>();
 
   useMemo(async () => {
     if (flow && flow.wallets) {
@@ -133,8 +134,6 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
         functionName: 'aaBytecodeHash'
       })) as `0x${string}`;
 
-      console.log(playFlowContractHash);
-
       const playFlowAddress = create2Address(
         ZKSYNC_AA_FACTORY_ADDRESS,
         playFlowContractHash,
@@ -143,8 +142,28 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
       );
 
       setNewAccountAddress(playFlowAddress);
+      setTxHash(data?.hash);
     }
-  }, [isSuccess]);
+  }, [isSuccess, data]);
+
+  useMemo(async () => {
+    if (txHash) {
+      // TODO: add loading indicator
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash: txHash
+      });
+
+      console.log('Receipt: ', receipt);
+
+      if (receipt) {
+        if (receipt.status === 'success') {
+          toast.success('Payflow Account Successfully Deployed!');
+        } else {
+          toast.error('Payflow Account Failed To Deploy!');
+        }
+      }
+    }
+  }, [txHash]);
 
   async function submitFlowAccount() {
     try {
@@ -178,7 +197,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
         }
       );
       console.log(response.status);
-      toast.success(`Successfully deleted external account: ${wallet.address}`);
+      toast.success(`Successfully removed ${wallet.address} from the flow!`);
     } catch (error) {
       console.log(error);
       toast.error('Operation failed!');
@@ -187,7 +206,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
     handleCloseCampaignDialog();
   }
 
-  return (
+  return flow ? (
     <Dialog
       fullScreen={fullScreen}
       onClose={handleCloseCampaignDialog}
@@ -224,24 +243,41 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                     flexDirection="row"
                     alignItems="center"
                     alignSelf="stretch"
-                    justifyContent="space-between"
-                    sx={{ border: 1, borderRadius: 3, p: 1 }}>
-                    <Box display="flex" flexDirection="row" alignItems="center">
-                      <Avatar
-                        src={'/public/networks/' + wallet.network + '.png'}
-                        sx={{ width: 24, height: 24 }}
-                      />
-                      <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
+                    justifyContent="space-between">
+                    <Box
+                      display="flex"
+                      flexDirection="row"
+                      alignItems="center"
+                      flexGrow={1}
+                      justifyContent="space-between"
+                      sx={{ border: 1, borderRadius: 3, p: 1 }}>
+                      <Box display="flex" flexDirection="row" alignItems="center">
+                        <Avatar
+                          src={'/public/networks/' + wallet.network + '.png'}
+                          sx={{ width: 24, height: 24 }}
+                        />
+                        <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            copyToClipboard(wallet.address);
+                            toast.success('Wallet address is copied to clipboard!');
+                          }}>
+                          <ContentCopy fontSize="small" />
+                        </IconButton>
+                      </Box>
+                      <Typography variant="subtitle2">${walletBalances[index]}</Typography>
+                    </Box>
+                    {editFlow && (
                       <IconButton
                         size="small"
-                        onClick={() => {
-                          copyToClipboard(wallet.address);
-                          toast.success('Wallet address is copied to clipboard!');
+                        onClick={async () => {
+                          setSelectedWithdrawalWallet(wallet);
+                          setOpenWithdrawalDialog(true);
                         }}>
-                        <ContentCopy fontSize="small" />
+                        <Download fontSize="small" />
                       </IconButton>
-                    </Box>
-                    <Typography variant="subtitle2">${walletBalances[index]}</Typography>
+                    )}
                   </Box>
                 ))}
             </>
@@ -351,7 +387,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                         color="primary"
                         sx={{ borderRadius: 3 }}
                         endIcon={<AutoFixHigh />}
-                        onClick={() => {
+                        onClick={async () => {
                           write?.();
                         }}>
                         Create PayFlow Account
@@ -391,7 +427,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
               <IconButton
                 size="small"
                 color="inherit"
-                onClick={() => {
+                onClick={async () => {
                   toast.error('Feature not supported yet!');
                 }}>
                 <Download fontSize="small" />
@@ -399,7 +435,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
               <IconButton
                 size="small"
                 color="inherit"
-                onClick={() => {
+                onClick={async () => {
                   toast.error('Feature not supported yet!');
                 }}>
                 <DeleteForever fontSize="small" />
@@ -408,6 +444,13 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
           )}
         </Stack>
       </DialogContent>
+      <FlowWithdrawalDialog
+        open={openWithdrawalDialog}
+        wallet={selectedWithdrawalWallet}
+        closeStateCallback={() => setOpenWithdrawalDialog(false)}
+      />
     </Dialog>
+  ) : (
+    <></>
   );
 }

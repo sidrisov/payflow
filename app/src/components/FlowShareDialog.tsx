@@ -30,7 +30,7 @@ export default function FlowShareDialog({ closeStateCallback, ...props }: FlowSh
     closeStateCallback();
   }
 
-  return (
+  return props.title ? (
     <Dialog
       fullScreen={fullScreen}
       onClose={handleCloseCampaignDialog}
@@ -65,5 +65,7 @@ export default function FlowShareDialog({ closeStateCallback, ...props }: FlowSh
         </Stack>
       </DialogContent>
     </Dialog>
+  ) : (
+    <></>
   );
 }

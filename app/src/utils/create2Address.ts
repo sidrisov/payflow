@@ -1,4 +1,4 @@
-import { Address, concat, getAddress, keccak256, pad, slice, toBytes } from 'viem';
+import { Address, ByteArray, concat, getAddress, keccak256, pad, slice, toBytes } from 'viem';
 
 export default function create2Address(
   sender: Address,
@@ -15,3 +15,10 @@ export default function create2Address(
 
   return getAddress(addressBytes);
 }
+
+export const DEFAULT_GAS_PER_PUBDATA_LIMIT = 50000;
+
+export declare type Eip712Meta = {
+  gasPerPubdata?: number;
+  customSignature?: ByteArray;
+};

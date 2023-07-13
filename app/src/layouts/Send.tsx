@@ -1,12 +1,13 @@
 import '@rainbow-me/rainbowkit/styles.css';
 import 'react-toastify/dist/ReactToastify.css';
 
-import { parseEther, toHex } from 'viem';
+import { Hash, parseEther, toHex } from 'viem';
 
 import {
   useEnsAvatar,
   useEnsName,
   usePrepareSendTransaction,
+  usePublicClient,
   useSendTransaction,
   useSwitchNetwork
 } from 'wagmi';
@@ -52,30 +53,28 @@ export default function Send({ appSettings, setAppSettings }: any) {
   const [topUpAmount, setTopUpAmount] = useState(BigInt(0));
   const [comment, setComment] = useState('');
 
+  const publicClient = usePublicClient();
+  const { chains, switchNetwork } = useSwitchNetwork();
+  const { config } = usePrepareSendTransaction({
+    enabled: selectedPaymentAddress !== undefined,
+    to: selectedPaymentAddress,
+    value: topUpAmount,
+    data: toHex(comment)
+  });
+
+  const [txHash, setTxHash] = useState<Hash>();
+
   const { data: ensName } = useEnsName({
     address: flow.account,
     chainId: 1
   });
 
-  const { error, data: avatar } = useEnsAvatar({
+  const { data: avatar } = useEnsAvatar({
     name: ensName,
     chainId: 1
   });
 
-  useMemo(() => {
-    console.log(avatar);
-    console.log(error);
-  }, [avatar]);
-
-  const { chains, switchNetwork } = useSwitchNetwork();
-  const { config } = usePrepareSendTransaction({
-    //chainId: chains.find((c) => c?.name === selectedPaymentNetwork)?.id,
-    to: selectedPaymentAddress,
-    value: topUpAmount,
-    data: toHex(comment)
-    // add comment to data
-  });
-  const { isSuccess, sendTransaction } = useSendTransaction(config);
+  const { isSuccess, data, sendTransaction } = useSendTransaction(config);
 
   useMemo(async () => {
     try {
@@ -104,15 +103,35 @@ export default function Send({ appSettings, setAppSettings }: any) {
 
   useMemo(async () => {
     if (isSuccess === true) {
+      setTxHash(data?.hash);
       toast.success('Payment was submitted!');
     }
-  }, [isSuccess]);
+  }, [isSuccess, data]);
 
   useMemo(async () => {
     if (flow && flow.wallets && flow.wallets.length) {
       setFlowTotalBalance(await getFlowBalance(flow, chains, 1850));
     }
   }, [flow]);
+
+  useMemo(async () => {
+    if (txHash) {
+      // TODO: add loading indicator
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash: txHash
+      });
+
+      console.log('Receipt: ', receipt);
+
+      if (receipt) {
+        if (receipt.status === 'success') {
+          toast.success('Payment Confirmed!');
+        } else {
+          toast.error('Payment Failed!');
+        }
+      }
+    }
+  }, [txHash]);
 
   return (
     <>
@@ -284,7 +303,6 @@ export default function Send({ appSettings, setAppSettings }: any) {
                   color="primary"
                   onClick={() => {
                     if (sendTransaction) {
-                      console.log('hello');
                       switchNetwork?.(chains.find((c) => c?.name === selectedPaymentNetwork)?.id);
                       sendTransaction?.();
                     }
