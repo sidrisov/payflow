@@ -117,7 +117,9 @@ export default function FlowWithdrawalDialog({
               src={'/public/networks/' + wallet.network + '.png'}
               sx={{ width: 24, height: 24 }}
             />
-            <Typography ml={1}>{wallet.address}</Typography>
+            <Typography ml={1} sx={{ overflow: 'scroll' }}>
+              {wallet.address}
+            </Typography>
             <IconButton
               size="small"
               onClick={() => {

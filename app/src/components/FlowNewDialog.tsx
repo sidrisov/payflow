@@ -11,7 +11,8 @@ import {
   Switch,
   FormControlLabel,
   Autocomplete,
-  Typography
+  Typography,
+  Box
 } from '@mui/material';
 import { toast } from 'react-toastify';
 
@@ -76,7 +77,11 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
       sx={{
         backdropFilter: 'blur(5px)'
       }}>
-      <DialogTitle>New Flow</DialogTitle>
+      <DialogTitle>
+        <Box display="flex" justifyContent="center">
+          <Typography variant="h6">New Flow</Typography>
+        </Box>
+      </DialogTitle>
       <DialogContent>
         <Stack
           m={1}

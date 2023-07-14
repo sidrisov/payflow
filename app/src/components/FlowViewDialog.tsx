@@ -26,7 +26,20 @@ import {
   usePublicClient,
   useSwitchNetwork
 } from 'wagmi';
-import { AutoFixHigh, ContentCopy, DeleteForever, Download, Edit } from '@mui/icons-material';
+import {
+  Add,
+  AutoFixHigh,
+  Cancel,
+  Clear,
+  Close,
+  CloseRounded,
+  CloseTwoTone,
+  ContentCopy,
+  DeleteForever,
+  Download,
+  Edit,
+  Share
+} from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { copyToClipboard } from '../utils/copyToClipboard';
@@ -39,6 +52,7 @@ import { smartAccountCompatibleChains } from '../utils/smartAccountCompatibleCha
 import axios from 'axios';
 import create2Address from '../utils/create2Address';
 import FlowWithdrawalDialog from './FlowWithdrawalDialog';
+import FlowShareDialog from './FlowShareDialog';
 
 export type FlowViewDialogProps = DialogProps &
   CloseCallbackType & {
@@ -57,6 +71,8 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const [walletBalances, setWalletBalances] = useState([] as string[]);
 
   const [editFlow, setEditFlow] = useState(false);
+  const [addFlowWallet, setAddFlowWallet] = useState(false);
+  const [withdrawFlowWallet, setWithdrawFlowWallet] = useState(false);
   const [openWithdrawalDialog, setOpenWithdrawalDialog] = useState(false);
   const [selectedWithdrawalWallet, setSelectedWithdrawalWallet] = useState({} as FlowWalletType);
 
@@ -70,6 +86,9 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const { chains, switchNetwork } = useSwitchNetwork();
   const publicClient = usePublicClient();
   const { address } = useAccount();
+
+  const [openFlowShare, setOpenFlowShare] = useState(false);
+  const [flowShareInfo, setFlowShareInfo] = useState({} as { title: string; link: string });
 
   const { config } = usePrepareContractWrite({
     enabled: smartAccountCompatibleChains().includes(newAccountNetwork),
@@ -116,6 +135,8 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
 
   function handleCloseCampaignDialog() {
     setEditFlow(false);
+    setAddFlowWallet(false);
+    setWithdrawFlowWallet(false);
     setNewAccountNetwork('');
     closeStateCallback();
   }
@@ -229,7 +250,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
           </Typography>
           <Typography variant="h5"> 💸 ${flowTotalBalance}</Typography>
 
-          {flow && flow.wallets && flow.wallets.filter((wallet) => wallet.smart).length > 0 && (
+          {flow.wallets && flow.wallets.filter((wallet) => wallet.smart).length > 0 && (
             <>
               <Divider flexItem>
                 <Typography variant="subtitle2"> PayFlow Accounts </Typography>
@@ -268,7 +289,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                       </Box>
                       <Typography variant="subtitle2">${walletBalances[index]}</Typography>
                     </Box>
-                    {editFlow && (
+                    {withdrawFlowWallet && (
                       <IconButton
                         size="small"
                         onClick={async () => {
@@ -283,7 +304,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
             </>
           )}
 
-          {flow && flow.wallets && flow.wallets.filter((wallet) => !wallet.smart).length > 0 && (
+          {flow.wallets && flow.wallets.filter((wallet) => !wallet.smart).length > 0 && (
             <>
               <Divider flexItem>
                 <Typography variant="subtitle2"> External Accounts </Typography>
@@ -336,7 +357,13 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
             </>
           )}
 
-          {editFlow &&
+          {withdrawFlowWallet &&
+            flow.wallets &&
+            flow.wallets.filter((wallet) => wallet.smart).length === 0 && (
+              <Typography>You can withdraw only from PayFlow Accounts</Typography>
+            )}
+
+          {addFlowWallet &&
             (availableNetworksToAddAccount.length > 0 ? (
               <>
                 <Divider flexItem>
@@ -414,31 +441,51 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                 <Typography>You have configured accounts for all networks</Typography>
               </>
             ))}
-          {!editFlow && (
-            <Stack direction="row" alignSelf="flex-end">
+          {!(editFlow || addFlowWallet || withdrawFlowWallet) && (
+            <Stack spacing={1} direction="row" alignSelf="center">
               <IconButton
-                size="small"
+                color="inherit"
+                onClick={() => {
+                  setAddFlowWallet(!addFlowWallet);
+                }}
+                sx={{ border: 1, borderStyle: 'dashed' }}>
+                <Add fontSize="small" />
+              </IconButton>
+              <IconButton
+                color="inherit"
+                onClick={async () => {
+                  setFlowShareInfo({
+                    title: flow.title,
+                    link: `http://app.payflow.me:5173/send/${flow.uuid}`
+                  });
+                  setOpenFlowShare(true);
+                }}
+                sx={{ border: 1, borderStyle: 'dashed' }}>
+                <Share fontSize="small" />
+              </IconButton>
+              <IconButton
                 color="inherit"
                 onClick={() => {
                   setEditFlow(!editFlow);
-                }}>
+                }}
+                sx={{ border: 1, borderStyle: 'dashed' }}>
                 <Edit fontSize="small" />
               </IconButton>
               <IconButton
-                size="small"
                 color="inherit"
                 onClick={async () => {
-                  toast.error('Feature not supported yet!');
-                }}>
+                  setWithdrawFlowWallet(!withdrawFlowWallet);
+                }}
+                sx={{ border: 1, borderStyle: 'dashed' }}>
                 <Download fontSize="small" />
               </IconButton>
               <IconButton
-                size="small"
                 color="inherit"
                 onClick={async () => {
                   toast.error('Feature not supported yet!');
-                }}>
-                <DeleteForever fontSize="small" />
+                }}
+                sx={{ border: 1, borderStyle: 'dashed' }}>
+                <Close fontSize="small" />
               </IconButton>
             </Stack>
           )}
@@ -448,6 +495,12 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
         open={openWithdrawalDialog}
         wallet={selectedWithdrawalWallet}
         closeStateCallback={() => setOpenWithdrawalDialog(false)}
+      />
+      <FlowShareDialog
+        open={openFlowShare}
+        title={flowShareInfo.title}
+        link={flowShareInfo.link}
+        closeStateCallback={() => setOpenFlowShare(false)}
       />
     </Dialog>
   ) : (
