@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { FlowType, FlowWalletType } from '../types/FlowType';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getTotalBalance, getWalletBalance } from '../utils/getFlowBalance';
 import {
   useAccount,
@@ -29,11 +29,7 @@ import {
 import {
   Add,
   AutoFixHigh,
-  Cancel,
-  Clear,
   Close,
-  CloseRounded,
-  CloseTwoTone,
   ContentCopy,
   DeleteForever,
   Download,
@@ -62,7 +58,7 @@ export type FlowViewDialogProps = DialogProps &
 const ZKSYNC_AA_FACTORY_ADDRESS = import.meta.env.VITE_PAYFLOW_ZKSYNC_AA_FACTORY_ADDRESS;
 
 export default function FlowViewDialog({ closeStateCallback, ...props }: FlowViewDialogProps) {
-  const flow = props.flow;
+  const [flow, setFlow] = useState<FlowType>();
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
@@ -81,7 +77,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   );
   const [newAccountNetwork, setNewAccountNetwork] = useState('');
   const [newAccountAddress, setNewAccountAddress] = useState('');
-  const [flowSalt, setFlowSalt] = useState('' as `0x${string}`);
+  const [flowSalt, setFlowSalt] = useState<Hash>();
 
   const { chains, switchNetwork } = useSwitchNetwork();
   const publicClient = usePublicClient();
@@ -100,6 +96,15 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   });
   const { isSuccess, data, write } = useContractWrite(config);
   const [txHash, setTxHash] = useState<Hash>();
+
+  useEffect(() => {
+    if (props.flow && props.flow.uuid) {
+      if (!flow) {
+        setFlow(props.flow);
+        setFlowSalt(keccak256(toHex(props.flow.uuid)));
+      }
+    }
+  }, [props]);
 
   useMemo(async () => {
     if (flow && flow.wallets) {
@@ -120,7 +125,6 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
           (parseFloat(formatEther(await getTotalBalance(balances))) * 1850).toFixed(1)
         );
       }
-      setFlowSalt(keccak256(toHex(flow.uuid)));
     }
   }, [flow]);
 
@@ -133,11 +137,15 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
     }
   }, [flow, chains]);
 
-  function handleCloseCampaignDialog() {
+  function resetViewState() {
     setEditFlow(false);
     setAddFlowWallet(false);
     setWithdrawFlowWallet(false);
     setNewAccountNetwork('');
+  }
+
+  function handleCloseCampaignDialog() {
+    resetViewState();
     closeStateCallback();
   }
 
@@ -187,44 +195,62 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   }, [txHash]);
 
   async function submitFlowAccount() {
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${flow.uuid}/wallet`,
-        {
+    if (flow) {
+      try {
+        const flowWallet = {
           address: newAccountAddress,
           network: newAccountNetwork,
           smart: smartAccountCompatibleChains().includes(newAccountNetwork)
-        }
-      );
-      console.log(response.status);
-      toast.success(`Successfully added new account: ${newAccountAddress}`);
-    } catch (error) {
-      console.log(error);
-      toast.error('Try again!');
-    }
+        } as FlowWalletType;
+        const response = await axios.post(
+          `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${flow.uuid}/wallet`,
+          flowWallet
+        );
+        console.log(response.status);
 
-    handleCloseCampaignDialog();
+        const wallets = flow.wallets;
+        wallets.push(flowWallet);
+        setFlow({ ...flow, wallets });
+        toast.success(`Successfully added new account: ${newAccountAddress}`);
+      } catch (error) {
+        console.log(error);
+        toast.error('Try again!');
+      }
+
+      resetViewState();
+    }
   }
 
   async function deleteExternalAccount(wallet: FlowWalletType) {
-    try {
-      const response = await axios.delete(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${flow.uuid}/wallet`,
-        {
-          data: {
-            address: wallet.address,
-            network: wallet.network
+    if (flow) {
+      try {
+        const response = await axios.delete(
+          `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${flow.uuid}/wallet`,
+          {
+            data: {
+              address: wallet.address,
+              network: wallet.network
+            }
           }
-        }
-      );
-      console.log(response.status);
-      toast.success(`Successfully removed ${wallet.address} from the flow!`);
-    } catch (error) {
-      console.log(error);
-      toast.error('Operation failed!');
-    }
+        );
+        console.log(response.status);
 
-    handleCloseCampaignDialog();
+        const wallets = flow.wallets.filter(
+          (w) => !(w.address === wallet.address && w.network === wallet.network)
+        );
+
+        const updatedFlow = { ...flow, wallets };
+        console.log(updatedFlow);
+        setFlow(updatedFlow);
+
+        toast.success(`Successfully removed ${wallet.address} from the flow!`);
+      } catch (error) {
+        console.log(error);
+        toast.error('Operation failed!');
+      }
+
+      resetViewState();
+    }
   }
 
   return flow ? (
@@ -259,6 +285,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                 .filter((wallet) => wallet.smart)
                 .map((wallet, index) => (
                   <Box
+                    key={`flow_view_${flow.uuid}_smart_wallet_${index}`}
                     mt={1}
                     display="flex"
                     flexDirection="row"
@@ -313,6 +340,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                 .filter((wallet) => !wallet.smart)
                 .map((wallet, index) => (
                   <Box
+                    key={`flow_view_${flow.uuid}_external_wallet_${index}`}
                     mt={1}
                     display="flex"
                     flexDirection="row"
@@ -494,13 +522,13 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
       <FlowWithdrawalDialog
         open={openWithdrawalDialog}
         wallet={selectedWithdrawalWallet}
-        closeStateCallback={() => setOpenWithdrawalDialog(false)}
+        closeStateCallback={async () => setOpenWithdrawalDialog(false)}
       />
       <FlowShareDialog
         open={openFlowShare}
         title={flowShareInfo.title}
         link={flowShareInfo.link}
-        closeStateCallback={() => setOpenFlowShare(false)}
+        closeStateCallback={async () => setOpenFlowShare(false)}
       />
     </Dialog>
   ) : (

@@ -28,6 +28,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
+  const [title, setTitle] = useState<string>();
   const [paymentOnLoggedAddress, setPaymentOnLoggedAddress] = useState(true);
   const [paymentNetworks, setPaymentNetworks] = useState([] as string[]);
 
@@ -39,7 +40,6 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
   }
 
   async function submitFlow() {
-    const title = (window.document.getElementById('flowTitle') as HTMLInputElement).value;
     const description = (window.document.getElementById('flowDesc') as HTMLInputElement).value;
 
     try {
@@ -95,10 +95,13 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
             label="Title"
             fullWidth
             InputProps={{ inputProps: { maxLength: 32 }, sx: { borderRadius: 3 } }}
+            onChange={(event) => {
+              setTitle(event.target.value);
+            }}
           />
           <TextField
             id="flowDesc"
-            label="Description"
+            label="Description (optional)"
             fullWidth
             multiline
             minRows={1}
@@ -146,6 +149,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
           )}
           <Button
             fullWidth
+            disabled={!title}
             variant="outlined"
             size="large"
             color="primary"

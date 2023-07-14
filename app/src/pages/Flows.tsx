@@ -36,19 +36,21 @@ export default function Flows() {
 
   useMemo(async () => {
     if (isConnected) {
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows?account=${address}`
-        );
-
-        setFlows(response.data);
-
-        console.log(response.data);
-      } catch (error) {
-        console.log(error);
-      }
+      fetchFlows();
     }
   }, [isConnected]);
+
+  async function fetchFlows() {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows?account=${address}`
+      );
+
+      setFlows(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   // TODO: separate the logic into each card flow fetching its data separately
   useMemo(async () => {
@@ -189,17 +191,28 @@ export default function Flows() {
           </Box>
         )}
       </Container>
-      <FlowNewDialog open={openFlowCreate} closeStateCallback={() => setOpenFlowCreate(false)} />
+      <FlowNewDialog
+        open={openFlowCreate}
+        closeStateCallback={async () => {
+          setOpenFlowCreate(false);
+          // TODO: just refresh, lately it's better to track each flow's update separately
+          fetchFlows();
+        }}
+      />
       <FlowShareDialog
         open={openFlowShare}
         title={flowShareInfo.title}
         link={flowShareInfo.link}
-        closeStateCallback={() => setOpenFlowShare(false)}
+        closeStateCallback={async () => setOpenFlowShare(false)}
       />
       <FlowViewDialog
         open={openFlowView}
         flow={flow}
-        closeStateCallback={() => setOpenFlowView(false)}
+        closeStateCallback={async () => {
+          setOpenFlowView(false);
+          // TODO: just refresh, lately it's better to track each flow's update separately
+          fetchFlows();
+        }}
       />
     </>
   );

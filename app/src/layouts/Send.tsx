@@ -109,10 +109,14 @@ export default function Send({ appSettings, setAppSettings }: any) {
   }, [isSuccess, data]);
 
   useMemo(async () => {
+    updateFlowTotalBalance(flow);
+  }, [flow]);
+
+  async function updateFlowTotalBalance(flow: FlowType) {
     if (flow && flow.wallets && flow.wallets.length) {
       setFlowTotalBalance(await getFlowBalance(flow, chains, 1850));
     }
-  }, [flow]);
+  }
 
   useMemo(async () => {
     if (txHash) {
@@ -125,6 +129,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
 
       if (receipt) {
         if (receipt.status === 'success') {
+          updateFlowTotalBalance(flow);
           toast.success('Payment Confirmed!');
         } else {
           toast.error('Payment Failed!');
