@@ -16,7 +16,6 @@ import {
   InputAdornment
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
-import { FlowWalletType } from '../types/FlowType';
 import { useMemo, useState } from 'react';
 import { Address, WalletClient, usePublicClient, useSwitchNetwork, useWalletClient } from 'wagmi';
 import { ContentCopy, ExpandMore } from '@mui/icons-material';
@@ -28,7 +27,10 @@ import { transferEth } from '../utils/zkSyncTransactions';
 
 export type FlowWithdrawalDialogProps = DialogProps &
   CloseCallbackType & {
-    wallet: FlowWalletType;
+    title: string;
+    from: Address;
+    to?: Address;
+    network: string;
   };
 
 export default function FlowWithdrawalDialog({
@@ -38,9 +40,9 @@ export default function FlowWithdrawalDialog({
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const wallet = props.wallet;
+  const { title, from, to, network } = props;
 
-  const [withdrawToAddress, setWithdrawToAddress] = useState<Address>();
+  const [withdrawToAddress, setWithdrawToAddress] = useState(to as Address);
   const [withdrawAmount, setWithdrawAmount] = useState<bigint>();
 
   const { data: walletClient } = useWalletClient();
@@ -52,9 +54,9 @@ export default function FlowWithdrawalDialog({
 
   const sendTransaction = async () => {
     if (withdrawToAddress && withdrawAmount) {
-      switchNetwork?.(chains.find((c) => c?.name === wallet.network)?.id);
+      switchNetwork?.(chains.find((c) => c?.name === network)?.id);
       const txData = {
-        from: wallet.address,
+        from,
         to: withdrawToAddress,
         amount: withdrawAmount
       };
@@ -75,10 +77,10 @@ export default function FlowWithdrawalDialog({
       if (receipt) {
         if ((receipt as TransactionReceipt).status === 'success') {
           toast.success(
-            `Withdrawal from ${wallet.address} to ${withdrawToAddress} was successfully processed!`
+            `Withdrawal from ${from} to ${withdrawToAddress} was successfully processed!`
           );
         } else {
-          toast.error(`Withdrawal from ${wallet.address} to ${withdrawToAddress} failed!`);
+          toast.error(`Withdrawal from ${from} to ${withdrawToAddress} failed!`);
         }
         handleCloseCampaignDialog();
       }
@@ -89,7 +91,7 @@ export default function FlowWithdrawalDialog({
     closeStateCallback();
   }
 
-  return wallet ? (
+  return from && network ? (
     <Dialog
       fullScreen={fullScreen}
       onClose={handleCloseCampaignDialog}
@@ -101,7 +103,7 @@ export default function FlowWithdrawalDialog({
       <DialogTitle>
         <Stack spacing={1} direction="row" justifyContent="center" alignItems="center">
           <Typography justifySelf="center" variant="h6">
-            Withdrawal
+            {title}
           </Typography>
         </Stack>
       </DialogTitle>
@@ -113,17 +115,14 @@ export default function FlowWithdrawalDialog({
             alignSelf="stretch"
             alignItems="center"
             sx={{ height: 56, border: 1, borderRadius: 3, p: 1 }}>
-            <Avatar
-              src={'/public/networks/' + wallet.network + '.png'}
-              sx={{ width: 24, height: 24 }}
-            />
+            <Avatar src={'/public/networks/' + network + '.png'} sx={{ width: 24, height: 24 }} />
             <Typography ml={1} sx={{ overflow: 'scroll' }}>
-              {wallet.address}
+              {from}
             </Typography>
             <IconButton
               size="small"
               onClick={() => {
-                copyToClipboard(wallet.address);
+                copyToClipboard(from);
                 toast.success('Wallet address is copied to clipboard!');
               }}>
               <ContentCopy fontSize="small" />

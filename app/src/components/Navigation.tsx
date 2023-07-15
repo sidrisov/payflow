@@ -5,7 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 
 import HomeLogo from './Logo';
 
-import { Settings, Merge, Payments, List as IconList } from '@mui/icons-material';
+import { Settings, Merge, Payments, List as IconList, Payment } from '@mui/icons-material';
 import { appRoutes } from '../appRouter';
 
 export default function Navigation() {
@@ -53,32 +53,39 @@ export default function Navigation() {
           flexGrow: 1
         }}>
         <AlignedLinkTab
-          label="Flows"
+          label="Accounts"
           tabIndex={0}
           component={Link}
           to={appRoutes[0]}
+          icon={<Payment />}
+        />
+        <AlignedLinkTab
+          label="Flows"
+          tabIndex={1}
+          component={Link}
+          to={appRoutes[1]}
           icon={<Merge />}
         />
         <AlignedLinkTab
           disabled
           label="Requests"
-          tabIndex={1}
-          to={appRoutes[1]}
+          tabIndex={2}
+          to={appRoutes[2]}
           icon={<Payments />}
         />
         <AlignedLinkTab
           disabled
           label="Activity"
-          tabIndex={2}
+          tabIndex={3}
           component={Link}
-          to={appRoutes[2]}
+          to={appRoutes[3]}
           icon={<IconList />}
         />
         <AlignedLinkTab
           label="Settings"
-          tabIndex={3}
+          tabIndex={4}
           component={Link}
-          to={appRoutes[3]}
+          to={appRoutes[4]}
           icon={<Settings />}
         />
       </Tabs>
@@ -87,8 +94,7 @@ export default function Navigation() {
         variant="overline"
         underline="hover"
         color="grey"
-        href="https://github.com/sidrisov"
-        sx={{}}>
+        href="https://github.com/sidrisov">
         Made by Sinaver
       </MuiLink>
     </Stack>

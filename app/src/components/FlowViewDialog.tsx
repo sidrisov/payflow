@@ -88,7 +88,6 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const [flowShareInfo, setFlowShareInfo] = useState({} as { title: string; link: string });
 
   const { config } = usePrepareContractWrite({
-    enabled: smartAccountCompatibleChains().includes(newAccountNetwork),
     address: ZKSYNC_AA_FACTORY_ADDRESS,
     abi: PayFlowMasterFactoryArtifact.abi,
     functionName: 'deployAccount',
@@ -393,7 +392,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                 <Autocomplete
                   autoHighlight
                   fullWidth
-                  id="externalAccountNetwork"
+                  id="accountNetwork"
                   onChange={(event, value) => {
                     if (value) {
                       setNewAccountNetwork(value);
@@ -418,7 +417,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                   (!smartAccountCompatibleChains().includes(newAccountNetwork) ? (
                     <TextField
                       fullWidth
-                      id="externalAccountAddress"
+                      id="accountAddress"
                       label="External Account Address"
                       onChange={(event) => {
                         setNewAccountAddress(event.target.value);
@@ -474,6 +473,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
               </IconButton>
               <IconButton
                 color="inherit"
+                disabled={flow.wallets && flow.wallets.length === 0}
                 onClick={async () => {
                   setFlowShareInfo({
                     title: flow.title,
@@ -514,7 +514,9 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
       </DialogContent>
       <FlowWithdrawalDialog
         open={openWithdrawalDialog}
-        wallet={selectedWithdrawalWallet}
+        title="Withdrawal"
+        from={selectedWithdrawalWallet.address}
+        network={selectedWithdrawalWallet.network}
         closeStateCallback={async () => setOpenWithdrawalDialog(false)}
       />
       <FlowShareDialog

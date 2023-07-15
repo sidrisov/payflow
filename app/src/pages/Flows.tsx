@@ -22,8 +22,7 @@ import FlowViewDialog from '../components/FlowViewDialog';
 import { getTotalBalance, getWalletBalance } from '../utils/getBalance';
 import { UserContext } from '../contexts/UserContext';
 import { formatEther } from 'viem';
-
-const cardBorderColours = ['lightgreen', 'lightblue', 'lightpink', 'lightyellow'];
+import { cardBorderColours } from '../utils/constants';
 
 export default function Flows() {
   const { isConnected, address } = useAccount();
@@ -224,6 +223,7 @@ export default function Flows() {
                   </AvatarGroup>
                   <Tooltip title="Share link or QR">
                     <IconButton
+                      disabled={flow.wallets.length === 0}
                       color="inherit"
                       sx={{ alignSelf: 'flex-end' }}
                       onClick={() => {

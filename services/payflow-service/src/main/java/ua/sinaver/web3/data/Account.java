@@ -1,23 +1,28 @@
 package ua.sinaver.web3.data;
 
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 
 @Entity
 @Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "network", "address" }) })
-public class Wallet {
+public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
+
+    @Column
+    private String userId;
 
     @Column
     private String address;
@@ -25,27 +30,19 @@ public class Wallet {
     @Column
     private String network;
 
-    @Column
-    private boolean smart;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "flow_id", nullable = false)
-    private Flow flow;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumn(name = "account_id", nullable = true)
-    private Account master;
+    @OneToMany(mappedBy = "master", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Wallet> wallets;
 
     @Version
     private Long version;
 
-    public Wallet() {
+    public Account() {
     }
 
-    public Wallet(String address, String network, boolean smart) {
+    public Account(String userId, String address, String network) {
+        this.userId = userId;
         this.address = address;
         this.network = network;
-        this.smart = smart;
     }
 
     public Integer getId() {
@@ -54,6 +51,14 @@ public class Wallet {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getAddress() {
@@ -72,12 +77,12 @@ public class Wallet {
         this.network = network;
     }
 
-    public boolean isSmart() {
-        return smart;
+    public List<Wallet> getWallets() {
+        return wallets;
     }
 
-    public void setSmart(boolean smart) {
-        this.smart = smart;
+    public void setWallets(List<Wallet> wallets) {
+        this.wallets = wallets;
     }
 
     public Long getVersion() {
@@ -88,27 +93,9 @@ public class Wallet {
         this.version = version;
     }
 
-    public Flow getFlow() {
-        return flow;
-    }
-
-    public void setFlow(Flow flow) {
-        this.flow = flow;
-    }
-
-    public Account getMaster() {
-        return master;
-    }
-
-    public void setMaster(Account master) {
-        this.master = master;
-    }
-
     @Override
     public String toString() {
-        return "Wallet [id=" + id + ", address=" + address + ", network=" + network + ", smart=" + smart + ", flow="
-                + flow.getUUID() + ", master="
-                + master != null ? master.getAddress() : "null" + "]";
+        return "Account [id=" + id + ", userId=" + userId + ", address=" + address + ", network=" + network
+                + ", wallets=" + wallets + "]";
     }
-
 }

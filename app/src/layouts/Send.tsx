@@ -39,8 +39,8 @@ import AddressQRCodeDialog from '../components/AddressQRCodeDialog';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import HideOnScroll from '../components/HideOnScroll';
 import { getFlowBalance } from '../utils/getBalance';
+import { cardBorderColours } from '../utils/constants';
 
-const cardBorderColours = ['lightgreen', 'lightblue', 'lightpink', 'lightyellow'];
 const cardBorderRandom = cardBorderColours[(cardBorderColours.length * Math.random()) | 0];
 
 export default function Send({ appSettings, setAppSettings }: any) {
