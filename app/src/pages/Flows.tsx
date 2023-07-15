@@ -69,7 +69,6 @@ export default function Flows() {
     Promise.all(
       uniqueWallets.map(async (wallet) => (await getWalletBalance(wallet, chains)).value)
     ).then((balances) => {
-      console.log('Succes', balances);
       const balancesMap = new Map<string, bigint>();
       balances.forEach((value, index) => {
         const key = `${uniqueWallets[index].address}_${uniqueWallets[index].network}`;
@@ -83,11 +82,7 @@ export default function Flows() {
     const flowBalances = new Map<string, string>();
     flows.forEach(async (flow) => {
       const balances = flow.wallets
-        .map((wallet) => {
-          const balance = walletBalances.get(`${wallet.address}_${wallet.network}`);
-          console.log(balance);
-          return balance;
-        })
+        .map((wallet) => walletBalances.get(`${wallet.address}_${wallet.network}`))
         .filter((balance) => balance) as bigint[];
       const flowBalance = (parseFloat(formatEther(await getTotalBalance(balances))) * 1850).toFixed(
         1
@@ -95,7 +90,7 @@ export default function Flows() {
       flowBalances.set(flow.uuid, flowBalance);
     });
 
-    setFlowBalances(flowBalances);
+    return flowBalances;
   }
 
   useMemo(async () => {
@@ -105,14 +100,17 @@ export default function Flows() {
   }, [isConnected]);
 
   useMemo(async () => {
-    if (flows) {
+    if (flows && flows.length) {
       await fetchWalletBalances();
     }
   }, [flows]);
 
   useMemo(async () => {
     if (walletBalances && walletBalances.size > 0) {
-      await calculateFlowBalances();
+      calculateFlowBalances().then((balances) => {
+        // explicitly wait for calculation to finish, otherwise re-render doesn't work properly
+        setFlowBalances(balances);
+      });
     }
   }, [walletBalances]);
 
@@ -249,7 +247,7 @@ export default function Flows() {
         closeStateCallback={async () => {
           setOpenFlowCreate(false);
           // TODO: just refresh, lately it's better to track each flow's update separately
-          //fetchFlows();
+          fetchFlows();
         }}
       />
       <FlowShareDialog
@@ -264,7 +262,7 @@ export default function Flows() {
         closeStateCallback={async () => {
           setOpenFlowView(false);
           // TODO: just refresh, lately it's better to track each flow's update separately
-          //fetchFlows();
+          fetchFlows();
         }}
       />
     </>
