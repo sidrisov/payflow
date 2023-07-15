@@ -12,12 +12,10 @@ import Nav from '../components/Navigation';
 import { UserContext } from '../contexts/UserContext';
 import HideOnScroll from '../components/HideOnScroll';
 
-import { useAccount } from 'wagmi';
-
 const drawerWidth = 151;
 
 export default function AppLayout({ appSettings, setAppSettings }: any) {
-  const { isConnected: isWalletConnected, address: userAddress } = useAccount();
+  const [walletBalances, setWalletBalances] = useState<Map<string, bigint>>(new Map());
 
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -30,10 +28,10 @@ export default function AppLayout({ appSettings, setAppSettings }: any) {
     <CustomThemeProvider darkMode={appSettings.darkMode}>
       <UserContext.Provider
         value={{
-          isWalletConnected,
-          userAddress: userAddress,
           appSettings,
-          setAppSettings
+          setAppSettings,
+          walletBalances,
+          setWalletBalances
         }}>
         <Box
           sx={{

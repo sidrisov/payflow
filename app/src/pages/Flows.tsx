@@ -10,35 +10,33 @@ import {
   Tooltip,
   Typography
 } from '@mui/material';
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import FlowNewDialog from '../components/FlowNewDialog';
 import { useAccount, useNetwork } from 'wagmi';
 import axios from 'axios';
-import { FlowType } from '../types/FlowType';
+import { FlowType, FlowWalletType } from '../types/FlowType';
 import { OpenInFull, ShareOutlined } from '@mui/icons-material';
 import FlowShareDialog from '../components/FlowShareDialog';
 import FlowViewDialog from '../components/FlowViewDialog';
-import { getFlowBalance } from '../utils/getFlowBalance';
+import { getTotalBalance, getWalletBalance } from '../utils/getBalance';
+import { UserContext } from '../contexts/UserContext';
+import { formatEther } from 'viem';
+
+const cardBorderColours = ['lightgreen', 'lightblue', 'lightpink', 'lightyellow'];
 
 export default function Flows() {
   const { isConnected, address } = useAccount();
-  const [flows, setFlows] = useState([] as FlowType[]);
-  const [balances, setBalances] = useState([] as string[]);
+  const { walletBalances, setWalletBalances } = useContext(UserContext);
+  const { chains } = useNetwork();
 
+  const [flows, setFlows] = useState([] as FlowType[]);
+  const [flowBalances, setFlowBalances] = useState<Map<string, string>>();
   const [openFlowCreate, setOpenFlowCreate] = useState(false);
   const [openFlowShare, setOpenFlowShare] = useState(false);
   const [openFlowView, setOpenFlowView] = useState(false);
   const [flowShareInfo, setFlowShareInfo] = useState({} as { title: string; link: string });
   const [flow, setFlow] = useState({} as FlowType);
-
-  const { chains } = useNetwork();
-
-  useMemo(async () => {
-    if (isConnected) {
-      fetchFlows();
-    }
-  }, [isConnected]);
 
   async function fetchFlows() {
     try {
@@ -52,17 +50,71 @@ export default function Flows() {
     }
   }
 
-  // TODO: separate the logic into each card flow fetching its data separately
+  async function fetchWalletBalances() {
+    // js is weird, no proper Set/Map impl, doing little hack here to find unique wallets
+    const uniqueWallets = Array.from(
+      flows
+        .reduce((wb, flow) => {
+          flow.wallets.forEach((wallet) => {
+            const key = `${wallet.address}_${wallet.network}`;
+            if (!wb.has(key)) {
+              wb.set(key, wallet);
+            }
+          });
+          return wb;
+        }, new Map<string, FlowWalletType>())
+        .values()
+    );
+
+    Promise.all(
+      uniqueWallets.map(async (wallet) => (await getWalletBalance(wallet, chains)).value)
+    ).then((balances) => {
+      console.log('Succes', balances);
+      const balancesMap = new Map<string, bigint>();
+      balances.forEach((value, index) => {
+        const key = `${uniqueWallets[index].address}_${uniqueWallets[index].network}`;
+        balancesMap.set(key, value);
+      });
+      setWalletBalances(balancesMap);
+    });
+  }
+
+  async function calculateFlowBalances() {
+    const flowBalances = new Map<string, string>();
+    flows.forEach(async (flow) => {
+      const balances = flow.wallets
+        .map((wallet) => {
+          const balance = walletBalances.get(`${wallet.address}_${wallet.network}`);
+          console.log(balance);
+          return balance;
+        })
+        .filter((balance) => balance) as bigint[];
+      const flowBalance = (parseFloat(formatEther(await getTotalBalance(balances))) * 1850).toFixed(
+        1
+      );
+      flowBalances.set(flow.uuid, flowBalance);
+    });
+
+    setFlowBalances(flowBalances);
+  }
+
+  useMemo(async () => {
+    if (isConnected) {
+      fetchFlows();
+    }
+  }, [isConnected]);
+
   useMemo(async () => {
     if (flows) {
-      const flowBalances = flows.map(async (flow) => {
-        return getFlowBalance(flow, chains, 1850);
-      });
-      setBalances(await Promise.all(flowBalances));
+      await fetchWalletBalances();
     }
   }, [flows]);
 
-  const cardBorderColours = ['lightgreen', 'lightblue', 'lightpink', 'lightyellow'];
+  useMemo(async () => {
+    if (walletBalances && walletBalances.size > 0) {
+      await calculateFlowBalances();
+    }
+  }, [walletBalances]);
 
   return (
     <>
@@ -129,7 +181,6 @@ export default function Flows() {
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between'
-                  //ackground: red[400]
                 }}>
                 <Box display="flex" flexDirection="row" justifyContent="space-between">
                   <Stack spacing={1}>
@@ -157,7 +208,9 @@ export default function Flows() {
                   flexDirection="row"
                   justifyContent="space-between"
                   alignItems="center">
-                  <Typography variant="subtitle2">${balances[index]}</Typography>
+                  <Typography variant="subtitle2">
+                    ${flowBalances ? flowBalances.get(flow.uuid) : ''}
+                  </Typography>
                   <AvatarGroup
                     max={5}
                     total={flow.wallets.length}
@@ -196,7 +249,7 @@ export default function Flows() {
         closeStateCallback={async () => {
           setOpenFlowCreate(false);
           // TODO: just refresh, lately it's better to track each flow's update separately
-          fetchFlows();
+          //fetchFlows();
         }}
       />
       <FlowShareDialog
@@ -211,7 +264,7 @@ export default function Flows() {
         closeStateCallback={async () => {
           setOpenFlowView(false);
           // TODO: just refresh, lately it's better to track each flow's update separately
-          fetchFlows();
+          //fetchFlows();
         }}
       />
     </>

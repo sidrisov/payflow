@@ -34,3 +34,10 @@ export async function getTotalBalance(balances: bigint[]) {
     return previousValue + currentValue;
   }, BigInt(0));
 }
+
+export function convertToUSD(value: bigint | undefined, price: number) {
+  if (value) {
+    return (parseFloat(formatEther(value)) * price).toFixed(1);
+  }
+  return 'N/A';
+}

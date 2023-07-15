@@ -17,8 +17,8 @@ import {
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { FlowType, FlowWalletType } from '../types/FlowType';
-import { useEffect, useMemo, useState } from 'react';
-import { getTotalBalance, getWalletBalance } from '../utils/getFlowBalance';
+import { useContext, useMemo, useState } from 'react';
+import { convertToUSD, getTotalBalance } from '../utils/getBalance';
 import {
   useAccount,
   useContractWrite,
@@ -49,6 +49,7 @@ import axios from 'axios';
 import create2Address from '../utils/create2Address';
 import FlowWithdrawalDialog from './FlowWithdrawalDialog';
 import FlowShareDialog from './FlowShareDialog';
+import { UserContext } from '../contexts/UserContext';
 
 export type FlowViewDialogProps = DialogProps &
   CloseCallbackType & {
@@ -58,13 +59,14 @@ export type FlowViewDialogProps = DialogProps &
 const ZKSYNC_AA_FACTORY_ADDRESS = import.meta.env.VITE_PAYFLOW_ZKSYNC_AA_FACTORY_ADDRESS;
 
 export default function FlowViewDialog({ closeStateCallback, ...props }: FlowViewDialogProps) {
-  const [flow, setFlow] = useState<FlowType>();
+  const flow = props.flow;
+  const flowSalt = props.flow.uuid ? keccak256(toHex(props.flow.uuid)) : undefined;
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [flowTotalBalance, setFlowTotalBalance] = useState('0');
-  const [walletBalances, setWalletBalances] = useState([] as string[]);
+  const { walletBalances } = useContext(UserContext);
 
   const [editFlow, setEditFlow] = useState(false);
   const [addFlowWallet, setAddFlowWallet] = useState(false);
@@ -77,7 +79,6 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   );
   const [newAccountNetwork, setNewAccountNetwork] = useState('');
   const [newAccountAddress, setNewAccountAddress] = useState('');
-  const [flowSalt, setFlowSalt] = useState<Hash>();
 
   const { chains, switchNetwork } = useSwitchNetwork();
   const publicClient = usePublicClient();
@@ -97,36 +98,19 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const { isSuccess, data, write } = useContractWrite(config);
   const [txHash, setTxHash] = useState<Hash>();
 
-  useEffect(() => {
-    if (props.flow && props.flow.uuid) {
-      if (!flow) {
-        setFlow(props.flow);
-        setFlowSalt(keccak256(toHex(props.flow.uuid)));
-      }
-    }
-  }, [props]);
-
   useMemo(async () => {
-    if (flow && flow.wallets) {
-      if (flow.wallets.length > 0) {
-        const balances = (
-          await Promise.all(
-            flow.wallets.map(async (wallet) => {
-              return getWalletBalance(wallet, chains);
-            })
-          )
-        ).map((result) => result.value);
+    if (flow && flow.wallets && walletBalances) {
+      const balances = flow.wallets
+        .map((wallet) => {
+          return walletBalances.get(`${wallet.address}_${wallet.network}`);
+        })
+        .filter((balance) => balance) as bigint[];
 
-        setWalletBalances(
-          balances.map((balance) => (parseFloat(formatEther(balance)) * 1850).toFixed(1))
-        );
-
-        setFlowTotalBalance(
-          (parseFloat(formatEther(await getTotalBalance(balances))) * 1850).toFixed(1)
-        );
-      }
+      setFlowTotalBalance(
+        (parseFloat(formatEther(await getTotalBalance(balances))) * 1850).toFixed(1)
+      );
     }
-  }, [flow]);
+  }, [flow.wallets]);
 
   useMemo(async () => {
     if (flow && flow.wallets && chains) {
@@ -135,7 +119,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
         chains.filter((c) => !addedNetworks.includes(c.name)).map((c) => c.name)
       );
     }
-  }, [flow, chains]);
+  }, [flow.wallets, chains]);
 
   function resetViewState() {
     setEditFlow(false);
@@ -208,9 +192,9 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
         );
         console.log(response.status);
 
-        const wallets = flow.wallets;
+        const wallets = Array.from(flow.wallets);
         wallets.push(flowWallet);
-        setFlow({ ...flow, wallets });
+        flow.wallets = wallets;
         toast.success(`Successfully added new account: ${newAccountAddress}`);
       } catch (error) {
         console.log(error);
@@ -239,9 +223,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
           (w) => !(w.address === wallet.address && w.network === wallet.network)
         );
 
-        const updatedFlow = { ...flow, wallets };
-        console.log(updatedFlow);
-        setFlow(updatedFlow);
+        flow.wallets = wallets;
 
         toast.success(`Successfully removed ${wallet.address} from the flow!`);
       } catch (error) {
@@ -314,7 +296,12 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                           <ContentCopy fontSize="small" />
                         </IconButton>
                       </Box>
-                      <Typography variant="subtitle2">${walletBalances[index]}</Typography>
+                      <Typography variant="subtitle2">
+                        {convertToUSD(
+                          walletBalances?.get(`${wallet.address}_${wallet.network}`),
+                          1850
+                        )}
+                      </Typography>
                     </Box>
                     {withdrawFlowWallet && (
                       <IconButton
@@ -369,7 +356,13 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                           <ContentCopy fontSize="small" />
                         </IconButton>
                       </Box>
-                      <Typography variant="subtitle2">${walletBalances[index]}</Typography>
+                      <Typography variant="subtitle2">
+                        $
+                        {convertToUSD(
+                          walletBalances?.get(`${wallet.address}_${wallet.network}`),
+                          1850
+                        )}
+                      </Typography>
                     </Box>
                     {editFlow && (
                       <IconButton

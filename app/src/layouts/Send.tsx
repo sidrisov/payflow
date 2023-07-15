@@ -38,7 +38,7 @@ import { copyToClipboard } from '../utils/copyToClipboard';
 import AddressQRCodeDialog from '../components/AddressQRCodeDialog';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import HideOnScroll from '../components/HideOnScroll';
-import { getFlowBalance } from '../utils/getFlowBalance';
+import { getFlowBalance } from '../utils/getBalance';
 
 const cardBorderColours = ['lightgreen', 'lightblue', 'lightpink', 'lightyellow'];
 const cardBorderRandom = cardBorderColours[(cardBorderColours.length * Math.random()) | 0];
@@ -113,7 +113,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
   }, [flow]);
 
   async function updateFlowTotalBalance(flow: FlowType) {
-    if (flow && flow.wallets && flow.wallets.length) {
+    if (flow && flow.wallets && flow.wallets.length > 0) {
       setFlowTotalBalance(await getFlowBalance(flow, chains, 1850));
     }
   }

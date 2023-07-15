@@ -1,8 +1,8 @@
 import { AppSettings } from './AppSettingsType';
 
 export interface UserContextType {
-  isWalletConnected: boolean;
-  userAddress: string | undefined;
   appSettings: AppSettings;
   setAppSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
+  walletBalances: Map<string, bigint>;
+  setWalletBalances: React.Dispatch<React.SetStateAction<Map<string, bigint>>>;
 }
