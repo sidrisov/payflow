@@ -34,10 +34,6 @@ export function AccountCard(props: AccountNewDialogProps) {
     chainId: chains.find((c) => c?.name === account.network)?.id
   });
 
-  useMemo(() => {
-    console.log(balance);
-  }, [balance]);
-
   return (
     <Card
       key={`account_card_${account.address}_${account.network}`}

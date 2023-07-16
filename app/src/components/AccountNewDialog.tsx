@@ -37,7 +37,7 @@ export type AccountNewDialogProps = DialogProps &
     networks: string[];
   };
 
-const ZKSYNC_AA_FACTORY_ADDRESS = import.meta.env.VITE_PAYFLOW_ZKSYNC_AA_FACTORY_ADDRESS;
+const ZKSYNC_AA_FACTORY_ADDRESS = import.meta.env.VITE_ZKSYNC_MASTER_PAYFLOW_FACTORY_ADDRESS;
 
 export default function FlowNewDialog({ closeStateCallback, ...props }: AccountNewDialogProps) {
   const theme = useTheme();

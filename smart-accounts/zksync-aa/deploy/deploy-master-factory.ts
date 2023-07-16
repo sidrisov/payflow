@@ -6,26 +6,26 @@ import * as ethers from 'ethers';
 export default async function (hre: HardhatRuntimeEnvironment) {
   const wallet = new Wallet(hre.network.config.accounts[0]);
   const deployer = new Deployer(hre, wallet);
-  const factoryArtifact = await deployer.loadArtifact('PayFlowFactory');
-  const artifact = await deployer.loadArtifact('PayFlow');
+  const factoryArtifact = await deployer.loadArtifact('PayFlowMasterFactory');
+  const aaArtifact = await deployer.loadArtifact('PayFlowMaster');
 
   // Getting the bytecodeHash of the account
-  const bytecodeHash = utils.hashBytecode(artifact.bytecode);
+  const bytecodeHash = utils.hashBytecode(aaArtifact.bytecode);
 
   const factory = await deployer.deploy(factoryArtifact, [bytecodeHash], undefined, [
     // Since the factory requires the code of the multisig to be available,
     // we should pass it here as well.
-    artifact.bytecode
+    aaArtifact.bytecode
   ]);
 
-  console.log(`PayFlow factory address: ${factory.address}`);
+  console.log(`PayFlow master factory address: ${factory.address}`);
 
   const abiCoder = new ethers.utils.AbiCoder();
   console.log(`args encoded: ${abiCoder.encode(['bytes32'], [bytecodeHash])}`);
 
   await hre.run('verify:verify', {
     address: factory.address,
-    contract: 'contracts/PayFlowFactory.sol:PayFlowFactory',
+    contract: 'contracts/PayFlowMasterFactory.sol:PayFlowMasterFactory',
     constructorArguments: [bytecodeHash]
   });
 }

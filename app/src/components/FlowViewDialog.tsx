@@ -55,7 +55,7 @@ export type FlowViewDialogProps = DialogProps &
     flow: FlowType;
   };
 
-const ZKSYNC_AA_FACTORY_ADDRESS = import.meta.env.VITE_PAYFLOW_ZKSYNC_AA_FACTORY_ADDRESS;
+const ZKSYNC_AA_FACTORY_ADDRESS = import.meta.env.VITE_ZKSYNC_MASTER_PAYFLOW_FACTORY_ADDRESS;
 
 export default function FlowViewDialog({ closeStateCallback, ...props }: FlowViewDialogProps) {
   const theme = useTheme();
