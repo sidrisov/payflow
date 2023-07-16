@@ -44,7 +44,6 @@ import { Hash, encodeAbiParameters, formatEther, keccak256, parseAbiParameters, 
 import PayFlowMasterFactoryArtifact from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/PayFlowMasterFactory.sol/PayFlowMasterFactory.json';
 import { readContract } from 'wagmi/actions';
 import { zkSyncTestnet } from 'wagmi/chains';
-import { smartAccountCompatibleChains } from '../utils/smartAccountCompatibleChains';
 import axios from 'axios';
 import create2Address from '../utils/create2Address';
 import FlowWithdrawalDialog from './FlowWithdrawalDialog';
@@ -59,14 +58,15 @@ export type FlowViewDialogProps = DialogProps &
 const ZKSYNC_AA_FACTORY_ADDRESS = import.meta.env.VITE_PAYFLOW_ZKSYNC_AA_FACTORY_ADDRESS;
 
 export default function FlowViewDialog({ closeStateCallback, ...props }: FlowViewDialogProps) {
-  const flow = props.flow;
-  const flowSalt = props.flow.uuid ? keccak256(toHex(props.flow.uuid)) : undefined;
-
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
+  const flow = props.flow;
+  const flowSalt = props.flow.uuid ? keccak256(toHex(props.flow.uuid)) : undefined;
+
+  const { walletBalances, smartAccountAllowedChains } = useContext(UserContext);
+
   const [flowTotalBalance, setFlowTotalBalance] = useState('0');
-  const { walletBalances } = useContext(UserContext);
 
   const [editFlow, setEditFlow] = useState(false);
   const [addFlowWallet, setAddFlowWallet] = useState(false);
@@ -183,7 +183,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
         const flowWallet = {
           address: newAccountAddress,
           network: newAccountNetwork,
-          smart: smartAccountCompatibleChains().includes(newAccountNetwork)
+          smart: smartAccountAllowedChains.includes(newAccountNetwork)
         } as FlowWalletType;
         const response = await axios.post(
           `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${flow.uuid}/wallet`,
@@ -398,7 +398,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                       setNewAccountNetwork(value);
                       // switch netwrok only for smart accounts,
                       // as those will require signing transaction
-                      if (smartAccountCompatibleChains().includes(value)) {
+                      if (smartAccountAllowedChains.includes(value)) {
                         switchNetwork?.(chains.find((c) => c?.name === value)?.id);
                       }
                     } else {
@@ -414,7 +414,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                 />
 
                 {newAccountNetwork.length > 0 &&
-                  (!smartAccountCompatibleChains().includes(newAccountNetwork) ? (
+                  (!smartAccountAllowedChains.includes(newAccountNetwork) ? (
                     <TextField
                       fullWidth
                       id="accountAddress"

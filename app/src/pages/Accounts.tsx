@@ -1,17 +1,18 @@
 import { Box, Button, Card, Container, Stack, Typography } from '@mui/material';
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useAccount } from 'wagmi';
-import { AccountType } from '../types/AccountType';
 import axios from 'axios';
 import AccountNewDialog from '../components/AccountNewDialog';
 import { smartAccountCompatibleChains } from '../utils/smartAccountCompatibleChains';
 import { AccountCard } from '../components/AccountCard';
+import { UserContext } from '../contexts/UserContext';
 
 export default function Accounts() {
   const { isConnected, address } = useAccount();
 
-  const [accounts, setAccounts] = useState<AccountType[]>();
+  const { accounts, setAccounts } = useContext(UserContext);
+  const [fetched, setFetched] = useState(false);
   const [availableNetworksToAddAccount, setAvailableNetworksToAddAccount] = useState<string[]>([]);
 
   const [openAccountCreate, setOpenAccountCreate] = useState(false);
@@ -23,6 +24,7 @@ export default function Accounts() {
       );
 
       setAccounts(response.data);
+      setFetched(true);
     } catch (error) {
       console.log(error);
     }
@@ -35,7 +37,7 @@ export default function Accounts() {
   }, [isConnected]);
 
   useMemo(async () => {
-    if (accounts) {
+    if (fetched && accounts) {
       let availableNetworks = smartAccountCompatibleChains();
       if (accounts.length > 0) {
         const addedNetworks = accounts.map((account) => account.network);
@@ -43,7 +45,7 @@ export default function Accounts() {
       }
       setAvailableNetworksToAddAccount(availableNetworks);
     }
-  }, [accounts]);
+  }, [fetched, accounts]);
 
   return (
     <>

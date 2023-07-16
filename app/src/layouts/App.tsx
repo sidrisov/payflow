@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
@@ -11,17 +11,26 @@ import Nav from '../components/Navigation';
 
 import { UserContext } from '../contexts/UserContext';
 import HideOnScroll from '../components/HideOnScroll';
+import { AccountType } from '../types/AccountType';
 
 const drawerWidth = 151;
 
 export default function AppLayout({ appSettings, setAppSettings }: any) {
   const [walletBalances, setWalletBalances] = useState<Map<string, bigint>>(new Map());
+  const [accounts, setAccounts] = useState<AccountType[]>([]);
+  const [smartAccountAllowedChains, setSmartAccountAllowedChains] = useState<string[]>([]);
 
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
+
+  useMemo(async () => {
+    if (accounts) {
+      setSmartAccountAllowedChains(accounts.map((c) => c.network));
+    }
+  }, [accounts]);
 
   const drawer = <Nav />;
   return (
@@ -30,6 +39,10 @@ export default function AppLayout({ appSettings, setAppSettings }: any) {
         value={{
           appSettings,
           setAppSettings,
+          accounts,
+          setAccounts,
+          smartAccountAllowedChains,
+          setSmartAccountAllowedChains,
           walletBalances,
           setWalletBalances
         }}>

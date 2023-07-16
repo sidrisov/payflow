@@ -19,8 +19,8 @@ import { toast } from 'react-toastify';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import axios from 'axios';
 import { useAccount, useNetwork } from 'wagmi';
-import { useState } from 'react';
-import { smartAccountCompatibleChains } from '../utils/smartAccountCompatibleChains';
+import { useContext, useState } from 'react';
+import { UserContext } from '../contexts/UserContext';
 
 export type FlowNewDialogProps = DialogProps & CloseCallbackType;
 
@@ -28,12 +28,14 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
+  const { address } = useAccount();
+  const { chains } = useNetwork();
+
+  const { smartAccountAllowedChains } = useContext(UserContext);
+
   const [title, setTitle] = useState<string>();
   const [paymentOnLoggedAddress, setPaymentOnLoggedAddress] = useState(true);
   const [paymentNetworks, setPaymentNetworks] = useState([] as string[]);
-
-  const { address } = useAccount();
-  const { chains } = useNetwork();
 
   function handleCloseCampaignDialog() {
     closeStateCallback();
@@ -134,7 +136,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
                   setPaymentNetworks(value);
                 }}
                 options={chains
-                  .filter((c) => !smartAccountCompatibleChains().includes(c.name))
+                  .filter((c) => !smartAccountAllowedChains.includes(c.name))
                   .map((c) => c.name)}
                 renderInput={(params) => (
                   <TextField
