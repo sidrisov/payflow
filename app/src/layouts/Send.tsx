@@ -39,7 +39,7 @@ import AddressQRCodeDialog from '../components/AddressQRCodeDialog';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import HideOnScroll from '../components/HideOnScroll';
 import { getFlowBalance } from '../utils/getBalance';
-import { cardBorderColours } from '../utils/constants';
+import { cardBorderColours, ethPrice } from '../utils/constants';
 
 const cardBorderRandom = cardBorderColours[(cardBorderColours.length * Math.random()) | 0];
 
@@ -114,7 +114,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
 
   async function updateFlowTotalBalance(flow: FlowType) {
     if (flow && flow.wallets && flow.wallets.length > 0) {
-      setFlowTotalBalance(await getFlowBalance(flow, chains, 1850));
+      setFlowTotalBalance(await getFlowBalance(flow, chains, ethPrice));
     }
   }
 
@@ -214,7 +214,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
                 </Card>
               </Divider>
 
-              <Typography variant="h5"> 💸 ${flowTotalBalance}</Typography>
+              <Typography variant="h5"> ${flowTotalBalance} USD</Typography>
               <Typography variant="h6" maxHeight={50} overflow="scroll">
                 {flow.title}
               </Typography>
@@ -227,7 +227,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
               <Autocomplete
                 autoHighlight
                 fullWidth
-                onChange={(event, value) => {
+                onChange={(_event, value) => {
                   setSelectedPaymentNetwork(value as string);
                 }}
                 options={flow.wallets.flatMap((wallet) => wallet.network)}

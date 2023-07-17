@@ -138,7 +138,7 @@ export default function FlowWithdrawalDialog({
             <IconButton
               size="small"
               onClick={() => {
-                copyToClipboard(from);
+                copyToClipboard(to);
                 toast.success('Wallet address is copied to clipboard!');
               }}>
               <ContentCopy fontSize="small" />

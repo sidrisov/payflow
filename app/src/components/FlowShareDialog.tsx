@@ -41,7 +41,9 @@ export default function FlowShareDialog({ closeStateCallback, ...props }: FlowSh
       }}>
       <DialogTitle>
         <Box display="flex" justifyContent="center">
-          <Typography variant="h6">{props.title}</Typography>
+          <Typography variant="h6" sx={{ overflow: 'auto' }}>
+            {props.title}
+          </Typography>
         </Box>
       </DialogTitle>
       <DialogContent>

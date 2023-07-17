@@ -23,7 +23,7 @@ export async function transferEth(
     } as types.Eip712Meta,
     value: tx.amount,
     gasPrice: await client.getGasPrice(),
-    gasLimit: 20000000, // constant 20M since estimateGas() causes an error and this tx consumes more than 15M at most
+    gasLimit: 2000000, // constant 20M since estimateGas() causes an error and this tx consumes more than 15M at most
     data: '0x'
   };
 
@@ -91,7 +91,7 @@ export async function withdrawEth(
     } as types.Eip712Meta,
     value: BigInt(0),
     gasPrice: await client.getGasPrice(),
-    gasLimit: 20000000, // constant 20M since estimateGas() causes an error and this tx consumes more than 15M at most
+    gasLimit: 2000000, // constant 20M since estimateGas() causes an error and this tx consumes more than 15M at most
     data
   };
 

@@ -8,15 +8,14 @@ import {
   Stack,
   Typography
 } from '@mui/material';
-import { cardBorderColours } from '../utils/constants';
+import { cardBorderColours, ethPrice } from '../utils/constants';
 import { AccountType } from '../types/AccountType';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { CallReceived, CallMade, Receipt, ContentCopy } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { copyToClipboard } from '../utils/copyToClipboard';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import AddressQRCodeDialog from './AddressQRCodeDialog';
-import FlowWithdrawalDialog from './FlowWithdrawalDialog';
 import { useBalance, useNetwork } from 'wagmi';
 import { convertToUSD } from '../utils/getBalance';
 import AccountSendDialog from './AccountSendDialog';
@@ -25,6 +24,7 @@ export type AccountNewDialogProps = CardProps & {
   account: AccountType;
 };
 
+const colorTheme = cardBorderColours[(cardBorderColours.length * Math.random()) | 0];
 export function AccountCard(props: AccountNewDialogProps) {
   const { account } = props;
   const [openAddressQRCode, setOpenAddressQRCode] = useState(false);
@@ -46,7 +46,7 @@ export function AccountCard(props: AccountNewDialogProps) {
         height: 200,
         border: 2,
         borderRadius: 5,
-        borderColor: cardBorderColours[(cardBorderColours.length * Math.random()) | 0],
+        borderColor: colorTheme,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between'
@@ -75,10 +75,21 @@ export function AccountCard(props: AccountNewDialogProps) {
           </IconButton>
         </Stack>
       </Box>
-      <Divider flexItem>
-        <Box sx={{ p: 1, border: 1, borderRadius: 3 }}>
+      <Divider
+        flexItem
+        sx={{
+          '&::before, &::after': {
+            borderColor: 'inherit'
+          }
+        }}>
+        <Box
+          sx={{
+            p: 1,
+            border: 1,
+            borderRadius: 3
+          }}>
           <Typography variant="h5">
-            💸 ${isSuccess ? convertToUSD(balance?.value, 1850) : ''}
+            ${isSuccess ? convertToUSD(balance?.value, ethPrice) : ''} 💸
           </Typography>
         </Box>
       </Divider>

@@ -1,4 +1,4 @@
-import { Box, Button, Card, Container, IconButton, Stack, Typography } from '@mui/material';
+import { Box, Card, Container, IconButton, Typography } from '@mui/material';
 import { useContext, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useAccount } from 'wagmi';
@@ -57,10 +57,10 @@ export default function Accounts() {
                   justifyContent: 'space-between'
                 }}>
                 <Typography fontSize={20} fontWeight="bold">
-                  New Account
+                  New account
                 </Typography>
                 <Typography fontSize={12} fontWeight="bold">
-                  Withdraw accumulated funds from your flows to accounts
+                  Withdraw accumulated funds from your flows and send to other accounts
                 </Typography>
 
                 <IconButton

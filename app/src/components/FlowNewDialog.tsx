@@ -132,7 +132,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
                 multiple
                 autoHighlight
                 fullWidth
-                onChange={(event, value) => {
+                onChange={(_event, value) => {
                   setPaymentNetworks(value);
                 }}
                 options={chains

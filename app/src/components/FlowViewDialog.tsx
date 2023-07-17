@@ -20,7 +20,6 @@ import { FlowType, FlowWalletType } from '../types/FlowType';
 import { useContext, useMemo, useState } from 'react';
 import { convertToUSD, getTotalBalance } from '../utils/getBalance';
 import {
-  useAccount,
   useContractWrite,
   usePrepareContractWrite,
   usePublicClient,
@@ -56,7 +55,9 @@ import create2Address from '../utils/create2Address';
 import FlowWithdrawalDialog from './FlowWithdrawalDialog';
 import FlowShareDialog from './FlowShareDialog';
 import { UserContext } from '../contexts/UserContext';
+import { ethPrice } from '../utils/constants';
 
+const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 export type FlowViewDialogProps = DialogProps &
   CloseCallbackType & {
     flow: FlowType;
@@ -114,7 +115,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
         .filter((balance) => balance) as bigint[];
 
       setFlowTotalBalance(
-        (parseFloat(formatEther(await getTotalBalance(balances))) * 1850).toFixed(1)
+        (parseFloat(formatEther(await getTotalBalance(balances))) * ethPrice).toFixed(1)
       );
     }
   }, [flow.wallets]);
@@ -265,7 +266,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
           </Typography>
         </Stack>
       </DialogTitle>
-      <DialogContent sx={{ minWidth: 350 }}>
+      <DialogContent sx={{ minWidth: 350, maxWidth: 400 }}>
         <Stack direction="column" spacing={2} alignItems="center">
           <Typography variant="subtitle2" alignSelf="center">
             {flow.description}
@@ -313,7 +314,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                       <Typography variant="subtitle2">
                         {convertToUSD(
                           walletBalances?.get(`${wallet.address}_${wallet.network}`),
-                          1850
+                          ethPrice
                         )}
                       </Typography>
                     </Box>
@@ -374,7 +375,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                         $
                         {convertToUSD(
                           walletBalances?.get(`${wallet.address}_${wallet.network}`),
-                          1850
+                          ethPrice
                         )}
                       </Typography>
                     </Box>
@@ -408,7 +409,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                   autoHighlight
                   fullWidth
                   id="accountNetwork"
-                  onChange={(event, value) => {
+                  onChange={(_event, value) => {
                     if (value) {
                       setNewAccountNetwork(value);
                       // switch netwrok only for smart accounts,
@@ -454,13 +455,15 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                         }}>
                         Create Payflow Wallet
                       </Button>
-                      {newAccountAddress && <Typography>{newAccountAddress}</Typography>}
+                      {newAccountAddress && (
+                        <Typography variant="subtitle2">{newAccountAddress}</Typography>
+                      )}
                     </>
                   ))}
 
                 <Button
                   fullWidth
-                  disabled={!newAccountNetwork || !newAccountAddress || !masterAccount}
+                  disabled={!newAccountNetwork || !newAccountAddress}
                   variant="outlined"
                   size="large"
                   color="primary"
@@ -473,7 +476,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
               </>
             ) : (
               <>
-                <Typography>You have configured accounts for all networks</Typography>
+                <Typography>You added wallets for all networks</Typography>
               </>
             ))}
           {!(editFlow || addFlowWallet || withdrawFlowWallet) && (
@@ -492,7 +495,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                 onClick={async () => {
                   setFlowShareInfo({
                     title: flow.title,
-                    link: `http://app.payflow.me:5173/send/${flow.uuid}`
+                    link: `${DAPP_URL}/send/${flow.uuid}`
                   });
                   setOpenFlowShare(true);
                 }}

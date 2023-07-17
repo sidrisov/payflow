@@ -38,16 +38,16 @@ export type AccountNewDialogProps = DialogProps &
   };
 
 const ZKSYNC_AA_FACTORY_ADDRESS = import.meta.env.VITE_ZKSYNC_MASTER_PAYFLOW_FACTORY_ADDRESS;
-
+const ZKSYNC_CREATE2_SALT_IV = import.meta.env.VITE_ZKSYNC_CREATE2_SALT_IV;
 export default function FlowNewDialog({ closeStateCallback, ...props }: AccountNewDialogProps) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const flowSalt = keccak256(toHex('blablabla'));
-
   const publicClient = usePublicClient();
   const { address } = useAccount();
   const { chains, switchNetwork } = useSwitchNetwork();
+
+  const flowSalt = address ? keccak256(toHex(ZKSYNC_CREATE2_SALT_IV.concat(address))) : undefined;
 
   const [newAccountAddress, setNewAccountAddress] = useState('');
   const [newAccountNetwork, setNewAccountNetwork] = useState('');
@@ -166,7 +166,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
             autoHighlight
             fullWidth
             id="accountNetwork"
-            onChange={(event, value) => {
+            onChange={(_event, value) => {
               if (value) {
                 setNewAccountNetwork(value);
                 switchNetwork?.(chains.find((c) => c?.name === value)?.id);
@@ -197,7 +197,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
               Create PayFlow Account
             </Button>
           )}
-          {newAccountAddress && <Typography>{newAccountAddress}</Typography>}
+          {newAccountAddress && <Typography variant="subtitle2">{newAccountAddress}</Typography>}
 
           <Button
             fullWidth

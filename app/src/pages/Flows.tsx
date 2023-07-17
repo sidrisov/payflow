@@ -21,8 +21,9 @@ import FlowViewDialog from '../components/FlowViewDialog';
 import { getTotalBalance, getWalletBalance } from '../utils/getBalance';
 import { UserContext } from '../contexts/UserContext';
 import { formatEther } from 'viem';
-import { cardBorderColours } from '../utils/constants';
+import { cardBorderColours, ethPrice } from '../utils/constants';
 
+const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 export default function Flows() {
   const { isConnected, address } = useAccount();
   const { walletBalances, setWalletBalances } = useContext(UserContext);
@@ -82,9 +83,9 @@ export default function Flows() {
       const balances = flow.wallets
         .map((wallet) => walletBalances.get(`${wallet.address}_${wallet.network}`))
         .filter((balance) => balance) as bigint[];
-      const flowBalance = (parseFloat(formatEther(await getTotalBalance(balances))) * 1850).toFixed(
-        1
-      );
+      const flowBalance = (
+        parseFloat(formatEther(await getTotalBalance(balances))) * ethPrice
+      ).toFixed(1);
       flowBalances.set(flow.uuid, flowBalance);
     });
 
@@ -162,7 +163,7 @@ export default function Flows() {
                 <Add fontSize="small" />
               </IconButton>
             </Card>
-            {flows.map((flow, index) => (
+            {flows.map((flow) => (
               <Card
                 key={`flow_card_${flow.uuid}`}
                 elevation={10}
@@ -180,7 +181,7 @@ export default function Flows() {
                 }}>
                 <Box display="flex" flexDirection="row" justifyContent="space-between">
                   <Stack spacing={1}>
-                    <Typography fontSize={20} fontWeight="bold" maxHeight={50} overflow="scroll">
+                    <Typography fontSize={20} fontWeight="bold" maxHeight={60} overflow="scroll">
                       {flow.title}
                     </Typography>
                     <Typography fontSize={12} fontWeight="bold" maxHeight={50} overflow="scroll">
@@ -213,7 +214,7 @@ export default function Flows() {
                     sx={{
                       '& .MuiAvatar-root': { width: 20, height: 20, fontSize: 10 }
                     }}>
-                    {[...Array(Math.min(4, flow.wallets.length))].map((item, i) => (
+                    {[...Array(Math.min(4, flow.wallets.length))].map((_item, i) => (
                       <Avatar
                         key={`wallet_avatar_${flow.uuid}_${i}`}
                         src={'/public/networks/' + flow.wallets[i].network.toLowerCase() + '.png'}
@@ -228,7 +229,7 @@ export default function Flows() {
                       onClick={() => {
                         setFlowShareInfo({
                           title: flow.title,
-                          link: `http://app.payflow.me:5173/send/${flow.uuid}`
+                          link: `${DAPP_URL}/send/${flow.uuid}`
                         });
                         setOpenFlowShare(true);
                       }}>
