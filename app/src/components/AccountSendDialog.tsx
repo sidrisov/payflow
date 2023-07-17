@@ -23,25 +23,26 @@ import { toast } from 'react-toastify';
 import { copyToClipboard } from '../utils/copyToClipboard';
 
 import { Hash, TransactionReceipt, parseEther } from 'viem';
-import { withdrawEth } from '../utils/zkSyncTransactions';
+import { transferEth } from '../utils/zkSyncTransactions';
 
-export type FlowWithdrawalDialogProps = DialogProps &
+export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
     from: Address;
-    to: Address;
+    to?: Address;
     network: string;
   };
 
-export default function FlowWithdrawalDialog({
+export default function AccountSendDialog({
   closeStateCallback,
   ...props
-}: FlowWithdrawalDialogProps) {
+}: AccountSendDialogProps) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const { from, to, network } = props;
 
-  const [withdrawAmount, setWithdrawAmount] = useState<bigint>();
+  const [sendToAddress, setSendToAddress] = useState(to as Address);
+  const [sendAmount, setSendAmount] = useState<bigint>();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -51,14 +52,14 @@ export default function FlowWithdrawalDialog({
   const [txHash, setTxHash] = useState<Hash>();
 
   const sendTransaction = async () => {
-    if (withdrawAmount) {
+    if (sendToAddress && sendAmount) {
       switchNetwork?.(chains.find((c) => c?.name === network)?.id);
       const txData = {
-        contract: from,
-        from: to,
-        amount: withdrawAmount
+        from,
+        to: sendToAddress,
+        amount: sendAmount
       };
-      const txHash = await withdrawEth(walletClient as WalletClient, txData);
+      const txHash = await transferEth(walletClient as WalletClient, txData);
       setTxHash(txHash);
     }
   };
@@ -74,9 +75,9 @@ export default function FlowWithdrawalDialog({
 
       if (receipt) {
         if ((receipt as TransactionReceipt).status === 'success') {
-          toast.success(`Withdrawal from ${from} to ${to} was successfully processed!`);
+          toast.success(`Sendal from ${from} to ${sendToAddress} was successfully processed!`);
         } else {
-          toast.error(`Withdrawal from ${from} to ${to} failed!`);
+          toast.error(`Sendal from ${from} to ${sendToAddress} failed!`);
         }
         handleCloseCampaignDialog();
       }
@@ -99,7 +100,7 @@ export default function FlowWithdrawalDialog({
       <DialogTitle>
         <Stack spacing={1} direction="row" justifyContent="center" alignItems="center">
           <Typography justifySelf="center" variant="h6">
-            Withdrawal
+            Send
           </Typography>
         </Stack>
       </DialogTitle>
@@ -124,26 +125,16 @@ export default function FlowWithdrawalDialog({
               <ContentCopy fontSize="small" />
             </IconButton>
           </Box>
-          <ExpandMore />
-          <Box
-            display="flex"
-            flexDirection="row"
-            alignSelf="stretch"
-            alignItems="center"
-            sx={{ height: 56, border: 1, borderRadius: 3, p: 1 }}>
-            <Avatar src={'/public/networks/' + network + '.png'} sx={{ width: 24, height: 24 }} />
-            <Typography ml={1} sx={{ overflow: 'scroll' }}>
-              {to}
-            </Typography>
-            <IconButton
-              size="small"
-              onClick={() => {
-                copyToClipboard(from);
-                toast.success('Wallet address is copied to clipboard!');
-              }}>
-              <ContentCopy fontSize="small" />
-            </IconButton>
-          </Box>
+          <ExpandMore></ExpandMore>
+          <TextField
+            fullWidth
+            id="sendToAddress"
+            label="Send to"
+            onChange={(event) => {
+              setSendToAddress(event.target.value as Address);
+            }}
+            InputProps={{ inputProps: { maxLength: 42 }, sx: { borderRadius: 3 } }}
+          />
           <TextField
             fullWidth
             variant="outlined"
@@ -156,19 +147,19 @@ export default function FlowWithdrawalDialog({
               sx: { borderRadius: 3 }
             }}
             onChange={(event) => {
-              setWithdrawAmount(parseEther(event.target.value));
+              setSendAmount(parseEther(event.target.value));
             }}
           />
           <Divider flexItem>
             <Button
-              disabled={!(from && to && withdrawAmount)}
+              disabled={!(sendToAddress && sendAmount)}
               fullWidth
               variant="outlined"
               size="medium"
               color="primary"
               onClick={sendTransaction}
               sx={{ mt: 1, borderRadius: 3 }}>
-              Withdraw
+              Send
             </Button>
           </Divider>
         </Stack>

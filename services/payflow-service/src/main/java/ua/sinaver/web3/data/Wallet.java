@@ -108,7 +108,7 @@ public class Wallet {
     public String toString() {
         return "Wallet [id=" + id + ", address=" + address + ", network=" + network + ", smart=" + smart + ", flow="
                 + flow.getUUID() + ", master="
-                + master != null ? master.getAddress() : "null" + "]";
+                + (master != null ? master.getAddress() : "null") + "]";
     }
 
 }

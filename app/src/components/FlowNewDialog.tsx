@@ -34,7 +34,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
   const { smartAccountAllowedChains } = useContext(UserContext);
 
   const [title, setTitle] = useState<string>();
-  const [paymentOnLoggedAddress, setPaymentOnLoggedAddress] = useState(true);
+  const [paymentOnLoggedAddress, setPaymentOnLoggedAddress] = useState(false);
   const [paymentNetworks, setPaymentNetworks] = useState([] as string[]);
 
   function handleCloseCampaignDialog() {
@@ -121,7 +121,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
                 }}
               />
             }
-            label="Receive On Logged External Account"
+            label="Receive on logged wallet"
           />
           {paymentOnLoggedAddress && (
             <>
@@ -142,7 +142,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
                   <TextField
                     variant="outlined"
                     {...params}
-                    label="Supported External Account Networks"
+                    label="Supported External Wallet Networks"
                   />
                 )}
                 sx={{ '& fieldset': { borderRadius: 3 } }}

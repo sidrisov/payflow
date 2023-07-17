@@ -47,6 +47,7 @@ class FlowController {
 
     @PostMapping("/{uuid}/wallet")
     public void addFlowWallet(@PathVariable String uuid, @RequestBody WalletDto wallet) throws Exception {
+        LOGGER.debug("addFlowWallet() {} {}", uuid, wallet);
         flowService.addFlowWallet(uuid, wallet);
     }
 

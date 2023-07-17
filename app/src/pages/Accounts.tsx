@@ -1,43 +1,23 @@
-import { Box, Button, Card, Container, Stack, Typography } from '@mui/material';
+import { Box, Button, Card, Container, IconButton, Stack, Typography } from '@mui/material';
 import { useContext, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useAccount } from 'wagmi';
-import axios from 'axios';
 import AccountNewDialog from '../components/AccountNewDialog';
 import { smartAccountCompatibleChains } from '../utils/smartAccountCompatibleChains';
 import { AccountCard } from '../components/AccountCard';
 import { UserContext } from '../contexts/UserContext';
+import { Add } from '@mui/icons-material';
 
 export default function Accounts() {
-  const { isConnected, address } = useAccount();
+  const { isConnected } = useAccount();
 
-  const { accounts, setAccounts } = useContext(UserContext);
-  const [fetched, setFetched] = useState(false);
+  const { accounts, setInitiateRefresh } = useContext(UserContext);
   const [availableNetworksToAddAccount, setAvailableNetworksToAddAccount] = useState<string[]>([]);
 
   const [openAccountCreate, setOpenAccountCreate] = useState(false);
 
-  async function fetchAccounts() {
-    try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/accounts?userId=${address}`
-      );
-
-      setAccounts(response.data);
-      setFetched(true);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
   useMemo(async () => {
-    if (isConnected) {
-      fetchAccounts();
-    }
-  }, [isConnected]);
-
-  useMemo(async () => {
-    if (fetched && accounts) {
+    if (accounts) {
       let availableNetworks = smartAccountCompatibleChains();
       if (accounts.length > 0) {
         const addedNetworks = accounts.map((account) => account.network);
@@ -45,7 +25,7 @@ export default function Accounts() {
       }
       setAvailableNetworksToAddAccount(availableNetworks);
     }
-  }, [fetched, accounts]);
+  }, [accounts]);
 
   return (
     <>
@@ -66,36 +46,36 @@ export default function Accounts() {
                 sx={{
                   m: 2,
                   p: 2,
-                  width: 250,
+                  width: 350,
                   height: 200,
                   border: 3,
-                  borderRadius: 3,
+                  borderRadius: 5,
                   borderStyle: 'dashed',
-                  borderColor: 'divider'
+                  borderColor: 'divider',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between'
                 }}>
-                <Stack direction="column" spacing={1}>
-                  <Typography fontSize={20} fontWeight="bold">
-                    New Account
-                  </Typography>
-                  <Typography fontSize={12} fontWeight="bold">
-                    Withdraw accumulated funds from your flows to accounts
-                  </Typography>
-                  <Box>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      size="medium"
-                      sx={{
-                        mt: 1,
-                        borderRadius: 3
-                      }}
-                      onClick={() => {
-                        setOpenAccountCreate(true);
-                      }}>
-                      Create
-                    </Button>
-                  </Box>
-                </Stack>
+                <Typography fontSize={20} fontWeight="bold">
+                  New Account
+                </Typography>
+                <Typography fontSize={12} fontWeight="bold">
+                  Withdraw accumulated funds from your flows to accounts
+                </Typography>
+
+                <IconButton
+                  color="inherit"
+                  onClick={() => {
+                    setOpenAccountCreate(true);
+                  }}
+                  sx={{
+                    border: 1,
+                    borderStyle: 'dashed',
+                    alignSelf: 'flex-end',
+                    justifySelf: 'flex-end'
+                  }}>
+                  <Add />
+                </IconButton>
               </Card>
             )}
             {accounts && accounts.map((account) => <AccountCard account={account} />)}
@@ -109,7 +89,7 @@ export default function Accounts() {
         closeStateCallback={async () => {
           setOpenAccountCreate(false);
           // TODO: just refresh, lately it's better to track each flow's update separately
-          fetchAccounts();
+          setInitiateRefresh(true);
         }}
       />
     </>

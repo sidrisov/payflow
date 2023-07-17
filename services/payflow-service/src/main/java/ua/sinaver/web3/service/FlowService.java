@@ -9,11 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
+import ua.sinaver.web3.data.Account;
 import ua.sinaver.web3.data.Flow;
 import ua.sinaver.web3.data.Wallet;
 import ua.sinaver.web3.dto.FlowDto;
 import ua.sinaver.web3.dto.WalletDto;
 import ua.sinaver.web3.repository.FlowRepository;
+import ua.sinaver.web3.repository.AccountRepository;
 
 @Service
 @Transactional
@@ -22,6 +24,9 @@ public class FlowService implements IFlowService {
 
     @Autowired
     private FlowRepository flowRepository;
+
+    @Autowired
+    private AccountRepository accountRepository;
 
     @Override
     public void saveFlow(FlowDto flowDto) {
@@ -78,8 +83,21 @@ public class FlowService implements IFlowService {
     @Override
     public void addFlowWallet(String uuid, WalletDto walletDto) throws Exception {
         Flow flow = flowRepository.findByUuid(uuid);
+
         if (flow != null) {
             Wallet wallet = convert(walletDto);
+
+            if (wallet.isSmart()) {
+                Account account = accountRepository.findByAddressAndNetwork(walletDto.master(),
+                        walletDto.network());
+                if (account != null) {
+                    wallet.setMaster(account);
+                    account.getWallets().add(wallet);
+                } else {
+                    throw new Exception("Account doesn't exist");
+                }
+            }
+
             wallet.setFlow(flow);
             flow.getWallets().add(wallet);
 
@@ -111,7 +129,10 @@ public class FlowService implements IFlowService {
         return new Wallet(walletDto.address(), walletDto.network(), walletDto.smart());
     }
 
+    // TODO: wallet.getMaster() != null redundant check, but since we have stale
+    // date, let's keep it till next db wipe
     private static WalletDto convert(Wallet wallet) {
-        return new WalletDto(wallet.getAddress(), wallet.getNetwork(), wallet.isSmart());
+        return new WalletDto(wallet.getAddress(), wallet.getNetwork(), wallet.isSmart(),
+                wallet.isSmart() && wallet.getMaster() != null ? wallet.getMaster().getAddress() : null);
     }
 }

@@ -19,6 +19,7 @@ import AddressQRCodeDialog from './AddressQRCodeDialog';
 import FlowWithdrawalDialog from './FlowWithdrawalDialog';
 import { useBalance, useNetwork } from 'wagmi';
 import { convertToUSD } from '../utils/getBalance';
+import AccountSendDialog from './AccountSendDialog';
 
 export type AccountNewDialogProps = CardProps & {
   account: AccountType;
@@ -43,8 +44,8 @@ export function AccountCard(props: AccountNewDialogProps) {
         p: 2,
         width: 350,
         height: 200,
-        borderRadius: 5,
         border: 2,
+        borderRadius: 5,
         borderColor: cardBorderColours[(cardBorderColours.length * Math.random()) | 0],
         display: 'flex',
         flexDirection: 'column',
@@ -113,8 +114,7 @@ export function AccountCard(props: AccountNewDialogProps) {
         network={account.network}
         closeStateCallback={() => setOpenAddressQRCode(false)}
       />
-      <FlowWithdrawalDialog
-        title="Send"
+      <AccountSendDialog
         open={openWithdrawalDialog}
         from={account.address}
         network={account.network}

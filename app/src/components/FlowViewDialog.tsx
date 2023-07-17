@@ -39,11 +39,18 @@ import {
 import { toast } from 'react-toastify';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { copyToClipboard } from '../utils/copyToClipboard';
-import { Hash, encodeAbiParameters, formatEther, keccak256, parseAbiParameters, toHex } from 'viem';
+import {
+  Address,
+  Hash,
+  encodeAbiParameters,
+  formatEther,
+  keccak256,
+  parseAbiParameters,
+  toHex
+} from 'viem';
 
-import PayFlowMasterFactoryArtifact from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/PayFlowMasterFactory.sol/PayFlowMasterFactory.json';
+import PayFlowFactoryArtifact from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/PayFlowFactory.sol/PayFlowFactory.json';
 import { readContract } from 'wagmi/actions';
-import { zkSyncTestnet } from 'wagmi/chains';
 import axios from 'axios';
 import create2Address from '../utils/create2Address';
 import FlowWithdrawalDialog from './FlowWithdrawalDialog';
@@ -55,7 +62,7 @@ export type FlowViewDialogProps = DialogProps &
     flow: FlowType;
   };
 
-const ZKSYNC_AA_FACTORY_ADDRESS = import.meta.env.VITE_ZKSYNC_MASTER_PAYFLOW_FACTORY_ADDRESS;
+const ZKSYNC_PAYFLOW_FACTORY_ADDRESS = import.meta.env.VITE_ZKSYNC_PAYFLOW_FACTORY_ADDRESS;
 
 export default function FlowViewDialog({ closeStateCallback, ...props }: FlowViewDialogProps) {
   const theme = useTheme();
@@ -65,6 +72,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const flowSalt = props.flow.uuid ? keccak256(toHex(props.flow.uuid)) : undefined;
 
   const { walletBalances, smartAccountAllowedChains } = useContext(UserContext);
+  const { accounts } = useContext(UserContext);
 
   const [flowTotalBalance, setFlowTotalBalance] = useState('0');
 
@@ -73,6 +81,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const [withdrawFlowWallet, setWithdrawFlowWallet] = useState(false);
   const [openWithdrawalDialog, setOpenWithdrawalDialog] = useState(false);
   const [selectedWithdrawalWallet, setSelectedWithdrawalWallet] = useState({} as FlowWalletType);
+  const [masterAccount, setMasterAccount] = useState<Address>();
 
   const [availableNetworksToAddAccount, setAvailableNetworksToAddAccount] = useState(
     [] as string[]
@@ -82,17 +91,16 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
 
   const { chains, switchNetwork } = useSwitchNetwork();
   const publicClient = usePublicClient();
-  const { address } = useAccount();
 
   const [openFlowShare, setOpenFlowShare] = useState(false);
   const [flowShareInfo, setFlowShareInfo] = useState({} as { title: string; link: string });
 
   const { config } = usePrepareContractWrite({
-    address: ZKSYNC_AA_FACTORY_ADDRESS,
-    abi: PayFlowMasterFactoryArtifact.abi,
-    functionName: 'deployAccount',
-    args: [flowSalt, address, address],
-    chainId: zkSyncTestnet.id
+    address: ZKSYNC_PAYFLOW_FACTORY_ADDRESS,
+    abi: PayFlowFactoryArtifact.abi,
+    functionName: 'deployContract',
+    args: [flowSalt, masterAccount],
+    chainId: chains.find((c) => c?.name === newAccountNetwork)?.id
   });
   const { isSuccess, data, write } = useContractWrite(config);
   const [txHash, setTxHash] = useState<Hash>();
@@ -125,6 +133,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
     setAddFlowWallet(false);
     setWithdrawFlowWallet(false);
     setNewAccountNetwork('');
+    setNewAccountAddress('');
   }
 
   function handleCloseCampaignDialog() {
@@ -133,21 +142,26 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   }
 
   useMemo(async () => {
-    if (isSuccess && address && flowSalt) {
-      const encodedData = encodeAbiParameters(parseAbiParameters('address, address'), [
-        address as `0x${string}`,
-        address as `0x${string}`
+    if (accounts && newAccountNetwork) {
+      setMasterAccount(accounts.find((a) => a.network === newAccountNetwork)?.address);
+    }
+  }, [accounts, newAccountNetwork]);
+
+  useMemo(async () => {
+    if (isSuccess && masterAccount && flowSalt) {
+      const encodedData = encodeAbiParameters(parseAbiParameters('address'), [
+        masterAccount as `0x${string}`
       ]);
 
       const playFlowContractHash = (await readContract({
-        address: ZKSYNC_AA_FACTORY_ADDRESS,
-        abi: PayFlowMasterFactoryArtifact.abi,
-        chainId: zkSyncTestnet.id,
-        functionName: 'aaBytecodeHash'
+        address: ZKSYNC_PAYFLOW_FACTORY_ADDRESS,
+        abi: PayFlowFactoryArtifact.abi,
+        chainId: chains.find((c) => c?.name === newAccountNetwork)?.id,
+        functionName: 'bytecodeHash'
       })) as `0x${string}`;
 
       const playFlowAddress = create2Address(
-        ZKSYNC_AA_FACTORY_ADDRESS,
+        ZKSYNC_PAYFLOW_FACTORY_ADDRESS,
         playFlowContractHash,
         flowSalt,
         encodedData
@@ -169,9 +183,9 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
 
       if (receipt) {
         if (receipt.status === 'success') {
-          toast.success('Payflow Account Successfully Deployed!');
+          toast.success('Payflow Wallet Successfully Deployed!');
         } else {
-          toast.error('Payflow Account Failed To Deploy!');
+          toast.error('Payflow Wallet Failed To Deploy!');
         }
       }
     }
@@ -183,7 +197,8 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
         const flowWallet = {
           address: newAccountAddress,
           network: newAccountNetwork,
-          smart: smartAccountAllowedChains.includes(newAccountNetwork)
+          smart: smartAccountAllowedChains.includes(newAccountNetwork),
+          master: masterAccount
         } as FlowWalletType;
         const response = await axios.post(
           `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${flow.uuid}/wallet`,
@@ -260,7 +275,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
           {flow.wallets && flow.wallets.filter((wallet) => wallet.smart).length > 0 && (
             <>
               <Divider flexItem>
-                <Typography variant="subtitle2"> PayFlow Accounts </Typography>
+                <Typography variant="subtitle2"> Payflow Wallets </Typography>
               </Divider>
               {flow.wallets
                 .filter((wallet) => wallet.smart)
@@ -320,7 +335,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
           {flow.wallets && flow.wallets.filter((wallet) => !wallet.smart).length > 0 && (
             <>
               <Divider flexItem>
-                <Typography variant="subtitle2"> External Accounts </Typography>
+                <Typography variant="subtitle2"> External Wallets </Typography>
               </Divider>
               {flow.wallets
                 .filter((wallet) => !wallet.smart)
@@ -380,14 +395,14 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
           {withdrawFlowWallet &&
             flow.wallets &&
             flow.wallets.filter((wallet) => wallet.smart).length === 0 && (
-              <Typography>You can withdraw only from PayFlow Accounts</Typography>
+              <Typography>You can withdraw only from Payflow Wallets</Typography>
             )}
 
           {addFlowWallet &&
             (availableNetworksToAddAccount.length > 0 ? (
               <>
                 <Divider flexItem>
-                  <Typography variant="subtitle2">Add New Account</Typography>
+                  <Typography variant="subtitle2">Add New Wallet</Typography>
                 </Divider>
                 <Autocomplete
                   autoHighlight
@@ -408,7 +423,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                   }}
                   options={availableNetworksToAddAccount}
                   renderInput={(params) => (
-                    <TextField variant="outlined" {...params} label="Choose Account Network" />
+                    <TextField variant="outlined" {...params} label="Choose Wallet Network" />
                   )}
                   sx={{ '& fieldset': { borderRadius: 3 } }}
                 />
@@ -418,7 +433,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                     <TextField
                       fullWidth
                       id="accountAddress"
-                      label="External Account Address"
+                      label="External Wallet Address"
                       onChange={(event) => {
                         setNewAccountAddress(event.target.value);
                       }}
@@ -437,7 +452,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                         onClick={async () => {
                           write?.();
                         }}>
-                        Create PayFlow Account
+                        Create Payflow Wallet
                       </Button>
                       {newAccountAddress && <Typography>{newAccountAddress}</Typography>}
                     </>
@@ -445,7 +460,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
 
                 <Button
                   fullWidth
-                  disabled={!newAccountNetwork || !newAccountAddress}
+                  disabled={!newAccountNetwork || !newAccountAddress || !masterAccount}
                   variant="outlined"
                   size="large"
                   color="primary"
@@ -514,8 +529,8 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
       </DialogContent>
       <FlowWithdrawalDialog
         open={openWithdrawalDialog}
-        title="Withdrawal"
         from={selectedWithdrawalWallet.address}
+        to={selectedWithdrawalWallet.master}
         network={selectedWithdrawalWallet.network}
         closeStateCallback={async () => setOpenWithdrawalDialog(false)}
       />

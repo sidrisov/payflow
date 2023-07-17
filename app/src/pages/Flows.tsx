@@ -2,7 +2,6 @@ import {
   Avatar,
   AvatarGroup,
   Box,
-  Button,
   Card,
   Container,
   IconButton,
@@ -16,7 +15,7 @@ import FlowNewDialog from '../components/FlowNewDialog';
 import { useAccount, useNetwork } from 'wagmi';
 import axios from 'axios';
 import { FlowType, FlowWalletType } from '../types/FlowType';
-import { OpenInFull, ShareOutlined } from '@mui/icons-material';
+import { Add, OpenInFull, ShareOutlined } from '@mui/icons-material';
 import FlowShareDialog from '../components/FlowShareDialog';
 import FlowViewDialog from '../components/FlowViewDialog';
 import { getTotalBalance, getWalletBalance } from '../utils/getBalance';
@@ -134,34 +133,34 @@ export default function Flows() {
                 width: 250,
                 height: 200,
                 border: 3,
-                borderRadius: 3,
+                borderRadius: 5,
                 borderStyle: 'dashed',
-                borderColor: 'divider'
+                borderColor: 'divider',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
               }}>
-              <Stack direction="column" spacing={1}>
-                <Typography fontSize={20} fontWeight="bold">
-                  New flow
-                </Typography>
-                <Typography fontSize={12} fontWeight="bold">
-                  Receive payments for different purposes: savings, income, creator support,
-                  fundraising, collecting for a friend's birthday - ANYTHING!
-                </Typography>
-                <Box>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    size="medium"
-                    sx={{
-                      mt: 1,
-                      borderRadius: 3
-                    }}
-                    onClick={() => {
-                      setOpenFlowCreate(true);
-                    }}>
-                    Create
-                  </Button>
-                </Box>
-              </Stack>
+              <Typography fontSize={20} fontWeight="bold">
+                New flow
+              </Typography>
+              <Typography fontSize={12} fontWeight="bold">
+                Receive payments for different purposes: savings, income, creator support,
+                fundraising, collecting for a friend's birthday - ANYTHING!
+              </Typography>
+              <IconButton
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  setOpenFlowCreate(true);
+                }}
+                sx={{
+                  border: 1,
+                  borderStyle: 'dashed',
+                  alignSelf: 'flex-end',
+                  justifySelf: 'flex-end'
+                }}>
+                <Add fontSize="small" />
+              </IconButton>
             </Card>
             {flows.map((flow, index) => (
               <Card
@@ -172,8 +171,8 @@ export default function Flows() {
                   p: 2,
                   width: 250,
                   height: 200,
-                  borderRadius: 5,
                   border: 2,
+                  borderRadius: 5,
                   borderColor: cardBorderColours[(cardBorderColours.length * Math.random()) | 0],
                   display: 'flex',
                   flexDirection: 'column',

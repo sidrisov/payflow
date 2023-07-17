@@ -12,19 +12,48 @@ import Nav from '../components/Navigation';
 import { UserContext } from '../contexts/UserContext';
 import HideOnScroll from '../components/HideOnScroll';
 import { AccountType } from '../types/AccountType';
+import { useAccount } from 'wagmi';
+import axios from 'axios';
 
 const drawerWidth = 151;
 
 export default function AppLayout({ appSettings, setAppSettings }: any) {
+  const { isConnected, address } = useAccount();
   const [walletBalances, setWalletBalances] = useState<Map<string, bigint>>(new Map());
-  const [accounts, setAccounts] = useState<AccountType[]>([]);
+  const [accounts, setAccounts] = useState<AccountType[]>();
   const [smartAccountAllowedChains, setSmartAccountAllowedChains] = useState<string[]>([]);
+  const [initiateRefresh, setInitiateRefresh] = useState(false);
 
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
+
+  async function fetchAccounts() {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/accounts?userId=${address}`
+      );
+
+      setAccounts(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useMemo(async () => {
+    if (initiateRefresh && accounts) {
+      setInitiateRefresh(false);
+      fetchAccounts();
+    }
+  }, [accounts, initiateRefresh]);
+
+  useMemo(async () => {
+    if (isConnected) {
+      fetchAccounts();
+    }
+  }, [isConnected]);
 
   useMemo(async () => {
     if (accounts) {
@@ -43,6 +72,7 @@ export default function AppLayout({ appSettings, setAppSettings }: any) {
           setAccounts,
           smartAccountAllowedChains,
           setSmartAccountAllowedChains,
+          setInitiateRefresh,
           walletBalances,
           setWalletBalances
         }}>

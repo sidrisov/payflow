@@ -1,5 +1,7 @@
+import { Address } from 'viem';
+
 export interface FlowType {
-  account: `0x${string}`;
+  account: Address;
   title: string;
   description: string;
   uuid: string;
@@ -7,7 +9,8 @@ export interface FlowType {
 }
 
 export interface FlowWalletType {
-  address: `0x${string}`;
+  address: Address;
   network: string;
   smart: boolean;
+  master: Address;
 }
