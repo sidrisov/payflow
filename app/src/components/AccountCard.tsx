@@ -53,10 +53,7 @@ export function AccountCard(props: AccountNewDialogProps) {
       }}>
       <Box display="flex" flexDirection="row" justifyContent="space-between" alignItems="center">
         <Stack spacing={1} direction="row" alignItems="center">
-          <Avatar
-            src={'/public/networks/' + account.network + '.png'}
-            sx={{ width: 36, height: 36 }}
-          />
+          <Avatar src={'/networks/' + account.network + '.png'} sx={{ width: 36, height: 36 }} />
           <Typography sx={{ fontSize: 15, fontWeight: 'bold' }}>{account.network}</Typography>
         </Stack>
 

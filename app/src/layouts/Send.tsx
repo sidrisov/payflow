@@ -241,7 +241,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
                 <>
                   <Box mt={1} display="flex" flexDirection="row" alignItems="center">
                     <Avatar
-                      src={'/public/networks/' + selectedPaymentNetwork + '.png'}
+                      src={'/networks/' + selectedPaymentNetwork + '.png'}
                       sx={{ width: 24, height: 24 }}
                     />
                     <Typography ml={1}>

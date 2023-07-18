@@ -112,7 +112,7 @@ export default function AccountSendDialog({
             alignSelf="stretch"
             alignItems="center"
             sx={{ height: 56, border: 1, borderRadius: 3, p: 1 }}>
-            <Avatar src={'/public/networks/' + network + '.png'} sx={{ width: 24, height: 24 }} />
+            <Avatar src={'/networks/' + network + '.png'} sx={{ width: 24, height: 24 }} />
             <Typography ml={1} sx={{ overflow: 'scroll' }}>
               {from}
             </Typography>

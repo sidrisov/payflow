@@ -217,7 +217,7 @@ export default function Flows() {
                     {[...Array(Math.min(4, flow.wallets.length))].map((_item, i) => (
                       <Avatar
                         key={`wallet_avatar_${flow.uuid}_${i}`}
-                        src={'/public/networks/' + flow.wallets[i].network.toLowerCase() + '.png'}
+                        src={'/networks/' + flow.wallets[i].network + '.png'}
                       />
                     ))}
                   </AvatarGroup>
