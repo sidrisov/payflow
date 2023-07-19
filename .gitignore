@@ -20,6 +20,7 @@ dist-ssr
 .vscode
 bin
 build
+*.jar
 .DS_Store
 .deps/*
 *.suo

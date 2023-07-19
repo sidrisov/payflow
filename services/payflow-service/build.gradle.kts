@@ -1,11 +1,16 @@
-import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
-
 plugins {
-	java
+	application
 	id("org.springframework.boot") version "3.1.1"
 	id("io.spring.dependency-management") version "1.1.0"
-	//id("org.graalvm.buildtools.native") version "0.9.20"
+	//id("com.google.cloud.tools.appengine") version "2.4.5"
 }
+
+application {
+    mainClass.set("ua.sinaver.web3.PayFlowApplication")
+}
+
+extra["springCloudGcpVersion"] = "4.5.1"
+extra["springCloudVersion"] = "2022.0.3"
 
 group = "ua.sinaver.web3"
 version = "0.0.1-SNAPSHOT"
@@ -19,6 +24,14 @@ dependencies {
 	implementation ("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation ("org.springframework.boot:spring-boot-starter-web")
 	
+	// gcp
+	//implementation ("com.google.cloud:spring-cloud-gcp-starter")
+	//implementation ("com.google.cloud:spring-cloud-gcp-starter-sql-mysql")
+	
+	// local
+	//runtimeOnly ("com.h2database:h2")
+  	runtimeOnly ("com.mysql:mysql-connector-j")
+
 	// utils
 	implementation("org.apache.commons:commons-lang3:3.12.0")
 	implementation("org.bouncycastle:bcprov-jdk18on:1.73")
@@ -26,26 +39,15 @@ dependencies {
    	implementation("com.google.code.gson:gson:2.10.1")
 
 	developmentOnly ("org.springframework.boot:spring-boot-devtools")
-	
-	//runtimeOnly ("com.h2database:h2")
-  	runtimeOnly ("com.mysql:mysql-connector-j")
+}
 
-	testImplementation ("org.springframework.boot:spring-boot-starter-test")
-	testImplementation ("org.springframework.amqp:spring-rabbit-test")
+dependencyManagement {
+  imports {
+    mavenBom("com.google.cloud:spring-cloud-gcp-dependencies:${property("springCloudGcpVersion")}")
+    mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
+  }
 }
 
 tasks.withType<Test> {
 	useJUnitPlatform()
-}
-
-// update docker image for M1 architecture
-tasks.withType<BootBuildImage> {
-	val osName = System.getProperty("os.name").lowercase()
-	val arch = System.getProperty("os.arch")
-
-	val runningOnM1Mac = "mac" in osName && arch == "aarch64"
-	if (runningOnM1Mac) {
-		builder.set("dashaun/builder:tiny")
-		//environment.set(mapOf("BP_NATIVE_IMAGE" to "true"))
-	}
 }
