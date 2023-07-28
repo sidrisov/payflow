@@ -9,13 +9,15 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 
 @Entity
-@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "network", "address" }) })
+@Table(indexes = @Index(columnList = "userId"), uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "network", "address" }) })
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
