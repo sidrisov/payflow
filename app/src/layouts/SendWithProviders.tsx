@@ -30,9 +30,11 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
   [alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }), publicProvider()]
 );
 
+const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
+
 const { connectors } = getDefaultWallets({
   appName: 'PayFlow',
-  projectId: '795e48b684a91818331afe21e54973ab',
+  projectId: WALLET_CONNECT_PROJECT_ID,
   chains
 });
 

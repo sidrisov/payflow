@@ -11,9 +11,11 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      if (global === undefined) {
-        var global = window;
-      }
+/*       var global = global || window
+
+      if (window.process === undefined) {
+        window.process = { browser: true, env: { ENVIRONMENT: 'BROWSER' } };
+      }            */       
     </script>
   </body>
 </html>

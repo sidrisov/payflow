@@ -44,7 +44,7 @@ export default function Navigation() {
       <Tabs
         orientation="vertical"
         variant="scrollable"
-        scrollButtons="auto"
+        scrollButtons={false}
         value={tabValue}
         textColor="inherit"
         sx={{

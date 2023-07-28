@@ -8,12 +8,15 @@ import merge from 'lodash.merge';
 
 import {
   AvatarComponent,
+  connectorsForWallets,
   darkTheme,
-  getDefaultWallets,
   lightTheme,
   RainbowKitProvider,
   Theme
 } from '@rainbow-me/rainbowkit';
+
+import { rainbowWeb3AuthConnector } from '../utils/web3AuthConnector';
+
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
 import { optimismGoerli, mainnet, zkSyncTestnet, baseGoerli } from 'wagmi/chains';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
@@ -23,17 +26,34 @@ import { useMediaQuery } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { AppSettings } from '../types/AppSettingsType';
 import { ToastContainer } from 'react-toastify';
+import {
+  coinbaseWallet,
+  injectedWallet,
+  metaMaskWallet,
+  rainbowWallet,
+  walletConnectWallet
+} from '@rainbow-me/rainbowkit/wallets';
+
+const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [zkSyncTestnet, optimismGoerli, baseGoerli, mainnet],
   [alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }), publicProvider()]
 );
 
-const { connectors } = getDefaultWallets({
-  appName: 'PayFlow',
-  projectId: '795e48b684a91818331afe21e54973ab',
-  chains
-});
+const connectors = connectorsForWallets([
+  {
+    groupName: 'Recommended',
+    wallets: [
+      injectedWallet({ chains }),
+      metaMaskWallet({ chains, projectId: WALLET_CONNECT_PROJECT_ID }),
+      coinbaseWallet({ appName: 'PayFlow', chains }),
+      rainbowWallet({ chains, projectId: WALLET_CONNECT_PROJECT_ID }),
+      walletConnectWallet({ chains, projectId: WALLET_CONNECT_PROJECT_ID }),
+      rainbowWeb3AuthConnector({ chains })
+    ]
+  }
+]);
 
 const CustomAvatar: AvatarComponent = ({ address, ensImage, size }) => {
   return ensImage ? (

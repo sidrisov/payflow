@@ -11,7 +11,13 @@ import {
 import { cardBorderColours, ethPrice } from '../utils/constants';
 import { AccountType } from '../types/AccountType';
 import { shortenWalletAddressLabel } from '../utils/address';
-import { CallReceived, CallMade, Receipt, ContentCopy } from '@mui/icons-material';
+import {
+  Receipt,
+  ContentCopy,
+  ArrowDownward,
+  Send,
+  SwapHoriz
+} from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { copyToClipboard } from '../utils/copyToClipboard';
 import { useState } from 'react';
@@ -97,7 +103,7 @@ export function AccountCard(props: AccountNewDialogProps) {
             toast.error('Feature not supported yet!');
           }}
           sx={{ border: 1, borderStyle: 'dashed' }}>
-          <CallReceived fontSize="medium" />
+          <ArrowDownward />
         </IconButton>
         <IconButton
           color="inherit"
@@ -105,7 +111,7 @@ export function AccountCard(props: AccountNewDialogProps) {
             setOpenWithdrawalDialog(true);
           }}
           sx={{ border: 1, borderStyle: 'dashed' }}>
-          <CallMade fontSize="medium" />
+          <Send />
         </IconButton>
         <IconButton
           color="inherit"
@@ -113,7 +119,15 @@ export function AccountCard(props: AccountNewDialogProps) {
             toast.error('Feature not supported yet!');
           }}
           sx={{ border: 1, borderStyle: 'dashed' }}>
-          <Receipt fontSize="medium" />
+          <SwapHoriz />
+        </IconButton>
+        <IconButton
+          color="inherit"
+          onClick={() => {
+            toast.error('Feature not supported yet!');
+          }}
+          sx={{ border: 1, borderStyle: 'dashed' }}>
+          <Receipt />
         </IconButton>
       </Stack>
       <AddressQRCodeDialog
