@@ -63,9 +63,8 @@ tasks.withType<Test> {
 	useJUnitPlatform()
 }
 
-// gradlew 
 tasks.withType<BootRun> {
 	if (project.hasProperty("gcp")) {
 		systemProperty("spring.profiles.active", "gcp")
-	}	
+	}
 }

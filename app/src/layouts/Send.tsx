@@ -40,6 +40,8 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import HideOnScroll from '../components/HideOnScroll';
 import { getFlowBalance } from '../utils/getBalance';
 import { cardBorderColours, ethPrice } from '../utils/constants';
+import { Helmet } from 'react-helmet-async';
+import CustomThemeProvider from '../theme/CustomThemeProvider';
 
 const cardBorderRandom = cardBorderColours[(cardBorderColours.length * Math.random()) | 0];
 
@@ -139,7 +141,10 @@ export default function Send({ appSettings, setAppSettings }: any) {
   }, [txHash]);
 
   return (
-    <>
+    <CustomThemeProvider darkMode={appSettings.darkMode}>
+      <Helmet>
+        <title> PayFlow | Pay </title>
+      </Helmet>
       <HideOnScroll>
         <AppBar
           position="sticky"
@@ -165,12 +170,12 @@ export default function Send({ appSettings, setAppSettings }: any) {
         </AppBar>
       </HideOnScroll>
       <Box
-        sx={{
-          my: '5%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
+        position="fixed"
+        display="flex"
+        alignItems="center"
+        boxSizing="border-box"
+        justifyContent="center"
+        sx={{ inset: 0 }}>
         <Card
           elevation={10}
           sx={{
@@ -327,6 +332,6 @@ export default function Send({ appSettings, setAppSettings }: any) {
           )}
         </Card>
       </Box>
-    </>
+    </CustomThemeProvider>
   );
 }

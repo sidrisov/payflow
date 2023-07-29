@@ -5,13 +5,19 @@ import Requests from './pages/Requests';
 import Activity from './pages/Activity';
 import Settings from './pages/Settings';
 
-import AppWithProviders from './layouts/AppWithProviders';
 import TopUp from './layouts/SendWithProviders';
 import Accounts from './pages/Accounts';
+import Login from './layouts/LoginWithProviders';
+import AppWithProviders from './layouts/AppWithProviders';
 
 export const appRoutes = ['/accounts', '/flows', '/requests', '/activity', '/settings'];
 
 export const appRouter = createBrowserRouter([
+  {
+    path: '/login',
+    element: <Login />,
+    errorElement: <Page404 />
+  },
   {
     path: '/',
     element: <AppWithProviders />,
@@ -36,11 +42,6 @@ export const appRouter = createBrowserRouter([
   {
     path: '/send/:uuid',
     element: <TopUp />,
-    errorElement: <Page404 />
-  },
-  {
-    path: '/login',
-    element: <></>,
     errorElement: <Page404 />
   }
 ]);

@@ -25,7 +25,7 @@ import ua.sinaver.web3.service.IFlowService;
 @CrossOrigin // default - allow all origins
 @Transactional
 class FlowController {
-    public static final Logger LOGGER = LoggerFactory.getLogger(FlowController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FlowController.class);
 
     @Autowired
     private IFlowService flowService;

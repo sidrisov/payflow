@@ -22,7 +22,7 @@ import ua.sinaver.web3.service.IAccountService;
 @CrossOrigin // default - allow all origins
 @Transactional
 class AccountController {
-    public static final Logger LOGGER = LoggerFactory.getLogger(AccountController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccountController.class);
 
     @Autowired
     private IAccountService accountService;
