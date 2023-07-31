@@ -66,7 +66,7 @@ export default function LoginWithProviders() {
       fetchingStatusRef.current = true;
 
       try {
-        const response = await fetch(`${AUTH_URL}/api/user/info`);
+        const response = await fetch(`${AUTH_URL}/api/me`, { credentials: 'include' });
         const json = await response.json();
         console.log(json);
         setAuthStatus(json ? 'authenticated' : 'unauthenticated');
@@ -88,7 +88,7 @@ export default function LoginWithProviders() {
   const authAdapter = useMemo(() => {
     return createAuthenticationAdapter({
       getNonce: async () => {
-        const response = await fetch(`${AUTH_URL}/api/auth/nonce`);
+        const response = await fetch(`${AUTH_URL}/api/auth/nonce`, { credentials: 'include' });
         return await response.text();
       },
 
@@ -111,11 +111,15 @@ export default function LoginWithProviders() {
       verify: async ({ message, signature }) => {
         verifyingRef.current = true;
 
+        console.log(message);
+        console.log(JSON.stringify({ message, signature }));
+
         try {
           const response = await fetch(`${AUTH_URL}/api/auth/verify`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message, signature })
+            body: JSON.stringify({ message, signature }),
+            credentials: 'include'
           });
 
           const authenticated = Boolean(response.ok);
@@ -134,7 +138,7 @@ export default function LoginWithProviders() {
 
       signOut: async () => {
         setAuthStatus('unauthenticated');
-        await fetch(`${AUTH_URL}/api/auth/logout`);
+        await fetch(`${AUTH_URL}/api/auth/logout`, { credentials: 'include' });
       }
     });
   }, []);

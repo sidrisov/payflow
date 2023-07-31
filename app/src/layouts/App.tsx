@@ -33,7 +33,8 @@ export default function AppLayout({ appSettings, setAppSettings }: any) {
   async function fetchAccounts() {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/accounts?userId=${address}`
+        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/accounts?userId=${address}`,
+        { withCredentials: true }
       );
 
       setAccounts(response.data);

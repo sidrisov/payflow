@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "dapp.url",
+      "type": "java.lang.String",
+      "description": "dApp Client Url"
+    }
+  ]
+}

@@ -81,7 +81,8 @@ export default function Send({ appSettings, setAppSettings }: any) {
   useMemo(async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${uuid}`
+        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${uuid}`,
+        { withCredentials: true }
       );
 
       console.log(response.data);

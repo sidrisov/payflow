@@ -58,7 +58,8 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
                 smart: false
               }))
             : []
-        }
+        },
+        { withCredentials: true }
       );
       console.log(response.status);
       toast.success(`Successfully uploaded a flow: ${title}`);

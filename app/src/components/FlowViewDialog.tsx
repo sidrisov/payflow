@@ -203,7 +203,8 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
         } as FlowWalletType;
         const response = await axios.post(
           `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${flow.uuid}/wallet`,
-          flowWallet
+          flowWallet,
+          { withCredentials: true }
         );
         console.log(response.status);
 
@@ -229,7 +230,8 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
             data: {
               address: wallet.address,
               network: wallet.network
-            }
+            },
+            withCredentials: true
           }
         );
         console.log(response.status);

@@ -40,7 +40,8 @@ export default function Flows() {
   async function fetchFlows() {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows?account=${address}`
+        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows?account=${address}`,
+        { withCredentials: true }
       );
 
       setFlows(response.data);
