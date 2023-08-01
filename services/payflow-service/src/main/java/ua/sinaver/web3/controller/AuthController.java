@@ -8,21 +8,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextHolderStrategy;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.google.gson.Gson;
-import com.moonstoneid.siwe.SiweMessage;
-import com.moonstoneid.siwe.error.SiweException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -40,10 +32,6 @@ import ua.sinaver.web3.service.IUserService;
 public class AuthController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
-
-    private SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
-            .getContextHolderStrategy();
-    private SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
 
     @Autowired
     private AuthenticationManager authManager;
@@ -75,8 +63,9 @@ public class AuthController {
                 new Web3Authentication(siwe.message(), siwe.signature()));
 
         if (authentication.isAuthenticated()) {
-            // save context to session
-            saveContextInSession(authentication, request, response);
+            // save authentication to security context
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
             // remove nonce, so it can't be re-used
             session.removeAttribute("nonce");
 
@@ -96,12 +85,5 @@ public class AuthController {
 
     @GetMapping("/logout")
     public void logout() {
-    }
-
-    private void saveContextInSession(Authentication authentication, HttpServletRequest request,
-            HttpServletResponse response) {
-        SecurityContext context = this.securityContextHolderStrategy.createEmptyContext();
-        context.setAuthentication(authentication);
-        this.securityContextRepository.saveContext(context, request, response);
     }
 }

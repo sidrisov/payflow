@@ -33,6 +33,7 @@ public class SecurityConfig {
                                 .csrf(csrf -> csrf.disable())
                                 .cors(Customizer.withDefaults())
                                 .requestCache(reqCache -> reqCache.disable())
+                                .httpBasic(basic -> basic.disable())
                                 .formLogin(form -> form.disable())
                                 .authorizeHttpRequests(requests -> requests
                                                 .requestMatchers(HttpMethod.GET, "/auth/nonce").permitAll()
@@ -40,11 +41,10 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.GET, "/flows/{uuid}").permitAll()
                                                 .anyRequest()
                                                 .authenticated())
-                                // .httpBasic(Customizer.withDefaults())
-                                .httpBasic(basic -> basic.disable())
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-                                .securityContext(Customizer.withDefaults())
+                                // set to false, so that context is saved into session automatically
+                                .securityContext(securityContext -> securityContext.requireExplicitSave(false))
                                 .authenticationManager(authenticationManager)
                                 .logout(logout -> logout
                                                 .logoutUrl("/auth/logout")
@@ -64,9 +64,11 @@ public class SecurityConfig {
         AuthenticationManager authManager(HttpSecurity http) throws Exception {
                 AuthenticationManagerBuilder authenticationManagerBuilder = http
                                 .getSharedObject(AuthenticationManagerBuilder.class);
-                authenticationManagerBuilder.inMemoryAuthentication()
-                                .withUser("user")
-                                .password(passwordEncoder().encode("password"));
+                /*
+                 * authenticationManagerBuilder.inMemoryAuthentication()
+                 * .withUser("user")
+                 * .password(passwordEncoder().encode("password"));
+                 */
                 authenticationManagerBuilder.authenticationProvider(web3AuthProvider);
                 return authenticationManagerBuilder.build();
         }
