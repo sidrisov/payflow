@@ -20,12 +20,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.gson.Gson;
+import com.moonstoneid.siwe.SiweMessage;
+import com.moonstoneid.siwe.error.SiweException;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import ua.sinaver.web3.auth.Web3Authentication;
-import ua.sinaver.web3.dto.SiweRawDto;
+import ua.sinaver.web3.data.User;
+import ua.sinaver.web3.message.SiweChallengeMessage;
+import ua.sinaver.web3.service.IUserService;
 
 @RestController
 @RequestMapping("/auth")
@@ -42,6 +48,9 @@ public class AuthController {
     @Autowired
     private AuthenticationManager authManager;
 
+    @Autowired
+    private IUserService userService;
+
     @GetMapping("/nonce")
     public String nonce(HttpSession session) {
         String nonce = RandomStringUtils.random(10, true, true);
@@ -50,31 +59,33 @@ public class AuthController {
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<String> verify(@RequestBody SiweRawDto siwe, HttpServletRequest request,
+    public ResponseEntity<String> verify(@RequestBody SiweChallengeMessage siwe, HttpServletRequest request,
             HttpServletResponse response, HttpSession session) {
-        LOGGER.info("Siwe Raw {}", siwe);
+        LOGGER.debug("Siwe Challenge Request: {}", siwe);
 
         String sessionNonce = (String) session.getAttribute("nonce");
-        LOGGER.debug("sessionNonce {}", sessionNonce);
+        LOGGER.debug("nonce from session {}", sessionNonce);
 
+        // check if nonce match with previosly generated for this session
         if (sessionNonce == null || !siwe.message().nonce().equals(sessionNonce)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        // add check to match nonce previously saved in session and the one included in
-        // siwe message
+        Authentication authentication = authManager.authenticate(
+                new Web3Authentication(siwe.message(), siwe.signature()));
 
-        Authentication authToken = authManager
-                .authenticate(new Web3Authentication(siwe.message().address(),
-                        siwe.signature()));
-
-        if (authToken.isAuthenticated()) {
-            SecurityContext context = this.securityContextHolderStrategy.createEmptyContext();
-            context.setAuthentication(authToken);
-            // this.securityContextHolderStrategy.setContext(context);
-            this.securityContextRepository.saveContext(context, request, response);
-
+        if (authentication.isAuthenticated()) {
+            // save context to session
+            saveContextInSession(authentication, request, response);
+            // remove nonce, so it can't be re-used
             session.removeAttribute("nonce");
+
+            // create a user if not exist
+            String signer = authentication.getPrincipal().toString();
+            User user = userService.findUser(signer);
+            if (user == null) {
+                userService.saveUser(signer, signer);
+            }
 
             return ResponseEntity.ok().build();
         }
@@ -87,4 +98,10 @@ public class AuthController {
     public void logout() {
     }
 
+    private void saveContextInSession(Authentication authentication, HttpServletRequest request,
+            HttpServletResponse response) {
+        SecurityContext context = this.securityContextHolderStrategy.createEmptyContext();
+        context.setAuthentication(authentication);
+        this.securityContextRepository.saveContext(context, request, response);
+    }
 }

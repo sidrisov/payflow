@@ -2,16 +2,22 @@ package ua.sinaver.web3.auth;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 
+import ua.sinaver.web3.message.SiweMessage;
+
 public class Web3Authentication extends AbstractAuthenticationToken {
 
-
-    private String address;
+    private SiweMessage siweMessage;
     private String signature;
 
-    public Web3Authentication(String address, String signature) {
+    public Web3Authentication(SiweMessage siweMessage, String signature) {
         super(null);
-        this.address = address;
+        this.siweMessage = siweMessage;
         this.signature = signature;
+    }
+
+    @Override
+    public Object getDetails() {
+        return siweMessage;
     }
 
     @Override
@@ -21,7 +27,7 @@ public class Web3Authentication extends AbstractAuthenticationToken {
 
     @Override
     public Object getPrincipal() {
-        return address;
+        return siweMessage.address();
     }
 
 }

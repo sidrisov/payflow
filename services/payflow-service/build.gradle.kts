@@ -42,9 +42,15 @@ dependencies {
 
 	// utils
 	implementation("org.apache.commons:commons-lang3:3.12.0")
-	implementation("org.bouncycastle:bcprov-jdk18on:1.73")
 	implementation("com.google.guava:guava:31.1-jre")
    	implementation("com.google.code.gson:gson:2.10.1")
+
+	// crypto
+	implementation("org.bouncycastle:bcprov-jdk18on:1.73")
+
+	//siwe
+	// TODO: it's ok to use as long as we're not in production
+	implementation("com.moonstoneid:siwe-java:1.0.2")
 
 	developmentOnly ("org.springframework.boot:spring-boot-devtools")
 }

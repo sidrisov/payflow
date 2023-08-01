@@ -2,6 +2,7 @@ import { AccountType } from './AccountType';
 import { AppSettings } from './AppSettingsType';
 
 export interface UserContextType {
+  isAuthenticated: boolean;
   appSettings: AppSettings;
   setAppSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
   accounts: AccountType[] | undefined;

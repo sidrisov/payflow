@@ -24,7 +24,7 @@ public class Account {
     private Integer id;
 
     @Column
-    private String userId;
+    private Integer userId;
 
     @Column
     private String address;
@@ -41,7 +41,7 @@ public class Account {
     public Account() {
     }
 
-    public Account(String userId, String address, String network) {
+    public Account(Integer userId, String address, String network) {
         this.userId = userId;
         this.address = address;
         this.network = network;
@@ -55,11 +55,11 @@ public class Account {
         this.id = id;
     }
 
-    public String getUserId() {
+    public Integer getUserId() {
         return userId;
     }
 
-    public void setUserId(String userId) {
+    public void setUserId(Integer userId) {
         this.userId = userId;
     }
 

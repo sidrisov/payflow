@@ -12,7 +12,7 @@ import {
 
 import { rainbowWeb3AuthConnector } from '../utils/web3AuthConnector';
 
-import { configureChains, createConfig, WagmiConfig } from 'wagmi';
+import { Address, configureChains, createConfig, WagmiConfig } from 'wagmi';
 import { mainnet } from 'wagmi/chains';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
@@ -55,6 +55,7 @@ export default function LoginWithProviders() {
   const fetchingStatusRef = useRef(false);
   const verifyingRef = useRef(false);
   const [authStatus, setAuthStatus] = useState<AuthenticationStatus>('loading');
+  const [authAccount, setAuthAccount] = useState<Address>();
 
   // Fetch user when:
   useEffect(() => {
@@ -67,9 +68,15 @@ export default function LoginWithProviders() {
 
       try {
         const response = await fetch(`${AUTH_URL}/api/me`, { credentials: 'include' });
-        const json = await response.json();
-        console.log(json);
-        setAuthStatus(json ? 'authenticated' : 'unauthenticated');
+        const authProfile = await response.json();
+        console.log(authProfile.address);
+        setAuthStatus(authProfile && authProfile.address ? 'authenticated' : 'unauthenticated');
+        
+        if (authProfile && authProfile.address) {
+          setAuthAccount(authProfile.address);
+        } else {
+          setAuthAccount(undefined);
+        }
       } catch (_error) {
         setAuthStatus('unauthenticated');
       } finally {
@@ -96,7 +103,7 @@ export default function LoginWithProviders() {
         return new SiweMessage({
           domain: window.location.host,
           address,
-          statement: 'Sign in with Ethereum to the app.',
+          statement: 'Sign in with Ethereum to PayFlow',
           uri: window.location.origin,
           version: '1',
           chainId,
@@ -111,7 +118,6 @@ export default function LoginWithProviders() {
       verify: async ({ message, signature }) => {
         verifyingRef.current = true;
 
-        console.log(message);
         console.log(JSON.stringify({ message, signature }));
 
         try {
@@ -138,6 +144,7 @@ export default function LoginWithProviders() {
 
       signOut: async () => {
         setAuthStatus('unauthenticated');
+        setAuthAccount(undefined)
         await fetch(`${AUTH_URL}/api/auth/logout`, { credentials: 'include' });
       }
     });
@@ -174,6 +181,7 @@ export default function LoginWithProviders() {
           chains={chains}>
           <Login
             authStatus={authStatus}
+            authAccount={authAccount}
             appSettings={appSettings}
             setAppSettings={setAppSettings}
           />

@@ -17,7 +17,7 @@ import { Helmet } from 'react-helmet-async';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import { useAccount } from 'wagmi';
 
-export default function Login({ authStatus, appSettings, setAppSettings }: any) {
+export default function Login({ authStatus, authAccount, appSettings, setAppSettings }: any) {
   const { address } = useAccount();
 
   return (
@@ -72,7 +72,7 @@ export default function Login({ authStatus, appSettings, setAppSettings }: any) 
               Wallet Connected: {address ? 'Yes' : 'No'}
             </Typography>
             <Typography alignSelf="flex-start" variant="subtitle2">
-              Authenticated: {authStatus === 'authenticated' ? 'Yes' : 'No'}
+              Authenticated: {address === authAccount && authStatus === 'authenticated' ? 'Yes' : 'No'}
             </Typography>
             <ConnectButton showBalance={{ smallScreen: false, largeScreen: false }} />
           </Box>

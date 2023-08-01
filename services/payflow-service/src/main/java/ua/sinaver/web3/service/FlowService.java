@@ -11,10 +11,12 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import ua.sinaver.web3.data.Account;
 import ua.sinaver.web3.data.Flow;
+import ua.sinaver.web3.data.User;
 import ua.sinaver.web3.data.Wallet;
-import ua.sinaver.web3.dto.FlowDto;
-import ua.sinaver.web3.dto.WalletDto;
+import ua.sinaver.web3.message.FlowMessage;
+import ua.sinaver.web3.message.WalletMessage;
 import ua.sinaver.web3.repository.FlowRepository;
+import ua.sinaver.web3.repository.UserRepository;
 import ua.sinaver.web3.repository.AccountRepository;
 
 @Service
@@ -28,94 +30,105 @@ public class FlowService implements IFlowService {
     @Autowired
     private AccountRepository accountRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Override
-    public void saveFlow(FlowDto flowDto) {
-        Flow flow = convert(flowDto);
+    public void saveFlow(FlowMessage flowDto, User user) {
+        Flow flow = convert(flowDto, user);
         flowRepository.save(flow);
         LOGGER.info("Saved flow {}", flow);
     }
 
     @Override
-    public List<FlowDto> getAllFlows(String account) {
-        List<Flow> flows = flowRepository.findByAccount(account);
+    public List<FlowMessage> getAllFlows(User user) {
+        List<Flow> flows = flowRepository.findByUserId(user.getId());
         return flows.stream()
-                .map(FlowService::convert)
+                .map(f -> convert(f, user))
                 .toList();
     }
 
     @Override
-    public FlowDto findByUUID(String uuid) {
+    public FlowMessage findByUUID(String uuid) {
         Flow flow = flowRepository.findByUuid(uuid);
         if (flow != null) {
-            return convert(flow);
+            Optional<User> user = userRepository.findById(flow.getId());
+            if (user.isPresent()) {
+                return convert(flow, user.get());
+            }
         }
         return null;
     }
 
     @Override
-    public void deleteFlowWallet(String uuid, WalletDto walletDto) throws Exception {
+    public void deleteFlowWallet(String uuid, WalletMessage walletDto, User user) throws Exception {
         Flow flow = flowRepository.findByUuid(uuid);
-        if (flow != null) {
-            String network = walletDto.network();
-            String address = walletDto.address();
-
-            Optional<Wallet> walletOptional = flow.getWallets().stream()
-                    .filter(w -> w.getNetwork().equals(network) && w.getAddress().equals(address))
-                    .findFirst();
-            if (!walletOptional.isPresent()) {
-                return;
-            }
-
-            Wallet wallet = walletOptional.get();
-            // deleting smart wallets from flow doesn't make sense
-            if (wallet.isSmart()) {
-                throw new Exception("Not allowed!");
-            }
-
-            flow.getWallets().remove(wallet);
-
-            LOGGER.info("Removed wallet {} from flow {}", wallet, flow);
-        } else {
+        if (flow == null) {
             throw new Exception("Flow doesn't exist");
+        } else if (!flow.getUserId().equals(user.getId())) {
+            throw new Exception("Authenticated user mismatch");
         }
+
+        String network = walletDto.network();
+        String address = walletDto.address();
+
+        Optional<Wallet> walletOptional = flow.getWallets().stream()
+                .filter(w -> w.getNetwork().equals(network) && w.getAddress().equals(address))
+                .findFirst();
+        if (!walletOptional.isPresent()) {
+            return;
+        }
+
+        Wallet wallet = walletOptional.get();
+        // deleting smart wallets from flow doesn't make sense
+        if (wallet.isSmart()) {
+            throw new Exception("Not allowed!");
+        }
+
+        flow.getWallets().remove(wallet);
+
+        LOGGER.info("Removed wallet {} from flow {}", wallet, flow);
     }
 
     @Override
-    public void addFlowWallet(String uuid, WalletDto walletDto) throws Exception {
+    public void addFlowWallet(String uuid, WalletMessage walletDto, User user) throws Exception {
         Flow flow = flowRepository.findByUuid(uuid);
 
-        if (flow != null) {
-            Wallet wallet = convert(walletDto);
-
-            if (wallet.isSmart()) {
-                Account account = accountRepository.findByAddressAndNetwork(walletDto.master(),
-                        walletDto.network());
-                if (account != null) {
-                    wallet.setMaster(account);
-                    account.getWallets().add(wallet);
-                } else {
-                    throw new Exception("Account doesn't exist");
-                }
-            }
-
-            wallet.setFlow(flow);
-            flow.getWallets().add(wallet);
-
-            LOGGER.info("Added wallet {} to flow {}", wallet, flow);
-        } else {
+        if (flow == null) {
             throw new Exception("Flow doesn't exist");
+        } else if (!flow.getUserId().equals(user.getId())) {
+            throw new Exception("Authenticated user mismatch");
         }
+
+        Wallet wallet = convert(walletDto);
+
+        if (wallet.isSmart()) {
+            Account account = accountRepository.findByAddressAndNetwork(walletDto.master(),
+                    walletDto.network());
+            if (account != null) {
+                wallet.setMaster(account);
+                account.getWallets().add(wallet);
+            } else {
+                throw new Exception("Account doesn't exist");
+            }
+        }
+
+        wallet.setFlow(flow);
+        flow.getWallets().add(wallet);
+
+        LOGGER.info("Added wallet {} to flow {}", wallet, flow);
+
     }
 
-    private static FlowDto convert(Flow flow) {
-        List<WalletDto> wallets = flow.getWallets().stream().map(w -> convert(w))
+    private static FlowMessage convert(Flow flow, User user) {
+        List<WalletMessage> wallets = flow.getWallets().stream().map(w -> convert(w))
                 .toList();
-        return new FlowDto(flow.getAccount(), flow.getTitle(), flow.getDescription(), flow.getUUID(),
+        return new FlowMessage(user.getSigner(), flow.getTitle(), flow.getDescription(), flow.getUUID(),
                 wallets);
     }
 
-    private static Flow convert(FlowDto flowDto) {
-        Flow flow = new Flow(flowDto.account(), flowDto.title(), flowDto.description());
+    private static Flow convert(FlowMessage flowDto, User user) {
+        Flow flow = new Flow(user.getId(), flowDto.title(), flowDto.description());
         List<Wallet> wallets = flowDto.wallets().stream().map(w -> {
             Wallet wallet = convert(w);
             wallet.setFlow(flow);
@@ -125,14 +138,14 @@ public class FlowService implements IFlowService {
         return flow;
     }
 
-    private static Wallet convert(WalletDto walletDto) {
+    private static Wallet convert(WalletMessage walletDto) {
         return new Wallet(walletDto.address(), walletDto.network(), walletDto.smart());
     }
 
     // TODO: wallet.getMaster() != null redundant check, but since we have stale
     // date, let's keep it till next db wipe
-    private static WalletDto convert(Wallet wallet) {
-        return new WalletDto(wallet.getAddress(), wallet.getNetwork(), wallet.isSmart(),
+    private static WalletMessage convert(Wallet wallet) {
+        return new WalletMessage(wallet.getAddress(), wallet.getNetwork(), wallet.isSmart(),
                 wallet.isSmart() && wallet.getMaster() != null ? wallet.getMaster().getAddress() : null);
     }
 }

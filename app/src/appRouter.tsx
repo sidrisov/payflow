@@ -7,17 +7,16 @@ import Settings from './pages/Settings';
 
 import TopUp from './layouts/SendWithProviders';
 import Accounts from './pages/Accounts';
-import Login from './layouts/LoginWithProviders';
 import AppWithProviders from './layouts/AppWithProviders';
 
 export const appRoutes = ['/accounts', '/flows', '/requests', '/activity', '/settings'];
 
 export const appRouter = createBrowserRouter([
-  {
-    path: '/login',
-    element: <Login />,
-    errorElement: <Page404 />
-  },
+  /*   {
+      path: '/login',
+      element: <Login />,
+      errorElement: <Page404 />
+    }, */
   {
     path: '/',
     element: <AppWithProviders />,

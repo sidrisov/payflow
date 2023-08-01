@@ -25,8 +25,7 @@ import { cardBorderColours, ethPrice } from '../utils/constants';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 export default function Flows() {
-  const { isConnected, address } = useAccount();
-  const { walletBalances, setWalletBalances } = useContext(UserContext);
+  const { isAuthenticated, walletBalances, setWalletBalances } = useContext(UserContext);
   const { chains } = useNetwork();
 
   const [flows, setFlows] = useState([] as FlowType[]);
@@ -40,7 +39,7 @@ export default function Flows() {
   async function fetchFlows() {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows?account=${address}`,
+        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows`,
         { withCredentials: true }
       );
 
@@ -94,10 +93,10 @@ export default function Flows() {
   }
 
   useMemo(async () => {
-    if (isConnected) {
+    if (isAuthenticated) {
       fetchFlows();
     }
-  }, [isConnected]);
+  }, [isAuthenticated]);
 
   useMemo(async () => {
     if (flows && flows.length) {
@@ -120,7 +119,7 @@ export default function Flows() {
         <title> PayFlow | Flows </title>
       </Helmet>
       <Container>
-        {isConnected && (
+        {isAuthenticated && (
           <Box
             sx={{
               display: 'flex',

@@ -17,7 +17,7 @@ import axios from 'axios';
 
 const drawerWidth = 151;
 
-export default function AppLayout({ appSettings, setAppSettings }: any) {
+export default function AppLayout({ authStatus, authAccount, appSettings, setAppSettings }: any) {
   const { isConnected, address } = useAccount();
   const [walletBalances, setWalletBalances] = useState<Map<string, bigint>>(new Map());
   const [accounts, setAccounts] = useState<AccountType[]>();
@@ -26,6 +26,8 @@ export default function AppLayout({ appSettings, setAppSettings }: any) {
 
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const [isAuthenticated, setAuthenticated] = useState<boolean>(false);
+
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
@@ -33,7 +35,7 @@ export default function AppLayout({ appSettings, setAppSettings }: any) {
   async function fetchAccounts() {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/accounts?userId=${address}`,
+        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/accounts`,
         { withCredentials: true }
       );
 
@@ -42,6 +44,18 @@ export default function AppLayout({ appSettings, setAppSettings }: any) {
       console.log(error);
     }
   }
+
+  useMemo(async () => {
+    if (isConnected) {
+      if (authStatus === "authenticated" && authAccount === address) {
+        console.log("connected")
+        setAuthenticated(true);
+        return;
+      }
+    }
+    setAuthenticated(false);
+
+  }, [isConnected, address, authStatus, authAccount]);
 
   useMemo(async () => {
     if (initiateRefresh && accounts) {
@@ -54,7 +68,7 @@ export default function AppLayout({ appSettings, setAppSettings }: any) {
     if (isConnected) {
       fetchAccounts();
     }
-  }, [isConnected]);
+  }, [isAuthenticated]);
 
   useMemo(async () => {
     if (accounts) {
@@ -67,6 +81,7 @@ export default function AppLayout({ appSettings, setAppSettings }: any) {
     <CustomThemeProvider darkMode={appSettings.darkMode}>
       <UserContext.Provider
         value={{
+          isAuthenticated,
           appSettings,
           setAppSettings,
           accounts,

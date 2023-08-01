@@ -1,7 +1,8 @@
 package ua.sinaver.web3.data;
 
 import java.util.List;
-import java.util.UUID;
+
+import org.apache.commons.lang3.RandomStringUtils;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -16,14 +17,14 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
 @Entity
-@Table(indexes = @Index(columnList = "account"))
+@Table(indexes = { @Index(columnList = "userId"), @Index(columnList = "uuid") })
 public class Flow {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
     @Column
-    private String account;
+    private Integer userId;
 
     @Column
     private String title;
@@ -31,7 +32,7 @@ public class Flow {
     @Column
     private String description;
 
-    @Column(columnDefinition = "boolean")
+    @Column
     private boolean shareable;
 
     @Column
@@ -46,11 +47,11 @@ public class Flow {
     public Flow() {
     }
 
-    public Flow(String account, String title, String description) {
-        this.account = account;
+    public Flow(Integer userId, String title, String description) {
+        this.userId = userId;
         this.title = title;
         this.description = description;
-        this.uuid = UUID.randomUUID().toString();
+        this.uuid = RandomStringUtils.random(8, true, true);
     }
 
     public Integer getId() {
@@ -61,12 +62,12 @@ public class Flow {
         this.id = id;
     }
 
-    public String getAccount() {
-        return account;
+    public Integer getUserId() {
+        return userId;
     }
 
-    public void setAccount(String account) {
-        this.account = account;
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 
     public String getTitle() {
@@ -119,7 +120,7 @@ public class Flow {
 
     @Override
     public String toString() {
-        return "Flow [id=" + id + ", account=" + account + ", title=" + title + ", description=" + description
+        return "Flow [id=" + id + ", userId=" + userId + ", title=" + title + ", description=" + description
                 + ", shareable=" + shareable + ", uuid=" + uuid + ", wallets=" + wallets + "]";
     }
 

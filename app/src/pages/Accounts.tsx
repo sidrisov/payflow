@@ -1,7 +1,6 @@
 import { Box, Card, Container, IconButton, Typography } from '@mui/material';
 import { useContext, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useAccount } from 'wagmi';
 import AccountNewDialog from '../components/AccountNewDialog';
 import { smartAccountCompatibleChains } from '../utils/smartAccountCompatibleChains';
 import { AccountCard } from '../components/AccountCard';
@@ -9,9 +8,7 @@ import { UserContext } from '../contexts/UserContext';
 import { Add } from '@mui/icons-material';
 
 export default function Accounts() {
-  const { isConnected } = useAccount();
-
-  const { accounts, setInitiateRefresh } = useContext(UserContext);
+  const { isAuthenticated, accounts, setInitiateRefresh } = useContext(UserContext);
   const [availableNetworksToAddAccount, setAvailableNetworksToAddAccount] = useState<string[]>([]);
 
   const [openAccountCreate, setOpenAccountCreate] = useState(false);
@@ -33,7 +30,7 @@ export default function Accounts() {
         <title> PayFlow | Accounts </title>
       </Helmet>
       <Container>
-        {isConnected && (
+        {isAuthenticated && (
           <Box
             sx={{
               display: 'flex',

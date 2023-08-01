@@ -120,8 +120,8 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
       } as AccountType;
 
       const response = await axios.post(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/accounts?userId=${address}`,
-        account
+        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/accounts`,
+        account, { withCredentials: true }
       );
       console.log(response.status);
 

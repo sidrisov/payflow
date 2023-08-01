@@ -8,6 +8,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 
+import com.moonstoneid.siwe.error.SiweException;
+
+import ua.sinaver.web3.message.SiweMessage;
+
 @Component
 public class Web3AuthenticationProvider implements AuthenticationProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(Web3AuthenticationProvider.class);
@@ -17,14 +21,34 @@ public class Web3AuthenticationProvider implements AuthenticationProvider {
         if (authentication.getPrincipal() == null) {
             throw new BadCredentialsException("Wrong Credentials");
         }
-        LOGGER.info("auth before {}", authentication);
-        Web3Authentication authenticated = new Web3Authentication(authentication.getPrincipal().toString(),
-                authentication.getCredentials().toString());
-        authenticated.setAuthenticated(true);
 
-        LOGGER.info("auth before {}", authenticated);
+        LOGGER.debug("Auth before verification {}", authentication);
 
-        return authenticated;
+        SiweMessage siweMessage = (SiweMessage) authentication.getDetails();
+        try {
+            // Verify integrity of SiweMessage by matching its signature
+            // Create new SiweMessage
+            com.moonstoneid.siwe.SiweMessage siwe = new com.moonstoneid.siwe.SiweMessage.Builder(siweMessage.domain(),
+                    siweMessage.address(), siweMessage.uri(), siweMessage.version(), siweMessage.chainId(),
+                    siweMessage.nonce(), siweMessage.issuedAt())
+                    .requestId(siweMessage.requestId())
+                    .notBefore(siweMessage.notBefore())
+                    .expirationTime(siweMessage.expirationTime())
+                    .statement(siweMessage.statement())
+                    .resources(siweMessage.resources()).build();
+            String signature = (String) authentication.getCredentials();
+
+            // TODO: skip domain and nonce verification for now, read more about domain!
+            siwe.verify(siwe.getDomain(), siwe.getNonce(), signature);
+            authentication.setAuthenticated(true);
+        } catch (SiweException e) {
+            LOGGER.error("Siwe verification failure", e);
+            authentication.setAuthenticated(false);
+        }
+
+        LOGGER.debug("Auth after verification {}", authentication);
+
+        return authentication;
     }
 
     @Override

@@ -2,17 +2,18 @@ package ua.sinaver.web3.service;
 
 import java.util.List;
 
-import ua.sinaver.web3.dto.FlowDto;
-import ua.sinaver.web3.dto.WalletDto;
+import ua.sinaver.web3.data.User;
+import ua.sinaver.web3.message.FlowMessage;
+import ua.sinaver.web3.message.WalletMessage;
 
 public interface IFlowService {
-    void saveFlow(FlowDto flowDto);
+    void saveFlow(FlowMessage flowDto, User user);
 
-    List<FlowDto> getAllFlows(String account);
+    List<FlowMessage> getAllFlows(User user);
 
-    FlowDto findByUUID(String uuid);
+    FlowMessage findByUUID(String uuid);
 
-    void addFlowWallet(String uuid, WalletDto wallet) throws Exception;
+    void addFlowWallet(String uuid, WalletMessage wallet, User user) throws Exception;
 
-    void deleteFlowWallet(String uuid, WalletDto wallet) throws Exception;
+    void deleteFlowWallet(String uuid, WalletMessage wallet, User user) throws Exception;
 }
