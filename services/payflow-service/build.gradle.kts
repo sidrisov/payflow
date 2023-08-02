@@ -4,6 +4,7 @@ plugins {
 	application
 	id("org.springframework.boot") version "3.1.2"
 	id("io.spring.dependency-management") version "1.1.2"
+	id("io.freefair.lombok") version "8.1.0"
 }
 
 application {
@@ -51,6 +52,9 @@ dependencies {
 	//siwe
 	// TODO: it's ok to use as long as we're not in production
 	implementation("com.moonstoneid:siwe-java:1.0.2")
+
+	//lombok
+	compileOnly("org.projectlombok:lombok")
 
 	developmentOnly ("org.springframework.boot:spring-boot-devtools")
 }

@@ -1,7 +1,5 @@
 package ua.sinaver.web3.auth;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
@@ -10,11 +8,12 @@ import org.springframework.stereotype.Component;
 
 import com.moonstoneid.siwe.error.SiweException;
 
+import lombok.extern.slf4j.Slf4j;
 import ua.sinaver.web3.message.SiweMessage;
 
+@Slf4j
 @Component
 public class Web3AuthenticationProvider implements AuthenticationProvider {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Web3AuthenticationProvider.class);
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -22,7 +21,7 @@ public class Web3AuthenticationProvider implements AuthenticationProvider {
             throw new BadCredentialsException("Wrong Credentials");
         }
 
-        LOGGER.debug("Auth before verification {}", authentication);
+        log.debug("Auth before verification {}", authentication);
 
         SiweMessage siweMessage = (SiweMessage) authentication.getDetails();
         try {
@@ -42,11 +41,11 @@ public class Web3AuthenticationProvider implements AuthenticationProvider {
             siwe.verify(siwe.getDomain(), siwe.getNonce(), signature);
             authentication.setAuthenticated(true);
         } catch (SiweException e) {
-            LOGGER.error("Siwe verification failure", e);
+            log.error("Siwe verification failure", e);
             authentication.setAuthenticated(false);
         }
 
-        LOGGER.debug("Auth after verification {}", authentication);
+        log.debug("Auth after verification {}", authentication);
 
         return authentication;
     }

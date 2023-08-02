@@ -3,12 +3,12 @@ package ua.sinaver.web3.service;
 import java.util.List;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 import ua.sinaver.web3.data.Account;
 import ua.sinaver.web3.data.Flow;
 import ua.sinaver.web3.data.User;
@@ -19,11 +19,10 @@ import ua.sinaver.web3.repository.FlowRepository;
 import ua.sinaver.web3.repository.UserRepository;
 import ua.sinaver.web3.repository.AccountRepository;
 
+@Slf4j
 @Service
 @Transactional
 public class FlowService implements IFlowService {
-    public static final Logger LOGGER = LoggerFactory.getLogger(FlowService.class);
-
     @Autowired
     private FlowRepository flowRepository;
 
@@ -35,14 +34,14 @@ public class FlowService implements IFlowService {
 
     @Override
     public void saveFlow(FlowMessage flowDto, User user) {
-        Flow flow = convert(flowDto, user);
+        val flow = convert(flowDto, user);
         flowRepository.save(flow);
-        LOGGER.info("Saved flow {}", flow);
+        log.info("Saved flow {}", flow);
     }
 
     @Override
     public List<FlowMessage> getAllFlows(User user) {
-        List<Flow> flows = flowRepository.findByUserId(user.getId());
+        val flows = flowRepository.findByUserId(user.getId());
         return flows.stream()
                 .map(f -> convert(f, user))
                 .toList();
@@ -50,7 +49,7 @@ public class FlowService implements IFlowService {
 
     @Override
     public FlowMessage findByUUID(String uuid) {
-        Flow flow = flowRepository.findByUuid(uuid);
+        val flow = flowRepository.findByUuid(uuid);
         if (flow != null) {
             Optional<User> user = userRepository.findById(flow.getId());
             if (user.isPresent()) {
@@ -62,24 +61,24 @@ public class FlowService implements IFlowService {
 
     @Override
     public void deleteFlowWallet(String uuid, WalletMessage walletDto, User user) throws Exception {
-        Flow flow = flowRepository.findByUuid(uuid);
+        val flow = flowRepository.findByUuid(uuid);
         if (flow == null) {
             throw new Exception("Flow doesn't exist");
         } else if (!flow.getUserId().equals(user.getId())) {
             throw new Exception("Authenticated user mismatch");
         }
 
-        String network = walletDto.network();
-        String address = walletDto.address();
+        val network = walletDto.network();
+        val address = walletDto.address();
 
-        Optional<Wallet> walletOptional = flow.getWallets().stream()
+        val walletOptional = flow.getWallets().stream()
                 .filter(w -> w.getNetwork().equals(network) && w.getAddress().equals(address))
                 .findFirst();
         if (!walletOptional.isPresent()) {
             return;
         }
 
-        Wallet wallet = walletOptional.get();
+        val wallet = walletOptional.get();
         // deleting smart wallets from flow doesn't make sense
         if (wallet.isSmart()) {
             throw new Exception("Not allowed!");
@@ -87,21 +86,19 @@ public class FlowService implements IFlowService {
 
         flow.getWallets().remove(wallet);
 
-        LOGGER.info("Removed wallet {} from flow {}", wallet, flow);
+        log.info("Removed wallet {} from flow {}", wallet, flow);
     }
 
     @Override
     public void addFlowWallet(String uuid, WalletMessage walletDto, User user) throws Exception {
-        Flow flow = flowRepository.findByUuid(uuid);
-
+        val flow = flowRepository.findByUuid(uuid);
         if (flow == null) {
             throw new Exception("Flow doesn't exist");
         } else if (!flow.getUserId().equals(user.getId())) {
             throw new Exception("Authenticated user mismatch");
         }
 
-        Wallet wallet = convert(walletDto);
-
+        val wallet = convert(walletDto);
         if (wallet.isSmart()) {
             Account account = accountRepository.findByAddressAndNetwork(walletDto.master(),
                     walletDto.network());
@@ -116,21 +113,21 @@ public class FlowService implements IFlowService {
         wallet.setFlow(flow);
         flow.getWallets().add(wallet);
 
-        LOGGER.info("Added wallet {} to flow {}", wallet, flow);
+        log.info("Added wallet {} to flow {}", wallet, flow);
 
     }
 
     private static FlowMessage convert(Flow flow, User user) {
-        List<WalletMessage> wallets = flow.getWallets().stream().map(w -> convert(w))
+        val wallets = flow.getWallets().stream().map(w -> convert(w))
                 .toList();
-        return new FlowMessage(user.getSigner(), flow.getTitle(), flow.getDescription(), flow.getUUID(),
+        return new FlowMessage(user.getSigner(), flow.getTitle(), flow.getDescription(), flow.getUuid(),
                 wallets);
     }
 
     private static Flow convert(FlowMessage flowDto, User user) {
-        Flow flow = new Flow(user.getId(), flowDto.title(), flowDto.description());
-        List<Wallet> wallets = flowDto.wallets().stream().map(w -> {
-            Wallet wallet = convert(w);
+        val flow = new Flow(user.getId(), flowDto.title(), flowDto.description());
+        val wallets = flowDto.wallets().stream().map(w -> {
+            val wallet = convert(w);
             wallet.setFlow(flow);
             return wallet;
         }).toList();

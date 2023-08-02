@@ -14,7 +14,15 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
+@ToString
+@Setter
+@Getter
+@NoArgsConstructor
 @Entity
 @Table(indexes = @Index(columnList = "userId"), uniqueConstraints = {
         @UniqueConstraint(columnNames = { "network", "address" }) })
@@ -38,66 +46,9 @@ public class Account {
     @Version
     private Long version;
 
-    public Account() {
-    }
-
     public Account(Integer userId, String address, String network) {
         this.userId = userId;
         this.address = address;
         this.network = network;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Integer getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getNetwork() {
-        return network;
-    }
-
-    public void setNetwork(String network) {
-        this.network = network;
-    }
-
-    public List<Wallet> getWallets() {
-        return wallets;
-    }
-
-    public void setWallets(List<Wallet> wallets) {
-        this.wallets = wallets;
-    }
-
-    public Long getVersion() {
-        return version;
-    }
-
-    public void setVersion(Long version) {
-        this.version = version;
-    }
-
-    @Override
-    public String toString() {
-        return "Account [id=" + id + ", userId=" + userId + ", address=" + address + ", network=" + network
-                + ", wallets=" + wallets + "]";
     }
 }

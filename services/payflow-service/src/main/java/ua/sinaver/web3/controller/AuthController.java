@@ -1,13 +1,10 @@
 package ua.sinaver.web3.controller;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,8 +17,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 import ua.sinaver.web3.auth.Web3Authentication;
-import ua.sinaver.web3.data.User;
 import ua.sinaver.web3.message.SiweChallengeMessage;
 import ua.sinaver.web3.service.IUserService;
 
@@ -29,9 +27,8 @@ import ua.sinaver.web3.service.IUserService;
 @RequestMapping("/auth")
 @CrossOrigin(origins = "${dapp.url}", allowCredentials = "true")
 @Transactional
+@Slf4j
 public class AuthController {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
 
     @Autowired
     private AuthenticationManager authManager;
@@ -41,7 +38,7 @@ public class AuthController {
 
     @GetMapping("/nonce")
     public String nonce(HttpSession session) {
-        String nonce = RandomStringUtils.random(10, true, true);
+        val nonce = RandomStringUtils.random(10, true, true);
         session.setAttribute("nonce", nonce);
         return nonce;
     }
@@ -49,17 +46,17 @@ public class AuthController {
     @PostMapping("/verify")
     public ResponseEntity<String> verify(@RequestBody SiweChallengeMessage siwe, HttpServletRequest request,
             HttpServletResponse response, HttpSession session) {
-        LOGGER.debug("Siwe Challenge Request: {}", siwe);
+        log.debug("Siwe Challenge Request: {}", siwe);
 
-        String sessionNonce = (String) session.getAttribute("nonce");
-        LOGGER.debug("nonce from session {}", sessionNonce);
+        val sessionNonce = (String) session.getAttribute("nonce");
+        log.debug("nonce from session {}", sessionNonce);
 
         // check if nonce match with previosly generated for this session
         if (sessionNonce == null || !siwe.message().nonce().equals(sessionNonce)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        Authentication authentication = authManager.authenticate(
+        val authentication = authManager.authenticate(
                 new Web3Authentication(siwe.message(), siwe.signature()));
 
         if (authentication.isAuthenticated()) {
@@ -70,8 +67,8 @@ public class AuthController {
             session.removeAttribute("nonce");
 
             // create a user if not exist
-            String signer = authentication.getPrincipal().toString();
-            User user = userService.findUser(signer);
+            val signer = authentication.getPrincipal().toString();
+            val user = userService.findUser(signer);
             if (user == null) {
                 userService.saveUser(signer, signer);
             }

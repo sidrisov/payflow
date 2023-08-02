@@ -3,8 +3,6 @@ package ua.sinaver.web3.controller;
 import java.security.Principal;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -18,7 +16,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.transaction.Transactional;
-import ua.sinaver.web3.data.User;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 import ua.sinaver.web3.message.FlowMessage;
 import ua.sinaver.web3.message.WalletMessage;
 import ua.sinaver.web3.service.IFlowService;
@@ -29,9 +28,8 @@ import ua.sinaver.web3.service.IUserService;
 @RequestMapping("/flows")
 @CrossOrigin(origins = "${dapp.url}", allowCredentials = "true")
 @Transactional
+@Slf4j
 class FlowController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FlowController.class);
-
     @Autowired
     private IUserService userService;
 
@@ -41,7 +39,7 @@ class FlowController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void createFlow(@RequestBody FlowMessage flow, Principal principal) throws Exception {
-        User user = userService.findUser(principal.getName());
+        val user = userService.findUser(principal.getName());
         if (user == null) {
             throw new Exception("User doesn't exist: " + principal.getName());
         }
@@ -51,7 +49,7 @@ class FlowController {
 
     @GetMapping
     public List<FlowMessage> getAllFlowsForAccount(Principal principal) throws Exception {
-        User user = userService.findUser(principal.getName());
+        val user = userService.findUser(principal.getName());
         if (user == null) {
             throw new Exception("User doesn't exist: " + principal.getName());
         }
@@ -68,19 +66,19 @@ class FlowController {
     @ResponseStatus(HttpStatus.CREATED)
     public void addFlowWallet(@PathVariable String uuid, @RequestBody WalletMessage wallet, Principal principal)
             throws Exception {
-        User user = userService.findUser(principal.getName());
+        val user = userService.findUser(principal.getName());
         if (user == null) {
             throw new Exception("User doesn't exist: " + principal.getName());
         }
 
-        LOGGER.debug("addFlowWallet() {} {}", uuid, wallet);
+        log.debug("addFlowWallet() {} {}", uuid, wallet);
         flowService.addFlowWallet(uuid, wallet, user);
     }
 
     @DeleteMapping("/{uuid}/wallet")
     public void deleteFLowWallet(@PathVariable String uuid, @RequestBody WalletMessage wallet, Principal principal)
             throws Exception {
-        User user = userService.findUser(principal.getName());
+        val user = userService.findUser(principal.getName());
         if (user == null) {
             throw new Exception("User doesn't exist: " + principal.getName());
         }
