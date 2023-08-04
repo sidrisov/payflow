@@ -16,7 +16,7 @@ import {
 import { rainbowWeb3AuthConnector } from '../utils/web3AuthConnector';
 
 import { Address, configureChains, createConfig, WagmiConfig } from 'wagmi';
-import { optimismGoerli, mainnet, zkSyncTestnet, baseGoerli } from 'wagmi/chains';
+import { optimismGoerli, mainnet, zkSyncTestnet, baseGoerli, zoraTestnet, optimism } from 'wagmi/chains';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 import { useMediaQuery } from '@mui/material';
@@ -30,7 +30,7 @@ const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 const AUTH_URL = import.meta.env.VITE_PAYFLOW_SERVICE_API_URL;
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [zkSyncTestnet, optimismGoerli, baseGoerli, mainnet],
+  [optimismGoerli, baseGoerli, zoraTestnet, zkSyncTestnet, optimism, mainnet],
   [alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }), publicProvider()]
 );
 

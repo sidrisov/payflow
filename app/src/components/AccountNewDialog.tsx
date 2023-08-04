@@ -31,6 +31,12 @@ import create2Address from '../utils/create2Address';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { AccountType } from '../types/AccountType';
+import { useEthersSigner } from '../utils/hooks/useEthersSigner';
+
+import { ethers } from 'ethers';
+import { SafeAccountConfig } from '@safe-global/protocol-kit';
+import { SafeFactory } from '@safe-global/protocol-kit';
+import { EthersAdapter } from '@safe-global/protocol-kit';
 
 export type AccountNewDialogProps = DialogProps &
   CloseCallbackType & {
@@ -38,26 +44,34 @@ export type AccountNewDialogProps = DialogProps &
   };
 
 const ZKSYNC_AA_FACTORY_ADDRESS = import.meta.env.VITE_ZKSYNC_MASTER_PAYFLOW_FACTORY_ADDRESS;
-const ZKSYNC_CREATE2_SALT_IV = import.meta.env.VITE_ZKSYNC_CREATE2_SALT_IV;
+const ACCOUNT_CREATE2_SALT_IV = import.meta.env.VITE_ACCOUNT_CREATE2_SALT_IV;
 export default function FlowNewDialog({ closeStateCallback, ...props }: AccountNewDialogProps) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const publicClient = usePublicClient();
+  const ethersSigner = useEthersSigner();
+
   const { address } = useAccount();
   const { chains, switchNetwork } = useSwitchNetwork();
 
-  const flowSalt = address ? keccak256(toHex(ZKSYNC_CREATE2_SALT_IV.concat(address))) : undefined;
+  const saltNonce = address ? keccak256(toHex(ACCOUNT_CREATE2_SALT_IV.concat(address))) : undefined;
 
-  const [newAccountAddress, setNewAccountAddress] = useState('');
-  const [newAccountNetwork, setNewAccountNetwork] = useState('');
+  const [newAccountAddress, setNewAccountAddress] = useState<string>();
+  const [newAccountNetwork, setNewAccountNetwork] = useState<string>();
+
+  const [isZkSyncNetwork, setZkSyncNetwork] = useState<boolean | undefined>();
+  const [deployable, setDeployable] = useState<boolean>(false);
+  const [deployed] = useState<boolean>(
+    newAccountNetwork !== undefined && newAccountAddress !== undefined
+  );
 
   const { config } = usePrepareContractWrite({
-    enabled: newAccountNetwork.length > 0,
+    enabled: newAccountNetwork !== undefined,
     address: ZKSYNC_AA_FACTORY_ADDRESS,
     abi: PayFlowMasterFactoryArtifact.abi,
     functionName: 'deployAccount',
-    args: [flowSalt, address, address],
+    args: [saltNonce, address, address],
     chainId: chains.find((c) => c.name === newAccountNetwork)?.id
   });
   const { isSuccess, data, write } = useContractWrite(config);
@@ -65,7 +79,48 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
   const [txHash, setTxHash] = useState<Hash>();
 
   useMemo(async () => {
-    if (isSuccess && address && flowSalt) {
+    setZkSyncNetwork(
+      newAccountNetwork
+        ? chains.find((c) => c.name === newAccountNetwork)?.id === zkSyncTestnet.id
+        : undefined
+    );
+  }, [newAccountNetwork]);
+
+  useMemo(async () => {
+    setDeployable(
+      isZkSyncNetwork !== undefined && (isZkSyncNetwork === false || write !== undefined)
+    );
+  }, [isZkSyncNetwork, write]);
+
+  async function deployNewAccount() {
+    if (isZkSyncNetwork) {
+      write?.();
+    } else {
+      if (ethersSigner) {
+        const ethAdapter = new EthersAdapter({
+          ethers,
+          signerOrProvider: ethersSigner
+        });
+
+        // TODO: update to safeVersion: "1.4.1" (AA compatible once Safe deploys relevant contracts)
+        const safeFactory = await SafeFactory.create({ ethAdapter });
+
+        const safeAccountConfig: SafeAccountConfig = {
+          owners: [address as string],
+          threshold: 1
+        };
+
+        const safeSdkOwner = await safeFactory.deploySafe({ safeAccountConfig, saltNonce });
+        const safeAddress = await safeSdkOwner.getAddress();
+
+        setNewAccountAddress(safeAddress);
+      }
+    }
+  }
+
+  // handle zkSync account deployment
+  useMemo(async () => {
+    if (isSuccess && address && saltNonce) {
       const encodedData = encodeAbiParameters(parseAbiParameters('address, address'), [
         address as `0x${string}`,
         address as `0x${string}`
@@ -81,11 +136,9 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
       const playFlowAddress = create2Address(
         ZKSYNC_AA_FACTORY_ADDRESS,
         playFlowContractHash,
-        flowSalt,
+        saltNonce,
         encodedData
       );
-
-      console.log(playFlowAddress);
 
       setNewAccountAddress(playFlowAddress);
       setTxHash(data?.hash);
@@ -98,8 +151,6 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
       const receipt = await publicClient.waitForTransactionReceipt({
         hash: txHash
       });
-
-      console.log('Receipt: ', receipt);
 
       if (receipt) {
         if (receipt.status === 'success') {
@@ -114,14 +165,16 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
   async function submitAccount() {
     try {
       const account = {
-        userId: address,
         address: newAccountAddress,
-        network: newAccountNetwork
+        network: newAccountNetwork,
+        // decide based on network, since other than zkSync all other support Safe
+        safe: isZkSyncNetwork
       } as AccountType;
 
       const response = await axios.post(
         `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/accounts`,
-        account, { withCredentials: true }
+        account,
+        { withCredentials: true }
       );
       console.log(response.status);
 
@@ -135,8 +188,8 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
   }
 
   function handleCloseCampaignDialog() {
-    setNewAccountNetwork('');
-    setNewAccountAddress('');
+    setNewAccountNetwork(undefined);
+    setNewAccountAddress(undefined);
     closeStateCallback();
   }
 
@@ -185,14 +238,14 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
           {newAccountNetwork && (
             <Button
               fullWidth
-              disabled={!write}
+              disabled={!deployable}
               variant="outlined"
               size="large"
               color="primary"
               sx={{ borderRadius: 3 }}
               endIcon={<AutoFixHigh />}
               onClick={async () => {
-                write?.();
+                await deployNewAccount();
               }}>
               Create PayFlow Account
             </Button>
@@ -201,7 +254,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
 
           <Button
             fullWidth
-            disabled={!newAccountNetwork || !newAccountAddress}
+            disabled={!deployed}
             variant="outlined"
             size="large"
             color="primary"

@@ -75,7 +75,13 @@ export default function Accounts() {
                 </IconButton>
               </Card>
             )}
-            {accounts && accounts.map((account) => <AccountCard account={account} />)}
+            {accounts &&
+              accounts.map((account) => (
+                <AccountCard
+                  key={`account_card_${account.address}_${account.network}`}
+                  account={account}
+                />
+              ))}
           </Box>
         )}
       </Container>

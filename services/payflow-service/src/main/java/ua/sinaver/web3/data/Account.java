@@ -40,15 +40,21 @@ public class Account {
     @Column
     private String network;
 
+    // TODO: in future we might have more metadata on the wallet impl, for now, just
+    // differentiate if it's safe or not based
+    @Column(columnDefinition = "boolean")
+    private boolean safe;
+
     @OneToMany(mappedBy = "master", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Wallet> wallets;
 
     @Version
     private Long version;
 
-    public Account(Integer userId, String address, String network) {
+    public Account(Integer userId, String address, String network, boolean safe) {
         this.userId = userId;
         this.address = address;
         this.network = network;
+        this.safe = safe;
     }
 }

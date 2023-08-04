@@ -28,7 +28,7 @@ public class User {
     @Column
     private String username;
 
-    @Column
+    @Column(columnDefinition = "boolean")
     private boolean locked;
 
     @Column

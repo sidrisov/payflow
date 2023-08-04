@@ -8,16 +8,10 @@ import {
   Stack,
   Typography
 } from '@mui/material';
-import { cardBorderColours, ethPrice } from '../utils/constants';
+import { cardBorderColours, ethPrice, networks } from '../utils/constants';
 import { AccountType } from '../types/AccountType';
 import { shortenWalletAddressLabel } from '../utils/address';
-import {
-  Receipt,
-  ContentCopy,
-  ArrowDownward,
-  Send,
-  SwapHoriz
-} from '@mui/icons-material';
+import { Receipt, ContentCopy, ArrowDownward, Send, SwapHoriz } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { copyToClipboard } from '../utils/copyToClipboard';
 import { useState } from 'react';
@@ -31,6 +25,7 @@ export type AccountNewDialogProps = CardProps & {
 };
 
 const colorTheme = cardBorderColours[(cardBorderColours.length * Math.random()) | 0];
+
 export function AccountCard(props: AccountNewDialogProps) {
   const { account } = props;
   const [openAddressQRCode, setOpenAddressQRCode] = useState(false);
@@ -41,9 +36,12 @@ export function AccountCard(props: AccountNewDialogProps) {
     chainId: chains.find((c) => c?.name === account.network)?.id
   });
 
+  const networkShortName = networks.find(
+    (n) => n.chainId === chains.find((c) => c.name === account.network)?.id
+  )?.shortName;
+
   return (
     <Card
-      key={`account_card_${account.address}_${account.network}`}
       elevation={10}
       sx={{
         m: 2,
@@ -64,6 +62,13 @@ export function AccountCard(props: AccountNewDialogProps) {
         </Stack>
 
         <Stack spacing={1} direction="row" alignItems="center">
+          {account.safe && (
+            <a
+              href={`https://app.safe.global/home?safe=${networkShortName}:${account.address}`}
+              target="_blank">
+              <Avatar src="/safe.png" sx={{ width: 16, height: 16 }} />
+            </a>
+          )}
           <Typography sx={{ fontSize: 15, fontWeight: 'bold' }}>
             {shortenWalletAddressLabel(account.address)}
           </Typography>

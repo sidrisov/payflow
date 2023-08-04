@@ -40,7 +40,7 @@ public class Flow {
     @Column
     private String description;
 
-    @Column
+    @Column(columnDefinition = "boolean")
     private boolean shareable;
 
     @Column

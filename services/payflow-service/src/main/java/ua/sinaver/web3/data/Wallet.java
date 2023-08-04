@@ -31,7 +31,7 @@ public class Wallet {
     @Column
     private String network;
 
-    @Column
+    @Column(columnDefinition = "boolean")
     private boolean smart;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

@@ -3,13 +3,13 @@ import Send from './Send';
 import '@rainbow-me/rainbowkit/styles.css';
 import 'react-toastify/dist/ReactToastify.css';
 
-
 import {
   connectorsForWallets,
   getDefaultWallets,
-  RainbowKitProvider} from '@rainbow-me/rainbowkit';
+  RainbowKitProvider
+} from '@rainbow-me/rainbowkit';
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
-import { optimismGoerli, mainnet, zkSyncTestnet, baseGoerli } from 'wagmi/chains';
+import { optimismGoerli, mainnet, zkSyncTestnet, baseGoerli, zoraTestnet, optimism } from 'wagmi/chains';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 import { useMediaQuery } from '@mui/material';
@@ -20,7 +20,7 @@ import { CustomAvatar } from '../components/CustomAvatar';
 import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [zkSyncTestnet, optimismGoerli, baseGoerli, mainnet],
+  [optimismGoerli, baseGoerli, zoraTestnet, zkSyncTestnet, optimism, mainnet],
   [alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }), publicProvider()]
 );
 

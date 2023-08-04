@@ -40,11 +40,11 @@ public class AccountService implements IAccountService {
          * List<WalletDto> wallets = account.getWallets().stream().map(w -> convert(w))
          * .toList();
          */
-        return new AccountMessage(account.getAddress(), account.getNetwork());
+        return new AccountMessage(account.getAddress(), account.getNetwork(), account.isSafe());
     }
 
     private static Account convert(AccountMessage accountDto, User user) {
-        val account = new Account(user.getId(), accountDto.address(), accountDto.network());
+        val account = new Account(user.getId(), accountDto.address(), accountDto.network(), accountDto.safe());
         /*
          * List<Wallet> wallets = accountDto.wallets().stream().map(w -> {
          * Wallet wallet = convert(w);

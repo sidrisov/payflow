@@ -17,13 +17,23 @@ import {
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useMemo, useState } from 'react';
-import { Address, WalletClient, usePublicClient, useSwitchNetwork, useWalletClient } from 'wagmi';
+import {
+  Address,
+  WalletClient,
+  usePublicClient,
+  useSwitchNetwork,
+  useWalletClient
+} from 'wagmi';
 import { ContentCopy, ExpandMore } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { copyToClipboard } from '../utils/copyToClipboard';
 
 import { Hash, TransactionReceipt, parseEther } from 'viem';
 import { transferEth } from '../utils/zkSyncTransactions';
+import { zkSyncTestnet } from 'wagmi/chains';
+
+import { useEthersSigner } from '../utils/hooks/useEthersSigner';
+import { safeTransferEth } from '../utils/safeTransactions';
 
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
@@ -46,6 +56,7 @@ export default function AccountSendDialog({
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
+  const ethersSigner = useEthersSigner();
 
   const { chains, switchNetwork } = useSwitchNetwork();
 
@@ -54,12 +65,24 @@ export default function AccountSendDialog({
   const sendTransaction = async () => {
     if (sendToAddress && sendAmount) {
       switchNetwork?.(chains.find((c) => c?.name === network)?.id);
+
       const txData = {
         from,
         to: sendToAddress,
         amount: sendAmount
       };
-      const txHash = await transferEth(walletClient as WalletClient, txData);
+
+      let txHash;
+
+      if (chains.find((c) => c?.name === network)?.id === zkSyncTestnet.id) {
+        txHash = await transferEth(walletClient as WalletClient, txData);
+      } else {
+        if (ethersSigner) {
+          txHash = await safeTransferEth(ethersSigner, txData);
+        } else {
+          toast.error('Failed to execute transaction!');
+        }
+      }
       setTxHash(txHash);
     }
   };
@@ -75,9 +98,9 @@ export default function AccountSendDialog({
 
       if (receipt) {
         if ((receipt as TransactionReceipt).status === 'success') {
-          toast.success(`Sendal from ${from} to ${sendToAddress} was successfully processed!`);
+          toast.success(`Transfer from ${from} to ${sendToAddress} was successfully processed!`);
         } else {
-          toast.error(`Sendal from ${from} to ${sendToAddress} failed!`);
+          toast.error(`Transfer from ${from} to ${sendToAddress} failed!`);
         }
         handleCloseCampaignDialog();
       }
