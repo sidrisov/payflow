@@ -9,7 +9,15 @@ import {
   RainbowKitProvider
 } from '@rainbow-me/rainbowkit';
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
-import { optimismGoerli, mainnet, zkSyncTestnet, baseGoerli, zoraTestnet, optimism } from 'wagmi/chains';
+import {
+  optimismGoerli,
+  mainnet,
+  zkSyncTestnet,
+  baseGoerli,
+  zoraTestnet,
+  optimism,
+  base
+} from 'wagmi/chains';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 import { useMediaQuery } from '@mui/material';
@@ -20,7 +28,7 @@ import { CustomAvatar } from '../components/CustomAvatar';
 import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [optimismGoerli, baseGoerli, zoraTestnet, zkSyncTestnet, optimism, mainnet],
+  [optimismGoerli, baseGoerli, zoraTestnet, zkSyncTestnet, optimism, base, mainnet],
   [alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }), publicProvider()]
 );
 

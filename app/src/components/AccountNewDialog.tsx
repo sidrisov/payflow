@@ -33,10 +33,8 @@ import axios from 'axios';
 import { AccountType } from '../types/AccountType';
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 
-import { ethers } from 'ethers';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
-import { SafeFactory } from '@safe-global/protocol-kit';
-import { EthersAdapter } from '@safe-global/protocol-kit';
+import { safeDeploy } from '../utils/safeTransactions';
 
 export type AccountNewDialogProps = DialogProps &
   CloseCallbackType & {
@@ -62,9 +60,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
 
   const [isZkSyncNetwork, setZkSyncNetwork] = useState<boolean | undefined>();
   const [deployable, setDeployable] = useState<boolean>(false);
-  const [deployed] = useState<boolean>(
-    newAccountNetwork !== undefined && newAccountAddress !== undefined
-  );
+  const [deployed, setDeployed] = useState<boolean>();
 
   const { config } = usePrepareContractWrite({
     enabled: newAccountNetwork !== undefined,
@@ -77,6 +73,15 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
   const { isSuccess, data, write } = useContractWrite(config);
 
   const [txHash, setTxHash] = useState<Hash>();
+
+  const safeDeployCallback = (txHash: string | undefined): void => {
+    if (!txHash) {
+      toast.error('Returned Tx Hash with error!');
+      return;
+    }
+    console.log({ txHash });
+    setTxHash(txHash as Hash);
+  };
 
   useMemo(async () => {
     setZkSyncNetwork(
@@ -92,26 +97,27 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
     );
   }, [isZkSyncNetwork, write]);
 
+  useMemo(async () => {
+    setDeployed(newAccountNetwork !== undefined && newAccountAddress !== undefined);
+  }, [newAccountNetwork, newAccountAddress]);
+
   async function deployNewAccount() {
     if (isZkSyncNetwork) {
       write?.();
     } else {
-      if (ethersSigner) {
-        const ethAdapter = new EthersAdapter({
-          ethers,
-          signerOrProvider: ethersSigner
-        });
-
-        // TODO: update to safeVersion: "1.4.1" (AA compatible once Safe deploys relevant contracts)
-        const safeFactory = await SafeFactory.create({ ethAdapter });
-
+      if (ethersSigner && saltNonce) {
         const safeAccountConfig: SafeAccountConfig = {
           owners: [address as string],
           threshold: 1
         };
 
-        const safeSdkOwner = await safeFactory.deploySafe({ safeAccountConfig, saltNonce });
-        const safeAddress = await safeSdkOwner.getAddress();
+        const safeAddress = await safeDeploy({
+          ethersSigner,
+          safeAccountConfig,
+          saltNonce,
+          sponsored: true,
+          callback: safeDeployCallback
+        });
 
         setNewAccountAddress(safeAddress);
       }
@@ -168,7 +174,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
         address: newAccountAddress,
         network: newAccountNetwork,
         // decide based on network, since other than zkSync all other support Safe
-        safe: isZkSyncNetwork
+        safe: !isZkSyncNetwork
       } as AccountType;
 
       const response = await axios.post(

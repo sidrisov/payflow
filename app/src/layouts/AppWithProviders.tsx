@@ -3,7 +3,6 @@ import App from './App';
 import '@rainbow-me/rainbowkit/styles.css';
 import 'react-toastify/dist/ReactToastify.css';
 
-
 import {
   AuthenticationStatus,
   connectorsForWallets,
@@ -16,7 +15,15 @@ import {
 import { rainbowWeb3AuthConnector } from '../utils/web3AuthConnector';
 
 import { Address, configureChains, createConfig, WagmiConfig } from 'wagmi';
-import { optimismGoerli, mainnet, zkSyncTestnet, baseGoerli, zoraTestnet, optimism } from 'wagmi/chains';
+import {
+  optimismGoerli,
+  mainnet,
+  zkSyncTestnet,
+  baseGoerli,
+  zoraTestnet,
+  optimism,
+  base
+} from 'wagmi/chains';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 import { useMediaQuery } from '@mui/material';
@@ -30,7 +37,7 @@ const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 const AUTH_URL = import.meta.env.VITE_PAYFLOW_SERVICE_API_URL;
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [optimismGoerli, baseGoerli, zoraTestnet, zkSyncTestnet, optimism, mainnet],
+  [optimismGoerli, baseGoerli, zoraTestnet, zkSyncTestnet, optimism, base, mainnet],
   [alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }), publicProvider()]
 );
 
@@ -53,16 +60,15 @@ const appSettingsStored = appSettingsStorageItem
   ? (JSON.parse(appSettingsStorageItem) as AppSettings)
   : null;
 
-
 export default function AppWithProviders() {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
   const [appSettings, setAppSettings] = useState<AppSettings>(
     appSettingsStored
       ? appSettingsStored
       : {
-        autoConnect: import.meta.env.VITE_INIT_CONNECT === 'true',
-        darkMode: prefersDarkMode
-      }
+          autoConnect: import.meta.env.VITE_INIT_CONNECT === 'true',
+          darkMode: prefersDarkMode
+        }
   );
 
   const fetchingStatusRef = useRef(false);
@@ -155,12 +161,11 @@ export default function AppWithProviders() {
 
       signOut: async () => {
         setAuthStatus('unauthenticated');
-        setAuthAccount(undefined)
+        setAuthAccount(undefined);
         await fetch(`${AUTH_URL}/api/auth/logout`, { credentials: 'include' });
       }
     });
   }, []);
-
 
   useMemo(() => {
     localStorage.setItem('appSettings', JSON.stringify(appSettings));
@@ -181,7 +186,12 @@ export default function AppWithProviders() {
           avatar={CustomAvatar}
           modalSize="compact"
           chains={chains}>
-          <App authStatus={authStatus} authAccount={authAccount} appSettings={appSettings} setAppSettings={setAppSettings} />
+          <App
+            authStatus={authStatus}
+            authAccount={authAccount}
+            appSettings={appSettings}
+            setAppSettings={setAppSettings}
+          />
         </RainbowKitProvider>
       </RainbowKitAuthenticationProvider>
     </WagmiConfig>

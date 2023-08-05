@@ -8,7 +8,7 @@ import {
   Stack,
   Typography
 } from '@mui/material';
-import { cardBorderColours, ethPrice, networks } from '../utils/constants';
+import { ethPrice, networks } from '../utils/constants';
 import { AccountType } from '../types/AccountType';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { Receipt, ContentCopy, ArrowDownward, Send, SwapHoriz } from '@mui/icons-material';
@@ -23,8 +23,6 @@ import AccountSendDialog from './AccountSendDialog';
 export type AccountNewDialogProps = CardProps & {
   account: AccountType;
 };
-
-const colorTheme = cardBorderColours[(cardBorderColours.length * Math.random()) | 0];
 
 export function AccountCard(props: AccountNewDialogProps) {
   const { account } = props;
@@ -48,9 +46,10 @@ export function AccountCard(props: AccountNewDialogProps) {
         p: 2,
         width: 350,
         height: 200,
-        border: 2,
+        border: 3,
         borderRadius: 5,
-        borderColor: colorTheme,
+        borderStyle: 'double',
+        borderColor: 'divider',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between'

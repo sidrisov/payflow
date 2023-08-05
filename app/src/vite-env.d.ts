@@ -10,6 +10,7 @@ interface ImportMetaEnv {
   readonly VITE_WEB3AUTH_PNP_CLIENT_ID: string;
   readonly VITE_WEB3AUTH_TORUS_API_KEY: string;
   readonly VITE_WALLETCONNECT_PROJECT_ID: string;
+  readonly VITE_GELATO_API_KEY: string;
 }
 
 interface ImportMeta {
