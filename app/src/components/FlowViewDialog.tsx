@@ -87,8 +87,8 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const [availableNetworksToAddAccount, setAvailableNetworksToAddAccount] = useState(
     [] as string[]
   );
-  const [newAccountNetwork, setNewAccountNetwork] = useState('');
-  const [newAccountAddress, setNewAccountAddress] = useState('');
+  const [newAccountNetwork, setNewAccountNetwork] = useState<string>();
+  const [newAccountAddress, setNewAccountAddress] = useState<string>();
 
   const { chains, switchNetwork } = useSwitchNetwork();
   const publicClient = usePublicClient();
@@ -97,6 +97,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const [flowShareInfo, setFlowShareInfo] = useState({} as { title: string; link: string });
 
   const { config } = usePrepareContractWrite({
+    enabled: newAccountNetwork !== undefined,
     address: ZKSYNC_PAYFLOW_FACTORY_ADDRESS,
     abi: PayFlowFactoryArtifact.abi,
     functionName: 'deployContract',
@@ -193,7 +194,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   }, [txHash]);
 
   async function submitFlowAccount() {
-    if (flow) {
+    if (flow && newAccountNetwork) {
       try {
         const flowWallet = {
           address: newAccountAddress,
@@ -431,7 +432,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                   sx={{ '& fieldset': { borderRadius: 3 } }}
                 />
 
-                {newAccountNetwork.length > 0 &&
+                {newAccountNetwork &&
                   (!smartAccountAllowedChains.includes(newAccountNetwork) ? (
                     <TextField
                       fullWidth

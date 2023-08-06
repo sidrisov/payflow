@@ -14,6 +14,7 @@ import HideOnScroll from '../components/HideOnScroll';
 import { AccountType } from '../types/AccountType';
 import { useAccount } from 'wagmi';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const drawerWidth = 151;
 
@@ -47,14 +48,19 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
 
   useMemo(async () => {
     if (isConnected) {
-      if (authStatus === "authenticated" && authAccount === address) {
-        console.log("connected")
-        setAuthenticated(true);
-        return;
+      if (authStatus === 'authenticated' && authAccount) {
+        if (authAccount === address) {
+          setAuthenticated(true);
+          return;
+        } else {
+          toast.error(
+            `Please, logout or switch wallet! Connected wallet is different from verified: ${authAccount}`,
+            { autoClose: false }
+          );
+        }
       }
     }
     setAuthenticated(false);
-
   }, [isConnected, address, authStatus, authAccount]);
 
   useMemo(async () => {
@@ -65,7 +71,8 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
   }, [accounts, initiateRefresh]);
 
   useMemo(async () => {
-    if (isConnected) {
+    console.log({ isAuthenticated });
+    if (isAuthenticated) {
       fetchAccounts();
     }
   }, [isAuthenticated]);

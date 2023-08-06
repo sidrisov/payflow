@@ -2,6 +2,7 @@ package ua.sinaver.web3.controller;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -36,6 +37,9 @@ public class AuthController {
     @Autowired
     private IUserService userService;
 
+    @Value("${dapp.url}")
+    private String dappUri;
+
     @GetMapping("/nonce")
     public String nonce(HttpSession session) {
         val nonce = RandomStringUtils.random(10, true, true);
@@ -53,6 +57,13 @@ public class AuthController {
 
         // check if nonce match with previosly generated for this session
         if (sessionNonce == null || !siwe.message().nonce().equals(sessionNonce)) {
+            log.error("Nonce mismatch!");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        // check if dapp uri match the one it's actually deployed
+        if (!siwe.message().uri().equals(dappUri)) {
+            log.error("URI mismatch!");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 

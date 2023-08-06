@@ -32,6 +32,7 @@ import { AppSettings } from '../types/AppSettingsType';
 import { CustomAvatar } from '../components/CustomAvatar';
 import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
 import { SiweMessage } from 'siwe';
+import axios from 'axios';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 const AUTH_URL = import.meta.env.VITE_PAYFLOW_SERVICE_API_URL;
@@ -86,17 +87,17 @@ export default function AppWithProviders() {
       fetchingStatusRef.current = true;
 
       try {
-        const response = await fetch(`${AUTH_URL}/api/me`, { credentials: 'include' });
-        const authProfile = await response.json();
-        console.log(authProfile.address);
-        setAuthStatus(authProfile && authProfile.address ? 'authenticated' : 'unauthenticated');
+        const response = await axios.get(`${AUTH_URL}/api/me`, { withCredentials: true });
+        const authProfile = await response.data;
 
-        if (authProfile && authProfile.address) {
+        setAuthStatus(authProfile.address ? 'authenticated' : 'unauthenticated');
+
+        if (authProfile.address) {
           setAuthAccount(authProfile.address);
         } else {
           setAuthAccount(undefined);
         }
-      } catch (_error) {
+      } catch (error) {
         setAuthStatus('unauthenticated');
       } finally {
         fetchingStatusRef.current = false;
@@ -111,11 +112,27 @@ export default function AppWithProviders() {
     return () => window.removeEventListener('focus', fetchStatus);
   }, []);
 
+  // 3. in case successfully authenticated, fetch currently authenticated user
+  useMemo(async () => {
+    if (authStatus === 'authenticated' && !authAccount) {
+      try {
+        const response = await axios.get(`${AUTH_URL}/api/me`, { withCredentials: true });
+        if (Boolean(response.status === 200)) {
+          const authAccount = response.data.address;
+          console.log(authAccount);
+          setAuthAccount(authAccount);
+        }
+      } catch (_error) {
+        setAuthStatus('unauthenticated');
+      }
+    }
+  }, [authStatus, authAccount]);
+
   const authAdapter = useMemo(() => {
     return createAuthenticationAdapter({
       getNonce: async () => {
-        const response = await fetch(`${AUTH_URL}/api/auth/nonce`, { credentials: 'include' });
-        return await response.text();
+        const response = await axios.get(`${AUTH_URL}/api/auth/nonce`, { withCredentials: true });
+        return await response.data;
       },
 
       createMessage: ({ nonce, address, chainId }) => {
@@ -138,14 +155,13 @@ export default function AppWithProviders() {
         verifyingRef.current = true;
 
         try {
-          const response = await fetch(`${AUTH_URL}/api/auth/verify`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message, signature }),
-            credentials: 'include'
-          });
+          const response = await axios.post(
+            `${AUTH_URL}/api/auth/verify`,
+            { message, signature },
+            { withCredentials: true }
+          );
 
-          const authenticated = Boolean(response.ok);
+          const authenticated = Boolean(response.status === 200);
 
           if (authenticated) {
             setAuthStatus(authenticated ? 'authenticated' : 'unauthenticated');
@@ -162,7 +178,7 @@ export default function AppWithProviders() {
       signOut: async () => {
         setAuthStatus('unauthenticated');
         setAuthAccount(undefined);
-        await fetch(`${AUTH_URL}/api/auth/logout`, { credentials: 'include' });
+        await axios.get(`${AUTH_URL}/api/auth/logout`, { withCredentials: true });
       }
     });
   }, []);
