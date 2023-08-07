@@ -55,7 +55,7 @@ import create2Address from '../utils/create2Address';
 import FlowWithdrawalDialog from './FlowWithdrawalDialog';
 import FlowShareDialog from './FlowShareDialog';
 import { UserContext } from '../contexts/UserContext';
-import { ethPrice, networks } from '../utils/constants';
+import { networks } from '../utils/constants';
 import { zkSyncTestnet } from 'wagmi/chains';
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
@@ -80,7 +80,8 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const publicClient = usePublicClient();
   const ethersSigner = useEthersSigner();
 
-  const { walletBalances, smartAccountAllowedChains, accounts } = useContext(UserContext);
+  const { walletBalances, smartAccountAllowedChains, accounts, ethUsdPrice } =
+    useContext(UserContext);
   const [flowTotalBalance, setFlowTotalBalance] = useState('0');
 
   const [editFlow, setEditFlow] = useState(false);
@@ -129,7 +130,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   }
 
   useMemo(async () => {
-    if (flow && flow.wallets && walletBalances) {
+    if (flow && flow.wallets && walletBalances && ethUsdPrice) {
       const balances = flow.wallets
         .map((wallet) => {
           return walletBalances.get(`${wallet.address}_${wallet.network}`);
@@ -137,7 +138,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
         .filter((balance) => balance) as bigint[];
 
       setFlowTotalBalance(
-        (parseFloat(formatEther(await getTotalBalance(balances))) * ethPrice).toFixed(1)
+        (parseFloat(formatEther(await getTotalBalance(balances))) * ethUsdPrice).toFixed(1)
       );
     }
   }, [flow.wallets]);
@@ -390,7 +391,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                       <Typography variant="subtitle2">
                         {convertToUSD(
                           walletBalances?.get(`${wallet.address}_${wallet.network}`),
-                          ethPrice
+                          ethUsdPrice
                         )}
                       </Typography>
                     </Box>
@@ -451,7 +452,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                         $
                         {convertToUSD(
                           walletBalances?.get(`${wallet.address}_${wallet.network}`),
-                          ethPrice
+                          ethUsdPrice
                         )}
                       </Typography>
                     </Box>

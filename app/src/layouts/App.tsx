@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
@@ -12,9 +12,12 @@ import Nav from '../components/Navigation';
 import { UserContext } from '../contexts/UserContext';
 import HideOnScroll from '../components/HideOnScroll';
 import { AccountType } from '../types/AccountType';
-import { useAccount } from 'wagmi';
+import { useAccount, useContractRead, useEnsAddress } from 'wagmi';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+
+import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
+import { formatUnits } from 'viem';
 
 const drawerWidth = 151;
 
@@ -28,6 +31,26 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const [isAuthorized, setAuthorized] = useState<boolean>(false);
+
+  const { isSuccess: isEnsSuccess, data: ethUsdPriceFeedAddress } = useEnsAddress({
+    name: 'eth-usd.data.eth',
+    chainId: 1,
+    cacheTime: 60_000
+  });
+
+  const { data: ethUsdPrice } = useContractRead({
+    enabled: isEnsSuccess && ethUsdPriceFeedAddress !== undefined,
+    chainId: 1,
+    address: ethUsdPriceFeedAddress ?? undefined,
+    abi: AggregatorV2V3Interface.abi,
+    functionName: 'latestAnswer',
+    select: (data) => Number(formatUnits(data as bigint, 8)),
+    cacheTime: 60_000
+  });
+
+  useEffect(() => {
+    console.log(ethUsdPrice);
+  }, [ethUsdPrice]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -97,7 +120,8 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
           setSmartAccountAllowedChains,
           setInitiateRefresh,
           walletBalances,
-          setWalletBalances
+          setWalletBalances,
+          ethUsdPrice
         }}>
         <Box
           sx={{

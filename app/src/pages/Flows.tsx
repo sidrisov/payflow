@@ -12,7 +12,7 @@ import {
 import { useContext, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import FlowNewDialog from '../components/FlowNewDialog';
-import { useAccount, useNetwork } from 'wagmi';
+import { useNetwork } from 'wagmi';
 import axios from 'axios';
 import { FlowType, FlowWalletType } from '../types/FlowType';
 import { Add, OpenInFull, ShareOutlined } from '@mui/icons-material';
@@ -21,11 +21,12 @@ import FlowViewDialog from '../components/FlowViewDialog';
 import { getTotalBalance, getWalletBalance } from '../utils/getBalance';
 import { UserContext } from '../contexts/UserContext';
 import { formatEther } from 'viem';
-import { cardBorderColours, ethPrice } from '../utils/constants';
+import { cardBorderColours } from '../utils/constants';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 export default function Flows() {
-  const { isAuthenticated, walletBalances, setWalletBalances } = useContext(UserContext);
+  const { isAuthenticated, walletBalances, setWalletBalances, ethUsdPrice } =
+    useContext(UserContext);
   const { chains } = useNetwork();
 
   const [flows, setFlows] = useState([] as FlowType[]);
@@ -77,14 +78,14 @@ export default function Flows() {
     });
   }
 
-  async function calculateFlowBalances() {
+  async function calculateFlowBalances(ethUsdPrice: number) {
     const flowBalances = new Map<string, string>();
     flows.forEach(async (flow) => {
       const balances = flow.wallets
         .map((wallet) => walletBalances.get(`${wallet.address}_${wallet.network}`))
         .filter((balance) => balance) as bigint[];
       const flowBalance = (
-        parseFloat(formatEther(await getTotalBalance(balances))) * ethPrice
+        parseFloat(formatEther(await getTotalBalance(balances))) * ethUsdPrice
       ).toFixed(1);
       flowBalances.set(flow.uuid, flowBalance);
     });
@@ -105,13 +106,13 @@ export default function Flows() {
   }, [flows]);
 
   useMemo(async () => {
-    if (walletBalances && walletBalances.size > 0) {
-      calculateFlowBalances().then((balances) => {
+    if (walletBalances && walletBalances.size > 0 && ethUsdPrice) {
+      calculateFlowBalances(ethUsdPrice).then((balances) => {
         // explicitly wait for calculation to finish, otherwise re-render doesn't work properly
         setFlowBalances(balances);
       });
     }
-  }, [walletBalances]);
+  }, [walletBalances, ethUsdPrice]);
 
   return (
     <>

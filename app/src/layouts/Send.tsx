@@ -1,9 +1,11 @@
 import '@rainbow-me/rainbowkit/styles.css';
 import 'react-toastify/dist/ReactToastify.css';
 
-import { Hash, parseEther, toHex } from 'viem';
+import { Hash, formatUnits, parseEther, toHex } from 'viem';
 
 import {
+  useContractRead,
+  useEnsAddress,
   useEnsAvatar,
   useEnsName,
   usePrepareSendTransaction,
@@ -39,9 +41,10 @@ import AddressQRCodeDialog from '../components/AddressQRCodeDialog';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import HideOnScroll from '../components/HideOnScroll';
 import { getFlowBalance } from '../utils/getBalance';
-import { cardBorderColours, ethPrice } from '../utils/constants';
+import { cardBorderColours } from '../utils/constants';
 import { Helmet } from 'react-helmet-async';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
+import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
 
 const cardBorderRandom = cardBorderColours[(cardBorderColours.length * Math.random()) | 0];
 
@@ -77,6 +80,22 @@ export default function Send({ appSettings, setAppSettings }: any) {
   });
 
   const { isSuccess, data, sendTransaction } = useSendTransaction(config);
+
+  const { isSuccess: isEnsSuccess, data: ethUsdPriceFeedAddress } = useEnsAddress({
+    name: 'eth-usd.data.eth',
+    chainId: 1,
+    cacheTime: 60_000
+  });
+
+  const { data: ethUsdPrice } = useContractRead({
+    enabled: isEnsSuccess && ethUsdPriceFeedAddress !== undefined,
+    chainId: 1,
+    address: ethUsdPriceFeedAddress ?? undefined,
+    abi: AggregatorV2V3Interface.abi,
+    functionName: 'latestAnswer',
+    select: (data) => Number(formatUnits(data as bigint, 8)),
+    cacheTime: 60_000
+  });
 
   useMemo(async () => {
     try {
@@ -116,8 +135,8 @@ export default function Send({ appSettings, setAppSettings }: any) {
   }, [flow]);
 
   async function updateFlowTotalBalance(flow: FlowType) {
-    if (flow && flow.wallets && flow.wallets.length > 0) {
-      setFlowTotalBalance(await getFlowBalance(flow, chains, ethPrice));
+    if (flow && flow.wallets && flow.wallets.length > 0 && ethUsdPrice) {
+      setFlowTotalBalance(await getFlowBalance(flow, chains, ethUsdPrice));
     }
   }
 

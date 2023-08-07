@@ -1,5 +1,4 @@
 export const cardBorderColours = ['lightgreen', 'lightblue', 'lightpink', 'lightyellow'];
-export const ethPrice = 1930;
 
 // Copyrights reserved to Safe Global
 // taken from here: https://github.com/safe-global/safe-core-sdk/blob/main/packages/protocol-kit/src/utils/eip-3770/config.ts

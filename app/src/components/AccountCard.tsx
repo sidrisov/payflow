@@ -8,23 +8,25 @@ import {
   Stack,
   Typography
 } from '@mui/material';
-import { ethPrice, networks } from '../utils/constants';
+import { networks } from '../utils/constants';
 import { AccountType } from '../types/AccountType';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { Receipt, ContentCopy, ArrowDownward, Send, SwapHoriz } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { copyToClipboard } from '../utils/copyToClipboard';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import AddressQRCodeDialog from './AddressQRCodeDialog';
 import { useBalance, useNetwork } from 'wagmi';
 import { convertToUSD } from '../utils/getBalance';
 import AccountSendDialog from './AccountSendDialog';
+import { UserContext } from '../contexts/UserContext';
 
 export type AccountNewDialogProps = CardProps & {
   account: AccountType;
 };
 
 export function AccountCard(props: AccountNewDialogProps) {
+  const { ethUsdPrice } = useContext(UserContext);
   const { account } = props;
   const [openAddressQRCode, setOpenAddressQRCode] = useState(false);
   const [openWithdrawalDialog, setOpenWithdrawalDialog] = useState(false);
@@ -96,7 +98,7 @@ export function AccountCard(props: AccountNewDialogProps) {
             borderRadius: 3
           }}>
           <Typography variant="h5">
-            ${isSuccess ? convertToUSD(balance?.value, ethPrice) : ''} 💸
+            ${isSuccess ? convertToUSD(balance?.value, ethUsdPrice) : ''} 💸
           </Typography>
         </Box>
       </Divider>

@@ -12,4 +12,5 @@ export interface UserContextType {
   setInitiateRefresh: React.Dispatch<React.SetStateAction<boolean>>;
   walletBalances: Map<string, bigint>;
   setWalletBalances: React.Dispatch<React.SetStateAction<Map<string, bigint>>>;
+  ethUsdPrice: number | undefined;
 }

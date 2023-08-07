@@ -2,7 +2,7 @@ import { Chain, formatEther } from 'viem';
 import { fetchBalance } from 'wagmi/actions';
 import { FlowType, FlowWalletType } from '../types/FlowType';
 
-export async function getFlowBalance(flow: FlowType, chains: Chain[], ethPrice: number) {
+export async function getFlowBalance(flow: FlowType, chains: Chain[], ethUsdPrice: number) {
   const balances = (
     await Promise.all(
       flow.wallets.map(async (wallet) => {
@@ -17,7 +17,7 @@ export async function getFlowBalance(flow: FlowType, chains: Chain[], ethPrice: 
     }, BigInt(0))
   );
 
-  return (parseFloat(totalBalance) * ethPrice).toFixed(1);
+  return (parseFloat(totalBalance) * ethUsdPrice).toFixed(1);
 }
 
 export async function getWalletBalance(wallet: FlowWalletType, chains: Chain[]) {
@@ -35,8 +35,8 @@ export async function getTotalBalance(balances: bigint[]) {
   }, BigInt(0));
 }
 
-export function convertToUSD(value: bigint | undefined, price: number) {
-  if (value !== undefined) {
+export function convertToUSD(value: bigint | undefined, price: number | undefined) {
+  if (value !== undefined && price !== undefined) {
     return (parseFloat(formatEther(value)) * price).toFixed(1);
   }
   return 'N/A';
