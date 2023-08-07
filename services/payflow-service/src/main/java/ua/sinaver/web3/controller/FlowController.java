@@ -59,7 +59,9 @@ class FlowController {
 
     @GetMapping("/{uuid}")
     public FlowMessage getFlowByUUID(@PathVariable String uuid) {
-        return flowService.findByUUID(uuid);
+        val flowMessage = flowService.findByUUID(uuid);
+        log.debug("{}", flowMessage);
+        return flowMessage;
     }
 
     @PostMapping("/{uuid}/wallet")

@@ -136,13 +136,13 @@ public class FlowService implements IFlowService {
     }
 
     private static Wallet convert(WalletMessage walletDto) {
-        return new Wallet(walletDto.address(), walletDto.network(), walletDto.smart());
+        return new Wallet(walletDto.address(), walletDto.network(), walletDto.safe(), walletDto.smart());
     }
 
     // TODO: wallet.getMaster() != null redundant check, but since we have stale
     // date, let's keep it till next db wipe
     private static WalletMessage convert(Wallet wallet) {
-        return new WalletMessage(wallet.getAddress(), wallet.getNetwork(), wallet.isSmart(),
+        return new WalletMessage(wallet.getAddress(), wallet.getNetwork(), wallet.isSmart(), wallet.isSafe(),
                 wallet.isSmart() && wallet.getMaster() != null ? wallet.getMaster().getAddress() : null);
     }
 }

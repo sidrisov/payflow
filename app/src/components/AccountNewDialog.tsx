@@ -58,7 +58,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
   const [newAccountAddress, setNewAccountAddress] = useState<string>();
   const [newAccountNetwork, setNewAccountNetwork] = useState<string>();
 
-  const [isZkSyncNetwork, setZkSyncNetwork] = useState<boolean | undefined>();
+  const [isZkSyncNetwork, setZkSyncNetwork] = useState<boolean>();
   const [deployable, setDeployable] = useState<boolean>(false);
   const [deployed, setDeployed] = useState<boolean>();
 
@@ -250,9 +250,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
               color="primary"
               sx={{ borderRadius: 3 }}
               endIcon={<AutoFixHigh />}
-              onClick={async () => {
-                await deployNewAccount();
-              }}>
+              onClick={deployNewAccount}>
               Create PayFlow Account
             </Button>
           )}

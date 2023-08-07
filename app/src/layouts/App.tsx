@@ -27,7 +27,7 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
 
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const [isAuthenticated, setAuthenticated] = useState<boolean>(false);
+  const [isAuthorized, setAuthorized] = useState<boolean>(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -50,7 +50,7 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
     if (isConnected) {
       if (authStatus === 'authenticated' && authAccount) {
         if (authAccount === address) {
-          setAuthenticated(true);
+          setAuthorized(true);
           return;
         } else {
           toast.error(
@@ -60,7 +60,7 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
         }
       }
     }
-    setAuthenticated(false);
+    setAuthorized(false);
   }, [isConnected, address, authStatus, authAccount]);
 
   useMemo(async () => {
@@ -71,11 +71,11 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
   }, [accounts, initiateRefresh]);
 
   useMemo(async () => {
-    console.log({ isAuthenticated });
-    if (isAuthenticated) {
+    console.log({ isAuthenticated: isAuthorized });
+    if (isAuthorized) {
       fetchAccounts();
     }
-  }, [isAuthenticated]);
+  }, [isAuthorized]);
 
   useMemo(async () => {
     if (accounts) {
@@ -88,7 +88,7 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
     <CustomThemeProvider darkMode={appSettings.darkMode}>
       <UserContext.Provider
         value={{
-          isAuthenticated,
+          isAuthenticated: isAuthorized,
           appSettings,
           setAppSettings,
           accounts,

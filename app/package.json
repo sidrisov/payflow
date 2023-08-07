@@ -14,7 +14,7 @@
     "@emotion/styled": "^11.11.0",
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
     "@fontsource/roboto": "^5.0.7",
-    "@gelatonetwork/relay-sdk": "^3.5.0",
+    "@gelatonetwork/relay-sdk": "^4.0.0",
     "@mui/icons-material": "^5.11.16",
     "@mui/material": "^5.13.6",
     "@rainbow-me/rainbowkit": "^1.0.8",
@@ -54,7 +54,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
     "typescript": "^5.0.2",
-    "vite": "^4.3.9",
+    "vite": "^4.4.9",
     "vite-plugin-mkcert": "^1.16.0"
   }
 }

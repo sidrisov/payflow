@@ -24,6 +24,9 @@ import { copyToClipboard } from '../utils/copyToClipboard';
 
 import { Hash, TransactionReceipt, parseEther } from 'viem';
 import { withdrawEth } from '../utils/zkSyncTransactions';
+import { safeTransferEth } from '../utils/safeTransactions';
+import { zkSyncTestnet } from 'viem/chains';
+import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 
 export type FlowWithdrawalDialogProps = DialogProps &
   CloseCallbackType & {
@@ -45,6 +48,7 @@ export default function FlowWithdrawalDialog({
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
+  const ethersSigner = useEthersSigner();
 
   const { chains, switchNetwork } = useSwitchNetwork();
 
@@ -53,12 +57,28 @@ export default function FlowWithdrawalDialog({
   const sendTransaction = async () => {
     if (withdrawAmount) {
       switchNetwork?.(chains.find((c) => c?.name === network)?.id);
-      const txData = {
-        contract: from,
-        from: to,
-        amount: withdrawAmount
-      };
-      const txHash = await withdrawEth(walletClient as WalletClient, txData);
+
+      let txHash;
+
+      if (chains.find((c) => c?.name === network)?.id === zkSyncTestnet.id) {
+        txHash = await withdrawEth(walletClient as WalletClient, {
+          contract: from,
+          from: to,
+          amount: withdrawAmount
+        });
+      } else {
+        if (ethersSigner) {
+          txHash = await safeTransferEth(ethersSigner, {
+            from,
+            to,
+            amount: withdrawAmount,
+            safeSigner: to
+          });
+        } else {
+          toast.error('Failed to execute transaction!');
+          return;
+        }
+      }
       setTxHash(txHash);
     }
   };

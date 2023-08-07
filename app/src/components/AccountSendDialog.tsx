@@ -17,13 +17,7 @@ import {
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useMemo, useState } from 'react';
-import {
-  Address,
-  WalletClient,
-  usePublicClient,
-  useSwitchNetwork,
-  useWalletClient
-} from 'wagmi';
+import { Address, WalletClient, usePublicClient, useSwitchNetwork, useWalletClient } from 'wagmi';
 import { ContentCopy, ExpandMore } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { copyToClipboard } from '../utils/copyToClipboard';
@@ -81,6 +75,7 @@ export default function AccountSendDialog({
           txHash = await safeTransferEth(ethersSigner, txData);
         } else {
           toast.error('Failed to execute transaction!');
+          return;
         }
       }
       setTxHash(txHash);

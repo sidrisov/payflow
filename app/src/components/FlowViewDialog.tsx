@@ -55,7 +55,11 @@ import create2Address from '../utils/create2Address';
 import FlowWithdrawalDialog from './FlowWithdrawalDialog';
 import FlowShareDialog from './FlowShareDialog';
 import { UserContext } from '../contexts/UserContext';
-import { ethPrice } from '../utils/constants';
+import { ethPrice, networks } from '../utils/constants';
+import { zkSyncTestnet } from 'wagmi/chains';
+import { useEthersSigner } from '../utils/hooks/useEthersSigner';
+import { SafeAccountConfig } from '@safe-global/protocol-kit';
+import { safeDeploy } from '../utils/safeTransactions';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 export type FlowViewDialogProps = DialogProps &
@@ -70,11 +74,13 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const flow = props.flow;
-  const flowSalt = props.flow.uuid ? keccak256(toHex(props.flow.uuid)) : undefined;
+  const saltNonce = props.flow.uuid ? keccak256(toHex(props.flow.uuid)) : undefined;
 
-  const { walletBalances, smartAccountAllowedChains } = useContext(UserContext);
-  const { accounts } = useContext(UserContext);
+  const { chains, switchNetwork } = useSwitchNetwork();
+  const publicClient = usePublicClient();
+  const ethersSigner = useEthersSigner();
 
+  const { walletBalances, smartAccountAllowedChains, accounts } = useContext(UserContext);
   const [flowTotalBalance, setFlowTotalBalance] = useState('0');
 
   const [editFlow, setEditFlow] = useState(false);
@@ -84,14 +90,15 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const [selectedWithdrawalWallet, setSelectedWithdrawalWallet] = useState({} as FlowWalletType);
   const [masterAccount, setMasterAccount] = useState<Address>();
 
+  const [isZkSyncNetwork, setZkSyncNetwork] = useState<boolean>();
+  const [deployable, setDeployable] = useState<boolean>(false);
+  const [deployed, setDeployed] = useState<boolean>();
+
   const [availableNetworksToAddAccount, setAvailableNetworksToAddAccount] = useState(
     [] as string[]
   );
   const [newAccountNetwork, setNewAccountNetwork] = useState<string>();
   const [newAccountAddress, setNewAccountAddress] = useState<string>();
-
-  const { chains, switchNetwork } = useSwitchNetwork();
-  const publicClient = usePublicClient();
 
   const [openFlowShare, setOpenFlowShare] = useState(false);
   const [flowShareInfo, setFlowShareInfo] = useState({} as { title: string; link: string });
@@ -101,11 +108,25 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
     address: ZKSYNC_PAYFLOW_FACTORY_ADDRESS,
     abi: PayFlowFactoryArtifact.abi,
     functionName: 'deployContract',
-    args: [flowSalt, masterAccount],
+    args: [saltNonce, masterAccount],
     chainId: chains.find((c) => c?.name === newAccountNetwork)?.id
   });
   const { isSuccess, data, write } = useContractWrite(config);
   const [txHash, setTxHash] = useState<Hash>();
+
+  const safeDeployCallback = (txHash: string | undefined): void => {
+    if (!txHash) {
+      toast.error('Returned Tx Hash with error!');
+      return;
+    }
+    console.log({ txHash });
+    setTxHash(txHash as Hash);
+  };
+
+  function shortNetworkName(network: string) {
+    return networks.find((n) => n.chainId === chains.find((c) => c.name === network)?.id)
+      ?.shortName;
+  }
 
   useMemo(async () => {
     if (flow && flow.wallets && walletBalances) {
@@ -130,6 +151,47 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
     }
   }, [flow.wallets, chains]);
 
+  useMemo(async () => {
+    setZkSyncNetwork(
+      newAccountNetwork
+        ? chains.find((c) => c.name === newAccountNetwork)?.id === zkSyncTestnet.id
+        : undefined
+    );
+  }, [newAccountNetwork]);
+
+  useMemo(async () => {
+    setDeployable(
+      isZkSyncNetwork !== undefined && (isZkSyncNetwork === false || write !== undefined)
+    );
+  }, [isZkSyncNetwork, write]);
+
+  useMemo(async () => {
+    setDeployed(newAccountNetwork !== undefined && newAccountAddress !== undefined);
+  }, [newAccountNetwork, newAccountAddress]);
+
+  async function deployNewWallet() {
+    if (isZkSyncNetwork) {
+      write?.();
+    } else {
+      if (ethersSigner && masterAccount && saltNonce) {
+        const safeAccountConfig: SafeAccountConfig = {
+          owners: [masterAccount],
+          threshold: 1
+        };
+
+        const safeAddress = await safeDeploy({
+          ethersSigner,
+          safeAccountConfig,
+          saltNonce,
+          sponsored: true,
+          callback: safeDeployCallback
+        });
+
+        setNewAccountAddress(safeAddress);
+      }
+    }
+  }
+
   function resetViewState() {
     setEditFlow(false);
     setAddFlowWallet(false);
@@ -150,7 +212,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   }, [accounts, newAccountNetwork]);
 
   useMemo(async () => {
-    if (isSuccess && masterAccount && flowSalt) {
+    if (isSuccess && masterAccount && saltNonce) {
       const encodedData = encodeAbiParameters(parseAbiParameters('address'), [
         masterAccount as `0x${string}`
       ]);
@@ -165,7 +227,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
       const playFlowAddress = create2Address(
         ZKSYNC_PAYFLOW_FACTORY_ADDRESS,
         playFlowContractHash,
-        flowSalt,
+        saltNonce,
         encodedData
       );
 
@@ -193,13 +255,15 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
     }
   }, [txHash]);
 
-  async function submitFlowAccount() {
+  async function submitWallet() {
     if (flow && newAccountNetwork) {
       try {
         const flowWallet = {
           address: newAccountAddress,
           network: newAccountNetwork,
           smart: smartAccountAllowedChains.includes(newAccountNetwork),
+          // decide based on network, since other than zkSync all other support Safe
+          safe: !isZkSyncNetwork,
           master: masterAccount
         } as FlowWalletType;
         const response = await axios.post(
@@ -313,6 +377,15 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                           }}>
                           <ContentCopy fontSize="small" />
                         </IconButton>
+                        {wallet.safe && (
+                          <a
+                            href={`https://app.safe.global/home?safe=${shortNetworkName(
+                              wallet.network
+                            )}:${wallet.address}`}
+                            target="_blank">
+                            <Avatar src="/safe.png" sx={{ width: 16, height: 16 }} />
+                          </a>
+                        )}
                       </Box>
                       <Typography variant="subtitle2">
                         {convertToUSD(
@@ -447,15 +520,13 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                     <>
                       <Button
                         fullWidth
-                        disabled={!write}
+                        disabled={!deployable}
                         variant="outlined"
                         size="large"
                         color="primary"
                         sx={{ borderRadius: 3 }}
                         endIcon={<AutoFixHigh />}
-                        onClick={async () => {
-                          write?.();
-                        }}>
+                        onClick={deployNewWallet}>
                         Create Payflow Wallet
                       </Button>
                       {newAccountAddress && (
@@ -466,13 +537,13 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
 
                 <Button
                   fullWidth
-                  disabled={!newAccountNetwork || !newAccountAddress}
+                  disabled={!deployed}
                   variant="outlined"
                   size="large"
                   color="primary"
                   sx={{ borderRadius: 3 }}
                   onClick={() => {
-                    submitFlowAccount();
+                    submitWallet();
                   }}>
                   SAVE
                 </Button>

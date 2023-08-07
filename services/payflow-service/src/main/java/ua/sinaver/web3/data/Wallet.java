@@ -34,6 +34,9 @@ public class Wallet {
     @Column(columnDefinition = "boolean")
     private boolean smart;
 
+    @Column(columnDefinition = "boolean")
+    private boolean safe;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "flow_id", nullable = false)
     private Flow flow;
@@ -45,15 +48,17 @@ public class Wallet {
     @Version
     private Long version;
 
-    public Wallet(String address, String network, boolean smart) {
+    public Wallet(String address, String network, boolean smart, boolean safe) {
         this.address = address;
         this.network = network;
         this.smart = smart;
+        this.safe = safe;
     }
 
     @Override
     public String toString() {
-        return "Wallet [id=" + id + ", address=" + address + ", network=" + network + ", smart=" + smart + ", flow="
+        return "Wallet [id=" + id + ", address=" + address + ", network=" + network + ", smart=" + smart + ", safe="
+                + safe + ", flow="
                 + flow.getUuid() + ", master="
                 + (master != null ? master.getAddress() : "null") + "]";
     }

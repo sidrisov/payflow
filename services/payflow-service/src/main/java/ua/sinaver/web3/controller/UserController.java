@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UserController {
     @GetMapping
     public Profile user(Principal principal) {
-        log.debug("Principal: {}", principal);
+        log.trace("{}", principal);
         return new Profile(principal.getName());
     }
 

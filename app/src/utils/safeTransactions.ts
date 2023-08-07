@@ -29,6 +29,7 @@ import { RelayResponse, TransactionStatusResponse } from '@gelatonetwork/relay-s
 
 import { Hash, Address } from 'viem';
 import { toast } from 'react-toastify';
+import { generatePreValidatedSignature } from '@safe-global/protocol-kit/dist/src/utils/signatures/utils';
 
 const ZERO_ADDRESS = ethers.constants.AddressZero;
 const LATEST_SAFE_VERSION = '1.3.0' as SafeVersion;
@@ -134,42 +135,10 @@ export async function safeDeploy({
       chainId
     );
 
-    console.log(
-      `Relay Transaction Task ID: https://relay.gelato.digital/tasks/status/${relayResponse.taskId}`
-    );
-
-    let relayTaskResult: TransactionStatusResponse;
-    do {
-      await delay(2000);
-      const relayExecResponse = await fetch(
-        `https://relay.gelato.digital/tasks/status/${relayResponse.taskId}`
-      );
-      relayTaskResult = (await relayExecResponse.json()).task;
-
-      console.log(relayTaskResult);
-    } while (
-      relayTaskResult &&
-      (relayTaskResult.taskState === TaskState.CheckPending ||
-        relayTaskResult.taskState === TaskState.ExecPending ||
-        relayTaskResult.taskState === TaskState.WaitingForConfirmation)
-    );
-
-    if (!relayTaskResult) {
-      toast.error('Failed to relay transaction!');
-      return;
-    }
-
-    if (relayTaskResult.taskState !== TaskState.ExecSuccess) {
-      toast.error(
-        `Failed to relay transaction with: ${relayTaskResult.taskState}, ${
-          relayTaskResult.lastCheckMessage ?? 'no error'
-        }!`
-      );
-      return;
-    }
+    const transactionHash = await waitForRelayTaskToComplete(relayResponse.taskId);
 
     if (callback) {
-      callback(relayTaskResult.transactionHash);
+      callback(transactionHash);
     }
   }
   return predictedAddress as Hash;
@@ -177,43 +146,100 @@ export async function safeDeploy({
 
 export async function safeTransferEth(
   ethersSigner: providers.JsonRpcSigner,
-  tx: { from: Address; to: Address; amount: bigint }
-): Promise<Hash> {
+  tx: { from: Address; to: Address; amount: bigint; safeSigner?: Address }
+): Promise<Hash | undefined> {
   const ethAdapter = new EthersAdapter({
     ethers,
     signerOrProvider: ethersSigner
   });
 
-  const safeSdk = await Safe.create({ ethAdapter, safeAddress: tx.from as string });
-
-  const safeTransactionData: MetaTransactionData = {
-    to: tx.to,
-    value: tx.amount.toString(),
-    data: '0x',
-    operation: OperationType.Call
-  };
+  const safe = await Safe.create({ ethAdapter, safeAddress: tx.from as string });
+  const safeSingletonContract = await getSafeContract({
+    ethAdapter,
+    safeVersion: await safe.getContractVersion()
+  });
+  const chainId = await safe.getChainId();
 
   const options: MetaTransactionOptions = {
     gasLimit: '500000',
     isSponsored: false
   };
 
-  const chainId = await safeSdk.getChainId();
+  const safeTransferTransactionData: MetaTransactionData = {
+    to: tx.to,
+    value: tx.amount.toString(),
+    data: '0x',
+    operation: OperationType.Call
+  };
 
+  /*   const standardizedSafeTx = await safe.createTransaction({
+    safeTransactionData: safeTransferTransactionData
+  });
+ */
   const standardizedSafeTx = await relayKit.createRelayedTransaction(
-    safeSdk,
-    [safeTransactionData],
+    safe,
+    [safeTransferTransactionData],
     options
   );
 
-  console.log(standardizedSafeTx);
+  let signedSafeTx;
+  if (tx.safeSigner) {
+    const safeSigner = await Safe.create({ ethAdapter, safeAddress: tx.safeSigner as string });
+    const safeTxTransferHash = await safe.getTransactionHash(standardizedSafeTx);
 
-  const signedSafeTx = await safeSdk.signTransaction(standardizedSafeTx);
+    const safeTxApproveHashData: MetaTransactionData = {
+      to: tx.from,
+      value: '0',
+      data: safeSingletonContract.encode('approveHash', [safeTxTransferHash]),
+      operation: OperationType.Call
+    };
 
-  const safeSingletonContract = await getSafeContract({
-    ethAdapter,
-    safeVersion: await safeSdk.getContractVersion()
-  });
+    const safeTxApproveHash = await safeSigner.createTransaction({
+      safeTransactionData: safeTxApproveHashData
+    });
+
+    const signedSafeTxApproveHash = await safeSigner.signTransaction(safeTxApproveHash);
+
+    const encodedSafeTxApproveHash = safeSingletonContract.encode('execTransaction', [
+      signedSafeTxApproveHash.data.to,
+      signedSafeTxApproveHash.data.value,
+      signedSafeTxApproveHash.data.data,
+      signedSafeTxApproveHash.data.operation,
+      signedSafeTxApproveHash.data.safeTxGas,
+      signedSafeTxApproveHash.data.baseGas,
+      signedSafeTxApproveHash.data.gasPrice,
+      signedSafeTxApproveHash.data.gasToken,
+      signedSafeTxApproveHash.data.refundReceiver,
+      signedSafeTxApproveHash.encodedSignatures()
+    ]);
+
+    const relayResponse: RelayResponse = await relayKit.sendSponsorTransaction(
+      tx.safeSigner,
+      encodedSafeTxApproveHash,
+      chainId
+    );
+
+    if (!(await waitForRelayTaskToComplete(relayResponse.taskId))) {
+      return;
+    }
+
+    standardizedSafeTx.addSignature(generatePreValidatedSignature(tx.safeSigner));
+
+    /*     let ownersWhoApprovedTx;
+    do {
+      await delay(1000);
+      ownersWhoApprovedTx = await safe.getOwnersWhoApprovedTx(safeTxTransferHash);
+      console.log({ ownersWhoApprovedTx });
+    } while (ownersWhoApprovedTx.length === 0);
+
+    for (const owner of ownersWhoApprovedTx) {
+      standardizedSafeTx.addSignature(generatePreValidatedSignature(owner));
+    } */
+
+    signedSafeTx = standardizedSafeTx;
+  } else {
+    signedSafeTx = await safe.signTransaction(standardizedSafeTx);
+  }
 
   const encodedTransaction = safeSingletonContract.encode('execTransaction', [
     signedSafeTx.data.to,
@@ -228,65 +254,14 @@ export async function safeTransferEth(
     signedSafeTx.encodedSignatures()
   ]);
 
-  const relayResponse: RelayResponse = await relayKit.relayTransaction({
-    target: tx.from,
+  const relayResponse: RelayResponse = await relayKit.sendSyncTransaction(
+    tx.from,
     encodedTransaction,
     chainId,
     options
-  });
-
-  console.log(
-    `Relay Transaction Task ID: https://relay.gelato.digital/tasks/status/${relayResponse.taskId}`
   );
 
-  let relayTaskResult: TransactionStatusResponse;
-  do {
-    await delay(2000);
-    const relayExecResponse = await fetch(
-      `https://relay.gelato.digital/tasks/status/${relayResponse.taskId}`
-    );
-    relayTaskResult = (await relayExecResponse.json()).task;
-
-    console.log(relayTaskResult);
-  } while (
-    relayTaskResult &&
-    (relayTaskResult.taskState === TaskState.CheckPending ||
-      relayTaskResult.taskState === TaskState.ExecPending ||
-      relayTaskResult.taskState === TaskState.WaitingForConfirmation)
-  );
-
-  if (!relayTaskResult) {
-    toast.error('Failed to relay transaction!');
-  }
-
-  if (relayTaskResult.taskState !== TaskState.ExecSuccess) {
-    toast.error(
-      `Failed to relay transaction with: ${relayTaskResult.taskState}, ${
-        relayTaskResult.lastCheckMessage ?? 'no error'
-      }!`
-    );
-  }
-
-  return relayTaskResult.transactionHash as Hash;
-
-  // TODO: not all testnets have transaction services, for now rely on onchain signatures
-  //const senderSignature = await safeSdk.signTransactionHash(safeTxHash);
-
-  //const txServiceUrl = 'https://safe-transaction-base-testnet.safe.global';
-  //const safeService = new SafeApiKit({ txServiceUrl, ethAdapter });
-
-  /*   await safeService.proposeTransaction({
-    safeAddress: tx.from as string,
-    safeTransactionData: safeTransaction.data,
-    safeTxHash,
-    senderAddress: await ethersSigner.getAddress(),
-    senderSignature: senderSignature.data
-  }); */
-
-  /*   const safeTxHash = await safeSdk.getTransactionHash(safeTransaction);
-
-  await safeSdk.approveTransactionHash(safeTxHash);
-  return (await safeSdk.executeTransaction(safeTransaction)).hash as Hash; */
+  return await waitForRelayTaskToComplete(relayResponse.taskId);
 }
 
 // TaskState is not exported by gelato-sdk, declare here
@@ -299,4 +274,48 @@ declare enum TaskState {
   Blacklisted = 'Blacklisted',
   Cancelled = 'Cancelled',
   NotFound = 'NotFound'
+}
+
+async function waitForRelayTaskToComplete(
+  taskId: string,
+  period: number = 3000,
+  timeout: number = 60000
+): Promise<Hash | undefined> {
+  console.log(`Relay Transaction Task ID: https://relay.gelato.digital/tasks/status/${taskId}`);
+
+  let relayTaskResult: TransactionStatusResponse;
+
+  const maxPolls = timeout / period;
+  let pollCounter = 0;
+
+  do {
+    pollCounter++;
+    await delay(period);
+    const relayExecResponse = await fetch(`https://relay.gelato.digital/tasks/status/${taskId}`);
+    relayTaskResult = (await relayExecResponse.json()).task;
+
+    console.log(relayTaskResult);
+  } while (
+    relayTaskResult &&
+    (relayTaskResult.taskState === TaskState.CheckPending ||
+      relayTaskResult.taskState === TaskState.ExecPending ||
+      relayTaskResult.taskState === TaskState.WaitingForConfirmation) &&
+    pollCounter < maxPolls
+  );
+
+  if (!relayTaskResult) {
+    toast.error('Failed to relay transaction!');
+    return;
+  }
+
+  if (relayTaskResult.taskState !== TaskState.ExecSuccess) {
+    toast.error(
+      `Failed to relay transaction with: ${relayTaskResult.taskState}, ${
+        relayTaskResult.lastCheckMessage ?? 'no error'
+      }!`
+    );
+    return;
+  }
+
+  return relayTaskResult.transactionHash as Hash;
 }
