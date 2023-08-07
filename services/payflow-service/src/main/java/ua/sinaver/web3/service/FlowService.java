@@ -51,7 +51,7 @@ public class FlowService implements IFlowService {
     public FlowMessage findByUUID(String uuid) {
         val flow = flowRepository.findByUuid(uuid);
         if (flow != null) {
-            Optional<User> user = userRepository.findById(flow.getId());
+            Optional<User> user = userRepository.findById(flow.getUserId());
             if (user.isPresent()) {
                 return convert(flow, user.get());
             }
