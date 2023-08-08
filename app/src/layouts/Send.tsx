@@ -1,7 +1,7 @@
 import '@rainbow-me/rainbowkit/styles.css';
 import 'react-toastify/dist/ReactToastify.css';
 
-import { Hash, formatEther, formatUnits, parseEther, toHex } from 'viem';
+import { Hash, formatEther, formatUnits, parseEther } from 'viem';
 
 import {
   useContractRead,

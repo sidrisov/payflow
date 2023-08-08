@@ -119,14 +119,14 @@ export function AccountCard(props: AccountNewDialogProps) {
           sx={{ border: 1, borderStyle: 'dashed' }}>
           <Send />
         </IconButton>
-        <IconButton
+{/*         <IconButton
           color="inherit"
           onClick={() => {
             toast.error('Feature not supported yet!');
           }}
           sx={{ border: 1, borderStyle: 'dashed' }}>
           <SwapHoriz />
-        </IconButton>
+        </IconButton> */}
         <IconButton
           color="inherit"
           onClick={() => {

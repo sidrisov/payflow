@@ -291,8 +291,8 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
           network: newAccountNetwork,
           smart: smartAccountAllowedChains.includes(newAccountNetwork),
           // decide based on network, since other than zkSync all other support Safe
-          safe: !isZkSyncNetwork,
-          master: masterAccount
+          safe: smartAccountAllowedChains.includes(newAccountNetwork) && !isZkSyncNetwork,
+          master: smartAccountAllowedChains.includes(newAccountNetwork) ? masterAccount : null
         } as FlowWalletType;
         const response = await axios.post(
           `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${flow.uuid}/wallet`,
@@ -304,7 +304,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
         const wallets = Array.from(flow.wallets);
         wallets.push(flowWallet);
         flow.wallets = wallets;
-        toast.success(`Successfully added new account: ${newAccountAddress}`);
+        toast.success(`Wallet ${shortenWalletAddressLabel(newAccountAddress)} added!`);
       } catch (error) {
         console.log(error);
         toast.error('Try again!');
@@ -335,7 +335,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
 
         flow.wallets = wallets;
 
-        toast.success(`Successfully removed ${wallet.address} from the flow!`);
+        toast.success(`Wallet ${shortenWalletAddressLabel(wallet.address)} removed!`);
       } catch (error) {
         console.log(error);
         toast.error('Operation failed!');
@@ -416,6 +416,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                         )}
                       </Box>
                       <Typography variant="subtitle2">
+                        $
                         {convertToUSD(
                           walletBalances?.get(`${wallet.address}_${wallet.network}`),
                           ethUsdPrice
