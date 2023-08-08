@@ -21,20 +21,21 @@ import {
   usePublicClient,
   useSwitchNetwork
 } from 'wagmi';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { AutoFixHigh } from '@mui/icons-material';
 import { Hash, encodeAbiParameters, keccak256, parseAbiParameters, toHex } from 'viem';
 import PayFlowMasterFactoryArtifact from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/PayFlowMasterFactory.sol/PayFlowMasterFactory.json';
 import { zkSyncTestnet } from 'viem/chains';
 import { readContract } from 'wagmi/actions';
 import create2Address from '../utils/create2Address';
-import { toast } from 'react-toastify';
+import { Id, toast } from 'react-toastify';
 import axios from 'axios';
 import { AccountType } from '../types/AccountType';
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { safeDeploy } from '../utils/safeTransactions';
+import { shortenWalletAddressLabel } from '../utils/address';
 
 export type AccountNewDialogProps = DialogProps &
   CloseCallbackType & {
@@ -62,13 +63,15 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
   const [deployable, setDeployable] = useState<boolean>(false);
   const [deployed, setDeployed] = useState<boolean>();
 
+  const newAccountToastId = useRef<Id>();
+
   const { config } = usePrepareContractWrite({
-    enabled: newAccountNetwork !== undefined,
+    enabled: isZkSyncNetwork === true,
     address: ZKSYNC_AA_FACTORY_ADDRESS,
     abi: PayFlowMasterFactoryArtifact.abi,
     functionName: 'deployAccount',
     args: [saltNonce, address, address],
-    chainId: chains.find((c) => c.name === newAccountNetwork)?.id
+    chainId: zkSyncTestnet.id
   });
   const { isSuccess, data, write } = useContractWrite(config);
 
@@ -102,6 +105,8 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
   }, [newAccountNetwork, newAccountAddress]);
 
   async function deployNewAccount() {
+    newAccountToastId.current = toast.loading('Creating Account 🪄');
+
     if (isZkSyncNetwork) {
       write?.();
     } else {
@@ -119,7 +124,17 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
           callback: safeDeployCallback
         });
 
-        setNewAccountAddress(safeAddress);
+        if (safeAddress) {
+          setNewAccountAddress(safeAddress);
+        } else {
+          toast.update(newAccountToastId.current, {
+            render: 'Account Creation Failed 😕',
+            type: 'error',
+            isLoading: false,
+            autoClose: 5000
+          });
+          newAccountToastId.current = undefined;
+        }
       }
     }
   }
@@ -153,16 +168,29 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
 
   useMemo(async () => {
     if (txHash) {
-      // TODO: add loading indicator
       const receipt = await publicClient.waitForTransactionReceipt({
         hash: txHash
       });
 
-      if (receipt) {
-        if (receipt.status === 'success') {
-          toast.success('Payflow Account Successfully Deployed!');
-        } else {
-          toast.error('Payflow Account Failed To Deploy!');
+      if (receipt && receipt.status === 'success') {
+        if (newAccountToastId.current) {
+          toast.update(newAccountToastId.current, {
+            render: `Account ${shortenWalletAddressLabel(newAccountAddress)} created 🚀`,
+            type: 'success',
+            isLoading: false,
+            autoClose: 5000
+          });
+          newAccountToastId.current = undefined;
+        }
+      } else {
+        if (newAccountToastId.current) {
+          toast.update(newAccountToastId.current, {
+            render: 'Account Creation Failed 😕',
+            type: 'error',
+            isLoading: false,
+            autoClose: 5000
+          });
+          newAccountToastId.current = undefined;
         }
       }
     }

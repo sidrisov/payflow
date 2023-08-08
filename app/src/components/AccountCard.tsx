@@ -78,7 +78,7 @@ export function AccountCard(props: AccountNewDialogProps) {
             color="inherit"
             onClick={() => {
               copyToClipboard(account.address);
-              toast.success('Wallet address is copied to clipboard!');
+              toast.success('Address is copied!');
             }}>
             <ContentCopy fontSize="small" />
           </IconButton>

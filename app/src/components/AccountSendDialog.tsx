@@ -16,18 +16,19 @@ import {
   InputAdornment
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Address, WalletClient, usePublicClient, useSwitchNetwork, useWalletClient } from 'wagmi';
 import { ContentCopy, ExpandMore } from '@mui/icons-material';
-import { toast } from 'react-toastify';
+import { Id, toast } from 'react-toastify';
 import { copyToClipboard } from '../utils/copyToClipboard';
 
-import { Hash, TransactionReceipt, parseEther } from 'viem';
+import { Hash, TransactionReceipt, formatEther, parseEther } from 'viem';
 import { transferEth } from '../utils/zkSyncTransactions';
 import { zkSyncTestnet } from 'wagmi/chains';
 
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 import { safeTransferEth } from '../utils/safeTransactions';
+import { shortenWalletAddressLabel } from '../utils/address';
 
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
@@ -56,8 +57,14 @@ export default function AccountSendDialog({
 
   const [txHash, setTxHash] = useState<Hash>();
 
+  const sendToastId = useRef<Id>();
+
   const sendTransaction = async () => {
-    if (sendToAddress && sendAmount) {
+    if (sendToAddress && sendAmount && ethersSigner) {
+      sendToastId.current = toast.loading(
+        `Sending ${formatEther(sendAmount)} to ${shortenWalletAddressLabel(sendToAddress)} 💸`
+      );
+
       switchNetwork?.(chains.find((c) => c?.name === network)?.id);
 
       const txData = {
@@ -71,33 +78,54 @@ export default function AccountSendDialog({
       if (chains.find((c) => c?.name === network)?.id === zkSyncTestnet.id) {
         txHash = await transferEth(walletClient as WalletClient, txData);
       } else {
-        if (ethersSigner) {
-          txHash = await safeTransferEth(ethersSigner, txData);
-        } else {
-          toast.error('Failed to execute transaction!');
-          return;
-        }
+        txHash = await safeTransferEth(ethersSigner, txData);
       }
-      setTxHash(txHash);
+
+      if (!txHash) {
+        toast.update(sendToastId.current, {
+          render: `Transfer to ${shortenWalletAddressLabel(sendToAddress)} failed! 😕`,
+          type: 'error',
+          isLoading: false,
+          autoClose: 5000
+        });
+        sendToastId.current = undefined;
+      } else {
+        setTxHash(txHash);
+      }
     }
   };
 
   useMemo(async () => {
     if (txHash) {
-      // TODO: add loading indicator
       const receipt = (await publicClient.waitForTransactionReceipt({
         hash: txHash
-      })) as {};
+      })) as TransactionReceipt;
 
       console.log('Receipt: ', receipt);
 
-      if (receipt) {
-        if ((receipt as TransactionReceipt).status === 'success') {
-          toast.success(`Transfer from ${from} to ${sendToAddress} was successfully processed!`);
-        } else {
-          toast.error(`Transfer from ${from} to ${sendToAddress} failed!`);
+      if (receipt && receipt.status === 'success') {
+        if (sendToastId.current) {
+          toast.update(sendToastId.current, {
+            render: `Transfer to ${shortenWalletAddressLabel(
+              sendToAddress
+            )} was successfully processed!`,
+            type: 'success',
+            isLoading: false,
+            autoClose: 5000
+          });
+          sendToastId.current = undefined;
         }
         handleCloseCampaignDialog();
+      } else {
+        if (sendToastId.current) {
+          toast.update(sendToastId.current, {
+            render: `Transfer to ${shortenWalletAddressLabel(sendToAddress)} failed! 😕`,
+            type: 'error',
+            isLoading: false,
+            autoClose: 5000
+          });
+          sendToastId.current = undefined;
+        }
       }
     }
   }, [txHash]);
@@ -138,7 +166,7 @@ export default function AccountSendDialog({
               size="small"
               onClick={() => {
                 copyToClipboard(from);
-                toast.success('Wallet address is copied to clipboard!');
+                toast.success('Address is copied!');
               }}>
               <ContentCopy fontSize="small" />
             </IconButton>

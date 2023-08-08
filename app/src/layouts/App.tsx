@@ -18,6 +18,7 @@ import { toast } from 'react-toastify';
 
 import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
 import { formatUnits } from 'viem';
+import { shortenWalletAddressLabel } from '../utils/address';
 
 const drawerWidth = 151;
 
@@ -77,7 +78,9 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
           return;
         } else {
           toast.error(
-            `Please, logout or switch wallet! Connected wallet is different from verified: ${authAccount}`,
+            `Please, logout or switch wallet! Connected wallet is different from verified: ${shortenWalletAddressLabel(
+              authAccount
+            )}`,
             { autoClose: false }
           );
         }

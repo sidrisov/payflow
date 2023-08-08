@@ -1,7 +1,7 @@
 import '@rainbow-me/rainbowkit/styles.css';
 import 'react-toastify/dist/ReactToastify.css';
 
-import { Hash, formatUnits, parseEther, toHex } from 'viem';
+import { Hash, formatEther, formatUnits, parseEther, toHex } from 'viem';
 
 import {
   useContractRead,
@@ -29,8 +29,8 @@ import {
   Toolbar,
   Typography
 } from '@mui/material';
-import { useMemo, useState } from 'react';
-import { toast } from 'react-toastify';
+import { useMemo, useRef, useState } from 'react';
+import { Id, toast } from 'react-toastify';
 import { useParams } from 'react-router-dom';
 import { FlowType } from '../types/FlowType';
 import axios from 'axios';
@@ -58,17 +58,6 @@ export default function Send({ appSettings, setAppSettings }: any) {
   const [topUpAmount, setTopUpAmount] = useState(BigInt(0));
   const [comment, setComment] = useState('');
 
-  const publicClient = usePublicClient();
-  const { chains, switchNetwork } = useSwitchNetwork();
-  const { config } = usePrepareSendTransaction({
-    enabled: selectedPaymentAddress !== undefined,
-    to: selectedPaymentAddress,
-    value: topUpAmount,
-    data: toHex(comment)
-  });
-
-  const [txHash, setTxHash] = useState<Hash>();
-
   const { data: ensName } = useEnsName({
     address: flow.account,
     chainId: 1
@@ -78,8 +67,6 @@ export default function Send({ appSettings, setAppSettings }: any) {
     name: ensName,
     chainId: 1
   });
-
-  const { isSuccess, data, sendTransaction } = useSendTransaction(config);
 
   const { isSuccess: isEnsSuccess, data: ethUsdPriceFeedAddress } = useEnsAddress({
     name: 'eth-usd.data.eth',
@@ -97,14 +84,28 @@ export default function Send({ appSettings, setAppSettings }: any) {
     cacheTime: 60_000
   });
 
+  const publicClient = usePublicClient();
+  const { chains, switchNetwork } = useSwitchNetwork();
+
+  const { config } = usePrepareSendTransaction({
+    enabled: selectedPaymentAddress !== undefined,
+    to: selectedPaymentAddress,
+    value: topUpAmount
+    //data: toHex(comment)
+  });
+
+  const { isSuccess, isError, data, sendTransaction } = useSendTransaction(config);
+
+  const [txHash, setTxHash] = useState<Hash>();
+
+  const sendToastId = useRef<Id>();
+
   useMemo(async () => {
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${uuid}`,
         { withCredentials: true }
       );
-
-      console.log(response.data);
 
       setFlow(response.data);
     } catch (error) {
@@ -124,11 +125,20 @@ export default function Send({ appSettings, setAppSettings }: any) {
   }, [selectedPaymentNetwork]);
 
   useMemo(async () => {
-    if (isSuccess === true) {
+    if (isSuccess) {
       setTxHash(data?.hash);
-      toast.success('Payment was submitted!');
+    } else if (isError) {
+      if (sendToastId.current) {
+        toast.update(sendToastId.current, {
+          render: `Payment failed! 😕`,
+          type: 'error',
+          isLoading: false,
+          autoClose: 5000
+        });
+        sendToastId.current = undefined;
+      }
     }
-  }, [isSuccess, data]);
+  }, [isSuccess, isError, data]);
 
   useMemo(async () => {
     updateFlowTotalBalance(flow);
@@ -142,19 +152,32 @@ export default function Send({ appSettings, setAppSettings }: any) {
 
   useMemo(async () => {
     if (txHash) {
-      // TODO: add loading indicator
       const receipt = await publicClient.waitForTransactionReceipt({
         hash: txHash
       });
 
       console.log('Receipt: ', receipt);
 
-      if (receipt) {
-        if (receipt.status === 'success') {
+      if (receipt && receipt.status === 'success') {
+        if (sendToastId.current) {
+          toast.update(sendToastId.current, {
+            render: `Payment confirmed!`,
+            type: 'success',
+            isLoading: false,
+            autoClose: 5000
+          });
+          sendToastId.current = undefined;
           updateFlowTotalBalance(flow);
-          toast.success('Payment Confirmed!');
-        } else {
-          toast.error('Payment Failed!');
+        }
+      } else {
+        if (sendToastId.current) {
+          toast.update(sendToastId.current, {
+            render: `Payment failed! 😕`,
+            type: 'error',
+            isLoading: false,
+            autoClose: 5000
+          });
+          sendToastId.current = undefined;
         }
       }
     }
@@ -232,7 +255,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
                     size="small"
                     onClick={() => {
                       copyToClipboard(flow.account);
-                      toast.success('Wallet address is copied to clipboard!');
+                      toast.success('Address is copied!');
                     }}>
                     <ContentCopy fontSize="small" />
                   </IconButton>
@@ -253,7 +276,12 @@ export default function Send({ appSettings, setAppSettings }: any) {
                 autoHighlight
                 fullWidth
                 onChange={(_event, value) => {
-                  setSelectedPaymentNetwork(value as string);
+                  if (value) {
+                    switchNetwork?.(chains.find((c) => c?.name === value)?.id);
+                    setSelectedPaymentNetwork(value);
+                  } else {
+                    setSelectedPaymentNetwork('');
+                  }
                 }}
                 options={flow.wallets.flatMap((wallet) => wallet.network)}
                 renderInput={(params) => (
@@ -276,7 +304,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
                       size="small"
                       onClick={() => {
                         copyToClipboard(selectedPaymentAddress);
-                        toast.success('Wallet address is copied to clipboard!');
+                        toast.success('Address is copied!');
                       }}>
                       <ContentCopy fontSize="small" />
                     </IconButton>
@@ -332,10 +360,12 @@ export default function Send({ appSettings, setAppSettings }: any) {
                   size="medium"
                   color="primary"
                   onClick={() => {
-                    if (sendTransaction) {
-                      switchNetwork?.(chains.find((c) => c?.name === selectedPaymentNetwork)?.id);
-                      sendTransaction?.();
-                    }
+                    sendToastId.current = toast.loading(
+                      `Sending ${formatEther(topUpAmount)} to ${shortenWalletAddressLabel(
+                        selectedPaymentAddress
+                      )} 💸`
+                    );
+                    sendTransaction?.();
                   }}
                   sx={{ mt: 1, borderRadius: 3 }}>
                   PAY

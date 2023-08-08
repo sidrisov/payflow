@@ -16,17 +16,18 @@ import {
   InputAdornment
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Address, WalletClient, usePublicClient, useSwitchNetwork, useWalletClient } from 'wagmi';
 import { ContentCopy, ExpandMore } from '@mui/icons-material';
-import { toast } from 'react-toastify';
+import { Id, toast } from 'react-toastify';
 import { copyToClipboard } from '../utils/copyToClipboard';
 
-import { Hash, TransactionReceipt, parseEther } from 'viem';
+import { Hash, TransactionReceipt, formatEther, parseEther } from 'viem';
 import { withdrawEth } from '../utils/zkSyncTransactions';
 import { safeTransferEth } from '../utils/safeTransactions';
 import { zkSyncTestnet } from 'viem/chains';
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
+import { shortenWalletAddressLabel } from '../utils/address';
 
 export type FlowWithdrawalDialogProps = DialogProps &
   CloseCallbackType & {
@@ -54,8 +55,14 @@ export default function FlowWithdrawalDialog({
 
   const [txHash, setTxHash] = useState<Hash>();
 
+  const withdrawalToastId = useRef<Id>();
+
   const sendTransaction = async () => {
-    if (withdrawAmount) {
+    if (withdrawAmount && ethersSigner) {
+      withdrawalToastId.current = toast.loading(
+        `Sending ${formatEther(withdrawAmount)} to ${shortenWalletAddressLabel(to)} 💸`
+      );
+
       switchNetwork?.(chains.find((c) => c?.name === network)?.id);
 
       let txHash;
@@ -67,38 +74,57 @@ export default function FlowWithdrawalDialog({
           amount: withdrawAmount
         });
       } else {
-        if (ethersSigner) {
-          txHash = await safeTransferEth(ethersSigner, {
-            from,
-            to,
-            amount: withdrawAmount,
-            safeSigner: to
-          });
-        } else {
-          toast.error('Failed to execute transaction!');
-          return;
-        }
+        txHash = await safeTransferEth(ethersSigner, {
+          from,
+          to,
+          amount: withdrawAmount,
+          safeSigner: to
+        });
       }
-      setTxHash(txHash);
+
+      if (!txHash) {
+        toast.update(withdrawalToastId.current, {
+          render: `Withdrwal to ${shortenWalletAddressLabel(to)} failed! 😕`,
+          type: 'error',
+          isLoading: false,
+          autoClose: 5000
+        });
+        withdrawalToastId.current = undefined;
+      } else {
+        setTxHash(txHash);
+      }
     }
   };
 
   useMemo(async () => {
     if (txHash) {
-      // TODO: add loading indicator
       const receipt = (await publicClient.waitForTransactionReceipt({
         hash: txHash
-      })) as {};
+      })) as TransactionReceipt;
 
       console.log('Receipt: ', receipt);
 
-      if (receipt) {
-        if ((receipt as TransactionReceipt).status === 'success') {
-          toast.success(`Withdrawal from ${from} to ${to} was successfully processed!`);
-        } else {
-          toast.error(`Withdrawal from ${from} to ${to} failed!`);
+      if (receipt && receipt.status === 'success') {
+        if (withdrawalToastId.current) {
+          toast.update(withdrawalToastId.current, {
+            render: `Withdrawal to ${shortenWalletAddressLabel(to)} was successfully processed!`,
+            type: 'success',
+            isLoading: false,
+            autoClose: 5000
+          });
+          withdrawalToastId.current = undefined;
         }
         handleCloseCampaignDialog();
+      } else {
+        if (withdrawalToastId.current) {
+          toast.update(withdrawalToastId.current, {
+            render: `Withdrawal to ${shortenWalletAddressLabel(to)} failed! 😕`,
+            type: 'error',
+            isLoading: false,
+            autoClose: 5000
+          });
+          withdrawalToastId.current = undefined;
+        }
       }
     }
   }, [txHash]);
@@ -139,7 +165,7 @@ export default function FlowWithdrawalDialog({
               size="small"
               onClick={() => {
                 copyToClipboard(from);
-                toast.success('Wallet address is copied to clipboard!');
+                toast.success('Address is copied!');
               }}>
               <ContentCopy fontSize="small" />
             </IconButton>
@@ -159,7 +185,7 @@ export default function FlowWithdrawalDialog({
               size="small"
               onClick={() => {
                 copyToClipboard(to);
-                toast.success('Wallet address is copied to clipboard!');
+                toast.success('Address is copied!');
               }}>
               <ContentCopy fontSize="small" />
             </IconButton>

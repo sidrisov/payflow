@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { FlowType, FlowWalletType } from '../types/FlowType';
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useMemo, useRef, useState } from 'react';
 import { convertToUSD, getTotalBalance } from '../utils/getBalance';
 import {
   useContractWrite,
@@ -35,7 +35,7 @@ import {
   Edit,
   Share
 } from '@mui/icons-material';
-import { toast } from 'react-toastify';
+import { Id, toast } from 'react-toastify';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { copyToClipboard } from '../utils/copyToClipboard';
 import {
@@ -115,6 +115,8 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const { isSuccess, data, write } = useContractWrite(config);
   const [txHash, setTxHash] = useState<Hash>();
 
+  const newWalletToastId = useRef<Id>();
+
   const safeDeployCallback = (txHash: string | undefined): void => {
     if (!txHash) {
       toast.error('Returned Tx Hash with error!');
@@ -171,6 +173,8 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   }, [newAccountNetwork, newAccountAddress]);
 
   async function deployNewWallet() {
+    newWalletToastId.current = toast.loading('Creating Wallet 🪄');
+
     if (isZkSyncNetwork) {
       write?.();
     } else {
@@ -188,7 +192,17 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
           callback: safeDeployCallback
         });
 
-        setNewAccountAddress(safeAddress);
+        if (safeAddress) {
+          setNewAccountAddress(safeAddress);
+        } else {
+          toast.update(newWalletToastId.current, {
+            render: 'Wallet Creation Failed 😕',
+            type: 'error',
+            isLoading: false,
+            autoClose: 5000
+          });
+          newWalletToastId.current = undefined;
+        }
       }
     }
   }
@@ -239,18 +253,31 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
 
   useMemo(async () => {
     if (txHash) {
-      // TODO: add loading indicator
       const receipt = await publicClient.waitForTransactionReceipt({
         hash: txHash
       });
 
       console.log('Receipt: ', receipt);
 
-      if (receipt) {
-        if (receipt.status === 'success') {
-          toast.success('Payflow Wallet Successfully Deployed!');
-        } else {
-          toast.error('Payflow Wallet Failed To Deploy!');
+      if (receipt && receipt.status === 'success') {
+        if (newWalletToastId.current) {
+          toast.update(newWalletToastId.current, {
+            render: `Wallet ${shortenWalletAddressLabel(newAccountAddress)} created 🚀`,
+            type: 'success',
+            isLoading: false,
+            autoClose: 5000
+          });
+          newWalletToastId.current = undefined;
+        }
+      } else {
+        if (newWalletToastId.current) {
+          toast.update(newWalletToastId.current, {
+            render: 'Wallet Creation Failed 😕',
+            type: 'error',
+            isLoading: false,
+            autoClose: 5000
+          });
+          newWalletToastId.current = undefined;
         }
       }
     }
@@ -374,7 +401,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                           size="small"
                           onClick={() => {
                             copyToClipboard(wallet.address);
-                            toast.success('Wallet address is copied to clipboard!');
+                            toast.success('Address is copied!');
                           }}>
                           <ContentCopy fontSize="small" />
                         </IconButton>
@@ -443,7 +470,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                           size="small"
                           onClick={() => {
                             copyToClipboard(wallet.address);
-                            toast.success('Wallet address is copied to clipboard!');
+                            toast.success('Address is copied!');
                           }}>
                           <ContentCopy fontSize="small" />
                         </IconButton>
