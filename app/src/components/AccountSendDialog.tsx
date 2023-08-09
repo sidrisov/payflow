@@ -106,9 +106,7 @@ export default function AccountSendDialog({
       if (receipt && receipt.status === 'success') {
         if (sendToastId.current) {
           toast.update(sendToastId.current, {
-            render: `Transfer to ${shortenWalletAddressLabel(
-              sendToAddress
-            )} was successfully processed!`,
+            render: `Transfer to ${shortenWalletAddressLabel(sendToAddress)} processed!`,
             type: 'success',
             isLoading: false,
             autoClose: 5000

@@ -107,7 +107,7 @@ export default function FlowWithdrawalDialog({
       if (receipt && receipt.status === 'success') {
         if (withdrawalToastId.current) {
           toast.update(withdrawalToastId.current, {
-            render: `Withdrawal to ${shortenWalletAddressLabel(to)} was successfully processed!`,
+            render: `Withdrawal to ${shortenWalletAddressLabel(to)} processed!`,
             type: 'success',
             isLoading: false,
             autoClose: 5000

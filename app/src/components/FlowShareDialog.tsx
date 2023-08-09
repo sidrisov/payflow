@@ -2,8 +2,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  useMediaQuery,
-  useTheme,
   DialogProps,
   Stack,
   Chip,
@@ -23,16 +21,12 @@ export type FlowShareDialogProps = DialogProps &
   };
 
 export default function FlowShareDialog({ closeStateCallback, ...props }: FlowShareDialogProps) {
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
-
   function handleCloseCampaignDialog() {
     closeStateCallback();
   }
 
   return props.title ? (
     <Dialog
-      fullScreen={fullScreen}
       onClose={handleCloseCampaignDialog}
       {...props}
       PaperProps={{ sx: { borderRadius: 5 } }}
@@ -46,24 +40,24 @@ export default function FlowShareDialog({ closeStateCallback, ...props }: FlowSh
           </Typography>
         </Box>
       </DialogTitle>
-      <DialogContent>
-        <Stack m={1} direction="column" spacing={2} component="form" id="flow" sx={{ width: 250 }}>
-          <Stack spacing={1} justifyItems="center">
-            <Chip
-              icon={<Link />}
-              label={props.link?.replace(/^https?:\/\//, '')}
-              clickable
-              onClick={() => {
-                copyToClipboard(props.link);
-                toast.success('Link is copied!');
-              }}
-              sx={{
-                alignSelf: 'flex-start',
-                textOverflow: 'ellipsis'
-              }}
-            />
-          </Stack>
-          {props.link && <QRCode alphabetic="true" value={props.link} />}
+      <DialogContent sx={{ display: 'flex', justifyContent: 'center' }}>
+        <Stack m={1} direction="column" spacing={3}>
+          <Chip
+            icon={<Link />}
+            label={props.link?.replace(/^https?:\/\//, '')}
+            clickable
+            onClick={() => {
+              copyToClipboard(props.link);
+              toast.success('Link is copied!');
+            }}
+            sx={{
+              alignSelf: 'center',
+              textOverflow: 'ellipsis'
+            }}
+          />
+          {props.link && (
+            <QRCode alignmentBaseline="central" alphabetic="true" value={props.link} />
+          )}
         </Stack>
       </DialogContent>
     </Dialog>

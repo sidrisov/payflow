@@ -105,12 +105,12 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const [flowShareInfo, setFlowShareInfo] = useState({} as { title: string; link: string });
 
   const { config } = usePrepareContractWrite({
-    enabled: newAccountNetwork !== undefined,
+    enabled: isZkSyncNetwork === true,
     address: ZKSYNC_PAYFLOW_FACTORY_ADDRESS,
     abi: PayFlowFactoryArtifact.abi,
     functionName: 'deployContract',
     args: [saltNonce, masterAccount],
-    chainId: chains.find((c) => c?.name === newAccountNetwork)?.id
+    chainId: zkSyncTestnet.id
   });
   const { isSuccess, data, write } = useContractWrite(config);
   const [txHash, setTxHash] = useState<Hash>();
