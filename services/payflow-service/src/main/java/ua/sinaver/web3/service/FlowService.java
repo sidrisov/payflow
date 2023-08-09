@@ -36,7 +36,7 @@ public class FlowService implements IFlowService {
     public void saveFlow(FlowMessage flowDto, User user) {
         val flow = convert(flowDto, user);
         flowRepository.save(flow);
-        log.info("Saved flow {}", flow);
+        log.debug("Saved flow {}", flow);
     }
 
     @Override
@@ -139,10 +139,8 @@ public class FlowService implements IFlowService {
         return new Wallet(walletDto.address(), walletDto.network(), walletDto.safe(), walletDto.smart());
     }
 
-    // TODO: wallet.getMaster() != null redundant check, but since we have stale
-    // date, let's keep it till next db wipe
     private static WalletMessage convert(Wallet wallet) {
         return new WalletMessage(wallet.getAddress(), wallet.getNetwork(), wallet.isSmart(), wallet.isSafe(),
-                wallet.isSmart() && wallet.getMaster() != null ? wallet.getMaster().getAddress() : null);
+                wallet.isSmart() ? wallet.getMaster().getAddress() : null);
     }
 }

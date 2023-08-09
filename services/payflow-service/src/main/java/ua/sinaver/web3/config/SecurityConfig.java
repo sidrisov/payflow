@@ -36,9 +36,14 @@ public class SecurityConfig {
                                 .httpBasic(basic -> basic.disable())
                                 .formLogin(form -> form.disable())
                                 .authorizeHttpRequests(requests -> requests
+                                                // siwe
                                                 .requestMatchers(HttpMethod.GET, "/auth/nonce").permitAll()
                                                 .requestMatchers(HttpMethod.POST, "/auth/verify").permitAll()
+                                                // flow payment
                                                 .requestMatchers(HttpMethod.GET, "/flows/{uuid}").permitAll()
+                                                // request payment
+                                                .requestMatchers(HttpMethod.GET, "/requests/{uuid}").permitAll()
+                                                .requestMatchers(HttpMethod.POST, "/requests/{uuid}/proof").permitAll()
                                                 .anyRequest()
                                                 .authenticated())
                                 .sessionManagement(session -> session
