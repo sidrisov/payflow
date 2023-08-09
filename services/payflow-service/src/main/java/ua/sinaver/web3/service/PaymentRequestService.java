@@ -14,6 +14,7 @@ import ua.sinaver.web3.data.PaymentRequest;
 import ua.sinaver.web3.data.User;
 import ua.sinaver.web3.message.FlowMessage;
 import ua.sinaver.web3.message.PaymentRequestMessage;
+import ua.sinaver.web3.repository.FlowRepository;
 import ua.sinaver.web3.repository.PaymentRequestRepository;
 import ua.sinaver.web3.repository.UserRepository;
 
@@ -26,10 +27,18 @@ public class PaymentRequestService implements IPaymentRequestService {
     private PaymentRequestRepository requestRepository;
 
     @Autowired
+    private FlowRepository flowRepository;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Override
-    public void saveRequest(User user, PaymentRequestMessage requestMessage) {
+    public void saveRequest(User user, PaymentRequestMessage requestMessage) throws Exception {
+        Flow flow = flowRepository.findByUuid(requestMessage.flowUuid());
+        if (flow == null) {
+            throw new Exception("Flow doesn't exist!");
+        }
+
         val request = convert(user, requestMessage);
         requestRepository.save(request);
         log.debug("Saved payment request {}", request);
@@ -78,14 +87,16 @@ public class PaymentRequestService implements IPaymentRequestService {
     }
 
     private static PaymentRequestMessage convert(User user, PaymentRequest request) {
-        return new PaymentRequestMessage(user.getSigner(), request.getTitle(), request.getDescription(),
+        return new PaymentRequestMessage(user.getSigner(), request.getUuid(), request.getTitle(),
+                request.getDescription(),
                 request.getUuid(),
                 request.getNetwork(), request.getAddress(), request.getAmount(),
                 request.isPayed(), request.getProof());
     }
 
     private static PaymentRequest convert(User user, PaymentRequestMessage requestMessage) {
-        val paymentRequest = new PaymentRequest(user.getId(), requestMessage.title(), requestMessage.description(),
+        val paymentRequest = new PaymentRequest(user.getId(), requestMessage.flowUuid(), requestMessage.title(),
+                requestMessage.description(),
                 requestMessage.network(), requestMessage.address(), requestMessage.amount());
         return paymentRequest;
     }

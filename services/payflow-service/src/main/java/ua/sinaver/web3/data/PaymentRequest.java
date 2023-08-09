@@ -29,6 +29,10 @@ public class PaymentRequest {
     @Column
     private Integer userId;
 
+    // TODO: add one-to-one mapping with flow, compare performance
+    @Column
+    private String flowUuid;
+
     @Column
     private String title;
 
@@ -56,9 +60,11 @@ public class PaymentRequest {
     @Version
     private Long version;
 
-    public PaymentRequest(Integer userId, String title, String description, String network, String address,
+    public PaymentRequest(Integer userId, String flowUuid, String title, String description, String network,
+            String address,
             String amount) {
         this.userId = userId;
+        this.flowUuid = flowUuid;
         this.title = title;
         this.description = description;
         this.uuid = RandomStringUtils.random(8, true, true);

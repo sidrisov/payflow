@@ -64,7 +64,7 @@ import { safeDeploy } from '../utils/safeTransactions';
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 export type FlowViewDialogProps = DialogProps &
   CloseCallbackType & {
-    flow: FlowType;
+    flow?: FlowType;
   };
 
 const ZKSYNC_PAYFLOW_FACTORY_ADDRESS = import.meta.env.VITE_ZKSYNC_PAYFLOW_FACTORY_ADDRESS;
@@ -74,7 +74,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const flow = props.flow;
-  const saltNonce = props.flow.uuid ? keccak256(toHex(props.flow.uuid)) : undefined;
+  const saltNonce = flow && flow.uuid ? keccak256(toHex(flow.uuid)) : undefined;
 
   const { chains, switchNetwork } = useSwitchNetwork();
   const publicClient = usePublicClient();
@@ -143,7 +143,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
         (parseFloat(formatEther(await getTotalBalance(balances))) * ethUsdPrice).toFixed(1)
       );
     }
-  }, [flow.wallets]);
+  }, [flow]);
 
   useMemo(async () => {
     if (flow && flow.wallets && chains) {
@@ -152,7 +152,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
         chains.filter((c) => !addedNetworks.includes(c.name)).map((c) => c.name)
       );
     }
-  }, [flow.wallets, chains]);
+  }, [flow, chains]);
 
   useMemo(async () => {
     setZkSyncNetwork(

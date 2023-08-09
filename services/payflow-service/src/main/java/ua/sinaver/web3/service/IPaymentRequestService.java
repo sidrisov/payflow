@@ -6,7 +6,7 @@ import ua.sinaver.web3.data.User;
 import ua.sinaver.web3.message.PaymentRequestMessage;
 
 public interface IPaymentRequestService {
-    void saveRequest(User user, PaymentRequestMessage requestMessage);
+    void saveRequest(User user, PaymentRequestMessage requestMessage) throws Exception;
 
     List<PaymentRequestMessage> getAllRequests(User user);
 

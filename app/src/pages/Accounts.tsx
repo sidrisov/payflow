@@ -8,7 +8,7 @@ import { UserContext } from '../contexts/UserContext';
 import { Add } from '@mui/icons-material';
 
 export default function Accounts() {
-  const { isAuthenticated, accounts, setInitiateRefresh } = useContext(UserContext);
+  const { isAuthenticated, accounts, setInitiateAccountsRefresh } = useContext(UserContext);
   const [availableNetworksToAddAccount, setAvailableNetworksToAddAccount] = useState<string[]>([]);
 
   const [openAccountCreate, setOpenAccountCreate] = useState(false);
@@ -92,7 +92,7 @@ export default function Accounts() {
         closeStateCallback={async () => {
           setOpenAccountCreate(false);
           // TODO: just refresh, lately it's better to track each flow's update separately
-          setInitiateRefresh(true);
+          setInitiateAccountsRefresh(true);
         }}
       />
     </>

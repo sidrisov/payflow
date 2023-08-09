@@ -43,7 +43,7 @@ public class Flow {
     @Column(columnDefinition = "boolean")
     private boolean shareable;
 
-    @Column
+    @Column(unique = true)
     private String uuid;
 
     @OneToMany(mappedBy = "flow", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)

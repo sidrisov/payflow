@@ -323,7 +323,7 @@ async function waitForRelayTaskToComplete(
 
   if (relayTaskResult.taskState !== TaskState.ExecSuccess) {
     toast.error(
-      `Failed to relay transaction with: ${relayTaskResult.taskState}, ${
+      `Failed to relay transaction: ${relayTaskResult.taskState}, ${
         relayTaskResult.lastCheckMessage ?? 'no error'
       }!`
     );

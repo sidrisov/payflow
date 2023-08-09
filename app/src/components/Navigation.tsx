@@ -66,13 +66,7 @@ export default function Navigation() {
           to={appRoutes[1]}
           icon={<Merge />}
         />
-        <AlignedLinkTab
-          disabled
-          label="Requests"
-          tabIndex={2}
-          to={appRoutes[2]}
-          icon={<Payments />}
-        />
+        <AlignedLinkTab label="Requests" tabIndex={2} to={appRoutes[2]} icon={<Payments />} />
         <AlignedLinkTab
           label="Settings"
           tabIndex={3}

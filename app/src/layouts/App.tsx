@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
@@ -19,6 +19,7 @@ import { toast } from 'react-toastify';
 import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
 import { formatUnits } from 'viem';
 import { shortenWalletAddressLabel } from '../utils/address';
+import { FlowType } from '../types/FlowType';
 
 const drawerWidth = 151;
 
@@ -26,8 +27,10 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
   const { isConnected, address } = useAccount();
   const [walletBalances, setWalletBalances] = useState<Map<string, bigint>>(new Map());
   const [accounts, setAccounts] = useState<AccountType[]>();
+  const [flows, setFlows] = useState<FlowType[]>();
   const [smartAccountAllowedChains, setSmartAccountAllowedChains] = useState<string[]>([]);
-  const [initiateRefresh, setInitiateRefresh] = useState(false);
+  const [initiateAccountsRefresh, setInitiateAccountsRefresh] = useState(false);
+  const [initiateFlowsRefresh, setInitiateFlowsRefresh] = useState(false);
 
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -49,10 +52,6 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
     cacheTime: 60_000
   });
 
-  useEffect(() => {
-    console.log(ethUsdPrice);
-  }, [ethUsdPrice]);
-
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
@@ -65,6 +64,19 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
       );
 
       setAccounts(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async function fetchFlows() {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows`,
+        { withCredentials: true }
+      );
+
+      setFlows(response.data);
     } catch (error) {
       console.log(error);
     }
@@ -90,16 +102,24 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
   }, [isConnected, address, authStatus, authAccount]);
 
   useMemo(async () => {
-    if (initiateRefresh && accounts) {
-      setInitiateRefresh(false);
-      fetchAccounts();
+    if (initiateAccountsRefresh && accounts) {
+      setInitiateAccountsRefresh(false);
+      await fetchAccounts();
     }
-  }, [accounts, initiateRefresh]);
+  }, [accounts, initiateAccountsRefresh]);
+
+  useMemo(async () => {
+    if (initiateFlowsRefresh && flows) {
+      setInitiateFlowsRefresh(false);
+      await fetchFlows();
+    }
+  }, [accounts, initiateAccountsRefresh]);
 
   useMemo(async () => {
     console.log({ isAuthenticated: isAuthorized });
     if (isAuthorized) {
-      fetchAccounts();
+      await fetchAccounts();
+      await fetchFlows();
     }
   }, [isAuthorized]);
 
@@ -119,9 +139,12 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
           setAppSettings,
           accounts,
           setAccounts,
+          flows,
+          setFlows,
           smartAccountAllowedChains,
           setSmartAccountAllowedChains,
-          setInitiateRefresh,
+          setInitiateAccountsRefresh,
+          setInitiateFlowsRefresh,
           walletBalances,
           setWalletBalances,
           ethUsdPrice
