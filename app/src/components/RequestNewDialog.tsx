@@ -90,7 +90,7 @@ export default function RequestNewDialog({ closeStateCallback, ...props }: Reque
       }}>
       <DialogTitle>
         <Box display="flex" justifyContent="center">
-          <Typography variant="h6">New Request</Typography>
+          <Typography variant="h6">New Payment Request</Typography>
         </Box>
       </DialogTitle>
       <DialogContent>

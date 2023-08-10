@@ -3,11 +3,9 @@ package ua.sinaver.web3.controller;
 import java.security.Principal;
 import java.util.List;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,9 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.transaction.Transactional;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-import ua.sinaver.web3.message.FlowMessage;
 import ua.sinaver.web3.message.PaymentRequestMessage;
-import ua.sinaver.web3.message.WalletMessage;
+import ua.sinaver.web3.message.ProofMessage;
 import ua.sinaver.web3.service.IPaymentRequestService;
 import ua.sinaver.web3.service.IUserService;
 
@@ -76,11 +73,11 @@ public class PaymentRequestController {
 
     @PostMapping("/{uuid}/proof")
     @ResponseStatus(HttpStatus.CREATED)
-    public void submitPaymentProof(@PathVariable String uuid, @RequestBody String proof, Principal principal)
+    public void submitPaymentProof(@PathVariable String uuid, @RequestBody ProofMessage proof, Principal principal)
             throws Exception {
 
-        log.debug("submitProof: {} {}", uuid, proof);
-        requestService.addProof(uuid, proof);
+        log.debug("submitProof: {} {}", uuid);
+        requestService.addProof(uuid, proof.txHash());
     }
 
     @PostMapping("/{uuid}/payed")

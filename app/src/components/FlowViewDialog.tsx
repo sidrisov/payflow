@@ -53,7 +53,7 @@ import { readContract } from 'wagmi/actions';
 import axios from 'axios';
 import create2Address from '../utils/create2Address';
 import FlowWithdrawalDialog from './FlowWithdrawalDialog';
-import FlowShareDialog from './FlowShareDialog';
+import ShareDialog from './ShareDialog';
 import { UserContext } from '../contexts/UserContext';
 import { networks } from '../utils/constants';
 import { zkSyncTestnet } from 'wagmi/chains';
@@ -640,7 +640,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
         network={selectedWithdrawalWallet.network}
         closeStateCallback={async () => setOpenWithdrawalDialog(false)}
       />
-      <FlowShareDialog
+      <ShareDialog
         open={openFlowShare}
         title={flowShareInfo.title}
         link={flowShareInfo.link}

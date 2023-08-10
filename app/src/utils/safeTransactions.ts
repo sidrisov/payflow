@@ -32,13 +32,12 @@ import { RelayResponse, TransactionStatusResponse } from '@gelatonetwork/relay-s
 
 import { Hash, Address } from 'viem';
 import { toast } from 'react-toastify';
+import { delay } from './delay';
 
 const ZERO_ADDRESS = ethers.constants.AddressZero;
 const LATEST_SAFE_VERSION = '1.3.0' as SafeVersion;
 const GELATO_API_KEY = import.meta.env.VITE_GELATO_API_KEY;
 const relayKit = new GelatoRelayPack(GELATO_API_KEY);
-
-const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 // TODO: update to safeVersion: "1.4.1" (AA compatible once Safe deploys relevant contracts)
 export async function safeDeploy({

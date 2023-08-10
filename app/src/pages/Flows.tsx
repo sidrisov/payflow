@@ -15,7 +15,7 @@ import FlowNewDialog from '../components/FlowNewDialog';
 import { useNetwork } from 'wagmi';
 import { FlowType, FlowWalletType } from '../types/FlowType';
 import { Add, OpenInFull, ShareOutlined } from '@mui/icons-material';
-import FlowShareDialog from '../components/FlowShareDialog';
+import ShareDialog from '../components/ShareDialog';
 import FlowViewDialog from '../components/FlowViewDialog';
 import { getTotalBalance, getWalletBalance } from '../utils/getBalance';
 import { UserContext } from '../contexts/UserContext';
@@ -247,7 +247,7 @@ export default function Flows() {
           setInitiateFlowsRefresh(true);
         }}
       />
-      <FlowShareDialog
+      <ShareDialog
         open={openFlowShare}
         title={flowShareInfo.title}
         link={flowShareInfo.link}

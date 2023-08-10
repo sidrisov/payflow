@@ -14,13 +14,13 @@ import { Link } from '@mui/icons-material';
 import { copyToClipboard } from '../utils/copyToClipboard';
 import { toast } from 'react-toastify';
 
-export type FlowShareDialogProps = DialogProps &
+export type ShareDialogProps = DialogProps &
   CloseCallbackType & {
     title: string;
     link: string;
   };
 
-export default function FlowShareDialog({ closeStateCallback, ...props }: FlowShareDialogProps) {
+export default function ShareDialog({ closeStateCallback, ...props }: ShareDialogProps) {
   function handleCloseCampaignDialog() {
     closeStateCallback();
   }

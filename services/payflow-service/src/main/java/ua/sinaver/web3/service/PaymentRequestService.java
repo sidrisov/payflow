@@ -87,7 +87,7 @@ public class PaymentRequestService implements IPaymentRequestService {
     }
 
     private static PaymentRequestMessage convert(User user, PaymentRequest request) {
-        return new PaymentRequestMessage(user.getSigner(), request.getUuid(), request.getTitle(),
+        return new PaymentRequestMessage(user.getSigner(), request.getFlowUuid(), request.getTitle(),
                 request.getDescription(),
                 request.getUuid(),
                 request.getNetwork(), request.getAddress(), request.getAmount(),

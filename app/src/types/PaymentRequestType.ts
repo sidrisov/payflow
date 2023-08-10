@@ -1,4 +1,4 @@
-import { Address } from 'viem';
+import { Address, Hash } from 'viem';
 
 export interface PaymentRequestType {
   account: Address;
@@ -10,5 +10,5 @@ export interface PaymentRequestType {
   address: string;
   amount: string;
   payed: boolean;
-  proof: string | undefined;
+  proof: Hash | undefined;
 }
