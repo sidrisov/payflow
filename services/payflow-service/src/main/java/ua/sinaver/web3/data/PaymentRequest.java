@@ -20,7 +20,7 @@ import lombok.ToString;
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(indexes = { @Index(columnList = "userId"), @Index(columnList = "uuid") })
+@Table(indexes = { @Index(columnList = "userId,payed,proof"), @Index(columnList = "uuid") })
 public class PaymentRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

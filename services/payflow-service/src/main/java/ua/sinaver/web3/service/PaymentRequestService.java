@@ -46,7 +46,7 @@ public class PaymentRequestService implements IPaymentRequestService {
 
     @Override
     public List<PaymentRequestMessage> getAllRequests(User user) {
-        val requests = requestRepository.findByUserId(user.getId());
+        val requests = requestRepository.findByUserIdOrderByPayedAscProofDesc(user.getId());
         return requests.stream()
                 .map(r -> convert(user, r))
                 .toList();

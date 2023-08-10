@@ -11,7 +11,7 @@ import {
 import { networks } from '../utils/constants';
 import { AccountType } from '../types/AccountType';
 import { shortenWalletAddressLabel } from '../utils/address';
-import { Receipt, ContentCopy, ArrowDownward, Send, SwapHoriz } from '@mui/icons-material';
+import { Receipt, ContentCopy, ArrowDownward, Send } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { copyToClipboard } from '../utils/copyToClipboard';
 import { useContext, useState } from 'react';

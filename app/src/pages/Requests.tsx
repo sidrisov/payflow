@@ -5,6 +5,7 @@ import {
   Avatar,
   Box,
   Card,
+  Collapse,
   Container,
   IconButton,
   Stack,
@@ -22,7 +23,14 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 import { PaymentRequestType } from '../types/PaymentRequestType';
-import { Add, Check, ShareOutlined } from '@mui/icons-material';
+import {
+  Add,
+  Check,
+  KeyboardArrowDown,
+  KeyboardArrowUp,
+  OpenInNew,
+  ShareOutlined
+} from '@mui/icons-material';
 import { shortenWalletAddressLabel } from '../utils/address';
 import RequestNewDialog from '../components/RequestNewDialog';
 import ShareDialog from '../components/ShareDialog';
@@ -30,6 +38,7 @@ import { useNetwork, usePublicClient } from 'wagmi';
 import { toast } from 'react-toastify';
 import { switchNetwork } from 'wagmi/actions';
 import { formatEther } from 'viem';
+import { green } from '@mui/material/colors';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 export default function Requests() {
@@ -115,6 +124,119 @@ export default function Requests() {
     }
   }
 
+  function RequestTableRow(props: { index: number; request: PaymentRequestType }) {
+    const { index, request } = props;
+    const [expand, setExpand] = useState(false);
+    const requestChain = chains.find((c) => c.name === request.network);
+
+    return (
+      <>
+        <TableRow>
+          {!smallScreen && <TableCell align="center">{index + 1}</TableCell>}
+          <TableCell align="center">{request.title}</TableCell>
+          {!smallScreen && (
+            <TableCell align="center">
+              {flows?.find((f) => f.uuid === request.flowUuid)?.title}
+            </TableCell>
+          )}
+          <TableCell>
+            <Box display="flex" flexDirection="row" justifyContent="center" alignItems="center">
+              <Avatar
+                src={'/networks/' + request.network + '.png'}
+                sx={{ width: 24, height: 24 }}
+              />
+              {!smallScreen && (
+                <Typography variant="body2" sx={{ ml: 1 }}>
+                  {`${request.network} : `}
+                </Typography>
+              )}
+              <Typography variant="body2" sx={{ ml: 1 }}>
+                {shortenWalletAddressLabel(request.address)}
+              </Typography>
+            </Box>
+          </TableCell>
+          <TableCell align="center">{request.amount}</TableCell>
+          <TableCell align="center">
+            {request.payed ? '✅ Payed' : request.proof ? '📝 Verify' : '⏳ Pending'}
+          </TableCell>
+          <TableCell>
+            <Stack spacing="5" direction="row">
+              {request.payed && (
+                <IconButton
+                  aria-label="expand row"
+                  size="small"
+                  onClick={() => setExpand(!expand)}
+                  sx={{ border: 0.5, borderStyle: 'dashed' }}>
+                  {expand ? (
+                    <KeyboardArrowUp fontSize="small" />
+                  ) : (
+                    <KeyboardArrowDown fontSize="small" />
+                  )}
+                </IconButton>
+              )}
+              {!request.payed && !request.proof && (
+                <Tooltip title="Share link or QR">
+                  <IconButton
+                    color="inherit"
+                    size="small"
+                    onClick={() => {
+                      setRequestShareInfo({
+                        title: request.title,
+                        link: `${DAPP_URL}/request/${request.uuid}`
+                      });
+                      setOpenRequestShare(true);
+                    }}
+                    sx={{ border: 0.5, borderStyle: 'dashed' }}>
+                    <ShareOutlined fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+              {!request.payed && request.proof && (
+                <Tooltip title="Verify Proof">
+                  <IconButton
+                    color="inherit"
+                    size="small"
+                    onClick={async () => {
+                      if (requestChain) {
+                        if (requestChain.id !== chain?.id) {
+                          await switchNetwork({ chainId: requestChain.id });
+                        }
+                        setRequestInVerification(request);
+                      }
+                    }}
+                    sx={{ border: 0.5, borderStyle: 'dashed' }}>
+                    <Check fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Stack>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell sx={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
+            <Collapse in={expand} timeout="auto" unmountOnExit>
+              <Box
+                display="flex"
+                flexDirection="row"
+                alignItems="center"
+                justifyContent="center"
+                m="5"
+                sx={{ margin: 3 }}>
+                <Typography>txHash: {request.proof}</Typography>
+
+                <a
+                  href={`${chain?.blockExplorers?.default.url}/tx/${request.proof}`}
+                  target="_blank">
+                  <OpenInNew sx={{ justifySelf: 'center', color: green[500] }} fontSize="medium" />
+                </a>
+              </Box>
+            </Collapse>
+          </TableCell>
+        </TableRow>
+      </>
+    );
+  }
+
   return (
     <>
       <Helmet>
@@ -165,91 +287,13 @@ export default function Requests() {
                     <TableCell align="center">Amount (ETH)</TableCell>
                     <TableCell align="center">Status</TableCell>
                     <TableCell align="center">Actions</TableCell>
+                    <TableCell />
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {requests &&
-                    requests.map((_, i) => (
-                      <TableRow key={i} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                        {!smallScreen && <TableCell align="center">{i + 1}</TableCell>}
-                        <TableCell align="center">{requests[i].title}</TableCell>
-                        {!smallScreen && (
-                          <TableCell align="center">
-                            {flows?.find((f) => f.uuid === requests[i].flowUuid)?.title}
-                          </TableCell>
-                        )}
-                        <TableCell>
-                          <Box
-                            display="flex"
-                            flexDirection="row"
-                            justifyContent="center"
-                            alignItems="center">
-                            <Avatar
-                              src={'/networks/' + requests[i].network + '.png'}
-                              sx={{ width: 24, height: 24 }}
-                            />
-                            {!smallScreen && (
-                              <Typography variant="body2" sx={{ ml: 1 }}>
-                                {`${requests[i].network} : `}
-                              </Typography>
-                            )}
-                            <Typography variant="body2" sx={{ ml: 1 }}>
-                              {shortenWalletAddressLabel(requests[i].address)}
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell align="center">{requests[i].amount}</TableCell>
-                        <TableCell align="center">
-                          {requests[i].payed
-                            ? '✅ Payed'
-                            : requests[i].proof
-                            ? '📝 Verify'
-                            : '⏳ Pending'}
-                        </TableCell>
-                        <TableCell>
-                          <Stack spacing="5" direction="row">
-                            {!requests[i].payed && !requests[i].proof && (
-                              <Tooltip title="Share link or QR">
-                                <IconButton
-                                  color="inherit"
-                                  size="small"
-                                  onClick={() => {
-                                    setRequestShareInfo({
-                                      title: requests[i].title,
-                                      link: `${DAPP_URL}/request/${requests[i].uuid}`
-                                    });
-                                    setOpenRequestShare(true);
-                                  }}
-                                  sx={{ border: 0.5, borderStyle: 'dashed' }}>
-                                  <ShareOutlined fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            )}
-                            {!requests[i].payed && requests[i].proof && (
-                              <Tooltip title="Verify Proof">
-                                <IconButton
-                                  color="inherit"
-                                  size="small"
-                                  onClick={async () => {
-                                    const requestChainId = chains.find(
-                                      (c) => c?.name === requests[i].network
-                                    )?.id;
-
-                                    if (requestChainId) {
-                                      if (requestChainId !== chain?.id) {
-                                        await switchNetwork({ chainId: requestChainId });
-                                      }
-                                      setRequestInVerification(requests[i]);
-                                    }
-                                  }}
-                                  sx={{ border: 0.5, borderStyle: 'dashed' }}>
-                                  <Check fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            )}
-                          </Stack>
-                        </TableCell>
-                      </TableRow>
+                    requests.map((request, i) => (
+                      <RequestTableRow index={i} key={request.uuid} request={request} />
                     ))}
                 </TableBody>
               </Table>
