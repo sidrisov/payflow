@@ -113,7 +113,7 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
       setInitiateFlowsRefresh(false);
       await fetchFlows();
     }
-  }, [accounts, initiateAccountsRefresh]);
+  }, [accounts, initiateFlowsRefresh]);
 
   useMemo(async () => {
     console.log({ isAuthenticated: isAuthorized });

@@ -33,12 +33,18 @@ import { RelayResponse, TransactionStatusResponse } from '@gelatonetwork/relay-s
 import { Hash, Address } from 'viem';
 import { toast } from 'react-toastify';
 import { delay } from './delay';
+import { base, optimism } from 'wagmi/chains';
 
 const ZERO_ADDRESS = ethers.constants.AddressZero;
 const LATEST_SAFE_VERSION = '1.3.0' as SafeVersion;
-const GELATO_API_KEY = import.meta.env.VITE_GELATO_API_KEY;
-const relayKit = new GelatoRelayPack(GELATO_API_KEY);
 
+const GELATO_TESTNET_API_KEY = import.meta.env.VITE_GELATO_TESTNET_API_KEY;
+const GELATO_MAINNET_API_KEY = import.meta.env.VITE_GELATO_MAINNET_API_KEY;
+
+const relayKitTestnet = new GelatoRelayPack(GELATO_TESTNET_API_KEY);
+const relayKitMainnet = new GelatoRelayPack(GELATO_MAINNET_API_KEY);
+
+const mainnet_chains_supporting_relaykit: number[] = [optimism.id, base.id];
 // TODO: update to safeVersion: "1.4.1" (AA compatible once Safe deploys relevant contracts)
 export async function safeDeploy({
   ethersSigner,
@@ -60,6 +66,11 @@ export async function safeDeploy({
     signerOrProvider: ethersSigner
   });
 
+  const chainId = await ethAdapter.getChainId();
+  const relayKit = mainnet_chains_supporting_relaykit.includes(chainId)
+    ? relayKitMainnet
+    : relayKitTestnet;
+
   try {
     const safeFactory = await SafeFactory.create({ ethAdapter, safeVersion });
     const predictedAddress = await safeFactory.predictSafeAddress(safeAccountConfig, saltNonce);
@@ -77,7 +88,6 @@ export async function safeDeploy({
         return;
       }
     } else {
-      const chainId = await ethAdapter.getChainId();
       const readOnlyProxyFactoryContract = await ethAdapter.getSafeProxyFactoryContract({
         safeVersion,
         singletonDeployment: getProxyFactoryDeployment({
@@ -160,13 +170,17 @@ export async function safeTransferEth(
     signerOrProvider: ethersSigner
   });
 
+  const chainId = await ethAdapter.getChainId();
+  const relayKit = mainnet_chains_supporting_relaykit.includes(chainId)
+    ? relayKitMainnet
+    : relayKitTestnet;
+
   try {
     const safe = await Safe.create({ ethAdapter, safeAddress: tx.from as string });
     const safeSingletonContract = await getSafeContract({
       ethAdapter,
       safeVersion: await safe.getContractVersion()
     });
-    const chainId = await safe.getChainId();
 
     const options: MetaTransactionOptions = {
       gasLimit: '500000',

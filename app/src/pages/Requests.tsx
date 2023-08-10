@@ -140,10 +140,10 @@ export default function Requests() {
             </TableCell>
           )}
           <TableCell>
-            <Box display="flex" flexDirection="row" justifyContent="center" alignItems="center">
+            <Box display="flex" flexDirection="row" justifyContent="flex-start" alignItems="center">
               <Avatar
                 src={'/networks/' + request.network + '.png'}
-                sx={{ width: 24, height: 24 }}
+                sx={{ ml: 2, width: 24, height: 24 }}
               />
               {!smallScreen && (
                 <Typography variant="body2" sx={{ ml: 1 }}>
@@ -225,7 +225,7 @@ export default function Requests() {
                 <Typography>txHash: {request.proof}</Typography>
 
                 <a
-                  href={`${chain?.blockExplorers?.default.url}/tx/${request.proof}`}
+                  href={`${requestChain?.blockExplorers?.default.url}/tx/${request.proof}`}
                   target="_blank">
                   <OpenInNew sx={{ justifySelf: 'center', color: green[500] }} fontSize="medium" />
                 </a>
