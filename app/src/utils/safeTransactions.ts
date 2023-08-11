@@ -16,7 +16,8 @@ import Safe, {
   EthersAdapter,
   SafeAccountConfig,
   SafeFactory,
-  getSafeContract
+  getSafeContract,
+  ContractNetworksConfig
 } from '@safe-global/protocol-kit';
 
 import { GelatoRelayPack } from '@safe-global/relay-kit';
@@ -33,7 +34,7 @@ import { RelayResponse, TransactionStatusResponse } from '@gelatonetwork/relay-s
 import { Hash, Address } from 'viem';
 import { toast } from 'react-toastify';
 import { delay } from './delay';
-import { base, optimism } from 'wagmi/chains';
+import { base, baseGoerli, optimism, optimismGoerli, zoraTestnet } from 'wagmi/chains';
 
 const ZERO_ADDRESS = ethers.constants.AddressZero;
 const LATEST_SAFE_VERSION = '1.3.0' as SafeVersion;
@@ -41,10 +42,26 @@ const LATEST_SAFE_VERSION = '1.3.0' as SafeVersion;
 const GELATO_TESTNET_API_KEY = import.meta.env.VITE_GELATO_TESTNET_API_KEY;
 const GELATO_MAINNET_API_KEY = import.meta.env.VITE_GELATO_MAINNET_API_KEY;
 
-const relayKitTestnet = new GelatoRelayPack(GELATO_TESTNET_API_KEY);
-const relayKitMainnet = new GelatoRelayPack(GELATO_MAINNET_API_KEY);
+const RELAY_KIT_TESTNET = new GelatoRelayPack(GELATO_TESTNET_API_KEY);
+const RELAY_KIT_MAINNET = new GelatoRelayPack(GELATO_MAINNET_API_KEY);
 
-const mainnet_chains_supporting_relaykit: number[] = [optimism.id, base.id];
+const MAINNET_CHAINS_SUPPORTING_RELAY: number[] = [optimism.id, base.id];
+const TESTNET_CHAINS_SUPPORTING_RELAY: number[] = [optimismGoerli.id, baseGoerli.id];
+const CUSTOM_CHAINS: number[] = [zoraTestnet.id];
+
+const CONTRACT_NETWORKS: ContractNetworksConfig = {
+  [zoraTestnet.id]: {
+    safeMasterCopyAddress: '0x3E5c63644E683549055b9Be8653de26E0B4CD36E',
+    safeProxyFactoryAddress: '0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2',
+    multiSendAddress: '0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761',
+    multiSendCallOnlyAddress: '0x40A2aCCbd92BCA938b02010E17A5b8929b49130D',
+    fallbackHandlerAddress: '0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4',
+    signMessageLibAddress: '0x98FFBBF51bb33A056B08ddf711f289936AafF717',
+    createCallAddress: '0x7cbB62EaA69F79e6873cD1ecB2392971036cFAa4',
+    simulateTxAccessorAddress: '0x59AD6735bCd8152B84860Cb256dD9e96b85F69Da'
+  }
+};
+
 // TODO: update to safeVersion: "1.4.1" (AA compatible once Safe deploys relevant contracts)
 export async function safeDeploy({
   ethersSigner,
@@ -67,16 +84,20 @@ export async function safeDeploy({
   });
 
   const chainId = await ethAdapter.getChainId();
-  const relayKit = mainnet_chains_supporting_relaykit.includes(chainId)
-    ? relayKitMainnet
-    : relayKitTestnet;
+
+  const contractNetworks = CUSTOM_CHAINS.includes(chainId) ? CONTRACT_NETWORKS : undefined;
+
+  const safeFactory = await SafeFactory.create({
+    ethAdapter,
+    safeVersion,
+    contractNetworks
+  });
+
+  const predictedAddress = await safeFactory.predictSafeAddress(safeAccountConfig, saltNonce);
 
   try {
-    const safeFactory = await SafeFactory.create({ ethAdapter, safeVersion });
-    const predictedAddress = await safeFactory.predictSafeAddress(safeAccountConfig, saltNonce);
-
-    safeAccountConfig.paymentReceiver;
-    if (!sponsored) {
+    // deploy without relaying
+    if (!sponsored || !isRelaySupported(chainId)) {
       const safe = await safeFactory.deploySafe({
         safeAccountConfig,
         saltNonce,
@@ -88,6 +109,12 @@ export async function safeDeploy({
         return;
       }
     } else {
+      const relayKit = getRelayKitForChainId(chainId);
+      if (!relayKit) {
+        console.error('Relayer not supported for: ', chainId);
+        return;
+      }
+
       const readOnlyProxyFactoryContract = await ethAdapter.getSafeProxyFactoryContract({
         safeVersion,
         singletonDeployment: getProxyFactoryDeployment({
@@ -95,6 +122,7 @@ export async function safeDeploy({
           version: safeVersion
         })
       });
+
       const proxyFactoryAddress = readOnlyProxyFactoryContract.getAddress();
       const readOnlyFallbackHandlerContract =
         await ethAdapter.getCompatibilityFallbackHandlerContract({
@@ -171,122 +199,178 @@ export async function safeTransferEth(
   });
 
   const chainId = await ethAdapter.getChainId();
-  const relayKit = mainnet_chains_supporting_relaykit.includes(chainId)
-    ? relayKitMainnet
-    : relayKitTestnet;
 
-  try {
-    const safe = await Safe.create({ ethAdapter, safeAddress: tx.from as string });
-    const safeSingletonContract = await getSafeContract({
-      ethAdapter,
-      safeVersion: await safe.getContractVersion()
-    });
+  const contractNetworks = CUSTOM_CHAINS.includes(chainId) ? CONTRACT_NETWORKS : undefined;
 
-    const options: MetaTransactionOptions = {
-      gasLimit: '500000',
-      isSponsored: false
-    };
+  const safe = await Safe.create({
+    ethAdapter,
+    safeAddress: tx.from as string,
+    contractNetworks
+  });
 
-    console.log(tx.amount.toString());
-    const safeTransferTransactionData: MetaTransactionData = {
-      to: tx.to,
-      value: tx.amount.toString(),
-      data: '0x',
-      operation: OperationType.Call
-    };
+  const safeSingletonContract = await getSafeContract({
+    ethAdapter,
+    safeVersion: await safe.getContractVersion(),
+    customContracts: contractNetworks ? contractNetworks[chainId] : undefined
+  });
 
-    const standardizedSafeTx = await relayKit.createRelayedTransaction(
-      safe,
-      [safeTransferTransactionData],
-      options
-    );
+  const safeTransferTransactionData: MetaTransactionData = {
+    to: tx.to,
+    value: tx.amount.toString(),
+    data: '0x',
+    operation: OperationType.Call
+  };
 
-    let signedSafeTx;
-    if (tx.safeSigner) {
-      const safeSigner = await Safe.create({ ethAdapter, safeAddress: tx.safeSigner as string });
-      const safeTxTransferHash = await safe.getTransactionHash(standardizedSafeTx);
+  if (isRelaySupported(chainId)) {
+    const relayKit = MAINNET_CHAINS_SUPPORTING_RELAY.includes(chainId)
+      ? RELAY_KIT_MAINNET
+      : RELAY_KIT_TESTNET;
 
-      const safeTxApproveHashData: MetaTransactionData = {
-        to: tx.from,
-        value: '0',
-        data: safeSingletonContract.encode('approveHash', [safeTxTransferHash]),
-        operation: OperationType.Call
+    try {
+      const options: MetaTransactionOptions = {
+        gasLimit: '500000',
+        isSponsored: false
       };
 
-      const safeTxApproveHash = await safeSigner.createTransaction({
-        safeTransactionData: safeTxApproveHashData
-      });
-
-      const signedSafeTxApproveHash = await safeSigner.signTransaction(safeTxApproveHash);
-
-      const encodedSafeTxApproveHash = safeSingletonContract.encode('execTransaction', [
-        signedSafeTxApproveHash.data.to,
-        signedSafeTxApproveHash.data.value,
-        signedSafeTxApproveHash.data.data,
-        signedSafeTxApproveHash.data.operation,
-        signedSafeTxApproveHash.data.safeTxGas,
-        signedSafeTxApproveHash.data.baseGas,
-        signedSafeTxApproveHash.data.gasPrice,
-        signedSafeTxApproveHash.data.gasToken,
-        signedSafeTxApproveHash.data.refundReceiver,
-        signedSafeTxApproveHash.encodedSignatures()
-      ]);
-
-      const relayResponse: RelayResponse = await relayKit.sendSponsorTransaction(
-        tx.safeSigner,
-        encodedSafeTxApproveHash,
-        chainId
+      const standardizedSafeTx = await relayKit.createRelayedTransaction(
+        safe,
+        [safeTransferTransactionData],
+        options
       );
 
-      if (!(await waitForRelayTaskToComplete(relayResponse.taskId))) {
-        return;
+      let signedSafeTx;
+      if (tx.safeSigner) {
+        const safeSigner = await Safe.create({
+          ethAdapter,
+          safeAddress: tx.safeSigner as string,
+          contractNetworks
+        });
+        const safeTxTransferHash = await safe.getTransactionHash(standardizedSafeTx);
+
+        const safeTxApproveHashData: MetaTransactionData = {
+          to: tx.from,
+          value: '0',
+          data: safeSingletonContract.encode('approveHash', [safeTxTransferHash]),
+          operation: OperationType.Call
+        };
+
+        const safeTxApproveHash = await safeSigner.createTransaction({
+          safeTransactionData: safeTxApproveHashData
+        });
+
+        const signedSafeTxApproveHash = await safeSigner.signTransaction(safeTxApproveHash);
+
+        const encodedSafeTxApproveHash = safeSingletonContract.encode('execTransaction', [
+          signedSafeTxApproveHash.data.to,
+          signedSafeTxApproveHash.data.value,
+          signedSafeTxApproveHash.data.data,
+          signedSafeTxApproveHash.data.operation,
+          signedSafeTxApproveHash.data.safeTxGas,
+          signedSafeTxApproveHash.data.baseGas,
+          signedSafeTxApproveHash.data.gasPrice,
+          signedSafeTxApproveHash.data.gasToken,
+          signedSafeTxApproveHash.data.refundReceiver,
+          signedSafeTxApproveHash.encodedSignatures()
+        ]);
+
+        const relayResponse: RelayResponse = await relayKit.sendSponsorTransaction(
+          tx.safeSigner,
+          encodedSafeTxApproveHash,
+          chainId
+        );
+
+        if (!(await waitForRelayTaskToComplete(relayResponse.taskId))) {
+          return;
+        }
+
+        standardizedSafeTx.addSignature(generatePreValidatedSignature(tx.safeSigner));
+
+        signedSafeTx = standardizedSafeTx;
+      } else {
+        signedSafeTx = await safe.signTransaction(standardizedSafeTx);
       }
 
-      standardizedSafeTx.addSignature(generatePreValidatedSignature(tx.safeSigner));
+      const encodedTransaction = safeSingletonContract.encode('execTransaction', [
+        signedSafeTx.data.to,
+        signedSafeTx.data.value,
+        signedSafeTx.data.data,
+        signedSafeTx.data.operation,
+        signedSafeTx.data.safeTxGas,
+        signedSafeTx.data.baseGas,
+        signedSafeTx.data.gasPrice,
+        signedSafeTx.data.gasToken,
+        signedSafeTx.data.refundReceiver,
+        signedSafeTx.encodedSignatures()
+      ]);
 
-      // TODO: add a logic where we don't sponsor approvalHash call
-      /*     let ownersWhoApprovedTx;
-    do {
-      await delay(1000);
-      ownersWhoApprovedTx = await safe.getOwnersWhoApprovedTx(safeTxTransferHash);
-      console.log({ ownersWhoApprovedTx });
-    } while (ownersWhoApprovedTx.length === 0);
+      const relayResponse: RelayResponse = await relayKit.sendSyncTransaction(
+        tx.from,
+        encodedTransaction,
+        chainId,
+        options
+      );
 
-    for (const owner of ownersWhoApprovedTx) {
-      standardizedSafeTx.addSignature(generatePreValidatedSignature(owner));
-    } */
-
-      signedSafeTx = standardizedSafeTx;
-    } else {
-      signedSafeTx = await safe.signTransaction(standardizedSafeTx);
+      return await waitForRelayTaskToComplete(relayResponse.taskId);
+    } catch (error) {
+      console.error('Failed to transfer: ', error);
+      return;
     }
+  } else {
+    try {
+      const standardizedSafeTx = await safe.createTransaction({
+        safeTransactionData: safeTransferTransactionData
+      });
+      let signedSafeTx;
+      if (tx.safeSigner) {
+        const safeSigner = await Safe.create({
+          ethAdapter,
+          safeAddress: tx.safeSigner as string,
+          contractNetworks
+        });
+        const safeTxTransferHash = await safe.getTransactionHash(standardizedSafeTx);
 
-    console.log({ signedSafeTx });
+        const safeTxApproveHashData: MetaTransactionData = {
+          to: tx.from,
+          value: '0',
+          data: safeSingletonContract.encode('approveHash', [safeTxTransferHash]),
+          operation: OperationType.Call
+        };
 
-    const encodedTransaction = safeSingletonContract.encode('execTransaction', [
-      signedSafeTx.data.to,
-      signedSafeTx.data.value,
-      signedSafeTx.data.data,
-      signedSafeTx.data.operation,
-      signedSafeTx.data.safeTxGas,
-      signedSafeTx.data.baseGas,
-      signedSafeTx.data.gasPrice,
-      signedSafeTx.data.gasToken,
-      signedSafeTx.data.refundReceiver,
-      signedSafeTx.encodedSignatures()
-    ]);
+        const safeTxApproveHash = await safeSigner.createTransaction({
+          safeTransactionData: safeTxApproveHashData
+        });
 
-    const relayResponse: RelayResponse = await relayKit.sendSyncTransaction(
-      tx.from,
-      encodedTransaction,
-      chainId,
-      options
-    );
+        const signedSafeTxApproveHash = await safeSigner.signTransaction(safeTxApproveHash);
 
-    return await waitForRelayTaskToComplete(relayResponse.taskId);
-  } catch (error) {
-    console.error('Failed to transfer: ', error);
-    return;
+        const response = await safeSigner.executeTransaction(signedSafeTxApproveHash, {
+          gasLimit: 500000
+        });
+        if (!response.hash) {
+          return;
+        }
+        const ownersWhoApprovedTx = await waitForOwnersWhoApprovedTx(
+          safe,
+          safeTxTransferHash as Hash
+        );
+
+        if (!ownersWhoApprovedTx) {
+          return;
+        }
+
+        for (const owner of ownersWhoApprovedTx) {
+          standardizedSafeTx.addSignature(generatePreValidatedSignature(owner));
+        }
+
+        signedSafeTx = standardizedSafeTx;
+      } else {
+        signedSafeTx = await safe.signTransaction(standardizedSafeTx);
+      }
+      const response = await safe.executeTransaction(signedSafeTx, { gasLimit: 500000 });
+      return response.hash as Hash;
+    } catch (error) {
+      console.error('Failed to transfer: ', error);
+      return;
+    }
   }
 }
 
@@ -346,6 +430,30 @@ async function waitForRelayTaskToComplete(
   return relayTaskResult.transactionHash as Hash;
 }
 
+async function waitForOwnersWhoApprovedTx(
+  safe: Safe,
+  hash: Hash,
+  period: number = 3000,
+  timeout: number = 30000
+): Promise<Address[] | undefined> {
+  const maxPolls = timeout / period;
+  let pollCounter = 0;
+
+  let ownersWhoApprovedTx;
+  do {
+    pollCounter++;
+    await delay(period);
+    ownersWhoApprovedTx = await safe.getOwnersWhoApprovedTx(hash);
+  } while (ownersWhoApprovedTx.length === 0 && pollCounter < maxPolls);
+
+  if (!ownersWhoApprovedTx || ownersWhoApprovedTx.length === 0) {
+    toast.error('Transaction timeout!');
+    return;
+  }
+
+  return ownersWhoApprovedTx as Address[];
+}
+
 export function generatePreValidatedSignature(ownerAddress: string): SafeSignature {
   const signature =
     '0x000000000000000000000000' +
@@ -354,4 +462,27 @@ export function generatePreValidatedSignature(ownerAddress: string): SafeSignatu
     '01';
 
   return new EthSafeSignature(ownerAddress, signature);
+}
+
+function getRelayKitForChainId(chainId: number) {
+  if (MAINNET_CHAINS_SUPPORTING_RELAY.includes(chainId)) {
+    return RELAY_KIT_MAINNET;
+  }
+
+  if (TESTNET_CHAINS_SUPPORTING_RELAY.includes(chainId)) {
+    return RELAY_KIT_TESTNET;
+  }
+
+  return;
+}
+
+function isRelaySupported(chainId: number) {
+  if (
+    MAINNET_CHAINS_SUPPORTING_RELAY.includes(chainId) ||
+    TESTNET_CHAINS_SUPPORTING_RELAY.includes(chainId)
+  ) {
+    return true;
+  }
+
+  return false;
 }
