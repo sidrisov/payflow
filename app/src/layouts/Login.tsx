@@ -1,15 +1,4 @@
-import '@rainbow-me/rainbowkit/styles.css';
-import 'react-toastify/dist/ReactToastify.css';
-
-import {
-  AppBar,
-  Box,
-  Card,
-  IconButton,
-  Stack,
-  Toolbar,
-  Typography
-} from '@mui/material';
+import { AppBar, Box, Card, IconButton, Stack, Toolbar, Typography } from '@mui/material';
 import { DarkModeOutlined, LightModeOutlined } from '@mui/icons-material';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import HideOnScroll from '../components/HideOnScroll';
@@ -72,7 +61,8 @@ export default function Login({ authStatus, authAccount, appSettings, setAppSett
               Wallet Connected: {address ? 'Yes' : 'No'}
             </Typography>
             <Typography alignSelf="flex-start" variant="subtitle2">
-              Authenticated: {address === authAccount && authStatus === 'authenticated' ? 'Yes' : 'No'}
+              Authenticated:{' '}
+              {address === authAccount && authStatus === 'authenticated' ? 'Yes' : 'No'}
             </Typography>
             <ConnectButton showBalance={{ smallScreen: false, largeScreen: false }} />
           </Box>

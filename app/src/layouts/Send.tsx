@@ -1,6 +1,3 @@
-import '@rainbow-me/rainbowkit/styles.css';
-import 'react-toastify/dist/ReactToastify.css';
-
 import { Hash, formatEther, formatUnits, parseEther } from 'viem';
 
 import {
@@ -57,7 +54,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
   const [selectedPaymentNetwork, setSelectedPaymentNetwork] = useState('');
   const [selectedPaymentAddress, setSelectedPaymentAddress] = useState('');
   const [topUpAmount, setTopUpAmount] = useState(BigInt(0));
-  const [comment, setComment] = useState('');
+  const [, /* comment */ setComment] = useState('');
 
   const { data: ensName } = useEnsName({
     address: flow.account,
