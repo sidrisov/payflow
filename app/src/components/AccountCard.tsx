@@ -6,6 +6,7 @@ import {
   Divider,
   IconButton,
   Stack,
+  Tooltip,
   Typography
 } from '@mui/material';
 import { networks } from '../utils/constants';
@@ -64,24 +65,28 @@ export function AccountCard(props: AccountNewDialogProps) {
 
         <Stack spacing={1} direction="row" alignItems="center">
           {account.safe && (
-            <a
-              href={`https://app.safe.global/home?safe=${networkShortName}:${account.address}`}
-              target="_blank">
-              <Avatar src="/safe.png" sx={{ width: 16, height: 16 }} />
-            </a>
+            <Tooltip title="Open in Safe Web Wallet">
+              <a
+                href={`https://app.safe.global/home?safe=${networkShortName}:${account.address}`}
+                target="_blank">
+                <Avatar src="/safe.png" sx={{ width: 16, height: 16 }} />
+              </a>
+            </Tooltip>
           )}
           <Typography sx={{ fontSize: 15, fontWeight: 'bold' }}>
             {shortenWalletAddressLabel(account.address)}
           </Typography>
-          <IconButton
-            size="small"
-            color="inherit"
-            onClick={() => {
-              copyToClipboard(account.address);
-              toast.success('Address is copied!');
-            }}>
-            <ContentCopy fontSize="small" />
-          </IconButton>
+          <Tooltip title="Copy Address">
+            <IconButton
+              size="small"
+              color="inherit"
+              onClick={() => {
+                copyToClipboard(account.address);
+                toast.success('Address is copied!');
+              }}>
+              <ContentCopy fontSize="small" />
+            </IconButton>
+          </Tooltip>
         </Stack>
       </Box>
       <Divider
@@ -103,38 +108,36 @@ export function AccountCard(props: AccountNewDialogProps) {
         </Box>
       </Divider>
       <Stack spacing={2} direction="row" alignSelf="center">
-        <IconButton
-          color="inherit"
-          onClick={() => {
-            toast.error('Feature not supported yet!');
-          }}
-          sx={{ border: 1, borderStyle: 'dashed' }}>
-          <ArrowDownward />
-        </IconButton>
-        <IconButton
-          color="inherit"
-          onClick={async () => {
-            setOpenWithdrawalDialog(true);
-          }}
-          sx={{ border: 1, borderStyle: 'dashed' }}>
-          <Send />
-        </IconButton>
-{/*         <IconButton
-          color="inherit"
-          onClick={() => {
-            toast.error('Feature not supported yet!');
-          }}
-          sx={{ border: 1, borderStyle: 'dashed' }}>
-          <SwapHoriz />
-        </IconButton> */}
-        <IconButton
-          color="inherit"
-          onClick={() => {
-            toast.error('Feature not supported yet!');
-          }}
-          sx={{ border: 1, borderStyle: 'dashed' }}>
-          <Receipt />
-        </IconButton>
+        <Tooltip title="Receive">
+          <IconButton
+            color="inherit"
+            onClick={() => {
+              toast.error('Feature not supported yet!');
+            }}
+            sx={{ border: 1, borderStyle: 'dashed' }}>
+            <ArrowDownward />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Send">
+          <IconButton
+            color="inherit"
+            onClick={async () => {
+              setOpenWithdrawalDialog(true);
+            }}
+            sx={{ border: 1, borderStyle: 'dashed' }}>
+            <Send />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Transactions">
+          <IconButton
+            color="inherit"
+            onClick={() => {
+              toast.error('Feature not supported yet!');
+            }}
+            sx={{ border: 1, borderStyle: 'dashed' }}>
+            <Receipt />
+          </IconButton>
+        </Tooltip>
       </Stack>
       <AddressQRCodeDialog
         open={openAddressQRCode}

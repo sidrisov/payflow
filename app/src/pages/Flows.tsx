@@ -212,13 +212,15 @@ export default function Flows() {
                         '& .MuiAvatar-root': { width: 20, height: 20, fontSize: 10 }
                       }}>
                       {[...Array(Math.min(4, flow.wallets.length))].map((_item, i) => (
-                        <Avatar
-                          key={`wallet_avatar_${flow.uuid}_${i}`}
-                          src={'/networks/' + flow.wallets[i].network + '.png'}
-                        />
+                        <Tooltip title={flow.wallets[i].network}>
+                          <Avatar
+                            key={`wallet_avatar_${flow.uuid}_${i}`}
+                            src={'/networks/' + flow.wallets[i].network + '.png'}
+                          />
+                        </Tooltip>
                       ))}
                     </AvatarGroup>
-                    <Tooltip title="Share link or QR">
+                    <Tooltip title="Share Link / QR">
                       <IconButton
                         disabled={flow.wallets.length === 0}
                         color="inherit"

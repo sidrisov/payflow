@@ -27,6 +27,7 @@ import {
   Stack,
   TextField,
   Toolbar,
+  Tooltip,
   Typography
 } from '@mui/material';
 import { useMemo, useRef, useState } from 'react';
@@ -251,14 +252,16 @@ export default function Send({ appSettings, setAppSettings }: any) {
                   <Typography ml={1} variant="subtitle2">
                     {ensName ? ensName : shortenWalletAddressLabel(flow.account)}
                   </Typography>
-                  <IconButton
-                    size="small"
-                    onClick={() => {
-                      copyToClipboard(flow.account);
-                      toast.success('Address is copied!');
-                    }}>
-                    <ContentCopy fontSize="small" />
-                  </IconButton>
+                  <Tooltip title="Copy Address">
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        copyToClipboard(flow.account);
+                        toast.success('Address is copied!');
+                      }}>
+                      <ContentCopy fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
                 </Card>
               </Divider>
 
@@ -300,21 +303,25 @@ export default function Send({ appSettings, setAppSettings }: any) {
                     <Typography ml={1}>
                       {shortenWalletAddressLabel(selectedPaymentAddress)}
                     </Typography>
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        copyToClipboard(selectedPaymentAddress);
-                        toast.success('Address is copied!');
-                      }}>
-                      <ContentCopy fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        setOpenAddressQRCode(true);
-                      }}>
-                      <QrCode2 fontSize="small" />
-                    </IconButton>
+                    <Tooltip title="Copy Address">
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          copyToClipboard(selectedPaymentAddress);
+                          toast.success('Address is copied!');
+                        }}>
+                        <ContentCopy fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Show QR">
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          setOpenAddressQRCode(true);
+                        }}>
+                        <QrCode2 fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                 </>
               )}

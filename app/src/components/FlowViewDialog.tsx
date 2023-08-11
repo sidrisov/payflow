@@ -392,29 +392,33 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                       justifyContent="space-between"
                       sx={{ border: 1, borderRadius: 3, p: 1 }}>
                       <Box display="flex" flexDirection="row" alignItems="center">
-                        <Tooltip color="white" title={wallet.network}>
+                        <Tooltip title={wallet.network}>
                           <Avatar
                             src={'/networks/' + wallet.network + '.png'}
                             sx={{ width: 24, height: 24 }}
                           />
                         </Tooltip>
                         <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
-                        <IconButton
-                          size="small"
-                          onClick={() => {
-                            copyToClipboard(wallet.address);
-                            toast.success('Address is copied!');
-                          }}>
-                          <ContentCopy fontSize="small" />
-                        </IconButton>
+                        <Tooltip title="Copy Address">
+                          <IconButton
+                            size="small"
+                            onClick={() => {
+                              copyToClipboard(wallet.address);
+                              toast.success('Address is copied!');
+                            }}>
+                            <ContentCopy fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
                         {wallet.safe && (
-                          <a
-                            href={`https://app.safe.global/home?safe=${shortNetworkName(
-                              wallet.network
-                            )}:${wallet.address}`}
-                            target="_blank">
-                            <Avatar src="/safe.png" sx={{ width: 16, height: 16 }} />
-                          </a>
+                          <Tooltip title="Open in Safe Web Wallet">
+                            <a
+                              href={`https://app.safe.global/home?safe=${shortNetworkName(
+                                wallet.network
+                              )}:${wallet.address}`}
+                              target="_blank">
+                              <Avatar src="/safe.png" sx={{ width: 16, height: 16 }} />
+                            </a>
+                          </Tooltip>
                         )}
                       </Box>
                       <Typography variant="subtitle2">
@@ -426,14 +430,16 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                       </Typography>
                     </Box>
                     {withdrawFlowWallet && (
-                      <IconButton
-                        size="small"
-                        onClick={async () => {
-                          setSelectedWithdrawalWallet(wallet);
-                          setOpenWithdrawalDialog(true);
-                        }}>
-                        <Download fontSize="small" />
-                      </IconButton>
+                      <Tooltip title="Withdraw">
+                        <IconButton
+                          size="small"
+                          onClick={async () => {
+                            setSelectedWithdrawalWallet(wallet);
+                            setOpenWithdrawalDialog(true);
+                          }}>
+                          <Download fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     )}
                   </Box>
                 ))}
@@ -469,14 +475,16 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                           sx={{ width: 24, height: 24 }}
                         />
                         <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
-                        <IconButton
-                          size="small"
-                          onClick={() => {
-                            copyToClipboard(wallet.address);
-                            toast.success('Address is copied!');
-                          }}>
-                          <ContentCopy fontSize="small" />
-                        </IconButton>
+                        <Tooltip title="Copy Address">
+                          <IconButton
+                            size="small"
+                            onClick={() => {
+                              copyToClipboard(wallet.address);
+                              toast.success('Address is copied!');
+                            }}>
+                            <ContentCopy fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
                       </Box>
                       <Typography variant="subtitle2">
                         $
@@ -519,7 +527,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                   onChange={(_event, value) => {
                     if (value) {
                       setNewAccountNetwork(value);
-                      // switch netwrok only for smart accounts,
+                      // switch network only for smart accounts,
                       // as those will require signing transaction
                       if (smartAccountAllowedChains.includes(value)) {
                         switchNetwork?.(chains.find((c) => c?.name === value)?.id);
@@ -586,51 +594,61 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
             ))}
           {!(editFlow || addFlowWallet || withdrawFlowWallet) && (
             <Stack spacing={1} direction="row" alignSelf="center">
-              <IconButton
-                color="inherit"
-                onClick={() => {
-                  setAddFlowWallet(!addFlowWallet);
-                }}
-                sx={{ border: 1, borderStyle: 'dashed' }}>
-                <Add fontSize="small" />
-              </IconButton>
-              <IconButton
-                color="inherit"
-                disabled={flow.wallets && flow.wallets.length === 0}
-                onClick={async () => {
-                  setFlowShareInfo({
-                    title: flow.title,
-                    link: `${DAPP_URL}/send/${flow.uuid}`
-                  });
-                  setOpenFlowShare(true);
-                }}
-                sx={{ border: 1, borderStyle: 'dashed' }}>
-                <Share fontSize="small" />
-              </IconButton>
-              <IconButton
-                color="inherit"
-                onClick={() => {
-                  setEditFlow(!editFlow);
-                }}
-                sx={{ border: 1, borderStyle: 'dashed' }}>
-                <Edit fontSize="small" />
-              </IconButton>
-              <IconButton
-                color="inherit"
-                onClick={async () => {
-                  setWithdrawFlowWallet(!withdrawFlowWallet);
-                }}
-                sx={{ border: 1, borderStyle: 'dashed' }}>
-                <Download fontSize="small" />
-              </IconButton>
-              <IconButton
-                color="inherit"
-                onClick={async () => {
-                  toast.error('Feature not supported yet!');
-                }}
-                sx={{ border: 1, borderStyle: 'dashed' }}>
-                <Close fontSize="small" />
-              </IconButton>
+              <Tooltip title="Add Wallet">
+                <IconButton
+                  color="inherit"
+                  onClick={() => {
+                    setAddFlowWallet(!addFlowWallet);
+                  }}
+                  sx={{ border: 1, borderStyle: 'dashed' }}>
+                  <Add fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Share Link / QR">
+                <IconButton
+                  color="inherit"
+                  disabled={flow.wallets && flow.wallets.length === 0}
+                  onClick={async () => {
+                    setFlowShareInfo({
+                      title: flow.title,
+                      link: `${DAPP_URL}/send/${flow.uuid}`
+                    });
+                    setOpenFlowShare(true);
+                  }}
+                  sx={{ border: 1, borderStyle: 'dashed' }}>
+                  <Share fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Edit">
+                <IconButton
+                  color="inherit"
+                  onClick={() => {
+                    setEditFlow(!editFlow);
+                  }}
+                  sx={{ border: 1, borderStyle: 'dashed' }}>
+                  <Edit fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Withdraw">
+                <IconButton
+                  color="inherit"
+                  onClick={async () => {
+                    setWithdrawFlowWallet(!withdrawFlowWallet);
+                  }}
+                  sx={{ border: 1, borderStyle: 'dashed' }}>
+                  <Download fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Suspend">
+                <IconButton
+                  color="inherit"
+                  onClick={async () => {
+                    toast.error('Feature not supported yet!');
+                  }}
+                  sx={{ border: 1, borderStyle: 'dashed' }}>
+                  <Close fontSize="small" />
+                </IconButton>
+              </Tooltip>
             </Stack>
           )}
         </Stack>

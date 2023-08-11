@@ -141,10 +141,12 @@ export default function Requests() {
           )}
           <TableCell>
             <Box display="flex" flexDirection="row" justifyContent="flex-start" alignItems="center">
-              <Avatar
-                src={'/networks/' + request.network + '.png'}
-                sx={{ ml: 2, width: 24, height: 24 }}
-              />
+              <Tooltip title={request.network}>
+                <Avatar
+                  src={'/networks/' + request.network + '.png'}
+                  sx={{ ml: 2, width: 24, height: 24 }}
+                />
+              </Tooltip>
               {!smallScreen && (
                 <Typography variant="body2" sx={{ ml: 1 }}>
                   {`${request.network} : `}
@@ -168,14 +170,18 @@ export default function Requests() {
                   onClick={() => setExpand(!expand)}
                   sx={{ border: 0.5, borderStyle: 'dashed' }}>
                   {expand ? (
-                    <KeyboardArrowUp fontSize="small" />
+                    <Tooltip title="Collapse">
+                      <KeyboardArrowUp fontSize="small" />
+                    </Tooltip>
                   ) : (
-                    <KeyboardArrowDown fontSize="small" />
+                    <Tooltip title="Show Details">
+                      <KeyboardArrowDown fontSize="small" />
+                    </Tooltip>
                   )}
                 </IconButton>
               )}
               {!request.payed && !request.proof && (
-                <Tooltip title="Share link or QR">
+                <Tooltip title="Share Link / QR">
                   <IconButton
                     color="inherit"
                     size="small"
@@ -223,12 +229,16 @@ export default function Requests() {
                 m="5"
                 sx={{ margin: 3 }}>
                 <Typography>txHash: {request.proof}</Typography>
-
-                <a
-                  href={`${requestChain?.blockExplorers?.default.url}/tx/${request.proof}`}
-                  target="_blank">
-                  <OpenInNew sx={{ justifySelf: 'center', color: green[500] }} fontSize="medium" />
-                </a>
+                <Tooltip title={`View on ${requestChain?.blockExplorers?.default.url}`}>
+                  <a
+                    href={`${requestChain?.blockExplorers?.default.url}/tx/${request.proof}`}
+                    target="_blank">
+                    <OpenInNew
+                      sx={{ justifySelf: 'center', color: green[500] }}
+                      fontSize="medium"
+                    />
+                  </a>
+                </Tooltip>
               </Box>
             </Collapse>
           </TableCell>

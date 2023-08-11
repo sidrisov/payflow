@@ -22,6 +22,7 @@ import {
   IconButton,
   Stack,
   Toolbar,
+  Tooltip,
   Typography
 } from '@mui/material';
 import { useMemo, useRef, useState } from 'react';
@@ -241,14 +242,16 @@ export default function PaymentRequest({ appSettings, setAppSettings }: any) {
                 />
                 <Typography ml={1}>{request.network}</Typography>
                 <Typography ml={1}>{shortenWalletAddressLabel(request.address)}</Typography>
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    copyToClipboard(request.address);
-                    toast.success('Address is copied!');
-                  }}>
-                  <ContentCopy fontSize="small" />
-                </IconButton>
+                <Tooltip title="Copy Address">
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      copyToClipboard(request.address);
+                      toast.success('Address is copied!');
+                    }}>
+                    <ContentCopy fontSize="small" />
+                  </IconButton>
+                </Tooltip>
               </Box>
 
               <Typography>Amount: {request.amount} ETH</Typography>
