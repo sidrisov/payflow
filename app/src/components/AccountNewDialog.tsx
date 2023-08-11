@@ -10,7 +10,9 @@ import {
   Stack,
   Autocomplete,
   Typography,
-  Box
+  Box,
+  FormControlLabel,
+  Switch
 } from '@mui/material';
 
 import { CloseCallbackType } from '../types/CloseCallbackType';
@@ -34,7 +36,7 @@ import { AccountType } from '../types/AccountType';
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
-import { safeDeploy } from '../utils/safeTransactions';
+import { isRelaySupported, safeDeploy } from '../utils/safeTransactions';
 import { shortenWalletAddressLabel } from '../utils/address';
 
 export type AccountNewDialogProps = DialogProps &
@@ -58,6 +60,8 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
 
   const [newAccountAddress, setNewAccountAddress] = useState<string>();
   const [newAccountNetwork, setNewAccountNetwork] = useState<string>();
+  const [sponsored, setSponsored] = useState<boolean>();
+  const [sponsarable, setSponsarable] = useState<boolean>();
 
   const [isZkSyncNetwork, setZkSyncNetwork] = useState<boolean>();
   const [deployable, setDeployable] = useState<boolean>(false);
@@ -86,11 +90,11 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
   };
 
   useMemo(async () => {
-    setZkSyncNetwork(
-      newAccountNetwork
-        ? chains.find((c) => c.name === newAccountNetwork)?.id === zkSyncTestnet.id
-        : undefined
-    );
+    const chainId = chains.find((c) => c.name === newAccountNetwork)?.id;
+    setSponsarable(isRelaySupported(chainId));
+    setSponsored(isRelaySupported(chainId));
+
+    setZkSyncNetwork(newAccountNetwork ? chainId === zkSyncTestnet.id : undefined);
   }, [newAccountNetwork]);
 
   useMemo(async () => {
@@ -119,7 +123,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
           ethersSigner,
           safeAccountConfig,
           saltNonce,
-          sponsored: true,
+          sponsored,
           callback: safeDeployCallback
         });
 
@@ -257,8 +261,8 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
                 setNewAccountNetwork(value);
                 switchNetwork?.(chains.find((c) => c?.name === value)?.id);
               } else {
-                setNewAccountNetwork('');
-                setNewAccountAddress('');
+                setNewAccountNetwork(undefined);
+                setNewAccountAddress(undefined);
               }
             }}
             options={props.networks}
@@ -269,17 +273,33 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
           />
 
           {newAccountNetwork && (
-            <Button
-              fullWidth
-              disabled={!deployable}
-              variant="outlined"
-              size="large"
-              color="primary"
-              sx={{ borderRadius: 3 }}
-              endIcon={<AutoFixHigh />}
-              onClick={deployNewAccount}>
-              Create PayFlow Account
-            </Button>
+            <>
+              <FormControlLabel
+                labelPlacement="end"
+                disabled={!sponsarable}
+                control={
+                  <Switch
+                    size="medium"
+                    checked={sponsored}
+                    onChange={() => {
+                      setSponsored(!sponsored);
+                    }}
+                  />
+                }
+                label="Sponsored"
+              />
+              <Button
+                fullWidth
+                disabled={!deployable}
+                variant="outlined"
+                size="large"
+                color="primary"
+                sx={{ borderRadius: 3 }}
+                endIcon={<AutoFixHigh />}
+                onClick={deployNewAccount}>
+                Create PayFlow Account
+              </Button>
+            </>
           )}
           {newAccountAddress && <Typography variant="subtitle2">{newAccountAddress}</Typography>}
 

@@ -88,12 +88,6 @@ export default function Flows() {
     return flowBalances;
   }
 
-  /*   useMemo(async () => {
-    if (isAuthenticated) {
-      fetchFlows();
-    }
-  }, [isAuthenticated]); */
-
   useMemo(async () => {
     if (flows) {
       await fetchWalletBalances();

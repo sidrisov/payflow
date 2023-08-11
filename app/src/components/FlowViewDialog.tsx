@@ -14,7 +14,9 @@ import {
   Button,
   Autocomplete,
   TextField,
-  Tooltip
+  Tooltip,
+  FormControlLabel,
+  Switch
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { FlowType, FlowWalletType } from '../types/FlowType';
@@ -60,7 +62,7 @@ import { networks } from '../utils/constants';
 import { zkSyncTestnet } from 'wagmi/chains';
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
-import { safeDeploy } from '../utils/safeTransactions';
+import { isRelaySupported, safeDeploy } from '../utils/safeTransactions';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 export type FlowViewDialogProps = DialogProps &
@@ -95,6 +97,9 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const [isZkSyncNetwork, setZkSyncNetwork] = useState<boolean>();
   const [deployable, setDeployable] = useState<boolean>(false);
   const [deployed, setDeployed] = useState<boolean>();
+
+  const [sponsored, setSponsored] = useState<boolean>();
+  const [sponsarable, setSponsarable] = useState<boolean>();
 
   const [availableNetworksToAddAccount, setAvailableNetworksToAddAccount] = useState(
     [] as string[]
@@ -155,11 +160,11 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   }, [flow, chains]);
 
   useMemo(async () => {
-    setZkSyncNetwork(
-      newAccountNetwork
-        ? chains.find((c) => c.name === newAccountNetwork)?.id === zkSyncTestnet.id
-        : undefined
-    );
+    const chainId = chains.find((c) => c.name === newAccountNetwork)?.id;
+    setSponsarable(isRelaySupported(chainId));
+    setSponsored(isRelaySupported(chainId));
+
+    setZkSyncNetwork(newAccountNetwork ? chainId === zkSyncTestnet.id : undefined);
   }, [newAccountNetwork]);
 
   useMemo(async () => {
@@ -188,7 +193,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
           ethersSigner,
           safeAccountConfig,
           saltNonce,
-          sponsored: true,
+          sponsored,
           callback: safeDeployCallback
         });
 
@@ -557,6 +562,21 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                     />
                   ) : (
                     <>
+                      <FormControlLabel
+                        labelPlacement="end"
+                        disabled={!sponsarable}
+                        control={
+                          <Switch
+                            size="medium"
+                            checked={sponsored}
+                            onChange={() => {
+                              setSponsored(!sponsored);
+                            }}
+                          />
+                        }
+                        label="Sponsored"
+                        sx={{ alignSelf: 'flex-start' }}
+                      />
                       <Button
                         fullWidth
                         disabled={!deployable}

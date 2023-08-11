@@ -488,10 +488,11 @@ function getRelayKitForChainId(chainId: number) {
   return;
 }
 
-function isRelaySupported(chainId: number) {
+export function isRelaySupported(chainId: number | undefined) {
   if (
-    MAINNET_CHAINS_SUPPORTING_RELAY.includes(chainId) ||
-    TESTNET_CHAINS_SUPPORTING_RELAY.includes(chainId)
+    chainId &&
+    (MAINNET_CHAINS_SUPPORTING_RELAY.includes(chainId) ||
+      TESTNET_CHAINS_SUPPORTING_RELAY.includes(chainId))
   ) {
     return true;
   }
