@@ -7,15 +7,6 @@ import {
   RainbowKitProvider
 } from '@rainbow-me/rainbowkit';
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
-import {
-  optimismGoerli,
-  mainnet,
-  zkSyncTestnet,
-  baseGoerli,
-  zoraTestnet,
-  optimism,
-  base
-} from 'wagmi/chains';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 import { useMediaQuery } from '@mui/material';
@@ -25,11 +16,12 @@ import { rainbowWeb3AuthConnector } from '../utils/web3AuthConnector';
 import { CustomAvatar } from '../components/CustomAvatar';
 import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
 import PaymentRequest from './PaymentRequest';
+import { SUPPORTED_CHAINS } from '../utils/supportedChains';
 
-const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [optimismGoerli, baseGoerli, zoraTestnet, zkSyncTestnet, optimism, base, mainnet],
-  [alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }), publicProvider()]
-);
+const { chains, publicClient, webSocketPublicClient } = configureChains(SUPPORTED_CHAINS, [
+  alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }),
+  publicProvider()
+]);
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 

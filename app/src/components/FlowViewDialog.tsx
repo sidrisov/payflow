@@ -13,7 +13,8 @@ import {
   IconButton,
   Button,
   Autocomplete,
-  TextField
+  TextField,
+  Tooltip
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { FlowType, FlowWalletType } from '../types/FlowType';
@@ -122,7 +123,6 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
       toast.error('Returned Tx Hash with error!');
       return;
     }
-    console.log({ txHash });
     setTxHash(txHash as Hash);
   };
 
@@ -392,10 +392,12 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                       justifyContent="space-between"
                       sx={{ border: 1, borderRadius: 3, p: 1 }}>
                       <Box display="flex" flexDirection="row" alignItems="center">
-                        <Avatar
-                          src={'/networks/' + wallet.network + '.png'}
-                          sx={{ width: 24, height: 24 }}
-                        />
+                        <Tooltip color="white" title={wallet.network}>
+                          <Avatar
+                            src={'/networks/' + wallet.network + '.png'}
+                            sx={{ width: 24, height: 24 }}
+                          />
+                        </Tooltip>
                         <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
                         <IconButton
                           size="small"

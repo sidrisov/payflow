@@ -15,15 +15,6 @@ import {
 import { rainbowWeb3AuthConnector } from '../utils/web3AuthConnector';
 
 import { Address, configureChains, createConfig, WagmiConfig } from 'wagmi';
-import {
-  optimismGoerli,
-  mainnet,
-  zkSyncTestnet,
-  baseGoerli,
-  zoraTestnet,
-  optimism,
-  base
-} from 'wagmi/chains';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 import { useMediaQuery } from '@mui/material';
@@ -33,14 +24,15 @@ import { CustomAvatar } from '../components/CustomAvatar';
 import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
 import { SiweMessage } from 'siwe';
 import axios from 'axios';
+import { SUPPORTED_CHAINS } from '../utils/supportedChains';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 const AUTH_URL = import.meta.env.VITE_PAYFLOW_SERVICE_API_URL;
 
-const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [optimismGoerli, baseGoerli, zoraTestnet, zkSyncTestnet, optimism, base, mainnet],
-  [alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }), publicProvider()]
-);
+const { chains, publicClient, webSocketPublicClient } = configureChains(SUPPORTED_CHAINS, [
+  alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }),
+  publicProvider()
+]);
 
 const { wallets } = getDefaultWallets({
   appName: 'PayFlow',

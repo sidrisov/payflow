@@ -141,6 +141,6 @@ public class FlowService implements IFlowService {
 
     private static WalletMessage convert(Wallet wallet) {
         return new WalletMessage(wallet.getAddress(), wallet.getNetwork(), wallet.isSmart(), wallet.isSafe(),
-                wallet.isSmart() ? wallet.getMaster().getAddress() : null);
+                wallet.isSmart() && wallet.getMaster() != null ? wallet.getMaster().getAddress() : null);
     }
 }

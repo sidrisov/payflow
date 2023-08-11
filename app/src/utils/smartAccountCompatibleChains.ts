@@ -4,7 +4,8 @@ import {
   optimismGoerli,
   zoraTestnet,
   optimism,
-  base
+  base,
+  modeTestnet
 } from 'wagmi/chains';
 
 export function smartAccountCompatibleChains() {
@@ -12,6 +13,7 @@ export function smartAccountCompatibleChains() {
     optimismGoerli.name,
     baseGoerli.name,
     zoraTestnet.name,
+    modeTestnet.name,
     zkSyncTestnet.name,
     optimism.name,
     base.name

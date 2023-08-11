@@ -34,7 +34,7 @@ import { RelayResponse, TransactionStatusResponse } from '@gelatonetwork/relay-s
 import { Hash, Address } from 'viem';
 import { toast } from 'react-toastify';
 import { delay } from './delay';
-import { base, baseGoerli, optimism, optimismGoerli, zoraTestnet } from 'wagmi/chains';
+import { baseGoerli, modeTestnet, optimism, optimismGoerli, zoraTestnet } from 'wagmi/chains';
 
 const ZERO_ADDRESS = ethers.constants.AddressZero;
 const LATEST_SAFE_VERSION = '1.3.0' as SafeVersion;
@@ -45,12 +45,22 @@ const GELATO_MAINNET_API_KEY = import.meta.env.VITE_GELATO_MAINNET_API_KEY;
 const RELAY_KIT_TESTNET = new GelatoRelayPack(GELATO_TESTNET_API_KEY);
 const RELAY_KIT_MAINNET = new GelatoRelayPack(GELATO_MAINNET_API_KEY);
 
-const MAINNET_CHAINS_SUPPORTING_RELAY: number[] = [optimism.id, base.id];
+const MAINNET_CHAINS_SUPPORTING_RELAY: number[] = [optimism.id];
 const TESTNET_CHAINS_SUPPORTING_RELAY: number[] = [optimismGoerli.id, baseGoerli.id];
-const CUSTOM_CHAINS: number[] = [zoraTestnet.id];
+const CUSTOM_CHAINS: number[] = [zoraTestnet.id, modeTestnet.id];
 
 const CONTRACT_NETWORKS: ContractNetworksConfig = {
   [zoraTestnet.id]: {
+    safeMasterCopyAddress: '0x3E5c63644E683549055b9Be8653de26E0B4CD36E',
+    safeProxyFactoryAddress: '0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2',
+    multiSendAddress: '0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761',
+    multiSendCallOnlyAddress: '0x40A2aCCbd92BCA938b02010E17A5b8929b49130D',
+    fallbackHandlerAddress: '0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4',
+    signMessageLibAddress: '0x98FFBBF51bb33A056B08ddf711f289936AafF717',
+    createCallAddress: '0x7cbB62EaA69F79e6873cD1ecB2392971036cFAa4',
+    simulateTxAccessorAddress: '0x59AD6735bCd8152B84860Cb256dD9e96b85F69Da'
+  },
+  [modeTestnet.id]: {
     safeMasterCopyAddress: '0x3E5c63644E683549055b9Be8653de26E0B4CD36E',
     safeProxyFactoryAddress: '0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2',
     multiSendAddress: '0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761',
@@ -342,9 +352,11 @@ export async function safeTransferEth(
 
         const signedSafeTxApproveHash = await safeSigner.signTransaction(safeTxApproveHash);
 
-        const response = await safeSigner.executeTransaction(signedSafeTxApproveHash, {
-          gasLimit: 500000
-        });
+        const response = await safeSigner.executeTransaction(
+          signedSafeTxApproveHash /* {
+          //gasLimit: 500000
+        } */
+        );
         if (!response.hash) {
           return;
         }
@@ -365,7 +377,7 @@ export async function safeTransferEth(
       } else {
         signedSafeTx = await safe.signTransaction(standardizedSafeTx);
       }
-      const response = await safe.executeTransaction(signedSafeTx, { gasLimit: 500000 });
+      const response = await safe.executeTransaction(signedSafeTx /* { gasLimit: 500000 } */);
       return response.hash as Hash;
     } catch (error) {
       console.error('Failed to transfer: ', error);

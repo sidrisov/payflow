@@ -82,7 +82,6 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
       toast.error('Returned Tx Hash with error!');
       return;
     }
-    console.log({ txHash });
     setTxHash(txHash as Hash);
   };
 

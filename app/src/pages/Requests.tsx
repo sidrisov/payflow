@@ -276,7 +276,7 @@ export default function Requests() {
                 </IconButton>
               </Box>
             </Toolbar>
-            <TableContainer sx={{ minHeight: 100 }}>
+            <TableContainer sx={{ minHeight: 100, maxHeight: 500 }}>
               <Table stickyHeader padding={smallScreen ? 'checkbox' : 'normal'}>
                 <TableHead>
                   <TableRow>

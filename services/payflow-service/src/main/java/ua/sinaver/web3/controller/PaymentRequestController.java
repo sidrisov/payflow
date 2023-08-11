@@ -76,7 +76,7 @@ public class PaymentRequestController {
     public void submitPaymentProof(@PathVariable String uuid, @RequestBody ProofMessage proof, Principal principal)
             throws Exception {
 
-        log.debug("submitProof: {} {}", uuid);
+        log.debug("submitProof: {} {}", uuid, proof);
         requestService.addProof(uuid, proof.txHash());
     }
 
