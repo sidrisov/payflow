@@ -1,6 +1,8 @@
 import { Hash, formatEther, formatUnits, parseEther } from 'viem';
 
 import {
+  useAccount,
+  useBalance,
   useContractRead,
   useEnsAddress,
   useEnsAvatar,
@@ -84,6 +86,13 @@ export default function Send({ appSettings, setAppSettings }: any) {
 
   const publicClient = usePublicClient();
   const { chains, switchNetwork } = useSwitchNetwork();
+
+  const { address } = useAccount();
+
+  const { isSuccess: isBalanceSuccess, data: balance } = useBalance({
+    enabled: address !== undefined,
+    address
+  });
 
   const { config } = usePrepareSendTransaction({
     enabled: selectedPaymentAddress !== undefined,
@@ -328,7 +337,11 @@ export default function Send({ appSettings, setAppSettings }: any) {
               <TextField
                 fullWidth
                 variant="outlined"
-                label="Top Up Amount"
+                label={`Top Up Amount (max: ${
+                  isBalanceSuccess
+                    ? balance && parseFloat(formatEther(balance?.value)).toPrecision(1)
+                    : 0
+                })`}
                 id="sendAmount"
                 type="number"
                 InputProps={{
@@ -337,7 +350,10 @@ export default function Send({ appSettings, setAppSettings }: any) {
                   sx: { borderRadius: 3 }
                 }}
                 onChange={(event) => {
-                  setTopUpAmount(parseEther(event.target.value));
+                  const amount = parseEther(event.target.value);
+                  if (balance && amount < balance?.value) {
+                    setTopUpAmount(amount);
+                  }
                 }}
               />
 

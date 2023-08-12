@@ -83,9 +83,8 @@ export default function Flows() {
         ).toFixed(1);
         flowBalances.set(flow.uuid, flowBalance);
       });
+      return flowBalances;
     }
-
-    return flowBalances;
   }
 
   useMemo(async () => {
@@ -95,13 +94,13 @@ export default function Flows() {
   }, [flows]);
 
   useMemo(async () => {
-    if (walletBalances && walletBalances.size > 0 && ethUsdPrice) {
+    if (flows && walletBalances && walletBalances.size > 0 && ethUsdPrice) {
       calculateFlowBalances(ethUsdPrice).then((balances) => {
         // explicitly wait for calculation to finish, otherwise re-render doesn't work properly
         setFlowBalances(balances);
       });
     }
-  }, [walletBalances, ethUsdPrice]);
+  }, [flows, walletBalances, ethUsdPrice]);
 
   return (
     <>

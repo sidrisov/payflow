@@ -17,7 +17,14 @@ import {
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useMemo, useRef, useState } from 'react';
-import { Address, WalletClient, usePublicClient, useSwitchNetwork, useWalletClient } from 'wagmi';
+import {
+  Address,
+  WalletClient,
+  useBalance,
+  usePublicClient,
+  useSwitchNetwork,
+  useWalletClient
+} from 'wagmi';
 import { ContentCopy, ExpandMore } from '@mui/icons-material';
 import { Id, toast } from 'react-toastify';
 import { copyToClipboard } from '../utils/copyToClipboard';
@@ -52,6 +59,11 @@ export default function FlowWithdrawalDialog({
   const ethersSigner = useEthersSigner();
 
   const { chains, switchNetwork } = useSwitchNetwork();
+
+  const { isSuccess, data: balance } = useBalance({
+    address: from,
+    chainId: chains.find((c) => c?.name === network)?.id
+  });
 
   const [txHash, setTxHash] = useState<Hash>();
 
@@ -193,7 +205,9 @@ export default function FlowWithdrawalDialog({
           <TextField
             fullWidth
             variant="outlined"
-            label="Amount"
+            label={`Amount (max: ${
+              isSuccess ? balance && parseFloat(formatEther(balance?.value)).toPrecision(1) : 0
+            })`}
             id="sendAmount"
             type="number"
             InputProps={{
@@ -202,7 +216,10 @@ export default function FlowWithdrawalDialog({
               sx: { borderRadius: 3 }
             }}
             onChange={(event) => {
-              setWithdrawAmount(parseEther(event.target.value));
+              const amount = parseEther(event.target.value);
+              if (balance && amount < balance?.value) {
+                setWithdrawAmount(amount);
+              }
             }}
           />
           <Divider flexItem>
