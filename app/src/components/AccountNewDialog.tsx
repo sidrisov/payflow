@@ -103,10 +103,6 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
     );
   }, [isZkSyncNetwork, write]);
 
-  useMemo(async () => {
-    setDeployed(newAccountNetwork !== undefined && newAccountAddress !== undefined);
-  }, [newAccountNetwork, newAccountAddress]);
-
   async function deployNewAccount() {
     newAccountToastId.current = toast.loading('Creating Account 🪄');
 
@@ -170,13 +166,15 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
   }, [isSuccess, data]);
 
   useMemo(async () => {
-    if (txHash) {
+    if (txHash && newAccountAddress) {
       const receipt = await publicClient.waitForTransactionReceipt({
         hash: txHash
       });
 
       if (receipt && receipt.status === 'success') {
         if (newAccountToastId.current) {
+          setDeployable(false);
+          setDeployed(true);
           toast.update(newAccountToastId.current, {
             render: `Account ${shortenWalletAddressLabel(newAccountAddress)} created 🚀`,
             type: 'success',
@@ -197,7 +195,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
         }
       }
     }
-  }, [txHash]);
+  }, [txHash, newAccountAddress]);
 
   async function submitAccount() {
     try {
@@ -215,7 +213,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
       );
       console.log(response.status);
 
-      toast.success(`Successfully added new account: ${newAccountAddress}`);
+      toast.success(`New account ${newAccountAddress} added`);
     } catch (error) {
       console.log(error);
       toast.error('Try again!');
@@ -227,6 +225,8 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
   function handleCloseCampaignDialog() {
     setNewAccountNetwork(undefined);
     setNewAccountAddress(undefined);
+    setDeployable(false);
+    setDeployed(false);
     closeStateCallback();
   }
 
@@ -301,7 +301,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
               </Button>
             </>
           )}
-          {newAccountAddress && <Typography variant="subtitle2">{newAccountAddress}</Typography>}
+          {deployed && <Typography variant="subtitle2">{newAccountAddress}</Typography>}
 
           <Button
             fullWidth

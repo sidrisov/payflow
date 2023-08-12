@@ -173,10 +173,6 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
     );
   }, [isZkSyncNetwork, write]);
 
-  useMemo(async () => {
-    setDeployed(newAccountNetwork !== undefined && newAccountAddress !== undefined);
-  }, [newAccountNetwork, newAccountAddress]);
-
   async function deployNewWallet() {
     newWalletToastId.current = toast.loading('Creating Wallet 🪄');
 
@@ -216,8 +212,10 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
     setEditFlow(false);
     setAddFlowWallet(false);
     setWithdrawFlowWallet(false);
-    setNewAccountNetwork('');
-    setNewAccountAddress('');
+    setNewAccountNetwork(undefined);
+    setNewAccountAddress(undefined);
+    setDeployable(false);
+    setDeployed(false);
   }
 
   function handleCloseCampaignDialog() {
@@ -257,7 +255,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   }, [isSuccess, data]);
 
   useMemo(async () => {
-    if (txHash) {
+    if (txHash && newAccountAddress) {
       const receipt = await publicClient.waitForTransactionReceipt({
         hash: txHash
       });
@@ -266,6 +264,8 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
 
       if (receipt && receipt.status === 'success') {
         if (newWalletToastId.current) {
+          setDeployable(false);
+          setDeployed(true);
           toast.update(newWalletToastId.current, {
             render: `Wallet ${shortenWalletAddressLabel(newAccountAddress)} created 🚀`,
             type: 'success',
@@ -286,7 +286,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
         }
       }
     }
-  }, [txHash]);
+  }, [txHash, newAccountAddress]);
 
   async function submitWallet() {
     if (flow && newAccountNetwork) {
@@ -588,9 +588,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                         onClick={deployNewWallet}>
                         Create Payflow Wallet
                       </Button>
-                      {newAccountAddress && (
-                        <Typography variant="subtitle2">{newAccountAddress}</Typography>
-                      )}
+                      {deployed && <Typography variant="subtitle2">{newAccountAddress}</Typography>}
                     </>
                   ))}
 

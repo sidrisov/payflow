@@ -11,7 +11,7 @@ application {
     mainClass.set("ua.sinaver.web3.PayFlowApplication")
 }
 
-if (project.hasProperty("gcp")) {
+if (project.hasProperty("gcp") || project.hasProperty("gcp-dev")) {
 	extra["springCloudGcpVersion"] = "4.5.1"
 	extra["springCloudVersion"] = "2022.0.3"
 }
@@ -30,7 +30,7 @@ dependencies {
 	implementation ("org.springframework.boot:spring-boot-starter-security")
 	implementation ("org.springframework.session:spring-session-jdbc")
 
-	if (project.hasProperty("gcp")) {
+	if (project.hasProperty("gcp") || project.hasProperty("gcp-dev")) {
 		project.logger.info("Including GCP dependencies")
 		// gcp
 		implementation ("com.google.cloud:spring-cloud-gcp-starter")
@@ -62,7 +62,7 @@ dependencies {
 
 dependencyManagement {
   imports {
-	if (project.hasProperty("gcp")) {
+	if (project.hasProperty("gcp") || project.hasProperty("gcp-dev")) {
 		// gcp
     	mavenBom("com.google.cloud:spring-cloud-gcp-dependencies:${property("springCloudGcpVersion")}")
     	mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
@@ -77,5 +77,9 @@ tasks.withType<Test> {
 tasks.withType<BootRun> {
 	if (project.hasProperty("gcp")) {
 		systemProperty("spring.profiles.active", "gcp")
+	}
+
+	if (project.hasProperty("gcp-dev")) {
+		systemProperty("spring.profiles.active", "gcp-dev")
 	}
 }

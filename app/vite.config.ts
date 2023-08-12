@@ -1,12 +1,11 @@
-import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
-import svgr from 'vite-plugin-svgr';
-import mkcert from 'vite-plugin-mkcert';
+import { defineConfig } from 'vite';
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
+import { NodeModulesPolyfillPlugin } from '@esbuild-plugins/node-modules-polyfill';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), svgr(), mkcert()],
+  plugins: [react()],
   server: {
     https: false
   },
@@ -25,7 +24,8 @@ export default defineConfig({
         NodeGlobalsPolyfillPlugin({
           buffer: true,
           process: true
-        })
+        }) as any,
+        NodeModulesPolyfillPlugin() as any
       ]
     }
   }

@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import ua.sinaver.web3.data.Flow;
 import ua.sinaver.web3.data.PaymentRequest;
 import ua.sinaver.web3.data.User;
-import ua.sinaver.web3.message.FlowMessage;
 import ua.sinaver.web3.message.PaymentRequestMessage;
 import ua.sinaver.web3.repository.FlowRepository;
 import ua.sinaver.web3.repository.PaymentRequestRepository;
