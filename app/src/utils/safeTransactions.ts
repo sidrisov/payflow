@@ -356,11 +356,9 @@ export async function safeTransferEth(
 
         const signedSafeTxApproveHash = await safeSigner.signTransaction(safeTxApproveHash);
 
-        const response = await safeSigner.executeTransaction(
-          signedSafeTxApproveHash /* {
-          //gasLimit: 500000
-        } */
-        );
+        const response = await safeSigner.executeTransaction(signedSafeTxApproveHash, {
+          gasLimit: 500000
+        });
         if (!response.hash) {
           return;
         }
@@ -381,7 +379,7 @@ export async function safeTransferEth(
       } else {
         signedSafeTx = await safe.signTransaction(standardizedSafeTx);
       }
-      const response = await safe.executeTransaction(signedSafeTx /* { gasLimit: 500000 } */);
+      const response = await safe.executeTransaction(signedSafeTx, { gasLimit: 500000 });
       return response.hash as Hash;
     } catch (error) {
       console.error('Failed to transfer: ', error);
