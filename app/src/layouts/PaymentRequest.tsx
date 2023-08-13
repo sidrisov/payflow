@@ -188,9 +188,10 @@ export default function PaymentRequest({ appSettings, setAppSettings }: any) {
             p: 5,
             width: 400,
             height: 350,
-            border: 2,
-            borderColor: 'divider',
-            borderRadius: 5
+            border: 3,
+            borderRadius: 5,
+            borderStyle: 'double',
+            borderColor: 'divider'
           }}>
           {request && (
             <Box display="flex" flexDirection="column" alignItems="center">

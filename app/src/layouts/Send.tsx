@@ -41,12 +41,9 @@ import AddressQRCodeDialog from '../components/AddressQRCodeDialog';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import HideOnScroll from '../components/HideOnScroll';
 import { getFlowBalance } from '../utils/getBalance';
-import { cardBorderColours } from '../utils/constants';
 import { Helmet } from 'react-helmet-async';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
-
-const cardBorderRandom = cardBorderColours[(cardBorderColours.length * Math.random()) | 0];
 
 export default function Send({ appSettings, setAppSettings }: any) {
   const { uuid } = useParams();
@@ -232,9 +229,10 @@ export default function Send({ appSettings, setAppSettings }: any) {
             p: 5,
             width: 500,
             height: 650,
-            border: 2,
-            borderColor: cardBorderRandom,
-            borderRadius: 5
+            border: 3,
+            borderRadius: 5,
+            borderStyle: 'double',
+            borderColor: 'divider'
           }}>
           {flow && flow.account && (
             <Box display="flex" flexDirection="column" alignItems="center">

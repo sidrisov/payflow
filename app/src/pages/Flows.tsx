@@ -20,7 +20,6 @@ import FlowViewDialog from '../components/FlowViewDialog';
 import { getTotalBalance, getWalletBalance } from '../utils/getBalance';
 import { UserContext } from '../contexts/UserContext';
 import { formatEther } from 'viem';
-import { cardBorderColours } from '../utils/constants';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 export default function Flows() {
@@ -162,9 +161,10 @@ export default function Flows() {
                     p: 2,
                     width: 250,
                     height: 200,
-                    border: 2,
+                    border: 3,
                     borderRadius: 5,
-                    borderColor: cardBorderColours[(cardBorderColours.length * Math.random()) | 0],
+                    borderStyle: 'double',
+                    borderColor: 'divider',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between'

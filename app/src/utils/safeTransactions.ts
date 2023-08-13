@@ -35,6 +35,7 @@ import { Hash, Address } from 'viem';
 import { toast } from 'react-toastify';
 import { delay } from './delay';
 import { baseGoerli, modeTestnet, optimism, optimismGoerli, zoraTestnet } from 'wagmi/chains';
+import { TaskState } from '../types/TaskState';
 
 const ZERO_ADDRESS = ethers.constants.AddressZero;
 const LATEST_SAFE_VERSION = '1.3.0' as SafeVersion;
@@ -187,6 +188,9 @@ export async function safeDeploy({
       );
 
       const transactionHash = await waitForRelayTaskToComplete(relayResponse.taskId);
+      if (!transactionHash) {
+        return;
+      }
 
       if (callback) {
         callback(transactionHash);
@@ -384,18 +388,6 @@ export async function safeTransferEth(
       return;
     }
   }
-}
-
-// TaskState is not exported by gelato-sdk, declare here
-declare enum TaskState {
-  CheckPending = 'CheckPending',
-  ExecPending = 'ExecPending',
-  ExecSuccess = 'ExecSuccess',
-  ExecReverted = 'ExecReverted',
-  WaitingForConfirmation = 'WaitingForConfirmation',
-  Blacklisted = 'Blacklisted',
-  Cancelled = 'Cancelled',
-  NotFound = 'NotFound'
 }
 
 async function waitForRelayTaskToComplete(
