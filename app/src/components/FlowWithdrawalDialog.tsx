@@ -217,7 +217,7 @@ export default function FlowWithdrawalDialog({
             }}
             onChange={(event) => {
               const amount = parseEther(event.target.value);
-              if (balance && amount < balance?.value) {
+              if (balance && amount <= balance?.value) {
                 setWithdrawAmount(amount);
               }
             }}

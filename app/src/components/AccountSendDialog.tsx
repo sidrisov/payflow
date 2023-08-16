@@ -207,7 +207,7 @@ export default function AccountSendDialog({
             }}
             onChange={(event) => {
               const amount = parseEther(event.target.value);
-              if (balance && amount < balance?.value) {
+              if (balance && amount <= balance?.value) {
                 setSendAmount(amount);
               }
             }}
