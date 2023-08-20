@@ -22,6 +22,9 @@ import { UserContext } from '../contexts/UserContext';
 import { formatEther } from 'viem';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
+
+// TODO: move to FlowCard
+
 export default function Flows() {
   const {
     isAuthenticated,
@@ -205,28 +208,29 @@ export default function Flows() {
                         '& .MuiAvatar-root': { width: 20, height: 20, fontSize: 10 }
                       }}>
                       {[...Array(Math.min(4, flow.wallets.length))].map((_item, i) => (
-                        <Tooltip title={flow.wallets[i].network}>
-                          <Avatar
-                            key={`wallet_avatar_${flow.uuid}_${i}`}
-                            src={'/networks/' + flow.wallets[i].network + '.png'}
-                          />
+                        <Tooltip
+                          key={`wallet_tooltip_${flow.uuid}_${i}`}
+                          title={flow.wallets[i].network}>
+                          <Avatar src={'/networks/' + flow.wallets[i].network + '.png'} />
                         </Tooltip>
                       ))}
                     </AvatarGroup>
                     <Tooltip title="Share Link / QR">
-                      <IconButton
-                        disabled={flow.wallets.length === 0}
-                        color="inherit"
-                        sx={{ alignSelf: 'flex-end' }}
-                        onClick={() => {
-                          setFlowShareInfo({
-                            title: flow.title,
-                            link: `${DAPP_URL}/send/${flow.uuid}`
-                          });
-                          setOpenFlowShare(true);
-                        }}>
-                        <ShareOutlined />
-                      </IconButton>
+                      <span>
+                        <IconButton
+                          disabled={flow.wallets.length === 0}
+                          color="inherit"
+                          sx={{ alignSelf: 'flex-end' }}
+                          onClick={() => {
+                            setFlowShareInfo({
+                              title: flow.title,
+                              link: `${DAPP_URL}/send/${flow.uuid}`
+                            });
+                            setOpenFlowShare(true);
+                          }}>
+                          <ShareOutlined />
+                        </IconButton>
+                      </span>
                     </Tooltip>
                   </Box>
                 </Card>

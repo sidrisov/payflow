@@ -12,66 +12,30 @@ import {
 } from '@safe-global/safe-deployments';
 
 import Safe, {
-  EthSafeSignature,
   EthersAdapter,
   SafeAccountConfig,
   SafeFactory,
-  getSafeContract,
-  ContractNetworksConfig
+  getSafeContract
 } from '@safe-global/protocol-kit';
 
-import { GelatoRelayPack } from '@safe-global/relay-kit';
 import {
   MetaTransactionData,
   MetaTransactionOptions,
   OperationType,
-  SafeSignature,
   SafeVersion
 } from '@safe-global/safe-core-sdk-types';
 
-import { RelayResponse, TransactionStatusResponse } from '@gelatonetwork/relay-sdk';
+import { RelayResponse } from '@gelatonetwork/relay-sdk';
 
 import { Hash, Address } from 'viem';
 import { toast } from 'react-toastify';
-import { delay } from './delay';
-import { baseGoerli, modeTestnet, optimism, optimismGoerli, zoraTestnet } from 'wagmi/chains';
-import { TaskState } from '../types/TaskState';
+import { getRelayKitForChainId, isRelaySupported, waitForRelayTaskToComplete } from './relayer';
+import { CUSTOM_CONTRACTS, CUSTOM_CONTRACTS_CHAINS } from './safeContracts';
+import { signTransactionBySafe } from './safeSignatures';
 
 const ZERO_ADDRESS = ethers.constants.AddressZero;
 const LATEST_SAFE_VERSION = '1.3.0' as SafeVersion;
-
-const GELATO_TESTNET_API_KEY = import.meta.env.VITE_GELATO_TESTNET_API_KEY;
-const GELATO_MAINNET_API_KEY = import.meta.env.VITE_GELATO_MAINNET_API_KEY;
-
-const RELAY_KIT_TESTNET = new GelatoRelayPack(GELATO_TESTNET_API_KEY);
-const RELAY_KIT_MAINNET = new GelatoRelayPack(GELATO_MAINNET_API_KEY);
-
-const MAINNET_CHAINS_SUPPORTING_RELAY: number[] = [optimism.id];
-const TESTNET_CHAINS_SUPPORTING_RELAY: number[] = [optimismGoerli.id, baseGoerli.id];
-const CUSTOM_CHAINS: number[] = [zoraTestnet.id, modeTestnet.id];
-
-const CONTRACT_NETWORKS: ContractNetworksConfig = {
-  [zoraTestnet.id]: {
-    safeMasterCopyAddress: '0x3E5c63644E683549055b9Be8653de26E0B4CD36E',
-    safeProxyFactoryAddress: '0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2',
-    multiSendAddress: '0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761',
-    multiSendCallOnlyAddress: '0x40A2aCCbd92BCA938b02010E17A5b8929b49130D',
-    fallbackHandlerAddress: '0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4',
-    signMessageLibAddress: '0x98FFBBF51bb33A056B08ddf711f289936AafF717',
-    createCallAddress: '0x7cbB62EaA69F79e6873cD1ecB2392971036cFAa4',
-    simulateTxAccessorAddress: '0x59AD6735bCd8152B84860Cb256dD9e96b85F69Da'
-  },
-  [modeTestnet.id]: {
-    safeMasterCopyAddress: '0x3E5c63644E683549055b9Be8653de26E0B4CD36E',
-    safeProxyFactoryAddress: '0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2',
-    multiSendAddress: '0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761',
-    multiSendCallOnlyAddress: '0x40A2aCCbd92BCA938b02010E17A5b8929b49130D',
-    fallbackHandlerAddress: '0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4',
-    signMessageLibAddress: '0x98FFBBF51bb33A056B08ddf711f289936AafF717',
-    createCallAddress: '0x7cbB62EaA69F79e6873cD1ecB2392971036cFAa4',
-    simulateTxAccessorAddress: '0x59AD6735bCd8152B84860Cb256dD9e96b85F69Da'
-  }
-};
+const GAS_LIMIT = 1_000_000;
 
 // TODO: update to safeVersion: "1.4.1" (AA compatible once Safe deploys relevant contracts)
 export async function safeDeploy({
@@ -96,7 +60,7 @@ export async function safeDeploy({
 
   const chainId = await ethAdapter.getChainId();
 
-  const contractNetworks = CUSTOM_CHAINS.includes(chainId) ? CONTRACT_NETWORKS : undefined;
+  const contractNetworks = CUSTOM_CONTRACTS_CHAINS.includes(chainId) ? CUSTOM_CONTRACTS : undefined;
 
   const safeFactory = await SafeFactory.create({
     ethAdapter,
@@ -131,7 +95,10 @@ export async function safeDeploy({
         singletonDeployment: getProxyFactoryDeployment({
           network: chainId.toString(),
           version: safeVersion
-        })
+        }),
+        customContractAddress: CUSTOM_CONTRACTS_CHAINS.includes(chainId)
+          ? CUSTOM_CONTRACTS[chainId].fallbackHandlerAddress
+          : undefined
       });
 
       const proxyFactoryAddress = readOnlyProxyFactoryContract.getAddress();
@@ -141,7 +108,10 @@ export async function safeDeploy({
           singletonDeployment: getFallbackHandlerDeployment({
             network: chainId.toString(),
             version: safeVersion
-          })
+          }),
+          customContractAddress: CUSTOM_CONTRACTS_CHAINS.includes(chainId)
+            ? CUSTOM_CONTRACTS[chainId].fallbackHandlerAddress
+            : undefined
         });
       const fallbackHandlerAddress = readOnlyFallbackHandlerContract.getAddress();
       const readOnlySafeContract = await ethAdapter.getSafeContract({
@@ -150,7 +120,10 @@ export async function safeDeploy({
         singletonDeployment: getSafeL2SingletonDeployment({
           network: chainId.toString(),
           version: safeVersion
-        })
+        }),
+        customContractAddress: CUSTOM_CONTRACTS_CHAINS.includes(chainId)
+          ? CUSTOM_CONTRACTS[chainId].fallbackHandlerAddress
+          : undefined
       });
       const safeContractAddress = readOnlySafeContract.getAddress();
 
@@ -214,7 +187,7 @@ export async function safeTransferEth(
 
   const chainId = await ethAdapter.getChainId();
 
-  const contractNetworks = CUSTOM_CHAINS.includes(chainId) ? CONTRACT_NETWORKS : undefined;
+  const contractNetworks = CUSTOM_CONTRACTS_CHAINS.includes(chainId) ? CUSTOM_CONTRACTS : undefined;
 
   const safe = await Safe.create({
     ethAdapter,
@@ -236,13 +209,15 @@ export async function safeTransferEth(
   };
 
   if (isRelaySupported(chainId)) {
-    const relayKit = MAINNET_CHAINS_SUPPORTING_RELAY.includes(chainId)
-      ? RELAY_KIT_MAINNET
-      : RELAY_KIT_TESTNET;
+    const relayKit = getRelayKitForChainId(chainId);
+    if (!relayKit) {
+      toast.error('Relayer not available!');
+      return;
+    }
 
     try {
       const options: MetaTransactionOptions = {
-        gasLimit: '500000',
+        gasLimit: GAS_LIMIT.toString(),
         isSponsored: false
       };
 
@@ -259,45 +234,13 @@ export async function safeTransferEth(
           safeAddress: tx.safeSigner as string,
           contractNetworks
         });
-        const safeTxTransferHash = await safe.getTransactionHash(standardizedSafeTx);
 
-        const safeTxApproveHashData: MetaTransactionData = {
-          to: tx.from,
-          value: '0',
-          data: safeSingletonContract.encode('approveHash', [safeTxTransferHash]),
-          operation: OperationType.Call
-        };
-
-        const safeTxApproveHash = await safeSigner.createTransaction({
-          safeTransactionData: safeTxApproveHashData
-        });
-
-        const signedSafeTxApproveHash = await safeSigner.signTransaction(safeTxApproveHash);
-
-        const encodedSafeTxApproveHash = safeSingletonContract.encode('execTransaction', [
-          signedSafeTxApproveHash.data.to,
-          signedSafeTxApproveHash.data.value,
-          signedSafeTxApproveHash.data.data,
-          signedSafeTxApproveHash.data.operation,
-          signedSafeTxApproveHash.data.safeTxGas,
-          signedSafeTxApproveHash.data.baseGas,
-          signedSafeTxApproveHash.data.gasPrice,
-          signedSafeTxApproveHash.data.gasToken,
-          signedSafeTxApproveHash.data.refundReceiver,
-          signedSafeTxApproveHash.encodedSignatures()
-        ]);
-
-        const relayResponse: RelayResponse = await relayKit.sendSponsorTransaction(
-          tx.safeSigner,
-          encodedSafeTxApproveHash,
-          chainId
-        );
-
-        if (!(await waitForRelayTaskToComplete(relayResponse.taskId))) {
+        const safeSignature = await signTransactionBySafe(safe, safeSigner, standardizedSafeTx);
+        if (!safeSignature) {
           return;
         }
 
-        standardizedSafeTx.addSignature(generatePreValidatedSignature(tx.safeSigner));
+        standardizedSafeTx.addSignature(safeSignature);
 
         signedSafeTx = standardizedSafeTx;
       } else {
@@ -341,151 +284,23 @@ export async function safeTransferEth(
           safeAddress: tx.safeSigner as string,
           contractNetworks
         });
-        const safeTxTransferHash = await safe.getTransactionHash(standardizedSafeTx);
 
-        const safeTxApproveHashData: MetaTransactionData = {
-          to: tx.from,
-          value: '0',
-          data: safeSingletonContract.encode('approveHash', [safeTxTransferHash]),
-          operation: OperationType.Call
-        };
-
-        const safeTxApproveHash = await safeSigner.createTransaction({
-          safeTransactionData: safeTxApproveHashData
-        });
-
-        const signedSafeTxApproveHash = await safeSigner.signTransaction(safeTxApproveHash);
-
-        const response = await safeSigner.executeTransaction(signedSafeTxApproveHash, {
-          gasLimit: 500000
-        });
-        if (!response.hash) {
-          return;
-        }
-        const ownersWhoApprovedTx = await waitForOwnersWhoApprovedTx(
-          safe,
-          safeTxTransferHash as Hash
-        );
-
-        if (!ownersWhoApprovedTx) {
+        const safeSignature = await signTransactionBySafe(safe, safeSigner, standardizedSafeTx);
+        if (!safeSignature) {
           return;
         }
 
-        for (const owner of ownersWhoApprovedTx) {
-          standardizedSafeTx.addSignature(generatePreValidatedSignature(owner));
-        }
+        standardizedSafeTx.addSignature(safeSignature);
 
         signedSafeTx = standardizedSafeTx;
       } else {
         signedSafeTx = await safe.signTransaction(standardizedSafeTx);
       }
-      const response = await safe.executeTransaction(signedSafeTx, { gasLimit: 500000 });
+      const response = await safe.executeTransaction(signedSafeTx);
       return response.hash as Hash;
     } catch (error) {
       console.error('Failed to transfer: ', error);
       return;
     }
   }
-}
-
-async function waitForRelayTaskToComplete(
-  taskId: string,
-  period: number = 3000,
-  timeout: number = 60000
-): Promise<Hash | undefined> {
-  console.log(`Relay Transaction Task ID: https://relay.gelato.digital/tasks/status/${taskId}`);
-
-  let relayTaskResult: TransactionStatusResponse;
-
-  const maxPolls = timeout / period;
-  let pollCounter = 0;
-
-  do {
-    pollCounter++;
-    await delay(period);
-    const relayExecResponse = await fetch(`https://relay.gelato.digital/tasks/status/${taskId}`);
-    relayTaskResult = (await relayExecResponse.json()).task;
-
-    console.log(relayTaskResult);
-  } while (
-    relayTaskResult &&
-    (relayTaskResult.taskState === TaskState.CheckPending ||
-      relayTaskResult.taskState === TaskState.ExecPending ||
-      relayTaskResult.taskState === TaskState.WaitingForConfirmation) &&
-    pollCounter < maxPolls
-  );
-
-  if (!relayTaskResult) {
-    toast.error('Failed to relay transaction!');
-    return;
-  }
-
-  if (relayTaskResult.taskState !== TaskState.ExecSuccess) {
-    toast.error(
-      `Failed to relay transaction: ${relayTaskResult.taskState}, ${
-        relayTaskResult.lastCheckMessage ?? 'no error'
-      }!`
-    );
-    return;
-  }
-
-  return relayTaskResult.transactionHash as Hash;
-}
-
-async function waitForOwnersWhoApprovedTx(
-  safe: Safe,
-  hash: Hash,
-  period: number = 3000,
-  timeout: number = 30000
-): Promise<Address[] | undefined> {
-  const maxPolls = timeout / period;
-  let pollCounter = 0;
-
-  let ownersWhoApprovedTx;
-  do {
-    pollCounter++;
-    await delay(period);
-    ownersWhoApprovedTx = await safe.getOwnersWhoApprovedTx(hash);
-  } while (ownersWhoApprovedTx.length === 0 && pollCounter < maxPolls);
-
-  if (!ownersWhoApprovedTx || ownersWhoApprovedTx.length === 0) {
-    toast.error('Transaction timeout!');
-    return;
-  }
-
-  return ownersWhoApprovedTx as Address[];
-}
-
-export function generatePreValidatedSignature(ownerAddress: string): SafeSignature {
-  const signature =
-    '0x000000000000000000000000' +
-    ownerAddress.slice(2) +
-    '0000000000000000000000000000000000000000000000000000000000000000' +
-    '01';
-
-  return new EthSafeSignature(ownerAddress, signature);
-}
-
-function getRelayKitForChainId(chainId: number) {
-  if (MAINNET_CHAINS_SUPPORTING_RELAY.includes(chainId)) {
-    return RELAY_KIT_MAINNET;
-  }
-
-  if (TESTNET_CHAINS_SUPPORTING_RELAY.includes(chainId)) {
-    return RELAY_KIT_TESTNET;
-  }
-
-  return;
-}
-
-export function isRelaySupported(chainId: number | undefined) {
-  if (
-    chainId &&
-    (MAINNET_CHAINS_SUPPORTING_RELAY.includes(chainId) ||
-      TESTNET_CHAINS_SUPPORTING_RELAY.includes(chainId))
-  ) {
-    return true;
-  }
-
-  return false;
 }

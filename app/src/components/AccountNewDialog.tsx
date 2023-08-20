@@ -36,7 +36,8 @@ import { AccountType } from '../types/AccountType';
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
-import { isRelaySupported, safeDeploy } from '../utils/safeTransactions';
+import { safeDeploy } from '../utils/safeTransactions';
+import { isRelaySupported } from '../utils/relayer';
 import { shortenWalletAddressLabel } from '../utils/address';
 
 export type AccountNewDialogProps = DialogProps &
