@@ -1,5 +1,5 @@
 import { GelatoRelayPack } from '@safe-global/relay-kit';
-import { baseGoerli, optimism, optimismGoerli } from 'viem/chains';
+import { base, baseGoerli, optimism, optimismGoerli } from 'viem/chains';
 import { TaskState } from '../types/TaskState';
 import { toast } from 'react-toastify';
 import { Hash } from 'viem';
@@ -12,7 +12,7 @@ const GELATO_MAINNET_API_KEY = import.meta.env.VITE_GELATO_MAINNET_API_KEY;
 const RELAY_KIT_TESTNET = new GelatoRelayPack(GELATO_TESTNET_API_KEY);
 const RELAY_KIT_MAINNET = new GelatoRelayPack(GELATO_MAINNET_API_KEY);
 
-const MAINNET_CHAINS_SUPPORTING_RELAY: number[] = [optimism.id];
+const MAINNET_CHAINS_SUPPORTING_RELAY: number[] = [optimism.id, base.id];
 const TESTNET_CHAINS_SUPPORTING_RELAY: number[] = [optimismGoerli.id, baseGoerli.id];
 
 export function getRelayKitForChainId(chainId: number) {
