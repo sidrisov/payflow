@@ -7,7 +7,9 @@ import {
   IconButton,
   Stack,
   Tooltip,
-  Typography
+  Typography,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import { useContext, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -26,6 +28,9 @@ const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 // TODO: move to FlowCard
 
 export default function Flows() {
+  const theme = useTheme();
+  const mediumScreen = useMediaQuery(theme.breakpoints.down('md'));
+
   const {
     isAuthenticated,
     flows,
@@ -115,7 +120,7 @@ export default function Flows() {
             sx={{
               display: 'flex',
               flexWrap: 'wrap',
-              justifyContent: 'flex-start'
+              justifyContent: mediumScreen ? 'center' : 'flex-start'
             }}>
             <Card
               elevation={10}

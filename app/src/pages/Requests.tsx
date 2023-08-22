@@ -228,15 +228,14 @@ export default function Requests() {
                 justifyContent="center"
                 m="5"
                 sx={{ margin: 3 }}>
-                <Typography>txHash: {request.proof}</Typography>
+                <Typography variant="body2">
+                  Transaction Hash: {shortenWalletAddressLabel(request.proof)}
+                </Typography>
                 <Tooltip title={`View on ${requestChain?.blockExplorers?.default.url}`}>
                   <a
                     href={`${requestChain?.blockExplorers?.default.url}/tx/${request.proof}`}
                     target="_blank">
-                    <OpenInNew
-                      sx={{ justifySelf: 'center', color: green[500] }}
-                      fontSize="medium"
-                    />
+                    <OpenInNew sx={{ justifySelf: 'center', color: green[500] }} fontSize="small" />
                   </a>
                 </Tooltip>
               </Box>

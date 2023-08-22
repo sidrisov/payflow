@@ -1,4 +1,4 @@
-import { Box, Card, Container, IconButton, Typography } from '@mui/material';
+import { Box, Card, Container, IconButton, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useContext, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import AccountNewDialog from '../components/AccountNewDialog';
@@ -8,6 +8,9 @@ import { UserContext } from '../contexts/UserContext';
 import { Add } from '@mui/icons-material';
 
 export default function Accounts() {
+  const theme = useTheme();
+  const mediumScreen = useMediaQuery(theme.breakpoints.down('md'));
+
   const { isAuthenticated, accounts, setInitiateAccountsRefresh } = useContext(UserContext);
   const [availableNetworksToAddAccount, setAvailableNetworksToAddAccount] = useState<string[]>([]);
 
@@ -35,7 +38,7 @@ export default function Accounts() {
             sx={{
               display: 'flex',
               flexWrap: 'wrap',
-              justifyContent: 'flex-start'
+              justifyContent: mediumScreen ? 'center' : 'flex-start'
             }}>
             {availableNetworksToAddAccount.length > 0 && (
               <Card
