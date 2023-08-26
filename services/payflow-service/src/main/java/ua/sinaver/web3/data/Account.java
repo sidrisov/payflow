@@ -9,20 +9,30 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
+@ToString
+@Setter
+@Getter
+@NoArgsConstructor
 @Entity
-@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "network", "address" }) })
+@Table(indexes = @Index(columnList = "userId"), uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "network", "address" }) })
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
     @Column
-    private String userId;
+    private Integer userId;
 
     @Column
     private String address;
@@ -30,72 +40,21 @@ public class Account {
     @Column
     private String network;
 
+    // TODO: in future we might have more metadata on the wallet impl, for now, just
+    // differentiate if it's safe or not based
+    @Column(columnDefinition = "boolean")
+    private boolean safe;
+
     @OneToMany(mappedBy = "master", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Wallet> wallets;
 
     @Version
     private Long version;
 
-    public Account() {
-    }
-
-    public Account(String userId, String address, String network) {
+    public Account(Integer userId, String address, String network, boolean safe) {
         this.userId = userId;
         this.address = address;
         this.network = network;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getNetwork() {
-        return network;
-    }
-
-    public void setNetwork(String network) {
-        this.network = network;
-    }
-
-    public List<Wallet> getWallets() {
-        return wallets;
-    }
-
-    public void setWallets(List<Wallet> wallets) {
-        this.wallets = wallets;
-    }
-
-    public Long getVersion() {
-        return version;
-    }
-
-    public void setVersion(Long version) {
-        this.version = version;
-    }
-
-    @Override
-    public String toString() {
-        return "Account [id=" + id + ", userId=" + userId + ", address=" + address + ", network=" + network
-                + ", wallets=" + wallets + "]";
+        this.safe = safe;
     }
 }

@@ -7,7 +7,7 @@ import java.util.List;
 import org.springframework.data.repository.CrudRepository;
 
 public interface AccountRepository extends CrudRepository<Account, Integer> {
-    List<Account> findByUserId(String userId);
+    List<Account> findByUserId(Integer userId);
 
     Account findByAddressAndNetwork(String address, String network);
 }

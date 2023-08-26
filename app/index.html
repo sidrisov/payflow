@@ -9,11 +9,15 @@
 
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-    <script>
+    <script type="module">
+      import { Buffer } from "buffer"
       if (global === undefined) {
         var global = window;
       }
+      window.global = window.global ?? window
+      window.Buffer = window.Buffer ?? Buffer
+      window.process = window.process ?? { env: { ENVIRONMENT: 'BROWSER' } }
     </script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

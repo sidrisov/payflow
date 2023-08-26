@@ -12,5 +12,6 @@ export interface FlowWalletType {
   address: Address;
   network: string;
   smart: boolean;
+  safe: boolean;
   master: Address;
 }

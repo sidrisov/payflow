@@ -1,17 +1,22 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import Page404 from './pages/Page404';
+import Accounts from './pages/Accounts';
 import Flows from './pages/Flows';
 import Requests from './pages/Requests';
-import Activity from './pages/Activity';
 import Settings from './pages/Settings';
+import Page404 from './pages/Page404';
 
 import AppWithProviders from './layouts/AppWithProviders';
-import TopUp from './layouts/SendWithProviders';
-import Accounts from './pages/Accounts';
+import SendWithProviders from './layouts/SendWithProviders';
+import PaymentRequestWithProviders from './layouts/PaymentRequestWithProviders';
 
-export const appRoutes = ['/accounts', '/flows', '/requests', '/activity', '/settings'];
+export const appRoutes = ['/accounts', '/flows', '/requests', '/settings'];
 
 export const appRouter = createBrowserRouter([
+  /*   {
+      path: '/login',
+      element: <Login />,
+      errorElement: <Page404 />
+    }, */
   {
     path: '/',
     element: <AppWithProviders />,
@@ -27,7 +32,6 @@ export const appRouter = createBrowserRouter([
         element: <Flows />
       },
       { path: 'requests', element: <Requests /> },
-      { path: 'activity', element: <Activity /> },
       { path: 'settings', element: <Settings /> },
       { path: '404', element: <Page404 /> },
       { path: '*', element: <Navigate to="/404" replace /> }
@@ -35,12 +39,12 @@ export const appRouter = createBrowserRouter([
   },
   {
     path: '/send/:uuid',
-    element: <TopUp />,
+    element: <SendWithProviders />,
     errorElement: <Page404 />
   },
   {
-    path: '/login',
-    element: <></>,
+    path: '/request/:uuid',
+    element: <PaymentRequestWithProviders />,
     errorElement: <Page404 />
   }
 ]);

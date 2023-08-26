@@ -1,9 +1,10 @@
-import '@rainbow-me/rainbowkit/styles.css';
-import 'react-toastify/dist/ReactToastify.css';
-
-import { Hash, parseEther, toHex } from 'viem';
+import { Hash, formatEther, formatUnits, parseEther } from 'viem';
 
 import {
+  useAccount,
+  useBalance,
+  useContractRead,
+  useEnsAddress,
   useEnsAvatar,
   useEnsName,
   usePrepareSendTransaction,
@@ -25,10 +26,11 @@ import {
   Stack,
   TextField,
   Toolbar,
+  Tooltip,
   Typography
 } from '@mui/material';
-import { useMemo, useState } from 'react';
-import { toast } from 'react-toastify';
+import { useMemo, useRef, useState } from 'react';
+import { Id, toast } from 'react-toastify';
 import { useParams } from 'react-router-dom';
 import { FlowType } from '../types/FlowType';
 import axios from 'axios';
@@ -39,9 +41,9 @@ import AddressQRCodeDialog from '../components/AddressQRCodeDialog';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import HideOnScroll from '../components/HideOnScroll';
 import { getFlowBalance } from '../utils/getBalance';
-import { cardBorderColours, ethPrice } from '../utils/constants';
-
-const cardBorderRandom = cardBorderColours[(cardBorderColours.length * Math.random()) | 0];
+import { Helmet } from 'react-helmet-async';
+import CustomThemeProvider from '../theme/CustomThemeProvider';
+import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
 
 export default function Send({ appSettings, setAppSettings }: any) {
   const { uuid } = useParams();
@@ -51,18 +53,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
   const [selectedPaymentNetwork, setSelectedPaymentNetwork] = useState('');
   const [selectedPaymentAddress, setSelectedPaymentAddress] = useState('');
   const [topUpAmount, setTopUpAmount] = useState(BigInt(0));
-  const [comment, setComment] = useState('');
-
-  const publicClient = usePublicClient();
-  const { chains, switchNetwork } = useSwitchNetwork();
-  const { config } = usePrepareSendTransaction({
-    enabled: selectedPaymentAddress !== undefined,
-    to: selectedPaymentAddress,
-    value: topUpAmount,
-    data: toHex(comment)
-  });
-
-  const [txHash, setTxHash] = useState<Hash>();
+  const [, /* comment */ setComment] = useState('');
 
   const { data: ensName } = useEnsName({
     address: flow.account,
@@ -74,19 +65,55 @@ export default function Send({ appSettings, setAppSettings }: any) {
     chainId: 1
   });
 
-  const { isSuccess, data, sendTransaction } = useSendTransaction(config);
+  const { isSuccess: isEnsSuccess, data: ethUsdPriceFeedAddress } = useEnsAddress({
+    name: 'eth-usd.data.eth',
+    chainId: 1,
+    cacheTime: 60_000
+  });
+
+  const { data: ethUsdPrice } = useContractRead({
+    enabled: isEnsSuccess && ethUsdPriceFeedAddress !== undefined,
+    chainId: 1,
+    address: ethUsdPriceFeedAddress ?? undefined,
+    abi: AggregatorV2V3Interface.abi,
+    functionName: 'latestAnswer',
+    select: (data) => Number(formatUnits(data as bigint, 8)),
+    cacheTime: 60_000
+  });
+
+  const publicClient = usePublicClient();
+  const { chains, switchNetwork } = useSwitchNetwork();
+
+  const { address } = useAccount();
+
+  const { isSuccess: isBalanceSuccess, data: balance } = useBalance({
+    enabled: address !== undefined,
+    address
+  });
+
+  const { config } = usePrepareSendTransaction({
+    enabled: selectedPaymentAddress !== undefined,
+    to: selectedPaymentAddress,
+    value: topUpAmount
+    //data: toHex(comment)
+  });
+
+  const { isSuccess, isError, data, sendTransaction } = useSendTransaction(config);
+
+  const [txHash, setTxHash] = useState<Hash>();
+
+  const sendToastId = useRef<Id>();
 
   useMemo(async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${uuid}`
+        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${uuid}`,
+        { withCredentials: true }
       );
-
-      console.log(response.data);
 
       setFlow(response.data);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }, [uuid]);
 
@@ -102,44 +129,69 @@ export default function Send({ appSettings, setAppSettings }: any) {
   }, [selectedPaymentNetwork]);
 
   useMemo(async () => {
-    if (isSuccess === true) {
+    if (isSuccess) {
       setTxHash(data?.hash);
-      toast.success('Payment was submitted!');
+    } else if (isError) {
+      if (sendToastId.current) {
+        toast.update(sendToastId.current, {
+          render: `Payment failed! 😕`,
+          type: 'error',
+          isLoading: false,
+          autoClose: 5000
+        });
+        sendToastId.current = undefined;
+      }
     }
-  }, [isSuccess, data]);
+  }, [isSuccess, isError, data]);
 
   useMemo(async () => {
     updateFlowTotalBalance(flow);
   }, [flow]);
 
   async function updateFlowTotalBalance(flow: FlowType) {
-    if (flow && flow.wallets && flow.wallets.length > 0) {
-      setFlowTotalBalance(await getFlowBalance(flow, chains, ethPrice));
+    if (flow && flow.wallets && flow.wallets.length > 0 && ethUsdPrice) {
+      setFlowTotalBalance(await getFlowBalance(flow, chains, ethUsdPrice));
     }
   }
 
   useMemo(async () => {
     if (txHash) {
-      // TODO: add loading indicator
       const receipt = await publicClient.waitForTransactionReceipt({
         hash: txHash
       });
 
       console.log('Receipt: ', receipt);
 
-      if (receipt) {
-        if (receipt.status === 'success') {
+      if (receipt && receipt.status === 'success') {
+        if (sendToastId.current) {
+          toast.update(sendToastId.current, {
+            render: `Payment confirmed!`,
+            type: 'success',
+            isLoading: false,
+            autoClose: 5000
+          });
+          sendToastId.current = undefined;
           updateFlowTotalBalance(flow);
-          toast.success('Payment Confirmed!');
-        } else {
-          toast.error('Payment Failed!');
+        }
+      } else {
+        if (sendToastId.current) {
+          toast.update(sendToastId.current, {
+            render: `Payment failed! 😕`,
+            type: 'error',
+            isLoading: false,
+            autoClose: 5000
+          });
+          sendToastId.current = undefined;
         }
       }
     }
   }, [txHash]);
 
   return (
-    <>
+    <CustomThemeProvider darkMode={appSettings.darkMode}>
+      <Helmet>
+        <title> PayFlow | Pay </title>
+      </Helmet>
       <HideOnScroll>
         <AppBar
           position="sticky"
@@ -165,21 +217,22 @@ export default function Send({ appSettings, setAppSettings }: any) {
         </AppBar>
       </HideOnScroll>
       <Box
-        sx={{
-          my: '5%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
+        position="fixed"
+        display="flex"
+        alignItems="center"
+        boxSizing="border-box"
+        justifyContent="center"
+        sx={{ inset: 0 }}>
         <Card
           elevation={10}
           sx={{
             p: 5,
             width: 500,
             height: 650,
-            border: 2,
-            borderColor: cardBorderRandom,
-            borderRadius: 5
+            border: 3,
+            borderRadius: 5,
+            borderStyle: 'double',
+            borderColor: 'divider'
           }}>
           {flow && flow.account && (
             <Box display="flex" flexDirection="column" alignItems="center">
@@ -203,14 +256,16 @@ export default function Send({ appSettings, setAppSettings }: any) {
                   <Typography ml={1} variant="subtitle2">
                     {ensName ? ensName : shortenWalletAddressLabel(flow.account)}
                   </Typography>
-                  <IconButton
-                    size="small"
-                    onClick={() => {
-                      copyToClipboard(flow.account);
-                      toast.success('Wallet address is copied to clipboard!');
-                    }}>
-                    <ContentCopy fontSize="small" />
-                  </IconButton>
+                  <Tooltip title="Copy Address">
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        copyToClipboard(flow.account);
+                        toast.success('Address is copied!');
+                      }}>
+                      <ContentCopy fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
                 </Card>
               </Divider>
 
@@ -228,7 +283,12 @@ export default function Send({ appSettings, setAppSettings }: any) {
                 autoHighlight
                 fullWidth
                 onChange={(_event, value) => {
-                  setSelectedPaymentNetwork(value as string);
+                  if (value) {
+                    switchNetwork?.(chains.find((c) => c?.name === value)?.id);
+                    setSelectedPaymentNetwork(value);
+                  } else {
+                    setSelectedPaymentNetwork('');
+                  }
                 }}
                 options={flow.wallets.flatMap((wallet) => wallet.network)}
                 renderInput={(params) => (
@@ -247,21 +307,25 @@ export default function Send({ appSettings, setAppSettings }: any) {
                     <Typography ml={1}>
                       {shortenWalletAddressLabel(selectedPaymentAddress)}
                     </Typography>
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        copyToClipboard(selectedPaymentAddress);
-                        toast.success('Wallet address is copied to clipboard!');
-                      }}>
-                      <ContentCopy fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        setOpenAddressQRCode(true);
-                      }}>
-                      <QrCode2 fontSize="small" />
-                    </IconButton>
+                    <Tooltip title="Copy Address">
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          copyToClipboard(selectedPaymentAddress);
+                          toast.success('Address is copied!');
+                        }}>
+                        <ContentCopy fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Show QR">
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          setOpenAddressQRCode(true);
+                        }}>
+                        <QrCode2 fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                 </>
               )}
@@ -271,7 +335,11 @@ export default function Send({ appSettings, setAppSettings }: any) {
               <TextField
                 fullWidth
                 variant="outlined"
-                label="Top Up Amount"
+                label={`Top Up Amount (max: ${
+                  isBalanceSuccess
+                    ? balance && parseFloat(formatEther(balance?.value)).toPrecision(1)
+                    : 0
+                })`}
                 id="sendAmount"
                 type="number"
                 InputProps={{
@@ -280,7 +348,10 @@ export default function Send({ appSettings, setAppSettings }: any) {
                   sx: { borderRadius: 3 }
                 }}
                 onChange={(event) => {
-                  setTopUpAmount(parseEther(event.target.value));
+                  const amount = parseEther(event.target.value);
+                  if (balance && amount < balance?.value) {
+                    setTopUpAmount(amount);
+                  }
                 }}
               />
 
@@ -307,10 +378,12 @@ export default function Send({ appSettings, setAppSettings }: any) {
                   size="medium"
                   color="primary"
                   onClick={() => {
-                    if (sendTransaction) {
-                      switchNetwork?.(chains.find((c) => c?.name === selectedPaymentNetwork)?.id);
-                      sendTransaction?.();
-                    }
+                    sendToastId.current = toast.loading(
+                      `Sending ${formatEther(topUpAmount)} to ${shortenWalletAddressLabel(
+                        selectedPaymentAddress
+                      )} 💸`
+                    );
+                    sendTransaction?.();
                   }}
                   sx={{ mt: 1, borderRadius: 3 }}>
                   PAY
@@ -327,6 +400,6 @@ export default function Send({ appSettings, setAppSettings }: any) {
           )}
         </Card>
       </Box>
-    </>
+    </CustomThemeProvider>
   );
 }

@@ -1,49 +1,50 @@
 package ua.sinaver.web3.service;
 
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 import ua.sinaver.web3.data.Account;
-import ua.sinaver.web3.dto.AccountDto;
+import ua.sinaver.web3.data.User;
+import ua.sinaver.web3.message.AccountMessage;
 import ua.sinaver.web3.repository.AccountRepository;
 
+@Slf4j
 @Service
 @Transactional
 public class AccountService implements IAccountService {
-    public static final Logger LOGGER = LoggerFactory.getLogger(AccountService.class);
 
     @Autowired
     private AccountRepository accountRepository;
 
     @Override
-    public void saveAccount(AccountDto accountDto) {
-        Account account = convert(accountDto);
+    public void saveAccount(AccountMessage accountDto, User user) {
+        val account = convert(accountDto, user);
         accountRepository.save(account);
-        LOGGER.info("Saved account {}", account);
+        log.info("Saved account {}", account);
     }
 
     @Override
-    public List<AccountDto> getAllAccounts(String userId) {
-        List<Account> accounts = accountRepository.findByUserId(userId);
+    public List<AccountMessage> getAllAccounts(User user) {
+        val accounts = accountRepository.findByUserId(user.getId());
         return accounts.stream()
                 .map(AccountService::convert)
                 .toList();
     }
 
-    private static AccountDto convert(Account account) {
+    private static AccountMessage convert(Account account) {
         /*
          * List<WalletDto> wallets = account.getWallets().stream().map(w -> convert(w))
          * .toList();
          */
-        return new AccountDto(account.getUserId(), account.getAddress(), account.getNetwork());
+        return new AccountMessage(account.getAddress(), account.getNetwork(), account.isSafe());
     }
 
-    private static Account convert(AccountDto accountDto) {
-        Account account = new Account(accountDto.userId(), accountDto.address(), accountDto.network());
+    private static Account convert(AccountMessage accountDto, User user) {
+        val account = new Account(user.getId(), accountDto.address(), accountDto.network(), accountDto.safe());
         /*
          * List<Wallet> wallets = accountDto.wallets().stream().map(w -> {
          * Wallet wallet = convert(w);

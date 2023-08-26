@@ -9,9 +9,26 @@ import '@fontsource/roboto/700.css';
 import { RouterProvider } from 'react-router-dom';
 
 import { appRouter } from './appRouter';
+import { HelmetProvider } from 'react-helmet-async';
+import { ToastContainer } from 'react-toastify';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <RouterProvider router={appRouter} />
+    <HelmetProvider>
+      <RouterProvider router={appRouter} />
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        limit={5}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
+    </HelmetProvider>
   </React.StrictMode>
 );

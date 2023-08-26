@@ -5,7 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 
 import HomeLogo from './Logo';
 
-import { Settings, Merge, Payments, List as IconList, Payment } from '@mui/icons-material';
+import { Settings, Merge, Payments, Payment } from '@mui/icons-material';
 import { appRoutes } from '../appRouter';
 
 export default function Navigation() {
@@ -39,16 +39,16 @@ export default function Navigation() {
         height: '100vh',
         alignItems: 'center'
       }}>
-      <HomeLogo mt={2} ml={-2} />
+      <HomeLogo mt={2} ml={-3} />
 
       <Tabs
         orientation="vertical"
         variant="scrollable"
-        scrollButtons="auto"
+        scrollButtons={false}
         value={tabValue}
         textColor="inherit"
         sx={{
-          mt: 5,
+          mt: 10,
           minWidth: 150,
           flexGrow: 1
         }}>
@@ -66,26 +66,12 @@ export default function Navigation() {
           to={appRoutes[1]}
           icon={<Merge />}
         />
+        <AlignedLinkTab label="Requests" tabIndex={2} to={appRoutes[2]} icon={<Payments />} />
         <AlignedLinkTab
-          disabled
-          label="Requests"
-          tabIndex={2}
-          to={appRoutes[2]}
-          icon={<Payments />}
-        />
-        <AlignedLinkTab
-          disabled
-          label="Activity"
+          label="Settings"
           tabIndex={3}
           component={Link}
           to={appRoutes[3]}
-          icon={<IconList />}
-        />
-        <AlignedLinkTab
-          label="Settings"
-          tabIndex={4}
-          component={Link}
-          to={appRoutes[4]}
           icon={<Settings />}
         />
       </Tabs>

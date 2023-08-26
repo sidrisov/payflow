@@ -3,15 +3,15 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 plugins {
 	application
 	id("org.springframework.boot") version "3.1.2"
-	id("io.spring.dependency-management") version "1.1.0"
-	//id("com.google.cloud.tools.jib") version "3.3.2" - jib
+	id("io.spring.dependency-management") version "1.1.2"
+	id("io.freefair.lombok") version "8.1.0"
 }
 
 application {
     mainClass.set("ua.sinaver.web3.PayFlowApplication")
 }
 
-if (project.hasProperty("gcp")) {
+if (project.hasProperty("gcp") || project.hasProperty("gcp-dev")) {
 	extra["springCloudGcpVersion"] = "4.5.1"
 	extra["springCloudVersion"] = "2022.0.3"
 }
@@ -25,10 +25,12 @@ repositories {
 }
 
 dependencies {
-	implementation ("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation ("org.springframework.boot:spring-boot-starter-web")
-	
-	if (project.hasProperty("gcp")) {
+	implementation ("org.springframework.boot:spring-boot-starter-data-jpa")
+	implementation ("org.springframework.boot:spring-boot-starter-security")
+	implementation ("org.springframework.session:spring-session-jdbc")
+
+	if (project.hasProperty("gcp") || project.hasProperty("gcp-dev")) {
 		project.logger.info("Including GCP dependencies")
 		// gcp
 		implementation ("com.google.cloud:spring-cloud-gcp-starter")
@@ -41,9 +43,18 @@ dependencies {
 
 	// utils
 	implementation("org.apache.commons:commons-lang3:3.12.0")
-	implementation("org.bouncycastle:bcprov-jdk18on:1.73")
 	implementation("com.google.guava:guava:31.1-jre")
    	implementation("com.google.code.gson:gson:2.10.1")
+
+	// crypto
+	implementation("org.bouncycastle:bcprov-jdk18on:1.73")
+
+	//siwe
+	// TODO: it's ok to use as long as we're not in production
+	implementation("com.moonstoneid:siwe-java:1.0.2")
+
+	//lombok
+	compileOnly("org.projectlombok:lombok")
 
 	developmentOnly ("org.springframework.boot:spring-boot-devtools")
 }
@@ -51,7 +62,7 @@ dependencies {
 
 dependencyManagement {
   imports {
-	if (project.hasProperty("gcp")) {
+	if (project.hasProperty("gcp") || project.hasProperty("gcp-dev")) {
 		// gcp
     	mavenBom("com.google.cloud:spring-cloud-gcp-dependencies:${property("springCloudGcpVersion")}")
     	mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
@@ -63,9 +74,12 @@ tasks.withType<Test> {
 	useJUnitPlatform()
 }
 
-// gradlew 
 tasks.withType<BootRun> {
 	if (project.hasProperty("gcp")) {
 		systemProperty("spring.profiles.active", "gcp")
-	}	
+	}
+
+	if (project.hasProperty("gcp-dev")) {
+		systemProperty("spring.profiles.active", "gcp-dev")
+	}
 }

@@ -1,59 +1,52 @@
-import { HelmetProvider } from 'react-helmet-async';
 import App from './App';
 
 import '@rainbow-me/rainbowkit/styles.css';
 import 'react-toastify/dist/ReactToastify.css';
 
-import merge from 'lodash.merge';
-
 import {
-  AvatarComponent,
-  darkTheme,
+  AuthenticationStatus,
+  connectorsForWallets,
+  createAuthenticationAdapter,
   getDefaultWallets,
-  lightTheme,
-  RainbowKitProvider,
-  Theme
+  RainbowKitAuthenticationProvider,
+  RainbowKitProvider
 } from '@rainbow-me/rainbowkit';
-import { configureChains, createConfig, WagmiConfig } from 'wagmi';
-import { optimismGoerli, mainnet, zkSyncTestnet, baseGoerli } from 'wagmi/chains';
+
+import { rainbowWeb3AuthConnector } from '../utils/web3AuthConnector';
+
+import { Address, configureChains, createConfig, WagmiConfig } from 'wagmi';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
-import AddressAvatar from '../components/AddressAvatar';
 import { useMediaQuery } from '@mui/material';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AppSettings } from '../types/AppSettingsType';
-import { ToastContainer } from 'react-toastify';
+import { CustomAvatar } from '../components/CustomAvatar';
+import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
+import { SiweMessage } from 'siwe';
+import axios from 'axios';
+import { SUPPORTED_CHAINS } from '../utils/supportedChains';
 
-const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [zkSyncTestnet, optimismGoerli, baseGoerli, mainnet],
-  [alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }), publicProvider()]
-);
+const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
+const AUTH_URL = import.meta.env.VITE_PAYFLOW_SERVICE_API_URL;
 
-const { connectors } = getDefaultWallets({
+const { chains, publicClient, webSocketPublicClient } = configureChains(SUPPORTED_CHAINS, [
+  alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }),
+  publicProvider()
+]);
+
+const { wallets } = getDefaultWallets({
   appName: 'PayFlow',
-  projectId: '795e48b684a91818331afe21e54973ab',
+  projectId: WALLET_CONNECT_PROJECT_ID,
   chains
 });
 
-const CustomAvatar: AvatarComponent = ({ address, ensImage, size }) => {
-  return ensImage ? (
-    <img src={ensImage} width={size} height={size} style={{ borderRadius: 999 }} />
-  ) : (
-    <AddressAvatar
-      address={address}
-      scale={size < 30 ? 3 : 10}
-      sx={{ width: size, height: size }}
-    />
-  );
-};
-
-const custLightTheme = lightTheme({ overlayBlur: 'small' });
-const customDarkTheme = merge(darkTheme({ overlayBlur: 'small' }), {
-  colors: {
-    modalBackground: '#242424',
-    connectButtonBackground: '#1e1e1e'
+const connectors = connectorsForWallets([
+  ...wallets,
+  {
+    groupName: 'Other',
+    wallets: [rainbowWeb3AuthConnector({ chains })]
   }
-} as Theme);
+]);
 
 const appSettingsStorageItem = localStorage.getItem('appSettings');
 const appSettingsStored = appSettingsStorageItem
@@ -66,11 +59,121 @@ export default function AppWithProviders() {
     appSettingsStored
       ? appSettingsStored
       : {
-          magicEnabled: false,
           autoConnect: import.meta.env.VITE_INIT_CONNECT === 'true',
           darkMode: prefersDarkMode
         }
   );
+
+  const fetchingStatusRef = useRef(false);
+  const verifyingRef = useRef(false);
+  const [authStatus, setAuthStatus] = useState<AuthenticationStatus>('loading');
+  const [authAccount, setAuthAccount] = useState<Address>();
+
+  // Fetch user when:
+  useEffect(() => {
+    const fetchStatus = async () => {
+      if (fetchingStatusRef.current || verifyingRef.current) {
+        return;
+      }
+
+      fetchingStatusRef.current = true;
+
+      try {
+        const response = await axios.get(`${AUTH_URL}/api/me`, { withCredentials: true });
+        const authProfile = await response.data;
+
+        setAuthStatus(authProfile.address ? 'authenticated' : 'unauthenticated');
+
+        if (authProfile.address) {
+          setAuthAccount(authProfile.address);
+        } else {
+          setAuthAccount(undefined);
+        }
+      } catch (error) {
+        setAuthStatus('unauthenticated');
+      } finally {
+        fetchingStatusRef.current = false;
+      }
+    };
+
+    // 1. page loads
+    fetchStatus();
+
+    // 2. window is focused (in case user logs out of another window)
+    window.addEventListener('focus', fetchStatus);
+    return () => window.removeEventListener('focus', fetchStatus);
+  }, []);
+
+  // 3. in case successfully authenticated, fetch currently authenticated user
+  useMemo(async () => {
+    if (authStatus === 'authenticated' && !authAccount) {
+      try {
+        const response = await axios.get(`${AUTH_URL}/api/me`, { withCredentials: true });
+        if (Boolean(response.status === 200)) {
+          const authAccount = response.data.address;
+          console.log(authAccount);
+          setAuthAccount(authAccount);
+        }
+      } catch (_error) {
+        setAuthStatus('unauthenticated');
+      }
+    }
+  }, [authStatus, authAccount]);
+
+  const authAdapter = useMemo(() => {
+    return createAuthenticationAdapter({
+      getNonce: async () => {
+        const response = await axios.get(`${AUTH_URL}/api/auth/nonce`, { withCredentials: true });
+        return await response.data;
+      },
+
+      createMessage: ({ nonce, address, chainId }) => {
+        return new SiweMessage({
+          domain: window.location.host,
+          address,
+          statement: 'Sign in with Ethereum to PayFlow',
+          uri: window.location.origin,
+          version: '1',
+          chainId,
+          nonce
+        });
+      },
+
+      getMessageBody: ({ message }) => {
+        return message.prepareMessage();
+      },
+
+      verify: async ({ message, signature }) => {
+        verifyingRef.current = true;
+
+        try {
+          const response = await axios.post(
+            `${AUTH_URL}/api/auth/verify`,
+            { message, signature },
+            { withCredentials: true }
+          );
+
+          const authenticated = Boolean(response.status === 200);
+
+          if (authenticated) {
+            setAuthStatus(authenticated ? 'authenticated' : 'unauthenticated');
+          }
+
+          return authenticated;
+        } catch (error) {
+          return false;
+        } finally {
+          verifyingRef.current = false;
+        }
+      },
+
+      signOut: async () => {
+        setAuthStatus('unauthenticated');
+        setAuthAccount(undefined);
+        await axios.get(`${AUTH_URL}/api/auth/logout`, { withCredentials: true });
+      }
+    });
+  }, []);
 
   useMemo(() => {
     localStorage.setItem('appSettings', JSON.stringify(appSettings));
@@ -84,32 +187,21 @@ export default function AppWithProviders() {
   });
 
   return (
-    <HelmetProvider>
-      <WagmiConfig config={wagmiConfig}>
+    <WagmiConfig config={wagmiConfig}>
+      <RainbowKitAuthenticationProvider adapter={authAdapter} status={authStatus}>
         <RainbowKitProvider
-          theme={appSettings.darkMode ? customDarkTheme : custLightTheme}
+          theme={appSettings.darkMode ? customDarkTheme : customLightTheme}
           avatar={CustomAvatar}
           modalSize="compact"
-          chains={chains}
-          initialChain={
-            chains.find((chain) => chain.network === import.meta.env.VITE_DEFAULT_NETWORK)?.id
-          }>
-          <App appSettings={appSettings} setAppSettings={setAppSettings} />
-          <ToastContainer
-            position="bottom-right"
-            autoClose={3000}
-            limit={5}
-            hideProgressBar={false}
-            newestOnTop={true}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="colored"
+          chains={chains}>
+          <App
+            authStatus={authStatus}
+            authAccount={authAccount}
+            appSettings={appSettings}
+            setAppSettings={setAppSettings}
           />
         </RainbowKitProvider>
-      </WagmiConfig>
-    </HelmetProvider>
+      </RainbowKitAuthenticationProvider>
+    </WagmiConfig>
   );
 }

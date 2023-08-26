@@ -13,11 +13,14 @@ import {
   IconButton,
   Button,
   Autocomplete,
-  TextField
+  TextField,
+  Tooltip,
+  FormControlLabel,
+  Switch
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { FlowType, FlowWalletType } from '../types/FlowType';
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useMemo, useRef, useState } from 'react';
 import { convertToUSD, getTotalBalance } from '../utils/getBalance';
 import {
   useContractWrite,
@@ -35,7 +38,7 @@ import {
   Edit,
   Share
 } from '@mui/icons-material';
-import { toast } from 'react-toastify';
+import { Id, toast } from 'react-toastify';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { copyToClipboard } from '../utils/copyToClipboard';
 import {
@@ -53,14 +56,18 @@ import { readContract } from 'wagmi/actions';
 import axios from 'axios';
 import create2Address from '../utils/create2Address';
 import FlowWithdrawalDialog from './FlowWithdrawalDialog';
-import FlowShareDialog from './FlowShareDialog';
+import ShareDialog from './ShareDialog';
 import { UserContext } from '../contexts/UserContext';
-import { ethPrice } from '../utils/constants';
+import { networks } from '../utils/constants';
+import { zkSyncTestnet } from 'wagmi/chains';
+import { useEthersSigner } from '../utils/hooks/useEthersSigner';
+import { SafeAccountConfig } from '@safe-global/protocol-kit';
+import { isRelaySupported, safeDeploy } from '../utils/safeTransactions';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 export type FlowViewDialogProps = DialogProps &
   CloseCallbackType & {
-    flow: FlowType;
+    flow?: FlowType;
   };
 
 const ZKSYNC_PAYFLOW_FACTORY_ADDRESS = import.meta.env.VITE_ZKSYNC_PAYFLOW_FACTORY_ADDRESS;
@@ -70,11 +77,14 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const flow = props.flow;
-  const flowSalt = props.flow.uuid ? keccak256(toHex(props.flow.uuid)) : undefined;
+  const saltNonce = flow && flow.uuid ? keccak256(toHex(flow.uuid)) : undefined;
 
-  const { walletBalances, smartAccountAllowedChains } = useContext(UserContext);
-  const { accounts } = useContext(UserContext);
+  const { chains, switchNetwork } = useSwitchNetwork();
+  const publicClient = usePublicClient();
+  const ethersSigner = useEthersSigner();
 
+  const { walletBalances, smartAccountAllowedChains, accounts, ethUsdPrice } =
+    useContext(UserContext);
   const [flowTotalBalance, setFlowTotalBalance] = useState('0');
 
   const [editFlow, setEditFlow] = useState(false);
@@ -84,30 +94,50 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const [selectedWithdrawalWallet, setSelectedWithdrawalWallet] = useState({} as FlowWalletType);
   const [masterAccount, setMasterAccount] = useState<Address>();
 
+  const [isZkSyncNetwork, setZkSyncNetwork] = useState<boolean>();
+  const [deployable, setDeployable] = useState<boolean>(false);
+  const [deployed, setDeployed] = useState<boolean>();
+
+  const [sponsored, setSponsored] = useState<boolean>();
+  const [sponsarable, setSponsarable] = useState<boolean>();
+
   const [availableNetworksToAddAccount, setAvailableNetworksToAddAccount] = useState(
     [] as string[]
   );
-  const [newAccountNetwork, setNewAccountNetwork] = useState('');
-  const [newAccountAddress, setNewAccountAddress] = useState('');
-
-  const { chains, switchNetwork } = useSwitchNetwork();
-  const publicClient = usePublicClient();
+  const [newAccountNetwork, setNewAccountNetwork] = useState<string>();
+  const [newAccountAddress, setNewAccountAddress] = useState<string>();
 
   const [openFlowShare, setOpenFlowShare] = useState(false);
   const [flowShareInfo, setFlowShareInfo] = useState({} as { title: string; link: string });
 
   const { config } = usePrepareContractWrite({
+    enabled: isZkSyncNetwork === true,
     address: ZKSYNC_PAYFLOW_FACTORY_ADDRESS,
     abi: PayFlowFactoryArtifact.abi,
     functionName: 'deployContract',
-    args: [flowSalt, masterAccount],
-    chainId: chains.find((c) => c?.name === newAccountNetwork)?.id
+    args: [saltNonce, masterAccount],
+    chainId: zkSyncTestnet.id
   });
   const { isSuccess, data, write } = useContractWrite(config);
   const [txHash, setTxHash] = useState<Hash>();
 
+  const newWalletToastId = useRef<Id>();
+
+  const safeDeployCallback = (txHash: string | undefined): void => {
+    if (!txHash) {
+      toast.error('Returned Tx Hash with error!');
+      return;
+    }
+    setTxHash(txHash as Hash);
+  };
+
+  function shortNetworkName(network: string) {
+    return networks.find((n) => n.chainId === chains.find((c) => c.name === network)?.id)
+      ?.shortName;
+  }
+
   useMemo(async () => {
-    if (flow && flow.wallets && walletBalances) {
+    if (flow && flow.wallets && walletBalances && ethUsdPrice) {
       const balances = flow.wallets
         .map((wallet) => {
           return walletBalances.get(`${wallet.address}_${wallet.network}`);
@@ -115,10 +145,10 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
         .filter((balance) => balance) as bigint[];
 
       setFlowTotalBalance(
-        (parseFloat(formatEther(await getTotalBalance(balances))) * ethPrice).toFixed(1)
+        (parseFloat(formatEther(await getTotalBalance(balances))) * ethUsdPrice).toFixed(1)
       );
     }
-  }, [flow.wallets]);
+  }, [flow]);
 
   useMemo(async () => {
     if (flow && flow.wallets && chains) {
@@ -127,14 +157,65 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
         chains.filter((c) => !addedNetworks.includes(c.name)).map((c) => c.name)
       );
     }
-  }, [flow.wallets, chains]);
+  }, [flow, chains]);
+
+  useMemo(async () => {
+    const chainId = chains.find((c) => c.name === newAccountNetwork)?.id;
+    setSponsarable(isRelaySupported(chainId));
+    setSponsored(isRelaySupported(chainId));
+
+    setZkSyncNetwork(newAccountNetwork ? chainId === zkSyncTestnet.id : undefined);
+  }, [newAccountNetwork]);
+
+  useMemo(async () => {
+    setDeployable(
+      isZkSyncNetwork !== undefined && (isZkSyncNetwork === false || write !== undefined)
+    );
+  }, [isZkSyncNetwork, write]);
+
+  async function deployNewWallet() {
+    newWalletToastId.current = toast.loading('Creating Wallet 🪄');
+
+    if (isZkSyncNetwork) {
+      write?.();
+    } else {
+      if (ethersSigner && masterAccount && saltNonce) {
+        const safeAccountConfig: SafeAccountConfig = {
+          owners: [masterAccount],
+          threshold: 1
+        };
+
+        const safeAddress = await safeDeploy({
+          ethersSigner,
+          safeAccountConfig,
+          saltNonce,
+          sponsored,
+          callback: safeDeployCallback
+        });
+
+        if (safeAddress) {
+          setNewAccountAddress(safeAddress);
+        } else {
+          toast.update(newWalletToastId.current, {
+            render: 'Wallet Creation Failed 😕',
+            type: 'error',
+            isLoading: false,
+            autoClose: 5000
+          });
+          newWalletToastId.current = undefined;
+        }
+      }
+    }
+  }
 
   function resetViewState() {
     setEditFlow(false);
     setAddFlowWallet(false);
     setWithdrawFlowWallet(false);
-    setNewAccountNetwork('');
-    setNewAccountAddress('');
+    setNewAccountNetwork(undefined);
+    setNewAccountAddress(undefined);
+    setDeployable(false);
+    setDeployed(false);
   }
 
   function handleCloseCampaignDialog() {
@@ -149,7 +230,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   }, [accounts, newAccountNetwork]);
 
   useMemo(async () => {
-    if (isSuccess && masterAccount && flowSalt) {
+    if (isSuccess && masterAccount && saltNonce) {
       const encodedData = encodeAbiParameters(parseAbiParameters('address'), [
         masterAccount as `0x${string}`
       ]);
@@ -164,7 +245,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
       const playFlowAddress = create2Address(
         ZKSYNC_PAYFLOW_FACTORY_ADDRESS,
         playFlowContractHash,
-        flowSalt,
+        saltNonce,
         encodedData
       );
 
@@ -174,43 +255,61 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   }, [isSuccess, data]);
 
   useMemo(async () => {
-    if (txHash) {
-      // TODO: add loading indicator
+    if (txHash && newAccountAddress) {
       const receipt = await publicClient.waitForTransactionReceipt({
         hash: txHash
       });
 
       console.log('Receipt: ', receipt);
 
-      if (receipt) {
-        if (receipt.status === 'success') {
-          toast.success('Payflow Wallet Successfully Deployed!');
-        } else {
-          toast.error('Payflow Wallet Failed To Deploy!');
+      if (receipt && receipt.status === 'success') {
+        if (newWalletToastId.current) {
+          setDeployable(false);
+          setDeployed(true);
+          toast.update(newWalletToastId.current, {
+            render: `Wallet ${shortenWalletAddressLabel(newAccountAddress)} created 🚀`,
+            type: 'success',
+            isLoading: false,
+            autoClose: 5000
+          });
+          newWalletToastId.current = undefined;
+        }
+      } else {
+        if (newWalletToastId.current) {
+          toast.update(newWalletToastId.current, {
+            render: 'Wallet Creation Failed 😕',
+            type: 'error',
+            isLoading: false,
+            autoClose: 5000
+          });
+          newWalletToastId.current = undefined;
         }
       }
     }
-  }, [txHash]);
+  }, [txHash, newAccountAddress]);
 
-  async function submitFlowAccount() {
-    if (flow) {
+  async function submitWallet() {
+    if (flow && newAccountNetwork) {
       try {
         const flowWallet = {
           address: newAccountAddress,
           network: newAccountNetwork,
           smart: smartAccountAllowedChains.includes(newAccountNetwork),
-          master: masterAccount
+          // decide based on network, since other than zkSync all other support Safe
+          safe: smartAccountAllowedChains.includes(newAccountNetwork) && !isZkSyncNetwork,
+          master: smartAccountAllowedChains.includes(newAccountNetwork) ? masterAccount : null
         } as FlowWalletType;
         const response = await axios.post(
           `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${flow.uuid}/wallet`,
-          flowWallet
+          flowWallet,
+          { withCredentials: true }
         );
         console.log(response.status);
 
         const wallets = Array.from(flow.wallets);
         wallets.push(flowWallet);
         flow.wallets = wallets;
-        toast.success(`Successfully added new account: ${newAccountAddress}`);
+        toast.success(`Wallet ${shortenWalletAddressLabel(newAccountAddress)} added!`);
       } catch (error) {
         console.log(error);
         toast.error('Try again!');
@@ -229,7 +328,8 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
             data: {
               address: wallet.address,
               network: wallet.network
-            }
+            },
+            withCredentials: true
           }
         );
         console.log(response.status);
@@ -240,7 +340,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
 
         flow.wallets = wallets;
 
-        toast.success(`Successfully removed ${wallet.address} from the flow!`);
+        toast.success(`Wallet ${shortenWalletAddressLabel(wallet.address)} removed!`);
       } catch (error) {
         console.log(error);
         toast.error('Operation failed!');
@@ -297,36 +397,54 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                       justifyContent="space-between"
                       sx={{ border: 1, borderRadius: 3, p: 1 }}>
                       <Box display="flex" flexDirection="row" alignItems="center">
-                        <Avatar
-                          src={'/networks/' + wallet.network + '.png'}
-                          sx={{ width: 24, height: 24 }}
-                        />
+                        <Tooltip title={wallet.network}>
+                          <Avatar
+                            src={'/networks/' + wallet.network + '.png'}
+                            sx={{ width: 24, height: 24 }}
+                          />
+                        </Tooltip>
                         <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
-                        <IconButton
-                          size="small"
-                          onClick={() => {
-                            copyToClipboard(wallet.address);
-                            toast.success('Wallet address is copied to clipboard!');
-                          }}>
-                          <ContentCopy fontSize="small" />
-                        </IconButton>
+                        <Tooltip title="Copy Address">
+                          <IconButton
+                            size="small"
+                            onClick={() => {
+                              copyToClipboard(wallet.address);
+                              toast.success('Address is copied!');
+                            }}>
+                            <ContentCopy fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        {wallet.safe && (
+                          <Tooltip title="Open in Safe Web Wallet">
+                            <a
+                              href={`https://app.safe.global/home?safe=${shortNetworkName(
+                                wallet.network
+                              )}:${wallet.address}`}
+                              target="_blank">
+                              <Avatar src="/safe.png" sx={{ width: 16, height: 16 }} />
+                            </a>
+                          </Tooltip>
+                        )}
                       </Box>
                       <Typography variant="subtitle2">
+                        $
                         {convertToUSD(
                           walletBalances?.get(`${wallet.address}_${wallet.network}`),
-                          ethPrice
+                          ethUsdPrice
                         )}
                       </Typography>
                     </Box>
                     {withdrawFlowWallet && (
-                      <IconButton
-                        size="small"
-                        onClick={async () => {
-                          setSelectedWithdrawalWallet(wallet);
-                          setOpenWithdrawalDialog(true);
-                        }}>
-                        <Download fontSize="small" />
-                      </IconButton>
+                      <Tooltip title="Withdraw">
+                        <IconButton
+                          size="small"
+                          onClick={async () => {
+                            setSelectedWithdrawalWallet(wallet);
+                            setOpenWithdrawalDialog(true);
+                          }}>
+                          <Download fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     )}
                   </Box>
                 ))}
@@ -362,20 +480,22 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                           sx={{ width: 24, height: 24 }}
                         />
                         <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
-                        <IconButton
-                          size="small"
-                          onClick={() => {
-                            copyToClipboard(wallet.address);
-                            toast.success('Wallet address is copied to clipboard!');
-                          }}>
-                          <ContentCopy fontSize="small" />
-                        </IconButton>
+                        <Tooltip title="Copy Address">
+                          <IconButton
+                            size="small"
+                            onClick={() => {
+                              copyToClipboard(wallet.address);
+                              toast.success('Address is copied!');
+                            }}>
+                            <ContentCopy fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
                       </Box>
                       <Typography variant="subtitle2">
                         $
                         {convertToUSD(
                           walletBalances?.get(`${wallet.address}_${wallet.network}`),
-                          ethPrice
+                          ethUsdPrice
                         )}
                       </Typography>
                     </Box>
@@ -412,7 +532,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                   onChange={(_event, value) => {
                     if (value) {
                       setNewAccountNetwork(value);
-                      // switch netwrok only for smart accounts,
+                      // switch network only for smart accounts,
                       // as those will require signing transaction
                       if (smartAccountAllowedChains.includes(value)) {
                         switchNetwork?.(chains.find((c) => c?.name === value)?.id);
@@ -429,7 +549,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                   sx={{ '& fieldset': { borderRadius: 3 } }}
                 />
 
-                {newAccountNetwork.length > 0 &&
+                {newAccountNetwork &&
                   (!smartAccountAllowedChains.includes(newAccountNetwork) ? (
                     <TextField
                       fullWidth
@@ -442,34 +562,45 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                     />
                   ) : (
                     <>
+                      <FormControlLabel
+                        labelPlacement="end"
+                        disabled={!sponsarable}
+                        control={
+                          <Switch
+                            size="medium"
+                            checked={sponsored}
+                            onChange={() => {
+                              setSponsored(!sponsored);
+                            }}
+                          />
+                        }
+                        label="Sponsored"
+                        sx={{ alignSelf: 'flex-start' }}
+                      />
                       <Button
                         fullWidth
-                        disabled={!write}
+                        disabled={!deployable}
                         variant="outlined"
                         size="large"
                         color="primary"
                         sx={{ borderRadius: 3 }}
                         endIcon={<AutoFixHigh />}
-                        onClick={async () => {
-                          write?.();
-                        }}>
+                        onClick={deployNewWallet}>
                         Create Payflow Wallet
                       </Button>
-                      {newAccountAddress && (
-                        <Typography variant="subtitle2">{newAccountAddress}</Typography>
-                      )}
+                      {deployed && <Typography variant="subtitle2">{newAccountAddress}</Typography>}
                     </>
                   ))}
 
                 <Button
                   fullWidth
-                  disabled={!newAccountNetwork || !newAccountAddress}
+                  disabled={!deployed}
                   variant="outlined"
                   size="large"
                   color="primary"
                   sx={{ borderRadius: 3 }}
                   onClick={() => {
-                    submitFlowAccount();
+                    submitWallet();
                   }}>
                   SAVE
                 </Button>
@@ -481,51 +612,61 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
             ))}
           {!(editFlow || addFlowWallet || withdrawFlowWallet) && (
             <Stack spacing={1} direction="row" alignSelf="center">
-              <IconButton
-                color="inherit"
-                onClick={() => {
-                  setAddFlowWallet(!addFlowWallet);
-                }}
-                sx={{ border: 1, borderStyle: 'dashed' }}>
-                <Add fontSize="small" />
-              </IconButton>
-              <IconButton
-                color="inherit"
-                disabled={flow.wallets && flow.wallets.length === 0}
-                onClick={async () => {
-                  setFlowShareInfo({
-                    title: flow.title,
-                    link: `${DAPP_URL}/send/${flow.uuid}`
-                  });
-                  setOpenFlowShare(true);
-                }}
-                sx={{ border: 1, borderStyle: 'dashed' }}>
-                <Share fontSize="small" />
-              </IconButton>
-              <IconButton
-                color="inherit"
-                onClick={() => {
-                  setEditFlow(!editFlow);
-                }}
-                sx={{ border: 1, borderStyle: 'dashed' }}>
-                <Edit fontSize="small" />
-              </IconButton>
-              <IconButton
-                color="inherit"
-                onClick={async () => {
-                  setWithdrawFlowWallet(!withdrawFlowWallet);
-                }}
-                sx={{ border: 1, borderStyle: 'dashed' }}>
-                <Download fontSize="small" />
-              </IconButton>
-              <IconButton
-                color="inherit"
-                onClick={async () => {
-                  toast.error('Feature not supported yet!');
-                }}
-                sx={{ border: 1, borderStyle: 'dashed' }}>
-                <Close fontSize="small" />
-              </IconButton>
+              <Tooltip title="Add Wallet">
+                <IconButton
+                  color="inherit"
+                  onClick={() => {
+                    setAddFlowWallet(!addFlowWallet);
+                  }}
+                  sx={{ border: 1, borderStyle: 'dashed' }}>
+                  <Add fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Share Link / QR">
+                <IconButton
+                  color="inherit"
+                  disabled={flow.wallets && flow.wallets.length === 0}
+                  onClick={async () => {
+                    setFlowShareInfo({
+                      title: flow.title,
+                      link: `${DAPP_URL}/send/${flow.uuid}`
+                    });
+                    setOpenFlowShare(true);
+                  }}
+                  sx={{ border: 1, borderStyle: 'dashed' }}>
+                  <Share fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Edit">
+                <IconButton
+                  color="inherit"
+                  onClick={() => {
+                    setEditFlow(!editFlow);
+                  }}
+                  sx={{ border: 1, borderStyle: 'dashed' }}>
+                  <Edit fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Withdraw">
+                <IconButton
+                  color="inherit"
+                  onClick={async () => {
+                    setWithdrawFlowWallet(!withdrawFlowWallet);
+                  }}
+                  sx={{ border: 1, borderStyle: 'dashed' }}>
+                  <Download fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Suspend">
+                <IconButton
+                  color="inherit"
+                  onClick={async () => {
+                    toast.error('Feature not supported yet!');
+                  }}
+                  sx={{ border: 1, borderStyle: 'dashed' }}>
+                  <Close fontSize="small" />
+                </IconButton>
+              </Tooltip>
             </Stack>
           )}
         </Stack>
@@ -537,7 +678,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
         network={selectedWithdrawalWallet.network}
         closeStateCallback={async () => setOpenWithdrawalDialog(false)}
       />
-      <FlowShareDialog
+      <ShareDialog
         open={openFlowShare}
         title={flowShareInfo.title}
         link={flowShareInfo.link}

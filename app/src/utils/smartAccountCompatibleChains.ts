@@ -1,5 +1,21 @@
-import { zkSyncTestnet } from 'wagmi/chains';
+import {
+  zkSyncTestnet,
+  baseGoerli,
+  optimismGoerli,
+  zoraTestnet,
+  optimism,
+  base,
+  modeTestnet
+} from 'wagmi/chains';
 
 export function smartAccountCompatibleChains() {
-  return [zkSyncTestnet.name] as string[];
+  return [
+    optimismGoerli.name,
+    baseGoerli.name,
+    zoraTestnet.name,
+    modeTestnet.name,
+    zkSyncTestnet.name,
+    optimism.name,
+    base.name
+  ] as string[];
 }
