@@ -349,7 +349,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
                 }}
                 onChange={(event) => {
                   const amount = parseEther(event.target.value);
-                  if (balance && amount < balance?.value) {
+                  if (balance && amount <= balance?.value) {
                     setTopUpAmount(amount);
                   }
                 }}

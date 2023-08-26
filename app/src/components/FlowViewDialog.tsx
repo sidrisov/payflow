@@ -62,7 +62,8 @@ import { networks } from '../utils/constants';
 import { zkSyncTestnet } from 'wagmi/chains';
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
-import { isRelaySupported, safeDeploy } from '../utils/safeTransactions';
+import { safeDeploy } from '../utils/safeTransactions';
+import { isRelaySupported } from '../utils/relayer';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 export type FlowViewDialogProps = DialogProps &
@@ -623,6 +624,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                 </IconButton>
               </Tooltip>
               <Tooltip title="Share Link / QR">
+                <span>
                 <IconButton
                   color="inherit"
                   disabled={flow.wallets && flow.wallets.length === 0}
@@ -636,6 +638,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                   sx={{ border: 1, borderStyle: 'dashed' }}>
                   <Share fontSize="small" />
                 </IconButton>
+                </span>
               </Tooltip>
               <Tooltip title="Edit">
                 <IconButton
