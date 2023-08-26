@@ -1,6 +1,10 @@
-**PayFlow** brings simplified crypto payment flows to Ethereum Layer 2, with secure Safe AA and gasless transactions
+## **PayFlow**
 
-## **What is PayFlow for?**
+**[PayFlow.me](https://app.payflow.me)** brings simplified crypto payment flows to Ethereum Layer 2, with secure Safe AA and gasless transactions
+
+![ux_flow.png](diagrams/ux_flow.png)
+
+## 💡 **What is PayFlow for?**
 
 Looking for a seamless way to manage multiple crypto payment flows?
 
@@ -14,13 +18,13 @@ Flows/requests can be shared simply as a link and QR code.
 
 Simplify your payment flows with PayFlow!
 
-## **What inspired me to build PayFlow?**
+## 🤔 **What inspired me to build PayFlow?**
 
 1. One of the most famous online banking/fintech applications in Ukraine - **[Monobank](https://www.monobank.ua/?lang=en) - has a service called “Jar”**, you can create any virtual account to **collect money for any kind of purpose**. It became one of the most used features among Ukrainian volunteers.
 2. I had the **intention to support one of the Web3 technical writers** (author of amazing articles about AA and blockchain interoperability), but after a brief discussion, it became obvious there are not many Web3 native funding/supporting/buymecoffee like platforms, where you can manage multiple streams of payments and share it over social media or embed in your website.
 3. **Vitalik’s article**: [The Three Transitions](https://vitalik.ca/general/2023/06/09/three_transitions.html)
 
-## **How does PayFlow work?**
+## ⚙️ **How does PayFlow work?**
 
 1. Sign in with Ethereum
 2. Create accounts for networks to support flow wallets
@@ -33,9 +37,7 @@ Simplify your payment flows with PayFlow!
 9. Withdraw funds from flows to accounts
 10. Transfer funds from accounts or for a broader spectrum of operations utilize Safe Apps ecosystem.
 
-![ux_flow.png](diagrams/ux_flow.png)
-
-## **What values does PayFlow stand for?**
+## ❤️ **What values does PayFlow stand for?**
 
 - **Accessibility**: makes it possible for anyone to start receiving payments in crypto, regardless of their technical expertise or financial status. It empowers individuals, creators, and businesses in developing countries, where traditional financial services are often inaccessible.
 - **Flexibility**: allows users to create multiple flows to collect payments for different purposes. It helps to streamline the payment process for individuals, creators, and businesses and makes it easier to track finances.
@@ -44,7 +46,7 @@ Simplify your payment flows with PayFlow!
 - **Composability**: accounts are backed by Safe AA, at any point user can continue using them in Safe App, which also means that they can be used with other DeFi applications of the ecosystem. It creates new financial products and services that could benefit individuals and communities.
 - **Gasless UX**: transactions are gasless, there is no initial barrier to receiving payments. It makes crypto payments more affordable and accessible to everyone.
 
-## **The team behind PayFlow**
+## 👨🏻‍💻 **The team behind PayFlow**
 
 It’s me for now - Sinaver - former Engineering Manager in the cybersecurity space, working before on end-to-end encryption solutions like Signal/ProtonMail, and now I am excited to build a cool product that will bring the next wave of consumers to Web3 space. You can reach me here:
 
@@ -54,7 +56,7 @@ Discord: **sinaver**
 
 Converse: **sinaver.eth**
 
-## **Current Status and Future Milestones**
+## ✅ **Current Status and Future Milestones**
 
 It’s already live, try it out here: [https://app.payflow.me](https://app.payflow.me/)
 
@@ -109,7 +111,7 @@ I started working on the project last month through hackathons where I won in mu
 5. Accounts recovery
 6. Flow created for someone, and claimed after
 
-## **Tech Stack:**
+## 🧱 **Tech Stack:**
 
 **DApp:**
 
@@ -122,3 +124,43 @@ Spring Boot, MySql (Cloud SQL) - deployed to GCP via cloud run
 **Smart-Contracts:**
 
 A mix of deployed contracts for ZkSync AA, and existing safe contracts within Safe AA SDK (+ deployed to other networks not available)
+
+## 🛠️ **CI/CD**
+
+1. Building/Running Services (GCP)
+    
+    ```bash
+    cd ./services/payflow-service
+    
+    # run service with local MySql or with GCP CloudSQL
+    # CloudSQL credentials are picked up automatically via DefaultCredentialsProvider
+    gradle bootRun | gradlew bootRun -Pgcp
+    
+    # building container image for cloud run 
+    # via gradle with Paketo Buildpack
+    PROJECT_ID=$(gcloud config get-value project)
+    
+    gradle bootBuildImage -Pgcp \
+    --imageName=gcr.io/${PROJECT_ID}/api-payflow-service
+    
+    docker push gcr.io/${PROJECT_ID}/api-payflow-service
+    
+    gcloud run deploy api-payflow-service \
+      --allow-unauthenticated \
+      --image=gcr.io/${PROJECT_ID}/api-payflow-service \
+    --min-instances=1 --max-instances=2 \
+    --memory=1024Mi \
+    --set-env-vars="SPRING_PROFILES_ACTIVE=gcp"
+    
+    # check service details
+    gcloud run services describe api-payflow-service
+    ```
+    
+2. Building/Running dApp (Vercel)
+    
+    ```bash
+    cd ./app
+    npm install; npm run dev
+    ```
+    
+3. Building/Deploying Smart-Contracts
