@@ -114,7 +114,40 @@ public class FlowService implements IFlowService {
         flow.getWallets().add(wallet);
 
         log.info("Added wallet {} to flow {}", wallet, flow);
+    }
 
+    @Override
+    public void updateFlowWallet(String uuid, WalletMessage walletDto, User user) throws Exception {
+        val flow = flowRepository.findByUuid(uuid);
+        if (flow == null) {
+            throw new Exception("Flow doesn't exist");
+        } else if (!flow.getUserId().equals(user.getId())) {
+            throw new Exception("Authenticated user mismatch");
+        }
+
+        val network = walletDto.network();
+        val address = walletDto.address();
+
+        val walletOptional = flow.getWallets().stream()
+                .filter(w -> w.getNetwork().equals(network) && w.getAddress().equals(address))
+                .findFirst();
+        if (!walletOptional.isPresent()) {
+            throw new Exception("Wallet doesn't exist");
+        }
+
+        val wallet = walletOptional.get();
+        if (wallet.isSmart() && wallet.isSafe()) {
+            // update only fields need to be changed
+            if (!wallet.getSafeVersion().equals(walletDto.safeVersion())) {
+                wallet.setSafeVersion(walletDto.safeVersion());
+            }
+
+            if (!wallet.isSafeDeployed() && walletDto.safeDeployed()) {
+                wallet.setSafeDeployed(true);
+            }
+        }
+
+        log.info("Updated wallet {}", wallet);
     }
 
     private static FlowMessage convert(Flow flow, User user) {
@@ -136,11 +169,13 @@ public class FlowService implements IFlowService {
     }
 
     private static Wallet convert(WalletMessage walletDto) {
-        return new Wallet(walletDto.address(), walletDto.network(), walletDto.safe(), walletDto.smart());
+        return new Wallet(walletDto.address(), walletDto.network(), walletDto.safe(), walletDto.smart(),
+                walletDto.safeVersion(), walletDto.safeDeployed());
     }
 
     private static WalletMessage convert(Wallet wallet) {
         return new WalletMessage(wallet.getAddress(), wallet.getNetwork(), wallet.isSmart(), wallet.isSafe(),
+                wallet.getSafeVersion(), wallet.isSafeDeployed(),
                 wallet.isSmart() && wallet.getMaster() != null ? wallet.getMaster().getAddress() : null);
     }
 }
