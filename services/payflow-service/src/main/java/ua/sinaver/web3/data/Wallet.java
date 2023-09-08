@@ -40,6 +40,9 @@ public class Wallet {
     @Column
     private String safeVersion;
 
+    @Column
+    private String safeSaltNonce;
+
     @Column(columnDefinition = "boolean")
     private boolean safeDeployed;
 
@@ -54,13 +57,14 @@ public class Wallet {
     @Version
     private Long version;
 
-    public Wallet(String address, String network, boolean smart, boolean safe, String safeVersion,
+    public Wallet(String address, String network, boolean smart, boolean safe, String safeVersion, String safeSaltNonce,
             boolean safeDeployed) {
         this.address = address;
         this.network = network;
         this.smart = smart;
         this.safe = safe;
         this.safeVersion = safeVersion;
+        this.safeSaltNonce = safeSaltNonce;
         this.safeDeployed = safeDeployed;
     }
 

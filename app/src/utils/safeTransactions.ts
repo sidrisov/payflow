@@ -43,6 +43,7 @@ export async function safeDeploy({
   safeAccountConfig,
   saltNonce,
   safeVersion = LATEST_SAFE_VERSION,
+  initialize = true,
   sponsored = false,
   callback
 }: {
@@ -50,6 +51,7 @@ export async function safeDeploy({
   safeAccountConfig: SafeAccountConfig;
   saltNonce: Hash;
   safeVersion?: SafeVersion;
+  initialize?: boolean;
   sponsored?: boolean;
   callback?: (txHash: string | undefined) => void;
 }): Promise<Address | undefined> {
@@ -69,6 +71,10 @@ export async function safeDeploy({
   });
 
   const predictedAddress = await safeFactory.predictSafeAddress(safeAccountConfig, saltNonce);
+
+  if (!initialize) {
+    return predictedAddress as Address;
+  }
 
   try {
     // deploy without relaying

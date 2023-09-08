@@ -1,5 +1,6 @@
-import { ContractNetworksConfig } from '@safe-global/protocol-kit';
+import { ContractNetworksConfig, EthersAdapter } from '@safe-global/protocol-kit';
 import { zoraTestnet, modeTestnet } from 'wagmi/chains';
+import { ethers, providers } from 'ethers';
 
 export const CUSTOM_CONTRACTS_CHAINS: number[] = [zoraTestnet.id, modeTestnet.id];
 
@@ -25,3 +26,15 @@ export const CUSTOM_CONTRACTS: ContractNetworksConfig = {
     simulateTxAccessorAddress: '0x59AD6735bCd8152B84860Cb256dD9e96b85F69Da'
   }
 };
+
+export async function isSafeDeployed(
+  address: string,
+  ethersSigner: providers.JsonRpcSigner
+): Promise<boolean> {
+  const ethAdapter = new EthersAdapter({
+    ethers,
+    signerOrProvider: ethersSigner
+  });
+
+  return ethAdapter.isContractDeployed(address);
+}

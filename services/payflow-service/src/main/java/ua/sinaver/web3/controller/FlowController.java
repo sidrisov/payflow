@@ -88,7 +88,7 @@ class FlowController {
         }
 
         log.debug("updateFlowWallet() {} {}", uuid, wallet);
-        flowService.addFlowWallet(uuid, wallet, user);
+        flowService.updateFlowWallet(uuid, wallet, user);
     }
 
     @DeleteMapping("/{uuid}/wallet")

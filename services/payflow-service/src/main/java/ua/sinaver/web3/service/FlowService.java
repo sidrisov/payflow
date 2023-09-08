@@ -138,9 +138,11 @@ public class FlowService implements IFlowService {
         val wallet = walletOptional.get();
         if (wallet.isSmart() && wallet.isSafe()) {
             // update only fields need to be changed
-            if (!wallet.getSafeVersion().equals(walletDto.safeVersion())) {
-                wallet.setSafeVersion(walletDto.safeVersion());
-            }
+            /*
+             * if (!wallet.getSafeVersion().equals(walletDto.safeVersion())) {
+             * wallet.setSafeVersion(walletDto.safeVersion());
+             * }
+             */
 
             if (!wallet.isSafeDeployed() && walletDto.safeDeployed()) {
                 wallet.setSafeDeployed(true);
@@ -170,12 +172,12 @@ public class FlowService implements IFlowService {
 
     private static Wallet convert(WalletMessage walletDto) {
         return new Wallet(walletDto.address(), walletDto.network(), walletDto.safe(), walletDto.smart(),
-                walletDto.safeVersion(), walletDto.safeDeployed());
+                walletDto.safeVersion(), walletDto.safeSaltNonce(), walletDto.safeDeployed());
     }
 
     private static WalletMessage convert(Wallet wallet) {
         return new WalletMessage(wallet.getAddress(), wallet.getNetwork(), wallet.isSmart(), wallet.isSafe(),
-                wallet.getSafeVersion(), wallet.isSafeDeployed(),
+                wallet.getSafeVersion(), wallet.getSafeSaltNonce(), wallet.isSafeDeployed(),
                 wallet.isSmart() && wallet.getMaster() != null ? wallet.getMaster().getAddress() : null);
     }
 }
