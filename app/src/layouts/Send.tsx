@@ -370,102 +370,103 @@ export default function Send({ appSettings, setAppSettings }: any) {
                 <>
                   <Divider flexItem sx={{ my: 2 }} />
 
-                  <Autocomplete
-                    autoHighlight
-                    fullWidth
-                    onChange={(_event, value) => {
-                      if (value) {
-                        setSelectedPaymentToken(value);
-                      } else {
-                        setSelectedPaymentToken(undefined);
-                      }
-                    }}
-                    options={getSupportedTokens(
-                      chains.find((c) => c.name === selectedPaymentNetwork)?.id
-                    )}
-                    getOptionLabel={(token) => token.name}
-                    renderInput={(params) => (
-                      <TextField variant="outlined" {...params} label="Select Payment Token" />
-                    )}
-                    sx={{ '& fieldset': { borderRadius: 3 }, my: 1 }}
-                  />
-
-                  {selectedPaymentToken && (
-                    <>
-                      <TextField
-                        fullWidth
-                        variant="outlined"
-                        label={`Top Up Amount (max: ${
-                          isBalanceSuccess
-                            ? balance &&
-                              parseFloat(
-                                formatUnits(balance?.value, balance?.decimals)
-                              ).toPrecision(5)
-                            : 0
-                        })`}
-                        id="sendAmount"
-                        type="number"
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              {selectedPaymentToken?.name}
-                            </InputAdornment>
-                          ),
-                          inputMode: 'decimal',
-                          sx: { borderRadius: 3 }
-                        }}
-                        onChange={(event) => {
-                          if (balance) {
-                            const amount = parseUnits(event.target.value, balance?.decimals);
-                            if (amount <= balance?.value) {
-                              setTopUpAmount(amount);
-                            }
+                  <Box display="flex" flexDirection="row" width="100%">
+                    <TextField
+                      fullWidth
+                      variant="outlined"
+                      label={`Top Up Amount (max: ${
+                        selectedPaymentToken && isBalanceSuccess
+                          ? balance &&
+                            parseFloat(formatUnits(balance?.value, balance?.decimals)).toPrecision(
+                              5
+                            )
+                          : 0
+                      })`}
+                      id="sendAmount"
+                      type="number"
+                      InputProps={{
+                        inputMode: 'decimal',
+                        sx: { borderRadius: 3, borderTopRightRadius: 0, borderBottomRightRadius: 0 }
+                      }}
+                      onChange={(event) => {
+                        if (balance) {
+                          const amount = parseUnits(event.target.value, balance?.decimals);
+                          if (amount <= balance?.value) {
+                            setTopUpAmount(amount);
+                          } else {
+                            setTopUpAmount(BigInt(0));
                           }
-                        }}
-                      />
+                        }
+                      }}
+                    />
+                    <Autocomplete
+                      autoHighlight
+                      onChange={(_event, value) => {
+                        if (value) {
+                          setSelectedPaymentToken(value);
+                        } else {
+                          setSelectedPaymentToken(undefined);
+                          setTopUpAmount(BigInt(0));
+                        }
+                      }}
+                      options={getSupportedTokens(
+                        chains.find((c) => c.name === selectedPaymentNetwork)?.id
+                      )}
+                      getOptionLabel={(token) => token.name}
+                      renderInput={(params) => (
+                        <TextField variant="outlined" {...params} label="Token" />
+                      )}
+                      sx={{
+                        '& fieldset': {
+                          borderRadius: 3,
+                          borderTopLeftRadius: 0,
+                          borderBottomLeftRadius: 0
+                        },
+                        width: 200
+                      }}
+                    />
+                  </Box>
 
-                      <TextField
-                        fullWidth
-                        id="sendComment"
-                        label="Comment (optional)"
-                        InputProps={{
-                          inputMode: 'text',
-                          inputProps: { maxLength: 32 },
-                          sx: { borderRadius: 3 }
-                        }}
-                        onChange={(event) => {
-                          setComment(event.target.value);
-                        }}
-                        sx={{ mt: 1 }}
-                      />
-                      <Divider flexItem sx={{ my: 2 }}>
-                        <Button
-                          disabled={!(sendTransaction || write) || !topUpAmount}
-                          fullWidth
-                          variant="outlined"
-                          size="medium"
-                          color="primary"
-                          onClick={() => {
-                            // TODO: replace with fetch info for the token and use metadata
-                            if (balance) {
-                              sendToastId.current = toast.loading(
-                                `Sending ${formatUnits(topUpAmount, balance?.decimals)} ${
-                                  selectedPaymentToken?.name
-                                } to ${shortenWalletAddressLabel(selectedPaymentAddress)} 💸`
-                              );
-                              if (selectedPaymentToken === ETH) {
-                                sendTransaction?.();
-                              } else {
-                                write?.();
-                              }
-                            }
-                          }}
-                          sx={{ mt: 1, borderRadius: 3 }}>
-                          PAY
-                        </Button>
-                      </Divider>
-                    </>
-                  )}
+                  <TextField
+                    fullWidth
+                    id="sendComment"
+                    label="Comment (optional)"
+                    InputProps={{
+                      inputMode: 'text',
+                      inputProps: { maxLength: 32 },
+                      sx: { borderRadius: 3 }
+                    }}
+                    onChange={(event) => {
+                      setComment(event.target.value);
+                    }}
+                    sx={{ mt: 1 }}
+                  />
+                  <Divider flexItem sx={{ my: 2 }}>
+                    <Button
+                      disabled={!(sendTransaction || write) || !topUpAmount}
+                      fullWidth
+                      variant="outlined"
+                      size="medium"
+                      color="primary"
+                      onClick={() => {
+                        // TODO: replace with fetch info for the token and use metadata
+                        if (balance) {
+                          sendToastId.current = toast.loading(
+                            `Sending ${formatUnits(topUpAmount, balance?.decimals)} ${
+                              selectedPaymentToken?.name
+                            } to ${shortenWalletAddressLabel(selectedPaymentAddress)} 💸`
+                          );
+                          if (selectedPaymentToken === ETH) {
+                            sendTransaction?.();
+                          } else {
+                            write?.();
+                          }
+                        }
+                      }}
+                      sx={{ mt: 1, borderRadius: 3 }}>
+                      PAY
+                    </Button>
+                  </Divider>
                 </>
               )}
 
