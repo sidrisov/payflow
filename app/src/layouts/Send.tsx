@@ -1,12 +1,15 @@
-import { Hash, formatEther, formatUnits, parseEther } from 'viem';
+import { Address, Hash, formatEther, formatUnits, parseEther, parseUnits } from 'viem';
 
 import {
+  erc20ABI,
   useAccount,
   useBalance,
   useContractRead,
+  useContractWrite,
   useEnsAddress,
   useEnsAvatar,
   useEnsName,
+  usePrepareContractWrite,
   usePrepareSendTransaction,
   usePublicClient,
   useSendTransaction,
@@ -44,6 +47,7 @@ import { getFlowBalance } from '../utils/getBalance';
 import { Helmet } from 'react-helmet-async';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
+import { ETH, Token, getSupportedTokens } from '../utils/erc20contracts';
 
 export default function Send({ appSettings, setAppSettings }: any) {
   const { uuid } = useParams();
@@ -51,7 +55,8 @@ export default function Send({ appSettings, setAppSettings }: any) {
   const [flowTotalBalance, setFlowTotalBalance] = useState('0');
   const [openAddressQRCode, setOpenAddressQRCode] = useState(false);
   const [selectedPaymentNetwork, setSelectedPaymentNetwork] = useState('');
-  const [selectedPaymentAddress, setSelectedPaymentAddress] = useState('');
+  const [selectedPaymentAddress, setSelectedPaymentAddress] = useState<Address>();
+  const [selectedPaymentToken, setSelectedPaymentToken] = useState<Token>();
   const [topUpAmount, setTopUpAmount] = useState(BigInt(0));
   const [, /* comment */ setComment] = useState('');
 
@@ -87,18 +92,34 @@ export default function Send({ appSettings, setAppSettings }: any) {
   const { address } = useAccount();
 
   const { isSuccess: isBalanceSuccess, data: balance } = useBalance({
-    enabled: address !== undefined,
-    address
+    enabled: address !== undefined && selectedPaymentToken !== undefined,
+    address,
+    token: selectedPaymentToken !== ETH ? selectedPaymentToken?.address : undefined
   });
 
   const { config } = usePrepareSendTransaction({
-    enabled: selectedPaymentAddress !== undefined,
+    enabled: selectedPaymentAddress !== undefined && selectedPaymentToken !== undefined,
     to: selectedPaymentAddress,
     value: topUpAmount
     //data: toHex(comment)
   });
 
   const { isSuccess, isError, data, sendTransaction } = useSendTransaction(config);
+
+  const { config: erc20TransferConfig } = usePrepareContractWrite({
+    enabled:
+      address !== undefined && selectedPaymentToken !== undefined && selectedPaymentToken !== ETH,
+    address: selectedPaymentToken?.address,
+    abi: erc20ABI,
+    functionName: 'transfer',
+    args: selectedPaymentAddress ? [selectedPaymentAddress, topUpAmount] : undefined
+  });
+  const {
+    isSuccess: isErc20TransferSuccess,
+    isError: isErc20TransferError,
+    data: erc20TransferTxData,
+    write
+  } = useContractWrite(erc20TransferConfig);
 
   const [txHash, setTxHash] = useState<Hash>();
 
@@ -124,7 +145,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
         setSelectedPaymentAddress(address);
       }
     } else {
-      setSelectedPaymentAddress('');
+      setSelectedPaymentAddress(undefined);
     }
   }, [selectedPaymentNetwork]);
 
@@ -143,6 +164,22 @@ export default function Send({ appSettings, setAppSettings }: any) {
       }
     }
   }, [isSuccess, isError, data]);
+
+  useMemo(async () => {
+    if (isErc20TransferSuccess) {
+      setTxHash(erc20TransferTxData?.hash);
+    } else if (isErc20TransferError) {
+      if (sendToastId.current) {
+        toast.update(sendToastId.current, {
+          render: `Payment failed! 😕`,
+          type: 'error',
+          isLoading: false,
+          autoClose: 5000
+        });
+        sendToastId.current = undefined;
+      }
+    }
+  }, [isErc20TransferSuccess, isErc20TransferError, erc20TransferTxData]);
 
   useMemo(async () => {
     updateFlowTotalBalance(flow);
@@ -284,111 +321,153 @@ export default function Send({ appSettings, setAppSettings }: any) {
                 fullWidth
                 onChange={(_event, value) => {
                   if (value) {
-                    switchNetwork?.(chains.find((c) => c?.name === value)?.id);
-                    setSelectedPaymentNetwork(value);
+                    switchNetwork?.(chains.find((c) => c?.name === value.network)?.id);
+                    setSelectedPaymentNetwork(value.network);
                   } else {
                     setSelectedPaymentNetwork('');
                   }
                 }}
-                options={flow.wallets.flatMap((wallet) => wallet.network)}
+                options={flow.wallets}
+                getOptionLabel={(wallet) => wallet.network}
                 renderInput={(params) => (
-                  <TextField variant="outlined" {...params} label="Choose Payment Network" />
+                  <TextField variant="outlined" {...params} label="Select Payment Network" />
                 )}
                 sx={{ '& fieldset': { borderRadius: 3 } }}
               />
 
               {selectedPaymentNetwork && (
-                <>
-                  <Box mt={1} display="flex" flexDirection="row" alignItems="center">
-                    <Avatar
-                      src={'/networks/' + selectedPaymentNetwork + '.png'}
-                      sx={{ width: 24, height: 24 }}
-                    />
-                    <Typography ml={1}>
-                      {shortenWalletAddressLabel(selectedPaymentAddress)}
-                    </Typography>
-                    <Tooltip title="Copy Address">
-                      <IconButton
-                        size="small"
-                        onClick={() => {
-                          copyToClipboard(selectedPaymentAddress);
-                          toast.success('Address is copied!');
-                        }}>
-                        <ContentCopy fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Show QR">
-                      <IconButton
-                        size="small"
-                        onClick={() => {
-                          setOpenAddressQRCode(true);
-                        }}>
-                        <QrCode2 fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </>
+                <Box mt={1} display="flex" flexDirection="row" alignItems="center">
+                  <Avatar
+                    src={'/networks/' + selectedPaymentNetwork + '.png'}
+                    sx={{ width: 24, height: 24 }}
+                  />
+                  <Typography ml={1}>
+                    {shortenWalletAddressLabel(selectedPaymentAddress)}
+                  </Typography>
+                  <Tooltip title="Copy Address">
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        copyToClipboard(selectedPaymentAddress);
+                        toast.success('Address is copied!');
+                      }}>
+                      <ContentCopy fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Show QR">
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        setOpenAddressQRCode(true);
+                      }}>
+                      <QrCode2 fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
               )}
 
-              <Divider flexItem sx={{ my: 3 }} />
+              {selectedPaymentNetwork && (
+                <>
+                  <Divider flexItem sx={{ my: 2 }} />
 
-              <TextField
-                fullWidth
-                variant="outlined"
-                label={`Top Up Amount (max: ${
-                  isBalanceSuccess
-                    ? balance && parseFloat(formatEther(balance?.value)).toPrecision(1)
-                    : 0
-                })`}
-                id="sendAmount"
-                type="number"
-                InputProps={{
-                  endAdornment: <InputAdornment position="end">ETH</InputAdornment>,
-                  inputMode: 'decimal',
-                  sx: { borderRadius: 3 }
-                }}
-                onChange={(event) => {
-                  const amount = parseEther(event.target.value);
-                  if (balance && amount <= balance?.value) {
-                    setTopUpAmount(amount);
-                  }
-                }}
-              />
+                  <Autocomplete
+                    autoHighlight
+                    fullWidth
+                    onChange={(_event, value) => {
+                      if (value) {
+                        setSelectedPaymentToken(value);
+                      } else {
+                        setSelectedPaymentToken(undefined);
+                      }
+                    }}
+                    options={getSupportedTokens(
+                      chains.find((c) => c.name === selectedPaymentNetwork)?.id
+                    )}
+                    getOptionLabel={(token) => token.name}
+                    renderInput={(params) => (
+                      <TextField variant="outlined" {...params} label="Select Payment Token" />
+                    )}
+                    sx={{ '& fieldset': { borderRadius: 3 }, my: 1 }}
+                  />
 
-              <TextField
-                fullWidth
-                id="sendComment"
-                label="Comment (optional)"
-                InputProps={{
-                  inputMode: 'text',
-                  inputProps: { maxLength: 32 },
-                  sx: { borderRadius: 3 }
-                }}
-                onChange={(event) => {
-                  setComment(event.target.value);
-                }}
-                sx={{ mt: 1 }}
-              />
+                  {selectedPaymentToken && (
+                    <>
+                      <TextField
+                        fullWidth
+                        variant="outlined"
+                        label={`Top Up Amount (max: ${
+                          isBalanceSuccess
+                            ? balance &&
+                              parseFloat(
+                                formatUnits(balance?.value, balance?.decimals)
+                              ).toPrecision(5)
+                            : 0
+                        })`}
+                        id="sendAmount"
+                        type="number"
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              {selectedPaymentToken?.name}
+                            </InputAdornment>
+                          ),
+                          inputMode: 'decimal',
+                          sx: { borderRadius: 3 }
+                        }}
+                        onChange={(event) => {
+                          if (balance) {
+                            const amount = parseUnits(event.target.value, balance?.decimals);
+                            if (amount <= balance?.value) {
+                              setTopUpAmount(amount);
+                            }
+                          }
+                        }}
+                      />
 
-              <Divider flexItem sx={{ my: 2 }}>
-                <Button
-                  disabled={!sendTransaction}
-                  fullWidth
-                  variant="outlined"
-                  size="medium"
-                  color="primary"
-                  onClick={() => {
-                    sendToastId.current = toast.loading(
-                      `Sending ${formatEther(topUpAmount)} to ${shortenWalletAddressLabel(
-                        selectedPaymentAddress
-                      )} 💸`
-                    );
-                    sendTransaction?.();
-                  }}
-                  sx={{ mt: 1, borderRadius: 3 }}>
-                  PAY
-                </Button>
-              </Divider>
+                      <TextField
+                        fullWidth
+                        id="sendComment"
+                        label="Comment (optional)"
+                        InputProps={{
+                          inputMode: 'text',
+                          inputProps: { maxLength: 32 },
+                          sx: { borderRadius: 3 }
+                        }}
+                        onChange={(event) => {
+                          setComment(event.target.value);
+                        }}
+                        sx={{ mt: 1 }}
+                      />
+                      <Divider flexItem sx={{ my: 2 }}>
+                        <Button
+                          disabled={!(sendTransaction || write) || !topUpAmount}
+                          fullWidth
+                          variant="outlined"
+                          size="medium"
+                          color="primary"
+                          onClick={() => {
+                            // TODO: replace with fetch info for the token and use metadata
+                            if (balance) {
+                              sendToastId.current = toast.loading(
+                                `Sending ${formatUnits(topUpAmount, balance?.decimals)} ${
+                                  selectedPaymentToken?.name
+                                } to ${shortenWalletAddressLabel(selectedPaymentAddress)} 💸`
+                              );
+                              if (selectedPaymentToken === ETH) {
+                                sendTransaction?.();
+                              } else {
+                                write?.();
+                              }
+                            }
+                          }}
+                          sx={{ mt: 1, borderRadius: 3 }}>
+                          PAY
+                        </Button>
+                      </Divider>
+                    </>
+                  )}
+                </>
+              )}
 
               <AddressQRCodeDialog
                 open={openAddressQRCode}

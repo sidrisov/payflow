@@ -100,7 +100,7 @@ export default function FlowWithdrawalDialog({
 
           if (!isDeployed) {
             toast.update(withdrawalToastId.current, {
-              render: `Initializing wallet ${shortenWalletAddressLabel(wallet.address)}`,
+              render: `Initializing Wallet 🪄`,
               isLoading: true
             });
 

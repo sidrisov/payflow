@@ -178,7 +178,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   }, [isZkSyncNetwork, write]);
 
   async function createNewWallet() {
-    newWalletToastId.current = toast.loading('Creating Wallet 🪄');
+    newWalletToastId.current = toast.loading('Initializing Wallet 🪄');
 
     if (isZkSyncNetwork) {
       write?.();
