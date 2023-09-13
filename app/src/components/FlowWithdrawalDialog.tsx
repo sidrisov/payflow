@@ -38,6 +38,7 @@ import { isSafeDeployed } from '../utils/safeContracts';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { FlowType, FlowWalletType } from '../types/FlowType';
 import axios from 'axios';
+import { delay } from '../utils/delay';
 
 export type FlowWithdrawalDialogProps = DialogProps &
   CloseCallbackType & {
@@ -119,6 +120,8 @@ export default function FlowWithdrawalDialog({
                 safeDeployTxHash = txHash;
               }
             });
+            // TODO: hack
+            await delay(5000);
 
             if (!safeDeployTxHash) {
               toast.update(withdrawalToastId.current, {
