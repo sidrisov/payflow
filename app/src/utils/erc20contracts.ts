@@ -19,7 +19,12 @@ export function getSupportedTokens(chainId: number | undefined): Token[] {
   if (!chainId) {
     return [];
   }
-  return [ETH].concat(ERC20_CONTRACTS[chainId]);
+
+  if (ERC20_CONTRACTS[chainId]) {
+    return [ETH].concat(ERC20_CONTRACTS[chainId]);
+  } else {
+    return [ETH];
+  }
 }
 
 export const ETH: Token = { name: 'ETH', address: zeroAddress };

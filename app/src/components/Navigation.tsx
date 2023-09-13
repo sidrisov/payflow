@@ -5,7 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 
 import HomeLogo from './Logo';
 
-import { Settings, Merge, Payments, Payment } from '@mui/icons-material';
+import { Settings, Merge, Payments, Payment, Widgets } from '@mui/icons-material';
 import { appRoutes } from '../appRouter';
 
 export default function Navigation() {
@@ -68,10 +68,17 @@ export default function Navigation() {
         />
         <AlignedLinkTab label="Requests" tabIndex={2} to={appRoutes[2]} icon={<Payments />} />
         <AlignedLinkTab
-          label="Settings"
+          label="Branding *"
           tabIndex={3}
           component={Link}
           to={appRoutes[3]}
+          icon={<Widgets />}
+        />
+        <AlignedLinkTab
+          label="Settings"
+          tabIndex={4}
+          component={Link}
+          to={appRoutes[4]}
           icon={<Settings />}
         />
       </Tabs>
