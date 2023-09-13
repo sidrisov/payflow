@@ -2,21 +2,21 @@
 
 **[PayFlow.me](https://app.payflow.me)** brings simplified crypto payment flows to Ethereum Layer 2, with secure Safe AA and gasless transactions
 
-![ux_flow.png](diagrams/ux_flow.png)
 
 ## 💡 **What is PayFlow for?**
 
-Looking for a seamless way to manage multiple crypto payment flows?
+PayFlow is a crypto payment management platform that simplifies payment flows for an average consumer, it can help receive payments for any purpose on multiple L2 networks, create trackable payment requests, and share flows/requests as links and QR codes, or embed widgets into a website *.
 
-Whether you’re a creator who wants to get supported by your fans, you’re raising funds for public goods, managing different incomes, or simply saving for some personal cause - YOU are ALL covered.
+An **average consumer** for the PayFlow platform is an **individual**, **creator**, or **freelancer** who already uses crypto and has additional payments-related use cases beyond regular crypto wallet usage but not on the scale of an organisation or a company. Those use cases are:
 
-Your flow can receive payments on multiple L2 networks, you can attach an existing external wallet, or create a new one with Safe AA, and it’s gasless*.
+- individual payments
+- public goods and donations
+- freelancer payments
+- creator support and tipping
 
-If you need to receive a particular payment, you can create a trackable flow payment request.
+![product_fit.png](diagrams/product_fit.png)
 
-Flows/requests can be shared simply as a link and QR code.
-
-Simplify your payment flows with PayFlow!
+PayFlow’s foundation is flows, which help you segregate different payment use cases. It can be used for sending payments between friends and families, like Venmo/PayPal, it can be used as a creator platform, like BuyMeCoffee/Patreon, it can be used for accepting freelance payments, like RequestFinance, or donations like GoFundMe. It’s all in one unified platform to collect crypto for anything.
 
 ## 🤔 **What inspired me to build PayFlow?**
 
@@ -27,15 +27,19 @@ Simplify your payment flows with PayFlow!
 ## ⚙️ **How does PayFlow work?**
 
 1. Sign in with Ethereum
-2. Create accounts for networks to support flow wallets
+2. Create accounts (Safe AA) for networks to support flow wallets
 3. Create a flow
-4. Add either external wallets or smart wallets (Safe AA) owned by accounts
-5. Share the flow on social media and receive payments
+4. Add either external wallets or smart wallets (Safe AA) to the flow, owned by accounts
+5. Share the flow on social media (or embed widgets into a website *) and receive payments
 6. Create a payment request for a particular flow, wallet, and amount
 7. Share payment request
 8. Once paid, verify the payment
-9. Withdraw funds from flows to accounts
-10. Transfer funds from accounts or for a broader spectrum of operations utilize Safe Apps ecosystem.
+9. Withdraw funds from the flow to accounts
+10. Transfer funds from accounts or for a broader spectrum of operations utilize the Safe Apps ecosystem.
+11. Create more flows.
+
+![ux_flow.png](diagrams/ux_flow.png)
+![flows.png](diagrams/flows.png)![branding.png](diagrams/branding.png)
 
 ## ❤️ **What values does PayFlow stand for?**
 
@@ -45,6 +49,10 @@ Simplify your payment flows with PayFlow!
 - **Multichain support**: flows can accept payments on multiple L2 networks, thus users have access to a wider range of liquidity and trading opportunities. It promotes financial inclusion and economic development.
 - **Composability**: accounts are backed by Safe AA, at any point user can continue using them in Safe App, which also means that they can be used with other DeFi applications of the ecosystem. It creates new financial products and services that could benefit individuals and communities.
 - **Gasless UX**: transactions are gasless, there is no initial barrier to receiving payments. It makes crypto payments more affordable and accessible to everyone.
+
+## 🔮 **The vision**
+
+The long-term vision would be to make it one of the most used permissionless platforms in the web3 space tocollect crypto for any purpose (donations, income, savings). It's Venmo/Patrion/BuyMeCoffee/GoFundMe for Crypto. More integrations beyond links/website widgets, e.g. with Farcaster/Lens/Gaming ecosystem. Composability is at its core.
 
 ## 👨🏻‍💻 **The team behind PayFlow**
 
@@ -91,25 +99,24 @@ I started working on the project last month through hackathons where I won in mu
 6. ✅ Sign In With Ethereum
 7. ✅ Chainlink Price Feeds
 
-3) Here I am at the Base Onchain Summer (August 20, 2023 → now):
-
-**Near-term (~3 months) features:**
+3) [100Builders](https://100.builders/) (August 20, 2023 → September 13)
 
 1. ✅ EIP1271
 2. ✅ Gasless transactions for Base (Mainnet)
-3. Flow wallet creation on withdrawal (multicall tx, gas paid by the received balance in the wallet)
-4. USDC/USDT/DAI/EUROC support
-5. Accounts/Flows transaction activity
-6. Embeddable widgets & branding for websites (Flow Payment)
+3. ✅ New logo
+4. ✅ Flow wallet creation on withdrawal (not a multicall tx yet, sponsored gas, not SyncFee)
+5. ERC20 support: ✅ a) Flow Payment, b) Request Payment, c) Withdrawals
+6. Embeddable widgets & branding PoC for websites: ✅ a) Constructor, b) Embeddable components
 
 **Long-term (~6 months) features:**
 
-1. Import existing Safe Accounts
-2. Transaction sponsorship based on waitlist, activity, tasks
-3. Shared flows ownership
-4. Add extra flow credibility (vouched/endorsed/attested)
-5. Accounts recovery
-6. Flow created for someone, and claimed after
+1. User management
+2. Payment activity
+3. Widgets & branding
+4. Miscellaneous features, UI/UX improvements
+5. Testing, documentation, and alpha launch
+
+More details on milestones can be found in [Safe Grant Proposal](https://app.charmverse.io/safe-grants-program/page-016401930695797873) !
 
 ## 🧱 **Tech Stack:**
 

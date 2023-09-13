@@ -14,6 +14,8 @@ public interface IFlowService {
     FlowMessage findByUUID(String uuid);
 
     void addFlowWallet(String uuid, WalletMessage wallet, User user) throws Exception;
+    
+    void updateFlowWallet(String uuid, WalletMessage wallet, User user) throws Exception;
 
     void deleteFlowWallet(String uuid, WalletMessage wallet, User user) throws Exception;
 }

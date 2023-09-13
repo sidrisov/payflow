@@ -18,7 +18,6 @@ import {
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useMemo, useRef, useState } from 'react';
 import {
-  Address,
   WalletClient,
   useBalance,
   usePublicClient,
@@ -29,18 +28,22 @@ import { ContentCopy, ExpandMore } from '@mui/icons-material';
 import { Id, toast } from 'react-toastify';
 import { copyToClipboard } from '../utils/copyToClipboard';
 
-import { Hash, TransactionReceipt, formatEther, parseEther } from 'viem';
+import { Hash, TransactionReceipt, formatEther, keccak256, parseEther, toHex } from 'viem';
 import { withdrawEth } from '../utils/zkSyncTransactions';
-import { safeTransferEth } from '../utils/safeTransactions';
+import { safeDeploy, safeTransferEth } from '../utils/safeTransactions';
 import { zkSyncTestnet } from 'viem/chains';
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 import { shortenWalletAddressLabel } from '../utils/address';
+import { isSafeDeployed } from '../utils/safeContracts';
+import { SafeAccountConfig } from '@safe-global/protocol-kit';
+import { FlowType, FlowWalletType } from '../types/FlowType';
+import axios from 'axios';
+import { delay } from '../utils/delay';
 
 export type FlowWithdrawalDialogProps = DialogProps &
   CloseCallbackType & {
-    from: Address;
-    to: Address;
-    network: string;
+    flow: FlowType;
+    wallet: FlowWalletType;
   };
 
 export default function FlowWithdrawalDialog({
@@ -50,7 +53,7 @@ export default function FlowWithdrawalDialog({
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { from, to, network } = props;
+  const { flow, wallet } = props;
 
   const [withdrawAmount, setWithdrawAmount] = useState<bigint>();
 
@@ -61,8 +64,8 @@ export default function FlowWithdrawalDialog({
   const { chains, switchNetwork } = useSwitchNetwork();
 
   const { isSuccess, data: balance } = useBalance({
-    address: from,
-    chainId: chains.find((c) => c?.name === network)?.id
+    address: wallet.address,
+    chainId: chains.find((c) => c?.name === wallet.network)?.id
   });
 
   const [txHash, setTxHash] = useState<Hash>();
@@ -70,33 +73,121 @@ export default function FlowWithdrawalDialog({
   const withdrawalToastId = useRef<Id>();
 
   const sendTransaction = async () => {
-    if (withdrawAmount && ethersSigner) {
-      withdrawalToastId.current = toast.loading(
-        `Sending ${formatEther(withdrawAmount)} to ${shortenWalletAddressLabel(to)} 💸`
-      );
+    console.log(wallet);
 
-      switchNetwork?.(chains.find((c) => c?.name === network)?.id);
+    if (withdrawAmount && ethersSigner) {
+      withdrawalToastId.current = toast.loading(`Loading ...`);
+
+      switchNetwork?.(chains.find((c) => c?.name === wallet.network)?.id);
 
       let txHash;
 
-      if (chains.find((c) => c?.name === network)?.id === zkSyncTestnet.id) {
+      if (chains.find((c) => c?.name === wallet.network)?.id === zkSyncTestnet.id) {
+        toast.update(withdrawalToastId.current, {
+          render: `Sending ${formatEther(withdrawAmount)} to ${shortenWalletAddressLabel(
+            wallet.master
+          )} 💸`,
+          isLoading: true
+        });
+
         txHash = await withdrawEth(walletClient as WalletClient, {
-          contract: from,
-          from: to,
+          contract: wallet.address,
+          from: wallet.master,
           amount: withdrawAmount
         });
       } else {
+        if (!wallet.safeDeployed) {
+          const isDeployed = await isSafeDeployed(wallet.address, ethersSigner);
+
+          if (!isDeployed) {
+            toast.update(withdrawalToastId.current, {
+              render: `Initializing Wallet 🪄`,
+              isLoading: true
+            });
+
+            const safeAccountConfig: SafeAccountConfig = {
+              owners: [wallet.master],
+              threshold: 1
+            };
+
+            let safeDeployTxHash;
+            await safeDeploy({
+              ethersSigner,
+              safeAccountConfig,
+              saltNonce: keccak256(toHex(flow.uuid)),
+              sponsored: true,
+              callback: (txHash: string | undefined): void => {
+                safeDeployTxHash = txHash;
+              }
+            });
+            // TODO: hack
+            await delay(5000);
+
+            if (!safeDeployTxHash) {
+              toast.update(withdrawalToastId.current, {
+                render: `Initialization failed!`,
+                type: 'error',
+                isLoading: false,
+                autoClose: 5000
+              });
+              return;
+            }
+
+            const receipt = await publicClient.waitForTransactionReceipt({
+              hash: safeDeployTxHash
+            });
+
+            if (receipt && receipt.status === 'success') {
+              toast.success('Wallet initialized!');
+            } else {
+              toast.update(withdrawalToastId.current, {
+                render: `Initialization failed!`,
+                type: 'error',
+                isLoading: false,
+                autoClose: 5000
+              });
+              return;
+            }
+          }
+
+          try {
+            wallet.safeDeployed = true;
+            const response = await axios.put(
+              `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${flow.uuid}/wallet`,
+              wallet,
+              { withCredentials: true }
+            );
+            console.log(response.status);
+          } catch (error) {
+            console.log(error);
+            toast.update(withdrawalToastId.current, {
+              render: `Failed to save wallet!`,
+              type: 'error',
+              isLoading: false,
+              autoClose: 5000
+            });
+            return;
+          }
+        }
+
+        toast.update(withdrawalToastId.current, {
+          render: `Sending ${formatEther(withdrawAmount)} to ${shortenWalletAddressLabel(
+            wallet.master
+          )} 💸`,
+          isLoading: true
+        });
+
         txHash = await safeTransferEth(ethersSigner, {
-          from,
-          to,
+          from: wallet.address,
+          to: wallet.master,
           amount: withdrawAmount,
-          safeSigner: to
+          safeSigner: wallet.master
         });
       }
 
       if (!txHash) {
         toast.update(withdrawalToastId.current, {
-          render: `Withdrwal to ${shortenWalletAddressLabel(to)} failed! 😕`,
+          render: `Withdrwal to ${shortenWalletAddressLabel(wallet.master)} failed! 😕`,
           type: 'error',
           isLoading: false,
           autoClose: 5000
@@ -119,7 +210,7 @@ export default function FlowWithdrawalDialog({
       if (receipt && receipt.status === 'success') {
         if (withdrawalToastId.current) {
           toast.update(withdrawalToastId.current, {
-            render: `Withdrawal to ${shortenWalletAddressLabel(to)} processed!`,
+            render: `Withdrawal to ${shortenWalletAddressLabel(wallet.master)} processed!`,
             type: 'success',
             isLoading: false,
             autoClose: 5000
@@ -130,7 +221,7 @@ export default function FlowWithdrawalDialog({
       } else {
         if (withdrawalToastId.current) {
           toast.update(withdrawalToastId.current, {
-            render: `Withdrawal to ${shortenWalletAddressLabel(to)} failed! 😕`,
+            render: `Withdrawal to ${shortenWalletAddressLabel(wallet.master)} failed! 😕`,
             type: 'error',
             isLoading: false,
             autoClose: 5000
@@ -145,7 +236,7 @@ export default function FlowWithdrawalDialog({
     closeStateCallback();
   }
 
-  return from && network ? (
+  return wallet ? (
     <Dialog
       fullScreen={fullScreen}
       onClose={handleCloseCampaignDialog}
@@ -169,14 +260,14 @@ export default function FlowWithdrawalDialog({
             alignSelf="stretch"
             alignItems="center"
             sx={{ height: 56, border: 1, borderRadius: 3, p: 1 }}>
-            <Avatar src={'/networks/' + network + '.png'} sx={{ width: 24, height: 24 }} />
+            <Avatar src={'/networks/' + wallet.network + '.png'} sx={{ width: 24, height: 24 }} />
             <Typography ml={1} sx={{ overflow: 'scroll' }}>
-              {from}
+              {wallet.address}
             </Typography>
             <IconButton
               size="small"
               onClick={() => {
-                copyToClipboard(from);
+                copyToClipboard(wallet.address);
                 toast.success('Address is copied!');
               }}>
               <ContentCopy fontSize="small" />
@@ -189,14 +280,14 @@ export default function FlowWithdrawalDialog({
             alignSelf="stretch"
             alignItems="center"
             sx={{ height: 56, border: 1, borderRadius: 3, p: 1 }}>
-            <Avatar src={'/networks/' + network + '.png'} sx={{ width: 24, height: 24 }} />
+            <Avatar src={'/networks/' + wallet.network + '.png'} sx={{ width: 24, height: 24 }} />
             <Typography ml={1} sx={{ overflow: 'scroll' }}>
-              {to}
+              {wallet.master}
             </Typography>
             <IconButton
               size="small"
               onClick={() => {
-                copyToClipboard(to);
+                copyToClipboard(wallet.master);
                 toast.success('Address is copied!');
               }}>
               <ContentCopy fontSize="small" />
@@ -224,7 +315,7 @@ export default function FlowWithdrawalDialog({
           />
           <Divider flexItem>
             <Button
-              disabled={!(from && to && withdrawAmount)}
+              disabled={!withdrawAmount}
               fullWidth
               variant="outlined"
               size="medium"

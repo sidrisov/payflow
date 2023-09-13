@@ -37,6 +37,15 @@ public class Wallet {
     @Column(columnDefinition = "boolean")
     private boolean safe;
 
+    @Column
+    private String safeVersion;
+
+    @Column
+    private String safeSaltNonce;
+
+    @Column(columnDefinition = "boolean")
+    private boolean safeDeployed;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "flow_id", nullable = false)
     private Flow flow;
@@ -48,17 +57,23 @@ public class Wallet {
     @Version
     private Long version;
 
-    public Wallet(String address, String network, boolean smart, boolean safe) {
+    public Wallet(String address, String network, boolean smart, boolean safe, String safeVersion, String safeSaltNonce,
+            boolean safeDeployed) {
         this.address = address;
         this.network = network;
         this.smart = smart;
         this.safe = safe;
+        this.safeVersion = safeVersion;
+        this.safeSaltNonce = safeSaltNonce;
+        this.safeDeployed = safeDeployed;
     }
 
     @Override
     public String toString() {
         return "Wallet [id=" + id + ", address=" + address + ", network=" + network + ", smart=" + smart + ", safe="
-                + safe + ", flow="
+                + safe + ", safeVersion="
+                + safeVersion + ", safeDeployed="
+                + safeDeployed + ", flow="
                 + flow.getUuid() + ", master="
                 + (master != null ? master.getAddress() : "null") + "]";
     }

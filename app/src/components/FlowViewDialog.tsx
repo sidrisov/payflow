@@ -36,6 +36,7 @@ import {
   DeleteForever,
   Download,
   Edit,
+  FlagOutlined,
   Share
 } from '@mui/icons-material';
 import { Id, toast } from 'react-toastify';
@@ -96,8 +97,10 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const [masterAccount, setMasterAccount] = useState<Address>();
 
   const [isZkSyncNetwork, setZkSyncNetwork] = useState<boolean>();
+
+  const [initializeWallet, setInitializeWalllet] = useState(false);
   const [deployable, setDeployable] = useState<boolean>(false);
-  const [deployed, setDeployed] = useState<boolean>();
+  const [created, setCreated] = useState<boolean>();
 
   const [sponsored, setSponsored] = useState<boolean>();
   const [sponsarable, setSponsarable] = useState<boolean>();
@@ -174,8 +177,8 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
     );
   }, [isZkSyncNetwork, write]);
 
-  async function deployNewWallet() {
-    newWalletToastId.current = toast.loading('Creating Wallet 🪄');
+  async function createNewWallet() {
+    newWalletToastId.current = toast.loading('Initializing Wallet 🪄');
 
     if (isZkSyncNetwork) {
       write?.();
@@ -190,12 +193,28 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
           ethersSigner,
           safeAccountConfig,
           saltNonce,
+          initialize: initializeWallet,
           sponsored,
           callback: safeDeployCallback
         });
 
         if (safeAddress) {
           setNewAccountAddress(safeAddress);
+
+          // no need to wait till its deployed, mark it as created
+          if (!initializeWallet) {
+            if (newWalletToastId.current) {
+              setDeployable(false);
+              setCreated(true);
+              toast.update(newWalletToastId.current, {
+                render: `Wallet ${shortenWalletAddressLabel(safeAddress)} created 🚀`,
+                type: 'success',
+                isLoading: false,
+                autoClose: 5000
+              });
+              newWalletToastId.current = undefined;
+            }
+          }
         } else {
           toast.update(newWalletToastId.current, {
             render: 'Wallet Creation Failed 😕',
@@ -216,7 +235,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
     setNewAccountNetwork(undefined);
     setNewAccountAddress(undefined);
     setDeployable(false);
-    setDeployed(false);
+    setCreated(false);
   }
 
   function handleCloseCampaignDialog() {
@@ -266,7 +285,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
       if (receipt && receipt.status === 'success') {
         if (newWalletToastId.current) {
           setDeployable(false);
-          setDeployed(true);
+          setCreated(true);
           toast.update(newWalletToastId.current, {
             render: `Wallet ${shortenWalletAddressLabel(newAccountAddress)} created 🚀`,
             type: 'success',
@@ -298,6 +317,10 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
           smart: smartAccountAllowedChains.includes(newAccountNetwork),
           // decide based on network, since other than zkSync all other support Safe
           safe: smartAccountAllowedChains.includes(newAccountNetwork) && !isZkSyncNetwork,
+          safeDeployed:
+            smartAccountAllowedChains.includes(newAccountNetwork) && !isZkSyncNetwork
+              ? initializeWallet
+              : null,
           master: smartAccountAllowedChains.includes(newAccountNetwork) ? masterAccount : null
         } as FlowWalletType;
         const response = await axios.post(
@@ -416,15 +439,22 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                           </IconButton>
                         </Tooltip>
                         {wallet.safe && (
-                          <Tooltip title="Open in Safe Web Wallet">
-                            <a
-                              href={`https://app.safe.global/home?safe=${shortNetworkName(
-                                wallet.network
-                              )}:${wallet.address}`}
-                              target="_blank">
-                              <Avatar src="/safe.png" sx={{ width: 16, height: 16 }} />
-                            </a>
-                          </Tooltip>
+                          <>
+                            <Tooltip title="Open in Safe Web Wallet">
+                              <a
+                                href={`https://app.safe.global/home?safe=${shortNetworkName(
+                                  wallet.network
+                                )}:${wallet.address}`}
+                                target="_blank">
+                                <Avatar src="/safe.png" sx={{ width: 16, height: 16 }} />
+                              </a>
+                            </Tooltip>
+                            {!wallet.safeDeployed && (
+                              <Tooltip title="Wallet will be initialized on the first withdrawal!">
+                                <FlagOutlined sx={{}} fontSize="small" />
+                              </Tooltip>
+                            )}
+                          </>
                         )}
                       </Box>
                       <Typography variant="subtitle2">
@@ -563,21 +593,37 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                     />
                   ) : (
                     <>
-                      <FormControlLabel
-                        labelPlacement="end"
-                        disabled={!sponsarable}
-                        control={
-                          <Switch
-                            size="medium"
-                            checked={sponsored}
-                            onChange={() => {
-                              setSponsored(!sponsored);
-                            }}
-                          />
-                        }
-                        label="Sponsored"
-                        sx={{ alignSelf: 'flex-start' }}
-                      />
+                      <Box>
+                        <FormControlLabel
+                          labelPlacement="end"
+                          control={
+                            <Switch
+                              size="medium"
+                              checked={initializeWallet}
+                              onChange={() => {
+                                setInitializeWalllet(!initializeWallet);
+                              }}
+                            />
+                          }
+                          label="Initialize"
+                          sx={{ alignSelf: 'flex-start' }}
+                        />
+                        <FormControlLabel
+                          labelPlacement="end"
+                          disabled={!initializeWallet || !sponsarable}
+                          control={
+                            <Switch
+                              size="medium"
+                              checked={sponsored}
+                              onChange={() => {
+                                setSponsored(!sponsored);
+                              }}
+                            />
+                          }
+                          label="Sponsored"
+                          sx={{ alignSelf: 'flex-start' }}
+                        />
+                      </Box>
                       <Button
                         fullWidth
                         disabled={!deployable}
@@ -586,16 +632,24 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                         color="primary"
                         sx={{ borderRadius: 3 }}
                         endIcon={<AutoFixHigh />}
-                        onClick={deployNewWallet}>
+                        onClick={createNewWallet}>
                         Create Payflow Wallet
                       </Button>
-                      {deployed && <Typography variant="subtitle2">{newAccountAddress}</Typography>}
+                      {created && <Typography variant="subtitle2">{newAccountAddress}</Typography>}
                     </>
                   ))}
 
                 <Button
                   fullWidth
-                  disabled={!deployed}
+                  // check if smart wallet was created or if external wallet was provided
+                  disabled={
+                    !(
+                      created ||
+                      (newAccountNetwork &&
+                        !smartAccountAllowedChains.includes(newAccountNetwork) &&
+                        newAccountAddress)
+                    )
+                  }
                   variant="outlined"
                   size="large"
                   color="primary"
@@ -625,19 +679,19 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
               </Tooltip>
               <Tooltip title="Share Link / QR">
                 <span>
-                <IconButton
-                  color="inherit"
-                  disabled={flow.wallets && flow.wallets.length === 0}
-                  onClick={async () => {
-                    setFlowShareInfo({
-                      title: flow.title,
-                      link: `${DAPP_URL}/send/${flow.uuid}`
-                    });
-                    setOpenFlowShare(true);
-                  }}
-                  sx={{ border: 1, borderStyle: 'dashed' }}>
-                  <Share fontSize="small" />
-                </IconButton>
+                  <IconButton
+                    color="inherit"
+                    disabled={flow.wallets && flow.wallets.length === 0}
+                    onClick={async () => {
+                      setFlowShareInfo({
+                        title: flow.title,
+                        link: `${DAPP_URL}/send/${flow.uuid}`
+                      });
+                      setOpenFlowShare(true);
+                    }}
+                    sx={{ border: 1, borderStyle: 'dashed' }}>
+                    <Share fontSize="small" />
+                  </IconButton>
                 </span>
               </Tooltip>
               <Tooltip title="Edit">
@@ -676,9 +730,8 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
       </DialogContent>
       <FlowWithdrawalDialog
         open={openWithdrawalDialog}
-        from={selectedWithdrawalWallet.address}
-        to={selectedWithdrawalWallet.master}
-        network={selectedWithdrawalWallet.network}
+        flow={flow}
+        wallet={selectedWithdrawalWallet}
         closeStateCallback={async () => setOpenWithdrawalDialog(false)}
       />
       <ShareDialog
