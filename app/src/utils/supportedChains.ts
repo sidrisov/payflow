@@ -4,6 +4,7 @@ import {
   zoraTestnet,
   modeTestnet,
   zkSyncTestnet,
+  lineaTestnet,
   optimism,
   base,
   mainnet
@@ -12,7 +13,6 @@ import {
 export const SUPPORTED_CHAINS = [
   optimismGoerli,
   baseGoerli,
-  zoraTestnet,
   {
     ...modeTestnet,
     iconUrl:
@@ -22,6 +22,9 @@ export const SUPPORTED_CHAINS = [
     ...zkSyncTestnet,
     iconUrl: 'https://zksync.io/apple-touch-icon.png'
   },
+  lineaTestnet,
+  //polygonZkEvmTestnet,
+  zoraTestnet,
   optimism,
   base,
   mainnet

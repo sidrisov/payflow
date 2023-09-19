@@ -18,7 +18,6 @@ import {
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useMemo, useRef, useState } from 'react';
 import {
-  WalletClient,
   useBalance,
   usePublicClient,
   useSwitchNetwork,
@@ -29,9 +28,7 @@ import { Id, toast } from 'react-toastify';
 import { copyToClipboard } from '../utils/copyToClipboard';
 
 import { Hash, TransactionReceipt, formatEther, keccak256, parseEther, toHex } from 'viem';
-import { withdrawEth } from '../utils/zkSyncTransactions';
 import { safeDeploy, safeTransferEth } from '../utils/safeTransactions';
-import { zkSyncTestnet } from 'viem/chains';
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { isSafeDeployed } from '../utils/safeContracts';
@@ -82,86 +79,52 @@ export default function FlowWithdrawalDialog({
 
       let txHash;
 
-      if (chains.find((c) => c?.name === wallet.network)?.id === zkSyncTestnet.id) {
-        toast.update(withdrawalToastId.current, {
-          render: `Sending ${formatEther(withdrawAmount)} to ${shortenWalletAddressLabel(
-            wallet.master
-          )} 💸`,
-          isLoading: true
-        });
+      if (!wallet.safeDeployed) {
+        const isDeployed = await isSafeDeployed(wallet.address, ethersSigner);
 
-        txHash = await withdrawEth(walletClient as WalletClient, {
-          contract: wallet.address,
-          from: wallet.master,
-          amount: withdrawAmount
-        });
-      } else {
-        if (!wallet.safeDeployed) {
-          const isDeployed = await isSafeDeployed(wallet.address, ethersSigner);
+        if (!isDeployed) {
+          toast.update(withdrawalToastId.current, {
+            render: `Initializing Wallet 🪄`,
+            isLoading: true
+          });
 
-          if (!isDeployed) {
+          const safeAccountConfig: SafeAccountConfig = {
+            owners: [wallet.master],
+            threshold: 1
+          };
+
+          let safeDeployTxHash;
+          await safeDeploy({
+            ethersSigner,
+            safeAccountConfig,
+            saltNonce: keccak256(toHex(flow.uuid)),
+            sponsored: true,
+            callback: (txHash: string | undefined): void => {
+              safeDeployTxHash = txHash;
+            }
+          });
+          // TODO: hack
+          await delay(5000);
+
+          if (!safeDeployTxHash) {
             toast.update(withdrawalToastId.current, {
-              render: `Initializing Wallet 🪄`,
-              isLoading: true
+              render: `Initialization failed!`,
+              type: 'error',
+              isLoading: false,
+              autoClose: 5000
             });
-
-            const safeAccountConfig: SafeAccountConfig = {
-              owners: [wallet.master],
-              threshold: 1
-            };
-
-            let safeDeployTxHash;
-            await safeDeploy({
-              ethersSigner,
-              safeAccountConfig,
-              saltNonce: keccak256(toHex(flow.uuid)),
-              sponsored: true,
-              callback: (txHash: string | undefined): void => {
-                safeDeployTxHash = txHash;
-              }
-            });
-            // TODO: hack
-            await delay(5000);
-
-            if (!safeDeployTxHash) {
-              toast.update(withdrawalToastId.current, {
-                render: `Initialization failed!`,
-                type: 'error',
-                isLoading: false,
-                autoClose: 5000
-              });
-              return;
-            }
-
-            const receipt = await publicClient.waitForTransactionReceipt({
-              hash: safeDeployTxHash
-            });
-
-            if (receipt && receipt.status === 'success') {
-              toast.success('Wallet initialized!');
-            } else {
-              toast.update(withdrawalToastId.current, {
-                render: `Initialization failed!`,
-                type: 'error',
-                isLoading: false,
-                autoClose: 5000
-              });
-              return;
-            }
+            return;
           }
 
-          try {
-            wallet.safeDeployed = true;
-            const response = await axios.put(
-              `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${flow.uuid}/wallet`,
-              wallet,
-              { withCredentials: true }
-            );
-            console.log(response.status);
-          } catch (error) {
-            console.log(error);
+          const receipt = await publicClient.waitForTransactionReceipt({
+            hash: safeDeployTxHash
+          });
+
+          if (receipt && receipt.status === 'success') {
+            toast.success('Wallet initialized!');
+          } else {
             toast.update(withdrawalToastId.current, {
-              render: `Failed to save wallet!`,
+              render: `Initialization failed!`,
               type: 'error',
               isLoading: false,
               autoClose: 5000
@@ -170,20 +133,39 @@ export default function FlowWithdrawalDialog({
           }
         }
 
-        toast.update(withdrawalToastId.current, {
-          render: `Sending ${formatEther(withdrawAmount)} to ${shortenWalletAddressLabel(
-            wallet.master
-          )} 💸`,
-          isLoading: true
-        });
-
-        txHash = await safeTransferEth(ethersSigner, {
-          from: wallet.address,
-          to: wallet.master,
-          amount: withdrawAmount,
-          safeSigner: wallet.master
-        });
+        try {
+          wallet.safeDeployed = true;
+          const response = await axios.put(
+            `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${flow.uuid}/wallet`,
+            wallet,
+            { withCredentials: true }
+          );
+          console.log(response.status);
+        } catch (error) {
+          console.log(error);
+          toast.update(withdrawalToastId.current, {
+            render: `Failed to save wallet!`,
+            type: 'error',
+            isLoading: false,
+            autoClose: 5000
+          });
+          return;
+        }
       }
+
+      toast.update(withdrawalToastId.current, {
+        render: `Sending ${formatEther(withdrawAmount)} to ${shortenWalletAddressLabel(
+          wallet.master
+        )} 💸`,
+        isLoading: true
+      });
+
+      txHash = await safeTransferEth(ethersSigner, {
+        from: wallet.address,
+        to: wallet.master,
+        amount: withdrawAmount,
+        safeSigner: wallet.master
+      });
 
       if (!txHash) {
         toast.update(withdrawalToastId.current, {

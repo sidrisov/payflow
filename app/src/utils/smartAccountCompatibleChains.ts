@@ -3,6 +3,8 @@ import {
   baseGoerli,
   optimismGoerli,
   zoraTestnet,
+  lineaTestnet,
+  polygonZkEvmTestnet,
   optimism,
   base,
   modeTestnet
@@ -15,6 +17,8 @@ export function smartAccountCompatibleChains() {
     zoraTestnet.name,
     modeTestnet.name,
     zkSyncTestnet.name,
+    lineaTestnet.name,
+    polygonZkEvmTestnet.name,
     optimism.name,
     base.name
   ] as string[];

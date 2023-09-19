@@ -19,7 +19,6 @@ import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useMemo, useRef, useState } from 'react';
 import {
   Address,
-  WalletClient,
   useBalance,
   usePublicClient,
   useSwitchNetwork,
@@ -30,8 +29,6 @@ import { Id, toast } from 'react-toastify';
 import { copyToClipboard } from '../utils/copyToClipboard';
 
 import { Hash, TransactionReceipt, formatEther, parseEther } from 'viem';
-import { transferEth } from '../utils/zkSyncTransactions';
-import { zkSyncTestnet } from 'wagmi/chains';
 
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 import { safeTransferEth } from '../utils/safeTransactions';
@@ -86,13 +83,8 @@ export default function AccountSendDialog({
         amount: sendAmount
       };
 
-      let txHash;
-
-      if (chains.find((c) => c?.name === network)?.id === zkSyncTestnet.id) {
-        txHash = await transferEth(walletClient as WalletClient, txData);
-      } else {
-        txHash = await safeTransferEth(ethersSigner, txData);
-      }
+      const txHash = await safeTransferEth(ethersSigner, txData);
+  
 
       if (!txHash) {
         toast.update(sendToastId.current, {

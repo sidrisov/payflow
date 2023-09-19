@@ -22,12 +22,7 @@ import { CloseCallbackType } from '../types/CloseCallbackType';
 import { FlowType, FlowWalletType } from '../types/FlowType';
 import { useContext, useMemo, useRef, useState } from 'react';
 import { convertToUSD, getTotalBalance } from '../utils/getBalance';
-import {
-  useContractWrite,
-  usePrepareContractWrite,
-  usePublicClient,
-  useSwitchNetwork
-} from 'wagmi';
+import { usePublicClient, useSwitchNetwork } from 'wagmi';
 import {
   Add,
   AutoFixHigh,
@@ -42,25 +37,13 @@ import {
 import { Id, toast } from 'react-toastify';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { copyToClipboard } from '../utils/copyToClipboard';
-import {
-  Address,
-  Hash,
-  encodeAbiParameters,
-  formatEther,
-  keccak256,
-  parseAbiParameters,
-  toHex
-} from 'viem';
+import { Address, Hash, formatEther, keccak256, toHex } from 'viem';
 
-import PayFlowFactoryArtifact from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/PayFlowFactory.sol/PayFlowFactory.json';
-import { readContract } from 'wagmi/actions';
 import axios from 'axios';
-import create2Address from '../utils/create2Address';
 import FlowWithdrawalDialog from './FlowWithdrawalDialog';
 import ShareDialog from './ShareDialog';
 import { UserContext } from '../contexts/UserContext';
 import { networks } from '../utils/constants';
-import { zkSyncTestnet } from 'wagmi/chains';
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { safeDeploy } from '../utils/safeTransactions';
@@ -71,8 +54,6 @@ export type FlowViewDialogProps = DialogProps &
   CloseCallbackType & {
     flow?: FlowType;
   };
-
-const ZKSYNC_PAYFLOW_FACTORY_ADDRESS = import.meta.env.VITE_ZKSYNC_PAYFLOW_FACTORY_ADDRESS;
 
 export default function FlowViewDialog({ closeStateCallback, ...props }: FlowViewDialogProps) {
   const theme = useTheme();
@@ -96,8 +77,6 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const [selectedWithdrawalWallet, setSelectedWithdrawalWallet] = useState({} as FlowWalletType);
   const [masterAccount, setMasterAccount] = useState<Address>();
 
-  const [isZkSyncNetwork, setZkSyncNetwork] = useState<boolean>();
-
   const [initializeWallet, setInitializeWalllet] = useState(false);
   const [deployable, setDeployable] = useState<boolean>(false);
   const [created, setCreated] = useState<boolean>();
@@ -114,15 +93,6 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const [openFlowShare, setOpenFlowShare] = useState(false);
   const [flowShareInfo, setFlowShareInfo] = useState({} as { title: string; link: string });
 
-  const { config } = usePrepareContractWrite({
-    enabled: isZkSyncNetwork === true,
-    address: ZKSYNC_PAYFLOW_FACTORY_ADDRESS,
-    abi: PayFlowFactoryArtifact.abi,
-    functionName: 'deployContract',
-    args: [saltNonce, masterAccount],
-    chainId: zkSyncTestnet.id
-  });
-  const { isSuccess, data, write } = useContractWrite(config);
   const [txHash, setTxHash] = useState<Hash>();
 
   const newWalletToastId = useRef<Id>();
@@ -167,63 +137,51 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
     const chainId = chains.find((c) => c.name === newAccountNetwork)?.id;
     setSponsarable(isRelaySupported(chainId));
     setSponsored(isRelaySupported(chainId));
-
-    setZkSyncNetwork(newAccountNetwork ? chainId === zkSyncTestnet.id : undefined);
   }, [newAccountNetwork]);
-
-  useMemo(async () => {
-    setDeployable(
-      isZkSyncNetwork !== undefined && (isZkSyncNetwork === false || write !== undefined)
-    );
-  }, [isZkSyncNetwork, write]);
 
   async function createNewWallet() {
     newWalletToastId.current = toast.loading('Initializing Wallet 🪄');
 
-    if (isZkSyncNetwork) {
-      write?.();
-    } else {
-      if (ethersSigner && masterAccount && saltNonce) {
-        const safeAccountConfig: SafeAccountConfig = {
-          owners: [masterAccount],
-          threshold: 1
-        };
+    if (ethersSigner && masterAccount && saltNonce) {
+      const safeAccountConfig: SafeAccountConfig = {
+        owners: [masterAccount],
+        threshold: 1
+      };
 
-        const safeAddress = await safeDeploy({
-          ethersSigner,
-          safeAccountConfig,
-          saltNonce,
-          initialize: initializeWallet,
-          sponsored,
-          callback: safeDeployCallback
-        });
+      const safeAddress = await safeDeploy({
+        ethersSigner,
+        safeAccountConfig,
+        saltNonce,
+        initialize: initializeWallet,
+        sponsored,
+        callback: safeDeployCallback
+      });
 
-        if (safeAddress) {
-          setNewAccountAddress(safeAddress);
+      if (safeAddress) {
+        setNewAccountAddress(safeAddress);
 
-          // no need to wait till its deployed, mark it as created
-          if (!initializeWallet) {
-            if (newWalletToastId.current) {
-              setDeployable(false);
-              setCreated(true);
-              toast.update(newWalletToastId.current, {
-                render: `Wallet ${shortenWalletAddressLabel(safeAddress)} created 🚀`,
-                type: 'success',
-                isLoading: false,
-                autoClose: 5000
-              });
-              newWalletToastId.current = undefined;
-            }
+        // no need to wait till its deployed, mark it as created
+        if (!initializeWallet) {
+          if (newWalletToastId.current) {
+            setDeployable(false);
+            setCreated(true);
+            toast.update(newWalletToastId.current, {
+              render: `Wallet ${shortenWalletAddressLabel(safeAddress)} created 🚀`,
+              type: 'success',
+              isLoading: false,
+              autoClose: 5000
+            });
+            newWalletToastId.current = undefined;
           }
-        } else {
-          toast.update(newWalletToastId.current, {
-            render: 'Wallet Creation Failed 😕',
-            type: 'error',
-            isLoading: false,
-            autoClose: 5000
-          });
-          newWalletToastId.current = undefined;
         }
+      } else {
+        toast.update(newWalletToastId.current, {
+          render: 'Wallet Creation Failed 😕',
+          type: 'error',
+          isLoading: false,
+          autoClose: 5000
+        });
+        newWalletToastId.current = undefined;
       }
     }
   }
@@ -248,31 +206,6 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
       setMasterAccount(accounts.find((a) => a.network === newAccountNetwork)?.address);
     }
   }, [accounts, newAccountNetwork]);
-
-  useMemo(async () => {
-    if (isSuccess && masterAccount && saltNonce) {
-      const encodedData = encodeAbiParameters(parseAbiParameters('address'), [
-        masterAccount as `0x${string}`
-      ]);
-
-      const playFlowContractHash = (await readContract({
-        address: ZKSYNC_PAYFLOW_FACTORY_ADDRESS,
-        abi: PayFlowFactoryArtifact.abi,
-        chainId: chains.find((c) => c?.name === newAccountNetwork)?.id,
-        functionName: 'bytecodeHash'
-      })) as `0x${string}`;
-
-      const playFlowAddress = create2Address(
-        ZKSYNC_PAYFLOW_FACTORY_ADDRESS,
-        playFlowContractHash,
-        saltNonce,
-        encodedData
-      );
-
-      setNewAccountAddress(playFlowAddress);
-      setTxHash(data?.hash);
-    }
-  }, [isSuccess, data]);
 
   useMemo(async () => {
     if (txHash && newAccountAddress) {
@@ -315,12 +248,10 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
           address: newAccountAddress,
           network: newAccountNetwork,
           smart: smartAccountAllowedChains.includes(newAccountNetwork),
-          // decide based on network, since other than zkSync all other support Safe
-          safe: smartAccountAllowedChains.includes(newAccountNetwork) && !isZkSyncNetwork,
-          safeDeployed:
-            smartAccountAllowedChains.includes(newAccountNetwork) && !isZkSyncNetwork
-              ? initializeWallet
-              : null,
+          safe: smartAccountAllowedChains.includes(newAccountNetwork),
+          safeDeployed: smartAccountAllowedChains.includes(newAccountNetwork)
+            ? initializeWallet
+            : null,
           master: smartAccountAllowedChains.includes(newAccountNetwork) ? masterAccount : null
         } as FlowWalletType;
         const response = await axios.post(
@@ -626,7 +557,6 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                       </Box>
                       <Button
                         fullWidth
-                        disabled={!deployable}
                         variant="outlined"
                         size="large"
                         color="primary"
