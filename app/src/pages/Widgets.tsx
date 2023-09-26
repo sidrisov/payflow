@@ -21,7 +21,7 @@ import {
 import { FlowType } from '../types/FlowType';
 import QRCode from 'react-qr-code';
 
-import { ReactComponent as Logo } from '../assets/logo.svg';
+import Logo from '../assets/logo.svg?react';
 import { blue, green, purple, red, yellow } from '@mui/material/colors';
 import { Check } from '@mui/icons-material';
 

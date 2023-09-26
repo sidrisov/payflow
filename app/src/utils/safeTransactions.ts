@@ -227,11 +227,11 @@ export async function safeTransferEth(
         isSponsored: false
       };
 
-      const standardizedSafeTx = await relayKit.createRelayedTransaction(
+      const standardizedSafeTx = await relayKit.createRelayedTransaction({
         safe,
-        [safeTransferTransactionData],
+        transactions: [safeTransferTransactionData],
         options
-      );
+      });
 
       let signedSafeTx;
       if (tx.safeSigner) {

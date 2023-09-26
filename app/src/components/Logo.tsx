@@ -1,6 +1,6 @@
 import { SvgIcon, Typography } from '@mui/material';
 import { Box } from '@mui/system';
-import { ReactComponent as Logo } from '../assets/logo.svg';
+import Logo from '../assets/logo.svg?react';
 
 export default function HomeLogo(props: any) {
   return (

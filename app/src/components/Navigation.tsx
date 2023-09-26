@@ -5,7 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 
 import HomeLogo from './Logo';
 
-import { Settings, Merge, Payments, Payment, Widgets } from '@mui/icons-material';
+import { Settings, Merge, Payments, Link as LinkIcon, Savings, Home } from '@mui/icons-material';
 import { appRoutes } from '../appRouter';
 
 export default function Navigation() {
@@ -52,35 +52,23 @@ export default function Navigation() {
           minWidth: 150,
           flexGrow: 1
         }}>
-        <AlignedLinkTab
-          label="Accounts"
-          tabIndex={0}
-          component={Link}
-          to={appRoutes[0]}
-          icon={<Payment />}
-        />
-        <AlignedLinkTab
-          label="Flows"
-          tabIndex={1}
-          component={Link}
-          to={appRoutes[1]}
-          icon={<Merge />}
-        />
+        <AlignedLinkTab label="Home" tabIndex={0} to={appRoutes[0]} icon={<Home />} />
+        <AlignedLinkTab label="Flows" tabIndex={1} to={appRoutes[1]} icon={<Merge />} />
+
         <AlignedLinkTab label="Requests" tabIndex={2} to={appRoutes[2]} icon={<Payments />} />
+        <AlignedLinkTab label="Links" tabIndex={3} to={appRoutes[3]} icon={<LinkIcon />} />
+
+        <AlignedLinkTab label="Tipping" tabIndex={4} to={appRoutes[4]} icon={<Savings />} />
+        <AlignedLinkTab label="Settings" tabIndex={5} to={appRoutes[5]} icon={<Settings />} />
+
+        {/* 
         <AlignedLinkTab
-          label="Branding *"
-          tabIndex={3}
-          component={Link}
-          to={appRoutes[3]}
-          icon={<Widgets />}
+          label="Donation"
+          tabIndex={6}
+          to={appRoutes[6]}
+          icon={<VolunteerActivism />}
         />
-        <AlignedLinkTab
-          label="Settings"
-          tabIndex={4}
-          component={Link}
-          to={appRoutes[4]}
-          icon={<Settings />}
-        />
+        <AlignedLinkTab label="Store" tabIndex={7} to={appRoutes[7]} icon={<Store />} /> */}
       </Tabs>
       <MuiLink
         mb={1}
