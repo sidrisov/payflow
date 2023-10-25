@@ -6,4 +6,6 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface UserRepository extends CrudRepository<User, Integer> {
     User findBySigner(String signer);
+
+    User findByUsernameOrSigner(String username, String signer);
 }

@@ -15,12 +15,26 @@ public class UserService implements IUserService {
     private UserRepository userRepository;
 
     @Override
-    public void saveUser(String username, String signer) {
-        userRepository.save(new User(username, signer));
+    public void saveUser(String signer, String username) {
+        userRepository.save(new User(signer, username));
     }
 
     @Override
-    public User findUser(String signer) {
+    public void updateUsername(String signer, String username) {
+        User user = userRepository.findBySigner(signer);
+        if (user != null && (user.getUsername() == null || !user.getUsername().equals(username))) {
+            user.setUsername(username);
+            user.setOnboarded(true);
+        }
+    }
+
+    @Override
+    public User findBySigner(String signer) {
         return userRepository.findBySigner(signer);
+    }
+
+    @Override
+    public User findByUsername(String username) {
+        return userRepository.findByUsernameOrSigner(username, username);
     }
 }

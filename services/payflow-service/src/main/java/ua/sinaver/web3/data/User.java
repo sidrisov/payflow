@@ -19,7 +19,8 @@ import lombok.ToString;
 @NoArgsConstructor
 @Entity
 @Table(uniqueConstraints = {
-        @UniqueConstraint(columnNames = { "signer" }) })
+        @UniqueConstraint(columnNames = { "signer" }),
+        @UniqueConstraint(columnNames = { "username" }) })
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -34,11 +35,14 @@ public class User {
     @Column
     private String signer;
 
+    @Column(columnDefinition = "boolean")
+    private boolean onboarded;
+
     @Version
     private Long version;
 
-    public User(String username, String signer) {
-        this.username = username;
+    public User(String signer, String username) {
         this.signer = signer;
+        this.username = username;
     }
 }

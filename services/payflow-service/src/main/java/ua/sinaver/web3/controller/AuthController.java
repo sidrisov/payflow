@@ -79,7 +79,7 @@ public class AuthController {
 
             // create a user if not exist
             val signer = authentication.getPrincipal().toString();
-            val user = userService.findUser(signer);
+            val user = userService.findBySigner(signer);
             if (user == null) {
                 userService.saveUser(signer, signer);
             }

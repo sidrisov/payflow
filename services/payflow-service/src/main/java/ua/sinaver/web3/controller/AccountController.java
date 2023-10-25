@@ -34,7 +34,7 @@ class AccountController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void createAccount(@RequestBody AccountMessage accountDto, Principal principal) throws Exception {
-        val user = userService.findUser(principal.getName());
+        val user = userService.findBySigner(principal.getName());
         if (user == null) {
             throw new Exception("User doesn't exist: " + principal.getName());
         }
@@ -43,7 +43,7 @@ class AccountController {
 
     @GetMapping
     public List<AccountMessage> getAllFlowsForAccount(Principal principal) throws Exception {
-        val user = userService.findUser(principal.getName());
+        val user = userService.findBySigner(principal.getName());
         if (user == null) {
             throw new Exception("User doesn't exist: " + principal.getName());
         }

@@ -38,7 +38,7 @@ public class PaymentRequestController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void createRequest(@RequestBody PaymentRequestMessage requestMessage, Principal principal) throws Exception {
-        val user = userService.findUser(principal.getName());
+        val user = userService.findBySigner(principal.getName());
         if (user == null) {
             throw new Exception("User doesn't exist: " + principal.getName());
         }
@@ -50,7 +50,7 @@ public class PaymentRequestController {
 
     @GetMapping
     public List<PaymentRequestMessage> getAllRequests(Principal principal) throws Exception {
-        val user = userService.findUser(principal.getName());
+        val user = userService.findBySigner(principal.getName());
         if (user == null) {
             throw new Exception("User doesn't exist: " + principal.getName());
         }
@@ -84,7 +84,7 @@ public class PaymentRequestController {
     @ResponseStatus(HttpStatus.OK)
     public void acceptPayment(@PathVariable String uuid, Principal principal)
             throws Exception {
-        val user = userService.findUser(principal.getName());
+        val user = userService.findBySigner(principal.getName());
         if (user == null) {
             throw new Exception("User doesn't exist: " + principal.getName());
         }
