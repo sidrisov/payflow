@@ -1,8 +1,17 @@
 import { useMemo, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
-import { AppBar, IconButton, Toolbar, Box, Container, Drawer, Stack } from '@mui/material';
+import {
+  AppBar,
+  IconButton,
+  Toolbar,
+  Box,
+  Container,
+  Drawer,
+  Stack,
+  CircularProgress
+} from '@mui/material';
 
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import { LightModeOutlined, DarkModeOutlined, Menu } from '@mui/icons-material';
@@ -35,6 +44,8 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const [isAuthorized, setAuthorized] = useState<boolean>(false);
+
+  const navigate = useNavigate();
 
   const { isSuccess: isEnsSuccess, data: ethUsdPriceFeedAddress } = useEnsAddress({
     name: 'eth-usd.data.eth',
@@ -99,6 +110,8 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
       }
     }
     setAuthorized(false);
+
+    navigate('/connect');
   }, [isConnected, address, authStatus, authAccount]);
 
   useMemo(async () => {
@@ -116,7 +129,6 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
   }, [accounts, initiateFlowsRefresh]);
 
   useMemo(async () => {
-    console.log({ isAuthenticated: isAuthorized });
     if (isAuthorized) {
       await fetchAccounts();
       await fetchFlows();
@@ -149,87 +161,101 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
           setWalletBalances,
           ethUsdPrice
         }}>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-evenly'
-          }}>
-          <Box component="nav" sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
-            <Drawer
-              variant="temporary"
-              open={mobileOpen}
-              onClose={handleDrawerToggle}
-              ModalProps={{
-                keepMounted: true
-              }}
-              sx={{
-                display: { xs: 'block', sm: 'none' },
-                '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth }
-              }}>
-              {drawer}
-            </Drawer>
-            {
+        {authStatus === 'loading' && (
+          <Box
+            position="fixed"
+            display="flex"
+            alignItems="center"
+            boxSizing="border-box"
+            justifyContent="center"
+            sx={{ inset: 0 }}>
+            <CircularProgress size={30} />
+          </Box>
+        )}
+        {isAuthorized && (
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'space-evenly'
+            }}>
+            <Box component="nav" sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
               <Drawer
-                variant="permanent"
-                sx={{
-                  display: { xs: 'none', sm: 'block' },
-                  '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth }
+                variant="temporary"
+                open={mobileOpen}
+                onClose={handleDrawerToggle}
+                ModalProps={{
+                  keepMounted: true
                 }}
-                open>
+                sx={{
+                  display: { xs: 'block', sm: 'none' },
+                  '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth }
+                }}>
                 {drawer}
               </Drawer>
-            }
-          </Box>
-          <Box flexGrow={1}>
-            <HideOnScroll>
-              <AppBar
-                position="sticky"
-                color="transparent"
-                elevation={0}
-                sx={{ backdropFilter: 'blur(5px)' }}>
-                <Toolbar
+              {
+                <Drawer
+                  variant="permanent"
                   sx={{
-                    justifyContent: 'space-between'
-                  }}>
-                  <Box>
-                    <IconButton
-                      color="inherit"
-                      onClick={handleDrawerToggle}
-                      sx={{ display: { sm: 'none' } }}>
-                      <Menu />
-                    </IconButton>
-                  </Box>
-                  <Stack direction="row" spacing={1}>
-                    <IconButton
-                      onClick={() =>
-                        setAppSettings({ ...appSettings, darkMode: !appSettings.darkMode })
-                      }>
-                      {appSettings.darkMode ? <DarkModeOutlined /> : <LightModeOutlined />}
-                    </IconButton>
+                    display: { xs: 'none', sm: 'block' },
+                    '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth }
+                  }}
+                  open>
+                  {drawer}
+                </Drawer>
+              }
+            </Box>
+            <Box flexGrow={1}>
+              <HideOnScroll>
+                <AppBar
+                  position="sticky"
+                  color="transparent"
+                  elevation={0}
+                  sx={{ backdropFilter: 'blur(5px)' }}>
+                  <Toolbar
+                    sx={{
+                      justifyContent: 'space-between'
+                    }}>
+                    <Box>
+                      <IconButton
+                        color="inherit"
+                        onClick={handleDrawerToggle}
+                        sx={{ display: { sm: 'none' } }}>
+                        <Menu />
+                      </IconButton>
+                    </Box>
+                    <Stack direction="row" spacing={1}>
+                      <IconButton
+                        onClick={() =>
+                          setAppSettings({ ...appSettings, darkMode: !appSettings.darkMode })
+                        }>
+                        {appSettings.darkMode ? <DarkModeOutlined /> : <LightModeOutlined />}
+                      </IconButton>
 
-                    <ConnectButton
-                      showBalance={{ smallScreen: false, largeScreen: true }}
-                      chainStatus={{ smallScreen: 'icon', largeScreen: 'full' }}
-                    />
-                  </Stack>
-                </Toolbar>
-              </AppBar>
-            </HideOnScroll>
+                      <ConnectButton
+                        label="Sign in"
+                        showBalance={{ smallScreen: false, largeScreen: true }}
+                        chainStatus={{ smallScreen: 'icon', largeScreen: 'full' }}
+                      />
+                    </Stack>
+                  </Toolbar>
+                </AppBar>
+              </HideOnScroll>
 
-            <Box
-              sx={{
-                my: 5,
-                flexGrow: 1,
-                display: 'flex',
-                flexDirection: 'row'
-              }}>
-              <Container>
-                <Outlet />
-              </Container>
+              <Box
+                sx={{
+                  my: 5,
+                  flexGrow: 1,
+                  display: 'flex',
+                  flexDirection: 'row'
+                }}>
+                <Container>
+                  <Outlet />
+                </Container>
+              </Box>
             </Box>
           </Box>
-        </Box>
+        )}
       </UserContext.Provider>
     </CustomThemeProvider>
   );

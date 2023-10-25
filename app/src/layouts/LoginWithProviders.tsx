@@ -23,6 +23,7 @@ import Login from './Login';
 import { CustomAvatar } from '../components/CustomAvatar';
 import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
 import { SiweMessage } from 'siwe';
+import axios from 'axios';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 const AUTH_URL = import.meta.env.VITE_PAYFLOW_SERVICE_API_URL;
@@ -51,7 +52,17 @@ const appSettingsStored = appSettingsStorageItem
   ? (JSON.parse(appSettingsStorageItem) as AppSettings)
   : null;
 
-export default function LoginWithProviders() {
+export default function AppWithProviders() {
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const [appSettings, setAppSettings] = useState<AppSettings>(
+    appSettingsStored
+      ? appSettingsStored
+      : {
+          autoConnect: import.meta.env.VITE_INIT_CONNECT === 'true',
+          darkMode: prefersDarkMode
+        }
+  );
+
   const fetchingStatusRef = useRef(false);
   const verifyingRef = useRef(false);
   const [authStatus, setAuthStatus] = useState<AuthenticationStatus>('loading');
@@ -67,17 +78,17 @@ export default function LoginWithProviders() {
       fetchingStatusRef.current = true;
 
       try {
-        const response = await fetch(`${AUTH_URL}/api/me`, { credentials: 'include' });
-        const authProfile = await response.json();
-        console.log(authProfile.address);
-        setAuthStatus(authProfile && authProfile.address ? 'authenticated' : 'unauthenticated');
-        
-        if (authProfile && authProfile.address) {
-          setAuthAccount(authProfile.address);
+        const response = await axios.get(`${AUTH_URL}/api/user/me`, { withCredentials: true });
+        const authProfile = await response.data;
+
+        setAuthStatus(authProfile.address ? 'authenticated' : 'unauthenticated');
+
+        if (authProfile.address) {
+          setAuthAccount(authProfile);
         } else {
           setAuthAccount(undefined);
         }
-      } catch (_error) {
+      } catch (error) {
         setAuthStatus('unauthenticated');
       } finally {
         fetchingStatusRef.current = false;
@@ -92,11 +103,26 @@ export default function LoginWithProviders() {
     return () => window.removeEventListener('focus', fetchStatus);
   }, []);
 
+  // 3. in case successfully authenticated, fetch currently authenticated user
+  useMemo(async () => {
+    if (authStatus === 'authenticated' && !authAccount) {
+      try {
+        const response = await axios.get(`${AUTH_URL}/api/user/me`, { withCredentials: true });
+        if (Boolean(response.status === 200)) {
+          const authAccount = response.data;
+          setAuthAccount(authAccount);
+        }
+      } catch (_error) {
+        setAuthStatus('unauthenticated');
+      }
+    }
+  }, [authStatus, authAccount]);
+
   const authAdapter = useMemo(() => {
     return createAuthenticationAdapter({
       getNonce: async () => {
-        const response = await fetch(`${AUTH_URL}/api/auth/nonce`, { credentials: 'include' });
-        return await response.text();
+        const response = await axios.get(`${AUTH_URL}/api/auth/nonce`, { withCredentials: true });
+        return await response.data;
       },
 
       createMessage: ({ nonce, address, chainId }) => {
@@ -118,17 +144,14 @@ export default function LoginWithProviders() {
       verify: async ({ message, signature }) => {
         verifyingRef.current = true;
 
-        console.log(JSON.stringify({ message, signature }));
-
         try {
-          const response = await fetch(`${AUTH_URL}/api/auth/verify`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message, signature }),
-            credentials: 'include'
-          });
+          const response = await axios.post(
+            `${AUTH_URL}/api/auth/verify`,
+            { message, signature },
+            { withCredentials: true }
+          );
 
-          const authenticated = Boolean(response.ok);
+          const authenticated = Boolean(response.status === 200);
 
           if (authenticated) {
             setAuthStatus(authenticated ? 'authenticated' : 'unauthenticated');
@@ -144,21 +167,11 @@ export default function LoginWithProviders() {
 
       signOut: async () => {
         setAuthStatus('unauthenticated');
-        setAuthAccount(undefined)
-        await fetch(`${AUTH_URL}/api/auth/logout`, { credentials: 'include' });
+        setAuthAccount(undefined);
+        await axios.get(`${AUTH_URL}/api/auth/logout`, { withCredentials: true });
       }
     });
   }, []);
-
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const [appSettings, setAppSettings] = useState<AppSettings>(
-    appSettingsStored
-      ? appSettingsStored
-      : {
-          autoConnect: import.meta.env.VITE_INIT_CONNECT === 'true',
-          darkMode: prefersDarkMode
-        }
-  );
 
   useMemo(() => {
     localStorage.setItem('appSettings', JSON.stringify(appSettings));

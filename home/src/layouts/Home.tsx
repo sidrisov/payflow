@@ -113,7 +113,7 @@ export default function Home() {
             <Button
               variant="contained"
               color="info"
-              href={`${DAPP_URL}/onboarding?username=${profile ?? ''}`}
+              href={`${DAPP_URL}/connect?username=${profile ?? ''}`}
               sx={{ ml: 1, borderRadius: 4 }}>
               START 🚀
             </Button>

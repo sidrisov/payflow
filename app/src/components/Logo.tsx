@@ -13,7 +13,7 @@ export default function HomeLogo(props: any) {
       }}>
       <SvgIcon component={Logo} inheritViewBox fontSize="large" />
       <Typography ml={0.5} sx={{ fontSize: 16, fontWeight: 'bold' }}>
-        PayFlow
+        Payflow
       </Typography>
     </Box>
   );

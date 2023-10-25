@@ -65,21 +65,20 @@ export default function AppWithProviders() {
   );
 
   const fetchingStatusRef = useRef(false);
-  const verifyingRef = useRef(false);
   const [authStatus, setAuthStatus] = useState<AuthenticationStatus>('loading');
   const [authAccount, setAuthAccount] = useState<Address>();
 
   // Fetch user when:
   useEffect(() => {
     const fetchStatus = async () => {
-      if (fetchingStatusRef.current || verifyingRef.current) {
+      if (fetchingStatusRef.current) {
         return;
       }
 
       fetchingStatusRef.current = true;
 
       try {
-        const response = await axios.get(`${AUTH_URL}/api/me`, { withCredentials: true });
+        const response = await axios.get(`${AUTH_URL}/api/user/me`, { withCredentials: true });
         const authProfile = await response.data;
 
         setAuthStatus(authProfile.address ? 'authenticated' : 'unauthenticated');
@@ -104,73 +103,25 @@ export default function AppWithProviders() {
     return () => window.removeEventListener('focus', fetchStatus);
   }, []);
 
-  // 3. in case successfully authenticated, fetch currently authenticated user
-  useMemo(async () => {
-    if (authStatus === 'authenticated' && !authAccount) {
-      try {
-        const response = await axios.get(`${AUTH_URL}/api/me`, { withCredentials: true });
-        if (Boolean(response.status === 200)) {
-          const authAccount = response.data.address;
-          console.log(authAccount);
-          setAuthAccount(authAccount);
-        }
-      } catch (_error) {
-        setAuthStatus('unauthenticated');
-      }
-    }
-  }, [authStatus, authAccount]);
-
   const authAdapter = useMemo(() => {
     return createAuthenticationAdapter({
-      getNonce: async () => {
-        const response = await axios.get(`${AUTH_URL}/api/auth/nonce`, { withCredentials: true });
-        return await response.data;
-      },
-
-      createMessage: ({ nonce, address, chainId }) => {
-        return new SiweMessage({
-          domain: window.location.host,
-          address,
-          statement: 'Sign in with Ethereum to PayFlow',
-          uri: window.location.origin,
-          version: '1',
-          chainId,
-          nonce
-        });
-      },
-
-      getMessageBody: ({ message }) => {
-        return message.prepareMessage();
-      },
-
-      verify: async ({ message, signature }) => {
-        verifyingRef.current = true;
-
-        try {
-          const response = await axios.post(
-            `${AUTH_URL}/api/auth/verify`,
-            { message, signature },
-            { withCredentials: true }
-          );
-
-          const authenticated = Boolean(response.status === 200);
-
-          if (authenticated) {
-            setAuthStatus(authenticated ? 'authenticated' : 'unauthenticated');
-          }
-
-          return authenticated;
-        } catch (error) {
-          return false;
-        } finally {
-          verifyingRef.current = false;
-        }
-      },
-
       signOut: async () => {
+        await axios.get(`${AUTH_URL}/api/auth/logout`, { withCredentials: true });
         setAuthStatus('unauthenticated');
         setAuthAccount(undefined);
-        await axios.get(`${AUTH_URL}/api/auth/logout`, { withCredentials: true });
+      },
+      // authentication logic should be handled on login
+      getNonce: function (): Promise<string> {
+        throw new Error('Function not implemented.');
+      },
+      createMessage: function (args: { nonce: string; address: string; chainId: number }): unknown {
+        throw new Error('Function not implemented.');
+      },
+      getMessageBody: function (args: { message: unknown }): string {
+        throw new Error('Function not implemented.');
+      },
+      verify: function (args: { message: unknown; signature: string }): Promise<boolean> {
+        throw new Error('Function not implemented.');
       }
     });
   }, []);

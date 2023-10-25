@@ -11,16 +11,17 @@ import SendWithProviders from './layouts/SendWithProviders';
 import PaymentRequestWithProviders from './layouts/PaymentRequestWithProviders';
 import Tipping from './pages/Tipping';
 import Links from './pages/Links';
-import Profile from './pages/Profile';
+import ProfileWithProviders from './layouts/ProfileWithProviders';
+import LoginWithProviders from './layouts/LoginWithProviders';
 
 export const appRoutes = ['/accounts', '/flows', '/requests', '/links', '/tipping', '/settings'];
 
 export const appRouter = createBrowserRouter([
-  /*   {
-      path: '/login',
-      element: <Login />,
-      errorElement: <Page404 />
-    }, */
+  {
+    path: '/connect',
+    element: <LoginWithProviders />,
+    errorElement: <Page404 />
+  },
   {
     path: '/',
     element: <AppWithProviders />,
@@ -36,8 +37,8 @@ export const appRouter = createBrowserRouter([
         element: <Flows />
       },
       { path: 'requests', element: <Requests /> },
-      { path: 'links', element: <Links /> },
-      { path: 'tipping', element: <Tipping /> },
+/*       { path: 'links', element: <Links /> },
+      { path: 'tipping', element: <Tipping /> }, */
       /*       { path: 'widgets', element: <Widgets /> },
        */
       { path: 'settings', element: <Settings /> },
@@ -56,8 +57,8 @@ export const appRouter = createBrowserRouter([
     errorElement: <Page404 />
   },
   {
-    path: '/p/:userId',
-    element: <Profile />,
+    path: '/p/:username',
+    element: <ProfileWithProviders />,
     errorElement: <Page404 />
   }
 ]);
