@@ -43,11 +43,11 @@ import axios from 'axios';
 import FlowWithdrawalDialog from './FlowWithdrawalDialog';
 import ShareDialog from './ShareDialog';
 import { UserContext } from '../contexts/UserContext';
-import { networks } from '../utils/constants';
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { safeDeploy } from '../utils/safeTransactions';
 import { isRelaySupported } from '../utils/relayer';
+import { shortNetworkName } from '../utils/shortNetworkName';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 export type FlowViewDialogProps = DialogProps &
@@ -104,11 +104,6 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
     }
     setTxHash(txHash as Hash);
   };
-
-  function shortNetworkName(network: string) {
-    return networks.find((n) => n.chainId === chains.find((c) => c.name === network)?.id)
-      ?.shortName;
-  }
 
   useMemo(async () => {
     if (flow && flow.wallets && walletBalances && ethUsdPrice) {
@@ -305,6 +300,58 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
     }
   }
 
+  function WalletSection(props: { wallet: FlowWalletType }) {
+    const wallet = props.wallet;
+
+    return (
+      <Box
+        display="flex"
+        flexDirection="row"
+        alignItems="center"
+        flexGrow={1}
+        justifyContent="space-between"
+        sx={{ border: 1, borderRadius: 3, p: 1 }}>
+        <Box display="flex" flexDirection="row" alignItems="center">
+          <Tooltip title={wallet.network}>
+            <Avatar src={'/networks/' + wallet.network + '.png'} sx={{ width: 24, height: 24 }} />
+          </Tooltip>
+          <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
+          <Tooltip title="Copy Address">
+            <IconButton
+              size="small"
+              onClick={() => {
+                copyToClipboard(wallet.address);
+                toast.success('Address is copied!');
+              }}>
+              <ContentCopy fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          {wallet.safe && (
+            <>
+              <Tooltip title="Open in Safe Web Wallet">
+                <a
+                  href={`https://app.safe.global/home?safe=${shortNetworkName(wallet.network)}:${
+                    wallet.address
+                  }`}
+                  target="_blank">
+                  <Avatar src="/safe.png" sx={{ width: 16, height: 16 }} />
+                </a>
+              </Tooltip>
+              {!wallet.safeDeployed && (
+                <Tooltip title="Wallet will be initialized on the first withdrawal!">
+                  <FlagOutlined sx={{}} fontSize="small" />
+                </Tooltip>
+              )}
+            </>
+          )}
+        </Box>
+        <Typography variant="subtitle2">
+          ${convertToUSD(walletBalances?.get(`${wallet.address}_${wallet.network}`), ethUsdPrice)}
+        </Typography>
+      </Box>
+    );
+  }
+
   return flow ? (
     <Dialog
       fullScreen={fullScreen}
@@ -344,58 +391,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                     alignItems="center"
                     alignSelf="stretch"
                     justifyContent="space-between">
-                    <Box
-                      display="flex"
-                      flexDirection="row"
-                      alignItems="center"
-                      flexGrow={1}
-                      justifyContent="space-between"
-                      sx={{ border: 1, borderRadius: 3, p: 1 }}>
-                      <Box display="flex" flexDirection="row" alignItems="center">
-                        <Tooltip title={wallet.network}>
-                          <Avatar
-                            src={'/networks/' + wallet.network + '.png'}
-                            sx={{ width: 24, height: 24 }}
-                          />
-                        </Tooltip>
-                        <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
-                        <Tooltip title="Copy Address">
-                          <IconButton
-                            size="small"
-                            onClick={() => {
-                              copyToClipboard(wallet.address);
-                              toast.success('Address is copied!');
-                            }}>
-                            <ContentCopy fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        {wallet.safe && (
-                          <>
-                            <Tooltip title="Open in Safe Web Wallet">
-                              <a
-                                href={`https://app.safe.global/home?safe=${shortNetworkName(
-                                  wallet.network
-                                )}:${wallet.address}`}
-                                target="_blank">
-                                <Avatar src="/safe.png" sx={{ width: 16, height: 16 }} />
-                              </a>
-                            </Tooltip>
-                            {!wallet.safeDeployed && (
-                              <Tooltip title="Wallet will be initialized on the first withdrawal!">
-                                <FlagOutlined sx={{}} fontSize="small" />
-                              </Tooltip>
-                            )}
-                          </>
-                        )}
-                      </Box>
-                      <Typography variant="subtitle2">
-                        $
-                        {convertToUSD(
-                          walletBalances?.get(`${wallet.address}_${wallet.network}`),
-                          ethUsdPrice
-                        )}
-                      </Typography>
-                    </Box>
+                    <WalletSection wallet={wallet} />
                     {withdrawFlowWallet && (
                       <Tooltip title="Withdraw">
                         <IconButton

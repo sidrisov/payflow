@@ -249,9 +249,7 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
                   display: 'flex',
                   flexDirection: 'row'
                 }}>
-                <Container>
-                  <Outlet />
-                </Container>
+                <Outlet />
               </Box>
             </Box>
           </Box>

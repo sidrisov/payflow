@@ -39,7 +39,7 @@ export default function Flows() {
     setInitiateFlowsRefresh,
     ethUsdPrice
   } = useContext(UserContext);
-  
+
   const { chains } = useNetwork();
 
   const [flowBalances, setFlowBalances] = useState<Map<string, string>>();

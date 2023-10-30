@@ -18,3 +18,10 @@ export interface FlowWalletType {
   safeDeployed: boolean;
   master: Address;
 }
+
+export interface WalletType {
+  address: Address;
+  network: string;
+  safe: boolean;
+  safeDeployed: boolean;
+}
