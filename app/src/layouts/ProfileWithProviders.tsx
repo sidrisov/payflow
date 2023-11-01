@@ -29,7 +29,6 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(SUPPORTE
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 const AIRSTACK_API_KEY = import.meta.env.VITE_AIRSTACK_API_KEY;
 
-console.log(AIRSTACK_API_KEY);
 const { wallets } = getDefaultWallets({
   appName: 'PayFlow',
   projectId: WALLET_CONNECT_PROJECT_ID,

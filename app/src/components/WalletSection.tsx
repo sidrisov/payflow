@@ -6,7 +6,7 @@ import { shortenWalletAddressLabel } from '../utils/address';
 import { WalletType } from '../types/FlowType';
 import { shortNetworkName } from '../utils/shortNetworkName';
 
-export function WalletSection(props: { wallet: WalletType; balance: string }) {
+export function WalletSection(props: { wallet: WalletType; balance?: string }) {
   const { wallet, balance } = props;
 
   return (
@@ -44,14 +44,14 @@ export function WalletSection(props: { wallet: WalletType; balance: string }) {
               </a>
             </Tooltip>
             {!wallet.safeDeployed && (
-              <Tooltip title="Wallet will be initialized on the first withdrawal!">
+              <Tooltip title="Wallet will be initialized on the first transaction!">
                 <FlagOutlined sx={{}} fontSize="small" />
               </Tooltip>
             )}
           </>
         )}
       </Box>
-      <Typography variant="subtitle2">${balance}</Typography>
+      {balance && <Typography variant="subtitle2">${balance}</Typography>}
     </Box>
   );
 }

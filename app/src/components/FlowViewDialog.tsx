@@ -338,7 +338,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                 </a>
               </Tooltip>
               {!wallet.safeDeployed && (
-                <Tooltip title="Wallet will be initialized on the first withdrawal!">
+                <Tooltip title="Wallet will be initialized on the first transaction!">
                   <FlagOutlined sx={{}} fontSize="small" />
                 </Tooltip>
               )}

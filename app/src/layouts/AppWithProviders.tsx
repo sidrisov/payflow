@@ -25,9 +25,13 @@ import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
 import { SiweMessage } from 'siwe';
 import axios from 'axios';
 import { SUPPORTED_CHAINS } from '../utils/supportedChains';
+import { AirstackProvider, init } from '@airstack/airstack-react';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 const AUTH_URL = import.meta.env.VITE_PAYFLOW_SERVICE_API_URL;
+const AIRSTACK_API_KEY = import.meta.env.VITE_AIRSTACK_API_KEY;
+
+init(AIRSTACK_API_KEY);
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(SUPPORTED_CHAINS, [
   alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }),
@@ -139,20 +143,22 @@ export default function AppWithProviders() {
 
   return (
     <WagmiConfig config={wagmiConfig}>
-      <RainbowKitAuthenticationProvider adapter={authAdapter} status={authStatus}>
-        <RainbowKitProvider
-          theme={appSettings.darkMode ? customDarkTheme : customLightTheme}
-          avatar={CustomAvatar}
-          modalSize="compact"
-          chains={chains}>
-          <App
-            authStatus={authStatus}
-            authAccount={authAccount}
-            appSettings={appSettings}
-            setAppSettings={setAppSettings}
-          />
-        </RainbowKitProvider>
-      </RainbowKitAuthenticationProvider>
+      <AirstackProvider apiKey={AIRSTACK_API_KEY}>
+        <RainbowKitAuthenticationProvider adapter={authAdapter} status={authStatus}>
+          <RainbowKitProvider
+            theme={appSettings.darkMode ? customDarkTheme : customLightTheme}
+            avatar={CustomAvatar}
+            modalSize="compact"
+            chains={chains}>
+            <App
+              authStatus={authStatus}
+              authAccount={authAccount}
+              appSettings={appSettings}
+              setAppSettings={setAppSettings}
+            />
+          </RainbowKitProvider>
+        </RainbowKitAuthenticationProvider>
+      </AirstackProvider>
     </WagmiConfig>
   );
 }

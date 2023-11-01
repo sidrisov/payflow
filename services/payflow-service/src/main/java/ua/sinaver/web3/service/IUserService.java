@@ -1,5 +1,7 @@
 package ua.sinaver.web3.service;
 
+import java.util.List;
+
 import ua.sinaver.web3.data.User;
 
 public interface IUserService {
@@ -10,4 +12,6 @@ public interface IUserService {
     User findBySigner(String signer);
 
     User findByUsername(String username);
+
+    List<User> searchByUsernameQuery(String query);
 }

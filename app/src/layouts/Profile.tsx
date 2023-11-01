@@ -84,10 +84,10 @@ export default function Profile() {
     }
   );
 
-  async function fetchFlows() {
+  async function fetchFlows(profile: ProfileType) {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/public/${profile?.address}`,
+        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/public/${profile.address}`,
         { withCredentials: true }
       );
 
@@ -105,6 +105,8 @@ export default function Profile() {
         });
         const profile = (await response.data) as ProfileType;
         setProfile(profile);
+
+        console.log(profile);
       } catch (error) {
         console.error(error);
       }
@@ -113,8 +115,9 @@ export default function Profile() {
 
   useMemo(async () => {
     if (profile) {
+      console.log(profile);
       fetch();
-      fetchFlows();
+      fetchFlows(profile);
     }
   }, [profile]);
 
@@ -373,7 +376,8 @@ export default function Profile() {
         open={openSearchProfile}
         closeStateCallback={() => {
           setOpenSearchProfile(false);
-        }}></SearchProfileDialog>
+        }}
+      />
     </>
   );
 }

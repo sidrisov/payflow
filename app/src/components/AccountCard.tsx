@@ -36,7 +36,7 @@ export type AccountNewDialogProps = CardProps & {
 
 export function AccountCard(props: AccountNewDialogProps) {
   const { ethUsdPrice } = useContext(UserContext);
-  const { accounts, flows, selectedFlow, setSelectedFlow } = props;
+  const { flows, selectedFlow, setSelectedFlow } = props;
 
   const [openWithdrawalDialog, setOpenWithdrawalDialog] = useState(false);
   const [openWalletDetailsPopover, setOpenWalletDetailsPopover] = useState(false);
@@ -185,15 +185,16 @@ export function AccountCard(props: AccountNewDialogProps) {
           </IconButton>
         </Tooltip>
       </Stack>
-      <AccountSendDialog
-        open={openWithdrawalDialog}
-        from={accounts[0].address}
-        network={accounts[0].network}
-        closeStateCallback={async () => setOpenWithdrawalDialog(false)}
-      />
+      {openWithdrawalDialog && (
+        <AccountSendDialog
+          open={openWithdrawalDialog}
+          flow={selectedFlow}
+          closeStateCallback={async () => setOpenWithdrawalDialog(false)}
+        />
+      )}
       <WalletsPopover
         open={openWalletDetailsPopover}
-        onClose={() => setOpenWalletDetailsPopover(false)}
+        onClose={async () => setOpenWalletDetailsPopover(false)}
         anchorEl={walletAnchorEl}
         flow={selectedFlow}
         balanceFetchResult={{ loading, fetched, balances }}
@@ -201,7 +202,7 @@ export function AccountCard(props: AccountNewDialogProps) {
       <ChooseFlowMenu
         anchorEl={flowAnchorEl}
         open={openSelectFlow}
-        onClose={() => setOpenSelectFlow(false)}
+        onClose={async () => setOpenSelectFlow(false)}
         flows={flows}
         selectedFlow={selectedFlow}
         setSelectedFlow={setSelectedFlow}

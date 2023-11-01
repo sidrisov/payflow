@@ -7,7 +7,6 @@ import {
   IconButton,
   Toolbar,
   Box,
-  Container,
   Drawer,
   Stack,
   CircularProgress
@@ -234,7 +233,7 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
 
                       <ConnectButton
                         label="Sign in"
-                        showBalance={{ smallScreen: false, largeScreen: true }}
+                        showBalance={{ smallScreen: false, largeScreen: false }}
                         chainStatus={{ smallScreen: 'icon', largeScreen: 'full' }}
                       />
                     </Stack>

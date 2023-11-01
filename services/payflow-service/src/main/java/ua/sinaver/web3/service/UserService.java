@@ -1,5 +1,7 @@
 package ua.sinaver.web3.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,5 +38,10 @@ public class UserService implements IUserService {
     @Override
     public User findByUsername(String username) {
         return userRepository.findByUsernameOrSigner(username, username);
+    }
+
+    @Override
+    public List<User> searchByUsernameQuery(String query) {
+        return userRepository.findByUsernameContainingOrSignerContaining(query, query);
     }
 }

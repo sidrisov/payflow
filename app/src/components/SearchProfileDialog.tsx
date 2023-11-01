@@ -11,22 +11,29 @@ import {
   Divider,
   Stack,
   Typography,
-  Link,
-  CircularProgress
+  CircularProgress,
+  Button,
+  IconButton
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
-import { Search } from '@mui/icons-material';
+import { Clear, Search } from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import axios from 'axios';
 import { ProfileType } from '../types/ProfleType';
 import { shortenWalletAddressLabel } from '../utils/address';
-import { delay } from '../utils/delay';
-//import { Link } from 'react-router-dom';
 
-import { fetchQuery, useLazyQuery } from '@airstack/airstack-react';
+import { fetchQuery } from '@airstack/airstack-react';
+import { Address, isAddress } from 'viem';
+import { useNavigate } from 'react-router-dom';
 
-export type SearchProfileDialogProps = DialogProps & CloseCallbackType;
+export type SelectProfileResultCallbackType = {
+  selectProfileCallback?: (profile: Address | ProfileType) => void;
+};
+
+export type SearchProfileDialogProps = DialogProps &
+  CloseCallbackType &
+  SelectProfileResultCallbackType;
 const API_URL = import.meta.env.VITE_PAYFLOW_SERVICE_API_URL;
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 
@@ -57,19 +64,27 @@ const queryAssociatedAddressesByFarcasterName = `query GetAssociatedAddresses($p
   }
 }`;
 
-export default function SearchProfileDialog({
-  closeStateCallback,
-  ...props
-}: SearchProfileDialogProps) {
+export default function SearchProfileDialog(props: SearchProfileDialogProps) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
+  const [searchString, setSearchString] = useState<string>();
   const [profiles, setProfiles] = useState<ProfileType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+
+  const { closeStateCallback, selectProfileCallback } = props;
 
   function handleCloseCampaignDialog() {
     closeStateCallback();
   }
+
+  const navigate = useNavigate();
+
+  useMemo(async () => {
+    if (searchString && searchString?.length > 2) {
+      await searchProfile(searchString);
+    }
+  }, [searchString]);
 
   async function searchProfile(searchStr: string) {
     const searchValue = searchStr;
@@ -77,12 +92,14 @@ export default function SearchProfileDialog({
       setLoading(true);
 
       if (!searchValue.includes('.')) {
-        const response = await axios.get(`${API_URL}/api/user/${searchValue}`, {
+        const response = await axios.get(`${API_URL}/api/user?search=${searchValue}`, {
           withCredentials: true
         });
-        const profile = (await response.data) as ProfileType;
-        if (profile) {
-          setProfiles([profile]);
+        const profiles = (await response.data) as ProfileType[];
+        if (profiles) {
+          setProfiles(profiles);
+        } else {
+          setProfiles([]);
         }
       } else {
         const domainId = searchValue.substring(searchValue.indexOf('.') + 1);
@@ -102,6 +119,8 @@ export default function SearchProfileDialog({
             const profile = (await response.data) as ProfileType;
             if (profile) {
               setProfiles([profile]);
+            } else {
+              setProfiles([]);
             }
           }
         } else if (domainId === 'fc') {
@@ -149,48 +168,112 @@ export default function SearchProfileDialog({
         backdropFilter: 'blur(5px)'
       }}>
       <DialogTitle>
-        <Box>
+        <Box minWidth={300}>
           <TextField
-            margin="normal"
             fullWidth
-            label={'Search'}
+            margin="normal"
+            label="Search"
+            value={searchString ?? ''}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
                   {!loading ? <Search /> : <CircularProgress color="inherit" size={25} />}
                 </InputAdornment>
               ),
+              endAdornment: searchString && (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={async () => {
+                      setSearchString(undefined);
+                      setProfiles([]);
+                    }}>
+                    <Clear fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              ),
               inputProps: { maxLength: 42, inputMode: 'search' },
               sx: { borderRadius: 3 }
             }}
             onChange={async (event) => {
-              await searchProfile(event.target.value);
+              setSearchString(event.target.value);
             }}
           />
         </Box>
         <Divider orientation="horizontal" sx={{ mt: 2 }}></Divider>
       </DialogTitle>
       <DialogContent>
-        <Stack m={1} spacing={1} height={400}>
-          {profiles &&
-            profiles.map((profile) => (
-              <Link href={`${DAPP_URL}/p/${profile.username}`}>
-                <Box
-                  color="primary"
-                  p={1}
-                  display="flex"
-                  flexDirection="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  //component={Link}
-                  //to={`${DAPP_URL}/p/${profile.username}`}
-                  sx={{ borderRadius: 3, border: 1, height: 60 }}>
-                  <Typography>@{profile.username}</Typography>
-                  <Typography>{shortenWalletAddressLabel(profile.address)}</Typography>
-                </Box>
-              </Link>
-            ))}
-        </Stack>
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignContent="center"
+          minHeight={300}
+          maxHeight={500}>
+          {selectProfileCallback && searchString && isAddress(searchString) && (
+            <>
+              <Typography variant="subtitle2">Address</Typography>
+
+              <Box
+                m={1}
+                color="inherit"
+                p={1}
+                display="flex"
+                flexDirection="row"
+                justifyContent="center"
+                alignItems="center"
+                component={Button}
+                textTransform="none"
+                sx={{ borderRadius: 3, border: 1, height: 60 }}
+                onClick={async () => {
+                  if (selectProfileCallback) {
+                    selectProfileCallback(searchString);
+                  }
+                  closeStateCallback();
+                }}>
+                <Typography>{shortenWalletAddressLabel(searchString)}</Typography>
+              </Box>
+            </>
+          )}
+
+          {profiles && profiles.length > 0 && (
+            <>
+              <Typography variant="subtitle2">Profiles</Typography>
+
+              <Stack m={1} spacing={1}>
+                {profiles.map((profile) => (
+                  <Box
+                    color="inherit"
+                    p={1}
+                    display="flex"
+                    flexDirection="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    component={Button}
+                    textTransform="none"
+                    sx={{ borderRadius: 3, border: 1, height: 60 }}
+                    onClick={async () => {
+                      if (selectProfileCallback) {
+                        selectProfileCallback(profile);
+                      } else {
+                        navigate(`/p/${profile.username}`);
+                      }
+                      closeStateCallback();
+                    }}>
+                    <Typography>@{profile.username}</Typography>
+                    <Typography>{shortenWalletAddressLabel(profile.address)}</Typography>
+                  </Box>
+                ))}
+              </Stack>
+            </>
+          )}
+          {searchString &&
+            profiles.length === 0 &&
+            selectProfileCallback &&
+            !isAddress(searchString) && (
+              <Typography alignSelf="center" variant="subtitle2">
+                No results found.
+              </Typography>
+            )}
+        </Box>
       </DialogContent>
     </Dialog>
   );

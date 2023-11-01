@@ -17,28 +17,23 @@ import {
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useMemo, useRef, useState } from 'react';
-import {
-  Address,
-  useBalance,
-  usePublicClient,
-  useSwitchNetwork,
-  useWalletClient
-} from 'wagmi';
-import { ContentCopy, ExpandMore } from '@mui/icons-material';
+import { useBalance, useNetwork, usePublicClient, useSwitchNetwork, useWalletClient } from 'wagmi';
+import { ExpandMore, Wallet, WalletOutlined, WalletRounded } from '@mui/icons-material';
 import { Id, toast } from 'react-toastify';
-import { copyToClipboard } from '../utils/copyToClipboard';
 
-import { Hash, TransactionReceipt, formatEther, parseEther } from 'viem';
+import { Address, Hash, TransactionReceipt, formatEther, isAddress, parseEther } from 'viem';
 
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 import { safeTransferEth } from '../utils/safeTransactions';
 import { shortenWalletAddressLabel } from '../utils/address';
+import { FlowType, FlowWalletType } from '../types/FlowType';
+import { ChooseWalletMenu } from './ChooseWalletMenu';
+import SearchProfileDialog from './SearchProfileDialog';
+import { ProfileType } from '../types/ProfleType';
 
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
-    from: Address;
-    to?: Address;
-    network: string;
+    flow: FlowType;
   };
 
 export default function AccountSendDialog({
@@ -48,47 +43,63 @@ export default function AccountSendDialog({
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { from, to, network } = props;
+  const { flow } = props;
 
-  const [sendToAddress, setSendToAddress] = useState(to as Address);
+  const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>(flow.wallets[0]);
+
+  const [sendToAddress, setSendToAddress] = useState<Address | ProfileType>();
+
   const [sendAmount, setSendAmount] = useState<bigint>();
 
-  const { data: walletClient } = useWalletClient();
+  const [openSearchProfile, setOpenSearchProfile] = useState<boolean>(false);
 
   const publicClient = usePublicClient();
   const ethersSigner = useEthersSigner();
 
   const { chains, switchNetwork } = useSwitchNetwork();
+  const { chain } = useNetwork();
 
   const { isSuccess, data: balance } = useBalance({
-    address: from,
-    chainId: chains.find((c) => c?.name === network)?.id
+    address: selectedWallet?.address,
+    chainId: chain?.id
   });
+
+  const [openSelectWallet, setOpenSelectWallet] = useState(false);
+  const [walletAnchorEl, setWalletAnchorEl] = useState<null | HTMLElement>(null);
 
   const [txHash, setTxHash] = useState<Hash>();
 
   const sendToastId = useRef<Id>();
 
+  function isProfileType(object: any): object is ProfileType {
+    return !isAddress(object);
+  }
+
   const sendTransaction = async () => {
     if (sendToAddress && sendAmount && ethersSigner) {
       sendToastId.current = toast.loading(
-        `Sending ${formatEther(sendAmount)} to ${shortenWalletAddressLabel(sendToAddress)} 💸`
+        `Sending ${formatEther(sendAmount)} to ${shortenWalletAddressLabel(
+          isProfileType(sendToAddress) ? sendToAddress.address : sendToAddress
+        )} 💸`
       );
 
-      switchNetwork?.(chains.find((c) => c?.name === network)?.id);
+      switchNetwork?.(chains.find((c) => c?.name === selectedWallet?.network)?.id);
 
       const txData = {
-        from,
-        to: sendToAddress,
+        from: selectedWallet.address,
+        to: (sendToAddress as Address)
+          ? (sendToAddress as Address)
+          : (sendToAddress as ProfileType).address,
         amount: sendAmount
       };
 
       const txHash = await safeTransferEth(ethersSigner, txData);
-  
 
       if (!txHash) {
         toast.update(sendToastId.current, {
-          render: `Transfer to ${shortenWalletAddressLabel(sendToAddress)} failed! 😕`,
+          render: `Transfer to ${shortenWalletAddressLabel(
+            isProfileType(sendToAddress) ? sendToAddress.address : sendToAddress
+          )} failed! 😕`,
           type: 'error',
           isLoading: false,
           autoClose: 5000
@@ -101,6 +112,11 @@ export default function AccountSendDialog({
   };
 
   useMemo(async () => {
+    const chainId = chains.find((c) => c.name === selectedWallet.network)?.id;
+    switchNetwork?.(chainId);
+  }, [selectedWallet]);
+
+  useMemo(async () => {
     if (txHash) {
       const receipt = (await publicClient.waitForTransactionReceipt({
         hash: txHash
@@ -111,18 +127,24 @@ export default function AccountSendDialog({
       if (receipt && receipt.status === 'success') {
         if (sendToastId.current) {
           toast.update(sendToastId.current, {
-            render: `Transfer to ${shortenWalletAddressLabel(sendToAddress)} processed!`,
+            render: `Transfer to ${shortenWalletAddressLabel(
+              isProfileType(sendToAddress) ? sendToAddress.address : sendToAddress
+            )} processed!`,
             type: 'success',
             isLoading: false,
             autoClose: 5000
           });
           sendToastId.current = undefined;
         }
-        handleCloseCampaignDialog();
+        handleCloseSendDialog();
       } else {
         if (sendToastId.current) {
           toast.update(sendToastId.current, {
-            render: `Transfer to ${shortenWalletAddressLabel(sendToAddress)} failed! 😕`,
+            render: `Transfer to ${shortenWalletAddressLabel(
+              (sendToAddress as Address)
+                ? (sendToAddress as Address)
+                : (sendToAddress as ProfileType).address
+            )} failed! 😕`,
             type: 'error',
             isLoading: false,
             autoClose: 5000
@@ -133,14 +155,14 @@ export default function AccountSendDialog({
     }
   }, [txHash]);
 
-  function handleCloseCampaignDialog() {
+  function handleCloseSendDialog() {
     closeStateCallback();
   }
 
-  return from && network ? (
+  return (
     <Dialog
       fullScreen={fullScreen}
-      onClose={handleCloseCampaignDialog}
+      onClose={handleCloseSendDialog}
       {...props}
       PaperProps={{ sx: { borderRadius: 5 } }}
       sx={{
@@ -161,29 +183,56 @@ export default function AccountSendDialog({
             alignSelf="stretch"
             alignItems="center"
             sx={{ height: 56, border: 1, borderRadius: 3, p: 1 }}>
-            <Avatar src={'/networks/' + network + '.png'} sx={{ width: 24, height: 24 }} />
-            <Typography ml={1} sx={{ overflow: 'scroll' }}>
-              {from}
-            </Typography>
             <IconButton
-              size="small"
-              onClick={() => {
-                copyToClipboard(from);
-                toast.success('Address is copied!');
+              sx={{ width: 40, height: 40, border: 1, borderStyle: 'dashed' }}
+              onClick={(event) => {
+                setWalletAnchorEl(event.currentTarget);
+                setOpenSelectWallet(true);
               }}>
-              <ContentCopy fontSize="small" />
+              <Avatar
+                src={'/networks/' + selectedWallet.network + '.png'}
+                sx={{ width: 28, height: 28 }}
+              />
             </IconButton>
+            <Box display="flex" flexDirection="row" flexGrow={1} justifyContent="center">
+              <Typography sx={{ m: 1, fontSize: 18, overflow: 'clip' }}>{flow.title}</Typography>
+            </Box>
           </Box>
-          <ExpandMore></ExpandMore>
-          <TextField
-            fullWidth
-            id="sendToAddress"
-            label="Send to"
-            onChange={(event) => {
-              setSendToAddress(event.target.value as Address);
-            }}
-            InputProps={{ inputProps: { maxLength: 42 }, sx: { borderRadius: 3 } }}
-          />
+          <ExpandMore />
+
+          <Box
+            display="flex"
+            flexDirection="row"
+            alignSelf="stretch"
+            alignItems="center"
+            component={Button}
+            color="inherit"
+            onClick={async () => setOpenSearchProfile(true)}
+            sx={{
+              height: 56,
+              border: 1,
+              borderRadius: 3,
+              p: 1,
+              textTransform: 'none'
+            }}>
+            {sendToAddress &&
+              (isProfileType(sendToAddress) ? (
+                <Avatar src="/logo.svg" sx={{ width: 35, height: 35 }} />
+              ) : (
+                <WalletRounded fontSize="large" />
+              ))}
+            <Box display="flex" flexDirection="row" flexGrow={1} justifyContent="center">
+              <Typography ml={-2} fontSize={18}>
+                {sendToAddress
+                  ? isProfileType(sendToAddress)
+                    ? sendToAddress.username
+                    : shortenWalletAddressLabel(sendToAddress)
+                  : 'Choose recipient'}
+              </Typography>
+            </Box>
+            <ExpandMore />
+          </Box>
+
           <TextField
             fullWidth
             variant="outlined"
@@ -218,8 +267,25 @@ export default function AccountSendDialog({
           </Divider>
         </Stack>
       </DialogContent>
+      <ChooseWalletMenu
+        anchorEl={walletAnchorEl}
+        open={openSelectWallet}
+        onClose={async () => setOpenSelectWallet(false)}
+        wallets={flow.wallets}
+        selectedWallet={selectedWallet}
+        setSelectedWallet={setSelectedWallet}
+      />
+      {openSearchProfile && (
+        <SearchProfileDialog
+          open={openSearchProfile}
+          closeStateCallback={() => {
+            setOpenSearchProfile(false);
+          }}
+          selectProfileCallback={(profile) => {
+            setSendToAddress(profile);
+          }}
+        />
+      )}
     </Dialog>
-  ) : (
-    <></>
   );
 }
