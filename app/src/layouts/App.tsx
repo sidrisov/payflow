@@ -2,15 +2,7 @@ import { useMemo, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
-import {
-  AppBar,
-  IconButton,
-  Toolbar,
-  Box,
-  Drawer,
-  Stack,
-  CircularProgress
-} from '@mui/material';
+import { AppBar, IconButton, Toolbar, Box, Drawer, Stack, CircularProgress } from '@mui/material';
 
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import { LightModeOutlined, DarkModeOutlined, Menu } from '@mui/icons-material';

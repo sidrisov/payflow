@@ -56,19 +56,8 @@ export default function Navigation() {
         <AlignedLinkTab label="Flows" tabIndex={1} to={appRoutes[1]} icon={<Merge />} />
 
         <AlignedLinkTab label="Requests" tabIndex={2} to={appRoutes[2]} icon={<Payments />} />
-{/*         <AlignedLinkTab label="Links" tabIndex={3} to={appRoutes[3]} icon={<LinkIcon />} />
 
-        <AlignedLinkTab label="Tipping" tabIndex={4} to={appRoutes[4]} icon={<Savings />} /> */}
         <AlignedLinkTab label="Settings" tabIndex={5} to={appRoutes[3]} icon={<Settings />} />
-
-        {/* 
-        <AlignedLinkTab
-          label="Donation"
-          tabIndex={6}
-          to={appRoutes[6]}
-          icon={<VolunteerActivism />}
-        />
-        <AlignedLinkTab label="Store" tabIndex={7} to={appRoutes[7]} icon={<Store />} /> */}
       </Tabs>
       <MuiLink
         mb={1}

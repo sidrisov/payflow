@@ -254,7 +254,7 @@ export default function SearchProfileDialog(props: SearchProfileDialogProps) {
                       if (selectProfileCallback) {
                         selectProfileCallback(profile);
                       } else {
-                        navigate(`/p/${profile.username}`);
+                        navigate(`/${profile.username}`);
                       }
                       closeStateCallback();
                     }}>
