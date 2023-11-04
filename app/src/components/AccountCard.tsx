@@ -25,7 +25,6 @@ import { FlowType } from '../types/FlowType';
 import { ChooseFlowMenu } from './ChooseFlowMenu';
 
 export type AccountNewDialogProps = CardProps & {
-  accounts: AccountType[];
   flows: FlowType[];
   selectedFlow: FlowType;
   setSelectedFlow: React.Dispatch<React.SetStateAction<FlowType | undefined>>;

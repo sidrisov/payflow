@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
@@ -20,23 +20,29 @@ import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts
 import { formatUnits } from 'viem';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { FlowType } from '../types/FlowType';
+import CenteredCircularProgress from '../components/CenteredCircularProgress';
 
 const drawerWidth = 151;
+const AUTH_URL = import.meta.env.VITE_PAYFLOW_SERVICE_API_URL;
 
-export default function AppLayout({ authStatus, authAccount, appSettings, setAppSettings }: any) {
-  const { isConnected, address } = useAccount();
+export default function AppLayout({ profile, appSettings, setAppSettings }: any) {
+  const navigate = useNavigate();
+
+  const { isConnected, address } = useAccount({
+    async onDisconnect() {
+      await axios.get(`${AUTH_URL}/api/auth/logout`, { withCredentials: true });
+      navigate('/connect');
+    }
+  });
+
   const [walletBalances, setWalletBalances] = useState<Map<string, bigint>>(new Map());
-  const [accounts, setAccounts] = useState<AccountType[]>();
   const [flows, setFlows] = useState<FlowType[]>();
   const [smartAccountAllowedChains, setSmartAccountAllowedChains] = useState<string[]>([]);
-  const [initiateAccountsRefresh, setInitiateAccountsRefresh] = useState(false);
   const [initiateFlowsRefresh, setInitiateFlowsRefresh] = useState(false);
 
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const [isAuthorized, setAuthorized] = useState<boolean>(false);
-
-  const navigate = useNavigate();
+  const [authorized, setAuthorized] = useState<boolean>(false);
 
   const { isSuccess: isEnsSuccess, data: ethUsdPriceFeedAddress } = useEnsAddress({
     name: 'eth-usd.data.eth',
@@ -58,19 +64,6 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
     setMobileOpen(!mobileOpen);
   };
 
-  async function fetchAccounts() {
-    try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/accounts`,
-        { withCredentials: true }
-      );
-
-      setAccounts(response.data);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
   async function fetchFlows() {
     try {
       const response = await axios.get(
@@ -84,86 +77,55 @@ export default function AppLayout({ authStatus, authAccount, appSettings, setApp
     }
   }
 
-  useMemo(async () => {
-    if (isConnected) {
-      if (authStatus === 'authenticated' && authAccount) {
-        if (authAccount === address) {
-          setAuthorized(true);
-          return;
-        } else {
-          toast.error(
-            `Please, logout or switch wallet! Connected wallet is different from verified: ${shortenWalletAddressLabel(
-              authAccount
-            )}`,
-            { autoClose: false }
-          );
-        }
+  useEffect(() => {
+    if (isConnected && profile) {
+      if (profile.address === address) {
+        setAuthorized(true);
+        return;
+      } else {
+        toast.error(
+          `Please, logout or switch wallet! Connected wallet is different from verified: ${shortenWalletAddressLabel(
+            profile
+          )}`,
+          { autoClose: false }
+        );
       }
     }
-    setAuthorized(false);
 
     navigate('/connect');
-  }, [isConnected, address, authStatus, authAccount]);
-
-  useMemo(async () => {
-    if (initiateAccountsRefresh && accounts) {
-      setInitiateAccountsRefresh(false);
-      await fetchAccounts();
-    }
-  }, [accounts, initiateAccountsRefresh]);
+  }, [isConnected, address, profile]);
 
   useMemo(async () => {
     if (initiateFlowsRefresh && flows) {
       setInitiateFlowsRefresh(false);
       await fetchFlows();
     }
-  }, [accounts, initiateFlowsRefresh]);
+  }, [flows, initiateFlowsRefresh]);
 
   useMemo(async () => {
-    if (isAuthorized) {
-      await fetchAccounts();
+    if (authorized) {
       await fetchFlows();
     }
-  }, [isAuthorized]);
-
-  useMemo(async () => {
-    if (accounts) {
-      setSmartAccountAllowedChains(accounts.map((c) => c.network));
-    }
-  }, [accounts]);
+  }, [authorized]);
 
   const drawer = <Nav />;
   return (
     <CustomThemeProvider darkMode={appSettings.darkMode}>
       <UserContext.Provider
         value={{
-          isAuthenticated: isAuthorized,
+          isAuthenticated: authorized,
           appSettings,
           setAppSettings,
-          accounts,
-          setAccounts,
           flows,
           setFlows,
           smartAccountAllowedChains,
           setSmartAccountAllowedChains,
-          setInitiateAccountsRefresh,
           setInitiateFlowsRefresh,
           walletBalances,
           setWalletBalances,
           ethUsdPrice
         }}>
-        {authStatus === 'loading' && (
-          <Box
-            position="fixed"
-            display="flex"
-            alignItems="center"
-            boxSizing="border-box"
-            justifyContent="center"
-            sx={{ inset: 0 }}>
-            <CircularProgress size={30} />
-          </Box>
-        )}
-        {isAuthorized && (
+        {authorized && (
           <Box
             sx={{
               display: 'flex',

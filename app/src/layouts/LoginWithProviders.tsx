@@ -24,14 +24,17 @@ import { CustomAvatar } from '../components/CustomAvatar';
 import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
 import { SiweMessage } from 'siwe';
 import axios from 'axios';
+import { ProfileType } from '../types/ProfleType';
+import { me } from '../services/user';
+import { SUPPORTED_CHAINS } from '../utils/supportedChains';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 const AUTH_URL = import.meta.env.VITE_PAYFLOW_SERVICE_API_URL;
 
-const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [mainnet],
-  [alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }), publicProvider()]
-);
+const { chains, publicClient, webSocketPublicClient } = configureChains(SUPPORTED_CHAINS, [
+  alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }),
+  publicProvider()
+]);
 
 const { wallets } = getDefaultWallets({
   appName: 'PayFlow',
@@ -66,7 +69,7 @@ export default function AppWithProviders() {
   const fetchingStatusRef = useRef(false);
   const verifyingRef = useRef(false);
   const [authStatus, setAuthStatus] = useState<AuthenticationStatus>('loading');
-  const [authAccount, setAuthAccount] = useState<Address>();
+  const [profile, setProfile] = useState<ProfileType>();
 
   // Fetch user when:
   useEffect(() => {
@@ -78,18 +81,10 @@ export default function AppWithProviders() {
       fetchingStatusRef.current = true;
 
       try {
-        const response = await axios.get(`${AUTH_URL}/api/user/me`, { withCredentials: true });
-        const authProfile = await response.data;
+        const profile = await me();
 
-        setAuthStatus(authProfile.address ? 'authenticated' : 'unauthenticated');
-
-        if (authProfile.address) {
-          setAuthAccount(authProfile);
-        } else {
-          setAuthAccount(undefined);
-        }
-      } catch (error) {
-        setAuthStatus('unauthenticated');
+        setAuthStatus(profile ? 'authenticated' : 'unauthenticated');
+        setProfile(profile);
       } finally {
         fetchingStatusRef.current = false;
       }
@@ -105,18 +100,18 @@ export default function AppWithProviders() {
 
   // 3. in case successfully authenticated, fetch currently authenticated user
   useMemo(async () => {
-    if (authStatus === 'authenticated' && !authAccount) {
+    if (authStatus === 'authenticated' && !profile) {
       try {
         const response = await axios.get(`${AUTH_URL}/api/user/me`, { withCredentials: true });
         if (Boolean(response.status === 200)) {
           const authAccount = response.data;
-          setAuthAccount(authAccount);
+          setProfile(authAccount);
         }
       } catch (_error) {
         setAuthStatus('unauthenticated');
       }
     }
-  }, [authStatus, authAccount]);
+  }, [authStatus, profile]);
 
   const authAdapter = useMemo(() => {
     return createAuthenticationAdapter({
@@ -167,7 +162,7 @@ export default function AppWithProviders() {
 
       signOut: async () => {
         setAuthStatus('unauthenticated');
-        setAuthAccount(undefined);
+        setProfile(undefined);
         await axios.get(`${AUTH_URL}/api/auth/logout`, { withCredentials: true });
       }
     });
@@ -178,7 +173,7 @@ export default function AppWithProviders() {
   }, [appSettings]);
 
   const wagmiConfig = createConfig({
-    autoConnect: appSettings.autoConnect,
+    autoConnect: true,
     connectors,
     publicClient,
     webSocketPublicClient
@@ -194,7 +189,7 @@ export default function AppWithProviders() {
           chains={chains}>
           <Login
             authStatus={authStatus}
-            authAccount={authAccount}
+            profile={profile}
             appSettings={appSettings}
             setAppSettings={setAppSettings}
           />

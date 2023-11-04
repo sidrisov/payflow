@@ -2,10 +2,10 @@ import React from 'react';
 import { type PublicClient, usePublicClient } from 'wagmi';
 import { providers } from 'ethers';
 import { type HttpTransport } from 'viem';
-import { getPublicClient } from 'wagmi/actions';
 
 export function publicClientToProvider(publicClient: PublicClient) {
   const { chain, transport } = publicClient;
+
   const network = {
     chainId: chain.id,
     name: chain.name,
@@ -21,12 +21,11 @@ export function publicClientToProvider(publicClient: PublicClient) {
 }
 
 /** Hook to convert a viem Public Client to an ethers.js Provider. */
-export function useEthersProvider({ chainId }: { chainId?: number } = {}) {
-  const publicClient = usePublicClient({ chainId });
-  return React.useMemo(() => publicClientToProvider(publicClient), [publicClient]);
-}
+export function useEthersProviders({ chainIds }: { chainIds: number[] }) {
+  const publicClients = chainIds.map((chainId) => usePublicClient({ chainId }));
 
-export function getEthersProvider({ chainId }: { chainId?: number } = {}) {
-  const publicClient = getPublicClient({ chainId });
-  return publicClientToProvider(publicClient);
+  return React.useMemo(
+    () => publicClients.map((publicClient) => publicClientToProvider(publicClient)),
+    [publicClients]
+  );
 }

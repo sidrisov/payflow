@@ -1,5 +1,5 @@
-import { Box, CircularProgress, Container, useMediaQuery, useTheme } from '@mui/material';
-import { useContext, useMemo, useState } from 'react';
+import { Box, Container, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import AccountNewDialog from '../components/AccountNewDialog';
 import { smartAccountCompatibleChains } from '../utils/smartAccountCompatibleChains';
@@ -8,17 +8,21 @@ import { UserContext } from '../contexts/UserContext';
 import Assets from '../components/Assets';
 import { AssetType } from '../types/AssetType';
 import Activity from '../components/Activity';
-import { useNetwork } from 'wagmi';
+import { useAccount, useNetwork } from 'wagmi';
 import { zeroAddress } from 'viem';
 import { getSupportedTokens } from '../utils/erc20contracts';
 import { useBalanceFetcher } from '../utils/hooks/useBalanceFetcher';
 import { FlowType } from '../types/FlowType';
+import CenteredCircularProgress from '../components/CenteredCircularProgress';
+import { toast } from 'react-toastify';
+import createSafeWallets from '../utils/createSafeWallets';
+import { baseGoerli, optimismGoerli, zkSyncTestnet } from 'viem/chains';
 
 export default function Accounts() {
   const theme = useTheme();
   const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { isAuthenticated, accounts, flows, setInitiateAccountsRefresh } = useContext(UserContext);
+  const { isAuthenticated, flows } = useContext(UserContext);
   const [availableNetworksToAddAccount, setAvailableNetworksToAddAccount] = useState<string[]>([]);
 
   const [openAccountCreate, setOpenAccountCreate] = useState(false);
@@ -26,19 +30,6 @@ export default function Accounts() {
   const [assetsOrActivityView, setAssetsOrActivityView] = useState<'assets' | 'activity'>('assets');
 
   const [selectedFlow, setSelectedFlow] = useState<FlowType>();
-
-  useMemo(async () => {
-    if (accounts) {
-      let availableNetworks = smartAccountCompatibleChains();
-      if (accounts.length > 0) {
-        const addedNetworks = accounts.map((account) => account.network);
-        availableNetworks = availableNetworks.filter((c) => !addedNetworks.includes(c));
-      }
-      setAvailableNetworksToAddAccount(availableNetworks);
-    }
-
-    console.log('Accounts');
-  }, [accounts]);
 
   // TODO: for now just select the first, later on we need to choose the main one
   useMemo(async () => {
@@ -75,7 +66,7 @@ export default function Accounts() {
 
   const { loading, fetched, balances } = useBalanceFetcher(assets);
 
-  console.log('Accounts', loading, balances);
+  console.log('Loading balances: ', loading, balances);
 
   return (
     <>
@@ -83,11 +74,10 @@ export default function Accounts() {
         <title> PayFlow | Accounts </title>
       </Helmet>
       <Container maxWidth="md">
-        {isAuthenticated && accounts && flows && selectedFlow ? (
+        {isAuthenticated && flows && selectedFlow ? (
           <Box display="flex" flexDirection="column" alignItems="center">
             <AccountCard
-              key={`account_card_${accounts[0].address}_${accounts[0].network}`}
-              accounts={accounts}
+              key={`account_card`}
               flows={flows ?? []}
               selectedFlow={selectedFlow}
               setSelectedFlow={setSelectedFlow}
@@ -103,32 +93,14 @@ export default function Accounts() {
                   balanceFetchResult={{ loading, fetched, balances }}
                 />
               ) : (
-                <Activity accounts={accounts} />
+                <Activity accounts={undefined} />
               )}
             </Box>
           </Box>
         ) : (
-          <Box
-            position="fixed"
-            display="flex"
-            alignItems="center"
-            boxSizing="border-box"
-            justifyContent="center"
-            sx={{ inset: 0 }}>
-            <CircularProgress size={30} />
-          </Box>
+          <CenteredCircularProgress />
         )}
       </Container>
-
-      <AccountNewDialog
-        open={openAccountCreate}
-        networks={availableNetworksToAddAccount}
-        closeStateCallback={async () => {
-          setOpenAccountCreate(false);
-          // TODO: just refresh, lately it's better to track each flow's update separately
-          setInitiateAccountsRefresh(true);
-        }}
-      />
     </>
   );
 }

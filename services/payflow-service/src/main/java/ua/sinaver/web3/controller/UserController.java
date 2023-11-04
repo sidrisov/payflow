@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.websocket.server.PathParam;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 import ua.sinaver.web3.data.User;
+import ua.sinaver.web3.message.FlowMessage;
+import ua.sinaver.web3.service.FlowService;
 import ua.sinaver.web3.service.UserService;
 
 @RestController
@@ -27,24 +29,18 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private FlowService flowService;
+
     @GetMapping("/me")
     public Profile user(Principal principal) {
         log.trace("{}", principal);
         User user = userService.findBySigner(principal.getName());
         if (user != null) {
-            return new Profile(user.getUsername(), user.getSigner());
+            val flows = flowService.getAllFlows(user);
+            return new Profile(user.getUsername(), user.getSigner(), flows.size() != 0 ? flows.get(0) : null);
         } else {
             return null;
-        }
-    }
-
-    @GetMapping("/me/onboarded")
-    public boolean isOnboarded(Principal principal) {
-        User user = userService.findBySigner(principal.getName());
-        if (user != null) {
-            return user.isOnboarded();
-        } else {
-            return false;
         }
     }
 
@@ -61,7 +57,7 @@ public class UserController {
         List<User> users = userService.searchByUsernameQuery(username);
         log.debug("User: {} for {}", users, username);
         if (users != null) {
-            return users.stream().map(user -> new Profile(user.getUsername(), user.getSigner())).toList();
+            return users.stream().map(user -> new Profile(user.getUsername(), user.getSigner(), null)).toList();
         } else {
             return null;
         }
@@ -69,16 +65,18 @@ public class UserController {
 
     @GetMapping("/{username}")
     public Profile findProfile(@PathVariable String username) {
-        User user = userService.findByUsername(username);
+        val user = userService.findByUsername(username);
+
         log.debug("User: {} for {}", user, username);
         if (user != null) {
-            return new Profile(user.getUsername(), user.getSigner());
+            val flows = flowService.getAllFlows(user);
+            return new Profile(user.getUsername(), user.getSigner(), flows.size() != 0 ? flows.get(0) : null);
         } else {
             return null;
         }
     }
 
-    record Profile(String username, String address) {
+    record Profile(String username, String address, FlowMessage defaultFlow) {
     }
 
 }

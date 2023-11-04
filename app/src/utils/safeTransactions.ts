@@ -47,14 +47,14 @@ export async function safeDeploy({
   sponsored = false,
   callback
 }: {
-  ethersSigner: providers.JsonRpcSigner;
+  ethersSigner: providers.JsonRpcSigner | providers.JsonRpcProvider;
   safeAccountConfig: SafeAccountConfig;
   saltNonce: Hash;
   safeVersion?: SafeVersion;
   initialize?: boolean;
   sponsored?: boolean;
   callback?: (txHash: string | undefined) => void;
-}): Promise<Address | undefined> {
+}): Promise<Address> {
   const ethAdapter = new EthersAdapter({
     ethers,
     signerOrProvider: ethersSigner
@@ -86,14 +86,12 @@ export async function safeDeploy({
       });
 
       if (!safe) {
-        console.error('Failed to deploy safe');
-        return;
+        throw new Error('Failed to deploy safe');
       }
     } else {
       const relayKit = getRelayKitForChainId(chainId);
       if (!relayKit) {
-        console.error('Relayer not supported for: ', chainId);
-        return;
+        throw new Error(`Relayer not supported for: ${chainId}`);
       }
 
       const readOnlyProxyFactoryContract = await ethAdapter.getSafeProxyFactoryContract({
@@ -168,7 +166,7 @@ export async function safeDeploy({
 
       const transactionHash = await waitForRelayTaskToComplete(relayResponse.taskId);
       if (!transactionHash) {
-        return;
+        throw new Error("Transaction didn't complete");
       }
 
       if (callback) {
@@ -177,8 +175,7 @@ export async function safeDeploy({
     }
     return predictedAddress as Address;
   } catch (error) {
-    console.error('Failed to deploy safe: ', error);
-    return;
+    throw error;
   }
 }
 

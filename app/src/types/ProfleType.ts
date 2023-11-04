@@ -1,4 +1,8 @@
+import { Address } from 'viem';
+import { FlowWalletType } from './FlowType';
+
 export interface ProfileType {
-  username: string;
-  address: `0x${string}`;
+  address: Address;
+  username?: string;
+  defaultFlow?: FlowWalletType;
 }

@@ -7,32 +7,47 @@ import {
   Typography,
   Box,
   TextField,
-  InputAdornment,
-  Avatar,
-  CircularProgress,
-  Button
+  InputAdornment
 } from '@mui/material';
+import LoadingButton from '@mui/lab/LoadingButton';
+
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { Check, Error } from '@mui/icons-material';
 import { useMemo, useState } from 'react';
 import axios from 'axios';
 import { ProfileType } from '../types/ProfleType';
 import { toast } from 'react-toastify';
+import { baseGoerli, optimismGoerli, zkSyncTestnet, zoraTestnet } from 'viem/chains';
+import { keccak256, toHex } from 'viem';
+import { useCreateSafeWallets as usePreCreateSafeWallets } from '../utils/hooks/useCreateSafeWallets';
+import saveFlow from '../services/flow';
+
+import { FlowWalletType } from '../types/FlowType';
+import { DEFAULT_SAFE_VERSION } from '@safe-global/protocol-kit';
+import { updateUsername } from '../services/user';
+
+const API_URL = import.meta.env.VITE_PAYFLOW_SERVICE_API_URL;
+const preCreateWalletChains = [baseGoerli, optimismGoerli, zoraTestnet, zkSyncTestnet];
 
 export type ShareDialogProps = DialogProps &
   CloseCallbackType & {
+    profile: ProfileType;
     username?: string | undefined;
   };
-
-const API_URL = import.meta.env.VITE_PAYFLOW_SERVICE_API_URL;
 
 export default function OnboardingDialog({ closeStateCallback, ...props }: ShareDialogProps) {
   function handleCloseCampaignDialog() {
     closeStateCallback();
   }
 
+  const { profile } = props;
   const [username, setUsername] = useState<string>(props.username ?? '');
-  const [isUsernameAvailble, setUserAvailable] = useState<boolean>();
+  const [usernameAvailble, setUsernameAvailable] = useState<boolean>();
+
+  const { loading: loadingWallets, created, create, wallets } = usePreCreateSafeWallets();
+
+  // TODO: add random generator
+  const saltNonce = keccak256(toHex('1'));
 
   useMemo(async () => {
     if (username) {
@@ -42,42 +57,48 @@ export default function OnboardingDialog({ closeStateCallback, ...props }: Share
         });
         const profile = (await response.data) as ProfileType;
 
-        setUserAvailable(!profile);
+        setUsernameAvailable(!profile);
       } catch (error) {
-        setUserAvailable(undefined);
-        console.log(2);
+        setUsernameAvailable(undefined);
       }
     } else {
-      setUserAvailable(undefined);
-      console.log(3);
+      setUsernameAvailable(undefined);
     }
   }, [username]);
 
-  async function updateUsername() {
-    if (username) {
-      try {
-        const response = await axios.post(
-          `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/user/me`,
-          username,
-
-          {
-            headers: {
-              'Content-Type': 'application/text'
-            },
-            withCredentials: true
-          }
-        );
-        if (response.status === 200) {
-          toast.success(`Successfully claimed username: ${username}`);
-        }
-        console.log(response.status);
-      } catch (error) {
-        console.log(error);
-      }
-    }
+  async function createMainFlow() {
+    create(profile.address, saltNonce, preCreateWalletChains);
   }
 
-  async function createMainFlow() {}
+  useMemo(async () => {
+    if (wallets && wallets.length === preCreateWalletChains.length) {
+      const flowWallets = wallets.map(
+        (wallet) =>
+          ({
+            address: wallet.address,
+            network: wallet.chain.name,
+            smart: true,
+            safe: true,
+            safeDeployed: false,
+            safeSaltNonce: saltNonce,
+            safeVersion: DEFAULT_SAFE_VERSION,
+            master: profile.address
+          } as FlowWalletType)
+      );
+      const success = await saveFlow({
+        account: profile.address,
+        title: 'Main flow',
+        description: '',
+        wallets: flowWallets
+      });
+
+      if (success) {
+        toast.success('Default flow created!');
+      } else {
+        toast.error('Failed, try again');
+      }
+    }
+  }, [wallets]);
 
   return (
     <Dialog
@@ -89,68 +110,63 @@ export default function OnboardingDialog({ closeStateCallback, ...props }: Share
       }}>
       <DialogTitle>
         <Box display="flex" justifyContent="center">
-          <Typography variant="h6" sx={{ overflow: 'auto' }}>
-            Let's setup your profile
+          <Typography variant="h5" sx={{ overflow: 'auto' }}>
+            Complete your sign up!
           </Typography>
         </Box>
       </DialogTitle>
       <DialogContent sx={{ display: 'flex', justifyContent: 'center' }}>
         <Stack m={1} direction="column" spacing={3}>
-          <Typography>Claim username</Typography>
-          <TextField
-            error={username !== '' && !isUsernameAvailble}
-            helperText={
-              username &&
-              (isUsernameAvailble ? 'username is available' : 'username is not available')
-            }
-            margin="dense"
-            fullWidth
-            defaultValue={username}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Avatar src="/logo.svg" sx={{ width: 30, height: 30 }} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  {username ? (
-                    isUsernameAvailble ? (
-                      <Check color="success" />
+          <Box>
+            <TextField
+              error={username !== '' && !usernameAvailble}
+              helperText={
+                username &&
+                (usernameAvailble ? 'username is available' : 'username is not available')
+              }
+              margin="dense"
+              fullWidth
+              value={username}
+              label={'Username'}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Typography variant="subtitle2">payflow.me/</Typography>
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    {username ? (
+                      usernameAvailble ? (
+                        <Check color="success" />
+                      ) : (
+                        <Error color="error" />
+                      )
                     ) : (
-                      <Error color="error" />
-                    )
-                  ) : (
-                    <></>
-                  )}
-                </InputAdornment>
-              ),
-              inputProps: { maxLength: 42, inputMode: 'text' },
-              sx: { borderRadius: 3 }
-            }}
-            onChange={async (event) => {
-              setUsername(event.target.value);
-            }}
-          />
-          <Button
-            disabled={!isUsernameAvailble}
-            variant="contained"
-            onClick={async () => {
-              await updateUsername();
-            }}
-            sx={{ borderRadius: 3 }}>
-            Claim
-          </Button>
+                      <></>
+                    )}
+                  </InputAdornment>
+                ),
+                inputProps: { maxLength: 16, inputMode: 'text' },
+                sx: { borderRadius: 3 }
+              }}
+              onChange={async (event) => {
+                setUsername(event.target.value);
+              }}
+            />
+          </Box>
 
-          <Typography>Create main flow </Typography>
-          <Button
+          <LoadingButton
+            loading={loadingWallets}
+            disabled={!usernameAvailble || !username}
             variant="contained"
             onClick={async () => {
               await createMainFlow();
+              await updateUsername(username);
             }}
             sx={{ borderRadius: 3 }}>
-            Create
-          </Button>
+            Complete
+          </LoadingButton>
         </Stack>
       </DialogContent>
     </Dialog>

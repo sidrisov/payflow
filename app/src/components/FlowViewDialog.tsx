@@ -48,6 +48,7 @@ import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { safeDeploy } from '../utils/safeTransactions';
 import { isRelaySupported } from '../utils/relayer';
 import { shortNetworkName } from '../utils/shortNetworkName';
+import { AccountType } from '../types/AccountType';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 export type FlowViewDialogProps = DialogProps &
@@ -66,8 +67,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const publicClient = usePublicClient();
   const ethersSigner = useEthersSigner();
 
-  const { walletBalances, smartAccountAllowedChains, accounts, ethUsdPrice } =
-    useContext(UserContext);
+  const { walletBalances, smartAccountAllowedChains, ethUsdPrice } = useContext(UserContext);
   const [flowTotalBalance, setFlowTotalBalance] = useState('0');
 
   const [editFlow, setEditFlow] = useState(false);
@@ -196,11 +196,11 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
     closeStateCallback();
   }
 
-  useMemo(async () => {
+  /*   useMemo(async () => {
     if (accounts && newAccountNetwork) {
       setMasterAccount(accounts.find((a) => a.network === newAccountNetwork)?.address);
     }
-  }, [accounts, newAccountNetwork]);
+  }, [accounts, newAccountNetwork]); */
 
   useMemo(async () => {
     if (txHash && newAccountAddress) {

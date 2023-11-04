@@ -4,17 +4,14 @@ import '@rainbow-me/rainbowkit/styles.css';
 import 'react-toastify/dist/ReactToastify.css';
 
 import {
-  AuthenticationStatus,
   connectorsForWallets,
-  createAuthenticationAdapter,
   getDefaultWallets,
-  RainbowKitAuthenticationProvider,
   RainbowKitProvider
 } from '@rainbow-me/rainbowkit';
 
 import { rainbowWeb3AuthConnector } from '../utils/web3AuthConnector';
 
-import { Address, configureChains, createConfig, WagmiConfig } from 'wagmi';
+import { configureChains, createConfig, WagmiConfig } from 'wagmi';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 import { useMediaQuery } from '@mui/material';
@@ -22,13 +19,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { AppSettings } from '../types/AppSettingsType';
 import { CustomAvatar } from '../components/CustomAvatar';
 import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
-import { SiweMessage } from 'siwe';
-import axios from 'axios';
 import { SUPPORTED_CHAINS } from '../utils/supportedChains';
 import { AirstackProvider, init } from '@airstack/airstack-react';
+import { me } from '../services/user';
+import CenteredCircularProgress from '../components/CenteredCircularProgress';
+import { ProfileType } from '../types/ProfleType';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
-const AUTH_URL = import.meta.env.VITE_PAYFLOW_SERVICE_API_URL;
 const AIRSTACK_API_KEY = import.meta.env.VITE_AIRSTACK_API_KEY;
 
 init(AIRSTACK_API_KEY);
@@ -69,8 +66,8 @@ export default function AppWithProviders() {
   );
 
   const fetchingStatusRef = useRef(false);
-  const [authStatus, setAuthStatus] = useState<AuthenticationStatus>('loading');
-  const [authAccount, setAuthAccount] = useState<Address>();
+  const [loading, setLoading] = useState<boolean>(true);
+  const [profile, setProfile] = useState<ProfileType>();
 
   // Fetch user when:
   useEffect(() => {
@@ -82,18 +79,15 @@ export default function AppWithProviders() {
       fetchingStatusRef.current = true;
 
       try {
-        const response = await axios.get(`${AUTH_URL}/api/user/me`, { withCredentials: true });
-        const authProfile = await response.data;
+        const profile = await me();
 
-        setAuthStatus(authProfile.address ? 'authenticated' : 'unauthenticated');
+        setLoading(false);
 
-        if (authProfile.address) {
-          setAuthAccount(authProfile.address);
+        if (profile) {
+          setProfile(profile);
         } else {
-          setAuthAccount(undefined);
+          setProfile(undefined);
         }
-      } catch (error) {
-        setAuthStatus('unauthenticated');
       } finally {
         fetchingStatusRef.current = false;
       }
@@ -105,29 +99,6 @@ export default function AppWithProviders() {
     // 2. window is focused (in case user logs out of another window)
     window.addEventListener('focus', fetchStatus);
     return () => window.removeEventListener('focus', fetchStatus);
-  }, []);
-
-  const authAdapter = useMemo(() => {
-    return createAuthenticationAdapter({
-      signOut: async () => {
-        await axios.get(`${AUTH_URL}/api/auth/logout`, { withCredentials: true });
-        setAuthStatus('unauthenticated');
-        setAuthAccount(undefined);
-      },
-      // authentication logic should be handled on login
-      getNonce: function (): Promise<string> {
-        throw new Error('Function not implemented.');
-      },
-      createMessage: function (args: { nonce: string; address: string; chainId: number }): unknown {
-        throw new Error('Function not implemented.');
-      },
-      getMessageBody: function (args: { message: unknown }): string {
-        throw new Error('Function not implemented.');
-      },
-      verify: function (args: { message: unknown; signature: string }): Promise<boolean> {
-        throw new Error('Function not implemented.');
-      }
-    });
   }, []);
 
   useMemo(() => {
@@ -144,20 +115,17 @@ export default function AppWithProviders() {
   return (
     <WagmiConfig config={wagmiConfig}>
       <AirstackProvider apiKey={AIRSTACK_API_KEY}>
-        <RainbowKitAuthenticationProvider adapter={authAdapter} status={authStatus}>
-          <RainbowKitProvider
-            theme={appSettings.darkMode ? customDarkTheme : customLightTheme}
-            avatar={CustomAvatar}
-            modalSize="compact"
-            chains={chains}>
-            <App
-              authStatus={authStatus}
-              authAccount={authAccount}
-              appSettings={appSettings}
-              setAppSettings={setAppSettings}
-            />
-          </RainbowKitProvider>
-        </RainbowKitAuthenticationProvider>
+        <RainbowKitProvider
+          theme={appSettings.darkMode ? customDarkTheme : customLightTheme}
+          avatar={CustomAvatar}
+          modalSize="compact"
+          chains={chains}>
+          {loading ? (
+            <CenteredCircularProgress />
+          ) : (
+            <App profile={profile} appSettings={appSettings} setAppSettings={setAppSettings} />
+          )}
+        </RainbowKitProvider>
       </AirstackProvider>
     </WagmiConfig>
   );

@@ -13,7 +13,8 @@ import {
   Typography,
   CircularProgress,
   Button,
-  IconButton
+  IconButton,
+  Chip
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { Clear, Search } from '@mui/icons-material';
@@ -249,7 +250,7 @@ export default function SearchProfileDialog(props: SearchProfileDialogProps) {
                     alignItems="center"
                     component={Button}
                     textTransform="none"
-                    sx={{ borderRadius: 3, border: 1, height: 60 }}
+                    sx={{ borderRadius: 3, border: 0, height: 60 }}
                     onClick={async () => {
                       if (selectProfileCallback) {
                         selectProfileCallback(profile);
@@ -259,7 +260,12 @@ export default function SearchProfileDialog(props: SearchProfileDialogProps) {
                       closeStateCallback();
                     }}>
                     <Typography>@{profile.username}</Typography>
-                    <Typography>{shortenWalletAddressLabel(profile.address)}</Typography>
+                    <Chip
+                      size="small"
+                      variant="filled"
+                      label="payflow"
+                      sx={{ background: 'lightgreen' }}
+                    />
                   </Box>
                 ))}
               </Stack>
