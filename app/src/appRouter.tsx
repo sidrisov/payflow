@@ -8,8 +8,9 @@ import Page404 from './pages/Page404';
 import AppWithProviders from './layouts/AppWithProviders';
 import SendWithProviders from './layouts/SendWithProviders';
 import PaymentRequestWithProviders from './layouts/PaymentRequestWithProviders';
-import ProfileWithProviders from './layouts/ProfileWithProviders';
+import PublicProfileWithProviders from './layouts/PublicProfileWithProviders';
 import LoginWithProviders from './layouts/LoginWithProviders';
+import Profile from './pages/Profile';
 
 export const appRoutes = ['/accounts', '/flows', '/requests', '/settings'];
 
@@ -25,6 +26,10 @@ export const appRouter = createBrowserRouter([
     errorElement: <Page404 />,
     children: [
       { element: <Navigate to="/accounts" />, index: true },
+      {
+        path: 'profile',
+        element: <Profile />
+      },
       {
         path: 'accounts',
         element: <Accounts />
@@ -51,7 +56,7 @@ export const appRouter = createBrowserRouter([
   },
   {
     path: '/:username',
-    element: <ProfileWithProviders />,
+    element: <PublicProfileWithProviders />,
     errorElement: <Page404 />
   }
 ]);

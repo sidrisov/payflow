@@ -3,6 +3,7 @@ import { UserContext } from '../contexts/UserContext';
 
 import {
   Box,
+  Container,
   FormControl,
   FormControlLabel,
   FormGroup,
@@ -20,10 +21,7 @@ export default function Settings() {
       <Helmet>
         <title> PayFlow | Settings </title>
       </Helmet>
-      <Box mt={3} display="flex" flexDirection="column">
-        <Typography align="center" color="primary" variant="h6" m={1}>
-          Settings
-        </Typography>
+      <Container maxWidth="md">
         <Box
           sx={{
             alignSelf: 'flex-start',
@@ -74,7 +72,7 @@ export default function Settings() {
             </FormGroup>
           </FormControl>
         </Box>
-      </Box>
+      </Container>
     </>
   );
 }

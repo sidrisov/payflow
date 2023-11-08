@@ -16,7 +16,7 @@ import { rainbowWeb3AuthConnector } from '../utils/web3AuthConnector';
 import { CustomAvatar } from '../components/CustomAvatar';
 import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
 import { SUPPORTED_CHAINS } from '../utils/supportedChains';
-import Profile from './Profile';
+import PublicProfile from './PublicProfile';
 
 import { AirstackProvider, init } from '@airstack/airstack-react';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
@@ -48,7 +48,7 @@ const appSettingsStored = appSettingsStorageItem
   ? (JSON.parse(appSettingsStorageItem) as AppSettings)
   : null;
 
-export default function ProfileWithProviders() {
+export default function PublicProfileWithProviders() {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
   const [appSettings, setAppSettings] = useState<AppSettings>(
     appSettingsStored
@@ -81,7 +81,7 @@ export default function ProfileWithProviders() {
           modalSize="compact"
           chains={chains}>
           <CustomThemeProvider darkMode={appSettings.darkMode}>
-            <Profile />
+            <PublicProfile />
           </CustomThemeProvider>
         </RainbowKitProvider>
       </AirstackProvider>

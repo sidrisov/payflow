@@ -21,19 +21,17 @@ import { Helmet } from 'react-helmet-async';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ProfileType } from '../types/ProfleType';
 import { shortenWalletAddressLabel } from '../utils/address';
-import { useEnsAvatar, useEnsName } from 'wagmi';
+import { useEnsName } from 'wagmi';
 import {
   ArrowForward,
   AttachMoney,
   Campaign,
   MonetizationOn,
-  Money,
   Payment,
   Savings,
   Search,
   Send
 } from '@mui/icons-material';
-import AddressAvatar from '../components/AddressAvatar';
 import { useLazyQuery } from '@airstack/airstack-react';
 import { FlowType } from '../types/FlowType';
 import QRCode from 'react-qr-code';
@@ -43,7 +41,7 @@ import { ProfileSection } from '../components/ProfileSection';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 
-export default function Profile() {
+export default function PublicProfile() {
   const { username } = useParams();
   const [profile, setProfile] = useState<ProfileType>();
   const [flows, setFlows] = useState<FlowType[]>();
@@ -57,11 +55,6 @@ export default function Profile() {
 
   const { data: ensName } = useEnsName({
     address: profile?.address,
-    chainId: 1
-  });
-
-  const { data: avatar } = useEnsAvatar({
-    name: ensName,
     chainId: 1
   });
 
@@ -131,23 +124,27 @@ export default function Profile() {
         <title> PayFlow | Profile </title>
       </Helmet>
       <Container maxWidth="sm">
-        {/*  <Box display="flex" flexDirection="column" alignItems="center" m={2}>
+        <Box m={3} display="flex" flexDirection="row" alignItems="center" alignSelf="stretch">
           <Chip
             size="medium"
             clickable
-            icon={<Search color="info" />}
+            icon={<Search color="inherit" />}
             variant="outlined"
-            label="Search"
+            label="Search ... "
+            onClick={() => {
+              setOpenSearchProfile(true);
+            }}
             sx={{
+              flexGrow: 1,
+              maxWidth: 500,
               '& .MuiChip-root': {
                 borderRadius: 5
               },
               '& .MuiChip-label': { fontSize: 18 },
-              flexGrow: 1,
               height: 50
             }}
           />
-        </Box> */}
+        </Box>
 
         {profile && (
           <Card
@@ -378,6 +375,7 @@ export default function Profile() {
         <Search />
       </Fab>
       <SearchProfileDialog
+        fullWidth
         open={openSearchProfile}
         closeStateCallback={() => {
           setOpenSearchProfile(false);

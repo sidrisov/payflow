@@ -34,7 +34,7 @@ export function ProfileMenu(
       <Divider />
       <MenuItem
         onClick={async () => {
-          navigate(`/${profile.username}`);
+          navigate('/profile');
         }}>
         <ListItemIcon>
           <Person fontSize="small" />
