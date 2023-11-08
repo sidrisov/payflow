@@ -1,4 +1,4 @@
-import { Address, Hash, formatEther, formatUnits, parseEther, parseUnits } from 'viem';
+import { Address, Hash, formatUnits, parseUnits } from 'viem';
 
 import {
   erc20ABI,
@@ -25,7 +25,6 @@ import {
   Card,
   Divider,
   IconButton,
-  InputAdornment,
   Stack,
   TextField,
   Toolbar,
@@ -48,6 +47,7 @@ import { Helmet } from 'react-helmet-async';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
 import { ETH, Token, getSupportedTokens } from '../utils/erc20contracts';
+import { API_URL } from '../utils/urlConstants';
 
 export default function Send({ appSettings, setAppSettings }: any) {
   const { uuid } = useParams();
@@ -127,10 +127,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
 
   useMemo(async () => {
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${uuid}`,
-        { withCredentials: true }
-      );
+      const response = await axios.get(`${API_URL}/api/flows/${uuid}`, { withCredentials: true });
 
       setFlow(response.data);
     } catch (error) {

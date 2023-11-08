@@ -34,9 +34,9 @@ import { useLazyQuery } from '@airstack/airstack-react';
 import { FlowType } from '../types/FlowType';
 import QRCode from 'react-qr-code';
 import SearchProfileDialog from '../components/SearchProfileDialog';
+import { API_URL } from '../utils/urlConstants';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
-const API_URL = import.meta.env.VITE_PAYFLOW_SERVICE_API_URL;
 
 export default function Profile() {
   const { username } = useParams();
@@ -86,10 +86,9 @@ export default function Profile() {
 
   async function fetchFlows(profile: ProfileType) {
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/public/${profile.address}`,
-        { withCredentials: true }
-      );
+      const response = await axios.get(`${API_URL}/api/flows/public/${profile.address}`, {
+        withCredentials: true
+      });
 
       setFlows(response.data);
     } catch (error) {

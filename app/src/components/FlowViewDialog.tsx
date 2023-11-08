@@ -48,9 +48,8 @@ import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { safeDeploy } from '../utils/safeTransactions';
 import { isRelaySupported } from '../utils/relayer';
 import { shortNetworkName } from '../utils/shortNetworkName';
-import { AccountType } from '../types/AccountType';
+import { API_URL, DAPP_URL } from '../utils/urlConstants';
 
-const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 export type FlowViewDialogProps = DialogProps &
   CloseCallbackType & {
     flow?: FlowType;
@@ -249,11 +248,9 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
             : null,
           master: smartAccountAllowedChains.includes(newAccountNetwork) ? masterAccount : null
         } as FlowWalletType;
-        const response = await axios.post(
-          `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${flow.uuid}/wallet`,
-          flowWallet,
-          { withCredentials: true }
-        );
+        const response = await axios.post(`${API_URL}/api/flows/${flow.uuid}/wallet`, flowWallet, {
+          withCredentials: true
+        });
         console.log(response.status);
 
         const wallets = Array.from(flow.wallets);
@@ -272,16 +269,13 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   async function deleteExternalAccount(wallet: FlowWalletType) {
     if (flow) {
       try {
-        const response = await axios.delete(
-          `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${flow.uuid}/wallet`,
-          {
-            data: {
-              address: wallet.address,
-              network: wallet.network
-            },
-            withCredentials: true
-          }
-        );
+        const response = await axios.delete(`${API_URL}/api/flows/${flow.uuid}/wallet`, {
+          data: {
+            address: wallet.address,
+            network: wallet.network
+          },
+          withCredentials: true
+        });
         console.log(response.status);
 
         const wallets = flow.wallets.filter(

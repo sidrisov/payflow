@@ -13,15 +13,16 @@ import {
   TextField,
   Button,
   Divider,
-  InputAdornment
+  InputAdornment,
+  Chip
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useMemo, useRef, useState } from 'react';
-import { useBalance, useNetwork, usePublicClient, useSwitchNetwork, useWalletClient } from 'wagmi';
-import { ExpandMore, Wallet, WalletOutlined, WalletRounded } from '@mui/icons-material';
+import { useBalance, useNetwork, usePublicClient, useSwitchNetwork } from 'wagmi';
+import { ExpandMore } from '@mui/icons-material';
 import { Id, toast } from 'react-toastify';
 
-import { Address, Hash, TransactionReceipt, formatEther, isAddress, parseEther } from 'viem';
+import { Hash, TransactionReceipt, formatEther, parseEther } from 'viem';
 
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 import { safeTransferEth } from '../utils/safeTransactions';
@@ -29,7 +30,9 @@ import { shortenWalletAddressLabel } from '../utils/address';
 import { FlowType, FlowWalletType } from '../types/FlowType';
 import { ChooseWalletMenu } from './ChooseWalletMenu';
 import SearchProfileDialog from './SearchProfileDialog';
-import { ProfileType } from '../types/ProfleType';
+import { SelectedProfileWithSocialsType } from '../types/ProfleType';
+import { ProfileSection } from './ProfileSection';
+import { AddressSection } from './AddressSection';
 
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
@@ -47,7 +50,7 @@ export default function AccountSendDialog({
 
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>(flow.wallets[0]);
 
-  const [sendToAddress, setSendToAddress] = useState<Address | ProfileType>();
+  const [sendToAddress, setSendToAddress] = useState<SelectedProfileWithSocialsType>();
 
   const [sendAmount, setSendAmount] = useState<bigint>();
 
@@ -71,25 +74,37 @@ export default function AccountSendDialog({
 
   const sendToastId = useRef<Id>();
 
-  function isProfileType(object: any): object is ProfileType {
-    return !isAddress(object);
+  function isProfileType(profile: SelectedProfileWithSocialsType): boolean {
+    return profile.type === 'profile';
   }
 
   const sendTransaction = async () => {
     if (sendToAddress && sendAmount && ethersSigner) {
+      const toAddress = isProfileType(sendToAddress)
+        ? sendToAddress.data.profile?.defaultFlow?.wallets.find(
+            (w) => w.network === selectedWallet.network
+          )?.address
+        : sendToAddress.data.meta?.addresses[0];
+
+      if (!toAddress) {
+        toast.error("can't send to this profiel");
+        return;
+      }
+
       sendToastId.current = toast.loading(
-        `Sending ${formatEther(sendAmount)} to ${shortenWalletAddressLabel(
-          isProfileType(sendToAddress) ? sendToAddress.address : sendToAddress
-        )} 💸`
+        `Sending ${formatEther(sendAmount)} to ${shortenWalletAddressLabel(toAddress)} 💸`
       );
 
       switchNetwork?.(chains.find((c) => c?.name === selectedWallet?.network)?.id);
 
+      if (!toAddress) {
+        toast.error("can't send to this profiel");
+        return;
+      }
+
       const txData = {
         from: selectedWallet.address,
-        to: (sendToAddress as Address)
-          ? (sendToAddress as Address)
-          : (sendToAddress as ProfileType).address,
+        to: toAddress,
         amount: sendAmount
       };
 
@@ -97,9 +112,7 @@ export default function AccountSendDialog({
 
       if (!txHash) {
         toast.update(sendToastId.current, {
-          render: `Transfer to ${shortenWalletAddressLabel(
-            isProfileType(sendToAddress) ? sendToAddress.address : sendToAddress
-          )} failed! 😕`,
+          render: `Transfer to ${shortenWalletAddressLabel(toAddress)} failed! 😕`,
           type: 'error',
           isLoading: false,
           autoClose: 5000
@@ -117,7 +130,7 @@ export default function AccountSendDialog({
   }, [selectedWallet]);
 
   useMemo(async () => {
-    if (txHash) {
+    if (txHash && sendToAddress) {
       const receipt = (await publicClient.waitForTransactionReceipt({
         hash: txHash
       })) as TransactionReceipt;
@@ -128,7 +141,11 @@ export default function AccountSendDialog({
         if (sendToastId.current) {
           toast.update(sendToastId.current, {
             render: `Transfer to ${shortenWalletAddressLabel(
-              isProfileType(sendToAddress) ? sendToAddress.address : sendToAddress
+              isProfileType(sendToAddress)
+                ? sendToAddress.data.profile?.defaultFlow?.wallets.find(
+                    (w) => w.network === selectedWallet.network
+                  )?.address
+                : sendToAddress.data.meta?.addresses[0]
             )} processed!`,
             type: 'success',
             isLoading: false,
@@ -141,9 +158,11 @@ export default function AccountSendDialog({
         if (sendToastId.current) {
           toast.update(sendToastId.current, {
             render: `Transfer to ${shortenWalletAddressLabel(
-              (sendToAddress as Address)
-                ? (sendToAddress as Address)
-                : (sendToAddress as ProfileType).address
+              isProfileType(sendToAddress)
+                ? sendToAddress.data.profile?.defaultFlow?.wallets.find(
+                    (w) => w.network === selectedWallet.network
+                  )?.address
+                : sendToAddress.data.meta?.addresses[0]
             )} failed! 😕`,
             type: 'error',
             isLoading: false,
@@ -194,7 +213,7 @@ export default function AccountSendDialog({
                 sx={{ width: 28, height: 28 }}
               />
             </IconButton>
-            <Box display="flex" flexDirection="row" flexGrow={1} justifyContent="center">
+            <Box display="flex" flexDirection="row" flexGrow={1} justifyContent="flex-start">
               <Typography sx={{ m: 1, fontSize: 18, overflow: 'clip' }}>{flow.title}</Typography>
             </Box>
           </Box>
@@ -205,6 +224,7 @@ export default function AccountSendDialog({
             flexDirection="row"
             alignSelf="stretch"
             alignItems="center"
+            justifyContent="space-between"
             component={Button}
             color="inherit"
             onClick={async () => setOpenSearchProfile(true)}
@@ -216,21 +236,25 @@ export default function AccountSendDialog({
               textTransform: 'none'
             }}>
             {sendToAddress &&
-              (isProfileType(sendToAddress) ? (
-                <Avatar src="/logo.svg" sx={{ width: 35, height: 35 }} />
-              ) : (
-                <WalletRounded fontSize="large" />
-              ))}
-            <Box display="flex" flexDirection="row" flexGrow={1} justifyContent="center">
-              <Typography ml={-2} fontSize={18}>
-                {sendToAddress
-                  ? isProfileType(sendToAddress)
-                    ? sendToAddress.username
-                    : shortenWalletAddressLabel(sendToAddress)
-                  : 'Choose recipient'}
-              </Typography>
-            </Box>
-            <ExpandMore />
+              (sendToAddress.type === 'profile'
+                ? sendToAddress.data.profile && (
+                    <ProfileSection profile={sendToAddress.data.profile} />
+                  )
+                : sendToAddress.data.meta && <AddressSection meta={sendToAddress.data.meta} />)}
+
+            {!sendToAddress && <Typography>Choose Recipient</Typography>}
+
+            <Stack direction="row">
+              {sendToAddress && sendToAddress.type === 'profile' && (
+                <Chip
+                  size="small"
+                  variant="filled"
+                  label="payflow"
+                  sx={{ background: 'lightgreen' }}
+                />
+              )}
+              <ExpandMore />
+            </Stack>
           </Box>
 
           <TextField
@@ -275,17 +299,15 @@ export default function AccountSendDialog({
         selectedWallet={selectedWallet}
         setSelectedWallet={setSelectedWallet}
       />
-      {openSearchProfile && (
-        <SearchProfileDialog
-          open={openSearchProfile}
-          closeStateCallback={() => {
-            setOpenSearchProfile(false);
-          }}
-          selectProfileCallback={(profile) => {
-            setSendToAddress(profile);
-          }}
-        />
-      )}
+      <SearchProfileDialog
+        open={openSearchProfile}
+        closeStateCallback={() => {
+          setOpenSearchProfile(false);
+        }}
+        selectProfileWithSocialsCallback={(selectedProfileWithSocials) => {
+          setSendToAddress(selectedProfileWithSocials);
+        }}
+      />
     </Dialog>
   );
 }

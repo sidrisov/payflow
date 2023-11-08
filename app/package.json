@@ -42,6 +42,7 @@
     "react-toastify": "^9.1.3",
     "siwe": "^2.1.4",
     "url": "^0.11.1",
+    "use-debounce": "^10.0.0",
     "viem": "^1.6.0",
     "vite-plugin-svgr": "^4.0.0",
     "wagmi": "^1.3.10"

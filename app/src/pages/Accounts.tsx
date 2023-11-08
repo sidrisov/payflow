@@ -1,31 +1,23 @@
-import { Box, Container, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { Box, Container, useMediaQuery, useTheme } from '@mui/material';
+import { useContext, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import AccountNewDialog from '../components/AccountNewDialog';
-import { smartAccountCompatibleChains } from '../utils/smartAccountCompatibleChains';
 import { AccountCard } from '../components/AccountCard';
 import { UserContext } from '../contexts/UserContext';
 import Assets from '../components/Assets';
 import { AssetType } from '../types/AssetType';
 import Activity from '../components/Activity';
-import { useAccount, useNetwork } from 'wagmi';
+import { useNetwork } from 'wagmi';
 import { zeroAddress } from 'viem';
 import { getSupportedTokens } from '../utils/erc20contracts';
 import { useBalanceFetcher } from '../utils/hooks/useBalanceFetcher';
 import { FlowType } from '../types/FlowType';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
-import { toast } from 'react-toastify';
-import createSafeWallets from '../utils/createSafeWallets';
-import { baseGoerli, optimismGoerli, zkSyncTestnet } from 'viem/chains';
 
 export default function Accounts() {
   const theme = useTheme();
   const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { isAuthenticated, flows } = useContext(UserContext);
-  const [availableNetworksToAddAccount, setAvailableNetworksToAddAccount] = useState<string[]>([]);
-
-  const [openAccountCreate, setOpenAccountCreate] = useState(false);
+  const { isAuthenticated, profile, flows } = useContext(UserContext);
 
   const [assetsOrActivityView, setAssetsOrActivityView] = useState<'assets' | 'activity'>('assets');
 
@@ -34,7 +26,7 @@ export default function Accounts() {
   // TODO: for now just select the first, later on we need to choose the main one
   useMemo(async () => {
     if (flows && flows.length > 0) {
-      setSelectedFlow(flows[0]);
+      setSelectedFlow(flows.find((f) => f.uuid === profile.defaultFlow?.uuid));
     }
   }, [flows]);
 

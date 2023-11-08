@@ -24,8 +24,7 @@ import QRCode from 'react-qr-code';
 import Logo from '../assets/logo.svg?react';
 import { blue, green, purple, red, yellow } from '@mui/material/colors';
 import { Check } from '@mui/icons-material';
-
-const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
+import { DAPP_URL } from '../utils/urlConstants';
 
 enum ComponentVariant {
   Button = 'Button',

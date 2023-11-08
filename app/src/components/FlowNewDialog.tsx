@@ -21,6 +21,7 @@ import axios from 'axios';
 import { useAccount, useNetwork } from 'wagmi';
 import { useContext, useState } from 'react';
 import { UserContext } from '../contexts/UserContext';
+import { API_URL } from '../utils/urlConstants';
 
 export type FlowNewDialogProps = DialogProps & CloseCallbackType;
 
@@ -46,7 +47,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows`,
+        `${API_URL}/api/flows`,
         {
           account: address,
           title: title,

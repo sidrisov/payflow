@@ -34,7 +34,7 @@ public class FlowService implements IFlowService {
 
     @Override
     public void saveFlow(FlowMessage flowDto, User user) {
-        val flow = convert(flowDto, user);
+        val flow = FlowMessage.convert(flowDto, user);
         flowRepository.save(flow);
         log.debug("Saved flow {}", flow);
     }
@@ -43,7 +43,7 @@ public class FlowService implements IFlowService {
     public List<FlowMessage> getAllFlows(User user) {
         val flows = flowRepository.findByUserId(user.getId());
         return flows.stream()
-                .map(f -> convert(f, user))
+                .map(f -> FlowMessage.convert(f, user))
                 .toList();
     }
 
@@ -53,7 +53,7 @@ public class FlowService implements IFlowService {
         if (flow != null) {
             Optional<User> user = userRepository.findById(flow.getUserId());
             if (user.isPresent()) {
-                return convert(flow, user.get());
+                return FlowMessage.convert(flow, user.get());
             }
         }
         return null;
@@ -98,7 +98,7 @@ public class FlowService implements IFlowService {
             throw new Exception("Authenticated user mismatch");
         }
 
-        val wallet = convert(walletDto);
+        val wallet = WalletMessage.convert(walletDto);
         if (wallet.isSmart()) {
             Account account = accountRepository.findByAddressAndNetwork(walletDto.master(),
                     walletDto.network());
@@ -152,32 +152,4 @@ public class FlowService implements IFlowService {
         log.info("Updated wallet {}", wallet);
     }
 
-    private static FlowMessage convert(Flow flow, User user) {
-        val wallets = flow.getWallets().stream().map(w -> convert(w))
-                .toList();
-        return new FlowMessage(user.getSigner(), flow.getTitle(), flow.getDescription(), flow.getUuid(),
-                wallets);
-    }
-
-    private static Flow convert(FlowMessage flowDto, User user) {
-        val flow = new Flow(user.getId(), flowDto.title(), flowDto.description());
-        val wallets = flowDto.wallets().stream().map(w -> {
-            val wallet = convert(w);
-            wallet.setFlow(flow);
-            return wallet;
-        }).toList();
-        flow.setWallets(wallets);
-        return flow;
-    }
-
-    private static Wallet convert(WalletMessage walletDto) {
-        return new Wallet(walletDto.address(), walletDto.network(), walletDto.safe(), walletDto.smart(),
-                walletDto.safeVersion(), walletDto.safeSaltNonce(), walletDto.safeDeployed());
-    }
-
-    private static WalletMessage convert(Wallet wallet) {
-        return new WalletMessage(wallet.getAddress(), wallet.getNetwork(), wallet.isSmart(), wallet.isSafe(),
-                wallet.getSafeVersion(), wallet.getSafeSaltNonce(), wallet.isSafeDeployed(),
-                wallet.isSmart() && wallet.getMaster() != null ? wallet.getMaster().getAddress() : null);
-    }
 }

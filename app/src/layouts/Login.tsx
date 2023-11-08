@@ -121,7 +121,7 @@ export default function Login({
           open={!profile.username || !profile.defaultFlow}
           profile={profile}
           closeStateCallback={() => {}}
-          username={username ?? ''}
+          username={username}
         />
       )}
     </CustomThemeProvider>

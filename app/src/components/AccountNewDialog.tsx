@@ -29,6 +29,7 @@ import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { safeDeploy } from '../utils/safeTransactions';
 import { isRelaySupported } from '../utils/relayer';
 import { shortenWalletAddressLabel } from '../utils/address';
+import { API_URL } from '../utils/urlConstants';
 
 export type AccountNewDialogProps = DialogProps &
   CloseCallbackType & {
@@ -144,11 +145,9 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
         safe: true
       } as AccountType;
 
-      const response = await axios.post(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/accounts`,
-        account,
-        { withCredentials: true }
-      );
+      const response = await axios.post(`${API_URL}/api/accounts`, account, {
+        withCredentials: true
+      });
       console.log(response.status);
 
       toast.success(`New account ${newAccountAddress} added`);

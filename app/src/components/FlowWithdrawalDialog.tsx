@@ -17,12 +17,7 @@ import {
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useMemo, useRef, useState } from 'react';
-import {
-  useBalance,
-  usePublicClient,
-  useSwitchNetwork,
-  useWalletClient
-} from 'wagmi';
+import { useBalance, usePublicClient, useSwitchNetwork, useWalletClient } from 'wagmi';
 import { ContentCopy, ExpandMore } from '@mui/icons-material';
 import { Id, toast } from 'react-toastify';
 import { copyToClipboard } from '../utils/copyToClipboard';
@@ -36,6 +31,7 @@ import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { FlowType, FlowWalletType } from '../types/FlowType';
 import axios from 'axios';
 import { delay } from '../utils/delay';
+import { API_URL } from '../utils/urlConstants';
 
 export type FlowWithdrawalDialogProps = DialogProps &
   CloseCallbackType & {
@@ -135,11 +131,9 @@ export default function FlowWithdrawalDialog({
 
         try {
           wallet.safeDeployed = true;
-          const response = await axios.put(
-            `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${flow.uuid}/wallet`,
-            wallet,
-            { withCredentials: true }
-          );
+          const response = await axios.put(`${API_URL}/api/flows/${flow.uuid}/wallet`, wallet, {
+            withCredentials: true
+          });
           console.log(response.status);
         } catch (error) {
           console.log(error);

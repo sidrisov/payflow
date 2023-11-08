@@ -12,7 +12,6 @@ import {
   Tooltip,
   Typography
 } from '@mui/material';
-import { AccountType } from '../types/AccountType';
 import { Receipt, ArrowDownward, Send, AccountBalance, Toll } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { useContext, useMemo, useState } from 'react';

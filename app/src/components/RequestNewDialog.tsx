@@ -27,6 +27,7 @@ import { ContentCopy } from '@mui/icons-material';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { copyToClipboard } from '../utils/copyToClipboard';
 import { PaymentRequestType } from '../types/PaymentRequestType';
+import { API_URL } from '../utils/urlConstants';
 
 export type RequestNewDialogProps = DialogProps & CloseCallbackType;
 
@@ -57,7 +58,7 @@ export default function RequestNewDialog({ closeStateCallback, ...props }: Reque
 
       try {
         const response = await axios.post(
-          `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/requests`,
+          `${API_URL}/api/requests`,
           {
             title: title,
             description: description,

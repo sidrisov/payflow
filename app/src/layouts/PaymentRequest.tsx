@@ -34,6 +34,7 @@ import HideOnScroll from '../components/HideOnScroll';
 import { Helmet } from 'react-helmet-async';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import { PaymentRequestType } from '../types/PaymentRequestType';
+import { API_URL } from '../utils/urlConstants';
 
 export default function PaymentRequest({ appSettings, setAppSettings }: any) {
   const { uuid } = useParams();
@@ -67,9 +68,7 @@ export default function PaymentRequest({ appSettings, setAppSettings }: any) {
 
   useMemo(async () => {
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/requests/${uuid}`
-      );
+      const response = await axios.get(`${API_URL}/api/requests/${uuid}`);
 
       setRequest(response.data);
     } catch (error) {
@@ -101,10 +100,9 @@ export default function PaymentRequest({ appSettings, setAppSettings }: any) {
 
   async function submitProof() {
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/requests/${request?.uuid}/proof`,
-        { txHash }
-      );
+      const response = await axios.post(`${API_URL}/api/requests/${request?.uuid}/proof`, {
+        txHash
+      });
       console.log(response.status);
       toast.success(`Payment request proof submitted`);
     } catch (error) {

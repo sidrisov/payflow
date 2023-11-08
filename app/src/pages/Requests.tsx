@@ -39,8 +39,8 @@ import { toast } from 'react-toastify';
 import { switchNetwork } from 'wagmi/actions';
 import { formatEther } from 'viem';
 import { green } from '@mui/material/colors';
+import { API_URL, DAPP_URL } from '../utils/urlConstants';
 
-const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 export default function Requests() {
   const theme = useTheme();
   const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
@@ -60,10 +60,7 @@ export default function Requests() {
 
   async function fetchRequests() {
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/requests`,
-        { withCredentials: true }
-      );
+      const response = await axios.get(`${API_URL}/api/requests`, { withCredentials: true });
 
       setRequests(response.data);
     } catch (error) {
@@ -96,7 +93,7 @@ export default function Requests() {
         if (transaction && formatEther(transaction.value) === request.amount) {
           console.log('I am here');
           const response = await axios.post(
-            `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/requests/${request.uuid}/payed`,
+            `${API_URL}/api/requests/${request.uuid}/payed`,
             {},
             { withCredentials: true }
           );

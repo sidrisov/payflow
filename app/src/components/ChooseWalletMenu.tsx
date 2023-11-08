@@ -1,12 +1,4 @@
-import {
-  Avatar,
-  Box,
-  Menu,
-  MenuItem,
-  MenuProps,
-  Tooltip,
-  Typography
-} from '@mui/material';
+import { Avatar, Box, Menu, MenuItem, MenuProps, Tooltip, Typography } from '@mui/material';
 import { FlowWalletType } from '../types/FlowType';
 import { Check } from '@mui/icons-material';
 import { shortenWalletAddressLabel } from '../utils/address';
@@ -22,6 +14,7 @@ export function ChooseWalletMenu(
   return (
     <Menu
       {...props}
+      sx={{ mt: 1.5 }}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'left'

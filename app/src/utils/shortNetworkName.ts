@@ -1,5 +1,5 @@
 import { useNetwork } from 'wagmi';
-import { networks } from './constants';
+import { networks } from './chainConstants';
 
 export function shortNetworkName(network: string) {
   const { chains } = useNetwork();

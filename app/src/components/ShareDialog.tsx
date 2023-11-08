@@ -25,7 +25,7 @@ export default function ShareDialog({ closeStateCallback, ...props }: ShareDialo
     closeStateCallback();
   }
 
-  return props.title ? (
+  return (
     <Dialog
       onClose={handleCloseCampaignDialog}
       {...props}
@@ -61,7 +61,5 @@ export default function ShareDialog({ closeStateCallback, ...props }: ShareDialo
         </Stack>
       </DialogContent>
     </Dialog>
-  ) : (
-    <></>
   );
 }

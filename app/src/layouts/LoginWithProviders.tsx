@@ -27,9 +27,9 @@ import axios from 'axios';
 import { ProfileType } from '../types/ProfleType';
 import { me } from '../services/user';
 import { SUPPORTED_CHAINS } from '../utils/supportedChains';
+import { API_URL } from '../utils/urlConstants';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
-const AUTH_URL = import.meta.env.VITE_PAYFLOW_SERVICE_API_URL;
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(SUPPORTED_CHAINS, [
   alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }),
@@ -102,7 +102,7 @@ export default function AppWithProviders() {
   useMemo(async () => {
     if (authStatus === 'authenticated' && !profile) {
       try {
-        const response = await axios.get(`${AUTH_URL}/api/user/me`, { withCredentials: true });
+        const response = await axios.get(`${API_URL}/api/user/me`, { withCredentials: true });
         if (Boolean(response.status === 200)) {
           const authAccount = response.data;
           setProfile(authAccount);
@@ -116,7 +116,7 @@ export default function AppWithProviders() {
   const authAdapter = useMemo(() => {
     return createAuthenticationAdapter({
       getNonce: async () => {
-        const response = await axios.get(`${AUTH_URL}/api/auth/nonce`, { withCredentials: true });
+        const response = await axios.get(`${API_URL}/api/auth/nonce`, { withCredentials: true });
         return await response.data;
       },
 
@@ -141,7 +141,7 @@ export default function AppWithProviders() {
 
         try {
           const response = await axios.post(
-            `${AUTH_URL}/api/auth/verify`,
+            `${API_URL}/api/auth/verify`,
             { message, signature },
             { withCredentials: true }
           );
@@ -163,7 +163,7 @@ export default function AppWithProviders() {
       signOut: async () => {
         setAuthStatus('unauthenticated');
         setProfile(undefined);
-        await axios.get(`${AUTH_URL}/api/auth/logout`, { withCredentials: true });
+        await axios.get(`${API_URL}/api/auth/logout`, { withCredentials: true });
       }
     });
   }, []);

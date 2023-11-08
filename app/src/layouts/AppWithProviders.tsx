@@ -123,7 +123,9 @@ export default function AppWithProviders() {
           {loading ? (
             <CenteredCircularProgress />
           ) : (
-            <App profile={profile} appSettings={appSettings} setAppSettings={setAppSettings} />
+            profile && (
+              <App profile={profile} appSettings={appSettings} setAppSettings={setAppSettings} />
+            )
           )}
         </RainbowKitProvider>
       </AirstackProvider>

@@ -1,10 +1,10 @@
 import { createAuthenticationAdapter } from '@rainbow-me/rainbowkit';
 import { SiweMessage } from 'siwe';
+import { API_URL } from './urlConstants';
 
-const AUTH_URL = import.meta.env.VITE_PAYFLOW_SERVICE_API_URL;
 const authenticationAdapter = createAuthenticationAdapter({
   getNonce: async () => {
-    const response = await fetch(`${AUTH_URL}/api/auth/nonce`);
+    const response = await fetch(`${API_URL}/api/auth/nonce`);
     return await response.text();
   },
   createMessage: ({ nonce, address, chainId }) => {
@@ -23,7 +23,7 @@ const authenticationAdapter = createAuthenticationAdapter({
   },
   verify: async ({ message, signature }) => {
     console.log(message, signature);
-    const verifyRes = await fetch(`${AUTH_URL}/api/auth/verify`, {
+    const verifyRes = await fetch(`${API_URL}/api/auth/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message, signature })
@@ -32,7 +32,7 @@ const authenticationAdapter = createAuthenticationAdapter({
     return Boolean(verifyRes.ok);
   },
   signOut: async () => {
-    await fetch(`${AUTH_URL}/api/auth/logout`);
+    await fetch(`${API_URL}/api/auth/logout`);
   }
 });
 

@@ -13,6 +13,7 @@ export function ChooseFlowMenu(
   return (
     <Menu
       {...props}
+      sx={{ mt: 1 }}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'left'

@@ -3,14 +3,20 @@ package ua.sinaver.web3.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
+import lombok.val;
+import lombok.extern.log4j.Log4j2;
 import ua.sinaver.web3.data.User;
+import ua.sinaver.web3.message.FlowMessage;
+import ua.sinaver.web3.message.ProfileMessage;
 import ua.sinaver.web3.repository.UserRepository;
 
 @Service
 @Transactional
+@Log4j2
 public class UserService implements IUserService {
 
     @Autowired
@@ -22,11 +28,16 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public void updateUsername(String signer, String username) {
+    public void updateProfile(String signer, ProfileMessage profile) {
         User user = userRepository.findBySigner(signer);
-        if (user != null && (user.getUsername() == null || !user.getUsername().equals(username))) {
-            user.setUsername(username);
-            user.setOnboarded(true);
+        if (user != null && profile != null) {
+            user.setDisplayName(profile.displayName());
+            user.setUsername(profile.username().toLowerCase());
+            user.setProfileImage(profile.profileImage());
+            if (user.getDefaultFlow() == null && profile.defaultFlow() != null) {
+                val defaultFlow = FlowMessage.convert(profile.defaultFlow(), user);
+                user.setDefaultFlow(defaultFlow);
+            }
         }
     }
 

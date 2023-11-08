@@ -7,7 +7,8 @@ import {
   Typography,
   Box,
   TextField,
-  InputAdornment
+  InputAdornment,
+  Avatar
 } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 
@@ -20,19 +21,19 @@ import { toast } from 'react-toastify';
 import { baseGoerli, optimismGoerli, zkSyncTestnet, zoraTestnet } from 'viem/chains';
 import { keccak256, toHex } from 'viem';
 import { useCreateSafeWallets as usePreCreateSafeWallets } from '../utils/hooks/useCreateSafeWallets';
-import saveFlow from '../services/flow';
 
-import { FlowWalletType } from '../types/FlowType';
+import { FlowType, FlowWalletType } from '../types/FlowType';
 import { DEFAULT_SAFE_VERSION } from '@safe-global/protocol-kit';
-import { updateUsername } from '../services/user';
+import { updateProfile } from '../services/user';
+import { useNavigate } from 'react-router-dom';
+import { API_URL } from '../utils/urlConstants';
 
-const API_URL = import.meta.env.VITE_PAYFLOW_SERVICE_API_URL;
 const preCreateWalletChains = [baseGoerli, optimismGoerli, zoraTestnet, zkSyncTestnet];
 
 export type ShareDialogProps = DialogProps &
   CloseCallbackType & {
     profile: ProfileType;
-    username?: string | undefined;
+    username?: string | undefined | null;
   };
 
 export default function OnboardingDialog({ closeStateCallback, ...props }: ShareDialogProps) {
@@ -41,16 +42,28 @@ export default function OnboardingDialog({ closeStateCallback, ...props }: Share
   }
 
   const { profile } = props;
-  const [username, setUsername] = useState<string>(props.username ?? '');
+
+  const [displayName, setDisplayName] = useState<string>(profile.displayName ?? '');
+  const [username, setUsername] = useState<string>(props.username ?? profile.username ?? '');
+  const [profileImage, setProfileImage] = useState<string>(profile.profileImage ?? '');
+
   const [usernameAvailble, setUsernameAvailable] = useState<boolean>();
 
-  const { loading: loadingWallets, created, create, wallets } = usePreCreateSafeWallets();
+  const { loading: loadingWallets, create, wallets } = usePreCreateSafeWallets();
+  const [loadingUpdateProfile, setLoadingUpdateProfile] = useState<boolean>(false);
+
+  const navigate = useNavigate();
 
   // TODO: add random generator
-  const saltNonce = keccak256(toHex('1'));
+  const saltNonce = keccak256(toHex('2'));
 
   useMemo(async () => {
     if (username) {
+      if (username === profile.username) {
+        setUsernameAvailable(true);
+        return;
+      }
+
       try {
         const response = await axios.get(`${API_URL}/api/user/${username}`, {
           withCredentials: true
@@ -85,17 +98,35 @@ export default function OnboardingDialog({ closeStateCallback, ...props }: Share
             master: profile.address
           } as FlowWalletType)
       );
-      const success = await saveFlow({
+
+      const defaultFlow = {
         account: profile.address,
-        title: 'Main flow',
+        title: 'default',
         description: '',
         wallets: flowWallets
-      });
+      } as FlowType;
 
-      if (success) {
-        toast.success('Default flow created!');
-      } else {
-        toast.error('Failed, try again');
+      const updatedProfile = {
+        ...profile,
+        displayName,
+        username,
+        profileImage,
+        defaultFlow
+      } as ProfileType;
+
+      setLoadingUpdateProfile(true);
+
+      try {
+        const success = await updateProfile(updatedProfile);
+
+        if (success) {
+          toast.success('Onboarding successfully completed');
+          navigate('/');
+        } else {
+          toast.error('Failed, try again');
+        }
+      } finally {
+        setLoadingUpdateProfile(false);
       }
     }
   }, [wallets]);
@@ -119,11 +150,22 @@ export default function OnboardingDialog({ closeStateCallback, ...props }: Share
         <Stack m={1} direction="column" spacing={3}>
           <Box>
             <TextField
+              margin="dense"
+              fullWidth
+              value={displayName}
+              label={'Display Name'}
+              InputProps={{
+                inputProps: { maxLength: 16, inputMode: 'text' },
+                sx: { borderRadius: 3 }
+              }}
+              onChange={async (event) => {
+                setDisplayName(event.target.value);
+              }}
+            />
+
+            <TextField
               error={username !== '' && !usernameAvailble}
-              helperText={
-                username &&
-                (usernameAvailble ? 'username is available' : 'username is not available')
-              }
+              helperText={username && !usernameAvailble && 'username is not available'}
               margin="dense"
               fullWidth
               value={username}
@@ -151,21 +193,43 @@ export default function OnboardingDialog({ closeStateCallback, ...props }: Share
                 sx: { borderRadius: 3 }
               }}
               onChange={async (event) => {
-                setUsername(event.target.value);
+                setUsername(event.target.value.toLowerCase());
+              }}
+            />
+
+            <TextField
+              margin="dense"
+              fullWidth
+              value={profileImage}
+              label={'Profile Image'}
+              InputProps={{
+                inputProps: { maxLength: 64, inputMode: 'url' },
+                sx: { borderRadius: 3 },
+                endAdornment: (
+                  <InputAdornment position="end">
+                    {profileImage && <Avatar src={profileImage} />}
+                  </InputAdornment>
+                )
+              }}
+              onChange={async (event) => {
+                setProfileImage(event.target.value);
               }}
             />
           </Box>
 
           <LoadingButton
-            loading={loadingWallets}
+            loading={loadingWallets || loadingUpdateProfile}
             disabled={!usernameAvailble || !username}
             variant="contained"
             onClick={async () => {
               await createMainFlow();
-              await updateUsername(username);
             }}
             sx={{ borderRadius: 3 }}>
-            Complete
+            {loadingWallets
+              ? 'Creating default flow ...'
+              : loadingUpdateProfile
+              ? 'Updating profile...'
+              : 'Complete'}
           </LoadingButton>
         </Stack>
       </DialogContent>

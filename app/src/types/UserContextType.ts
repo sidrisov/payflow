@@ -1,9 +1,11 @@
 import { AccountType } from './AccountType';
 import { AppSettings } from './AppSettingsType';
 import { FlowType } from './FlowType';
+import { ProfileType } from './ProfleType';
 
 export interface UserContextType {
   isAuthenticated: boolean;
+  profile: ProfileType;
   appSettings: AppSettings;
   setAppSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
   flows: FlowType[] | undefined;
