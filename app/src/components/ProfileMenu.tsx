@@ -6,6 +6,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ProfileSection } from './ProfileSection';
 import { API_URL } from '../utils/urlConstants';
+import { useAccount } from 'wagmi';
 
 export function ProfileMenu(
   props: MenuProps & {
@@ -13,6 +14,7 @@ export function ProfileMenu(
   }
 ) {
   const navigate = useNavigate();
+  const { connector } = useAccount();
 
   const { profile } = props;
 
@@ -57,6 +59,7 @@ export function ProfileMenu(
             await axios.get(`${API_URL}/api/auth/logout`, {
               withCredentials: true
             });
+            await connector?.disconnect();
             navigate('/connect');
           } catch (error) {
             toast.error('Failed to logout!');

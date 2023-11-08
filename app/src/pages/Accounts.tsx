@@ -78,7 +78,7 @@ export default function Accounts() {
               setAssetsOrActivityView={setAssetsOrActivityView}
             />
 
-            <Box maxWidth={smallScreen ? 350 : 600}>
+            <Box maxWidth={smallScreen ? 350 : 440}>
               {assetsOrActivityView === 'assets' ? (
                 <Assets
                   wallets={selectedFlow.wallets}

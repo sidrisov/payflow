@@ -134,7 +134,7 @@ export function AccountCard(props: AccountNewDialogProps) {
           sx={{
             p: 1,
             border: 1,
-            borderRadius: 3,
+            borderRadius: 5,
             minWidth: 100,
             maxWidth: 150,
             height: 60,

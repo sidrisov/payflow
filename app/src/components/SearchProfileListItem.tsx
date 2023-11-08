@@ -36,7 +36,7 @@ export function SearchProfileListItem(
           component={Button}
           textTransform="none"
           onClick={props.onClick}
-          sx={{ borderRadius: 3, border: 0, height: 60 }}>
+          sx={{ borderRadius: 5, border: 0, height: 60 }}>
           {view === 'profile' && profileWithSocials.profile && (
             <ProfileSection profile={profileWithSocials.profile} />
           )}

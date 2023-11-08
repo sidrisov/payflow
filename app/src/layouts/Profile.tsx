@@ -2,6 +2,7 @@ import {
   Avatar,
   AvatarGroup,
   Box,
+  Button,
   Card,
   Chip,
   CircularProgress,
@@ -23,11 +24,14 @@ import { shortenWalletAddressLabel } from '../utils/address';
 import { useEnsAvatar, useEnsName } from 'wagmi';
 import {
   ArrowForward,
+  AttachMoney,
   Campaign,
   MonetizationOn,
+  Money,
   Payment,
   Savings,
-  Search
+  Search,
+  Send
 } from '@mui/icons-material';
 import AddressAvatar from '../components/AddressAvatar';
 import { useLazyQuery } from '@airstack/airstack-react';
@@ -35,6 +39,7 @@ import { FlowType } from '../types/FlowType';
 import QRCode from 'react-qr-code';
 import SearchProfileDialog from '../components/SearchProfileDialog';
 import { API_URL } from '../utils/urlConstants';
+import { ProfileSection } from '../components/ProfileSection';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 
@@ -160,21 +165,7 @@ export default function Profile() {
               borderRadius: 5
             }}>
             <Stack spacing={1} direction="column" alignItems="center">
-              {avatar ? (
-                <Avatar src={avatar as string} sx={{ width: 60, height: 60 }} />
-              ) : (
-                <AddressAvatar address={profile.address} sx={{ width: 60, height: 60 }} scale={8} />
-              )}
-              <Chip
-                variant="filled"
-                avatar={<Avatar src="/logo.svg" />}
-                label={<Typography variant="h5">{profile.username}</Typography>}
-                sx={{
-                  borderColor: 'inherit',
-                  m: 0.5
-                }}
-              />
-
+              <ProfileSection profile={profile} avatarSize={48} />
               {loading && <CircularProgress color="inherit" size={25} />}
               {socialInfo && (
                 <Box
@@ -247,6 +238,22 @@ export default function Profile() {
                   )}
                 </Box>
               )}
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Button
+                  color="inherit"
+                  variant="outlined"
+                  endIcon={<AttachMoney />}
+                  sx={{ borderRadius: 5, textTransform: 'lowercase' }}>
+                  Tip
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  endIcon={<Send />}
+                  sx={{ borderRadius: 5, textTransform: 'lowercase' }}>
+                  Send
+                </Button>
+              </Stack>
             </Stack>
           </Card>
         )}
@@ -371,7 +378,6 @@ export default function Profile() {
         <Search />
       </Fab>
       <SearchProfileDialog
-        fullWidth
         open={openSearchProfile}
         closeStateCallback={() => {
           setOpenSearchProfile(false);

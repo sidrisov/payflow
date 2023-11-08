@@ -16,7 +16,7 @@ export function WalletSection(props: { wallet: WalletType; balance?: string }) {
       alignItems="center"
       minWidth={250}
       justifyContent="space-between"
-      sx={{ border: 1, borderRadius: 3, p: 1 }}>
+      sx={{ border: 1, borderRadius: 5, p: 1 }}>
       <Box display="flex" flexDirection="row" alignItems="center">
         <Tooltip title={wallet.network}>
           <Avatar src={'/networks/' + wallet.network + '.png'} sx={{ width: 24, height: 24 }} />

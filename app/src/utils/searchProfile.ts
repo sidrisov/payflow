@@ -4,7 +4,6 @@ import { fetchQuery } from '@airstack/airstack-react';
 import { isAddress } from 'viem';
 import { API_URL } from './urlConstants';
 
-
 const querySocials = `query GetSocial($identity: Identity!) {
   Wallet(input: {identity: $identity, blockchain: ethereum}) {
     addresses
@@ -80,8 +79,9 @@ function converSocialResults(data: any): MetaType | undefined {
     meta.socials = [];
   }
 
+  console.log(data);
   if (data.Wallet.primaryDomain && data.Wallet.primaryDomain.tokenNft) {
-    meta.ensAvatar = data.Wallet.primaryDomain.tokenNft.contentValue.image.small;
+    meta.ensAvatar = data.Wallet.primaryDomain.tokenNft.contentValue?.image?.small;
   }
 
   if (!meta.ensAvatar && meta.socials.length > 0) {
@@ -144,7 +144,12 @@ export async function searchProfile(searchValue: string): Promise<ProfileWithSoc
 
     console.log('lens', data);
 
-    if (data && data.Socials?.Social[0]?.userAssociatedAddresses[0]) {
+    if (
+      data &&
+      data.Socials &&
+      data.Socials.Social &&
+      data.Socials.Social[0].userAssociatedAddresses[0]
+    ) {
       foundProfiles = foundProfiles.concat(
         await searchProfile((data.Socials.Social[0].userAssociatedAddresses as string[])[0])
       );

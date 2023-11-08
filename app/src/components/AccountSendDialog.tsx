@@ -33,6 +33,7 @@ import SearchProfileDialog from './SearchProfileDialog';
 import { SelectedProfileWithSocialsType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
+import LoadingButton from '@mui/lab/LoadingButton';
 
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
@@ -188,36 +189,18 @@ export default function AccountSendDialog({
         backdropFilter: 'blur(5px)'
       }}>
       <DialogTitle>
-        <Stack spacing={1} direction="row" justifyContent="center" alignItems="center">
+        <Stack direction="column" alignItems="center">
           <Typography justifySelf="center" variant="h6">
             Send
+          </Typography>
+          <Typography justifySelf="center" variant="caption">
+            from: "{flow.title}" flow
           </Typography>
         </Stack>
       </DialogTitle>
       <DialogContent sx={{ minWidth: 350 }}>
         <Stack direction="column" spacing={2} alignItems="center">
-          <Box
-            display="flex"
-            flexDirection="row"
-            alignSelf="stretch"
-            alignItems="center"
-            sx={{ height: 56, border: 1, borderRadius: 3, p: 1 }}>
-            <IconButton
-              sx={{ width: 40, height: 40, border: 1, borderStyle: 'dashed' }}
-              onClick={(event) => {
-                setWalletAnchorEl(event.currentTarget);
-                setOpenSelectWallet(true);
-              }}>
-              <Avatar
-                src={'/networks/' + selectedWallet.network + '.png'}
-                sx={{ width: 28, height: 28 }}
-              />
-            </IconButton>
-            <Box display="flex" flexDirection="row" flexGrow={1} justifyContent="flex-start">
-              <Typography sx={{ m: 1, fontSize: 18, overflow: 'clip' }}>{flow.title}</Typography>
-            </Box>
-          </Box>
-          <ExpandMore />
+          <Divider />
 
           <Box
             display="flex"
@@ -231,7 +214,7 @@ export default function AccountSendDialog({
             sx={{
               height: 56,
               border: 1,
-              borderRadius: 3,
+              borderRadius: 5,
               p: 1,
               textTransform: 'none'
             }}>
@@ -242,7 +225,11 @@ export default function AccountSendDialog({
                   )
                 : sendToAddress.data.meta && <AddressSection meta={sendToAddress.data.meta} />)}
 
-            {!sendToAddress && <Typography>Choose Recipient</Typography>}
+            {!sendToAddress && (
+              <Typography alignSelf="center" flexGrow={1}>
+                Choose Recipient
+              </Typography>
+            )}
 
             <Stack direction="row">
               {sendToAddress && sendToAddress.type === 'profile' && (
@@ -256,39 +243,64 @@ export default function AccountSendDialog({
               <ExpandMore />
             </Stack>
           </Box>
-
-          <TextField
-            fullWidth
-            variant="outlined"
-            label={`Amount (max: ${
-              isSuccess ? balance && parseFloat(formatEther(balance?.value)).toPrecision(1) : 0
-            })`}
-            id="sendAmount"
-            type="number"
-            InputProps={{
-              endAdornment: <InputAdornment position="end">ETH</InputAdornment>,
-              inputMode: 'decimal',
-              sx: { borderRadius: 3 }
-            }}
-            onChange={(event) => {
-              const amount = parseEther(event.target.value);
-              if (balance && amount <= balance?.value) {
-                setSendAmount(amount);
-              }
-            }}
-          />
-          <Divider flexItem>
-            <Button
-              disabled={!(sendToAddress && sendAmount)}
+          {sendToAddress && (
+            <TextField
               fullWidth
               variant="outlined"
-              size="medium"
-              color="primary"
-              onClick={sendTransaction}
-              sx={{ mt: 1, borderRadius: 3 }}>
-              Send
-            </Button>
-          </Divider>
+              label={`Amount (max: ${
+                isSuccess ? balance && parseFloat(formatEther(balance?.value)).toPrecision(1) : 0
+              })`}
+              id="sendAmount"
+              type="number"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <IconButton
+                      sx={{ width: 40, height: 40, border: 1, borderStyle: 'dashed' }}
+                      onClick={(event) => {
+                        setWalletAnchorEl(event.currentTarget);
+                        setOpenSelectWallet(true);
+                      }}>
+                      <Avatar
+                        src={'/networks/' + selectedWallet.network + '.png'}
+                        sx={{ width: 28, height: 28 }}
+                      />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+                endAdornment: <InputAdornment position="end">ETH</InputAdornment>,
+                inputMode: 'decimal',
+                sx: { borderRadius: 5 }
+              }}
+              onChange={(event) => {
+                const amount = parseEther(event.target.value);
+                if (balance && amount <= balance?.value) {
+                  setSendAmount(amount);
+                }
+              }}
+            />
+          )}
+          {/*          <Box
+            alignSelf="stretch"
+            display="flex"
+            flexDirection="row"
+            alignItems="center"
+            justifyContent="space-between">
+            <Typography variant="caption">Gas Fee: </Typography>
+            <Typography variant="caption">0.00001 ETH</Typography>
+          </Box> */}
+
+          <Divider />
+          <LoadingButton
+            disabled={!(sendToAddress && sendAmount)}
+            fullWidth
+            variant="outlined"
+            size="medium"
+            color="primary"
+            onClick={sendTransaction}
+            sx={{ mt: 1, borderRadius: 5 }}>
+            Send
+          </LoadingButton>
         </Stack>
       </DialogContent>
       <ChooseWalletMenu

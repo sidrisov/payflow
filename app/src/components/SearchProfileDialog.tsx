@@ -82,11 +82,14 @@ export default function SearchProfileDialog(props: SearchProfileDialogProps) {
         backdropFilter: 'blur(5px)'
       }}>
       <DialogTitle>
-        <Box minWidth={300}>
+        <Stack minWidth={300} direction="column" alignItems="center">
+          <Typography alignSelf="center" variant="h6">
+            Search Profile
+          </Typography>
           <TextField
             fullWidth
             margin="dense"
-            label="Search by name, fc:, lens:, .eth, or 0x"
+            label="search by name, fc:, lens:, .eth, or 0x"
             value={searchString ?? ''}
             InputProps={{
               startAdornment: shrink && (
@@ -107,7 +110,7 @@ export default function SearchProfileDialog(props: SearchProfileDialogProps) {
                 </InputAdornment>
               ),
               inputProps: { maxLength: 42, inputMode: 'search' },
-              sx: { borderRadius: 3 }
+              sx: { borderRadius: 5 }
             }}
             onFocus={() => setShrink(true)}
             onBlur={(e) => setShrink(!!e.target.value)}
@@ -117,7 +120,7 @@ export default function SearchProfileDialog(props: SearchProfileDialogProps) {
               setSearchString(event.target.value);
             }}
           />
-        </Box>
+        </Stack>
       </DialogTitle>
       <DialogContent>
         <Box

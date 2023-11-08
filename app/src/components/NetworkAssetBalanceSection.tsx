@@ -15,7 +15,7 @@ export function NetworkAssetBalanceSection(props: {
       flexDirection="row"
       alignItems="center"
       justifyContent="space-between"
-      sx={{ border: 1, borderRadius: 3 }}>
+      sx={{ border: 1, borderRadius: 5 }}>
       <Box display="flex" flexDirection="row" alignItems="center" justifyContent="flex-start">
         <Badge
           overlap="circular"
