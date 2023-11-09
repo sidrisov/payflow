@@ -4,7 +4,6 @@ import java.security.Principal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import ua.sinaver.web3.data.User;
 import ua.sinaver.web3.message.FlowMessage;
 import ua.sinaver.web3.message.ProfileMessage;
-import ua.sinaver.web3.service.FlowService;
 import ua.sinaver.web3.service.UserService;
 
 @RestController
@@ -31,20 +29,15 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private FlowService flowService;
-
     @GetMapping("/me")
     public ProfileMessage user(Principal principal) {
         log.trace("{}", principal);
         val user = userService.findBySigner(principal.getName());
         if (user != null) {
-            val flows = flowService.getAllFlows(user);
-
             return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
                     user.getSigner(),
                     user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
-                            /* : flows.size() != 0 ? flows.get(0) */ : null);
+                            : null);
         } else {
             return null;
         }
@@ -63,13 +56,11 @@ public class UserController {
         List<User> users = userService.searchByUsernameQuery(username);
         log.debug("User: {} for {}", users, username);
         if (users != null) {
-
-            // TODO: refactor, to fetch defaultFlow
             return users.stream().map(user -> {
-                val flows = flowService.getAllFlows(user);
                 return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
                         user.getSigner(),
-                        flows.size() != 0 ? flows.get(0) : null);
+                        user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
+                                : null);
             }).toList();
 
         } else {
@@ -83,10 +74,10 @@ public class UserController {
 
         log.debug("User: {} for {}", user, username);
         if (user != null) {
-            val flows = flowService.getAllFlows(user);
             return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
                     user.getSigner(),
-                    flows.size() != 0 ? flows.get(0) : null);
+                    user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
+                            : null);
         } else {
             return null;
         }

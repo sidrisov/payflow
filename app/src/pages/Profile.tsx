@@ -159,7 +159,7 @@ export default function Profile() {
           <LoadingButton
             loading={loadingUpdateProfile}
             disabled={!usernameAvailble || !username}
-            variant="contained"
+            variant="outlined"
             onClick={save}
             sx={{ borderRadius: 5 }}>
             Save

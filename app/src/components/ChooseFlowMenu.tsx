@@ -1,18 +1,21 @@
 import { Box, Menu, MenuItem, MenuProps, Typography } from '@mui/material';
 import { FlowType } from '../types/FlowType';
 import { Check } from '@mui/icons-material';
+import { CloseCallbackType } from '../types/CloseCallbackType';
 
 export function ChooseFlowMenu(
-  props: MenuProps & {
-    flows: FlowType[];
-    selectedFlow: FlowType;
-    setSelectedFlow: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
-  }
+  props: MenuProps &
+    CloseCallbackType & {
+      flows: FlowType[];
+      selectedFlow: FlowType;
+      setSelectedFlow: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
+    }
 ) {
-  const { flows, selectedFlow, setSelectedFlow } = props;
+  const { flows, selectedFlow, setSelectedFlow, closeStateCallback } = props;
   return (
     <Menu
       {...props}
+      onClose={closeStateCallback}
       sx={{ mt: 1 }}
       anchorOrigin={{
         vertical: 'bottom',
@@ -23,7 +26,10 @@ export function ChooseFlowMenu(
           <MenuItem
             key={option.uuid}
             selected={option === selectedFlow}
-            onClick={() => setSelectedFlow(option)}>
+            onClick={async () => {
+              setSelectedFlow(option);
+              closeStateCallback();
+            }}>
             <Box
               width={200}
               display="flex"

@@ -18,6 +18,18 @@ export default async function createSafeWallets(
 
   const deployPromises = chains.map(async (chain) => {
     const ethersProvider = getEthersProvider({ chainId: chain.id });
+
+    // TODO: refactor to using ->
+
+    /*
+  const safeFactory = await SafeFactory.create({
+    ethAdapter,
+    safeVersion: LATEST_SAFE_VERSION
+  });
+
+  const predictedAddress = await safeFactory.predictSafeAddress(safeAccountConfig, saltNonce);
+    */
+
     const address = await safeDeploy({
       safeAccountConfig,
       ethersSigner: ethersProvider as providers.JsonRpcProvider,

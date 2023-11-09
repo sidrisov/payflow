@@ -43,9 +43,7 @@ export default function SearchProfileDialog(props: SearchProfileDialogProps) {
 
   const [searchString, setSearchString] = useState<string>();
 
-  const [debouncedSearchString] = useDebounce(searchString, 500, {
-    leading: true
-  });
+  const [debouncedSearchString] = useDebounce(searchString, 500);
 
   const [profiles, setProfiles] = useState<ProfileWithSocialsType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);

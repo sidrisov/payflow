@@ -49,52 +49,39 @@ const queryAssociatedAddressesByLensName = `query GetAssociatedAddresses($profil
   }
 }`;
 
-function converSocialResults(data: any): MetaType | undefined {
-  if (!data || !data.Wallet) {
-    return;
+const ENS_SCORE = 3;
+const FARCASTER_SCORE = 4;
+const LENS_SCORE = 4;
+const XMTP_SCORE = 1;
+
+export function sortBySocialScore(
+  profilesWithSocials: ProfileWithSocialsType[]
+): ProfileWithSocialsType[] {
+  return profilesWithSocials.sort((left, right) => calculateScore(right) - calculateScore(left));
+}
+
+function calculateScore(profilesWithSocials: ProfileWithSocialsType): number {
+  let score = 0;
+  if (profilesWithSocials.meta) {
+    if (profilesWithSocials.meta.ens) {
+      score += ENS_SCORE;
+    }
+
+    if (profilesWithSocials.meta.xmtp) {
+      score += XMTP_SCORE;
+    }
+
+    profilesWithSocials.meta.socials.forEach((s) => {
+      if (s.dappName === 'farcaster') {
+        score += FARCASTER_SCORE;
+      }
+
+      if (s.dappName === 'lens') {
+        score += LENS_SCORE;
+      }
+    });
   }
-
-  let meta = {} as MetaType;
-
-  if (data.Wallet.addresses) {
-    meta.addresses = data.Wallet.addresses;
-  }
-
-  if (data.Wallet.primaryDomain) {
-    meta.ens = data.Wallet.primaryDomain.name;
-  }
-
-  if (data.Wallet.socials) {
-    meta.socials = data.Wallet.socials
-      .filter((s: any) => s.dappName && s.profileName && s.profileImage)
-      .map(
-        (s: any) =>
-          ({
-            dappName: s.dappName,
-            profileName: s.profileName,
-            profileImage: s.profileImage
-          } as SocialInfoType)
-      );
-  } else {
-    meta.socials = [];
-  }
-
-  console.log(data);
-  if (data.Wallet.primaryDomain && data.Wallet.primaryDomain.tokenNft) {
-    meta.ensAvatar = data.Wallet.primaryDomain.tokenNft.contentValue?.image?.small;
-  }
-
-  if (!meta.ensAvatar && meta.socials.length > 0) {
-    meta.ensAvatar = meta.socials[0].profileImage;
-  }
-
-  if (data.Wallet.xmtp && data.Wallet.xmtp[0].isXMTPEnabled) {
-    meta.xmtp = true;
-  } else {
-    meta.xmtp = false;
-  }
-
-  return meta;
+  return score;
 }
 
 export async function searchProfile(searchValue: string): Promise<ProfileWithSocialsType[]> {
@@ -187,37 +174,52 @@ export async function searchProfile(searchValue: string): Promise<ProfileWithSoc
   return foundProfiles;
 }
 
-const ENS_SCORE = 3;
-const FARCASTER_SCORE = 4;
-const LENS_SCORE = 4;
-const XMTP_SCORE = 1;
-
-export function sortBySocialScore(
-  profilesWithSocials: ProfileWithSocialsType[]
-): ProfileWithSocialsType[] {
-  return profilesWithSocials.sort((left, right) => calculateScore(right) - calculateScore(left));
-}
-
-function calculateScore(profilesWithSocials: ProfileWithSocialsType): number {
-  let score = 0;
-  if (profilesWithSocials.meta) {
-    if (profilesWithSocials.meta.ens) {
-      score += ENS_SCORE;
-    }
-
-    if (profilesWithSocials.meta.xmtp) {
-      score += XMTP_SCORE;
-    }
-
-    profilesWithSocials.meta.socials.forEach((s) => {
-      if (s.dappName === 'farcaster') {
-        score += FARCASTER_SCORE;
-      }
-
-      if (s.dappName === 'lens') {
-        score += LENS_SCORE;
-      }
-    });
+function converSocialResults(data: any): MetaType | undefined {
+  if (!data || !data.Wallet) {
+    return;
   }
-  return score;
+
+  let meta = {} as MetaType;
+
+  if (data.Wallet.addresses) {
+    meta.addresses = data.Wallet.addresses;
+  } else {
+    meta.addresses = [];
+  }
+
+  if (data.Wallet.primaryDomain) {
+    meta.ens = data.Wallet.primaryDomain.name;
+  }
+
+  if (data.Wallet.socials) {
+    meta.socials = data.Wallet.socials
+      .filter((s: any) => s.dappName && s.profileName && s.profileImage)
+      .map(
+        (s: any) =>
+          ({
+            dappName: s.dappName,
+            profileName: s.profileName,
+            profileImage: s.profileImage
+          } as SocialInfoType)
+      );
+  } else {
+    meta.socials = [];
+  }
+
+  console.log(data);
+  if (data.Wallet.primaryDomain && data.Wallet.primaryDomain.tokenNft) {
+    meta.ensAvatar = data.Wallet.primaryDomain.tokenNft.contentValue?.image?.small;
+  }
+
+  if (!meta.ensAvatar && meta.socials.length > 0) {
+    meta.ensAvatar = meta.socials[0].profileImage;
+  }
+
+  if (data.Wallet.xmtp && data.Wallet.xmtp[0].isXMTPEnabled) {
+    meta.xmtp = true;
+  } else {
+    meta.xmtp = false;
+  }
+
+  return meta;
 }

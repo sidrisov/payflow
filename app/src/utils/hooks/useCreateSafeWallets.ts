@@ -20,6 +20,7 @@ export const useCreateSafeWallets = (): {
   const create = useCallback(async function (owner: Address, saltNonce: Hash, chains: Chain[]) {
     setLoading(true);
     try {
+      
       const wallets = await createSafeWallets(owner, saltNonce, chains);
       setLoading(false);
       setCreated(true);

@@ -2,18 +2,21 @@ import { Avatar, Box, Menu, MenuItem, MenuProps, Tooltip, Typography } from '@mu
 import { FlowWalletType } from '../types/FlowType';
 import { Check } from '@mui/icons-material';
 import { shortenWalletAddressLabel } from '../utils/address';
+import { CloseCallbackType } from '../types/CloseCallbackType';
 
 export function ChooseWalletMenu(
-  props: MenuProps & {
-    wallets: FlowWalletType[];
-    selectedWallet: FlowWalletType;
-    setSelectedWallet: React.Dispatch<React.SetStateAction<FlowWalletType>>;
-  }
+  props: MenuProps &
+    CloseCallbackType & {
+      wallets: FlowWalletType[];
+      selectedWallet: FlowWalletType;
+      setSelectedWallet: React.Dispatch<React.SetStateAction<FlowWalletType>>;
+    }
 ) {
-  const { wallets, selectedWallet, setSelectedWallet } = props;
+  const { wallets, selectedWallet, setSelectedWallet, closeStateCallback } = props;
   return (
     <Menu
       {...props}
+      onClose={closeStateCallback}
       sx={{ mt: 1.5 }}
       anchorOrigin={{
         vertical: 'bottom',
@@ -24,7 +27,10 @@ export function ChooseWalletMenu(
           <MenuItem
             key={wallet.network}
             selected={wallet === selectedWallet}
-            onClick={() => setSelectedWallet(wallet)}>
+            onClick={async () => {
+              setSelectedWallet(wallet);
+              closeStateCallback();
+            }}>
             <Box
               width={150}
               display="flex"

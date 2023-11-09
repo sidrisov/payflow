@@ -14,7 +14,17 @@ import {
 } from '@mui/material';
 
 import CustomThemeProvider from '../theme/CustomThemeProvider';
-import { LightModeOutlined, DarkModeOutlined, Menu as MenuIcon, Search } from '@mui/icons-material';
+import {
+  LightModeOutlined,
+  DarkModeOutlined,
+  Menu as MenuIcon,
+  Search,
+  SettingsApplications,
+  Payment,
+  Payments,
+  Apps,
+  Home
+} from '@mui/icons-material';
 
 import Nav from '../components/Navigation';
 
@@ -33,6 +43,7 @@ import { AppSettings } from '../types/AppSettingsType';
 import { ProfileMenu } from '../components/ProfileMenu';
 import SearchProfileDialog from '../components/SearchProfileDialog';
 import { API_URL } from '../utils/urlConstants';
+import HomeLogo from '../components/Logo';
 
 const drawerWidth = 151;
 
@@ -172,7 +183,7 @@ export default function AppLayout({
               flexDirection: 'row',
               justifyContent: 'space-evenly'
             }}>
-            <Box component="nav" sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
+            {/* <Box component="nav" sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
               <Drawer
                 variant="temporary"
                 open={mobileOpen}
@@ -197,7 +208,7 @@ export default function AppLayout({
                   {drawer}
                 </Drawer>
               }
-            </Box>
+            </Box> */}
             <Box flexGrow={1}>
               <HideOnScroll>
                 <AppBar
@@ -209,39 +220,55 @@ export default function AppLayout({
                     sx={{
                       justifyContent: 'space-between'
                     }}>
-                    <Box>
+                    {/*                     <Box>
                       <IconButton
                         color="inherit"
                         onClick={handleDrawerToggle}
                         sx={{ display: { sm: 'none' } }}>
                         <MenuIcon />
                       </IconButton>
-                    </Box>
+                    </Box> */}
                     <Box
                       display="flex"
                       flexDirection="row"
                       alignItems="center"
                       justifyContent="space-between"
                       flexGrow={1}>
-                      <Box
-                        display="flex"
-                        flexDirection="row"
-                        alignItems="center"
-                        component={Button}
-                        color="inherit"
-                        sx={{
-                          width: 100,
-                          borderRadius: 5,
-                          border: 1,
-                          borderColor: 'inherit',
-                          textTransform: 'none'
-                        }}
-                        onClick={async () => {
-                          setOpenSearchProfile(true);
-                        }}>
-                        <Search fontSize="small" />
-                        <Typography variant="subtitle2">Search ...</Typography>
-                      </Box>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <HomeLogo />
+
+                        <IconButton color="inherit" onClick={() => navigate('/home')}>
+                          <Home />
+                        </IconButton>
+
+                        <IconButton color="inherit" onClick={() => navigate('/flows')}>
+                          <Apps />
+                        </IconButton>
+
+                        <IconButton color="inherit" onClick={() => navigate('/requests')}>
+                          <Payments />
+                        </IconButton>
+
+                        <Box
+                          display="flex"
+                          flexDirection="row"
+                          alignItems="center"
+                          component={Button}
+                          color="inherit"
+                          sx={{
+                            width: 100,
+                            borderRadius: 5,
+                            border: 1,
+                            borderColor: 'inherit',
+                            textTransform: 'none'
+                          }}
+                          onClick={async () => {
+                            setOpenSearchProfile(true);
+                          }}>
+                          <Search fontSize="small" />
+                          <Typography variant="subtitle2">Search ...</Typography>
+                        </Box>
+                      </Stack>
                       <Stack direction="row" spacing={0.5} alignItems="center">
                         <IconButton
                           onClick={() =>

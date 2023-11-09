@@ -14,19 +14,18 @@ import {
   Button,
   Divider,
   InputAdornment,
-  Chip
+  Chip,
+  CircularProgress
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
-import { useMemo, useRef, useState } from 'react';
+import { useContext, useMemo, useRef, useState } from 'react';
 import { useBalance, useNetwork, usePublicClient, useSwitchNetwork } from 'wagmi';
-import { ExpandMore } from '@mui/icons-material';
+import { ArrowForward, Close, ExpandMore } from '@mui/icons-material';
 import { Id, toast } from 'react-toastify';
 
-import { Hash, TransactionReceipt, formatEther, parseEther } from 'viem';
+import { Address, Hash, formatEther, parseEther } from 'viem';
 
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
-import { safeTransferEth } from '../utils/safeTransactions';
-import { shortenWalletAddressLabel } from '../utils/address';
 import { FlowType, FlowWalletType } from '../types/FlowType';
 import { ChooseWalletMenu } from './ChooseWalletMenu';
 import SearchProfileDialog from './SearchProfileDialog';
@@ -34,6 +33,10 @@ import { SelectedProfileWithSocialsType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
 import LoadingButton from '@mui/lab/LoadingButton';
+import { SafeAccountConfig } from '@safe-global/protocol-kit';
+import { UserContext } from '../contexts/UserContext';
+import { SafeVersion } from '@safe-global/safe-core-sdk-types';
+import { useSafeTransfer } from '../utils/hooks/useSafeTransfer';
 
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
@@ -49,19 +52,22 @@ export default function AccountSendDialog({
 
   const { flow } = props;
 
-  const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>(flow.wallets[0]);
+  const { profile, ethUsdPrice } = useContext(UserContext);
 
-  const [sendToAddress, setSendToAddress] = useState<SelectedProfileWithSocialsType>();
+  const ethersSigner = useEthersSigner();
 
+  const { chains, switchNetwork, isLoading: isSwitchNetworkLoading } = useSwitchNetwork();
+  const { chain } = useNetwork();
+
+  const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>(
+    flow.wallets.find((w) => w.network === chain?.name) ?? flow.wallets[0]
+  );
+  const [selectedRecipient, setSelectedRecipient] = useState<SelectedProfileWithSocialsType>();
+
+  const [toAddress, setToAddress] = useState<Address>();
   const [sendAmount, setSendAmount] = useState<bigint>();
 
   const [openSearchProfile, setOpenSearchProfile] = useState<boolean>(false);
-
-  const publicClient = usePublicClient();
-  const ethersSigner = useEthersSigner();
-
-  const { chains, switchNetwork } = useSwitchNetwork();
-  const { chain } = useNetwork();
 
   const { isSuccess, data: balance } = useBalance({
     address: selectedWallet?.address,
@@ -71,37 +77,113 @@ export default function AccountSendDialog({
   const [openSelectWallet, setOpenSelectWallet] = useState(false);
   const [walletAnchorEl, setWalletAnchorEl] = useState<null | HTMLElement>(null);
 
-  const [txHash, setTxHash] = useState<Hash>();
-
   const sendToastId = useRef<Id>();
 
-  function isProfileType(profile: SelectedProfileWithSocialsType): boolean {
-    return profile.type === 'profile';
-  }
+  const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
+
+  useMemo(async () => {
+    if (!sendAmount || !selectedRecipient) {
+      return;
+    }
+
+    if (loading) {
+      sendToastId.current = toast.loading(
+        <Box display="flex" flexDirection="row" alignItems="center" justifyContent="space-between">
+          <ProfileSection profile={profile} />
+          <Stack alignItems="center" justifyContent="center">
+            <Typography variant="subtitle2">
+              ${(parseFloat(formatEther(sendAmount)) * (ethUsdPrice ?? 0)).toPrecision(3)}
+            </Typography>
+            <ArrowForward />
+          </Stack>
+          {selectedRecipient.type === 'profile'
+            ? selectedRecipient.data.profile && (
+                <ProfileSection profile={selectedRecipient.data.profile} />
+              )
+            : selectedRecipient.data.meta && <AddressSection meta={selectedRecipient.data.meta} />}
+        </Box>
+      );
+    }
+
+    if (!sendToastId.current) {
+      return;
+    }
+
+    if (confirmed) {
+      toast.update(sendToastId.current, {
+        render: (
+          <Box
+            display="flex"
+            flexDirection="row"
+            alignItems="center"
+            justifyContent="space-between">
+            <ProfileSection profile={profile} />
+            <Stack spacing={0.5} alignItems="center">
+              <Typography variant="caption">
+                $
+                {sendAmount
+                  ? (parseFloat(formatEther(sendAmount)) * (ethUsdPrice ?? 0)).toPrecision(3)
+                  : 0}
+              </Typography>
+              <ArrowForward />
+            </Stack>
+            {selectedRecipient.type === 'profile'
+              ? selectedRecipient.data.profile && (
+                  <ProfileSection profile={selectedRecipient.data.profile} />
+                )
+              : selectedRecipient.data.meta && (
+                  <AddressSection meta={selectedRecipient.data.meta} />
+                )}
+          </Box>
+        ),
+        type: 'success',
+        isLoading: false,
+        autoClose: 5000
+      });
+      sendToastId.current = undefined;
+    } else if (error) {
+      toast.update(sendToastId.current, {
+        render: (
+          <Box
+            display="flex"
+            flexDirection="row"
+            alignItems="center"
+            justifyContent="space-between">
+            <ProfileSection profile={profile} />
+            <Stack spacing={0.5} alignItems="center">
+              <Typography variant="caption">
+                $
+                {sendAmount
+                  ? (parseFloat(formatEther(sendAmount)) * (ethUsdPrice ?? 0)).toPrecision(3)
+                  : 0}
+              </Typography>
+              <Close />
+            </Stack>
+            {selectedRecipient.type === 'profile'
+              ? selectedRecipient.data.profile && (
+                  <ProfileSection profile={selectedRecipient.data.profile} />
+                )
+              : selectedRecipient.data.meta && (
+                  <AddressSection meta={selectedRecipient.data.meta} />
+                )}
+          </Box>
+        ),
+        type: 'error',
+        isLoading: false,
+        autoClose: 5000
+      });
+      sendToastId.current = undefined;
+    }
+  }, [loading, confirmed, error, txHash, sendAmount, selectedRecipient]);
 
   const sendTransaction = async () => {
-    if (sendToAddress && sendAmount && ethersSigner) {
-      const toAddress = isProfileType(sendToAddress)
-        ? sendToAddress.data.profile?.defaultFlow?.wallets.find(
-            (w) => w.network === selectedWallet.network
-          )?.address
-        : sendToAddress.data.meta?.addresses[0];
-
+    if (selectedRecipient && sendAmount && ethersSigner) {
       if (!toAddress) {
-        toast.error("can't send to this profiel");
+        toast.error("Can't send to this profile");
         return;
       }
 
-      sendToastId.current = toast.loading(
-        `Sending ${formatEther(sendAmount)} to ${shortenWalletAddressLabel(toAddress)} 💸`
-      );
-
-      switchNetwork?.(chains.find((c) => c?.name === selectedWallet?.network)?.id);
-
-      if (!toAddress) {
-        toast.error("can't send to this profiel");
-        return;
-      }
+      await reset();
 
       const txData = {
         from: selectedWallet.address,
@@ -109,71 +191,41 @@ export default function AccountSendDialog({
         amount: sendAmount
       };
 
-      const txHash = await safeTransferEth(ethersSigner, txData);
+      const safeAccountConfig: SafeAccountConfig = {
+        owners: [profile.address],
+        threshold: 1
+      };
 
-      if (!txHash) {
-        toast.update(sendToastId.current, {
-          render: `Transfer to ${shortenWalletAddressLabel(toAddress)} failed! 😕`,
-          type: 'error',
-          isLoading: false,
-          autoClose: 5000
-        });
-        sendToastId.current = undefined;
-      } else {
-        setTxHash(txHash);
-      }
+      const saltNonce = selectedWallet.safeSaltNonce as Hash;
+      const safeVersion = selectedWallet.safeVersion as SafeVersion;
+
+      transfer(ethersSigner, txData, safeAccountConfig, safeVersion, saltNonce);
     }
   };
 
-  useMemo(async () => {
-    const chainId = chains.find((c) => c.name === selectedWallet.network)?.id;
-    switchNetwork?.(chainId);
-  }, [selectedWallet]);
-
-  useMemo(async () => {
-    if (txHash && sendToAddress) {
-      const receipt = (await publicClient.waitForTransactionReceipt({
-        hash: txHash
-      })) as TransactionReceipt;
-
-      console.log('Receipt: ', receipt);
-
-      if (receipt && receipt.status === 'success') {
-        if (sendToastId.current) {
-          toast.update(sendToastId.current, {
-            render: `Transfer to ${shortenWalletAddressLabel(
-              isProfileType(sendToAddress)
-                ? sendToAddress.data.profile?.defaultFlow?.wallets.find(
-                    (w) => w.network === selectedWallet.network
-                  )?.address
-                : sendToAddress.data.meta?.addresses[0]
-            )} processed!`,
-            type: 'success',
-            isLoading: false,
-            autoClose: 5000
-          });
-          sendToastId.current = undefined;
-        }
-        handleCloseSendDialog();
-      } else {
-        if (sendToastId.current) {
-          toast.update(sendToastId.current, {
-            render: `Transfer to ${shortenWalletAddressLabel(
-              isProfileType(sendToAddress)
-                ? sendToAddress.data.profile?.defaultFlow?.wallets.find(
-                    (w) => w.network === selectedWallet.network
-                  )?.address
-                : sendToAddress.data.meta?.addresses[0]
-            )} failed! 😕`,
-            type: 'error',
-            isLoading: false,
-            autoClose: 5000
-          });
-          sendToastId.current = undefined;
-        }
-      }
+  useMemo(() => {
+    if (selectedRecipient) {
+      const chainId = chains.find((c) => c.name === selectedWallet.network)?.id;
+      switchNetwork?.(chainId);
     }
-  }, [txHash]);
+  }, [selectedWallet, selectedRecipient]);
+
+  useMemo(async () => {
+    if (!selectedRecipient) {
+      setToAddress(toAddress);
+      return;
+    }
+
+    if (selectedRecipient.type === 'address') {
+      setToAddress(selectedRecipient.data.meta?.addresses[0]);
+    } else {
+      setToAddress(
+        selectedRecipient.data.profile?.defaultFlow?.wallets.find(
+          (w) => w.network === selectedWallet.network
+        )?.address
+      );
+    }
+  }, [selectedWallet, selectedRecipient]);
 
   function handleCloseSendDialog() {
     closeStateCallback();
@@ -198,10 +250,13 @@ export default function AccountSendDialog({
           </Typography>
         </Stack>
       </DialogTitle>
-      <DialogContent sx={{ minWidth: 350 }}>
+      <DialogContent
+        sx={{
+          minWidth: 350,
+          maxWidth: fullScreen ? 600 : 350
+        }}>
         <Stack direction="column" spacing={2} alignItems="center">
           <Divider />
-
           <Box
             display="flex"
             flexDirection="row"
@@ -215,24 +270,26 @@ export default function AccountSendDialog({
               height: 56,
               border: 1,
               borderRadius: 5,
-              p: 1,
+              p: 1.5,
               textTransform: 'none'
             }}>
-            {sendToAddress &&
-              (sendToAddress.type === 'profile'
-                ? sendToAddress.data.profile && (
-                    <ProfileSection profile={sendToAddress.data.profile} />
+            {selectedRecipient &&
+              (selectedRecipient.type === 'profile'
+                ? selectedRecipient.data.profile && (
+                    <ProfileSection profile={selectedRecipient.data.profile} />
                   )
-                : sendToAddress.data.meta && <AddressSection meta={sendToAddress.data.meta} />)}
+                : selectedRecipient.data.meta && (
+                    <AddressSection meta={selectedRecipient.data.meta} />
+                  ))}
 
-            {!sendToAddress && (
+            {!selectedRecipient && (
               <Typography alignSelf="center" flexGrow={1}>
                 Choose Recipient
               </Typography>
             )}
 
             <Stack direction="row">
-              {sendToAddress && sendToAddress.type === 'profile' && (
+              {selectedRecipient && selectedRecipient.type === 'profile' && (
                 <Chip
                   size="small"
                   variant="filled"
@@ -243,70 +300,114 @@ export default function AccountSendDialog({
               <ExpandMore />
             </Stack>
           </Box>
-          {sendToAddress && (
-            <TextField
-              fullWidth
-              variant="outlined"
-              label={`Amount (max: ${
-                isSuccess ? balance && parseFloat(formatEther(balance?.value)).toPrecision(1) : 0
-              })`}
-              id="sendAmount"
-              type="number"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <IconButton
-                      sx={{ width: 40, height: 40, border: 1, borderStyle: 'dashed' }}
-                      onClick={(event) => {
-                        setWalletAnchorEl(event.currentTarget);
-                        setOpenSelectWallet(true);
-                      }}>
-                      <Avatar
-                        src={'/networks/' + selectedWallet.network + '.png'}
-                        sx={{ width: 28, height: 28 }}
-                      />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-                endAdornment: <InputAdornment position="end">ETH</InputAdornment>,
-                inputMode: 'decimal',
-                sx: { borderRadius: 5 }
-              }}
-              onChange={(event) => {
-                const amount = parseEther(event.target.value);
-                if (balance && amount <= balance?.value) {
-                  setSendAmount(amount);
-                }
-              }}
-            />
-          )}
-          {/*          <Box
-            alignSelf="stretch"
-            display="flex"
-            flexDirection="row"
-            alignItems="center"
-            justifyContent="space-between">
-            <Typography variant="caption">Gas Fee: </Typography>
-            <Typography variant="caption">0.00001 ETH</Typography>
-          </Box> */}
+          {selectedRecipient && (
+            <>
+              <TextField
+                fullWidth
+                variant="outlined"
+                helperText={`max: ${
+                  isSuccess ? balance && parseFloat(formatEther(balance?.value)).toPrecision(2) : 0
+                } ETH ≈ $${
+                  isSuccess
+                    ? balance &&
+                      (parseFloat(formatEther(balance?.value)) * (ethUsdPrice ?? 0)).toPrecision(2)
+                    : 0.0
+                }`}
+                type="number"
+                inputProps={{ style: { textAlign: 'center', fontSize: 20 } }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <IconButton
+                        sx={{ width: 40, height: 40, border: 1, borderStyle: 'dashed' }}
+                        onClick={(event) => {
+                          setWalletAnchorEl(event.currentTarget);
+                          setOpenSelectWallet(true);
+                        }}>
+                        <Avatar
+                          src={'/networks/' + selectedWallet.network + '.png'}
+                          sx={{ width: 28, height: 28 }}
+                        />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <Box
+                        display="flex"
+                        flexDirection="row"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        width={150}>
+                        <Typography>$</Typography>
+                        <Typography>≈</Typography>
+                        <Typography>
+                          {`${sendAmount ? parseFloat(formatEther(sendAmount)).toPrecision(2) : 0}
+                        ETH`}
+                        </Typography>
+                      </Box>
+                    </InputAdornment>
+                  ),
+                  inputMode: 'decimal',
+                  sx: { borderRadius: 5, height: 56 }
+                }}
+                onChange={(event) => {
+                  const amountUSD = parseFloat(event.target.value);
+                  if (ethUsdPrice && amountUSD >= 1) {
+                    const amount = parseEther((amountUSD / ethUsdPrice).toString());
 
-          <Divider />
-          <LoadingButton
-            disabled={!(sendToAddress && sendAmount)}
-            fullWidth
-            variant="outlined"
-            size="medium"
-            color="primary"
-            onClick={sendTransaction}
-            sx={{ mt: 1, borderRadius: 5 }}>
-            Send
-          </LoadingButton>
+                    if (balance && amount <= balance?.value && amountUSD >= 1) {
+                      setSendAmount(amount);
+                      return;
+                    }
+                  }
+                  setSendAmount(undefined);
+                }}
+              />
+
+              <Divider />
+              {chain?.name === selectedWallet.network ? (
+                <LoadingButton
+                  loading={loading || (txHash && !confirmed && !error)}
+                  disabled={!(toAddress && sendAmount)}
+                  fullWidth
+                  variant="outlined"
+                  loadingIndicator={
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <CircularProgress color="inherit" size={16} />
+                      <Typography variant="button">{status}</Typography>
+                    </Stack>
+                  }
+                  size="medium"
+                  color="primary"
+                  onClick={sendTransaction}
+                  sx={{ mt: 1, borderRadius: 5 }}>
+                  send
+                </LoadingButton>
+              ) : (
+                <LoadingButton
+                  fullWidth
+                  loading={isSwitchNetworkLoading}
+                  variant="outlined"
+                  size="medium"
+                  color="primary"
+                  onClick={() => {
+                    switchNetwork?.(chains.find((c) => c?.name === selectedWallet?.network)?.id);
+                  }}
+                  sx={{ mt: 1, borderRadius: 5 }}>
+                  Switch Network
+                </LoadingButton>
+              )}
+            </>
+          )}
         </Stack>
       </DialogContent>
       <ChooseWalletMenu
         anchorEl={walletAnchorEl}
         open={openSelectWallet}
-        onClose={async () => setOpenSelectWallet(false)}
+        closeStateCallback={() => {
+          setOpenSelectWallet(false);
+        }}
         wallets={flow.wallets}
         selectedWallet={selectedWallet}
         setSelectedWallet={setSelectedWallet}
@@ -317,7 +418,7 @@ export default function AccountSendDialog({
           setOpenSearchProfile(false);
         }}
         selectProfileWithSocialsCallback={(selectedProfileWithSocials) => {
-          setSendToAddress(selectedProfileWithSocials);
+          setSelectedRecipient(selectedProfileWithSocials);
         }}
       />
     </Dialog>

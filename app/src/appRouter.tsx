@@ -12,7 +12,7 @@ import PublicProfileWithProviders from './layouts/PublicProfileWithProviders';
 import LoginWithProviders from './layouts/LoginWithProviders';
 import Profile from './pages/Profile';
 
-export const appRoutes = ['/accounts', '/flows', '/requests', '/settings'];
+export const appRoutes = ['/home', '/flows', '/requests', '/settings'];
 
 export const appRouter = createBrowserRouter([
   {
@@ -25,13 +25,13 @@ export const appRouter = createBrowserRouter([
     element: <AppWithProviders />,
     errorElement: <Page404 />,
     children: [
-      { element: <Navigate to="/accounts" />, index: true },
+      { element: <Navigate to="/home" />, index: true },
       {
         path: 'profile',
         element: <Profile />
       },
       {
-        path: 'accounts',
+        path: 'home',
         element: <Accounts />
       },
       {
@@ -54,6 +54,9 @@ export const appRouter = createBrowserRouter([
     element: <PaymentRequestWithProviders />,
     errorElement: <Page404 />
   },
+
+  { path: '/search', element: <PublicProfileWithProviders />, errorElement: <Page404 /> },
+
   {
     path: '/:username',
     element: <PublicProfileWithProviders />,

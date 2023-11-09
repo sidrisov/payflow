@@ -12,8 +12,10 @@ import {
 } from '@safe-global/safe-deployments';
 
 import Safe, {
+  DEFAULT_SAFE_VERSION,
   EthersAdapter,
   SafeAccountConfig,
+  SafeDeploymentConfig,
   SafeFactory,
   getSafeContract
 } from '@safe-global/protocol-kit';
@@ -27,7 +29,7 @@ import {
 
 import { RelayResponse } from '@gelatonetwork/relay-sdk';
 
-import { Hash, Address } from 'viem';
+import { Hash, Address, keccak256, toHex } from 'viem';
 import { toast } from 'react-toastify';
 import { getRelayKitForChainId, isRelaySupported, waitForRelayTaskToComplete } from './relayer';
 import { CUSTOM_CONTRACTS, CUSTOM_CONTRACTS_CHAINS } from './safeContracts';
@@ -164,7 +166,7 @@ export async function safeDeploy({
         chainId
       );
 
-      const transactionHash = await waitForRelayTaskToComplete(relayResponse.taskId);
+      const transactionHash = await waitForRelayTaskToComplete(relayKit, relayResponse.taskId);
       if (!transactionHash) {
         throw new Error("Transaction didn't complete");
       }
@@ -270,7 +272,7 @@ export async function safeTransferEth(
         options
       );
 
-      return await waitForRelayTaskToComplete(relayResponse.taskId);
+      return await waitForRelayTaskToComplete(relayKit, relayResponse.taskId);
     } catch (error) {
       console.error('Failed to transfer: ', error);
       return;
@@ -306,4 +308,74 @@ export async function safeTransferEth(
       return;
     }
   }
+}
+
+export async function safeTransferEthWithDeploy(
+  ethersSigner: providers.JsonRpcSigner,
+  tx: { from: Address; to: Address; amount: bigint; safeSigner?: Address },
+  safeAccountConfig: SafeAccountConfig,
+  safeVersion?: SafeVersion,
+  saltNonce?: Hash,
+  statusCallback?: (status: string | undefined) => void
+): Promise<Hash | undefined> {
+  const ethAdapter = new EthersAdapter({
+    ethers,
+    signerOrProvider: ethersSigner
+  });
+
+  const safeAddress = tx.from;
+  const chainId = await ethAdapter.getChainId();
+
+  const isSafeDeployed = await ethAdapter.isContractDeployed(safeAddress);
+
+  const safeDeploymentConfig = {
+    saltNonce,
+    safeVersion: safeVersion ?? LATEST_SAFE_VERSION
+  } as SafeDeploymentConfig;
+
+  const safeSdk = isSafeDeployed
+    ? await Safe.create({ ethAdapter: ethAdapter, safeAddress })
+    : await Safe.create({
+        ethAdapter: ethAdapter,
+        predictedSafe: { safeAccountConfig, safeDeploymentConfig }
+      });
+
+  console.debug(`${safeAddress} is deployed: ${isSafeDeployed}`);
+
+  const safeTransactions: MetaTransactionData[] = [
+    {
+      to: tx.to,
+      value: tx.amount.toString(),
+      data: '0x',
+      operation: OperationType.Call
+    }
+  ];
+
+  console.debug(`Safe txs: ${safeTransactions}`);
+
+  const relayKit = getRelayKitForChainId(chainId);
+  if (!relayKit) {
+    throw new Error('Relayer not available!');
+  }
+
+  // Relay the transaction
+  const options: MetaTransactionOptions = {
+    gasLimit: GAS_LIMIT.toString(),
+    isSponsored: false
+  };
+
+  const relayedTransaction = await relayKit.createRelayedTransaction({
+    safe: safeSdk,
+    transactions: safeTransactions,
+    options
+  });
+
+  statusCallback?.('signing');
+
+  const signedSafeTransaction = await safeSdk.signTransaction(relayedTransaction);
+
+  statusCallback?.('relaying');
+  const relayResponse = await relayKit.executeRelayTransaction(signedSafeTransaction, safeSdk);
+
+  return await waitForRelayTaskToComplete(relayKit, relayResponse.taskId);
 }

@@ -17,7 +17,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <HelmetProvider>
     <RouterProvider router={appRouter} />
     <ToastContainer
-      position="bottom-right"
+      position="top-center"
       autoClose={3000}
       limit={5}
       hideProgressBar={false}
@@ -28,6 +28,8 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
       draggable
       pauseOnHover
       theme="colored"
+      toastStyle={{ borderRadius: 20 }}
+      closeButton
     />
   </HelmetProvider>
   //</React.StrictMode>

@@ -1,4 +1,4 @@
-import { GelatoRelayPack } from '@safe-global/relay-kit';
+import { GelatoRelayPack, RelayPack } from '@safe-global/relay-kit';
 import {
   base,
   baseGoerli,
@@ -8,11 +8,11 @@ import {
   polygonZkEvmTestnet,
   zkSyncTestnet
 } from 'viem/chains';
-import { TaskState } from '../types/TaskState';
 import { toast } from 'react-toastify';
 import { Hash } from 'viem';
 import { TransactionStatusResponse } from '@gelatonetwork/relay-sdk';
 import { delay } from './delay';
+import { TaskState } from '../types/TaskState';
 
 const GELATO_TESTNET_API_KEY = import.meta.env.VITE_GELATO_TESTNET_API_KEY;
 const GELATO_MAINNET_API_KEY = import.meta.env.VITE_GELATO_MAINNET_API_KEY;
@@ -54,13 +54,12 @@ export function isRelaySupported(chainId: number | undefined) {
 }
 
 export async function waitForRelayTaskToComplete(
+  relayKit: RelayPack,
   taskId: string,
   period: number = 3000,
   timeout: number = 60000
 ): Promise<Hash | undefined> {
-  console.log(`Relay Transaction Task ID: https://relay.gelato.digital/tasks/status/${taskId}`);
-
-  let relayTaskResult: TransactionStatusResponse;
+  let relayTaskResult;
 
   const maxPolls = timeout / period;
   let pollCounter = 0;
@@ -68,10 +67,9 @@ export async function waitForRelayTaskToComplete(
   do {
     pollCounter++;
     await delay(period);
-    const relayExecResponse = await fetch(`https://relay.gelato.digital/tasks/status/${taskId}`);
-    relayTaskResult = (await relayExecResponse.json()).task;
 
-    console.log(relayTaskResult);
+    relayTaskResult = await relayKit.getTaskStatus(taskId);
+    console.debug('Relay Transaction Status for taskId', taskId, relayTaskResult);
   } while (
     relayTaskResult &&
     (relayTaskResult.taskState === TaskState.CheckPending ||
@@ -81,17 +79,15 @@ export async function waitForRelayTaskToComplete(
   );
 
   if (!relayTaskResult) {
-    toast.error('Failed to relay transaction!');
-    return;
+    throw new Error(`Failed to relay transaction for taskId: ${taskId}`);
   }
 
   if (relayTaskResult.taskState !== TaskState.ExecSuccess) {
-    toast.error(
-      `Failed to relay transaction: ${relayTaskResult.taskState}, ${
+    throw new Error(
+      `Failed to relay transaction for taskId: ${taskId} - ${relayTaskResult.taskState}, ${
         relayTaskResult.lastCheckMessage ?? 'no error'
       }!`
     );
-    return;
   }
 
   return relayTaskResult.transactionHash as Hash;

@@ -24,6 +24,7 @@ import { AirstackProvider, init } from '@airstack/airstack-react';
 import { me } from '../services/user';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { ProfileType } from '../types/ProfleType';
+import { useNavigate } from 'react-router-dom';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 const AIRSTACK_API_KEY = import.meta.env.VITE_AIRSTACK_API_KEY;
@@ -65,6 +66,8 @@ export default function AppWithProviders() {
         }
   );
 
+  const navigate = useNavigate();
+
   const fetchingStatusRef = useRef(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [profile, setProfile] = useState<ProfileType>();
@@ -86,7 +89,7 @@ export default function AppWithProviders() {
         if (profile) {
           setProfile(profile);
         } else {
-          setProfile(undefined);
+          navigate('/connect');
         }
       } finally {
         fetchingStatusRef.current = false;

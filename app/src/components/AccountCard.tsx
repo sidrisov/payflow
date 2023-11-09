@@ -200,7 +200,7 @@ export function AccountCard(props: AccountNewDialogProps) {
       <ChooseFlowMenu
         anchorEl={flowAnchorEl}
         open={openSelectFlow}
-        onClose={async () => setOpenSelectFlow(false)}
+        closeStateCallback={() => setOpenSelectFlow(false)}
         flows={flows}
         selectedFlow={selectedFlow}
         setSelectedFlow={setSelectedFlow}

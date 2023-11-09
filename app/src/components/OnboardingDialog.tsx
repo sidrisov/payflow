@@ -55,7 +55,7 @@ export default function OnboardingDialog({ closeStateCallback, ...props }: Share
   const navigate = useNavigate();
 
   // TODO: add random generator
-  const saltNonce = keccak256(toHex('2'));
+  const saltNonce = keccak256(toHex('3'));
 
   useMemo(async () => {
     if (username) {
@@ -220,7 +220,7 @@ export default function OnboardingDialog({ closeStateCallback, ...props }: Share
           <LoadingButton
             loading={loadingWallets || loadingUpdateProfile}
             disabled={!usernameAvailble || !username}
-            variant="contained"
+            variant="outlined"
             onClick={async () => {
               await createMainFlow();
             }}
