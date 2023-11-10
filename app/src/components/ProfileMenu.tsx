@@ -1,22 +1,34 @@
 import { Divider, ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material';
 import { ProfileType } from '../types/ProfleType';
 import { useNavigate } from 'react-router-dom';
-import { Logout, Person, Settings } from '@mui/icons-material';
+import {
+  DarkModeOutlined,
+  LightModeOutlined,
+  Logout,
+  Person,
+  Settings
+} from '@mui/icons-material';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ProfileSection } from './ProfileSection';
 import { API_URL } from '../utils/urlConstants';
 import { useAccount } from 'wagmi';
+import { useContext } from 'react';
+import { UserContext } from '../contexts/UserContext';
+import { CloseCallbackType } from '../types/CloseCallbackType';
 
 export function ProfileMenu(
-  props: MenuProps & {
-    profile: ProfileType;
-  }
+  props: MenuProps &
+    CloseCallbackType & {
+      profile: ProfileType;
+    }
 ) {
   const navigate = useNavigate();
   const { connector } = useAccount();
 
-  const { profile } = props;
+  const { profile, closeStateCallback } = props;
+
+  const { appSettings, setAppSettings } = useContext(UserContext);
 
   return (
     <Menu
@@ -27,6 +39,7 @@ export function ProfileMenu(
       <MenuItem
         sx={{ minWidth: 150 }}
         onClick={async () => {
+          closeStateCallback();
           navigate(`/${profile.username}`);
         }}>
         <ProfileSection profile={profile} />
@@ -34,6 +47,7 @@ export function ProfileMenu(
       <Divider />
       <MenuItem
         onClick={async () => {
+          closeStateCallback();
           navigate('/profile');
         }}>
         <ListItemIcon>
@@ -44,12 +58,24 @@ export function ProfileMenu(
 
       <MenuItem
         onClick={() => {
+          closeStateCallback();
           navigate('/settings');
         }}>
         <ListItemIcon>
           <Settings fontSize="small" />
         </ListItemIcon>
         Settings
+      </MenuItem>
+      <Divider />
+      <MenuItem onClick={() => setAppSettings({ ...appSettings, darkMode: !appSettings.darkMode })}>
+        <ListItemIcon>
+          {appSettings.darkMode ? (
+            <DarkModeOutlined fontSize="small" />
+          ) : (
+            <LightModeOutlined fontSize="small" />
+          )}
+        </ListItemIcon>
+        {appSettings.darkMode ? 'Dark' : 'Light'}
       </MenuItem>
       <Divider />
       <MenuItem

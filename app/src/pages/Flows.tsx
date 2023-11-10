@@ -6,7 +6,6 @@ import {
   Container,
   IconButton,
   Stack,
-  SvgIcon,
   Tooltip,
   Typography,
   useMediaQuery,
@@ -29,7 +28,6 @@ import { DAPP_URL } from '../utils/urlConstants';
 
 export default function Flows() {
   const theme = useTheme();
-  const mediumScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   const {
     isAuthenticated,
@@ -121,7 +119,7 @@ export default function Flows() {
             sx={{
               display: 'flex',
               flexWrap: 'wrap',
-              justifyContent: mediumScreen ? 'center' : 'flex-start'
+              justifyContent: 'center'
             }}>
             <Card
               elevation={10}

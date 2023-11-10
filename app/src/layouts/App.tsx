@@ -1,30 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 
-import {
-  AppBar,
-  IconButton,
-  Toolbar,
-  Box,
-  Drawer,
-  Stack,
-  Avatar,
-  Typography,
-  Button
-} from '@mui/material';
+import { AppBar, IconButton, Toolbar, Box, Stack, Avatar, Typography, Button } from '@mui/material';
 
 import CustomThemeProvider from '../theme/CustomThemeProvider';
-import {
-  LightModeOutlined,
-  DarkModeOutlined,
-  Menu as MenuIcon,
-  Search,
-  SettingsApplications,
-  Payment,
-  Payments,
-  Apps,
-  Home
-} from '@mui/icons-material';
+import { Search, Payments, Apps, Home, Notifications } from '@mui/icons-material';
 
 import Nav from '../components/Navigation';
 
@@ -181,7 +161,7 @@ export default function AppLayout({
             sx={{
               display: 'flex',
               flexDirection: 'row',
-              justifyContent: 'space-evenly'
+              justifyContent: 'space-between'
             }}>
             {/* <Box component="nav" sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
               <Drawer
@@ -216,10 +196,7 @@ export default function AppLayout({
                   color="transparent"
                   elevation={0}
                   sx={{ backdropFilter: 'blur(5px)' }}>
-                  <Toolbar
-                    sx={{
-                      justifyContent: 'space-between'
-                    }}>
+                  <Toolbar>
                     {/*                     <Box>
                       <IconButton
                         color="inherit"
@@ -234,9 +211,8 @@ export default function AppLayout({
                       alignItems="center"
                       justifyContent="space-between"
                       flexGrow={1}>
+                      <HomeLogo />
                       <Stack direction="row" spacing={0.5} alignItems="center">
-                        <HomeLogo />
-
                         <IconButton color="inherit" onClick={() => navigate('/home')}>
                           <Home />
                         </IconButton>
@@ -250,13 +226,14 @@ export default function AppLayout({
                         </IconButton>
 
                         <Box
+                          ml={1}
                           display="flex"
                           flexDirection="row"
                           alignItems="center"
                           component={Button}
                           color="inherit"
                           sx={{
-                            width: 100,
+                            width: 120,
                             borderRadius: 5,
                             border: 1,
                             borderColor: 'inherit',
@@ -265,16 +242,13 @@ export default function AppLayout({
                           onClick={async () => {
                             setOpenSearchProfile(true);
                           }}>
-                          <Search fontSize="small" />
+                          <Search color="inherit" />
                           <Typography variant="subtitle2">Search ...</Typography>
                         </Box>
                       </Stack>
                       <Stack direction="row" spacing={0.5} alignItems="center">
-                        <IconButton
-                          onClick={() =>
-                            setAppSettings({ ...appSettings, darkMode: !appSettings.darkMode })
-                          }>
-                          {appSettings.darkMode ? <DarkModeOutlined /> : <LightModeOutlined />}
+                        <IconButton color="inherit">
+                          <Notifications />
                         </IconButton>
 
                         <IconButton
@@ -308,7 +282,7 @@ export default function AppLayout({
           anchorEl={profileMenuAnchorEl}
           open={openProfileMenu}
           onClose={() => setOpenProfileMenu(false)}
-          onClick={() => setOpenProfileMenu(false)}
+          closeStateCallback={() => setOpenProfileMenu(false)}
         />
         <SearchProfileDialog
           open={openSearchProfile}
