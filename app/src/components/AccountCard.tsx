@@ -22,6 +22,7 @@ import { formatEther } from 'viem';
 import { WalletsPopover } from './WalletsInfoPopover';
 import { FlowType } from '../types/FlowType';
 import { ChooseFlowMenu } from './ChooseFlowMenu';
+import { comingSoonToast } from './Toasts';
 
 export type AccountNewDialogProps = CardProps & {
   flows: FlowType[];
@@ -46,7 +47,7 @@ export function AccountCard(props: AccountNewDialogProps) {
   const [totalBalance, setTotalBalance] = useState<string>();
 
   useMemo(async () => {
-    if (fetched && balances && ethUsdPrice) {
+    if (fetched && balances.length > 0 && ethUsdPrice) {
       const totalBalance = formatEther(
         balances
           // don't count ERC20 for now
@@ -55,8 +56,6 @@ export function AccountCard(props: AccountNewDialogProps) {
             return previousValue + (currentValue.balance?.value ?? BigInt(0));
           }, BigInt(0))
       );
-
-      console.log(totalBalance);
 
       setTotalBalance((parseFloat(totalBalance) * ethUsdPrice).toFixed(1));
     }
@@ -142,7 +141,7 @@ export function AccountCard(props: AccountNewDialogProps) {
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-          {loading ? (
+          {loading || !totalBalance ? (
             <Skeleton variant="rectangular" height={40} width={80} sx={{ borderRadius: 3 }} />
           ) : (
             <Typography variant="h4">${fetched ? totalBalance : 'N/A'}</Typography>
@@ -154,7 +153,7 @@ export function AccountCard(props: AccountNewDialogProps) {
           <IconButton
             color="inherit"
             onClick={() => {
-              toast.error('Feature not supported yet!');
+              comingSoonToast();
             }}
             sx={{ border: 1, borderStyle: 'dashed' }}>
             <ArrowDownward />

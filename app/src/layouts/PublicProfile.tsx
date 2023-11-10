@@ -20,7 +20,6 @@ import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ProfileType } from '../types/ProfleType';
-import { shortenWalletAddressLabel } from '../utils/address';
 import { useEnsName } from 'wagmi';
 import {
   ArrowForward,
@@ -38,6 +37,9 @@ import QRCode from 'react-qr-code';
 import SearchProfileDialog from '../components/SearchProfileDialog';
 import { API_URL } from '../utils/urlConstants';
 import { ProfileSection } from '../components/ProfileSection';
+import { comingSoonText, comingSoonToast } from '../components/Toasts';
+import SocialPresenceChipWithLink from '../components/SocialPresenceChipWithLink';
+import { querySocialsMinimal } from '../utils/searchProfile';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 
@@ -58,24 +60,8 @@ export default function PublicProfile() {
     chainId: 1
   });
 
-  const querySocials = `query GetSocial($identity: Identity!) {
-  Wallet(input: {identity: $identity, blockchain: ethereum}) {
-    primaryDomain {
-      name
-    }
-    socials(input: {limit: 200}) {
-      dappName
-      profileName
-      profileTokenId
-    }
-    xmtp {
-      isXMTPEnabled
-    }
-  }
-}`;
-
   const [fetch, { data: socialInfo, loading }] = useLazyQuery(
-    querySocials,
+    querySocialsMinimal,
     { identity: profile?.address },
     {
       cache: true
@@ -170,68 +156,19 @@ export default function PublicProfile() {
                   display="flex"
                   justifyContent="space-evenly"
                   alignItems="center">
-                  <Chip
-                    variant="outlined"
-                    avatar={<Avatar src={ensName ? '/ens.svg' : '/etherscan.jpg'} />}
-                    label={ensName ?? shortenWalletAddressLabel(profile.address)}
-                    clickable
-                    component="a"
-                    href={`https://etherscan.io/address/${profile.address}`}
-                    sx={{ borderColor: 'inherit', m: 0.5 }}
+                  <SocialPresenceChipWithLink
+                    type={ensName ? 'ens' : 'address'}
+                    name={ensName ?? profile.address}
                   />
 
                   {socialInfo.Wallet.socials &&
-                    socialInfo.Wallet.socials.find((s: any) => s.dappName === 'farcaster') && (
-                      <Chip
-                        variant="outlined"
-                        avatar={<Avatar src="/farcaster.svg" />}
-                        label={
-                          socialInfo.Wallet.socials.find((s: any) => s.dappName === 'farcaster')
-                            .profileName
-                        }
-                        clickable
-                        component="a"
-                        href={`https://warpcast.com/${
-                          socialInfo.Wallet.socials.find((s: any) => s.dappName === 'farcaster')
-                            .profileName
-                        }`}
-                        sx={{
-                          borderColor: 'inherit',
-                          m: 0.5
-                        }}
-                      />
-                    )}
-                  {socialInfo.Wallet.socials &&
-                    socialInfo.Wallet.socials.find((s: any) => s.dappName === 'farcaster') && (
-                      <Chip
-                        variant="outlined"
-                        avatar={<Avatar src="/lens.svg" />}
-                        label={
-                          socialInfo.Wallet.socials.find((s: any) => s.dappName === 'farcaster')
-                            .profileName
-                        }
-                        clickable
-                        component="a"
-                        href={`https://hey.xyz/u/${
-                          socialInfo.Wallet.socials.find((s: any) => s.dappName === 'farcaster')
-                            .profileName
-                        }`}
-                        sx={{
-                          borderColor: 'inherit',
-                          m: 0.5
-                        }}
-                      />
-                    )}
+                    socialInfo.Wallet.socials
+                      .filter((s: any) => s.profileName)
+                      .map((s: any) => (
+                        <SocialPresenceChipWithLink type={s.dappName} name={s.profileName} />
+                      ))}
                   {socialInfo.Wallet.xmtp && socialInfo.Wallet.xmtp[0].isXMTPEnabled && (
-                    <Chip
-                      variant="outlined"
-                      avatar={<Avatar src="/xmtp.svg" />}
-                      label="chat"
-                      clickable
-                      component="a"
-                      href={`https://xmtp.chat/dm/${ensName ?? profile.address}`}
-                      sx={{ borderColor: 'inherit', m: 0.5 }}
-                    />
+                    <SocialPresenceChipWithLink type="xmtp" name={ensName ?? profile.address} />
                   )}
                 </Box>
               )}
@@ -240,6 +177,7 @@ export default function PublicProfile() {
                   color="inherit"
                   variant="outlined"
                   endIcon={<AttachMoney />}
+                  onClick={() => comingSoonToast()}
                   sx={{ borderRadius: 5, textTransform: 'lowercase' }}>
                   Tip
                 </Button>
@@ -247,6 +185,7 @@ export default function PublicProfile() {
                   variant="outlined"
                   color="inherit"
                   endIcon={<Send />}
+                  onClick={() => comingSoonToast()}
                   sx={{ borderRadius: 5, textTransform: 'lowercase' }}>
                   Send
                 </Button>
@@ -282,7 +221,11 @@ export default function PublicProfile() {
           </Stack>
         )}
 
-        {flows &&
+        <Typography variant="h6" textAlign="center">
+          {comingSoonText}
+        </Typography>
+
+        {/* {flows &&
           flows.map((flow) => (
             <Card
               key={`flow_card_${flow.uuid}`}
@@ -364,7 +307,7 @@ export default function PublicProfile() {
                 <ArrowForward fontSize="medium" />
               </IconButton>
             </Card>
-          ))}
+          ))} */}
       </Container>
       <Fab
         variant="circular"
@@ -375,6 +318,7 @@ export default function PublicProfile() {
         <Search />
       </Fab>
       <SearchProfileDialog
+        maxWidth="sm"
         fullWidth
         open={openSearchProfile}
         closeStateCallback={() => {

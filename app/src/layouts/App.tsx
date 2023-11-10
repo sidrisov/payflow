@@ -234,7 +234,7 @@ export default function AppLayout({
                       alignItems="center"
                       justifyContent="space-between"
                       flexGrow={1}>
-                      <Stack direction="row" spacing={1} alignItems="center">
+                      <Stack direction="row" spacing={0.5} alignItems="center">
                         <HomeLogo />
 
                         <IconButton color="inherit" onClick={() => navigate('/home')}>

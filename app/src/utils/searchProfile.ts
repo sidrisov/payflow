@@ -4,7 +4,7 @@ import { fetchQuery } from '@airstack/airstack-react';
 import { isAddress } from 'viem';
 import { API_URL } from './urlConstants';
 
-const querySocials = `query GetSocial($identity: Identity!) {
+export const querySocials = `query GetSocial($identity: Identity!) {
   Wallet(input: {identity: $identity, blockchain: ethereum}) {
     addresses
     primaryDomain {
@@ -22,6 +22,21 @@ const querySocials = `query GetSocial($identity: Identity!) {
       profileName
       profileImage
       profileTokenId
+    }
+    xmtp {
+      isXMTPEnabled
+    }
+  }
+}`;
+
+export const querySocialsMinimal = `query GetSocial($identity: Identity!) {
+  Wallet(input: {identity: $identity, blockchain: ethereum}) {
+    primaryDomain {
+      name
+    }
+    socials(input: {limit: 5}) {
+      dappName
+      profileName
     }
     xmtp {
       isXMTPEnabled

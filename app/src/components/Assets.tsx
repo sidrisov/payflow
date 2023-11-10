@@ -79,7 +79,7 @@ export default function Assets(props: {
         })}
       </Stack>
       <Stack p={1} direction="column" spacing={1} minWidth={350} maxHeight={350} overflow="scroll">
-        {loading ? (
+        {loading || balances.length === 0 ? (
           <>
             <Skeleton variant="rectangular" height={60} sx={{ borderRadius: 3 }} />
             <Skeleton variant="rectangular" height={60} sx={{ borderRadius: 3 }} />

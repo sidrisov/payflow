@@ -1,26 +1,17 @@
-import {
-  Box,
-  Stack,
-  Button,
-  IconButton,
-  Chip,
-  Avatar,
-  Tooltip,
-  BoxProps
-} from '@mui/material';
+import { Box, Stack, Button, IconButton, Chip, Tooltip, BoxProps } from '@mui/material';
 import { StarBorder } from '@mui/icons-material';
 import { ProfileWithSocialsType } from '../types/ProfleType';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
+import { comingSoonToast } from './Toasts';
+import SocialPresenceAvatar from './SocialPresenceAvatar';
+import { dAppType } from '../utils/dapps';
 
 export function SearchProfileListItem(
   props: BoxProps & { profileWithSocials: ProfileWithSocialsType; view: 'address' | 'profile' }
 ) {
   const { profileWithSocials, view } = props;
-
-  const navigate = useNavigate();
 
   return (
     (view === 'profile' ? profileWithSocials.profile : profileWithSocials.meta) && (
@@ -61,7 +52,7 @@ export function SearchProfileListItem(
                   label="invite"
                   clickable
                   onClick={() => {
-                    navigate('/invite?invitee=sinaver&code=asdf4432');
+                    comingSoonToast();
                   }}
                   sx={{ bgcolor: 'orange', '&:hover': { bgcolor: 'lightgreen' } }}
                 />
@@ -71,26 +62,23 @@ export function SearchProfileListItem(
             {profileWithSocials.meta && (
               <Stack direction="row" spacing={0.5}>
                 {profileWithSocials.meta.ens && (
-                  <Tooltip title={profileWithSocials.meta.ens}>
-                    <Avatar src="/ens.svg" sx={{ width: 15, height: 15 }} />
-                  </Tooltip>
+                  <SocialPresenceAvatar dappName="ens" profileName={profileWithSocials.meta.ens} />
                 )}
                 {profileWithSocials.meta.socials
-                  .filter((s) => s.profileName)
+                  .filter((s) => s.profileName && s.dappName)
                   .map((s) => (
-                    <Tooltip title={s.profileName}>
-                      <Avatar src={`/${s.dappName}.svg`} sx={{ width: 15, height: 15 }} />
-                    </Tooltip>
+                    <SocialPresenceAvatar
+                      dappName={s.dappName as dAppType}
+                      profileName={s.profileName}
+                    />
                   ))}
-                {profileWithSocials.meta.xmtp && (
-                  <Avatar src="/xmtp.svg" sx={{ width: 15, height: 15 }} />
-                )}
+                {profileWithSocials.meta.xmtp && <SocialPresenceAvatar dappName="xmtp" />}
               </Stack>
             )}
           </Stack>
         </Box>
         <Tooltip title="Add to favourites">
-          <IconButton size="small" onClick={() => toast.warning('not implemented yet!')}>
+          <IconButton size="small" onClick={() => comingSoonToast()}>
             <StarBorder fontSize="small" />
           </IconButton>
         </Tooltip>

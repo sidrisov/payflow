@@ -49,6 +49,7 @@ import { safeDeploy } from '../utils/safeTransactions';
 import { isRelaySupported } from '../utils/relayer';
 import { shortNetworkName } from '../utils/shortNetworkName';
 import { API_URL, DAPP_URL } from '../utils/urlConstants';
+import { comingSoonToast } from './Toasts';
 
 export type FlowViewDialogProps = DialogProps &
   CloseCallbackType & {
@@ -638,7 +639,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                 <IconButton
                   color="inherit"
                   onClick={async () => {
-                    toast.error('Feature not supported yet!');
+                    comingSoonToast();
                   }}
                   sx={{ border: 1, borderStyle: 'dashed' }}>
                   <Close fontSize="small" />

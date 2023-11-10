@@ -83,7 +83,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
       }}>
       <DialogTitle>
         <Box display="flex" justifyContent="center">
-          <Typography variant="h6">New Flow</Typography>
+          <Typography variant="h6">New Jar</Typography>
         </Box>
       </DialogTitle>
       <DialogContent>

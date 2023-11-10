@@ -15,12 +15,14 @@ import {
   Divider,
   InputAdornment,
   Chip,
-  CircularProgress
+  CircularProgress,
+  Tooltip
 } from '@mui/material';
+
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useContext, useMemo, useRef, useState } from 'react';
-import { useBalance, useNetwork, usePublicClient, useSwitchNetwork } from 'wagmi';
-import { ArrowForward, Close, ExpandMore } from '@mui/icons-material';
+import { useBalance, useNetwork, useSwitchNetwork } from 'wagmi';
+import { AddComment, ArrowForward, Close, ExpandMore } from '@mui/icons-material';
 import { Id, toast } from 'react-toastify';
 
 import { Address, Hash, formatEther, parseEther } from 'viem';
@@ -37,6 +39,9 @@ import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { UserContext } from '../contexts/UserContext';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { useSafeTransfer } from '../utils/hooks/useSafeTransfer';
+import { comingSoonToast } from './Toasts';
+import { grey } from '@mui/material/colors';
+import { updateWallet } from '../services/flow';
 
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
@@ -141,6 +146,12 @@ export default function AccountSendDialog({
         autoClose: 5000
       });
       sendToastId.current = undefined;
+
+      // if tx was successfull, mark wallet as deployed if it wasn't
+      if (!selectedWallet.safeDeployed) {
+        selectedWallet.safeDeployed = true;
+        updateWallet(flow.uuid, selectedWallet);
+      }
     } else if (error) {
       toast.update(sendToastId.current, {
         render: (
@@ -204,6 +215,7 @@ export default function AccountSendDialog({
   };
 
   useMemo(() => {
+    setSendAmount(undefined);
     if (selectedRecipient) {
       const chainId = chains.find((c) => c.name === selectedWallet.network)?.id;
       switchNetwork?.(chainId);
@@ -302,68 +314,93 @@ export default function AccountSendDialog({
           </Box>
           {selectedRecipient && (
             <>
-              <TextField
-                fullWidth
-                variant="outlined"
-                helperText={`max: ${
-                  isSuccess ? balance && parseFloat(formatEther(balance?.value)).toPrecision(2) : 0
-                } ETH ≈ $${
-                  isSuccess
-                    ? balance &&
-                      (parseFloat(formatEther(balance?.value)) * (ethUsdPrice ?? 0)).toPrecision(2)
-                    : 0.0
-                }`}
-                type="number"
-                inputProps={{ style: { textAlign: 'center', fontSize: 20 } }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <IconButton
-                        sx={{ width: 40, height: 40, border: 1, borderStyle: 'dashed' }}
-                        onClick={(event) => {
-                          setWalletAnchorEl(event.currentTarget);
-                          setOpenSelectWallet(true);
-                        }}>
-                        <Avatar
-                          src={'/networks/' + selectedWallet.network + '.png'}
-                          sx={{ width: 28, height: 28 }}
-                        />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <Box
-                        display="flex"
-                        flexDirection="row"
-                        justifyContent="space-between"
-                        alignItems="center"
-                        width={150}>
-                        <Typography>$</Typography>
-                        <Typography>≈</Typography>
-                        <Typography>
-                          {`${sendAmount ? parseFloat(formatEther(sendAmount)).toPrecision(2) : 0}
+              <Box display="flex" flexDirection="column">
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  type="number"
+                  inputProps={{ style: { textAlign: 'center', fontSize: 20 } }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <IconButton
+                          sx={{ width: 40, height: 40, border: 1, borderStyle: 'dashed' }}
+                          onClick={(event) => {
+                            setWalletAnchorEl(event.currentTarget);
+                            setOpenSelectWallet(true);
+                          }}>
+                          <Avatar
+                            src={'/networks/' + selectedWallet.network + '.png'}
+                            sx={{ width: 28, height: 28 }}
+                          />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Box
+                          display="flex"
+                          flexDirection="row"
+                          justifyContent="space-between"
+                          alignItems="center"
+                          width={150}>
+                          <Typography>$</Typography>
+                          <Typography>≈</Typography>
+                          <Typography>
+                            {`${sendAmount ? parseFloat(formatEther(sendAmount)).toPrecision(2) : 0}
                         ETH`}
-                        </Typography>
-                      </Box>
-                    </InputAdornment>
-                  ),
-                  inputMode: 'decimal',
-                  sx: { borderRadius: 5, height: 56 }
-                }}
-                onChange={(event) => {
-                  const amountUSD = parseFloat(event.target.value);
-                  if (ethUsdPrice && amountUSD >= 1) {
-                    const amount = parseEther((amountUSD / ethUsdPrice).toString());
+                          </Typography>
+                        </Box>
+                      </InputAdornment>
+                    ),
+                    inputMode: 'decimal',
+                    sx: { borderRadius: 5, height: 56 }
+                  }}
+                  onChange={(event) => {
+                    const amountUSD = parseFloat(event.target.value);
+                    if (ethUsdPrice && amountUSD >= 1) {
+                      const amount = parseEther((amountUSD / ethUsdPrice).toString());
 
-                    if (balance && amount <= balance?.value && amountUSD >= 1) {
-                      setSendAmount(amount);
-                      return;
+                      if (balance && amount <= balance?.value && amountUSD >= 1) {
+                        setSendAmount(amount);
+                        return;
+                      }
                     }
-                  }
-                  setSendAmount(undefined);
-                }}
-              />
+                    setSendAmount(undefined);
+                  }}
+                />
+
+                <Box
+                  display="flex"
+                  flexDirection="row"
+                  justifyContent="space-between"
+                  alignItems="center">
+                  <Typography ml={1} variant="caption" color={grey[700]}>
+                    {`max: ${
+                      isSuccess
+                        ? balance && parseFloat(formatEther(balance?.value)).toPrecision(2)
+                        : 0
+                    } ETH ≈ $${
+                      isSuccess
+                        ? balance &&
+                          (
+                            parseFloat(formatEther(balance?.value)) * (ethUsdPrice ?? 0)
+                          ).toPrecision(2)
+                        : 0.0
+                    }`}
+                  </Typography>
+                  <Tooltip title="Add a note">
+                    <IconButton
+                      size="small"
+                      sx={{ mr: 1, alignSelf: 'flex-end' }}
+                      onClick={() => {
+                        comingSoonToast();
+                      }}>
+                      <AddComment fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </Box>
 
               <Divider />
               {chain?.name === selectedWallet.network ? (
@@ -382,7 +419,7 @@ export default function AccountSendDialog({
                   color="primary"
                   onClick={sendTransaction}
                   sx={{ mt: 1, borderRadius: 5 }}>
-                  send
+                  Send
                 </LoadingButton>
               ) : (
                 <LoadingButton

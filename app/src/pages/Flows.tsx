@@ -6,6 +6,7 @@ import {
   Container,
   IconButton,
   Stack,
+  SvgIcon,
   Tooltip,
   Typography,
   useMediaQuery,
@@ -137,9 +138,16 @@ export default function Flows() {
                 flexDirection: 'column',
                 justifyContent: 'space-between'
               }}>
-              <Typography fontSize={20} fontWeight="bold">
-                New flow
-              </Typography>
+              <Box
+                display="flex"
+                flexDirection="row"
+                alignItems="center"
+                justifyContent="space-between">
+                <Typography fontSize={20} fontWeight="bold">
+                  Create New Jar
+                </Typography>
+                <Avatar src="/jar2.png" sx={{ p: 1, width: 48, height: 48 }} />
+              </Box>
               <Typography fontSize={12} fontWeight="bold">
                 Receive payments for different purposes: savings, income, creator support,
                 fundraising, collecting for a friend's birthday - ANYTHING!
