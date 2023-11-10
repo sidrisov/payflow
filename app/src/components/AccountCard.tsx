@@ -23,6 +23,7 @@ import { WalletsPopover } from './WalletsInfoPopover';
 import { FlowType } from '../types/FlowType';
 import { ChooseFlowMenu } from './ChooseFlowMenu';
 import { comingSoonToast } from './Toasts';
+import { FlowTopUpMenu } from './FlowTopUpMenu';
 
 export type AccountNewDialogProps = CardProps & {
   flows: FlowType[];
@@ -34,14 +35,16 @@ export type AccountNewDialogProps = CardProps & {
 };
 
 export function AccountCard(props: AccountNewDialogProps) {
-  const { ethUsdPrice } = useContext(UserContext);
+  const { ethUsdPrice, profile } = useContext(UserContext);
   const { flows, selectedFlow, setSelectedFlow } = props;
 
   const [openWithdrawalDialog, setOpenWithdrawalDialog] = useState(false);
   const [openWalletDetailsPopover, setOpenWalletDetailsPopover] = useState(false);
   const [openSelectFlow, setOpenSelectFlow] = useState(false);
+  const [openTopUpMenu, setOpenTopUpMenu] = useState(false);
   const [walletAnchorEl, setWalletAnchorEl] = useState<null | HTMLElement>(null);
   const [flowAnchorEl, setFlowAnchorEl] = useState<null | HTMLElement>(null);
+  const [topUpMenuAnchorEl, setTopUpMenuAnchorEl] = useState<null | HTMLElement>(null);
 
   const { loading, fetched, balances } = props.balanceFetchResult;
   const [totalBalance, setTotalBalance] = useState<string>();
@@ -152,8 +155,9 @@ export function AccountCard(props: AccountNewDialogProps) {
         <Tooltip title="Receive">
           <IconButton
             color="inherit"
-            onClick={() => {
-              comingSoonToast();
+            onClick={(event) => {
+              setTopUpMenuAnchorEl(event.currentTarget);
+              setOpenTopUpMenu(true);
             }}
             sx={{ border: 1, borderStyle: 'dashed' }}>
             <ArrowDownward />
@@ -203,6 +207,13 @@ export function AccountCard(props: AccountNewDialogProps) {
         flows={flows}
         selectedFlow={selectedFlow}
         setSelectedFlow={setSelectedFlow}
+      />
+      <FlowTopUpMenu
+        profile={profile}
+        anchorEl={topUpMenuAnchorEl}
+        open={openTopUpMenu}
+        onClose={() => setOpenTopUpMenu(false)}
+        onClick={() => setOpenTopUpMenu(false)}
       />
     </Card>
   );

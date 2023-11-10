@@ -21,7 +21,7 @@ export function ProfileMenu(
   return (
     <Menu
       {...props}
-      sx={{ mt: 1 }}
+      sx={{ mt: 1, '.MuiMenu-paper': { borderRadius: 5 } }}
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}>
       <MenuItem

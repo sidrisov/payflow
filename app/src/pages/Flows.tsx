@@ -237,7 +237,7 @@ export default function Flows() {
                           onClick={() => {
                             setFlowShareInfo({
                               title: flow.title,
-                              link: `${DAPP_URL}/send/${flow.uuid}`
+                              link: `${DAPP_URL}/jar/${flow.uuid}`
                             });
                             setOpenFlowShare(true);
                           }}>

@@ -490,7 +490,7 @@ export default function Widgets() {
                           ? colors[componentColor].toString()
                           : undefined
                       }
-                      value={`${DAPP_URL}/send/${selectedFlow?.uuid}`}
+                      value={`${DAPP_URL}/jar/${selectedFlow?.uuid}`}
                     />
                   </Card>
                 )}

@@ -42,7 +42,7 @@ export default function Home() {
             <Logo />
             <Button
               variant="outlined"
-              color="info"
+              color="inherit"
               size="small"
               href={DOCS_URL}
               sx={{ borderRadius: 5 }}>
@@ -62,21 +62,26 @@ export default function Home() {
         sx={{ inset: 0 }}>
         <Box display="flex" flexDirection="column" alignItems="center">
           <Stack direction="column" alignItems="center" spacing={1}>
+            <Typography
+              textAlign="center"
+              variant={isMobile ? 'h3' : 'h2'}
+              color={blue[500]}
+              fontWeight="bold">
+              Abstract your web3 social payments
+            </Typography>
             <Box display="flex" flexWrap="wrap" justifyContent="center">
               <Typography variant={isMobile ? 'h3' : 'h2'} color={blue[500]} fontWeight="bold">
-                Web3 payments
-              </Typography>
-              <Typography variant={isMobile ? 'h3' : 'h2'} color={blue[500]} fontWeight="bold">
-                &nbsp;for&nbsp;
+                &nbsp;with&nbsp;
               </Typography>
               <Typography
                 variant={isMobile ? 'h3' : 'h2'}
                 color={orange[300]}
                 fontStyle="italic"
                 fontWeight="bold">
-                EVERYONE
+                payflow
               </Typography>
             </Box>
+
             <Typography variant="overline" color={grey[500]} fontWeight="bold">
               Any flow | Gasless | Non-custodial
             </Typography>
@@ -113,7 +118,7 @@ export default function Home() {
             <Button
               variant="contained"
               color="info"
-              href={`${DAPP_URL}/connect?username=${profile ?? ''}`}
+              href={`${DAPP_URL}/connect${profile ? `?username=${profile}` : ''}`}
               sx={{ ml: 1, borderRadius: 4 }}>
               START 🚀
             </Button>

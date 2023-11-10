@@ -7,12 +7,14 @@ import {
   lineaTestnet,
   optimism,
   base,
-  mainnet
+  mainnet,
+  arbitrumGoerli
 } from 'wagmi/chains';
 
 export const SUPPORTED_CHAINS = [
   optimismGoerli,
   baseGoerli,
+  arbitrumGoerli,
   {
     ...modeTestnet,
     iconUrl:

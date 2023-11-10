@@ -606,7 +606,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                     onClick={async () => {
                       setFlowShareInfo({
                         title: flow.title,
-                        link: `${DAPP_URL}/send/${flow.uuid}`
+                        link: `${DAPP_URL}/jar/${flow.uuid}`
                       });
                       setOpenFlowShare(true);
                     }}

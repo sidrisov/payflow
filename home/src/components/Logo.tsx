@@ -11,9 +11,10 @@ export default function HomeLogo(props: any) {
         flexDirection: 'row',
         alignItems: 'center'
       }}>
-      <SvgIcon component={Logo} inheritViewBox fontSize="large" />
-      <Typography ml={0.5} sx={{ fontSize: 20, fontWeight: 'bold' }}>
-        PayFlow
+      {/*       <SvgIcon component={Logo} inheritViewBox fontSize="large" />
+       */}
+      <Typography ml={0.5} sx={{ fontSize: 20, fontWeight: 'bold', fontFamily: 'monospace' }}>
+        payflow
       </Typography>
     </Box>
   );

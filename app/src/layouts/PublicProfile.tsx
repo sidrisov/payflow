@@ -1,6 +1,4 @@
 import {
-  Avatar,
-  AvatarGroup,
   Box,
   Button,
   Card,
@@ -8,9 +6,7 @@ import {
   CircularProgress,
   Container,
   Fab,
-  IconButton,
   Stack,
-  Tooltip,
   Typography,
   useMediaQuery,
   useTheme
@@ -22,7 +18,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ProfileType } from '../types/ProfleType';
 import { useEnsName } from 'wagmi';
 import {
-  ArrowForward,
   AttachMoney,
   Campaign,
   MonetizationOn,
@@ -33,7 +28,6 @@ import {
 } from '@mui/icons-material';
 import { useLazyQuery } from '@airstack/airstack-react';
 import { FlowType } from '../types/FlowType';
-import QRCode from 'react-qr-code';
 import SearchProfileDialog from '../components/SearchProfileDialog';
 import { API_URL } from '../utils/urlConstants';
 import { ProfileSection } from '../components/ProfileSection';
@@ -110,7 +104,7 @@ export default function PublicProfile() {
         <title> PayFlow | Profile </title>
       </Helmet>
       <Container maxWidth="sm">
-        <Box m={3} display="flex" flexDirection="row" alignItems="center" alignSelf="stretch">
+        {/* <Box m={3} display="flex" flexDirection="row" alignItems="center" alignSelf="stretch">
           <Chip
             size="medium"
             clickable
@@ -130,100 +124,99 @@ export default function PublicProfile() {
               height: 50
             }}
           />
-        </Box>
+        </Box> */}
 
         {profile && (
-          <Card
-            elevation={10}
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'space-evenly',
-              m: 2,
-              p: 2,
-              border: 2,
-              borderColor: 'divider',
-              borderStyle: 'double',
-              borderRadius: 5
-            }}>
-            <Stack spacing={1} direction="column" alignItems="center">
-              <ProfileSection profile={profile} avatarSize={48} />
-              {loading && <CircularProgress color="inherit" size={25} />}
-              {socialInfo && (
-                <Box
-                  flexWrap="wrap"
-                  display="flex"
-                  justifyContent="space-evenly"
-                  alignItems="center">
-                  <SocialPresenceChipWithLink
-                    type={ensName ? 'ens' : 'address'}
-                    name={ensName ?? profile.address}
-                  />
+          <>
+            <Card
+              elevation={10}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'space-evenly',
+                m: 2,
+                p: 2,
+                border: 2,
+                borderColor: 'divider',
+                borderStyle: 'double',
+                borderRadius: 5
+              }}>
+              <Stack spacing={1} direction="column" alignItems="center">
+                <ProfileSection profile={profile} avatarSize={48} />
+                {loading && <CircularProgress color="inherit" size={25} />}
+                {socialInfo && (
+                  <Box
+                    flexWrap="wrap"
+                    display="flex"
+                    justifyContent="space-evenly"
+                    alignItems="center">
+                    <SocialPresenceChipWithLink
+                      type={ensName ? 'ens' : 'address'}
+                      name={ensName ?? profile.address}
+                    />
 
-                  {socialInfo.Wallet.socials &&
-                    socialInfo.Wallet.socials
-                      .filter((s: any) => s.profileName)
-                      .map((s: any) => (
-                        <SocialPresenceChipWithLink type={s.dappName} name={s.profileName} />
-                      ))}
-                  {socialInfo.Wallet.xmtp && socialInfo.Wallet.xmtp[0].isXMTPEnabled && (
-                    <SocialPresenceChipWithLink type="xmtp" name={ensName ?? profile.address} />
-                  )}
-                </Box>
-              )}
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Button
-                  color="inherit"
-                  variant="outlined"
-                  endIcon={<AttachMoney />}
-                  onClick={() => comingSoonToast()}
-                  sx={{ borderRadius: 5, textTransform: 'lowercase' }}>
-                  Tip
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="inherit"
-                  endIcon={<Send />}
-                  onClick={() => comingSoonToast()}
-                  sx={{ borderRadius: 5, textTransform: 'lowercase' }}>
-                  Send
-                </Button>
+                    {socialInfo.Wallet.socials &&
+                      socialInfo.Wallet.socials
+                        .filter((s: any) => s.profileName)
+                        .map((s: any) => (
+                          <SocialPresenceChipWithLink type={s.dappName} name={s.profileName} />
+                        ))}
+                    {socialInfo.Wallet.xmtp && socialInfo.Wallet.xmtp[0].isXMTPEnabled && (
+                      <SocialPresenceChipWithLink type="xmtp" name={ensName ?? profile.address} />
+                    )}
+                  </Box>
+                )}
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Button
+                    color="inherit"
+                    variant="outlined"
+                    endIcon={<AttachMoney />}
+                    onClick={() => comingSoonToast()}
+                    sx={{ borderRadius: 5, textTransform: 'lowercase' }}>
+                    Tip
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="inherit"
+                    endIcon={<Send />}
+                    onClick={() => comingSoonToast()}
+                    sx={{ borderRadius: 5, textTransform: 'lowercase' }}>
+                    Send
+                  </Button>
+                </Stack>
               </Stack>
+            </Card>
+            <Stack
+              overflow="scroll"
+              m={1}
+              spacing={1}
+              justifyContent={isSmallScreen ? 'flex-start' : 'center'}
+              direction="row"
+              p={1}>
+              <Chip
+                clickable
+                icon={<MonetizationOn />}
+                label="Tipping"
+                sx={{ backgroundColor: 'inherit' }}></Chip>
+              <Chip icon={<Savings />} label="Jars"></Chip>
+              <Chip
+                clickable
+                icon={<Payment />}
+                label="Subscriptions"
+                sx={{ backgroundColor: 'inherit' }}></Chip>
+              <Chip
+                clickable
+                icon={<Campaign />}
+                label="Campaigns"
+                sx={{ backgroundColor: 'inherit' }}></Chip>
             </Stack>
-          </Card>
-        )}
 
-        {profile && (
-          <Stack
-            overflow="scroll"
-            m={1}
-            spacing={1}
-            justifyContent={isSmallScreen ? 'flex-start' : 'center'}
-            direction="row"
-            p={1}>
-            <Chip
-              clickable
-              icon={<MonetizationOn />}
-              label="Tipping"
-              sx={{ backgroundColor: 'inherit' }}></Chip>
-            <Chip icon={<Savings />} label="Jars"></Chip>
-            <Chip
-              clickable
-              icon={<Payment />}
-              label="Subscriptions"
-              sx={{ backgroundColor: 'inherit' }}></Chip>
-            <Chip
-              clickable
-              icon={<Campaign />}
-              label="Campaigns"
-              sx={{ backgroundColor: 'inherit' }}></Chip>
-          </Stack>
+            <Typography variant="h6" textAlign="center">
+              {comingSoonText}
+            </Typography>
+          </>
         )}
-
-        <Typography variant="h6" textAlign="center">
-          {comingSoonText}
-        </Typography>
 
         {/* {flows &&
           flows.map((flow) => (
@@ -256,7 +249,7 @@ export default function PublicProfile() {
                   size={100}
                   alignmentBaseline="baseline"
                   alphabetic="true"
-                  value={`${DAPP_URL}/send/${flow.uuid}`}
+                  value={`${DAPP_URL}/jar/${flow.uuid}`}
                 />
               </Box>
               <Box
@@ -301,7 +294,7 @@ export default function PublicProfile() {
               <IconButton
                 color="inherit"
                 onClick={async () => {
-                  navigate(`/send/${flow.uuid}`);
+                  navigate(`/jar/${flow.uuid}`);
                 }}
                 sx={{ ml: 1, border: 1.5, borderStyle: 'dashed' }}>
                 <ArrowForward fontSize="medium" />

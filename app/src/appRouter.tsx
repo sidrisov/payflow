@@ -45,7 +45,7 @@ export const appRouter = createBrowserRouter([
     ]
   },
   {
-    path: '/send/:uuid',
+    path: '/jar/:uuid',
     element: <SendWithProviders />,
     errorElement: <Page404 />
   },
@@ -54,7 +54,7 @@ export const appRouter = createBrowserRouter([
     element: <PaymentRequestWithProviders />,
     errorElement: <Page404 />
   },
-
+  
   { path: '/search', element: <PublicProfileWithProviders />, errorElement: <Page404 /> },
 
   {

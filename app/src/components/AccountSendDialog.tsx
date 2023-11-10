@@ -375,7 +375,7 @@ export default function AccountSendDialog({
                   flexDirection="row"
                   justifyContent="space-between"
                   alignItems="center">
-                  <Typography ml={1} variant="caption" color={grey[700]}>
+                  <Typography ml={1} variant="caption">
                     {`max: ${
                       isSuccess
                         ? balance && parseFloat(formatEther(balance?.value)).toPrecision(2)
@@ -392,6 +392,7 @@ export default function AccountSendDialog({
                   <Tooltip title="Add a note">
                     <IconButton
                       size="small"
+                      color="inherit"
                       sx={{ mr: 1, alignSelf: 'flex-end' }}
                       onClick={() => {
                         comingSoonToast();

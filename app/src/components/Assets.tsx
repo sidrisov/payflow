@@ -93,6 +93,10 @@ export default function Assets(props: {
                     chains.find((c) => c.name === selectedNetwork.name)?.id
                 : true /* && assetBalance.balance?.value !== BigInt(0) */;
             })
+            // TODO: works for now, since we have only eth
+            .sort((left, right) =>
+              Number((right.balance?.value ?? BigInt(0)) - (left.balance?.value ?? BigInt(0)))
+            )
             .map((assetBalance) => {
               return (
                 <NetworkAssetBalanceSection

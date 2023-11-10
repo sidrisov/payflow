@@ -38,6 +38,7 @@ export function WalletsPopover(
   return (
     <Popover
       {...props}
+      sx={{ mt: 1, '.MuiPopover-paper': { borderRadius: 5 } }}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'left'

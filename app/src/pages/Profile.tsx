@@ -69,7 +69,7 @@ export default function Profile() {
       const success = await updateProfile(updatedProfile);
 
       if (success) {
-        toast.success('Successfully saved');
+        toast.success('Saved');
         navigate(0);
       } else {
         toast.error('Failed! Try again');

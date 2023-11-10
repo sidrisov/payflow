@@ -1,17 +1,18 @@
 import { Box, Stack, Button, IconButton, Chip, Tooltip, BoxProps } from '@mui/material';
 import { StarBorder } from '@mui/icons-material';
 import { ProfileWithSocialsType } from '../types/ProfleType';
-import { useNavigate } from 'react-router-dom';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
 import { comingSoonToast } from './Toasts';
 import SocialPresenceAvatar from './SocialPresenceAvatar';
 import { dAppType } from '../utils/dapps';
+import { useState } from 'react';
 
 export function SearchProfileListItem(
   props: BoxProps & { profileWithSocials: ProfileWithSocialsType; view: 'address' | 'profile' }
 ) {
   const { profileWithSocials, view } = props;
+  const [disableClick, setDisableClick] = useState<boolean>(false);
 
   return (
     (view === 'profile' ? profileWithSocials.profile : profileWithSocials.meta) && (
@@ -26,7 +27,7 @@ export function SearchProfileListItem(
           alignItems="center"
           component={Button}
           textTransform="none"
-          onClick={props.onClick}
+          onClick={!disableClick ? props.onClick : undefined}
           sx={{ borderRadius: 5, border: 0, height: 60 }}>
           {view === 'profile' && profileWithSocials.profile && (
             <ProfileSection profile={profileWithSocials.profile} />
@@ -51,6 +52,12 @@ export function SearchProfileListItem(
                   variant="filled"
                   label="invite"
                   clickable
+                  onMouseEnter={() => {
+                    setDisableClick(true);
+                  }}
+                  onMouseLeave={() => {
+                    setDisableClick(false);
+                  }}
                   onClick={() => {
                     comingSoonToast();
                   }}
