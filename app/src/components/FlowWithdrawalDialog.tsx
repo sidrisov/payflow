@@ -150,7 +150,7 @@ export default function FlowWithdrawalDialog({
       toast.update(withdrawalToastId.current, {
         render: `Sending ${formatEther(withdrawAmount)} to ${shortenWalletAddressLabel(
           wallet.master
-        )} 💸`,
+        )}`,
         isLoading: true
       });
 

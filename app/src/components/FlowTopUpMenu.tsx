@@ -6,8 +6,10 @@ import { comingSoonToast } from './Toasts';
 export function FlowTopUpMenu(
   props: MenuProps & {
     profile: ProfileType;
+    qrClickCallback: () => void;
   }
 ) {
+  const { qrClickCallback } = props;
   return (
     <Menu
       {...props}
@@ -15,10 +17,7 @@ export function FlowTopUpMenu(
       style={{ borderRadius: '50px' }}
       transformOrigin={{ horizontal: 'left', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
-      <MenuItem
-        onClick={async () => {
-          comingSoonToast();
-        }}>
+      <MenuItem onClick={qrClickCallback}>
         <ListItemIcon>
           <QrCode fontSize="small" />
         </ListItemIcon>

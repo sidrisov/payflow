@@ -1,10 +1,28 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
-import { AppBar, IconButton, Toolbar, Box, Stack, Avatar, Typography, Button } from '@mui/material';
+import {
+  AppBar,
+  IconButton,
+  Toolbar,
+  Box,
+  Stack,
+  Avatar,
+  Typography,
+  Button,
+  Badge
+} from '@mui/material';
 
 import CustomThemeProvider from '../theme/CustomThemeProvider';
-import { Search, Payments, Apps, Home, Notifications } from '@mui/icons-material';
+import {
+  Search,
+  Payments,
+  Home,
+  NotificationsOutlined,
+  HomeOutlined,
+  PaymentsOutlined,
+  AppsOutlined
+} from '@mui/icons-material';
 
 import Nav from '../components/Navigation';
 
@@ -24,6 +42,7 @@ import { ProfileMenu } from '../components/ProfileMenu';
 import SearchProfileDialog from '../components/SearchProfileDialog';
 import { API_URL } from '../utils/urlConstants';
 import HomeLogo from '../components/Logo';
+import { comingSoonToast } from '../components/Toasts';
 
 const drawerWidth = 151;
 
@@ -57,6 +76,8 @@ export default function AppLayout({
   const [profileMenuAnchorEl, setProfileMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [openProfileMenu, setOpenProfileMenu] = useState(false);
   const [openSearchProfile, setOpenSearchProfile] = useState(false);
+
+  const location = useLocation();
 
   const { isSuccess: isEnsSuccess, data: ethUsdPriceFeedAddress } = useEnsAddress({
     name: 'eth-usd.data.eth',
@@ -213,16 +234,22 @@ export default function AppLayout({
                       flexGrow={1}>
                       <HomeLogo />
                       <Stack direction="row" spacing={0.5} alignItems="center">
-                        <IconButton color="inherit" onClick={() => navigate('/home')}>
-                          <Home />
+                        <IconButton
+                          color={location.pathname === '/home' ? 'inherit' : undefined}
+                          onClick={() => navigate('/home')}>
+                          {location.pathname === '/home' ? <Home /> : <HomeOutlined />}
                         </IconButton>
 
-                        <IconButton color="inherit" onClick={() => navigate('/flows')}>
-                          <Apps />
+                        <IconButton
+                          color={location.pathname === '/flows' ? 'inherit' : undefined}
+                          onClick={() => navigate('/flows')}>
+                          <AppsOutlined />
                         </IconButton>
 
-                        <IconButton color="inherit" onClick={() => navigate('/requests')}>
-                          <Payments />
+                        <IconButton
+                          color={location.pathname === '/requests' ? 'inherit' : undefined}
+                          onClick={() => navigate('/requests')}>
+                          {location.pathname === '/requests' ? <Payments /> : <PaymentsOutlined />}
                         </IconButton>
 
                         <Box
@@ -247,8 +274,10 @@ export default function AppLayout({
                         </Box>
                       </Stack>
                       <Stack direction="row" spacing={0.5} alignItems="center">
-                        <IconButton color="inherit">
-                          <Notifications />
+                        <IconButton color="inherit" onClick={() => comingSoonToast()}>
+                          <Badge variant="dot" color="info">
+                            <NotificationsOutlined />
+                          </Badge>
                         </IconButton>
 
                         <IconButton

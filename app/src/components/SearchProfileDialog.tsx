@@ -41,6 +41,7 @@ export default function SearchProfileDialog(props: SearchProfileDialogProps) {
 
   const navigate = useNavigate();
 
+
   const [searchString, setSearchString] = useState<string>();
 
   const [debouncedSearchString] = useDebounce(searchString, 500);
@@ -154,8 +155,7 @@ export default function SearchProfileDialog(props: SearchProfileDialogProps) {
             </>
           )}
 
-          {selectProfileCallback &&
-            searchString &&
+          {searchString &&
             (isAddress(searchString) ||
               searchString.endsWith('.eth') ||
               searchString.endsWith('.xyz') ||
@@ -175,8 +175,8 @@ export default function SearchProfileDialog(props: SearchProfileDialogProps) {
                         onClick={() => {
                           if (selectProfileCallback) {
                             selectProfileCallback({ type: 'address', data: profileWithSocials });
+                            closeStateCallback();
                           }
-                          closeStateCallback();
                         }}
                       />
                     ))}

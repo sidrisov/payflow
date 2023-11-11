@@ -39,7 +39,6 @@ import axios from 'axios';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { ContentCopy, DarkModeOutlined, LightModeOutlined, QrCode2 } from '@mui/icons-material';
 import { copyToClipboard } from '../utils/copyToClipboard';
-import AddressQRCodeDialog from '../components/AddressQRCodeDialog';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import HideOnScroll from '../components/HideOnScroll';
 import { getFlowBalance } from '../utils/getBalance';
@@ -48,6 +47,7 @@ import CustomThemeProvider from '../theme/CustomThemeProvider';
 import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
 import { ETH, Token, getSupportedTokens } from '../utils/erc20contracts';
 import { API_URL } from '../utils/urlConstants';
+import { comingSoonToast } from '../components/Toasts';
 
 export default function Send({ appSettings, setAppSettings }: any) {
   const { uuid } = useParams();
@@ -302,7 +302,6 @@ export default function Send({ appSettings, setAppSettings }: any) {
                   </Tooltip>
                 </Card>
               </Divider>
-
               <Typography variant="h5"> ${flowTotalBalance} USD</Typography>
               <Typography variant="h6" maxHeight={50} overflow="scroll">
                 {flow.title}
@@ -310,9 +309,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
               <Typography variant="subtitle2" maxHeight={50} overflow="scroll">
                 {flow.description}
               </Typography>
-
               <Divider flexItem sx={{ my: 3 }} />
-
               <Autocomplete
                 autoHighlight
                 fullWidth
@@ -331,7 +328,6 @@ export default function Send({ appSettings, setAppSettings }: any) {
                 )}
                 sx={{ '& fieldset': { borderRadius: 3 } }}
               />
-
               {selectedPaymentNetwork && (
                 <Box mt={1} display="flex" flexDirection="row" alignItems="center">
                   <Avatar
@@ -355,14 +351,14 @@ export default function Send({ appSettings, setAppSettings }: any) {
                     <IconButton
                       size="small"
                       onClick={() => {
-                        setOpenAddressQRCode(true);
+                        //setOpenAddressQRCode(true);
+                        comingSoonToast();
                       }}>
                       <QrCode2 fontSize="small" />
                     </IconButton>
                   </Tooltip>
                 </Box>
               )}
-
               {selectedPaymentNetwork && (
                 <>
                   <Divider flexItem sx={{ my: 2 }} />
@@ -451,7 +447,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
                           sendToastId.current = toast.loading(
                             `Sending ${formatUnits(topUpAmount, balance?.decimals)} ${
                               selectedPaymentToken?.name
-                            } to ${shortenWalletAddressLabel(selectedPaymentAddress)} 💸`
+                            } to ${shortenWalletAddressLabel(selectedPaymentAddress)}`
                           );
                           if (selectedPaymentToken === ETH) {
                             sendTransaction?.();
@@ -466,13 +462,15 @@ export default function Send({ appSettings, setAppSettings }: any) {
                   </Divider>
                 </>
               )}
-
-              <AddressQRCodeDialog
-                open={openAddressQRCode}
-                address={selectedPaymentAddress}
-                network={selectedPaymentNetwork}
-                closeStateCallback={() => setOpenAddressQRCode(false)}
-              />
+              // TODO: refactor this
+              {/* {selectedPaymentAddress && selectedPaymentNetwork && (
+                <WalletQRCodeShareDialog
+                  open={openAddressQRCode}
+                  address={selectedPaymentAddress}
+                  network={selectedPaymentNetwork}
+                  closeStateCallback={() => setOpenAddressQRCode(false)}
+                />
+              )} */}
             </Box>
           )}
         </Card>

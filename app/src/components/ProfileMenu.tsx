@@ -1,21 +1,15 @@
 import { Divider, ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material';
 import { ProfileType } from '../types/ProfleType';
 import { useNavigate } from 'react-router-dom';
-import {
-  DarkModeOutlined,
-  LightModeOutlined,
-  Logout,
-  Person,
-  Settings
-} from '@mui/icons-material';
+import { DarkModeOutlined, LightModeOutlined, Logout, Person, Settings } from '@mui/icons-material';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ProfileSection } from './ProfileSection';
 import { API_URL } from '../utils/urlConstants';
-import { useAccount } from 'wagmi';
 import { useContext } from 'react';
 import { UserContext } from '../contexts/UserContext';
 import { CloseCallbackType } from '../types/CloseCallbackType';
+import { disconnect } from 'wagmi/actions';
 
 export function ProfileMenu(
   props: MenuProps &
@@ -24,7 +18,6 @@ export function ProfileMenu(
     }
 ) {
   const navigate = useNavigate();
-  const { connector } = useAccount();
 
   const { profile, closeStateCallback } = props;
 
@@ -85,7 +78,7 @@ export function ProfileMenu(
             await axios.get(`${API_URL}/api/auth/logout`, {
               withCredentials: true
             });
-            await connector?.disconnect();
+            await disconnect();
             navigate('/connect');
           } catch (error) {
             toast.error('Failed to logout!');

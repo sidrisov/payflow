@@ -6,13 +6,15 @@ import { AddressSection } from './AddressSection';
 import { comingSoonToast } from './Toasts';
 import SocialPresenceAvatar from './SocialPresenceAvatar';
 import { dAppType } from '../utils/dapps';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
+import { UserContext } from '../contexts/UserContext';
 
 export function SearchProfileListItem(
   props: BoxProps & { profileWithSocials: ProfileWithSocialsType; view: 'address' | 'profile' }
 ) {
   const { profileWithSocials, view } = props;
   const [disableClick, setDisableClick] = useState<boolean>(false);
+  const { isAuthenticated } = useContext(UserContext);
 
   return (
     (view === 'profile' ? profileWithSocials.profile : profileWithSocials.meta) && (
@@ -46,6 +48,7 @@ export function SearchProfileListItem(
                 sx={{ background: 'lightgreen' }}
               />
             ) : (
+              isAuthenticated &&
               !profileWithSocials.profile && (
                 <Chip
                   size="small"

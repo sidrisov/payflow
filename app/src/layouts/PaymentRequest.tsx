@@ -263,7 +263,7 @@ export default function PaymentRequest({ appSettings, setAppSettings }: any) {
                     requestToastId.current = toast.loading(
                       `Sending ${request.amount} to ${shortenWalletAddressLabel(
                         request.address
-                      )} 💸`
+                      )}`
                     );
                     sendTransaction?.();
                   }}

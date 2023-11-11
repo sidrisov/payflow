@@ -368,7 +368,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
           <Typography variant="subtitle2" alignSelf="center">
             {flow.description}
           </Typography>
-          <Typography variant="h5"> 💸 ${flowTotalBalance}</Typography>
+          <Typography variant="h5">${flowTotalBalance}</Typography>
 
           {flow.wallets && flow.wallets.filter((wallet) => wallet.smart).length > 0 && (
             <>

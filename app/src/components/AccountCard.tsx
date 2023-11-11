@@ -13,7 +13,6 @@ import {
   Typography
 } from '@mui/material';
 import { Receipt, ArrowDownward, Send, AccountBalance, Toll } from '@mui/icons-material';
-import { toast } from 'react-toastify';
 import { useContext, useMemo, useState } from 'react';
 import AccountSendDialog from './AccountSendDialog';
 import { UserContext } from '../contexts/UserContext';
@@ -22,8 +21,8 @@ import { formatEther } from 'viem';
 import { WalletsPopover } from './WalletsInfoPopover';
 import { FlowType } from '../types/FlowType';
 import { ChooseFlowMenu } from './ChooseFlowMenu';
-import { comingSoonToast } from './Toasts';
 import { FlowTopUpMenu } from './FlowTopUpMenu';
+import WalletQRCodeShareDialog from './WalletQRCodeShareDialog';
 
 export type AccountNewDialogProps = CardProps & {
   flows: FlowType[];
@@ -42,6 +41,8 @@ export function AccountCard(props: AccountNewDialogProps) {
   const [openWalletDetailsPopover, setOpenWalletDetailsPopover] = useState(false);
   const [openSelectFlow, setOpenSelectFlow] = useState(false);
   const [openTopUpMenu, setOpenTopUpMenu] = useState(false);
+  const [openFlowReceiveQRCode, setOpenFlowReceiveQRCode] = useState(false);
+
   const [walletAnchorEl, setWalletAnchorEl] = useState<null | HTMLElement>(null);
   const [flowAnchorEl, setFlowAnchorEl] = useState<null | HTMLElement>(null);
   const [topUpMenuAnchorEl, setTopUpMenuAnchorEl] = useState<null | HTMLElement>(null);
@@ -212,8 +213,15 @@ export function AccountCard(props: AccountNewDialogProps) {
         profile={profile}
         anchorEl={topUpMenuAnchorEl}
         open={openTopUpMenu}
+        qrClickCallback={() => setOpenFlowReceiveQRCode(true)}
         onClose={() => setOpenTopUpMenu(false)}
         onClick={() => setOpenTopUpMenu(false)}
+      />
+      <WalletQRCodeShareDialog
+        open={openFlowReceiveQRCode}
+        wallet={selectedFlow.wallets[0]}
+        wallets={selectedFlow.wallets}
+        closeStateCallback={() => setOpenFlowReceiveQRCode(false)}
       />
     </Card>
   );
