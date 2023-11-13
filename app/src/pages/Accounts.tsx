@@ -85,7 +85,7 @@ export default function Accounts() {
                   balanceFetchResult={{ loading, fetched, balances }}
                 />
               ) : (
-                <Activity accounts={undefined} />
+                <Activity wallets={selectedFlow.wallets} />
               )}
             </Box>
           </Box>
