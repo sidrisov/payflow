@@ -151,5 +151,4 @@ public class FlowService implements IFlowService {
 
         log.info("Updated wallet {}", wallet);
     }
-
 }

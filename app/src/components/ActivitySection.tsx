@@ -1,4 +1,4 @@
-import { Repeat, ArrowDownward, ArrowUpward } from '@mui/icons-material';
+import { Repeat, ArrowDownward, Send } from '@mui/icons-material';
 import { Avatar, Badge, Box, BoxProps, Chip, Stack, Typography } from '@mui/material';
 import { red } from '@mui/material/colors';
 import { formatEther } from 'viem';
@@ -10,22 +10,37 @@ import { useNetwork } from 'wagmi';
 import { UserContext } from '../contexts/UserContext';
 import { TxInfo } from '../types/ActivityFetchResultType';
 
+// TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
+
 function getActivityLabel(activity: string) {
   return activity === 'self' ? 'Self' : activity === 'inbound' ? 'Received' : 'Sent';
 }
 
-function getActivityIcon(activity: string) {
-  return activity === 'self' ? (
-    <Repeat color="inherit" fontSize="large" />
-  ) : activity === 'inbound' ? (
-    <ArrowDownward color="success" fontSize="large" />
-  ) : (
-    <ArrowUpward color="error" fontSize="large" />
+function getActivityIndicator(activity: string) {
+  return (
+    <Box
+      sx={{
+        p: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: 1,
+        borderStyle: 'dashed',
+        borderRadius: 5
+      }}>
+      {activity === 'self' ? (
+        <Repeat color="inherit" fontSize="small" />
+      ) : activity === 'inbound' ? (
+        <ArrowDownward color="success" fontSize="small" />
+      ) : (
+        <Send color="error" fontSize="small" />
+      )}
+    </Box>
   );
 }
 
 export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
-  const { ethUsdPrice, profile } = useContext(UserContext);
+  const { ethUsdPrice } = useContext(UserContext);
   const { chains } = useNetwork();
   const { txInfo } = props;
 
@@ -49,7 +64,7 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
               }}
             />
           }>
-          {getActivityIcon(txInfo.activity)}
+          {getActivityIndicator(txInfo.activity)}
         </Badge>
 
         <Stack alignItems="center">
@@ -62,8 +77,8 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
         </Stack>
       </Stack>
       <Box display="flex" flexDirection="row" justifyContent="flex-start" width={140}>
-        {txInfo.activity === 'self' ? (
-          <ProfileSection profile={profile} />
+        {txInfo.profile ? (
+          <ProfileSection profile={txInfo.profile} />
         ) : (
           <AddressSection
             meta={

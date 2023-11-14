@@ -1,5 +1,5 @@
 import { Box, Stack, Typography } from '@mui/material';
-import { FlowWalletType, WalletType } from '../types/FlowType';
+import { FlowWalletType, SafeWalletType } from '../types/FlowType';
 import NetworkSelectorSection from './NetworkSelectorSection';
 import { useState } from 'react';
 import { Chain } from 'viem';
@@ -25,7 +25,7 @@ export default function Activity(props: AssetsProps) {
   return (
     <Box m={1}>
       <NetworkSelectorSection
-        wallets={wallets as WalletType[]}
+        wallets={wallets as SafeWalletType[]}
         selectedNetwork={selectedNetwork}
         setSelectedNetwork={setSelectedNetwork}
       />

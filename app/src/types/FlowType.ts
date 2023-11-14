@@ -1,4 +1,5 @@
 import { Address } from 'viem';
+import { ProfileType } from './ProfleType';
 
 export interface FlowType {
   account: Address;
@@ -19,9 +20,20 @@ export interface FlowWalletType {
   master: Address;
 }
 
-export interface WalletType {
+export interface SafeWalletType {
   address: Address;
   network: string;
   safe: boolean;
   safeDeployed: boolean;
+}
+
+export interface WalletType {
+  address: Address;
+  network: string;
+}
+
+export interface WalletWithProfileType {
+  address: Address;
+  network: string;
+  profile?: ProfileType;
 }

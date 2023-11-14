@@ -3,10 +3,10 @@ import { FlagOutlined, ContentCopy } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { copyToClipboard } from '../utils/copyToClipboard';
 import { shortenWalletAddressLabel } from '../utils/address';
-import { WalletType } from '../types/FlowType';
+import { SafeWalletType } from '../types/FlowType';
 import { shortNetworkName } from '../utils/shortNetworkName';
 
-export function WalletSection(props: { wallet: WalletType; balance?: string }) {
+export function WalletSection(props: { wallet: SafeWalletType; balance?: string }) {
   const { wallet, balance } = props;
 
   return (

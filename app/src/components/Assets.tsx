@@ -6,7 +6,7 @@ import { useNetwork } from 'wagmi';
 import { NetworkAssetBalanceSection } from './NetworkAssetBalanceSection';
 import { BalanceFetchResultType } from '../types/BalanceFetchResultType';
 import { UserContext } from '../contexts/UserContext';
-import { FlowWalletType, WalletType } from '../types/FlowType';
+import { FlowWalletType, SafeWalletType } from '../types/FlowType';
 import NetworkSelectorSection from './NetworkSelectorSection';
 import { ActivitySkeletonSection } from './ActivitySkeletonSection';
 
@@ -24,7 +24,7 @@ export default function Assets(props: {
   return (
     <Box m={1}>
       <NetworkSelectorSection
-        wallets={wallets as WalletType[]}
+        wallets={wallets as SafeWalletType[]}
         selectedNetwork={selectedNetwork}
         setSelectedNetwork={setSelectedNetwork}
       />

@@ -1,12 +1,12 @@
 import { SelectAll } from '@mui/icons-material';
 import { ChipProps, Chip, Avatar, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { Chain } from 'viem';
-import { WalletType } from '../types/FlowType';
+import { SafeWalletType } from '../types/FlowType';
 import { useNetwork } from 'wagmi';
 
 export default function NetworkSelectorChip(
   props: ChipProps & {
-    wallet?: WalletType;
+    wallet?: SafeWalletType;
     selectedNetwork: Chain | undefined;
     setSelectedNetwork: React.Dispatch<React.SetStateAction<Chain | undefined>>;
   }

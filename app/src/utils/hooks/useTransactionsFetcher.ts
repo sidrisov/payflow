@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { ActivityFetchResultType, TxInfo } from '../../types/ActivityFetchResultType';
-import { FlowWalletType } from '../../types/FlowType';
+import { FlowWalletType, WalletWithProfileType } from '../../types/FlowType';
 import axios from 'axios';
 import {
   base,
@@ -14,6 +14,7 @@ import {
   zoraTestnet
 } from 'viem/chains';
 import { getNetwork } from 'wagmi/actions';
+import { API_URL } from '../urlConstants';
 
 export const useTransactionsFetcher = (wallets: FlowWalletType[]): ActivityFetchResultType => {
   const [transactions, setTransactions] = useState<TxInfo[]>([]);
@@ -24,7 +25,7 @@ export const useTransactionsFetcher = (wallets: FlowWalletType[]): ActivityFetch
     setLoading(true);
 
     Promise.allSettled(wallets.map((wallet) => fetchTransactions(wallet)))
-      .then((data) => {
+      .then(async (data) => {
         const txs = (
           data
             .filter((result) => result.status === 'fulfilled')
@@ -33,8 +34,31 @@ export const useTransactionsFetcher = (wallets: FlowWalletType[]): ActivityFetch
             .filter((tx) => tx) as TxInfo[]
         ).sort((left, right) => right.timestamp.localeCompare(left.timestamp));
 
-        console.log('txs:', txs);
+        // TODO: get unique
+        const wallets = txs.map((tx) => ({
+          address: tx.activity in ['inbound', 'self'] ? tx.from : tx.to,
+          network: getNetwork().chains.find((c) => c.id === tx.chainId)?.name
+        }));
 
+        const { status, data: walletProfiles } = await axios.post(
+          `${API_URL}/api/user/search/wallets`,
+          wallets
+        );
+
+        if (status === 200 && walletProfiles) {
+          txs.forEach((tx) => {
+            const profile = walletProfiles.find(
+              (w: WalletWithProfileType) =>
+                w.address === (tx.activity in ['self', 'inbound'] ? tx.from : tx.to) &&
+                w.network === getNetwork().chains.find((c) => c.id === tx.chainId)?.name
+            ).profile;
+
+            if (profile) {
+              tx.profile = profile;
+            }
+            return tx;
+          });
+        }
         setLoading(false);
         setFetched(true);
         setTransactions(txs);

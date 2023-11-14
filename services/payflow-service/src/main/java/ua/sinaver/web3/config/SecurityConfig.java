@@ -47,6 +47,7 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.POST, "/requests/{uuid}/proof").permitAll()
                                                 // user
                                                 .requestMatchers(HttpMethod.GET, "/user/{username}").permitAll()
+                                                .requestMatchers(HttpMethod.POST, "/user/search/wallets").permitAll()
                                                 .anyRequest()
                                                 .authenticated())
                                 .sessionManagement(session -> session

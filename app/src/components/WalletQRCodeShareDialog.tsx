@@ -14,13 +14,13 @@ import {
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import QRCode from 'react-qr-code';
-import { ContentCopy, QrCode2 } from '@mui/icons-material';
+import { ContentCopy } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { copyToClipboard } from '../utils/copyToClipboard';
 import { useState } from 'react';
 import { ChooseWalletMenu } from './ChooseWalletMenu';
-import { FlowWalletType, WalletType } from '../types/FlowType';
+import { FlowWalletType } from '../types/FlowType';
 
 export type WalletQRCodeShareDialogProps = DialogProps &
   CloseCallbackType & {

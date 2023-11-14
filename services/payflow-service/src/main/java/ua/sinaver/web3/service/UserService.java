@@ -1,9 +1,12 @@
 package ua.sinaver.web3.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -12,6 +15,7 @@ import lombok.extern.log4j.Log4j2;
 import ua.sinaver.web3.data.User;
 import ua.sinaver.web3.message.FlowMessage;
 import ua.sinaver.web3.message.ProfileMessage;
+import ua.sinaver.web3.message.WalletProfileRequestMessage;
 import ua.sinaver.web3.repository.UserRepository;
 
 @Service
@@ -54,5 +58,16 @@ public class UserService implements IUserService {
     @Override
     public List<User> searchByUsernameQuery(String query) {
         return userRepository.findByUsernameContainingOrSignerContaining(query, query);
+    }
+
+    @Override
+    public Map<WalletProfileRequestMessage, User> searchByOwnedWallets(List<WalletProfileRequestMessage> wallets) {
+        // TODO: do lazy way for now, combine results within query later
+        var walletUserMap = new HashMap<WalletProfileRequestMessage, User>();
+        wallets.stream().forEach(w -> {
+            val user = userRepository.findByOwnedWallet(w);
+            walletUserMap.put(w, user);
+        });
+        return walletUserMap;
     }
 }
