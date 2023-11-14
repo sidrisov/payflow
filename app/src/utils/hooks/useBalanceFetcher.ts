@@ -31,6 +31,6 @@ export const useBalanceFetcher = (assets: AssetType[]): BalanceFetchResultType =
         setLoading(false);
         setFetched(false);
       });
-  }, [assets.length]);
+  }, [assets.toString()]);
   return { loading, fetched, balances };
 };

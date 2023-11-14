@@ -72,7 +72,7 @@ export default function AccountSendDialog({
   const [toAddress, setToAddress] = useState<Address>();
   const [sendAmount, setSendAmount] = useState<bigint>();
 
-  const [openSearchProfile, setOpenSearchProfile] = useState<boolean>(false);
+  const [openSearchProfile, setOpenSearchProfile] = useState<boolean>(true);
 
   const { isSuccess, data: balance } = useBalance({
     address: selectedWallet?.address,

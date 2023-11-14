@@ -12,6 +12,7 @@ import { getSupportedTokens } from '../utils/erc20contracts';
 import { useBalanceFetcher } from '../utils/hooks/useBalanceFetcher';
 import { FlowType } from '../types/FlowType';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
+import { useTransactionsFetcher } from '../utils/hooks/useTransactionsFetcher';
 
 export default function Accounts() {
   const theme = useTheme();
@@ -57,6 +58,7 @@ export default function Accounts() {
   }, [selectedFlow?.wallets]);
 
   const { loading, fetched, balances } = useBalanceFetcher(assets);
+  const activityFetcherResult = useTransactionsFetcher(selectedFlow?.wallets ?? []);
 
   console.log('Loading balances: ', loading, balances);
 
@@ -85,7 +87,10 @@ export default function Accounts() {
                   balanceFetchResult={{ loading, fetched, balances }}
                 />
               ) : (
-                <Activity wallets={selectedFlow.wallets} />
+                <Activity
+                  wallets={selectedFlow.wallets}
+                  activityFetchResult={activityFetcherResult}
+                />
               )}
             </Box>
           </Box>

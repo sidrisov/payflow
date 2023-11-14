@@ -1,4 +1,4 @@
-import { Box, Skeleton, Stack } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import { useContext, useState } from 'react';
 
 import { Chain, formatEther } from 'viem';
@@ -7,8 +7,8 @@ import { NetworkAssetBalanceSection } from './NetworkAssetBalanceSection';
 import { BalanceFetchResultType } from '../types/BalanceFetchResultType';
 import { UserContext } from '../contexts/UserContext';
 import { FlowWalletType, WalletType } from '../types/FlowType';
-import NetworkSelectorChip from './NetworkSelectorChip';
 import NetworkSelectorSection from './NetworkSelectorSection';
+import { ActivitySkeletonSection } from './ActivitySkeletonSection';
 
 export default function Assets(props: {
   wallets: FlowWalletType[];
@@ -28,13 +28,9 @@ export default function Assets(props: {
         selectedNetwork={selectedNetwork}
         setSelectedNetwork={setSelectedNetwork}
       />
-      <Stack p={1} direction="column" spacing={1} minWidth={350} maxHeight={350} overflow="scroll">
+      <Stack p={1} spacing={1} minWidth={350} maxHeight={350} overflow="scroll">
         {loading || balances.length === 0 ? (
-          <>
-            <Skeleton variant="rectangular" height={60} sx={{ borderRadius: 3 }} />
-            <Skeleton variant="rectangular" height={60} sx={{ borderRadius: 3 }} />
-            <Skeleton variant="rectangular" height={60} sx={{ borderRadius: 3 }} />
-          </>
+          <ActivitySkeletonSection />
         ) : fetched && ethUsdPrice ? (
           balances
             .filter((assetBalance) => {
@@ -58,7 +54,9 @@ export default function Assets(props: {
               );
             })
         ) : (
-          <></>
+          <Typography variant="subtitle2" textAlign="center">
+            Couldn't fetch. Try again!
+          </Typography>
         )}
       </Stack>
     </Box>

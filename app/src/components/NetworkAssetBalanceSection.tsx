@@ -24,8 +24,6 @@ export function NetworkAssetBalanceSection(props: {
             <Avatar
               src={`/networks/${chains.find((c) => props.network === c.id)?.name}.png`}
               sx={{
-                border: 0.5,
-                borderStyle: 'groove',
                 width: 15,
                 height: 15
               }}
