@@ -1,7 +1,9 @@
-import { Box, Menu, MenuItem, MenuProps, Typography } from '@mui/material';
+import { Badge, Box, Menu, MenuItem, MenuProps, Tooltip, Typography } from '@mui/material';
 import { FlowType } from '../types/FlowType';
-import { Check } from '@mui/icons-material';
+import { Check, Star, Stars } from '@mui/icons-material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
+import { useContext } from 'react';
+import { UserContext } from '../contexts/UserContext';
 
 export function ChooseFlowMenu(
   props: MenuProps &
@@ -12,6 +14,8 @@ export function ChooseFlowMenu(
     }
 ) {
   const { flows, selectedFlow, setSelectedFlow, closeStateCallback } = props;
+
+  const { profile } = useContext(UserContext);
   return (
     <Menu
       {...props}
@@ -30,6 +34,13 @@ export function ChooseFlowMenu(
               setSelectedFlow(option);
               closeStateCallback();
             }}>
+            <Box display="flex" alignItems="center" justifyContent="center" width={30}>
+              {option.uuid === profile.defaultFlow?.uuid && (
+                <Tooltip title="Default flow">
+                  <Stars fontSize="small" />
+                </Tooltip>
+              )}
+            </Box>
             <Box
               width={200}
               display="flex"

@@ -1,7 +1,14 @@
 import { Divider, ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material';
 import { ProfileType } from '../types/ProfleType';
 import { useNavigate } from 'react-router-dom';
-import { DarkModeOutlined, LightModeOutlined, Logout, Person, Settings } from '@mui/icons-material';
+import {
+  DarkModeOutlined,
+  LightModeOutlined,
+  Logout,
+  Person,
+  Settings,
+  Verified
+} from '@mui/icons-material';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ProfileSection } from './ProfileSection';
@@ -10,6 +17,7 @@ import { useContext } from 'react';
 import { UserContext } from '../contexts/UserContext';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { disconnect } from 'wagmi/actions';
+import { comingSoonToast } from './Toasts';
 
 export function ProfileMenu(
   props: MenuProps &
@@ -47,6 +55,15 @@ export function ProfileMenu(
           <Person fontSize="small" />
         </ListItemIcon>
         Profile
+      </MenuItem>
+      <MenuItem
+        onClick={async () => {
+          comingSoonToast();
+        }}>
+        <ListItemIcon>
+          <Verified fontSize="small" />
+        </ListItemIcon>
+        Attest
       </MenuItem>
 
       <MenuItem

@@ -36,7 +36,7 @@ export const useTransactionsFetcher = (wallets: FlowWalletType[]): ActivityFetch
 
         // TODO: get unique
         const wallets = txs.map((tx) => ({
-          address: tx.activity in ['inbound', 'self'] ? tx.from : tx.to,
+          address: tx.activity === 'self' || tx.activity === 'inbound' ? tx.from : tx.to,
           network: getNetwork().chains.find((c) => c.id === tx.chainId)?.name
         }));
 
@@ -49,7 +49,8 @@ export const useTransactionsFetcher = (wallets: FlowWalletType[]): ActivityFetch
           txs.forEach((tx) => {
             const profile = walletProfiles.find(
               (w: WalletWithProfileType) =>
-                w.address === (tx.activity in ['self', 'inbound'] ? tx.from : tx.to) &&
+                w.address ===
+                  (tx.activity === 'self' || tx.activity === 'inbound' ? tx.from : tx.to) &&
                 w.network === getNetwork().chains.find((c) => c.id === tx.chainId)?.name
             ).profile;
 
