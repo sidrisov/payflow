@@ -1,5 +1,15 @@
 import { Repeat, ArrowDownward, Send } from '@mui/icons-material';
-import { Avatar, Badge, Box, BoxProps, Chip, Stack, Typography } from '@mui/material';
+import {
+  Avatar,
+  Badge,
+  Box,
+  BoxProps,
+  Chip,
+  IconButton,
+  Stack,
+  Tooltip,
+  Typography
+} from '@mui/material';
 import { red } from '@mui/material/colors';
 import { formatEther } from 'viem';
 import { MetaType } from '../types/ProfleType';
@@ -9,6 +19,7 @@ import { useContext } from 'react';
 import { useNetwork } from 'wagmi';
 import { UserContext } from '../contexts/UserContext';
 import { TxInfo } from '../types/ActivityFetchResultType';
+import { comingSoonToast } from './Toasts';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
 
@@ -18,24 +29,27 @@ function getActivityLabel(activity: string) {
 
 function getActivityIndicator(activity: string) {
   return (
-    <Box
-      sx={{
-        p: 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        border: 1,
-        borderStyle: 'dashed',
-        borderRadius: 5
-      }}>
-      {activity === 'self' ? (
-        <Repeat color="inherit" fontSize="small" />
-      ) : activity === 'inbound' ? (
-        <ArrowDownward color="success" fontSize="small" />
-      ) : (
-        <Send color="error" fontSize="small" />
-      )}
-    </Box>
+    <Tooltip title="Tx details">
+      <IconButton
+        sx={{
+          p: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: 1,
+          borderStyle: 'dashed',
+          borderRadius: 5
+        }}
+        onClick={() => comingSoonToast()}>
+        {activity === 'self' ? (
+          <Repeat color="inherit" fontSize="small" />
+        ) : activity === 'inbound' ? (
+          <ArrowDownward color="success" fontSize="small" />
+        ) : (
+          <Send color="error" fontSize="small" />
+        )}
+      </IconButton>
+    </Tooltip>
   );
 }
 

@@ -7,12 +7,13 @@ import Assets from '../components/Assets';
 import { AssetType } from '../types/AssetType';
 import Activity from '../components/Activity';
 import { useNetwork } from 'wagmi';
-import { zeroAddress } from 'viem';
+import { Chain, zeroAddress } from 'viem';
 import { getSupportedTokens } from '../utils/erc20contracts';
 import { useBalanceFetcher } from '../utils/hooks/useBalanceFetcher';
 import { FlowType } from '../types/FlowType';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { useTransactionsFetcher } from '../utils/hooks/useTransactionsFetcher';
+import NetworkSelectorSection from '../components/NetworkSelectorSection';
 
 export default function Accounts() {
   const theme = useTheme();
@@ -62,6 +63,8 @@ export default function Accounts() {
 
   console.log('Loading balances: ', loading, balances);
 
+  const [selectedNetwork, setSelectedNetwork] = useState<Chain>();
+
   return (
     <>
       <Helmet>
@@ -80,15 +83,21 @@ export default function Accounts() {
               setAssetsOrActivityView={setAssetsOrActivityView}
             />
 
-            <Box maxWidth={smallScreen ? 350 : 440}>
+            <Box px={2} maxWidth={smallScreen ? 350 : 440}>
+              <NetworkSelectorSection
+                mx={1}
+                wallets={selectedFlow.wallets}
+                selectedNetwork={selectedNetwork}
+                setSelectedNetwork={setSelectedNetwork}
+              />
               {assetsOrActivityView === 'assets' ? (
                 <Assets
-                  wallets={selectedFlow.wallets}
+                  selectedNetwork={selectedNetwork}
                   balanceFetchResult={{ loading, fetched, balances }}
                 />
               ) : (
                 <Activity
-                  wallets={selectedFlow.wallets}
+                  selectedNetwork={selectedNetwork}
                   activityFetchResult={activityFetcherResult}
                 />
               )}

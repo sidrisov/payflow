@@ -13,7 +13,7 @@ export default function NetworkSelectorSection(
   const { wallets, selectedNetwork, setSelectedNetwork } = props;
 
   return (
-    <Stack {...props} p={1} direction="row" spacing={1} overflow="scroll">
+    <Stack p={1} direction="row" spacing={1} overflow="scroll" {...props}>
       <NetworkSelectorChip
         selectedNetwork={selectedNetwork}
         setSelectedNetwork={setSelectedNetwork}
