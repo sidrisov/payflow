@@ -58,11 +58,14 @@ export type FlowViewDialogProps = DialogProps &
     flow?: FlowType;
   };
 
-export default function FlowViewDialog({ closeStateCallback, ...props }: FlowViewDialogProps) {
+export default function FlowViewDialog({
+  closeStateCallback,
+  flow,
+  ...props
+}: FlowViewDialogProps) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const flow = props.flow;
   const saltNonce = flow && flow.uuid ? keccak256(toHex(flow.uuid)) : undefined;
 
   const { chains, switchNetwork } = useSwitchNetwork();

@@ -6,10 +6,10 @@ export type AddressAvatarProps = AvatarProps & {
   scale?: number;
 };
 
-export default function AddressAvatar(props: AddressAvatarProps) {
+export default function AddressAvatar({ address, scale, ...props }: AddressAvatarProps) {
   return (
     <Avatar {...props}>
-      <Blockies seed={props.address.toLowerCase()} scale={props.scale ? props.scale : 5} />
+      <Blockies seed={address.toLowerCase()} scale={scale ? scale : 5} />
     </Avatar>
   );
 }

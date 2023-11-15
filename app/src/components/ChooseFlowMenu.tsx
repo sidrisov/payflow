@@ -1,20 +1,24 @@
-import { Badge, Box, Menu, MenuItem, MenuProps, Tooltip, Typography } from '@mui/material';
+import { Box, Menu, MenuItem, MenuProps, Tooltip, Typography } from '@mui/material';
 import { FlowType } from '../types/FlowType';
-import { Check, Star, Stars } from '@mui/icons-material';
+import { Check, Stars } from '@mui/icons-material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useContext } from 'react';
 import { UserContext } from '../contexts/UserContext';
 
-export function ChooseFlowMenu(
-  props: MenuProps &
-    CloseCallbackType & {
-      flows: FlowType[];
-      selectedFlow: FlowType;
-      setSelectedFlow: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
-    }
-) {
-  const { flows, selectedFlow, setSelectedFlow, closeStateCallback } = props;
+export type ChooseFlowMenuProps = MenuProps &
+  CloseCallbackType & {
+    flows: FlowType[];
+    selectedFlow: FlowType;
+    setSelectedFlow: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
+  };
 
+export function ChooseFlowMenu({
+  flows,
+  selectedFlow,
+  setSelectedFlow,
+  closeStateCallback,
+  ...props
+}: ChooseFlowMenuProps) {
   const { profile } = useContext(UserContext);
   return (
     <Menu

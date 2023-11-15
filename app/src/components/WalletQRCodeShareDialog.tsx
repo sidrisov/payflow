@@ -7,7 +7,6 @@ import {
   DialogTitle,
   Stack,
   Typography,
-  Avatar,
   Box,
   IconButton,
   Tooltip
@@ -30,13 +29,13 @@ export type WalletQRCodeShareDialogProps = DialogProps &
   };
 
 export default function WalletQRCodeShareDialog({
+  wallet,
+  wallets,
   closeStateCallback,
   ...props
 }: WalletQRCodeShareDialogProps) {
   const theme = useTheme();
   const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
-
-  const { wallet, wallets } = props;
 
   const [openSelectWallet, setOpenSelectWallet] = useState(false);
   const [walletAnchorEl, setWalletAnchorEl] = useState<null | HTMLElement>(null);

@@ -1,24 +1,26 @@
 import { SelectAll } from '@mui/icons-material';
-import { ChipProps, Chip, Avatar, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { ChipProps, Chip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { Chain } from 'viem';
-import { SafeWalletType, WalletType } from '../types/FlowType';
+import { WalletType } from '../types/FlowType';
 import { useNetwork } from 'wagmi';
 import NetworkAvatar from './NetworkAvatar';
 import { getNetworkDisplayName } from '../utils/networkImages';
 
-export default function NetworkSelectorChip(
-  props: ChipProps & {
-    wallet?: WalletType;
-    selectedNetwork: Chain | undefined;
-    setSelectedNetwork: React.Dispatch<React.SetStateAction<Chain | undefined>>;
-  }
-) {
+export default function NetworkSelectorChip({
+  wallet,
+  selectedNetwork,
+  setSelectedNetwork,
+  ...props
+}: ChipProps & {
+  wallet?: WalletType;
+  selectedNetwork: Chain | undefined;
+  setSelectedNetwork: React.Dispatch<React.SetStateAction<Chain | undefined>>;
+}) {
   const theme = useTheme();
   const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const { chains } = useNetwork();
 
-  const { wallet, selectedNetwork, setSelectedNetwork } = props;
   return (
     <Chip
       {...props}

@@ -138,7 +138,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
                   setPaymentNetworks(value);
                 }}
                 options={chains
-                  .filter((c) => !smartAccountAllowedChains.includes(c.name))
+                  .filter((c) => !smartAccountAllowedChains.includes(c))
                   .map((c) => c.name)}
                 renderInput={(params) => (
                   <TextField

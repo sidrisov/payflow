@@ -1,5 +1,4 @@
 import { Avatar, Badge, Box, Stack, Typography } from '@mui/material';
-import { useNetwork } from 'wagmi';
 import NetworkAvatar from './NetworkAvatar';
 
 export function NetworkAssetBalanceSection(props: {
@@ -8,7 +7,6 @@ export function NetworkAssetBalanceSection(props: {
   balance: string;
   price: number;
 }) {
-  const { chains } = useNetwork();
   return (
     <Box
       p={1}

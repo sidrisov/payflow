@@ -26,21 +26,22 @@ import { useDebounce } from 'use-debounce';
 import { SearchProfileListItem } from './SearchProfileListItem';
 
 export type SelectProfileResultCallbackType = {
-  selectProfileWithSocialsCallback?: (
-    selectedProfileWithSocials: SelectedProfileWithSocialsType
-  ) => void;
+  selectProfileCallback?: (selectedProfileWithSocials: SelectedProfileWithSocialsType) => void;
 };
 
 export type SearchProfileDialogProps = DialogProps &
   CloseCallbackType &
   SelectProfileResultCallbackType;
 
-export default function SearchProfileDialog(props: SearchProfileDialogProps) {
+export default function SearchProfileDialog({
+  closeStateCallback,
+  selectProfileCallback,
+  ...props
+}: SearchProfileDialogProps) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const navigate = useNavigate();
-
 
   const [searchString, setSearchString] = useState<string>();
 
@@ -48,8 +49,6 @@ export default function SearchProfileDialog(props: SearchProfileDialogProps) {
 
   const [profiles, setProfiles] = useState<ProfileWithSocialsType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-
-  const { closeStateCallback, selectProfileWithSocialsCallback: selectProfileCallback } = props;
 
   function handleCloseCampaignDialog() {
     closeStateCallback();

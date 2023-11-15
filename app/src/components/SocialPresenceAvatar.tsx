@@ -6,9 +6,13 @@ export type SocialPresenceAvatarProps = AvatarProps & {
   profileName?: string;
 };
 
-export default function SocialPresenceAvatar(props: SocialPresenceAvatarProps) {
-  const avatarSrc = `/${props.dappName}.svg`;
-  const toolTipTitle = XMPT_DAPP === props.dappName ? 'enabled' : props.profileName;
+export default function SocialPresenceAvatar({
+  dappName,
+  profileName,
+  ...props
+}: SocialPresenceAvatarProps) {
+  const avatarSrc = `/${dappName}.svg`;
+  const toolTipTitle = XMPT_DAPP === dappName ? 'enabled' : profileName;
 
   return (
     <Tooltip title={toolTipTitle}>

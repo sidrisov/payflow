@@ -15,7 +15,6 @@ import { MetaType } from '../types/ProfleType';
 import { AddressSection } from './AddressSection';
 import { ProfileSection } from './ProfileSection';
 import { useContext } from 'react';
-import { useNetwork } from 'wagmi';
 import { UserContext } from '../contexts/UserContext';
 import { TxInfo } from '../types/ActivityFetchResultType';
 import { comingSoonToast } from './Toasts';
@@ -55,7 +54,6 @@ function getActivityIndicator(activity: string) {
 
 export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
   const { ethUsdPrice } = useContext(UserContext);
-  const { chains } = useNetwork();
   const { txInfo } = props;
 
   return (

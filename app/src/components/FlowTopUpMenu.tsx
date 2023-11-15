@@ -3,13 +3,14 @@ import { ProfileType } from '../types/ProfleType';
 import { Link, Payments, QrCode } from '@mui/icons-material';
 import { comingSoonToast } from './Toasts';
 
-export function FlowTopUpMenu(
-  props: MenuProps & {
-    profile: ProfileType;
-    qrClickCallback: () => void;
-  }
-) {
-  const { qrClickCallback } = props;
+export function FlowTopUpMenu({
+  profile,
+  qrClickCallback,
+  ...props
+}: MenuProps & {
+  profile: ProfileType;
+  qrClickCallback: () => void;
+}) {
   return (
     <Menu
       {...props}

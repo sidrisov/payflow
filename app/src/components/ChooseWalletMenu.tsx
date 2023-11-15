@@ -5,15 +5,20 @@ import { shortenWalletAddressLabel } from '../utils/address';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import NetworkAvatar from './NetworkAvatar';
 
-export function ChooseWalletMenu(
-  props: MenuProps &
-    CloseCallbackType & {
-      wallets: FlowWalletType[];
-      selectedWallet: FlowWalletType;
-      setSelectedWallet: React.Dispatch<React.SetStateAction<FlowWalletType>>;
-    }
-) {
-  const { wallets, selectedWallet, setSelectedWallet, closeStateCallback } = props;
+export type ChooseWalletMenuProps = MenuProps &
+  CloseCallbackType & {
+    wallets: FlowWalletType[];
+    selectedWallet: FlowWalletType;
+    setSelectedWallet: React.Dispatch<React.SetStateAction<FlowWalletType>>;
+  };
+
+export function ChooseWalletMenu({
+  wallets,
+  selectedWallet,
+  setSelectedWallet,
+  closeStateCallback,
+  ...props
+}: ChooseWalletMenuProps) {
   return (
     <Menu
       {...props}

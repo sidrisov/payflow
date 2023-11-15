@@ -19,15 +19,15 @@ import { CloseCallbackType } from '../types/CloseCallbackType';
 import { disconnect } from 'wagmi/actions';
 import { comingSoonToast } from './Toasts';
 
-export function ProfileMenu(
-  props: MenuProps &
-    CloseCallbackType & {
-      profile: ProfileType;
-    }
-) {
+export function ProfileMenu({
+  profile,
+  closeStateCallback,
+  ...props
+}: MenuProps &
+  CloseCallbackType & {
+    profile: ProfileType;
+  }) {
   const navigate = useNavigate();
-
-  const { profile, closeStateCallback } = props;
 
   const { appSettings, setAppSettings } = useContext(UserContext);
 

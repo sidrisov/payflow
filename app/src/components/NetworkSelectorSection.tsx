@@ -3,15 +3,16 @@ import NetworkSelectorChip from './NetworkSelectorChip';
 import { SafeWalletType, WalletType } from '../types/FlowType';
 import { Chain } from 'viem';
 
-export default function NetworkSelectorSection(
-  props: StackProps & {
-    wallets: WalletType[];
-    selectedNetwork: Chain | undefined;
-    setSelectedNetwork: React.Dispatch<React.SetStateAction<Chain | undefined>>;
-  }
-) {
-  const { wallets, selectedNetwork, setSelectedNetwork } = props;
-
+export default function NetworkSelectorSection({
+  wallets,
+  selectedNetwork,
+  setSelectedNetwork,
+  ...props
+}: StackProps & {
+  wallets: WalletType[];
+  selectedNetwork: Chain | undefined;
+  setSelectedNetwork: React.Dispatch<React.SetStateAction<Chain | undefined>>;
+}) {
   return (
     <Stack p={1} direction="row" spacing={1} overflow="scroll" {...props}>
       <NetworkSelectorChip

@@ -2,7 +2,6 @@ import { Stack, Typography } from '@mui/material';
 import { useContext } from 'react';
 
 import { Chain, formatEther } from 'viem';
-import { useNetwork } from 'wagmi';
 import { NetworkAssetBalanceSection } from './NetworkAssetBalanceSection';
 import { BalanceFetchResultType } from '../types/BalanceFetchResultType';
 import { UserContext } from '../contexts/UserContext';
@@ -15,7 +14,6 @@ export default function Assets(props: {
   const { ethUsdPrice } = useContext(UserContext);
   const { selectedNetwork } = props;
 
-  const { chains } = useNetwork();
   const { loading, fetched, balances } = props.balanceFetchResult;
 
   return (
@@ -26,8 +24,7 @@ export default function Assets(props: {
         balances
           .filter((assetBalance) => {
             return selectedNetwork
-              ? assetBalance.asset.chainId ===
-                  chains.find((c) => c.name === selectedNetwork.name)?.id
+              ? assetBalance.asset.chainId === selectedNetwork.id
               : true /* && assetBalance.balance?.value !== BigInt(0) */;
           })
           // TODO: sort on fetch
@@ -36,8 +33,10 @@ export default function Assets(props: {
             Number((right.balance?.value ?? BigInt(0)) - (left.balance?.value ?? BigInt(0)))
           )
           .map((assetBalance) => {
+            console.log(assetBalance);
             return (
               <NetworkAssetBalanceSection
+                key={`network_asset_balance_${assetBalance.asset.chainId}_${assetBalance.asset.address}_${assetBalance.asset.token}`}
                 network={assetBalance.asset.chainId}
                 asset={assetBalance.balance?.symbol ?? ''}
                 balance={formatEther(assetBalance.balance?.value ?? BigInt(0))}

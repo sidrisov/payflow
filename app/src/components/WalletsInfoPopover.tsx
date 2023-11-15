@@ -3,26 +3,21 @@ import { WalletSection } from './WalletSection';
 import { FlowType, FlowWalletType } from '../types/FlowType';
 import { BalanceFetchResultType } from '../types/BalanceFetchResultType';
 import { formatEther } from 'viem';
-import { useNetwork } from 'wagmi';
 import { useContext } from 'react';
 import { UserContext } from '../contexts/UserContext';
 
-export function WalletsPopover(
-  props: PopoverProps & { flow: FlowType; balanceFetchResult: BalanceFetchResultType }
-) {
-  const { flow, balanceFetchResult } = props;
-
-  const { chains } = useNetwork();
-
+export function WalletsPopover({
+  flow,
+  balanceFetchResult,
+  ...props
+}: PopoverProps & { flow: FlowType; balanceFetchResult: BalanceFetchResultType }) {
   const { ethUsdPrice } = useContext(UserContext);
 
   function calculateBalance(wallet: FlowWalletType) {
     if (balanceFetchResult && ethUsdPrice) {
       const totalBalance = formatEther(
         balanceFetchResult.balances
-          .filter(
-            (balance) => balance.asset.chainId === chains.find((c) => c.name === wallet.network)?.id
-          )
+          .filter((balance) => balance.asset.chainId === wallet.network)
           // don't count ERC20 for now
           .filter((balance) => !balance.asset.token && balance.balance)
           .reduce((previousValue, currentValue) => {

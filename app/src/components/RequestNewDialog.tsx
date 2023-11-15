@@ -12,7 +12,6 @@ import {
   Typography,
   Box,
   InputAdornment,
-  Avatar,
   IconButton
 } from '@mui/material';
 import { toast } from 'react-toastify';
@@ -29,6 +28,7 @@ import { copyToClipboard } from '../utils/copyToClipboard';
 import { PaymentRequestType } from '../types/PaymentRequestType';
 import { API_URL } from '../utils/urlConstants';
 import NetworkAvatar from './NetworkAvatar';
+import { getNetworkDisplayName } from '../utils/networkImages';
 
 export type RequestNewDialogProps = DialogProps & CloseCallbackType;
 
@@ -153,7 +153,7 @@ export default function RequestNewDialog({ closeStateCallback, ...props }: Reque
               }}
               // allow only smart wallets
               options={selectedFlow.wallets.filter((f) => f.smart)}
-              getOptionLabel={(option) => option.network}
+              getOptionLabel={(option) => getNetworkDisplayName(option.network)}
               renderInput={(params) => (
                 <TextField variant="outlined" {...params} label="Choose Payment Wallet" />
               )}

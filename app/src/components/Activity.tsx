@@ -1,6 +1,5 @@
 import { Stack, Typography } from '@mui/material';
 import { ActivityFetchResultType } from '../types/ActivityFetchResultType';
-import { useNetwork } from 'wagmi';
 import ActivitySection from './ActivitySection';
 import { ActivitySkeletonSection } from './ActivitySkeletonSection';
 import { Chain } from '@rainbow-me/rainbowkit';
@@ -15,8 +14,6 @@ export default function Activity(props: AssetsProps) {
 
   const { loading, fetched, transactions } = props.activityFetchResult;
 
-  const { chains } = useNetwork();
-
   return (
     <Stack px={1.5} spacing={1} minWidth={350} maxHeight={350} overflow="scroll">
       {loading || transactions.length === 0 ? (
@@ -24,9 +21,7 @@ export default function Activity(props: AssetsProps) {
       ) : fetched ? (
         transactions
           .filter((tx) => {
-            return selectedNetwork
-              ? tx.chainId === chains.find((c) => c.name === selectedNetwork.name)?.id
-              : true;
+            return selectedNetwork ? tx.chainId === selectedNetwork.id : true;
           })
           .map((txInfo) => <ActivitySection txInfo={txInfo} />)
       ) : (

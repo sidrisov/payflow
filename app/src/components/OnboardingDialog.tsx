@@ -33,18 +33,21 @@ const preCreateWalletChains = [baseGoerli, optimismGoerli, zoraTestnet, zkSyncTe
 export type ShareDialogProps = DialogProps &
   CloseCallbackType & {
     profile: ProfileType;
-    username?: string | undefined | null;
+    paramUsername?: string | undefined | null;
   };
 
-export default function OnboardingDialog({ closeStateCallback, ...props }: ShareDialogProps) {
+export default function OnboardingDialog({
+  closeStateCallback,
+  profile,
+  paramUsername,
+  ...props
+}: ShareDialogProps) {
   function handleCloseCampaignDialog() {
     closeStateCallback();
   }
 
-  const { profile } = props;
-
   const [displayName, setDisplayName] = useState<string>(profile.displayName ?? '');
-  const [username, setUsername] = useState<string>(props.username ?? profile.username ?? '');
+  const [username, setUsername] = useState<string>(paramUsername ?? profile.username ?? '');
   const [profileImage, setProfileImage] = useState<string>(profile.profileImage ?? '');
 
   const [usernameAvailble, setUsernameAvailable] = useState<boolean>();

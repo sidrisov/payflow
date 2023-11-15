@@ -49,12 +49,11 @@ export type AccountSendDialogProps = DialogProps &
 
 export default function AccountSendDialog({
   closeStateCallback,
+  flow,
   ...props
 }: AccountSendDialogProps) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
-
-  const { flow } = props;
 
   const { profile, ethUsdPrice } = useContext(UserContext);
 

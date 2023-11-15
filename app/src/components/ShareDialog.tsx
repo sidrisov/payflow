@@ -20,7 +20,12 @@ export type ShareDialogProps = DialogProps &
     link: string;
   };
 
-export default function ShareDialog({ closeStateCallback, ...props }: ShareDialogProps) {
+export default function ShareDialog({
+  title,
+  link,
+  closeStateCallback,
+  ...props
+}: ShareDialogProps) {
   function handleCloseCampaignDialog() {
     closeStateCallback();
   }
@@ -36,7 +41,7 @@ export default function ShareDialog({ closeStateCallback, ...props }: ShareDialo
       <DialogTitle>
         <Box display="flex" justifyContent="center">
           <Typography variant="h6" sx={{ overflow: 'auto' }}>
-            {props.title}
+            {title}
           </Typography>
         </Box>
       </DialogTitle>
@@ -44,10 +49,10 @@ export default function ShareDialog({ closeStateCallback, ...props }: ShareDialo
         <Stack m={1} direction="column" spacing={3}>
           <Chip
             icon={<Link />}
-            label={props.link?.replace(/^https?:\/\//, '')}
+            label={link?.replace(/^https?:\/\//, '')}
             clickable
             onClick={() => {
-              copyToClipboard(props.link);
+              copyToClipboard(link);
               toast.success('Link is copied!');
             }}
             sx={{
@@ -55,9 +60,7 @@ export default function ShareDialog({ closeStateCallback, ...props }: ShareDialo
               textOverflow: 'ellipsis'
             }}
           />
-          {props.link && (
-            <QRCode alignmentBaseline="central" alphabetic="true" value={props.link} />
-          )}
+          {link && <QRCode alignmentBaseline="central" alphabetic="true" value={link} />}
         </Stack>
       </DialogContent>
     </Dialog>

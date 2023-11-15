@@ -41,24 +41,23 @@ export type FlowWithdrawalDialogProps = DialogProps &
 
 export default function FlowWithdrawalDialog({
   closeStateCallback,
+  flow,
+  wallet,
   ...props
 }: FlowWithdrawalDialogProps) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { flow, wallet } = props;
-
   const [withdrawAmount, setWithdrawAmount] = useState<bigint>();
 
-  const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
   const ethersSigner = useEthersSigner();
 
-  const { chains, switchNetwork } = useSwitchNetwork();
+  const { switchNetwork } = useSwitchNetwork();
 
   const { isSuccess, data: balance } = useBalance({
     address: wallet.address,
-    chainId: chains.find((c) => c?.name === wallet.network)?.id
+    chainId: wallet.network
   });
 
   const [txHash, setTxHash] = useState<Hash>();
@@ -71,7 +70,7 @@ export default function FlowWithdrawalDialog({
     if (withdrawAmount && ethersSigner) {
       withdrawalToastId.current = toast.loading(`Loading ...`);
 
-      switchNetwork?.(chains.find((c) => c?.name === wallet.network)?.id);
+      switchNetwork?.(wallet.network);
 
       let txHash;
 
