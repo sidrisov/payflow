@@ -32,6 +32,7 @@ import { FlowType, FlowWalletType } from '../types/FlowType';
 import axios from 'axios';
 import { delay } from '../utils/delay';
 import { API_URL } from '../utils/urlConstants';
+import getNetworkImageSrc from '../utils/networkImages';
 
 export type FlowWithdrawalDialogProps = DialogProps &
   CloseCallbackType & {
@@ -236,7 +237,7 @@ export default function FlowWithdrawalDialog({
             alignSelf="stretch"
             alignItems="center"
             sx={{ height: 56, border: 1, borderRadius: 3, p: 1 }}>
-            <Avatar src={'/networks/' + wallet.network + '.png'} sx={{ width: 24, height: 24 }} />
+            <Avatar src={getNetworkImageSrc(wallet.network)} sx={{ width: 24, height: 24 }} />
             <Typography ml={1} sx={{ overflow: 'scroll' }}>
               {wallet.address}
             </Typography>
@@ -256,7 +257,7 @@ export default function FlowWithdrawalDialog({
             alignSelf="stretch"
             alignItems="center"
             sx={{ height: 56, border: 1, borderRadius: 3, p: 1 }}>
-            <Avatar src={'/networks/' + wallet.network + '.png'} sx={{ width: 24, height: 24 }} />
+            <Avatar src={getNetworkImageSrc(wallet.network)} sx={{ width: 24, height: 24 }} />
             <Typography ml={1} sx={{ overflow: 'scroll' }}>
               {wallet.master}
             </Typography>

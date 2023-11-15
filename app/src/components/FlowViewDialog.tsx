@@ -50,6 +50,7 @@ import { isRelaySupported } from '../utils/relayer';
 import { shortNetworkName } from '../utils/shortNetworkName';
 import { API_URL, DAPP_URL } from '../utils/urlConstants';
 import { comingSoonToast } from './Toasts';
+import getNetworkImageSrc from '../utils/networkImages';
 
 export type FlowViewDialogProps = DialogProps &
   CloseCallbackType & {
@@ -308,7 +309,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
         sx={{ border: 1, borderRadius: 3, p: 1 }}>
         <Box display="flex" flexDirection="row" alignItems="center">
           <Tooltip title={wallet.network}>
-            <Avatar src={'/networks/' + wallet.network + '.png'} sx={{ width: 24, height: 24 }} />
+            <Avatar src={getNetworkImageSrc(wallet.network)} sx={{ width: 24, height: 24 }} />
           </Tooltip>
           <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
           <Tooltip title="Copy Address">
@@ -429,7 +430,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                       sx={{ border: 1, borderRadius: 3, p: 1 }}>
                       <Box display="flex" flexDirection="row" alignItems="center">
                         <Avatar
-                          src={'/networks/' + wallet.network + '.png'}
+                          src={getNetworkImageSrc(wallet.network)}
                           sx={{ width: 24, height: 24 }}
                         />
                         <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>

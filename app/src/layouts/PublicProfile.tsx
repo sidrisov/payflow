@@ -285,7 +285,7 @@ export default function PublicProfile() {
                       <Tooltip
                         key={`wallet_tooltip_${flow.uuid}_${i}`}
                         title={flow.wallets[i].network}>
-                        <Avatar src={'/networks/' + flow.wallets[i].network + '.png'} />
+                        <Avatar src={getNetworkImageSrc(flow.wallets[i].network)} />
                       </Tooltip>
                     ))}
                   </AvatarGroup>

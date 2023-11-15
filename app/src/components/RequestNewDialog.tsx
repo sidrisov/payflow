@@ -28,6 +28,7 @@ import { shortenWalletAddressLabel } from '../utils/address';
 import { copyToClipboard } from '../utils/copyToClipboard';
 import { PaymentRequestType } from '../types/PaymentRequestType';
 import { API_URL } from '../utils/urlConstants';
+import getNetworkImageSrc from '../utils/networkImages';
 
 export type RequestNewDialogProps = DialogProps & CloseCallbackType;
 
@@ -168,7 +169,7 @@ export default function RequestNewDialog({ closeStateCallback, ...props }: Reque
               alignItems="center"
               justifyContent="center">
               <Avatar
-                src={'/networks/' + selectedWallet.network + '.png'}
+                src={getNetworkImageSrc(selectedWallet.network)}
                 sx={{ width: 24, height: 24 }}
               />
               <Typography ml={1}>{shortenWalletAddressLabel(selectedWallet.address)}</Typography>

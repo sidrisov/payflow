@@ -35,6 +35,7 @@ import { Helmet } from 'react-helmet-async';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import { PaymentRequestType } from '../types/PaymentRequestType';
 import { API_URL } from '../utils/urlConstants';
+import getNetworkImageSrc from '../utils/networkImages';
 
 export default function PaymentRequest({ appSettings, setAppSettings }: any) {
   const { uuid } = useParams();
@@ -232,10 +233,7 @@ export default function PaymentRequest({ appSettings, setAppSettings }: any) {
               </Typography>
 
               <Box mt={1} display="flex" flexDirection="row" alignItems="center">
-                <Avatar
-                  src={'/networks/' + request.network + '.png'}
-                  sx={{ width: 24, height: 24 }}
-                />
+                <Avatar src={getNetworkImageSrc(request.network)} sx={{ width: 24, height: 24 }} />
                 <Typography ml={1}>{request.network}</Typography>
                 <Typography ml={1}>{shortenWalletAddressLabel(request.address)}</Typography>
                 <Tooltip title="Copy Address">
@@ -261,9 +259,7 @@ export default function PaymentRequest({ appSettings, setAppSettings }: any) {
                   color="primary"
                   onClick={() => {
                     requestToastId.current = toast.loading(
-                      `Sending ${request.amount} to ${shortenWalletAddressLabel(
-                        request.address
-                      )}`
+                      `Sending ${request.amount} to ${shortenWalletAddressLabel(request.address)}`
                     );
                     sendTransaction?.();
                   }}

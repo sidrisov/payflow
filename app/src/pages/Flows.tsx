@@ -23,6 +23,7 @@ import { getTotalBalance, getWalletBalance } from '../utils/getBalance';
 import { UserContext } from '../contexts/UserContext';
 import { formatEther } from 'viem';
 import { DAPP_URL } from '../utils/urlConstants';
+import getNetworkImageSrc from '../utils/networkImages';
 
 // TODO: move to FlowCard
 
@@ -222,7 +223,7 @@ export default function Flows() {
                         <Tooltip
                           key={`wallet_tooltip_${flow.uuid}_${i}`}
                           title={flow.wallets[i].network}>
-                          <Avatar src={'/networks/' + flow.wallets[i].network + '.png'} />
+                          <Avatar src={getNetworkImageSrc(flow.wallets[i].network)} />
                         </Tooltip>
                       ))}
                     </AvatarGroup>

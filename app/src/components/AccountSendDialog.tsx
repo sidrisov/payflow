@@ -42,6 +42,7 @@ import { useSafeTransfer } from '../utils/hooks/useSafeTransfer';
 import { comingSoonToast } from './Toasts';
 import { grey } from '@mui/material/colors';
 import { updateWallet } from '../services/flow';
+import getNetworkImageSrc from '../utils/networkImages';
 
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
@@ -330,7 +331,7 @@ export default function AccountSendDialog({
                             setOpenSelectWallet(true);
                           }}>
                           <Avatar
-                            src={'/networks/' + selectedWallet.network + '.png'}
+                            src={getNetworkImageSrc(selectedWallet.network)}
                             sx={{ width: 28, height: 28 }}
                           />
                         </IconButton>

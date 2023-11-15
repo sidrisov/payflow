@@ -20,6 +20,7 @@ import { useNetwork } from 'wagmi';
 import { UserContext } from '../contexts/UserContext';
 import { TxInfo } from '../types/ActivityFetchResultType';
 import { comingSoonToast } from './Toasts';
+import getNetworkImageSrc from '../utils/networkImages';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
 
@@ -71,7 +72,7 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           badgeContent={
             <Avatar
-              src={`/networks/${chains.find((c) => c.id === txInfo.chainId)?.name}.png`}
+              src={getNetworkImageSrc(txInfo.chainId)}
               sx={{
                 width: 15,
                 height: 15

@@ -40,6 +40,7 @@ import { switchNetwork } from 'wagmi/actions';
 import { formatEther } from 'viem';
 import { green } from '@mui/material/colors';
 import { API_URL, DAPP_URL } from '../utils/urlConstants';
+import getNetworkImageSrc from '../utils/networkImages';
 
 export default function Requests() {
   const theme = useTheme();
@@ -140,7 +141,7 @@ export default function Requests() {
             <Box display="flex" flexDirection="row" justifyContent="flex-start" alignItems="center">
               <Tooltip title={request.network}>
                 <Avatar
-                  src={'/networks/' + request.network + '.png'}
+                  src={getNetworkImageSrc(request.network)}
                   sx={{ ml: 2, width: 24, height: 24 }}
                 />
               </Tooltip>

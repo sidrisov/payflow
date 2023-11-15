@@ -23,6 +23,7 @@ import { FlowType } from '../types/FlowType';
 import { ChooseFlowMenu } from './ChooseFlowMenu';
 import { FlowTopUpMenu } from './FlowTopUpMenu';
 import WalletQRCodeShareDialog from './WalletQRCodeShareDialog';
+import getNetworkImageSrc from '../utils/networkImages';
 
 export type AccountNewDialogProps = CardProps & {
   flows: FlowType[];
@@ -107,7 +108,7 @@ export function AccountCard(props: AccountNewDialogProps) {
             setOpenWalletDetailsPopover(true);
           }}>
           {[...Array(Math.min(4, selectedFlow.wallets.length))].map((_item, i) => (
-            <Avatar src={'/networks/' + selectedFlow.wallets[i].network + '.png'} />
+            <Avatar src={getNetworkImageSrc(selectedFlow.wallets[i].network)} />
           ))}
         </AvatarGroup>
 

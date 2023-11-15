@@ -5,6 +5,7 @@ import { copyToClipboard } from '../utils/copyToClipboard';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { SafeWalletType } from '../types/FlowType';
 import { shortNetworkName } from '../utils/shortNetworkName';
+import getNetworkImageSrc from '../utils/networkImages';
 
 export function WalletSection(props: { wallet: SafeWalletType; balance?: string }) {
   const { wallet, balance } = props;
@@ -19,7 +20,7 @@ export function WalletSection(props: { wallet: SafeWalletType; balance?: string 
       sx={{ border: 1, borderRadius: 5, p: 1 }}>
       <Box display="flex" flexDirection="row" alignItems="center">
         <Tooltip title={wallet.network}>
-          <Avatar src={'/networks/' + wallet.network + '.png'} sx={{ width: 24, height: 24 }} />
+          <Avatar src={getNetworkImageSrc(wallet.network)} sx={{ width: 24, height: 24 }} />
         </Tooltip>
         <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
         <Tooltip title="Copy Address">

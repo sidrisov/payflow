@@ -21,6 +21,7 @@ import { copyToClipboard } from '../utils/copyToClipboard';
 import { useState } from 'react';
 import { ChooseWalletMenu } from './ChooseWalletMenu';
 import { FlowWalletType } from '../types/FlowType';
+import getNetworkImageSrc from '../utils/networkImages';
 
 export type WalletQRCodeShareDialogProps = DialogProps &
   CloseCallbackType & {
@@ -74,7 +75,7 @@ export default function WalletQRCodeShareDialog({
                   setOpenSelectWallet(true);
                 }}>
                 <Avatar
-                  src={'/networks/' + selectedWallet.network + '.png'}
+                  src={getNetworkImageSrc(selectedWallet.network)}
                   sx={{ width: 28, height: 28 }}
                 />
               </IconButton>

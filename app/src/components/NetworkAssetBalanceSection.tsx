@@ -1,5 +1,6 @@
 import { Avatar, Badge, Box, Stack, Typography } from '@mui/material';
 import { useNetwork } from 'wagmi';
+import getNetworkImageSrc from '../utils/networkImages';
 
 export function NetworkAssetBalanceSection(props: {
   network: number;
@@ -22,7 +23,7 @@ export function NetworkAssetBalanceSection(props: {
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           badgeContent={
             <Avatar
-              src={`/networks/${chains.find((c) => props.network === c.id)?.name}.png`}
+              src={getNetworkImageSrc(props.network)}
               sx={{
                 width: 15,
                 height: 15

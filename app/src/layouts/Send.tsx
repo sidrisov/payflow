@@ -48,6 +48,7 @@ import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts
 import { ETH, Token, getSupportedTokens } from '../utils/erc20contracts';
 import { API_URL } from '../utils/urlConstants';
 import { comingSoonToast } from '../components/Toasts';
+import getNetworkImageSrc from '../utils/networkImages';
 
 export default function Send({ appSettings, setAppSettings }: any) {
   const { uuid } = useParams();
@@ -331,7 +332,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
               {selectedPaymentNetwork && (
                 <Box mt={1} display="flex" flexDirection="row" alignItems="center">
                   <Avatar
-                    src={'/networks/' + selectedPaymentNetwork + '.png'}
+                    src={getNetworkImageSrc(selectedPaymentNetwork)}
                     sx={{ width: 24, height: 24 }}
                   />
                   <Typography ml={1}>
