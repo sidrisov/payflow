@@ -7,7 +7,6 @@ import {
   DialogProps,
   Typography,
   Stack,
-  Avatar,
   Box,
   IconButton,
   TextField,
@@ -40,9 +39,8 @@ import { UserContext } from '../contexts/UserContext';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { useSafeTransfer } from '../utils/hooks/useSafeTransfer';
 import { comingSoonToast } from './Toasts';
-import { grey } from '@mui/material/colors';
 import { updateWallet } from '../services/flow';
-import getNetworkImageSrc from '../utils/networkImages';
+import NetworkAvatar from './NetworkAvatar';
 
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
@@ -330,8 +328,8 @@ export default function AccountSendDialog({
                             setWalletAnchorEl(event.currentTarget);
                             setOpenSelectWallet(true);
                           }}>
-                          <Avatar
-                            src={getNetworkImageSrc(selectedWallet.network)}
+                          <NetworkAvatar
+                            network={selectedWallet.network}
                             sx={{ width: 28, height: 28 }}
                           />
                         </IconButton>

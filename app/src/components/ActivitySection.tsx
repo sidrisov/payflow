@@ -1,6 +1,5 @@
 import { Repeat, ArrowDownward, Send } from '@mui/icons-material';
 import {
-  Avatar,
   Badge,
   Box,
   BoxProps,
@@ -20,7 +19,7 @@ import { useNetwork } from 'wagmi';
 import { UserContext } from '../contexts/UserContext';
 import { TxInfo } from '../types/ActivityFetchResultType';
 import { comingSoonToast } from './Toasts';
-import getNetworkImageSrc from '../utils/networkImages';
+import NetworkAvatar from './NetworkAvatar';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
 
@@ -71,8 +70,8 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
           overlap="circular"
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           badgeContent={
-            <Avatar
-              src={getNetworkImageSrc(txInfo.chainId)}
+            <NetworkAvatar
+              network={txInfo.chainId}
               sx={{
                 width: 15,
                 height: 15

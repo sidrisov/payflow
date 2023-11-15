@@ -12,3 +12,16 @@ export default function getNetworkImageSrc(network: number | string): string {
 
   return `/networks/${fileName}.png`;
 }
+
+export function getNetworkDisplayName(network: number | string): string {
+  const displayName =
+    typeof network === 'number'
+      ? getNetwork().chains.find((c) => c.id === (network as number))?.name
+      : network;
+
+  if (!displayName) {
+    throw new Error(`Chain ${network} not supported!`);
+  }
+
+  return displayName;
+}

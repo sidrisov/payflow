@@ -23,7 +23,7 @@ import { getTotalBalance, getWalletBalance } from '../utils/getBalance';
 import { UserContext } from '../contexts/UserContext';
 import { formatEther } from 'viem';
 import { DAPP_URL } from '../utils/urlConstants';
-import getNetworkImageSrc from '../utils/networkImages';
+import NetworkAvatar from '../components/NetworkAvatar';
 
 // TODO: move to FlowCard
 
@@ -220,11 +220,11 @@ export default function Flows() {
                         '& .MuiAvatar-root': { width: 20, height: 20, fontSize: 10 }
                       }}>
                       {[...Array(Math.min(4, flow.wallets.length))].map((_item, i) => (
-                        <Tooltip
-                          key={`wallet_tooltip_${flow.uuid}_${i}`}
-                          title={flow.wallets[i].network}>
-                          <Avatar src={getNetworkImageSrc(flow.wallets[i].network)} />
-                        </Tooltip>
+                        <NetworkAvatar
+                          key={`wallet_avatar_${flow.uuid}_${i}`}
+                          tooltip
+                          network={flow.wallets[i].network}
+                        />
                       ))}
                     </AvatarGroup>
                     <Tooltip title="Share Link / QR">

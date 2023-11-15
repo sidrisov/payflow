@@ -3,7 +3,7 @@ import { ChipProps, Chip, Avatar, Typography, useMediaQuery, useTheme } from '@m
 import { Chain } from 'viem';
 import { SafeWalletType } from '../types/FlowType';
 import { useNetwork } from 'wagmi';
-import getNetworkImageSrc from '../utils/networkImages';
+import NetworkAvatar from './NetworkAvatar';
 
 export default function NetworkSelectorChip(
   props: ChipProps & {
@@ -24,7 +24,7 @@ export default function NetworkSelectorChip(
       clickable
       icon={
         wallet ? (
-          <Avatar src={getNetworkImageSrc(wallet.network)} sx={{ width: 20, height: 20 }} />
+          <NetworkAvatar network={wallet.network} sx={{ width: 20, height: 20 }} />
         ) : (
           <SelectAll />
         )

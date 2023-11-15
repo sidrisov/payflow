@@ -21,7 +21,7 @@ import { copyToClipboard } from '../utils/copyToClipboard';
 import { useState } from 'react';
 import { ChooseWalletMenu } from './ChooseWalletMenu';
 import { FlowWalletType } from '../types/FlowType';
-import getNetworkImageSrc from '../utils/networkImages';
+import NetworkAvatar from './NetworkAvatar';
 
 export type WalletQRCodeShareDialogProps = DialogProps &
   CloseCallbackType & {
@@ -67,19 +67,18 @@ export default function WalletQRCodeShareDialog({
       <DialogContent>
         <Stack alignItems="center" spacing={2}>
           <Box display="flex" flexDirection="row" alignItems="center">
-            <Tooltip title={selectedWallet.network}>
-              <IconButton
-                sx={{ width: 40, height: 40, border: 1, borderStyle: 'dashed' }}
-                onClick={(event) => {
-                  setWalletAnchorEl(event.currentTarget);
-                  setOpenSelectWallet(true);
-                }}>
-                <Avatar
-                  src={getNetworkImageSrc(selectedWallet.network)}
-                  sx={{ width: 28, height: 28 }}
-                />
-              </IconButton>
-            </Tooltip>
+            <IconButton
+              sx={{ width: 40, height: 40, border: 1, borderStyle: 'dashed' }}
+              onClick={(event) => {
+                setWalletAnchorEl(event.currentTarget);
+                setOpenSelectWallet(true);
+              }}>
+              <NetworkAvatar
+                tooltip
+                network={selectedWallet.network}
+                sx={{ width: 28, height: 28 }}
+              />
+            </IconButton>
             <Typography ml={1} variant="subtitle2">
               {shortenWalletAddressLabel(selectedWallet.address)}
             </Typography>

@@ -282,11 +282,8 @@ export default function PublicProfile() {
                       '& .MuiAvatar-root': { width: 20, height: 20, fontSize: 10 }
                     }}>
                     {[...Array(Math.min(4, flow.wallets.length))].map((_item, i) => (
-                      <Tooltip
-                        key={`wallet_tooltip_${flow.uuid}_${i}`}
-                        title={flow.wallets[i].network}>
-                        <Avatar src={getNetworkImageSrc(flow.wallets[i].network)} />
-                      </Tooltip>
+                
+                        <NetworkAvatar tooltip network={flow.wallets[i].network} />
                     ))}
                   </AvatarGroup>
                 </Box>
