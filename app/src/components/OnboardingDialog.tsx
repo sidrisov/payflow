@@ -89,7 +89,7 @@ export default function OnboardingDialog({ closeStateCallback, ...props }: Share
         (wallet) =>
           ({
             address: wallet.address,
-            network: wallet.chain.name,
+            network: wallet.chain.id,
             smart: true,
             safe: true,
             safeDeployed: false,

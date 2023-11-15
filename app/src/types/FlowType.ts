@@ -11,7 +11,7 @@ export interface FlowType {
 
 export interface FlowWalletType {
   address: Address;
-  network: string;
+  network: number;
   smart: boolean;
   safe: boolean;
   safeVersion: string;
@@ -22,18 +22,18 @@ export interface FlowWalletType {
 
 export interface SafeWalletType {
   address: Address;
-  network: string;
+  network: number;
   safe: boolean;
   safeDeployed: boolean;
 }
 
 export interface WalletType {
   address: Address;
-  network: string;
+  network: number;
 }
 
 export interface WalletWithProfileType {
   address: Address;
-  network: string;
+  network: number;
   profile?: ProfileType;
 }

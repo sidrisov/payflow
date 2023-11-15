@@ -1,13 +1,14 @@
 import { SelectAll } from '@mui/icons-material';
 import { ChipProps, Chip, Avatar, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { Chain } from 'viem';
-import { SafeWalletType } from '../types/FlowType';
+import { SafeWalletType, WalletType } from '../types/FlowType';
 import { useNetwork } from 'wagmi';
 import NetworkAvatar from './NetworkAvatar';
+import { getNetworkDisplayName } from '../utils/networkImages';
 
 export default function NetworkSelectorChip(
   props: ChipProps & {
-    wallet?: SafeWalletType;
+    wallet?: WalletType;
     selectedNetwork: Chain | undefined;
     setSelectedNetwork: React.Dispatch<React.SetStateAction<Chain | undefined>>;
   }
@@ -31,19 +32,19 @@ export default function NetworkSelectorChip(
       }
       label={
         <Typography variant={!smallScreen ? 'subtitle2' : 'caption'}>
-          {wallet ? wallet.network : 'All networks'}
+          {wallet ? getNetworkDisplayName(wallet.network) : 'All networks'}
         </Typography>
       }
       onClick={async () => {
         if (wallet) {
-          setSelectedNetwork(chains.find((c) => c.name === wallet.network));
+          setSelectedNetwork(chains.find((c) => c.id === wallet.network));
         } else {
           setSelectedNetwork(undefined);
         }
       }}
       sx={{
         backgroundColor: (
-          wallet ? selectedNetwork?.name === wallet.network : selectedNetwork === undefined
+          wallet ? selectedNetwork?.id === wallet.network : selectedNetwork === undefined
         )
           ? ''
           : 'inherit'

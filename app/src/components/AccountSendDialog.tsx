@@ -60,11 +60,11 @@ export default function AccountSendDialog({
 
   const ethersSigner = useEthersSigner();
 
-  const { chains, switchNetwork, isLoading: isSwitchNetworkLoading } = useSwitchNetwork();
+  const { switchNetwork, isLoading: isSwitchNetworkLoading } = useSwitchNetwork();
   const { chain } = useNetwork();
 
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>(
-    flow.wallets.find((w) => w.network === chain?.name) ?? flow.wallets[0]
+    flow.wallets.find((w) => w.network === chain?.id) ?? flow.wallets[0]
   );
   const [selectedRecipient, setSelectedRecipient] = useState<SelectedProfileWithSocialsType>();
 
@@ -216,8 +216,7 @@ export default function AccountSendDialog({
   useMemo(() => {
     setSendAmount(undefined);
     if (selectedRecipient) {
-      const chainId = chains.find((c) => c.name === selectedWallet.network)?.id;
-      switchNetwork?.(chainId);
+      switchNetwork?.(selectedWallet.network);
     }
   }, [selectedWallet, selectedRecipient]);
 
@@ -403,7 +402,7 @@ export default function AccountSendDialog({
               </Box>
 
               <Divider />
-              {chain?.name === selectedWallet.network ? (
+              {chain?.id === selectedWallet.network ? (
                 <LoadingButton
                   loading={loading || (txHash && !confirmed && !error)}
                   disabled={!(toAddress && sendAmount)}
@@ -429,7 +428,7 @@ export default function AccountSendDialog({
                   size="medium"
                   color="primary"
                   onClick={() => {
-                    switchNetwork?.(chains.find((c) => c?.name === selectedWallet?.network)?.id);
+                    switchNetwork?.(selectedWallet.network);
                   }}
                   sx={{ mt: 1, borderRadius: 5 }}>
                   Switch Network

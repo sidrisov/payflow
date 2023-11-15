@@ -51,6 +51,7 @@ import { shortNetworkName } from '../utils/shortNetworkName';
 import { API_URL, DAPP_URL } from '../utils/urlConstants';
 import { comingSoonToast } from './Toasts';
 import NetworkAvatar from './NetworkAvatar';
+import { Chain } from '@rainbow-me/rainbowkit';
 
 export type FlowViewDialogProps = DialogProps &
   CloseCallbackType & {
@@ -85,10 +86,8 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   const [sponsored, setSponsored] = useState<boolean>();
   const [sponsarable, setSponsarable] = useState<boolean>();
 
-  const [availableNetworksToAddAccount, setAvailableNetworksToAddAccount] = useState(
-    [] as string[]
-  );
-  const [newAccountNetwork, setNewAccountNetwork] = useState<string>();
+  const [availableNetworksToAddAccount, setAvailableNetworksToAddAccount] = useState<Chain[]>([]);
+  const [newAccountNetwork, setNewAccountNetwork] = useState<Chain>();
   const [newAccountAddress, setNewAccountAddress] = useState<string>();
 
   const [openFlowShare, setOpenFlowShare] = useState(false);
@@ -123,14 +122,12 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
   useMemo(async () => {
     if (flow && flow.wallets && chains) {
       const addedNetworks = flow.wallets.map((wallet) => wallet.network);
-      setAvailableNetworksToAddAccount(
-        chains.filter((c) => !addedNetworks.includes(c.name)).map((c) => c.name)
-      );
+      setAvailableNetworksToAddAccount(chains.filter((c) => !addedNetworks.includes(c.id)));
     }
   }, [flow, chains]);
 
   useMemo(async () => {
-    const chainId = chains.find((c) => c.name === newAccountNetwork)?.id;
+    const chainId = newAccountNetwork?.id;
     setSponsarable(isRelaySupported(chainId));
     setSponsored(isRelaySupported(chainId));
   }, [newAccountNetwork]);
@@ -242,7 +239,7 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
       try {
         const flowWallet = {
           address: newAccountAddress,
-          network: newAccountNetwork,
+          network: newAccountNetwork.id,
           smart: smartAccountAllowedChains.includes(newAccountNetwork),
           safe: smartAccountAllowedChains.includes(newAccountNetwork),
           safeDeployed: smartAccountAllowedChains.includes(newAccountNetwork)
@@ -484,10 +481,10 @@ export default function FlowViewDialog({ closeStateCallback, ...props }: FlowVie
                       // switch network only for smart accounts,
                       // as those will require signing transaction
                       if (smartAccountAllowedChains.includes(value)) {
-                        switchNetwork?.(chains.find((c) => c?.name === value)?.id);
+                        switchNetwork?.(value.id);
                       }
                     } else {
-                      setNewAccountNetwork('');
+                      setNewAccountNetwork(undefined);
                       setNewAccountAddress('');
                     }
                   }}

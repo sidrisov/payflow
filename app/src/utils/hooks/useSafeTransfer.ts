@@ -6,6 +6,7 @@ import { providers } from 'ethers';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { usePublicClient } from 'wagmi';
+import { toast } from 'react-toastify';
 
 export type SafeWallet = {
   chain: Chain;
@@ -76,6 +77,10 @@ export const useSafeTransfer = (): {
       );
       setTxHash(txHash);
     } catch (error) {
+      const message = (error as Error).message;
+      if (message.includes('ACTION_REJECTED')) {
+        setStatus('rejected');
+      }
       console.log(error);
       setConfirmed(false);
       setError(true);

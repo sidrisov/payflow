@@ -37,7 +37,7 @@ export const useTransactionsFetcher = (wallets: FlowWalletType[]): ActivityFetch
         // TODO: get unique
         const wallets = txs.map((tx) => ({
           address: tx.activity === 'self' || tx.activity === 'inbound' ? tx.from : tx.to,
-          network: getNetwork().chains.find((c) => c.id === tx.chainId)?.name
+          network: tx.chainId
         }));
 
         const { status, data: walletProfiles } = await axios.post(
@@ -45,13 +45,15 @@ export const useTransactionsFetcher = (wallets: FlowWalletType[]): ActivityFetch
           wallets
         );
 
+        console.log(walletProfiles);
+
         if (status === 200 && walletProfiles) {
           txs.forEach((tx) => {
             const profile = walletProfiles.find(
               (w: WalletWithProfileType) =>
                 w.address ===
                   (tx.activity === 'self' || tx.activity === 'inbound' ? tx.from : tx.to) &&
-                w.network === getNetwork().chains.find((c) => c.id === tx.chainId)?.name
+                w.network === tx.chainId
             ).profile;
 
             if (profile) {
@@ -79,14 +81,9 @@ function parseTxHistoryResponse(wallet: FlowWalletType, internalTxs: any, txs: a
     return [];
   }
 
-  const chainId = getNetwork().chains.find((c) => c.name === wallet.network)?.id;
-  if (!chainId) {
-    return [];
-  }
-
   const interalTxsInfo: TxInfo[] = internalTxs.items.map((item: any) => {
     const txInfo: TxInfo = {
-      chainId: chainId,
+      chainId: wallet.network,
       block: item.block,
       success: item.success,
       hash: item.transaction_hash,
@@ -107,7 +104,7 @@ function parseTxHistoryResponse(wallet: FlowWalletType, internalTxs: any, txs: a
 
   const txsInfo: TxInfo[] = txs.items.map((item: any) => {
     const txInfo: TxInfo = {
-      chainId: chainId,
+      chainId: wallet.network,
       block: item.block,
       success: item.result === 'success',
       hash: item.hash,
@@ -179,35 +176,35 @@ function getWalletTxsFetchAPI(wallet: FlowWalletType): string | undefined {
   }
 }
 
-function getBlockscoutBaseUrl(network: string) {
+function getBlockscoutBaseUrl(network: number) {
   let baseUrl;
 
   switch (network) {
-    case baseGoerli.name:
+    case baseGoerli.id:
       baseUrl = `https://${baseGoerli.network}.blockscout.com`;
       break;
-    case base.name:
+    case base.id:
       baseUrl = `https://${base.network}.blockscout.com`;
       break;
-    case optimismGoerli.name:
+    case optimismGoerli.id:
       baseUrl = `https://${optimismGoerli.network}.blockscout.com`;
       break;
-    case optimism.name:
+    case optimism.id:
       baseUrl = `https://${optimism.network}.blockscout.com`;
       break;
-    case modeTestnet.name:
+    case modeTestnet.id:
       baseUrl = `https://sepolia.explorer.mode.network`;
       break;
-    case zoraTestnet.name:
+    case zoraTestnet.id:
       baseUrl = 'https://testnet.explorer.zora.energy';
       break;
-    case zora.name:
+    case zora.id:
       baseUrl = 'https://explorer.zora.energy';
       break;
-    case polygonZkEvmTestnet.name:
+    case polygonZkEvmTestnet.id:
       baseUrl = 'https://testnet.explorer.zora.energy';
       break;
-    case polygonZkEvm.name:
+    case polygonZkEvm.id:
       baseUrl = 'https://explorer.zora.energy';
   }
 

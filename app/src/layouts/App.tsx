@@ -43,6 +43,7 @@ import SearchProfileDialog from '../components/SearchProfileDialog';
 import { API_URL } from '../utils/urlConstants';
 import HomeLogo from '../components/Logo';
 import { comingSoonToast } from '../components/Toasts';
+import { Chain } from '@rainbow-me/rainbowkit';
 
 const drawerWidth = 151;
 
@@ -66,7 +67,7 @@ export default function AppLayout({
 
   const [walletBalances, setWalletBalances] = useState<Map<string, bigint>>(new Map());
   const [flows, setFlows] = useState<FlowType[]>();
-  const [smartAccountAllowedChains, setSmartAccountAllowedChains] = useState<string[]>([]);
+  const [smartAccountAllowedChains, setSmartAccountAllowedChains] = useState<Chain[]>([]);
   const [initiateFlowsRefresh, setInitiateFlowsRefresh] = useState(false);
 
   const [mobileOpen, setMobileOpen] = useState(false);

@@ -1,11 +1,11 @@
 import { Stack, StackProps } from '@mui/material';
 import NetworkSelectorChip from './NetworkSelectorChip';
-import { SafeWalletType } from '../types/FlowType';
+import { SafeWalletType, WalletType } from '../types/FlowType';
 import { Chain } from 'viem';
 
 export default function NetworkSelectorSection(
   props: StackProps & {
-    wallets: SafeWalletType[];
+    wallets: WalletType[];
     selectedNetwork: Chain | undefined;
     setSelectedNetwork: React.Dispatch<React.SetStateAction<Chain | undefined>>;
   }

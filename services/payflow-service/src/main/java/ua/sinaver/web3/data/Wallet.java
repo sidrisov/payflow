@@ -29,7 +29,7 @@ public class Wallet {
     private String address;
 
     @Column
-    private String network;
+    private Integer network;
 
     @Column(columnDefinition = "boolean")
     private boolean smart;
@@ -57,7 +57,8 @@ public class Wallet {
     @Version
     private Long version;
 
-    public Wallet(String address, String network, boolean smart, boolean safe, String safeVersion, String safeSaltNonce,
+    public Wallet(String address, Integer network, boolean smart, boolean safe, String safeVersion,
+            String safeSaltNonce,
             boolean safeDeployed) {
         this.address = address;
         this.network = network;

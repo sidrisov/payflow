@@ -82,48 +82,52 @@ export function AccountCard(props: AccountNewDialogProps) {
         justifyContent: 'space-between'
       }}>
       <Box display="flex" flexDirection="row" justifyContent="space-between" alignItems="center">
-        <AvatarGroup
-          max={4}
-          color="inherit"
-          total={selectedFlow.wallets.length}
-          component={Button}
-          sx={{
-            alignSelf: 'center',
-            '& .MuiAvatar-root': {
-              borderStyle: 'none',
-              border: 0,
-              width: 20,
-              height: 20,
-              fontSize: 10
-            },
-            p: 1,
-            pl: 2,
-            border: 1,
-            borderStyle: 'dashed',
-            borderRadius: 5
-          }}
-          onClick={(event) => {
-            setWalletAnchorEl(event.currentTarget);
-            setOpenWalletDetailsPopover(true);
-          }}>
-          {[...Array(Math.min(4, selectedFlow.wallets.length))].map((_item, i) => (
-            <NetworkAvatar network={selectedFlow.wallets[i].network} />
-          ))}
-        </AvatarGroup>
+        <Tooltip title="Flow wallets">
+          <AvatarGroup
+            max={4}
+            color="inherit"
+            total={selectedFlow.wallets.length}
+            component={Button}
+            sx={{
+              alignSelf: 'center',
+              '& .MuiAvatar-root': {
+                borderStyle: 'none',
+                border: 0,
+                width: 20,
+                height: 20,
+                fontSize: 10
+              },
+              p: 1,
+              pl: 2,
+              border: 1,
+              borderStyle: 'dashed',
+              borderRadius: 5
+            }}
+            onClick={(event) => {
+              setWalletAnchorEl(event.currentTarget);
+              setOpenWalletDetailsPopover(true);
+            }}>
+            {[...Array(Math.min(4, selectedFlow.wallets.length))].map((_item, i) => (
+              <NetworkAvatar network={selectedFlow.wallets[i].network} />
+            ))}
+          </AvatarGroup>
+        </Tooltip>
 
         <Stack
           spacing={1}
           direction="row"
           alignItems="center"
           sx={{ p: 0, border: 1, borderStyle: 'dashed', borderRadius: 5 }}>
-          <IconButton
-            size="medium"
-            onClick={(event) => {
-              setFlowAnchorEl(event.currentTarget);
-              setOpenSelectFlow(true);
-            }}>
-            <Toll fontSize="small" />
-          </IconButton>
+          <Tooltip title="Select flow">
+            <IconButton
+              size="medium"
+              onClick={(event) => {
+                setFlowAnchorEl(event.currentTarget);
+                setOpenSelectFlow(true);
+              }}>
+              <Toll fontSize="small" />
+            </IconButton>
+          </Tooltip>
         </Stack>
       </Box>
       <Divider

@@ -6,7 +6,6 @@ import { UserContext } from '../contexts/UserContext';
 import Assets from '../components/Assets';
 import { AssetType } from '../types/AssetType';
 import Activity from '../components/Activity';
-import { useNetwork } from 'wagmi';
 import { Chain, zeroAddress } from 'viem';
 import { getSupportedTokens } from '../utils/erc20contracts';
 import { useBalanceFetcher } from '../utils/hooks/useBalanceFetcher';
@@ -34,14 +33,12 @@ export default function Accounts() {
 
   const [assets, setAssets] = useState<AssetType[]>([]);
 
-  const { chains } = useNetwork();
-
   useMemo(async () => {
     let assets: AssetType[] = [];
 
     if (selectedFlow) {
       selectedFlow.wallets.forEach((wallet) => {
-        const chainId = chains.find((c) => c.name === wallet.network)?.id;
+        const chainId = wallet.network;
         if (chainId) {
           const tokens = getSupportedTokens(chainId);
           tokens.forEach((token) => {

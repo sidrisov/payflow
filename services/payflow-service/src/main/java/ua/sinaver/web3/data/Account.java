@@ -38,7 +38,7 @@ public class Account {
     private String address;
 
     @Column
-    private String network;
+    private Integer network;
 
     // TODO: in future we might have more metadata on the wallet impl, for now, just
     // differentiate if it's safe or not based
@@ -51,7 +51,7 @@ public class Account {
     @Version
     private Long version;
 
-    public Account(Integer userId, String address, String network, boolean safe) {
+    public Account(Integer userId, String address, Integer network, boolean safe) {
         this.userId = userId;
         this.address = address;
         this.network = network;

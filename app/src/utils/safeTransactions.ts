@@ -12,7 +12,6 @@ import {
 } from '@safe-global/safe-deployments';
 
 import Safe, {
-  DEFAULT_SAFE_VERSION,
   EthersAdapter,
   SafeAccountConfig,
   SafeDeploymentConfig,
@@ -29,7 +28,7 @@ import {
 
 import { RelayResponse } from '@gelatonetwork/relay-sdk';
 
-import { Hash, Address, keccak256, toHex } from 'viem';
+import { Hash, Address } from 'viem';
 import { toast } from 'react-toastify';
 import { getRelayKitForChainId, isRelaySupported, waitForRelayTaskToComplete } from './relayer';
 import { CUSTOM_CONTRACTS, CUSTOM_CONTRACTS_CHAINS } from './safeContracts';
@@ -351,7 +350,7 @@ export async function safeTransferEthWithDeploy(
     }
   ];
 
-  console.debug(`Safe txs: ${safeTransactions}`);
+  console.debug('Safe txs', JSON.stringify(safeTransactions, null, 2));
 
   const relayKit = getRelayKitForChainId(chainId);
   if (!relayKit) {
