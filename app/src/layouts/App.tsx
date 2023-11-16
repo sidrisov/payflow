@@ -45,6 +45,7 @@ import HomeLogo from '../components/Logo';
 import { comingSoonToast } from '../components/Toasts';
 import { Chain } from '@rainbow-me/rainbowkit';
 import { SUPPORTED_CHAINS } from '../utils/networks';
+import ProfileAvatar from '../components/ProfileAvatar';
 
 const drawerWidth = 151;
 
@@ -297,7 +298,7 @@ export default function AppLayout({
                             setProfileMenuAnchorEl(event.currentTarget);
                             setOpenProfileMenu(true);
                           }}>
-                          <Avatar src={profile.profileImage} sx={{ width: 36, height: 36 }} />
+                          <ProfileAvatar profile={profile} sx={{ width: 36, height: 36 }} />
                         </IconButton>
                       </Stack>
                     </Box>
