@@ -26,7 +26,7 @@ import { DEFAULT_SAFE_VERSION } from '@safe-global/protocol-kit';
 import { updateProfile } from '../services/user';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../utils/urlConstants';
-import { PRE_CREATE_WALLET_CHAINS } from '../utils/networks';
+import { DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS } from '../utils/networks';
 
 export type ShareDialogProps = DialogProps &
   CloseCallbackType & {
@@ -81,11 +81,11 @@ export default function OnboardingDialog({
   }, [username]);
 
   async function createMainFlow() {
-    create(profile.address, saltNonce, PRE_CREATE_WALLET_CHAINS);
+    create(profile.address, saltNonce, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
   }
 
   useMemo(async () => {
-    if (wallets && wallets.length === PRE_CREATE_WALLET_CHAINS.length) {
+    if (wallets && wallets.length === DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS.length) {
       const flowWallets = wallets.map(
         (wallet) =>
           ({

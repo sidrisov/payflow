@@ -48,7 +48,12 @@ export const AA_COMPATIBLE_CHAINS = [
   base.name
 ] as string[];
 
-export const PRE_CREATE_WALLET_CHAINS = [baseGoerli, optimismGoerli, zoraTestnet, zkSyncTestnet];
+export const DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS = [
+  baseGoerli,
+  optimismGoerli,
+  zoraTestnet,
+  zkSyncTestnet
+];
 
 export default function getNetworkImageSrc(network: number | string): string {
   const fileName =

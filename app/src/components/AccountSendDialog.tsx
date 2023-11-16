@@ -62,6 +62,7 @@ export default function AccountSendDialog({
   const { switchNetwork, isLoading: isSwitchNetworkLoading } = useSwitchNetwork();
   const { chain } = useNetwork();
 
+  // TODO: what if there is not a single compatible wallet between sender & recipient
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>(
     flow.wallets.find((w) => w.network === chain?.id) ?? flow.wallets[0]
   );
@@ -443,7 +444,12 @@ export default function AccountSendDialog({
         closeStateCallback={() => {
           setOpenSelectWallet(false);
         }}
-        wallets={flow.wallets}
+        // in case a new wallet chain added, not all users maybe be compatible, limit by chains recipient supports
+        wallets={flow.wallets.filter((w) =>
+          selectedRecipient?.data.profile?.defaultFlow?.wallets.find(
+            (rw) => rw.network === w.network
+          )
+        )}
         selectedWallet={selectedWallet}
         setSelectedWallet={setSelectedWallet}
       />
