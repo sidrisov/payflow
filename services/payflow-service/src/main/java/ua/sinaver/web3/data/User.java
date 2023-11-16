@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+// TODO: add indexes (for query search)
 @ToString
 @Setter
 @Getter

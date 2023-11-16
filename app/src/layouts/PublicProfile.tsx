@@ -24,7 +24,8 @@ import {
   Payment,
   Savings,
   Search,
-  Send
+  Send,
+  Verified
 } from '@mui/icons-material';
 import { useLazyQuery } from '@airstack/airstack-react';
 import { FlowType } from '../types/FlowType';
@@ -34,6 +35,7 @@ import { ProfileSection } from '../components/ProfileSection';
 import { comingSoonText, comingSoonToast } from '../components/Toasts';
 import SocialPresenceChipWithLink from '../components/SocialPresenceChipWithLink';
 import { querySocialsMinimal } from '../utils/searchProfile';
+import { green } from '@mui/material/colors';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 
@@ -143,7 +145,11 @@ export default function PublicProfile() {
                 borderRadius: 5
               }}>
               <Stack spacing={1} direction="column" alignItems="center">
-                <ProfileSection profile={profile} avatarSize={48} />
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <ProfileSection profile={profile} avatarSize={48} />
+{/*                   <Verified fontSize="small" color="success" sx={{color: green[500]}}/>
+ */}                </Stack>
+
                 {loading && <CircularProgress color="inherit" size={25} />}
                 {socialInfo && (
                   <Box

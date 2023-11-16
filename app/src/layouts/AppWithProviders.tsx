@@ -19,7 +19,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { AppSettings } from '../types/AppSettingsType';
 import { CustomAvatar } from '../components/CustomAvatar';
 import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
-import { SUPPORTED_CHAINS } from '../utils/supportedChains';
+import { SUPPORTED_CHAINS } from '../utils/networks';
 import { AirstackProvider, init } from '@airstack/airstack-react';
 import { me } from '../services/user';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';

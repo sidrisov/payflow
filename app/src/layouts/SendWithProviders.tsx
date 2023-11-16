@@ -17,7 +17,7 @@ import { AppSettings } from '../types/AppSettingsType';
 import { rainbowWeb3AuthConnector } from '../utils/web3AuthConnector';
 import { CustomAvatar } from '../components/CustomAvatar';
 import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
-import { SUPPORTED_CHAINS } from '../utils/supportedChains';
+import { SUPPORTED_CHAINS } from '../utils/networks';
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(SUPPORTED_CHAINS, [
   alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }),

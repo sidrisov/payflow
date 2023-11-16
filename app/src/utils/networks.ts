@@ -1,4 +1,78 @@
-export const cardBorderColours = ['lightgreen', 'lightblue', 'lightpink', 'lightyellow'];
+import { getNetwork } from 'wagmi/actions';
+import {
+  mainnet,
+  arbitrumGoerli,
+  base,
+  baseGoerli,
+  lineaTestnet,
+  modeTestnet,
+  optimism,
+  optimismGoerli,
+  polygonZkEvmTestnet,
+  zkSyncTestnet,
+  zoraTestnet
+} from 'wagmi/chains';
+
+const ENABLED_CHAINS = JSON.parse(import.meta.env.VITE_ENABLED_CHAINS) as string[];
+
+export const SUPPORTED_CHAINS = [
+  optimismGoerli,
+  baseGoerli,
+  arbitrumGoerli,
+  {
+    ...modeTestnet,
+    iconUrl:
+      'https://uploads-ssl.webflow.com/64c906a6ed3c4d809558853b/64d0b11158be9cdd5c89a2fe_webc.png'
+  },
+  {
+    ...zkSyncTestnet,
+    iconUrl: 'https://zksync.io/apple-touch-icon.png'
+  },
+  lineaTestnet,
+  //polygonZkEvmTestnet,
+  zoraTestnet,
+  optimism,
+  base,
+  mainnet
+]; /* .filter((c) => ENABLED_CHAINS.includes(c.network)); */
+
+export const AA_COMPATIBLE_CHAINS = [
+  optimismGoerli.name,
+  baseGoerli.name,
+  zoraTestnet.name,
+  modeTestnet.name,
+  zkSyncTestnet.name,
+  lineaTestnet.name,
+  polygonZkEvmTestnet.name,
+  optimism.name,
+  base.name
+] as string[];
+
+export const PRE_CREATE_WALLET_CHAINS = [baseGoerli, optimismGoerli, zoraTestnet, zkSyncTestnet];
+
+export default function getNetworkImageSrc(network: number | string): string {
+  const fileName =
+    typeof network === 'number'
+      ? getNetwork().chains.find((c) => c.id === network)?.network
+      : network;
+
+  if (!fileName) {
+    throw new Error(`Chain ${network} not supported!`);
+  }
+
+  return `/networks/${fileName}.png`;
+}
+
+export function getNetworkDisplayName(network: number | string): string {
+  const displayName =
+    typeof network === 'number' ? getNetwork().chains.find((c) => c.id === network)?.name : network;
+
+  if (!displayName) {
+    throw new Error(`Chain ${network} not supported!`);
+  }
+
+  return displayName;
+}
 
 // Copyrights reserved to Safe Global
 // taken from here: https://github.com/safe-global/safe-core-sdk/blob/main/packages/protocol-kit/src/utils/eip-3770/config.ts
@@ -6,9 +80,13 @@ interface NetworkShortName {
   shortName: string;
   chainId: number;
 }
-
 // https://github.com/ethereum-lists/chains/tree/master/_data/chains
-export const networks: NetworkShortName[] = [
+
+export function shortNetworkName(network: number) {
+  return SHORT_NAME_NETWORKS.find((n) => n.chainId === network)?.shortName;
+}
+
+const SHORT_NAME_NETWORKS: NetworkShortName[] = [
   { chainId: 1, shortName: 'eth' },
   { chainId: 3, shortName: 'rop' },
   { chainId: 4, shortName: 'rin' },

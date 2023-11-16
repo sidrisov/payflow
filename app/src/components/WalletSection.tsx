@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { copyToClipboard } from '../utils/copyToClipboard';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { SafeWalletType } from '../types/FlowType';
-import { shortNetworkName } from '../utils/shortNetworkName';
+import { shortNetworkName } from '../utils/networks';
 import NetworkAvatar from './NetworkAvatar';
 
 export function WalletSection(props: { wallet: SafeWalletType; balance?: string }) {

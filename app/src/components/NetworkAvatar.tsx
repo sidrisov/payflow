@@ -1,5 +1,5 @@
 import { Avatar, AvatarProps, Tooltip } from '@mui/material';
-import getNetworkImageSrc, { getNetworkDisplayName } from '../utils/networkImages';
+import getNetworkImageSrc, { getNetworkDisplayName } from '../utils/networks';
 
 export default function NetworkAvatar({
   network,

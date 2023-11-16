@@ -18,7 +18,6 @@ import { useMemo, useState } from 'react';
 import axios from 'axios';
 import { ProfileType } from '../types/ProfleType';
 import { toast } from 'react-toastify';
-import { baseGoerli, optimismGoerli, zkSyncTestnet, zoraTestnet } from 'viem/chains';
 import { keccak256, toHex } from 'viem';
 import { useCreateSafeWallets as usePreCreateSafeWallets } from '../utils/hooks/useCreateSafeWallets';
 
@@ -27,8 +26,7 @@ import { DEFAULT_SAFE_VERSION } from '@safe-global/protocol-kit';
 import { updateProfile } from '../services/user';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../utils/urlConstants';
-
-const preCreateWalletChains = [baseGoerli, optimismGoerli, zoraTestnet, zkSyncTestnet];
+import { PRE_CREATE_WALLET_CHAINS } from '../utils/networks';
 
 export type ShareDialogProps = DialogProps &
   CloseCallbackType & {
@@ -83,11 +81,11 @@ export default function OnboardingDialog({
   }, [username]);
 
   async function createMainFlow() {
-    create(profile.address, saltNonce, preCreateWalletChains);
+    create(profile.address, saltNonce, PRE_CREATE_WALLET_CHAINS);
   }
 
   useMemo(async () => {
-    if (wallets && wallets.length === preCreateWalletChains.length) {
+    if (wallets && wallets.length === PRE_CREATE_WALLET_CHAINS.length) {
       const flowWallets = wallets.map(
         (wallet) =>
           ({

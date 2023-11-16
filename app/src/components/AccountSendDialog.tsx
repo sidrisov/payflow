@@ -452,7 +452,7 @@ export default function AccountSendDialog({
         closeStateCallback={() => {
           setOpenSearchProfile(false);
         }}
-        selectProfileWithSocialsCallback={(selectedProfileWithSocials) => {
+        selectProfileCallback={(selectedProfileWithSocials) => {
           setSelectedRecipient(selectedProfileWithSocials);
         }}
       />

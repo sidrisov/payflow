@@ -14,7 +14,8 @@ public interface UserRepository extends CrudRepository<User, Integer> {
 
     User findByUsernameOrSigner(String username, String signer);
 
-    List<User> findByUsernameContainingOrSignerContaining(String username, String signer);
+    List<User> findByDisplayNameContainingOrUsernameContainingOrSignerContaining(String displayName, String username,
+            String signer);
 
     @Query(value = "SELECT * FROM user WHERE id " +
             "in (SELECT user_id FROM flow WHERE id " +

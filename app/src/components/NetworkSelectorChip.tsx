@@ -4,7 +4,7 @@ import { Chain } from 'viem';
 import { WalletType } from '../types/FlowType';
 import { useNetwork } from 'wagmi';
 import NetworkAvatar from './NetworkAvatar';
-import { getNetworkDisplayName } from '../utils/networkImages';
+import { getNetworkDisplayName } from '../utils/networks';
 
 export default function NetworkSelectorChip({
   wallet,

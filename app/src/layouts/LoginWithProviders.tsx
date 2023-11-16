@@ -26,7 +26,7 @@ import { SiweMessage } from 'siwe';
 import axios from 'axios';
 import { ProfileType } from '../types/ProfleType';
 import { me } from '../services/user';
-import { SUPPORTED_CHAINS } from '../utils/supportedChains';
+import { SUPPORTED_CHAINS } from '../utils/networks';
 import { API_URL } from '../utils/urlConstants';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;

@@ -44,6 +44,7 @@ import { API_URL } from '../utils/urlConstants';
 import HomeLogo from '../components/Logo';
 import { comingSoonToast } from '../components/Toasts';
 import { Chain } from '@rainbow-me/rainbowkit';
+import { SUPPORTED_CHAINS } from '../utils/networks';
 
 const drawerWidth = 151;
 
@@ -105,22 +106,31 @@ export default function AppLayout({
       const response = await axios.get(`${API_URL}/api/flows`, { withCredentials: true });
 
       setFlows(
-        (response.data as FlowType[]).sort((a, b) => {
-          if (a.uuid === profile.defaultFlow?.uuid) {
-            return -1;
-          }
+        (response.data as FlowType[])
+          .sort((a, b) => {
+            if (a.uuid === profile.defaultFlow?.uuid) {
+              return -1;
+            }
 
-          let fa = a.title.toLowerCase(),
-            fb = b.title.toLowerCase();
+            let fa = a.title.toLowerCase(),
+              fb = b.title.toLowerCase();
 
-          if (fa < fb) {
-            return -1;
-          }
-          if (fa > fb) {
-            return 1;
-          }
-          return 0;
-        })
+            if (fa < fb) {
+              return -1;
+            }
+            if (fa > fb) {
+              return 1;
+            }
+            return 0;
+          })
+          .map((f) => {
+            return {
+              ...f,
+              wallets: f.wallets.filter((w) =>
+                SUPPORTED_CHAINS.map((c) => c.id as number).includes(w.network)
+              )
+            };
+          })
       );
     } catch (error) {
       console.log(error);

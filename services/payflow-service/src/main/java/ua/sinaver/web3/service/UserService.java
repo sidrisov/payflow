@@ -57,7 +57,7 @@ public class UserService implements IUserService {
 
     @Override
     public List<User> searchByUsernameQuery(String query) {
-        return userRepository.findByUsernameContainingOrSignerContaining(query, query);
+        return userRepository.findByDisplayNameContainingOrUsernameContainingOrSignerContaining(query, query, query);
     }
 
     @Override

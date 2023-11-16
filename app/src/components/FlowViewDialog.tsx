@@ -47,7 +47,7 @@ import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { safeDeploy } from '../utils/safeTransactions';
 import { isRelaySupported } from '../utils/relayer';
-import { shortNetworkName } from '../utils/shortNetworkName';
+import { shortNetworkName } from '../utils/networks';
 import { API_URL, DAPP_URL } from '../utils/urlConstants';
 import { comingSoonToast } from './Toasts';
 import NetworkAvatar from './NetworkAvatar';

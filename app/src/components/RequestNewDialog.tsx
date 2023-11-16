@@ -28,7 +28,7 @@ import { copyToClipboard } from '../utils/copyToClipboard';
 import { PaymentRequestType } from '../types/PaymentRequestType';
 import { API_URL } from '../utils/urlConstants';
 import NetworkAvatar from './NetworkAvatar';
-import { getNetworkDisplayName } from '../utils/networkImages';
+import { getNetworkDisplayName } from '../utils/networks';
 
 export type RequestNewDialogProps = DialogProps & CloseCallbackType;
 

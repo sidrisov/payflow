@@ -15,7 +15,7 @@ import { AppSettings } from '../types/AppSettingsType';
 import { rainbowWeb3AuthConnector } from '../utils/web3AuthConnector';
 import { CustomAvatar } from '../components/CustomAvatar';
 import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
-import { SUPPORTED_CHAINS } from '../utils/supportedChains';
+import { SUPPORTED_CHAINS } from '../utils/networks';
 import PublicProfile from './PublicProfile';
 
 import { AirstackProvider, init } from '@airstack/airstack-react';
