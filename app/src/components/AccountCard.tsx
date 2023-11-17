@@ -23,6 +23,7 @@ import { ChooseFlowMenu } from './ChooseFlowMenu';
 import { FlowTopUpMenu } from './FlowTopUpMenu';
 import WalletQRCodeShareDialog from './WalletQRCodeShareDialog';
 import NetworkAvatar from './NetworkAvatar';
+import { useChainId, useNetwork } from 'wagmi';
 
 export type AccountNewDialogProps = CardProps & {
   flows: FlowType[];
@@ -49,6 +50,8 @@ export function AccountCard(props: AccountNewDialogProps) {
 
   const { loading, fetched, balances } = props.balanceFetchResult;
   const [totalBalance, setTotalBalance] = useState<string>();
+
+  const { chain } = useNetwork();
 
   useMemo(async () => {
     if (fetched && balances.length > 0 && ethUsdPrice) {
@@ -223,7 +226,9 @@ export function AccountCard(props: AccountNewDialogProps) {
       />
       <WalletQRCodeShareDialog
         open={openFlowReceiveQRCode}
-        wallet={selectedFlow.wallets[0]}
+        wallet={
+          selectedFlow.wallets.find((w) => w.network === chain?.id) ?? selectedFlow.wallets[0]
+        }
         wallets={selectedFlow.wallets}
         closeStateCallback={() => setOpenFlowReceiveQRCode(false)}
       />

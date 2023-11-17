@@ -11,6 +11,7 @@ import PaymentRequestWithProviders from './layouts/PaymentRequestWithProviders';
 import PublicProfileWithProviders from './layouts/PublicProfileWithProviders';
 import LoginWithProviders from './layouts/LoginWithProviders';
 import Profile from './pages/Profile';
+import Invite from './pages/Invite';
 
 export const appRoutes = ['/home', '/flows', '/requests', '/settings'];
 
@@ -27,12 +28,16 @@ export const appRouter = createBrowserRouter([
     children: [
       { element: <Navigate to="/home" />, index: true },
       {
+        path: 'home',
+        element: <Accounts />
+      },
+      {
         path: 'profile',
         element: <Profile />
       },
       {
-        path: 'home',
-        element: <Accounts />
+        path: 'invite',
+        element: <Invite />
       },
       {
         path: 'flows',
@@ -54,7 +59,7 @@ export const appRouter = createBrowserRouter([
     element: <PaymentRequestWithProviders />,
     errorElement: <Page404 />
   },
-  
+
   { path: '/search', element: <PublicProfileWithProviders />, errorElement: <Page404 /> },
 
   {

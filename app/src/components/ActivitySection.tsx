@@ -1,15 +1,6 @@
 import { Repeat, ArrowDownward, Send } from '@mui/icons-material';
-import {
-  Badge,
-  Box,
-  BoxProps,
-  Chip,
-  IconButton,
-  Stack,
-  Tooltip,
-  Typography
-} from '@mui/material';
-import { red } from '@mui/material/colors';
+import { Badge, Box, BoxProps, Chip, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import { green, lightGreen, red } from '@mui/material/colors';
 import { formatEther } from 'viem';
 import { MetaType } from '../types/ProfleType';
 import { AddressSection } from './AddressSection';
@@ -43,9 +34,9 @@ function getActivityIndicator(activity: string) {
         {activity === 'self' ? (
           <Repeat color="inherit" fontSize="small" />
         ) : activity === 'inbound' ? (
-          <ArrowDownward color="success" fontSize="small" />
+          <ArrowDownward fontSize="small" sx={{ color: lightGreen.A700 }} />
         ) : (
-          <Send color="error" fontSize="small" />
+          <Send fontSize="small" sx={{ color: red.A400 }} />
         )}
       </IconButton>
     </Tooltip>
@@ -121,8 +112,8 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
               txInfo.activity === 'self'
                 ? 'inherit'
                 : txInfo.activity === 'inbound'
-                ? 'lightgreen'
-                : red[500]
+                ? lightGreen.A700
+                : red.A400
           }}
         />
       </Box>

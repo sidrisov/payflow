@@ -13,7 +13,6 @@ import {
   Button,
   Divider,
   InputAdornment,
-  Chip,
   CircularProgress,
   Tooltip
 } from '@mui/material';
@@ -41,6 +40,7 @@ import { useSafeTransfer } from '../utils/hooks/useSafeTransfer';
 import { comingSoonToast } from './Toasts';
 import { updateWallet } from '../services/flow';
 import NetworkAvatar from './NetworkAvatar';
+import PayflowChip from './PayflowChip';
 
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
@@ -299,14 +299,7 @@ export default function AccountSendDialog({
             )}
 
             <Stack direction="row">
-              {selectedRecipient && selectedRecipient.type === 'profile' && (
-                <Chip
-                  size="small"
-                  variant="filled"
-                  label="payflow"
-                  sx={{ background: 'lightgreen' }}
-                />
-              )}
+              {selectedRecipient && selectedRecipient.type === 'profile' && <PayflowChip />}
               <ExpandMore />
             </Stack>
           </Box>

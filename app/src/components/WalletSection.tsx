@@ -6,6 +6,7 @@ import { shortenWalletAddressLabel } from '../utils/address';
 import { SafeWalletType } from '../types/FlowType';
 import { shortNetworkName } from '../utils/networks';
 import NetworkAvatar from './NetworkAvatar';
+import CopyToClipboardIconButton from './CopyToClipboardIconButton';
 
 export function WalletSection(props: { wallet: SafeWalletType; balance?: string }) {
   const { wallet, balance } = props;
@@ -21,16 +22,7 @@ export function WalletSection(props: { wallet: SafeWalletType; balance?: string 
       <Box display="flex" flexDirection="row" alignItems="center">
         <NetworkAvatar tooltip network={wallet.network} sx={{ width: 24, height: 24 }} />
         <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
-        <Tooltip title="Copy Address">
-          <IconButton
-            size="small"
-            onClick={() => {
-              copyToClipboard(wallet.address);
-              toast.success('Address is copied!');
-            }}>
-            <ContentCopy fontSize="small" />
-          </IconButton>
-        </Tooltip>
+        <CopyToClipboardIconButton tooltip="Copy address" value={wallet.address} />
         {wallet.safe && (
           <>
             <Tooltip title="Open in Safe Web Wallet">

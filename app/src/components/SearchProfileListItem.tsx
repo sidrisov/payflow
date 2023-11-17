@@ -8,6 +8,12 @@ import SocialPresenceAvatar from './SocialPresenceAvatar';
 import { dAppType } from '../utils/dapps';
 import { useContext, useState } from 'react';
 import { UserContext } from '../contexts/UserContext';
+import axios from 'axios';
+import { API_URL } from '../utils/urlConstants';
+import { toast } from 'react-toastify';
+import { shortenWalletAddressLabel } from '../utils/address';
+import PayflowChip from './PayflowChip';
+import { lightGreen } from '@mui/material/colors';
 
 export function SearchProfileListItem(
   props: BoxProps & { profileWithSocials: ProfileWithSocialsType; view: 'address' | 'profile' }
@@ -30,7 +36,7 @@ export function SearchProfileListItem(
           component={Button}
           textTransform="none"
           onClick={!disableClick ? props.onClick : undefined}
-          sx={{ borderRadius: 5, border: 0, height: 60 }}>
+          sx={{ borderRadius: 5, height: 60 }}>
           {view === 'profile' && profileWithSocials.profile && (
             <ProfileSection profile={profileWithSocials.profile} />
           )}
@@ -41,12 +47,7 @@ export function SearchProfileListItem(
 
           <Stack direction="column" spacing={0.5} alignItems="center" sx={{ width: 70 }}>
             {view === 'profile' ? (
-              <Chip
-                size="small"
-                variant="filled"
-                label="payflow"
-                sx={{ background: 'lightgreen' }}
-              />
+              <PayflowChip />
             ) : (
               isAuthenticated &&
               !profileWithSocials.profile && (
@@ -61,10 +62,25 @@ export function SearchProfileListItem(
                   onMouseLeave={() => {
                     setDisableClick(false);
                   }}
-                  onClick={() => {
-                    comingSoonToast();
+                  onClick={async () => {
+                    try {
+                      await axios.post(
+                        `${API_URL}/api/invitations`,
+                        {
+                          identityBased: profileWithSocials.meta?.addresses[0]
+                        },
+                        { withCredentials: true }
+                      );
+                      toast.success(
+                        `${shortenWalletAddressLabel(
+                          profileWithSocials.meta?.addresses[0]
+                        )} is whitelisted!`
+                      );
+                    } catch (error) {
+                      toast.error('Invitation failed!');
+                    }
                   }}
-                  sx={{ bgcolor: 'orange', '&:hover': { bgcolor: 'lightgreen' } }}
+                  sx={{ bgcolor: 'orange', '&:hover': { bgcolor: lightGreen.A700 } }}
                 />
               )
             )}

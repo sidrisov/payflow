@@ -1,5 +1,7 @@
 package ua.sinaver.web3.data;
 
+import java.util.Date;
+
 import org.apache.commons.lang3.RandomStringUtils;
 
 import jakarta.persistence.Column;
@@ -9,6 +11,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -56,6 +60,10 @@ public class PaymentRequest {
 
     @Column(columnDefinition = "boolean")
     private boolean payed;
+
+    @Column
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdDate = new Date();
 
     @Version
     private Long version;

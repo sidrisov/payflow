@@ -28,18 +28,20 @@ import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../utils/urlConstants';
 import { DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS } from '../utils/networks';
 
-export type ShareDialogProps = DialogProps &
+export type OnboardingDialogProps = DialogProps &
   CloseCallbackType & {
     profile: ProfileType;
-    paramUsername?: string | undefined | null;
+    username?: string | null;
+    code?: string | null;
   };
 
 export default function OnboardingDialog({
   closeStateCallback,
   profile,
-  paramUsername,
+  username: paramUsername,
+  code,
   ...props
-}: ShareDialogProps) {
+}: OnboardingDialogProps) {
   function handleCloseCampaignDialog() {
     closeStateCallback();
   }
@@ -118,7 +120,7 @@ export default function OnboardingDialog({
       setLoadingUpdateProfile(true);
 
       try {
-        const success = await updateProfile(updatedProfile);
+        const success = await updateProfile(updatedProfile, code ?? undefined);
 
         if (success) {
           toast.success('Onboarding successfully completed');

@@ -10,7 +10,7 @@ import ua.sinaver.web3.message.WalletProfileRequestMessage;
 public interface IUserService {
     void saveUser(String signer, String username);
 
-    void updateProfile(String signer, ProfileMessage profile);
+    void updateProfile(String signer, ProfileMessage profile, String invitationCode);
 
     User findBySigner(String signer);
 

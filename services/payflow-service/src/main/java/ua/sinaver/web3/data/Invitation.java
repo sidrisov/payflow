@@ -1,14 +1,18 @@
 package ua.sinaver.web3.data;
 
+import java.time.LocalDate;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -20,42 +24,33 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-// TODO: add indexes (for query search)
 @ToString
 @Setter
 @Getter
 @NoArgsConstructor
 @Entity
 @Table(uniqueConstraints = {
-        @UniqueConstraint(columnNames = { "signer" }),
-        @UniqueConstraint(columnNames = { "username" }) })
-public class User {
+        @UniqueConstraint(columnNames = { "identity" }) })
+public class Invitation {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
-    @Column
-    private String displayName;
-
-    @Column(nullable = false)
-    private String username;
-
-    @Column
-    private String profileImage;
-
-    @Column(columnDefinition = "boolean")
-    private Boolean locked;
-
-    @Column(columnDefinition = "boolean")
-    private Boolean allowed = false;
-
-    // TODO: add identity
-    @Column(nullable = false)
-    private String signer;
+    // no need to fetch, since the user who requests is the one authorized, so User
+    // entity alredy fetched
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "invited_by_id", referencedColumnName = "id")
+    private User invitedBy;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "flow_id", referencedColumnName = "id")
-    private Flow defaultFlow;
+    @JoinColumn(name = "invitee_id", referencedColumnName = "id")
+    private User invitee;
+
+    @Column
+    private String identity;
+
+    @Column
+    private String code;
 
     @Column
     @Temporal(TemporalType.TIMESTAMP)
@@ -63,13 +58,15 @@ public class User {
 
     @Column
     @Temporal(TemporalType.TIMESTAMP)
-    private Date lastSeen = new Date();
+    // TODO: make expiry configurable
+    private Date expiryDate = new Date(new Date().getTime() + TimeUnit.DAYS.toMillis(14));
 
     @Version
     private Long version;
 
-    public User(String signer, String username) {
-        this.signer = signer;
-        this.username = username;
+    public Invitation(String identity, String code) {
+        this.identity = identity;
+        this.code = code;
     }
+
 }

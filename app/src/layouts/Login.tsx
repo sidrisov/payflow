@@ -25,6 +25,7 @@ export default function Login({
 }) {
   const [searchParams] = useSearchParams();
   const username = searchParams.get('username');
+  const invitationCode = searchParams.get('code');
 
   const navigate = useNavigate();
 
@@ -122,6 +123,7 @@ export default function Login({
           profile={profile}
           closeStateCallback={() => {}}
           username={username}
+          code={invitationCode}
         />
       )}
     </CustomThemeProvider>

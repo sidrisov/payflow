@@ -1,5 +1,6 @@
 package ua.sinaver.web3.data;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -14,6 +15,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -48,6 +51,10 @@ public class Flow {
 
     @OneToMany(mappedBy = "flow", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Wallet> wallets;
+
+    @Column
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdDate = new Date();
 
     @Version
     private Long version;

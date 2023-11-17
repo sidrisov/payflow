@@ -6,6 +6,7 @@ import {
   LightModeOutlined,
   Logout,
   Person,
+  PersonAdd,
   Settings,
   Verified
 } from '@mui/icons-material';
@@ -55,6 +56,16 @@ export function ProfileMenu({
           <Person fontSize="small" />
         </ListItemIcon>
         Profile
+      </MenuItem>
+      <MenuItem
+        onClick={async () => {
+          closeStateCallback();
+          navigate('/invite');
+        }}>
+        <ListItemIcon>
+          <PersonAdd fontSize="small" />
+        </ListItemIcon>
+        Invite
       </MenuItem>
       <MenuItem
         onClick={async () => {

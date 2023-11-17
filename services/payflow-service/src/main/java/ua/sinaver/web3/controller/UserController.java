@@ -50,10 +50,11 @@ public class UserController {
     }
 
     @PostMapping("/me")
-    public void updateProfile(Principal principal, @RequestBody ProfileMessage profile) {
-        log.debug("Update profile: {} by {}", profile, principal.getName());
+    public void updateProfile(Principal principal, @RequestBody ProfileMessage profile,
+            @RequestParam(required = false, name = "code") String invitationCode) {
+        log.debug("Update profile: {} by {} with code {}", profile, principal.getName(), invitationCode);
 
-        userService.updateProfile(principal.getName(), profile);
+        userService.updateProfile(principal.getName(), profile, invitationCode);
 
     }
 
@@ -106,9 +107,11 @@ public class UserController {
         // sql level)
         return walletUserMap.entrySet().stream()
                 .map(wu -> new WalletProfileResponseMessage(wu.getKey().address(), wu.getKey().network(),
-                        wu.getValue() != null ? new ProfileMetaMessage(wu.getValue().getDisplayName(),
-                                wu.getValue().getUsername(),
-                                wu.getValue().getProfileImage()) : null))
+                        wu.getValue() != null
+                                ? new ProfileMetaMessage(wu.getValue().getSigner(), wu.getValue().getDisplayName(),
+                                        wu.getValue().getUsername(),
+                                        wu.getValue().getProfileImage())
+                                : null))
                 .collect(Collectors.toList());
     }
 }

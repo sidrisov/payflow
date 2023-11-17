@@ -125,6 +125,7 @@ export async function searchProfile(searchValue: string): Promise<ProfileWithSoc
 
     console.log('fc', data);
     if (data) {
+      // TODO: optimize and fetch in batch
       foundProfiles = foundProfiles.concat(
         ...(await Promise.all(
           data.Socials && data.Socials.Social && data.Socials.Social.length > 0

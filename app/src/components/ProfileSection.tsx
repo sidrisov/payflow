@@ -2,8 +2,13 @@ import { Stack, Typography } from '@mui/material';
 import { ProfileType } from '../types/ProfleType';
 import ProfileAvatar from './ProfileAvatar';
 
-export function ProfileSection(props: { profile: ProfileType; avatarSize?: number }) {
-  const { profile, avatarSize } = props;
+export function ProfileSection({
+  profile,
+  avatarSize
+}: {
+  profile: ProfileType;
+  avatarSize?: number;
+}) {
   return (
     <Stack direction="row" spacing={0.5} alignItems="center">
       <ProfileAvatar profile={profile} sx={{ width: avatarSize, height: avatarSize }} />

@@ -16,10 +16,17 @@ export async function me(): Promise<ProfileType | undefined> {
   }
 }
 
-export async function updateProfile(profile: ProfileType): Promise<boolean | undefined> {
+export async function updateProfile(
+  profile: ProfileType,
+  code?: string
+): Promise<boolean | undefined> {
   if (profile) {
     try {
+      console.log(code);
       const response = await axios.post(`${API_URL}/api/user/me`, profile, {
+        params: {
+          code: code
+        },
         withCredentials: true
       });
       console.log(response.status);
