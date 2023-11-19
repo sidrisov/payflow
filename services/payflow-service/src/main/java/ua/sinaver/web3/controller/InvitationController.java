@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,22 +41,26 @@ public class InvitationController {
     @Autowired
     private UserService userService;
 
+    // TODO: add converter to messages
     @GetMapping
     public List<InvitationMessage> getAll(Principal principal) {
         log.debug("Getting all invitations for {}", principal.getName());
 
         val user = userService.findBySigner(principal.getName());
         if (user != null) {
+            val invitedBy = new ProfileMetaMessage(user.getSigner(), user.getDisplayName(), user.getUsername(),
+                    user.getProfileImage(), user.getCreatedDate().toString());
+
             val invitations = invitationRepository.findByInvitedBy(user);
             val invitationMessages = invitations.stream()
                     .map(invite -> new InvitationMessage(
-                            new ProfileMetaMessage(user.getSigner(), user.getDisplayName(), user.getUsername(),
-                                    user.getProfileImage()),
+                            invitedBy,
                             invite.getInvitee() != null
                                     ? new ProfileMetaMessage(invite.getInvitee().getSigner(),
                                             invite.getInvitee().getDisplayName(),
                                             invite.getInvitee().getUsername(),
-                                            invite.getInvitee().getProfileImage())
+                                            invite.getInvitee().getProfileImage(),
+                                            invite.getInvitee().getCreatedDate().toString())
                                     : null,
                             invite.getIdentity(), invite.getCode(), invite.getCreatedDate(), invite.getExpiryDate()))
                     .toList();
@@ -66,6 +71,12 @@ public class InvitationController {
 
         return null;
 
+    }
+
+    @GetMapping("/{identity}")
+    @ResponseStatus(HttpStatus.OK)
+    public Boolean isInvited(@PathVariable String identity) {
+        return invitationRepository.existsByIdentity(identity);
     }
 
     @PostMapping
@@ -83,26 +94,39 @@ public class InvitationController {
             throw new Error("User doesn't exist");
         }
 
+        val allowance = user.getInvitationAllowance();
+
         if (!StringUtils.isBlank(invitationMessage.identityBased())) {
-            val invitation = new Invitation(invitationMessage.identityBased(), null);
-            invitation.setInvitedBy(user);
-            invitationRepository.save(invitation);
+            if (allowance != null && allowance.getIdenityInviteLimit() > 0) {
+                allowance.setIdenityInviteLimit(allowance.getIdenityInviteLimit() - 1);
+                val invitation = new Invitation(invitationMessage.identityBased(), null);
+                invitation.setInvitedBy(user);
+                invitationRepository.save(invitation);
+            } else {
+                throw new Error("User reached his invitation limit");
+            }
         } else {
             val numberOfCodes = invitationMessage.codeBased().number() == null ? 1
                     : invitationMessage.codeBased().number().intValue();
 
-            val invitations = IntStream.range(0, numberOfCodes).boxed().map(n -> {
-                val code = StringUtils.isBlank(invitationMessage.codeBased().code())
-                        ? "pf-".concat(RandomStringUtils.random(8, true, true).toLowerCase())
-                        : invitationMessage.codeBased().code();
+            if (allowance != null && allowance.getCodeInviteLimit() >= numberOfCodes) {
+                allowance.setCodeInviteLimit(allowance.getCodeInviteLimit() - numberOfCodes);
 
-                val invitation = new Invitation(null, code);
-                invitation.setInvitedBy(user);
-                return invitation;
+                val invitations = IntStream.range(0, numberOfCodes).boxed().map(n -> {
+                    val code = StringUtils.isBlank(invitationMessage.codeBased().code())
+                            ? "pf-".concat(RandomStringUtils.random(8, true, true).toLowerCase())
+                            : invitationMessage.codeBased().code();
 
-            }).toList();
+                    val invitation = new Invitation(null, code);
+                    invitation.setInvitedBy(user);
+                    return invitation;
 
-            invitationRepository.saveAll(invitations);
+                }).toList();
+
+                invitationRepository.saveAll(invitations);
+            } else {
+                throw new Error("User reached his invitation limit");
+            }
         }
     }
 

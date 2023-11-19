@@ -1,5 +1,6 @@
 package ua.sinaver.web3.service;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import jakarta.transaction.Transactional;
 import lombok.val;
 import lombok.extern.log4j.Log4j2;
 import ua.sinaver.web3.data.Invitation;
+import ua.sinaver.web3.data.InvitationAllowance;
 import ua.sinaver.web3.data.User;
 import ua.sinaver.web3.message.FlowMessage;
 import ua.sinaver.web3.message.ProfileMessage;
@@ -52,12 +54,16 @@ public class UserService implements IUserService {
 
             if (user.getSigner().equals("0x0dEe77c83cB8b14fA95497825dF93202AbF6ad83")) {
                 user.setAllowed(true);
+                user.setCreatedDate(new Date());
+                user.setInvitationAllowance(new InvitationAllowance(100, 100));
             } else {
                 Invitation invitation = invitationRepository.findFirstValidByIdentityOrCode(signer, invitationCode);
                 if (invitation != null) {
                     user.setAllowed(true);
+                    user.setCreatedDate(new Date());
                     invitation.setInvitee(user);
                     invitation.setExpiryDate(null);
+                    user.setInvitationAllowance(new InvitationAllowance(1, 1));
                 } else {
                     throw new Error("Access not allowed");
                 }

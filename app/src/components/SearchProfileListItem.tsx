@@ -6,21 +6,35 @@ import { AddressSection } from './AddressSection';
 import { comingSoonToast } from './Toasts';
 import SocialPresenceAvatar from './SocialPresenceAvatar';
 import { dAppType } from '../utils/dapps';
-import { useContext, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { UserContext } from '../contexts/UserContext';
 import axios from 'axios';
 import { API_URL } from '../utils/urlConstants';
 import { toast } from 'react-toastify';
 import { shortenWalletAddressLabel } from '../utils/address';
 import PayflowChip from './PayflowChip';
-import { lightGreen } from '@mui/material/colors';
+import { lightGreen, orange } from '@mui/material/colors';
 
 export function SearchProfileListItem(
   props: BoxProps & { profileWithSocials: ProfileWithSocialsType; view: 'address' | 'profile' }
 ) {
+  const { profile } = useContext(UserContext);
   const { profileWithSocials, view } = props;
   const [disableClick, setDisableClick] = useState<boolean>(false);
   const { isAuthenticated } = useContext(UserContext);
+  const [invited, setInvited] = useState<boolean>();
+
+  // fetch in batch for all addresses in parent component
+  useMemo(async () => {
+    if (!profileWithSocials.profile) {
+      const response = await axios.get(
+        `${API_URL}/api/invitations/${profileWithSocials.meta?.addresses[0]}`,
+        { withCredentials: true }
+      );
+
+      setInvited(response.data);
+    }
+  }, [profileWithSocials.profile]);
 
   return (
     (view === 'profile' ? profileWithSocials.profile : profileWithSocials.meta) && (
@@ -54,15 +68,29 @@ export function SearchProfileListItem(
                 <Chip
                   size="small"
                   variant="filled"
-                  label="invite"
-                  clickable
+                  label={invited ? 'invited' : 'invite'}
+                  clickable={!invited}
                   onMouseEnter={() => {
-                    setDisableClick(true);
+                    !invited && setDisableClick(true);
                   }}
                   onMouseLeave={() => {
-                    setDisableClick(false);
+                    !invited && setDisableClick(false);
                   }}
                   onClick={async () => {
+                    if (invited) {
+                      return;
+                    }
+
+                    if (profile.identityInviteLimit === -1) {
+                      comingSoonToast();
+                      return;
+                    }
+
+                    if (profile.identityInviteLimit === 0) {
+                      toast.warn("You don't have any invites");
+                      return;
+                    }
+
                     try {
                       await axios.post(
                         `${API_URL}/api/invitations`,
@@ -71,6 +99,9 @@ export function SearchProfileListItem(
                         },
                         { withCredentials: true }
                       );
+
+                      setInvited(true);
+
                       toast.success(
                         `${shortenWalletAddressLabel(
                           profileWithSocials.meta?.addresses[0]
@@ -80,7 +111,10 @@ export function SearchProfileListItem(
                       toast.error('Invitation failed!');
                     }
                   }}
-                  sx={{ bgcolor: 'orange', '&:hover': { bgcolor: lightGreen.A700 } }}
+                  sx={{
+                    bgcolor: invited ? lightGreen.A700 : orange.A700,
+                    '&:hover': { bgcolor: lightGreen.A700 }
+                  }}
                 />
               )
             )}

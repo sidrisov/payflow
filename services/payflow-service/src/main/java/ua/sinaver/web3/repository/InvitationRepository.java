@@ -11,6 +11,9 @@ import java.util.Date;
 import java.util.List;
 
 public interface InvitationRepository extends CrudRepository<Invitation, Integer> {
+
+        boolean existsByIdentity(String identity);
+
         List<Invitation> findByInvitedBy(User invitedBy);
 
         Invitation findFirstByIdentityAndExpiryDateAfterOrCodeAndExpiryDateAfterOrderByCreatedDateAsc(String identity,

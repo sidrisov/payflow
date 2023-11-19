@@ -1,7 +1,5 @@
 package ua.sinaver.web3.controller;
 
-import java.util.Date;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -84,8 +82,6 @@ public class AuthController {
             val user = userService.findBySigner(signer);
             if (user == null) {
                 userService.saveUser(signer, signer);
-            } else {
-                user.setLastSeen(new Date());
             }
 
             return ResponseEntity.ok().build();

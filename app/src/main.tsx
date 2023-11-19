@@ -11,6 +11,7 @@ import { RouterProvider } from 'react-router-dom';
 import { appRouter } from './appRouter';
 import { HelmetProvider } from 'react-helmet-async';
 import { ToastContainer } from 'react-toastify';
+import { Button } from '@mui/material';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   //<React.StrictMode>
@@ -28,8 +29,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
       draggable
       pauseOnHover
       theme="colored"
-      toastStyle={{ borderRadius: 20 }}
-      closeButton
+      toastStyle={{ borderRadius: 20, textAlign: 'center' }}
     />
   </HelmetProvider>
   //</React.StrictMode>

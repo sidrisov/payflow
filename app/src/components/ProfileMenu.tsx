@@ -77,7 +77,7 @@ export function ProfileMenu({
         Attest
       </MenuItem>
 
-      <MenuItem
+      {/*       <MenuItem
         onClick={() => {
           closeStateCallback();
           navigate('/settings');
@@ -86,7 +86,7 @@ export function ProfileMenu({
           <Settings fontSize="small" />
         </ListItemIcon>
         Settings
-      </MenuItem>
+      </MenuItem> */}
       <Divider />
       <MenuItem onClick={() => setAppSettings({ ...appSettings, darkMode: !appSettings.darkMode })}>
         <ListItemIcon>

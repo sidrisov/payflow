@@ -3,10 +3,12 @@ import { FlowType } from './FlowType';
 
 export interface ProfileType {
   address: Address;
+  createdDate: string;
   displayName?: string;
   username?: string;
   profileImage?: string;
   defaultFlow?: FlowType;
+  identityInviteLimit: number;
 }
 
 export interface ProfileWithSocialsType {

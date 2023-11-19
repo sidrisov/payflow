@@ -34,6 +34,7 @@ public class Flow {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
+    // TODO: on clean up rename to user_id
     @Column
     private Integer userId;
 

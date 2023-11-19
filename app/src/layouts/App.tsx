@@ -254,13 +254,13 @@ export default function AppLayout({
 
                         <IconButton
                           color={location.pathname === '/flows' ? 'inherit' : undefined}
-                          onClick={() => navigate('/flows')}>
+                          onClick={() => /* navigate('/flows') */ comingSoonToast()}>
                           <AppsOutlined />
                         </IconButton>
 
                         <IconButton
                           color={location.pathname === '/requests' ? 'inherit' : undefined}
-                          onClick={() => navigate('/requests')}>
+                          onClick={() => /* navigate('/requests') */ comingSoonToast()}>
                           {location.pathname === '/requests' ? <Payments /> : <PaymentsOutlined />}
                         </IconButton>
 

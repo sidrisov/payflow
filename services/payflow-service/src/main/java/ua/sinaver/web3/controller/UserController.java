@@ -2,6 +2,7 @@ package ua.sinaver.web3.controller;
 
 import java.security.Principal;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,10 +41,14 @@ public class UserController {
         log.trace("{}", principal);
         val user = userService.findBySigner(principal.getName());
         if (user != null) {
+            user.setLastSeen(new Date());
+
             return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
                     user.getSigner(),
                     user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
-                            : null);
+                            : null,
+                    user.getInvitationAllowance() != null ? user.getInvitationAllowance().getIdenityInviteLimit()
+                            : -1);
         } else {
             return null;
         }
@@ -67,7 +72,8 @@ public class UserController {
                 return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
                         user.getSigner(),
                         user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
-                                : null);
+                                : null,
+                        -1);
             }).toList();
 
         } else {
@@ -84,7 +90,8 @@ public class UserController {
             return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
                     user.getSigner(),
                     user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
-                            : null);
+                            : null,
+                    -1);
         } else {
             return null;
         }
@@ -110,7 +117,7 @@ public class UserController {
                         wu.getValue() != null
                                 ? new ProfileMetaMessage(wu.getValue().getSigner(), wu.getValue().getDisplayName(),
                                         wu.getValue().getUsername(),
-                                        wu.getValue().getProfileImage())
+                                        wu.getValue().getProfileImage(), wu.getValue().getCreatedDate().toString())
                                 : null))
                 .collect(Collectors.toList());
     }

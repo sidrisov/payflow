@@ -3,7 +3,7 @@ package ua.sinaver.web3.message;
 import ua.sinaver.web3.data.Wallet;
 
 public record WalletMessage(
-        String address, Integer network,
+        String address, int network,
         boolean smart,
         boolean safe, String safeVersion, String safeSaltNonce,
         boolean safeDeployed, String master) {
