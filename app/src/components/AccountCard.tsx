@@ -1,45 +1,72 @@
 import {
-  Avatar,
+  AvatarGroup,
   Box,
+  Button,
   Card,
   CardProps,
   Divider,
   IconButton,
+  Skeleton,
   Stack,
   Tooltip,
   Typography
 } from '@mui/material';
-import { networks } from '../utils/constants';
-import { AccountType } from '../types/AccountType';
-import { shortenWalletAddressLabel } from '../utils/address';
-import { Receipt, ContentCopy, ArrowDownward, Send } from '@mui/icons-material';
-import { toast } from 'react-toastify';
-import { copyToClipboard } from '../utils/copyToClipboard';
-import { useContext, useState } from 'react';
-import AddressQRCodeDialog from './AddressQRCodeDialog';
-import { useBalance, useNetwork } from 'wagmi';
-import { convertToUSD } from '../utils/getBalance';
+import { Receipt, ArrowDownward, Send, AccountBalance, Toll } from '@mui/icons-material';
+import { useContext, useMemo, useState } from 'react';
 import AccountSendDialog from './AccountSendDialog';
 import { UserContext } from '../contexts/UserContext';
+import { BalanceFetchResultType } from '../types/BalanceFetchResultType';
+import { formatEther } from 'viem';
+import { WalletsPopover } from './WalletsInfoPopover';
+import { FlowType } from '../types/FlowType';
+import { ChooseFlowMenu } from './ChooseFlowMenu';
+import { FlowTopUpMenu } from './FlowTopUpMenu';
+import WalletQRCodeShareDialog from './WalletQRCodeShareDialog';
+import NetworkAvatar from './NetworkAvatar';
+import { useChainId, useNetwork } from 'wagmi';
 
 export type AccountNewDialogProps = CardProps & {
-  account: AccountType;
+  flows: FlowType[];
+  selectedFlow: FlowType;
+  setSelectedFlow: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
+  balanceFetchResult: BalanceFetchResultType;
+  assetsOrActivityView: 'assets' | 'activity';
+  setAssetsOrActivityView: React.Dispatch<React.SetStateAction<'assets' | 'activity'>>;
 };
 
 export function AccountCard(props: AccountNewDialogProps) {
-  const { ethUsdPrice } = useContext(UserContext);
-  const { account } = props;
-  const [openAddressQRCode, setOpenAddressQRCode] = useState(false);
-  const [openWithdrawalDialog, setOpenWithdrawalDialog] = useState(false);
-  const { chains } = useNetwork();
-  const { isSuccess, data: balance } = useBalance({
-    address: account.address,
-    chainId: chains.find((c) => c?.name === account.network)?.id
-  });
+  const { ethUsdPrice, profile } = useContext(UserContext);
+  const { flows, selectedFlow, setSelectedFlow } = props;
 
-  const networkShortName = networks.find(
-    (n) => n.chainId === chains.find((c) => c.name === account.network)?.id
-  )?.shortName;
+  const [openWithdrawalDialog, setOpenWithdrawalDialog] = useState(false);
+  const [openWalletDetailsPopover, setOpenWalletDetailsPopover] = useState(false);
+  const [openSelectFlow, setOpenSelectFlow] = useState(false);
+  const [openTopUpMenu, setOpenTopUpMenu] = useState(false);
+  const [openFlowReceiveQRCode, setOpenFlowReceiveQRCode] = useState(false);
+
+  const [walletAnchorEl, setWalletAnchorEl] = useState<null | HTMLElement>(null);
+  const [flowAnchorEl, setFlowAnchorEl] = useState<null | HTMLElement>(null);
+  const [topUpMenuAnchorEl, setTopUpMenuAnchorEl] = useState<null | HTMLElement>(null);
+
+  const { loading, fetched, balances } = props.balanceFetchResult;
+  const [totalBalance, setTotalBalance] = useState<string>();
+
+  const { chain } = useNetwork();
+
+  useMemo(async () => {
+    if (fetched && balances.length > 0 && ethUsdPrice) {
+      const totalBalance = formatEther(
+        balances
+          // don't count ERC20 for now
+          .filter((balance) => !balance.asset.token && balance.balance)
+          .reduce((previousValue, currentValue) => {
+            return previousValue + (currentValue.balance?.value ?? BigInt(0));
+          }, BigInt(0))
+      );
+
+      setTotalBalance((parseFloat(totalBalance) * ethUsdPrice).toFixed(1));
+    }
+  }, [fetched, balances.length, ethUsdPrice]);
 
   return (
     <Card
@@ -58,33 +85,50 @@ export function AccountCard(props: AccountNewDialogProps) {
         justifyContent: 'space-between'
       }}>
       <Box display="flex" flexDirection="row" justifyContent="space-between" alignItems="center">
-        <Stack spacing={1} direction="row" alignItems="center">
-          <Avatar src={'/networks/' + account.network + '.png'} sx={{ width: 36, height: 36 }} />
-          <Typography sx={{ fontSize: 15, fontWeight: 'bold' }}>{account.network}</Typography>
-        </Stack>
+        <Tooltip title="Flow wallets">
+          <AvatarGroup
+            max={4}
+            color="inherit"
+            total={selectedFlow.wallets.length}
+            component={Button}
+            sx={{
+              alignSelf: 'center',
+              '& .MuiAvatar-root': {
+                borderStyle: 'none',
+                border: 0,
+                width: 20,
+                height: 20,
+                fontSize: 10
+              },
+              p: 1,
+              pl: 2,
+              border: 1,
+              borderStyle: 'dashed',
+              borderRadius: 5
+            }}
+            onClick={(event) => {
+              setWalletAnchorEl(event.currentTarget);
+              setOpenWalletDetailsPopover(true);
+            }}>
+            {[...Array(Math.min(4, selectedFlow.wallets.length))].map((_item, i) => (
+              <NetworkAvatar network={selectedFlow.wallets[i].network} />
+            ))}
+          </AvatarGroup>
+        </Tooltip>
 
-        <Stack spacing={1} direction="row" alignItems="center">
-          {account.safe && (
-            <Tooltip title="Open in Safe Web Wallet">
-              <a
-                href={`https://app.safe.global/home?safe=${networkShortName}:${account.address}`}
-                target="_blank">
-                <Avatar src="/safe.png" sx={{ width: 16, height: 16 }} />
-              </a>
-            </Tooltip>
-          )}
-          <Typography sx={{ fontSize: 15, fontWeight: 'bold' }}>
-            {shortenWalletAddressLabel(account.address)}
-          </Typography>
-          <Tooltip title="Copy Address">
+        <Stack
+          spacing={1}
+          direction="row"
+          alignItems="center"
+          sx={{ p: 0, border: 1, borderStyle: 'dashed', borderRadius: 5 }}>
+          <Tooltip title="Select flow">
             <IconButton
-              size="small"
-              color="inherit"
-              onClick={() => {
-                copyToClipboard(account.address);
-                toast.success('Address is copied!');
+              size="medium"
+              onClick={(event) => {
+                setFlowAnchorEl(event.currentTarget);
+                setOpenSelectFlow(true);
               }}>
-              <ContentCopy fontSize="small" />
+              <Toll fontSize="small" />
             </IconButton>
           </Tooltip>
         </Stack>
@@ -100,19 +144,28 @@ export function AccountCard(props: AccountNewDialogProps) {
           sx={{
             p: 1,
             border: 1,
-            borderRadius: 3
+            borderRadius: 5,
+            minWidth: 100,
+            maxWidth: 150,
+            height: 60,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}>
-          <Typography variant="h5">
-            ${isSuccess ? convertToUSD(balance?.value, ethUsdPrice) : ''} 💸
-          </Typography>
+          {loading || !totalBalance ? (
+            <Skeleton variant="rectangular" height={40} width={80} sx={{ borderRadius: 3 }} />
+          ) : (
+            <Typography variant="h4">${fetched ? totalBalance : 'N/A'}</Typography>
+          )}
         </Box>
       </Divider>
       <Stack spacing={2} direction="row" alignSelf="center">
         <Tooltip title="Receive">
           <IconButton
             color="inherit"
-            onClick={() => {
-              toast.error('Feature not supported yet!');
+            onClick={(event) => {
+              setTopUpMenuAnchorEl(event.currentTarget);
+              setOpenTopUpMenu(true);
             }}
             sx={{ border: 1, borderStyle: 'dashed' }}>
             <ArrowDownward />
@@ -128,28 +181,56 @@ export function AccountCard(props: AccountNewDialogProps) {
             <Send />
           </IconButton>
         </Tooltip>
-        <Tooltip title="Transactions">
+        <Tooltip title={props.assetsOrActivityView === 'assets' ? ' Activity' : 'Assets'}>
           <IconButton
             color="inherit"
             onClick={() => {
-              toast.error('Feature not supported yet!');
+              props.setAssetsOrActivityView(
+                props.assetsOrActivityView === 'assets' ? 'activity' : 'assets'
+              );
             }}
             sx={{ border: 1, borderStyle: 'dashed' }}>
-            <Receipt />
+            {props.assetsOrActivityView === 'assets' ? <Receipt /> : <AccountBalance />}
           </IconButton>
         </Tooltip>
       </Stack>
-      <AddressQRCodeDialog
-        open={openAddressQRCode}
-        address={account.address}
-        network={account.network}
-        closeStateCallback={() => setOpenAddressQRCode(false)}
+      {openWithdrawalDialog && (
+        <AccountSendDialog
+          open={openWithdrawalDialog}
+          flow={selectedFlow}
+          closeStateCallback={async () => setOpenWithdrawalDialog(false)}
+        />
+      )}
+      <WalletsPopover
+        open={openWalletDetailsPopover}
+        onClose={async () => setOpenWalletDetailsPopover(false)}
+        anchorEl={walletAnchorEl}
+        flow={selectedFlow}
+        balanceFetchResult={{ loading, fetched, balances }}
       />
-      <AccountSendDialog
-        open={openWithdrawalDialog}
-        from={account.address}
-        network={account.network}
-        closeStateCallback={async () => setOpenWithdrawalDialog(false)}
+      <ChooseFlowMenu
+        anchorEl={flowAnchorEl}
+        open={openSelectFlow}
+        closeStateCallback={() => setOpenSelectFlow(false)}
+        flows={flows}
+        selectedFlow={selectedFlow}
+        setSelectedFlow={setSelectedFlow}
+      />
+      <FlowTopUpMenu
+        profile={profile}
+        anchorEl={topUpMenuAnchorEl}
+        open={openTopUpMenu}
+        qrClickCallback={() => setOpenFlowReceiveQRCode(true)}
+        onClose={() => setOpenTopUpMenu(false)}
+        onClick={() => setOpenTopUpMenu(false)}
+      />
+      <WalletQRCodeShareDialog
+        open={openFlowReceiveQRCode}
+        wallet={
+          selectedFlow.wallets.find((w) => w.network === chain?.id) ?? selectedFlow.wallets[0]
+        }
+        wallets={selectedFlow.wallets}
+        closeStateCallback={() => setOpenFlowReceiveQRCode(false)}
       />
     </Card>
   );

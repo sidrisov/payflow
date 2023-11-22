@@ -34,6 +34,8 @@ import HideOnScroll from '../components/HideOnScroll';
 import { Helmet } from 'react-helmet-async';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import { PaymentRequestType } from '../types/PaymentRequestType';
+import { API_URL } from '../utils/urlConstants';
+import NetworkAvatar from '../components/NetworkAvatar';
 
 export default function PaymentRequest({ appSettings, setAppSettings }: any) {
   const { uuid } = useParams();
@@ -67,9 +69,7 @@ export default function PaymentRequest({ appSettings, setAppSettings }: any) {
 
   useMemo(async () => {
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/requests/${uuid}`
-      );
+      const response = await axios.get(`${API_URL}/api/requests/${uuid}`);
 
       setRequest(response.data);
     } catch (error) {
@@ -79,7 +79,7 @@ export default function PaymentRequest({ appSettings, setAppSettings }: any) {
 
   useMemo(async () => {
     if (request) {
-      switchNetwork?.(chains.find((c) => c?.name === request.network)?.id);
+      switchNetwork?.(request.network);
     }
   }, [request]);
 
@@ -101,10 +101,9 @@ export default function PaymentRequest({ appSettings, setAppSettings }: any) {
 
   async function submitProof() {
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/requests/${request?.uuid}/proof`,
-        { txHash }
-      );
+      const response = await axios.post(`${API_URL}/api/requests/${request?.uuid}/proof`, {
+        txHash
+      });
       console.log(response.status);
       toast.success(`Payment request proof submitted`);
     } catch (error) {
@@ -234,10 +233,7 @@ export default function PaymentRequest({ appSettings, setAppSettings }: any) {
               </Typography>
 
               <Box mt={1} display="flex" flexDirection="row" alignItems="center">
-                <Avatar
-                  src={'/networks/' + request.network + '.png'}
-                  sx={{ width: 24, height: 24 }}
-                />
+                <NetworkAvatar network={request.network} sx={{ width: 24, height: 24 }} />
                 <Typography ml={1}>{request.network}</Typography>
                 <Typography ml={1}>{shortenWalletAddressLabel(request.address)}</Typography>
                 <Tooltip title="Copy Address">
@@ -263,9 +259,7 @@ export default function PaymentRequest({ appSettings, setAppSettings }: any) {
                   color="primary"
                   onClick={() => {
                     requestToastId.current = toast.loading(
-                      `Sending ${request.amount} to ${shortenWalletAddressLabel(
-                        request.address
-                      )} 💸`
+                      `Sending ${request.amount} to ${shortenWalletAddressLabel(request.address)}`
                     );
                     sendTransaction?.();
                   }}

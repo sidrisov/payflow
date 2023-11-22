@@ -2,6 +2,7 @@ import React from 'react';
 import { type PublicClient, usePublicClient } from 'wagmi';
 import { providers } from 'ethers';
 import { type HttpTransport } from 'viem';
+import { getPublicClient } from 'wagmi/actions';
 
 export function publicClientToProvider(publicClient: PublicClient) {
   const { chain, transport } = publicClient;
@@ -23,4 +24,9 @@ export function publicClientToProvider(publicClient: PublicClient) {
 export function useEthersProvider({ chainId }: { chainId?: number } = {}) {
   const publicClient = usePublicClient({ chainId });
   return React.useMemo(() => publicClientToProvider(publicClient), [publicClient]);
+}
+
+export function getEthersProvider({ chainId }: { chainId?: number } = {}) {
+  const publicClient = getPublicClient({ chainId });
+  return publicClientToProvider(publicClient);
 }

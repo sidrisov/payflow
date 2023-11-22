@@ -1,5 +1,7 @@
 package ua.sinaver.web3.data;
 
+import java.util.Date;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -9,6 +11,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 import lombok.Getter;
@@ -29,52 +33,38 @@ public class Wallet {
     private String address;
 
     @Column
-    private String network;
-
-    @Column(columnDefinition = "boolean")
-    private boolean smart;
-
-    @Column(columnDefinition = "boolean")
-    private boolean safe;
+    private Integer network;
 
     @Column
-    private String safeVersion;
-
-    @Column
-    private String safeSaltNonce;
+    private String walletVersion;
 
     @Column(columnDefinition = "boolean")
-    private boolean safeDeployed;
+    private boolean deployed;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "flow_id", nullable = false)
     private Flow flow;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumn(name = "account_id", nullable = true)
-    private Account master;
+    @Column
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdDate = new Date();
 
     @Version
     private Long version;
 
-    public Wallet(String address, String network, boolean smart, boolean safe, String safeVersion, String safeSaltNonce,
+    public Wallet(String address, Integer network, String walletVersion,
             boolean safeDeployed) {
         this.address = address;
         this.network = network;
-        this.smart = smart;
-        this.safe = safe;
-        this.safeVersion = safeVersion;
-        this.safeSaltNonce = safeSaltNonce;
-        this.safeDeployed = safeDeployed;
+        this.walletVersion = walletVersion;
+        this.deployed = safeDeployed;
     }
 
     @Override
     public String toString() {
-        return "Wallet [id=" + id + ", address=" + address + ", network=" + network + ", smart=" + smart + ", safe="
-                + safe + ", safeVersion="
-                + safeVersion + ", safeDeployed="
-                + safeDeployed + ", flow="
-                + flow.getUuid() + ", master="
-                + (master != null ? master.getAddress() : "null") + "]";
+        return "Wallet [id=" + id + ", address=" + address + ", network=" + network + ", flow="
+                + flow.getUuid() + ", walletProvider=" + flow.getWalletProvider() + ", walletVersion="
+                + walletVersion + ", deployed="
+                + deployed + "]";
     }
 }

@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+/// <reference types="vite-plugin-svgr/client" />
 interface ImportMetaEnv {
   readonly VITE_INIT_CONNECT: string;
   readonly VITE_ALCHEMY_API_KEY: string;
@@ -12,6 +13,8 @@ interface ImportMetaEnv {
   readonly VITE_WALLETCONNECT_PROJECT_ID: string;
   readonly VITE_GELATO_TESTNET_API_KEY: string;
   readonly VITE_GELATO_MAINNET_API_KEY: string;
+  readonly VITE_AIRSTACK_API_KEY: string;
+  readonly VITE_ENABLED_CHAINS: string;
 }
 
 interface ImportMeta {

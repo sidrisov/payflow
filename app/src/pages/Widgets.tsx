@@ -21,11 +21,10 @@ import {
 import { FlowType } from '../types/FlowType';
 import QRCode from 'react-qr-code';
 
-import { ReactComponent as Logo } from '../assets/logo.svg';
+import Logo from '../assets/logo.svg?react';
 import { blue, green, purple, red, yellow } from '@mui/material/colors';
 import { Check } from '@mui/icons-material';
-
-const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
+import { DAPP_URL } from '../utils/urlConstants';
 
 enum ComponentVariant {
   Button = 'Button',
@@ -491,7 +490,7 @@ export default function Widgets() {
                           ? colors[componentColor].toString()
                           : undefined
                       }
-                      value={`${DAPP_URL}/send/${selectedFlow?.uuid}`}
+                      value={`${DAPP_URL}/jar/${selectedFlow?.uuid}`}
                     />
                   </Card>
                 )}

@@ -12,7 +12,6 @@ import {
   Typography,
   Box,
   InputAdornment,
-  Avatar,
   IconButton
 } from '@mui/material';
 import { toast } from 'react-toastify';
@@ -27,6 +26,9 @@ import { ContentCopy } from '@mui/icons-material';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { copyToClipboard } from '../utils/copyToClipboard';
 import { PaymentRequestType } from '../types/PaymentRequestType';
+import { API_URL } from '../utils/urlConstants';
+import NetworkAvatar from './NetworkAvatar';
+import { getNetworkDisplayName } from '../utils/networks';
 
 export type RequestNewDialogProps = DialogProps & CloseCallbackType;
 
@@ -57,7 +59,7 @@ export default function RequestNewDialog({ closeStateCallback, ...props }: Reque
 
       try {
         const response = await axios.post(
-          `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/requests`,
+          `${API_URL}/api/requests`,
           {
             title: title,
             description: description,
@@ -150,8 +152,8 @@ export default function RequestNewDialog({ closeStateCallback, ...props }: Reque
                 }
               }}
               // allow only smart wallets
-              options={selectedFlow.wallets.filter((f) => f.smart)}
-              getOptionLabel={(option) => option.network}
+              options={selectedFlow.walletProvider ? selectedFlow.wallets : []}
+              getOptionLabel={(option) => getNetworkDisplayName(option.network)}
               renderInput={(params) => (
                 <TextField variant="outlined" {...params} label="Choose Payment Wallet" />
               )}
@@ -166,10 +168,7 @@ export default function RequestNewDialog({ closeStateCallback, ...props }: Reque
               flexDirection="row"
               alignItems="center"
               justifyContent="center">
-              <Avatar
-                src={'/networks/' + selectedWallet.network + '.png'}
-                sx={{ width: 24, height: 24 }}
-              />
+              <NetworkAvatar network={selectedWallet.network} sx={{ width: 24, height: 24 }} />
               <Typography ml={1}>{shortenWalletAddressLabel(selectedWallet.address)}</Typography>
               <IconButton
                 size="small"

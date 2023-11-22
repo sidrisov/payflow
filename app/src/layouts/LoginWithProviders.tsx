@@ -12,25 +12,26 @@ import {
 
 import { rainbowWeb3AuthConnector } from '../utils/web3AuthConnector';
 
-import { Address, configureChains, createConfig, WagmiConfig } from 'wagmi';
-import { mainnet } from 'wagmi/chains';
+import { configureChains, createConfig, WagmiConfig } from 'wagmi';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
-import { useMediaQuery } from '@mui/material';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AppSettings } from '../types/AppSettingsType';
 import Login from './Login';
 import { CustomAvatar } from '../components/CustomAvatar';
-import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
+import { customLightTheme } from '../theme/rainbowTheme';
 import { SiweMessage } from 'siwe';
+import axios from 'axios';
+import { ProfileType } from '../types/ProfleType';
+import { me } from '../services/user';
+import { SUPPORTED_CHAINS } from '../utils/networks';
+import { API_URL } from '../utils/urlConstants';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
-const AUTH_URL = import.meta.env.VITE_PAYFLOW_SERVICE_API_URL;
 
-const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [mainnet],
-  [alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }), publicProvider()]
-);
+const { chains, publicClient, webSocketPublicClient } = configureChains(SUPPORTED_CHAINS, [
+  alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }),
+  publicProvider()
+]);
 
 const { wallets } = getDefaultWallets({
   appName: 'PayFlow',
@@ -46,16 +47,11 @@ const connectors = connectorsForWallets([
   }
 ]);
 
-const appSettingsStorageItem = localStorage.getItem('appSettings');
-const appSettingsStored = appSettingsStorageItem
-  ? (JSON.parse(appSettingsStorageItem) as AppSettings)
-  : null;
-
-export default function LoginWithProviders() {
+export default function AppWithProviders() {
   const fetchingStatusRef = useRef(false);
   const verifyingRef = useRef(false);
   const [authStatus, setAuthStatus] = useState<AuthenticationStatus>('loading');
-  const [authAccount, setAuthAccount] = useState<Address>();
+  const [profile, setProfile] = useState<ProfileType>();
 
   // Fetch user when:
   useEffect(() => {
@@ -67,18 +63,10 @@ export default function LoginWithProviders() {
       fetchingStatusRef.current = true;
 
       try {
-        const response = await fetch(`${AUTH_URL}/api/me`, { credentials: 'include' });
-        const authProfile = await response.json();
-        console.log(authProfile.address);
-        setAuthStatus(authProfile && authProfile.address ? 'authenticated' : 'unauthenticated');
-        
-        if (authProfile && authProfile.address) {
-          setAuthAccount(authProfile.address);
-        } else {
-          setAuthAccount(undefined);
-        }
-      } catch (_error) {
-        setAuthStatus('unauthenticated');
+        const profile = await me();
+
+        setAuthStatus(profile ? 'authenticated' : 'unauthenticated');
+        setProfile(profile);
       } finally {
         fetchingStatusRef.current = false;
       }
@@ -92,11 +80,26 @@ export default function LoginWithProviders() {
     return () => window.removeEventListener('focus', fetchStatus);
   }, []);
 
+  // 3. in case successfully authenticated, fetch currently authenticated user
+  useMemo(async () => {
+    if (authStatus === 'authenticated' && !profile) {
+      try {
+        const response = await axios.get(`${API_URL}/api/user/me`, { withCredentials: true });
+        if (Boolean(response.status === 200)) {
+          const authAccount = response.data;
+          setProfile(authAccount);
+        }
+      } catch (_error) {
+        setAuthStatus('unauthenticated');
+      }
+    }
+  }, [authStatus, profile]);
+
   const authAdapter = useMemo(() => {
     return createAuthenticationAdapter({
       getNonce: async () => {
-        const response = await fetch(`${AUTH_URL}/api/auth/nonce`, { credentials: 'include' });
-        return await response.text();
+        const response = await axios.get(`${API_URL}/api/auth/nonce`, { withCredentials: true });
+        return await response.data;
       },
 
       createMessage: ({ nonce, address, chainId }) => {
@@ -118,17 +121,14 @@ export default function LoginWithProviders() {
       verify: async ({ message, signature }) => {
         verifyingRef.current = true;
 
-        console.log(JSON.stringify({ message, signature }));
-
         try {
-          const response = await fetch(`${AUTH_URL}/api/auth/verify`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message, signature }),
-            credentials: 'include'
-          });
+          const response = await axios.post(
+            `${API_URL}/api/auth/verify`,
+            { message, signature },
+            { withCredentials: true }
+          );
 
-          const authenticated = Boolean(response.ok);
+          const authenticated = Boolean(response.status === 200);
 
           if (authenticated) {
             setAuthStatus(authenticated ? 'authenticated' : 'unauthenticated');
@@ -144,28 +144,14 @@ export default function LoginWithProviders() {
 
       signOut: async () => {
         setAuthStatus('unauthenticated');
-        setAuthAccount(undefined)
-        await fetch(`${AUTH_URL}/api/auth/logout`, { credentials: 'include' });
+        setProfile(undefined);
+        await axios.get(`${API_URL}/api/auth/logout`, { withCredentials: true });
       }
     });
   }, []);
 
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const [appSettings, setAppSettings] = useState<AppSettings>(
-    appSettingsStored
-      ? appSettingsStored
-      : {
-          autoConnect: import.meta.env.VITE_INIT_CONNECT === 'true',
-          darkMode: prefersDarkMode
-        }
-  );
-
-  useMemo(() => {
-    localStorage.setItem('appSettings', JSON.stringify(appSettings));
-  }, [appSettings]);
-
   const wagmiConfig = createConfig({
-    autoConnect: appSettings.autoConnect,
+    autoConnect: true,
     connectors,
     publicClient,
     webSocketPublicClient
@@ -175,16 +161,11 @@ export default function LoginWithProviders() {
     <WagmiConfig config={wagmiConfig}>
       <RainbowKitAuthenticationProvider adapter={authAdapter} status={authStatus}>
         <RainbowKitProvider
-          theme={appSettings.darkMode ? customDarkTheme : customLightTheme}
+          theme={customLightTheme}
           avatar={CustomAvatar}
-          modalSize="compact"
+          modalSize="wide"
           chains={chains}>
-          <Login
-            authStatus={authStatus}
-            authAccount={authAccount}
-            appSettings={appSettings}
-            setAppSettings={setAppSettings}
-          />
+          <Login authStatus={authStatus} profile={profile} />
         </RainbowKitProvider>
       </RainbowKitAuthenticationProvider>
     </WagmiConfig>

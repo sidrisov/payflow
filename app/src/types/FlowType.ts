@@ -1,20 +1,30 @@
 import { Address } from 'viem';
+import { ProfileType } from './ProfleType';
 
 export interface FlowType {
   account: Address;
   title: string;
   description: string;
   uuid: string;
+  walletProvider: string;
+  saltNonce: string;
   wallets: FlowWalletType[];
 }
 
 export interface FlowWalletType {
   address: Address;
-  network: string;
-  smart: boolean;
-  safe: boolean;
-  safeVersion: string;
-  safeSaltNonce: string;
-  safeDeployed: boolean;
-  master: Address;
+  network: number;
+  version: string;
+  deployed: boolean;
+}
+
+export interface WalletType {
+  address: Address;
+  network: number;
+}
+
+export interface WalletWithProfileType {
+  address: Address;
+  network: number;
+  profile?: ProfileType;
 }

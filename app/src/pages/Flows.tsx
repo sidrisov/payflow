@@ -8,28 +8,24 @@ import {
   Stack,
   Tooltip,
   Typography,
-  useMediaQuery,
   useTheme
 } from '@mui/material';
 import { useContext, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import FlowNewDialog from '../components/FlowNewDialog';
-import { useNetwork } from 'wagmi';
 import { FlowType, FlowWalletType } from '../types/FlowType';
 import { Add, OpenInFull, ShareOutlined } from '@mui/icons-material';
 import ShareDialog from '../components/ShareDialog';
-import FlowViewDialog from '../components/FlowViewDialog';
 import { getTotalBalance, getWalletBalance } from '../utils/getBalance';
 import { UserContext } from '../contexts/UserContext';
 import { formatEther } from 'viem';
-
-const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
+import { DAPP_URL } from '../utils/urlConstants';
+import NetworkAvatar from '../components/NetworkAvatar';
 
 // TODO: move to FlowCard
 
 export default function Flows() {
   const theme = useTheme();
-  const mediumScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   const {
     isAuthenticated,
@@ -39,8 +35,6 @@ export default function Flows() {
     setInitiateFlowsRefresh,
     ethUsdPrice
   } = useContext(UserContext);
-  
-  const { chains } = useNetwork();
 
   const [flowBalances, setFlowBalances] = useState<Map<string, string>>();
   const [openFlowCreate, setOpenFlowCreate] = useState(false);
@@ -66,16 +60,16 @@ export default function Flows() {
           .values()
       );
 
-      Promise.all(
-        uniqueWallets.map(async (wallet) => (await getWalletBalance(wallet, chains)).value)
-      ).then((balances) => {
-        const balancesMap = new Map<string, bigint>();
-        balances.forEach((value, index) => {
-          const key = `${uniqueWallets[index].address}_${uniqueWallets[index].network}`;
-          balancesMap.set(key, value);
-        });
-        setWalletBalances(balancesMap);
-      });
+      Promise.all(uniqueWallets.map(async (wallet) => (await getWalletBalance(wallet)).value)).then(
+        (balances) => {
+          const balancesMap = new Map<string, bigint>();
+          balances.forEach((value, index) => {
+            const key = `${uniqueWallets[index].address}_${uniqueWallets[index].network}`;
+            balancesMap.set(key, value);
+          });
+          setWalletBalances(balancesMap);
+        }
+      );
     }
   }
 
@@ -121,7 +115,7 @@ export default function Flows() {
             sx={{
               display: 'flex',
               flexWrap: 'wrap',
-              justifyContent: mediumScreen ? 'center' : 'flex-start'
+              justifyContent: 'center'
             }}>
             <Card
               elevation={10}
@@ -138,9 +132,16 @@ export default function Flows() {
                 flexDirection: 'column',
                 justifyContent: 'space-between'
               }}>
-              <Typography fontSize={20} fontWeight="bold">
-                New flow
-              </Typography>
+              <Box
+                display="flex"
+                flexDirection="row"
+                alignItems="center"
+                justifyContent="space-between">
+                <Typography fontSize={20} fontWeight="bold">
+                  Create New Jar
+                </Typography>
+                <Avatar src="/jar2.png" sx={{ p: 1, width: 48, height: 48 }} />
+              </Box>
               <Typography fontSize={12} fontWeight="bold">
                 Receive payments for different purposes: savings, income, creator support,
                 fundraising, collecting for a friend's birthday - ANYTHING!
@@ -214,11 +215,11 @@ export default function Flows() {
                         '& .MuiAvatar-root': { width: 20, height: 20, fontSize: 10 }
                       }}>
                       {[...Array(Math.min(4, flow.wallets.length))].map((_item, i) => (
-                        <Tooltip
-                          key={`wallet_tooltip_${flow.uuid}_${i}`}
-                          title={flow.wallets[i].network}>
-                          <Avatar src={'/networks/' + flow.wallets[i].network + '.png'} />
-                        </Tooltip>
+                        <NetworkAvatar
+                          key={`wallet_avatar_${flow.uuid}_${i}`}
+                          tooltip
+                          network={flow.wallets[i].network}
+                        />
                       ))}
                     </AvatarGroup>
                     <Tooltip title="Share Link / QR">
@@ -230,7 +231,7 @@ export default function Flows() {
                           onClick={() => {
                             setFlowShareInfo({
                               title: flow.title,
-                              link: `${DAPP_URL}/send/${flow.uuid}`
+                              link: `${DAPP_URL}/jar/${flow.uuid}`
                             });
                             setOpenFlowShare(true);
                           }}>
@@ -258,7 +259,7 @@ export default function Flows() {
         link={flowShareInfo.link}
         closeStateCallback={async () => setOpenFlowShare(false)}
       />
-      <FlowViewDialog
+      {/*  <FlowViewDialog
         open={openFlowView}
         flow={flow}
         closeStateCallback={async () => {
@@ -266,7 +267,7 @@ export default function Flows() {
           // TODO: just refresh, lately it's better to track each flow's update separately
           setInitiateFlowsRefresh(true);
         }}
-      />
+      /> */}
     </>
   );
 }

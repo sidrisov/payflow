@@ -13,7 +13,9 @@ import {
 
 import Safe, {
   EthersAdapter,
+  PredictedSafeProps,
   SafeAccountConfig,
+  SafeDeploymentConfig,
   SafeFactory,
   getSafeContract
 } from '@safe-global/protocol-kit';
@@ -22,16 +24,20 @@ import {
   MetaTransactionData,
   MetaTransactionOptions,
   OperationType,
+  RelayTransaction,
+  SafeTransaction,
   SafeVersion
 } from '@safe-global/safe-core-sdk-types';
 
 import { RelayResponse } from '@gelatonetwork/relay-sdk';
 
-import { Hash, Address } from 'viem';
+import { Hash, Address, keccak256, toBytes } from 'viem';
 import { toast } from 'react-toastify';
 import { getRelayKitForChainId, isRelaySupported, waitForRelayTaskToComplete } from './relayer';
 import { CUSTOM_CONTRACTS, CUSTOM_CONTRACTS_CHAINS } from './safeContracts';
 import { signTransactionBySafe } from './safeSignatures';
+import { getNetwork, getPublicClient } from 'wagmi/actions';
+import { arbitrumGoerli, zkSyncTestnet } from 'viem/chains';
 
 const ZERO_ADDRESS = ethers.constants.AddressZero;
 const LATEST_SAFE_VERSION = '1.3.0' as SafeVersion;
@@ -47,14 +53,14 @@ export async function safeDeploy({
   sponsored = false,
   callback
 }: {
-  ethersSigner: providers.JsonRpcSigner;
+  ethersSigner: providers.JsonRpcSigner | providers.JsonRpcProvider;
   safeAccountConfig: SafeAccountConfig;
   saltNonce: Hash;
   safeVersion?: SafeVersion;
   initialize?: boolean;
   sponsored?: boolean;
   callback?: (txHash: string | undefined) => void;
-}): Promise<Address | undefined> {
+}): Promise<Address> {
   const ethAdapter = new EthersAdapter({
     ethers,
     signerOrProvider: ethersSigner
@@ -86,14 +92,12 @@ export async function safeDeploy({
       });
 
       if (!safe) {
-        console.error('Failed to deploy safe');
-        return;
+        throw new Error('Failed to deploy safe');
       }
     } else {
       const relayKit = getRelayKitForChainId(chainId);
       if (!relayKit) {
-        console.error('Relayer not supported for: ', chainId);
-        return;
+        throw new Error(`Relayer not supported for: ${chainId}`);
       }
 
       const readOnlyProxyFactoryContract = await ethAdapter.getSafeProxyFactoryContract({
@@ -108,6 +112,9 @@ export async function safeDeploy({
       });
 
       const proxyFactoryAddress = readOnlyProxyFactoryContract.getAddress();
+
+      console.log(proxyFactoryAddress);
+
       const readOnlyFallbackHandlerContract =
         await ethAdapter.getCompatibilityFallbackHandlerContract({
           safeVersion,
@@ -144,6 +151,8 @@ export async function safeDeploy({
         paymentReceiver: ZERO_ADDRESS
       };
 
+      console.log(callData);
+
       const initializer = readOnlySafeContract.encode('setup', [
         callData.owners,
         callData.threshold,
@@ -155,10 +164,14 @@ export async function safeDeploy({
         callData.paymentReceiver
       ]);
 
+      console.log(initializer);
+
       const createProxyWithNonceCallData = readOnlyProxyFactoryContract.encode(
         'createProxyWithNonce',
         [safeContractAddress, initializer, saltNonce]
       );
+
+      console.log(createProxyWithNonceCallData);
 
       const relayResponse: RelayResponse = await relayKit.sendSponsorTransaction(
         proxyFactoryAddress,
@@ -166,9 +179,9 @@ export async function safeDeploy({
         chainId
       );
 
-      const transactionHash = await waitForRelayTaskToComplete(relayResponse.taskId);
+      const transactionHash = await waitForRelayTaskToComplete(relayKit, relayResponse.taskId);
       if (!transactionHash) {
-        return;
+        throw new Error("Transaction didn't complete");
       }
 
       if (callback) {
@@ -177,8 +190,7 @@ export async function safeDeploy({
     }
     return predictedAddress as Address;
   } catch (error) {
-    console.error('Failed to deploy safe: ', error);
-    return;
+    throw error;
   }
 }
 
@@ -227,11 +239,11 @@ export async function safeTransferEth(
         isSponsored: false
       };
 
-      const standardizedSafeTx = await relayKit.createRelayedTransaction(
+      const standardizedSafeTx = await relayKit.createRelayedTransaction({
         safe,
-        [safeTransferTransactionData],
+        transactions: [safeTransferTransactionData],
         options
-      );
+      });
 
       let signedSafeTx;
       if (tx.safeSigner) {
@@ -273,7 +285,7 @@ export async function safeTransferEth(
         options
       );
 
-      return await waitForRelayTaskToComplete(relayResponse.taskId);
+      return await waitForRelayTaskToComplete(relayKit, relayResponse.taskId);
     } catch (error) {
       console.error('Failed to transfer: ', error);
       return;
@@ -309,4 +321,179 @@ export async function safeTransferEth(
       return;
     }
   }
+}
+
+export async function safeTransferEthWithDeploy(
+  ethersSigner: providers.JsonRpcSigner,
+  tx: { from: Address; to: Address; amount: bigint },
+  safeAccountConfig: SafeAccountConfig,
+  safeVersion: SafeVersion,
+  saltNonce: string,
+  statusCallback?: (status: string | undefined) => void
+): Promise<Hash | undefined> {
+  const ethAdapter = new EthersAdapter({
+    ethers,
+    signerOrProvider: ethersSigner
+  });
+
+  const safeAddress = tx.from;
+  const chainId = await ethAdapter.getChainId();
+
+  const relayKit = getRelayKitForChainId(chainId);
+  if (!relayKit) {
+    throw new Error('Relayer not available!');
+  }
+
+  const isSafeDeployed = await ethAdapter.isContractDeployed(safeAddress);
+
+  const safeDeploymentConfig = {
+    saltNonce: keccak256(toBytes(saltNonce)),
+    safeVersion
+  } as SafeDeploymentConfig;
+
+  const fallbackHandler = getFallbackHandler(chainId);
+
+  const predictedSafe: PredictedSafeProps = {
+    safeAccountConfig: {
+      ...safeAccountConfig,
+      fallbackHandler
+    },
+    safeDeploymentConfig
+  };
+
+  console.log(predictedSafe);
+
+  const safeSdk = isSafeDeployed
+    ? await Safe.create({ ethAdapter, safeAddress })
+    : await Safe.create({
+        ethAdapter,
+        predictedSafe
+      });
+
+  const safeFactory = await SafeFactory.create({
+    ethAdapter,
+    safeVersion
+  });
+
+  const predictedAddress = await safeFactory.predictSafeAddress(
+    {
+      ...safeAccountConfig,
+      fallbackHandler
+    },
+    keccak256(toBytes(saltNonce))
+  );
+
+  console.log(
+    `isSafeDeployed: ${isSafeDeployed} - pre-generated before: ${safeAddress} vs safeSdk.getAddress() ${await safeSdk.getAddress()} vs safeFactory.predictSafeAddress ${predictedAddress}`
+  );
+
+  const safeTransactions: MetaTransactionData[] = [
+    {
+      to: tx.to,
+      value: tx.amount.toString(),
+      data: '0x',
+      operation: OperationType.Call
+    }
+  ];
+
+  console.debug('Safe txs', JSON.stringify(safeTransactions, null, 2));
+
+  // Relay the transaction
+  const options: MetaTransactionOptions = {
+    isSponsored: false
+  };
+
+  const relayedTransaction = await relayKit.createRelayedTransaction({
+    safe: safeSdk,
+    transactions: safeTransactions,
+    options
+  });
+
+  relayedTransaction.data.baseGas = await estimateFee(isSafeDeployed, chainId);
+
+  statusCallback?.('signing');
+
+  const signedSafeTransaction = await safeSdk.signTransaction(relayedTransaction);
+
+  statusCallback?.('relaying');
+
+  const relayResponse = await relayKit.executeRelayTransaction(signedSafeTransaction, safeSdk);
+
+  return await waitForRelayTaskToComplete(relayKit, relayResponse.taskId);
+}
+
+async function estimateFee(isSafeDeployed: boolean, chainId: number): Promise<string> {
+  const isMainnetChain = !getNetwork().chains.find((c) => c.id === chainId)?.testnet;
+
+  const l1GasPrice = await getPublicClient({ chainId: isMainnetChain ? 1 : 5 }).getGasPrice();
+  const l2GasPrice = await getPublicClient({ chainId }).getGasPrice();
+
+  const l1GasLimit = BigInt(isSafeDeployed ? 8_500 : 13_000);
+  const l2GasLimit = BigInt(isSafeDeployed ? 200_000 : 500_000);
+
+  const relayerFeeMultiplier = 1.1;
+
+  const manualFeeEstimation =
+    parseInt((l2GasLimit * l2GasPrice + l1GasLimit * l1GasPrice).toString()) * relayerFeeMultiplier;
+
+  console.debug(isSafeDeployed, chainId, isMainnetChain, manualFeeEstimation);
+
+  return parseFloat(manualFeeEstimation.toString()).toFixed().toString();
+}
+
+async function executeRelayTransaction(
+  safeTransaction: SafeTransaction,
+  safe: Safe,
+  options?: MetaTransactionOptions
+): Promise<RelayResponse> {
+  const isSafeDeployed = await safe.isSafeDeployed();
+  const chainId = await safe.getChainId();
+  const safeAddress = await safe.getAddress();
+  const safeTransactionEncodedData = await safe.getEncodedTransaction(safeTransaction);
+
+  const relayKit = getRelayKitForChainId(chainId);
+  if (!relayKit) {
+    throw new Error('Relayer not available!');
+  }
+
+  const gasToken = options?.gasToken || safeTransaction.data.gasToken;
+
+  if (isSafeDeployed) {
+    const relayTransaction: RelayTransaction = {
+      target: safeAddress,
+      encodedTransaction: safeTransactionEncodedData,
+      chainId,
+      options: {
+        ...options,
+        gasToken
+      }
+    };
+
+    return relayKit.relayTransaction(relayTransaction);
+  }
+
+  // if the Safe is not deployed we create a batch with the Safe deployment transaction and the provided Safe transaction
+  const safeDeploymentBatch = await safe.wrapSafeTransactionIntoDeploymentBatch(safeTransaction);
+
+  const relayTransaction: RelayTransaction = {
+    target: safeDeploymentBatch.to, // multiSend Contract address
+    encodedTransaction: safeDeploymentBatch.data,
+    chainId,
+    options: {
+      ...options,
+      gasToken
+    }
+  };
+
+  console.log(relayTransaction);
+
+  return relayKit.relayTransaction(relayTransaction);
+}
+
+export function getFallbackHandler(chainId: number): Address {
+  return chainId == zkSyncTestnet.id
+    ? '0x2f870a80647BbC554F3a0EBD093f11B4d2a7492A'
+    : chainId === arbitrumGoerli.id
+    ? '0xf48f2b2d2a534e402487b3ee7c18c33aec0fe5e4'
+    : '0x017062a1dE2FE6b99BE3d9d37841FeD19F573804';
 }

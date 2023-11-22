@@ -1,4 +1,4 @@
-import { Address, Hash, formatEther, formatUnits, parseEther, parseUnits } from 'viem';
+import { Address, Hash, formatUnits, parseUnits } from 'viem';
 
 import {
   erc20ABI,
@@ -25,7 +25,6 @@ import {
   Card,
   Divider,
   IconButton,
-  InputAdornment,
   Stack,
   TextField,
   Toolbar,
@@ -40,7 +39,6 @@ import axios from 'axios';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { ContentCopy, DarkModeOutlined, LightModeOutlined, QrCode2 } from '@mui/icons-material';
 import { copyToClipboard } from '../utils/copyToClipboard';
-import AddressQRCodeDialog from '../components/AddressQRCodeDialog';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import HideOnScroll from '../components/HideOnScroll';
 import { getFlowBalance } from '../utils/getBalance';
@@ -48,13 +46,17 @@ import { Helmet } from 'react-helmet-async';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
 import { ETH, Token, getSupportedTokens } from '../utils/erc20contracts';
+import { API_URL } from '../utils/urlConstants';
+import { comingSoonToast } from '../components/Toasts';
+import NetworkAvatar from '../components/NetworkAvatar';
+import { getNetworkDisplayName } from '../utils/networks';
 
 export default function Send({ appSettings, setAppSettings }: any) {
   const { uuid } = useParams();
   const [flow, setFlow] = useState({} as FlowType);
   const [flowTotalBalance, setFlowTotalBalance] = useState('0');
   const [openAddressQRCode, setOpenAddressQRCode] = useState(false);
-  const [selectedPaymentNetwork, setSelectedPaymentNetwork] = useState('');
+  const [selectedPaymentNetwork, setSelectedPaymentNetwork] = useState<number>();
   const [selectedPaymentAddress, setSelectedPaymentAddress] = useState<Address>();
   const [selectedPaymentToken, setSelectedPaymentToken] = useState<Token>();
   const [topUpAmount, setTopUpAmount] = useState(BigInt(0));
@@ -87,7 +89,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
   });
 
   const publicClient = usePublicClient();
-  const { chains, switchNetwork } = useSwitchNetwork();
+  const { switchNetwork } = useSwitchNetwork();
 
   const { address } = useAccount();
 
@@ -127,10 +129,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
 
   useMemo(async () => {
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows/${uuid}`,
-        { withCredentials: true }
-      );
+      const response = await axios.get(`${API_URL}/api/flows/${uuid}`, { withCredentials: true });
 
       setFlow(response.data);
     } catch (error) {
@@ -187,7 +186,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
 
   async function updateFlowTotalBalance(flow: FlowType) {
     if (flow && flow.wallets && flow.wallets.length > 0 && ethUsdPrice) {
-      setFlowTotalBalance(await getFlowBalance(flow, chains, ethUsdPrice));
+      setFlowTotalBalance(await getFlowBalance(flow, ethUsdPrice));
     }
   }
 
@@ -305,7 +304,6 @@ export default function Send({ appSettings, setAppSettings }: any) {
                   </Tooltip>
                 </Card>
               </Divider>
-
               <Typography variant="h5"> ${flowTotalBalance} USD</Typography>
               <Typography variant="h6" maxHeight={50} overflow="scroll">
                 {flow.title}
@@ -313,34 +311,28 @@ export default function Send({ appSettings, setAppSettings }: any) {
               <Typography variant="subtitle2" maxHeight={50} overflow="scroll">
                 {flow.description}
               </Typography>
-
               <Divider flexItem sx={{ my: 3 }} />
-
               <Autocomplete
                 autoHighlight
                 fullWidth
                 onChange={(_event, value) => {
                   if (value) {
-                    switchNetwork?.(chains.find((c) => c?.name === value.network)?.id);
+                    switchNetwork?.(value.network);
                     setSelectedPaymentNetwork(value.network);
                   } else {
-                    setSelectedPaymentNetwork('');
+                    setSelectedPaymentNetwork(undefined);
                   }
                 }}
                 options={flow.wallets}
-                getOptionLabel={(wallet) => wallet.network}
+                getOptionLabel={(wallet) => getNetworkDisplayName(wallet.network)}
                 renderInput={(params) => (
                   <TextField variant="outlined" {...params} label="Select Payment Network" />
                 )}
                 sx={{ '& fieldset': { borderRadius: 3 } }}
               />
-
               {selectedPaymentNetwork && (
                 <Box mt={1} display="flex" flexDirection="row" alignItems="center">
-                  <Avatar
-                    src={'/networks/' + selectedPaymentNetwork + '.png'}
-                    sx={{ width: 24, height: 24 }}
-                  />
+                  <NetworkAvatar network={selectedPaymentNetwork} sx={{ width: 24, height: 24 }} />
                   <Typography ml={1}>
                     {shortenWalletAddressLabel(selectedPaymentAddress)}
                   </Typography>
@@ -358,14 +350,14 @@ export default function Send({ appSettings, setAppSettings }: any) {
                     <IconButton
                       size="small"
                       onClick={() => {
-                        setOpenAddressQRCode(true);
+                        //setOpenAddressQRCode(true);
+                        comingSoonToast();
                       }}>
                       <QrCode2 fontSize="small" />
                     </IconButton>
                   </Tooltip>
                 </Box>
               )}
-
               {selectedPaymentNetwork && (
                 <>
                   <Divider flexItem sx={{ my: 2 }} />
@@ -409,9 +401,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
                           setTopUpAmount(BigInt(0));
                         }
                       }}
-                      options={getSupportedTokens(
-                        chains.find((c) => c.name === selectedPaymentNetwork)?.id
-                      )}
+                      options={getSupportedTokens(selectedPaymentNetwork)}
                       getOptionLabel={(token) => token.name}
                       renderInput={(params) => (
                         <TextField variant="outlined" {...params} label="Token" />
@@ -454,7 +444,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
                           sendToastId.current = toast.loading(
                             `Sending ${formatUnits(topUpAmount, balance?.decimals)} ${
                               selectedPaymentToken?.name
-                            } to ${shortenWalletAddressLabel(selectedPaymentAddress)} 💸`
+                            } to ${shortenWalletAddressLabel(selectedPaymentAddress)}`
                           );
                           if (selectedPaymentToken === ETH) {
                             sendTransaction?.();
@@ -469,13 +459,15 @@ export default function Send({ appSettings, setAppSettings }: any) {
                   </Divider>
                 </>
               )}
-
-              <AddressQRCodeDialog
-                open={openAddressQRCode}
-                address={selectedPaymentAddress}
-                network={selectedPaymentNetwork}
-                closeStateCallback={() => setOpenAddressQRCode(false)}
-              />
+              // TODO: refactor this
+              {/* {selectedPaymentAddress && selectedPaymentNetwork && (
+                <WalletQRCodeShareDialog
+                  open={openAddressQRCode}
+                  address={selectedPaymentAddress}
+                  network={selectedPaymentNetwork}
+                  closeStateCallback={() => setOpenAddressQRCode(false)}
+                />
+              )} */}
             </Box>
           )}
         </Card>

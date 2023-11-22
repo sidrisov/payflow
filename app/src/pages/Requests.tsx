@@ -39,8 +39,9 @@ import { toast } from 'react-toastify';
 import { switchNetwork } from 'wagmi/actions';
 import { formatEther } from 'viem';
 import { green } from '@mui/material/colors';
+import { API_URL, DAPP_URL } from '../utils/urlConstants';
+import NetworkAvatar from '../components/NetworkAvatar';
 
-const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 export default function Requests() {
   const theme = useTheme();
   const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
@@ -60,10 +61,7 @@ export default function Requests() {
 
   async function fetchRequests() {
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/requests`,
-        { withCredentials: true }
-      );
+      const response = await axios.get(`${API_URL}/api/requests`, { withCredentials: true });
 
       setRequests(response.data);
     } catch (error) {
@@ -96,7 +94,7 @@ export default function Requests() {
         if (transaction && formatEther(transaction.value) === request.amount) {
           console.log('I am here');
           const response = await axios.post(
-            `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/requests/${request.uuid}/payed`,
+            `${API_URL}/api/requests/${request.uuid}/payed`,
             {},
             { withCredentials: true }
           );
@@ -127,7 +125,7 @@ export default function Requests() {
   function RequestTableRow(props: { index: number; request: PaymentRequestType }) {
     const { index, request } = props;
     const [expand, setExpand] = useState(false);
-    const requestChain = chains.find((c) => c.name === request.network);
+    const requestChain = chains.find((c) => c.id === request.network);
 
     return (
       <>
@@ -141,12 +139,11 @@ export default function Requests() {
           )}
           <TableCell>
             <Box display="flex" flexDirection="row" justifyContent="flex-start" alignItems="center">
-              <Tooltip title={request.network}>
-                <Avatar
-                  src={'/networks/' + request.network + '.png'}
-                  sx={{ ml: 2, width: 24, height: 24 }}
-                />
-              </Tooltip>
+              <NetworkAvatar
+                tooltip
+                network={request.network}
+                sx={{ ml: 2, width: 24, height: 24 }}
+              />
               {!smallScreen && (
                 <Typography variant="body2" sx={{ ml: 1 }}>
                   {`${request.network} : `}

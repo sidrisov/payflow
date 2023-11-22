@@ -1,73 +1,122 @@
-import { AppBar, Box, Card, IconButton, Stack, Toolbar, Typography } from '@mui/material';
-import { DarkModeOutlined, LightModeOutlined } from '@mui/icons-material';
+import { Box, Container, Stack, Typography } from '@mui/material';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import HideOnScroll from '../components/HideOnScroll';
 import { Helmet } from 'react-helmet-async';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import { useAccount } from 'wagmi';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect } from 'react';
+import OnboardingDialog from '../components/OnboardingDialog';
+import CenteredCircularProgress from '../components/CenteredCircularProgress';
+import { ProfileType } from '../types/ProfleType';
+import { blue, yellow } from '@mui/material/colors';
 
-export default function Login({ authStatus, authAccount, appSettings, setAppSettings }: any) {
+export default function Login({
+  authStatus,
+  profile
+}: {
+  authStatus: string;
+  profile: ProfileType | undefined;
+}) {
+  const [searchParams] = useSearchParams();
+  const username = searchParams.get('username');
+  const invitationCode = searchParams.get('code');
+
+  const navigate = useNavigate();
+
   const { address } = useAccount();
 
+  useEffect(() => {
+    console.log(profile, authStatus);
+
+    if (profile && address === profile.address && authStatus === 'authenticated') {
+      if (profile.username && profile.defaultFlow) {
+        console.log('redirecting to /');
+        navigate('/');
+      }
+    }
+  }, [authStatus, profile, address]);
+
   return (
-    <CustomThemeProvider darkMode={appSettings.darkMode}>
+    <CustomThemeProvider darkMode={true}>
       <Helmet>
         <title> PayFlow | Login </title>
       </Helmet>
-      <HideOnScroll>
-        <AppBar
-          position="sticky"
-          color="transparent"
-          elevation={0}
-          sx={{ alignItems: 'flex-end', backdropFilter: 'blur(5px)' }}>
-          <Toolbar
-            sx={{
-              justifyContent: 'space-between'
-            }}>
-            <Stack direction="row" spacing={1}>
-              <IconButton
-                onClick={() => setAppSettings({ ...appSettings, darkMode: !appSettings.darkMode })}>
-                {appSettings.darkMode ? <DarkModeOutlined /> : <LightModeOutlined />}
-              </IconButton>
-            </Stack>
-          </Toolbar>
-        </AppBar>
-      </HideOnScroll>
-      <Box
-        position="fixed"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        sx={{ inset: 0 }}>
-        <Card
-          elevation={15}
-          sx={{
-            p: 5,
-            width: 300,
-            height: 250,
-            border: 2,
-            borderStyle: 'double',
-            borderRadius: 5,
-            borderColor: 'divider'
-          }}>
-          <Box
-            height="100%"
-            display="flex"
-            flexDirection="column"
-            justifyContent="space-between"
-            alignItems="center">
-            <Typography variant="h6">Welcome To PayFlow</Typography>
-            <Typography alignSelf="flex-start" variant="subtitle2">
-              Wallet Connected: {address ? 'Yes' : 'No'}
-            </Typography>
-            <Typography alignSelf="flex-start" variant="subtitle2">
-              Authenticated:{' '}
-              {address === authAccount && authStatus === 'authenticated' ? 'Yes' : 'No'}
-            </Typography>
-            <ConnectButton showBalance={{ smallScreen: false, largeScreen: false }} />
-          </Box>
-        </Card>
-      </Box>
+      {authStatus === 'loading' ? (
+        <CenteredCircularProgress color="inherit" />
+      ) : (
+        (!profile || !address) && (
+          <Container maxWidth="xl">
+            <Box
+              display="flex"
+              height="100vh"
+              flexDirection="row"
+              alignItems="center"
+              justifyContent="space-between">
+              <Box
+                flexGrow={0.5}
+                height="90vh"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                sx={{
+                  background: blue[800],
+                  borderTopLeftRadius: 25,
+                  borderBottomLeftRadius: 25
+                }}>
+                <Stack spacing={2} alignItems="flex-start" width={600}>
+                  <Typography pb={5} variant="h5" fontFamily="monospace" textAlign="center">
+                    Abstract your web3 identity payments
+                  </Typography>
+                  <Typography variant="subtitle2" fontSize={16} fontFamily="monospace">
+                    ✨ create a flow abstracted from your identity wallet
+                  </Typography>
+                  <Typography variant="subtitle2" fontSize={16} fontFamily="monospace">
+                    🫂 discover users by farcaster, lens, ens, or address
+                  </Typography>
+                  <Typography variant="subtitle2" fontSize={16} fontFamily="monospace">
+                    💸 send, receive, and request crypto
+                  </Typography>
+                  <Typography variant="subtitle2" fontSize={16} fontFamily="monospace">
+                    🚀 and more coming
+                  </Typography>
+                </Stack>
+              </Box>
+              <Box
+                flexGrow={0.5}
+                height="90vh"
+                display="flex"
+                flexDirection="column"
+                alignItems="center"
+                justifyContent="center"
+                sx={{
+                  background: yellow[800],
+                  borderTopRightRadius: 25,
+                  borderBottomRightRadius: 25
+                }}>
+                <Stack spacing={2} alignItems="center" width={600}>
+                  <Typography pb={5} variant="h4" fontFamily="monospace" textAlign="center">
+                    Welcome to payflow
+                  </Typography>
+
+                  <ConnectButton
+                    label={address ? 'Sign & verify' : 'Connect wallet'}
+                    showBalance={{ smallScreen: false, largeScreen: false }}
+                  />
+                </Stack>
+              </Box>
+            </Box>
+          </Container>
+        )
+      )}
+      {profile && address && (!profile.username || !profile.defaultFlow) && (
+        <OnboardingDialog
+          open={!profile.username || !profile.defaultFlow}
+          profile={profile}
+          closeStateCallback={() => {}}
+          username={username}
+          code={invitationCode}
+        />
+      )}
     </CustomThemeProvider>
   );
 }

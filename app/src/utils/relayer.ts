@@ -1,10 +1,19 @@
-import { GelatoRelayPack } from '@safe-global/relay-kit';
-import { base, baseGoerli, optimism, optimismGoerli } from 'viem/chains';
-import { TaskState } from '../types/TaskState';
+import { GelatoRelayPack, RelayPack } from '@safe-global/relay-kit';
+import {
+  arbitrumGoerli,
+  base,
+  baseGoerli,
+  lineaTestnet,
+  optimism,
+  optimismGoerli,
+  polygonZkEvmTestnet,
+  zkSyncTestnet
+} from 'viem/chains';
 import { toast } from 'react-toastify';
 import { Hash } from 'viem';
 import { TransactionStatusResponse } from '@gelatonetwork/relay-sdk';
 import { delay } from './delay';
+import { TaskState } from '../types/TaskState';
 
 const GELATO_TESTNET_API_KEY = import.meta.env.VITE_GELATO_TESTNET_API_KEY;
 const GELATO_MAINNET_API_KEY = import.meta.env.VITE_GELATO_MAINNET_API_KEY;
@@ -13,7 +22,12 @@ const RELAY_KIT_TESTNET = new GelatoRelayPack(GELATO_TESTNET_API_KEY);
 const RELAY_KIT_MAINNET = new GelatoRelayPack(GELATO_MAINNET_API_KEY);
 
 const MAINNET_CHAINS_SUPPORTING_RELAY: number[] = [optimism.id, base.id];
-const TESTNET_CHAINS_SUPPORTING_RELAY: number[] = [optimismGoerli.id, baseGoerli.id];
+const TESTNET_CHAINS_SUPPORTING_RELAY: number[] = [
+  optimismGoerli.id,
+  baseGoerli.id,
+  arbitrumGoerli.id,
+  zkSyncTestnet.id
+];
 
 export function getRelayKitForChainId(chainId: number) {
   if (MAINNET_CHAINS_SUPPORTING_RELAY.includes(chainId)) {
@@ -40,13 +54,12 @@ export function isRelaySupported(chainId: number | undefined) {
 }
 
 export async function waitForRelayTaskToComplete(
+  relayKit: RelayPack,
   taskId: string,
   period: number = 3000,
   timeout: number = 60000
 ): Promise<Hash | undefined> {
-  console.log(`Relay Transaction Task ID: https://relay.gelato.digital/tasks/status/${taskId}`);
-
-  let relayTaskResult: TransactionStatusResponse;
+  let relayTaskResult;
 
   const maxPolls = timeout / period;
   let pollCounter = 0;
@@ -54,10 +67,9 @@ export async function waitForRelayTaskToComplete(
   do {
     pollCounter++;
     await delay(period);
-    const relayExecResponse = await fetch(`https://relay.gelato.digital/tasks/status/${taskId}`);
-    relayTaskResult = (await relayExecResponse.json()).task;
 
-    console.log(relayTaskResult);
+    relayTaskResult = await relayKit.getTaskStatus(taskId);
+    console.debug('Relay Transaction Status for taskId', taskId, relayTaskResult);
   } while (
     relayTaskResult &&
     (relayTaskResult.taskState === TaskState.CheckPending ||
@@ -67,17 +79,15 @@ export async function waitForRelayTaskToComplete(
   );
 
   if (!relayTaskResult) {
-    toast.error('Failed to relay transaction!');
-    return;
+    throw new Error(`Failed to relay transaction for taskId: ${taskId}`);
   }
 
   if (relayTaskResult.taskState !== TaskState.ExecSuccess) {
-    toast.error(
-      `Failed to relay transaction: ${relayTaskResult.taskState}, ${
+    throw new Error(
+      `Failed to relay transaction for taskId: ${taskId} - ${relayTaskResult.taskState}, ${
         relayTaskResult.lastCheckMessage ?? 'no error'
       }!`
     );
-    return;
   }
 
   return relayTaskResult.transactionHash as Hash;

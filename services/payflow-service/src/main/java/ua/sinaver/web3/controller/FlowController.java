@@ -40,7 +40,7 @@ class FlowController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void createFlow(@RequestBody FlowMessage flow, Principal principal) throws Exception {
-        val user = userService.findUser(principal.getName());
+        val user = userService.findBySigner(principal.getName());
         if (user == null) {
             throw new Exception("User doesn't exist: " + principal.getName());
         }
@@ -50,9 +50,19 @@ class FlowController {
 
     @GetMapping
     public List<FlowMessage> getAllFlows(Principal principal) throws Exception {
-        val user = userService.findUser(principal.getName());
+        val user = userService.findBySigner(principal.getName());
         if (user == null) {
             throw new Exception("User doesn't exist: " + principal.getName());
+        }
+
+        return flowService.getAllFlows(user);
+    }
+
+    @GetMapping("/public/{username}")
+    public List<FlowMessage> getAllPublicFlows(@PathVariable String username) throws Exception {
+        val user = userService.findByUsername(username);
+        if (user == null) {
+            throw new Exception("User doesn't exist: " + username);
         }
 
         return flowService.getAllFlows(user);
@@ -69,7 +79,7 @@ class FlowController {
     @ResponseStatus(HttpStatus.CREATED)
     public void addFlowWallet(@PathVariable String uuid, @RequestBody WalletMessage wallet, Principal principal)
             throws Exception {
-        val user = userService.findUser(principal.getName());
+        val user = userService.findBySigner(principal.getName());
         if (user == null) {
             throw new Exception("User doesn't exist: " + principal.getName());
         }
@@ -82,7 +92,7 @@ class FlowController {
     @ResponseStatus(HttpStatus.OK)
     public void updateFlowWallet(@PathVariable String uuid, @RequestBody WalletMessage wallet, Principal principal)
             throws Exception {
-        val user = userService.findUser(principal.getName());
+        val user = userService.findBySigner(principal.getName());
         if (user == null) {
             throw new Exception("User doesn't exist: " + principal.getName());
         }
@@ -94,7 +104,7 @@ class FlowController {
     @DeleteMapping("/{uuid}/wallet")
     public void deleteFLowWallet(@PathVariable String uuid, @RequestBody WalletMessage wallet, Principal principal)
             throws Exception {
-        val user = userService.findUser(principal.getName());
+        val user = userService.findBySigner(principal.getName());
         if (user == null) {
             throw new Exception("User doesn't exist: " + principal.getName());
         }

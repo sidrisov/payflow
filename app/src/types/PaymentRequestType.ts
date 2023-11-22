@@ -6,7 +6,7 @@ export interface PaymentRequestType {
   title: string;
   description: string | undefined;
   uuid: string;
-  network: string;
+  network: number;
   address: string;
   amount: string;
   payed: boolean;

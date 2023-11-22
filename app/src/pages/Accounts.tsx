@@ -1,103 +1,109 @@
-import { Box, Card, Container, IconButton, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Container, useMediaQuery, useTheme } from '@mui/material';
 import { useContext, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import AccountNewDialog from '../components/AccountNewDialog';
-import { smartAccountCompatibleChains } from '../utils/smartAccountCompatibleChains';
 import { AccountCard } from '../components/AccountCard';
 import { UserContext } from '../contexts/UserContext';
-import { Add } from '@mui/icons-material';
+import Assets from '../components/Assets';
+import { AssetType } from '../types/AssetType';
+import Activity from '../components/Activity';
+import { Chain, zeroAddress } from 'viem';
+import { getSupportedTokens } from '../utils/erc20contracts';
+import { useBalanceFetcher } from '../utils/hooks/useBalanceFetcher';
+import { FlowType } from '../types/FlowType';
+import CenteredCircularProgress from '../components/CenteredCircularProgress';
+import { useTransactionsFetcher } from '../utils/hooks/useTransactionsFetcher';
+import NetworkSelectorSection from '../components/NetworkSelectorSection';
 
 export default function Accounts() {
   const theme = useTheme();
-  const mediumScreen = useMediaQuery(theme.breakpoints.down('md'));
+  const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { isAuthenticated, accounts, setInitiateAccountsRefresh } = useContext(UserContext);
-  const [availableNetworksToAddAccount, setAvailableNetworksToAddAccount] = useState<string[]>([]);
+  const { isAuthenticated, profile, flows } = useContext(UserContext);
 
-  const [openAccountCreate, setOpenAccountCreate] = useState(false);
+  const [assetsOrActivityView, setAssetsOrActivityView] = useState<'assets' | 'activity'>('assets');
+
+  const [selectedFlow, setSelectedFlow] = useState<FlowType>();
+
+  // TODO: for now just select the first, later on we need to choose the main one
+  useMemo(async () => {
+    if (flows && flows.length > 0) {
+      setSelectedFlow(flows.find((f) => f.uuid === profile.defaultFlow?.uuid));
+    }
+  }, [flows]);
+
+  const [assets, setAssets] = useState<AssetType[]>([]);
 
   useMemo(async () => {
-    if (accounts) {
-      let availableNetworks = smartAccountCompatibleChains();
-      if (accounts.length > 0) {
-        const addedNetworks = accounts.map((account) => account.network);
-        availableNetworks = availableNetworks.filter((c) => !addedNetworks.includes(c));
-      }
-      setAvailableNetworksToAddAccount(availableNetworks);
+    let assets: AssetType[] = [];
+
+    if (selectedFlow) {
+      selectedFlow.wallets.forEach((wallet) => {
+        const chainId = wallet.network;
+        if (chainId) {
+          const tokens = getSupportedTokens(chainId);
+          tokens.forEach((token) => {
+            assets.push({
+              address: wallet.address,
+              chainId,
+              token: token.address !== zeroAddress ? token.address : undefined
+            });
+          });
+        }
+      });
     }
-  }, [accounts]);
+
+    setAssets(assets);
+  }, [selectedFlow?.wallets]);
+
+  const { loading, fetched, balances } = useBalanceFetcher(assets);
+  const activityFetcherResult = useTransactionsFetcher(selectedFlow?.wallets ?? []);
+
+  console.log('Loading balances: ', loading, balances);
+
+  const [selectedNetwork, setSelectedNetwork] = useState<Chain>();
 
   return (
     <>
       <Helmet>
         <title> PayFlow | Accounts </title>
       </Helmet>
-      <Container>
-        {isAuthenticated && (
-          <Box
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              justifyContent: mediumScreen ? 'center' : 'flex-start'
-            }}>
-            {availableNetworksToAddAccount.length > 0 && (
-              <Card
-                elevation={10}
-                sx={{
-                  m: 2,
-                  p: 2,
-                  width: 350,
-                  height: 200,
-                  border: 3,
-                  borderRadius: 5,
-                  borderStyle: 'dashed',
-                  borderColor: 'divider',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between'
-                }}>
-                <Typography fontSize={20} fontWeight="bold">
-                  New account
-                </Typography>
-                <Typography fontSize={12} fontWeight="bold">
-                  Withdraw accumulated funds from your flows and send to other accounts
-                </Typography>
+      <Container maxWidth="md">
+        {isAuthenticated && flows && selectedFlow ? (
+          <Box display="flex" flexDirection="column" alignItems="center">
+            <AccountCard
+              key={`account_card`}
+              flows={flows ?? []}
+              selectedFlow={selectedFlow}
+              setSelectedFlow={setSelectedFlow}
+              balanceFetchResult={{ loading, fetched, balances }}
+              assetsOrActivityView={assetsOrActivityView}
+              setAssetsOrActivityView={setAssetsOrActivityView}
+            />
 
-                <IconButton
-                  color="inherit"
-                  onClick={() => {
-                    setOpenAccountCreate(true);
-                  }}
-                  sx={{
-                    border: 1,
-                    borderStyle: 'dashed',
-                    alignSelf: 'flex-end',
-                    justifySelf: 'flex-end'
-                  }}>
-                  <Add />
-                </IconButton>
-              </Card>
-            )}
-            {accounts &&
-              accounts.map((account) => (
-                <AccountCard
-                  key={`account_card_${account.address}_${account.network}`}
-                  account={account}
+            <Box px={2} maxWidth={smallScreen ? 350 : 440}>
+              <NetworkSelectorSection
+                mx={1}
+                wallets={selectedFlow.wallets}
+                selectedNetwork={selectedNetwork}
+                setSelectedNetwork={setSelectedNetwork}
+              />
+              {assetsOrActivityView === 'assets' ? (
+                <Assets
+                  selectedNetwork={selectedNetwork}
+                  balanceFetchResult={{ loading, fetched, balances }}
                 />
-              ))}
+              ) : (
+                <Activity
+                  selectedNetwork={selectedNetwork}
+                  activityFetchResult={activityFetcherResult}
+                />
+              )}
+            </Box>
           </Box>
+        ) : (
+          <CenteredCircularProgress />
         )}
       </Container>
-
-      <AccountNewDialog
-        open={openAccountCreate}
-        networks={availableNetworksToAddAccount}
-        closeStateCallback={async () => {
-          setOpenAccountCreate(false);
-          // TODO: just refresh, lately it's better to track each flow's update separately
-          setInitiateAccountsRefresh(true);
-        }}
-      />
     </>
   );
 }

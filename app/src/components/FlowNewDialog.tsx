@@ -21,6 +21,7 @@ import axios from 'axios';
 import { useAccount, useNetwork } from 'wagmi';
 import { useContext, useState } from 'react';
 import { UserContext } from '../contexts/UserContext';
+import { API_URL } from '../utils/urlConstants';
 
 export type FlowNewDialogProps = DialogProps & CloseCallbackType;
 
@@ -46,11 +47,12 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_PAYFLOW_SERVICE_API_URL}/api/flows`,
+        `${API_URL}/api/flows`,
         {
           account: address,
           title: title,
           description: description,
+          walletProvider: 'safe',
           wallets: paymentOnLoggedAddress
             ? paymentNetworks.map((network) => ({
                 address: address,
@@ -82,7 +84,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
       }}>
       <DialogTitle>
         <Box display="flex" justifyContent="center">
-          <Typography variant="h6">New Flow</Typography>
+          <Typography variant="h6">New Jar</Typography>
         </Box>
       </DialogTitle>
       <DialogContent>
@@ -137,7 +139,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
                   setPaymentNetworks(value);
                 }}
                 options={chains
-                  .filter((c) => !smartAccountAllowedChains.includes(c.name))
+                  .filter((c) => !smartAccountAllowedChains.includes(c))
                   .map((c) => c.name)}
                 renderInput={(params) => (
                   <TextField
