@@ -1,9 +1,22 @@
-{
-  "properties": [
-    {
-      "name": "dapp.url",
-      "type": "java.lang.String",
-      "description": "dApp Client Url"
-    }
-  ]
-}
+{"properties": [
+  {
+    "name": "dapp.url",
+    "type": "java.lang.String",
+    "description": "dApp Client Url"
+  },
+  {
+    "name": "payflow.invitation.allowance.enabled",
+    "type": "java.lang.String",
+    "description": "A description for 'payflow.invitation.allowance.enabled'"
+  },
+  {
+    "name": "payflow.invitation.whitelisted.default.users",
+    "type": "java.lang.String",
+    "description": "A description for 'payflow.invitation.whitelisted.default.users'"
+  },
+  {
+    "name": "payflow.invitation.whitelisted.default.allowance",
+    "type": "java.lang.String",
+    "description": "A description for 'payflow.invitation.whitelisted.default.allowance'"
+  }
+]}

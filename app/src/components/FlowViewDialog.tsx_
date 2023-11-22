@@ -40,7 +40,7 @@ import { copyToClipboard } from '../utils/copyToClipboard';
 import { Address, Hash, formatEther, keccak256, toHex } from 'viem';
 
 import axios from 'axios';
-import FlowWithdrawalDialog from './FlowWithdrawalDialog';
+import FlowWithdrawalDialog from './FlowWithdrawalDialog.tsx_';
 import ShareDialog from './ShareDialog';
 import { UserContext } from '../contexts/UserContext';
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
@@ -243,12 +243,7 @@ export default function FlowViewDialog({
         const flowWallet = {
           address: newAccountAddress,
           network: newAccountNetwork.id,
-          smart: smartAccountAllowedChains.includes(newAccountNetwork),
-          safe: smartAccountAllowedChains.includes(newAccountNetwork),
-          safeDeployed: smartAccountAllowedChains.includes(newAccountNetwork)
-            ? initializeWallet
-            : null,
-          master: smartAccountAllowedChains.includes(newAccountNetwork) ? masterAccount : null
+          deployed: smartAccountAllowedChains.includes(newAccountNetwork) ? initializeWallet : null
         } as FlowWalletType;
         const response = await axios.post(`${API_URL}/api/flows/${flow.uuid}/wallet`, flowWallet, {
           withCredentials: true
@@ -320,7 +315,7 @@ export default function FlowViewDialog({
               <ContentCopy fontSize="small" />
             </IconButton>
           </Tooltip>
-          {wallet.safe && (
+          {flow?.walletProvider && (
             <>
               <Tooltip title="Open in Safe Web Wallet">
                 <a
@@ -331,7 +326,7 @@ export default function FlowViewDialog({
                   <Avatar src="/safe.png" sx={{ width: 16, height: 16 }} />
                 </a>
               </Tooltip>
-              {!wallet.safeDeployed && (
+              {!wallet.deployed && (
                 <Tooltip title="Wallet will be initialized on the first transaction!">
                   <FlagOutlined sx={{}} fontSize="small" />
                 </Tooltip>
@@ -369,13 +364,13 @@ export default function FlowViewDialog({
           </Typography>
           <Typography variant="h5">${flowTotalBalance}</Typography>
 
-          {flow.wallets && flow.wallets.filter((wallet) => wallet.smart).length > 0 && (
+          {flow.wallets && flow.wallets.filter((wallet) => flow.walletProvider).length > 0 && (
             <>
               <Divider flexItem>
                 <Typography variant="subtitle2"> Payflow Wallets </Typography>
               </Divider>
               {flow.wallets
-                .filter((wallet) => wallet.smart)
+                .filter((wallet) => flow.walletProvider)
                 .map((wallet, index) => (
                   <Box
                     key={`flow_view_${flow.uuid}_smart_wallet_${index}`}
@@ -403,13 +398,13 @@ export default function FlowViewDialog({
             </>
           )}
 
-          {flow.wallets && flow.wallets.filter((wallet) => !wallet.smart).length > 0 && (
+          {flow.wallets && flow.wallets.filter((wallet) => !flow.walletProvider).length > 0 && (
             <>
               <Divider flexItem>
                 <Typography variant="subtitle2"> External Wallets </Typography>
               </Divider>
               {flow.wallets
-                .filter((wallet) => !wallet.smart)
+                .filter((wallet) => !flow.walletProvider)
                 .map((wallet, index) => (
                   <Box
                     key={`flow_view_${flow.uuid}_external_wallet_${index}`}
@@ -464,7 +459,7 @@ export default function FlowViewDialog({
 
           {withdrawFlowWallet &&
             flow.wallets &&
-            flow.wallets.filter((wallet) => wallet.smart).length === 0 && (
+            flow.wallets.filter((wallet) => flow.walletProvider).length === 0 && (
               <Typography>You can withdraw only from Payflow Wallets</Typography>
             )}
 

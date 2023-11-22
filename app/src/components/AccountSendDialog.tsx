@@ -147,8 +147,8 @@ export default function AccountSendDialog({
       sendToastId.current = undefined;
 
       // if tx was successfull, mark wallet as deployed if it wasn't
-      if (!selectedWallet.safeDeployed) {
-        selectedWallet.safeDeployed = true;
+      if (!selectedWallet.deployed) {
+        selectedWallet.deployed = true;
         updateWallet(flow.uuid, selectedWallet);
       }
     } else if (error) {
@@ -206,8 +206,8 @@ export default function AccountSendDialog({
         threshold: 1
       };
 
-      const saltNonce = selectedWallet.safeSaltNonce as Hash;
-      const safeVersion = selectedWallet.safeVersion as SafeVersion;
+      const saltNonce = flow.saltNonce as string;
+      const safeVersion = selectedWallet.version as SafeVersion;
 
       transfer(ethersSigner, txData, safeAccountConfig, safeVersion, saltNonce);
     }
@@ -352,10 +352,10 @@ export default function AccountSendDialog({
                     if (ethUsdPrice && amountUSD >= 1) {
                       const amount = parseEther((amountUSD / ethUsdPrice).toString());
 
-                      if (balance && amount <= balance?.value && amountUSD >= 1) {
-                        setSendAmount(amount);
-                        return;
-                      }
+                      //if (balance && amount <= balance?.value && amountUSD >= 1) {
+                      setSendAmount(amount);
+                      return;
+                      //}
                     }
                     setSendAmount(undefined);
                   }}

@@ -6,25 +6,16 @@ export interface FlowType {
   title: string;
   description: string;
   uuid: string;
+  walletProvider: string;
+  saltNonce: string;
   wallets: FlowWalletType[];
 }
 
 export interface FlowWalletType {
   address: Address;
   network: number;
-  smart: boolean;
-  safe: boolean;
-  safeVersion: string;
-  safeSaltNonce: string;
-  safeDeployed: boolean;
-  master: Address;
-}
-
-export interface SafeWalletType {
-  address: Address;
-  network: number;
-  safe: boolean;
-  safeDeployed: boolean;
+  version: string;
+  deployed: boolean;
 }
 
 export interface WalletType {

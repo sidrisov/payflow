@@ -1,5 +1,6 @@
 import { GelatoRelayPack, RelayPack } from '@safe-global/relay-kit';
 import {
+  arbitrumGoerli,
   base,
   baseGoerli,
   lineaTestnet,
@@ -24,9 +25,8 @@ const MAINNET_CHAINS_SUPPORTING_RELAY: number[] = [optimism.id, base.id];
 const TESTNET_CHAINS_SUPPORTING_RELAY: number[] = [
   optimismGoerli.id,
   baseGoerli.id,
-  zkSyncTestnet.id,
-  lineaTestnet.id,
-  polygonZkEvmTestnet.id
+  arbitrumGoerli.id,
+  zkSyncTestnet.id
 ];
 
 export function getRelayKitForChainId(chainId: number) {

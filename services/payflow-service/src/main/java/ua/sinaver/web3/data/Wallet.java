@@ -18,7 +18,9 @@ import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
+@ToString
 @Setter
 @Getter
 @NoArgsConstructor
@@ -35,28 +37,15 @@ public class Wallet {
     @Column
     private Integer network;
 
-    @Column(columnDefinition = "boolean")
-    private boolean smart;
-
-    @Column(columnDefinition = "boolean")
-    private boolean safe;
-
     @Column
-    private String safeVersion;
-
-    @Column
-    private String safeSaltNonce;
+    private String walletVersion;
 
     @Column(columnDefinition = "boolean")
-    private boolean safeDeployed;
+    private boolean deployed;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "flow_id", nullable = false)
     private Flow flow;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id")
-    private Account master;
 
     @Column
     @Temporal(TemporalType.TIMESTAMP)
@@ -65,25 +54,11 @@ public class Wallet {
     @Version
     private Long version;
 
-    public Wallet(String address, Integer network, boolean smart, boolean safe, String safeVersion,
-            String safeSaltNonce,
+    public Wallet(String address, Integer network, String walletVersion,
             boolean safeDeployed) {
         this.address = address;
         this.network = network;
-        this.smart = smart;
-        this.safe = safe;
-        this.safeVersion = safeVersion;
-        this.safeSaltNonce = safeSaltNonce;
-        this.safeDeployed = safeDeployed;
-    }
-
-    @Override
-    public String toString() {
-        return "Wallet [id=" + id + ", address=" + address + ", network=" + network + ", smart=" + smart + ", safe="
-                + safe + ", safeVersion="
-                + safeVersion + ", safeDeployed="
-                + safeDeployed + ", flow="
-                + flow.getUuid() + ", master="
-                + (master != null ? master.getAddress() : "null") + "]";
+        this.walletVersion = walletVersion;
+        this.deployed = safeDeployed;
     }
 }

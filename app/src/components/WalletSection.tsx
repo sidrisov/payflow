@@ -1,14 +1,13 @@
-import { Avatar, Box, IconButton, Tooltip, Typography } from '@mui/material';
-import { FlagOutlined, ContentCopy } from '@mui/icons-material';
-import { toast } from 'react-toastify';
-import { copyToClipboard } from '../utils/copyToClipboard';
+import { Avatar, Box, Tooltip, Typography } from '@mui/material';
+import { FlagOutlined } from '@mui/icons-material';
 import { shortenWalletAddressLabel } from '../utils/address';
-import { SafeWalletType } from '../types/FlowType';
+import { FlowWalletType } from '../types/FlowType';
 import { shortNetworkName } from '../utils/networks';
 import NetworkAvatar from './NetworkAvatar';
 import CopyToClipboardIconButton from './CopyToClipboardIconButton';
 
-export function WalletSection(props: { wallet: SafeWalletType; balance?: string }) {
+// TODO: for now since we have only safe wallets check version field to display safe indicator
+export function WalletSection(props: { wallet: FlowWalletType; balance?: string }) {
   const { wallet, balance } = props;
 
   return (
@@ -23,7 +22,7 @@ export function WalletSection(props: { wallet: SafeWalletType; balance?: string 
         <NetworkAvatar tooltip network={wallet.network} sx={{ width: 24, height: 24 }} />
         <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
         <CopyToClipboardIconButton tooltip="Copy address" value={wallet.address} />
-        {wallet.safe && (
+        {wallet.version && (
           <>
             <Tooltip title="Open in Safe Web Wallet">
               <a
@@ -34,7 +33,7 @@ export function WalletSection(props: { wallet: SafeWalletType; balance?: string 
                 <Avatar src="/safe.png" sx={{ width: 16, height: 16 }} />
               </a>
             </Tooltip>
-            {!wallet.safeDeployed && (
+            {!wallet.deployed && (
               <Tooltip title="Wallet will be initialized on the first transaction!">
                 <FlagOutlined sx={{}} fontSize="small" />
               </Tooltip>

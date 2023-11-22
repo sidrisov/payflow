@@ -18,7 +18,6 @@ import { useMemo, useState } from 'react';
 import axios from 'axios';
 import { ProfileType } from '../types/ProfleType';
 import { toast } from 'react-toastify';
-import { keccak256, toHex } from 'viem';
 import { useCreateSafeWallets as usePreCreateSafeWallets } from '../utils/hooks/useCreateSafeWallets';
 
 import { FlowType, FlowWalletType } from '../types/FlowType';
@@ -27,6 +26,7 @@ import { updateProfile } from '../services/user';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../utils/urlConstants';
 import { DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS } from '../utils/networks';
+import { keccak256, toBytes } from 'viem';
 
 export type OnboardingDialogProps = DialogProps &
   CloseCallbackType & {
@@ -57,8 +57,7 @@ export default function OnboardingDialog({
 
   const navigate = useNavigate();
 
-  // TODO: add random generator
-  const saltNonce = keccak256(toHex('3'));
+  const saltNonce = '1';
 
   useMemo(async () => {
     if (username) {
@@ -83,6 +82,7 @@ export default function OnboardingDialog({
   }, [username]);
 
   async function createMainFlow() {
+    console.log(profile.address, saltNonce, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
     create(profile.address, saltNonce, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
   }
 
@@ -93,12 +93,7 @@ export default function OnboardingDialog({
           ({
             address: wallet.address,
             network: wallet.chain.id,
-            smart: true,
-            safe: true,
-            safeDeployed: false,
-            safeSaltNonce: saltNonce,
-            safeVersion: DEFAULT_SAFE_VERSION,
-            master: profile.address
+            version: DEFAULT_SAFE_VERSION
           } as FlowWalletType)
       );
 
@@ -106,6 +101,8 @@ export default function OnboardingDialog({
         account: profile.address,
         title: 'default',
         description: '',
+        walletProvider: 'safe',
+        saltNonce,
         wallets: flowWallets
       } as FlowType;
 

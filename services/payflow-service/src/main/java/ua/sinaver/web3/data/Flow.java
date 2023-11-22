@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -28,14 +29,13 @@ import lombok.ToString;
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(indexes = { @Index(columnList = "userId"), @Index(columnList = "uuid") })
+@Table(indexes = { @Index(columnList = "user_id"), @Index(columnList = "uuid") })
 public class Flow {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
-    // TODO: on clean up rename to user_id
-    @Column
+    @Column(name = "user_id")
     private Integer userId;
 
     @Column
@@ -50,6 +50,12 @@ public class Flow {
     @Column(unique = true)
     private String uuid;
 
+    @Column
+    private String walletProvider;
+
+    @Column
+    private String saltNonce;
+
     @OneToMany(mappedBy = "flow", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Wallet> wallets;
 
@@ -60,10 +66,17 @@ public class Flow {
     @Version
     private Long version;
 
-    public Flow(Integer userId, String title, String description) {
+    public Flow(Integer userId, String title, String description, String walletProvider, String saltNonce) {
         this.userId = userId;
         this.title = title;
         this.description = description;
         this.uuid = RandomStringUtils.random(8, true, true);
+
+        this.walletProvider = walletProvider;
+        if (StringUtils.isBlank(saltNonce)) {
+            this.saltNonce = this.uuid;
+        } else {
+            this.saltNonce = saltNonce;
+        }
     }
 }

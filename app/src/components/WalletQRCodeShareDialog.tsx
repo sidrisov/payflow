@@ -21,7 +21,7 @@ import { useState } from 'react';
 import { ChooseWalletMenu } from './ChooseWalletMenu';
 import { FlowWalletType } from '../types/FlowType';
 import NetworkAvatar from './NetworkAvatar';
-import { getNetworkDisplayName } from '../utils/networks';
+import { getNetworkDisplayName, shortNetworkName } from '../utils/networks';
 
 export type WalletQRCodeShareDialogProps = DialogProps &
   CloseCallbackType & {
@@ -94,7 +94,7 @@ export default function WalletQRCodeShareDialog({
             </Tooltip>
           </Box>
           <QRCode
-            value={selectedWallet.address}
+            value={`${selectedWallet.address}`}
             style={{ borderRadius: 10, border: 5, borderStyle: 'double' }}
           />
         </Stack>

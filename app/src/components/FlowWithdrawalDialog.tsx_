@@ -74,7 +74,7 @@ export default function FlowWithdrawalDialog({
 
       let txHash;
 
-      if (!wallet.safeDeployed) {
+      if (!wallet.deployed) {
         const isDeployed = await isSafeDeployed(wallet.address, ethersSigner);
 
         if (!isDeployed) {

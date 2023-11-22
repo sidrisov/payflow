@@ -9,13 +9,11 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-import ua.sinaver.web3.data.Account;
 import ua.sinaver.web3.data.User;
 import ua.sinaver.web3.message.FlowMessage;
 import ua.sinaver.web3.message.WalletMessage;
 import ua.sinaver.web3.repository.FlowRepository;
 import ua.sinaver.web3.repository.UserRepository;
-import ua.sinaver.web3.repository.AccountRepository;
 
 @Slf4j
 @Service
@@ -23,9 +21,6 @@ import ua.sinaver.web3.repository.AccountRepository;
 public class FlowService implements IFlowService {
     @Autowired
     private FlowRepository flowRepository;
-
-    @Autowired
-    private AccountRepository accountRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -78,9 +73,11 @@ public class FlowService implements IFlowService {
 
         val wallet = walletOptional.get();
         // deleting smart wallets from flow doesn't make sense
-        if (wallet.isSmart()) {
-            throw new Exception("Not allowed!");
-        }
+        /*
+         * if (flow.isSmart()) {
+         * throw new Exception("Not allowed!");
+         * }
+         */
 
         flow.getWallets().remove(wallet);
 
@@ -97,16 +94,6 @@ public class FlowService implements IFlowService {
         }
 
         val wallet = WalletMessage.convert(walletDto);
-        if (wallet.isSmart()) {
-            Account account = accountRepository.findByAddressAndNetwork(walletDto.master(),
-                    walletDto.network());
-            if (account != null) {
-                wallet.setMaster(account);
-                account.getWallets().add(wallet);
-            } else {
-                throw new Exception("Account doesn't exist");
-            }
-        }
 
         wallet.setFlow(flow);
         flow.getWallets().add(wallet);
@@ -134,7 +121,7 @@ public class FlowService implements IFlowService {
         }
 
         val wallet = walletOptional.get();
-        if (wallet.isSmart() && wallet.isSafe()) {
+        if (flow.getWalletProvider() != null) {
             // update only fields need to be changed
             /*
              * if (!wallet.getSafeVersion().equals(walletDto.safeVersion())) {
@@ -142,8 +129,8 @@ public class FlowService implements IFlowService {
              * }
              */
 
-            if (!wallet.isSafeDeployed() && walletDto.safeDeployed()) {
-                wallet.setSafeDeployed(true);
+            if (!wallet.isDeployed() && walletDto.deployed()) {
+                wallet.setDeployed(true);
             }
         }
 

@@ -24,13 +24,13 @@ import lombok.ToString;
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(indexes = { @Index(columnList = "userId,payed,proof"), @Index(columnList = "uuid") })
+@Table(indexes = { @Index(columnList = "user_id,payed,proof"), @Index(columnList = "uuid") })
 public class PaymentRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
-    @Column
+    @Column(name = "user_id")
     private Integer userId;
 
     // TODO: add one-to-one mapping with flow, compare performance
@@ -47,7 +47,7 @@ public class PaymentRequest {
     private String uuid;
 
     @Column
-    private String network;
+    private Integer network;
 
     @Column
     private String address;
@@ -68,7 +68,7 @@ public class PaymentRequest {
     @Version
     private Long version;
 
-    public PaymentRequest(Integer userId, String flowUuid, String title, String description, String network,
+    public PaymentRequest(Integer userId, String flowUuid, String title, String description, Integer network,
             String address,
             String amount) {
         this.userId = userId;

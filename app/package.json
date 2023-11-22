@@ -14,7 +14,7 @@
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@fontsource/roboto": "^5.0.8",
-    "@gelatonetwork/relay-sdk": "^5.0.0",
+    "@gelatonetwork/relay-sdk": "^5.5.2",
     "@mui/icons-material": "^5.14.3",
     "@mui/lab": "^5.0.0-alpha.151",
     "@mui/material": "^5.14.4",

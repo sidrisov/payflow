@@ -6,7 +6,6 @@ import { providers } from 'ethers';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { usePublicClient } from 'wagmi';
-import { toast } from 'react-toastify';
 
 export type SafeWallet = {
   chain: Chain;
@@ -23,8 +22,8 @@ export const useSafeTransfer = (): {
     ethersSigner: providers.JsonRpcSigner,
     tx: { from: Address; to: Address; amount: bigint; safeSigner?: Address },
     safeAccountConfig: SafeAccountConfig,
-    safeVersion?: SafeVersion,
-    saltNonce?: Hash
+    safeVersion: SafeVersion,
+    saltNonce: string
   ) => Promise<void>;
   reset: () => Promise<void>;
 } => {
@@ -62,8 +61,8 @@ export const useSafeTransfer = (): {
     ethersSigner: providers.JsonRpcSigner,
     tx: { from: Address; to: Address; amount: bigint; safeSigner?: Address },
     safeAccountConfig: SafeAccountConfig,
-    safeVersion?: SafeVersion,
-    saltNonce?: Hash
+    safeVersion: SafeVersion,
+    saltNonce: string
   ) {
     setLoading(true);
     try {

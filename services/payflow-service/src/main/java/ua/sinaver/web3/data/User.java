@@ -11,6 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -59,12 +60,11 @@ public class User {
     @JoinColumn(name = "flow_id", referencedColumnName = "id")
     private Flow defaultFlow;
 
-    // add flows, and return with profile
-    // @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    // @JoinColumn(name = "userId", referencedColumnName = "id")
-    // private List<Flow> flows;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private List<Flow> flows;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private InvitationAllowance invitationAllowance;
 
     @Column

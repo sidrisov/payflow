@@ -4,8 +4,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -24,6 +26,15 @@ import ua.sinaver.web3.repository.UserRepository;
 @Transactional
 @Log4j2
 public class UserService implements IUserService {
+
+    @Value("${payflow.invitation.allowance.enabled:false}")
+    private boolean invitationAllowanceEnabled;
+
+    @Value("${payflow.invitation.whitelisted.default.users}")
+    private Set<String> defaultWhitelistedUsers;
+
+    @Value("${payflow.invitation.whitelisted.default.allowance}")
+    private int defaultWhitelistedAllowance;
 
     @Autowired
     private UserRepository userRepository;
@@ -52,10 +63,15 @@ public class UserService implements IUserService {
         if (!user.getAllowed()) {
             log.debug("Checking invitation for {} code {}", user, invitationCode);
 
-            if (user.getSigner().equals("0x0dEe77c83cB8b14fA95497825dF93202AbF6ad83")) {
+            log.debug("default whitelisted users {} and allowance {}", defaultWhitelistedUsers,
+                    defaultWhitelistedAllowance);
+            if (defaultWhitelistedUsers.contains(user.getSigner())) {
                 user.setAllowed(true);
                 user.setCreatedDate(new Date());
-                user.setInvitationAllowance(new InvitationAllowance(100, 100));
+                val defaultAllowance = new InvitationAllowance(defaultWhitelistedAllowance,
+                        defaultWhitelistedAllowance);
+                defaultAllowance.setUser(user);
+                user.setInvitationAllowance(defaultAllowance);
             } else {
                 Invitation invitation = invitationRepository.findFirstValidByIdentityOrCode(signer, invitationCode);
                 if (invitation != null) {
@@ -63,7 +79,13 @@ public class UserService implements IUserService {
                     user.setCreatedDate(new Date());
                     invitation.setInvitee(user);
                     invitation.setExpiryDate(null);
-                    user.setInvitationAllowance(new InvitationAllowance(1, 1));
+                    if (invitationAllowanceEnabled) {
+                        val defaultInvitationAllowance = new InvitationAllowance(1,
+                                1);
+                        defaultInvitationAllowance.setUser(user);
+                        user.setInvitationAllowance(defaultInvitationAllowance);
+
+                    }
                 } else {
                     throw new Error("Access not allowed");
                 }

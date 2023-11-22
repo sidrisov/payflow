@@ -24,14 +24,14 @@ import lombok.ToString;
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(indexes = @Index(columnList = "userId"), uniqueConstraints = {
+@Table(indexes = @Index(columnList = "user_id"), uniqueConstraints = {
         @UniqueConstraint(columnNames = { "network", "address" }) })
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
-    @Column
+    @Column(name = "user_id")
     private Integer userId;
 
     @Column

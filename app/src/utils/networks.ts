@@ -34,7 +34,7 @@ export const SUPPORTED_CHAINS = [
   optimism,
   base,
   mainnet
-]; /* .filter((c) => ENABLED_CHAINS.includes(c.network)); */
+].filter((c) => ENABLED_CHAINS.includes(c.network));
 
 export const AA_COMPATIBLE_CHAINS = [
   optimismGoerli.name,
@@ -51,8 +51,9 @@ export const AA_COMPATIBLE_CHAINS = [
 export const DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS = [
   baseGoerli,
   optimismGoerli,
-  zoraTestnet,
-  zkSyncTestnet
+  base,
+  optimism
+  /*   arbitrumGoerli, */
 ];
 
 export default function getNetworkImageSrc(network: number | string): string {

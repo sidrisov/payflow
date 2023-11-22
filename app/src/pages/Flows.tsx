@@ -18,7 +18,6 @@ import { useNetwork } from 'wagmi';
 import { FlowType, FlowWalletType } from '../types/FlowType';
 import { Add, OpenInFull, ShareOutlined } from '@mui/icons-material';
 import ShareDialog from '../components/ShareDialog';
-import FlowViewDialog from '../components/FlowViewDialog';
 import { getTotalBalance, getWalletBalance } from '../utils/getBalance';
 import { UserContext } from '../contexts/UserContext';
 import { formatEther } from 'viem';
@@ -264,7 +263,7 @@ export default function Flows() {
         link={flowShareInfo.link}
         closeStateCallback={async () => setOpenFlowShare(false)}
       />
-      <FlowViewDialog
+      {/*  <FlowViewDialog
         open={openFlowView}
         flow={flow}
         closeStateCallback={async () => {
@@ -272,7 +271,7 @@ export default function Flows() {
           // TODO: just refresh, lately it's better to track each flow's update separately
           setInitiateFlowsRefresh(true);
         }}
-      />
+      /> */}
     </>
   );
 }
