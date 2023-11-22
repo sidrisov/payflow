@@ -49,13 +49,14 @@ import { ETH, Token, getSupportedTokens } from '../utils/erc20contracts';
 import { API_URL } from '../utils/urlConstants';
 import { comingSoonToast } from '../components/Toasts';
 import NetworkAvatar from '../components/NetworkAvatar';
+import { getNetworkDisplayName } from '../utils/networks';
 
 export default function Send({ appSettings, setAppSettings }: any) {
   const { uuid } = useParams();
   const [flow, setFlow] = useState({} as FlowType);
   const [flowTotalBalance, setFlowTotalBalance] = useState('0');
   const [openAddressQRCode, setOpenAddressQRCode] = useState(false);
-  const [selectedPaymentNetwork, setSelectedPaymentNetwork] = useState('');
+  const [selectedPaymentNetwork, setSelectedPaymentNetwork] = useState<number>();
   const [selectedPaymentAddress, setSelectedPaymentAddress] = useState<Address>();
   const [selectedPaymentToken, setSelectedPaymentToken] = useState<Token>();
   const [topUpAmount, setTopUpAmount] = useState(BigInt(0));
@@ -88,7 +89,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
   });
 
   const publicClient = usePublicClient();
-  const { chains, switchNetwork } = useSwitchNetwork();
+  const { switchNetwork } = useSwitchNetwork();
 
   const { address } = useAccount();
 
@@ -185,7 +186,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
 
   async function updateFlowTotalBalance(flow: FlowType) {
     if (flow && flow.wallets && flow.wallets.length > 0 && ethUsdPrice) {
-      setFlowTotalBalance(await getFlowBalance(flow, chains, ethUsdPrice));
+      setFlowTotalBalance(await getFlowBalance(flow, ethUsdPrice));
     }
   }
 
@@ -316,14 +317,14 @@ export default function Send({ appSettings, setAppSettings }: any) {
                 fullWidth
                 onChange={(_event, value) => {
                   if (value) {
-                    switchNetwork?.(chains.find((c) => c?.name === value.network)?.id);
+                    switchNetwork?.(value.network);
                     setSelectedPaymentNetwork(value.network);
                   } else {
-                    setSelectedPaymentNetwork('');
+                    setSelectedPaymentNetwork(undefined);
                   }
                 }}
                 options={flow.wallets}
-                getOptionLabel={(wallet) => wallet.network}
+                getOptionLabel={(wallet) => getNetworkDisplayName(wallet.network)}
                 renderInput={(params) => (
                   <TextField variant="outlined" {...params} label="Select Payment Network" />
                 )}
@@ -400,9 +401,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
                           setTopUpAmount(BigInt(0));
                         }
                       }}
-                      options={getSupportedTokens(
-                        chains.find((c) => c.name === selectedPaymentNetwork)?.id
-                      )}
+                      options={getSupportedTokens(selectedPaymentNetwork)}
                       getOptionLabel={(token) => token.name}
                       renderInput={(params) => (
                         <TextField variant="outlined" {...params} label="Token" />

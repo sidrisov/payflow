@@ -8,13 +8,11 @@ import {
   Stack,
   Tooltip,
   Typography,
-  useMediaQuery,
   useTheme
 } from '@mui/material';
 import { useContext, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import FlowNewDialog from '../components/FlowNewDialog';
-import { useNetwork } from 'wagmi';
 import { FlowType, FlowWalletType } from '../types/FlowType';
 import { Add, OpenInFull, ShareOutlined } from '@mui/icons-material';
 import ShareDialog from '../components/ShareDialog';
@@ -37,8 +35,6 @@ export default function Flows() {
     setInitiateFlowsRefresh,
     ethUsdPrice
   } = useContext(UserContext);
-
-  const { chains } = useNetwork();
 
   const [flowBalances, setFlowBalances] = useState<Map<string, string>>();
   const [openFlowCreate, setOpenFlowCreate] = useState(false);
@@ -64,16 +60,16 @@ export default function Flows() {
           .values()
       );
 
-      Promise.all(
-        uniqueWallets.map(async (wallet) => (await getWalletBalance(wallet, chains)).value)
-      ).then((balances) => {
-        const balancesMap = new Map<string, bigint>();
-        balances.forEach((value, index) => {
-          const key = `${uniqueWallets[index].address}_${uniqueWallets[index].network}`;
-          balancesMap.set(key, value);
-        });
-        setWalletBalances(balancesMap);
-      });
+      Promise.all(uniqueWallets.map(async (wallet) => (await getWalletBalance(wallet)).value)).then(
+        (balances) => {
+          const balancesMap = new Map<string, bigint>();
+          balances.forEach((value, index) => {
+            const key = `${uniqueWallets[index].address}_${uniqueWallets[index].network}`;
+            balancesMap.set(key, value);
+          });
+          setWalletBalances(balancesMap);
+        }
+      );
     }
   }
 

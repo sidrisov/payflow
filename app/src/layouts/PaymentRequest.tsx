@@ -79,7 +79,7 @@ export default function PaymentRequest({ appSettings, setAppSettings }: any) {
 
   useMemo(async () => {
     if (request) {
-      switchNetwork?.(chains.find((c) => c?.name === request.network)?.id);
+      switchNetwork?.(request.network);
     }
   }, [request]);
 

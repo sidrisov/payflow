@@ -125,7 +125,7 @@ export default function Requests() {
   function RequestTableRow(props: { index: number; request: PaymentRequestType }) {
     const { index, request } = props;
     const [expand, setExpand] = useState(false);
-    const requestChain = chains.find((c) => c.name === request.network);
+    const requestChain = chains.find((c) => c.id === request.network);
 
     return (
       <>

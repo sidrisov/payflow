@@ -152,7 +152,7 @@ export default function RequestNewDialog({ closeStateCallback, ...props }: Reque
                 }
               }}
               // allow only smart wallets
-              options={selectedFlow.wallets.filter((f) => f.smart)}
+              options={selectedFlow.walletProvider ? selectedFlow.wallets : []}
               getOptionLabel={(option) => getNetworkDisplayName(option.network)}
               renderInput={(params) => (
                 <TextField variant="outlined" {...params} label="Choose Payment Wallet" />
