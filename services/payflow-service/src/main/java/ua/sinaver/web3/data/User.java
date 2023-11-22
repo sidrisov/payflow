@@ -47,10 +47,10 @@ public class User {
     private String profileImage;
 
     @Column(columnDefinition = "boolean")
-    private Boolean locked;
+    private boolean locked = false;
 
     @Column(columnDefinition = "boolean")
-    private Boolean allowed = false;
+    private boolean allowed = false;
 
     // TODO: add identity
     @Column(nullable = false)

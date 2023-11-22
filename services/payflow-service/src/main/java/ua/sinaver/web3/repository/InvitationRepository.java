@@ -16,14 +16,16 @@ public interface InvitationRepository extends CrudRepository<Invitation, Integer
 
         List<Invitation> findByInvitedBy(User invitedBy);
 
-        Invitation findFirstByIdentityAndExpiryDateAfterOrCodeAndExpiryDateAfterOrderByCreatedDateAsc(String identity,
+        // TODO: fix a bug when searching by NULL
+        Invitation findFirstByIdentityAndExpiryDateAfterOrCodeAndCodeNotNullAndExpiryDateAfterOrderByCreatedDateAsc(
+                        String identity,
                         Date before1,
                         String code, Date before2);
 
         default Invitation findFirstValidByIdentityOrCode(String identity,
                         String code) {
                 val now = new Date();
-                return findFirstByIdentityAndExpiryDateAfterOrCodeAndExpiryDateAfterOrderByCreatedDateAsc(identity, now,
+                return findFirstByIdentityAndExpiryDateAfterOrCodeAndCodeNotNullAndExpiryDateAfterOrderByCreatedDateAsc(identity, now,
                                 code, now);
         }
 

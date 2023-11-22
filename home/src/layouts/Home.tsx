@@ -53,7 +53,7 @@ export default function Home() {
       </HideOnScroll>
 
       <Box
-        mt={-10}
+        mt={-5}
         position="fixed"
         display="flex"
         alignItems="center"
@@ -66,23 +66,33 @@ export default function Home() {
               textAlign="center"
               variant={isMobile ? 'h3' : 'h2'}
               color={blue[500]}
-              fontWeight="bold">
-              Abstract your web3 social payments
+              fontWeight="bold"
+              fontFamily="monospace">
+              Abstract your web3 identity payments
             </Typography>
             <Box display="flex" flexWrap="wrap" justifyContent="center">
-              <Typography variant={isMobile ? 'h3' : 'h2'} color={blue[500]} fontWeight="bold">
+              <Typography
+                variant={isMobile ? 'h3' : 'h2'}
+                color={blue[500]}
+                fontWeight="bold"
+                fontFamily="monospace">
                 &nbsp;with&nbsp;
               </Typography>
               <Typography
                 variant={isMobile ? 'h3' : 'h2'}
                 color={orange[300]}
                 fontStyle="italic"
-                fontWeight="bold">
+                fontWeight="bold"
+                fontFamily="monospace">
                 payflow
               </Typography>
             </Box>
 
-            <Typography variant="overline" color={grey[500]} fontWeight="bold">
+            <Typography
+              variant="overline"
+              color={grey[500]}
+              fontWeight="bold"
+              fontFamily="monospace">
               Any flow | Gasless | Non-custodial
             </Typography>
           </Stack>

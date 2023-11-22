@@ -60,11 +60,12 @@ public class UserService implements IUserService {
         // 2. Update invitation and user records
         // 4. Throw error if none
         // TODO: add roles later on instead
-        if (!user.getAllowed()) {
+        if (!user.isAllowed()) {
             log.debug("Checking invitation for {} code {}", user, invitationCode);
 
             log.debug("default whitelisted users {} and allowance {}", defaultWhitelistedUsers,
                     defaultWhitelistedAllowance);
+
             if (defaultWhitelistedUsers.contains(user.getSigner())) {
                 user.setAllowed(true);
                 user.setCreatedDate(new Date());

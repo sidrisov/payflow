@@ -68,7 +68,8 @@ public class UserController {
         List<User> users = userService.searchByUsernameQuery(username);
         log.debug("User: {} for {}", users, username);
         if (users != null) {
-            return users.stream().map(user -> {
+            // TODO: for now filter by whitelisted
+            return users.stream().filter(user -> user.isAllowed() && user.getDefaultFlow() != null).map(user -> {
                 return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
                         user.getSigner(),
                         user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
@@ -86,7 +87,7 @@ public class UserController {
         val user = userService.findByUsername(username);
 
         log.debug("User: {} for {}", user, username);
-        if (user != null) {
+        if (user != null && user.isAllowed() && user.getDefaultFlow() != null) {
             return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
                     user.getSigner(),
                     user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
