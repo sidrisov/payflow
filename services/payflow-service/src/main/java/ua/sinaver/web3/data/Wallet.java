@@ -18,9 +18,7 @@ import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
-@ToString
 @Setter
 @Getter
 @NoArgsConstructor
@@ -60,5 +58,13 @@ public class Wallet {
         this.network = network;
         this.walletVersion = walletVersion;
         this.deployed = safeDeployed;
+    }
+
+    @Override
+    public String toString() {
+        return "Wallet [id=" + id + ", address=" + address + ", network=" + network + ", flow="
+                + flow.getUuid() + ", walletProvider=" + flow.getWalletProvider() + ", walletVersion="
+                + walletVersion + ", deployed="
+                + deployed + "]";
     }
 }
