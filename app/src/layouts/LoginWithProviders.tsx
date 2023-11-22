@@ -12,16 +12,13 @@ import {
 
 import { rainbowWeb3AuthConnector } from '../utils/web3AuthConnector';
 
-import { Address, configureChains, createConfig, WagmiConfig } from 'wagmi';
-import { mainnet } from 'wagmi/chains';
+import { configureChains, createConfig, WagmiConfig } from 'wagmi';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
-import { useMediaQuery } from '@mui/material';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AppSettings } from '../types/AppSettingsType';
 import Login from './Login';
 import { CustomAvatar } from '../components/CustomAvatar';
-import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
+import { customLightTheme } from '../theme/rainbowTheme';
 import { SiweMessage } from 'siwe';
 import axios from 'axios';
 import { ProfileType } from '../types/ProfleType';
@@ -50,22 +47,7 @@ const connectors = connectorsForWallets([
   }
 ]);
 
-const appSettingsStorageItem = localStorage.getItem('appSettings');
-const appSettingsStored = appSettingsStorageItem
-  ? (JSON.parse(appSettingsStorageItem) as AppSettings)
-  : null;
-
 export default function AppWithProviders() {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const [appSettings, setAppSettings] = useState<AppSettings>(
-    appSettingsStored
-      ? appSettingsStored
-      : {
-          autoConnect: import.meta.env.VITE_INIT_CONNECT === 'true',
-          darkMode: prefersDarkMode
-        }
-  );
-
   const fetchingStatusRef = useRef(false);
   const verifyingRef = useRef(false);
   const [authStatus, setAuthStatus] = useState<AuthenticationStatus>('loading');
@@ -168,10 +150,6 @@ export default function AppWithProviders() {
     });
   }, []);
 
-  useMemo(() => {
-    localStorage.setItem('appSettings', JSON.stringify(appSettings));
-  }, [appSettings]);
-
   const wagmiConfig = createConfig({
     autoConnect: true,
     connectors,
@@ -183,16 +161,11 @@ export default function AppWithProviders() {
     <WagmiConfig config={wagmiConfig}>
       <RainbowKitAuthenticationProvider adapter={authAdapter} status={authStatus}>
         <RainbowKitProvider
-          theme={appSettings.darkMode ? customDarkTheme : customLightTheme}
+          theme={customLightTheme}
           avatar={CustomAvatar}
-          modalSize="compact"
+          modalSize="wide"
           chains={chains}>
-          <Login
-            authStatus={authStatus}
-            profile={profile}
-            appSettings={appSettings}
-            setAppSettings={setAppSettings}
-          />
+          <Login authStatus={authStatus} profile={profile} />
         </RainbowKitProvider>
       </RainbowKitAuthenticationProvider>
     </WagmiConfig>
