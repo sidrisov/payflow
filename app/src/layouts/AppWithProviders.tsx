@@ -25,6 +25,7 @@ import { me } from '../services/user';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { ProfileType } from '../types/ProfleType';
 import { useNavigate } from 'react-router-dom';
+import sortAndFilterFlows from '../utils/sortAndFilterFlows';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 const AIRSTACK_API_KEY = import.meta.env.VITE_AIRSTACK_API_KEY;
@@ -87,6 +88,10 @@ export default function AppWithProviders() {
         setLoading(false);
 
         if (profile) {
+          if (profile.defaultFlow && profile.flows) {
+            profile.flows = sortAndFilterFlows(profile.defaultFlow, profile.flows);
+          }
+
           setProfile(profile);
         } else {
           navigate('/connect');

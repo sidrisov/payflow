@@ -8,6 +8,7 @@ export interface ProfileType {
   username?: string;
   profileImage?: string;
   defaultFlow?: FlowType;
+  flows?: FlowType[];
   identityInviteLimit: number;
 }
 

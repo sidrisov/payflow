@@ -35,6 +35,8 @@ export type OnboardingDialogProps = DialogProps &
     code?: string | null;
   };
 
+const SALT_NONCE = import.meta.env.VITE_DEFAULT_FLOW_CREATE2_SALT_NONCE;
+
 export default function OnboardingDialog({
   closeStateCallback,
   profile,
@@ -56,8 +58,6 @@ export default function OnboardingDialog({
   const [loadingUpdateProfile, setLoadingUpdateProfile] = useState<boolean>(false);
 
   const navigate = useNavigate();
-
-  const saltNonce = '1';
 
   useMemo(async () => {
     if (username) {
@@ -82,8 +82,8 @@ export default function OnboardingDialog({
   }, [username]);
 
   async function createMainFlow() {
-    console.log(profile.address, saltNonce, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
-    create(profile.address, saltNonce, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
+    console.log(profile.address, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
+    create(profile.address, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
   }
 
   useMemo(async () => {
@@ -102,7 +102,7 @@ export default function OnboardingDialog({
         title: 'default',
         description: '',
         walletProvider: 'safe',
-        saltNonce,
+        saltNonce: SALT_NONCE,
         wallets: flowWallets
       } as FlowType;
 

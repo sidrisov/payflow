@@ -36,7 +36,7 @@ export type AccountNewDialogProps = DialogProps &
     networks: string[];
   };
 
-const ACCOUNT_CREATE2_SALT_IV = import.meta.env.VITE_ACCOUNT_CREATE2_SALT_IV;
+const ACCOUNT_CREATE2_SALT_IV = import.meta.env.VITE_DEFAULT_FLOW_CREATE2_SALT_NONCE;
 export default function FlowNewDialog({ closeStateCallback, ...props }: AccountNewDialogProps) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));

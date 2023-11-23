@@ -68,7 +68,6 @@ export default function AppLayout({
   });
 
   const [walletBalances, setWalletBalances] = useState<Map<string, bigint>>(new Map());
-  const [flows, setFlows] = useState<FlowType[]>();
   const [smartAccountAllowedChains, setSmartAccountAllowedChains] = useState<Chain[]>([]);
   const [initiateFlowsRefresh, setInitiateFlowsRefresh] = useState(false);
 
@@ -102,42 +101,6 @@ export default function AppLayout({
     setMobileOpen(!mobileOpen);
   };
 
-  async function fetchFlows() {
-    try {
-      const response = await axios.get(`${API_URL}/api/flows`, { withCredentials: true });
-
-      setFlows(
-        (response.data as FlowType[])
-          .sort((a, b) => {
-            if (a.uuid === profile.defaultFlow?.uuid) {
-              return -1;
-            }
-
-            let fa = a.title.toLowerCase(),
-              fb = b.title.toLowerCase();
-
-            if (fa < fb) {
-              return -1;
-            }
-            if (fa > fb) {
-              return 1;
-            }
-            return 0;
-          })
-          .map((f) => {
-            return {
-              ...f,
-              wallets: f.wallets.filter((w) =>
-                SUPPORTED_CHAINS.map((c) => c.id as number).includes(w.network)
-              )
-            };
-          })
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
   useEffect(() => {
     if (isConnected && profile) {
       if (profile.address === address) {
@@ -158,18 +121,12 @@ export default function AppLayout({
     navigate('/connect');
   }, [isConnected, address, profile]);
 
-  useMemo(async () => {
+  /*   useMemo(async () => {
     if (initiateFlowsRefresh && flows) {
       setInitiateFlowsRefresh(false);
       await fetchFlows();
     }
-  }, [flows, initiateFlowsRefresh]);
-
-  useMemo(async () => {
-    if (authorized) {
-      await fetchFlows();
-    }
-  }, [authorized]);
+  }, [flows, initiateFlowsRefresh]); */
 
   const drawer = <Nav />;
   return (
@@ -180,8 +137,6 @@ export default function AppLayout({
           profile,
           appSettings,
           setAppSettings,
-          flows,
-          setFlows,
           smartAccountAllowedChains,
           setSmartAccountAllowedChains,
           setInitiateFlowsRefresh,

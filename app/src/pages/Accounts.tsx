@@ -18,7 +18,9 @@ export default function Accounts() {
   const theme = useTheme();
   const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { isAuthenticated, profile, flows } = useContext(UserContext);
+  const { isAuthenticated, profile } = useContext(UserContext);
+
+  const { flows } = profile;
 
   const [assetsOrActivityView, setAssetsOrActivityView] = useState<'assets' | 'activity'>('assets');
 

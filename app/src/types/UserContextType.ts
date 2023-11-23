@@ -8,8 +8,6 @@ export interface UserContextType {
   profile: ProfileType;
   appSettings: AppSettings;
   setAppSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
-  flows: FlowType[] | undefined;
-  setFlows: React.Dispatch<React.SetStateAction<FlowType[] | undefined>>;
   smartAccountAllowedChains: Chain[];
   setSmartAccountAllowedChains: React.Dispatch<React.SetStateAction<Chain[]>>;
   setInitiateFlowsRefresh: React.Dispatch<React.SetStateAction<boolean>>;

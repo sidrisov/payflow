@@ -24,9 +24,9 @@ import ua.sinaver.web3.message.ProfileMessage;
 import ua.sinaver.web3.message.ProfileMetaMessage;
 import ua.sinaver.web3.message.WalletProfileRequestMessage;
 import ua.sinaver.web3.message.WalletProfileResponseMessage;
+import ua.sinaver.web3.service.FlowService;
 import ua.sinaver.web3.service.UserService;
 
-// TODO: remove Whitelabel Error Page
 @RestController
 @RequestMapping("/user")
 @CrossOrigin(origins = "${dapp.url}", allowCredentials = "true")
@@ -35,6 +35,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private FlowService flowService;
 
     @GetMapping("/me")
     public ProfileMessage user(Principal principal) {
@@ -47,6 +50,7 @@ public class UserController {
                     user.getSigner(),
                     user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
                             : null,
+                    flowService.getAllFlows(user),
                     user.getInvitationAllowance() != null ? user.getInvitationAllowance().getIdenityInviteLimit()
                             : -1);
         } else {
@@ -74,6 +78,7 @@ public class UserController {
                         user.getSigner(),
                         user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
                                 : null,
+                        null,
                         -1);
             }).toList();
 
@@ -92,6 +97,7 @@ public class UserController {
                     user.getSigner(),
                     user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
                             : null,
+                    null,
                     -1);
         } else {
             return null;

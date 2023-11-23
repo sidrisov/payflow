@@ -1,5 +1,7 @@
 package ua.sinaver.web3.service;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,10 +36,14 @@ public class FlowService implements IFlowService {
 
     @Override
     public List<FlowMessage> getAllFlows(User user) {
-        val flows = flowRepository.findByUserId(user.getId());
-        return flows.stream()
-                .map(f -> FlowMessage.convert(f, user))
-                .toList();
+        if (user.getFlows() != null) {
+            return user.getFlows().stream()
+                    .map(f -> FlowMessage.convert(f, user))
+                    .toList();
+        } else {
+            return Collections.emptyList();
+        }
+
     }
 
     @Override
