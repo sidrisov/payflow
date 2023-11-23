@@ -422,7 +422,7 @@ export async function safeTransferEthWithDeploy(
   return await waitForRelayTaskToComplete(relayKit, relayResponse.taskId);
 }
 
-async function estimateFee(isSafeDeployed: boolean, chainId: number): Promise<string> {
+export async function estimateFee(isSafeDeployed: boolean, chainId: number): Promise<string> {
   const isMainnetChain = !getNetwork().chains.find((c) => c.id === chainId)?.testnet;
 
   const l1GasPrice = await getPublicClient({ chainId: isMainnetChain ? 1 : 5 }).getGasPrice();

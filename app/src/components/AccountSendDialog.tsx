@@ -20,10 +20,16 @@ import {
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useContext, useMemo, useRef, useState } from 'react';
 import { useBalance, useNetwork, useSwitchNetwork } from 'wagmi';
-import { AddComment, ArrowForward, Close, ExpandMore } from '@mui/icons-material';
+import {
+  AddComment,
+  ArrowForward,
+  AttachMoney,
+  Close,
+  ExpandMore,
+  LocalGasStation} from '@mui/icons-material';
 import { Id, toast } from 'react-toastify';
 
-import { Address, Hash, formatEther, parseEther } from 'viem';
+import { Address, formatEther, parseEther } from 'viem';
 
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 import { FlowType, FlowWalletType } from '../types/FlowType';
@@ -41,6 +47,7 @@ import { comingSoonToast } from './Toasts';
 import { updateWallet } from '../services/flow';
 import NetworkAvatar from './NetworkAvatar';
 import PayflowChip from './PayflowChip';
+import { estimateFee as estimateSafeTransferFee } from '../utils/safeTransactions';
 
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
@@ -71,6 +78,8 @@ export default function AccountSendDialog({
   const [toAddress, setToAddress] = useState<Address>();
   const [sendAmount, setSendAmount] = useState<bigint>();
 
+  const [gasFee, setGasFee] = useState<bigint>();
+
   const [openSearchProfile, setOpenSearchProfile] = useState<boolean>(true);
 
   const { isSuccess, data: balance } = useBalance({
@@ -84,6 +93,12 @@ export default function AccountSendDialog({
   const sendToastId = useRef<Id>();
 
   const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
+
+  useMemo(async () => {
+    setGasFee(
+      BigInt(await estimateSafeTransferFee(selectedWallet.deployed, selectedWallet.network))
+    );
+  }, [selectedWallet]);
 
   useMemo(async () => {
     if (!sendAmount || !selectedRecipient) {
@@ -352,10 +367,10 @@ export default function AccountSendDialog({
                     if (ethUsdPrice && amountUSD >= 1) {
                       const amount = parseEther((amountUSD / ethUsdPrice).toString());
 
-                      //if (balance && amount <= balance?.value && amountUSD >= 1) {
-                      setSendAmount(amount);
-                      return;
-                      //}
+                      if (balance && amount <= balance?.value && amountUSD >= 1) {
+                        setSendAmount(amount);
+                        return;
+                      }
                     }
                     setSendAmount(undefined);
                   }}
@@ -366,25 +381,28 @@ export default function AccountSendDialog({
                   flexDirection="row"
                   justifyContent="space-between"
                   alignItems="center">
-                  <Typography ml={1} variant="caption">
-                    {`max: ${
-                      isSuccess
-                        ? balance && parseFloat(formatEther(balance?.value)).toPrecision(2)
-                        : 0
-                    } ETH ≈ $${
-                      isSuccess
-                        ? balance &&
-                          (
-                            parseFloat(formatEther(balance?.value)) * (ethUsdPrice ?? 0)
-                          ).toPrecision(2)
-                        : 0.0
-                    }`}
-                  </Typography>
+                  <Stack ml={0.5} direction="row" spacing={0.5} alignItems="center">
+                    <AttachMoney fontSize="small" />
+                    <Typography variant="caption">
+                      {`max: ${
+                        isSuccess
+                          ? balance && parseFloat(formatEther(balance.value)).toPrecision(2)
+                          : 0
+                      } ETH ≈ $${
+                        isSuccess
+                          ? balance &&
+                            (
+                              parseFloat(formatEther(balance.value)) * (ethUsdPrice ?? 0)
+                            ).toPrecision(2)
+                          : 0.0
+                      }`}
+                    </Typography>
+                  </Stack>
                   <Tooltip title="Add a note">
                     <IconButton
                       size="small"
                       color="inherit"
-                      sx={{ mr: 1, alignSelf: 'flex-end' }}
+                      sx={{ mr: 0.5, alignSelf: 'flex-end' }}
                       onClick={() => {
                         comingSoonToast();
                       }}>
@@ -392,6 +410,20 @@ export default function AccountSendDialog({
                     </IconButton>
                   </Tooltip>
                 </Box>
+                {gasFee !== undefined && (
+                  <Stack ml={0.5} direction="row" spacing={0.5} alignItems="center">
+                    <Tooltip
+                      title="Gas is paid by the sending flow wallet via Gelato SyncFee call method. 
+                    The fee includes Gelato on-chain call, safe tx fee + deployment fee on the first tx, and 10% Gelato's comission on top of all.">
+                      <LocalGasStation fontSize="small" />
+                    </Tooltip>
+                    <Typography ml={1} variant="caption">
+                      {`fee: ${parseFloat(formatEther(gasFee)).toFixed(5)} ETH ≈ $${(
+                        parseFloat(formatEther(gasFee)) * (ethUsdPrice ?? 0)
+                      ).toFixed(2)}`}
+                    </Typography>
+                  </Stack>
+                )}
               </Box>
 
               <Divider />
