@@ -4,8 +4,8 @@ import org.springframework.boot.buildpack.platform.build.PullPolicy
 
 plugins {
 	application
-	id("org.springframework.boot") version "3.1.6"
-	id("io.spring.dependency-management") version "1.1.3"
+	id("org.springframework.boot") version "3.2.0"
+	id("io.spring.dependency-management") version "1.1.4"
 	id("com.google.cloud.artifactregistry.gradle-plugin") version "2.2.1"
 	id("io.freefair.lombok") version "8.4"
 }
@@ -15,14 +15,14 @@ application {
 }
 
 if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local") || project.hasProperty("gcp-staging")) {
-	extra["springCloudGcpVersion"] = "4.5.1"
-	extra["springCloudVersion"] = "2022.0.3"
+	extra["springCloudGcpVersion"] = "4.8.4"
+	extra["springCloudVersion"] = "2022.0.4"
 }
 
 group = "ua.sinaver.web3"
 version = "0.0.1-pre-alpha"
 
-java.sourceCompatibility = JavaVersion.VERSION_17
+java.sourceCompatibility = JavaVersion.VERSION_21
 
 repositories {
 	mavenCentral()
@@ -99,9 +99,12 @@ tasks.withType<BootRun> {
 // gradle -d  bootBuildImage -P{profile} \                                    ✘ INT  10:54:12
 // -Pgcp-image-name={artifactory}/{repository}/{image} \
 // --publishImage
-tasks.withType<BootBuildImage> {
+// TODO: permissions are not picked up for publishing - https://cloud.google.com/artifact-registry/docs/java/authentication#gcloud
+ tasks.named<BootBuildImage>("bootBuildImage") {
 	if (project.hasProperty("gcp-image-name")) {
-    	imageName = "${project.property("gcp-image-name")}:${project.version}"
+    	imageName.set("${project.property("gcp-image-name")}:${project.version}")
 	}
-	pullPolicy = PullPolicy.IF_NOT_PRESENT
+	pullPolicy.set(PullPolicy.IF_NOT_PRESENT)
+	//publish.set(true)
 }
+
