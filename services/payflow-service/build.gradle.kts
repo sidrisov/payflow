@@ -1,9 +1,12 @@
 import org.springframework.boot.gradle.tasks.run.BootRun
+import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
+import org.springframework.boot.buildpack.platform.build.PullPolicy
 
 plugins {
 	application
-	id("org.springframework.boot") version "3.1.5"
+	id("org.springframework.boot") version "3.1.6"
 	id("io.spring.dependency-management") version "1.1.3"
+	id("com.google.cloud.artifactregistry.gradle-plugin") version "2.2.1"
 	id("io.freefair.lombok") version "8.4"
 }
 
@@ -11,13 +14,14 @@ application {
     mainClass.set("ua.sinaver.web3.PayFlowApplication")
 }
 
-if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local")) {
+if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local") || project.hasProperty("gcp-staging")) {
 	extra["springCloudGcpVersion"] = "4.5.1"
 	extra["springCloudVersion"] = "2022.0.3"
 }
 
 group = "ua.sinaver.web3"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1-pre-alpha"
+
 java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
@@ -30,7 +34,7 @@ dependencies {
 	implementation ("org.springframework.boot:spring-boot-starter-security")
 	implementation ("org.springframework.session:spring-session-jdbc")
 
-	if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local")) {
+	if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local") || project.hasProperty("gcp-staging")) {
 		project.logger.info("Including GCP dependencies")
 		// gcp
 		implementation ("com.google.cloud:spring-cloud-gcp-starter")
@@ -62,7 +66,7 @@ dependencies {
 
 dependencyManagement {
   imports {
-	if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local")) {
+	if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local") || project.hasProperty("gcp-staging")) {
 		// gcp
     	mavenBom("com.google.cloud:spring-cloud-gcp-dependencies:${property("springCloudGcpVersion")}")
     	mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
@@ -86,4 +90,18 @@ tasks.withType<BootRun> {
 	if (project.hasProperty("gcp-local")) {
 		systemProperty("spring.profiles.active", "gcp-local")
 	}
+
+	if (project.hasProperty("gcp-staging")) {
+		systemProperty("spring.profiles.active", "gcp-staging")
+	}
+}
+
+// gradle -d  bootBuildImage -P{profile} \                                    ✘ INT  10:54:12
+// -Pgcp-image-name={artifactory}/{repository}/{image} \
+// --publishImage
+tasks.withType<BootBuildImage> {
+	if (project.hasProperty("gcp-image-name")) {
+    	imageName = "${project.property("gcp-image-name")}:${project.version}"
+	}
+	pullPolicy = PullPolicy.IF_NOT_PRESENT
 }
