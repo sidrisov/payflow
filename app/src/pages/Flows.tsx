@@ -29,7 +29,7 @@ export default function Flows() {
 
   const {
     isAuthenticated,
-    flows,
+    profile: { flows },
     walletBalances,
     setWalletBalances,
     setInitiateFlowsRefresh,

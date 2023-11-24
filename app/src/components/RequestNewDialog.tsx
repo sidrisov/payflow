@@ -36,7 +36,9 @@ export default function RequestNewDialog({ closeStateCallback, ...props }: Reque
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { flows } = useContext(UserContext);
+  const {
+    profile: { flows }
+  } = useContext(UserContext);
 
   const [title, setTitle] = useState<string>();
   const [selectedFlow, setSelectedFlow] = useState<FlowType>();
