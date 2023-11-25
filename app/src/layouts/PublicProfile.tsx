@@ -2,12 +2,9 @@ import {
   Box,
   Button,
   Card,
-  Chip,
   CircularProgress,
   Container,
-  Fab,
   Stack,
-  Typography,
   useMediaQuery,
   useTheme
 } from '@mui/material';
@@ -19,23 +16,14 @@ import { ProfileType } from '../types/ProfleType';
 import { useEnsName } from 'wagmi';
 import {
   AttachMoney,
-  Campaign,
-  MonetizationOn,
-  Payment,
-  Savings,
-  Search,
-  Send,
-  Verified
-} from '@mui/icons-material';
+  Send} from '@mui/icons-material';
 import { useLazyQuery } from '@airstack/airstack-react';
 import { FlowType } from '../types/FlowType';
-import SearchProfileDialog from '../components/SearchProfileDialog';
 import { API_URL } from '../utils/urlConstants';
 import { ProfileSection } from '../components/ProfileSection';
-import { comingSoonText, comingSoonToast } from '../components/Toasts';
+import { comingSoonToast } from '../components/Toasts';
 import SocialPresenceChipWithLink from '../components/SocialPresenceChipWithLink';
 import { querySocialsMinimal } from '../utils/searchProfile';
-import { green } from '@mui/material/colors';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 
@@ -147,8 +135,9 @@ export default function PublicProfile() {
               <Stack spacing={1} direction="column" alignItems="center">
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <ProfileSection profile={profile} avatarSize={48} />
-{/*                   <Verified fontSize="small" color="success" sx={{color: green[500]}}/>
- */}                </Stack>
+                  {/*                   <Verified fontSize="small" color="success" sx={{color: green[500]}}/>
+                   */}{' '}
+                </Stack>
 
                 {loading && <CircularProgress color="inherit" size={25} />}
                 {socialInfo && (
@@ -193,7 +182,8 @@ export default function PublicProfile() {
                 </Stack>
               </Stack>
             </Card>
-            <Stack
+
+            {/*  <Stack
               overflow="scroll"
               m={1}
               spacing={1}
@@ -220,7 +210,7 @@ export default function PublicProfile() {
 
             <Typography variant="h6" textAlign="center">
               {comingSoonText}
-            </Typography>
+            </Typography> */}
           </>
         )}
 
@@ -305,7 +295,7 @@ export default function PublicProfile() {
             </Card>
           ))} */}
       </Container>
-      <Fab
+      {/* <Fab
         variant="circular"
         onClick={() => {
           setOpenSearchProfile(true);
@@ -320,7 +310,7 @@ export default function PublicProfile() {
         closeStateCallback={() => {
           setOpenSearchProfile(false);
         }}
-      />
+      /> */}
     </>
   );
 }
