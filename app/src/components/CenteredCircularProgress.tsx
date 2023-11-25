@@ -9,7 +9,7 @@ export default function CenteredCircularProgress(props: CircularProgressProps) {
       boxSizing="border-box"
       justifyContent="center"
       sx={{ inset: 0 }}>
-      <CircularProgress {...props} size={30} />
+      <CircularProgress {...props} color="inherit" size={30} />
     </Box>
   );
 }

@@ -14,16 +14,14 @@ import { Helmet } from 'react-helmet-async';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ProfileType } from '../types/ProfleType';
 import { useEnsName } from 'wagmi';
-import {
-  AttachMoney,
-  Send} from '@mui/icons-material';
+import { AttachMoney, Send } from '@mui/icons-material';
 import { useLazyQuery } from '@airstack/airstack-react';
 import { FlowType } from '../types/FlowType';
 import { API_URL } from '../utils/urlConstants';
 import { ProfileSection } from '../components/ProfileSection';
 import { comingSoonToast } from '../components/Toasts';
 import SocialPresenceChipWithLink from '../components/SocialPresenceChipWithLink';
-import { querySocialsMinimal } from '../utils/searchProfile';
+import { QUERY_SOCIALS_MINIMAL } from '../services/socials';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 
@@ -45,7 +43,7 @@ export default function PublicProfile() {
   });
 
   const [fetch, { data: socialInfo, loading }] = useLazyQuery(
-    querySocialsMinimal,
+    QUERY_SOCIALS_MINIMAL,
     { identity: profile?.address },
     {
       cache: true

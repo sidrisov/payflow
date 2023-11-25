@@ -131,7 +131,7 @@ export default function AppWithProviders() {
           chains={chains}>
           <CustomThemeProvider darkMode={appSettings.darkMode}>
             {loading ? (
-              <CenteredCircularProgress color="inherit" />
+              <CenteredCircularProgress />
             ) : (
               profile && (
                 <App profile={profile} appSettings={appSettings} setAppSettings={setAppSettings} />

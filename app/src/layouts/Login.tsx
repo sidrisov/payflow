@@ -45,7 +45,7 @@ export default function Login({
         <title> PayFlow | Login </title>
       </Helmet>
       {authStatus === 'loading' ? (
-        <CenteredCircularProgress color="inherit" />
+        <CenteredCircularProgress />
       ) : (
         (!profile || !address) && (
           <Container maxWidth="xl" sx={{ py: '4vh' }}>

@@ -26,7 +26,9 @@ import { updateProfile } from '../services/user';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../utils/urlConstants';
 import { DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS } from '../utils/networks';
-import { keccak256, toBytes } from 'viem';
+import { QUERY_SOCIALS, converSocialResults } from '../services/socials';
+import { useQuery } from '@airstack/airstack-react';
+import CenteredCircularProgress from './CenteredCircularProgress';
 
 export type OnboardingDialogProps = DialogProps &
   CloseCallbackType & {
@@ -58,6 +60,41 @@ export default function OnboardingDialog({
   const [loadingUpdateProfile, setLoadingUpdateProfile] = useState<boolean>(false);
 
   const navigate = useNavigate();
+
+  const { data: socialInfo, loading: loadingSocials } = useQuery(
+    QUERY_SOCIALS,
+    { identity: profile.address },
+    {
+      cache: true
+    }
+  );
+
+  // make a best effort to pull social info for the user
+  useMemo(async () => {
+    if (socialInfo) {
+      const meta = converSocialResults(socialInfo);
+
+      if (meta) {
+        if (meta.socials && meta.socials.length > 0) {
+          if (!displayName) {
+            setDisplayName(meta.socials[0].profileDisplayName);
+          }
+
+          if (!username || username === profile.address) {
+            setUsername(meta.socials[0].profileName);
+          }
+
+          if (!profileImage) {
+            setProfileImage(meta.socials[0].profileImage);
+          }
+        } else {
+          if (!profile.profileImage && meta.ensAvatar) {
+            setProfileImage(meta.ensAvatar);
+          }
+        }
+      }
+    }
+  }, [socialInfo]);
 
   useMemo(async () => {
     if (username) {
@@ -131,7 +168,11 @@ export default function OnboardingDialog({
     }
   }, [wallets]);
 
-  return (
+  return loadingSocials ? (
+    <Box alignSelf="stretch" justifySelf="stretch">
+      <CenteredCircularProgress />
+    </Box>
+  ) : (
     <Dialog
       onClose={handleCloseCampaignDialog}
       {...props}

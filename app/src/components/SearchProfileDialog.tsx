@@ -20,7 +20,7 @@ import { ProfileWithSocialsType, SelectedProfileWithSocialsType } from '../types
 
 import { isAddress } from 'viem';
 import { useNavigate } from 'react-router-dom';
-import { searchProfile, sortBySocialScore } from '../utils/searchProfile';
+import { searchProfile, sortBySocialScore } from '../services/socials';
 
 import { useDebounce } from 'use-debounce';
 import { SearchProfileListItem } from './SearchProfileListItem';

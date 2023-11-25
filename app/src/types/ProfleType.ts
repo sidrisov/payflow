@@ -28,6 +28,7 @@ export interface MetaType {
 export interface SocialInfoType {
   dappName: string;
   profileName: string;
+  profileDisplayName: string;
   profileImage: string;
 }
 
