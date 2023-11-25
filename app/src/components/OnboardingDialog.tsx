@@ -88,6 +88,15 @@ export default function OnboardingDialog({
             setProfileImage(meta.socials[0].profileImage);
           }
         } else {
+          // TODO: allow .eth, .xyz, etc in the username?
+          if (!displayName && meta.ens) {
+            //setDisplayName(meta.ens);
+          }
+
+          if ((!username || username === profile.address) && meta.ens) {
+            //setUsername(meta.ens);
+          }
+
           if (!profile.profileImage && meta.ensAvatar) {
             setProfileImage(meta.ensAvatar);
           }

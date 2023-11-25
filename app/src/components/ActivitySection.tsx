@@ -3,14 +3,13 @@ import { Badge, Box, BoxProps, Chip, IconButton, Stack, Tooltip, Typography } fr
 import { lightGreen, red } from '@mui/material/colors';
 import { formatEther } from 'viem';
 import { MetaType } from '../types/ProfleType';
-import { AddressSection } from './AddressSection';
-import { ProfileSection } from './ProfileSection';
 import { useContext } from 'react';
 import { UserContext } from '../contexts/UserContext';
 import { TxInfo } from '../types/ActivityFetchResultType';
 import NetworkAvatar from './NetworkAvatar';
-import { useNavigate } from 'react-router-dom';
 import { getNetwork } from 'wagmi/actions';
+import ProfileSectionButton from './ProfileSectionButton';
+import AddressSectionButton from './AddressSectionButton';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
 
@@ -18,13 +17,9 @@ function getActivityLabel(activity: string) {
   return activity === 'self' ? 'Self' : activity === 'inbound' ? 'Received' : 'Sent';
 }
 
-function getActivityIndicator(txInfo: TxInfo) {
-  const { activity, chainId, hash } = txInfo;
+function getActivityIndicator(txInfo: TxInfo, blockExplorerUrl: string | undefined) {
+  const { activity, hash } = txInfo;
 
-  const blockExplorerUrl = getNetwork().chains.find((c) => c.id === chainId)?.blockExplorers
-    ?.etherscan?.url;
-
-  const navigate = useNavigate();
   return (
     <Tooltip title="Tx details">
       <IconButton
@@ -54,6 +49,9 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
   const { ethUsdPrice } = useContext(UserContext);
   const { txInfo } = props;
 
+  const blockExplorerUrl = getNetwork().chains.find((c) => c.id === txInfo.chainId)?.blockExplorers
+    ?.etherscan?.url;
+
   return (
     <Box
       display="flex"
@@ -74,7 +72,7 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
               }}
             />
           }>
-          {getActivityIndicator(txInfo)}
+          {getActivityIndicator(txInfo, blockExplorerUrl)}
         </Badge>
 
         <Stack alignItems="center">
@@ -86,19 +84,21 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
           </Typography>
         </Stack>
       </Stack>
-      <Box display="flex" flexDirection="row" justifyContent="flex-start" width={140}>
-        {txInfo.profile ? (
-          <ProfileSection profile={txInfo.profile} />
-        ) : (
-          <AddressSection
-            meta={
-              {
-                addresses: [txInfo.activity === 'inbound' ? txInfo.from : txInfo.to]
-              } as MetaType
-            }
-          />
-        )}
-      </Box>
+      {txInfo.profile ? (
+        <ProfileSectionButton fullWidth profile={txInfo.profile} />
+      ) : (
+        <AddressSectionButton
+          fullWidth
+          href={`${blockExplorerUrl}/address/${
+            txInfo.activity === 'inbound' ? txInfo.from : txInfo.to
+          }`}
+          meta={
+            {
+              addresses: [txInfo.activity === 'inbound' ? txInfo.from : txInfo.to]
+            } as MetaType
+          }
+        />
+      )}
       <Box
         display="flex"
         flexDirection="row"
