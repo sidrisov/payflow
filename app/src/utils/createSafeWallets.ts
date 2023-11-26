@@ -1,9 +1,7 @@
 import Safe, {
   EthersAdapter,
   SafeAccountConfig,
-  SafeDeploymentConfig,
-  SafeFactory
-} from '@safe-global/protocol-kit';
+  SafeDeploymentConfig} from '@safe-global/protocol-kit';
 import { Address, Chain, keccak256, toBytes } from 'viem';
 import { getEthersProvider } from './hooks/useEthersProvider';
 
@@ -20,6 +18,13 @@ export default async function createSafeWallets(
     // thus changing fallbackhandle, thus changing the initiator, thus changing the create2 address
     const fallbackHandler = getFallbackHandler(chain.id);
 
+    const ethersProvider = getEthersProvider({ chainId: chain.id });
+
+    const ethAdapter = new EthersAdapter({
+      ethers,
+      signerOrProvider: ethersProvider
+    });
+
     // probably the same issue with Safe singleton address
     const safeAccountConfig: SafeAccountConfig = {
       owners: [owner],
@@ -33,18 +38,6 @@ export default async function createSafeWallets(
     } as SafeDeploymentConfig;
 
     console.log(safeAccountConfig, safeDeploymentConfig);
-
-    const ethersProvider = getEthersProvider({ chainId: chain.id });
-
-    const ethAdapter = new EthersAdapter({
-      ethers,
-      signerOrProvider: ethersProvider
-    });
-
-    const safeFactory = await SafeFactory.create({
-      ethAdapter,
-      safeVersion: '1.3.0'
-    });
 
     const safe = await Safe.create({
       ethAdapter: ethAdapter,
@@ -64,5 +57,5 @@ export default async function createSafeWallets(
     };
   });
 
-  return await Promise.all(deployPromises);
+  return Promise.all(deployPromises);
 }

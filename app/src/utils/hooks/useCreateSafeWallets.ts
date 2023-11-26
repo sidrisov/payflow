@@ -9,11 +9,12 @@ export type SafeWallet = {
 
 export const useCreateSafeWallets = (): {
   loading: boolean;
-  created: boolean;
+  error: boolean;
   wallets: { chain: Chain; address: Address }[] | undefined;
   create: (owner: Address, saltNonce: string, chains: Chain[]) => Promise<void>;
+  reset: () => Promise<void>;
 } => {
-  const [created, setCreated] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [wallets, setWallets] = useState<{ chain: Chain; address: Address }[]>();
 
@@ -22,13 +23,18 @@ export const useCreateSafeWallets = (): {
     try {
       const wallets = await createSafeWallets(owner, saltNonce, chains);
       setLoading(false);
-      setCreated(true);
       setWallets(wallets);
     } catch (error) {
       console.log(error);
-      setCreated(false);
+      setError(true);
       setLoading(false);
     }
   }, []);
-  return { loading, created, wallets, create };
+
+  const reset = useCallback(async function () {
+    setLoading(false);
+    setError(false);
+    setWallets(undefined);
+  }, []);
+  return { loading, error, wallets, create, reset };
 };

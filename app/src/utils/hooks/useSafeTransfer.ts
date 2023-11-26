@@ -90,7 +90,7 @@ export const useSafeTransfer = (): {
   []);
 
   const reset = useCallback(async function () {
-    setLoading(true);
+    setLoading(false);
     setError(false);
     setConfirmed(undefined);
     setTxHash(undefined);

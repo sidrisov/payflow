@@ -8,7 +8,8 @@ import {
   Box,
   TextField,
   InputAdornment,
-  Avatar
+  Avatar,
+  CircularProgress
 } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 
@@ -56,7 +57,7 @@ export default function OnboardingDialog({
 
   const [usernameAvailble, setUsernameAvailable] = useState<boolean>();
 
-  const { loading: loadingWallets, create, wallets } = usePreCreateSafeWallets();
+  const { loading: loadingWallets, error, wallets, create, reset } = usePreCreateSafeWallets();
   const [loadingUpdateProfile, setLoadingUpdateProfile] = useState<boolean>(false);
 
   const navigate = useNavigate();
@@ -133,7 +134,10 @@ export default function OnboardingDialog({
   }
 
   useMemo(async () => {
-    if (wallets && wallets.length === DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS.length) {
+    if (error) {
+      toast.error('Failed to prepare flow, try again!');
+      await reset();
+    } else if (wallets && wallets.length === DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS.length) {
       const flowWallets = wallets.map(
         (wallet) =>
           ({
@@ -169,13 +173,14 @@ export default function OnboardingDialog({
           toast.success('Onboarding successfully completed');
           navigate('/');
         } else {
-          toast.error('Failed, try again');
+          toast.error('Failed to update profile, try again!');
         }
       } finally {
         setLoadingUpdateProfile(false);
+        await reset();
       }
     }
-  }, [wallets]);
+  }, [wallets, error]);
 
   return loadingSocials ? (
     <Box alignSelf="stretch" justifySelf="stretch">
@@ -270,16 +275,27 @@ export default function OnboardingDialog({
           <LoadingButton
             loading={loadingWallets || loadingUpdateProfile}
             disabled={!usernameAvailble || !username}
+            fullWidth
             variant="outlined"
+            loadingIndicator={
+              <Stack direction="row" spacing={1} alignItems="center">
+                <CircularProgress color="inherit" size={16} />
+                <Typography variant="button">
+                  {loadingWallets
+                    ? 'preparing flow'
+                    : loadingUpdateProfile
+                    ? 'updating profile'
+                    : ''}
+                </Typography>
+              </Stack>
+            }
+            size="medium"
+            color="primary"
             onClick={async () => {
               await createMainFlow();
             }}
-            sx={{ borderRadius: 3 }}>
-            {loadingWallets
-              ? 'Creating default flow ...'
-              : loadingUpdateProfile
-              ? 'Updating profile...'
-              : 'Complete'}
+            sx={{ borderRadius: 5 }}>
+            Complete
           </LoadingButton>
         </Stack>
       </DialogContent>

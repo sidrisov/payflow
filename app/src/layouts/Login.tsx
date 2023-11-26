@@ -135,6 +135,7 @@ export default function Login({
       )}
       {profile && address && (!profile.username || !profile.defaultFlow) && (
         <OnboardingDialog
+          fullScreen={isMobile}
           open={!profile.username || !profile.defaultFlow}
           profile={profile}
           closeStateCallback={() => {}}
