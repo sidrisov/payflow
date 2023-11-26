@@ -158,6 +158,7 @@ export default function SearchProfileDialog({
             (isAddress(searchString) ||
               searchString.endsWith('.eth') ||
               searchString.endsWith('.xyz') ||
+              searchString.endsWith('.id') ||
               searchString.startsWith('fc:') ||
               searchString.startsWith('lens:')) &&
             profiles.length > 0 && (

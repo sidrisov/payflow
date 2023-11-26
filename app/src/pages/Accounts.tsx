@@ -67,7 +67,7 @@ export default function Accounts() {
   return (
     <>
       <Helmet>
-        <title> PayFlow | Accounts </title>
+        <title> PayFlow | Home </title>
       </Helmet>
       <Container maxWidth="md">
         {isAuthenticated && flows && selectedFlow ? (

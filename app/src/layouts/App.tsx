@@ -195,13 +195,13 @@ export default function AppLayout({
 
                       <IconButton
                         color={location.pathname === '/flows' ? 'inherit' : undefined}
-                        onClick={() => /* navigate('/flows') */ comingSoonToast()}>
+                        onClick={() => comingSoonToast()}>
                         <AppsOutlined />
                       </IconButton>
 
                       <IconButton
                         color={location.pathname === '/requests' ? 'inherit' : undefined}
-                        onClick={() => /* navigate('/requests') */ comingSoonToast()}>
+                        onClick={() => comingSoonToast()}>
                         {location.pathname === '/requests' ? <Payments /> : <PaymentsOutlined />}
                       </IconButton>
 
@@ -227,11 +227,11 @@ export default function AppLayout({
                       </Box>
                     </Stack>
                     <Stack direction="row" spacing={0.5} alignItems="center">
-                      <IconButton color="inherit" onClick={() => comingSoonToast()}>
+                      {/*                       <IconButton color="inherit" onClick={() => comingSoonToast()}>
                         <Badge variant="dot" color="info">
                           <NotificationsOutlined />
                         </Badge>
-                      </IconButton>
+                      </IconButton> */}
 
                       <IconButton
                         size="small"

@@ -161,7 +161,8 @@ export async function searchProfile(searchValue: string): Promise<ProfileWithSoc
   } else if (
     searchValue.endsWith('.eth') ||
     isAddress(searchValue) ||
-    searchValue.endsWith('.xyz')
+    searchValue.endsWith('.xyz') ||
+    searchValue.endsWith('.id')
   ) {
     const { data, error } = await fetchQuery(
       QUERY_SOCIALS,
