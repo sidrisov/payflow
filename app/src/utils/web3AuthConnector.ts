@@ -30,7 +30,7 @@ export const rainbowWeb3AuthConnector = ({ chains }: { chains: any[] }) => {
       defaultLanguage: 'en',
       modalZIndex: '2147483647'
     },
-    web3AuthNetwork: 'cyan',
+    web3AuthNetwork: 'sapphire_devnet',
     authMode: 'WALLET'
   });
 
@@ -42,7 +42,7 @@ export const rainbowWeb3AuthConnector = ({ chains }: { chains: any[] }) => {
     },
     privateKeyProvider,
     adapterSettings: {
-      network: 'cyan',
+      network: 'sapphire_devnet',
       uxMode: 'popup'
     }
   });

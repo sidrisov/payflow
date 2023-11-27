@@ -2,7 +2,7 @@ import { Box, Container, Stack, Typography, useMediaQuery, useTheme } from '@mui
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Helmet } from 'react-helmet-async';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
-import { useAccount } from 'wagmi';
+import { useAccount, useSwitchNetwork } from 'wagmi';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import OnboardingDialog from '../components/OnboardingDialog';
@@ -27,6 +27,8 @@ export default function Login({
   const navigate = useNavigate();
 
   const { address } = useAccount();
+
+  useSwitchNetwork({ chainId: 1 });
 
   useEffect(() => {
     console.log(profile, authStatus);

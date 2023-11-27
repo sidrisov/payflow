@@ -56,7 +56,6 @@ public class User {
     @Column(nullable = false)
     private String signer;
 
-    // TODO: rename columnt to default_flow_id
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "flow_id", referencedColumnName = "id")
     private Flow defaultFlow;

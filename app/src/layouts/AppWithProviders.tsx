@@ -9,8 +9,6 @@ import {
   RainbowKitProvider
 } from '@rainbow-me/rainbowkit';
 
-import { rainbowWeb3AuthConnector } from '../utils/web3AuthConnector';
-
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
@@ -46,10 +44,10 @@ const { wallets } = getDefaultWallets({
 
 const connectors = connectorsForWallets([
   ...wallets,
-  {
+/*   {
     groupName: 'Other',
     wallets: [rainbowWeb3AuthConnector({ chains })]
-  }
+  } */
 ]);
 
 const appSettingsStorageItem = localStorage.getItem('appSettings');

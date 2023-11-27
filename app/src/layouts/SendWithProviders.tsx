@@ -14,7 +14,6 @@ import { publicProvider } from 'wagmi/providers/public';
 import { useMediaQuery } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { AppSettings } from '../types/AppSettingsType';
-import { rainbowWeb3AuthConnector } from '../utils/web3AuthConnector';
 import { CustomAvatar } from '../components/CustomAvatar';
 import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
 import { SUPPORTED_CHAINS } from '../utils/networks';
@@ -33,11 +32,11 @@ const { wallets } = getDefaultWallets({
 });
 
 const connectors = connectorsForWallets([
-  ...wallets,
-  {
+  ...wallets
+  /*   {
     groupName: 'Other',
     wallets: [rainbowWeb3AuthConnector({ chains })]
-  }
+  } */
 ]);
 
 const appSettingsStorageItem = localStorage.getItem('appSettings');
