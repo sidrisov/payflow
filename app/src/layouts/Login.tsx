@@ -2,9 +2,9 @@ import { Box, Container, Stack, Typography, useMediaQuery, useTheme } from '@mui
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Helmet } from 'react-helmet-async';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
-import { useAccount, useSwitchNetwork } from 'wagmi';
+import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import OnboardingDialog from '../components/OnboardingDialog';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { ProfileType } from '../types/ProfleType';
@@ -28,7 +28,14 @@ export default function Login({
 
   const { address } = useAccount();
 
-  useSwitchNetwork({ chainId: 1 });
+  const { chain } = useNetwork();
+  const { switchNetwork } = useSwitchNetwork();
+
+  useMemo(() => {
+    if (chain?.id !== 1) {
+      switchNetwork?.(1);
+    }
+  }, [chain?.id]);
 
   useEffect(() => {
     console.log(profile, authStatus);
@@ -95,13 +102,7 @@ export default function Login({
                     variant="subtitle2"
                     fontSize={isMobile ? 14 : 16}
                     fontFamily="monospace">
-                    💸 send, receive, and request crypto
-                  </Typography>
-                  <Typography
-                    variant="subtitle2"
-                    fontSize={isMobile ? 14 : 16}
-                    fontFamily="monospace">
-                    🚀 and more coming
+                    💸 send, receive, request crypto, and more coming
                   </Typography>
                 </Stack>
               </Box>
