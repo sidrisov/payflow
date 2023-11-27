@@ -22,6 +22,11 @@ export const QUERY_SOCIALS = `query GetSocial($identity: Identity!) {
       profileName
       profileDisplayName
       profileImage
+      profileImageContentValue {
+        image {
+          small
+        }
+      }
       profileTokenId
     }
     xmtp {
@@ -211,14 +216,19 @@ export function converSocialResults(data: any): MetaType | undefined {
 
   if (data.Wallet.socials) {
     meta.socials = data.Wallet.socials
-      .filter((s: any) => s.dappName && s.profileName && s.profileImage)
+      .filter(
+        (s: any) =>
+          s.dappName &&
+          s.profileName &&
+          (s.profileImage || s.profileImageContentValue?.image?.small)
+      )
       .map(
         (s: any) =>
           ({
             dappName: s.dappName,
             profileName: s.profileName,
             profileDisplayName: s.profileDisplayName,
-            profileImage: s.profileImage
+            profileImage: s.profileImageContentValue?.image?.small ?? s.profileImage
           } as SocialInfoType)
       );
   } else {
