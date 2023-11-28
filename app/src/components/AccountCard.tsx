@@ -93,6 +93,8 @@ export function AccountCard(props: AccountNewDialogProps) {
             component={Button}
             sx={{
               alignSelf: 'center',
+              height: 36,
+              minWidth: 36,
               '& .MuiAvatar-root': {
                 borderStyle: 'none',
                 border: 0,

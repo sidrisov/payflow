@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.micrometer.core.annotation.Timed;
+import jakarta.transaction.Transactional;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 import ua.sinaver.web3.data.User;
@@ -30,7 +32,9 @@ import ua.sinaver.web3.service.UserService;
 @RestController
 @RequestMapping("/user")
 @CrossOrigin(origins = "${dapp.url}", allowCredentials = "true")
+@Transactional
 @Slf4j
+@Timed(value = "api.user")
 public class UserController {
 
     @Autowired

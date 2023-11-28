@@ -18,5 +18,15 @@
     "name": "payflow.invitation.whitelisted.default.allowance",
     "type": "java.lang.String",
     "description": "A description for 'payflow.invitation.whitelisted.default.allowance'"
+  },
+  {
+    "name": "logging.step",
+    "type": "java.lang.String",
+    "description": "A description for 'logging.step'"
+  },
+  {
+    "name": "management.metrics.export.logging.step",
+    "type": "java.lang.String",
+    "description": "A description for 'management.metrics.export.logging.step'"
   }
 ]}
