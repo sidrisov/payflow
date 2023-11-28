@@ -138,22 +138,13 @@ export default function OnboardingDialog({
       toast.error('Failed to prepare flow, try again!');
       await reset();
     } else if (wallets && wallets.length === DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS.length) {
-      const flowWallets = wallets.map(
-        (wallet) =>
-          ({
-            address: wallet.address,
-            network: wallet.chain.id,
-            version: DEFAULT_SAFE_VERSION
-          } as FlowWalletType)
-      );
-
       const defaultFlow = {
         account: profile.address,
         title: 'default',
         description: '',
         walletProvider: 'safe',
         saltNonce: SALT_NONCE,
-        wallets: flowWallets
+        wallets
       } as FlowType;
 
       const updatedProfile = {

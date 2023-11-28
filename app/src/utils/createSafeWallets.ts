@@ -1,18 +1,22 @@
 import Safe, {
   EthersAdapter,
   SafeAccountConfig,
-  SafeDeploymentConfig} from '@safe-global/protocol-kit';
+  SafeDeploymentConfig
+} from '@safe-global/protocol-kit';
 import { Address, Chain, keccak256, toBytes } from 'viem';
 import { getEthersProvider } from './hooks/useEthersProvider';
 
 import { ethers } from 'ethers';
 import { getFallbackHandler } from './safeTransactions';
+import { FlowWalletType } from '../types/FlowType';
+
+const DEFAULT_SAFE_VERSION = '1.3.0';
 
 export default async function createSafeWallets(
   owner: Address,
   saltNonce: string,
   chains: Chain[]
-): Promise<{ chain: Chain; address: Address }[]> {
+): Promise<FlowWalletType[]> {
   const deployPromises = chains.map(async (chain) => {
     // there is a bug where safe sdk will modify the state of safe account config,
     // thus changing fallbackhandle, thus changing the initiator, thus changing the create2 address
@@ -33,7 +37,7 @@ export default async function createSafeWallets(
     };
 
     const safeDeploymentConfig = {
-      safeVersion: '1.3.0',
+      safeVersion: DEFAULT_SAFE_VERSION,
       saltNonce: keccak256(toBytes(saltNonce))
     } as SafeDeploymentConfig;
 
@@ -49,12 +53,16 @@ export default async function createSafeWallets(
 
     const predictedAddress = (await safe.getAddress()) as Address;
 
-    console.log(predictedAddress, chain.name);
+    const isSafeDeployed = await ethAdapter.isContractDeployed(predictedAddress);
+
+    console.log(predictedAddress, chain.name, isSafeDeployed);
 
     return {
-      chain,
-      address: predictedAddress
-    };
+      network: chain.id,
+      address: predictedAddress,
+      deployed: isSafeDeployed,
+      version: DEFAULT_SAFE_VERSION
+    } as FlowWalletType;
   });
 
   return Promise.all(deployPromises);
