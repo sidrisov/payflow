@@ -478,11 +478,15 @@ export default function AccountSendDialog({
           setOpenSelectWallet(false);
         }}
         // in case a new wallet chain added, not all users maybe be compatible, limit by chains recipient supports
-        wallets={flow.wallets.filter((w) =>
-          selectedRecipient?.data.profile?.defaultFlow?.wallets.find(
-            (rw) => rw.network === w.network
-          )
-        )}
+        wallets={
+          selectedRecipient?.type === 'profile'
+            ? flow.wallets.filter((w) =>
+                selectedRecipient?.data.profile?.defaultFlow?.wallets.find(
+                  (rw) => rw.network === w.network
+                )
+              )
+            : flow.wallets
+        }
         selectedWallet={selectedWallet}
         setSelectedWallet={setSelectedWallet}
       />
