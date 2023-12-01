@@ -50,7 +50,7 @@ export default function PublicProfile() {
     }
   );
 
-  async function fetchFlows(profile: ProfileType) {
+  /* async function fetchFlows(profile: ProfileType) {
     try {
       const response = await axios.get(`${API_URL}/api/flows/public/${profile.address}`, {
         withCredentials: true
@@ -60,7 +60,7 @@ export default function PublicProfile() {
     } catch (error) {
       console.log(error);
     }
-  }
+  } */
 
   useMemo(async () => {
     if (username) {
@@ -82,7 +82,7 @@ export default function PublicProfile() {
     if (profile) {
       console.log(profile);
       fetch();
-      fetchFlows(profile);
+      //fetchFlows(profile);
     }
   }, [profile]);
 

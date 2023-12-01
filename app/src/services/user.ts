@@ -16,6 +16,18 @@ export async function me(): Promise<ProfileType | undefined> {
   }
 }
 
+export async function getAllActiveProfiles(): Promise<ProfileType[] | undefined> {
+  try {
+    const response = await axios.get(`${API_URL}/api/user/all`);
+    if (response.status === 200) {
+      return response.data as ProfileType[];
+    }
+    console.log(response.data);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 export async function updateProfile(
   profile: ProfileType,
   code?: string

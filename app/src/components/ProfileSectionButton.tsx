@@ -1,4 +1,4 @@
-import { Box, Button, ButtonProps } from '@mui/material';
+import { Box, BoxProps, Button, ButtonProps } from '@mui/material';
 import { ProfileType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { useNavigate } from 'react-router-dom';
@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 export default function ProfileSectionButton({
   profile,
   ...props
-}: ButtonProps & { profile: ProfileType }) {
+}: BoxProps & ButtonProps & { profile: ProfileType }) {
   const navigate = useNavigate();
 
   return (

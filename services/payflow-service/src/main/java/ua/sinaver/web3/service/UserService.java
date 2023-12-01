@@ -133,4 +133,9 @@ public class UserService implements IUserService {
         });
         return walletUserMap;
     }
+
+    @Override
+    public List<User> findAll() {
+        return userRepository.findByAllowedTrueOrderByLastSeenDesc();
+    }
 }

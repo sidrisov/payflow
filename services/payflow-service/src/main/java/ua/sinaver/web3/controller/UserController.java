@@ -71,6 +71,19 @@ public class UserController {
 
     }
 
+    @GetMapping("/all")
+    public List<ProfileMetaMessage> getAllProfiles() {
+        List<User> users = userService.findAll();
+        log.debug("Fetching all profiles");
+        if (users != null) {
+            return users.stream().map(user -> new ProfileMetaMessage(user.getSigner(), user.getDisplayName(),
+                    user.getUsername(),
+                    user.getProfileImage(), user.getCreatedDate().toString())).toList();
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
     @GetMapping
     public List<ProfileMessage> searchProfile(@RequestParam(value = "search") String username) {
         List<User> users = userService.searchByUsernameQuery(username);
@@ -87,7 +100,7 @@ public class UserController {
             }).toList();
 
         } else {
-            return null;
+            return Collections.emptyList();
         }
     }
 

@@ -27,4 +27,6 @@ public interface UserRepository extends CrudRepository<User, Integer> {
                         "in (SELECT flow_id FROM wallet WHERE " +
                         "address = :#{#wallet.address} AND network = :#{#wallet.network}))", nativeQuery = true)
         User findByOwnedWallet(@Param("wallet") WalletProfileRequestMessage wallet);
+
+        List<User> findByAllowedTrueOrderByLastSeenDesc();
 }
