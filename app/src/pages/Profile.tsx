@@ -82,7 +82,7 @@ export default function Profile() {
   return (
     <>
       <Helmet>
-        <title> PayFlow | Profile </title>
+        <title> Payflow | Profile </title>
       </Helmet>
       <Container maxWidth="sm" sx={{ p: 3 }}>
         <ProfileSection profile={profile} avatarSize={48} />

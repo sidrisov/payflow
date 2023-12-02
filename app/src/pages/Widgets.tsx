@@ -63,7 +63,7 @@ export default function Widgets() {
   return (
     <>
       <Helmet>
-        <title> PayFlow | Branding </title>
+        <title> Payflow | Branding </title>
       </Helmet>
       <Typography variant="caption" color="red">
         * Experimental feature

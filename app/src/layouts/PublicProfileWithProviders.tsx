@@ -29,7 +29,7 @@ const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 const AIRSTACK_API_KEY = import.meta.env.VITE_AIRSTACK_API_KEY;
 
 const { wallets } = getDefaultWallets({
-  appName: 'PayFlow',
+  appName: 'Payflow',
   projectId: WALLET_CONNECT_PROJECT_ID,
   chains
 });

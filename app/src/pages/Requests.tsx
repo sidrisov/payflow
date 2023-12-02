@@ -248,7 +248,7 @@ export default function Requests() {
   return (
     <>
       <Helmet>
-        <title> PayFlow | Requests </title>
+        <title> Payflow | Requests </title>
       </Helmet>
       <Container>
         {isAuthenticated && (

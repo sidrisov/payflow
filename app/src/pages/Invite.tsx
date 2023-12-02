@@ -55,7 +55,7 @@ export default function Invite() {
   return (
     <>
       <Helmet>
-        <title> PayFlow | Invite </title>
+        <title> Payflow | Invite </title>
       </Helmet>
       <Container maxWidth="sm" sx={{ p: 3 }}>
         <Box display="flex" flexDirection="column" justifyContent="flex-start" alignItems="center">

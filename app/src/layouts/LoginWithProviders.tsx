@@ -32,7 +32,7 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(SUPPORTE
 ]);
 
 const { wallets } = getDefaultWallets({
-  appName: 'PayFlow',
+  appName: 'Payflow',
   projectId: WALLET_CONNECT_PROJECT_ID,
   chains
 });
@@ -104,7 +104,7 @@ export default function AppWithProviders() {
         return new SiweMessage({
           domain: window.location.host,
           address,
-          statement: 'Sign in with Ethereum to PayFlow',
+          statement: 'Sign in with Ethereum to Payflow',
           uri: window.location.origin,
           version: '1',
           chainId,

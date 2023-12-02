@@ -4,7 +4,7 @@ export default function Tipping() {
   return (
     <>
       <Helmet>
-        <title> PayFlow | Tipping </title>
+        <title> Payflow | Tipping </title>
       </Helmet>
     </>
   );

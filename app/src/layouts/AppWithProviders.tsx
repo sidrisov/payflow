@@ -37,14 +37,14 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(SUPPORTE
 ]);
 
 const { wallets } = getDefaultWallets({
-  appName: 'PayFlow',
+  appName: 'Payflow',
   projectId: WALLET_CONNECT_PROJECT_ID,
   chains
 });
 
 const connectors = connectorsForWallets([
-  ...wallets,
-/*   {
+  ...wallets
+  /*   {
     groupName: 'Other',
     wallets: [rainbowWeb3AuthConnector({ chains })]
   } */

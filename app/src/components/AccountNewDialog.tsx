@@ -232,7 +232,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
                 sx={{ borderRadius: 3 }}
                 endIcon={<AutoFixHigh />}
                 onClick={deployNewAccount}>
-                Create PayFlow Account
+                Create Payflow Account
               </Button>
             </>
           )}

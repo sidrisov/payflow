@@ -89,7 +89,7 @@ export default function PublicProfile() {
   return (
     <>
       <Helmet>
-        <title> PayFlow | Profile </title>
+        <title> Payflow {profile ? '| ' + profile.displayName : ''} </title>
       </Helmet>
       <Container maxWidth="sm">
         {/* <Box m={3} display="flex" flexDirection="row" alignItems="center" alignSelf="stretch">

@@ -25,14 +25,14 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(SUPPORTE
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 
 const { wallets } = getDefaultWallets({
-  appName: 'PayFlow',
+  appName: 'Payflow',
   projectId: WALLET_CONNECT_PROJECT_ID,
   chains
 });
 
 const connectors = connectorsForWallets([
-  ...wallets,
-/*   {
+  ...wallets
+  /*   {
     groupName: 'Other',
     wallets: [rainbowWeb3AuthConnector({ chains })]
   } */

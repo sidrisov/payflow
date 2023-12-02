@@ -51,7 +51,7 @@ export default function Login({
   return (
     <CustomThemeProvider darkMode={true}>
       <Helmet>
-        <title> PayFlow | Login </title>
+        <title> Payflow | Login </title>
       </Helmet>
       {authStatus === 'loading' ? (
         <CenteredCircularProgress />

@@ -4,7 +4,7 @@ export default function Activity() {
   return (
     <>
       <Helmet>
-        <title> PayFlow | Transactions </title>
+        <title> Payflow | Transactions </title>
       </Helmet>
     </>
   );

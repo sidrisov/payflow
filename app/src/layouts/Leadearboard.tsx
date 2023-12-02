@@ -43,7 +43,7 @@ export default function Leaderboard() {
     <AirstackProvider apiKey={AIRSTACK_API_KEY}>
       <CustomThemeProvider darkMode={appSettings.darkMode}>
         <Helmet>
-          <title> PayFlow | Leaderboard </title>
+          <title> Payflow | Leaderboard </title>
         </Helmet>
         <Container maxWidth="xs">
           <Card
