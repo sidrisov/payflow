@@ -226,7 +226,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
   return (
     <CustomThemeProvider darkMode={appSettings.darkMode}>
       <Helmet>
-        <title> PayFlow | Pay </title>
+        <title> Payflow | Pay </title>
       </Helmet>
       <HideOnScroll>
         <AppBar

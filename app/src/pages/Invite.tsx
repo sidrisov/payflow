@@ -14,7 +14,7 @@ export default function Invite() {
 
   const [loadingInvitations, setLoadingInvitations] = useState<boolean>();
   const [invitations, setInvitations] = useState<InvitationType[]>();
-  const [codes, setCodes] = useState<InvitationType[]>();
+  const [codes, setCodes] = useState<{ code: string; count: number }[]>();
   const [pending, setPending] = useState<InvitationType[]>();
   const [joined, setJoined] = useState<InvitationType[]>();
 
@@ -27,9 +27,22 @@ export default function Invite() {
       const invitations = await getAllInvitations();
 
       if (invitations) {
-        setCodes(invitations.filter((inv) => inv.code && !inv.invitee));
         setPending(invitations.filter((inv) => inv.identity && !inv.invitee));
         setJoined(invitations.filter((inv) => inv.invitee));
+
+        var codes: { code: string; count: number }[] = [];
+        invitations
+          .filter((inv) => inv.code && !inv.invitee)
+          .reduce(function (res: any, value) {
+            if (!res[value.code]) {
+              res[value.code] = { code: value.code, count: 0 };
+              codes.push(res[value.code]);
+            }
+            res[value.code].count += 1;
+            return res;
+          }, {});
+
+        setCodes(codes);
       }
 
       console.log(invitations);
@@ -42,7 +55,7 @@ export default function Invite() {
   return (
     <>
       <Helmet>
-        <title> PayFlow | Invite </title>
+        <title> Payflow | Invite </title>
       </Helmet>
       <Container maxWidth="sm" sx={{ p: 3 }}>
         <Box display="flex" flexDirection="column" justifyContent="flex-start" alignItems="center">
@@ -63,7 +76,10 @@ export default function Invite() {
 
                     <Stack maxHeight={300} sx={{ p: 1, overflowY: 'scroll' }}>
                       {codes?.map((inv) => (
-                        <CodeOrAddressInvitationSection codeOrAddress={inv.code} />
+                        <CodeOrAddressInvitationSection
+                          codeOrAddress={inv.code}
+                          count={inv.count}
+                        />
                       ))}
                     </Stack>
                   </Box>

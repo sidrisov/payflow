@@ -18,7 +18,9 @@ export default function Accounts() {
   const theme = useTheme();
   const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { isAuthenticated, profile, flows } = useContext(UserContext);
+  const { isAuthenticated, profile } = useContext(UserContext);
+
+  const { flows } = profile;
 
   const [assetsOrActivityView, setAssetsOrActivityView] = useState<'assets' | 'activity'>('assets');
 
@@ -65,7 +67,7 @@ export default function Accounts() {
   return (
     <>
       <Helmet>
-        <title> PayFlow | Accounts </title>
+        <title> Payflow | Home </title>
       </Helmet>
       <Container maxWidth="md">
         {isAuthenticated && flows && selectedFlow ? (
@@ -80,7 +82,7 @@ export default function Accounts() {
               setAssetsOrActivityView={setAssetsOrActivityView}
             />
 
-            <Box px={2} maxWidth={smallScreen ? 350 : 440}>
+            <Box px={2} maxWidth={smallScreen ? 400 : 450}>
               <NetworkSelectorSection
                 mx={1}
                 wallets={selectedFlow.wallets}

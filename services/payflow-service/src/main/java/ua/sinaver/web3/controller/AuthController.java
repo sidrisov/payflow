@@ -57,13 +57,19 @@ public class AuthController {
 
         // check if nonce match with previosly generated for this session
         if (sessionNonce == null || !siwe.message().nonce().equals(sessionNonce)) {
-            log.error("Nonce mismatch!");
+            log.error("Nonce mismatch - expected: {}, actual {}", sessionNonce, siwe.message().nonce());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
         // check if dapp uri match the one it's actually deployed
         if (!siwe.message().uri().equals(dappUri)) {
-            log.error("URI mismatch!");
+            log.error("URI mismatch - expected: {}, actual {}", dappUri, siwe.message().uri());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        // check chainId
+        if (siwe.message().chainId() != 1) {
+            log.error("Wrong chainId  - expected: {}, actual {}", 1, siwe.message().chainId());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 

@@ -2,9 +2,9 @@ import axios from 'axios';
 import { MetaType, ProfileType, ProfileWithSocialsType, SocialInfoType } from '../types/ProfleType';
 import { fetchQuery } from '@airstack/airstack-react';
 import { isAddress } from 'viem';
-import { API_URL } from './urlConstants';
+import { API_URL } from '../utils/urlConstants';
 
-export const querySocials = `query GetSocial($identity: Identity!) {
+export const QUERY_SOCIALS = `query GetSocial($identity: Identity!) {
   Wallet(input: {identity: $identity, blockchain: ethereum}) {
     addresses
     primaryDomain {
@@ -20,7 +20,13 @@ export const querySocials = `query GetSocial($identity: Identity!) {
     socials(input: {limit: 5}) {
       dappName
       profileName
+      profileDisplayName
       profileImage
+      profileImageContentValue {
+        image {
+          small
+        }
+      }
       profileTokenId
     }
     xmtp {
@@ -29,7 +35,7 @@ export const querySocials = `query GetSocial($identity: Identity!) {
   }
 }`;
 
-export const querySocialsMinimal = `query GetSocial($identity: Identity!) {
+export const QUERY_SOCIALS_MINIMAL = `query GetSocial($identity: Identity!) {
   Wallet(input: {identity: $identity, blockchain: ethereum}) {
     primaryDomain {
       name
@@ -44,7 +50,7 @@ export const querySocialsMinimal = `query GetSocial($identity: Identity!) {
   }
 }`;
 
-const queryAssociatedAddressesByFarcasterName = `query GetAssociatedAddresses($profileName: String!) {
+const QUERY_ASSOCIATED_ADDRESSES_BY_FC_NAME = `query GetAssociatedAddresses($profileName: String!) {
   Socials(
     input: {filter: {dappName: {_eq: farcaster}, profileName: {_eq: $profileName}}, blockchain: ethereum}
   ) {
@@ -54,7 +60,7 @@ const queryAssociatedAddressesByFarcasterName = `query GetAssociatedAddresses($p
   }
 }`;
 
-const queryAssociatedAddressesByLensName = `query GetAssociatedAddresses($profileName: String!) {
+const QUERY_ASSOCIATED_ADDRESSES_BY_LENS_NAME = `query GetAssociatedAddresses($profileName: String!) {
   Socials(
     input: {filter: {dappName: {_eq: lens}, profileName: {_eq: $profileName}}, blockchain: ethereum}
   ) {
@@ -116,7 +122,7 @@ export async function searchProfile(searchValue: string): Promise<ProfileWithSoc
     }
   } else if (searchValue.startsWith('fc:')) {
     const { data, error } = await fetchQuery(
-      queryAssociatedAddressesByFarcasterName,
+      QUERY_ASSOCIATED_ADDRESSES_BY_FC_NAME,
       { profileName: searchValue.substring(searchValue.indexOf(':') + 1) },
       {
         cache: true
@@ -138,7 +144,7 @@ export async function searchProfile(searchValue: string): Promise<ProfileWithSoc
     }
   } else if (searchValue.startsWith('lens:')) {
     const { data, error } = await fetchQuery(
-      queryAssociatedAddressesByLensName,
+      QUERY_ASSOCIATED_ADDRESSES_BY_LENS_NAME,
       { profileName: 'lens/@'.concat(searchValue.substring(searchValue.indexOf(':') + 1)) },
       {
         cache: true
@@ -160,10 +166,11 @@ export async function searchProfile(searchValue: string): Promise<ProfileWithSoc
   } else if (
     searchValue.endsWith('.eth') ||
     isAddress(searchValue) ||
-    searchValue.endsWith('.xyz')
+    searchValue.endsWith('.xyz') ||
+    searchValue.endsWith('.id')
   ) {
     const { data, error } = await fetchQuery(
-      querySocials,
+      QUERY_SOCIALS,
       { identity: searchValue },
       {
         cache: true
@@ -190,7 +197,7 @@ export async function searchProfile(searchValue: string): Promise<ProfileWithSoc
   return foundProfiles;
 }
 
-function converSocialResults(data: any): MetaType | undefined {
+export function converSocialResults(data: any): MetaType | undefined {
   if (!data || !data.Wallet) {
     return;
   }
@@ -209,13 +216,19 @@ function converSocialResults(data: any): MetaType | undefined {
 
   if (data.Wallet.socials) {
     meta.socials = data.Wallet.socials
-      .filter((s: any) => s.dappName && s.profileName && s.profileImage)
+      .filter(
+        (s: any) =>
+          s.dappName &&
+          s.profileName &&
+          (s.profileImage || s.profileImageContentValue?.image?.small)
+      )
       .map(
         (s: any) =>
           ({
             dappName: s.dappName,
             profileName: s.profileName,
-            profileImage: s.profileImage
+            profileDisplayName: s.profileDisplayName,
+            profileImage: s.profileImageContentValue?.image?.small ?? s.profileImage
           } as SocialInfoType)
       );
   } else {

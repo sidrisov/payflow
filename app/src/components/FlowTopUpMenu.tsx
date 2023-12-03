@@ -2,6 +2,9 @@ import { ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material';
 import { ProfileType } from '../types/ProfleType';
 import { Link, Payments, QrCode } from '@mui/icons-material';
 import { comingSoonToast } from './Toasts';
+import { copyToClipboard } from '../utils/copyToClipboard';
+import { DAPP_URL } from '../utils/urlConstants';
+import { toast } from 'react-toastify';
 
 export function FlowTopUpMenu({
   profile,
@@ -26,7 +29,8 @@ export function FlowTopUpMenu({
       </MenuItem>
       <MenuItem
         onClick={() => {
-          comingSoonToast();
+          copyToClipboard(`${DAPP_URL}/${profile.username}`);
+          toast.success('Profile link copied!');
         }}>
         <ListItemIcon>
           <Link fontSize="small" />

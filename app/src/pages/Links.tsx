@@ -4,7 +4,7 @@ export default function Links() {
   return (
     <>
       <Helmet>
-        <title> PayFlow | Links </title>
+        <title> Payflow | Links </title>
       </Helmet>
     </>
   );

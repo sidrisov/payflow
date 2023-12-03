@@ -40,26 +40,23 @@ export default function Home() {
               justifyContent: 'space-between'
             }}>
             <Logo />
-            <Button
-              variant="outlined"
-              color="inherit"
-              size="small"
-              href={DOCS_URL}
-              sx={{ borderRadius: 5 }}>
-              Docs
-            </Button>
+            <Box>
+              <IconButton size="small" href="https://x.com/payflowme">
+                <Twitter fontSize="small" />
+              </IconButton>
+              <Button
+                variant="outlined"
+                color="inherit"
+                size="small"
+                href={DOCS_URL}
+                sx={{ borderRadius: 5 }}>
+                Docs
+              </Button>
+            </Box>
           </Toolbar>
         </AppBar>
       </HideOnScroll>
-
-      <Box
-        mt={-5}
-        position="fixed"
-        display="flex"
-        alignItems="center"
-        boxSizing="border-box"
-        justifyContent="center"
-        sx={{ inset: 0 }}>
+      <Box my={10} display="flex" alignItems="center" justifyContent="center">
         <Box display="flex" flexDirection="column" alignItems="center">
           <Stack direction="column" alignItems="center" spacing={1}>
             <Typography
@@ -68,7 +65,7 @@ export default function Home() {
               color={blue[500]}
               fontWeight="bold"
               fontFamily="monospace">
-              Abstract your web3 identity payments
+              Abstract web3 identity payments
             </Typography>
             <Box display="flex" flexWrap="wrap" justifyContent="center">
               <Typography
@@ -93,7 +90,7 @@ export default function Home() {
               color={grey[500]}
               fontWeight="bold"
               fontFamily="monospace">
-              Any flow | Gasless | Non-custodial
+              FARCASTER | LENS | ENS
             </Typography>
           </Stack>
           <Box
@@ -101,7 +98,7 @@ export default function Home() {
             flexDirection="row"
             alignItems="center"
             sx={{
-              mt: 10,
+              mt: 8,
               px: 1,
               border: 2,
               borderRadius: 5,
@@ -133,21 +130,45 @@ export default function Home() {
               START 🚀
             </Button>
           </Box>
+
+          <Box mt={10} display="flex" flexDirection="column" alignItems="center">
+            <Typography fontSize={30} fontFamily="monospace">
+              Powered By
+            </Typography>
+            <Box
+              mt={1}
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="flex-start">
+              <Stack direction="row" spacing={1} maxWidth={isMobile ? 300 : 600} overflow="scroll">
+                <Box p={1} sx={{ borderRadius: 5, border: 1 }}>
+                  <img width={isMobile ? 50 : 150} height={isMobile ? 20 : 40} src="safe.svg" />
+                </Box>
+                <Box p={1} sx={{ background: 'inherit', borderRadius: 5, border: 1 }}>
+                  <img width={isMobile ? 50 : 150} height={isMobile ? 20 : 40} src="gelato.svg" />
+                </Box>
+                <Box p={1} sx={{ background: 'inherit', borderRadius: 5, border: 1 }}>
+                  <img width={isMobile ? 50 : 150} height={isMobile ? 20 : 40} src="airstack.svg" />
+                </Box>
+              </Stack>
+              <Box
+                mt={2}
+                p={1}
+                sx={{
+                  background: 'white',
+                  borderRadius: 5,
+                  border: 1
+                }}>
+                <img
+                  width={isMobile ? 100 : 200}
+                  height={isMobile ? 20 : 40}
+                  src="gcp_for_startups.png"
+                />
+              </Box>
+            </Box>
+          </Box>
         </Box>
-      </Box>
-      <Box
-        p={2}
-        width="100%"
-        position="fixed"
-        bottom={0}
-        display="flex"
-        flexDirection="row"
-        alignItems="center"
-        justifyContent="space-between">
-        <Typography variant="caption">© payflow.me</Typography>
-        <IconButton size="small" href="https://x.com/payflowme">
-          <Twitter fontSize="small" />
-        </IconButton>
       </Box>
     </CustomThemeProvider>
   );

@@ -46,6 +46,8 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.GET, "/requests/{uuid}").permitAll()
                                                 .requestMatchers(HttpMethod.POST, "/requests/{uuid}/proof").permitAll()
                                                 // user
+                                                // TODO: {username} behaves like a wildcard for other APIs, as well,
+                                                // e.g. /user/all will get whitelisted too, a bit dangerous behaviour
                                                 .requestMatchers(HttpMethod.GET, "/user/{username}").permitAll()
                                                 .requestMatchers(HttpMethod.POST, "/user/search/wallets").permitAll()
                                                 .anyRequest()

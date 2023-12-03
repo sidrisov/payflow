@@ -1,9 +1,12 @@
 import org.springframework.boot.gradle.tasks.run.BootRun
+import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
+import org.springframework.boot.buildpack.platform.build.PullPolicy
 
 plugins {
 	application
-	id("org.springframework.boot") version "3.1.5"
-	id("io.spring.dependency-management") version "1.1.3"
+	id("org.springframework.boot") version "3.2.0"
+	id("io.spring.dependency-management") version "1.1.4"
+	id("com.google.cloud.artifactregistry.gradle-plugin") version "2.2.1"
 	id("io.freefair.lombok") version "8.4"
 }
 
@@ -11,14 +14,15 @@ application {
     mainClass.set("ua.sinaver.web3.PayFlowApplication")
 }
 
-if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local")) {
-	extra["springCloudGcpVersion"] = "4.5.1"
-	extra["springCloudVersion"] = "2022.0.3"
+if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local") || project.hasProperty("gcp-staging")) {
+	extra["springCloudGcpVersion"] = "4.8.4"
+	extra["springCloudVersion"] = "2022.0.4"
 }
 
 group = "ua.sinaver.web3"
-version = "0.0.1-SNAPSHOT"
-java.sourceCompatibility = JavaVersion.VERSION_17
+version = "0.0.1-pre-alpha"
+
+java.sourceCompatibility = JavaVersion.VERSION_21
 
 repositories {
 	mavenCentral()
@@ -28,9 +32,10 @@ dependencies {
 	implementation ("org.springframework.boot:spring-boot-starter-web")
 	implementation ("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation ("org.springframework.boot:spring-boot-starter-security")
+	implementation ("org.springframework.boot:spring-boot-starter-actuator")
 	implementation ("org.springframework.session:spring-session-jdbc")
 
-	if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local")) {
+	if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local") || project.hasProperty("gcp-staging")) {
 		project.logger.info("Including GCP dependencies")
 		// gcp
 		implementation ("com.google.cloud:spring-cloud-gcp-starter")
@@ -62,7 +67,7 @@ dependencies {
 
 dependencyManagement {
   imports {
-	if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local")) {
+	if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local") || project.hasProperty("gcp-staging")) {
 		// gcp
     	mavenBom("com.google.cloud:spring-cloud-gcp-dependencies:${property("springCloudGcpVersion")}")
     	mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
@@ -86,4 +91,21 @@ tasks.withType<BootRun> {
 	if (project.hasProperty("gcp-local")) {
 		systemProperty("spring.profiles.active", "gcp-local")
 	}
+
+	if (project.hasProperty("gcp-staging")) {
+		systemProperty("spring.profiles.active", "gcp-staging")
+	}
 }
+
+// gradle -d  bootBuildImage -P{profile} \                                    ✘ INT  10:54:12
+// -Pgcp-image-name={artifactory}/{repository}/{image} \
+// --publishImage
+// TODO: permissions are not picked up for publishing - https://cloud.google.com/artifact-registry/docs/java/authentication#gcloud
+ tasks.named<BootBuildImage>("bootBuildImage") {
+	if (project.hasProperty("gcp-image-name")) {
+    	imageName.set("${project.property("gcp-image-name")}:${project.version}")
+	}
+	pullPolicy.set(PullPolicy.IF_NOT_PRESENT)
+	//publish.set(true)
+}
+

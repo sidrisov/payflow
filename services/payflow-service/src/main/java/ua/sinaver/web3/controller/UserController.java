@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.micrometer.core.annotation.Timed;
+import jakarta.transaction.Transactional;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 import ua.sinaver.web3.data.User;
@@ -24,17 +26,22 @@ import ua.sinaver.web3.message.ProfileMessage;
 import ua.sinaver.web3.message.ProfileMetaMessage;
 import ua.sinaver.web3.message.WalletProfileRequestMessage;
 import ua.sinaver.web3.message.WalletProfileResponseMessage;
+import ua.sinaver.web3.service.FlowService;
 import ua.sinaver.web3.service.UserService;
 
-// TODO: remove Whitelabel Error Page
 @RestController
 @RequestMapping("/user")
 @CrossOrigin(origins = "${dapp.url}", allowCredentials = "true")
+@Transactional
 @Slf4j
+@Timed(value = "api.user")
 public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private FlowService flowService;
 
     @GetMapping("/me")
     public ProfileMessage user(Principal principal) {
@@ -47,6 +54,7 @@ public class UserController {
                     user.getSigner(),
                     user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
                             : null,
+                    flowService.getAllFlows(user),
                     user.getInvitationAllowance() != null ? user.getInvitationAllowance().getIdenityInviteLimit()
                             : -1);
         } else {
@@ -63,6 +71,19 @@ public class UserController {
 
     }
 
+    @GetMapping("/all")
+    public List<ProfileMetaMessage> getAllProfiles() {
+        List<User> users = userService.findAll();
+        log.debug("Fetching all profiles");
+        if (users != null) {
+            return users.stream().map(user -> new ProfileMetaMessage(user.getSigner(), user.getDisplayName(),
+                    user.getUsername(),
+                    user.getProfileImage(), user.getCreatedDate().toString())).toList();
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
     @GetMapping
     public List<ProfileMessage> searchProfile(@RequestParam(value = "search") String username) {
         List<User> users = userService.searchByUsernameQuery(username);
@@ -74,11 +95,12 @@ public class UserController {
                         user.getSigner(),
                         user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
                                 : null,
+                        null,
                         -1);
             }).toList();
 
         } else {
-            return null;
+            return Collections.emptyList();
         }
     }
 
@@ -92,6 +114,7 @@ public class UserController {
                     user.getSigner(),
                     user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
                             : null,
+                    null,
                     -1);
         } else {
             return null;

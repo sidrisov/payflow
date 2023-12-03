@@ -29,7 +29,7 @@ export default function Flows() {
 
   const {
     isAuthenticated,
-    flows,
+    profile: { flows },
     walletBalances,
     setWalletBalances,
     setInitiateFlowsRefresh,
@@ -107,7 +107,7 @@ export default function Flows() {
   return (
     <>
       <Helmet>
-        <title> PayFlow | Flows </title>
+        <title> Payflow | Flows </title>
       </Helmet>
       <Container>
         {isAuthenticated && (

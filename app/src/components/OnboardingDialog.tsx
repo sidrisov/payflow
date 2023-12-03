@@ -8,7 +8,8 @@ import {
   Box,
   TextField,
   InputAdornment,
-  Avatar
+  Avatar,
+  CircularProgress
 } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 
@@ -26,7 +27,9 @@ import { updateProfile } from '../services/user';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../utils/urlConstants';
 import { DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS } from '../utils/networks';
-import { keccak256, toBytes } from 'viem';
+import { QUERY_SOCIALS, converSocialResults } from '../services/socials';
+import { useQuery } from '@airstack/airstack-react';
+import CenteredCircularProgress from './CenteredCircularProgress';
 
 export type OnboardingDialogProps = DialogProps &
   CloseCallbackType & {
@@ -34,6 +37,8 @@ export type OnboardingDialogProps = DialogProps &
     username?: string | null;
     code?: string | null;
   };
+
+const SALT_NONCE = import.meta.env.VITE_DEFAULT_FLOW_CREATE2_SALT_NONCE;
 
 export default function OnboardingDialog({
   closeStateCallback,
@@ -52,12 +57,54 @@ export default function OnboardingDialog({
 
   const [usernameAvailble, setUsernameAvailable] = useState<boolean>();
 
-  const { loading: loadingWallets, create, wallets } = usePreCreateSafeWallets();
+  const { loading: loadingWallets, error, wallets, create, reset } = usePreCreateSafeWallets();
   const [loadingUpdateProfile, setLoadingUpdateProfile] = useState<boolean>(false);
 
   const navigate = useNavigate();
 
-  const saltNonce = '1';
+  const { data: socialInfo, loading: loadingSocials } = useQuery(
+    QUERY_SOCIALS,
+    { identity: profile.address },
+    {
+      cache: true
+    }
+  );
+
+  // make a best effort to pull social info for the user
+  useMemo(async () => {
+    if (socialInfo) {
+      const meta = converSocialResults(socialInfo);
+
+      if (meta) {
+        if (meta.socials && meta.socials.length > 0) {
+          if (!displayName) {
+            setDisplayName(meta.socials[0].profileDisplayName);
+          }
+
+          if (!username || username === profile.address) {
+            setUsername(meta.socials[0].profileName);
+          }
+
+          if (!profileImage) {
+            setProfileImage(meta.socials[0].profileImage);
+          }
+        } else {
+          // TODO: allow .eth, .xyz, etc in the username?
+          if (!displayName && meta.ens) {
+            //setDisplayName(meta.ens);
+          }
+
+          if ((!username || username === profile.address) && meta.ens) {
+            //setUsername(meta.ens);
+          }
+
+          if (!profile.profileImage && meta.ensAvatar) {
+            setProfileImage(meta.ensAvatar);
+          }
+        }
+      }
+    }
+  }, [socialInfo]);
 
   useMemo(async () => {
     if (username) {
@@ -82,28 +129,22 @@ export default function OnboardingDialog({
   }, [username]);
 
   async function createMainFlow() {
-    console.log(profile.address, saltNonce, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
-    create(profile.address, saltNonce, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
+    console.log(profile.address, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
+    create(profile.address, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
   }
 
   useMemo(async () => {
-    if (wallets && wallets.length === DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS.length) {
-      const flowWallets = wallets.map(
-        (wallet) =>
-          ({
-            address: wallet.address,
-            network: wallet.chain.id,
-            version: DEFAULT_SAFE_VERSION
-          } as FlowWalletType)
-      );
-
+    if (error) {
+      toast.error('Failed to prepare flow, try again!');
+      await reset();
+    } else if (wallets && wallets.length === DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS.length) {
       const defaultFlow = {
         account: profile.address,
         title: 'default',
         description: '',
         walletProvider: 'safe',
-        saltNonce,
-        wallets: flowWallets
+        saltNonce: SALT_NONCE,
+        wallets
       } as FlowType;
 
       const updatedProfile = {
@@ -123,15 +164,20 @@ export default function OnboardingDialog({
           toast.success('Onboarding successfully completed');
           navigate('/');
         } else {
-          toast.error('Failed, try again');
+          toast.error('Failed to update profile, try again!');
         }
       } finally {
         setLoadingUpdateProfile(false);
+        await reset();
       }
     }
-  }, [wallets]);
+  }, [wallets, error]);
 
-  return (
+  return loadingSocials ? (
+    <Box alignSelf="stretch" justifySelf="stretch">
+      <CenteredCircularProgress />
+    </Box>
+  ) : (
     <Dialog
       onClose={handleCloseCampaignDialog}
       {...props}
@@ -220,16 +266,27 @@ export default function OnboardingDialog({
           <LoadingButton
             loading={loadingWallets || loadingUpdateProfile}
             disabled={!usernameAvailble || !username}
+            fullWidth
             variant="outlined"
+            loadingIndicator={
+              <Stack direction="row" spacing={1} alignItems="center">
+                <CircularProgress color="inherit" size={16} />
+                <Typography variant="button">
+                  {loadingWallets
+                    ? 'preparing flow'
+                    : loadingUpdateProfile
+                    ? 'updating profile'
+                    : ''}
+                </Typography>
+              </Stack>
+            }
+            size="medium"
+            color="primary"
             onClick={async () => {
               await createMainFlow();
             }}
-            sx={{ borderRadius: 3 }}>
-            {loadingWallets
-              ? 'Creating default flow ...'
-              : loadingUpdateProfile
-              ? 'Updating profile...'
-              : 'Complete'}
+            sx={{ borderRadius: 5 }}>
+            Complete
           </LoadingButton>
         </Stack>
       </DialogContent>

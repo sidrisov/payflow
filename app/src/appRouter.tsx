@@ -12,6 +12,7 @@ import PublicProfileWithProviders from './layouts/PublicProfileWithProviders';
 import LoginWithProviders from './layouts/LoginWithProviders';
 import Profile from './pages/Profile';
 import Invite from './pages/Invite';
+import Leaderboard from './layouts/Leadearboard';
 
 export const appRoutes = ['/home', '/flows', '/requests', '/settings'];
 
@@ -61,6 +62,7 @@ export const appRouter = createBrowserRouter([
   },
 
   { path: '/search', element: <PublicProfileWithProviders />, errorElement: <Page404 /> },
+  { path: '/leaderboard', element: <Leaderboard />, errorElement: <Page404 /> },
 
   {
     path: '/:username',

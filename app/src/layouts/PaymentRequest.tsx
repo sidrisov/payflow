@@ -148,7 +148,7 @@ export default function PaymentRequest({ appSettings, setAppSettings }: any) {
   return (
     <CustomThemeProvider darkMode={appSettings.darkMode}>
       <Helmet>
-        <title> PayFlow | Request </title>
+        <title> Payflow | Request </title>
       </Helmet>
       <HideOnScroll>
         <AppBar

@@ -1,4 +1,3 @@
-import React from 'react';
 import ReactDOM from 'react-dom/client';
 
 import '@fontsource/roboto/300.css';
@@ -11,10 +10,10 @@ import { RouterProvider } from 'react-router-dom';
 import { appRouter } from './appRouter';
 import { HelmetProvider } from 'react-helmet-async';
 import { ToastContainer } from 'react-toastify';
-import { Button } from '@mui/material';
+import React from 'react';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  //<React.StrictMode>
+  <React.StrictMode>
   <HelmetProvider>
     <RouterProvider router={appRouter} />
     <ToastContainer
@@ -32,5 +31,5 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
       toastStyle={{ borderRadius: 20, textAlign: 'center' }}
     />
   </HelmetProvider>
-  //</React.StrictMode>
+  </React.StrictMode>
 );

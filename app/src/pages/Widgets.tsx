@@ -44,7 +44,11 @@ enum ComponentColor {
 const colors = [-1, yellow[600], purple[400], blue[400], green[400], red[400]];
 
 export default function Widgets() {
-  const { isAuthenticated, flows, appSettings } = useContext(UserContext);
+  const {
+    isAuthenticated,
+    profile: { flows },
+    appSettings
+  } = useContext(UserContext);
   const [selectedFlow, setSelectedFlow] = useState<FlowType>();
   const [componentVariant, setComponentVariant] = useState<ComponentVariant>(
     ComponentVariant.Button
@@ -59,7 +63,7 @@ export default function Widgets() {
   return (
     <>
       <Helmet>
-        <title> PayFlow | Branding </title>
+        <title> Payflow | Branding </title>
       </Helmet>
       <Typography variant="caption" color="red">
         * Experimental feature

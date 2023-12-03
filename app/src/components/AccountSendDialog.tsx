@@ -20,10 +20,17 @@ import {
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useContext, useMemo, useRef, useState } from 'react';
 import { useBalance, useNetwork, useSwitchNetwork } from 'wagmi';
-import { AddComment, ArrowForward, Close, ExpandMore } from '@mui/icons-material';
+import {
+  AddComment,
+  ArrowForward,
+  AttachMoney,
+  Close,
+  ExpandMore,
+  LocalGasStation
+} from '@mui/icons-material';
 import { Id, toast } from 'react-toastify';
 
-import { Address, Hash, formatEther, parseEther } from 'viem';
+import { Address, formatEther, parseEther } from 'viem';
 
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 import { FlowType, FlowWalletType } from '../types/FlowType';
@@ -41,6 +48,7 @@ import { comingSoonToast } from './Toasts';
 import { updateWallet } from '../services/flow';
 import NetworkAvatar from './NetworkAvatar';
 import PayflowChip from './PayflowChip';
+import { estimateFee as estimateSafeTransferFee } from '../utils/safeTransactions';
 
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
@@ -53,7 +61,7 @@ export default function AccountSendDialog({
   ...props
 }: AccountSendDialogProps) {
   const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const { profile, ethUsdPrice } = useContext(UserContext);
 
@@ -71,6 +79,8 @@ export default function AccountSendDialog({
   const [toAddress, setToAddress] = useState<Address>();
   const [sendAmount, setSendAmount] = useState<bigint>();
 
+  const [gasFee, setGasFee] = useState<bigint>();
+
   const [openSearchProfile, setOpenSearchProfile] = useState<boolean>(true);
 
   const { isSuccess, data: balance } = useBalance({
@@ -84,6 +94,12 @@ export default function AccountSendDialog({
   const sendToastId = useRef<Id>();
 
   const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
+
+  useMemo(async () => {
+    setGasFee(
+      BigInt(await estimateSafeTransferFee(selectedWallet.deployed, selectedWallet.network))
+    );
+  }, [selectedWallet]);
 
   useMemo(async () => {
     if (!sendAmount || !selectedRecipient) {
@@ -243,7 +259,7 @@ export default function AccountSendDialog({
 
   return (
     <Dialog
-      fullScreen={fullScreen}
+      fullScreen={isMobile}
       onClose={handleCloseSendDialog}
       {...props}
       PaperProps={{ sx: { borderRadius: 5 } }}
@@ -251,7 +267,7 @@ export default function AccountSendDialog({
         backdropFilter: 'blur(5px)'
       }}>
       <DialogTitle>
-        <Stack direction="column" alignItems="center">
+        <Stack alignItems="center">
           <Typography justifySelf="center" variant="h6">
             Send
           </Typography>
@@ -262,50 +278,58 @@ export default function AccountSendDialog({
       </DialogTitle>
       <DialogContent
         sx={{
-          minWidth: 350,
-          maxWidth: fullScreen ? 600 : 350
+          p: 2,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center'
         }}>
-        <Stack direction="column" spacing={2} alignItems="center">
-          <Divider />
-          <Box
-            display="flex"
-            flexDirection="row"
-            alignSelf="stretch"
-            alignItems="center"
-            justifyContent="space-between"
-            component={Button}
-            color="inherit"
-            onClick={async () => setOpenSearchProfile(true)}
-            sx={{
-              height: 56,
-              border: 1,
-              borderRadius: 5,
-              p: 1.5,
-              textTransform: 'none'
-            }}>
-            {selectedRecipient &&
-              (selectedRecipient.type === 'profile'
-                ? selectedRecipient.data.profile && (
-                    <ProfileSection profile={selectedRecipient.data.profile} />
-                  )
-                : selectedRecipient.data.meta && (
-                    <AddressSection meta={selectedRecipient.data.meta} />
-                  ))}
+        <Box
+          display="flex"
+          minWidth={350}
+          maxWidth={isMobile ? 450 : 350}
+          height="100%"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="space-between">
+          <Stack width="100%" spacing={2} alignItems="center">
+            <Box
+              display="flex"
+              flexDirection="row"
+              width="100%"
+              alignItems="center"
+              justifyContent="space-between"
+              component={Button}
+              color="inherit"
+              onClick={async () => setOpenSearchProfile(true)}
+              sx={{
+                height: 56,
+                border: 1,
+                borderRadius: 5,
+                p: 1.5,
+                textTransform: 'none'
+              }}>
+              {selectedRecipient &&
+                (selectedRecipient.type === 'profile'
+                  ? selectedRecipient.data.profile && (
+                      <ProfileSection profile={selectedRecipient.data.profile} />
+                    )
+                  : selectedRecipient.data.meta && (
+                      <AddressSection meta={selectedRecipient.data.meta} />
+                    ))}
 
-            {!selectedRecipient && (
-              <Typography alignSelf="center" flexGrow={1}>
-                Choose Recipient
-              </Typography>
-            )}
+              {!selectedRecipient && (
+                <Typography alignSelf="center" flexGrow={1}>
+                  Choose Recipient
+                </Typography>
+              )}
 
-            <Stack direction="row">
-              {selectedRecipient && selectedRecipient.type === 'profile' && <PayflowChip />}
-              <ExpandMore />
-            </Stack>
-          </Box>
-          {selectedRecipient && (
-            <>
-              <Box display="flex" flexDirection="column">
+              <Stack direction="row">
+                {selectedRecipient && selectedRecipient.type === 'profile' && <PayflowChip />}
+                <ExpandMore />
+              </Stack>
+            </Box>
+            {selectedRecipient && (
+              <Box width="100%" display="flex" flexDirection="column">
                 <TextField
                   fullWidth
                   variant="outlined"
@@ -334,7 +358,7 @@ export default function AccountSendDialog({
                           flexDirection="row"
                           justifyContent="space-between"
                           alignItems="center"
-                          width={150}>
+                          minWidth={150}>
                           <Typography>$</Typography>
                           <Typography>≈</Typography>
                           <Typography>
@@ -352,10 +376,10 @@ export default function AccountSendDialog({
                     if (ethUsdPrice && amountUSD >= 1) {
                       const amount = parseEther((amountUSD / ethUsdPrice).toString());
 
-                      //if (balance && amount <= balance?.value && amountUSD >= 1) {
-                      setSendAmount(amount);
-                      return;
-                      //}
+                      if (balance && amount <= balance?.value && amountUSD >= 1) {
+                        setSendAmount(amount);
+                        return;
+                      }
                     }
                     setSendAmount(undefined);
                   }}
@@ -366,25 +390,28 @@ export default function AccountSendDialog({
                   flexDirection="row"
                   justifyContent="space-between"
                   alignItems="center">
-                  <Typography ml={1} variant="caption">
-                    {`max: ${
-                      isSuccess
-                        ? balance && parseFloat(formatEther(balance?.value)).toPrecision(2)
-                        : 0
-                    } ETH ≈ $${
-                      isSuccess
-                        ? balance &&
-                          (
-                            parseFloat(formatEther(balance?.value)) * (ethUsdPrice ?? 0)
-                          ).toPrecision(2)
-                        : 0.0
-                    }`}
-                  </Typography>
+                  <Stack ml={0.5} direction="row" spacing={0.5} alignItems="center">
+                    <AttachMoney fontSize="small" />
+                    <Typography variant="caption">
+                      {`max: ${
+                        isSuccess
+                          ? balance && parseFloat(formatEther(balance.value)).toPrecision(2)
+                          : 0
+                      } ETH ≈ $${
+                        isSuccess
+                          ? balance &&
+                            (
+                              parseFloat(formatEther(balance.value)) * (ethUsdPrice ?? 0)
+                            ).toPrecision(2)
+                          : 0.0
+                      }`}
+                    </Typography>
+                  </Stack>
                   <Tooltip title="Add a note">
                     <IconButton
                       size="small"
                       color="inherit"
-                      sx={{ mr: 1, alignSelf: 'flex-end' }}
+                      sx={{ mr: 0.5, alignSelf: 'flex-end' }}
                       onClick={() => {
                         comingSoonToast();
                       }}>
@@ -392,44 +419,57 @@ export default function AccountSendDialog({
                     </IconButton>
                   </Tooltip>
                 </Box>
+                {gasFee !== undefined && (
+                  <Stack ml={0.5} direction="row" spacing={0.5} alignItems="center">
+                    <Tooltip
+                      title="Gas is paid by the sending flow wallet via Gelato SyncFee call method. 
+                    The fee includes Gelato on-chain call, safe tx fee + deployment fee on the first tx, and 10% Gelato's comission on top of all.">
+                      <LocalGasStation fontSize="small" />
+                    </Tooltip>
+                    <Typography ml={1} variant="caption">
+                      {`fee: ${parseFloat(formatEther(gasFee)).toFixed(5)} ETH ≈ $${(
+                        parseFloat(formatEther(gasFee)) * (ethUsdPrice ?? 0)
+                      ).toFixed(2)}`}
+                    </Typography>
+                  </Stack>
+                )}
               </Box>
-
-              <Divider />
-              {chain?.id === selectedWallet.network ? (
-                <LoadingButton
-                  loading={loading || (txHash && !confirmed && !error)}
-                  disabled={!(toAddress && sendAmount)}
-                  fullWidth
-                  variant="outlined"
-                  loadingIndicator={
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <CircularProgress color="inherit" size={16} />
-                      <Typography variant="button">{status}</Typography>
-                    </Stack>
-                  }
-                  size="medium"
-                  color="primary"
-                  onClick={sendTransaction}
-                  sx={{ mt: 1, borderRadius: 5 }}>
-                  Send
-                </LoadingButton>
-              ) : (
-                <LoadingButton
-                  fullWidth
-                  loading={isSwitchNetworkLoading}
-                  variant="outlined"
-                  size="medium"
-                  color="primary"
-                  onClick={() => {
-                    switchNetwork?.(selectedWallet.network);
-                  }}
-                  sx={{ mt: 1, borderRadius: 5 }}>
-                  Switch Network
-                </LoadingButton>
-              )}
-            </>
-          )}
-        </Stack>
+            )}
+          </Stack>
+          {selectedRecipient &&
+            (chain?.id === selectedWallet.network ? (
+              <LoadingButton
+                fullWidth
+                variant="outlined"
+                loading={loading || (txHash && !confirmed && !error)}
+                disabled={!(toAddress && sendAmount)}
+                loadingIndicator={
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <CircularProgress color="inherit" size={16} />
+                    <Typography variant="button">{status}</Typography>
+                  </Stack>
+                }
+                size="large"
+                color="primary"
+                onClick={sendTransaction}
+                sx={{ mt: 3, mb: 1, borderRadius: 5 }}>
+                Send
+              </LoadingButton>
+            ) : (
+              <LoadingButton
+                fullWidth
+                variant="outlined"
+                loading={isSwitchNetworkLoading}
+                size="large"
+                color="primary"
+                onClick={() => {
+                  switchNetwork?.(selectedWallet.network);
+                }}
+                sx={{ mt: 3, mb: 1, borderRadius: 5 }}>
+                Switch Network
+              </LoadingButton>
+            ))}
+        </Box>
       </DialogContent>
       <ChooseWalletMenu
         anchorEl={walletAnchorEl}
@@ -438,11 +478,15 @@ export default function AccountSendDialog({
           setOpenSelectWallet(false);
         }}
         // in case a new wallet chain added, not all users maybe be compatible, limit by chains recipient supports
-        wallets={flow.wallets.filter((w) =>
-          selectedRecipient?.data.profile?.defaultFlow?.wallets.find(
-            (rw) => rw.network === w.network
-          )
-        )}
+        wallets={
+          selectedRecipient?.type === 'profile'
+            ? flow.wallets.filter((w) =>
+                selectedRecipient?.data.profile?.defaultFlow?.wallets.find(
+                  (rw) => rw.network === w.network
+                )
+              )
+            : flow.wallets
+        }
         selectedWallet={selectedWallet}
         setSelectedWallet={setSelectedWallet}
       />

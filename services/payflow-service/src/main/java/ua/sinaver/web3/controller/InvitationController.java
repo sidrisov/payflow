@@ -2,7 +2,6 @@ package ua.sinaver.web3.controller;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.RandomStringUtils;

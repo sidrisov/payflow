@@ -18,5 +18,8 @@ public interface IUserService {
 
     List<User> searchByUsernameQuery(String query);
 
+    // TODO: add pagination
+    List<User> findAll();
+
     Map<WalletProfileRequestMessage, User> searchByOwnedWallets(List<WalletProfileRequestMessage> wallets);
 }

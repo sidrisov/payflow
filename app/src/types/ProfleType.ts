@@ -8,6 +8,7 @@ export interface ProfileType {
   username?: string;
   profileImage?: string;
   defaultFlow?: FlowType;
+  flows?: FlowType[];
   identityInviteLimit: number;
 }
 
@@ -27,6 +28,7 @@ export interface MetaType {
 export interface SocialInfoType {
   dappName: string;
   profileName: string;
+  profileDisplayName: string;
   profileImage: string;
 }
 

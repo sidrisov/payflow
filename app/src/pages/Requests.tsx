@@ -50,7 +50,9 @@ export default function Requests() {
   const { chains, chain } = useNetwork();
 
   const { isAuthenticated } = useContext(UserContext);
-  const { flows } = useContext(UserContext);
+  const {
+    profile: { flows }
+  } = useContext(UserContext);
   const [requests, setRequests] = useState<PaymentRequestType[]>();
 
   const [openRequestCreate, setOpenRequestCreate] = useState(false);
@@ -246,7 +248,7 @@ export default function Requests() {
   return (
     <>
       <Helmet>
-        <title> PayFlow | Requests </title>
+        <title> Payflow | Requests </title>
       </Helmet>
       <Container>
         {isAuthenticated && (

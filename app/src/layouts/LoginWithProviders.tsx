@@ -10,8 +10,6 @@ import {
   RainbowKitProvider
 } from '@rainbow-me/rainbowkit';
 
-import { rainbowWeb3AuthConnector } from '../utils/web3AuthConnector';
-
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
@@ -34,17 +32,17 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(SUPPORTE
 ]);
 
 const { wallets } = getDefaultWallets({
-  appName: 'PayFlow',
+  appName: 'Payflow',
   projectId: WALLET_CONNECT_PROJECT_ID,
   chains
 });
 
 const connectors = connectorsForWallets([
-  ...wallets,
-  {
+  ...wallets
+  /* {
     groupName: 'Other',
     wallets: [rainbowWeb3AuthConnector({ chains })]
-  }
+  } */
 ]);
 
 export default function AppWithProviders() {
@@ -106,7 +104,7 @@ export default function AppWithProviders() {
         return new SiweMessage({
           domain: window.location.host,
           address,
-          statement: 'Sign in with Ethereum to PayFlow',
+          statement: 'Sign in with Ethereum to Payflow',
           uri: window.location.origin,
           version: '1',
           chainId,
@@ -164,7 +162,8 @@ export default function AppWithProviders() {
           theme={customLightTheme}
           avatar={CustomAvatar}
           modalSize="wide"
-          chains={chains}>
+          chains={chains}
+          initialChain={1}>
           <Login authStatus={authStatus} profile={profile} />
         </RainbowKitProvider>
       </RainbowKitAuthenticationProvider>

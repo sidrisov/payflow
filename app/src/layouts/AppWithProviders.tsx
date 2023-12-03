@@ -9,8 +9,6 @@ import {
   RainbowKitProvider
 } from '@rainbow-me/rainbowkit';
 
-import { rainbowWeb3AuthConnector } from '../utils/web3AuthConnector';
-
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
@@ -25,6 +23,8 @@ import { me } from '../services/user';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { ProfileType } from '../types/ProfleType';
 import { useNavigate } from 'react-router-dom';
+import sortAndFilterFlows from '../utils/sortAndFilterFlows';
+import CustomThemeProvider from '../theme/CustomThemeProvider';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 const AIRSTACK_API_KEY = import.meta.env.VITE_AIRSTACK_API_KEY;
@@ -37,17 +37,17 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(SUPPORTE
 ]);
 
 const { wallets } = getDefaultWallets({
-  appName: 'PayFlow',
+  appName: 'Payflow',
   projectId: WALLET_CONNECT_PROJECT_ID,
   chains
 });
 
 const connectors = connectorsForWallets([
-  ...wallets,
-  {
+  ...wallets
+  /*   {
     groupName: 'Other',
     wallets: [rainbowWeb3AuthConnector({ chains })]
-  }
+  } */
 ]);
 
 const appSettingsStorageItem = localStorage.getItem('appSettings');
@@ -87,6 +87,10 @@ export default function AppWithProviders() {
         setLoading(false);
 
         if (profile) {
+          if (profile.defaultFlow && profile.flows) {
+            profile.flows = sortAndFilterFlows(profile.defaultFlow, profile.flows);
+          }
+
           setProfile(profile);
         } else {
           navigate('/connect');
@@ -123,13 +127,15 @@ export default function AppWithProviders() {
           avatar={CustomAvatar}
           modalSize="compact"
           chains={chains}>
-          {loading ? (
-            <CenteredCircularProgress />
-          ) : (
-            profile && (
-              <App profile={profile} appSettings={appSettings} setAppSettings={setAppSettings} />
-            )
-          )}
+          <CustomThemeProvider darkMode={appSettings.darkMode}>
+            {loading ? (
+              <CenteredCircularProgress />
+            ) : (
+              profile && (
+                <App profile={profile} appSettings={appSettings} setAppSettings={setAppSettings} />
+              )
+            )}
+          </CustomThemeProvider>
         </RainbowKitProvider>
       </AirstackProvider>
     </WagmiConfig>

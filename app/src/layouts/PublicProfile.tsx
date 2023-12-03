@@ -2,12 +2,9 @@ import {
   Box,
   Button,
   Card,
-  Chip,
   CircularProgress,
   Container,
-  Fab,
   Stack,
-  Typography,
   useMediaQuery,
   useTheme
 } from '@mui/material';
@@ -17,25 +14,14 @@ import { Helmet } from 'react-helmet-async';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ProfileType } from '../types/ProfleType';
 import { useEnsName } from 'wagmi';
-import {
-  AttachMoney,
-  Campaign,
-  MonetizationOn,
-  Payment,
-  Savings,
-  Search,
-  Send,
-  Verified
-} from '@mui/icons-material';
+import { AttachMoney, Send } from '@mui/icons-material';
 import { useLazyQuery } from '@airstack/airstack-react';
 import { FlowType } from '../types/FlowType';
-import SearchProfileDialog from '../components/SearchProfileDialog';
 import { API_URL } from '../utils/urlConstants';
 import { ProfileSection } from '../components/ProfileSection';
-import { comingSoonText, comingSoonToast } from '../components/Toasts';
+import { comingSoonToast } from '../components/Toasts';
 import SocialPresenceChipWithLink from '../components/SocialPresenceChipWithLink';
-import { querySocialsMinimal } from '../utils/searchProfile';
-import { green } from '@mui/material/colors';
+import { QUERY_SOCIALS_MINIMAL } from '../services/socials';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 
@@ -57,14 +43,14 @@ export default function PublicProfile() {
   });
 
   const [fetch, { data: socialInfo, loading }] = useLazyQuery(
-    querySocialsMinimal,
+    QUERY_SOCIALS_MINIMAL,
     { identity: profile?.address },
     {
       cache: true
     }
   );
 
-  async function fetchFlows(profile: ProfileType) {
+  /* async function fetchFlows(profile: ProfileType) {
     try {
       const response = await axios.get(`${API_URL}/api/flows/public/${profile.address}`, {
         withCredentials: true
@@ -74,7 +60,7 @@ export default function PublicProfile() {
     } catch (error) {
       console.log(error);
     }
-  }
+  } */
 
   useMemo(async () => {
     if (username) {
@@ -96,14 +82,14 @@ export default function PublicProfile() {
     if (profile) {
       console.log(profile);
       fetch();
-      fetchFlows(profile);
+      //fetchFlows(profile);
     }
   }, [profile]);
 
   return (
     <>
       <Helmet>
-        <title> PayFlow | Profile </title>
+        <title> Payflow {profile ? '| ' + profile.displayName : ''} </title>
       </Helmet>
       <Container maxWidth="sm">
         {/* <Box m={3} display="flex" flexDirection="row" alignItems="center" alignSelf="stretch">
@@ -147,8 +133,9 @@ export default function PublicProfile() {
               <Stack spacing={1} direction="column" alignItems="center">
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <ProfileSection profile={profile} avatarSize={48} />
-{/*                   <Verified fontSize="small" color="success" sx={{color: green[500]}}/>
- */}                </Stack>
+                  {/*                   <Verified fontSize="small" color="success" sx={{color: green[500]}}/>
+                   */}{' '}
+                </Stack>
 
                 {loading && <CircularProgress color="inherit" size={25} />}
                 {socialInfo && (
@@ -193,7 +180,8 @@ export default function PublicProfile() {
                 </Stack>
               </Stack>
             </Card>
-            <Stack
+
+            {/*  <Stack
               overflow="scroll"
               m={1}
               spacing={1}
@@ -220,7 +208,7 @@ export default function PublicProfile() {
 
             <Typography variant="h6" textAlign="center">
               {comingSoonText}
-            </Typography>
+            </Typography> */}
           </>
         )}
 
@@ -305,7 +293,7 @@ export default function PublicProfile() {
             </Card>
           ))} */}
       </Container>
-      <Fab
+      {/* <Fab
         variant="circular"
         onClick={() => {
           setOpenSearchProfile(true);
@@ -320,7 +308,7 @@ export default function PublicProfile() {
         closeStateCallback={() => {
           setOpenSearchProfile(false);
         }}
-      />
+      /> */}
     </>
   );
 }

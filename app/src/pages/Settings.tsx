@@ -19,7 +19,7 @@ export default function Settings() {
   return (
     <>
       <Helmet>
-        <title> PayFlow | Settings </title>
+        <title> Payflow | Settings </title>
       </Helmet>
       <Container maxWidth="md">
         <Box

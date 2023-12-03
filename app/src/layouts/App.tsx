@@ -1,19 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
-import {
-  AppBar,
-  IconButton,
-  Toolbar,
-  Box,
-  Stack,
-  Avatar,
-  Typography,
-  Button,
-  Badge
-} from '@mui/material';
+import { AppBar, IconButton, Toolbar, Box, Stack, Typography, Button, Badge } from '@mui/material';
 
-import CustomThemeProvider from '../theme/CustomThemeProvider';
 import {
   Search,
   Payments,
@@ -35,7 +24,6 @@ import { toast } from 'react-toastify';
 import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
 import { formatUnits } from 'viem';
 import { shortenWalletAddressLabel } from '../utils/address';
-import { FlowType } from '../types/FlowType';
 import { ProfileType } from '../types/ProfleType';
 import { AppSettings } from '../types/AppSettingsType';
 import { ProfileMenu } from '../components/ProfileMenu';
@@ -44,7 +32,6 @@ import { API_URL } from '../utils/urlConstants';
 import HomeLogo from '../components/Logo';
 import { comingSoonToast } from '../components/Toasts';
 import { Chain } from '@rainbow-me/rainbowkit';
-import { SUPPORTED_CHAINS } from '../utils/networks';
 import ProfileAvatar from '../components/ProfileAvatar';
 
 const drawerWidth = 151;
@@ -68,7 +55,6 @@ export default function AppLayout({
   });
 
   const [walletBalances, setWalletBalances] = useState<Map<string, bigint>>(new Map());
-  const [flows, setFlows] = useState<FlowType[]>();
   const [smartAccountAllowedChains, setSmartAccountAllowedChains] = useState<Chain[]>([]);
   const [initiateFlowsRefresh, setInitiateFlowsRefresh] = useState(false);
 
@@ -102,42 +88,6 @@ export default function AppLayout({
     setMobileOpen(!mobileOpen);
   };
 
-  async function fetchFlows() {
-    try {
-      const response = await axios.get(`${API_URL}/api/flows`, { withCredentials: true });
-
-      setFlows(
-        (response.data as FlowType[])
-          .sort((a, b) => {
-            if (a.uuid === profile.defaultFlow?.uuid) {
-              return -1;
-            }
-
-            let fa = a.title.toLowerCase(),
-              fb = b.title.toLowerCase();
-
-            if (fa < fb) {
-              return -1;
-            }
-            if (fa > fb) {
-              return 1;
-            }
-            return 0;
-          })
-          .map((f) => {
-            return {
-              ...f,
-              wallets: f.wallets.filter((w) =>
-                SUPPORTED_CHAINS.map((c) => c.id as number).includes(w.network)
-              )
-            };
-          })
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
   useEffect(() => {
     if (isConnected && profile) {
       if (profile.address === address) {
@@ -158,45 +108,36 @@ export default function AppLayout({
     navigate('/connect');
   }, [isConnected, address, profile]);
 
-  useMemo(async () => {
+  /*   useMemo(async () => {
     if (initiateFlowsRefresh && flows) {
       setInitiateFlowsRefresh(false);
       await fetchFlows();
     }
-  }, [flows, initiateFlowsRefresh]);
-
-  useMemo(async () => {
-    if (authorized) {
-      await fetchFlows();
-    }
-  }, [authorized]);
+  }, [flows, initiateFlowsRefresh]); */
 
   const drawer = <Nav />;
   return (
-    <CustomThemeProvider darkMode={appSettings.darkMode}>
-      <UserContext.Provider
-        value={{
-          isAuthenticated: authorized,
-          profile,
-          appSettings,
-          setAppSettings,
-          flows,
-          setFlows,
-          smartAccountAllowedChains,
-          setSmartAccountAllowedChains,
-          setInitiateFlowsRefresh,
-          walletBalances,
-          setWalletBalances,
-          ethUsdPrice
-        }}>
-        {authorized && (
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-between'
-            }}>
-            {/* <Box component="nav" sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
+    <UserContext.Provider
+      value={{
+        isAuthenticated: authorized,
+        profile,
+        appSettings,
+        setAppSettings,
+        smartAccountAllowedChains,
+        setSmartAccountAllowedChains,
+        setInitiateFlowsRefresh,
+        walletBalances,
+        setWalletBalances,
+        ethUsdPrice
+      }}>
+      {authorized && (
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between'
+          }}>
+          {/* <Box component="nav" sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
               <Drawer
                 variant="temporary"
                 open={mobileOpen}
@@ -222,15 +163,15 @@ export default function AppLayout({
                 </Drawer>
               }
             </Box> */}
-            <Box flexGrow={1}>
-              <HideOnScroll>
-                <AppBar
-                  position="sticky"
-                  color="transparent"
-                  elevation={0}
-                  sx={{ backdropFilter: 'blur(5px)' }}>
-                  <Toolbar>
-                    {/*                     <Box>
+          <Box flexGrow={1}>
+            <HideOnScroll>
+              <AppBar
+                position="sticky"
+                color="transparent"
+                elevation={0}
+                sx={{ backdropFilter: 'blur(5px)' }}>
+                <Toolbar>
+                  {/*                     <Box>
                       <IconButton
                         color="inherit"
                         onClick={handleDrawerToggle}
@@ -238,100 +179,99 @@ export default function AppLayout({
                         <MenuIcon />
                       </IconButton>
                     </Box> */}
-                    <Box
-                      display="flex"
-                      flexDirection="row"
-                      alignItems="center"
-                      justifyContent="space-between"
-                      flexGrow={1}>
-                      <HomeLogo />
-                      <Stack direction="row" spacing={0.5} alignItems="center">
-                        <IconButton
-                          color={location.pathname === '/home' ? 'inherit' : undefined}
-                          onClick={() => navigate('/home')}>
-                          {location.pathname === '/home' ? <Home /> : <HomeOutlined />}
-                        </IconButton>
+                  <Box
+                    display="flex"
+                    flexDirection="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    flexGrow={1}>
+                    <HomeLogo />
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      <IconButton
+                        color={location.pathname === '/home' ? 'inherit' : undefined}
+                        onClick={() => navigate('/home')}>
+                        {location.pathname === '/home' ? <Home /> : <HomeOutlined />}
+                      </IconButton>
 
-                        <IconButton
-                          color={location.pathname === '/flows' ? 'inherit' : undefined}
-                          onClick={() => /* navigate('/flows') */ comingSoonToast()}>
-                          <AppsOutlined />
-                        </IconButton>
+                      <IconButton
+                        color={location.pathname === '/flows' ? 'inherit' : undefined}
+                        onClick={() => comingSoonToast()}>
+                        <AppsOutlined />
+                      </IconButton>
 
-                        <IconButton
-                          color={location.pathname === '/requests' ? 'inherit' : undefined}
-                          onClick={() => /* navigate('/requests') */ comingSoonToast()}>
-                          {location.pathname === '/requests' ? <Payments /> : <PaymentsOutlined />}
-                        </IconButton>
+                      <IconButton
+                        color={location.pathname === '/requests' ? 'inherit' : undefined}
+                        onClick={() => comingSoonToast()}>
+                        {location.pathname === '/requests' ? <Payments /> : <PaymentsOutlined />}
+                      </IconButton>
 
-                        <Box
-                          ml={1}
-                          display="flex"
-                          flexDirection="row"
-                          alignItems="center"
-                          component={Button}
-                          color="inherit"
-                          sx={{
-                            width: 120,
-                            borderRadius: 5,
-                            border: 1,
-                            borderColor: 'inherit',
-                            textTransform: 'none'
-                          }}
-                          onClick={async () => {
-                            setOpenSearchProfile(true);
-                          }}>
-                          <Search color="inherit" />
-                          <Typography variant="subtitle2">Search ...</Typography>
-                        </Box>
-                      </Stack>
-                      <Stack direction="row" spacing={0.5} alignItems="center">
-                        <IconButton color="inherit" onClick={() => comingSoonToast()}>
-                          <Badge variant="dot" color="info">
-                            <NotificationsOutlined />
-                          </Badge>
-                        </IconButton>
+                      <Box
+                        ml={1}
+                        display="flex"
+                        flexDirection="row"
+                        alignItems="center"
+                        component={Button}
+                        color="inherit"
+                        sx={{
+                          width: 120,
+                          borderRadius: 5,
+                          border: 1,
+                          borderColor: 'inherit',
+                          textTransform: 'none'
+                        }}
+                        onClick={async () => {
+                          setOpenSearchProfile(true);
+                        }}>
+                        <Search color="inherit" />
+                        <Typography variant="subtitle2">Search ...</Typography>
+                      </Box>
+                    </Stack>
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      {/*                       <IconButton color="inherit" onClick={() => comingSoonToast()}>
+                        <Badge variant="dot" color="info">
+                          <NotificationsOutlined />
+                        </Badge>
+                      </IconButton> */}
 
-                        <IconButton
-                          size="small"
-                          onClick={async (event) => {
-                            setProfileMenuAnchorEl(event.currentTarget);
-                            setOpenProfileMenu(true);
-                          }}>
-                          <ProfileAvatar profile={profile} sx={{ width: 36, height: 36 }} />
-                        </IconButton>
-                      </Stack>
-                    </Box>
-                  </Toolbar>
-                </AppBar>
-              </HideOnScroll>
+                      <IconButton
+                        size="small"
+                        onClick={async (event) => {
+                          setProfileMenuAnchorEl(event.currentTarget);
+                          setOpenProfileMenu(true);
+                        }}>
+                        <ProfileAvatar profile={profile} sx={{ width: 36, height: 36 }} />
+                      </IconButton>
+                    </Stack>
+                  </Box>
+                </Toolbar>
+              </AppBar>
+            </HideOnScroll>
 
-              <Box
-                sx={{
-                  my: 5,
-                  flexGrow: 1,
-                  display: 'flex',
-                  flexDirection: 'row'
-                }}>
-                <Outlet />
-              </Box>
+            <Box
+              sx={{
+                my: 5,
+                flexGrow: 1,
+                display: 'flex',
+                flexDirection: 'row'
+              }}>
+              <Outlet />
             </Box>
           </Box>
-        )}
-        <ProfileMenu
-          profile={profile}
-          anchorEl={profileMenuAnchorEl}
-          open={openProfileMenu}
-          onClose={() => setOpenProfileMenu(false)}
-          closeStateCallback={() => setOpenProfileMenu(false)}
-        />
-        <SearchProfileDialog
-          open={openSearchProfile}
-          closeStateCallback={() => {
-            setOpenSearchProfile(false);
-          }}
-        />
-      </UserContext.Provider>
-    </CustomThemeProvider>
+        </Box>
+      )}
+      <ProfileMenu
+        profile={profile}
+        anchorEl={profileMenuAnchorEl}
+        open={openProfileMenu}
+        onClose={() => setOpenProfileMenu(false)}
+        closeStateCallback={() => setOpenProfileMenu(false)}
+      />
+      <SearchProfileDialog
+        open={openSearchProfile}
+        closeStateCallback={() => {
+          setOpenSearchProfile(false);
+        }}
+      />
+    </UserContext.Provider>
   );
 }

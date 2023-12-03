@@ -85,7 +85,6 @@ public class UserService implements IUserService {
                                 1);
                         defaultInvitationAllowance.setUser(user);
                         user.setInvitationAllowance(defaultInvitationAllowance);
-
                     }
                 } else {
                     throw new Error("Access not allowed");
@@ -133,5 +132,10 @@ public class UserService implements IUserService {
             walletUserMap.put(w, user);
         });
         return walletUserMap;
+    }
+
+    @Override
+    public List<User> findAll() {
+        return userRepository.findByAllowedTrueOrderByLastSeenDesc();
     }
 }
