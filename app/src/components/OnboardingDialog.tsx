@@ -30,6 +30,7 @@ import { DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS } from '../utils/networks';
 import { QUERY_SOCIALS, converSocialResults } from '../services/socials';
 import { useQuery } from '@airstack/airstack-react';
 import CenteredCircularProgress from './CenteredCircularProgress';
+import { isAlphanumeric } from '../utils/regex';
 
 export type OnboardingDialogProps = DialogProps &
   CloseCallbackType & {
@@ -110,6 +111,11 @@ export default function OnboardingDialog({
     if (username) {
       if (username === profile.username) {
         setUsernameAvailable(true);
+        return;
+      }
+
+      if (!isAlphanumeric(username)) {
+        setUsernameAvailable(undefined);
         return;
       }
 

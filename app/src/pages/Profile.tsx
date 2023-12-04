@@ -19,6 +19,7 @@ import { ProfileType } from '../types/ProfleType';
 import { updateProfile } from '../services/user';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { isAlphanumeric } from '../utils/regex';
 
 export default function Profile() {
   const { profile } = useContext(UserContext);
@@ -37,6 +38,11 @@ export default function Profile() {
     if (username) {
       if (username === profile.username) {
         setUsernameAvailable(true);
+        return;
+      }
+
+      if (!isAlphanumeric(username)) {
+        setUsernameAvailable(false);
         return;
       }
 
