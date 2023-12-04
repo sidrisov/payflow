@@ -28,7 +28,7 @@ export function SearchProfileListItem(
   useMemo(async () => {
     if (!profileWithSocials.profile) {
       const response = await axios.get(
-        `${API_URL}/api/invitations/${profileWithSocials.meta?.addresses[0]}`,
+        `${API_URL}/api/invitations/identity/${profileWithSocials.meta?.addresses[0]}`,
         { withCredentials: true }
       );
 

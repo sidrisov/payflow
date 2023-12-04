@@ -12,12 +12,14 @@ import java.util.List;
 
 public interface InvitationRepository extends CrudRepository<Invitation, Integer> {
 
-        boolean existsByIdentity(String identity);
+        boolean existsByIdentityAndInviteeNull(String identity);
+
+        boolean existsByCodeAndInviteeNull(String code);
 
         List<Invitation> findByInvitedBy(User invitedBy);
 
         // TODO: fix a bug when searching by NULL
-        Invitation findFirstByIdentityAndExpiryDateAfterOrCodeAndCodeNotNullAndExpiryDateAfterOrderByCreatedDateAsc(
+        Invitation findFirstByIdentityAndExpiryDateAfterAndInviteeNullOrCodeAndCodeNotNullAndExpiryDateAfterAndInviteeNullOrderByCreatedDateAsc(
                         String identity,
                         Date before1,
                         String code, Date before2);
@@ -25,7 +27,8 @@ public interface InvitationRepository extends CrudRepository<Invitation, Integer
         default Invitation findFirstValidByIdentityOrCode(String identity,
                         String code) {
                 val now = new Date();
-                return findFirstByIdentityAndExpiryDateAfterOrCodeAndCodeNotNullAndExpiryDateAfterOrderByCreatedDateAsc(identity, now,
+                return findFirstByIdentityAndExpiryDateAfterAndInviteeNullOrCodeAndCodeNotNullAndExpiryDateAfterAndInviteeNullOrderByCreatedDateAsc(
+                                identity, now,
                                 code, now);
         }
 

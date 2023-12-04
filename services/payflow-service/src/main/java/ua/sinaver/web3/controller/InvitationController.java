@@ -2,11 +2,13 @@ package ua.sinaver.web3.controller;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,6 +42,9 @@ public class InvitationController {
     @Autowired
     private UserService userService;
 
+    @Value("${payflow.invitation.whitelisted.default.users}")
+    private Set<String> defaultWhitelistedUsers;
+
     // TODO: add converter to messages
     @GetMapping
     public List<InvitationMessage> getAll(Principal principal) {
@@ -72,10 +77,17 @@ public class InvitationController {
 
     }
 
-    @GetMapping("/{identity}")
+    @GetMapping("/identity/{identity}")
     @ResponseStatus(HttpStatus.OK)
     public Boolean isInvited(@PathVariable String identity) {
-        return invitationRepository.existsByIdentity(identity);
+        return invitationRepository.existsByIdentityAndInviteeNull(identity)
+                || defaultWhitelistedUsers.contains(identity);
+    }
+
+    @GetMapping("/code/{code}")
+    @ResponseStatus(HttpStatus.OK)
+    public Boolean isCodeValid(@PathVariable String code) {
+        return invitationRepository.existsByCodeAndInviteeNull(code);
     }
 
     @PostMapping
