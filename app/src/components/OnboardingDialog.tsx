@@ -21,8 +21,7 @@ import { ProfileType } from '../types/ProfleType';
 import { toast } from 'react-toastify';
 import { useCreateSafeWallets as usePreCreateSafeWallets } from '../utils/hooks/useCreateSafeWallets';
 
-import { FlowType, FlowWalletType } from '../types/FlowType';
-import { DEFAULT_SAFE_VERSION } from '@safe-global/protocol-kit';
+import { FlowType } from '../types/FlowType';
 import { updateProfile } from '../services/user';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../utils/urlConstants';
@@ -30,6 +29,8 @@ import { DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS } from '../utils/networks';
 import { QUERY_SOCIALS, converSocialResults } from '../services/socials';
 import { useQuery } from '@airstack/airstack-react';
 import CenteredCircularProgress from './CenteredCircularProgress';
+import { isAlphanumeric } from '../utils/regex';
+import { lightGreen, red } from '@mui/material/colors';
 
 export type OnboardingDialogProps = DialogProps &
   CloseCallbackType & {
@@ -44,7 +45,7 @@ export default function OnboardingDialog({
   closeStateCallback,
   profile,
   username: paramUsername,
-  code,
+  code: paramCode,
   ...props
 }: OnboardingDialogProps) {
   function handleCloseCampaignDialog() {
@@ -52,10 +53,13 @@ export default function OnboardingDialog({
   }
 
   const [displayName, setDisplayName] = useState<string>(profile.displayName ?? '');
-  const [username, setUsername] = useState<string>(paramUsername ?? profile.username ?? '');
+  const [username, setUsername] = useState<string>(paramUsername ?? '');
+  const [code, setCode] = useState<string>(paramCode ?? '');
   const [profileImage, setProfileImage] = useState<string>(profile.profileImage ?? '');
 
   const [usernameAvailble, setUsernameAvailable] = useState<boolean>();
+  const [codeValid, setCodeValid] = useState<boolean>();
+  const [whitelisted, setWhitelisted] = useState<boolean>();
 
   const { loading: loadingWallets, error, wallets, create, reset } = usePreCreateSafeWallets();
   const [loadingUpdateProfile, setLoadingUpdateProfile] = useState<boolean>(false);
@@ -107,9 +111,21 @@ export default function OnboardingDialog({
   }, [socialInfo]);
 
   useMemo(async () => {
+    const response = await axios.get(`${API_URL}/api/invitations/identity/${profile.address}`, {
+      withCredentials: true
+    });
+    setWhitelisted(response.data);
+  }, [profile]);
+
+  useMemo(async () => {
     if (username) {
       if (username === profile.username) {
         setUsernameAvailable(true);
+        return;
+      }
+
+      if (!isAlphanumeric(username)) {
+        setUsernameAvailable(undefined);
         return;
       }
 
@@ -127,6 +143,26 @@ export default function OnboardingDialog({
       setUsernameAvailable(undefined);
     }
   }, [username]);
+
+  useMemo(async () => {
+    if (whitelisted) {
+      return;
+    }
+
+    if (code) {
+      try {
+        const response = await axios.get(`${API_URL}/api/invitations/code/${code}`, {
+          withCredentials: true
+        });
+
+        setCodeValid(response.data);
+      } catch (error) {
+        setCodeValid(undefined);
+      }
+    } else {
+      setCodeValid(undefined);
+    }
+  }, [code, whitelisted]);
 
   async function createMainFlow() {
     console.log(profile.address, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
@@ -192,43 +228,27 @@ export default function OnboardingDialog({
           </Typography>
         </Box>
       </DialogTitle>
-      <DialogContent sx={{ display: 'flex', justifyContent: 'center' }}>
-        <Stack m={1} direction="column" spacing={3}>
-          <Box>
+      <DialogContent>
+        <Stack m={1} spacing={3}>
+          {whitelisted ? (
+            <Typography textAlign="center" color={lightGreen.A700}>
+              Congratulations 🎉 Your identity is whitelisted!
+            </Typography>
+          ) : (
             <TextField
-              margin="dense"
+              error={code !== '' && !codeValid}
+              helperText={code && !codeValid && 'invitation code is not valid'}
               fullWidth
-              value={displayName}
-              label={'Display Name'}
+              value={code}
+              label={'Invitation Code'}
               InputProps={{
-                inputProps: { maxLength: 16, inputMode: 'text' },
-                sx: { borderRadius: 3 }
-              }}
-              onChange={async (event) => {
-                setDisplayName(event.target.value);
-              }}
-            />
-
-            <TextField
-              error={username !== '' && !usernameAvailble}
-              helperText={username && !usernameAvailble && 'username is not available'}
-              margin="dense"
-              fullWidth
-              value={username}
-              label={'Username'}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Typography variant="subtitle2">payflow.me/</Typography>
-                  </InputAdornment>
-                ),
                 endAdornment: (
                   <InputAdornment position="end">
-                    {username ? (
-                      usernameAvailble ? (
-                        <Check color="success" />
+                    {code ? (
+                      codeValid ? (
+                        <Check sx={{ color: lightGreen.A700 }} />
                       ) : (
-                        <Error color="error" />
+                        <Error sx={{ color: red.A400 }} />
                       )
                     ) : (
                       <></>
@@ -236,36 +256,80 @@ export default function OnboardingDialog({
                   </InputAdornment>
                 ),
                 inputProps: { maxLength: 16, inputMode: 'text' },
-                sx: { borderRadius: 3 }
+                sx: { borderRadius: 5 }
               }}
               onChange={async (event) => {
-                setUsername(event.target.value.toLowerCase());
+                setCode(event.target.value.toLowerCase());
               }}
             />
+          )}
+          <TextField
+            fullWidth
+            value={displayName}
+            label={'Display Name'}
+            InputProps={{
+              inputProps: { maxLength: 16, inputMode: 'text' },
+              sx: { borderRadius: 5 }
+            }}
+            onChange={async (event) => {
+              setDisplayName(event.target.value);
+            }}
+          />
 
-            <TextField
-              margin="dense"
-              fullWidth
-              value={profileImage}
-              label={'Profile Image'}
-              InputProps={{
-                inputProps: { maxLength: 64, inputMode: 'url' },
-                sx: { borderRadius: 3 },
-                endAdornment: (
-                  <InputAdornment position="end">
-                    {profileImage && <Avatar src={profileImage} />}
-                  </InputAdornment>
-                )
-              }}
-              onChange={async (event) => {
-                setProfileImage(event.target.value);
-              }}
-            />
-          </Box>
+          <TextField
+            error={username !== '' && !usernameAvailble}
+            helperText={username && !usernameAvailble && 'username is not available'}
+            fullWidth
+            value={username}
+            label={'Username'}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Typography variant="subtitle2">payflow.me/</Typography>
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  {username ? (
+                    usernameAvailble ? (
+                      <Check color="success" />
+                    ) : (
+                      <Error color="error" />
+                    )
+                  ) : (
+                    <></>
+                  )}
+                </InputAdornment>
+              ),
+              inputProps: { maxLength: 16, inputMode: 'text' },
+              sx: { borderRadius: 5 }
+            }}
+            onChange={async (event) => {
+              setUsername(event.target.value.toLowerCase());
+            }}
+          />
+
+          <TextField
+            fullWidth
+            value={profileImage}
+            label={'Profile Image'}
+            InputProps={{
+              inputProps: { maxLength: 64, inputMode: 'url' },
+              sx: { borderRadius: 5 },
+              endAdornment: (
+                <InputAdornment position="end">
+                  {profileImage && <Avatar src={profileImage} />}
+                </InputAdornment>
+              )
+            }}
+            onChange={async (event) => {
+              setProfileImage(event.target.value);
+            }}
+          />
 
           <LoadingButton
             loading={loadingWallets || loadingUpdateProfile}
-            disabled={!usernameAvailble || !username}
+            disabled={!usernameAvailble || !(whitelisted || codeValid)}
             fullWidth
             variant="outlined"
             loadingIndicator={
@@ -280,7 +344,7 @@ export default function OnboardingDialog({
                 </Typography>
               </Stack>
             }
-            size="medium"
+            size="large"
             color="primary"
             onClick={async () => {
               await createMainFlow();

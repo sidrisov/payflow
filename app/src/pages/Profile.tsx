@@ -3,7 +3,6 @@ import { Helmet } from 'react-helmet-async';
 import { UserContext } from '../contexts/UserContext';
 import {
   Avatar,
-  Box,
   Container,
   InputAdornment,
   Stack,
@@ -19,6 +18,7 @@ import { ProfileType } from '../types/ProfleType';
 import { updateProfile } from '../services/user';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { isAlphanumeric } from '../utils/regex';
 
 export default function Profile() {
   const { profile } = useContext(UserContext);
@@ -37,6 +37,11 @@ export default function Profile() {
     if (username) {
       if (username === profile.username) {
         setUsernameAvailable(true);
+        return;
+      }
+
+      if (!isAlphanumeric(username)) {
+        setUsernameAvailable(false);
         return;
       }
 
@@ -87,79 +92,75 @@ export default function Profile() {
       <Container maxWidth="sm" sx={{ p: 3 }}>
         <ProfileSection profile={profile} avatarSize={48} />
         <Stack mt={3} direction="column" spacing={3}>
-          <Box>
-            <TextField
-              fullWidth
-              margin="normal"
-              value={displayName}
-              label={'Display Name'}
-              InputProps={{
-                inputProps: { maxLength: 16, inputMode: 'text' },
-                sx: { borderRadius: 5 }
-              }}
-              onChange={async (event) => {
-                setDisplayName(event.target.value);
-              }}
-            />
+          <TextField
+            fullWidth
+            value={displayName}
+            label={'Display Name'}
+            InputProps={{
+              inputProps: { maxLength: 16, inputMode: 'text' },
+              sx: { borderRadius: 5 }
+            }}
+            onChange={async (event) => {
+              setDisplayName(event.target.value);
+            }}
+          />
 
-            <TextField
-              error={username !== '' && !usernameAvailble}
-              helperText={username && !usernameAvailble && 'username is not available'}
-              margin="normal"
-              fullWidth
-              value={username}
-              label={'Username'}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Typography variant="subtitle2">payflow.me/</Typography>
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    {username ? (
-                      usernameAvailble ? (
-                        <Check color="success" />
-                      ) : (
-                        <Error color="error" />
-                      )
+          <TextField
+            error={username !== '' && !usernameAvailble}
+            helperText={username && !usernameAvailble && 'username is not available'}
+            fullWidth
+            value={username}
+            label={'Username'}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Typography variant="subtitle2">payflow.me/</Typography>
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  {username ? (
+                    usernameAvailble ? (
+                      <Check color="success" />
                     ) : (
-                      <></>
-                    )}
-                  </InputAdornment>
-                ),
-                inputProps: { maxLength: 16, inputMode: 'text' },
-                sx: { borderRadius: 5 }
-              }}
-              onChange={async (event) => {
-                setUsername(event.target.value.toLowerCase());
-              }}
-            />
+                      <Error color="error" />
+                    )
+                  ) : (
+                    <></>
+                  )}
+                </InputAdornment>
+              ),
+              inputProps: { maxLength: 16, inputMode: 'text' },
+              sx: { borderRadius: 5 }
+            }}
+            onChange={async (event) => {
+              setUsername(event.target.value.toLowerCase());
+            }}
+          />
 
-            <TextField
-              margin="dense"
-              fullWidth
-              value={profileImage}
-              label={'Profile Image'}
-              InputProps={{
-                inputProps: { maxLength: 64, inputMode: 'url' },
-                sx: { borderRadius: 5 },
-                endAdornment: (
-                  <InputAdornment position="end">
-                    {profileImage && <Avatar src={profileImage} />}
-                  </InputAdornment>
-                )
-              }}
-              onChange={async (event) => {
-                setProfileImage(event.target.value);
-              }}
-            />
-          </Box>
+          <TextField
+            fullWidth
+            value={profileImage}
+            label={'Profile Image'}
+            InputProps={{
+              inputProps: { maxLength: 64, inputMode: 'url' },
+              sx: { borderRadius: 5 },
+              endAdornment: (
+                <InputAdornment position="end">
+                  {profileImage && <Avatar src={profileImage} />}
+                </InputAdornment>
+              )
+            }}
+            onChange={async (event) => {
+              setProfileImage(event.target.value);
+            }}
+          />
 
           <LoadingButton
             loading={loadingUpdateProfile}
             disabled={!usernameAvailble || !username}
             variant="outlined"
+            size="large"
             onClick={save}
             sx={{ borderRadius: 5 }}>
             Save

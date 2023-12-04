@@ -8,8 +8,8 @@ import {
   TextField,
   IconButton,
   useMediaQuery,
-  useTheme
-} from '@mui/material';
+  useTheme,
+  Avatar} from '@mui/material';
 
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import HideOnScroll from '../components/HideOnScroll';
@@ -61,7 +61,7 @@ export default function Home() {
           <Stack direction="column" alignItems="center" spacing={1}>
             <Typography
               textAlign="center"
-              variant={isMobile ? 'h3' : 'h2'}
+              variant={isMobile ? 'h4' : 'h2'}
               color={blue[500]}
               fontWeight="bold"
               fontFamily="monospace">
@@ -69,14 +69,14 @@ export default function Home() {
             </Typography>
             <Box display="flex" flexWrap="wrap" justifyContent="center">
               <Typography
-                variant={isMobile ? 'h3' : 'h2'}
+                variant={isMobile ? 'h4' : 'h2'}
                 color={blue[500]}
                 fontWeight="bold"
                 fontFamily="monospace">
                 &nbsp;with&nbsp;
               </Typography>
               <Typography
-                variant={isMobile ? 'h3' : 'h2'}
+                variant={isMobile ? 'h4' : 'h2'}
                 color={orange[300]}
                 fontStyle="italic"
                 fontWeight="bold"
@@ -85,13 +85,42 @@ export default function Home() {
               </Typography>
             </Box>
 
-            <Typography
-              variant="overline"
-              color={grey[500]}
-              fontWeight="bold"
-              fontFamily="monospace">
-              FARCASTER | LENS | ENS
-            </Typography>
+            <Stack spacing={1} direction="row" alignItems="center">
+              <Stack spacing={1} direction="row" alignItems="center">
+                <Avatar variant="rounded" src="farcaster.svg" sx={{ width: 24, height: 24 }} />
+                <Typography
+                  color={grey[500]}
+                  fontSize={16}
+                  fontWeight="bold"
+                  fontFamily="monospace">
+                  FARCASTER
+                </Typography>
+              </Stack>
+
+              <Typography>|</Typography>
+
+              <Stack spacing={1} direction="row" alignItems="center">
+                <Avatar variant="rounded" src="lens.svg" sx={{ width: 24, height: 24 }} />
+                <Typography
+                  color={grey[500]}
+                  fontSize={18}
+                  fontWeight="bold"
+                  fontFamily="monospace">
+                  LENS
+                </Typography>
+              </Stack>
+              <Typography>|</Typography>
+              <Stack spacing={1} direction="row" alignItems="center">
+                <Avatar variant="rounded" src="ens.svg" sx={{ width: 24, height: 24 }} />
+                <Typography
+                  color={grey[500]}
+                  fontSize={18}
+                  fontWeight="bold"
+                  fontFamily="monospace">
+                  ENS
+                </Typography>
+              </Stack>
+            </Stack>
           </Stack>
           <Box
             display="flex"
@@ -127,7 +156,7 @@ export default function Home() {
               color="info"
               href={`${DAPP_URL}/connect${profile ? `?username=${profile}` : ''}`}
               sx={{ ml: 1, borderRadius: 4 }}>
-              START 🚀
+              JOIN 🚀
             </Button>
           </Box>
 

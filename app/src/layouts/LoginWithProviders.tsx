@@ -161,7 +161,7 @@ export default function AppWithProviders() {
         <RainbowKitProvider
           theme={customLightTheme}
           avatar={CustomAvatar}
-          modalSize="wide"
+          modalSize="compact"
           chains={chains}
           initialChain={1}>
           <Login authStatus={authStatus} profile={profile} />

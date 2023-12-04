@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +36,8 @@ public class UserService implements IUserService {
 
     @Value("${payflow.invitation.whitelisted.default.allowance}")
     private int defaultWhitelistedAllowance;
+
+    private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9]*$");
 
     @Autowired
     private UserRepository userRepository;
@@ -97,6 +100,11 @@ public class UserService implements IUserService {
             if (profile.username().toLowerCase().startsWith("0x")) {
                 throw new Error("Username can't be an address");
             }
+
+            if (!USERNAME_PATTERN.matcher(profile.username().toLowerCase()).matches()) {
+                throw new Error("Username should be alphanumerical");
+            }
+
             user.setUsername(profile.username().toLowerCase());
             user.setProfileImage(profile.profileImage());
             if (user.getDefaultFlow() == null && profile.defaultFlow() != null) {
@@ -106,6 +114,7 @@ public class UserService implements IUserService {
                 // check if any extra wallets need to be added
             }
         }
+
     }
 
     @Override
