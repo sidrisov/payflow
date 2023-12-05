@@ -13,11 +13,10 @@ export default function Assets(props: {
 }) {
   const { ethUsdPrice } = useContext(UserContext);
   const { selectedNetwork } = props;
-
   const { loading, fetched, balances } = props.balanceFetchResult;
 
   return (
-    <Stack pt={1} px={2} spacing={1} minWidth={350} maxHeight={350} overflow="scroll">
+    <Stack pt={1} px={1} spacing={1} width="100%" maxHeight={350} overflow="scroll">
       {loading || balances.length === 0 ? (
         <ActivitySkeletonSection />
       ) : fetched && ethUsdPrice ? (

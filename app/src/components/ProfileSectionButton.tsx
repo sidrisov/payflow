@@ -1,4 +1,4 @@
-import { Box, BoxProps, Button, ButtonProps } from '@mui/material';
+import { Box, BoxProps, Button, ButtonProps, useMediaQuery, useTheme } from '@mui/material';
 import { ProfileType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { useNavigate } from 'react-router-dom';
@@ -8,6 +8,9 @@ export default function ProfileSectionButton({
   ...props
 }: BoxProps & ButtonProps & { profile: ProfileType }) {
   const navigate = useNavigate();
+
+  const theme = useTheme();
+  const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
     <Box
@@ -24,7 +27,7 @@ export default function ProfileSectionButton({
         }
       }}
       sx={{ borderRadius: 5 }}>
-      <ProfileSection profile={profile} />
+      <ProfileSection profile={profile} fontSize={smallScreen ? 13 : 15} />
     </Box>
   );
 }

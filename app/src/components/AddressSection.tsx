@@ -1,10 +1,10 @@
 import { Avatar, Stack, Typography } from '@mui/material';
-import { MetaType, ProfileType } from '../types/ProfleType';
+import { MetaType } from '../types/ProfleType';
 import AddressAvatar from './AddressAvatar';
 import { shortenWalletAddressLabel } from '../utils/address';
 
-export function AddressSection(props: { meta: MetaType }) {
-  const { meta } = props;
+export function AddressSection(props: { meta: MetaType; fontSize?: number }) {
+  const { meta, fontSize } = props;
   return (
     <Stack direction="row" spacing={0.5} alignItems="center">
       {meta.ensAvatar ? (
@@ -14,7 +14,9 @@ export function AddressSection(props: { meta: MetaType }) {
       )}
 
       <Stack direction="column" spacing={0.1} alignItems="flex-start">
-        <Typography variant="subtitle2">{shortenWalletAddressLabel(meta.addresses[0])}</Typography>
+        <Typography variant="subtitle2" fontSize={fontSize}>
+          {shortenWalletAddressLabel(meta.addresses[0])}
+        </Typography>
         {meta.ens && <Typography variant="caption">{meta.ens}</Typography>}
       </Stack>
     </Stack>

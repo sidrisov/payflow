@@ -82,9 +82,13 @@ export default function Accounts() {
               setAssetsOrActivityView={setAssetsOrActivityView}
             />
 
-            <Box px={2} maxWidth={smallScreen ? 400 : 450}>
+            <Box
+              width={smallScreen ? 350 : 375}
+              display="flex"
+              flexDirection="column"
+              alignItems="center">
               <NetworkSelectorSection
-                mx={1}
+                width="100%"
                 wallets={selectedFlow.wallets}
                 selectedNetwork={selectedNetwork}
                 setSelectedNetwork={setSelectedNetwork}
