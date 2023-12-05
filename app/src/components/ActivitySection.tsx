@@ -1,5 +1,16 @@
 import { Repeat, ArrowDownward, Send } from '@mui/icons-material';
-import { Badge, Box, BoxProps, Chip, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import {
+  Badge,
+  Box,
+  BoxProps,
+  Chip,
+  IconButton,
+  Stack,
+  Tooltip,
+  Typography,
+  useMediaQuery,
+  useTheme
+} from '@mui/material';
 import { lightGreen, red } from '@mui/material/colors';
 import { formatEther } from 'viem';
 import { MetaType } from '../types/ProfleType';
@@ -46,6 +57,9 @@ function getActivityIndicator(txInfo: TxInfo, blockExplorerUrl: string | undefin
 }
 
 export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
+  const theme = useTheme();
+  const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+
   const { ethUsdPrice } = useContext(UserContext);
   const { txInfo } = props;
 
@@ -54,12 +68,12 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
 
   return (
     <Box
+      px={smallScreen ? 0 : 0.5}
       display="flex"
       flexDirection="row"
       alignItems="center"
-      justifyContent="space-between"
-      sx={{ p: 1, border: 0, borderRadius: 5 }}>
-      <Stack direction="row" spacing={1} alignItems="center" width={140}>
+      justifyContent="space-between">
+      <Stack direction="row" spacing={1} alignItems="center" width={110}>
         <Badge
           overlap="circular"
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
@@ -75,11 +89,11 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
           {getActivityIndicator(txInfo, blockExplorerUrl)}
         </Badge>
 
-        <Stack alignItems="center">
-          <Typography variant="subtitle2" fontSize={16}>
+        <Stack alignItems="center" width={65}>
+          <Typography variant="subtitle2" fontSize={smallScreen ? 13 : 16}>
             {getActivityLabel(txInfo.activity)}
           </Typography>
-          <Typography variant="caption">
+          <Typography variant="caption" fontSize={smallScreen ? 10 : 12}>
             {new Date(txInfo.timestamp).toLocaleDateString()}
           </Typography>
         </Stack>

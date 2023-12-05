@@ -11,11 +11,10 @@ export type AssetsProps = {
 
 export default function Activity(props: AssetsProps) {
   const { selectedNetwork } = props;
-
   const { loading, fetched, transactions } = props.activityFetchResult;
 
   return (
-    <Stack px={1.5} spacing={1} minWidth={350} maxHeight={400} overflow="scroll">
+    <Stack pt={1} px={1} spacing={2} width="100%" maxHeight={350} overflow="scroll">
       {loading || transactions.length === 0 ? (
         <ActivitySkeletonSection />
       ) : fetched ? (

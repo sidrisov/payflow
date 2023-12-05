@@ -1,17 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
-import { AppBar, IconButton, Toolbar, Box, Stack, Typography, Button, Badge } from '@mui/material';
+import { AppBar, IconButton, Toolbar, Box, Stack, Typography, Button } from '@mui/material';
 
-import {
-  Search,
-  Payments,
-  Home,
-  NotificationsOutlined,
-  HomeOutlined,
-  PaymentsOutlined,
-  AppsOutlined
-} from '@mui/icons-material';
+import { Search, Home, HomeOutlined, AppsOutlined } from '@mui/icons-material';
 
 import Nav from '../components/Navigation';
 
@@ -186,7 +178,7 @@ export default function AppLayout({
                     justifyContent="space-between"
                     flexGrow={1}>
                     <HomeLogo />
-                    <Stack direction="row" spacing={0.5} alignItems="center">
+                    <Stack direction="row" alignItems="center">
                       <IconButton
                         color={location.pathname === '/home' ? 'inherit' : undefined}
                         onClick={() => navigate('/home')}>
@@ -199,11 +191,12 @@ export default function AppLayout({
                         <AppsOutlined />
                       </IconButton>
 
+                      {/*
                       <IconButton
                         color={location.pathname === '/requests' ? 'inherit' : undefined}
                         onClick={() => comingSoonToast()}>
                         {location.pathname === '/requests' ? <Payments /> : <PaymentsOutlined />}
-                      </IconButton>
+                      </IconButton> */}
 
                       <Box
                         ml={1}
@@ -249,7 +242,7 @@ export default function AppLayout({
 
             <Box
               sx={{
-                my: 5,
+                mt: 3,
                 flexGrow: 1,
                 display: 'flex',
                 flexDirection: 'row'

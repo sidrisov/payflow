@@ -59,7 +59,11 @@ export function SearchProfileListItem(
             <AddressSection meta={profileWithSocials.meta} />
           )}
 
-          <Stack direction="column" spacing={0.5} alignItems="center" sx={{ width: 70 }}>
+          <Stack
+            direction="column"
+            spacing={0.5}
+            alignItems="center"
+            sx={{ minWidth: 70, maxWidth: 100 }}>
             {view === 'profile' ? (
               <PayflowChip />
             ) : (
