@@ -36,7 +36,7 @@ export function NetworkAssetBalanceSection(props: {
         </Stack>
       </Box>
 
-      <Typography>${(parseFloat(props.balance) * props.price).toPrecision(3)}</Typography>
+      <Typography>${(parseFloat(props.balance) * props.price).toFixed(1)}</Typography>
     </Box>
   );
 }

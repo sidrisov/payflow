@@ -9,6 +9,7 @@ import OnboardingDialog from '../components/OnboardingDialog';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { ProfileType } from '../types/ProfleType';
 import { blue, yellow } from '@mui/material/colors';
+import { toast } from 'react-toastify';
 
 export default function Login({
   authStatus,
@@ -32,10 +33,11 @@ export default function Login({
   const { switchNetwork } = useSwitchNetwork();
 
   useMemo(() => {
-    if (chain?.id !== 1) {
+    if (chain && chain.id !== 1) {
+      toast.warning('Please, switch to Ethereum!', { autoClose: 10000 });
       switchNetwork?.(1);
     }
-  }, [chain?.id]);
+  }, [chain]);
 
   useEffect(() => {
     console.log(profile, authStatus);

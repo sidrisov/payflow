@@ -4,6 +4,7 @@ import { Check, Stars } from '@mui/icons-material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useContext } from 'react';
 import { UserContext } from '../contexts/UserContext';
+import { green } from '@mui/material/colors';
 
 export type ChooseFlowMenuProps = MenuProps &
   CloseCallbackType & {
@@ -54,7 +55,7 @@ export function ChooseFlowMenu({
               <Typography variant="subtitle2" overflow="clip">
                 {option.title}
               </Typography>
-              {option === selectedFlow && <Check color="success" sx={{ ml: 1 }} />}
+              {option === selectedFlow && <Check sx={{ mx: 1, color: green.A700 }} />}
             </Box>
           </MenuItem>
         ))}

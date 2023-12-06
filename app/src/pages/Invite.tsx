@@ -74,7 +74,7 @@ export default function Invite() {
                       {`Available codes (${codes?.length})`}
                     </Typography>
 
-                    <Stack maxHeight={300} sx={{ p: 1, overflowY: 'scroll' }}>
+                    <Stack maxHeight={400} sx={{ p: 1, overflowY: 'scroll' }}>
                       {codes?.map((inv) => (
                         <CodeOrAddressInvitationSection
                           codeOrAddress={inv.code}
@@ -94,7 +94,7 @@ export default function Invite() {
                     </Stack>
                   </Box>
                 </Stack>
-                <Box mt={5} width={250}>
+                <Box mt={5}>
                   <Typography variant="caption" textAlign="start">
                     {`Joined profiles (${joined?.length})`}
                   </Typography>

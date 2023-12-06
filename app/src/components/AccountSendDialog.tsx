@@ -11,7 +11,6 @@ import {
   IconButton,
   TextField,
   Button,
-  Divider,
   InputAdornment,
   CircularProgress,
   Tooltip
@@ -72,8 +71,9 @@ export default function AccountSendDialog({
 
   // TODO: what if there is not a single compatible wallet between sender & recipient
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>(
-    flow.wallets.find((w) => w.network === chain?.id) ?? flow.wallets[0]
+    /* flow.wallets.find((w) => w.network === chain?.id) ??  */ flow.wallets[0]
   );
+
   const [selectedRecipient, setSelectedRecipient] = useState<SelectedProfileWithSocialsType>();
 
   const [toAddress, setToAddress] = useState<Address>();
@@ -362,7 +362,7 @@ export default function AccountSendDialog({
                           <Typography>$</Typography>
                           <Typography>≈</Typography>
                           <Typography>
-                            {`${sendAmount ? parseFloat(formatEther(sendAmount)).toPrecision(2) : 0}
+                            {`${sendAmount ? parseFloat(formatEther(sendAmount)).toPrecision(3) : 0}
                         ETH`}
                           </Typography>
                         </Box>
@@ -394,15 +394,11 @@ export default function AccountSendDialog({
                     <AttachMoney fontSize="small" />
                     <Typography variant="caption">
                       {`max: ${
-                        isSuccess
-                          ? balance && parseFloat(formatEther(balance.value)).toPrecision(2)
-                          : 0
+                        isSuccess ? balance && parseFloat(formatEther(balance.value)).toFixed(5) : 0
                       } ETH ≈ $${
                         isSuccess
                           ? balance &&
-                            (
-                              parseFloat(formatEther(balance.value)) * (ethUsdPrice ?? 0)
-                            ).toPrecision(2)
+                            (parseFloat(formatEther(balance.value)) * (ethUsdPrice ?? 0)).toFixed(2)
                           : 0.0
                       }`}
                     </Typography>
