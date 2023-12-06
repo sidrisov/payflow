@@ -1,14 +1,7 @@
 import { useContext, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { UserContext } from '../contexts/UserContext';
-import {
-  Avatar,
-  Container,
-  InputAdornment,
-  Stack,
-  TextField,
-  Typography
-} from '@mui/material';
+import { Avatar, Container, InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import { ProfileSection } from '../components/ProfileSection';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { Check, Error } from '@mui/icons-material';
@@ -19,6 +12,7 @@ import { updateProfile } from '../services/user';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { isAlphanumeric } from '../utils/regex';
+import { green } from '@mui/material/colors';
 
 export default function Profile() {
   const { profile } = useContext(UserContext);
@@ -121,7 +115,7 @@ export default function Profile() {
                 <InputAdornment position="end">
                   {username ? (
                     usernameAvailble ? (
-                      <Check color="success" />
+                      <Check sx={{ color: green.A700 }} />
                     ) : (
                       <Error color="error" />
                     )
@@ -143,7 +137,7 @@ export default function Profile() {
             value={profileImage}
             label={'Profile Image'}
             InputProps={{
-              inputProps: { maxLength: 64, inputMode: 'url' },
+              inputProps: { maxLength: 128, inputMode: 'url' },
               sx: { borderRadius: 5 },
               endAdornment: (
                 <InputAdornment position="end">

@@ -30,7 +30,7 @@ import { QUERY_SOCIALS, converSocialResults } from '../services/socials';
 import { useQuery } from '@airstack/airstack-react';
 import CenteredCircularProgress from './CenteredCircularProgress';
 import { isAlphanumeric } from '../utils/regex';
-import { lightGreen, red } from '@mui/material/colors';
+import { green, lightGreen, red } from '@mui/material/colors';
 
 export type OnboardingDialogProps = DialogProps &
   CloseCallbackType & {
@@ -246,7 +246,7 @@ export default function OnboardingDialog({
                   <InputAdornment position="end">
                     {code ? (
                       codeValid ? (
-                        <Check sx={{ color: lightGreen.A700 }} />
+                        <Check sx={{ color: green.A700 }} />
                       ) : (
                         <Error sx={{ color: red.A400 }} />
                       )
@@ -292,7 +292,7 @@ export default function OnboardingDialog({
                 <InputAdornment position="end">
                   {username ? (
                     usernameAvailble ? (
-                      <Check color="success" />
+                      <Check sx={{ color: green.A700 }} />
                     ) : (
                       <Error color="error" />
                     )
@@ -314,7 +314,7 @@ export default function OnboardingDialog({
             value={profileImage}
             label={'Profile Image'}
             InputProps={{
-              inputProps: { maxLength: 64, inputMode: 'url' },
+              inputProps: { maxLength: 128, inputMode: 'url' },
               sx: { borderRadius: 5 },
               endAdornment: (
                 <InputAdornment position="end">
