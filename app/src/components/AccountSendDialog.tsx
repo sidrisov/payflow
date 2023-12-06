@@ -362,7 +362,7 @@ export default function AccountSendDialog({
                           <Typography>$</Typography>
                           <Typography>≈</Typography>
                           <Typography>
-                            {`${sendAmount ? parseFloat(formatEther(sendAmount)).toPrecision(2) : 0}
+                            {`${sendAmount ? parseFloat(formatEther(sendAmount)).toPrecision(3) : 0}
                         ETH`}
                           </Typography>
                         </Box>
@@ -395,14 +395,14 @@ export default function AccountSendDialog({
                     <Typography variant="caption">
                       {`max: ${
                         isSuccess
-                          ? balance && parseFloat(formatEther(balance.value)).toPrecision(2)
+                          ? balance && parseFloat(formatEther(balance.value)).toFixed(5)
                           : 0
                       } ETH ≈ $${
                         isSuccess
                           ? balance &&
                             (
                               parseFloat(formatEther(balance.value)) * (ethUsdPrice ?? 0)
-                            ).toPrecision(2)
+                            ).toFixed(2)
                           : 0.0
                       }`}
                     </Typography>
