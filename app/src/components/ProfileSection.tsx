@@ -14,7 +14,7 @@ export function ProfileSection({
   return (
     <Stack direction="row" spacing={0.5} alignItems="center">
       <ProfileAvatar profile={profile} sx={{ width: avatarSize, height: avatarSize }} />
-      <Stack direction="column" spacing={0.1} alignItems="flex-start">
+      <Stack width={80} direction="column" spacing={0.1} alignItems="flex-start" overflow="scroll">
         <Typography variant="subtitle2" fontSize={fontSize}>
           {profile?.displayName}
         </Typography>

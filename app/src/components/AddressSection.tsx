@@ -13,7 +13,7 @@ export function AddressSection(props: { meta: MetaType; fontSize?: number }) {
         <AddressAvatar address={meta.addresses[0] ?? '0x'} />
       )}
 
-      <Stack direction="column" spacing={0.1} alignItems="flex-start">
+      <Stack width={80} direction="column" spacing={0.1} alignItems="flex-start" overflow="scroll">
         <Typography variant="subtitle2" fontSize={fontSize}>
           {shortenWalletAddressLabel(meta.addresses[0])}
         </Typography>
