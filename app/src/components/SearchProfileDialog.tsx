@@ -74,11 +74,11 @@ export default function SearchProfileDialog({
     <Dialog
       fullScreen={fullScreen}
       onClose={handleCloseCampaignDialog}
-      {...props}
-      PaperProps={{ sx: { borderRadius: 5 } }}
       sx={{
         backdropFilter: 'blur(5px)'
-      }}>
+      }}
+      PaperProps={{ sx: { borderRadius: 5 } }}
+      {...props}>
       <DialogTitle>
         <Stack minWidth={300} direction="column" alignItems="center">
           <Typography alignSelf="center" variant="h6">

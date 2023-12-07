@@ -1,41 +1,24 @@
-import {
-  Box,
-  Button,
-  Card,
-  CircularProgress,
-  Container,
-  Stack,
-  useMediaQuery,
-  useTheme
-} from '@mui/material';
+import { Box, Button, Card, CircularProgress, Container, Stack } from '@mui/material';
 import axios from 'axios';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { ProfileType } from '../types/ProfleType';
 import { useEnsName } from 'wagmi';
 import { AttachMoney, Send } from '@mui/icons-material';
 import { useLazyQuery } from '@airstack/airstack-react';
-import { FlowType } from '../types/FlowType';
 import { API_URL } from '../utils/urlConstants';
 import { ProfileSection } from '../components/ProfileSection';
 import { comingSoonToast } from '../components/Toasts';
 import SocialPresenceChipWithLink from '../components/SocialPresenceChipWithLink';
 import { QUERY_SOCIALS_MINIMAL } from '../services/socials';
-
-const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
+import SearchProfileDialog from '../components/SearchProfileDialog';
 
 export default function PublicProfile() {
   const { username } = useParams();
   const [profile, setProfile] = useState<ProfileType>();
-  const [flows, setFlows] = useState<FlowType[]>();
 
   const [openSearchProfile, setOpenSearchProfile] = useState<boolean>(false);
-
-  const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
-
-  const navigate = useNavigate();
 
   const { data: ensName } = useEnsName({
     address: profile?.address,
@@ -49,18 +32,6 @@ export default function PublicProfile() {
       cache: true
     }
   );
-
-  /* async function fetchFlows(profile: ProfileType) {
-    try {
-      const response = await axios.get(`${API_URL}/api/flows/public/${profile.address}`, {
-        withCredentials: true
-      });
-
-      setFlows(response.data);
-    } catch (error) {
-      console.log(error);
-    }
-  } */
 
   useMemo(async () => {
     if (username) {
@@ -82,7 +53,6 @@ export default function PublicProfile() {
     if (profile) {
       console.log(profile);
       fetch();
-      //fetchFlows(profile);
     }
   }, [profile]);
 
@@ -91,29 +61,59 @@ export default function PublicProfile() {
       <Helmet>
         <title> Payflow {profile ? '| ' + profile.displayName : ''} </title>
       </Helmet>
-      <Container maxWidth="sm">
-        {/* <Box m={3} display="flex" flexDirection="row" alignItems="center" alignSelf="stretch">
-          <Chip
-            size="medium"
-            clickable
-            icon={<Search color="inherit" />}
-            variant="outlined"
-            label="Search ... "
-            onClick={() => {
-              setOpenSearchProfile(true);
-            }}
-            sx={{
-              flexGrow: 1,
-              maxWidth: 500,
-              '& .MuiChip-root': {
-                borderRadius: 5
-              },
-              '& .MuiChip-label': { fontSize: 18 },
-              height: 50
-            }}
-          />
-        </Box> */}
+      <Container maxWidth="xs">
+        {/* {!profile && (
+          <Box
+            position="absolute"
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            boxSizing="border-box"
+            justifyContent="center"
+            sx={{ inset: 0 }}>
+            <Stack spacing={1} alignItems="center" sx={{ border: 0 }}>
+              <Badge
+                badgeContent={
+                  <Typography
+                    variant="h5"
+                    fontWeight="900"
+                    color={green.A700}
+                    sx={{ mb: 3 }}>
+                    made easy
+                  </Typography>
+                }>
+                <Typography variant="h3" fontWeight="500" textAlign="center">
+                  Onchain Social Payments
+                </Typography>
+              </Badge>
 
+              <Typography variant="caption" fontSize={16} color="grey">
+                Safe, gasless, farcaster/lens/ens supported
+              </Typography>
+
+              <Chip
+                size="medium"
+                clickable
+                icon={<Search color="inherit" />}
+                variant="outlined"
+                label="search & pay your friend"
+                onClick={() => {
+                  setOpenSearchProfile(true);
+                }}
+                sx={{
+                  border: 2,
+                  backgroundColor: 'white',
+                  borderStyle: 'dotted',
+                  borderColor: 'divider',
+                  borderRadius: 10,
+                  width: 300,
+                  '& .MuiChip-label': { fontSize: 20 },
+                  height: 50
+                }}
+              />
+            </Stack>
+          </Box>
+        )} */}
         {profile && (
           <>
             <Card
@@ -124,6 +124,7 @@ export default function PublicProfile() {
                 alignItems: 'center',
                 justifyContent: 'space-evenly',
                 m: 2,
+                mt: 5,
                 p: 2,
                 border: 2,
                 borderColor: 'divider',
@@ -132,18 +133,14 @@ export default function PublicProfile() {
               }}>
               <Stack spacing={1} direction="column" alignItems="center">
                 <Stack direction="row" alignItems="center" spacing={1}>
-                  <ProfileSection profile={profile} avatarSize={48} />
-                  {/*                   <Verified fontSize="small" color="success" sx={{color: green[500]}}/>
-                   */}{' '}
+                  {/*                   <Verified fontSize="small" color="success" sx={{ color: green[500] }} />
+                   */}
+                  <ProfileSection profile={profile} avatarSize={48} maxWidth={300} />
                 </Stack>
 
                 {loading && <CircularProgress color="inherit" size={25} />}
                 {socialInfo && (
-                  <Box
-                    flexWrap="wrap"
-                    display="flex"
-                    justifyContent="space-evenly"
-                    alignItems="center">
+                  <Box flexWrap="wrap" display="flex" justifyContent="center" alignItems="center">
                     <SocialPresenceChipWithLink
                       type={ensName ? 'ens' : 'address'}
                       name={ensName ?? profile.address}
@@ -175,7 +172,7 @@ export default function PublicProfile() {
                     endIcon={<Send />}
                     onClick={() => comingSoonToast()}
                     sx={{ borderRadius: 5, textTransform: 'lowercase' }}>
-                    Send
+                    Pay
                   </Button>
                 </Stack>
               </Stack>
@@ -211,7 +208,6 @@ export default function PublicProfile() {
             </Typography> */}
           </>
         )}
-
         {/* {flows &&
           flows.map((flow) => (
             <Card
@@ -293,22 +289,15 @@ export default function PublicProfile() {
             </Card>
           ))} */}
       </Container>
-      {/* <Fab
-        variant="circular"
-        onClick={() => {
-          setOpenSearchProfile(true);
-        }}
-        sx={{ position: 'fixed', bottom: 16, right: 16 }}>
-        <Search />
-      </Fab>
       <SearchProfileDialog
-        maxWidth="sm"
-        fullWidth
         open={openSearchProfile}
+        sx={{
+          backdropFilter: 'blur(10px)'
+        }}
         closeStateCallback={() => {
           setOpenSearchProfile(false);
         }}
-      /> */}
+      />
     </>
   );
 }

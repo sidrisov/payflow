@@ -5,17 +5,19 @@ import ProfileAvatar from './ProfileAvatar';
 export function ProfileSection({
   profile,
   avatarSize,
-  fontSize
+  fontSize,
+  maxWidth: width
 }: {
   profile: ProfileType;
   avatarSize?: number;
   fontSize?: number;
+  maxWidth?: number;
 }) {
   return (
-    <Stack direction="row" spacing={0.5} alignItems="center">
+    <Stack maxWidth={width ?? 120} direction="row" spacing={0.5} alignItems="center">
       <ProfileAvatar profile={profile} sx={{ width: avatarSize, height: avatarSize }} />
-      <Stack width={80} direction="column" spacing={0.1} alignItems="flex-start" overflow="scroll">
-        <Typography variant="subtitle2" fontSize={fontSize}>
+      <Stack direction="column" spacing={0.1} alignItems="flex-start" overflow="scroll">
+        <Typography noWrap variant="subtitle2" fontSize={fontSize}>
           {profile?.displayName}
         </Typography>
         <Typography variant="caption">@{profile?.username}</Typography>
