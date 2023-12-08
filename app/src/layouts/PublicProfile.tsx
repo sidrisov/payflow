@@ -7,7 +7,8 @@ import {
   CircularProgress,
   Container,
   Stack,
-  Typography} from '@mui/material';
+  Typography
+} from '@mui/material';
 import axios from 'axios';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -22,12 +23,14 @@ import { comingSoonToast } from '../components/Toasts';
 import SocialPresenceChipWithLink from '../components/SocialPresenceChipWithLink';
 import { QUERY_SOCIALS_MINIMAL } from '../services/socials';
 import SearchProfileDialog from '../components/SearchProfileDialog';
-import { green, grey } from '@mui/material/colors';
+import { green, grey, orange } from '@mui/material/colors';
 import { AppSettings } from '../types/AppSettingsType';
+import CenteredCircularProgress from '../components/CenteredCircularProgress';
 
 export default function PublicProfile({ appSettings }: { appSettings: AppSettings }) {
   const { username } = useParams();
   const [profile, setProfile] = useState<ProfileType>();
+  const [loadingProfile, setLoadingProfile] = useState<boolean>();
 
   const { darkMode } = appSettings;
 
@@ -38,7 +41,7 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
     chainId: 1
   });
 
-  const [fetch, { data: socialInfo, loading }] = useLazyQuery(
+  const [fetch, { data: socialInfo, loading: loadingSocials }] = useLazyQuery(
     QUERY_SOCIALS_MINIMAL,
     { identity: profile?.address },
     {
@@ -48,23 +51,21 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
 
   useMemo(async () => {
     if (username) {
+      setLoadingProfile(true);
       try {
-        const response = await axios.get(`${API_URL}/api/user/${username}`, {
-          withCredentials: true
-        });
+        const response = await axios.get(`${API_URL}/api/user/${username}`);
         const profile = (await response.data) as ProfileType;
         setProfile(profile);
-
-        console.log(profile);
       } catch (error) {
         console.error(error);
+      } finally {
+        setLoadingProfile(false);
       }
     }
   }, [username]);
 
   useMemo(async () => {
     if (profile) {
-      console.log(profile);
       fetch();
     }
   }, [profile]);
@@ -74,56 +75,16 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
       <Helmet>
         <title> Payflow {profile ? '| ' + profile.displayName : ''} </title>
       </Helmet>
-      <Container maxWidth="xs">
-        {!profile && (
-          <Box
-            position="absolute"
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            boxSizing="border-box"
-            justifyContent="center"
-            sx={{ inset: 0 }}>
-            <Stack spacing={1} alignItems="center" sx={{ border: 0 }}>
-              <Badge
-                badgeContent={
-                  <Typography variant="h5" fontWeight="900" color={green.A700} sx={{ mb: 3 }}>
-                    made easy
-                  </Typography>
-                }>
-                <Typography variant="h3" fontWeight="500" textAlign="center">
-                  Onchain Social Payments
-                </Typography>
-              </Badge>
-
-              <Typography variant="caption" fontSize={16} color="grey">
-                Safe, gasless, farcaster/lens/ens supported
-              </Typography>
-
-              <Chip
-                size="medium"
-                clickable
-                icon={<Search color="inherit" />}
-                variant="outlined"
-                label="search & pay your friend"
-                onClick={() => {
-                  setOpenSearchProfile(true);
-                }}
-                sx={{
-                  border: 2,
-                  backgroundColor: darkMode ? grey[800] : grey[50],
-                  borderStyle: 'dotted',
-                  borderColor: 'divider',
-                  borderRadius: 10,
-                  width: 300,
-                  '& .MuiChip-label': { fontSize: 20 },
-                  height: 50
-                }}
-              />
-            </Stack>
-          </Box>
+      <Container maxWidth="sm">
+        {username && !loadingProfile && !profile && (
+          <Typography mt={10} variant="h6" textAlign="center" color={orange.A400}>
+            Ooops, not found 🤷🏻‍♂️ try to search by social identity👇🏻
+          </Typography>
         )}
-        {profile && (
+
+        {loadingProfile === true ? (
+          <CenteredCircularProgress />
+        ) : profile ? (
           <>
             <Card
               elevation={10}
@@ -147,7 +108,7 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
                   <ProfileSection profile={profile} avatarSize={48} maxWidth={300} />
                 </Stack>
 
-                {loading && <CircularProgress color="inherit" size={25} />}
+                {loadingSocials && <CircularProgress color="inherit" size={25} />}
                 {socialInfo && (
                   <Box flexWrap="wrap" display="flex" justifyContent="center" alignItems="center">
                     <SocialPresenceChipWithLink
@@ -216,6 +177,53 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
               {comingSoonText}
             </Typography> */}
           </>
+        ) : (
+          <Box
+            position="absolute"
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            boxSizing="border-box"
+            justifyContent="center"
+            sx={{ inset: 0 }}>
+            <Stack spacing={1} alignItems="center" sx={{ border: 0 }}>
+              <Badge
+                badgeContent={
+                  <Typography variant="h5" fontWeight="900" color={green.A700} sx={{ mb: 3 }}>
+                    made easy
+                  </Typography>
+                }>
+                <Typography variant="h3" fontWeight="500" textAlign="center">
+                  Onchain Social Payments
+                </Typography>
+              </Badge>
+
+              <Typography variant="caption" fontSize={16} color="grey">
+                Safe, gasless, farcaster/lens/ens supported
+              </Typography>
+
+              <Chip
+                size="medium"
+                clickable
+                icon={<Search color="inherit" />}
+                variant="outlined"
+                label="search & pay your friend"
+                onClick={() => {
+                  setOpenSearchProfile(true);
+                }}
+                sx={{
+                  border: 2,
+                  backgroundColor: darkMode ? grey[800] : grey[50],
+                  borderStyle: 'dotted',
+                  borderColor: 'divider',
+                  borderRadius: 10,
+                  width: 300,
+                  '& .MuiChip-label': { fontSize: 20 },
+                  height: 50
+                }}
+              />
+            </Stack>
+          </Box>
         )}
         {/* {flows &&
           flows.map((flow) => (

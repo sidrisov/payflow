@@ -49,7 +49,7 @@ const appSettingsStored = appSettingsStorageItem
 
 export default function PublicProfileWithProviders() {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const [appSettings, setAppSettings] = useState<AppSettings>(
+  const [appSettings] = useState<AppSettings>(
     appSettingsStored
       ? appSettingsStored
       : {
