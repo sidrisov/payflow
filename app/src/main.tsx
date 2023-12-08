@@ -12,24 +12,27 @@ import { HelmetProvider } from 'react-helmet-async';
 import { ToastContainer } from 'react-toastify';
 import React from 'react';
 
+import { SpeedInsights } from '@vercel/speed-insights/react';
+
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-  <HelmetProvider>
-    <RouterProvider router={appRouter} />
-    <ToastContainer
-      position="top-center"
-      autoClose={3000}
-      limit={5}
-      hideProgressBar={false}
-      newestOnTop={true}
-      closeOnClick
-      rtl={false}
-      pauseOnFocusLoss
-      draggable
-      pauseOnHover
-      theme="colored"
-      toastStyle={{ borderRadius: 20, textAlign: 'center' }}
-    />
-  </HelmetProvider>
+    <HelmetProvider>
+      <RouterProvider router={appRouter} />
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        limit={5}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+        toastStyle={{ borderRadius: 20, textAlign: 'center' }}
+      />
+    </HelmetProvider>
+    <SpeedInsights />
   </React.StrictMode>
 );

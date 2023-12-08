@@ -24,6 +24,7 @@
     "@safe-global/relay-kit": "^1.2.0",
     "@safe-global/safe-core-sdk-types": "^2.2.0",
     "@typescript-eslint/parser": "^6.3.0",
+    "@vercel/speed-insights": "^1.0.1",
     "@vitejs/plugin-react": "^4.1.0",
     "@web3auth/ethereum-provider": "^7.0.2",
     "@web3auth/modal": "^7.0.3",
