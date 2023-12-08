@@ -61,7 +61,7 @@ export default function Leaderboard() {
             </Typography>
 
             {profiles && profiles.length ? (
-              <Stack p={1} maxHeight="80vh" overflow="scroll" spacing={3} alignItems="flex-start">
+              <Stack p={1} maxHeight="80vh" overflow="auto" spacing={3} alignItems="flex-start">
                 {profiles.map((profile, index) => (
                   <Stack direction="row" spacing={1} alignItems="center">
                     <Typography variant="subtitle2">{index + 1}</Typography>

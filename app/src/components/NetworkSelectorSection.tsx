@@ -14,7 +14,7 @@ export default function NetworkSelectorSection({
   setSelectedNetwork: React.Dispatch<React.SetStateAction<Chain | undefined>>;
 }) {
   return (
-    <Stack p={1} direction="row" spacing={1} overflow="scroll" {...props}>
+    <Stack p={1} direction="row" spacing={1} overflow="auto" {...props}>
       <NetworkSelectorChip
         selectedNetwork={selectedNetwork}
         setSelectedNetwork={setSelectedNetwork}

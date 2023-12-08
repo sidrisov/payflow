@@ -16,7 +16,7 @@ export default function Assets(props: {
   const { loading, fetched, balances } = props.balanceFetchResult;
 
   return (
-    <Stack pt={1} px={1} spacing={1} width="100%" maxHeight={350} overflow="scroll">
+    <Stack pt={1} px={1} spacing={1} width="100%" maxHeight={350} overflow="auto">
       {loading || balances.length === 0 ? (
         <ActivitySkeletonSection />
       ) : fetched && ethUsdPrice ? (

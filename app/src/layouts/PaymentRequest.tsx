@@ -225,10 +225,10 @@ export default function PaymentRequest({ appSettings, setAppSettings }: any) {
                 </Card>
               </Divider>
 
-              <Typography variant="h6" maxHeight={50} overflow="scroll">
+              <Typography variant="h6" maxHeight={50} overflow="auto">
                 {request.title}
               </Typography>
-              <Typography variant="subtitle2" maxHeight={50} overflow="scroll">
+              <Typography variant="subtitle2" maxHeight={50} overflow="auto">
                 {request.description}
               </Typography>
 

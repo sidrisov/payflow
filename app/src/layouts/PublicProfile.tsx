@@ -149,7 +149,7 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
             </Card>
 
             {/*  <Stack
-              overflow="scroll"
+              overflow="auto"
               m={1}
               spacing={1}
               justifyContent={isSmallScreen ? 'flex-start' : 'center'}
@@ -268,10 +268,10 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
                 width={300}>
                 <Box display="flex" flexDirection="row" justifyContent="space-between">
                   <Stack spacing={1}>
-                    <Typography fontSize={20} fontWeight="bold" maxHeight={60} overflow="scroll">
+                    <Typography fontSize={20} fontWeight="bold" maxHeight={60} overflow="auto">
                       {flow.title}
                     </Typography>
-                    <Typography fontSize={12} fontWeight="bold" maxHeight={50} overflow="scroll">
+                    <Typography fontSize={12} fontWeight="bold" maxHeight={50} overflow="auto">
                       {flow.description}
                     </Typography>
                   </Stack>

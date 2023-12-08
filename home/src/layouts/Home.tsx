@@ -9,7 +9,8 @@ import {
   IconButton,
   useMediaQuery,
   useTheme,
-  Avatar} from '@mui/material';
+  Avatar
+} from '@mui/material';
 
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import HideOnScroll from '../components/HideOnScroll';
@@ -170,7 +171,7 @@ export default function Home() {
               flexDirection="column"
               alignItems="center"
               justifyContent="flex-start">
-              <Stack direction="row" spacing={1} maxWidth={isMobile ? 300 : 600} overflow="scroll">
+              <Stack direction="row" spacing={1} maxWidth={isMobile ? 300 : 600} overflow="auto">
                 <Box p={1} sx={{ borderRadius: 5, border: 1 }}>
                   <img width={isMobile ? 50 : 150} height={isMobile ? 20 : 40} src="safe.svg" />
                 </Box>

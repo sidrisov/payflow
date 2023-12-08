@@ -14,7 +14,7 @@ export default function Activity(props: AssetsProps) {
   const { loading, fetched, transactions } = props.activityFetchResult;
 
   return (
-    <Stack pt={1} px={1} spacing={2} width="100%" maxHeight={350} overflow="scroll">
+    <Stack pt={1} px={1} spacing={2} width="100%" maxHeight={350} overflow="auto">
       {loading || transactions.length === 0 ? (
         <ActivitySkeletonSection />
       ) : fetched ? (

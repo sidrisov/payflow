@@ -181,10 +181,10 @@ export default function Flows() {
                   }}>
                   <Box display="flex" flexDirection="row" justifyContent="space-between">
                     <Stack spacing={1}>
-                      <Typography fontSize={20} fontWeight="bold" maxHeight={60} overflow="scroll">
+                      <Typography fontSize={20} fontWeight="bold" maxHeight={60} overflow="auto">
                         {flow.title}
                       </Typography>
-                      <Typography fontSize={12} fontWeight="bold" maxHeight={50} overflow="scroll">
+                      <Typography fontSize={12} fontWeight="bold" maxHeight={50} overflow="auto">
                         {flow.description}
                       </Typography>
                     </Stack>
