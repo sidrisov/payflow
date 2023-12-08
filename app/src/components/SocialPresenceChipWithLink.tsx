@@ -22,22 +22,17 @@ function getLink(dappName: dAppType, profileName?: string) {
 }
 
 export default function SocialPresenceChipWithLink(props: SocialPresenceChipWithLinkProps) {
+  const { type, name } = { ...props, name: props.name?.replace('lens/@', '') };
+
   const avatarSrc = `/${props.type === 'address' ? 'etherscan.jpg' : props.type + '.svg'}`;
 
-  console.log(avatarSrc);
-  const linkRef = getLink(props.type, props.name);
+  const linkRef = getLink(type, name);
 
   return (
     <Chip
       variant="outlined"
       avatar={<Avatar src={avatarSrc} />}
-      label={
-        props.type === 'address'
-          ? shortenWalletAddressLabel(props.name)
-          : props.type === 'xmtp'
-          ? 'chat'
-          : props.name
-      }
+      label={type === 'address' ? shortenWalletAddressLabel(name) : type === 'xmtp' ? 'chat' : name}
       clickable
       component="a"
       href={linkRef}
