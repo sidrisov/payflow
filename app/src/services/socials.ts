@@ -109,9 +109,7 @@ export async function searchProfile(searchValue: string): Promise<ProfileWithSoc
   let foundProfiles: ProfileWithSocialsType[] = [];
 
   if (!searchValue.includes(':') && !searchValue.includes('.') && !isAddress(searchValue)) {
-    const response = await axios.get(`${API_URL}/api/user?search=${searchValue}`, {
-      withCredentials: true
-    });
+    const response = await axios.get(`${API_URL}/api/user?search=${searchValue}`);
     const profiles = (await response.data) as ProfileType[];
     if (profiles) {
       foundProfiles = foundProfiles.concat(

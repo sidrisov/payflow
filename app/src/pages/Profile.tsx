@@ -84,7 +84,7 @@ export default function Profile() {
         <title> Payflow | Profile </title>
       </Helmet>
       <Container maxWidth="sm" sx={{ p: 3 }}>
-        <ProfileSection profile={profile} avatarSize={48} />
+        <ProfileSection profile={profile} avatarSize={48} maxWidth={200} />
         <Stack mt={3} direction="column" spacing={3}>
           <TextField
             fullWidth

@@ -80,7 +80,7 @@ export default function PublicProfileWithProviders() {
           modalSize="compact"
           chains={chains}>
           <CustomThemeProvider darkMode={appSettings.darkMode}>
-            <PublicProfile />
+            <PublicProfile appSettings={appSettings} />
           </CustomThemeProvider>
         </RainbowKitProvider>
       </AirstackProvider>

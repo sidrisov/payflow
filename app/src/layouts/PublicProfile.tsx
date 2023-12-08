@@ -1,11 +1,20 @@
-import { Box, Button, Card, CircularProgress, Container, Stack } from '@mui/material';
+import {
+  Badge,
+  Box,
+  Button,
+  Card,
+  Chip,
+  CircularProgress,
+  Container,
+  Stack,
+  Typography} from '@mui/material';
 import axios from 'axios';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
 import { ProfileType } from '../types/ProfleType';
 import { useEnsName } from 'wagmi';
-import { AttachMoney, Send } from '@mui/icons-material';
+import { AttachMoney, Search, Send } from '@mui/icons-material';
 import { useLazyQuery } from '@airstack/airstack-react';
 import { API_URL } from '../utils/urlConstants';
 import { ProfileSection } from '../components/ProfileSection';
@@ -13,10 +22,14 @@ import { comingSoonToast } from '../components/Toasts';
 import SocialPresenceChipWithLink from '../components/SocialPresenceChipWithLink';
 import { QUERY_SOCIALS_MINIMAL } from '../services/socials';
 import SearchProfileDialog from '../components/SearchProfileDialog';
+import { green, grey } from '@mui/material/colors';
+import { AppSettings } from '../types/AppSettingsType';
 
-export default function PublicProfile() {
+export default function PublicProfile({ appSettings }: { appSettings: AppSettings }) {
   const { username } = useParams();
   const [profile, setProfile] = useState<ProfileType>();
+
+  const { darkMode } = appSettings;
 
   const [openSearchProfile, setOpenSearchProfile] = useState<boolean>(false);
 
@@ -62,7 +75,7 @@ export default function PublicProfile() {
         <title> Payflow {profile ? '| ' + profile.displayName : ''} </title>
       </Helmet>
       <Container maxWidth="xs">
-        {/* {!profile && (
+        {!profile && (
           <Box
             position="absolute"
             display="flex"
@@ -74,11 +87,7 @@ export default function PublicProfile() {
             <Stack spacing={1} alignItems="center" sx={{ border: 0 }}>
               <Badge
                 badgeContent={
-                  <Typography
-                    variant="h5"
-                    fontWeight="900"
-                    color={green.A700}
-                    sx={{ mb: 3 }}>
+                  <Typography variant="h5" fontWeight="900" color={green.A700} sx={{ mb: 3 }}>
                     made easy
                   </Typography>
                 }>
@@ -102,7 +111,7 @@ export default function PublicProfile() {
                 }}
                 sx={{
                   border: 2,
-                  backgroundColor: 'white',
+                  backgroundColor: darkMode ? grey[800] : grey[50],
                   borderStyle: 'dotted',
                   borderColor: 'divider',
                   borderRadius: 10,
@@ -113,7 +122,7 @@ export default function PublicProfile() {
               />
             </Stack>
           </Box>
-        )} */}
+        )}
         {profile && (
           <>
             <Card
