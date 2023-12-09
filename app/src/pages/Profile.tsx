@@ -11,7 +11,7 @@ import { ProfileType } from '../types/ProfleType';
 import { updateProfile } from '../services/user';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import { isAlphanumeric } from '../utils/regex';
+import { isAlphanumericPlusFewSpecialChars } from '../utils/regex';
 import { green } from '@mui/material/colors';
 
 export default function Profile() {
@@ -21,7 +21,8 @@ export default function Profile() {
   const [username, setUsername] = useState<string>(profile.username ?? '');
   const [profileImage, setProfileImage] = useState<string>(profile.profileImage ?? '');
 
-  const [usernameAvailble, setUsernameAvailable] = useState<boolean>();
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean>();
+  const [usernameValid, setUsernameValid] = useState<boolean>();
 
   const [loadingUpdateProfile, setLoadingUpdateProfile] = useState<boolean>(false);
 
@@ -31,12 +32,15 @@ export default function Profile() {
     if (username) {
       if (username === profile.username) {
         setUsernameAvailable(true);
+        setUsernameValid(true);
         return;
       }
 
-      if (!isAlphanumeric(username)) {
-        setUsernameAvailable(false);
+      if (!isAlphanumericPlusFewSpecialChars(username)) {
+        setUsernameValid(false);
         return;
+      } else {
+        setUsernameValid(true);
       }
 
       try {
@@ -100,8 +104,11 @@ export default function Profile() {
           />
 
           <TextField
-            error={username !== '' && !usernameAvailble}
-            helperText={username && !usernameAvailble && 'username is not available'}
+            error={username !== '' && (!usernameAvailable || !usernameValid)}
+            helperText={
+              (username && !usernameAvailable && 'username not available') ||
+              (!usernameValid && 'username invalid format')
+            }
             fullWidth
             value={username}
             label={'Username'}
@@ -114,7 +121,7 @@ export default function Profile() {
               endAdornment: (
                 <InputAdornment position="end">
                   {username ? (
-                    usernameAvailble ? (
+                    usernameAvailable && usernameValid ? (
                       <Check sx={{ color: green.A700 }} />
                     ) : (
                       <Error color="error" />
@@ -152,7 +159,7 @@ export default function Profile() {
 
           <LoadingButton
             loading={loadingUpdateProfile}
-            disabled={!usernameAvailble || !username}
+            disabled={!usernameAvailable || !usernameValid || !username}
             variant="outlined"
             size="large"
             onClick={save}

@@ -1,3 +1,3 @@
-export function isAlphanumeric(str: string) {
-  return /^[a-zA-Z0-9]+$/.test(str);
+export function isAlphanumericPlusFewSpecialChars(str: string) {
+  return /^[a-zA-Z0-9_-]+$/.test(str);
 }

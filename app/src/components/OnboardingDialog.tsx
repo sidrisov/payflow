@@ -29,7 +29,7 @@ import { DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS } from '../utils/networks';
 import { QUERY_SOCIALS, converSocialResults } from '../services/socials';
 import { useQuery } from '@airstack/airstack-react';
 import CenteredCircularProgress from './CenteredCircularProgress';
-import { isAlphanumeric } from '../utils/regex';
+import { isAlphanumericPlusFewSpecialChars as isAlphanumericWithSpecials } from '../utils/regex';
 import { green, lightGreen, red } from '@mui/material/colors';
 
 export type OnboardingDialogProps = DialogProps &
@@ -57,7 +57,9 @@ export default function OnboardingDialog({
   const [code, setCode] = useState<string>(paramCode ?? '');
   const [profileImage, setProfileImage] = useState<string>(profile.profileImage ?? '');
 
-  const [usernameAvailble, setUsernameAvailable] = useState<boolean>();
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean>();
+  const [usernameValid, setUsernameValid] = useState<boolean>();
+
   const [codeValid, setCodeValid] = useState<boolean>();
   const [whitelisted, setWhitelisted] = useState<boolean>();
 
@@ -121,12 +123,15 @@ export default function OnboardingDialog({
     if (username) {
       if (username === profile.username) {
         setUsernameAvailable(true);
+        setUsernameValid(true);
         return;
       }
 
-      if (!isAlphanumeric(username)) {
-        setUsernameAvailable(undefined);
+      if (!isAlphanumericWithSpecials(username)) {
+        setUsernameValid(false);
         return;
+      } else {
+        setUsernameValid(true);
       }
 
       try {
@@ -277,8 +282,11 @@ export default function OnboardingDialog({
           />
 
           <TextField
-            error={username !== '' && !usernameAvailble}
-            helperText={username && !usernameAvailble && 'username is not available'}
+            error={username !== '' && (!usernameAvailable || !usernameValid)}
+            helperText={
+              (username && !usernameAvailable && 'username not available') ||
+              (!usernameValid && 'username invalid format')
+            }
             fullWidth
             value={username}
             label={'Username'}
@@ -291,7 +299,7 @@ export default function OnboardingDialog({
               endAdornment: (
                 <InputAdornment position="end">
                   {username ? (
-                    usernameAvailble ? (
+                    usernameAvailable && usernameValid ? (
                       <Check sx={{ color: green.A700 }} />
                     ) : (
                       <Error color="error" />
@@ -329,7 +337,7 @@ export default function OnboardingDialog({
 
           <LoadingButton
             loading={loadingWallets || loadingUpdateProfile}
-            disabled={!usernameAvailble || !(whitelisted || codeValid)}
+            disabled={!usernameAvailable || !usernameValid || !(whitelisted || codeValid)}
             fullWidth
             variant="outlined"
             loadingIndicator={

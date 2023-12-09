@@ -37,7 +37,7 @@ public class UserService implements IUserService {
     @Value("${payflow.invitation.whitelisted.default.allowance}")
     private int defaultWhitelistedAllowance;
 
-    private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9]*$");
+    private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_-]*$");
 
     @Autowired
     private UserRepository userRepository;
