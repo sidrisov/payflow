@@ -25,8 +25,8 @@ import {
   AttachMoney,
   Close,
   ExpandMore,
-  LocalGasStation
-} from '@mui/icons-material';
+  LocalGasStation,
+  PriorityHigh} from '@mui/icons-material';
 import { Id, toast } from 'react-toastify';
 
 import { Address, formatEther, parseEther } from 'viem';
@@ -48,6 +48,7 @@ import { updateWallet } from '../services/flow';
 import NetworkAvatar from './NetworkAvatar';
 import PayflowChip from './PayflowChip';
 import { estimateFee as estimateSafeTransferFee } from '../utils/safeTransactions';
+import { red } from '@mui/material/colors';
 
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
@@ -65,44 +66,73 @@ export default function AccountSendDialog({
   const { profile, ethUsdPrice } = useContext(UserContext);
 
   const ethersSigner = useEthersSigner();
-
-  const { switchNetwork, isLoading: isSwitchNetworkLoading } = useSwitchNetwork();
   const { chain } = useNetwork();
-
-  // TODO: what if there is not a single compatible wallet between sender & recipient
-  const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>(
-    /* flow.wallets.find((w) => w.network === chain?.id) ??  */ flow.wallets[0]
-  );
+  const { switchNetwork, isLoading: isSwitchNetworkLoading } = useSwitchNetwork();
 
   const [selectedRecipient, setSelectedRecipient] = useState<SelectedProfileWithSocialsType>();
+  const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
+  const [compatibleWallets, setCompatibleWallets] = useState<FlowWalletType[]>([]);
 
   const [toAddress, setToAddress] = useState<Address>();
+  const [sendAmountUSD, setSendAmountUSD] = useState<number>();
   const [sendAmount, setSendAmount] = useState<bigint>();
-
+  const [balanceEnough, setBalanceEnough] = useState<boolean>();
+  const [minAmountSatisfied, setMinAmountSatisfied] = useState<boolean>();
   const [gasFee, setGasFee] = useState<bigint>();
-
-  const [openSearchProfile, setOpenSearchProfile] = useState<boolean>(true);
 
   const { isSuccess, data: balance } = useBalance({
     address: selectedWallet?.address,
     chainId: chain?.id
   });
 
-  const [openSelectWallet, setOpenSelectWallet] = useState(false);
-  const [walletAnchorEl, setWalletAnchorEl] = useState<null | HTMLElement>(null);
-
-  const sendToastId = useRef<Id>();
-
   const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
 
+  const [openSearchProfile, setOpenSearchProfile] = useState<boolean>(true);
+  const [openSelectWallet, setOpenSelectWallet] = useState(false);
+  const [walletAnchorEl, setWalletAnchorEl] = useState<null | HTMLElement>(null);
+  const sendToastId = useRef<Id>();
+
   useMemo(async () => {
-    setGasFee(
-      BigInt(await estimateSafeTransferFee(selectedWallet.deployed, selectedWallet.network))
+    if (!selectedRecipient) {
+      setSelectedWallet(undefined);
+      setCompatibleWallets([]);
+      return;
+    }
+
+    // TODO: what if there is not a single compatible wallet between sender & recipient
+    // in case a new wallet chain added, not all users maybe be compatible, limit by chains recipient supports
+    const compatibleSenderWallets =
+      selectedRecipient.type === 'profile'
+        ? flow.wallets.filter((w) =>
+            selectedRecipient.data.profile?.defaultFlow?.wallets.find(
+              (rw) => rw.network === w.network
+            )
+          )
+        : flow.wallets;
+
+    setCompatibleWallets(compatibleSenderWallets);
+
+    if (compatibleSenderWallets.length === 0) {
+      toast.error('No compatible wallets available!');
+      return;
+    }
+
+    setSelectedWallet(
+      (chain && compatibleSenderWallets.find((w) => w.network === chain.id)) ??
+        compatibleSenderWallets[0]
     );
+  }, [selectedRecipient]);
+
+  useMemo(async () => {
+    if (selectedWallet) {
+      setGasFee(
+        BigInt(await estimateSafeTransferFee(selectedWallet.deployed, selectedWallet.network))
+      );
+    }
   }, [selectedWallet]);
 
   useMemo(async () => {
-    if (!sendAmount || !selectedRecipient) {
+    if (!sendAmount || !selectedRecipient || !selectedWallet) {
       return;
     }
 
@@ -203,7 +233,7 @@ export default function AccountSendDialog({
   }, [loading, confirmed, error, txHash, sendAmount, selectedRecipient]);
 
   const sendTransaction = async () => {
-    if (selectedRecipient && sendAmount && ethersSigner) {
+    if (selectedWallet && selectedRecipient && sendAmount && ethersSigner) {
       if (!toAddress) {
         toast.error("Can't send to this profile");
         return;
@@ -229,17 +259,35 @@ export default function AccountSendDialog({
     }
   };
 
-  useMemo(() => {
-    setSendAmount(undefined);
-    if (selectedRecipient) {
-      switchNetwork?.(selectedWallet.network);
+  useMemo(async () => {
+    if (sendAmountUSD !== undefined && ethUsdPrice) {
+      const amount = parseEther((sendAmountUSD / ethUsdPrice).toString());
+
+      const balanceEnough = balance && amount <= balance?.value;
+      const minAmount = sendAmountUSD >= 1;
+
+      setBalanceEnough(balanceEnough);
+      setMinAmountSatisfied(minAmount);
+
+      if (minAmount && balanceEnough) {
+        setSendAmount(amount);
+      } else {
+        setSendAmount(undefined);
+      }
+    } else {
+      setBalanceEnough(undefined);
+      setMinAmountSatisfied(undefined);
     }
-  }, [selectedWallet, selectedRecipient]);
+  }, [sendAmountUSD, chain?.id]);
 
   useMemo(async () => {
-    if (!selectedRecipient) {
-      setToAddress(toAddress);
+    if (!selectedRecipient || !selectedWallet) {
+      setToAddress(undefined);
       return;
+    }
+
+    if (switchNetwork) {
+      switchNetwork(selectedWallet.network);
     }
 
     if (selectedRecipient.type === 'address') {
@@ -253,14 +301,20 @@ export default function AccountSendDialog({
     }
   }, [selectedWallet, selectedRecipient]);
 
-  function handleCloseSendDialog() {
-    closeStateCallback();
+  function getGasFeeText(): string {
+    return 'fee: '.concat(
+      gasFee !== undefined
+        ? `${parseFloat(formatEther(gasFee)).toFixed(5)} ETH ≈ $${(
+            parseFloat(formatEther(gasFee)) * (ethUsdPrice ?? 0)
+          ).toFixed(2)}`
+        : 'N/A'
+    );
   }
 
   return (
     <Dialog
       fullScreen={isMobile}
-      onClose={handleCloseSendDialog}
+      onClose={closeStateCallback}
       {...props}
       PaperProps={{ sx: { borderRadius: 5 } }}
       sx={{
@@ -328,12 +382,16 @@ export default function AccountSendDialog({
                 <ExpandMore />
               </Stack>
             </Box>
-            {selectedRecipient && (
+            {selectedRecipient && selectedWallet && (
               <Box width="100%" display="flex" flexDirection="column">
                 <TextField
                   fullWidth
                   variant="outlined"
                   type="number"
+                  error={
+                    sendAmountUSD !== undefined &&
+                    (minAmountSatisfied === false || balanceEnough === false)
+                  }
                   inputProps={{ style: { textAlign: 'center', fontSize: 20 } }}
                   InputProps={{
                     startAdornment: (
@@ -372,18 +430,26 @@ export default function AccountSendDialog({
                     sx: { borderRadius: 5, height: 56 }
                   }}
                   onChange={(event) => {
-                    const amountUSD = parseFloat(event.target.value);
-                    if (ethUsdPrice && amountUSD >= 1) {
-                      const amount = parseEther((amountUSD / ethUsdPrice).toString());
-
-                      if (balance && amount <= balance?.value && amountUSD >= 1) {
-                        setSendAmount(amount);
-                        return;
-                      }
+                    if (event.target.value) {
+                      const amountUSD = parseFloat(event.target.value);
+                      setSendAmountUSD(amountUSD);
+                    } else {
+                      setSendAmountUSD(undefined);
                     }
-                    setSendAmount(undefined);
                   }}
                 />
+
+                {sendAmountUSD !== undefined &&
+                  (minAmountSatisfied === false || balanceEnough === false) && (
+                    <Stack ml={0.5} mt={0.5} direction="row" spacing={0.5} alignItems="center">
+                      <PriorityHigh fontSize="small" sx={{ color: red.A400 }} />
+                      <Typography ml={1} variant="caption" color={red.A400}>
+                        {sendAmountUSD !== undefined &&
+                          ((minAmountSatisfied === false && 'min: $1') ||
+                            (balanceEnough === false && 'balance: not enough'))}
+                      </Typography>
+                    </Stack>
+                  )}
 
                 <Box
                   display="flex"
@@ -415,24 +481,22 @@ export default function AccountSendDialog({
                     </IconButton>
                   </Tooltip>
                 </Box>
-                {gasFee !== undefined && (
-                  <Stack ml={0.5} direction="row" spacing={0.5} alignItems="center">
-                    <Tooltip
-                      title="Gas is paid by the sending flow wallet via Gelato SyncFee call method. 
+
+                <Stack ml={0.5} direction="row" spacing={0.5} alignItems="center">
+                  <Tooltip
+                    title="Gas is paid by the sending flow wallet via Gelato SyncFee call method. 
                     The fee includes Gelato on-chain call, safe tx fee + deployment fee on the first tx, and 10% Gelato's comission on top of all.">
-                      <LocalGasStation fontSize="small" />
-                    </Tooltip>
-                    <Typography ml={1} variant="caption">
-                      {`fee: ${parseFloat(formatEther(gasFee)).toFixed(5)} ETH ≈ $${(
-                        parseFloat(formatEther(gasFee)) * (ethUsdPrice ?? 0)
-                      ).toFixed(2)}`}
-                    </Typography>
-                  </Stack>
-                )}
+                    <LocalGasStation fontSize="small" />
+                  </Tooltip>
+                  <Typography ml={1} variant="caption">
+                    {getGasFeeText()}
+                  </Typography>
+                </Stack>
               </Box>
             )}
           </Stack>
           {selectedRecipient &&
+            selectedWallet &&
             (chain?.id === selectedWallet.network ? (
               <LoadingButton
                 fullWidth
@@ -467,25 +531,20 @@ export default function AccountSendDialog({
             ))}
         </Box>
       </DialogContent>
-      <ChooseWalletMenu
-        anchorEl={walletAnchorEl}
-        open={openSelectWallet}
-        closeStateCallback={() => {
-          setOpenSelectWallet(false);
-        }}
-        // in case a new wallet chain added, not all users maybe be compatible, limit by chains recipient supports
-        wallets={
-          selectedRecipient?.type === 'profile'
-            ? flow.wallets.filter((w) =>
-                selectedRecipient?.data.profile?.defaultFlow?.wallets.find(
-                  (rw) => rw.network === w.network
-                )
-              )
-            : flow.wallets
-        }
-        selectedWallet={selectedWallet}
-        setSelectedWallet={setSelectedWallet}
-      />
+
+      {selectedRecipient && (
+        <ChooseWalletMenu
+          anchorEl={walletAnchorEl}
+          open={openSelectWallet}
+          closeStateCallback={() => {
+            setOpenSelectWallet(false);
+          }}
+          wallets={compatibleWallets}
+          selectedWallet={selectedWallet}
+          setSelectedWallet={setSelectedWallet}
+        />
+      )}
+
       <SearchProfileDialog
         open={openSearchProfile}
         closeStateCallback={() => {

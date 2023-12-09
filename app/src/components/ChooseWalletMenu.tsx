@@ -9,8 +9,8 @@ import { green } from '@mui/material/colors';
 export type ChooseWalletMenuProps = MenuProps &
   CloseCallbackType & {
     wallets: FlowWalletType[];
-    selectedWallet: FlowWalletType;
-    setSelectedWallet: React.Dispatch<React.SetStateAction<FlowWalletType>>;
+    selectedWallet: FlowWalletType | undefined;
+    setSelectedWallet: React.Dispatch<React.SetStateAction<FlowWalletType | undefined>>;
   };
 
 // TODO: fix selection issue on re-rendering
