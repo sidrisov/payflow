@@ -41,74 +41,76 @@ export default function WalletQRCodeShareDialog({
   const [openSelectWallet, setOpenSelectWallet] = useState(false);
   const [walletAnchorEl, setWalletAnchorEl] = useState<null | HTMLElement>(null);
 
-  const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>(wallet);
+  const [selectedWallet, setSelectedWallet] = useState<FlowWalletType | undefined>(wallet);
   function handleCloseCampaignDialog() {
     closeStateCallback();
   }
 
   return (
-    <Dialog
-      fullScreen={smallScreen}
-      onClose={handleCloseCampaignDialog}
-      {...props}
-      PaperProps={{ sx: { borderRadius: 5 } }}
-      sx={{
-        backdropFilter: 'blur(5px)'
-      }}>
-      <DialogTitle>
-        <Typography textAlign="center" variant="subtitle2">
-          Send only on{' '}
-          <b>
-            <u>{getNetworkDisplayName(selectedWallet.network)}</u>
-          </b>{' '}
-          network
-        </Typography>
-      </DialogTitle>
-      <DialogContent>
-        <Stack alignItems="center" spacing={2}>
-          <Box display="flex" flexDirection="row" alignItems="center">
-            <IconButton
-              sx={{ width: 40, height: 40, border: 1, borderStyle: 'dashed' }}
-              onClick={(event) => {
-                setWalletAnchorEl(event.currentTarget);
-                setOpenSelectWallet(true);
-              }}>
-              <NetworkAvatar
-                tooltip
-                network={selectedWallet.network}
-                sx={{ width: 28, height: 28 }}
-              />
-            </IconButton>
-            <Typography ml={1} variant="subtitle2">
-              {shortenWalletAddressLabel(selectedWallet.address)}
-            </Typography>
-            <Tooltip title="Copy Address">
+    selectedWallet && (
+      <Dialog
+        fullScreen={smallScreen}
+        onClose={handleCloseCampaignDialog}
+        {...props}
+        PaperProps={{ sx: { borderRadius: 5 } }}
+        sx={{
+          backdropFilter: 'blur(5px)'
+        }}>
+        <DialogTitle>
+          <Typography textAlign="center" variant="subtitle2">
+            Send only on{' '}
+            <b>
+              <u>{getNetworkDisplayName(selectedWallet.network)}</u>
+            </b>{' '}
+            network
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Stack alignItems="center" spacing={2}>
+            <Box display="flex" flexDirection="row" alignItems="center">
               <IconButton
-                size="small"
-                onClick={() => {
-                  copyToClipboard(selectedWallet.address);
-                  toast.success('Address is copied!');
+                sx={{ width: 40, height: 40, border: 1, borderStyle: 'dashed' }}
+                onClick={(event) => {
+                  setWalletAnchorEl(event.currentTarget);
+                  setOpenSelectWallet(true);
                 }}>
-                <ContentCopy fontSize="small" />
+                <NetworkAvatar
+                  tooltip
+                  network={selectedWallet.network}
+                  sx={{ width: 28, height: 28 }}
+                />
               </IconButton>
-            </Tooltip>
-          </Box>
-          <QRCode
-            value={`${selectedWallet.address}`}
-            style={{ borderRadius: 10, border: 5, borderStyle: 'double' }}
-          />
-        </Stack>
-      </DialogContent>
-      <ChooseWalletMenu
-        anchorEl={walletAnchorEl}
-        open={openSelectWallet}
-        closeStateCallback={() => {
-          setOpenSelectWallet(false);
-        }}
-        wallets={wallets}
-        selectedWallet={selectedWallet}
-        setSelectedWallet={setSelectedWallet}
-      />
-    </Dialog>
+              <Typography ml={1} variant="subtitle2">
+                {shortenWalletAddressLabel(selectedWallet.address)}
+              </Typography>
+              <Tooltip title="Copy Address">
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    copyToClipboard(selectedWallet.address);
+                    toast.success('Address is copied!');
+                  }}>
+                  <ContentCopy fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+            <QRCode
+              value={`${selectedWallet.address}`}
+              style={{ borderRadius: 10, border: 5, borderStyle: 'double' }}
+            />
+          </Stack>
+        </DialogContent>
+        <ChooseWalletMenu
+          anchorEl={walletAnchorEl}
+          open={openSelectWallet}
+          closeStateCallback={() => {
+            setOpenSelectWallet(false);
+          }}
+          wallets={wallets}
+          selectedWallet={selectedWallet}
+          setSelectedWallet={setSelectedWallet}
+        />
+      </Dialog>
+    )
   );
 }
