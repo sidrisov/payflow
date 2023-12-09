@@ -108,7 +108,7 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
                   <ProfileSection profile={profile} avatarSize={48} maxWidth={300} />
                 </Stack>
 
-                {loadingSocials && <CircularProgress color="inherit" size={25} />}
+                {loadingSocials && <CircularProgress color="inherit" size={20} />}
                 {socialInfo && (
                   <Box flexWrap="wrap" display="flex" justifyContent="center" alignItems="center">
                     <SocialPresenceChipWithLink
