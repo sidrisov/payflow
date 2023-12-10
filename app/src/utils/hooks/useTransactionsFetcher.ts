@@ -162,7 +162,7 @@ async function fetchTransactions(wallet: FlowWalletType): Promise<TxInfo[]> {
   return txInfos;
 }
 
-// TODO: later introduce the page number limit (e.g. 1000 / 50 = 20)
+// TODO: later introduce the page number limit
 async function fetchAnyTxs(url: string, params?: NextPageParams): Promise<any[]> {
   const response = await axios.get(url.concat(getNextPageParamsUrlProps(params)));
 
