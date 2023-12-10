@@ -13,8 +13,14 @@ import {
   zora,
   zoraTestnet
 } from 'viem/chains';
-import { getNetwork } from 'wagmi/actions';
 import { API_URL } from '../urlConstants';
+
+interface NextPageParams {
+  block_number: number;
+  index: number;
+  items_count: number;
+  transaction_index: number;
+}
 
 export const useTransactionsFetcher = (wallets: FlowWalletType[]): ActivityFetchResultType => {
   const [transactions, setTransactions] = useState<TxInfo[]>([]);
@@ -76,12 +82,12 @@ export const useTransactionsFetcher = (wallets: FlowWalletType[]): ActivityFetch
   return { loading, fetched, transactions };
 };
 
-function parseTxHistoryResponse(wallet: FlowWalletType, internalTxs: any, txs: any): TxInfo[] {
-  if (!internalTxs || !txs || !internalTxs.items || !txs.items) {
+function parseTxHistoryResponse(wallet: FlowWalletType, internalTxs: any[], txs: any[]): TxInfo[] {
+  if (!internalTxs || !txs) {
     return [];
   }
 
-  const interalTxsInfo: TxInfo[] = internalTxs.items.map((item: any) => {
+  const interalTxsInfo: TxInfo[] = internalTxs.map((item: any) => {
     const txInfo: TxInfo = {
       chainId: wallet.network,
       block: item.block,
@@ -102,7 +108,7 @@ function parseTxHistoryResponse(wallet: FlowWalletType, internalTxs: any, txs: a
     return txInfo;
   });
 
-  const txsInfo: TxInfo[] = txs.items.map((item: any) => {
+  const txsInfo: TxInfo[] = txs.map((item: any) => {
     const txInfo: TxInfo = {
       chainId: wallet.network,
       block: item.block,
@@ -148,12 +154,45 @@ async function fetchTransactions(wallet: FlowWalletType): Promise<TxInfo[]> {
     return [];
   }
 
-  const internalTxs = await axios.get(internalTxsUrl);
-  const txs = await axios.get(txsUrl);
+  const internalTxs = await fetchAnyTxs(internalTxsUrl);
+  const txs = await fetchAnyTxs(txsUrl);
 
-  const txInfos: TxInfo[] = parseTxHistoryResponse(wallet, internalTxs.data, txs.data);
+  const txInfos: TxInfo[] = parseTxHistoryResponse(wallet, internalTxs, txs);
 
   return txInfos;
+}
+
+// TODO: later introduce the page number limit
+async function fetchAnyTxs(url: string, params?: NextPageParams): Promise<any[]> {
+  const response = await axios.get(url.concat(getNextPageParamsUrlProps(params)));
+
+  if (response.status !== 200 || !response.data) {
+    return [];
+  }
+
+  let items: any[] = response.data.items;
+  const nextPageParams = response.data.next_page_params as NextPageParams;
+
+  if (nextPageParams) {
+    try {
+      const nextPageItems = await fetchAnyTxs(url, nextPageParams);
+
+      if (nextPageItems) {
+        items = items.concat(nextPageItems);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  return items;
+}
+
+function getNextPageParamsUrlProps(params?: NextPageParams) {
+  if (!params) {
+    return '';
+  }
+  return `?block_number=${params.block_number}&index=${params.index}&items_count=${params.items_count}&transaction_index=${params.transaction_index}`;
 }
 
 function getWalletInternalTxsFetchAPI(wallet: FlowWalletType): string | undefined {
