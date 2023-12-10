@@ -160,9 +160,7 @@ function getWalletInternalTxsFetchAPI(wallet: FlowWalletType): string | undefine
   let baseUrl = getBlockscoutBaseUrl(wallet.network);
 
   if (baseUrl) {
-    return baseUrl.concat(
-      `/api/v2/addresses/${wallet.address}/internal-transactions?filter=to%20%7C%20from`
-    );
+    return baseUrl.concat(`/api/v2/addresses/${wallet.address}/internal-transactions`);
   }
 }
 
@@ -170,9 +168,7 @@ function getWalletTxsFetchAPI(wallet: FlowWalletType): string | undefined {
   let baseUrl = getBlockscoutBaseUrl(wallet.network);
 
   if (baseUrl) {
-    return baseUrl.concat(
-      `/api/v2/addresses/${wallet.address}/transactions?filter=to%20%7C%20from`
-    );
+    return baseUrl.concat(`/api/v2/addresses/${wallet.address}/transactions`);
   }
 }
 
