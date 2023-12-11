@@ -21,9 +21,7 @@ import { useContext, useMemo, useRef, useState } from 'react';
 import { useBalance, useNetwork, useSwitchNetwork } from 'wagmi';
 import {
   AddComment,
-  ArrowForward,
   AttachMoney,
-  Close,
   ExpandMore,
   LocalGasStation,
   PriorityHigh
@@ -49,6 +47,7 @@ import PayflowChip from './PayflowChip';
 import { estimateFee as estimateSafeTransferFee } from '../utils/safeTransactions';
 import { red } from '@mui/material/colors';
 import { NetworkSelectorButton } from './NetworkSelectorButton';
+import { TransferToastContent } from './toasts/TransferToastContent';
 
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
@@ -136,20 +135,12 @@ export default function AccountSendDialog({
 
     if (loading) {
       sendToastId.current = toast.loading(
-        <Box display="flex" flexDirection="row" alignItems="center" justifyContent="space-between">
-          <ProfileSection profile={profile} />
-          <Stack alignItems="center" justifyContent="center">
-            <Typography variant="subtitle2">
-              ${(parseFloat(formatEther(sendAmount)) * (ethUsdPrice ?? 0)).toPrecision(3)}
-            </Typography>
-            <ArrowForward />
-          </Stack>
-          {selectedRecipient.type === 'profile'
-            ? selectedRecipient.data.profile && (
-                <ProfileSection profile={selectedRecipient.data.profile} />
-              )
-            : selectedRecipient.data.meta && <AddressSection meta={selectedRecipient.data.meta} />}
-        </Box>
+        <TransferToastContent
+          from={{ type: 'profile', data: { profile: profile } }}
+          to={selectedRecipient}
+          ethAmount={sendAmount}
+          ethUsdPrice={ethUsdPrice}
+        />
       );
     }
 
@@ -160,29 +151,12 @@ export default function AccountSendDialog({
     if (confirmed) {
       toast.update(sendToastId.current, {
         render: (
-          <Box
-            display="flex"
-            flexDirection="row"
-            alignItems="center"
-            justifyContent="space-between">
-            <ProfileSection profile={profile} />
-            <Stack spacing={0.5} alignItems="center">
-              <Typography variant="caption">
-                $
-                {sendAmount
-                  ? (parseFloat(formatEther(sendAmount)) * (ethUsdPrice ?? 0)).toPrecision(3)
-                  : 0}
-              </Typography>
-              <ArrowForward />
-            </Stack>
-            {selectedRecipient.type === 'profile'
-              ? selectedRecipient.data.profile && (
-                  <ProfileSection profile={selectedRecipient.data.profile} />
-                )
-              : selectedRecipient.data.meta && (
-                  <AddressSection meta={selectedRecipient.data.meta} />
-                )}
-          </Box>
+          <TransferToastContent
+            from={{ type: 'profile', data: { profile: profile } }}
+            to={selectedRecipient}
+            ethAmount={sendAmount}
+            ethUsdPrice={ethUsdPrice}
+          />
         ),
         type: 'success',
         isLoading: false,
@@ -198,29 +172,13 @@ export default function AccountSendDialog({
     } else if (error) {
       toast.update(sendToastId.current, {
         render: (
-          <Box
-            display="flex"
-            flexDirection="row"
-            alignItems="center"
-            justifyContent="space-between">
-            <ProfileSection profile={profile} />
-            <Stack spacing={0.5} alignItems="center">
-              <Typography variant="caption">
-                $
-                {sendAmount
-                  ? (parseFloat(formatEther(sendAmount)) * (ethUsdPrice ?? 0)).toPrecision(3)
-                  : 0}
-              </Typography>
-              <Close />
-            </Stack>
-            {selectedRecipient.type === 'profile'
-              ? selectedRecipient.data.profile && (
-                  <ProfileSection profile={selectedRecipient.data.profile} />
-                )
-              : selectedRecipient.data.meta && (
-                  <AddressSection meta={selectedRecipient.data.meta} />
-                )}
-          </Box>
+          <TransferToastContent
+            from={{ type: 'profile', data: { profile: profile } }}
+            to={selectedRecipient}
+            ethAmount={sendAmount}
+            ethUsdPrice={ethUsdPrice}
+            status="error"
+          />
         ),
         type: 'error',
         isLoading: false,

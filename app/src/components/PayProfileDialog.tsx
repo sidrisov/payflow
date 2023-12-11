@@ -30,9 +30,7 @@ import {
 } from 'wagmi';
 import {
   AddComment,
-  ArrowForward,
   AttachMoney,
-  Close,
   ExpandMore,
   LocalGasStation,
   PriorityHigh
@@ -54,6 +52,7 @@ import { estimateFee as estimateSafeTransferFee } from '../utils/safeTransaction
 import { red } from '@mui/material/colors';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { NetworkSelectorButton } from './NetworkSelectorButton';
+import { TransferToastContent } from './toasts/TransferToastContent';
 
 export type PayProfileDialogProps = DialogProps &
   CloseCallbackType & {
@@ -163,20 +162,12 @@ export default function PayProfileDialog({
 
     if (loading) {
       sendToastId.current = toast.loading(
-        <Box display="flex" flexDirection="row" alignItems="center" justifyContent="space-between">
-          <AddressSection meta={{ addresses: [address] } as MetaType} />
-          <Stack alignItems="center" justifyContent="center">
-            <Typography variant="subtitle2">
-              ${(parseFloat(formatEther(sendAmount)) * (ethUsdPrice ?? 0)).toPrecision(3)}
-            </Typography>
-            <ArrowForward />
-          </Stack>
-          {selectedRecipient.type === 'profile'
-            ? selectedRecipient.data.profile && (
-                <ProfileSection profile={selectedRecipient.data.profile} />
-              )
-            : selectedRecipient.data.meta && <AddressSection meta={selectedRecipient.data.meta} />}
-        </Box>
+        <TransferToastContent
+          from={{ type: 'address', data: { meta: { addresses: [address] } as MetaType } }}
+          to={selectedRecipient}
+          ethAmount={sendAmount}
+          ethUsdPrice={ethUsdPrice}
+        />
       );
     }
 
@@ -187,29 +178,12 @@ export default function PayProfileDialog({
     if (confirmed) {
       toast.update(sendToastId.current, {
         render: (
-          <Box
-            display="flex"
-            flexDirection="row"
-            alignItems="center"
-            justifyContent="space-between">
-            <AddressSection meta={{ addresses: [address] } as MetaType} />
-            <Stack spacing={0.5} alignItems="center">
-              <Typography variant="caption">
-                $
-                {sendAmount
-                  ? (parseFloat(formatEther(sendAmount)) * (ethUsdPrice ?? 0)).toPrecision(3)
-                  : 0}
-              </Typography>
-              <ArrowForward />
-            </Stack>
-            {selectedRecipient.type === 'profile'
-              ? selectedRecipient.data.profile && (
-                  <ProfileSection profile={selectedRecipient.data.profile} />
-                )
-              : selectedRecipient.data.meta && (
-                  <AddressSection meta={selectedRecipient.data.meta} />
-                )}
-          </Box>
+          <TransferToastContent
+            from={{ type: 'address', data: { meta: { addresses: [address] } as MetaType } }}
+            to={selectedRecipient}
+            ethAmount={sendAmount}
+            ethUsdPrice={ethUsdPrice}
+          />
         ),
         type: 'success',
         isLoading: false,
@@ -225,29 +199,13 @@ export default function PayProfileDialog({
     } else if (error) {
       toast.update(sendToastId.current, {
         render: (
-          <Box
-            display="flex"
-            flexDirection="row"
-            alignItems="center"
-            justifyContent="space-between">
-            <AddressSection meta={{ addresses: [address] } as MetaType} />
-            <Stack spacing={0.5} alignItems="center">
-              <Typography variant="caption">
-                $
-                {sendAmount
-                  ? (parseFloat(formatEther(sendAmount)) * (ethUsdPrice ?? 0)).toPrecision(3)
-                  : 0}
-              </Typography>
-              <Close />
-            </Stack>
-            {selectedRecipient.type === 'profile'
-              ? selectedRecipient.data.profile && (
-                  <ProfileSection profile={selectedRecipient.data.profile} />
-                )
-              : selectedRecipient.data.meta && (
-                  <AddressSection meta={selectedRecipient.data.meta} />
-                )}
-          </Box>
+          <TransferToastContent
+            from={{ type: 'address', data: { meta: { addresses: [address] } as MetaType } }}
+            to={selectedRecipient}
+            ethAmount={sendAmount}
+            ethUsdPrice={ethUsdPrice}
+            status="error"
+          />
         ),
         type: 'error',
         isLoading: false,
