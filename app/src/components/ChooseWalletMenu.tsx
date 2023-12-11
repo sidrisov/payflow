@@ -13,7 +13,6 @@ export type ChooseWalletMenuProps = MenuProps &
     setSelectedWallet: React.Dispatch<React.SetStateAction<FlowWalletType | undefined>>;
   };
 
-// TODO: fix selection issue on re-rendering
 export function ChooseWalletMenu({
   wallets,
   selectedWallet,
@@ -25,7 +24,7 @@ export function ChooseWalletMenu({
     <Menu
       {...props}
       onClose={closeStateCallback}
-      sx={{ mt: 1.5, '.MuiMenu-paper': { borderRadius: 5 } }}
+      sx={{ mt: 1.5, '.MuiMenu-paper': { borderRadius: 5, minWidth: 180 } }}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'left'

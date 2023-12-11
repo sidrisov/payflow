@@ -1,6 +1,10 @@
 import { Box, Button, Card, CardProps, CircularProgress, Stack } from '@mui/material';
-import { useMemo } from 'react';
-import { ProfileType } from '../types/ProfleType';
+import { useMemo, useState } from 'react';
+import {
+  ProfileType,
+  ProfileWithSocialsType,
+  SelectedProfileWithSocialsType
+} from '../types/ProfleType';
 import { useEnsName } from 'wagmi';
 import { AttachMoney, Send } from '@mui/icons-material';
 import { useLazyQuery } from '@airstack/airstack-react';
@@ -9,8 +13,11 @@ import { comingSoonToast } from './Toasts';
 import SocialPresenceChipWithLink from './SocialPresenceChipWithLink';
 import { QUERY_SOCIALS_MINIMAL } from '../services/socials';
 import { lightGreen } from '@mui/material/colors';
+import PayProfileDialog from './PayProfileDialog';
 
 export function PublicProfileCard({ profile, ...props }: { profile: ProfileType } & CardProps) {
+  const [openPayDialog, setOpenPayDialog] = useState(false);
+
   const { data: ensName } = useEnsName({
     address: profile?.address,
     chainId: 1
@@ -86,7 +93,7 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
             variant="outlined"
             color="inherit"
             endIcon={<Send />}
-            onClick={() => comingSoonToast()}
+            onClick={() => setOpenPayDialog(true)}
             sx={{
               borderRadius: 5,
               textTransform: 'lowercase',
@@ -98,9 +105,21 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
           </Button>
         </Stack>
       </Stack>
+      {openPayDialog && profile.defaultFlow && (
+        <PayProfileDialog
+          open={openPayDialog}
+          flow={profile.defaultFlow}
+          recipient={
+            {
+              type: 'profile',
+              data: { profile } as ProfileWithSocialsType
+            } as SelectedProfileWithSocialsType
+          }
+          closeStateCallback={async () => setOpenPayDialog(false)}
+        />
+      )}
     </Card>
   );
-
   {
     /*  <Stack
               overflow="auto"

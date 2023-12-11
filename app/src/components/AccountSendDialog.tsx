@@ -26,14 +26,14 @@ import {
   Close,
   ExpandMore,
   LocalGasStation,
-  PriorityHigh} from '@mui/icons-material';
+  PriorityHigh
+} from '@mui/icons-material';
 import { Id, toast } from 'react-toastify';
 
 import { Address, formatEther, parseEther } from 'viem';
 
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 import { FlowType, FlowWalletType } from '../types/FlowType';
-import { ChooseWalletMenu } from './ChooseWalletMenu';
 import SearchProfileDialog from './SearchProfileDialog';
 import { SelectedProfileWithSocialsType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
@@ -45,10 +45,10 @@ import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { useSafeTransfer } from '../utils/hooks/useSafeTransfer';
 import { comingSoonToast } from './Toasts';
 import { updateWallet } from '../services/flow';
-import NetworkAvatar from './NetworkAvatar';
 import PayflowChip from './PayflowChip';
 import { estimateFee as estimateSafeTransferFee } from '../utils/safeTransactions';
 import { red } from '@mui/material/colors';
+import { NetworkSelectorButton } from './NetworkSelectorButton';
 
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
@@ -88,8 +88,6 @@ export default function AccountSendDialog({
   const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
 
   const [openSearchProfile, setOpenSearchProfile] = useState<boolean>(true);
-  const [openSelectWallet, setOpenSelectWallet] = useState(false);
-  const [walletAnchorEl, setWalletAnchorEl] = useState<null | HTMLElement>(null);
   const sendToastId = useRef<Id>();
 
   useMemo(async () => {
@@ -307,7 +305,7 @@ export default function AccountSendDialog({
         ? `${parseFloat(formatEther(gasFee)).toFixed(5)} ETH ≈ $${(
             parseFloat(formatEther(gasFee)) * (ethUsdPrice ?? 0)
           ).toFixed(2)}`
-        : 'N/A'
+        : '...'
     );
   }
 
@@ -396,17 +394,11 @@ export default function AccountSendDialog({
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <IconButton
-                          sx={{ width: 40, height: 40, border: 1, borderStyle: 'dashed' }}
-                          onClick={(event) => {
-                            setWalletAnchorEl(event.currentTarget);
-                            setOpenSelectWallet(true);
-                          }}>
-                          <NetworkAvatar
-                            network={selectedWallet.network}
-                            sx={{ width: 28, height: 28 }}
-                          />
-                        </IconButton>
+                        <NetworkSelectorButton
+                          selectedWallet={selectedWallet}
+                          setSelectedWallet={setSelectedWallet}
+                          wallets={compatibleWallets}
+                        />
                       </InputAdornment>
                     ),
                     endAdornment: (
@@ -531,19 +523,6 @@ export default function AccountSendDialog({
             ))}
         </Box>
       </DialogContent>
-
-      {selectedRecipient && (
-        <ChooseWalletMenu
-          anchorEl={walletAnchorEl}
-          open={openSelectWallet}
-          closeStateCallback={() => {
-            setOpenSelectWallet(false);
-          }}
-          wallets={compatibleWallets}
-          selectedWallet={selectedWallet}
-          setSelectedWallet={setSelectedWallet}
-        />
-      )}
 
       <SearchProfileDialog
         open={openSearchProfile}

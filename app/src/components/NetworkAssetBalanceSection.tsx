@@ -21,6 +21,7 @@ export function NetworkAssetBalanceSection(props: {
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           badgeContent={
             <NetworkAvatar
+              tooltip
               network={props.network}
               sx={{
                 width: 15,

@@ -441,55 +441,6 @@ export async function estimateFee(isSafeDeployed: boolean, chainId: number): Pro
   return parseFloat(manualFeeEstimation.toString()).toFixed().toString();
 }
 
-async function executeRelayTransaction(
-  safeTransaction: SafeTransaction,
-  safe: Safe,
-  options?: MetaTransactionOptions
-): Promise<RelayResponse> {
-  const isSafeDeployed = await safe.isSafeDeployed();
-  const chainId = await safe.getChainId();
-  const safeAddress = await safe.getAddress();
-  const safeTransactionEncodedData = await safe.getEncodedTransaction(safeTransaction);
-
-  const relayKit = getRelayKitForChainId(chainId);
-  if (!relayKit) {
-    throw new Error('Relayer not available!');
-  }
-
-  const gasToken = options?.gasToken || safeTransaction.data.gasToken;
-
-  if (isSafeDeployed) {
-    const relayTransaction: RelayTransaction = {
-      target: safeAddress,
-      encodedTransaction: safeTransactionEncodedData,
-      chainId,
-      options: {
-        ...options,
-        gasToken
-      }
-    };
-
-    return relayKit.relayTransaction(relayTransaction);
-  }
-
-  // if the Safe is not deployed we create a batch with the Safe deployment transaction and the provided Safe transaction
-  const safeDeploymentBatch = await safe.wrapSafeTransactionIntoDeploymentBatch(safeTransaction);
-
-  const relayTransaction: RelayTransaction = {
-    target: safeDeploymentBatch.to, // multiSend Contract address
-    encodedTransaction: safeDeploymentBatch.data,
-    chainId,
-    options: {
-      ...options,
-      gasToken
-    }
-  };
-
-  console.log(relayTransaction);
-
-  return relayKit.relayTransaction(relayTransaction);
-}
-
 export function getFallbackHandler(chainId: number): Address {
   return chainId == zkSyncTestnet.id
     ? '0x2f870a80647BbC554F3a0EBD093f11B4d2a7492A'
