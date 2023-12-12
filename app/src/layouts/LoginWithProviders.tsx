@@ -18,11 +18,12 @@ import Login from './Login';
 import { CustomAvatar } from '../components/CustomAvatar';
 import { customLightTheme } from '../theme/rainbowTheme';
 import { SiweMessage } from 'siwe';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { ProfileType } from '../types/ProfleType';
 import { me } from '../services/user';
 import { SUPPORTED_CHAINS } from '../utils/networks';
 import { API_URL } from '../utils/urlConstants';
+import { toast } from 'react-toastify';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 
@@ -65,6 +66,11 @@ export default function AppWithProviders() {
 
         setAuthStatus(profile ? 'authenticated' : 'unauthenticated');
         setProfile(profile);
+      } catch (error: any | AxiosError) {
+        if (axios.isAxiosError(error)) {
+          toast.error(`${error.message} 🤷🏻‍♂️`);
+        }
+        console.error(error);
       } finally {
         fetchingStatusRef.current = false;
       }
