@@ -16,9 +16,11 @@ import {
   Tooltip
 } from '@mui/material';
 
+import { providers } from 'ethers';
+
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useContext, useMemo, useRef, useState } from 'react';
-import { useBalance, useNetwork, useSwitchNetwork } from 'wagmi';
+import { useBalance, useNetwork } from 'wagmi';
 import {
   AddComment,
   AttachMoney,
@@ -33,7 +35,7 @@ import { Address, formatEther, parseEther } from 'viem';
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 import { FlowType, FlowWalletType } from '../types/FlowType';
 import SearchProfileDialog from './SearchProfileDialog';
-import { SelectedProfileWithSocialsType } from '../types/ProfleType';
+import { ProfileType, SelectedProfileWithSocialsType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -48,6 +50,7 @@ import { estimateFee as estimateSafeTransferFee } from '../utils/safeTransaction
 import { red } from '@mui/material/colors';
 import { NetworkSelectorButton } from './NetworkSelectorButton';
 import { TransferToastContent } from './toasts/TransferToastContent';
+import { LoadingSwitchNetworkButton } from './LoadingSwitchNetworkButton';
 
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
@@ -66,7 +69,6 @@ export default function AccountSendDialog({
 
   const ethersSigner = useEthersSigner();
   const { chain } = useNetwork();
-  const { switchNetwork, isLoading: isSwitchNetworkLoading } = useSwitchNetwork();
 
   const [selectedRecipient, setSelectedRecipient] = useState<SelectedProfileWithSocialsType>();
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
@@ -188,32 +190,32 @@ export default function AccountSendDialog({
     }
   }, [loading, confirmed, error, txHash, sendAmount, selectedRecipient]);
 
-  const sendTransaction = async () => {
-    if (selectedWallet && selectedRecipient && sendAmount && ethersSigner) {
-      if (!toAddress) {
-        toast.error("Can't send to this profile");
-        return;
-      }
+  async function sendSafeTransaction(
+    profile: ProfileType,
+    flow: FlowType,
+    from: FlowWalletType,
+    to: Address,
+    amount: bigint,
+    ethersSigner: providers.JsonRpcSigner
+  ) {
+    await reset();
 
-      await reset();
+    const txData = {
+      from: from.address,
+      to,
+      amount
+    };
 
-      const txData = {
-        from: selectedWallet.address,
-        to: toAddress,
-        amount: sendAmount
-      };
+    const safeAccountConfig: SafeAccountConfig = {
+      owners: [profile.address],
+      threshold: 1
+    };
 
-      const safeAccountConfig: SafeAccountConfig = {
-        owners: [profile.address],
-        threshold: 1
-      };
+    const saltNonce = flow.saltNonce as string;
+    const safeVersion = from.version as SafeVersion;
 
-      const saltNonce = flow.saltNonce as string;
-      const safeVersion = selectedWallet.version as SafeVersion;
-
-      transfer(ethersSigner, txData, safeAccountConfig, safeVersion, saltNonce);
-    }
-  };
+    transfer(ethersSigner, txData, safeAccountConfig, safeVersion, saltNonce);
+  }
 
   useMemo(async () => {
     if (sendAmountUSD !== undefined && ethUsdPrice) {
@@ -240,10 +242,6 @@ export default function AccountSendDialog({
     if (!selectedRecipient || !selectedWallet) {
       setToAddress(undefined);
       return;
-    }
-
-    if (switchNetwork) {
-      switchNetwork(selectedWallet.network);
     }
 
     if (selectedRecipient.type === 'address') {
@@ -461,23 +459,25 @@ export default function AccountSendDialog({
                 }
                 size="large"
                 color="primary"
-                onClick={sendTransaction}
+                onClick={async () => {
+                  if (toAddress && sendAmount && ethersSigner) {
+                    await sendSafeTransaction(
+                      profile,
+                      flow,
+                      selectedWallet,
+                      toAddress,
+                      sendAmount,
+                      ethersSigner
+                    );
+                  } else {
+                    toast.error("Can't send to this profile");
+                  }
+                }}
                 sx={{ mt: 3, mb: 1, borderRadius: 5 }}>
                 Send
               </LoadingButton>
             ) : (
-              <LoadingButton
-                fullWidth
-                variant="outlined"
-                loading={isSwitchNetworkLoading}
-                size="large"
-                color="primary"
-                onClick={() => {
-                  switchNetwork?.(selectedWallet.network);
-                }}
-                sx={{ mt: 3, mb: 1, borderRadius: 5 }}>
-                Switch Network
-              </LoadingButton>
+              <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
             ))}
         </Box>
       </DialogContent>

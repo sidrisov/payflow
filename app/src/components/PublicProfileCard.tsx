@@ -1,10 +1,6 @@
 import { Box, Button, Card, CardProps, CircularProgress, Stack } from '@mui/material';
 import { useMemo, useState } from 'react';
-import {
-  ProfileType,
-  ProfileWithSocialsType,
-  SelectedProfileWithSocialsType
-} from '../types/ProfleType';
+import { ProfileType } from '../types/ProfleType';
 import { useEnsName } from 'wagmi';
 import { AttachMoney, Send } from '@mui/icons-material';
 import { useLazyQuery } from '@airstack/airstack-react';
@@ -12,20 +8,19 @@ import { ProfileSection } from './ProfileSection';
 import { comingSoonToast } from './Toasts';
 import SocialPresenceChipWithLink from './SocialPresenceChipWithLink';
 import { QUERY_SOCIALS_MINIMAL } from '../services/socials';
-import { lightGreen } from '@mui/material/colors';
 import PayProfileDialog from './PayProfileDialog';
 
 export function PublicProfileCard({ profile, ...props }: { profile: ProfileType } & CardProps) {
   const [openPayDialog, setOpenPayDialog] = useState(false);
 
   const { data: ensName } = useEnsName({
-    address: profile?.address,
+    address: profile.address,
     chainId: 1
   });
 
   const [fetch, { data: socialInfo, loading: loadingSocials }] = useLazyQuery(
     QUERY_SOCIALS_MINIMAL,
-    { identity: profile?.address },
+    { identity: profile.address },
     {
       cache: true
     }
@@ -38,87 +33,82 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
   }, [profile]);
 
   return (
-    <Card
-      {...props}
-      elevation={10}
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'space-evenly',
-        m: 2,
-        mt: 5,
-        p: 2,
-        border: 2,
-        borderColor: 'divider',
-        borderStyle: 'double',
-        borderRadius: 5
-      }}>
-      <Stack spacing={1} direction="column" alignItems="center">
-        <Stack direction="row" alignItems="center" spacing={1}>
-          {/*                   <Verified fontSize="small" color="success" sx={{ color: green[500] }} />
-           */}
-          <ProfileSection profile={profile} avatarSize={48} maxWidth={300} />
-        </Stack>
+    <>
+      <Card
+        {...props}
+        elevation={10}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'space-evenly',
+          m: 2,
+          mt: 5,
+          p: 2,
+          border: 2,
+          borderColor: 'divider',
+          borderStyle: 'double',
+          borderRadius: 5
+        }}>
+        <Stack spacing={1} direction="column" alignItems="center">
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <ProfileSection profile={profile} avatarSize={48} maxWidth={300} />
+          </Stack>
 
-        {loadingSocials && <CircularProgress color="inherit" size={20} />}
-        {socialInfo && (
-          <Box flexWrap="wrap" display="flex" justifyContent="center" alignItems="center">
-            <SocialPresenceChipWithLink
-              type={ensName ? 'ens' : 'address'}
-              name={ensName ?? profile.address}
-            />
+          {loadingSocials && <CircularProgress color="inherit" size={20} />}
+          {socialInfo && (
+            <Box flexWrap="wrap" display="flex" justifyContent="center" alignItems="center">
+              <SocialPresenceChipWithLink
+                type={ensName ? 'ens' : 'address'}
+                name={ensName ?? profile.address}
+              />
 
-            {socialInfo.Wallet.socials &&
-              socialInfo.Wallet.socials
-                .filter((s: any) => s.profileName)
-                .map((s: any) => (
-                  <SocialPresenceChipWithLink type={s.dappName} name={s.profileName} />
-                ))}
-            {socialInfo.Wallet.xmtp && socialInfo.Wallet.xmtp[0].isXMTPEnabled && (
-              <SocialPresenceChipWithLink type="xmtp" name={ensName ?? profile.address} />
-            )}
-          </Box>
-        )}
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Button
-            color="inherit"
-            variant="outlined"
-            endIcon={<AttachMoney />}
-            onClick={() => comingSoonToast()}
-            sx={{ borderRadius: 5, textTransform: 'lowercase' }}>
-            Tip
-          </Button>
-          <Button
-            variant="outlined"
-            color="inherit"
-            endIcon={<Send />}
-            onClick={() => setOpenPayDialog(true)}
-            sx={{
-              borderRadius: 5,
-              textTransform: 'lowercase',
-              '&:hover': {
-                backgroundColor: lightGreen.A700
-              }
-            }}>
-            Pay
-          </Button>
+              {socialInfo.Wallet.socials &&
+                socialInfo.Wallet.socials
+                  .filter((s: any) => s.profileName)
+                  .map((s: any) => (
+                    <SocialPresenceChipWithLink
+                      key={s.dappName}
+                      type={s.dappName}
+                      name={s.profileName}
+                    />
+                  ))}
+              {socialInfo.Wallet.xmtp && socialInfo.Wallet.xmtp[0].isXMTPEnabled && (
+                <SocialPresenceChipWithLink type="xmtp" name={ensName ?? profile.address} />
+              )}
+            </Box>
+          )}
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Button
+              color="inherit"
+              variant="outlined"
+              endIcon={<AttachMoney />}
+              onClick={() => comingSoonToast()}
+              sx={{ borderRadius: 5, textTransform: 'lowercase' }}>
+              Tip
+            </Button>
+            <Button
+              variant="outlined"
+              color="inherit"
+              endIcon={<Send />}
+              onClick={() => setOpenPayDialog(true)}
+              sx={{
+                borderRadius: 5,
+                textTransform: 'lowercase'
+              }}>
+              Pay
+            </Button>
+          </Stack>
         </Stack>
-      </Stack>
-      {openPayDialog && profile.defaultFlow && (
+      </Card>
+      {openPayDialog && (
         <PayProfileDialog
           open={openPayDialog}
-          flow={profile.defaultFlow}
-          recipient={
-            {
-              type: 'profile',
-              data: { profile } as ProfileWithSocialsType
-            } as SelectedProfileWithSocialsType
-          }
+          profile={profile}
           closeStateCallback={async () => setOpenPayDialog(false)}
         />
       )}
-    </Card>
+    </>
   );
   {
     /*  <Stack
