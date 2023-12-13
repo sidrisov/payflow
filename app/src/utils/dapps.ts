@@ -10,3 +10,9 @@ export type dAppType =
   | typeof FARCASTER_DAPP
   | typeof LENS_DAPP
   | typeof ADDRESS;
+
+export const XMTP_INBOX = 'inbox';
+export const XMTP_CONVERSE = 'converse';
+export const XMTP_COINBASE = 'coinbase';
+
+export type XmtpAppType = typeof XMTP_INBOX | typeof XMTP_CONVERSE | typeof XMTP_COINBASE;
