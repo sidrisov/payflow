@@ -8,7 +8,7 @@ function getXmtpAppDmLink(xmtpApp: XmtpAppType, addressOrEns: string) {
     case 'converse':
       return `https://converse.xyz/dm/${addressOrEns}`;
     case 'coinbase':
-      return `https://coinbase.com/wallet?address=${addressOrEns}`;
+      return `https://go.cb-w.com/message?address=${addressOrEns}`;
   }
 }
 
