@@ -55,9 +55,26 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
       </Helmet>
       <Container maxWidth={!loadingProfile && !profile ? 'sm' : 'xs'}>
         {username && !loadingProfile && !profile && (
-          <Typography mt={10} variant="h6" textAlign="center" color={orange.A400}>
-            Ooops, not found 🤷🏻‍♂️ try to search by social identity👇🏻
-          </Typography>
+          <Stack mt={10}>
+            <Typography
+              variant="h6"
+              fontSize={isMobile ? 16 : 20}
+              textAlign="center"
+              color={orange.A400}>
+              Ooops, profile{' '}
+              <b>
+                <u>{username}</u>
+              </b>{' '}
+              not found 🤷🏻‍♂️
+            </Typography>
+            <Typography
+              variant="h6"
+              fontSize={isMobile ? 16 : 20}
+              textAlign="center"
+              color={orange.A400}>
+              Try to search by social 👇🏻
+            </Typography>
+          </Stack>
         )}
 
         {loadingProfile === true ? (
@@ -77,23 +94,32 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
               <Badge
                 badgeContent={
                   <Typography
-                    variant="h5"
+                    variant={isMobile ? 'h6' : 'h5'}
                     fontWeight="900"
                     color={green.A700}
                     sx={{ mb: 3, ml: isMobile ? -20 : 0 }}>
                     made easy
                   </Typography>
                 }>
-                <Typography variant="h3" fontWeight="500" textAlign="center">
+                <Typography variant={isMobile ? 'h4' : 'h3'} fontWeight="500" textAlign="center">
                   Onchain Social Payments
                 </Typography>
               </Badge>
 
-              <Typography variant="h6" fontWeight="900" color={green.A700} textAlign="center">
+              <Typography
+                variant="h6"
+                fontSize={isMobile ? 16 : 20}
+                fontWeight="900"
+                color={green.A700}
+                textAlign="center">
                 abstracted | gasless | non-custodial
               </Typography>
 
-              <Typography variant="caption" fontSize={16} color="grey" textAlign="center">
+              <Typography
+                variant="caption"
+                fontSize={isMobile ? 14 : 16}
+                color="grey"
+                textAlign="center">
                 farcaster | lens | ens supported
               </Typography>
 

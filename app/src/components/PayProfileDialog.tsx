@@ -288,10 +288,10 @@ export default function PayProfileDialog({
                     {recipient &&
                       (recipient.type === 'profile'
                         ? recipient.data.profile && (
-                            <ProfileSection maxWidth={150} profile={recipient.data.profile} />
+                            <ProfileSection maxWidth={200} profile={recipient.data.profile} />
                           )
                         : recipient.data.meta && (
-                            <AddressSection maxWidth={150} meta={recipient.data.meta} />
+                            <AddressSection maxWidth={200} meta={recipient.data.meta} />
                           ))}
 
                     {!recipient && (
