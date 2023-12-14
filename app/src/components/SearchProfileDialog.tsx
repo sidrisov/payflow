@@ -14,7 +14,7 @@ import {
   IconButton
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
-import { Clear, Search } from '@mui/icons-material';
+import { ArrowBack, Clear, Search } from '@mui/icons-material';
 import { useMemo, useState } from 'react';
 import { ProfileWithSocialsType, SelectedProfileWithSocialsType } from '../types/ProfleType';
 
@@ -33,13 +33,14 @@ export type SearchProfileDialogProps = DialogProps &
   CloseCallbackType &
   SelectProfileResultCallbackType;
 
+// TODO: back button + title alignment hack - check with someone knowledgeable on proper solution
 export default function SearchProfileDialog({
   closeStateCallback,
   selectProfileCallback,
   ...props
 }: SearchProfileDialogProps) {
   const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const navigate = useNavigate();
 
@@ -72,7 +73,7 @@ export default function SearchProfileDialog({
 
   return (
     <Dialog
-      fullScreen={fullScreen}
+      fullScreen={isMobile}
       onClose={handleCloseCampaignDialog}
       sx={{
         backdropFilter: 'blur(5px)'
@@ -80,10 +81,22 @@ export default function SearchProfileDialog({
       PaperProps={{ sx: { borderRadius: 5 } }}
       {...props}>
       <DialogTitle>
-        <Stack minWidth={300} direction="column" alignItems="center">
-          <Typography alignSelf="center" variant="h6">
-            Search Profile
-          </Typography>
+        <Stack minWidth={300}>
+          <Box
+            display="flex"
+            flexDirection="row"
+            alignItems="center"
+            justifyContent={isMobile ? 'flex-start' : 'center'}>
+            {isMobile && (
+              <IconButton onClick={closeStateCallback}>
+                <ArrowBack />
+              </IconButton>
+            )}
+            <Typography ml={isMobile ? '18vw' : 0} variant="h6">
+              Search Profile
+            </Typography>
+          </Box>
+
           <TextField
             fullWidth
             margin="dense"

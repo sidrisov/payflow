@@ -23,6 +23,7 @@ import { useContext, useMemo, useRef, useState } from 'react';
 import { useBalance, useNetwork } from 'wagmi';
 import {
   AddComment,
+  ArrowBack,
   AttachMoney,
   ExpandMore,
   LocalGasStation,
@@ -284,11 +285,22 @@ export default function AccountSendDialog({
         backdropFilter: 'blur(5px)'
       }}>
       <DialogTitle>
-        <Stack alignItems="center">
-          <Typography justifySelf="center" variant="h6">
-            Send
-          </Typography>
-          <Typography justifySelf="center" variant="caption">
+        <Stack>
+          <Box
+            display="flex"
+            flexDirection="row"
+            alignItems="center"
+            justifyContent={isMobile ? 'flex-start' : 'center'}>
+            {isMobile && (
+              <IconButton onClick={closeStateCallback}>
+                <ArrowBack />
+              </IconButton>
+            )}
+            <Typography ml={isMobile ? '30vw' : 0} variant="h6">
+              Send
+            </Typography>
+          </Box>
+          <Typography textAlign="center" variant="caption">
             from: "{flow.title}" flow
           </Typography>
         </Stack>

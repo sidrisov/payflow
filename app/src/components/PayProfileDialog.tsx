@@ -19,7 +19,7 @@ import {
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAccount, useBalance, useContractRead, useEnsAddress, useNetwork } from 'wagmi';
-import { AddComment, AttachMoney, ExpandMore, PriorityHigh } from '@mui/icons-material';
+import { AddComment, ArrowBack, AttachMoney, ExpandMore, PriorityHigh } from '@mui/icons-material';
 import { Id, toast } from 'react-toastify';
 
 import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
@@ -246,11 +246,20 @@ export default function PayProfileDialog({
           backdropFilter: 'blur(5px)'
         }}>
         <DialogTitle>
-          <Stack alignItems="center">
-            <Typography justifySelf="center" variant="h6">
+          <Box
+            display="flex"
+            flexDirection="row"
+            alignItems="center"
+            justifyContent={isMobile ? 'flex-start' : 'center'}>
+            {isMobile && (
+              <IconButton onClick={closeStateCallback}>
+                <ArrowBack />
+              </IconButton>
+            )}
+            <Typography ml={isMobile ? '30vw' : 0} variant="h6">
               Pay
             </Typography>
-          </Stack>
+          </Box>
         </DialogTitle>
         <DialogContent
           sx={{
