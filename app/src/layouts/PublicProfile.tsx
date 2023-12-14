@@ -1,4 +1,13 @@
-import { Badge, Box, Chip, Container, Stack, Typography } from '@mui/material';
+import {
+  Badge,
+  Box,
+  Chip,
+  Container,
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme
+} from '@mui/material';
 import axios from 'axios';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -13,6 +22,9 @@ import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { PublicProfileCard } from '../components/PublicProfileCard';
 
 export default function PublicProfile({ appSettings }: { appSettings: AppSettings }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const { username } = useParams();
   const [profile, setProfile] = useState<ProfileType>();
   const [loadingProfile, setLoadingProfile] = useState<boolean>();
@@ -64,7 +76,11 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
             <Stack spacing={1} alignItems="center" sx={{ border: 0 }}>
               <Badge
                 badgeContent={
-                  <Typography variant="h5" fontWeight="900" color={green.A700} sx={{ mb: 3 }}>
+                  <Typography
+                    variant="h5"
+                    fontWeight="900"
+                    color={green.A700}
+                    sx={{ mb: 3, ml: isMobile ? -20 : 0 }}>
                     made easy
                   </Typography>
                 }>
@@ -73,8 +89,12 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
                 </Typography>
               </Badge>
 
-              <Typography variant="caption" fontSize={16} color="grey">
-                Safe, gasless, farcaster/lens/ens supported
+              <Typography variant="h6" fontWeight="900" color={green.A700} textAlign="center">
+                abstracted | gasless | non-custodial
+              </Typography>
+
+              <Typography variant="caption" fontSize={16} color="grey" textAlign="center">
+                farcaster | lens | ens supported
               </Typography>
 
               <Chip
@@ -82,7 +102,7 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
                 clickable
                 icon={<Search color="inherit" />}
                 variant="outlined"
-                label="search & pay your friend"
+                label="search & pay"
                 onClick={() => {
                   setOpenSearchProfile(true);
                 }}
@@ -92,7 +112,7 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
                   borderStyle: 'dotted',
                   borderColor: 'divider',
                   borderRadius: 10,
-                  width: 300,
+                  width: 200,
                   '& .MuiChip-label': { fontSize: 20 },
                   height: 50
                 }}

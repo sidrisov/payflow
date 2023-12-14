@@ -135,7 +135,8 @@ export default function AccountSendDialog({
       return;
     }
 
-    if (loading) {
+    if (loading && !sendToastId.current) {
+      toast.dismiss();
       sendToastId.current = toast.loading(
         <TransferToastContent
           from={{ type: 'profile', data: { profile: profile } }}
@@ -187,8 +188,16 @@ export default function AccountSendDialog({
         autoClose: 5000
       });
       sendToastId.current = undefined;
+
+      if (status === 'rejected') {
+        toast.error('Cancelled');
+      }
+
+      if (status === 'insufficient_fees') {
+        toast.error('Insufficient Gas Fees');
+      }
     }
-  }, [loading, confirmed, error, txHash, sendAmount, selectedRecipient]);
+  }, [loading, confirmed, error, status, txHash, sendAmount, selectedRecipient]);
 
   async function sendSafeTransaction(
     profile: ProfileType,
@@ -198,7 +207,7 @@ export default function AccountSendDialog({
     amount: bigint,
     ethersSigner: providers.JsonRpcSigner
   ) {
-    await reset();
+    reset();
 
     const txData = {
       from: from.address,
@@ -408,12 +417,18 @@ export default function AccountSendDialog({
                     <AttachMoney fontSize="small" />
                     <Typography variant="caption">
                       {`max: ${
-                        isSuccess ? balance && parseFloat(formatEther(balance.value)).toFixed(5) : 0
+                        isSuccess && balance && balance.value - (gasFee ?? BigInt(0)) > BigInt(0)
+                          ? parseFloat(formatEther(balance.value - (gasFee ?? BigInt(0)))).toFixed(
+                              5
+                            )
+                          : 0
                       } ETH ≈ $${
-                        isSuccess
-                          ? balance &&
-                            (parseFloat(formatEther(balance.value)) * (ethUsdPrice ?? 0)).toFixed(2)
-                          : 0.0
+                        isSuccess && balance && balance.value - (gasFee ?? BigInt(0)) > BigInt(0)
+                          ? (
+                              parseFloat(formatEther(balance.value - (gasFee ?? BigInt(0)))) *
+                              (ethUsdPrice ?? 0)
+                            ).toFixed(2)
+                          : 0
                       }`}
                     </Typography>
                   </Stack>

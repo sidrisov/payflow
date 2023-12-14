@@ -39,7 +39,7 @@ export function ChooseWalletMenu({
               closeStateCallback();
             }}>
             <Box
-              width={150}
+              width={160}
               display="flex"
               flexDirection="row"
               alignItems="center"
@@ -48,7 +48,7 @@ export function ChooseWalletMenu({
                 <NetworkAvatar tooltip network={wallet.network} sx={{ width: 24, height: 24 }} />
                 <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
               </Box>
-              {wallet === selectedWallet && <Check sx={{ mx: 1, color: green.A700 }} />}
+              {wallet === selectedWallet && <Check sx={{ color: green.A700 }} />}
             </Box>
           </MenuItem>
         ))}

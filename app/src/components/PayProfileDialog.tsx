@@ -18,16 +18,7 @@ import {
 
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  useAccount,
-  useBalance,
-  useContractRead,
-  useEnsAddress,
-  useNetwork,
-  usePrepareSendTransaction,
-  useSendTransaction,
-  useSwitchNetwork
-} from 'wagmi';
+import { useAccount, useBalance, useContractRead, useEnsAddress, useNetwork } from 'wagmi';
 import { AddComment, AttachMoney, ExpandMore, PriorityHigh } from '@mui/icons-material';
 import { Id, toast } from 'react-toastify';
 
@@ -52,6 +43,7 @@ import { NetworkSelectorButton } from './NetworkSelectorButton';
 import { TransferToastContent } from './toasts/TransferToastContent';
 import { LoadingConnectWalletButton } from './LoadingConnectWalletButton';
 import { LoadingSwitchNetworkButton } from './LoadingSwitchNetworkButton';
+import { useRegularTransfer } from '../utils/hooks/useRegularTransfer';
 
 export type PayProfileDialogProps = DialogProps &
   CloseCallbackType & {
@@ -108,20 +100,10 @@ export default function PayProfileDialog({
 
   const sendToastId = useRef<Id>();
 
-  const { config } = usePrepareSendTransaction({
-    enabled: toAddress !== undefined,
+  const { loading, confirmed, error, status, txHash, sendTransaction, reset } = useRegularTransfer({
     to: toAddress,
-    value: sendAmount
+    amount: sendAmount
   });
-
-  const {
-    isSuccess: confirmed,
-    isLoading: loading,
-    error,
-    status,
-    data: txHash,
-    sendTransaction
-  } = useSendTransaction(config);
 
   useEffect(() => {
     if (!profile || !address) {
@@ -169,20 +151,13 @@ export default function PayProfileDialog({
     }
   }, [selectedWallet]);
 
-  /* useMemo(async () => {
-    if (selectedWallet) {
-      setGasFee(
-        BigInt(await estimateSafeTransferFee(selectedWallet.deployed, selectedWallet.network))
-      );
-    }
-  }, [selectedWallet]); */
-
   useMemo(async () => {
     if (!sendAmount || !recipient || !selectedWallet) {
       return;
     }
 
-    if (loading) {
+    if (loading && !sendToastId.current) {
+      toast.dismiss();
       sendToastId.current = toast.loading(
         <TransferToastContent
           from={{ type: 'address', data: { meta: { addresses: [address] } as MetaType } }}
@@ -212,6 +187,7 @@ export default function PayProfileDialog({
         autoClose: 5000
       });
       sendToastId.current = undefined;
+      reset();
     } else if (error) {
       toast.update(sendToastId.current, {
         render: (
@@ -228,8 +204,15 @@ export default function PayProfileDialog({
         autoClose: 5000
       });
       sendToastId.current = undefined;
+      reset();
     }
-  }, [loading, confirmed, error, txHash, sendAmount]);
+  }, [loading, confirmed, error, txHash, sendAmount, recipient]);
+
+  useMemo(async () => {
+    if (status === 'rejected') {
+      toast.error('Cancelled');
+    }
+  }, [status]);
 
   useMemo(async () => {
     if (sendAmountUSD !== undefined && ethUsdPrice) {
@@ -251,16 +234,6 @@ export default function PayProfileDialog({
       setMinAmountSatisfied(undefined);
     }
   }, [sendAmountUSD, chain?.id]);
-
-  /*   function getGasFeeText(): string {
-    return 'fee: '.concat(
-      gasFee !== undefined
-        ? `${parseFloat(formatEther(gasFee)).toFixed(5)} ETH ≈ $${(
-            parseFloat(formatEther(gasFee)) * (ethUsdPrice ?? 0)
-          ).toFixed(2)}`
-        : '...'
-    );
-  } */
 
   return (
     profile && (
@@ -315,9 +288,11 @@ export default function PayProfileDialog({
                     {recipient &&
                       (recipient.type === 'profile'
                         ? recipient.data.profile && (
-                            <ProfileSection profile={recipient.data.profile} />
+                            <ProfileSection maxWidth={150} profile={recipient.data.profile} />
                           )
-                        : recipient.data.meta && <AddressSection meta={recipient.data.meta} />)}
+                        : recipient.data.meta && (
+                            <AddressSection maxWidth={150} meta={recipient.data.meta} />
+                          ))}
 
                     {!recipient && (
                       <Typography alignSelf="center" flexGrow={1}>
@@ -436,17 +411,6 @@ export default function PayProfileDialog({
                           </IconButton>
                         </Tooltip>
                       </Box>
-
-                      {/* <Stack ml={0.5} direction="row" spacing={0.5} alignItems="center">
-                      <Tooltip
-                        title="Gas is paid by the sending flow wallet via Gelato SyncFee call method. 
-                    The fee includes Gelato on-chain call, safe tx fee + deployment fee on the first tx, and 10% Gelato's comission on top of all.">
-                        <LocalGasStation fontSize="small" />
-                      </Tooltip>
-                      <Typography ml={1} variant="caption">
-                        {getGasFeeText()}
-                      </Typography>
-                    </Stack> */}
                     </Box>
                   )}
                 </Stack>

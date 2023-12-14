@@ -39,6 +39,7 @@ export default function SocialPresenceChipWithLink(props: SocialPresenceChipWith
       clickable
       component="a"
       href={socialLinkRef}
+      target="_blank"
       sx={{ borderColor: 'inherit', m: 0.5 }}
     />
   ) : (

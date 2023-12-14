@@ -52,11 +52,11 @@ export function SearchProfileListItem(
           onClick={!disableClick ? props.onClick : undefined}
           sx={{ borderRadius: 5, height: 60 }}>
           {view === 'profile' && profileWithSocials.profile && (
-            <ProfileSection profile={profileWithSocials.profile} />
+            <ProfileSection maxWidth={200} profile={profileWithSocials.profile} />
           )}
 
           {view === 'address' && profileWithSocials.meta && (
-            <AddressSection meta={profileWithSocials.meta} />
+            <AddressSection maxWidth={200} meta={profileWithSocials.meta} />
           )}
 
           <Stack
