@@ -45,7 +45,7 @@ export default function SearchProfileDialog({
 
   const [searchString, setSearchString] = useState<string>();
 
-  const [debouncedSearchString] = useDebounce(searchString, 500);
+  const [debouncedSearchString] = useDebounce(searchString, 300);
 
   const [profiles, setProfiles] = useState<ProfileWithSocialsType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -55,7 +55,7 @@ export default function SearchProfileDialog({
   }
 
   useMemo(async () => {
-    if (debouncedSearchString && debouncedSearchString?.length > 2) {
+    if (debouncedSearchString && debouncedSearchString?.length > 1) {
       try {
         setLoading(true);
         const profiles = sortBySocialScore(await searchProfile(debouncedSearchString));
@@ -185,10 +185,9 @@ export default function SearchProfileDialog({
             )}
 
           {debouncedSearchString &&
-            debouncedSearchString.length > 3 &&
+            debouncedSearchString.length > 1 &&
             profiles.length === 0 &&
-            !loading &&
-            selectProfileCallback && (
+            !loading && (
               <Typography alignSelf="center" variant="subtitle2">
                 No results found.
               </Typography>
