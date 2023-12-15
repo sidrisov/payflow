@@ -44,6 +44,7 @@ import { TransferToastContent } from './toasts/TransferToastContent';
 import { LoadingConnectWalletButton } from './LoadingConnectWalletButton';
 import { LoadingSwitchNetworkButton } from './LoadingSwitchNetworkButton';
 import { useRegularTransfer } from '../utils/hooks/useRegularTransfer';
+import { shortenWalletAddressLabel } from '../utils/address';
 
 export type PayProfileDialogProps = DialogProps &
   CloseCallbackType & {
@@ -246,20 +247,31 @@ export default function PayProfileDialog({
           backdropFilter: 'blur(5px)'
         }}>
         <DialogTitle>
-          <Box
-            display="flex"
-            flexDirection="row"
-            alignItems="center"
-            justifyContent={isMobile ? 'flex-start' : 'center'}>
-            {isMobile && (
-              <IconButton onClick={closeStateCallback}>
-                <ArrowBack />
-              </IconButton>
+          <Stack>
+            <Box
+              display="flex"
+              flexDirection="row"
+              alignItems="center"
+              justifyContent={isMobile ? 'flex-start' : 'center'}>
+              {isMobile && (
+                <IconButton onClick={closeStateCallback}>
+                  <ArrowBack />
+                </IconButton>
+              )}
+              <Typography ml={isMobile ? '30vw' : 0} variant="h6">
+                Pay
+              </Typography>
+            </Box>
+            {address && (
+              <Typography textAlign="center" variant="caption" fontWeight="bold">
+                from:{' '}
+                <b>
+                  <u>{shortenWalletAddressLabel(address)}</u>
+                </b>{' '}
+                wallet
+              </Typography>
             )}
-            <Typography ml={isMobile ? '30vw' : 0} variant="h6">
-              Pay
-            </Typography>
-          </Box>
+          </Stack>
         </DialogTitle>
         <DialogContent
           sx={{

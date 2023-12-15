@@ -11,7 +11,8 @@ import {
   Stack,
   Typography,
   CircularProgress,
-  IconButton
+  IconButton,
+  Avatar
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { ArrowBack, Clear, Search } from '@mui/icons-material';
@@ -92,20 +93,20 @@ export default function SearchProfileDialog({
                 <ArrowBack />
               </IconButton>
             )}
-            <Typography ml={isMobile ? '18vw' : 0} variant="h6">
+            <Typography ml={isMobile ? 2 : 0} variant="h6">
               Search Profile
             </Typography>
           </Box>
 
           <TextField
             fullWidth
-            margin="dense"
+            margin="normal"
             label="search by name, fc:, lens:, .eth, or 0x"
             value={searchString ?? ''}
             InputProps={{
               startAdornment: shrink && (
                 <InputAdornment position="start">
-                  <Search />
+                  <Avatar src="payflow.png" sx={{ ml: 1, width: 28, height: 28 }} />
                 </InputAdornment>
               ),
               endAdornment: debouncedSearchString && (

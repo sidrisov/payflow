@@ -300,8 +300,12 @@ export default function AccountSendDialog({
               Send
             </Typography>
           </Box>
-          <Typography textAlign="center" variant="caption">
-            from: "{flow.title}" flow
+          <Typography textAlign="center" variant="caption" fontWeight="bold">
+            from:{' '}
+            <b>
+              <u>{flow.title}</u>
+            </b>{' '}
+            flow
           </Typography>
         </Stack>
       </DialogTitle>

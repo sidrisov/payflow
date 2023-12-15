@@ -1,5 +1,7 @@
 import { Avatar, ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material';
 import { XmtpAppType } from '../utils/dapps';
+import { useEnsAddress } from 'wagmi';
+import { isAddress } from 'viem';
 
 function getXmtpAppDmLink(xmtpApp: XmtpAppType, addressOrEns: string) {
   switch (xmtpApp) {
@@ -18,6 +20,13 @@ export function XmtpActionMenu({
 }: MenuProps & {
   addressOrEns: string;
 }) {
+  // TODO: small hack for coinbase wallet not supporting ens names
+  const { isSuccess: isEnsSuccess, data: addressEns } = useEnsAddress({
+    enabled: !isAddress(addressOrEns),
+    name: addressOrEns,
+    chainId: 1,
+    cacheTime: 60_000
+  });
   return (
     <Menu
       {...props}
@@ -30,7 +39,13 @@ export function XmtpActionMenu({
         </ListItemIcon>
         converse
       </MenuItem>
-      <MenuItem component="a" href={getXmtpAppDmLink('coinbase', addressOrEns)} target="_blank">
+      <MenuItem
+        component="a"
+        href={getXmtpAppDmLink(
+          'coinbase',
+          isAddress(addressOrEns) ? addressOrEns : isEnsSuccess && addressEns ? addressEns : ''
+        )}
+        target="_blank">
         <ListItemIcon>
           <Avatar src="xmtp_coinbase.png" variant="rounded" sx={{ width: 24, height: 24 }} />
         </ListItemIcon>

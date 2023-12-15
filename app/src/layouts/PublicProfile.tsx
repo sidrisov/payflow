@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Badge,
   Box,
   Chip,
@@ -126,7 +127,7 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
               <Chip
                 size="medium"
                 clickable
-                icon={<Search color="inherit" />}
+                icon={<Avatar src="payflow.png" sx={{ width: 32, height: 32 }} />}
                 variant="outlined"
                 label="search & pay"
                 onClick={() => {
@@ -138,7 +139,7 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
                   borderStyle: 'dotted',
                   borderColor: 'divider',
                   borderRadius: 10,
-                  width: 200,
+                  width: 220,
                   '& .MuiChip-label': { fontSize: 20 },
                   height: 50
                 }}
