@@ -285,29 +285,27 @@ export default function AccountSendDialog({
         backdropFilter: 'blur(5px)'
       }}>
       <DialogTitle>
-        <Stack>
-          <Box
-            display="flex"
-            flexDirection="row"
-            alignItems="center"
-            justifyContent={isMobile ? 'flex-start' : 'center'}>
-            {isMobile && (
-              <IconButton onClick={closeStateCallback}>
-                <ArrowBack />
-              </IconButton>
-            )}
-            <Typography ml={isMobile ? '30vw' : 0} variant="h6">
-              Send
+        <Box
+          display="flex"
+          flexDirection="row"
+          alignItems="center"
+          justifyContent={isMobile ? 'flex-start' : 'center'}>
+          {isMobile && (
+            <IconButton onClick={closeStateCallback}>
+              <ArrowBack />
+            </IconButton>
+          )}
+          <Stack ml={isMobile ? '25vw' : 0} alignItems="center">
+            <Typography variant="h6">Send</Typography>
+            <Typography textAlign="center" variant="caption" fontWeight="bold">
+              from:{' '}
+              <b>
+                <u>{flow.title}</u>
+              </b>{' '}
+              flow
             </Typography>
-          </Box>
-          <Typography textAlign="center" variant="caption" fontWeight="bold">
-            from:{' '}
-            <b>
-              <u>{flow.title}</u>
-            </b>{' '}
-            flow
-          </Typography>
-        </Stack>
+          </Stack>
+        </Box>
       </DialogTitle>
       <DialogContent
         sx={{

@@ -247,31 +247,29 @@ export default function PayProfileDialog({
           backdropFilter: 'blur(5px)'
         }}>
         <DialogTitle>
-          <Stack>
-            <Box
-              display="flex"
-              flexDirection="row"
-              alignItems="center"
-              justifyContent={isMobile ? 'flex-start' : 'center'}>
-              {isMobile && (
-                <IconButton onClick={closeStateCallback}>
-                  <ArrowBack />
-                </IconButton>
-              )}
-              <Typography ml={isMobile ? '30vw' : 0} variant="h6">
-                Pay
-              </Typography>
-            </Box>
-            {address && (
-              <Typography textAlign="center" variant="caption" fontWeight="bold">
-                from:{' '}
-                <b>
-                  <u>{shortenWalletAddressLabel(address)}</u>
-                </b>{' '}
-                wallet
-              </Typography>
+          <Box
+            display="flex"
+            flexDirection="row"
+            alignItems="center"
+            justifyContent={isMobile ? 'flex-start' : 'center'}>
+            {isMobile && (
+              <IconButton onClick={closeStateCallback}>
+                <ArrowBack />
+              </IconButton>
             )}
-          </Stack>
+            <Stack ml={isMobile ? '18vw' : 0} alignItems="center">
+              <Typography variant="h6">Pay</Typography>{' '}
+              {address && (
+                <Typography textAlign="center" variant="caption" fontWeight="bold">
+                  from:{' '}
+                  <b>
+                    <u>{shortenWalletAddressLabel(address)}</u>
+                  </b>{' '}
+                  wallet
+                </Typography>
+              )}
+            </Stack>
+          </Box>
         </DialogTitle>
         <DialogContent
           sx={{
