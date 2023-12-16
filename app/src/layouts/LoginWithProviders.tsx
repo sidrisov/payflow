@@ -1,5 +1,3 @@
-import '@rainbow-me/rainbowkit/styles.css';
-
 import {
   AuthenticationStatus,
   connectorsForWallets,

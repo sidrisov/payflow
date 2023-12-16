@@ -1,7 +1,5 @@
 import Send from './Send';
 
-import '@rainbow-me/rainbowkit/styles.css';
-
 import {
   connectorsForWallets,
   getDefaultWallets,

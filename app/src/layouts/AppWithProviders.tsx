@@ -1,7 +1,5 @@
 import App from './App';
 
-import '@rainbow-me/rainbowkit/styles.css';
-
 import {
   connectorsForWallets,
   getDefaultWallets,
