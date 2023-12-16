@@ -15,7 +15,7 @@ import React from 'react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <React.StrictMode>
+  <>
     <HelmetProvider>
       <RouterProvider router={appRouter} />
       <ToastContainer
@@ -34,5 +34,5 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
       />
     </HelmetProvider>
     <SpeedInsights />
-  </React.StrictMode>
+  </>
 );

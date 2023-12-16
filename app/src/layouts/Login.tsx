@@ -84,7 +84,7 @@ export default function Login({
                   variant={isMobile ? 'h6' : 'h5'}
                   fontFamily="monospace"
                   textAlign="center">
-                  Abstract your web3 identity payments
+                  Abstracted onchain social payments
                 </Typography>
 
                 <Stack mt={3} p={1} spacing={2} alignItems="flex-start">
