@@ -30,14 +30,14 @@ export default function Login({
   const { address } = useAccount();
 
   const { chain } = useNetwork();
-  const { switchNetwork } = useSwitchNetwork();
+  const { switchNetwork, pendingChainId } = useSwitchNetwork();
 
   useMemo(() => {
-    if (chain && chain.id !== 1) {
+    if (authStatus === 'unauthenticated' && chain && chain.id !== 1 && pendingChainId !== 1) {
       toast.warning('Please, switch to Ethereum!', { autoClose: 10000 });
       switchNetwork?.(1);
     }
-  }, [chain]);
+  }, [chain, pendingChainId, authStatus]);
 
   useEffect(() => {
     console.log(profile, authStatus);

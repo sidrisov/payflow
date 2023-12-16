@@ -3,7 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 import { AppBar, IconButton, Toolbar, Box, Stack, Typography, Button, Avatar } from '@mui/material';
 
-import { Search, Home, HomeOutlined, AppsOutlined } from '@mui/icons-material';
+import { Home, HomeOutlined, AppsOutlined } from '@mui/icons-material';
 
 import Nav from '../components/Navigation';
 
@@ -39,7 +39,7 @@ export default function AppLayout({
 }) {
   const navigate = useNavigate();
 
-  const { isConnected, address, connector } = useAccount({
+  const { isConnected, address } = useAccount({
     async onDisconnect() {
       await axios.get(`${API_URL}/api/auth/logout`, { withCredentials: true });
       navigate('/connect');
@@ -88,7 +88,7 @@ export default function AppLayout({
           return;
         }
       } else {
-        toast.error(
+        toast.warn(
           `Please, logout or switch wallet! Connected wallet is different from signed in: ${shortenWalletAddressLabel(
             profile.address
           )}`,

@@ -191,11 +191,11 @@ export default function AccountSendDialog({
       sendToastId.current = undefined;
 
       if (status === 'rejected') {
-        toast.error('Cancelled');
+        toast.error('Cancelled', { closeButton: false, autoClose: 5000 });
       }
 
       if (status === 'insufficient_fees') {
-        toast.error('Insufficient Gas Fees');
+        toast.error('Insufficient Gas Fees', { closeButton: false, autoClose: 5000 });
       }
     }
   }, [loading, confirmed, error, status, txHash, sendAmount, selectedRecipient]);

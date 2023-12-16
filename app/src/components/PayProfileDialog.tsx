@@ -211,7 +211,7 @@ export default function PayProfileDialog({
 
   useMemo(async () => {
     if (status === 'rejected') {
-      toast.error('Cancelled');
+      toast.error('Cancelled', { closeButton: false, autoClose: 5000 });
     }
   }, [status]);
 
