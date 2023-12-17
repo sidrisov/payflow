@@ -21,6 +21,7 @@ import { green, grey, orange } from '@mui/material/colors';
 import { AppSettings } from '../types/AppSettingsType';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { PublicProfileCard } from '../components/PublicProfileCard';
+import { SUPPORTED_CHAINS } from '../utils/networks';
 
 export default function PublicProfile({ appSettings }: { appSettings: AppSettings }) {
   const theme = useTheme();
@@ -40,6 +41,13 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
       try {
         const response = await axios.get(`${API_URL}/api/user/${username}`);
         const profile = (await response.data) as ProfileType;
+
+        if (profile.defaultFlow) {
+          const wallets = profile.defaultFlow?.wallets.filter((w) =>
+            SUPPORTED_CHAINS.map((c) => c.id as number).includes(w.network)
+          );
+          profile.defaultFlow.wallets = wallets;
+        }
         setProfile(profile);
       } catch (error) {
         console.error(error);
