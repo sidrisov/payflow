@@ -35,6 +35,7 @@ function getActivityIndicator(txInfo: TxInfo, blockExplorerUrl: string | undefin
     <Tooltip title="Tx details">
       <IconButton
         href={`${blockExplorerUrl}/tx/${hash}`}
+        target="_blank"
         sx={{
           p: 1,
           display: 'flex',

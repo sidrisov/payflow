@@ -1,11 +1,11 @@
 import { useCallback, useMemo, useState } from 'react';
-import { Address, Chain, Hash, TransactionReceipt } from 'viem';
+import { Address, Chain, Hash } from 'viem';
 import { safeTransferEthWithDeploy } from '../safeTransactions';
 
 import { providers } from 'ethers';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
-import { usePublicClient } from 'wagmi';
+import { useWaitForTransaction } from 'wagmi';
 
 export type SafeWallet = {
   chain: Chain;
@@ -25,7 +25,7 @@ export const useSafeTransfer = (): {
     safeVersion: SafeVersion,
     saltNonce: string
   ) => Promise<void>;
-  reset: () => Promise<void>;
+  reset: () => void;
 } => {
   const [loading, setLoading] = useState<boolean>(false);
   const [confirmed, setConfirmed] = useState<boolean>();
@@ -33,25 +33,30 @@ export const useSafeTransfer = (): {
   const [txHash, setTxHash] = useState<Hash>();
   const [status, setStatus] = useState<string>();
 
-  const publicClient = usePublicClient();
+  const {
+    isSuccess: isTxConfirmed,
+    isLoading: isTxLoading,
+    isError: isTxError
+  } = useWaitForTransaction({
+    hash: txHash
+  });
 
   useMemo(async () => {
-    if (txHash) {
+    if (isTxLoading) {
       setStatus('confirming');
-      try {
-        const receipt = (await publicClient.waitForTransactionReceipt({
-          hash: txHash
-        })) as TransactionReceipt;
-
-        if (receipt && receipt.status === 'success') {
-          setConfirmed(true);
-        }
-      } catch (error) {
-        console.log(error);
-        setError(true);
-      }
+      return;
     }
-  }, [txHash]);
+
+    if (isTxConfirmed) {
+      setConfirmed(true);
+      return;
+    }
+
+    if (isTxError) {
+      setError(true);
+      return;
+    }
+  }, [isTxLoading, isTxConfirmed, isTxError]);
 
   const statusCallback = (status: string | undefined): void => {
     setStatus(status);
@@ -77,9 +82,15 @@ export const useSafeTransfer = (): {
       setTxHash(txHash);
     } catch (error) {
       const message = (error as Error).message;
+
+      console.log(message);
       if (message.includes('ACTION_REJECTED')) {
         setStatus('rejected');
       }
+      if (message.includes('Insufficient Fees')) {
+        setStatus('insufficient_fees');
+      }
+
       console.log(error);
       setConfirmed(false);
       setError(true);

@@ -31,13 +31,14 @@ import lombok.ToString;
 @Entity
 @Table(uniqueConstraints = {
         @UniqueConstraint(columnNames = { "signer" }),
-        @UniqueConstraint(columnNames = { "username" }) })
+        @UniqueConstraint(columnNames = { "username" }),
+        @UniqueConstraint(columnNames = { "display_name" }) })
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
-    @Column
+    @Column(name = "display_name")
     private String displayName;
 
     @Column(nullable = false)

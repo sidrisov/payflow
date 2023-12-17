@@ -23,7 +23,7 @@ import { ChooseFlowMenu } from './ChooseFlowMenu';
 import { FlowTopUpMenu } from './FlowTopUpMenu';
 import WalletQRCodeShareDialog from './WalletQRCodeShareDialog';
 import NetworkAvatar from './NetworkAvatar';
-import { useChainId, useNetwork } from 'wagmi';
+import { useNetwork } from 'wagmi';
 
 export type AccountNewDialogProps = CardProps & {
   flows: FlowType[];

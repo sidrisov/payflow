@@ -13,6 +13,7 @@ interface ImportMetaEnv {
   readonly VITE_GELATO_MAINNET_API_KEY: string;
   readonly VITE_AIRSTACK_API_KEY: string;
   readonly VITE_ENABLED_CHAINS: string;
+  readonly VITE_GELATO_SPONSORED_ENABLED: string;
 }
 
 interface ImportMeta {

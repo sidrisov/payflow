@@ -305,10 +305,10 @@ export default function Send({ appSettings, setAppSettings }: any) {
                 </Card>
               </Divider>
               <Typography variant="h5"> ${flowTotalBalance} USD</Typography>
-              <Typography variant="h6" maxHeight={50} overflow="scroll">
+              <Typography variant="h6" maxHeight={50} overflow="auto">
                 {flow.title}
               </Typography>
-              <Typography variant="subtitle2" maxHeight={50} overflow="scroll">
+              <Typography variant="subtitle2" maxHeight={50} overflow="auto">
                 {flow.description}
               </Typography>
               <Divider flexItem sx={{ my: 3 }} />

@@ -9,11 +9,10 @@ import { green } from '@mui/material/colors';
 export type ChooseWalletMenuProps = MenuProps &
   CloseCallbackType & {
     wallets: FlowWalletType[];
-    selectedWallet: FlowWalletType;
-    setSelectedWallet: React.Dispatch<React.SetStateAction<FlowWalletType>>;
+    selectedWallet: FlowWalletType | undefined;
+    setSelectedWallet: React.Dispatch<React.SetStateAction<FlowWalletType | undefined>>;
   };
 
-// TODO: fix selection issue on re-rendering
 export function ChooseWalletMenu({
   wallets,
   selectedWallet,
@@ -25,7 +24,7 @@ export function ChooseWalletMenu({
     <Menu
       {...props}
       onClose={closeStateCallback}
-      sx={{ mt: 1.5, '.MuiMenu-paper': { borderRadius: 5 } }}
+      sx={{ mt: 1.5, '.MuiMenu-paper': { borderRadius: 5, minWidth: 180 } }}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'left'
@@ -40,7 +39,7 @@ export function ChooseWalletMenu({
               closeStateCallback();
             }}>
             <Box
-              width={150}
+              width={160}
               display="flex"
               flexDirection="row"
               alignItems="center"
@@ -49,7 +48,7 @@ export function ChooseWalletMenu({
                 <NetworkAvatar tooltip network={wallet.network} sx={{ width: 24, height: 24 }} />
                 <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
               </Box>
-              {wallet === selectedWallet && <Check sx={{ mx: 1, color: green.A700 }} />}
+              {wallet === selectedWallet && <Check sx={{ color: green.A700 }} />}
             </Box>
           </MenuItem>
         ))}

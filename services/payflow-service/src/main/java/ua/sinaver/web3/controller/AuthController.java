@@ -56,7 +56,12 @@ public class AuthController {
         log.debug("nonce from session {}", sessionNonce);
 
         // check if nonce match with previosly generated for this session
-        if (sessionNonce == null || !siwe.message().nonce().equals(sessionNonce)) {
+
+        if (sessionNonce == null || siwe.message().nonce() == null) {
+            log.error("Nonce is empty - session: {}, challenge {}", sessionNonce, siwe.message().nonce());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        if (!siwe.message().nonce().equals(sessionNonce)) {
             log.error("Nonce mismatch - expected: {}, actual {}", sessionNonce, siwe.message().nonce());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }

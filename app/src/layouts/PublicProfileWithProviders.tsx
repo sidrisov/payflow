@@ -1,6 +1,3 @@
-import '@rainbow-me/rainbowkit/styles.css';
-import 'react-toastify/dist/ReactToastify.css';
-
 import {
   connectorsForWallets,
   getDefaultWallets,
@@ -49,7 +46,7 @@ const appSettingsStored = appSettingsStorageItem
 
 export default function PublicProfileWithProviders() {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const [appSettings, setAppSettings] = useState<AppSettings>(
+  const [appSettings] = useState<AppSettings>(
     appSettingsStored
       ? appSettingsStored
       : {
@@ -80,7 +77,7 @@ export default function PublicProfileWithProviders() {
           modalSize="compact"
           chains={chains}>
           <CustomThemeProvider darkMode={appSettings.darkMode}>
-            <PublicProfile />
+            <PublicProfile appSettings={appSettings} />
           </CustomThemeProvider>
         </RainbowKitProvider>
       </AirstackProvider>

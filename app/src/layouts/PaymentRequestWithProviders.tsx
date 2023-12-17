@@ -1,6 +1,3 @@
-import '@rainbow-me/rainbowkit/styles.css';
-import 'react-toastify/dist/ReactToastify.css';
-
 import {
   connectorsForWallets,
   getDefaultWallets,

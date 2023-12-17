@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
-import { AppBar, IconButton, Toolbar, Box, Stack, Typography, Button } from '@mui/material';
+import { AppBar, IconButton, Toolbar, Box, Stack, Typography, Button, Avatar } from '@mui/material';
 
-import { Search, Home, HomeOutlined, AppsOutlined } from '@mui/icons-material';
+import { Home, HomeOutlined, AppsOutlined } from '@mui/icons-material';
 
 import Nav from '../components/Navigation';
 
@@ -39,7 +39,7 @@ export default function AppLayout({
 }) {
   const navigate = useNavigate();
 
-  const { isConnected, address, connector } = useAccount({
+  const { isConnected, address } = useAccount({
     async onDisconnect() {
       await axios.get(`${API_URL}/api/auth/logout`, { withCredentials: true });
       navigate('/connect');
@@ -88,7 +88,7 @@ export default function AppLayout({
           return;
         }
       } else {
-        toast.error(
+        toast.warn(
           `Please, logout or switch wallet! Connected wallet is different from signed in: ${shortenWalletAddressLabel(
             profile.address
           )}`,
@@ -210,13 +210,14 @@ export default function AppLayout({
                           borderRadius: 5,
                           border: 1,
                           borderColor: 'inherit',
-                          textTransform: 'none'
+                          textTransform: 'none',
+                          justifyContent: 'space-evenly'
                         }}
                         onClick={async () => {
                           setOpenSearchProfile(true);
                         }}>
-                        <Search color="inherit" />
-                        <Typography variant="subtitle2">Search ...</Typography>
+                        <Avatar src="payflow.png" sx={{ width: 24, height: 24 }} />
+                        <Typography variant="subtitle2">Search ... </Typography>
                       </Box>
                     </Stack>
                     <Stack direction="row" spacing={0.5} alignItems="center">

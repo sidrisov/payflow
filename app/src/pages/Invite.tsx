@@ -7,7 +7,6 @@ import { getAllInvitations } from '../services/invitation';
 import CodeOrAddressInvitationSection from '../components/CodeOrAddressInvitationSection';
 import { ProfileSection } from '../components/ProfileSection';
 import { useNavigate } from 'react-router-dom';
-import PayflowChip from '../components/PayflowChip';
 
 export default function Invite() {
   const { profile } = useContext(UserContext);
@@ -98,8 +97,8 @@ export default function Invite() {
                   <Typography variant="caption" textAlign="start">
                     {`Joined profiles (${joined?.length})`}
                   </Typography>
-                  <Stack maxHeight={300} sx={{ p: 1, overflowY: 'scroll' }}>
-                    {joined?.map((inv) => (
+                  <Stack maxHeight={400} sx={{ p: 1, overflowY: 'scroll' }}>
+                    {joined?.map(({ invitee }) => (
                       <Box
                         color="inherit"
                         p={1}
@@ -112,15 +111,12 @@ export default function Invite() {
                         textTransform="none"
                         sx={{ borderRadius: 5, textTransform: 'none' }}
                         onClick={async () => {
-                          navigate(`/${inv.invitee.username}`);
+                          navigate(`/${invitee.username}`);
                         }}>
-                        <ProfileSection profile={inv.invitee} />
-                        <Stack>
-                          <PayflowChip />
-                          <Typography variant="caption">
-                            {new Date(inv.invitee.createdDate).toLocaleDateString()}
-                          </Typography>
-                        </Stack>
+                        <ProfileSection maxWidth={150} profile={invitee} />
+                        <Typography variant="caption">
+                          joined on: {new Date(profile.createdDate).toLocaleDateString()}
+                        </Typography>
                       </Box>
                     ))}
                   </Stack>

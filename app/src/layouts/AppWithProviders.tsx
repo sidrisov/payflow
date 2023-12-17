@@ -1,8 +1,5 @@
 import App from './App';
 
-import '@rainbow-me/rainbowkit/styles.css';
-import 'react-toastify/dist/ReactToastify.css';
-
 import {
   connectorsForWallets,
   getDefaultWallets,
@@ -25,6 +22,8 @@ import { ProfileType } from '../types/ProfleType';
 import { useNavigate } from 'react-router-dom';
 import sortAndFilterFlows from '../utils/sortAndFilterFlows';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
+import { toast } from 'react-toastify';
+import axios from 'axios';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 const AIRSTACK_API_KEY = import.meta.env.VITE_AIRSTACK_API_KEY;
@@ -84,8 +83,6 @@ export default function AppWithProviders() {
       try {
         const profile = await me();
 
-        setLoading(false);
-
         if (profile) {
           if (profile.defaultFlow && profile.flows) {
             profile.flows = sortAndFilterFlows(profile.defaultFlow, profile.flows);
@@ -95,7 +92,13 @@ export default function AppWithProviders() {
         } else {
           navigate('/connect');
         }
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          toast.error(`🤷🏻‍♂️ ${error.message}`);
+        }
+        console.error(error);
       } finally {
+        setLoading(false);
         fetchingStatusRef.current = false;
       }
     };
