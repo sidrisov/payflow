@@ -3,20 +3,17 @@ import {
   arbitrumGoerli,
   base,
   baseGoerli,
-  lineaTestnet,
   optimism,
   optimismGoerli,
-  polygonZkEvmTestnet,
   zkSyncTestnet
 } from 'viem/chains';
-import { toast } from 'react-toastify';
 import { Hash } from 'viem';
-import { TransactionStatusResponse } from '@gelatonetwork/relay-sdk';
 import { delay } from './delay';
 import { TaskState } from '../types/TaskState';
 
 const GELATO_TESTNET_API_KEY = import.meta.env.VITE_GELATO_TESTNET_API_KEY;
 const GELATO_MAINNET_API_KEY = import.meta.env.VITE_GELATO_MAINNET_API_KEY;
+const GELATO_SPONSORED_ENABLED = parseInt(import.meta.env.VITE_GELATO_SPONSORED_ENABLED) ?? 0;
 
 const RELAY_KIT_TESTNET = new GelatoRelayPack(GELATO_TESTNET_API_KEY);
 const RELAY_KIT_MAINNET = new GelatoRelayPack(GELATO_MAINNET_API_KEY);
@@ -51,6 +48,11 @@ export function isRelaySupported(chainId: number | undefined) {
   }
 
   return false;
+}
+
+export function getSponsoredCount() {
+  console.log(GELATO_SPONSORED_ENABLED);
+  return GELATO_SPONSORED_ENABLED;
 }
 
 export async function waitForRelayTaskToComplete(

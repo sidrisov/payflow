@@ -47,8 +47,8 @@ import { useSafeTransfer } from '../utils/hooks/useSafeTransfer';
 import { comingSoonToast } from './Toasts';
 import { updateWallet } from '../services/flow';
 import PayflowChip from './PayflowChip';
-import { estimateFee as estimateSafeTransferFee } from '../utils/safeTransactions';
-import { red } from '@mui/material/colors';
+import { estimateFee as estimateSafeTransferFee, isSafeSponsored } from '../utils/safeTransactions';
+import { green, red } from '@mui/material/colors';
 import { NetworkSelectorButton } from './NetworkSelectorButton';
 import { TransferToastContent } from './toasts/TransferToastContent';
 import { LoadingSwitchNetworkButton } from './LoadingSwitchNetworkButton';
@@ -124,12 +124,23 @@ export default function AccountSendDialog({
   }, [selectedRecipient]);
 
   useMemo(async () => {
-    if (selectedWallet) {
+    setGasFee(undefined);
+
+    if (
+      selectedWallet &&
+      ethersSigner &&
+      selectedWallet.network === (await ethersSigner.getChainId())
+    ) {
+      const sponsored = await isSafeSponsored(ethersSigner, selectedWallet.address);
       setGasFee(
-        BigInt(await estimateSafeTransferFee(selectedWallet.deployed, selectedWallet.network))
+        BigInt(
+          sponsored
+            ? 0
+            : await estimateSafeTransferFee(selectedWallet.deployed, selectedWallet.network)
+        )
       );
     }
-  }, [selectedWallet]);
+  }, [selectedWallet, ethersSigner]);
 
   useMemo(async () => {
     if (!sendAmount || !selectedRecipient || !selectedWallet) {
@@ -265,12 +276,14 @@ export default function AccountSendDialog({
     }
   }, [selectedWallet, selectedRecipient]);
 
-  function getGasFeeText(): string {
+  function getGasFeeText(gasFee: bigint | undefined): string {
     return 'fee: '.concat(
       gasFee !== undefined
-        ? `${parseFloat(formatEther(gasFee)).toFixed(5)} ETH ≈ $${(
-            parseFloat(formatEther(gasFee)) * (ethUsdPrice ?? 0)
-          ).toFixed(2)}`
+        ? gasFee === BigInt(0)
+          ? 'sponsored'
+          : `${parseFloat(formatEther(gasFee)).toFixed(5)} ETH ≈ $${(
+              parseFloat(formatEther(gasFee)) * (ethUsdPrice ?? 0)
+            ).toFixed(2)}`
         : '...'
     );
   }
@@ -465,8 +478,11 @@ export default function AccountSendDialog({
                     The fee includes Gelato on-chain call, safe tx fee + deployment fee on the first tx, and 10% Gelato's comission on top of all.">
                     <LocalGasStation fontSize="small" />
                   </Tooltip>
-                  <Typography ml={1} variant="caption">
-                    {getGasFeeText()}
+                  <Typography
+                    ml={1}
+                    variant="caption"
+                    color={gasFee === BigInt(0) ? green.A700 : 'inherit'}>
+                    {getGasFeeText(gasFee)}
                   </Typography>
                 </Stack>
               </Box>

@@ -33,7 +33,12 @@ import { RelayResponse } from '@gelatonetwork/relay-sdk';
 
 import { Hash, Address, keccak256, toBytes } from 'viem';
 import { toast } from 'react-toastify';
-import { getRelayKitForChainId, isRelaySupported, waitForRelayTaskToComplete } from './relayer';
+import {
+  getRelayKitForChainId,
+  getSponsoredCount,
+  isRelaySupported,
+  waitForRelayTaskToComplete
+} from './relayer';
 import { CUSTOM_CONTRACTS, CUSTOM_CONTRACTS_CHAINS } from './safeContracts';
 import { signTransactionBySafe } from './safeSignatures';
 import { getNetwork, getPublicClient } from 'wagmi/actions';
@@ -398,9 +403,11 @@ export async function safeTransferEthWithDeploy(
 
   console.debug('Safe txs', JSON.stringify(safeTransactions, null, 2));
 
+  const isSponsored = getSponsoredCount() > 0 && (await safeSdk.getNonce()) < getSponsoredCount();
+
   // Relay the transaction
   const options: MetaTransactionOptions = {
-    isSponsored: false
+    isSponsored
   };
 
   const relayedTransaction = await relayKit.createRelayedTransaction({
@@ -409,7 +416,9 @@ export async function safeTransferEthWithDeploy(
     options
   });
 
-  relayedTransaction.data.baseGas = await estimateFee(isSafeDeployed, chainId);
+  if (!isSponsored) {
+    relayedTransaction.data.baseGas = await estimateFee(await safeSdk.isSafeDeployed(), chainId);
+  }
 
   statusCallback?.('signing');
 
@@ -417,9 +426,34 @@ export async function safeTransferEthWithDeploy(
 
   statusCallback?.('relaying');
 
-  const relayResponse = await relayKit.executeRelayTransaction(signedSafeTransaction, safeSdk);
+  const relayResponse = await relayKit.executeRelayTransaction(
+    signedSafeTransaction,
+    safeSdk,
+    options
+  );
 
   return await waitForRelayTaskToComplete(relayKit, relayResponse.taskId);
+}
+
+export async function isSafeSponsored(ethersSigner: providers.JsonRpcSigner, safeAddress: Address) {
+  if (getSponsoredCount() === 0) {
+    return false;
+  }
+
+  const ethAdapter = new EthersAdapter({
+    ethers,
+    signerOrProvider: ethersSigner
+  });
+
+  let safeNonce = 0;
+
+  const isSafeDeployed = await ethAdapter.isContractDeployed(safeAddress);
+  if (isSafeDeployed) {
+    const safeSdk = await Safe.create({ ethAdapter, safeAddress });
+    safeNonce = await safeSdk.getNonce();
+  }
+
+  return safeNonce < getSponsoredCount();
 }
 
 export async function estimateFee(isSafeDeployed: boolean, chainId: number): Promise<string> {
