@@ -22,7 +22,7 @@ import { ProfileType } from '../types/ProfleType';
 import { useNavigate } from 'react-router-dom';
 import sortAndFilterFlows from '../utils/sortAndFilterFlows';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
@@ -141,6 +141,20 @@ export default function AppWithProviders() {
           </CustomThemeProvider>
         </RainbowKitProvider>
       </AirstackProvider>
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        limit={5}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+        toastStyle={{ borderRadius: 20, textAlign: 'center' }}
+      />
     </WagmiConfig>
   );
 }
