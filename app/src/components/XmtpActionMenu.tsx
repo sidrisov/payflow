@@ -25,7 +25,7 @@ export function XmtpActionMenu({
     enabled: !isAddress(addressOrEns),
     name: addressOrEns,
     chainId: 1,
-    cacheTime: 60_000
+    cacheTime: 300_000
   });
   return (
     <Menu

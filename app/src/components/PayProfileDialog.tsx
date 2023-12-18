@@ -71,7 +71,7 @@ export default function PayProfileDialog({
   const { isSuccess: isEnsSuccess, data: ethUsdPriceFeedAddress } = useEnsAddress({
     name: 'eth-usd.data.eth',
     chainId: 1,
-    cacheTime: 60_000
+    cacheTime: 300_000
   });
 
   const { data: ethUsdPrice } = useContractRead({
@@ -81,7 +81,7 @@ export default function PayProfileDialog({
     abi: AggregatorV2V3Interface.abi,
     functionName: 'latestAnswer',
     select: (data) => Number(formatUnits(data as bigint, 8)),
-    cacheTime: 60_000
+    cacheTime: 10_000
   });
 
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();

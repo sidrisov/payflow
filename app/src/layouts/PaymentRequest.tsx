@@ -43,12 +43,14 @@ export default function PaymentRequest({ appSettings, setAppSettings }: any) {
 
   const { data: ensName } = useEnsName({
     address: request?.account,
-    chainId: 1
+    chainId: 1,
+    cacheTime: 300_000
   });
 
   const { data: avatar } = useEnsAvatar({
     name: ensName,
-    chainId: 1
+    chainId: 1,
+    cacheTime: 300_000
   });
 
   const publicClient = usePublicClient();

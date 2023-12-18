@@ -15,7 +15,8 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
 
   const { data: ensName } = useEnsName({
     address: profile.address,
-    chainId: 1
+    chainId: 1,
+    cacheTime: 300_000
   });
 
   const [fetch, { data: socialInfo, loading: loadingSocials }] = useLazyQuery(
