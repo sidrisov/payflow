@@ -21,8 +21,6 @@ export function AddressSection(props: { meta: MetaType; fontSize?: number; maxWi
     cacheTime: 300_000
   });
 
-  console.log(avatar, avatar.isFetchedAfterMount, avatar.isRefetching, avatar.error);
-
   return (
     <Stack maxWidth={maxWidth ?? 130} direction="row" spacing={0.5} alignItems="center">
       {meta.ensAvatar || (avatar.isSuccess && avatar.data) ? (

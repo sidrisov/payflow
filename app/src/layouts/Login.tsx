@@ -1,5 +1,4 @@
-import { Box, Container, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { Box, Container, useMediaQuery, useTheme } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi';
@@ -8,15 +7,18 @@ import { useEffect, useMemo } from 'react';
 import OnboardingDialog from '../components/OnboardingDialog';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { ProfileType } from '../types/ProfleType';
-import { blue, yellow } from '@mui/material/colors';
 import { toast } from 'react-toastify';
+import { ConnectCard } from '../components/ConnectCard';
+import { AppSettings } from '../types/AppSettingsType';
 
 export default function Login({
   authStatus,
-  profile
+  profile,
+  settings
 }: {
   authStatus: string;
   profile: ProfileType | undefined;
+  settings: AppSettings;
 }) {
   const [searchParams] = useSearchParams();
   const username = searchParams.get('username');
@@ -51,89 +53,23 @@ export default function Login({
   }, [authStatus, profile, address]);
 
   return (
-    <CustomThemeProvider darkMode={true}>
+    <CustomThemeProvider darkMode={settings.darkMode}>
       <Helmet>
-        <title> Payflow | Login </title>
+        <title> Payflow | Connect </title>
       </Helmet>
       {authStatus === 'loading' ? (
         <CenteredCircularProgress />
       ) : (
         (!profile || !address) && (
-          <Container maxWidth="xl" sx={{ py: '4vh' }}>
+          <Container maxWidth="sm">
             <Box
+              position="fixed"
               display="flex"
-              flexDirection={isMobile ? 'column-reverse' : 'row'}
-              alignItems={isMobile ? 'center' : 'stretch'}
-              height="90vh">
-              <Box
-                m={1}
-                p={3}
-                flexGrow={1}
-                flexDirection="column"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                width={isMobile ? 300 : 600}
-                sx={{
-                  background: blue[800],
-                  borderBottomLeftRadius: 25,
-                  borderBottomRightRadius: isMobile ? 25 : 0,
-                  borderTopLeftRadius: isMobile ? 0 : 25
-                }}>
-                <Typography
-                  variant={isMobile ? 'h6' : 'h5'}
-                  fontFamily="monospace"
-                  textAlign="center">
-                  Abstracted onchain social payments
-                </Typography>
-
-                <Stack mt={3} p={1} spacing={2} alignItems="flex-start">
-                  <Typography
-                    variant="subtitle2"
-                    fontSize={isMobile ? 14 : 16}
-                    fontFamily="monospace">
-                    ✨ create a flow abstracted from your identity wallet
-                  </Typography>
-                  <Typography
-                    variant="subtitle2"
-                    fontSize={isMobile ? 14 : 16}
-                    fontFamily="monospace">
-                    🫂 discover users by farcaster, lens, ens, or address
-                  </Typography>
-                  <Typography
-                    variant="subtitle2"
-                    fontSize={isMobile ? 14 : 16}
-                    fontFamily="monospace">
-                    💸 send, receive, request crypto, and more coming
-                  </Typography>
-                </Stack>
-              </Box>
-              <Box
-                m={1}
-                p={1}
-                flexGrow={1}
-                display="flex"
-                flexDirection="column"
-                alignItems="center"
-                justifyContent="center"
-                width={isMobile ? 300 : 600}
-                sx={{
-                  background: yellow[800],
-                  borderTopLeftRadius: isMobile ? 25 : 0,
-                  borderTopRightRadius: 25,
-                  borderBottomRightRadius: isMobile ? 0 : 25
-                }}>
-                <Typography flexWrap="wrap" variant="h4" fontFamily="monospace" textAlign="center">
-                  Welcome to payflow
-                </Typography>
-
-                <Box my={3}>
-                  <ConnectButton
-                    label={address ? 'Sign & verify' : 'Connect wallet'}
-                    showBalance={{ smallScreen: false, largeScreen: false }}
-                  />
-                </Box>
-              </Box>
+              alignItems="center"
+              boxSizing="border-box"
+              justifyContent="center"
+              sx={{ inset: 0 }}>
+              <ConnectCard />
             </Box>
           </Container>
         )
