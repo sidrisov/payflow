@@ -13,6 +13,7 @@ import { CustomAvatar } from '../components/CustomAvatar';
 import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
 import PaymentRequest from './PaymentRequest';
 import { SUPPORTED_CHAINS } from '../utils/networks';
+import { ToastContainer } from 'react-toastify';
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(SUPPORTED_CHAINS, [
   alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }),
@@ -71,6 +72,20 @@ export default function PaymentRequestWithProviders() {
         chains={chains}>
         <PaymentRequest appSettings={appSettings} setAppSettings={setAppSettings} />
       </RainbowKitProvider>
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        limit={5}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+        toastStyle={{ borderRadius: 20, textAlign: 'center' }}
+      />
     </WagmiConfig>
   );
 }

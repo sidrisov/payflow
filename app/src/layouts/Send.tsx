@@ -64,18 +64,20 @@ export default function Send({ appSettings, setAppSettings }: any) {
 
   const { data: ensName } = useEnsName({
     address: flow.account,
-    chainId: 1
+    chainId: 1,
+    cacheTime: 300_000
   });
 
   const { data: avatar } = useEnsAvatar({
     name: ensName,
-    chainId: 1
+    chainId: 1,
+    cacheTime: 300_000
   });
 
   const { isSuccess: isEnsSuccess, data: ethUsdPriceFeedAddress } = useEnsAddress({
     name: 'eth-usd.data.eth',
     chainId: 1,
-    cacheTime: 60_000
+    cacheTime: 300_000
   });
 
   const { data: ethUsdPrice } = useContractRead({
@@ -85,7 +87,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
     abi: AggregatorV2V3Interface.abi,
     functionName: 'latestAnswer',
     select: (data) => Number(formatUnits(data as bigint, 8)),
-    cacheTime: 60_000
+    cacheTime: 10_000
   });
 
   const publicClient = usePublicClient();
