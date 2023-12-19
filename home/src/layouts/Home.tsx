@@ -22,13 +22,13 @@ const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 const DOCS_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DOCS_URL;
 
 export default function Home() {
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
   const [profile, setProfile] = useState<string>();
 
   return (
-    <CustomThemeProvider darkMode={false}>
+    <CustomThemeProvider darkMode={prefersDarkMode}>
       <HideOnScroll>
         <AppBar
           position="sticky"
@@ -64,109 +64,123 @@ export default function Home() {
           </Toolbar>
         </AppBar>
       </HideOnScroll>
-      <Box my={isMobile ? 10 : 5} display="flex" alignItems="center" justifyContent="center">
-        <Box display="flex" flexDirection="column" alignItems="center">
-          <Stack direction="column" alignItems="center" spacing={1}>
-            <Badge
-              badgeContent={
-                <Typography
-                  variant={isMobile ? 'h5' : 'h4'}
-                  fontWeight="bold"
-                  color={green.A700}
-                  sx={{ mb: 3, ml: isMobile ? -25 : 0 }}>
-                  made easy
-                </Typography>
-              }>
-              <Typography textAlign="center" variant={isMobile ? 'h4' : 'h2'} fontWeight="bold">
-                Onchain Social Payments
+      <Box
+        my={isMobile ? 10 : 5}
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center">
+        <Stack direction="column" alignItems="center" spacing={1}>
+          <Badge
+            badgeContent={
+              <Typography
+                variant={isMobile ? 'h5' : 'h4'}
+                fontWeight="bold"
+                color={green.A700}
+                sx={{ mb: 3, ml: isMobile ? -25 : 0 }}>
+                made easy
               </Typography>
-            </Badge>
-
-            <Typography
-              fontSize={isMobile ? 18 : 24}
-              fontWeight="bold"
-              color={green.A700}
-              textAlign="center">
-              abstracted | gasless | non-custodial
+            }>
+            <Typography textAlign="center" variant={isMobile ? 'h4' : 'h2'} fontWeight="bold">
+              Onchain Social Payments
             </Typography>
+          </Badge>
 
+          <Typography
+            fontSize={isMobile ? 18 : 24}
+            fontWeight="bold"
+            color={green.A700}
+            textAlign="center">
+            abstracted | gasless | non-custodial
+          </Typography>
+
+          <Stack spacing={1} direction="row" alignItems="center">
             <Stack spacing={1} direction="row" alignItems="center">
-              <Stack spacing={1} direction="row" alignItems="center">
-                <Avatar variant="rounded" src="farcaster.svg" sx={{ width: 20, height: 20 }} />
-                <Typography color={grey[500]} fontSize={15} fontWeight="bold">
-                  farcaster
-                </Typography>
-              </Stack>
-              <Typography>|</Typography>
-              <Stack spacing={1} direction="row" alignItems="center">
-                <Avatar variant="rounded" src="lens.svg" sx={{ width: 20, height: 20 }} />
-                <Typography color={grey[500]} fontSize={15} fontWeight="bold">
-                  lens
-                </Typography>
-              </Stack>
-              <Typography>|</Typography>
-              <Stack spacing={1} direction="row" alignItems="center">
-                <Avatar variant="rounded" src="ens.svg" sx={{ width: 20, height: 20 }} />
-                <Typography color={grey[500]} fontSize={15} fontWeight="bold">
-                  ens
-                </Typography>
-              </Stack>
+              <Avatar variant="rounded" src="farcaster.svg" sx={{ width: 20, height: 20 }} />
+              <Typography color={grey[500]} fontSize={15} fontWeight="bold">
+                farcaster
+              </Typography>
             </Stack>
-
-            <Box p={2} sx={{ borderRadius: 10, border: 1, backgroundColor: '#191919' }}>
-              <img
-                width={isMobile ? 300 : 600}
-                height={isMobile ? 215 : 430}
-                src="payflow_ux.png"
-              />
-            </Box>
+            <Typography>|</Typography>
+            <Stack spacing={1} direction="row" alignItems="center">
+              <Avatar variant="rounded" src="lens.svg" sx={{ width: 20, height: 20 }} />
+              <Typography color={grey[500]} fontSize={15} fontWeight="bold">
+                lens
+              </Typography>
+            </Stack>
+            <Typography>|</Typography>
+            <Stack spacing={1} direction="row" alignItems="center">
+              <Avatar variant="rounded" src="ens.svg" sx={{ width: 20, height: 20 }} />
+              <Typography color={grey[500]} fontSize={15} fontWeight="bold">
+                ens
+              </Typography>
+            </Stack>
           </Stack>
 
-          <Box
-            display="flex"
-            flexDirection="row"
-            alignItems="center"
-            sx={{
-              mt: 3,
-              mx: 1,
-              border: 2,
-              borderRadius: 10,
-              borderStyle: 'dashed',
-              borderColor: grey[500]
-            }}>
-            <Avatar src="payflow.png" sx={{ ml: 1, width: 36, height: 36 }} />
-            <Typography fontSize={isMobile ? 16 : 18} fontWeight="bold">
-              payflow.me/
-            </Typography>
-            <TextField
-              size="small"
-              variant="standard"
-              margin="dense"
-              InputProps={{
-                inputProps: { maxLength: 16 },
-                placeholder: 'yourname',
-                sx: { fontSize: isMobile ? 18 : 20, width: 90 },
-                disableUnderline: true
-              }}
-              onChange={(event) => {
-                setProfile(event.target.value);
-              }}
+          <Stack p={1} direction="row" spacing={3} alignItems="center">
+            <img
+              width={isMobile ? 95 : 190}
+              height={isMobile ? 190 : 380}
+              src={prefersDarkMode ? 'payflow_ux_search_dark.png' : 'payflow_ux_search_light.png'}
             />
-            <Button
-              size="medium"
-              variant="contained"
-              href={`${DAPP_URL}/connect${profile ? `?username=${profile}` : ''}`}
-              sx={{
-                m: 1,
-                borderRadius: 5,
-                bgcolor: 'black',
-                '&:hover': { bgcolor: green.A700 }
-              }}>
-              JOIN 🚀
-            </Button>
-          </Box>
+            <img
+              width={isMobile ? 110 : 220}
+              height={isMobile ? 215 : 430}
+              src={prefersDarkMode ? 'payflow_ux_home_dark.png' : 'payflow_ux_home_light.png'}
+            />
+            <img
+              width={isMobile ? 95 : 190}
+              height={isMobile ? 190 : 380}
+              src={prefersDarkMode ? 'payflow_ux_send_dark.png' : 'payflow_ux_send_light.png'}
+            />
+          </Stack>
+        </Stack>
 
-          {/* <Box mt={10} display="flex" flexDirection="column" alignItems="center">
+        <Box
+          display="flex"
+          flexDirection="row"
+          alignItems="center"
+          sx={{
+            mt: 3,
+            mx: 1,
+            border: 2,
+            borderRadius: 10,
+            borderStyle: 'dashed',
+            borderColor: grey[500]
+          }}>
+          <Avatar src="payflow.png" sx={{ mx: 1, width: 36, height: 36 }} />
+          <Typography fontSize={isMobile ? 16 : 18} fontWeight="bold">
+            payflow.me/
+          </Typography>
+          <TextField
+            size="small"
+            variant="standard"
+            margin="dense"
+            InputProps={{
+              inputProps: { maxLength: 16 },
+              placeholder: 'yourname',
+              sx: { fontSize: isMobile ? 18 : 20, width: 90 },
+              disableUnderline: true
+            }}
+            onChange={(event) => {
+              setProfile(event.target.value);
+            }}
+          />
+          <Button
+            size="medium"
+            variant="contained"
+            href={`${DAPP_URL}/connect${profile ? `?username=${profile}` : ''}`}
+            sx={{
+              m: 1,
+              borderRadius: 5,
+              bgcolor: prefersDarkMode ? 'white' : 'black',
+              '&:hover': { bgcolor: green.A700 }
+            }}>
+            JOIN 🚀
+          </Button>
+        </Box>
+
+        {/* <Box mt={10} display="flex" flexDirection="column" alignItems="center">
             <Typography fontSize={30} fontFamily="monospace">
               Powered By
             </Typography>
@@ -205,7 +219,6 @@ export default function Home() {
               </Box>
             </Box>
           </Box> */}
-        </Box>
       </Box>
     </CustomThemeProvider>
   );
