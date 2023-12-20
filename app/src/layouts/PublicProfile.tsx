@@ -110,7 +110,11 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
                     made easy
                   </Typography>
                 }>
-                <Typography variant={isMobile ? 'h4' : 'h3'} fontWeight="500" textAlign="center">
+                <Typography
+                  maxWidth={isMobile ? 350 : 600}
+                  variant={isMobile ? 'h4' : 'h3'}
+                  fontWeight="500"
+                  textAlign="center">
                   Onchain Social Payments
                 </Typography>
               </Badge>

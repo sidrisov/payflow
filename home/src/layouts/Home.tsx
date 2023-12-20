@@ -81,7 +81,11 @@ export default function Home() {
                 made easy
               </Typography>
             }>
-            <Typography textAlign="center" variant={isMobile ? 'h4' : 'h2'} fontWeight="bold">
+            <Typography
+              maxWidth={isMobile ? 350 : 700}
+              textAlign="center"
+              variant={isMobile ? 'h4' : 'h2'}
+              fontWeight="bold">
               Onchain Social Payments
             </Typography>
           </Badge>
