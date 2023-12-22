@@ -17,7 +17,7 @@ import { FlowType, FlowWalletType } from '../types/FlowType';
 import { Add, OpenInFull, ShareOutlined } from '@mui/icons-material';
 import ShareDialog from '../components/ShareDialog';
 import { getTotalBalance, getWalletBalance } from '../utils/getBalance';
-import { UserContext } from '../contexts/UserContext';
+import { ProfileContext } from '../contexts/UserContext';
 import { formatEther } from 'viem';
 import { DAPP_URL } from '../utils/urlConstants';
 import NetworkAvatar from '../components/NetworkAvatar';
@@ -34,7 +34,7 @@ export default function Flows() {
     setWalletBalances,
     setInitiateFlowsRefresh,
     ethUsdPrice
-  } = useContext(UserContext);
+  } = useContext(ProfileContext);
 
   const [flowBalances, setFlowBalances] = useState<Map<string, string>>();
   const [openFlowCreate, setOpenFlowCreate] = useState(false);

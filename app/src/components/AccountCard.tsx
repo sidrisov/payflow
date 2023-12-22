@@ -14,7 +14,7 @@ import {
 import { Receipt, ArrowDownward, Send, AccountBalance, Toll } from '@mui/icons-material';
 import { useContext, useMemo, useState } from 'react';
 import AccountSendDialog from './AccountSendDialog';
-import { UserContext } from '../contexts/UserContext';
+import { ProfileContext } from '../contexts/UserContext';
 import { BalanceFetchResultType } from '../types/BalanceFetchResultType';
 import { formatEther } from 'viem';
 import { WalletsPopover } from './WalletsInfoPopover';
@@ -35,7 +35,7 @@ export type AccountNewDialogProps = CardProps & {
 };
 
 export function AccountCard(props: AccountNewDialogProps) {
-  const { ethUsdPrice, profile } = useContext(UserContext);
+  const { ethUsdPrice, profile } = useContext(ProfileContext);
   const { flows, selectedFlow, setSelectedFlow } = props;
 
   const [openWithdrawalDialog, setOpenWithdrawalDialog] = useState(false);

@@ -15,7 +15,7 @@ import { lightGreen, red } from '@mui/material/colors';
 import { formatEther } from 'viem';
 import { MetaType } from '../types/ProfleType';
 import { useContext } from 'react';
-import { UserContext } from '../contexts/UserContext';
+import { ProfileContext } from '../contexts/UserContext';
 import { TxInfo } from '../types/ActivityFetchResultType';
 import NetworkAvatar from './NetworkAvatar';
 import { getNetwork } from 'wagmi/actions';
@@ -61,7 +61,7 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
   const theme = useTheme();
   const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { ethUsdPrice } = useContext(UserContext);
+  const { ethUsdPrice } = useContext(ProfileContext);
   const { txInfo } = props;
 
   const blockExplorerUrl = getNetwork().chains.find((c) => c.id === txInfo.chainId)?.blockExplorers

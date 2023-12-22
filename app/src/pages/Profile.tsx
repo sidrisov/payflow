@@ -1,6 +1,6 @@
 import { useContext, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { UserContext } from '../contexts/UserContext';
+import { ProfileContext } from '../contexts/UserContext';
 import { Avatar, Container, InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import { ProfileSection } from '../components/ProfileSection';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -15,7 +15,7 @@ import { isAlphanumericPlusFewSpecialChars } from '../utils/regex';
 import { green } from '@mui/material/colors';
 
 export default function Profile() {
-  const { profile } = useContext(UserContext);
+  const { profile } = useContext(ProfileContext);
 
   const [displayName, setDisplayName] = useState<string>(profile.displayName ?? '');
   const [username, setUsername] = useState<string>(profile.username ?? '');

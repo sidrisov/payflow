@@ -4,14 +4,14 @@ import { FlowType, FlowWalletType } from '../types/FlowType';
 import { BalanceFetchResultType } from '../types/BalanceFetchResultType';
 import { formatEther } from 'viem';
 import { useContext } from 'react';
-import { UserContext } from '../contexts/UserContext';
+import { ProfileContext } from '../contexts/UserContext';
 
 export function WalletsPopover({
   flow,
   balanceFetchResult,
   ...props
 }: PopoverProps & { flow: FlowType; balanceFetchResult: BalanceFetchResultType }) {
-  const { ethUsdPrice } = useContext(UserContext);
+  const { ethUsdPrice } = useContext(ProfileContext);
 
   function calculateBalance(wallet: FlowWalletType) {
     if (balanceFetchResult && ethUsdPrice) {

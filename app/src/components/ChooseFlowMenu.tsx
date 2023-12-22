@@ -3,7 +3,7 @@ import { FlowType } from '../types/FlowType';
 import { Check, Stars } from '@mui/icons-material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useContext } from 'react';
-import { UserContext } from '../contexts/UserContext';
+import { ProfileContext } from '../contexts/UserContext';
 import { green } from '@mui/material/colors';
 
 export type ChooseFlowMenuProps = MenuProps &
@@ -20,7 +20,7 @@ export function ChooseFlowMenu({
   closeStateCallback,
   ...props
 }: ChooseFlowMenuProps) {
-  const { profile } = useContext(UserContext);
+  const { profile } = useContext(ProfileContext);
   return (
     <Menu
       {...props}
