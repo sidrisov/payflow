@@ -1,4 +1,7 @@
 import { createContext } from 'react';
-import { UserContextType } from '../types/UserContextType';
+import { AnonymousUserContextType, ProfileContextType } from '../types/UserContextType';
 
-export const UserContext = createContext<UserContextType>({} as UserContextType);
+export const ProfileContext = createContext<ProfileContextType>({} as ProfileContextType);
+export const AnonymousUserContext = createContext<AnonymousUserContextType>(
+  {} as AnonymousUserContextType
+);

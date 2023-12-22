@@ -4,14 +4,14 @@ import { useContext } from 'react';
 import { Chain, formatEther } from 'viem';
 import { NetworkAssetBalanceSection } from './NetworkAssetBalanceSection';
 import { BalanceFetchResultType } from '../types/BalanceFetchResultType';
-import { UserContext } from '../contexts/UserContext';
+import { ProfileContext } from '../contexts/UserContext';
 import { ActivitySkeletonSection } from './ActivitySkeletonSection';
 
 export default function Assets(props: {
   selectedNetwork: Chain | undefined;
   balanceFetchResult: BalanceFetchResultType;
 }) {
-  const { ethUsdPrice } = useContext(UserContext);
+  const { ethUsdPrice } = useContext(ProfileContext);
   const { selectedNetwork } = props;
   const { loading, fetched, balances } = props.balanceFetchResult;
 

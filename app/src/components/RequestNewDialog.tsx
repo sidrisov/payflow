@@ -19,7 +19,7 @@ import { toast } from 'react-toastify';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import axios from 'axios';
 import { useContext, useState } from 'react';
-import { UserContext } from '../contexts/UserContext';
+import { ProfileContext } from '../contexts/UserContext';
 import { formatEther, parseEther } from 'viem';
 import { FlowType, FlowWalletType } from '../types/FlowType';
 import { ContentCopy } from '@mui/icons-material';
@@ -38,7 +38,7 @@ export default function RequestNewDialog({ closeStateCallback, ...props }: Reque
 
   const {
     profile: { flows }
-  } = useContext(UserContext);
+  } = useContext(ProfileContext);
 
   const [title, setTitle] = useState<string>();
   const [selectedFlow, setSelectedFlow] = useState<FlowType>();

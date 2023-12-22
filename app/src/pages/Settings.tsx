@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { UserContext } from '../contexts/UserContext';
+import { ProfileContext } from '../contexts/UserContext';
 
 import {
   Box,
@@ -14,7 +14,7 @@ import {
 import { Helmet } from 'react-helmet-async';
 
 export default function Settings() {
-  const { appSettings, setAppSettings } = useContext(UserContext);
+  const { appSettings, setAppSettings } = useContext(ProfileContext);
 
   return (
     <>

@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import { UserContext } from '../contexts/UserContext';
+import { ProfileContext } from '../contexts/UserContext';
 import { useContext, useState } from 'react';
 import {
   Autocomplete,
@@ -48,7 +48,7 @@ export default function Widgets() {
     isAuthenticated,
     profile: { flows },
     appSettings
-  } = useContext(UserContext);
+  } = useContext(ProfileContext);
   const [selectedFlow, setSelectedFlow] = useState<FlowType>();
   const [componentVariant, setComponentVariant] = useState<ComponentVariant>(
     ComponentVariant.Button

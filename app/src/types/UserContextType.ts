@@ -1,9 +1,8 @@
 import { Chain } from 'viem';
 import { AppSettings } from './AppSettingsType';
-import { FlowType } from './FlowType';
 import { ProfileType } from './ProfleType';
 
-export interface UserContextType {
+export interface ProfileContextType {
   isAuthenticated: boolean;
   profile: ProfileType;
   appSettings: AppSettings;
@@ -14,4 +13,9 @@ export interface UserContextType {
   walletBalances: Map<string, bigint>;
   setWalletBalances: React.Dispatch<React.SetStateAction<Map<string, bigint>>>;
   ethUsdPrice: number | undefined;
+}
+
+export interface AnonymousUserContextType {
+  appSettings: AppSettings;
+  setAppSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
 }

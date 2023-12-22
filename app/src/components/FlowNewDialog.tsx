@@ -20,7 +20,7 @@ import { CloseCallbackType } from '../types/CloseCallbackType';
 import axios from 'axios';
 import { useAccount, useNetwork } from 'wagmi';
 import { useContext, useState } from 'react';
-import { UserContext } from '../contexts/UserContext';
+import { ProfileContext } from '../contexts/UserContext';
 import { API_URL } from '../utils/urlConstants';
 
 export type FlowNewDialogProps = DialogProps & CloseCallbackType;
@@ -32,7 +32,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
   const { address } = useAccount();
   const { chains } = useNetwork();
 
-  const { smartAccountAllowedChains } = useContext(UserContext);
+  const { smartAccountAllowedChains } = useContext(ProfileContext);
 
   const [title, setTitle] = useState<string>();
   const [paymentOnLoggedAddress, setPaymentOnLoggedAddress] = useState(false);

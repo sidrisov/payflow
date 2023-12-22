@@ -1,6 +1,6 @@
 import { useContext, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { UserContext } from '../contexts/UserContext';
+import { ProfileContext } from '../contexts/UserContext';
 import { Box, Button, CircularProgress, Container, Stack, Typography } from '@mui/material';
 import { InvitationType } from '../types/InvitationType';
 import { getAllInvitations } from '../services/invitation';
@@ -9,7 +9,7 @@ import { ProfileSection } from '../components/ProfileSection';
 import { useNavigate } from 'react-router-dom';
 
 export default function Invite() {
-  const { profile } = useContext(UserContext);
+  const { profile } = useContext(ProfileContext);
 
   const [loadingInvitations, setLoadingInvitations] = useState<boolean>();
   const [invitations, setInvitations] = useState<InvitationType[]>();

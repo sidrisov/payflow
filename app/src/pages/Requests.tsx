@@ -1,6 +1,6 @@
 import { useContext, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { UserContext } from '../contexts/UserContext';
+import { ProfileContext } from '../contexts/UserContext';
 import {
   Avatar,
   Box,
@@ -49,10 +49,10 @@ export default function Requests() {
   const publicClient = usePublicClient();
   const { chains, chain } = useNetwork();
 
-  const { isAuthenticated } = useContext(UserContext);
+  const { isAuthenticated } = useContext(ProfileContext);
   const {
     profile: { flows }
-  } = useContext(UserContext);
+  } = useContext(ProfileContext);
   const [requests, setRequests] = useState<PaymentRequestType[]>();
 
   const [openRequestCreate, setOpenRequestCreate] = useState(false);

@@ -7,7 +7,7 @@ import { comingSoonToast } from './Toasts';
 import SocialPresenceAvatar from './SocialPresenceAvatar';
 import { dAppType } from '../utils/dapps';
 import { useContext, useMemo, useState } from 'react';
-import { UserContext } from '../contexts/UserContext';
+import { ProfileContext } from '../contexts/UserContext';
 import axios from 'axios';
 import { API_URL } from '../utils/urlConstants';
 import { toast } from 'react-toastify';
@@ -18,10 +18,10 @@ import { lightGreen, orange } from '@mui/material/colors';
 export function SearchProfileListItem(
   props: BoxProps & { profileWithSocials: ProfileWithSocialsType; view: 'address' | 'profile' }
 ) {
-  const { profile } = useContext(UserContext);
+  const { profile } = useContext(ProfileContext);
   const { profileWithSocials, view } = props;
   const [disableClick, setDisableClick] = useState<boolean>(false);
-  const { isAuthenticated } = useContext(UserContext);
+  const { isAuthenticated } = useContext(ProfileContext);
   const [invited, setInvited] = useState<boolean>();
 
   // fetch in batch for all addresses in parent component

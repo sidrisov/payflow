@@ -41,7 +41,7 @@ import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
-import { UserContext } from '../contexts/UserContext';
+import { ProfileContext } from '../contexts/UserContext';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { useSafeTransfer } from '../utils/hooks/useSafeTransfer';
 import { comingSoonToast } from './Toasts';
@@ -66,7 +66,7 @@ export default function AccountSendDialog({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { profile, ethUsdPrice } = useContext(UserContext);
+  const { profile, ethUsdPrice } = useContext(ProfileContext);
 
   const ethersSigner = useEthersSigner();
   const { chain } = useNetwork();

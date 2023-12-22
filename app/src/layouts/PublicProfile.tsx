@@ -18,7 +18,7 @@ import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ProfileType } from '../types/ProfleType';
-import { HomeOutlined, Search } from '@mui/icons-material';
+import { HomeOutlined, Menu } from '@mui/icons-material';
 import { API_URL } from '../utils/urlConstants';
 import SearchProfileDialog from '../components/SearchProfileDialog';
 import { green, grey, orange } from '@mui/material/colors';
@@ -28,6 +28,7 @@ import { PublicProfileCard } from '../components/PublicProfileCard';
 import { SUPPORTED_CHAINS } from '../utils/networks';
 import HideOnScroll from '../components/HideOnScroll';
 import HomeLogo from '../components/Logo';
+import { WalletMenu } from '../components/WalletMenu';
 
 export default function PublicProfile({ appSettings }: { appSettings: AppSettings }) {
   const theme = useTheme();
@@ -42,6 +43,8 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
   const { darkMode } = appSettings;
 
   const [openSearchProfile, setOpenSearchProfile] = useState<boolean>(false);
+  const [walletMenuAnchorEl, setWalletMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [openWalletMenu, setOpenWalletMenu] = useState(false);
 
   useMemo(async () => {
     if (username) {
@@ -112,7 +115,7 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
                     justifyContent="space-between"
                     flexGrow={1}>
                     <Stack direction="row" alignItems="center">
-                      <IconButton onClick={() => navigate('/home')}>
+                      <IconButton color="inherit" onClick={() => navigate('/home')}>
                         <HomeOutlined />
                       </IconButton>
                       <HomeLogo />
@@ -138,6 +141,15 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
                       <Avatar src="payflow.png" sx={{ width: 24, height: 24 }} />
                       <Typography variant="subtitle2">Search ... </Typography>
                     </Box>
+
+                    <IconButton
+                      color="inherit"
+                      onClick={async (event) => {
+                        setWalletMenuAnchorEl(event.currentTarget);
+                        setOpenWalletMenu(true);
+                      }}>
+                      <Menu />
+                    </IconButton>
                   </Box>
                 </Toolbar>
               </AppBar>
@@ -222,6 +234,12 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
         closeStateCallback={() => {
           setOpenSearchProfile(false);
         }}
+      />
+      <WalletMenu
+        anchorEl={walletMenuAnchorEl}
+        open={openWalletMenu}
+        onClose={() => setOpenWalletMenu(false)}
+        closeStateCallback={() => setOpenWalletMenu(false)}
       />
     </>
   );

@@ -15,7 +15,7 @@ import { toast } from 'react-toastify';
 import { ProfileSection } from './ProfileSection';
 import { API_URL } from '../utils/urlConstants';
 import { useContext } from 'react';
-import { UserContext } from '../contexts/UserContext';
+import { ProfileContext } from '../contexts/UserContext';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { disconnect } from 'wagmi/actions';
 import { comingSoonToast } from './Toasts';
@@ -30,7 +30,7 @@ export function ProfileMenu({
   }) {
   const navigate = useNavigate();
 
-  const { appSettings, setAppSettings } = useContext(UserContext);
+  const { appSettings, setAppSettings } = useContext(ProfileContext);
 
   return (
     <Menu

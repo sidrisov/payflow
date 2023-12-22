@@ -2,7 +2,7 @@ import { Box, Container, useMediaQuery, useTheme } from '@mui/material';
 import { useContext, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { AccountCard } from '../components/AccountCard';
-import { UserContext } from '../contexts/UserContext';
+import { ProfileContext } from '../contexts/UserContext';
 import Assets from '../components/Assets';
 import { AssetType } from '../types/AssetType';
 import Activity from '../components/Activity';
@@ -18,7 +18,7 @@ export default function Accounts() {
   const theme = useTheme();
   const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { isAuthenticated, profile } = useContext(UserContext);
+  const { isAuthenticated, profile } = useContext(ProfileContext);
 
   const { flows } = profile;
 

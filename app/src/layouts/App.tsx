@@ -7,7 +7,7 @@ import { Home, HomeOutlined, AppsOutlined } from '@mui/icons-material';
 
 import Nav from '../components/Navigation';
 
-import { UserContext } from '../contexts/UserContext';
+import { ProfileContext } from '../contexts/UserContext';
 import HideOnScroll from '../components/HideOnScroll';
 import { useAccount, useContractRead, useEnsAddress } from 'wagmi';
 import axios from 'axios';
@@ -109,7 +109,7 @@ export default function AppLayout({
 
   const drawer = <Nav />;
   return (
-    <UserContext.Provider
+    <ProfileContext.Provider
       value={{
         isAuthenticated: authorized,
         profile,
@@ -266,6 +266,6 @@ export default function AppLayout({
           setOpenSearchProfile(false);
         }}
       />
-    </UserContext.Provider>
+    </ProfileContext.Provider>
   );
 }

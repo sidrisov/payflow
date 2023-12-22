@@ -47,6 +47,8 @@ export default function Leaderboard() {
         }
   );
 
+  console.log(appSettings);
+
   const [profiles, setProfiles] = useState<ProfileType[]>();
   const [loadingProfiles, setLoadingProfiles] = useState<boolean>();
 
@@ -71,7 +73,7 @@ export default function Leaderboard() {
     }
   }, []);
 
-  // TODO: refactor bar into a separate reusable component
+  // TODO: refactor app bar into a separate reusable component
   return (
     <AirstackProvider apiKey={AIRSTACK_API_KEY}>
       <CustomThemeProvider darkMode={appSettings.darkMode}>
@@ -145,7 +147,7 @@ export default function Leaderboard() {
             {loadingProfiles ? (
               <CircularProgress color="inherit" size={20} sx={{ m: 1 }} />
             ) : profiles && profiles.length ? (
-              <Stack p={1} maxHeight="65vhvh" overflow="auto" spacing={3} alignItems="flex-start">
+              <Stack p={1} maxHeight="65vh" overflow="auto" spacing={3} alignItems="flex-start">
                 {profiles.map((profile, index) => (
                   <Stack direction="row" spacing={1} alignItems="center">
                     <Typography variant="subtitle2">{index + 1}</Typography>
