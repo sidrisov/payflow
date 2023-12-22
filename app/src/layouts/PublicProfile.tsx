@@ -1,10 +1,14 @@
 import {
+  AppBar,
   Avatar,
   Badge,
   Box,
+  Button,
   Chip,
   Container,
+  IconButton,
   Stack,
+  Toolbar,
   Typography,
   useMediaQuery,
   useTheme
@@ -12,9 +16,9 @@ import {
 import axios from 'axios';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ProfileType } from '../types/ProfleType';
-import { Search } from '@mui/icons-material';
+import { HomeOutlined, Search } from '@mui/icons-material';
 import { API_URL } from '../utils/urlConstants';
 import SearchProfileDialog from '../components/SearchProfileDialog';
 import { green, grey, orange } from '@mui/material/colors';
@@ -22,10 +26,14 @@ import { AppSettings } from '../types/AppSettingsType';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { PublicProfileCard } from '../components/PublicProfileCard';
 import { SUPPORTED_CHAINS } from '../utils/networks';
+import HideOnScroll from '../components/HideOnScroll';
+import HomeLogo from '../components/Logo';
 
 export default function PublicProfile({ appSettings }: { appSettings: AppSettings }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const navigate = useNavigate();
 
   const { username } = useParams();
   const [profile, setProfile] = useState<ProfileType>();
@@ -89,7 +97,53 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
         {loadingProfile === true ? (
           <CenteredCircularProgress />
         ) : profile ? (
-          <PublicProfileCard profile={profile} />
+          <>
+            <HideOnScroll>
+              <AppBar
+                position="sticky"
+                color="transparent"
+                elevation={0}
+                sx={{ backdropFilter: 'blur(5px)' }}>
+                <Toolbar>
+                  <Box
+                    display="flex"
+                    flexDirection="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    flexGrow={1}>
+                    <Stack direction="row" alignItems="center">
+                      <IconButton onClick={() => navigate('/home')}>
+                        <HomeOutlined />
+                      </IconButton>
+                      <HomeLogo />
+                    </Stack>
+                    <Box
+                      ml={1}
+                      display="flex"
+                      flexDirection="row"
+                      alignItems="center"
+                      component={Button}
+                      color="inherit"
+                      sx={{
+                        width: 120,
+                        borderRadius: 5,
+                        border: 1,
+                        borderColor: 'inherit',
+                        textTransform: 'none',
+                        justifyContent: 'space-evenly'
+                      }}
+                      onClick={async () => {
+                        setOpenSearchProfile(true);
+                      }}>
+                      <Avatar src="payflow.png" sx={{ width: 24, height: 24 }} />
+                      <Typography variant="subtitle2">Search ... </Typography>
+                    </Box>
+                  </Box>
+                </Toolbar>
+              </AppBar>
+            </HideOnScroll>
+            <PublicProfileCard profile={profile} />
+          </>
         ) : (
           <Box
             position="absolute"
@@ -110,7 +164,11 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
                     made easy
                   </Typography>
                 }>
-                <Typography variant={isMobile ? 'h4' : 'h3'} fontWeight="500" textAlign="center">
+                <Typography
+                  maxWidth={isMobile ? 350 : 600}
+                  variant={isMobile ? 'h4' : 'h3'}
+                  fontWeight="500"
+                  textAlign="center">
                   Onchain Social Payments
                 </Typography>
               </Badge>

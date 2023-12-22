@@ -3,11 +3,11 @@ import { ProfileType } from '../types/ProfleType';
 import { useNavigate } from 'react-router-dom';
 import {
   DarkModeOutlined,
+  LeaderboardRounded,
   LightModeOutlined,
   Logout,
   Person,
   PersonAdd,
-  Settings,
   Verified
 } from '@mui/icons-material';
 import axios from 'axios';
@@ -67,6 +67,7 @@ export function ProfileMenu({
         </ListItemIcon>
         Invite
       </MenuItem>
+
       <MenuItem
         onClick={async () => {
           comingSoonToast();
@@ -76,17 +77,17 @@ export function ProfileMenu({
         </ListItemIcon>
         Attest
       </MenuItem>
-
-      {/*       <MenuItem
-        onClick={() => {
+      <Divider />
+      <MenuItem
+        onClick={async () => {
           closeStateCallback();
-          navigate('/settings');
+          navigate('/leaderboard');
         }}>
         <ListItemIcon>
-          <Settings fontSize="small" />
+          <LeaderboardRounded fontSize="small" />
         </ListItemIcon>
-        Settings
-      </MenuItem> */}
+        Board
+      </MenuItem>
       <Divider />
       <MenuItem onClick={() => setAppSettings({ ...appSettings, darkMode: !appSettings.darkMode })}>
         <ListItemIcon>

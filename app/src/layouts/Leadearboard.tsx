@@ -1,5 +1,18 @@
 import { AirstackProvider, init } from '@airstack/airstack-react';
-import { Card, CircularProgress, Container, Stack, Typography, useMediaQuery } from '@mui/material';
+import {
+  AppBar,
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CircularProgress,
+  Container,
+  IconButton,
+  Stack,
+  Toolbar,
+  Typography,
+  useMediaQuery
+} from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 import { AppSettings } from '../types/AppSettingsType';
 import { useMemo, useState } from 'react';
@@ -8,6 +21,11 @@ import { getAllActiveProfiles } from '../services/user';
 import { ProfileType } from '../types/ProfleType';
 import ProfileSectionButton from '../components/ProfileSectionButton';
 import { delay } from '../utils/delay';
+import { HomeOutlined } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import HideOnScroll from '../components/HideOnScroll';
+import HomeLogo from '../components/Logo';
+import SearchProfileDialog from '../components/SearchProfileDialog';
 
 const AIRSTACK_API_KEY = import.meta.env.VITE_AIRSTACK_API_KEY;
 
@@ -32,6 +50,10 @@ export default function Leaderboard() {
   const [profiles, setProfiles] = useState<ProfileType[]>();
   const [loadingProfiles, setLoadingProfiles] = useState<boolean>();
 
+  const [openSearchProfile, setOpenSearchProfile] = useState<boolean>(false);
+
+  const navigate = useNavigate();
+
   useMemo(() => {
     localStorage.setItem('appSettings', JSON.stringify(appSettings));
   }, [appSettings]);
@@ -49,6 +71,7 @@ export default function Leaderboard() {
     }
   }, []);
 
+  // TODO: refactor bar into a separate reusable component
   return (
     <AirstackProvider apiKey={AIRSTACK_API_KEY}>
       <CustomThemeProvider darkMode={appSettings.darkMode}>
@@ -56,6 +79,50 @@ export default function Leaderboard() {
           <title> Payflow | Leaderboard </title>
         </Helmet>
         <Container maxWidth="xs">
+          <HideOnScroll>
+            <AppBar
+              position="sticky"
+              color="transparent"
+              elevation={0}
+              sx={{ backdropFilter: 'blur(5px)' }}>
+              <Toolbar>
+                <Box
+                  display="flex"
+                  flexDirection="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  flexGrow={1}>
+                  <Stack direction="row" alignItems="center">
+                    <IconButton onClick={() => navigate('/home')}>
+                      <HomeOutlined />
+                    </IconButton>
+                    <HomeLogo />
+                  </Stack>
+                  <Box
+                    ml={1}
+                    display="flex"
+                    flexDirection="row"
+                    alignItems="center"
+                    component={Button}
+                    color="inherit"
+                    sx={{
+                      width: 120,
+                      borderRadius: 5,
+                      border: 1,
+                      borderColor: 'inherit',
+                      textTransform: 'none',
+                      justifyContent: 'space-evenly'
+                    }}
+                    onClick={async () => {
+                      setOpenSearchProfile(true);
+                    }}>
+                    <Avatar src="payflow.png" sx={{ width: 24, height: 24 }} />
+                    <Typography variant="subtitle2">Search ... </Typography>
+                  </Box>
+                </Box>
+              </Toolbar>
+            </AppBar>
+          </HideOnScroll>
           <Card
             elevation={5}
             sx={{
@@ -96,6 +163,15 @@ export default function Leaderboard() {
             )}
           </Card>
         </Container>
+        <SearchProfileDialog
+          open={openSearchProfile}
+          sx={{
+            backdropFilter: 'blur(10px)'
+          }}
+          closeStateCallback={() => {
+            setOpenSearchProfile(false);
+          }}
+        />
       </CustomThemeProvider>
     </AirstackProvider>
   );
