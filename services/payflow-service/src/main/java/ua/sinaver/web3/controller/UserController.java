@@ -1,6 +1,7 @@
 package ua.sinaver.web3.controller;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -85,23 +86,24 @@ public class UserController {
     }
 
     @GetMapping
-    public List<ProfileMessage> searchProfile(@RequestParam(value = "search") String username) {
-        List<User> users = userService.searchByUsernameQuery(username);
-        log.debug("User: {} for {}", users, username);
-        if (users != null) {
-            // TODO: for now filter by whitelisted
-            return users.stream().filter(user -> user.isAllowed() && user.getDefaultFlow() != null).map(user -> {
-                return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
-                        user.getSigner(),
-                        user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
-                                : null,
-                        null,
-                        -1);
-            }).toList();
+    public List<ProfileMessage> searchProfile(@RequestParam(value = "search") List<String> usernames) {
+        val users = new ArrayList<User>();
 
-        } else {
-            return Collections.emptyList();
-        }
+        // TODO: batch it in query
+        usernames.stream().forEach(username -> {
+            users.addAll(userService.searchByUsernameQuery(username));
+        });
+
+        log.debug("User: {} for {}", users, usernames);
+        // TODO: for now filter by whitelisted
+        return users.stream().filter(user -> user.isAllowed() && user.getDefaultFlow() != null).map(user -> {
+            return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
+                    user.getSigner(),
+                    user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
+                            : null,
+                    null,
+                    -1);
+        }).toList();
     }
 
     @GetMapping("/{username}")

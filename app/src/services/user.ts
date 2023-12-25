@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { ProfileType } from '../types/ProfleType';
 import { API_URL } from '../utils/urlConstants';
-import { toast } from 'react-toastify';
+import { Address } from 'viem';
 
 export async function me(): Promise<ProfileType | undefined> {
   try {
@@ -31,6 +31,23 @@ export async function getAllActiveProfiles(): Promise<ProfileType[] | undefined>
   } catch (error) {
     console.log(error);
   }
+}
+
+export async function searchByListOfAddressesOrUsernames(searchParams: string[]) {
+  const response = await axios.get(`${API_URL}/api/user`, {
+    params: { search: searchParams },
+    paramsSerializer: {
+      indexes: null
+    }
+  });
+  return response.data as ProfileType[];
+}
+
+export async function getProfileByAddress(address: Address) {
+  const response = await axios.get(`${API_URL}/api/user/${address}`, {
+    withCredentials: true
+  });
+  return response.data as ProfileType;
 }
 
 export async function updateProfile(

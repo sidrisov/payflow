@@ -261,6 +261,7 @@ export default function AppLayout({
         closeStateCallback={() => setOpenProfileMenu(false)}
       />
       <SearchProfileDialog
+        address={profile.address}
         open={openSearchProfile}
         closeStateCallback={() => {
           setOpenSearchProfile(false);

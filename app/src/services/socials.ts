@@ -1,10 +1,10 @@
-import axios from 'axios';
-import { MetaType, ProfileType, ProfileWithSocialsType, SocialInfoType } from '../types/ProfleType';
+import { MetaType, ProfileWithSocialsType, SocialInfoType } from '../types/ProfleType';
 import { fetchQuery } from '@airstack/airstack-react';
 import { isAddress } from 'viem';
-import { API_URL } from '../utils/urlConstants';
+import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';
+import { getProfileByAddress, searchByListOfAddressesOrUsernames } from './user';
 
-export const QUERY_SOCIALS = `query GetSocial($identity: Identity!) {
+export const QUERY_SOCIALS = `query GetSocial($identity: Identity!, $me: Identity!) {
   Wallet(input: {identity: $identity, blockchain: ethereum}) {
     addresses
     primaryDomain {
@@ -27,15 +27,81 @@ export const QUERY_SOCIALS = `query GetSocial($identity: Identity!) {
           small
         }
       }
-      profileTokenId
+      followerCount
     }
     xmtp {
       isXMTPEnabled
     }
+    socialFollowers(
+      input: {filter: {identity: {_in: [$me]}, dappName: {_in: [farcaster,lens]}}}
+    ) {
+      Follower {
+        dappName
+      }
+    }
+    socialFollowings(
+      input: {filter: {identity: {_in: [$me]}, dappName: {_in: [farcaster,lens]}}}
+    ) {
+      Following {
+       dappName
+      }
+    }
   }
 }`;
 
-export const QUERY_SOCIALS_MINIMAL = `query GetSocial($identity: Identity!) {
+export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = `query GetSocialsForAssociatedAddresses($dappName: SocialDappName!, $profileName: String!, $me:Identity!) {
+  Socials(
+    input: {filter: {dappName: {_eq: $dappName}, profileName: {_eq: $profileName}}, blockchain: ethereum}
+  ) {
+    Social {
+      userAssociatedAddressDetails {
+      	addresses
+        primaryDomain {
+          name
+          tokenNft {
+            contentValue {
+              image {
+                small
+              }
+            }
+          }
+        }
+        socials(input: {limit: 5}) {  
+          userAssociatedAddresses
+          dappName
+          profileName
+          profileDisplayName
+          profileImage
+          profileImageContentValue {
+            image {
+              small
+            }
+          }
+          followerCount
+        }
+        xmtp {
+          isXMTPEnabled
+        }
+        socialFollowers(
+          input: {filter: {identity: {_in: [$me]}, dappName: { _in: [farcaster,lens]}}}
+        ) {
+          Follower {
+            dappName
+          }
+        }
+        socialFollowings(
+          input: {filter: {identity: {_in: [$me]}, dappName: {_in: [farcaster,lens]}}}
+        ) {
+          Following {
+            dappName
+          }
+        }
+      }
+    }
+  }
+}`;
+
+export const QUERY_SOCIALS_MINIMAL = `query GetSocial($identity: Identity!, $me: Identity!) {
   Wallet(input: {identity: $identity, blockchain: ethereum}) {
     primaryDomain {
       name
@@ -43,36 +109,31 @@ export const QUERY_SOCIALS_MINIMAL = `query GetSocial($identity: Identity!) {
     socials(input: {limit: 5}) {
       dappName
       profileName
+      followerCount
     }
     xmtp {
       isXMTPEnabled
     }
-  }
-}`;
-
-const QUERY_ASSOCIATED_ADDRESSES_BY_FC_NAME = `query GetAssociatedAddresses($profileName: String!) {
-  Socials(
-    input: {filter: {dappName: {_eq: farcaster}, profileName: {_eq: $profileName}}, blockchain: ethereum}
-  ) {
-    Social {
-      userAssociatedAddresses
+    socialFollowers(
+      input: {filter: {identity: {_in: [$me]}, dappName: { _in: [ farcaster,lens]}}}
+    ) {
+      Follower {
+        dappName
+      }
+    }
+    socialFollowings(
+      input: {filter: {identity: {_in: [$me]}, dappName: {_in: [ farcaster,lens]}}}
+    ) {
+      Following {
+        dappName
+      }
     }
   }
 }`;
 
-const QUERY_ASSOCIATED_ADDRESSES_BY_LENS_NAME = `query GetAssociatedAddresses($profileName: String!) {
-  Socials(
-    input: {filter: {dappName: {_eq: lens}, profileName: {_eq: $profileName}}, blockchain: ethereum}
-  ) {
-    Social {
-      userAssociatedAddresses
-    }
-  }
-}`;
-
-const ENS_SCORE = 3;
 const FARCASTER_SCORE = 4;
 const LENS_SCORE = 4;
+const ENS_SCORE = 3;
 const XMTP_SCORE = 1;
 
 export function sortBySocialScore(
@@ -105,61 +166,64 @@ function calculateScore(profilesWithSocials: ProfileWithSocialsType): number {
   return score;
 }
 
-export async function searchProfile(searchValue: string): Promise<ProfileWithSocialsType[]> {
+export async function searchProfile(
+  searchValue: string,
+  me: string = ''
+): Promise<ProfileWithSocialsType[]> {
   let foundProfiles: ProfileWithSocialsType[] = [];
 
   if (!searchValue.includes(':') && !searchValue.includes('.') && !isAddress(searchValue)) {
-    const response = await axios.get(`${API_URL}/api/user?search=${searchValue}`);
-    const profiles = (await response.data) as ProfileType[];
+    const profiles = await searchByListOfAddressesOrUsernames([searchValue]);
     if (profiles) {
       foundProfiles = foundProfiles.concat(
         ...(await Promise.all(
-          profiles.filter((p) => p.defaultFlow).map((p) => searchProfile(p.address))
+          profiles.filter((p) => p.defaultFlow).map((p) => searchProfile(p.address, me))
         ))
       );
     }
-  } else if (searchValue.startsWith('fc:')) {
-    const { data, error } = await fetchQuery(
-      QUERY_ASSOCIATED_ADDRESSES_BY_FC_NAME,
-      { profileName: searchValue.substring(searchValue.indexOf(':') + 1) },
+  } else if (searchValue.startsWith('fc:') || searchValue.startsWith('lens:')) {
+    const dappName = searchValue.startsWith('fc:') ? FARCASTER_DAPP : LENS_DAPP;
+    const profileName = searchValue.startsWith('fc:')
+      ? searchValue.substring(searchValue.indexOf(':') + 1)
+      : 'lens/@'.concat(searchValue.substring(searchValue.indexOf(':') + 1));
+
+    const { data: dataInBatch } = await fetchQuery(
+      QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME,
+      {
+        dappName,
+        profileName,
+        me
+      },
       {
         cache: true
       }
     );
-
-    console.log('fc', data);
-    if (data) {
-      // TODO: optimize and fetch in batch
-      foundProfiles = foundProfiles.concat(
-        ...(await Promise.all(
-          data.Socials && data.Socials.Social && data.Socials.Social.length > 0
-            ? (data.Socials.Social[0].userAssociatedAddresses as string[]).map((address) =>
-                searchProfile(address)
-              )
-            : []
-        ))
-      );
-    }
-  } else if (searchValue.startsWith('lens:')) {
-    const { data, error } = await fetchQuery(
-      QUERY_ASSOCIATED_ADDRESSES_BY_LENS_NAME,
-      { profileName: 'lens/@'.concat(searchValue.substring(searchValue.indexOf(':') + 1)) },
-      {
-        cache: true
-      }
-    );
-
-    console.log('lens', data);
 
     if (
-      data &&
-      data.Socials &&
-      data.Socials.Social &&
-      data.Socials.Social[0].userAssociatedAddresses[0]
+      dataInBatch &&
+      dataInBatch.Socials &&
+      dataInBatch.Socials.Social &&
+      dataInBatch.Socials.Social.length > 0
     ) {
-      foundProfiles = foundProfiles.concat(
-        await searchProfile((data.Socials.Social[0].userAssociatedAddresses as string[])[0])
-      );
+      const userAssociatedAddressDetails =
+        dataInBatch.Socials.Social[0].userAssociatedAddressDetails;
+      const userAssociatedAddressSocials = userAssociatedAddressDetails.map((s: any) =>
+        converSocialResults(s)
+      ) as MetaType[];
+      const addresses = userAssociatedAddressSocials.map((s) => s.addresses[0]);
+
+      const profiles = await searchByListOfAddressesOrUsernames(addresses);
+      userAssociatedAddressSocials.forEach((s) => {
+        const profile = profiles.find(
+          (p) => p.address.toLowerCase() === s.addresses[0].toLowerCase()
+        );
+
+        if (profile) {
+          foundProfiles.push({ profile: profile, meta: s });
+        } else {
+          foundProfiles.push({ meta: s });
+        }
+      });
     }
   } else if (
     searchValue.endsWith('.eth') ||
@@ -169,83 +233,95 @@ export async function searchProfile(searchValue: string): Promise<ProfileWithSoc
   ) {
     const { data, error } = await fetchQuery(
       QUERY_SOCIALS,
-      { identity: searchValue },
+      { identity: searchValue, me },
       {
         cache: true
       }
     );
 
-    const meta = converSocialResults(data);
+    if (data && data.Wallet) {
+      const meta = converSocialResults(data.Wallet);
 
-    if (meta && meta.addresses[0]) {
-      const response = await axios.get(`${API_URL}/api/user/${data.Wallet.addresses[0]}`, {
-        withCredentials: true
-      });
-      const profile = (await response.data) as ProfileType;
-      if (profile) {
-        foundProfiles.push({ profile: profile, meta: meta });
-      } else {
-        foundProfiles.push({ meta: meta });
+      if (meta && meta.addresses[0]) {
+        const profile = await getProfileByAddress(data.Wallet.addresses[0]);
+        if (profile) {
+          foundProfiles.push({ profile: profile, meta: meta });
+        } else {
+          foundProfiles.push({ meta: meta });
+        }
       }
     }
   }
 
-  console.log('found profiles', foundProfiles);
+  console.debug('Found profiles:', foundProfiles);
 
   return foundProfiles;
 }
 
-export function converSocialResults(data: any): MetaType | undefined {
-  if (!data || !data.Wallet) {
-    return;
-  }
-
+export function converSocialResults(walletInfo: any): MetaType | undefined {
   let meta = {} as MetaType;
 
-  if (data.Wallet.addresses) {
-    meta.addresses = data.Wallet.addresses;
+  if (walletInfo.addresses) {
+    meta.addresses = walletInfo.addresses;
   } else {
     meta.addresses = [];
   }
 
-  if (data.Wallet.primaryDomain) {
-    meta.ens = data.Wallet.primaryDomain.name;
+  if (walletInfo.primaryDomain) {
+    meta.ens = walletInfo.primaryDomain.name;
   }
 
-  if (data.Wallet.socials) {
-    meta.socials = data.Wallet.socials
-      .filter(
-        (s: any) =>
-          s.dappName &&
-          s.profileName &&
-          (s.profileImage || s.profileImageContentValue?.image?.small)
-      )
+  if (walletInfo.socials) {
+    meta.socials = walletInfo.socials
+      .filter((s: any) => s.dappName && s.profileName)
       .map(
         (s: any) =>
           ({
             dappName: s.dappName,
             profileName: s.profileName,
             profileDisplayName: s.profileDisplayName,
-            profileImage: s.profileImageContentValue?.image?.small ?? s.profileImage
+            profileImage: s.profileImageContentValue?.image?.small ?? s.profileImage,
+            followerCount: s.followerCount
           } as SocialInfoType)
       );
   } else {
     meta.socials = [];
   }
 
-  console.log(data);
-  if (data.Wallet.primaryDomain && data.Wallet.primaryDomain.tokenNft) {
-    meta.ensAvatar = data.Wallet.primaryDomain.tokenNft.contentValue?.image?.small;
+  if (walletInfo.primaryDomain && walletInfo.primaryDomain.tokenNft) {
+    meta.ensAvatar = walletInfo.primaryDomain.tokenNft.contentValue?.image?.small;
   }
 
   if (!meta.ensAvatar && meta.socials.length > 0) {
     meta.ensAvatar = meta.socials[0].profileImage;
   }
 
-  if (data.Wallet.xmtp && data.Wallet.xmtp[0].isXMTPEnabled) {
+  if (walletInfo.xmtp && walletInfo.xmtp[0].isXMTPEnabled) {
     meta.xmtp = true;
   } else {
     meta.xmtp = false;
+  }
+
+  if (
+    walletInfo.socialFollowers &&
+    walletInfo.socialFollowings &&
+    walletInfo.socialFollowings.Following
+  ) {
+    if (walletInfo.socialFollowings.Following.find((f: any) => f.dappName === FARCASTER_DAPP)) {
+      if (walletInfo.socialFollowers.Follower?.find((f: any) => f.dappName === FARCASTER_DAPP)) {
+        meta.farcasterFollow = 'mutual';
+      } else {
+        meta.farcasterFollow = 'following';
+      }
+    }
+
+    if (walletInfo.socialFollowings.Following.find((f: any) => f.dappName === LENS_DAPP)) {
+      if (walletInfo.socialFollowers.Follower?.find((f: any) => f.dappName === LENS_DAPP)) {
+        meta.lensFollow = 'mutual';
+      } else {
+        meta.lensFollow = 'following';
+      }
+    }
   }
 
   return meta;
