@@ -160,7 +160,7 @@ export function SearchProfileListItem(
             title={
               address ? (
                 address === profileWithSocials.profile?.address ? (
-                  <Typography variant="caption">
+                  <Typography variant="caption" fontWeight="bold">
                     Your {view === 'profile' ? 'profile' : 'address'}
                   </Typography>
                 ) : profileWithSocials?.meta?.farcasterFollow ||
@@ -169,7 +169,7 @@ export function SearchProfileListItem(
                     {profileWithSocials.meta.farcasterFollow && (
                       <Stack spacing={1} direction="row" alignItems="center">
                         <Avatar src="farcaster.svg" sx={{ width: 15, height: 15 }} />
-                        <Typography variant="caption">
+                        <Typography variant="caption" fontWeight="bold">
                           {profileWithSocials.meta.farcasterFollow === 'mutual'
                             ? 'Mutual follow'
                             : 'You follow them'}
@@ -179,7 +179,7 @@ export function SearchProfileListItem(
                     {profileWithSocials.meta.lensFollow && (
                       <Stack spacing={1} direction="row" alignItems="center">
                         <Avatar src="lens.svg" sx={{ width: 15, height: 15 }} />
-                        <Typography variant="caption">
+                        <Typography variant="caption" fontWeight="bold">
                           {profileWithSocials.meta.farcasterFollow === 'mutual'
                             ? 'Mutual follow'
                             : 'You follow them'}
@@ -188,10 +188,14 @@ export function SearchProfileListItem(
                     )}
                   </>
                 ) : (
-                  <Typography variant="caption">You don't follow them</Typography>
+                  <Typography variant="caption" fontWeight="bold">
+                    No follow
+                  </Typography>
                 )
               ) : (
-                <Typography variant="caption">For follow insights connect wallet</Typography>
+                <Typography variant="caption" fontWeight="bold">
+                  For follow insights connect wallet
+                </Typography>
               )
             }>
             <HowToReg
