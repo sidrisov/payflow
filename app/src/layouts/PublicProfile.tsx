@@ -29,6 +29,7 @@ import { SUPPORTED_CHAINS } from '../utils/networks';
 import HideOnScroll from '../components/HideOnScroll';
 import HomeLogo from '../components/Logo';
 import { WalletMenu } from '../components/WalletMenu';
+import { useAccount } from 'wagmi';
 
 export default function PublicProfile({ appSettings }: { appSettings: AppSettings }) {
   const theme = useTheme();
@@ -45,6 +46,8 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
   const [openSearchProfile, setOpenSearchProfile] = useState<boolean>(false);
   const [walletMenuAnchorEl, setWalletMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [openWalletMenu, setOpenWalletMenu] = useState(false);
+
+  const { address } = useAccount();
 
   useMemo(async () => {
     if (username) {
@@ -227,6 +230,7 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
         )}
       </Container>
       <SearchProfileDialog
+        address={address}
         open={openSearchProfile}
         sx={{
           backdropFilter: 'blur(10px)'

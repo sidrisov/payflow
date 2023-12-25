@@ -1,5 +1,15 @@
-import { Box, Stack, Button, IconButton, Chip, Tooltip, BoxProps } from '@mui/material';
-import { StarBorder } from '@mui/icons-material';
+import {
+  Box,
+  Stack,
+  Button,
+  IconButton,
+  Chip,
+  Tooltip,
+  BoxProps,
+  Avatar,
+  Typography
+} from '@mui/material';
+import { HowToReg, StarBorder } from '@mui/icons-material';
 import { ProfileWithSocialsType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
@@ -13,8 +23,9 @@ import { API_URL } from '../utils/urlConstants';
 import { toast } from 'react-toastify';
 import { shortenWalletAddressLabel } from '../utils/address';
 import PayflowChip from './PayflowChip';
-import { lightGreen, orange } from '@mui/material/colors';
-
+import { green, grey, lightGreen, orange } from '@mui/material/colors';
+import { useAccount } from 'wagmi';
+// TODO: add 3 color gradation for connection: mutual, ... poap, etc...
 export function SearchProfileListItem(
   props: BoxProps & { profileWithSocials: ProfileWithSocialsType; view: 'address' | 'profile' }
 ) {
@@ -24,9 +35,10 @@ export function SearchProfileListItem(
   const { isAuthenticated } = useContext(ProfileContext);
   const [invited, setInvited] = useState<boolean>();
 
+  const { address } = useAccount();
   // fetch in batch for all addresses in parent component
   useMemo(async () => {
-    if (!profileWithSocials.profile) {
+    if (profile && !profileWithSocials.profile) {
       const response = await axios.get(
         `${API_URL}/api/invitations/identity/${profileWithSocials.meta?.addresses[0]}`,
         { withCredentials: true }
@@ -34,7 +46,7 @@ export function SearchProfileListItem(
 
       setInvited(response.data);
     }
-  }, [profileWithSocials.profile]);
+  }, [profileWithSocials.profile, profile]);
 
   return (
     (view === 'profile' ? profileWithSocials.profile : profileWithSocials.meta) && (
@@ -124,7 +136,7 @@ export function SearchProfileListItem(
             )}
 
             {profileWithSocials.meta && (
-              <Stack direction="row" spacing={0.5}>
+              <Stack direction="row" spacing={0.5} alignItems="center">
                 {profileWithSocials.meta.ens && (
                   <SocialPresenceAvatar dappName="ens" profileName={profileWithSocials.meta.ens} />
                 )}
@@ -132,8 +144,10 @@ export function SearchProfileListItem(
                   .filter((s) => s.profileName && s.dappName)
                   .map((s) => (
                     <SocialPresenceAvatar
+                      key={s.dappName}
                       dappName={s.dappName as dAppType}
                       profileName={s.profileName}
+                      followerCount={s.followerCount}
                     />
                   ))}
                 {profileWithSocials.meta.xmtp && <SocialPresenceAvatar dappName="xmtp" />}
@@ -141,11 +155,71 @@ export function SearchProfileListItem(
             )}
           </Stack>
         </Box>
-        <Tooltip title="Add to favourites">
-          <IconButton size="small" onClick={() => comingSoonToast()}>
-            <StarBorder fontSize="small" />
-          </IconButton>
-        </Tooltip>
+        <Stack ml={1} spacing={1} direction="row" alignItems="center">
+          <Tooltip
+            title={
+              address ? (
+                address === profileWithSocials.profile?.address ? (
+                  <Typography variant="caption" fontWeight="bold">
+                    Your {view === 'profile' ? 'profile' : 'address'}
+                  </Typography>
+                ) : profileWithSocials?.meta?.farcasterFollow ||
+                  profileWithSocials?.meta?.lensFollow ? (
+                  <>
+                    {profileWithSocials.meta.farcasterFollow && (
+                      <Stack spacing={1} direction="row" alignItems="center">
+                        <Avatar src="farcaster.svg" sx={{ width: 15, height: 15 }} />
+                        <Typography variant="caption" fontWeight="bold">
+                          {profileWithSocials.meta.farcasterFollow === 'mutual'
+                            ? 'Mutual follow'
+                            : 'You follow them'}
+                        </Typography>
+                      </Stack>
+                    )}
+                    {profileWithSocials.meta.lensFollow && (
+                      <Stack spacing={1} direction="row" alignItems="center">
+                        <Avatar src="lens.svg" sx={{ width: 15, height: 15 }} />
+                        <Typography variant="caption" fontWeight="bold">
+                          {profileWithSocials.meta.farcasterFollow === 'mutual'
+                            ? 'Mutual follow'
+                            : 'You follow them'}
+                        </Typography>
+                      </Stack>
+                    )}
+                  </>
+                ) : (
+                  <Typography variant="caption" fontWeight="bold">
+                    No follow
+                  </Typography>
+                )
+              ) : (
+                <Typography variant="caption" fontWeight="bold">
+                  For follow insights connect wallet
+                </Typography>
+              )
+            }>
+            <HowToReg
+              sx={{
+                color:
+                  profileWithSocials?.meta?.farcasterFollow ||
+                  profileWithSocials?.meta?.lensFollow ||
+                  (address && address === profileWithSocials.profile?.address)
+                    ? green.A700
+                    : grey.A700,
+                border: 1,
+                borderRadius: 5,
+                p: 0.05,
+                width: 16,
+                height: 16
+              }}
+            />
+          </Tooltip>
+          <Tooltip title="Add to favourites">
+            <IconButton size="small" onClick={() => comingSoonToast()}>
+              <StarBorder fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Stack>
       </Box>
     )
   );

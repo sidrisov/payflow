@@ -23,6 +23,8 @@ export interface MetaType {
   ensAvatar?: string;
   socials: SocialInfoType[];
   xmtp: boolean;
+  farcasterFollow: 'following' | 'mutual';
+  lensFollow: 'following' | 'mutual';
 }
 
 export interface SocialInfoType {
@@ -30,6 +32,7 @@ export interface SocialInfoType {
   profileName: string;
   profileDisplayName: string;
   profileImage: string;
+  followerCount: number;
 }
 
 export interface SelectedProfileWithSocialsType {

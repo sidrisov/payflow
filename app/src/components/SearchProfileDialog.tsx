@@ -19,7 +19,7 @@ import { ArrowBack, Clear, Search } from '@mui/icons-material';
 import { useMemo, useState } from 'react';
 import { ProfileWithSocialsType, SelectedProfileWithSocialsType } from '../types/ProfleType';
 
-import { isAddress } from 'viem';
+import { Address, isAddress } from 'viem';
 import { useNavigate } from 'react-router-dom';
 import { searchProfile, sortBySocialScore } from '../services/socials';
 
@@ -32,10 +32,13 @@ export type SelectProfileResultCallbackType = {
 
 export type SearchProfileDialogProps = DialogProps &
   CloseCallbackType &
-  SelectProfileResultCallbackType;
+  SelectProfileResultCallbackType & {
+    address?: Address;
+  };
 
 // TODO: back button + title alignment hack - check with someone knowledgeable on proper solution
 export default function SearchProfileDialog({
+  address,
   closeStateCallback,
   selectProfileCallback,
   ...props
@@ -60,7 +63,7 @@ export default function SearchProfileDialog({
     if (debouncedSearchString && debouncedSearchString?.length > 1) {
       try {
         setLoading(true);
-        const profiles = sortBySocialScore(await searchProfile(debouncedSearchString));
+        const profiles = sortBySocialScore(await searchProfile(debouncedSearchString, address));
         setProfiles(profiles);
       } finally {
         setLoading(false);
@@ -68,7 +71,7 @@ export default function SearchProfileDialog({
     } else {
       setProfiles([]);
     }
-  }, [debouncedSearchString]);
+  }, [debouncedSearchString, address]);
 
   const [shrink, setShrink] = useState(false);
 
@@ -150,6 +153,7 @@ export default function SearchProfileDialog({
                   .filter((profileWithSocials) => profileWithSocials.profile)
                   .map((profileWithSocials) => (
                     <SearchProfileListItem
+                      key={profileWithSocials.profile?.username}
                       view="profile"
                       profileWithSocials={profileWithSocials}
                       onClick={() => {
@@ -181,9 +185,10 @@ export default function SearchProfileDialog({
 
                 <Stack m={1} spacing={1}>
                   {profiles
-                    //.filter((profileWithSocials) => profileWithSocials.meta)
+                    .filter((profileWithSocials) => profileWithSocials.meta)
                     .map((profileWithSocials) => (
                       <SearchProfileListItem
+                        key={profileWithSocials.meta?.addresses[0]}
                         view="address"
                         profileWithSocials={profileWithSocials}
                         onClick={() => {

@@ -1,29 +1,38 @@
-import { Box, Button, Card, CardProps, CircularProgress, Stack } from '@mui/material';
+import {
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardProps,
+  CircularProgress,
+  Stack,
+  Typography
+} from '@mui/material';
 import { useMemo, useState } from 'react';
-import { ProfileType } from '../types/ProfleType';
-import { useEnsName } from 'wagmi';
+import { MetaType, ProfileType } from '../types/ProfleType';
+import { useAccount } from 'wagmi';
 import { AttachMoney, Send } from '@mui/icons-material';
 import { useLazyQuery } from '@airstack/airstack-react';
 import { ProfileSection } from './ProfileSection';
 import { comingSoonToast } from './Toasts';
 import SocialPresenceChipWithLink from './SocialPresenceChipWithLink';
-import { QUERY_SOCIALS_MINIMAL } from '../services/socials';
+import { QUERY_SOCIALS_MINIMAL, converSocialResults } from '../services/socials';
 import PayProfileDialog from './PayProfileDialog';
+import { green } from '@mui/material/colors';
 
 export function PublicProfileCard({ profile, ...props }: { profile: ProfileType } & CardProps) {
   const [openPayDialog, setOpenPayDialog] = useState(false);
 
-  const { data: ensName } = useEnsName({
-    address: profile.address,
-    chainId: 1,
-    cacheTime: 300_000
-  });
+  const { address } = useAccount();
 
   const [fetch, { data: socialInfo, loading: loadingSocials }] = useLazyQuery(
     QUERY_SOCIALS_MINIMAL,
-    { identity: profile.address },
+    { identity: profile.address, me: address ?? '' },
     {
-      cache: true
+      cache: true,
+      dataFormatter(data) {
+        return converSocialResults(data.Wallet) as MetaType;
+      }
     }
   );
 
@@ -31,7 +40,7 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
     if (profile) {
       fetch();
     }
-  }, [profile]);
+  }, [profile, address]);
 
   return (
     <>
@@ -58,27 +67,58 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
 
           {loadingSocials && <CircularProgress color="inherit" size={20} />}
           {socialInfo && (
-            <Box flexWrap="wrap" display="flex" justifyContent="center" alignItems="center">
-              <SocialPresenceChipWithLink
-                type={ensName ? 'ens' : 'address'}
-                name={ensName ?? profile.address}
-              />
+            <Stack>
+              <Box flexWrap="wrap" display="flex" justifyContent="center" alignItems="center">
+                <SocialPresenceChipWithLink
+                  type={socialInfo.ens ? 'ens' : 'address'}
+                  name={socialInfo.ens ?? profile.address}
+                />
 
-              {socialInfo.Wallet.socials &&
-                socialInfo.Wallet.socials
-                  .filter((s: any) => s.profileName)
-                  .map((s: any) => (
-                    <SocialPresenceChipWithLink
-                      key={s.dappName}
-                      type={s.dappName}
-                      name={s.profileName}
-                    />
-                  ))}
-              {socialInfo.Wallet.xmtp && socialInfo.Wallet.xmtp[0].isXMTPEnabled && (
-                <SocialPresenceChipWithLink type="xmtp" name={ensName ?? profile.address} />
+                {socialInfo.socials &&
+                  socialInfo.socials
+                    .filter((s: any) => s.profileName)
+                    .map((s: any) => (
+                      <SocialPresenceChipWithLink
+                        key={s.dappName}
+                        type={s.dappName}
+                        name={s.profileName}
+                      />
+                    ))}
+                {socialInfo.xmtp && (
+                  <SocialPresenceChipWithLink
+                    type="xmtp"
+                    name={socialInfo.ens ?? profile.address}
+                  />
+                )}
+              </Box>
+
+              {(socialInfo.farcasterFollow || socialInfo.lensFollow) && (
+                <Stack my={1} spacing={1} alignSelf="center" alignItems="flex-start">
+                  {socialInfo.farcasterFollow && (
+                    <Stack spacing={1} direction="row" alignItems="center">
+                      <Avatar src="farcaster.svg" sx={{ width: 15, height: 15 }} />
+                      <Typography variant="caption" fontWeight="bold" color={green.A700}>
+                        {socialInfo.farcasterFollow === 'mutual'
+                          ? 'Mutual follow on farcaster'
+                          : 'You follow them on farcaster'}
+                      </Typography>
+                    </Stack>
+                  )}
+                  {socialInfo.lensFollow && (
+                    <Stack spacing={1} direction="row" alignItems="center">
+                      <Avatar src="lens.svg" sx={{ width: 15, height: 15 }} />
+                      <Typography variant="caption" fontWeight="bold">
+                        {socialInfo.lensFollow === 'mutual'
+                          ? 'Mutual follow on lens'
+                          : 'You follow them on lens'}
+                      </Typography>
+                    </Stack>
+                  )}
+                </Stack>
               )}
-            </Box>
+            </Stack>
           )}
+
           <Stack direction="row" spacing={1} alignItems="center">
             <Button
               color="inherit"
