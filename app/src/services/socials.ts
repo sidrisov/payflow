@@ -2,7 +2,7 @@ import { MetaType, ProfileWithSocialsType, SocialInfoType } from '../types/Profl
 import { fetchQuery } from '@airstack/airstack-react';
 import { isAddress } from 'viem';
 import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';
-import { getProfileByAddress, searchByListOfAddressesOrUsernames } from './user';
+import { getProfileByAddressOrName, searchByListOfAddressesOrUsernames } from './user';
 
 export const QUERY_SOCIALS = `query GetSocial($identity: Identity!, $me: Identity!) {
   Wallet(input: {identity: $identity, blockchain: ethereum}) {
@@ -243,7 +243,7 @@ export async function searchProfile(
       const meta = converSocialResults(data.Wallet);
 
       if (meta && meta.addresses[0]) {
-        const profile = await getProfileByAddress(data.Wallet.addresses[0]);
+        const profile = await getProfileByAddressOrName(data.Wallet.addresses[0]);
         if (profile) {
           foundProfiles.push({ profile: profile, meta: meta });
         } else {

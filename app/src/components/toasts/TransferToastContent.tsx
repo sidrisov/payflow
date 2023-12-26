@@ -20,19 +20,24 @@ export function TransferToastContent({
   status?: TypeOptions;
 }) {
   return (
-    <Box display="flex" flexDirection="row" alignItems="center" justifyContent="space-between">
+    <Box
+      minWidth={300}
+      display="flex"
+      flexDirection="row"
+      alignItems="center"
+      justifyContent="space-between">
       {from.type === 'profile'
-        ? from.data.profile && <ProfileSection maxWidth={150} profile={from.data.profile} />
-        : from.data.meta && <AddressSection maxWidth={150} meta={from.data.meta} />}
-      <Stack alignItems="center" justifyContent="center">
-        <Typography variant="subtitle2">
+        ? from.data.profile && <ProfileSection profile={from.data.profile} />
+        : from.data.meta && <AddressSection meta={from.data.meta} />}
+      <Stack mx={1} width={50} alignItems="center" justifyContent="center">
+        <Typography noWrap variant="subtitle2">
           ${(parseFloat(formatEther(ethAmount)) * (ethUsdPrice ?? 0)).toPrecision(3)}
         </Typography>
         {status === 'error' ? <Close /> : <ArrowForward />}
       </Stack>
       {to.type === 'profile'
-        ? to.data.profile && <ProfileSection maxWidth={150} profile={to.data.profile} />
-        : to.data.meta && <AddressSection maxWidth={150} meta={to.data.meta} />}
+        ? to.data.profile && <ProfileSection profile={to.data.profile} />
+        : to.data.meta && <AddressSection meta={to.data.meta} />}
     </Box>
   );
 }

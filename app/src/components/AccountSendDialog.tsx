@@ -355,10 +355,10 @@ export default function AccountSendDialog({
               {selectedRecipient &&
                 (selectedRecipient.type === 'profile'
                   ? selectedRecipient.data.profile && (
-                      <ProfileSection profile={selectedRecipient.data.profile} />
+                      <ProfileSection maxWidth={200} profile={selectedRecipient.data.profile} />
                     )
                   : selectedRecipient.data.meta && (
-                      <AddressSection meta={selectedRecipient.data.meta} />
+                      <AddressSection maxWidth={200} meta={selectedRecipient.data.meta} />
                     ))}
 
               {!selectedRecipient && (

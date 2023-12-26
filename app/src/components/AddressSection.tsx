@@ -28,12 +28,28 @@ export function AddressSection(props: { meta: MetaType; fontSize?: number; maxWi
       ) : (
         <AddressAvatar address={meta.addresses[0] ?? '0x'} />
       )}
-
-      <Stack direction="column" spacing={0.1} alignItems="flex-start" overflow="auto">
-        <Typography variant="subtitle2" fontSize={fontSize}>
+      <Stack
+        minWidth={75}
+        spacing={0.1}
+        alignItems="flex-start"
+        overflow="auto"
+        sx={{
+          scrollbarWidth: 'none', // Hide the scrollbar for firefox
+          '&::-webkit-scrollbar': {
+            display: 'none' // Hide the scrollbar for WebKit browsers (Chrome, Safari, Edge, etc.)
+          },
+          '&-ms-overflow-style:': {
+            display: 'none' // Hide the scrollbar for IE
+          }
+        }}>
+        <Typography noWrap variant="subtitle2" fontSize={fontSize}>
           {shortenWalletAddressLabel(meta.addresses[0])}
         </Typography>
-        {meta.ens || (ensName && <Typography variant="caption">{meta.ens ?? ensName}</Typography>)}
+        {(meta.ens || ensName) && (
+          <Typography noWrap variant="caption">
+            {meta.ens ?? ensName}
+          </Typography>
+        )}
       </Stack>
     </Stack>
   );

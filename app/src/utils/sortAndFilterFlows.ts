@@ -1,4 +1,5 @@
-import { FlowType } from '../types/FlowType';
+import { getNetwork } from 'wagmi/actions';
+import { FlowType, FlowWalletType } from '../types/FlowType';
 import { SUPPORTED_CHAINS } from './networks';
 
 export default function sortAndFilterFlows(defaultFlow: FlowType, flows: FlowType[]): FlowType[] {
@@ -19,12 +20,30 @@ export default function sortAndFilterFlows(defaultFlow: FlowType, flows: FlowTyp
       }
       return 0;
     })
-    .map((f) => {
-      return {
-        ...f,
-        wallets: f.wallets.filter((w) =>
-          SUPPORTED_CHAINS.map((c) => c.id as number).includes(w.network)
-        )
-      };
+    .map((f) => sortAndFilterFlowWallets(f));
+}
+
+export function sortAndFilterFlowWallets(flow: FlowType): FlowType {
+  return {
+    ...flow,
+    wallets: sortAndFilterWallets(flow.wallets)
+  };
+}
+
+export function sortAndFilterWallets(wallets: FlowWalletType[]): FlowWalletType[] {
+  const { chains } = getNetwork();
+  return wallets
+    .filter((w) => SUPPORTED_CHAINS.map((c) => c.id as number).includes(w.network))
+    .sort((a, b) => {
+      console.log(a, b);
+      if (chains.find((c) => c.id === a.network)?.testnet === true) {
+        return 1;
+      }
+
+      if (chains.find((c) => c.id === b.network)?.testnet === true) {
+        return -1;
+      }
+
+      return 0;
     });
 }
