@@ -107,7 +107,7 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
                   {socialInfo.lensFollow && (
                     <Stack spacing={1} direction="row" alignItems="center">
                       <Avatar src="lens.svg" sx={{ width: 15, height: 15 }} />
-                      <Typography variant="caption" fontWeight="bold">
+                      <Typography variant="caption" fontWeight="bold" color={green.A700}>
                         {socialInfo.lensFollow === 'mutual'
                           ? 'Mutual follow on lens'
                           : 'You follow them on lens'}

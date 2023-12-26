@@ -180,7 +180,7 @@ export function SearchProfileListItem(
                       <Stack spacing={1} direction="row" alignItems="center">
                         <Avatar src="lens.svg" sx={{ width: 15, height: 15 }} />
                         <Typography variant="caption" fontWeight="bold">
-                          {profileWithSocials.meta.farcasterFollow === 'mutual'
+                          {profileWithSocials.meta.lensFollow === 'mutual'
                             ? 'Mutual follow'
                             : 'You follow them'}
                         </Typography>
