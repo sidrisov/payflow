@@ -9,7 +9,9 @@ import {
   TextField,
   InputAdornment,
   Avatar,
-  CircularProgress
+  CircularProgress,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 
@@ -48,9 +50,8 @@ export default function OnboardingDialog({
   code: paramCode,
   ...props
 }: OnboardingDialogProps) {
-  function handleCloseCampaignDialog() {
-    closeStateCallback();
-  }
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [displayName, setDisplayName] = useState<string>(profile.displayName ?? '');
   const [username, setUsername] = useState<string>(paramUsername ?? '');
@@ -75,6 +76,10 @@ export default function OnboardingDialog({
       cache: true
     }
   );
+
+  function handleCloseCampaignDialog() {
+    closeStateCallback();
+  }
 
   // make a best effort to pull social info for the user
   useMemo(async () => {
@@ -234,26 +239,81 @@ export default function OnboardingDialog({
         </Box>
       </DialogTitle>
       <DialogContent>
-        <Stack m={1} spacing={3}>
-          {whitelisted ? (
-            <Typography textAlign="center" color={lightGreen.A700}>
-              Congratulations 🎉 Your identity is whitelisted!
-            </Typography>
-          ) : (
+        <Box
+          height="100%"
+          display="flex"
+          flexDirection="column"
+          justifyContent={isMobile ? 'space-between' : 'flex-start'}
+          p={1}>
+          <Stack mb={3} spacing={3}>
+            {whitelisted ? (
+              <Typography textAlign="center" color={lightGreen.A700}>
+                Congratulations 🎉 Your identity is whitelisted!
+              </Typography>
+            ) : (
+              <TextField
+                error={code !== '' && !codeValid}
+                helperText={code && !codeValid && 'invitation code is not valid'}
+                fullWidth
+                value={code}
+                label={'Invitation Code'}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      {code ? (
+                        codeValid ? (
+                          <Check sx={{ color: green.A700 }} />
+                        ) : (
+                          <Error sx={{ color: red.A400 }} />
+                        )
+                      ) : (
+                        <></>
+                      )}
+                    </InputAdornment>
+                  ),
+                  inputProps: { maxLength: 16, inputMode: 'text' },
+                  sx: { borderRadius: 5 }
+                }}
+                onChange={async (event) => {
+                  setCode(event.target.value.toLowerCase());
+                }}
+              />
+            )}
             <TextField
-              error={code !== '' && !codeValid}
-              helperText={code && !codeValid && 'invitation code is not valid'}
               fullWidth
-              value={code}
-              label={'Invitation Code'}
+              value={displayName}
+              label={'Display Name'}
               InputProps={{
+                inputProps: { maxLength: 16, inputMode: 'text' },
+                sx: { borderRadius: 5 }
+              }}
+              onChange={async (event) => {
+                setDisplayName(event.target.value);
+              }}
+            />
+
+            <TextField
+              error={username !== '' && (!usernameAvailable || !usernameValid)}
+              helperText={
+                (username && !usernameAvailable && 'username not available') ||
+                (!usernameValid && 'username invalid format')
+              }
+              fullWidth
+              value={username}
+              label={'Username'}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Typography variant="subtitle2">payflow.me/</Typography>
+                  </InputAdornment>
+                ),
                 endAdornment: (
                   <InputAdornment position="end">
-                    {code ? (
-                      codeValid ? (
+                    {username ? (
+                      usernameAvailable && usernameValid ? (
                         <Check sx={{ color: green.A700 }} />
                       ) : (
-                        <Error sx={{ color: red.A400 }} />
+                        <Error color="error" />
                       )
                     ) : (
                       <></>
@@ -264,77 +324,28 @@ export default function OnboardingDialog({
                 sx: { borderRadius: 5 }
               }}
               onChange={async (event) => {
-                setCode(event.target.value.toLowerCase());
+                setUsername(event.target.value.toLowerCase());
               }}
             />
-          )}
-          <TextField
-            fullWidth
-            value={displayName}
-            label={'Display Name'}
-            InputProps={{
-              inputProps: { maxLength: 16, inputMode: 'text' },
-              sx: { borderRadius: 5 }
-            }}
-            onChange={async (event) => {
-              setDisplayName(event.target.value);
-            }}
-          />
 
-          <TextField
-            error={username !== '' && (!usernameAvailable || !usernameValid)}
-            helperText={
-              (username && !usernameAvailable && 'username not available') ||
-              (!usernameValid && 'username invalid format')
-            }
-            fullWidth
-            value={username}
-            label={'Username'}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Typography variant="subtitle2">payflow.me/</Typography>
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  {username ? (
-                    usernameAvailable && usernameValid ? (
-                      <Check sx={{ color: green.A700 }} />
-                    ) : (
-                      <Error color="error" />
-                    )
-                  ) : (
-                    <></>
-                  )}
-                </InputAdornment>
-              ),
-              inputProps: { maxLength: 16, inputMode: 'text' },
-              sx: { borderRadius: 5 }
-            }}
-            onChange={async (event) => {
-              setUsername(event.target.value.toLowerCase());
-            }}
-          />
-
-          <TextField
-            fullWidth
-            value={profileImage}
-            label={'Profile Image'}
-            InputProps={{
-              inputProps: { maxLength: 128, inputMode: 'url' },
-              sx: { borderRadius: 5 },
-              endAdornment: (
-                <InputAdornment position="end">
-                  {profileImage && <Avatar src={profileImage} />}
-                </InputAdornment>
-              )
-            }}
-            onChange={async (event) => {
-              setProfileImage(event.target.value);
-            }}
-          />
-
+            <TextField
+              fullWidth
+              value={profileImage}
+              label={'Profile Image'}
+              InputProps={{
+                inputProps: { maxLength: 128, inputMode: 'url' },
+                sx: { borderRadius: 5 },
+                endAdornment: (
+                  <InputAdornment position="end">
+                    {profileImage && <Avatar src={profileImage} />}
+                  </InputAdornment>
+                )
+              }}
+              onChange={async (event) => {
+                setProfileImage(event.target.value);
+              }}
+            />
+          </Stack>
           <LoadingButton
             loading={loadingWallets || loadingUpdateProfile}
             disabled={!usernameAvailable || !usernameValid || !(whitelisted || codeValid)}
@@ -360,7 +371,7 @@ export default function OnboardingDialog({
             sx={{ borderRadius: 5 }}>
             Complete
           </LoadingButton>
-        </Stack>
+        </Box>
       </DialogContent>
     </Dialog>
   );

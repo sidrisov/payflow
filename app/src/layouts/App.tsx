@@ -5,8 +5,6 @@ import { AppBar, IconButton, Toolbar, Box, Stack, Typography, Button, Avatar } f
 
 import { Home, HomeOutlined, AppsOutlined } from '@mui/icons-material';
 
-import Nav from '../components/Navigation';
-
 import { ProfileContext } from '../contexts/UserContext';
 import HideOnScroll from '../components/HideOnScroll';
 import { useAccount, useContractRead, useEnsAddress } from 'wagmi';
@@ -25,8 +23,6 @@ import HomeLogo from '../components/Logo';
 import { comingSoonToast } from '../components/Toasts';
 import { Chain } from '@rainbow-me/rainbowkit';
 import ProfileAvatar from '../components/ProfileAvatar';
-
-const drawerWidth = 151;
 
 export default function AppLayout({
   profile,
@@ -49,8 +45,6 @@ export default function AppLayout({
   const [walletBalances, setWalletBalances] = useState<Map<string, bigint>>(new Map());
   const [smartAccountAllowedChains, setSmartAccountAllowedChains] = useState<Chain[]>([]);
   const [initiateFlowsRefresh, setInitiateFlowsRefresh] = useState(false);
-
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   const [authorized, setAuthorized] = useState<boolean>(false);
 
@@ -75,10 +69,6 @@ export default function AppLayout({
     select: (data) => Number(formatUnits(data as bigint, 8)),
     cacheTime: 10_000
   });
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
 
   useEffect(() => {
     if (isConnected && profile) {
@@ -107,7 +97,6 @@ export default function AppLayout({
     }
   }, [flows, initiateFlowsRefresh]); */
 
-  const drawer = <Nav />;
   return (
     <ProfileContext.Provider
       value={{
@@ -123,133 +112,86 @@ export default function AppLayout({
         ethUsdPrice
       }}>
       {authorized && (
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between'
-          }}>
-          {/* <Box component="nav" sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
-              <Drawer
-                variant="temporary"
-                open={mobileOpen}
-                onClose={handleDrawerToggle}
-                ModalProps={{
-                  keepMounted: true
-                }}
-                sx={{
-                  display: { xs: 'block', sm: 'none' },
-                  '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth }
-                }}>
-                {drawer}
-              </Drawer>
-              {
-                <Drawer
-                  variant="permanent"
-                  sx={{
-                    display: { xs: 'none', sm: 'block' },
-                    '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth }
-                  }}
-                  open>
-                  {drawer}
-                </Drawer>
-              }
-            </Box> */}
-          <Box flexGrow={1}>
-            <HideOnScroll>
-              <AppBar
-                position="sticky"
-                color="transparent"
-                elevation={0}
-                sx={{ backdropFilter: 'blur(5px)' }}>
-                <Toolbar>
-                  {/*                     <Box>
-                      <IconButton
-                        color="inherit"
-                        onClick={handleDrawerToggle}
-                        sx={{ display: { sm: 'none' } }}>
-                        <MenuIcon />
-                      </IconButton>
-                    </Box> */}
-                  <Box
-                    display="flex"
-                    flexDirection="row"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    flexGrow={1}>
-                    <HomeLogo />
-                    <Stack direction="row" alignItems="center">
-                      <IconButton
-                        color={location.pathname === '/home' ? 'inherit' : undefined}
-                        onClick={() => navigate('/home')}>
-                        {location.pathname === '/home' ? <Home /> : <HomeOutlined />}
-                      </IconButton>
+        <Box height="100vh" display="flex" flexDirection="column" justifyContent="flex-start">
+          <HideOnScroll>
+            <AppBar
+              position="sticky"
+              color="transparent"
+              elevation={0}
+              sx={{ backdropFilter: 'blur(5px)' }}>
+              <Toolbar>
+                <Box
+                  display="flex"
+                  flexDirection="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  flexGrow={1}>
+                  <HomeLogo />
+                  <Stack direction="row" alignItems="center">
+                    <IconButton
+                      color={location.pathname === '/home' ? 'inherit' : undefined}
+                      onClick={() => navigate('/home')}>
+                      {location.pathname === '/home' ? <Home /> : <HomeOutlined />}
+                    </IconButton>
 
-                      <IconButton
-                        color={location.pathname === '/flows' ? 'inherit' : undefined}
-                        onClick={() => comingSoonToast()}>
-                        <AppsOutlined />
-                      </IconButton>
+                    <IconButton
+                      color={location.pathname === '/flows' ? 'inherit' : undefined}
+                      onClick={() => comingSoonToast()}>
+                      <AppsOutlined />
+                    </IconButton>
 
-                      {/*
+                    {/*
                       <IconButton
                         color={location.pathname === '/requests' ? 'inherit' : undefined}
                         onClick={() => comingSoonToast()}>
                         {location.pathname === '/requests' ? <Payments /> : <PaymentsOutlined />}
                       </IconButton> */}
 
-                      <Box
-                        ml={1}
-                        display="flex"
-                        flexDirection="row"
-                        alignItems="center"
-                        component={Button}
-                        color="inherit"
-                        sx={{
-                          width: 120,
-                          borderRadius: 5,
-                          border: 1,
-                          borderColor: 'inherit',
-                          textTransform: 'none',
-                          justifyContent: 'space-evenly'
-                        }}
-                        onClick={async () => {
-                          setOpenSearchProfile(true);
-                        }}>
-                        <Avatar src="payflow.png" sx={{ width: 24, height: 24 }} />
-                        <Typography variant="subtitle2">Search ... </Typography>
-                      </Box>
-                    </Stack>
-                    <Stack direction="row" spacing={0.5} alignItems="center">
-                      {/*                       <IconButton color="inherit" onClick={() => comingSoonToast()}>
+                    <Box
+                      ml={1}
+                      display="flex"
+                      flexDirection="row"
+                      alignItems="center"
+                      component={Button}
+                      color="inherit"
+                      sx={{
+                        width: 120,
+                        borderRadius: 5,
+                        border: 1,
+                        borderColor: 'inherit',
+                        textTransform: 'none',
+                        justifyContent: 'space-evenly'
+                      }}
+                      onClick={async () => {
+                        setOpenSearchProfile(true);
+                      }}>
+                      <Avatar src="payflow.png" sx={{ width: 24, height: 24 }} />
+                      <Typography variant="subtitle2">Search ... </Typography>
+                    </Box>
+                  </Stack>
+                  <Stack direction="row" spacing={0.5} alignItems="center">
+                    {/*                       <IconButton color="inherit" onClick={() => comingSoonToast()}>
                         <Badge variant="dot" color="info">
                           <NotificationsOutlined />
                         </Badge>
                       </IconButton> */}
 
-                      <IconButton
-                        size="small"
-                        onClick={async (event) => {
-                          setProfileMenuAnchorEl(event.currentTarget);
-                          setOpenProfileMenu(true);
-                        }}>
-                        <ProfileAvatar profile={profile} sx={{ width: 36, height: 36 }} />
-                      </IconButton>
-                    </Stack>
-                  </Box>
-                </Toolbar>
-              </AppBar>
-            </HideOnScroll>
+                    <IconButton
+                      size="small"
+                      onClick={async (event) => {
+                        setProfileMenuAnchorEl(event.currentTarget);
+                        setOpenProfileMenu(true);
+                      }}>
+                      <ProfileAvatar profile={profile} sx={{ width: 36, height: 36 }} />
+                    </IconButton>
+                  </Stack>
+                </Box>
+              </Toolbar>
+            </AppBar>
+          </HideOnScroll>
 
-            <Box
-              sx={{
-                mt: 3,
-                flexGrow: 1,
-                display: 'flex',
-                flexDirection: 'row'
-              }}>
-              <Outlet />
-            </Box>
+          <Box display="flex" mt={3} height="100%">
+            <Outlet />
           </Box>
         </Box>
       )}
