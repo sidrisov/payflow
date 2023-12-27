@@ -35,7 +35,6 @@ export function sortAndFilterWallets(wallets: FlowWalletType[]): FlowWalletType[
   return wallets
     .filter((w) => SUPPORTED_CHAINS.map((c) => c.id as number).includes(w.network))
     .sort((a, b) => {
-      console.log(a, b);
       if (chains.find((c) => c.id === a.network)?.testnet === true) {
         return 1;
       }

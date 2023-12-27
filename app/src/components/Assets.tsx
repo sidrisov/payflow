@@ -32,7 +32,7 @@ export default function Assets(props: {
             Number((right.balance?.value ?? BigInt(0)) - (left.balance?.value ?? BigInt(0)))
           )
           .map((assetBalance) => {
-            console.log(assetBalance);
+            console.debug(assetBalance);
             return (
               <NetworkAssetBalanceSection
                 key={`network_asset_balance_${assetBalance.asset.chainId}_${assetBalance.asset.address}_${assetBalance.asset.token}`}

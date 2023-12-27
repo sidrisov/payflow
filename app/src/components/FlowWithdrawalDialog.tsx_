@@ -65,7 +65,7 @@ export default function FlowWithdrawalDialog({
   const withdrawalToastId = useRef<Id>();
 
   const sendTransaction = async () => {
-    console.log(wallet);
+    console.debug(wallet);
 
     if (withdrawAmount && ethersSigner) {
       withdrawalToastId.current = toast.loading(`Loading ...`);
@@ -133,9 +133,9 @@ export default function FlowWithdrawalDialog({
           const response = await axios.put(`${API_URL}/api/flows/${flow.uuid}/wallet`, wallet, {
             withCredentials: true
           });
-          console.log(response.status);
+          console.debug(response.status);
         } catch (error) {
-          console.log(error);
+          console.error(error);
           toast.update(withdrawalToastId.current, {
             render: `Failed to save wallet!`,
             type: 'error',
@@ -180,7 +180,7 @@ export default function FlowWithdrawalDialog({
         hash: txHash
       })) as TransactionReceipt;
 
-      console.log('Receipt: ', receipt);
+      console.debug('Receipt: ', receipt);
 
       if (receipt && receipt.status === 'success') {
         if (withdrawalToastId.current) {

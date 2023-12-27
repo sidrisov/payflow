@@ -83,7 +83,7 @@ export const useSafeTransfer = (): {
     } catch (error) {
       const message = (error as Error).message;
 
-      console.log(message);
+      console.debug(message);
       if (message.includes('ACTION_REJECTED')) {
         setStatus('rejected');
       }
@@ -91,7 +91,7 @@ export const useSafeTransfer = (): {
         setStatus('insufficient_fees');
       }
 
-      console.log(error);
+      console.error(error);
       setConfirmed(false);
       setError(true);
     } finally {

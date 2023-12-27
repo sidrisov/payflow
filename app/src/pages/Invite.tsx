@@ -44,7 +44,7 @@ export default function Invite() {
         setCodes(codes);
       }
 
-      console.log(invitations);
+      console.debug(invitations);
       setInvitations(invitations);
     } finally {
       setLoadingInvitations(false);

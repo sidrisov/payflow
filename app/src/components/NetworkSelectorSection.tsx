@@ -16,12 +16,14 @@ export default function NetworkSelectorSection({
   return (
     <Stack p={1} direction="row" spacing={1} overflow="auto" {...props}>
       <NetworkSelectorChip
+        key={'network_selector_section_all'}
         selectedNetwork={selectedNetwork}
         setSelectedNetwork={setSelectedNetwork}
       />
       {wallets.map((wallet) => {
         return (
           <NetworkSelectorChip
+            key={`network_selector_section_${wallet.network}`}
             wallet={wallet}
             selectedNetwork={selectedNetwork}
             setSelectedNetwork={setSelectedNetwork}

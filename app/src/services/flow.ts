@@ -7,7 +7,7 @@ export default async function saveFlow(flow: {}): Promise<boolean | undefined> {
     const response = await axios.post(`${API_URL}/api/flows`, flow, { withCredentials: true });
     return response.status === 201;
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 

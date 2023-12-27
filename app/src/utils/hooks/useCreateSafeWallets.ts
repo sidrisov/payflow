@@ -26,7 +26,7 @@ export const useCreateSafeWallets = (): {
       setLoading(false);
       setWallets(wallets);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       setError(true);
       setLoading(false);
     }

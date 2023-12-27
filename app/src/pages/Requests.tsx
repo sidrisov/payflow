@@ -67,7 +67,7 @@ export default function Requests() {
 
       setRequests(response.data);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }
 
@@ -92,9 +92,8 @@ export default function Requests() {
           hash: request.proof
         });
 
-        console.log(transaction);
+        console.debug(transaction);
         if (transaction && formatEther(transaction.value) === request.amount) {
-          console.log('I am here');
           const response = await axios.post(
             `${API_URL}/api/requests/${request.uuid}/payed`,
             {},

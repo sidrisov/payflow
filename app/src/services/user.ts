@@ -12,7 +12,7 @@ export async function me(): Promise<ProfileType | undefined> {
     if (response.status === 200) {
       return response.data as ProfileType;
     }
-    console.log(response.data);
+    console.debug(response.data);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       if (!error.response || error.response.status !== 401) {
@@ -28,9 +28,9 @@ export async function getAllActiveProfiles(): Promise<ProfileType[] | undefined>
     if (response.status === 200) {
       return response.data as ProfileType[];
     }
-    console.log(response.data);
+    console.debug(response.data);
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 
@@ -84,11 +84,11 @@ export async function updateProfile(
         },
         withCredentials: true
       });
-      console.log(response.status);
+      console.debug(response.status);
 
       return response.status === 200;
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }
 }

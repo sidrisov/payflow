@@ -118,7 +118,7 @@ export async function safeDeploy({
 
       const proxyFactoryAddress = readOnlyProxyFactoryContract.getAddress();
 
-      console.log(proxyFactoryAddress);
+      console.debug(proxyFactoryAddress);
 
       const readOnlyFallbackHandlerContract =
         await ethAdapter.getCompatibilityFallbackHandlerContract({
@@ -156,7 +156,7 @@ export async function safeDeploy({
         paymentReceiver: ZERO_ADDRESS
       };
 
-      console.log(callData);
+      console.debug(callData);
 
       const initializer = readOnlySafeContract.encode('setup', [
         callData.owners,
@@ -169,14 +169,14 @@ export async function safeDeploy({
         callData.paymentReceiver
       ]);
 
-      console.log(initializer);
+      console.debug(initializer);
 
       const createProxyWithNonceCallData = readOnlyProxyFactoryContract.encode(
         'createProxyWithNonce',
         [safeContractAddress, initializer, saltNonce]
       );
 
-      console.log(createProxyWithNonceCallData);
+      console.debug(createProxyWithNonceCallData);
 
       const relayResponse: RelayResponse = await relayKit.sendSponsorTransaction(
         proxyFactoryAddress,
@@ -366,7 +366,7 @@ export async function safeTransferEthWithDeploy(
     safeDeploymentConfig
   };
 
-  console.log(predictedSafe);
+  console.debug(predictedSafe);
 
   const safeSdk = isSafeDeployed
     ? await Safe.create({ ethAdapter, safeAddress })
@@ -388,7 +388,7 @@ export async function safeTransferEthWithDeploy(
     keccak256(toBytes(saltNonce))
   );
 
-  console.log(
+  console.debug(
     `isSafeDeployed: ${isSafeDeployed} - pre-generated before: ${safeAddress} vs safeSdk.getAddress() ${await safeSdk.getAddress()} vs safeFactory.predictSafeAddress ${predictedAddress}`
   );
 

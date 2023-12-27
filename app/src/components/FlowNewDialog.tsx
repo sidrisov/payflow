@@ -63,10 +63,10 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
         },
         { withCredentials: true }
       );
-      console.log(response.status);
+      console.debug(response.status);
       toast.success(`Flow: ${title} created`);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast.error('Try again!');
     }
 

@@ -51,7 +51,7 @@ export const useTransactionsFetcher = (wallets: FlowWalletType[]): ActivityFetch
           wallets
         );
 
-        console.log(walletProfiles);
+        console.debug(walletProfiles);
 
         if (status === 200 && walletProfiles) {
           txs.forEach((tx) => {
@@ -129,7 +129,7 @@ function parseTxHistoryResponse(wallet: FlowWalletType, internalTxs: any[], txs:
     return txInfo;
   });
 
-  console.log(txsInfo);
+  console.debug(txsInfo);
 
   return interalTxsInfo
     .concat(txsInfo)

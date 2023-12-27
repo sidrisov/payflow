@@ -170,7 +170,7 @@ export default function OnboardingDialog({
   }, [code, whitelisted]);
 
   async function createMainFlow() {
-    console.log(profile.address, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
+    console.debug(profile.address, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
     create(profile.address, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
   }
 

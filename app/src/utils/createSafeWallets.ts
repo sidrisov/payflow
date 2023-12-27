@@ -41,7 +41,7 @@ export default async function createSafeWallets(
       saltNonce: keccak256(toBytes(saltNonce))
     } as SafeDeploymentConfig;
 
-    console.log(safeAccountConfig, safeDeploymentConfig);
+    console.debug(safeAccountConfig, safeDeploymentConfig);
 
     const safe = await Safe.create({
       ethAdapter: ethAdapter,
@@ -55,7 +55,7 @@ export default async function createSafeWallets(
 
     const isSafeDeployed = await ethAdapter.isContractDeployed(predictedAddress);
 
-    console.log(predictedAddress, chain.name, isSafeDeployed);
+    console.debug(predictedAddress, chain.name, isSafeDeployed);
 
     return {
       network: chain.id,

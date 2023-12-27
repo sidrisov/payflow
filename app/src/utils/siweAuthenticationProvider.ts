@@ -22,7 +22,7 @@ const authenticationAdapter = createAuthenticationAdapter({
     return message.prepareMessage();
   },
   verify: async ({ message, signature }) => {
-    console.log(message, signature);
+    console.debug(message, signature);
     const verifyRes = await fetch(`${API_URL}/api/auth/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

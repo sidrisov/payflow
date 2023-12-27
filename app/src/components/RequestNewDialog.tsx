@@ -72,10 +72,10 @@ export default function RequestNewDialog({ closeStateCallback, ...props }: Reque
           } as PaymentRequestType,
           { withCredentials: true }
         );
-        console.log(response.status);
+        console.debug(response.status);
         toast.success(`Payment request '${title}' created`);
       } catch (error) {
-        console.log(error);
+        console.error(error);
         toast.error('Try again!');
       }
 

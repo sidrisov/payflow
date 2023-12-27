@@ -42,11 +42,11 @@ export default function Login({
   }, [chain, pendingChainId, authStatus]);
 
   useEffect(() => {
-    console.log(profile, authStatus);
+    console.debug(profile, authStatus);
 
     if (profile && address === profile.address && authStatus === 'authenticated') {
       if (profile.username && profile.defaultFlow) {
-        console.log('redirecting to /');
+        console.debug('redirecting to /');
         navigate('/');
       }
     }

@@ -22,7 +22,9 @@ export default function Activity(props: AssetsProps) {
           .filter((tx) => {
             return selectedNetwork ? tx.chainId === selectedNetwork.id : true;
           })
-          .map((txInfo) => <ActivitySection txInfo={txInfo} />)
+          .map((txInfo) => (
+            <ActivitySection key={`activity_section_${txInfo.hash}`} txInfo={txInfo} />
+          ))
       ) : (
         <Typography variant="subtitle2" textAlign="center">
           Couldn't fetch. Try again!
