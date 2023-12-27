@@ -1,4 +1,4 @@
-import { Divider, ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material';
+import { Box, Divider, ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material';
 import { MetaType } from '../types/ProfleType';
 import {
   AccountBalanceWallet,
@@ -60,7 +60,7 @@ export function WalletMenu({ closeStateCallback, ...props }: MenuProps & CloseCa
         {appSettings.darkMode ? 'Dark' : 'Light'}
       </MenuItem>
       {isConnected && (
-        <>
+        <div>
           <Divider />
           <MenuItem
             sx={{ color: 'red' }}
@@ -73,7 +73,7 @@ export function WalletMenu({ closeStateCallback, ...props }: MenuProps & CloseCa
             </ListItemIcon>
             Disconnect
           </MenuItem>
-        </>
+        </div>
       )}
     </Menu>
   );

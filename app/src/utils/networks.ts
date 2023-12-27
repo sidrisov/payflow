@@ -1,16 +1,15 @@
 import { getNetwork } from 'wagmi/actions';
 import {
   mainnet,
-  arbitrumGoerli,
   base,
   baseGoerli,
-  lineaTestnet,
   modeTestnet,
   optimism,
   optimismGoerli,
-  polygonZkEvmTestnet,
   zkSyncSepoliaTestnet,
-  zoraTestnet
+  arbitrum,
+  zora,
+  zkSync
 } from 'wagmi/chains';
 
 const ENABLED_CHAINS = JSON.parse(import.meta.env.VITE_ENABLED_CHAINS) as string[];
@@ -18,10 +17,12 @@ const ENABLED_CHAINS = JSON.parse(import.meta.env.VITE_ENABLED_CHAINS) as string
 export const SUPPORTED_CHAINS = [
   base,
   optimism,
+  arbitrum,
+  zora,
+  zkSync,
   mainnet,
-  optimismGoerli,
   baseGoerli,
-  arbitrumGoerli,
+  optimismGoerli,
   {
     ...modeTestnet,
     iconUrl:
@@ -30,23 +31,8 @@ export const SUPPORTED_CHAINS = [
   {
     ...zkSyncSepoliaTestnet,
     iconUrl: 'https://zksync.io/apple-touch-icon.png'
-  },
-  lineaTestnet,
-  //polygonZkEvmTestnet,
-  zoraTestnet
+  }
 ].filter((c) => ENABLED_CHAINS.includes(c.network));
-
-export const AA_COMPATIBLE_CHAINS = [
-  optimismGoerli.name,
-  baseGoerli.name,
-  zoraTestnet.name,
-  modeTestnet.name,
-  zkSyncSepoliaTestnet.name,
-  lineaTestnet.name,
-  polygonZkEvmTestnet.name,
-  optimism.name,
-  base.name
-] as string[];
 
 export const DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS = [base, optimism, baseGoerli];
 
