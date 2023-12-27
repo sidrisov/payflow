@@ -44,7 +44,7 @@ export function ProfileMenu({
           closeStateCallback();
           navigate(`/${profile.username}`);
         }}>
-        <ProfileSection profile={profile} />
+        <ProfileSection maxWidth={150} profile={profile} />
       </MenuItem>
       <Divider />
       <MenuItem

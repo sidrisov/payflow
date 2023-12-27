@@ -10,8 +10,8 @@ export async function getAllInvitations(): Promise<InvitationType[] | undefined>
     if (response.status === 200) {
       return response.data as InvitationType[];
     }
-    console.log(response.data);
+    console.debug(response.data);
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }

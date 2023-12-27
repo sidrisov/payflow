@@ -415,7 +415,7 @@ export default function Widgets() {
                         }
                       }}
                       onChange={(event) => {
-                        console.log(event.target.value);
+                        console.debug(event.target.value);
                         setWidgetAmount(Number.parseInt(event.target.value));
                       }}
                     />

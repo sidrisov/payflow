@@ -13,23 +13,22 @@ import {
   useMediaQuery,
   useTheme
 } from '@mui/material';
-import axios from 'axios';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ProfileType } from '../types/ProfleType';
+import { ProfileType, SelectedProfileWithSocialsType } from '../types/ProfleType';
 import { HomeOutlined, Menu } from '@mui/icons-material';
-import { API_URL } from '../utils/urlConstants';
 import SearchProfileDialog from '../components/SearchProfileDialog';
 import { green, grey, orange } from '@mui/material/colors';
 import { AppSettings } from '../types/AppSettingsType';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { PublicProfileCard } from '../components/PublicProfileCard';
-import { SUPPORTED_CHAINS } from '../utils/networks';
 import HideOnScroll from '../components/HideOnScroll';
 import HomeLogo from '../components/Logo';
 import { WalletMenu } from '../components/WalletMenu';
 import { useAccount } from 'wagmi';
+import PayProfileDialog from '../components/PayProfileDialog';
+import { getProfileByAddressOrName } from '../services/user';
 
 export default function PublicProfile({ appSettings }: { appSettings: AppSettings }) {
   const theme = useTheme();
@@ -49,19 +48,13 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
 
   const { address } = useAccount();
 
+  const [selectedRecipient, setSelectedRecipient] = useState<SelectedProfileWithSocialsType>();
+
   useMemo(async () => {
     if (username) {
       setLoadingProfile(true);
       try {
-        const response = await axios.get(`${API_URL}/api/user/${username}`);
-        const profile = (await response.data) as ProfileType;
-
-        if (profile.defaultFlow) {
-          const wallets = profile.defaultFlow?.wallets.filter((w) =>
-            SUPPORTED_CHAINS.map((c) => c.id as number).includes(w.network)
-          );
-          profile.defaultFlow.wallets = wallets;
-        }
+        const profile = await getProfileByAddressOrName(username);
         setProfile(profile);
       } catch (error) {
         console.error(error);
@@ -231,6 +224,11 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
       </Container>
       <SearchProfileDialog
         address={address}
+        profileRedirect={true}
+        walletMenuEnabled={true}
+        selectProfileCallback={(selectedProfileWithSocials) => {
+          setSelectedRecipient(selectedProfileWithSocials);
+        }}
         open={openSearchProfile}
         sx={{
           backdropFilter: 'blur(10px)'
@@ -239,6 +237,15 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
           setOpenSearchProfile(false);
         }}
       />
+      {selectedRecipient && (
+        <PayProfileDialog
+          open={selectedRecipient !== undefined}
+          recipient={selectedRecipient}
+          closeStateCallback={async () => {
+            setSelectedRecipient(undefined);
+          }}
+        />
+      )}
       <WalletMenu
         anchorEl={walletMenuAnchorEl}
         open={openWalletMenu}

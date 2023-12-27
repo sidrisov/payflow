@@ -60,7 +60,7 @@ export default function Accounts() {
   const { loading, fetched, balances } = useBalanceFetcher(assets);
   const activityFetcherResult = useTransactionsFetcher(selectedFlow?.wallets ?? []);
 
-  console.log('Loading balances: ', loading, balances);
+  console.debug('Loading balances: ', loading, balances);
 
   const [selectedNetwork, setSelectedNetwork] = useState<Chain>();
 

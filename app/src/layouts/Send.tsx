@@ -198,7 +198,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
         hash: txHash
       });
 
-      console.log('Receipt: ', receipt);
+      console.debug('Receipt: ', receipt);
 
       if (receipt && receipt.status === 'success') {
         if (sendToastId.current) {

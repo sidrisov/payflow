@@ -4,7 +4,7 @@ import org.springframework.boot.buildpack.platform.build.PullPolicy
 
 plugins {
 	application
-	id("org.springframework.boot") version "3.2.0"
+	id("org.springframework.boot") version "3.2.1"
 	id("io.spring.dependency-management") version "1.1.4"
 	id("com.google.cloud.artifactregistry.gradle-plugin") version "2.2.1"
 	id("io.freefair.lombok") version "8.4"
@@ -14,13 +14,13 @@ application {
     mainClass.set("ua.sinaver.web3.PayFlowApplication")
 }
 
-if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local") || project.hasProperty("gcp-staging")) {
+if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local")) {
 	extra["springCloudGcpVersion"] = "4.8.4"
 	extra["springCloudVersion"] = "2022.0.4"
 }
 
 group = "ua.sinaver.web3"
-version = "0.0.2-alpha"
+version = "0.0.3-alpha"
 
 java.sourceCompatibility = JavaVersion.VERSION_21
 
@@ -35,7 +35,7 @@ dependencies {
 	implementation ("org.springframework.boot:spring-boot-starter-actuator")
 	implementation ("org.springframework.session:spring-session-jdbc")
 
-	if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local") || project.hasProperty("gcp-staging")) {
+	if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local")) {
 		project.logger.info("Including GCP dependencies")
 		// gcp
 		implementation ("com.google.cloud:spring-cloud-gcp-starter")
@@ -67,7 +67,7 @@ dependencies {
 
 dependencyManagement {
   imports {
-	if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local") || project.hasProperty("gcp-staging")) {
+	if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local")) {
 		// gcp
     	mavenBom("com.google.cloud:spring-cloud-gcp-dependencies:${property("springCloudGcpVersion")}")
     	mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
@@ -90,10 +90,6 @@ tasks.withType<BootRun> {
 
 	if (project.hasProperty("gcp-local")) {
 		systemProperty("spring.profiles.active", "gcp-local")
-	}
-
-	if (project.hasProperty("gcp-staging")) {
-		systemProperty("spring.profiles.active", "gcp-staging")
 	}
 }
 

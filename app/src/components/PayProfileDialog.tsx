@@ -27,12 +27,7 @@ import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts
 import { Address, formatEther, formatUnits, parseEther } from 'viem';
 
 import { FlowWalletType } from '../types/FlowType';
-import {
-  MetaType,
-  ProfileType,
-  ProfileWithSocialsType,
-  SelectedProfileWithSocialsType
-} from '../types/ProfleType';
+import { MetaType, SelectedProfileWithSocialsType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -45,24 +40,20 @@ import { LoadingConnectWalletButton } from './LoadingConnectWalletButton';
 import { LoadingSwitchNetworkButton } from './LoadingSwitchNetworkButton';
 import { useRegularTransfer } from '../utils/hooks/useRegularTransfer';
 import { shortenWalletAddressLabel } from '../utils/address';
+import { SUPPORTED_CHAINS } from '../utils/networks';
 
 export type PayProfileDialogProps = DialogProps &
   CloseCallbackType & {
-    profile: ProfileType;
+    recipient: SelectedProfileWithSocialsType;
   };
 
 export default function PayProfileDialog({
   closeStateCallback,
-  profile,
+  recipient,
   ...props
 }: PayProfileDialogProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-  const recipient = {
-    type: 'profile',
-    data: { profile } as ProfileWithSocialsType
-  } as SelectedProfileWithSocialsType;
 
   const { address } = useAccount();
 
@@ -107,16 +98,18 @@ export default function PayProfileDialog({
   });
 
   useEffect(() => {
-    if (!profile || !address) {
+    if (!recipient || !address) {
       setSelectedWallet(undefined);
       setCompatibleWallets([]);
       return;
     }
 
     const compatibleSenderWallets =
-      profile.defaultFlow?.wallets.map(
-        (wallet) => ({ address, network: wallet.network } as FlowWalletType)
-      ) ?? [];
+      recipient.type === 'address'
+        ? SUPPORTED_CHAINS.map((c) => ({ address, network: c.id } as FlowWalletType))
+        : recipient.data.profile?.defaultFlow?.wallets.map(
+            (wallet) => ({ address, network: wallet.network } as FlowWalletType)
+          ) ?? [];
 
     setCompatibleWallets(compatibleSenderWallets);
 
@@ -237,7 +230,7 @@ export default function PayProfileDialog({
   }, [sendAmountUSD, chain?.id]);
 
   return (
-    profile && (
+    recipient && (
       <Dialog
         fullScreen={isMobile}
         onClose={closeStateCallback}

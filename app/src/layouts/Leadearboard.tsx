@@ -47,7 +47,7 @@ export default function Leaderboard() {
         }
   );
 
-  console.log(appSettings);
+  console.debug(appSettings);
 
   const [profiles, setProfiles] = useState<ProfileType[]>();
   const [loadingProfiles, setLoadingProfiles] = useState<boolean>();

@@ -40,7 +40,11 @@ export function WalletsPopover({
       }}>
       <Stack m={2} spacing={1} direction="column">
         {flow.wallets.map((wallet) => (
-          <WalletSection wallet={wallet} balance={calculateBalance(wallet)} />
+          <WalletSection
+            key={`wallet_popover_list_${wallet.network}`}
+            wallet={wallet}
+            balance={calculateBalance(wallet)}
+          />
         ))}
       </Stack>
     </Popover>

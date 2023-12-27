@@ -145,7 +145,10 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
       {openPayDialog && (
         <PayProfileDialog
           open={openPayDialog}
-          profile={profile}
+          recipient={{
+            type: 'profile',
+            data: { profile }
+          }}
           closeStateCallback={async () => setOpenPayDialog(false)}
         />
       )}

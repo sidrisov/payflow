@@ -106,10 +106,10 @@ export default function PaymentRequest({ appSettings, setAppSettings }: any) {
       const response = await axios.post(`${API_URL}/api/requests/${request?.uuid}/proof`, {
         txHash
       });
-      console.log(response.status);
+      console.debug(response.status);
       toast.success(`Payment request proof submitted`);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast.error('Try again!');
     }
   }
@@ -120,7 +120,7 @@ export default function PaymentRequest({ appSettings, setAppSettings }: any) {
         hash: txHash
       });
 
-      console.log('Receipt: ', receipt);
+      console.debug('Receipt: ', receipt);
 
       if (receipt && receipt.status === 'success') {
         if (requestToastId.current) {

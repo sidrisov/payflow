@@ -2,6 +2,7 @@ import axios from 'axios';
 import { ProfileType } from '../types/ProfleType';
 import { API_URL } from '../utils/urlConstants';
 import { Address } from 'viem';
+import { sortAndFilterFlowWallets } from '../utils/sortAndFilterFlows';
 
 export async function me(): Promise<ProfileType | undefined> {
   try {
@@ -11,7 +12,7 @@ export async function me(): Promise<ProfileType | undefined> {
     if (response.status === 200) {
       return response.data as ProfileType;
     }
-    console.log(response.data);
+    console.debug(response.data);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       if (!error.response || error.response.status !== 401) {
@@ -27,9 +28,9 @@ export async function getAllActiveProfiles(): Promise<ProfileType[] | undefined>
     if (response.status === 200) {
       return response.data as ProfileType[];
     }
-    console.log(response.data);
+    console.debug(response.data);
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 
@@ -40,14 +41,34 @@ export async function searchByListOfAddressesOrUsernames(searchParams: string[])
       indexes: null
     }
   });
-  return response.data as ProfileType[];
+  return (response.data as ProfileType[]).map((profile) => {
+    const defaultFlow = profile.defaultFlow
+      ? sortAndFilterFlowWallets(profile.defaultFlow)
+      : undefined;
+    return {
+      ...profile,
+      defaultFlow
+    };
+  });
 }
 
-export async function getProfileByAddress(address: Address) {
-  const response = await axios.get(`${API_URL}/api/user/${address}`, {
+export async function getProfileByAddressOrName(addressOrName: Address | string) {
+  const response = await axios.get(`${API_URL}/api/user/${addressOrName}`, {
     withCredentials: true
   });
-  return response.data as ProfileType;
+
+  const profile = response.data as ProfileType;
+  if (!profile) {
+    return;
+  }
+
+  const defaultFlow = profile.defaultFlow
+    ? sortAndFilterFlowWallets(profile.defaultFlow)
+    : undefined;
+  return {
+    ...profile,
+    defaultFlow
+  };
 }
 
 export async function updateProfile(
@@ -63,11 +84,11 @@ export async function updateProfile(
         },
         withCredentials: true
       });
-      console.log(response.status);
+      console.debug(response.status);
 
       return response.status === 200;
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }
 }

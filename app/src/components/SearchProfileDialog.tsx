@@ -15,7 +15,7 @@ import {
   Avatar
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
-import { ArrowBack, Clear, Search } from '@mui/icons-material';
+import { ArrowBack, Clear, Menu } from '@mui/icons-material';
 import { useMemo, useState } from 'react';
 import { ProfileWithSocialsType, SelectedProfileWithSocialsType } from '../types/ProfleType';
 
@@ -25,6 +25,7 @@ import { searchProfile, sortBySocialScore } from '../services/socials';
 
 import { useDebounce } from 'use-debounce';
 import { SearchProfileListItem } from './SearchProfileListItem';
+import { WalletMenu } from './WalletMenu';
 
 export type SelectProfileResultCallbackType = {
   selectProfileCallback?: (selectedProfileWithSocials: SelectedProfileWithSocialsType) => void;
@@ -34,11 +35,15 @@ export type SearchProfileDialogProps = DialogProps &
   CloseCallbackType &
   SelectProfileResultCallbackType & {
     address?: Address;
+    profileRedirect?: boolean;
+    walletMenuEnabled?: boolean;
   };
 
 // TODO: back button + title alignment hack - check with someone knowledgeable on proper solution
 export default function SearchProfileDialog({
   address,
+  profileRedirect,
+  walletMenuEnabled,
   closeStateCallback,
   selectProfileCallback,
   ...props
@@ -54,6 +59,9 @@ export default function SearchProfileDialog({
 
   const [profiles, setProfiles] = useState<ProfileWithSocialsType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+
+  const [walletMenuAnchorEl, setWalletMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [openWalletMenu, setOpenWalletMenu] = useState(false);
 
   function handleCloseCampaignDialog() {
     closeStateCallback();
@@ -90,15 +98,30 @@ export default function SearchProfileDialog({
             display="flex"
             flexDirection="row"
             alignItems="center"
-            justifyContent={isMobile ? 'flex-start' : 'center'}>
-            {isMobile && (
-              <IconButton onClick={closeStateCallback}>
-                <ArrowBack />
+            justifyContent={
+              walletMenuEnabled ? 'space-between' : isMobile ? 'flex-start' : 'center'
+            }>
+            <Stack direction="row" alignItems="center">
+              {isMobile && (
+                <IconButton onClick={closeStateCallback}>
+                  <ArrowBack />
+                </IconButton>
+              )}
+              <Typography ml={isMobile ? 2 : walletMenuEnabled ? 1 : 0} variant="h6">
+                Search
+              </Typography>
+            </Stack>
+
+            {walletMenuEnabled && (
+              <IconButton
+                color="inherit"
+                onClick={async (event) => {
+                  setWalletMenuAnchorEl(event.currentTarget);
+                  setOpenWalletMenu(true);
+                }}>
+                <Menu />
               </IconButton>
             )}
-            <Typography ml={isMobile ? 2 : 0} variant="h6">
-              Search Profile
-            </Typography>
           </Box>
 
           <TextField
@@ -158,10 +181,10 @@ export default function SearchProfileDialog({
                       profileWithSocials={profileWithSocials}
                       onClick={() => {
                         if (profileWithSocials.profile) {
-                          if (selectProfileCallback) {
-                            selectProfileCallback({ type: 'profile', data: profileWithSocials });
-                          } else {
+                          if (profileRedirect) {
                             navigate(`/${profileWithSocials.profile.username}`);
+                          } else if (selectProfileCallback) {
+                            selectProfileCallback({ type: 'profile', data: profileWithSocials });
                           }
                           closeStateCallback();
                         }
@@ -219,6 +242,14 @@ export default function SearchProfileDialog({
           )}
         </Box>
       </DialogContent>
+      {walletMenuEnabled && (
+        <WalletMenu
+          anchorEl={walletMenuAnchorEl}
+          open={openWalletMenu}
+          onClose={() => setOpenWalletMenu(false)}
+          closeStateCallback={() => setOpenWalletMenu(false)}
+        />
+      )}
     </Dialog>
   );
 }

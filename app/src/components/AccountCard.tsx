@@ -113,7 +113,10 @@ export function AccountCard(props: AccountNewDialogProps) {
               setOpenWalletDetailsPopover(true);
             }}>
             {[...Array(Math.min(4, selectedFlow.wallets.length))].map((_item, i) => (
-              <NetworkAvatar network={selectedFlow.wallets[i].network} />
+              <NetworkAvatar
+                key={`account_card_wallet_list_${selectedFlow.wallets[i].network}`}
+                network={selectedFlow.wallets[i].network}
+              />
             ))}
           </AvatarGroup>
         </Tooltip>

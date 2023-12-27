@@ -209,7 +209,7 @@ export default function FlowViewDialog({
         hash: txHash
       });
 
-      console.log('Receipt: ', receipt);
+      console.debug('Receipt: ', receipt);
 
       if (receipt && receipt.status === 'success') {
         if (newWalletToastId.current) {
@@ -248,14 +248,14 @@ export default function FlowViewDialog({
         const response = await axios.post(`${API_URL}/api/flows/${flow.uuid}/wallet`, flowWallet, {
           withCredentials: true
         });
-        console.log(response.status);
+        console.debug(response.status);
 
         const wallets = Array.from(flow.wallets);
         wallets.push(flowWallet);
         flow.wallets = wallets;
         toast.success(`Wallet ${shortenWalletAddressLabel(newAccountAddress)} added!`);
       } catch (error) {
-        console.log(error);
+        console.error(error);
         toast.error('Try again!');
       }
 
@@ -273,7 +273,7 @@ export default function FlowViewDialog({
           },
           withCredentials: true
         });
-        console.log(response.status);
+        console.debug(response.status);
 
         const wallets = flow.wallets.filter(
           (w) => !(w.address === wallet.address && w.network === wallet.network)
@@ -283,7 +283,7 @@ export default function FlowViewDialog({
 
         toast.success(`Wallet ${shortenWalletAddressLabel(wallet.address)} removed!`);
       } catch (error) {
-        console.log(error);
+        console.error(error);
         toast.error('Operation failed!');
       }
 

@@ -1,65 +1,47 @@
 import { getNetwork } from 'wagmi/actions';
 import {
   mainnet,
-  arbitrumGoerli,
   base,
   baseGoerli,
-  lineaTestnet,
   modeTestnet,
   optimism,
   optimismGoerli,
-  polygonZkEvmTestnet,
-  zkSyncTestnet,
-  zoraTestnet
+  zkSyncSepoliaTestnet,
+  arbitrum,
+  zora,
+  zkSync
 } from 'wagmi/chains';
 
 const ENABLED_CHAINS = JSON.parse(import.meta.env.VITE_ENABLED_CHAINS) as string[];
 
 export const SUPPORTED_CHAINS = [
-  optimismGoerli,
+  base,
+  optimism,
+  arbitrum,
+  zora,
+  zkSync,
+  mainnet,
   baseGoerli,
-  arbitrumGoerli,
+  optimismGoerli,
   {
     ...modeTestnet,
     iconUrl:
       'https://uploads-ssl.webflow.com/64c906a6ed3c4d809558853b/64d0b11158be9cdd5c89a2fe_webc.png'
   },
   {
-    ...zkSyncTestnet,
+    ...zkSyncSepoliaTestnet,
     iconUrl: 'https://zksync.io/apple-touch-icon.png'
-  },
-  lineaTestnet,
-  //polygonZkEvmTestnet,
-  zoraTestnet,
-  optimism,
-  base,
-  mainnet
+  }
 ].filter((c) => ENABLED_CHAINS.includes(c.network));
 
-export const AA_COMPATIBLE_CHAINS = [
-  optimismGoerli.name,
-  baseGoerli.name,
-  zoraTestnet.name,
-  modeTestnet.name,
-  zkSyncTestnet.name,
-  lineaTestnet.name,
-  polygonZkEvmTestnet.name,
-  optimism.name,
-  base.name
-] as string[];
-
-export const DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS = [
-  baseGoerli,
-  optimismGoerli,
-  base,
-  optimism
-  /*   arbitrumGoerli, */
-];
+export const DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS = [base, optimism, baseGoerli];
 
 export default function getNetworkImageSrc(network: number | string): string {
   const fileName =
     typeof network === 'number'
-      ? getNetwork().chains.find((c) => c.id === network)?.network
+      ? network === 1
+        ? 'ethereum'
+        : getNetwork().chains.find((c) => c.id === network)?.network
       : network;
 
   if (!fileName) {

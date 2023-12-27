@@ -51,7 +51,7 @@ export function isRelaySupported(chainId: number | undefined) {
 }
 
 export function getSponsoredCount() {
-  console.log(GELATO_SPONSORED_ENABLED);
+  console.debug(GELATO_SPONSORED_ENABLED);
   return GELATO_SPONSORED_ENABLED;
 }
 

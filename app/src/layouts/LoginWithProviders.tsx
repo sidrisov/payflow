@@ -20,9 +20,10 @@ import { ProfileType } from '../types/ProfleType';
 import { me } from '../services/user';
 import { SUPPORTED_CHAINS } from '../utils/networks';
 import { API_URL } from '../utils/urlConstants';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { AppSettings } from '../types/AppSettingsType';
 import { useMediaQuery } from '@mui/material';
+import CustomToastContainer from '../components/toasts/CustomToastContainer';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 
@@ -191,20 +192,7 @@ export default function AppWithProviders() {
           <Login authStatus={authStatus} profile={profile} settings={appSettings} />
         </RainbowKitProvider>
       </RainbowKitAuthenticationProvider>
-      <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        limit={5}
-        hideProgressBar={false}
-        newestOnTop={true}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored"
-        toastStyle={{ borderRadius: 20, textAlign: 'center' }}
-      />
+      <CustomToastContainer />
     </WagmiConfig>
   );
 }

@@ -148,11 +148,11 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: AccountN
       const response = await axios.post(`${API_URL}/api/accounts`, account, {
         withCredentials: true
       });
-      console.log(response.status);
+      console.debug(response.status);
 
       toast.success(`New account ${newAccountAddress} added`);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast.error('Try again!');
     }
 
