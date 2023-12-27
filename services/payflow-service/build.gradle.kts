@@ -4,7 +4,7 @@ import org.springframework.boot.buildpack.platform.build.PullPolicy
 
 plugins {
 	application
-	id("org.springframework.boot") version "3.2.0"
+	id("org.springframework.boot") version "3.2.1"
 	id("io.spring.dependency-management") version "1.1.4"
 	id("com.google.cloud.artifactregistry.gradle-plugin") version "2.2.1"
 	id("io.freefair.lombok") version "8.4"
@@ -20,7 +20,7 @@ if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasP
 }
 
 group = "ua.sinaver.web3"
-version = "0.0.2-alpha"
+version = "0.0.3-alpha"
 
 java.sourceCompatibility = JavaVersion.VERSION_21
 
