@@ -4,7 +4,7 @@ cd ./../payflow-service
 # via gradle with Paketo Buildpack
 PROJECT_ID=$(gcloud config get-value project)
 VERSION=$(gradle properties -q | awk '/^version:/ {print $2}')
-PROFILE=gcp-staging
+PROFILE=gcp
 
 GCP_SQL_INSTANCE_NAME=${PROJECT_ID}:europe-west4:${PROJECT_ID}-mysql-eu
 SQL_DB_NAME=payflow_db
@@ -29,4 +29,4 @@ gcloud run services describe api-payflow-service-staging
 
 # run service locally with GCP CloudSQL
 # CloudSQL credentials are picked up automatically via DefaultCredentialsProvider
-#gradlew bootRun -Pgcp-staging
+#gradlew bootRun -Pgcp
