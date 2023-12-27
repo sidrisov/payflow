@@ -33,6 +33,7 @@ import { useQuery } from '@airstack/airstack-react';
 import CenteredCircularProgress from './CenteredCircularProgress';
 import { isAlphanumericPlusFewSpecialChars as isAlphanumericWithSpecials } from '../utils/regex';
 import { green, lightGreen, red } from '@mui/material/colors';
+import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';
 
 export type OnboardingDialogProps = DialogProps &
   CloseCallbackType & {
@@ -71,7 +72,7 @@ export default function OnboardingDialog({
 
   const { data: socialInfo, loading: loadingSocials } = useQuery(
     QUERY_SOCIALS,
-    { identity: profile.address },
+    { identity: profile.address, me: '' },
     {
       cache: true
     }
@@ -84,20 +85,38 @@ export default function OnboardingDialog({
   // make a best effort to pull social info for the user
   useMemo(async () => {
     if (socialInfo) {
-      const meta = converSocialResults(socialInfo);
+      console.log(loadingSocials, socialInfo);
+
+      const meta = converSocialResults(socialInfo.Wallet);
+
+      console.log(meta);
 
       if (meta) {
         if (meta.socials && meta.socials.length > 0) {
+          const socialInfo =
+            meta.socials.find((s) => s.dappName === FARCASTER_DAPP) ??
+            meta.socials.find((s) => s.dappName === LENS_DAPP) ??
+            meta.socials[0];
+
           if (!displayName) {
-            setDisplayName(meta.socials[0].profileDisplayName);
+            setDisplayName(socialInfo.profileDisplayName);
           }
 
           if (!username || username === profile.address) {
-            setUsername(meta.socials[0].profileName);
+            setUsername(
+              socialInfo.dappName === LENS_DAPP
+                ? socialInfo.profileName.replace('lens/@', '')
+                : socialInfo.profileName
+            );
           }
 
           if (!profileImage) {
-            setProfileImage(meta.socials[0].profileImage);
+            if (
+              socialInfo.dappName === FARCASTER_DAPP ||
+              !socialInfo.profileImage.includes('ipfs://')
+            ) {
+              setProfileImage(socialInfo.profileImage);
+            }
           }
         } else {
           // TODO: allow .eth, .xyz, etc in the username?
