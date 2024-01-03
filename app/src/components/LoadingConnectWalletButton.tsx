@@ -1,7 +1,10 @@
 import LoadingButton, { LoadingButtonProps } from '@mui/lab/LoadingButton';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 
-export function LoadingConnectWalletButton(props: LoadingButtonProps) {
+export function LoadingConnectWalletButton({
+  title,
+  ...props
+}: LoadingButtonProps & { title?: string }) {
   const { openConnectModal, connectModalOpen } = useConnectModal();
 
   return (
@@ -16,7 +19,7 @@ export function LoadingConnectWalletButton(props: LoadingButtonProps) {
         openConnectModal?.();
       }}
       sx={{ mt: 3, mb: 1, borderRadius: 5 }}>
-      Connect Wallet
+      {title ?? 'Connect Wallet'}
     </LoadingButton>
   );
 }

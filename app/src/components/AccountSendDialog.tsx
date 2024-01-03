@@ -20,7 +20,7 @@ import { providers } from 'ethers';
 
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useContext, useMemo, useRef, useState } from 'react';
-import { useBalance, useNetwork } from 'wagmi';
+import { useAccount, useBalance, useNetwork } from 'wagmi';
 import {
   AddComment,
   ArrowBack,
@@ -36,7 +36,7 @@ import { Address, formatEther, parseEther } from 'viem';
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 import { FlowType, FlowWalletType } from '../types/FlowType';
 import SearchProfileDialog from './SearchProfileDialog';
-import { ProfileType, SelectedProfileWithSocialsType } from '../types/ProfleType';
+import { SelectedProfileWithSocialsType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -52,6 +52,9 @@ import { green, red } from '@mui/material/colors';
 import { NetworkSelectorButton } from './NetworkSelectorButton';
 import { TransferToastContent } from './toasts/TransferToastContent';
 import { LoadingSwitchNetworkButton } from './LoadingSwitchNetworkButton';
+import { LoadingConnectWalletButton } from './LoadingConnectWalletButton';
+import { shortenWalletAddressLabel } from '../utils/address';
+import { WalletMenu } from './WalletMenu';
 
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
@@ -69,6 +72,9 @@ export default function AccountSendDialog({
   const { profile, ethUsdPrice } = useContext(ProfileContext);
 
   const ethersSigner = useEthersSigner();
+
+  const { address } = useAccount();
+
   const { chain } = useNetwork();
 
   const [selectedRecipient, setSelectedRecipient] = useState<SelectedProfileWithSocialsType>();
@@ -91,6 +97,9 @@ export default function AccountSendDialog({
 
   const [openSearchProfile, setOpenSearchProfile] = useState<boolean>(true);
   const sendToastId = useRef<Id>();
+
+  const [walletMenuAnchorEl, setWalletMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [openWalletMenu, setOpenWalletMenu] = useState(false);
 
   useMemo(async () => {
     if (!selectedRecipient) {
@@ -212,7 +221,6 @@ export default function AccountSendDialog({
   }, [loading, confirmed, error, status, txHash, sendAmount, selectedRecipient]);
 
   async function sendSafeTransaction(
-    profile: ProfileType,
     flow: FlowType,
     from: FlowWalletType,
     to: Address,
@@ -228,7 +236,7 @@ export default function AccountSendDialog({
     };
 
     const safeAccountConfig: SafeAccountConfig = {
-      owners: [profile.address],
+      owners: [flow.owner],
       threshold: 1
     };
 
@@ -318,6 +326,15 @@ export default function AccountSendDialog({
               flow
             </Typography>
           </Stack>
+
+          {/* <IconButton
+            color="inherit"
+            onClick={async (event) => {
+              setWalletMenuAnchorEl(event.currentTarget);
+              setOpenWalletMenu(true);
+            }}>
+            <Menu />
+          </IconButton> */}
         </Box>
       </DialogTitle>
       <DialogContent
@@ -335,195 +352,215 @@ export default function AccountSendDialog({
           flexDirection="column"
           alignItems="center"
           justifyContent="space-between">
-          <Stack width="100%" spacing={2} alignItems="center">
-            <Box
-              display="flex"
-              flexDirection="row"
-              width="100%"
-              alignItems="center"
-              justifyContent="space-between"
-              component={Button}
-              color="inherit"
-              onClick={async () => setOpenSearchProfile(true)}
-              sx={{
-                height: 56,
-                border: 1,
-                borderRadius: 5,
-                p: 1.5,
-                textTransform: 'none'
-              }}>
-              {selectedRecipient &&
-                (selectedRecipient.type === 'profile'
-                  ? selectedRecipient.data.profile && (
-                      <ProfileSection maxWidth={200} profile={selectedRecipient.data.profile} />
-                    )
-                  : selectedRecipient.data.meta && (
-                      <AddressSection maxWidth={200} meta={selectedRecipient.data.meta} />
-                    ))}
-
-              {!selectedRecipient && (
-                <Typography alignSelf="center" flexGrow={1}>
-                  Choose Recipient
-                </Typography>
-              )}
-
-              <Stack direction="row">
-                {selectedRecipient && selectedRecipient.type === 'profile' && <PayflowChip />}
-                <ExpandMore />
-              </Stack>
-            </Box>
-            {selectedRecipient && selectedWallet && (
-              <Box width="100%" display="flex" flexDirection="column">
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  type="number"
-                  error={
-                    sendAmountUSD !== undefined &&
-                    (minAmountSatisfied === false || balanceEnough === false)
-                  }
-                  inputProps={{ style: { textAlign: 'center', fontSize: 20 } }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <NetworkSelectorButton
-                          selectedWallet={selectedWallet}
-                          setSelectedWallet={setSelectedWallet}
-                          wallets={compatibleWallets}
-                        />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <Box
-                          display="flex"
-                          flexDirection="row"
-                          justifyContent="space-between"
-                          alignItems="center"
-                          minWidth={150}>
-                          <Typography>$</Typography>
-                          <Typography>≈</Typography>
-                          <Typography>
-                            {`${sendAmount ? parseFloat(formatEther(sendAmount)).toPrecision(3) : 0}
-                        ETH`}
-                          </Typography>
-                        </Box>
-                      </InputAdornment>
-                    ),
-                    inputMode: 'decimal',
-                    sx: { borderRadius: 5, height: 56 }
-                  }}
-                  onChange={(event) => {
-                    if (event.target.value) {
-                      const amountUSD = parseFloat(event.target.value);
-                      setSendAmountUSD(amountUSD);
-                    } else {
-                      setSendAmountUSD(undefined);
-                    }
-                  }}
-                />
-
-                {sendAmountUSD !== undefined &&
-                  (minAmountSatisfied === false || balanceEnough === false) && (
-                    <Stack ml={0.5} mt={0.5} direction="row" spacing={0.5} alignItems="center">
-                      <PriorityHigh fontSize="small" sx={{ color: red.A400 }} />
-                      <Typography ml={1} variant="caption" color={red.A400}>
-                        {sendAmountUSD !== undefined &&
-                          ((minAmountSatisfied === false && 'min: $1') ||
-                            (balanceEnough === false && 'balance: not enough'))}
-                      </Typography>
-                    </Stack>
-                  )}
-
+          {address && address === flow.owner ? (
+            <>
+              <Stack width="100%" spacing={2} alignItems="center">
                 <Box
                   display="flex"
                   flexDirection="row"
+                  width="100%"
+                  alignItems="center"
                   justifyContent="space-between"
-                  alignItems="center">
-                  <Stack ml={0.5} direction="row" spacing={0.5} alignItems="center">
-                    <AttachMoney fontSize="small" />
-                    <Typography variant="caption">
-                      {`max: ${
-                        isSuccess && balance && balance.value - (gasFee ?? BigInt(0)) > BigInt(0)
-                          ? parseFloat(formatEther(balance.value - (gasFee ?? BigInt(0)))).toFixed(
-                              5
-                            )
-                          : 0
-                      } ETH ≈ $${
-                        isSuccess && balance && balance.value - (gasFee ?? BigInt(0)) > BigInt(0)
-                          ? (
-                              parseFloat(formatEther(balance.value - (gasFee ?? BigInt(0)))) *
-                              (ethUsdPrice ?? 0)
-                            ).toFixed(2)
-                          : 0
-                      }`}
-                    </Typography>
-                  </Stack>
-                  <Tooltip title="Add a note">
-                    <IconButton
-                      size="small"
-                      color="inherit"
-                      sx={{ mr: 0.5, alignSelf: 'flex-end' }}
-                      onClick={() => {
-                        comingSoonToast();
-                      }}>
-                      <AddComment fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
+                  component={Button}
+                  color="inherit"
+                  onClick={async () => setOpenSearchProfile(true)}
+                  sx={{
+                    height: 56,
+                    border: 1,
+                    borderRadius: 5,
+                    p: 1.5,
+                    textTransform: 'none'
+                  }}>
+                  {selectedRecipient &&
+                    (selectedRecipient.type === 'profile'
+                      ? selectedRecipient.data.profile && (
+                          <ProfileSection maxWidth={200} profile={selectedRecipient.data.profile} />
+                        )
+                      : selectedRecipient.data.meta && (
+                          <AddressSection maxWidth={200} meta={selectedRecipient.data.meta} />
+                        ))}
 
-                <Stack ml={0.5} direction="row" spacing={0.5} alignItems="center">
-                  <Tooltip
-                    title="Gas is paid by the sending flow wallet via Gelato SyncFee call method. 
-                    The fee includes Gelato on-chain call, safe tx fee + deployment fee on the first tx, and 10% Gelato's comission on top of all.">
-                    <LocalGasStation fontSize="small" />
-                  </Tooltip>
-                  <Typography
-                    ml={1}
-                    variant="caption"
-                    color={gasFee === BigInt(0) ? green.A700 : 'inherit'}>
-                    {getGasFeeText(gasFee)}
-                  </Typography>
-                </Stack>
-              </Box>
-            )}
-          </Stack>
-          {selectedRecipient &&
-            selectedWallet &&
-            (chain?.id === selectedWallet.network ? (
-              <LoadingButton
-                fullWidth
-                variant="outlined"
-                loading={loading || (txHash && !confirmed && !error)}
-                disabled={!(toAddress && sendAmount)}
-                loadingIndicator={
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <CircularProgress color="inherit" size={16} />
-                    <Typography variant="button">{status}</Typography>
+                  {!selectedRecipient && (
+                    <Typography alignSelf="center" flexGrow={1}>
+                      Choose Recipient
+                    </Typography>
+                  )}
+
+                  <Stack direction="row">
+                    {selectedRecipient && selectedRecipient.type === 'profile' && <PayflowChip />}
+                    <ExpandMore />
                   </Stack>
-                }
-                size="large"
-                color="primary"
-                onClick={async () => {
-                  if (toAddress && sendAmount && ethersSigner) {
-                    await sendSafeTransaction(
-                      profile,
-                      flow,
-                      selectedWallet,
-                      toAddress,
-                      sendAmount,
-                      ethersSigner
-                    );
-                  } else {
-                    toast.error("Can't send to this profile");
-                  }
-                }}
-                sx={{ mt: 3, mb: 1, borderRadius: 5 }}>
-                Send
-              </LoadingButton>
-            ) : (
-              <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
-            ))}
+                </Box>
+                {selectedRecipient && selectedWallet && (
+                  <Box width="100%" display="flex" flexDirection="column">
+                    <TextField
+                      fullWidth
+                      variant="outlined"
+                      type="number"
+                      error={
+                        sendAmountUSD !== undefined &&
+                        (minAmountSatisfied === false || balanceEnough === false)
+                      }
+                      inputProps={{ style: { textAlign: 'center', fontSize: 20 } }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <NetworkSelectorButton
+                              selectedWallet={selectedWallet}
+                              setSelectedWallet={setSelectedWallet}
+                              wallets={compatibleWallets}
+                            />
+                          </InputAdornment>
+                        ),
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <Box
+                              display="flex"
+                              flexDirection="row"
+                              justifyContent="space-between"
+                              alignItems="center"
+                              minWidth={150}>
+                              <Typography>$</Typography>
+                              <Typography>≈</Typography>
+                              <Typography>
+                                {`${
+                                  sendAmount
+                                    ? parseFloat(formatEther(sendAmount)).toPrecision(3)
+                                    : 0
+                                }
+                        ETH`}
+                              </Typography>
+                            </Box>
+                          </InputAdornment>
+                        ),
+                        inputMode: 'decimal',
+                        sx: { borderRadius: 5, height: 56 }
+                      }}
+                      onChange={(event) => {
+                        if (event.target.value) {
+                          const amountUSD = parseFloat(event.target.value);
+                          setSendAmountUSD(amountUSD);
+                        } else {
+                          setSendAmountUSD(undefined);
+                        }
+                      }}
+                    />
+
+                    {sendAmountUSD !== undefined &&
+                      (minAmountSatisfied === false || balanceEnough === false) && (
+                        <Stack ml={0.5} mt={0.5} direction="row" spacing={0.5} alignItems="center">
+                          <PriorityHigh fontSize="small" sx={{ color: red.A400 }} />
+                          <Typography ml={1} variant="caption" color={red.A400}>
+                            {sendAmountUSD !== undefined &&
+                              ((minAmountSatisfied === false && 'min: $1') ||
+                                (balanceEnough === false && 'balance: not enough'))}
+                          </Typography>
+                        </Stack>
+                      )}
+
+                    <Box
+                      display="flex"
+                      flexDirection="row"
+                      justifyContent="space-between"
+                      alignItems="center">
+                      <Stack ml={0.5} direction="row" spacing={0.5} alignItems="center">
+                        <AttachMoney fontSize="small" />
+                        <Typography variant="caption">
+                          {`max: ${
+                            isSuccess &&
+                            balance &&
+                            balance.value - (gasFee ?? BigInt(0)) > BigInt(0)
+                              ? parseFloat(
+                                  formatEther(balance.value - (gasFee ?? BigInt(0)))
+                                ).toFixed(5)
+                              : 0
+                          } ETH ≈ $${
+                            isSuccess &&
+                            balance &&
+                            balance.value - (gasFee ?? BigInt(0)) > BigInt(0)
+                              ? (
+                                  parseFloat(formatEther(balance.value - (gasFee ?? BigInt(0)))) *
+                                  (ethUsdPrice ?? 0)
+                                ).toFixed(2)
+                              : 0
+                          }`}
+                        </Typography>
+                      </Stack>
+                      <Tooltip title="Add a note">
+                        <IconButton
+                          size="small"
+                          color="inherit"
+                          sx={{ mr: 0.5, alignSelf: 'flex-end' }}
+                          onClick={() => {
+                            comingSoonToast();
+                          }}>
+                          <AddComment fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+
+                    <Stack ml={0.5} direction="row" spacing={0.5} alignItems="center">
+                      <Tooltip
+                        title="Gas is paid by the sending flow wallet via Gelato SyncFee call method. 
+                    The fee includes Gelato on-chain call, safe tx fee + deployment fee on the first tx, and 10% Gelato's comission on top of all.">
+                        <LocalGasStation fontSize="small" />
+                      </Tooltip>
+                      <Typography
+                        ml={1}
+                        variant="caption"
+                        color={gasFee === BigInt(0) ? green.A700 : 'inherit'}>
+                        {getGasFeeText(gasFee)}
+                      </Typography>
+                    </Stack>
+                  </Box>
+                )}
+              </Stack>
+              {selectedRecipient &&
+                selectedWallet &&
+                (chain?.id === selectedWallet.network ? (
+                  <LoadingButton
+                    fullWidth
+                    variant="outlined"
+                    loading={loading || (txHash && !confirmed && !error)}
+                    disabled={!(toAddress && sendAmount)}
+                    loadingIndicator={
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <CircularProgress color="inherit" size={16} />
+                        <Typography variant="button">{status}</Typography>
+                      </Stack>
+                    }
+                    size="large"
+                    color="primary"
+                    onClick={async () => {
+                      if (toAddress && sendAmount && ethersSigner) {
+                        await sendSafeTransaction(
+                          flow,
+                          selectedWallet,
+                          toAddress,
+                          sendAmount,
+                          ethersSigner
+                        );
+                      } else {
+                        toast.error("Can't send to this profile");
+                      }
+                    }}
+                    sx={{ mt: 3, mb: 1, borderRadius: 5 }}>
+                    Send
+                  </LoadingButton>
+                ) : (
+                  <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
+                ))}
+            </>
+          ) : address && address !== flow.owner ? (
+            <Typography variant="subtitle2" color={red.A700}>
+              Please, connect following flow signer:{' '}
+              <u>
+                <b>{shortenWalletAddressLabel(flow.owner)}</b>
+              </u>
+            </Typography>
+          ) : (
+            <LoadingConnectWalletButton title="Connect Signer" />
+          )}
         </Box>
       </DialogContent>
 
@@ -536,6 +573,14 @@ export default function AccountSendDialog({
         selectProfileCallback={(selectedProfileWithSocials) => {
           setSelectedRecipient(selectedProfileWithSocials);
         }}
+      />
+
+      <WalletMenu
+        contextType="profile"
+        anchorEl={walletMenuAnchorEl}
+        open={openWalletMenu}
+        onClose={() => setOpenWalletMenu(false)}
+        closeStateCallback={() => setOpenWalletMenu(false)}
       />
     </Dialog>
   );

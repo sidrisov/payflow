@@ -259,6 +259,7 @@ export async function searchProfile(
 }
 
 export function converSocialResults(walletInfo: any): MetaType | undefined {
+  console.debug('Converting wallet info: ', walletInfo);
   let meta = {} as MetaType;
 
   if (walletInfo.addresses) {

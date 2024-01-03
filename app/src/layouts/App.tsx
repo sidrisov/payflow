@@ -7,18 +7,14 @@ import { Home, HomeOutlined, AppsOutlined } from '@mui/icons-material';
 
 import { ProfileContext } from '../contexts/UserContext';
 import HideOnScroll from '../components/HideOnScroll';
-import { useAccount, useContractRead, useEnsAddress } from 'wagmi';
-import axios from 'axios';
-import { toast } from 'react-toastify';
+import { useContractRead, useEnsAddress } from 'wagmi';
 
 import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
 import { formatUnits } from 'viem';
-import { shortenWalletAddressLabel } from '../utils/address';
 import { ProfileType } from '../types/ProfleType';
 import { AppSettings } from '../types/AppSettingsType';
 import { ProfileMenu } from '../components/ProfileMenu';
 import SearchProfileDialog from '../components/SearchProfileDialog';
-import { API_URL } from '../utils/urlConstants';
 import HomeLogo from '../components/Logo';
 import { comingSoonToast } from '../components/Toasts';
 import { Chain } from '@rainbow-me/rainbowkit';
@@ -34,13 +30,6 @@ export default function AppLayout({
   setAppSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
 }) {
   const navigate = useNavigate();
-
-  const { isConnected, address } = useAccount({
-    async onDisconnect() {
-      await axios.get(`${API_URL}/api/auth/logout`, { withCredentials: true });
-      navigate('/connect');
-    }
-  });
 
   const [walletBalances, setWalletBalances] = useState<Map<string, bigint>>(new Map());
   const [smartAccountAllowedChains, setSmartAccountAllowedChains] = useState<Chain[]>([]);
@@ -71,24 +60,12 @@ export default function AppLayout({
   });
 
   useEffect(() => {
-    if (isConnected && profile) {
-      if (profile.address === address) {
-        if (profile.username && profile.defaultFlow) {
-          setAuthorized(true);
-          return;
-        }
-      } else {
-        toast.warn(
-          `Please, logout or switch wallet! Connected wallet is different from signed in: ${shortenWalletAddressLabel(
-            profile.address
-          )}`,
-          { autoClose: false }
-        );
-      }
+    if (profile && profile.username && profile.defaultFlow) {
+      setAuthorized(true);
+    } else {
+      navigate('/connect');
     }
-
-    navigate('/connect');
-  }, [isConnected, address, profile]);
+  }, [profile]);
 
   /*   useMemo(async () => {
     if (initiateFlowsRefresh && flows) {

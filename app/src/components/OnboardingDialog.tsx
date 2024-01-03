@@ -204,7 +204,7 @@ export default function OnboardingDialog({
       await reset();
     } else if (wallets && wallets.length === DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS.length) {
       const defaultFlow = {
-        account: profile.address,
+        owner: profile.address,
         title: 'default',
         description: '',
         walletProvider: 'safe',
