@@ -1,4 +1,3 @@
-import { getNetwork } from 'wagmi/actions';
 import {
   mainnet,
   base,
@@ -9,7 +8,8 @@ import {
   zkSyncSepoliaTestnet,
   arbitrum,
   zora,
-  zkSync
+  zkSync,
+  baseSepolia
 } from 'wagmi/chains';
 
 const ENABLED_CHAINS = JSON.parse(import.meta.env.VITE_ENABLED_CHAINS) as string[];
@@ -22,6 +22,7 @@ export const SUPPORTED_CHAINS = [
   zkSync,
   mainnet,
   baseGoerli,
+  baseSepolia,
   optimismGoerli,
   {
     ...modeTestnet,
@@ -41,7 +42,7 @@ export default function getNetworkImageSrc(network: number | string): string {
     typeof network === 'number'
       ? network === 1
         ? 'ethereum'
-        : getNetwork().chains.find((c) => c.id === network)?.network
+        : SUPPORTED_CHAINS.find((c) => c.id === network)?.network
       : network;
 
   if (!fileName) {
@@ -53,7 +54,7 @@ export default function getNetworkImageSrc(network: number | string): string {
 
 export function getNetworkDisplayName(network: number | string): string {
   const displayName =
-    typeof network === 'number' ? getNetwork().chains.find((c) => c.id === network)?.name : network;
+    typeof network === 'number' ? SUPPORTED_CHAINS.find((c) => c.id === network)?.name : network;
 
   if (!displayName) {
     throw new Error(`Chain ${network} not supported!`);
