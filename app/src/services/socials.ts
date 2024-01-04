@@ -187,55 +187,57 @@ export async function searchProfile(
       ? searchValue.substring(searchValue.indexOf(':') + 1)
       : 'lens/@'.concat(searchValue.substring(searchValue.indexOf(':') + 1));
 
-    const { data: dataInBatch } = await fetchQuery(
-      QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME,
-      {
-        dappName,
-        profileName: '(?i)'.concat(profileName.toLowerCase()),
-        me
-      },
-      {
-        cache: true
-      }
-    );
+    if (profileName.length > 0) {
+      const { data: dataInBatch } = await fetchQuery(
+        QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME,
+        {
+          dappName,
+          profileName: '^'.concat(profileName.toLowerCase()),
+          me
+        },
+        {
+          cache: true
+        }
+      );
 
-    console.log(dataInBatch);
+      console.log(dataInBatch);
 
-    if (
-      dataInBatch &&
-      dataInBatch.Socials &&
-      dataInBatch.Socials.Social &&
-      dataInBatch.Socials.Social.length > 0
-    ) {
-      let userAssociatedAddressSocials: MetaType[] = [];
+      if (
+        dataInBatch &&
+        dataInBatch.Socials &&
+        dataInBatch.Socials.Social &&
+        dataInBatch.Socials.Social.length > 0
+      ) {
+        let userAssociatedAddressSocials: MetaType[] = [];
 
-      dataInBatch.Socials.Social.forEach((social: any) => {
-        console.log(social);
+        dataInBatch.Socials.Social.forEach((social: any) => {
+          console.log(social);
 
-        social.userAssociatedAddressDetails.forEach((s: any) => {
-          const meta = converSocialResults(s);
-          if (meta) {
-            userAssociatedAddressSocials.push(meta);
+          social.userAssociatedAddressDetails.forEach((s: any) => {
+            const meta = converSocialResults(s);
+            if (meta) {
+              userAssociatedAddressSocials.push(meta);
+            }
+          });
+        });
+
+        console.log('userAssociatedAddressSocials', userAssociatedAddressSocials);
+
+        const addresses = userAssociatedAddressSocials.map((s) => s.addresses[0]);
+
+        const profiles = await searchByListOfAddressesOrUsernames(addresses);
+        userAssociatedAddressSocials.forEach((s) => {
+          const profile = profiles.find(
+            (p) => p.address.toLowerCase() === s.addresses[0].toLowerCase()
+          );
+
+          if (profile) {
+            foundProfiles.push({ profile: profile, meta: s });
+          } else {
+            foundProfiles.push({ meta: s });
           }
         });
-      });
-
-      console.log('userAssociatedAddressSocials', userAssociatedAddressSocials);
-
-      const addresses = userAssociatedAddressSocials.map((s) => s.addresses[0]);
-
-      const profiles = await searchByListOfAddressesOrUsernames(addresses);
-      userAssociatedAddressSocials.forEach((s) => {
-        const profile = profiles.find(
-          (p) => p.address.toLowerCase() === s.addresses[0].toLowerCase()
-        );
-
-        if (profile) {
-          foundProfiles.push({ profile: profile, meta: s });
-        } else {
-          foundProfiles.push({ meta: s });
-        }
-      });
+      }
     }
   } else if (
     searchValue.endsWith('.eth') ||
