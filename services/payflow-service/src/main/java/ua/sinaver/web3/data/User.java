@@ -30,9 +30,9 @@ import lombok.ToString;
 @NoArgsConstructor
 @Entity
 @Table(uniqueConstraints = {
-        @UniqueConstraint(columnNames = { "signer" }),
-        @UniqueConstraint(columnNames = { "username" }),
-        @UniqueConstraint(columnNames = { "display_name" }) })
+        @UniqueConstraint(name = "uc_user_identity", columnNames = { "identity" }),
+        @UniqueConstraint(name = "uc_user_username", columnNames = { "username" }),
+        @UniqueConstraint(name = "uc_user_display_name", columnNames = { "display_name" }) })
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -53,9 +53,8 @@ public class User {
     @Column(columnDefinition = "boolean")
     private boolean allowed = false;
 
-    // TODO: add identity
     @Column(nullable = false)
-    private String signer;
+    private String identity;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "flow_id", referencedColumnName = "id")
@@ -79,8 +78,8 @@ public class User {
     @Version
     private Long version;
 
-    public User(String signer, String username) {
-        this.signer = signer;
+    public User(String identity, String username) {
+        this.identity = identity;
         this.username = username;
     }
 }

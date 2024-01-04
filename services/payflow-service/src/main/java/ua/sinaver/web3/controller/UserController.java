@@ -52,7 +52,7 @@ public class UserController {
             user.setLastSeen(new Date());
 
             return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
-                    user.getSigner(),
+                    user.getIdentity(),
                     user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
                             : null,
                     flowService.getAllFlows(user),
@@ -77,7 +77,7 @@ public class UserController {
         List<User> users = userService.findAll();
         log.debug("Fetching all profiles");
         if (users != null) {
-            return users.stream().map(user -> new ProfileMetaMessage(user.getSigner(), user.getDisplayName(),
+            return users.stream().map(user -> new ProfileMetaMessage(user.getIdentity(), user.getDisplayName(),
                     user.getUsername(),
                     user.getProfileImage(), user.getCreatedDate().toString())).toList();
         } else {
@@ -98,7 +98,7 @@ public class UserController {
         // TODO: for now filter by whitelisted
         return users.stream().filter(user -> user.isAllowed() && user.getDefaultFlow() != null).map(user -> {
             return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
-                    user.getSigner(),
+                    user.getIdentity(),
                     user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
                             : null,
                     null,
@@ -113,7 +113,7 @@ public class UserController {
         log.debug("User: {} for {}", user, username);
         if (user != null && user.isAllowed() && user.getDefaultFlow() != null) {
             return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
-                    user.getSigner(),
+                    user.getIdentity(),
                     user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
                             : null,
                     null,
@@ -141,7 +141,7 @@ public class UserController {
         return walletUserMap.entrySet().stream()
                 .map(wu -> new WalletProfileResponseMessage(wu.getKey().address(), wu.getKey().network(),
                         wu.getValue() != null
-                                ? new ProfileMetaMessage(wu.getValue().getSigner(), wu.getValue().getDisplayName(),
+                                ? new ProfileMetaMessage(wu.getValue().getIdentity(), wu.getValue().getDisplayName(),
                                         wu.getValue().getUsername(),
                                         wu.getValue().getProfileImage(), wu.getValue().getCreatedDate().toString())
                                 : null))

@@ -52,7 +52,7 @@ public class InvitationController {
 
         val user = userService.findBySigner(principal.getName());
         if (user != null) {
-            val invitedBy = new ProfileMetaMessage(user.getSigner(), user.getDisplayName(), user.getUsername(),
+            val invitedBy = new ProfileMetaMessage(user.getIdentity(), user.getDisplayName(), user.getUsername(),
                     user.getProfileImage(), user.getCreatedDate().toString());
 
             val invitations = invitationRepository.findByInvitedBy(user);
@@ -60,7 +60,7 @@ public class InvitationController {
                     .map(invite -> new InvitationMessage(
                             invitedBy,
                             invite.getInvitee() != null
-                                    ? new ProfileMetaMessage(invite.getInvitee().getSigner(),
+                                    ? new ProfileMetaMessage(invite.getInvitee().getIdentity(),
                                             invite.getInvitee().getDisplayName(),
                                             invite.getInvitee().getUsername(),
                                             invite.getInvitee().getProfileImage(),

@@ -52,7 +52,7 @@ public class UserService implements IUserService {
 
     @Override
     public void updateProfile(String signer, ProfileMessage profile, String invitationCode) {
-        User user = userRepository.findBySigner(signer);
+        User user = userRepository.findByIdentity(signer);
 
         if (user == null) {
             throw new Error("User not found");
@@ -69,7 +69,7 @@ public class UserService implements IUserService {
             log.debug("default whitelisted users {} and allowance {}", defaultWhitelistedUsers,
                     defaultWhitelistedAllowance);
 
-            if (defaultWhitelistedUsers.contains(user.getSigner())) {
+            if (defaultWhitelistedUsers.contains(user.getIdentity())) {
                 user.setAllowed(true);
                 user.setCreatedDate(new Date());
                 val defaultAllowance = new InvitationAllowance(defaultWhitelistedAllowance,
@@ -119,17 +119,17 @@ public class UserService implements IUserService {
 
     @Override
     public User findBySigner(String signer) {
-        return userRepository.findBySigner(signer);
+        return userRepository.findByIdentity(signer);
     }
 
     @Override
     public User findByUsername(String username) {
-        return userRepository.findByUsernameOrSigner(username);
+        return userRepository.findByUsernameOrIdentity(username);
     }
 
     @Override
     public List<User> searchByUsernameQuery(String query) {
-        return userRepository.findByDisplayNameContainingOrUsernameContainingOrSignerContaining(query, query, query);
+        return userRepository.findByDisplayNameContainingOrUsernameContainingOrIdentityContaining(query, query, query);
     }
 
     @Override

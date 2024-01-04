@@ -32,18 +32,11 @@ public class PayFlowApplication {
 	@Bean
 	LoggingMeterRegistry loggingMeterRegistry(Environment env) {
 		LoggingRegistryConfig config = key -> {
-			String property = null;
-
-			switch (key) {
-				case "logging.enabled":
-					property = "management.metrics.export.logging.enabled";
-					break;
-
-				case "logging.step":
-					property = "management.metrics.export.logging.step";
-					break;
-
-			}
+			String property = switch (key) {
+				case "logging.enabled" -> "management.metrics.export.logging.enabled";
+				case "logging.step" -> "management.metrics.export.logging.step";
+				default -> null;
+			};
 
 			return (null != property)
 					? env.getProperty(property)
