@@ -8,7 +8,8 @@ import {
   zkSyncSepoliaTestnet,
   arbitrum,
   zora,
-  zkSync
+  zkSync,
+  baseSepolia
 } from 'wagmi/chains';
 
 const ENABLED_CHAINS = JSON.parse(import.meta.env.VITE_ENABLED_CHAINS) as string[];
@@ -21,6 +22,7 @@ export const SUPPORTED_CHAINS = [
   zkSync,
   mainnet,
   baseGoerli,
+  baseSepolia,
   optimismGoerli,
   {
     ...modeTestnet,
