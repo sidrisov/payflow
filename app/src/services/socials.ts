@@ -51,7 +51,7 @@ export const QUERY_SOCIALS = `query GetSocial($identity: Identity!, $me: Identit
 
 export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = `query GetSocialsForAssociatedAddresses($dappName: SocialDappName!, $profileName: String!, $me:Identity!) {
   Socials(
-    input: {filter: {dappName: {_eq: $dappName}, profileName: {_eq: $profileName}}, blockchain: ethereum}
+    input: {limit: 10, filter: {dappName: {_eq: $dappName}, profileName: {_regex: $profileName}}, blockchain: ethereum}
   ) {
     Social {
       userAssociatedAddressDetails {
@@ -191,7 +191,7 @@ export async function searchProfile(
       QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME,
       {
         dappName,
-        profileName,
+        profileName: '(?i)'.concat(profileName.toLowerCase()),
         me
       },
       {
@@ -199,17 +199,29 @@ export async function searchProfile(
       }
     );
 
+    console.log(dataInBatch);
+
     if (
       dataInBatch &&
       dataInBatch.Socials &&
       dataInBatch.Socials.Social &&
       dataInBatch.Socials.Social.length > 0
     ) {
-      const userAssociatedAddressDetails =
-        dataInBatch.Socials.Social[0].userAssociatedAddressDetails;
-      const userAssociatedAddressSocials = userAssociatedAddressDetails.map((s: any) =>
-        converSocialResults(s)
-      ) as MetaType[];
+      let userAssociatedAddressSocials: MetaType[] = [];
+
+      dataInBatch.Socials.Social.forEach((social: any) => {
+        console.log(social);
+
+        social.userAssociatedAddressDetails.forEach((s: any) => {
+          const meta = converSocialResults(s);
+          if (meta) {
+            userAssociatedAddressSocials.push(meta);
+          }
+        });
+      });
+
+      console.log('userAssociatedAddressSocials', userAssociatedAddressSocials);
+
       const addresses = userAssociatedAddressSocials.map((s) => s.addresses[0]);
 
       const profiles = await searchByListOfAddressesOrUsernames(addresses);
