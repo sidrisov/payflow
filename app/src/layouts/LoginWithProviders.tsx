@@ -7,7 +7,7 @@ import {
   RainbowKitProvider
 } from '@rainbow-me/rainbowkit';
 
-import { configureChains, createConfig, WagmiConfig } from 'wagmi';
+import { configureChains, createConfig, mainnet, WagmiConfig } from 'wagmi';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -18,7 +18,6 @@ import { SiweMessage } from 'siwe';
 import axios, { AxiosError } from 'axios';
 import { ProfileType } from '../types/ProfleType';
 import { me } from '../services/user';
-import { SUPPORTED_CHAINS } from '../utils/networks';
 import { API_URL } from '../utils/urlConstants';
 import { toast } from 'react-toastify';
 import { AppSettings } from '../types/AppSettingsType';
@@ -27,10 +26,10 @@ import CustomToastContainer from '../components/toasts/CustomToastContainer';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 
-const { chains, publicClient, webSocketPublicClient } = configureChains(SUPPORTED_CHAINS, [
-  alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }),
-  publicProvider()
-]);
+const { chains, publicClient, webSocketPublicClient } = configureChains(
+  [mainnet],
+  [alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }), publicProvider()]
+);
 
 const { wallets } = getDefaultWallets({
   appName: 'Payflow',

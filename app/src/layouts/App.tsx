@@ -1,7 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
-import { AppBar, IconButton, Toolbar, Box, Stack, Typography, Button, Avatar } from '@mui/material';
+import {
+  AppBar,
+  IconButton,
+  Toolbar,
+  Box,
+  Stack,
+  Typography,
+  Button,
+  Avatar,
+  useTheme,
+  useMediaQuery
+} from '@mui/material';
 
 import { Home, HomeOutlined, AppsOutlined } from '@mui/icons-material';
 
@@ -19,6 +30,7 @@ import HomeLogo from '../components/Logo';
 import { comingSoonToast } from '../components/Toasts';
 import { Chain } from '@rainbow-me/rainbowkit';
 import ProfileAvatar from '../components/ProfileAvatar';
+import DefaultFlowOnboardingDialog from '../components/DefaultFlowOnboardingDialog';
 
 export default function AppLayout({
   profile,
@@ -29,6 +41,9 @@ export default function AppLayout({
   appSettings: AppSettings;
   setAppSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
 }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const navigate = useNavigate();
 
   const [walletBalances, setWalletBalances] = useState<Map<string, bigint>>(new Map());
@@ -60,7 +75,7 @@ export default function AppLayout({
   });
 
   useEffect(() => {
-    if (profile && profile.username && profile.defaultFlow) {
+    if (profile && profile.username) {
       setAuthorized(true);
     } else {
       navigate('/connect');
@@ -167,9 +182,11 @@ export default function AppLayout({
             </AppBar>
           </HideOnScroll>
 
-          <Box display="flex" mt={3} height="100%">
-            <Outlet />
-          </Box>
+          {profile && profile.defaultFlow && (
+            <Box display="flex" mt={3} height="100%">
+              <Outlet />
+            </Box>
+          )}
         </Box>
       )}
       <ProfileMenu
@@ -186,6 +203,14 @@ export default function AppLayout({
           setOpenSearchProfile(false);
         }}
       />
+      {profile && !profile.defaultFlow && (
+        <DefaultFlowOnboardingDialog
+          fullScreen={isMobile}
+          open={!profile.defaultFlow}
+          profile={profile}
+          closeStateCallback={() => {}}
+        />
+      )}
     </ProfileContext.Provider>
   );
 }

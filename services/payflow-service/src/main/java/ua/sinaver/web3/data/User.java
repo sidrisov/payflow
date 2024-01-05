@@ -42,7 +42,7 @@ public class User {
     @Column(name = "display_name")
     private String displayName;
 
-    @Column(nullable = false)
+    @Column
     private String username;
 
     @Column
@@ -82,8 +82,7 @@ public class User {
     @Version
     private Long version;
 
-    public User(String identity, String username) {
+    public User(String identity) {
         this.identity = identity;
-        this.username = username;
     }
 }

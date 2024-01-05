@@ -8,11 +8,11 @@ import ua.sinaver.web3.message.ProfileMessage;
 import ua.sinaver.web3.message.WalletProfileRequestMessage;
 
 public interface IUserService {
-    void saveUser(String signer, String username);
+    void saveUser(String identity);
 
-    void updateProfile(String signer, ProfileMessage profile, String invitationCode);
+    void updateProfile(String identity, ProfileMessage profile, String invitationCode);
 
-    User findBySigner(String signer);
+    User findByIdentity(String identity);
 
     User findByUsername(String username);
 

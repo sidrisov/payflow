@@ -36,7 +36,7 @@ export const SUPPORTED_CHAINS: Chain[] = [
   }
 ].filter((c) => ENABLED_CHAINS.includes(c.network));
 
-export const DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS = [base, optimism, baseSepolia];
+export const DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS = [base, optimism, baseGoerli];
 
 export default function getNetworkImageSrc(network: number | string): string {
   const fileName =

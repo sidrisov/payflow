@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface InvitationRepository extends CrudRepository<Invitation, Integer> {
 
-        boolean existsByIdentityAndInviteeNull(String identity);
+        boolean existsByIdentityAndExpiryDateAfterAndInviteeNull(String identity, Date before);
 
         boolean existsByCodeAndInviteeNull(String code);
 
@@ -23,6 +23,11 @@ public interface InvitationRepository extends CrudRepository<Invitation, Integer
                         String identity,
                         Date before1,
                         String code, Date before2);
+
+        default boolean existsByIdentityAndValid(String identity) {
+                val now = new Date();
+                return existsByIdentityAndExpiryDateAfterAndInviteeNull(identity, now);
+        }
 
         default Invitation findFirstValidByIdentityOrCode(String identity,
                         String code) {

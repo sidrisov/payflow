@@ -50,7 +50,7 @@ public class InvitationController {
     public List<InvitationMessage> getAll(Principal principal) {
         log.debug("Getting all invitations for {}", principal.getName());
 
-        val user = userService.findBySigner(principal.getName());
+        val user = userService.findByIdentity(principal.getName());
         if (user != null) {
             val invitedBy = new ProfileMetaMessage(user.getIdentity(), user.getDisplayName(), user.getUsername(),
                     user.getProfileImage(), user.getCreatedDate().toString());
@@ -80,7 +80,7 @@ public class InvitationController {
     @GetMapping("/identity/{identity}")
     @ResponseStatus(HttpStatus.OK)
     public Boolean isInvited(@PathVariable String identity) {
-        return invitationRepository.existsByIdentityAndInviteeNull(identity)
+        return invitationRepository.existsByIdentityAndValid(identity)
                 || defaultWhitelistedUsers.contains(identity);
     }
 
@@ -100,7 +100,7 @@ public class InvitationController {
             throw new Error("Invalid input, invitation should include either identity or code");
         }
 
-        val user = userService.findBySigner(principal.getName());
+        val user = userService.findByIdentity(principal.getName());
         if (user == null) {
             throw new Error("User doesn't exist");
         }

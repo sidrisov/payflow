@@ -89,10 +89,10 @@ public class AuthController {
             session.removeAttribute("nonce");
 
             // create a user if not exist
-            val signer = authentication.getPrincipal().toString();
-            val user = userService.findBySigner(signer);
+            val identity = authentication.getPrincipal().toString();
+            val user = userService.findByIdentity(identity);
             if (user == null) {
-                userService.saveUser(signer, signer);
+                userService.saveUser(identity);
             }
 
             return ResponseEntity.ok().build();

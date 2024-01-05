@@ -4,7 +4,7 @@ import CustomThemeProvider from '../theme/CustomThemeProvider';
 import { useNetwork, useSwitchNetwork } from 'wagmi';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useEffect, useMemo } from 'react';
-import OnboardingDialog from '../components/OnboardingDialog';
+import ProfileOnboardingDialog from '../components/ProfileOnboardingDialog';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { ProfileType } from '../types/ProfleType';
 import { toast } from 'react-toastify';
@@ -43,7 +43,7 @@ export default function Login({
     console.debug(profile, authStatus);
 
     if (profile && authStatus === 'authenticated') {
-      if (profile.username && profile.defaultFlow) {
+      if (profile.username) {
         console.debug('redirecting to /');
         navigate('/');
       }
@@ -72,10 +72,10 @@ export default function Login({
           </Container>
         )
       )}
-      {profile && (!profile.username || !profile.defaultFlow) && (
-        <OnboardingDialog
+      {profile && !profile.username && (
+        <ProfileOnboardingDialog
           fullScreen={isMobile}
-          open={!profile.username || !profile.defaultFlow}
+          open={!profile.username}
           profile={profile}
           closeStateCallback={() => {}}
           username={username}

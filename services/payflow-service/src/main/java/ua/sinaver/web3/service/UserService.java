@@ -46,13 +46,13 @@ public class UserService implements IUserService {
     private InvitationRepository invitationRepository;
 
     @Override
-    public void saveUser(String signer, String username) {
-        userRepository.save(new User(signer, username));
+    public void saveUser(String identity) {
+        userRepository.save(new User(identity));
     }
 
     @Override
-    public void updateProfile(String signer, ProfileMessage profile, String invitationCode) {
-        User user = userRepository.findByIdentity(signer);
+    public void updateProfile(String identity, ProfileMessage profile, String invitationCode) {
+        User user = userRepository.findByIdentity(identity);
 
         if (user == null) {
             throw new Error("User not found");
@@ -77,7 +77,7 @@ public class UserService implements IUserService {
                 defaultAllowance.setUser(user);
                 user.setInvitationAllowance(defaultAllowance);
             } else {
-                Invitation invitation = invitationRepository.findFirstValidByIdentityOrCode(signer, invitationCode);
+                Invitation invitation = invitationRepository.findFirstValidByIdentityOrCode(identity, invitationCode);
                 if (invitation != null) {
                     user.setAllowed(true);
                     user.setCreatedDate(new Date());
@@ -118,7 +118,7 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public User findBySigner(String signer) {
+    public User findByIdentity(String signer) {
         return userRepository.findByIdentity(signer);
     }
 

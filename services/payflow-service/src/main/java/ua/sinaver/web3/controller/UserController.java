@@ -47,7 +47,7 @@ public class UserController {
     @GetMapping("/me")
     public ProfileMessage user(Principal principal) {
         log.trace("{}", principal);
-        val user = userService.findBySigner(principal.getName());
+        val user = userService.findByIdentity(principal.getName());
         if (user != null) {
             user.setLastSeen(new Date());
 
