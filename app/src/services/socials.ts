@@ -177,7 +177,7 @@ export async function searchProfile(
     if (profiles) {
       foundProfiles = foundProfiles.concat(
         ...(await Promise.all(
-          profiles.filter((p) => p.defaultFlow).map((p) => searchProfile(p.address, me))
+          profiles.filter((p) => p.defaultFlow).map((p) => searchProfile(p.identity, me))
         ))
       );
     }
@@ -228,7 +228,7 @@ export async function searchProfile(
         const profiles = await searchByListOfAddressesOrUsernames(addresses);
         userAssociatedAddressSocials.forEach((s) => {
           const profile = profiles.find(
-            (p) => p.address.toLowerCase() === s.addresses[0].toLowerCase()
+            (p) => p.identity.toLowerCase() === s.addresses[0].toLowerCase()
           );
 
           if (profile) {

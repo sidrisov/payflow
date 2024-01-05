@@ -27,7 +27,7 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
 
   const [fetch, { data: socialInfo, loading: loadingSocials }] = useLazyQuery(
     QUERY_SOCIALS_MINIMAL,
-    { identity: profile.address, me: address ?? '' },
+    { identity: profile.identity, me: address ?? '' },
     {
       cache: true,
       dataFormatter(data) {
@@ -71,7 +71,7 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
               <Box flexWrap="wrap" display="flex" justifyContent="center" alignItems="center">
                 <SocialPresenceChipWithLink
                   type={socialInfo.ens ? 'ens' : 'address'}
-                  name={socialInfo.ens ?? profile.address}
+                  name={socialInfo.ens ?? profile.identity}
                 />
 
                 {socialInfo.socials &&
@@ -87,7 +87,7 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
                 {socialInfo.xmtp && (
                   <SocialPresenceChipWithLink
                     type="xmtp"
-                    name={socialInfo.ens ?? profile.address}
+                    name={socialInfo.ens ?? profile.identity}
                   />
                 )}
               </Box>

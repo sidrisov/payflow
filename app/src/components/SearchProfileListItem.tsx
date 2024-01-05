@@ -157,8 +157,8 @@ export function SearchProfileListItem(
         <Stack ml={1} spacing={1} direction="row" alignItems="center">
           <Tooltip
             title={
-              profile?.address || address ? (
-                (profile?.address ?? address) === profileWithSocials.profile?.address ? (
+              profile?.identity || address ? (
+                (profile?.identity ?? address) === profileWithSocials.profile?.identity ? (
                   <Typography variant="caption" fontWeight="bold">
                     Your {view === 'profile' ? 'profile' : 'address'}
                   </Typography>
@@ -202,8 +202,8 @@ export function SearchProfileListItem(
                 color:
                   profileWithSocials?.meta?.farcasterFollow ||
                   profileWithSocials?.meta?.lensFollow ||
-                  ((profile?.address || address) &&
-                    (profile?.address ?? address) === profileWithSocials.profile?.address)
+                  ((profile?.identity || address) &&
+                    (profile?.identity ?? address) === profileWithSocials.profile?.identity)
                     ? green.A700
                     : grey.A700,
                 border: 1,

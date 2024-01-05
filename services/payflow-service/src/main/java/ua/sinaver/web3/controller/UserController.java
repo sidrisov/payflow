@@ -53,6 +53,7 @@ public class UserController {
 
             return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
                     user.getIdentity(),
+                    user.getSigner(),
                     user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
                             : null,
                     flowService.getAllFlows(user),
@@ -99,6 +100,7 @@ public class UserController {
         return users.stream().filter(user -> user.isAllowed() && user.getDefaultFlow() != null).map(user -> {
             return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
                     user.getIdentity(),
+                    null,
                     user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
                             : null,
                     null,
@@ -114,6 +116,7 @@ public class UserController {
         if (user != null && user.isAllowed() && user.getDefaultFlow() != null) {
             return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
                     user.getIdentity(),
+                    null,
                     user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
                             : null,
                     null,

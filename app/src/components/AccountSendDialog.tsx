@@ -565,7 +565,7 @@ export default function AccountSendDialog({
       </DialogContent>
 
       <SearchProfileDialog
-        address={profile.address}
+        address={profile.identity}
         open={openSearchProfile}
         closeStateCallback={() => {
           setOpenSearchProfile(false);

@@ -72,7 +72,7 @@ export default function OnboardingDialog({
 
   const { data: socialInfo, loading: loadingSocials } = useQuery(
     QUERY_SOCIALS,
-    { identity: profile.address, me: '' },
+    { identity: profile.identity, me: '' },
     {
       cache: true
     }
@@ -102,7 +102,7 @@ export default function OnboardingDialog({
             setDisplayName(socialInfo.profileDisplayName);
           }
 
-          if (!username || username === profile.address) {
+          if (!username || username === profile.identity) {
             setUsername(
               socialInfo.dappName === LENS_DAPP
                 ? socialInfo.profileName.replace('lens/@', '')
@@ -124,7 +124,7 @@ export default function OnboardingDialog({
             //setDisplayName(meta.ens);
           }
 
-          if ((!username || username === profile.address) && meta.ens) {
+          if ((!username || username === profile.identity) && meta.ens) {
             //setUsername(meta.ens);
           }
 
@@ -137,7 +137,7 @@ export default function OnboardingDialog({
   }, [socialInfo]);
 
   useMemo(async () => {
-    const response = await axios.get(`${API_URL}/api/invitations/identity/${profile.address}`, {
+    const response = await axios.get(`${API_URL}/api/invitations/identity/${profile.identity}`, {
       withCredentials: true
     });
     setWhitelisted(response.data);
@@ -194,8 +194,8 @@ export default function OnboardingDialog({
   }, [code, whitelisted]);
 
   async function createMainFlow() {
-    console.debug(profile.address, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
-    create(profile.address, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
+    console.debug(profile.identity, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
+    create(profile.identity, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
   }
 
   useMemo(async () => {
@@ -204,7 +204,7 @@ export default function OnboardingDialog({
       await reset();
     } else if (wallets && wallets.length === DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS.length) {
       const defaultFlow = {
-        owner: profile.address,
+        owner: profile.identity,
         title: 'default',
         description: '',
         walletProvider: 'safe',

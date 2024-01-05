@@ -31,6 +31,7 @@ import lombok.ToString;
 @Entity
 @Table(uniqueConstraints = {
         @UniqueConstraint(name = "uc_user_identity", columnNames = { "identity" }),
+        @UniqueConstraint(name = "uc_user_signer", columnNames = { "signer" }),
         @UniqueConstraint(name = "uc_user_username", columnNames = { "username" }),
         @UniqueConstraint(name = "uc_user_display_name", columnNames = { "display_name" }) })
 public class User {
@@ -55,6 +56,9 @@ public class User {
 
     @Column(nullable = false)
     private String identity;
+
+    @Column
+    private String signer;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "flow_id", referencedColumnName = "id")

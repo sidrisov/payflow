@@ -28,6 +28,7 @@ build
 *.njsproj
 *.sln
 *.sw?
+update.sql
 
 # Hardhat files
 cache

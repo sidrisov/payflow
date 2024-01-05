@@ -2,7 +2,8 @@ import { Address } from 'viem';
 import { FlowType } from './FlowType';
 
 export interface ProfileType {
-  address: Address;
+  identity: Address;
+  signer?: Address;
   createdDate: string;
   displayName?: string;
   username?: string;
