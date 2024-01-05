@@ -9,12 +9,13 @@ import {
   arbitrum,
   zora,
   zkSync,
-  baseSepolia
+  baseSepolia,
+  Chain
 } from 'wagmi/chains';
 
 const ENABLED_CHAINS = JSON.parse(import.meta.env.VITE_ENABLED_CHAINS) as string[];
 
-export const SUPPORTED_CHAINS = [
+export const SUPPORTED_CHAINS: Chain[] = [
   base,
   optimism,
   arbitrum,
@@ -35,7 +36,7 @@ export const SUPPORTED_CHAINS = [
   }
 ].filter((c) => ENABLED_CHAINS.includes(c.network));
 
-export const DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS = [base, optimism, baseGoerli];
+export const DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS = [base, optimism, baseSepolia];
 
 export default function getNetworkImageSrc(network: number | string): string {
   const fileName =
