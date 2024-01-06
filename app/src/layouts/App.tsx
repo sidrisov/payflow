@@ -198,6 +198,7 @@ export default function AppLayout({
       />
       <SearchProfileDialog
         address={profile.identity}
+        profileRedirect={true}
         open={openSearchProfile}
         closeStateCallback={() => {
           setOpenSearchProfile(false);
