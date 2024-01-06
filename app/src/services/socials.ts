@@ -46,6 +46,9 @@ export const QUERY_SOCIALS = `query GetSocial($identity: Identity!, $me: Identit
        dappName
       }
     }
+    tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: ethereum}) {
+      type
+    }
   }
 }`;
 
@@ -96,6 +99,9 @@ export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = `
             dappName
           }
         }
+        tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: ethereum}) {
+          type
+        }
       }
     }
   }
@@ -127,6 +133,9 @@ export const QUERY_SOCIALS_MINIMAL = `query GetSocial($identity: Identity!, $me:
       Following {
         dappName
       }
+    }
+    tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: ethereum}) {
+      type
     }
   }
 }`;
@@ -337,6 +346,10 @@ export function converSocialResults(walletInfo: any): MetaType | undefined {
         meta.lensFollow = 'following';
       }
     }
+  }
+
+  if (walletInfo.tokenTransfers && walletInfo.tokenTransfers.length > 0) {
+    meta.sentTxs = walletInfo.tokenTransfers.length;
   }
 
   return meta;

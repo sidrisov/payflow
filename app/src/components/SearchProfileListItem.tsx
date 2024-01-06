@@ -163,7 +163,8 @@ export function SearchProfileListItem(
                     Your {view === 'profile' ? 'profile' : 'address'}
                   </Typography>
                 ) : profileWithSocials?.meta?.farcasterFollow ||
-                  profileWithSocials?.meta?.lensFollow ? (
+                  profileWithSocials?.meta?.lensFollow ||
+                  profileWithSocials?.meta?.sentTxs ? (
                   <>
                     {profileWithSocials.meta.farcasterFollow && (
                       <Stack spacing={1} direction="row" alignItems="center">
@@ -185,15 +186,27 @@ export function SearchProfileListItem(
                         </Typography>
                       </Stack>
                     )}
+                    {profileWithSocials.meta.sentTxs && (
+                      <Stack spacing={1} direction="row" alignItems="center">
+                        <Avatar src="ethereum.png" sx={{ width: 15, height: 15 }} />
+                        <Typography variant="caption" fontWeight="bold">
+                          {`Transacted ${
+                            profileWithSocials.meta.sentTxs > 5
+                              ? '5+'
+                              : profileWithSocials.meta.sentTxs
+                          } time${profileWithSocials.meta.sentTxs > 1 ? 's' : ''}`}
+                        </Typography>
+                      </Stack>
+                    )}
                   </>
                 ) : (
                   <Typography variant="caption" fontWeight="bold">
-                    No follow
+                    No connection insights
                   </Typography>
                 )
               ) : (
                 <Typography variant="caption" fontWeight="bold">
-                  For follow insights connect wallet
+                  For connection insights connect wallet
                 </Typography>
               )
             }>
@@ -202,6 +215,7 @@ export function SearchProfileListItem(
                 color:
                   profileWithSocials?.meta?.farcasterFollow ||
                   profileWithSocials?.meta?.lensFollow ||
+                  profileWithSocials?.meta?.sentTxs ||
                   ((profile?.identity || address) &&
                     (profile?.identity ?? address) === profileWithSocials.profile?.identity)
                     ? green.A700

@@ -26,6 +26,7 @@ export interface MetaType {
   xmtp: boolean;
   farcasterFollow: 'following' | 'mutual';
   lensFollow: 'following' | 'mutual';
+  sentTxs: number;
 }
 
 export interface SocialInfoType {

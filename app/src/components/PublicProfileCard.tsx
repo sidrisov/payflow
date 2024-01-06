@@ -92,7 +92,7 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
                 )}
               </Box>
 
-              {(socialInfo.farcasterFollow || socialInfo.lensFollow) && (
+              {(socialInfo.farcasterFollow || socialInfo.lensFollow || socialInfo.sentTxs) && (
                 <Stack my={1} spacing={1} alignSelf="center" alignItems="flex-start">
                   {socialInfo.farcasterFollow && (
                     <Stack spacing={1} direction="row" alignItems="center">
@@ -111,6 +111,16 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
                         {socialInfo.lensFollow === 'mutual'
                           ? 'Mutual follow on lens'
                           : 'You follow them on lens'}
+                      </Typography>
+                    </Stack>
+                  )}
+                  {socialInfo.sentTxs && (
+                    <Stack spacing={1} direction="row" alignItems="center">
+                      <Avatar src="ethereum.png" sx={{ width: 15, height: 15 }} />
+                      <Typography variant="caption" fontWeight="bold" color={green.A700}>
+                        {`Transacted ${socialInfo.sentTxs > 5 ? '5+' : socialInfo.sentTxs} time${
+                          socialInfo.sentTxs > 1 ? 's' : ''
+                        } on ethereum`}
                       </Typography>
                     </Stack>
                   )}
