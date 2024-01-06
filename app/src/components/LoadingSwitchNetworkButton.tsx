@@ -6,13 +6,13 @@ export function LoadingSwitchNetworkButton({
   chainId,
   ...props
 }: { chainId: number } & LoadingButtonProps) {
-  const { switchNetwork, isLoading, pendingChainId } = useSwitchNetwork();
+  const { switchNetwork, isLoading, pendingChainId, isError, error } = useSwitchNetwork();
 
   useEffect(() => {
     if (chainId !== pendingChainId) {
       switchNetwork?.(chainId);
     }
-  }, [chainId, pendingChainId]);
+  }, [chainId, pendingChainId, isError, error]);
 
   return (
     <LoadingButton
@@ -23,7 +23,7 @@ export function LoadingSwitchNetworkButton({
       size="large"
       color="primary"
       onClick={() => {
-        if (chainId !== pendingChainId) {
+        if (isError || chainId !== pendingChainId) {
           switchNetwork?.(chainId);
         }
       }}
