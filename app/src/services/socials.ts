@@ -46,7 +46,10 @@ export const QUERY_SOCIALS = `query GetSocial($identity: Identity!, $me: Identit
        dappName
       }
     }
-    tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: ethereum}) {
+    ethTransfers: tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: ethereum}) {
+      type
+    }
+    baseTransfers: tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: base}) {
       type
     }
   }
@@ -54,7 +57,7 @@ export const QUERY_SOCIALS = `query GetSocial($identity: Identity!, $me: Identit
 
 export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = `query GetSocialsForAssociatedAddresses($dappName: SocialDappName!, $profileName: String!, $me:Identity!) {
   Socials(
-    input: {limit: 10, filter: {dappName: {_eq: $dappName}, profileName: {_regex: $profileName}}, blockchain: ethereum}
+    input: {limit: 10, filter: {dappName: {_eq: $dappName}, profileName: {_regex: $profileName}}, blockchain: ethereum, order: {followerCount: DESC}}
   ) {
     Social {
       userAssociatedAddressDetails {
@@ -99,7 +102,10 @@ export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = `
             dappName
           }
         }
-        tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: ethereum}) {
+        ethTransfers: tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: ethereum}) {
+          type
+        }
+        baseTransfers: tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: base}) {
           type
         }
       }
@@ -134,7 +140,10 @@ export const QUERY_SOCIALS_MINIMAL = `query GetSocial($identity: Identity!, $me:
         dappName
       }
     }
-    tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: ethereum}) {
+    ethTransfers: tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: ethereum}) {
+      type
+    }
+    baseTransfers: tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: base}) {
       type
     }
   }
@@ -348,8 +357,12 @@ export function converSocialResults(walletInfo: any): MetaType | undefined {
     }
   }
 
-  if (walletInfo.tokenTransfers && walletInfo.tokenTransfers.length > 0) {
-    meta.sentTxs = walletInfo.tokenTransfers.length;
+  if (walletInfo.ethTransfers && walletInfo.ethTransfers.length > 0) {
+    meta.sentTxs = walletInfo.ethTransfers.length;
+  }
+
+  if (walletInfo.baseTransfers && walletInfo.baseTransfers.length > 0) {
+    meta.sentTxs = (meta.sentTxs ?? 0) + walletInfo.baseTransfers.length;
   }
 
   return meta;

@@ -6,6 +6,7 @@ import {
   CardProps,
   CircularProgress,
   Stack,
+  Tooltip,
   Typography
 } from '@mui/material';
 import { useMemo, useState } from 'react';
@@ -96,7 +97,11 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
                 <Stack my={1} spacing={1} alignSelf="center" alignItems="flex-start">
                   {socialInfo.farcasterFollow && (
                     <Stack spacing={1} direction="row" alignItems="center">
-                      <Avatar src="farcaster.svg" sx={{ width: 15, height: 15 }} />
+                      <Avatar
+                        variant="rounded"
+                        src="farcaster.svg"
+                        sx={{ width: 15, height: 15 }}
+                      />
                       <Typography variant="caption" fontWeight="bold" color={green.A700}>
                         {socialInfo.farcasterFollow === 'mutual'
                           ? 'Mutual follow on farcaster'
@@ -106,7 +111,7 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
                   )}
                   {socialInfo.lensFollow && (
                     <Stack spacing={1} direction="row" alignItems="center">
-                      <Avatar src="lens.svg" sx={{ width: 15, height: 15 }} />
+                      <Avatar variant="rounded" src="lens.svg" sx={{ width: 15, height: 15 }} />
                       <Typography variant="caption" fontWeight="bold" color={green.A700}>
                         {socialInfo.lensFollow === 'mutual'
                           ? 'Mutual follow on lens'
@@ -116,11 +121,13 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
                   )}
                   {socialInfo.sentTxs && (
                     <Stack spacing={1} direction="row" alignItems="center">
-                      <Avatar src="ethereum.png" sx={{ width: 15, height: 15 }} />
+                      <Avatar variant="rounded" src="ethereum.png" sx={{ width: 15, height: 15 }} />
                       <Typography variant="caption" fontWeight="bold" color={green.A700}>
-                        {`Transacted ${socialInfo.sentTxs > 5 ? '5+' : socialInfo.sentTxs} time${
-                          socialInfo.sentTxs > 1 ? 's' : ''
-                        } on ethereum`}
+                        {`Transacted ${
+                          socialInfo.sentTxs === 1
+                            ? 'once'
+                            : (socialInfo.sentTxs > 5 ? '5+' : socialInfo.sentTxs) + ' times'
+                        } onchain`}
                       </Typography>
                     </Stack>
                   )}

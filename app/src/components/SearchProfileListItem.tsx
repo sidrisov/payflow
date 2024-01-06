@@ -191,10 +191,12 @@ export function SearchProfileListItem(
                         <Avatar src="ethereum.png" sx={{ width: 15, height: 15 }} />
                         <Typography variant="caption" fontWeight="bold">
                           {`Transacted ${
-                            profileWithSocials.meta.sentTxs > 5
-                              ? '5+'
-                              : profileWithSocials.meta.sentTxs
-                          } time${profileWithSocials.meta.sentTxs > 1 ? 's' : ''}`}
+                            profileWithSocials.meta.sentTxs === 1
+                              ? 'once'
+                              : (profileWithSocials.meta.sentTxs > 5
+                                  ? '5+'
+                                  : profileWithSocials.meta.sentTxs) + ' times'
+                          }`}
                         </Typography>
                       </Stack>
                     )}
