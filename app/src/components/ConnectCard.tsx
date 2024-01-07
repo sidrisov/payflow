@@ -25,7 +25,8 @@ export function ConnectCard() {
         border: 3,
         borderRadius: 5,
         borderStyle: 'double',
-        borderColor: 'divider'
+        borderColor: 'divider',
+        maxWidth: 400
       }}>
       <Box
         m={1}
@@ -56,9 +57,17 @@ export function ConnectCard() {
           <FeatureSection description="send, receive, request crypto, and more" />
         </Stack>
 
+        <Typography my={1} variant="caption" fontWeight="bold" textAlign="center">
+          <u>
+            <b>{'Identity'}</b>
+          </u>
+          {': '}your ethereum address linked to web3 socials (ens, farcaster, lens) for seamless
+          profile discovery and payments with your friends.
+        </Typography>
+
         <Box my={2}>
           <ConnectButton
-            label={address ? 'Sign & verify' : 'Connect wallet'}
+            label={address ? 'Verify Identity' : 'Connect Identity'}
             showBalance={{ smallScreen: false, largeScreen: false }}
           />
         </Box>

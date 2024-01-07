@@ -27,8 +27,8 @@ export default function Advanced() {
                 Identity
               </Typography>
               <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
-                An ethereum address associated with your social credentials (ens, farcaster, lens),
-                your friends can discover your profile by it and send funds to your default flow.
+                Your ethereum address linked to web3 socials (ens, farcaster, lens) for seamless
+                profile discovery and payments with your friends.
               </Typography>
               <Typography variant="subtitle2" fontSize={isMobile ? 12 : 14}>
                 {profile.identity}
@@ -42,8 +42,8 @@ export default function Advanced() {
                 Flow Signer
               </Typography>
               <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
-                An ethereum address used to sign all flow related transactions, hence
-                minimizing identity wallet signature requirement.
+                Your ethereum address used to sign all flow related transactions, reducing the need
+                for additional identity wallet signatures.
               </Typography>
               <Typography variant="subtitle2" fontSize={isMobile ? 12 : 14}>
                 {profile.signer ?? profile.identity}

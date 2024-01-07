@@ -21,7 +21,7 @@ export function LoadingSwitchNetworkButton({
       variant="outlined"
       loading={isLoading}
       size="large"
-      color="primary"
+      color="inherit"
       onClick={() => {
         if (isError || chainId !== pendingChainId) {
           switchNetwork?.(chainId);

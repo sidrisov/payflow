@@ -225,8 +225,8 @@ export default function ProfileOnboardingDialog({
       }}>
       <DialogTitle>
         <Box display="flex" justifyContent="center">
-          <Typography variant="h5" sx={{ overflow: 'auto' }}>
-            Complete your sign up!
+          <Typography variant="h6" sx={{ overflow: 'auto' }}>
+            Complete your profile
           </Typography>
         </Box>
       </DialogTitle>
@@ -239,8 +239,10 @@ export default function ProfileOnboardingDialog({
           p={1}>
           <Stack mb={3} spacing={3}>
             {whitelisted ? (
-              <Typography textAlign="center" color={lightGreen.A700}>
-                Congratulations 🎉 Your identity is whitelisted!
+              <Typography textAlign="center" fontWeight="bold" color={lightGreen.A700}>
+                Congratulations 🎉
+                <br />
+                Your identity is whitelisted!
               </Typography>
             ) : (
               <TextField
@@ -288,7 +290,7 @@ export default function ProfileOnboardingDialog({
               error={username !== '' && (!usernameAvailable || !usernameValid)}
               helperText={
                 (username && !usernameAvailable && 'username not available') ||
-                (!usernameValid && 'username invalid format')
+                (username && !usernameValid && 'username invalid format')
               }
               fullWidth
               value={username}
@@ -352,7 +354,7 @@ export default function ProfileOnboardingDialog({
               </Stack>
             }
             size="large"
-            color="primary"
+            color="inherit"
             onClick={async () => {
               await updatedProfile();
             }}

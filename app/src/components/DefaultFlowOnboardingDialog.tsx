@@ -8,7 +8,10 @@ import {
   Box,
   CircularProgress,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  FormControlLabel,
+  Switch,
+  IconButton
 } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 
@@ -22,6 +25,12 @@ import { FlowType } from '../types/FlowType';
 import { useNavigate } from 'react-router-dom';
 import { DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS } from '../utils/networks';
 import { updateProfile } from '../services/user';
+import { LoadingConnectWalletButton } from './LoadingConnectWalletButton';
+import { useAccount } from 'wagmi';
+import { green, red } from '@mui/material/colors';
+import { shortenWalletAddressLabel } from '../utils/address';
+import { Logout } from '@mui/icons-material';
+import { disconnect } from 'wagmi/actions';
 
 export type DefaultFlowOnboardingDialogProps = DialogProps &
   CloseCallbackType & {
@@ -43,6 +52,10 @@ export default function DefaultFlowOnboardingDialog({
   const { loading: loadingWallets, error, wallets, create, reset } = usePreCreateSafeWallets();
   const [loadingUpdateProfile, setLoadingUpdateProfile] = useState<boolean>(false);
 
+  const [signerAsIdentity, setSignerAsIdentity] = useState<boolean>(false);
+
+  const { address } = useAccount();
+
   const navigate = useNavigate();
 
   function handleCloseCampaignDialog() {
@@ -51,7 +64,13 @@ export default function DefaultFlowOnboardingDialog({
 
   async function createMainFlow() {
     console.debug(profile.identity, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
-    create(profile.identity, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
+    if (signerAsIdentity) {
+      create(profile.identity, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
+    } else if (address) {
+      create(address, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
+    } else {
+      toast.error('No wallet connected!');
+    }
   }
 
   useMemo(async () => {
@@ -69,6 +88,7 @@ export default function DefaultFlowOnboardingDialog({
       } as FlowType;
       const updatedProfile = {
         ...profile,
+        signer: signerAsIdentity ? undefined : address,
         defaultFlow
       } as ProfileType;
       setLoadingUpdateProfile(true);
@@ -98,44 +118,98 @@ export default function DefaultFlowOnboardingDialog({
       }}>
       <DialogTitle>
         <Box display="flex" justifyContent="center">
-          <Typography variant="h5" sx={{ overflow: 'auto' }}>
-            Initialize default flow!
+          <Typography variant="h6" sx={{ overflow: 'auto' }}>
+            Initialize default flow and signer
           </Typography>
         </Box>
       </DialogTitle>
       <DialogContent>
         <Box
-          minWidth={350}
+          maxWidth={350}
           minHeight={400}
           height="100%"
           display="flex"
           flexDirection="column"
-          justifyContent={isMobile ? 'space-between' : 'flex-start'}
+          justifyContent="space-between"
           p={1}>
-          <LoadingButton
-            loading={loadingWallets || loadingUpdateProfile}
-            fullWidth
-            variant="outlined"
-            loadingIndicator={
-              <Stack direction="row" spacing={1} alignItems="center">
-                <CircularProgress color="inherit" size={16} />
-                <Typography variant="button">
-                  {loadingWallets
-                    ? 'preparing flow'
-                    : loadingUpdateProfile
-                    ? 'updating profile'
-                    : ''}
+          <Stack spacing={2} alignItems="flex-start">
+            <Typography variant="caption" fontSize={isMobile ? 14 : 16}>
+              <b>
+                <u>Default Flow</u>
+              </b>
+              {': '}
+              abstracted set of smart wallets across various chains, funds sent to your profile are
+              received on default flow.
+            </Typography>
+            <Typography variant="caption" fontSize={isMobile ? 14 : 16}>
+              <b>
+                <u>Flow Signer</u>
+              </b>
+              {': '}
+              your ethereum address used to sign all flow related transactions, reducing the need
+              for additional identity wallet signatures.
+            </Typography>
+
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={signerAsIdentity}
+                  onChange={(event) => {
+                    setSignerAsIdentity(event.target.checked);
+                  }}
+                  sx={{ accentColor: green.A700 }}
+                />
+              }
+              label="Use your identity wallet as signer"
+            />
+
+            {!signerAsIdentity && address && (
+              <Box
+                width="100%"
+                display="flex"
+                flexDirection="row"
+                alignItems="center"
+                justifyContent="space-between">
+                <Typography variant="subtitle2" fontSize={isMobile ? 15 : 16} sx={{ pl: 1 }}>
+                  Connected Signer:{' '}
+                  <u>
+                    <b>{shortenWalletAddressLabel(address)}</b>
+                  </u>
                 </Typography>
-              </Stack>
-            }
-            size="large"
-            color="primary"
-            onClick={async () => {
-              await createMainFlow();
-            }}
-            sx={{ borderRadius: 5 }}>
-            Complete
-          </LoadingButton>
+                <IconButton onClick={async () => await disconnect()} sx={{ color: red.A700 }}>
+                  <Logout />
+                </IconButton>
+              </Box>
+            )}
+          </Stack>
+          {signerAsIdentity || address ? (
+            <LoadingButton
+              loading={loadingWallets || loadingUpdateProfile}
+              fullWidth
+              variant="outlined"
+              color="inherit"
+              loadingIndicator={
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <CircularProgress color="inherit" size={16} />
+                  <Typography variant="button">
+                    {loadingWallets
+                      ? 'preparing flow'
+                      : loadingUpdateProfile
+                      ? 'updating profile'
+                      : ''}
+                  </Typography>
+                </Stack>
+              }
+              size="large"
+              onClick={async () => {
+                await createMainFlow();
+              }}
+              sx={{ mt: 3, mb: 1, borderRadius: 5 }}>
+              Initialize
+            </LoadingButton>
+          ) : (
+            <LoadingConnectWalletButton title="Connect Signer" />
+          )}
         </Box>
       </DialogContent>
     </Dialog>

@@ -442,7 +442,7 @@ export default function PayProfileDialog({
                         </Stack>
                       }
                       size="large"
-                      color="primary"
+                      color="inherit"
                       onClick={() => sendTransaction?.()}
                       sx={{ mt: 3, mb: 1, borderRadius: 5 }}>
                       Pay

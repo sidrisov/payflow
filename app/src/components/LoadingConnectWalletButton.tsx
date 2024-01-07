@@ -14,7 +14,7 @@ export function LoadingConnectWalletButton({
       variant="outlined"
       loading={connectModalOpen}
       size="large"
-      color="primary"
+      color="inherit"
       onClick={() => {
         openConnectModal?.();
       }}

@@ -530,7 +530,7 @@ export default function AccountSendDialog({
                       </Stack>
                     }
                     size="large"
-                    color="primary"
+                    color="inherit"
                     onClick={async () => {
                       if (toAddress && sendAmount && ethersSigner) {
                         await sendSafeTransaction(
