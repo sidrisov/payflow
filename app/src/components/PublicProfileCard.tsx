@@ -6,16 +6,14 @@ import {
   CardProps,
   CircularProgress,
   Stack,
-  Tooltip,
   Typography
 } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { MetaType, ProfileType } from '../types/ProfleType';
 import { useAccount } from 'wagmi';
-import { AttachMoney, Send } from '@mui/icons-material';
+import { Send } from '@mui/icons-material';
 import { useLazyQuery } from '@airstack/airstack-react';
 import { ProfileSection } from './ProfileSection';
-import { comingSoonToast } from './Toasts';
 import SocialPresenceChipWithLink from './SocialPresenceChipWithLink';
 import { QUERY_SOCIALS_MINIMAL, converSocialResults } from '../services/socials';
 import PayProfileDialog from './PayProfileDialog';
@@ -65,7 +63,6 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
           <Stack direction="row" alignItems="center" spacing={1}>
             <ProfileSection profile={profile} avatarSize={48} maxWidth={300} />
           </Stack>
-
           {loadingSocials && <CircularProgress color="inherit" size={20} />}
           {socialInfo && (
             <Stack>
@@ -85,12 +82,6 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
                         name={s.profileName}
                       />
                     ))}
-                {socialInfo.xmtp && (
-                  <SocialPresenceChipWithLink
-                    type="xmtp"
-                    name={socialInfo.ens ?? profile.identity}
-                  />
-                )}
               </Box>
 
               {(socialInfo.farcasterFollow || socialInfo.lensFollow || socialInfo.sentTxs) && (
@@ -135,16 +126,15 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
               )}
             </Stack>
           )}
-
           <Stack direction="row" spacing={1} alignItems="center">
-            <Button
+            {/* <Button
               color="inherit"
               variant="outlined"
               endIcon={<AttachMoney />}
               onClick={() => comingSoonToast()}
               sx={{ borderRadius: 5, textTransform: 'lowercase' }}>
               Tip
-            </Button>
+            </Button> */}
             <Button
               variant="outlined"
               color="inherit"
@@ -156,6 +146,9 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
               }}>
               Pay
             </Button>
+            {socialInfo?.xmtp && (
+              <SocialPresenceChipWithLink type="xmtp" name={socialInfo.ens ?? profile.identity} />
+            )}
           </Stack>
         </Stack>
       </Card>

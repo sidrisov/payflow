@@ -1,8 +1,9 @@
-import { Avatar, Chip, ChipProps } from '@mui/material';
+import { Avatar, Chip, ChipProps, IconButton, Tooltip, Typography } from '@mui/material';
 import { dAppType } from '../utils/dapps';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { XmtpActionMenu } from './XmtpActionMenu';
 import { useState } from 'react';
+import { Chat } from '@mui/icons-material';
 
 export type SocialPresenceChipWithLinkProps = ChipProps & {
   type: dAppType;
@@ -44,17 +45,28 @@ export default function SocialPresenceChipWithLink(props: SocialPresenceChipWith
     />
   ) : (
     <>
-      <Chip
+      <Tooltip title="message on xmtp">
+        <IconButton
+          color="inherit"
+          onClick={(event) => {
+            setXmtpMenuAnchorEl(event.currentTarget);
+            setOpenXmtpMenu(true);
+          }}
+          sx={{ border: 1, width: 36, height: 36 }}>
+          <Chat fontSize="small" />
+        </IconButton>
+      </Tooltip>
+      {/* <Chip
         variant="outlined"
         avatar={<Avatar src={avatarSrc} />}
-        label="chat"
+        label=""
         clickable
         onClick={(event) => {
           setXmtpMenuAnchorEl(event.currentTarget);
           setOpenXmtpMenu(true);
         }}
         sx={{ borderColor: 'inherit', m: 0.5 }}
-      />
+      /> */}
       <XmtpActionMenu
         addressOrEns={name ?? ''}
         anchorEl={xmtpMenuAnchorEl}
