@@ -26,11 +26,21 @@ import { PublicProfileCard } from '../components/PublicProfileCard';
 import HideOnScroll from '../components/HideOnScroll';
 import HomeLogo from '../components/Logo';
 import { WalletMenu } from '../components/WalletMenu';
-import { useAccount } from 'wagmi';
+import { useAccount, useContractRead, useEnsAddress } from 'wagmi';
 import PayProfileDialog from '../components/PayProfileDialog';
 import { getProfileByAddressOrName } from '../services/user';
+import { AnonymousUserContext } from '../contexts/UserContext';
+import { formatUnits } from 'viem';
 
-export default function PublicProfile({ appSettings }: { appSettings: AppSettings }) {
+import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
+
+export default function PublicProfile({
+  appSettings,
+  setAppSettings
+}: {
+  appSettings: AppSettings;
+  setAppSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
+}) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -50,6 +60,22 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
 
   const [selectedRecipient, setSelectedRecipient] = useState<SelectedProfileWithSocialsType>();
 
+  const { isSuccess: isEnsSuccess, data: ethUsdPriceFeedAddress } = useEnsAddress({
+    name: 'eth-usd.data.eth',
+    chainId: 1,
+    cacheTime: 300_000
+  });
+
+  const { data: ethUsdPrice } = useContractRead({
+    enabled: isEnsSuccess && ethUsdPriceFeedAddress !== undefined,
+    chainId: 1,
+    address: ethUsdPriceFeedAddress ?? undefined,
+    abi: AggregatorV2V3Interface.abi,
+    functionName: 'latestAnswer',
+    select: (data) => Number(formatUnits(data as bigint, 8)),
+    cacheTime: 10_000
+  });
+
   useMemo(async () => {
     if (username) {
       setLoadingProfile(true);
@@ -65,7 +91,12 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
   }, [username]);
 
   return (
-    <>
+    <AnonymousUserContext.Provider
+      value={{
+        appSettings,
+        setAppSettings,
+        ethUsdPrice
+      }}>
       <Helmet>
         <title> Payflow {profile ? '| ' + profile.displayName : ''} </title>
       </Helmet>
@@ -252,6 +283,6 @@ export default function PublicProfile({ appSettings }: { appSettings: AppSetting
         onClose={() => setOpenWalletMenu(false)}
         closeStateCallback={() => setOpenWalletMenu(false)}
       />
-    </>
+    </AnonymousUserContext.Provider>
   );
 }

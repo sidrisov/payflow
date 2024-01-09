@@ -18,6 +18,8 @@ import SocialPresenceChipWithLink from './SocialPresenceChipWithLink';
 import { QUERY_SOCIALS_MINIMAL, converSocialResults } from '../services/socials';
 import PayProfileDialog from './PayProfileDialog';
 import { green } from '@mui/material/colors';
+import { useTransactionsFetcher } from '../utils/hooks/useTransactionsFetcher';
+import PublicProfileActivityFeed from './PublicProfileActivityFeed';
 
 export function PublicProfileCard({ profile, ...props }: { profile: ProfileType } & CardProps) {
   const [openPayDialog, setOpenPayDialog] = useState(false);
@@ -41,11 +43,15 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
     }
   }, [profile, address]);
 
+  const activityFetcherResult = useTransactionsFetcher(
+    profile?.defaultFlow?.wallets /* .filter((w) => w.network === base.id) */ ?? []
+  );
+
   return (
     <>
       <Card
         {...props}
-        elevation={10}
+        elevation={3}
         sx={{
           display: 'flex',
           flexDirection: 'column',
@@ -54,9 +60,8 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
           m: 2,
           mt: 5,
           p: 2,
-          border: 2,
+          border: 1.5,
           borderColor: 'divider',
-          borderStyle: 'double',
           borderRadius: 5
         }}>
         <Stack spacing={1} direction="column" alignItems="center">
@@ -152,6 +157,14 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
           </Stack>
         </Stack>
       </Card>
+
+      <Box mx={1}>
+        <PublicProfileActivityFeed
+          selectedNetwork={undefined}
+          activityFetchResult={activityFetcherResult}
+        />
+      </Box>
+
       {openPayDialog && (
         <PayProfileDialog
           open={openPayDialog}

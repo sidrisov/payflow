@@ -41,10 +41,18 @@ export const useTransactionsFetcher = (wallets: FlowWalletType[]): ActivityFetch
         ).sort((left, right) => right.timestamp.localeCompare(left.timestamp));
 
         // TODO: get unique
-        const wallets = txs.map((tx) => ({
-          address: tx.activity === 'self' || tx.activity === 'inbound' ? tx.from : tx.to,
-          network: tx.chainId
-        }));
+        let wallets: any = [];
+
+        txs.forEach((tx) => {
+          wallets.push({
+            address: tx.from,
+            network: tx.chainId
+          });
+          wallets.push({
+            address: tx.to,
+            network: tx.chainId
+          });
+        });
 
         const { status, data: walletProfiles } = await axios.post(
           `${API_URL}/api/user/search/wallets`,
@@ -55,15 +63,20 @@ export const useTransactionsFetcher = (wallets: FlowWalletType[]): ActivityFetch
 
         if (status === 200 && walletProfiles) {
           txs.forEach((tx) => {
-            const profile = walletProfiles.find(
-              (w: WalletWithProfileType) =>
-                w.address ===
-                  (tx.activity === 'self' || tx.activity === 'inbound' ? tx.from : tx.to) &&
-                w.network === tx.chainId
-            ).profile;
+            const fromProfile = walletProfiles.find(
+              (w: WalletWithProfileType) => w.address === tx.from && w.network === tx.chainId
+            )?.profile;
 
-            if (profile) {
-              tx.profile = profile;
+            const toProfile = walletProfiles.find(
+              (w: WalletWithProfileType) => w.address === tx.to && w.network === tx.chainId
+            )?.profile;
+
+            if (fromProfile) {
+              tx.fromProfile = fromProfile;
+            }
+
+            if (toProfile) {
+              tx.toProfile = toProfile;
             }
             return tx;
           });

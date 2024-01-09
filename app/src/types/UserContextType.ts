@@ -18,4 +18,5 @@ export interface ProfileContextType {
 export interface AnonymousUserContextType {
   appSettings: AppSettings;
   setAppSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
+  ethUsdPrice: number | undefined;
 }

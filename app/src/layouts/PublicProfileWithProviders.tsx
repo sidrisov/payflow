@@ -16,7 +16,6 @@ import PublicProfile from './PublicProfile';
 
 import { AirstackProvider, init } from '@airstack/airstack-react';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
-import { AnonymousUserContext } from '../contexts/UserContext';
 import CustomToastContainer from '../components/toasts/CustomToastContainer';
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(SUPPORTED_CHAINS, [
@@ -71,25 +70,19 @@ export default function PublicProfileWithProviders() {
   init(AIRSTACK_API_KEY);
 
   return (
-    <AnonymousUserContext.Provider
-      value={{
-        appSettings,
-        setAppSettings
-      }}>
-      <WagmiConfig config={wagmiConfig}>
-        <AirstackProvider apiKey={AIRSTACK_API_KEY}>
-          <RainbowKitProvider
-            theme={appSettings.darkMode ? customDarkTheme : customLightTheme}
-            avatar={CustomAvatar}
-            modalSize="compact"
-            chains={chains}>
-            <CustomThemeProvider darkMode={appSettings.darkMode}>
-              <PublicProfile appSettings={appSettings} />
-            </CustomThemeProvider>
-          </RainbowKitProvider>
-        </AirstackProvider>
-        <CustomToastContainer />
-      </WagmiConfig>
-    </AnonymousUserContext.Provider>
+    <WagmiConfig config={wagmiConfig}>
+      <AirstackProvider apiKey={AIRSTACK_API_KEY}>
+        <RainbowKitProvider
+          theme={appSettings.darkMode ? customDarkTheme : customLightTheme}
+          avatar={CustomAvatar}
+          modalSize="compact"
+          chains={chains}>
+          <CustomThemeProvider darkMode={appSettings.darkMode}>
+            <PublicProfile appSettings={appSettings} setAppSettings={setAppSettings} />
+          </CustomThemeProvider>
+        </RainbowKitProvider>
+      </AirstackProvider>
+      <CustomToastContainer />
+    </WagmiConfig>
   );
 }
