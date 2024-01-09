@@ -46,12 +46,18 @@ export const QUERY_SOCIALS = `query GetSocial($identity: Identity!, $me: Identit
        dappName
       }
     }
+    ethTransfers: tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: ethereum}) {
+      type
+    }
+    baseTransfers: tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: base}) {
+      type
+    }
   }
 }`;
 
 export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = `query GetSocialsForAssociatedAddresses($dappName: SocialDappName!, $profileName: String!, $me:Identity!) {
   Socials(
-    input: {limit: 10, filter: {dappName: {_eq: $dappName}, profileName: {_regex: $profileName}}, blockchain: ethereum}
+    input: {limit: 10, filter: {dappName: {_eq: $dappName}, profileName: {_regex: $profileName}}, blockchain: ethereum, order: {followerCount: DESC}}
   ) {
     Social {
       userAssociatedAddressDetails {
@@ -96,6 +102,12 @@ export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = `
             dappName
           }
         }
+        ethTransfers: tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: ethereum}) {
+          type
+        }
+        baseTransfers: tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: base}) {
+          type
+        }
       }
     }
   }
@@ -127,6 +139,12 @@ export const QUERY_SOCIALS_MINIMAL = `query GetSocial($identity: Identity!, $me:
       Following {
         dappName
       }
+    }
+    ethTransfers: tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: ethereum}) {
+      type
+    }
+    baseTransfers: tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: base}) {
+      type
     }
   }
 }`;
@@ -177,7 +195,7 @@ export async function searchProfile(
     if (profiles) {
       foundProfiles = foundProfiles.concat(
         ...(await Promise.all(
-          profiles.filter((p) => p.defaultFlow).map((p) => searchProfile(p.address, me))
+          profiles.filter((p) => p.defaultFlow).map((p) => searchProfile(p.identity, me))
         ))
       );
     }
@@ -228,7 +246,7 @@ export async function searchProfile(
         const profiles = await searchByListOfAddressesOrUsernames(addresses);
         userAssociatedAddressSocials.forEach((s) => {
           const profile = profiles.find(
-            (p) => p.address.toLowerCase() === s.addresses[0].toLowerCase()
+            (p) => p.identity.toLowerCase() === s.addresses[0].toLowerCase()
           );
 
           if (profile) {
@@ -273,6 +291,7 @@ export async function searchProfile(
 }
 
 export function converSocialResults(walletInfo: any): MetaType | undefined {
+  console.debug('Converting wallet info: ', walletInfo);
   let meta = {} as MetaType;
 
   if (walletInfo.addresses) {
@@ -336,6 +355,14 @@ export function converSocialResults(walletInfo: any): MetaType | undefined {
         meta.lensFollow = 'following';
       }
     }
+  }
+
+  if (walletInfo.ethTransfers && walletInfo.ethTransfers.length > 0) {
+    meta.sentTxs = walletInfo.ethTransfers.length;
+  }
+
+  if (walletInfo.baseTransfers && walletInfo.baseTransfers.length > 0) {
+    meta.sentTxs = (meta.sentTxs ?? 0) + walletInfo.baseTransfers.length;
   }
 
   return meta;

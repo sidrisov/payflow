@@ -2,7 +2,8 @@ import { Address } from 'viem';
 import { FlowType } from './FlowType';
 
 export interface ProfileType {
-  address: Address;
+  identity: Address;
+  signer?: Address;
   createdDate: string;
   displayName?: string;
   username?: string;
@@ -25,6 +26,7 @@ export interface MetaType {
   xmtp: boolean;
   farcasterFollow: 'following' | 'mutual';
   lensFollow: 'following' | 'mutual';
+  sentTxs: number;
 }
 
 export interface SocialInfoType {

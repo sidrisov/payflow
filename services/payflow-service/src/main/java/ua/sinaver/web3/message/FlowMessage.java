@@ -11,7 +11,7 @@ public record FlowMessage(String owner, String title, String description, String
     public static FlowMessage convert(Flow flow, User user) {
         val wallets = flow.getWallets().stream().map(w -> WalletMessage.convert(w))
                 .toList();
-        return new FlowMessage(user.getSigner(), flow.getTitle(), flow.getDescription(), flow.getUuid(),
+        return new FlowMessage(user.getIdentity(), flow.getTitle(), flow.getDescription(), flow.getUuid(),
                 flow.getWalletProvider(), flow.getSaltNonce(), wallets);
     }
 

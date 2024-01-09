@@ -182,6 +182,7 @@ export default function Profile() {
             fullWidth
             variant="outlined"
             size="large"
+            color="inherit"
             onClick={save}
             sx={{ borderRadius: 5 }}>
             Save

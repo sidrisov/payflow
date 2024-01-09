@@ -21,13 +21,10 @@ import { useMemo, useState } from 'react';
 import axios from 'axios';
 import { ProfileType } from '../types/ProfleType';
 import { toast } from 'react-toastify';
-import { useCreateSafeWallets as usePreCreateSafeWallets } from '../utils/hooks/useCreateSafeWallets';
 
-import { FlowType } from '../types/FlowType';
 import { updateProfile } from '../services/user';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../utils/urlConstants';
-import { DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS } from '../utils/networks';
 import { QUERY_SOCIALS, converSocialResults } from '../services/socials';
 import { useQuery } from '@airstack/airstack-react';
 import CenteredCircularProgress from './CenteredCircularProgress';
@@ -35,22 +32,20 @@ import { isAlphanumericPlusFewSpecialChars as isAlphanumericWithSpecials } from 
 import { green, lightGreen, red } from '@mui/material/colors';
 import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';
 
-export type OnboardingDialogProps = DialogProps &
+export type ProfileOnboardingDialogProps = DialogProps &
   CloseCallbackType & {
     profile: ProfileType;
     username?: string | null;
     code?: string | null;
   };
 
-const SALT_NONCE = import.meta.env.VITE_DEFAULT_FLOW_CREATE2_SALT_NONCE;
-
-export default function OnboardingDialog({
+export default function ProfileOnboardingDialog({
   closeStateCallback,
   profile,
   username: paramUsername,
   code: paramCode,
   ...props
-}: OnboardingDialogProps) {
+}: ProfileOnboardingDialogProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -65,14 +60,13 @@ export default function OnboardingDialog({
   const [codeValid, setCodeValid] = useState<boolean>();
   const [whitelisted, setWhitelisted] = useState<boolean>();
 
-  const { loading: loadingWallets, error, wallets, create, reset } = usePreCreateSafeWallets();
   const [loadingUpdateProfile, setLoadingUpdateProfile] = useState<boolean>(false);
 
   const navigate = useNavigate();
 
   const { data: socialInfo, loading: loadingSocials } = useQuery(
     QUERY_SOCIALS,
-    { identity: profile.address, me: '' },
+    { identity: profile.identity, me: '' },
     {
       cache: true
     }
@@ -102,7 +96,7 @@ export default function OnboardingDialog({
             setDisplayName(socialInfo.profileDisplayName);
           }
 
-          if (!username || username === profile.address) {
+          if (!username || username === profile.identity) {
             setUsername(
               socialInfo.dappName === LENS_DAPP
                 ? socialInfo.profileName.replace('lens/@', '')
@@ -124,7 +118,7 @@ export default function OnboardingDialog({
             //setDisplayName(meta.ens);
           }
 
-          if ((!username || username === profile.address) && meta.ens) {
+          if ((!username || username === profile.identity) && meta.ens) {
             //setUsername(meta.ens);
           }
 
@@ -137,7 +131,7 @@ export default function OnboardingDialog({
   }, [socialInfo]);
 
   useMemo(async () => {
-    const response = await axios.get(`${API_URL}/api/invitations/identity/${profile.address}`, {
+    const response = await axios.get(`${API_URL}/api/invitations/identity/${profile.identity}`, {
       withCredentials: true
     });
     setWhitelisted(response.data);
@@ -193,50 +187,29 @@ export default function OnboardingDialog({
     }
   }, [code, whitelisted]);
 
-  async function createMainFlow() {
-    console.debug(profile.address, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
-    create(profile.address, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
-  }
+  async function updatedProfile() {
+    const updatedProfile = {
+      ...profile,
+      displayName,
+      username,
+      profileImage
+    } as ProfileType;
 
-  useMemo(async () => {
-    if (error) {
-      toast.error('Failed to prepare flow, try again!');
-      await reset();
-    } else if (wallets && wallets.length === DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS.length) {
-      const defaultFlow = {
-        account: profile.address,
-        title: 'default',
-        description: '',
-        walletProvider: 'safe',
-        saltNonce: SALT_NONCE,
-        wallets
-      } as FlowType;
+    setLoadingUpdateProfile(true);
 
-      const updatedProfile = {
-        ...profile,
-        displayName,
-        username,
-        profileImage,
-        defaultFlow
-      } as ProfileType;
+    try {
+      const success = await updateProfile(updatedProfile, code ?? undefined);
 
-      setLoadingUpdateProfile(true);
-
-      try {
-        const success = await updateProfile(updatedProfile, code ?? undefined);
-
-        if (success) {
-          toast.success('Onboarding successfully completed');
-          navigate('/');
-        } else {
-          toast.error('Failed to update profile, try again!');
-        }
-      } finally {
-        setLoadingUpdateProfile(false);
-        await reset();
+      if (success) {
+        toast.success('Onboarding successfully completed');
+        navigate('/');
+      } else {
+        toast.error('Failed to update profile, try again!');
       }
+    } finally {
+      setLoadingUpdateProfile(false);
     }
-  }, [wallets, error]);
+  }
 
   return loadingSocials ? (
     <Box alignSelf="stretch" justifySelf="stretch">
@@ -252,8 +225,8 @@ export default function OnboardingDialog({
       }}>
       <DialogTitle>
         <Box display="flex" justifyContent="center">
-          <Typography variant="h5" sx={{ overflow: 'auto' }}>
-            Complete your sign up!
+          <Typography variant="h6" sx={{ overflow: 'auto' }}>
+            Complete your profile
           </Typography>
         </Box>
       </DialogTitle>
@@ -266,8 +239,10 @@ export default function OnboardingDialog({
           p={1}>
           <Stack mb={3} spacing={3}>
             {whitelisted ? (
-              <Typography textAlign="center" color={lightGreen.A700}>
-                Congratulations 🎉 Your identity is whitelisted!
+              <Typography textAlign="center" fontWeight="bold" color={lightGreen.A700}>
+                Congratulations 🎉
+                <br />
+                Your identity is whitelisted!
               </Typography>
             ) : (
               <TextField
@@ -315,7 +290,7 @@ export default function OnboardingDialog({
               error={username !== '' && (!usernameAvailable || !usernameValid)}
               helperText={
                 (username && !usernameAvailable && 'username not available') ||
-                (!usernameValid && 'username invalid format')
+                (username && !usernameValid && 'username invalid format')
               }
               fullWidth
               value={username}
@@ -366,7 +341,7 @@ export default function OnboardingDialog({
             />
           </Stack>
           <LoadingButton
-            loading={loadingWallets || loadingUpdateProfile}
+            loading={loadingUpdateProfile}
             disabled={!usernameAvailable || !usernameValid || !(whitelisted || codeValid)}
             fullWidth
             variant="outlined"
@@ -374,18 +349,14 @@ export default function OnboardingDialog({
               <Stack direction="row" spacing={1} alignItems="center">
                 <CircularProgress color="inherit" size={16} />
                 <Typography variant="button">
-                  {loadingWallets
-                    ? 'preparing flow'
-                    : loadingUpdateProfile
-                    ? 'updating profile'
-                    : ''}
+                  {loadingUpdateProfile ? 'updating profile' : ''}
                 </Typography>
               </Stack>
             }
             size="large"
-            color="primary"
+            color="inherit"
             onClick={async () => {
-              await createMainFlow();
+              await updatedProfile();
             }}
             sx={{ borderRadius: 5 }}>
             Complete

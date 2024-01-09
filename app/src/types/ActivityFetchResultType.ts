@@ -19,7 +19,8 @@ export interface TxInfo {
   type: string | number;
   value: number;
   activity: 'inbound' | 'outbound' | 'self';
-  profile?: ProfileType;
+  fromProfile?: ProfileType;
+  toProfile?: ProfileType;
 }
 
 export type WalletActivityType = { wallet: FlowWalletType; txs: TxInfo[] | undefined };

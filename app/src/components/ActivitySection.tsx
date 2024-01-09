@@ -18,10 +18,14 @@ import { useContext } from 'react';
 import { ProfileContext } from '../contexts/UserContext';
 import { TxInfo } from '../types/ActivityFetchResultType';
 import NetworkAvatar from './NetworkAvatar';
-import { getNetwork } from 'wagmi/actions';
 import ProfileSectionButton from './ProfileSectionButton';
 import AddressSectionButton from './AddressSectionButton';
+import { SUPPORTED_CHAINS } from '../utils/networks';
+import TimeAgo from 'javascript-time-ago';
+import en from 'javascript-time-ago/locale/en';
 
+TimeAgo.addDefaultLocale(en);
+const timeAgo = new TimeAgo('en-US');
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
 
 function getActivityLabel(activity: string) {
@@ -64,8 +68,8 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
   const { ethUsdPrice } = useContext(ProfileContext);
   const { txInfo } = props;
 
-  const blockExplorerUrl = getNetwork().chains.find((c) => c.id === txInfo.chainId)?.blockExplorers
-    ?.etherscan?.url;
+  const blockExplorerUrl = SUPPORTED_CHAINS.find((c) => c.id === txInfo.chainId)?.blockExplorers
+    ?.default?.url;
 
   return (
     <Box
@@ -90,17 +94,20 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
           {getActivityIndicator(txInfo, blockExplorerUrl)}
         </Badge>
 
-        <Stack alignItems="center" width={65}>
+        <Stack alignItems="center" width={70}>
           <Typography variant="subtitle2" fontSize={smallScreen ? 13 : 16}>
             {getActivityLabel(txInfo.activity)}
           </Typography>
-          <Typography variant="caption" fontSize={smallScreen ? 10 : 12}>
-            {new Date(txInfo.timestamp).toLocaleDateString()}
+          <Typography noWrap variant="caption" fontSize={smallScreen ? 10 : 12}>
+            {timeAgo.format(new Date(txInfo.timestamp), 'round')}
           </Typography>
         </Stack>
       </Stack>
-      {txInfo.profile ? (
-        <ProfileSectionButton fullWidth profile={txInfo.profile} />
+      {(txInfo.activity === 'inbound' ? txInfo.fromProfile : txInfo.toProfile) ? (
+        <ProfileSectionButton
+          fullWidth
+          profile={txInfo.activity === 'inbound' ? txInfo.fromProfile : txInfo.toProfile}
+        />
       ) : (
         <AddressSectionButton
           fullWidth

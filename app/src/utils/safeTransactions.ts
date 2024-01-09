@@ -24,8 +24,6 @@ import {
   MetaTransactionData,
   MetaTransactionOptions,
   OperationType,
-  RelayTransaction,
-  SafeTransaction,
   SafeVersion
 } from '@safe-global/safe-core-sdk-types';
 
@@ -41,8 +39,9 @@ import {
 } from './relayer';
 import { CUSTOM_CONTRACTS, CUSTOM_CONTRACTS_CHAINS } from './safeContracts';
 import { signTransactionBySafe } from './safeSignatures';
-import { getNetwork, getPublicClient } from 'wagmi/actions';
+import { getPublicClient } from 'wagmi/actions';
 import { arbitrumGoerli, zkSyncTestnet } from 'viem/chains';
+import { SUPPORTED_CHAINS } from './networks';
 
 const ZERO_ADDRESS = ethers.constants.AddressZero;
 const LATEST_SAFE_VERSION = '1.3.0' as SafeVersion;
@@ -457,7 +456,7 @@ export async function isSafeSponsored(ethersSigner: providers.JsonRpcSigner, saf
 }
 
 export async function estimateFee(isSafeDeployed: boolean, chainId: number): Promise<string> {
-  const isMainnetChain = !getNetwork().chains.find((c) => c.id === chainId)?.testnet;
+  const isMainnetChain = !SUPPORTED_CHAINS.find((c) => c.id === chainId)?.testnet;
 
   const l1GasPrice = await getPublicClient({ chainId: isMainnetChain ? 1 : 5 }).getGasPrice();
   const l2GasPrice = await getPublicClient({ chainId }).getGasPrice();

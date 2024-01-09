@@ -63,7 +63,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
   const [, /* comment */ setComment] = useState('');
 
   const { data: ensName } = useEnsName({
-    address: flow.account,
+    address: flow.owner,
     chainId: 1,
     cacheTime: 300_000
   });
@@ -272,7 +272,7 @@ export default function Send({ appSettings, setAppSettings }: any) {
             borderStyle: 'double',
             borderColor: 'divider'
           }}>
-          {flow && flow.account && (
+          {flow && flow.owner && (
             <Box display="flex" flexDirection="column" alignItems="center">
               <Divider flexItem sx={{ my: 1 }}>
                 <Card
@@ -289,16 +289,16 @@ export default function Send({ appSettings, setAppSettings }: any) {
                   {avatar ? (
                     <Avatar src={avatar as string} sx={{ width: 40, height: 40 }} />
                   ) : (
-                    <AddressAvatar address={flow.account} />
+                    <AddressAvatar address={flow.owner} />
                   )}
                   <Typography ml={1} variant="subtitle2">
-                    {ensName ? ensName : shortenWalletAddressLabel(flow.account)}
+                    {ensName ? ensName : shortenWalletAddressLabel(flow.owner)}
                   </Typography>
                   <Tooltip title="Copy Address">
                     <IconButton
                       size="small"
                       onClick={() => {
-                        copyToClipboard(flow.account);
+                        copyToClipboard(flow.owner);
                         toast.success('Address is copied!');
                       }}>
                       <ContentCopy fontSize="small" />

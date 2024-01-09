@@ -1,6 +1,6 @@
 import { Avatar, AvatarProps, Tooltip } from '@mui/material';
-import getNetworkImageSrc, { getNetworkDisplayName } from '../utils/networks';
-import { Chain, useNetwork } from 'wagmi';
+import getNetworkImageSrc, { SUPPORTED_CHAINS, getNetworkDisplayName } from '../utils/networks';
+import { Chain } from 'wagmi';
 import { pink } from '@mui/material/colors';
 
 function isTestnetChain(chains: Chain[], chainId: number): boolean {
@@ -20,9 +20,7 @@ export default function NetworkAvatar({
   const imageSrc = getNetworkImageSrc(network);
   const title = tooltip ? getNetworkDisplayName(network) : '';
 
-  const { chains } = useNetwork();
-
-  const testnet = isTestnetChain(chains, network as number) ?? false;
+  const testnet = isTestnetChain(SUPPORTED_CHAINS, network as number) ?? false;
 
   return tooltip ? (
     <Tooltip title={title}>

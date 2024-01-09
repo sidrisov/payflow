@@ -1,28 +1,36 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
-import { AppBar, IconButton, Toolbar, Box, Stack, Typography, Button, Avatar } from '@mui/material';
+import {
+  AppBar,
+  IconButton,
+  Toolbar,
+  Box,
+  Stack,
+  Typography,
+  Button,
+  Avatar,
+  useTheme,
+  useMediaQuery
+} from '@mui/material';
 
 import { Home, HomeOutlined, AppsOutlined } from '@mui/icons-material';
 
 import { ProfileContext } from '../contexts/UserContext';
 import HideOnScroll from '../components/HideOnScroll';
-import { useAccount, useContractRead, useEnsAddress } from 'wagmi';
-import axios from 'axios';
-import { toast } from 'react-toastify';
+import { useContractRead, useEnsAddress } from 'wagmi';
 
 import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
 import { formatUnits } from 'viem';
-import { shortenWalletAddressLabel } from '../utils/address';
 import { ProfileType } from '../types/ProfleType';
 import { AppSettings } from '../types/AppSettingsType';
 import { ProfileMenu } from '../components/ProfileMenu';
 import SearchProfileDialog from '../components/SearchProfileDialog';
-import { API_URL } from '../utils/urlConstants';
 import HomeLogo from '../components/Logo';
 import { comingSoonToast } from '../components/Toasts';
 import { Chain } from '@rainbow-me/rainbowkit';
 import ProfileAvatar from '../components/ProfileAvatar';
+import DefaultFlowOnboardingDialog from '../components/DefaultFlowOnboardingDialog';
 
 export default function AppLayout({
   profile,
@@ -33,14 +41,10 @@ export default function AppLayout({
   appSettings: AppSettings;
   setAppSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
 }) {
-  const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { isConnected, address } = useAccount({
-    async onDisconnect() {
-      await axios.get(`${API_URL}/api/auth/logout`, { withCredentials: true });
-      navigate('/connect');
-    }
-  });
+  const navigate = useNavigate();
 
   const [walletBalances, setWalletBalances] = useState<Map<string, bigint>>(new Map());
   const [smartAccountAllowedChains, setSmartAccountAllowedChains] = useState<Chain[]>([]);
@@ -71,24 +75,12 @@ export default function AppLayout({
   });
 
   useEffect(() => {
-    if (isConnected && profile) {
-      if (profile.address === address) {
-        if (profile.username && profile.defaultFlow) {
-          setAuthorized(true);
-          return;
-        }
-      } else {
-        toast.warn(
-          `Please, logout or switch wallet! Connected wallet is different from signed in: ${shortenWalletAddressLabel(
-            profile.address
-          )}`,
-          { autoClose: false }
-        );
-      }
+    if (profile && profile.username) {
+      setAuthorized(true);
+    } else {
+      navigate('/connect');
     }
-
-    navigate('/connect');
-  }, [isConnected, address, profile]);
+  }, [profile]);
 
   /*   useMemo(async () => {
     if (initiateFlowsRefresh && flows) {
@@ -190,9 +182,11 @@ export default function AppLayout({
             </AppBar>
           </HideOnScroll>
 
-          <Box display="flex" mt={3} height="100%">
-            <Outlet />
-          </Box>
+          {profile && profile.defaultFlow && (
+            <Box display="flex" mt={3} height="100%">
+              <Outlet />
+            </Box>
+          )}
         </Box>
       )}
       <ProfileMenu
@@ -203,12 +197,21 @@ export default function AppLayout({
         closeStateCallback={() => setOpenProfileMenu(false)}
       />
       <SearchProfileDialog
-        address={profile.address}
+        address={profile.identity}
+        profileRedirect={true}
         open={openSearchProfile}
         closeStateCallback={() => {
           setOpenSearchProfile(false);
         }}
       />
+      {profile && !profile.defaultFlow && (
+        <DefaultFlowOnboardingDialog
+          fullScreen={isMobile}
+          open={!profile.defaultFlow}
+          profile={profile}
+          closeStateCallback={() => {}}
+        />
+      )}
     </ProfileContext.Provider>
   );
 }

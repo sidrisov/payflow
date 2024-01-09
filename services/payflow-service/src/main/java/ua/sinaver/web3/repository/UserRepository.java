@@ -10,17 +10,17 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 public interface UserRepository extends CrudRepository<User, Integer> {
-        User findBySigner(String signer);
+        User findByIdentity(String identity);
 
-        User findByUsernameOrSigner(String username, String signer);
+        User findByUsernameOrIdentity(String username, String identity);
 
-        default User findByUsernameOrSigner(String usernameOrSigner) {
-                return findByUsernameOrSigner(usernameOrSigner, usernameOrSigner);
+        default User findByUsernameOrIdentity(String usernameOrIdentity) {
+                return findByUsernameOrIdentity(usernameOrIdentity, usernameOrIdentity);
         }
 
-        List<User> findByDisplayNameContainingOrUsernameContainingOrSignerContaining(String displayName,
+        List<User> findByDisplayNameContainingOrUsernameContainingOrIdentityContaining(String displayName,
                         String username,
-                        String signer);
+                        String identity);
 
         @Query(value = "SELECT * FROM user WHERE id " +
                         "in (SELECT user_id FROM flow WHERE id " +

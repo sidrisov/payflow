@@ -29,10 +29,9 @@ import { useAccount } from 'wagmi';
 export function SearchProfileListItem(
   props: BoxProps & { profileWithSocials: ProfileWithSocialsType; view: 'address' | 'profile' }
 ) {
-  const { profile } = useContext(ProfileContext);
+  const { profile, isAuthenticated } = useContext(ProfileContext);
   const { profileWithSocials, view } = props;
   const [disableClick, setDisableClick] = useState<boolean>(false);
-  const { isAuthenticated } = useContext(ProfileContext);
   const [invited, setInvited] = useState<boolean>();
 
   const { address } = useAccount();
@@ -158,13 +157,14 @@ export function SearchProfileListItem(
         <Stack ml={1} spacing={1} direction="row" alignItems="center">
           <Tooltip
             title={
-              address ? (
-                address === profileWithSocials.profile?.address ? (
+              profile?.identity || address ? (
+                (profile?.identity ?? address) === profileWithSocials.profile?.identity ? (
                   <Typography variant="caption" fontWeight="bold">
                     Your {view === 'profile' ? 'profile' : 'address'}
                   </Typography>
                 ) : profileWithSocials?.meta?.farcasterFollow ||
-                  profileWithSocials?.meta?.lensFollow ? (
+                  profileWithSocials?.meta?.lensFollow ||
+                  profileWithSocials?.meta?.sentTxs ? (
                   <>
                     {profileWithSocials.meta.farcasterFollow && (
                       <Stack spacing={1} direction="row" alignItems="center">
@@ -186,15 +186,29 @@ export function SearchProfileListItem(
                         </Typography>
                       </Stack>
                     )}
+                    {profileWithSocials.meta.sentTxs && (
+                      <Stack spacing={1} direction="row" alignItems="center">
+                        <Avatar src="ethereum.png" sx={{ width: 15, height: 15 }} />
+                        <Typography variant="caption" fontWeight="bold">
+                          {`Transacted ${
+                            profileWithSocials.meta.sentTxs === 1
+                              ? 'once'
+                              : (profileWithSocials.meta.sentTxs > 5
+                                  ? '5+'
+                                  : profileWithSocials.meta.sentTxs) + ' times'
+                          }`}
+                        </Typography>
+                      </Stack>
+                    )}
                   </>
                 ) : (
                   <Typography variant="caption" fontWeight="bold">
-                    No follow
+                    No connection insights
                   </Typography>
                 )
               ) : (
                 <Typography variant="caption" fontWeight="bold">
-                  For follow insights connect wallet
+                  For connection insights connect wallet
                 </Typography>
               )
             }>
@@ -203,7 +217,9 @@ export function SearchProfileListItem(
                 color:
                   profileWithSocials?.meta?.farcasterFollow ||
                   profileWithSocials?.meta?.lensFollow ||
-                  (address && address === profileWithSocials.profile?.address)
+                  profileWithSocials?.meta?.sentTxs ||
+                  ((profile?.identity || address) &&
+                    (profile?.identity ?? address) === profileWithSocials.profile?.identity)
                     ? green.A700
                     : grey.A700,
                 border: 1,

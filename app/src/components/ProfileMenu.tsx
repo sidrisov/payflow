@@ -8,6 +8,7 @@ import {
   Logout,
   Person,
   PersonAdd,
+  Settings,
   Verified
 } from '@mui/icons-material';
 import axios from 'axios';
@@ -67,7 +68,6 @@ export function ProfileMenu({
         </ListItemIcon>
         Invite
       </MenuItem>
-
       <MenuItem
         onClick={async () => {
           comingSoonToast();
@@ -76,6 +76,16 @@ export function ProfileMenu({
           <Verified fontSize="small" />
         </ListItemIcon>
         Attest
+      </MenuItem>
+      <MenuItem
+        onClick={async () => {
+          closeStateCallback();
+          navigate('/advanced');
+        }}>
+        <ListItemIcon>
+          <Settings fontSize="small" />
+        </ListItemIcon>
+        Advanced
       </MenuItem>
       <Divider />
       <MenuItem

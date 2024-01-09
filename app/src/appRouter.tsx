@@ -13,6 +13,7 @@ import LoginWithProviders from './layouts/LoginWithProviders';
 import Profile from './pages/Profile';
 import Invite from './pages/Invite';
 import Leaderboard from './layouts/Leadearboard';
+import Advanced from './pages/Advanced';
 
 export const appRoutes = ['/home', '/flows', '/requests', '/settings'];
 
@@ -35,6 +36,10 @@ export const appRouter = createBrowserRouter([
       {
         path: 'profile',
         element: <Profile />
+      },
+      {
+        path: 'advanced',
+        element: <Advanced />
       },
       {
         path: 'invite',

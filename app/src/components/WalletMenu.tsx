@@ -7,18 +7,24 @@ import {
   Logout
 } from '@mui/icons-material';
 import { useContext } from 'react';
-import { AnonymousUserContext } from '../contexts/UserContext';
+import { AnonymousUserContext, ProfileContext } from '../contexts/UserContext';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { disconnect } from 'wagmi/actions';
 import { AddressSection } from './AddressSection';
 import { useAccount } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
+import { AnonymousUserContextType, ProfileContextType } from '../types/UserContextType';
 
-export function WalletMenu({ closeStateCallback, ...props }: MenuProps & CloseCallbackType) {
-  const { appSettings, setAppSettings } = useContext(AnonymousUserContext);
+export function WalletMenu({
+  contextType = 'anonymous',
+  closeStateCallback,
+  ...props
+}: MenuProps & CloseCallbackType & { contextType?: 'anonymous' | 'profile' }) {
+  const { appSettings, setAppSettings } =
+    contextType === 'anonymous' ? useContext(AnonymousUserContext) : useContext(ProfileContext);
 
   const { address, isConnected } = useAccount();
-  const { openConnectModal, connectModalOpen } = useConnectModal();
+  const { openConnectModal } = useConnectModal();
 
   return (
     <Menu

@@ -46,6 +46,9 @@ dependencies {
   		runtimeOnly ("com.mysql:mysql-connector-j")
 	}
 
+	implementation ("org.flywaydb:flyway-core:10.4.1")
+	implementation ("org.flywaydb:flyway-mysql:10.4.1")
+
 	// utils
 	implementation("org.apache.commons:commons-lang3:3.12.0")
 	implementation("com.google.guava:guava:31.1-jre")

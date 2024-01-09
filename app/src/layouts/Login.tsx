@@ -1,10 +1,10 @@
 import { Box, Container, useMediaQuery, useTheme } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
-import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi';
+import { useNetwork, useSwitchNetwork } from 'wagmi';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useEffect, useMemo } from 'react';
-import OnboardingDialog from '../components/OnboardingDialog';
+import ProfileOnboardingDialog from '../components/ProfileOnboardingDialog';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { ProfileType } from '../types/ProfleType';
 import { toast } from 'react-toastify';
@@ -29,8 +29,6 @@ export default function Login({
 
   const navigate = useNavigate();
 
-  const { address } = useAccount();
-
   const { chain } = useNetwork();
   const { switchNetwork, pendingChainId } = useSwitchNetwork();
 
@@ -44,13 +42,13 @@ export default function Login({
   useEffect(() => {
     console.debug(profile, authStatus);
 
-    if (profile && address === profile.address && authStatus === 'authenticated') {
-      if (profile.username && profile.defaultFlow) {
+    if (profile && authStatus === 'authenticated') {
+      if (profile.username) {
         console.debug('redirecting to /');
         navigate('/');
       }
     }
-  }, [authStatus, profile, address]);
+  }, [authStatus, profile]);
 
   return (
     <CustomThemeProvider darkMode={settings.darkMode}>
@@ -60,7 +58,7 @@ export default function Login({
       {authStatus === 'loading' ? (
         <CenteredCircularProgress />
       ) : (
-        (!profile || !address) && (
+        !profile && (
           <Container maxWidth="sm">
             <Box
               position="fixed"
@@ -74,10 +72,10 @@ export default function Login({
           </Container>
         )
       )}
-      {profile && address && (!profile.username || !profile.defaultFlow) && (
-        <OnboardingDialog
+      {profile && !profile.username && (
+        <ProfileOnboardingDialog
           fullScreen={isMobile}
-          open={!profile.username || !profile.defaultFlow}
+          open={!profile.username}
           profile={profile}
           closeStateCallback={() => {}}
           username={username}

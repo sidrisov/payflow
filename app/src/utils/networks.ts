@@ -9,12 +9,13 @@ import {
   arbitrum,
   zora,
   zkSync,
-  baseSepolia
+  baseSepolia,
+  Chain
 } from 'wagmi/chains';
 
 const ENABLED_CHAINS = JSON.parse(import.meta.env.VITE_ENABLED_CHAINS) as string[];
 
-export const SUPPORTED_CHAINS = [
+export const SUPPORTED_CHAINS: Chain[] = [
   base,
   optimism,
   arbitrum,

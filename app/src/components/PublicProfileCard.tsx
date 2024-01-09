@@ -11,14 +11,15 @@ import {
 import { useMemo, useState } from 'react';
 import { MetaType, ProfileType } from '../types/ProfleType';
 import { useAccount } from 'wagmi';
-import { AttachMoney, Send } from '@mui/icons-material';
+import { Send } from '@mui/icons-material';
 import { useLazyQuery } from '@airstack/airstack-react';
 import { ProfileSection } from './ProfileSection';
-import { comingSoonToast } from './Toasts';
 import SocialPresenceChipWithLink from './SocialPresenceChipWithLink';
 import { QUERY_SOCIALS_MINIMAL, converSocialResults } from '../services/socials';
 import PayProfileDialog from './PayProfileDialog';
 import { green } from '@mui/material/colors';
+import { useTransactionsFetcher } from '../utils/hooks/useTransactionsFetcher';
+import PublicProfileActivityFeed from './PublicProfileActivityFeed';
 
 export function PublicProfileCard({ profile, ...props }: { profile: ProfileType } & CardProps) {
   const [openPayDialog, setOpenPayDialog] = useState(false);
@@ -27,7 +28,7 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
 
   const [fetch, { data: socialInfo, loading: loadingSocials }] = useLazyQuery(
     QUERY_SOCIALS_MINIMAL,
-    { identity: profile.address, me: address ?? '' },
+    { identity: profile.identity, me: address ?? '' },
     {
       cache: true,
       dataFormatter(data) {
@@ -42,11 +43,15 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
     }
   }, [profile, address]);
 
+  const activityFetcherResult = useTransactionsFetcher(
+    profile?.defaultFlow?.wallets /* .filter((w) => w.network === base.id) */ ?? []
+  );
+
   return (
     <>
       <Card
         {...props}
-        elevation={10}
+        elevation={3}
         sx={{
           display: 'flex',
           flexDirection: 'column',
@@ -55,23 +60,21 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
           m: 2,
           mt: 5,
           p: 2,
-          border: 2,
+          border: 1.5,
           borderColor: 'divider',
-          borderStyle: 'double',
           borderRadius: 5
         }}>
         <Stack spacing={1} direction="column" alignItems="center">
           <Stack direction="row" alignItems="center" spacing={1}>
             <ProfileSection profile={profile} avatarSize={48} maxWidth={300} />
           </Stack>
-
           {loadingSocials && <CircularProgress color="inherit" size={20} />}
           {socialInfo && (
             <Stack>
               <Box flexWrap="wrap" display="flex" justifyContent="center" alignItems="center">
                 <SocialPresenceChipWithLink
                   type={socialInfo.ens ? 'ens' : 'address'}
-                  name={socialInfo.ens ?? profile.address}
+                  name={socialInfo.ens ?? profile.identity}
                 />
 
                 {socialInfo.socials &&
@@ -84,19 +87,17 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
                         name={s.profileName}
                       />
                     ))}
-                {socialInfo.xmtp && (
-                  <SocialPresenceChipWithLink
-                    type="xmtp"
-                    name={socialInfo.ens ?? profile.address}
-                  />
-                )}
               </Box>
 
-              {(socialInfo.farcasterFollow || socialInfo.lensFollow) && (
+              {(socialInfo.farcasterFollow || socialInfo.lensFollow || socialInfo.sentTxs) && (
                 <Stack my={1} spacing={1} alignSelf="center" alignItems="flex-start">
                   {socialInfo.farcasterFollow && (
                     <Stack spacing={1} direction="row" alignItems="center">
-                      <Avatar src="farcaster.svg" sx={{ width: 15, height: 15 }} />
+                      <Avatar
+                        variant="rounded"
+                        src="farcaster.svg"
+                        sx={{ width: 15, height: 15 }}
+                      />
                       <Typography variant="caption" fontWeight="bold" color={green.A700}>
                         {socialInfo.farcasterFollow === 'mutual'
                           ? 'Mutual follow on farcaster'
@@ -106,7 +107,7 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
                   )}
                   {socialInfo.lensFollow && (
                     <Stack spacing={1} direction="row" alignItems="center">
-                      <Avatar src="lens.svg" sx={{ width: 15, height: 15 }} />
+                      <Avatar variant="rounded" src="lens.svg" sx={{ width: 15, height: 15 }} />
                       <Typography variant="caption" fontWeight="bold" color={green.A700}>
                         {socialInfo.lensFollow === 'mutual'
                           ? 'Mutual follow on lens'
@@ -114,20 +115,31 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
                       </Typography>
                     </Stack>
                   )}
+                  {socialInfo.sentTxs && (
+                    <Stack spacing={1} direction="row" alignItems="center">
+                      <Avatar variant="rounded" src="ethereum.png" sx={{ width: 15, height: 15 }} />
+                      <Typography variant="caption" fontWeight="bold" color={green.A700}>
+                        {`Transacted ${
+                          socialInfo.sentTxs === 1
+                            ? 'once'
+                            : (socialInfo.sentTxs > 5 ? '5+' : socialInfo.sentTxs) + ' times'
+                        } onchain`}
+                      </Typography>
+                    </Stack>
+                  )}
                 </Stack>
               )}
             </Stack>
           )}
-
           <Stack direction="row" spacing={1} alignItems="center">
-            <Button
+            {/* <Button
               color="inherit"
               variant="outlined"
               endIcon={<AttachMoney />}
               onClick={() => comingSoonToast()}
               sx={{ borderRadius: 5, textTransform: 'lowercase' }}>
               Tip
-            </Button>
+            </Button> */}
             <Button
               variant="outlined"
               color="inherit"
@@ -139,9 +151,20 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
               }}>
               Pay
             </Button>
+            {socialInfo?.xmtp && (
+              <SocialPresenceChipWithLink type="xmtp" name={socialInfo.ens ?? profile.identity} />
+            )}
           </Stack>
         </Stack>
       </Card>
+
+      <Box mx={1}>
+        <PublicProfileActivityFeed
+          selectedNetwork={undefined}
+          activityFetchResult={activityFetcherResult}
+        />
+      </Box>
+
       {openPayDialog && (
         <PayProfileDialog
           open={openPayDialog}

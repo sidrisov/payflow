@@ -17,14 +17,12 @@ import {
 } from '@mui/material';
 
 import { CloseCallbackType } from '../types/CloseCallbackType';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useAccount, useBalance, useContractRead, useEnsAddress, useNetwork } from 'wagmi';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useAccount, useBalance, useNetwork } from 'wagmi';
 import { AddComment, ArrowBack, AttachMoney, ExpandMore, PriorityHigh } from '@mui/icons-material';
 import { Id, toast } from 'react-toastify';
 
-import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
-
-import { Address, formatEther, formatUnits, parseEther } from 'viem';
+import { Address, formatEther, parseEther } from 'viem';
 
 import { FlowWalletType } from '../types/FlowType';
 import { MetaType, SelectedProfileWithSocialsType } from '../types/ProfleType';
@@ -41,6 +39,7 @@ import { LoadingSwitchNetworkButton } from './LoadingSwitchNetworkButton';
 import { useRegularTransfer } from '../utils/hooks/useRegularTransfer';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { SUPPORTED_CHAINS } from '../utils/networks';
+import { AnonymousUserContext } from '../contexts/UserContext';
 
 export type PayProfileDialogProps = DialogProps &
   CloseCallbackType & {
@@ -55,25 +54,10 @@ export default function PayProfileDialog({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+  const { ethUsdPrice } = useContext(AnonymousUserContext);
+
   const { address } = useAccount();
-
   const { chain } = useNetwork();
-
-  const { isSuccess: isEnsSuccess, data: ethUsdPriceFeedAddress } = useEnsAddress({
-    name: 'eth-usd.data.eth',
-    chainId: 1,
-    cacheTime: 300_000
-  });
-
-  const { data: ethUsdPrice } = useContractRead({
-    enabled: isEnsSuccess && ethUsdPriceFeedAddress !== undefined,
-    chainId: 1,
-    address: ethUsdPriceFeedAddress ?? undefined,
-    abi: AggregatorV2V3Interface.abi,
-    functionName: 'latestAnswer',
-    select: (data) => Number(formatUnits(data as bigint, 8)),
-    cacheTime: 10_000
-  });
 
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
   const [compatibleWallets, setCompatibleWallets] = useState<FlowWalletType[]>([]);
@@ -442,7 +426,7 @@ export default function PayProfileDialog({
                         </Stack>
                       }
                       size="large"
-                      color="primary"
+                      color="inherit"
                       onClick={() => sendTransaction?.()}
                       sx={{ mt: 3, mb: 1, borderRadius: 5 }}>
                       Pay
