@@ -117,14 +117,14 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
             </Typography>
           ) : (
             <Typography variant="caption" fontSize={smallScreen ? 12 : 14}>
-              <b>{shortenWalletAddressLabel(txInfo.to)}</b>
+              <b>{ensNameTo ? ensNameTo : shortenWalletAddressLabel(txInfo.to)}</b>
             </Typography>
           )}
         </Stack>
         <Box display="flex" flexDirection="row" alignItems="center" justifyContent="space-between">
           <Stack direction="row" spacing={0.5} alignItems="center">
             <Typography variant="caption" fontSize={smallScreen ? 12 : 14}>
-              on {ensNameTo ? ensNameTo : getNetworkDisplayName(txInfo.chainId)}
+              on {getNetworkDisplayName(txInfo.chainId)}
             </Typography>
             <NetworkAvatar
               network={txInfo.chainId}
