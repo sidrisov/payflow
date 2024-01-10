@@ -15,19 +15,25 @@ export default function PublicProfileActivityFeed(props: AssetsProps) {
 
   return (
     <Stack py={1} px={1} spacing={2} width="100%" maxHeight={375} overflow="auto">
-      {loading || transactions.length === 0 ? (
+      {loading ? (
         <ActivitySkeletonSection />
       ) : fetched ? (
-        transactions
-          .filter((tx) => {
-            return selectedNetwork ? tx.chainId === selectedNetwork.id : true;
-          })
-          .map((txInfo) => (
-            <PublicProfileActivityFeedSection
-              key={`activity_section_${txInfo.hash}`}
-              txInfo={txInfo}
-            />
-          ))
+        transactions.length === 0 ? (
+          <Typography variant="subtitle2" textAlign="center">
+            Profile hasn't transacted yet.
+          </Typography>
+        ) : (
+          transactions
+            .filter((tx) => {
+              return selectedNetwork ? tx.chainId === selectedNetwork.id : true;
+            })
+            .map((txInfo) => (
+              <PublicProfileActivityFeedSection
+                key={`activity_section_${txInfo.hash}`}
+                txInfo={txInfo}
+              />
+            ))
+        )
       ) : (
         <Typography variant="subtitle2" textAlign="center">
           Couldn't fetch. Try again!
