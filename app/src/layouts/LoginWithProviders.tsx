@@ -188,7 +188,8 @@ export default function AppWithProviders() {
     rpcUrl: 'https://mainnet.optimism.io',
     domain: window.location.hostname,
     siweUri: window.location.origin,
-    relay: 'https://relay.farcaster.xyz'
+    relay: 'https://relay.farcaster.xyz',
+    version: 'v1'
   };
 
   return (

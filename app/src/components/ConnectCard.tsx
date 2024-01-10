@@ -9,7 +9,11 @@ import {
   useTheme
 } from '@mui/material';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { ConnectButton as FarcasterConnectButton } from '@farcaster/connect-kit';
+import {
+  ConnectError,
+  ConnectButton as FarcasterConnectButton,
+  StatusAPIResponse
+} from '@farcaster/connect-kit';
 
 import { useAccount } from 'wagmi';
 import { green } from '@mui/material/colors';
@@ -50,6 +54,38 @@ export function ConnectCard() {
         setSiweNonce(response.data);
       });
   }, []);
+
+  async function onFarcasterSignInSuccess(data: StatusAPIResponse) {
+    if (data.message && data.signature && data.state === 'completed') {
+      const parsedMessage = new ParsedMessage(data.message);
+      const signature = data.signature;
+      console.debug(parsedMessage, signature);
+
+      try {
+        const response = await axios.post(
+          `${API_URL}/api/auth/verify`,
+          { message: parsedMessage, signature },
+          { withCredentials: true }
+        );
+
+        if (response.status === 200) {
+          navigate('/');
+        } else {
+          toast.error('Failed to sign in with Farcaster');
+        }
+      } catch (error) {
+        toast.error('Failed to sign in with Farcaster');
+        console.error(error);
+      }
+    }
+  }
+
+  async function onFarcasterSignInError(error: ConnectError | undefined) {
+    if (error) {
+      console.error(error);
+    }
+    toast.error('Failed to sign in with Farcaster. Try again!');
+  }
 
   return (
     <Card
@@ -92,17 +128,17 @@ export function ConnectCard() {
           <FeatureSection description="send, receive, request crypto, and more" />
         </Stack>
 
-        <Typography my={1} variant="caption" fontWeight="bold" textAlign="center">
+        <Typography my={1} mx={1} variant="caption" fontWeight="bold" textAlign="center">
           <u>
             <b>{'Identity'}</b>
           </u>
-          {': '}your ethereum address linked to web3 socials (ens, farcaster, lens) for seamless
-          profile discovery and payments with your friends.
+          {': '}your ethereum address linked to web3 socials (ens, farcaster, lens), facilitates
+          seamless profile discovery and payments with your friends
         </Typography>
 
         <Stack my={2} spacing={1} alignItems="center">
           <ConnectButton
-            label={address ? 'Verify Identity' : 'Connect Identity'}
+            label={address ? 'Verify Identity Wallet' : 'Connect Identity Wallet'}
             showBalance={{ smallScreen: false, largeScreen: false }}
           />
           {!isMobile && (
@@ -110,39 +146,14 @@ export function ConnectCard() {
               <Divider flexItem>or</Divider>
               <Box
                 sx={{
+                  fontSize: 16,
                   borderRadius: 3,
                   overflow: 'hidden'
                 }}>
                 <FarcasterConnectButton
-                  onStatusResponse={(data) => {
-                    console.log(data);
-                  }}
                   nonce={siweNonce}
-                  onSuccess={async (data) => {
-                    if (data.message && data.signature) {
-                      const message = new ParsedMessage(data.message);
-                      const signature = data.signature;
-                      console.log(message, signature);
-
-                      try {
-                        const response = await axios.post(
-                          `${API_URL}/api/auth/verify`,
-                          { message, signature },
-                          { withCredentials: true }
-                        );
-
-                        if (Boolean(response.status === 200)) {
-                          toast.success('Successfully signed in with Farcaster');
-                          navigate('/');
-                        } else {
-                          toast.error('Failed to sign in with Farcaster');
-                        }
-                      } catch (error) {
-                        console.log(error);
-                        toast.error('Failed to sign in with Farcaster');
-                      }
-                    }
-                  }}
+                  onSuccess={onFarcasterSignInSuccess}
+                  onError={onFarcasterSignInError}
                 />
               </Box>
             </>
