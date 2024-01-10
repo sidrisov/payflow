@@ -1,8 +1,25 @@
-import { Avatar, Box, Card, Stack, Typography } from '@mui/material';
+import {
+  Avatar,
+  Box,
+  Card,
+  Divider,
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme
+} from '@mui/material';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { ConnectButton as FarcasterConnectButton } from '@farcaster/connect-kit';
+
 import { useAccount } from 'wagmi';
 import { green } from '@mui/material/colors';
 import { CheckCircle } from '@mui/icons-material';
+import { useEffect, useState } from 'react';
+import { API_URL } from '../utils/urlConstants';
+import { ParsedMessage } from '@spruceid/siwe-parser';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function FeatureSection({ description }: { description: string }) {
   return (
@@ -15,7 +32,25 @@ function FeatureSection({ description }: { description: string }) {
   );
 }
 export function ConnectCard() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const { address } = useAccount();
+  const [siweNonce, setSiweNonce] = useState<string>();
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    axios
+      .get(`${API_URL}/api/auth/nonce`, {
+        withCredentials: true
+      })
+      .then((response) => {
+        console.debug(response.data);
+        setSiweNonce(response.data);
+      });
+  }, []);
+
   return (
     <Card
       elevation={10}
@@ -65,12 +100,54 @@ export function ConnectCard() {
           profile discovery and payments with your friends.
         </Typography>
 
-        <Box my={2}>
+        <Stack my={2} spacing={1} alignItems="center">
           <ConnectButton
             label={address ? 'Verify Identity' : 'Connect Identity'}
             showBalance={{ smallScreen: false, largeScreen: false }}
           />
-        </Box>
+          {!isMobile && (
+            <>
+              <Divider flexItem>or</Divider>
+              <Box
+                sx={{
+                  borderRadius: 3,
+                  overflow: 'hidden'
+                }}>
+                <FarcasterConnectButton
+                  onStatusResponse={(data) => {
+                    console.log(data);
+                  }}
+                  nonce={siweNonce}
+                  onSuccess={async (data) => {
+                    if (data.message && data.signature) {
+                      const message = new ParsedMessage(data.message);
+                      const signature = data.signature;
+                      console.log(message, signature);
+
+                      try {
+                        const response = await axios.post(
+                          `${API_URL}/api/auth/verify`,
+                          { message, signature },
+                          { withCredentials: true }
+                        );
+
+                        if (Boolean(response.status === 200)) {
+                          toast.success('Successfully signed in with Farcaster');
+                          navigate('/');
+                        } else {
+                          toast.error('Failed to sign in with Farcaster');
+                        }
+                      } catch (error) {
+                        console.log(error);
+                        toast.error('Failed to sign in with Farcaster');
+                      }
+                    }
+                  }}
+                />
+              </Box>
+            </>
+          )}
+        </Stack>
       </Box>
     </Card>
   );

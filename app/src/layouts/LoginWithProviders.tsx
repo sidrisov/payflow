@@ -7,6 +7,9 @@ import {
   RainbowKitProvider
 } from '@rainbow-me/rainbowkit';
 
+import '@farcaster/connect-kit/styles.css';
+import { ConnectKitProvider } from '@farcaster/connect-kit';
+
 import { configureChains, createConfig, mainnet, WagmiConfig } from 'wagmi';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
@@ -179,6 +182,15 @@ export default function AppWithProviders() {
     webSocketPublicClient
   });
 
+  const config = {
+    // For a production app, replace this with an Optimism Mainnet
+    // RPC URL from a provider like Alchemy or Infura.
+    rpcUrl: 'https://mainnet.optimism.io',
+    domain: window.location.hostname,
+    siweUri: window.location.origin,
+    relay: 'https://relay.farcaster.xyz'
+  };
+
   return (
     <WagmiConfig config={wagmiConfig}>
       <RainbowKitAuthenticationProvider adapter={authAdapter} status={authStatus}>
@@ -188,7 +200,9 @@ export default function AppWithProviders() {
           modalSize="compact"
           chains={chains}
           initialChain={1}>
-          <Login authStatus={authStatus} profile={profile} settings={appSettings} />
+          <ConnectKitProvider config={config}>
+            <Login authStatus={authStatus} profile={profile} settings={appSettings} />
+          </ConnectKitProvider>
         </RainbowKitProvider>
       </RainbowKitAuthenticationProvider>
       <CustomToastContainer />
