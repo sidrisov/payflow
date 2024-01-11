@@ -20,7 +20,7 @@ if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasP
 }
 
 group = "ua.sinaver.web3"
-version = "0.0.3-alpha"
+version = "0.0.4-alpha"
 
 java.sourceCompatibility = JavaVersion.VERSION_21
 
