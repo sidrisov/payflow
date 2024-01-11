@@ -113,8 +113,12 @@ public class UserService implements IUserService {
             } else {
                 // check if any extra wallets need to be added
             }
-        }
 
+            // for now, only allow to update if not set
+            if (user.getSigner() == null && profile.signer() != null) {
+                user.setSigner(profile.signer());
+            }
+        }
     }
 
     @Override

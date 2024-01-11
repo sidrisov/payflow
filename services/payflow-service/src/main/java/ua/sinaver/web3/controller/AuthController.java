@@ -44,13 +44,14 @@ public class AuthController {
     public String nonce(HttpSession session) {
         val nonce = RandomStringUtils.random(10, true, true);
         session.setAttribute("nonce", nonce);
+        log.debug("SessioId: {} - nonce: {} ", session.getId(), nonce);
         return nonce;
     }
 
     @PostMapping("/verify")
     public ResponseEntity<String> verify(@RequestBody SiweChallengeMessage siwe, HttpServletRequest request,
             HttpServletResponse response, HttpSession session) {
-        log.debug("Siwe Challenge Request: {}", siwe);
+        log.debug("SessionId: {} - siwe challenge request: {}", session.getId(), siwe);
 
         val sessionNonce = (String) session.getAttribute("nonce");
         log.debug("nonce from session {}", sessionNonce);
@@ -72,9 +73,9 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        // check chainId
-        if (siwe.message().chainId() != 1) {
-            log.error("Wrong chainId  - expected: {}, actual {}", 1, siwe.message().chainId());
+        // check chainId (added 10 - Optimism For Farcaster)
+        if (siwe.message().chainId() != 1 && siwe.message().chainId() != 10) {
+            log.error("Wrong chainId  - expected: {} or {}, actual {}", 1, 10, siwe.message().chainId());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 

@@ -14,6 +14,7 @@ interface ImportMetaEnv {
   readonly VITE_AIRSTACK_API_KEY: string;
   readonly VITE_ENABLED_CHAINS: string;
   readonly VITE_GELATO_SPONSORED_ENABLED: string;
+  readonly VITE_FARCASTER_CONNECT_ENABLED: string;
 }
 
 interface ImportMeta {

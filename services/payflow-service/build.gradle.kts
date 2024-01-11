@@ -58,7 +58,6 @@ dependencies {
 	implementation("org.bouncycastle:bcprov-jdk18on:1.73")
 
 	//siwe
-	// TODO: it's ok to use as long as we're not in production
 	implementation("com.moonstoneid:siwe-java:1.0.2")
 
 	//lombok
