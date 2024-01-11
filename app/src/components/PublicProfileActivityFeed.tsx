@@ -67,8 +67,9 @@ export default function PublicProfileActivityFeed(props: AssetsProps) {
                   (feedOption !== 1
                     ? tx.to === address ||
                       tx.from === address ||
-                      tx.fromProfile?.identity === profile?.identity ||
-                      tx.toProfile?.identity === profile?.identity
+                      (profile &&
+                        (tx.fromProfile?.identity === profile.identity ||
+                          tx.toProfile?.identity === profile.identity))
                     : true)
                 );
               })
