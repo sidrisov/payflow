@@ -42,44 +42,37 @@ export default function PublicProfileActivityFeed(props: AssetsProps) {
           variant="outlined"
           disableUnderline
           value={feedOption}
-          style={{ borderRadius: '50' }}
           onChange={(event) => {
             setFeedOption(parseInt(event.target.value));
           }}
-          sx={{ textAlign: 'end', fontSize: 14, fontWeight: 500 }}>
+          sx={{ fontSize: 14, fontWeight: 500 }}>
           <option value={1}>All payments</option>
           {(address || profile) && <option value={2}>Between you</option>}
         </NativeSelect>
       </Box>
-      <Stack p={1} spacing={2} width="100%" maxHeight={375} overflow="auto">
+      <Stack p={1} spacing={2} width="100%" maxHeight={425} overflow="auto">
         {loading ? (
           <ActivitySkeletonSection />
         ) : fetched ? (
-          transactions.length === 0 ? (
-            <Typography variant="subtitle2" textAlign="center">
-              Profile hasn't transacted yet.
-            </Typography>
-          ) : (
-            transactions
-              .filter((tx) => {
-                return (
-                  (selectedNetwork ? tx.chainId === selectedNetwork.id : true) &&
-                  (feedOption !== 1
-                    ? tx.to === address ||
-                      tx.from === address ||
-                      (profile &&
-                        (tx.fromProfile?.identity === profile.identity ||
-                          tx.toProfile?.identity === profile.identity))
-                    : true)
-                );
-              })
-              .map((txInfo) => (
-                <PublicProfileActivityFeedSection
-                  key={`activity_section_${txInfo.hash}`}
-                  txInfo={txInfo}
-                />
-              ))
-          )
+          transactions
+            .filter((tx) => {
+              return (
+                (selectedNetwork ? tx.chainId === selectedNetwork.id : true) &&
+                (feedOption !== 1
+                  ? tx.to === address ||
+                    tx.from === address ||
+                    (profile &&
+                      (tx.fromProfile?.identity === profile.identity ||
+                        tx.toProfile?.identity === profile.identity))
+                  : true)
+              );
+            })
+            .map((txInfo) => (
+              <PublicProfileActivityFeedSection
+                key={`activity_section_${txInfo.hash}`}
+                txInfo={txInfo}
+              />
+            ))
         ) : (
           <Typography variant="subtitle2" textAlign="center">
             Couldn't fetch. Try again!
