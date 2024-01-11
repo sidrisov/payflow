@@ -25,6 +25,8 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+const FARCASTER_CONNECT_ENABLED = import.meta.env.VITE_FARCASTER_CONNECT_ENABLED === 'true';
+
 function FeatureSection({ description }: { description: string }) {
   return (
     <Stack spacing={1} direction="row" alignItems="center">
@@ -45,14 +47,16 @@ export function ConnectCard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios
-      .get(`${API_URL}/api/auth/nonce`, {
-        withCredentials: true
-      })
-      .then((response) => {
-        console.debug(response.data);
-        setSiweNonce(response.data);
-      });
+    if (FARCASTER_CONNECT_ENABLED) {
+      axios
+        .get(`${API_URL}/api/auth/nonce`, {
+          withCredentials: true
+        })
+        .then((response) => {
+          console.debug(response.data);
+          setSiweNonce(response.data);
+        });
+    }
   }, []);
 
   async function onFarcasterSignInSuccess(data: StatusAPIResponse) {
@@ -141,7 +145,7 @@ export function ConnectCard() {
             label={address ? 'Verify Identity Wallet' : 'Connect Identity Wallet'}
             showBalance={{ smallScreen: false, largeScreen: false }}
           />
-          {!isMobile && (
+          {!isMobile && FARCASTER_CONNECT_ENABLED && (
             <>
               <Divider flexItem>or</Divider>
               <Box
