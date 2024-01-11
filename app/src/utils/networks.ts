@@ -64,6 +64,10 @@ export function getNetworkDisplayName(network: number | string): string {
   return displayName;
 }
 
+export function getNetworkDefaultBlockExplorerUrl(chainId: number) {
+  return SUPPORTED_CHAINS.find((c) => c.id === chainId)?.blockExplorers?.default?.url;
+}
+
 // Copyrights reserved to Safe Global
 // taken from here: https://github.com/safe-global/safe-core-sdk/blob/main/packages/protocol-kit/src/utils/eip-3770/config.ts
 interface NetworkShortName {

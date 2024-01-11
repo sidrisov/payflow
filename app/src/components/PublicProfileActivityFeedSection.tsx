@@ -13,31 +13,30 @@ import { useContext } from 'react';
 import { AnonymousUserContext } from '../contexts/UserContext';
 import { TxInfo } from '../types/ActivityFetchResultType';
 import NetworkAvatar from './NetworkAvatar';
-import { getNetworkDisplayName } from '../utils/networks';
-import { shortenWalletAddressLabel } from '../utils/address';
+import { getNetworkDefaultBlockExplorerUrl, getNetworkDisplayName } from '../utils/networks';
 
-import TimeAgo from 'javascript-time-ago';
-import en from 'javascript-time-ago/locale/en';
-import ProfileAvatar from './ProfileAvatar';
 import AddressAvatar from './AddressAvatar';
 import { lightGreen, red } from '@mui/material/colors';
 import { useEnsAvatar, useEnsName } from 'wagmi';
-
-TimeAgo.addDefaultLocale(en);
-const timeAgo = new TimeAgo('en-US');
+import { timeAgo } from '../utils/time';
+import ProfileAvatar from './ProfileAvatar';
+import { AddressOrEnsWithLink } from './AddressOrEnsWithLink';
+import { ProfileDisplayNameWithLink } from './ProfileDisplayNameWithLink';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
 
 function getActivityLabel(activity: string) {
-  return activity === 'self' ? 'self' : 'paid';
+  return activity === 'self' ? 'paid self' : 'paid';
 }
 
 export default function PublicProfileActivityFeedSection(props: BoxProps & { txInfo: TxInfo }) {
   const theme = useTheme();
-  const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const { ethUsdPrice } = useContext(AnonymousUserContext);
   const { txInfo } = props;
+
+  const defultBlockExplorerUrl = getNetworkDefaultBlockExplorerUrl(txInfo.chainId);
 
   const { data: ensNameFrom } = useEnsName({
     enabled: !txInfo.fromProfile,
@@ -69,8 +68,7 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
 
   return (
     <Stack
-      p={1}
-      pl={2}
+      p={2}
       direction="row"
       spacing={0.5}
       sx={{ border: 1, borderRadius: 5, borderColor: 'divider' }}>
@@ -82,26 +80,37 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
         <AddressAvatar address={txInfo.from} />
       )}
       <Stack spacing={0.5} width="100%">
-        <Stack spacing={0.5} direction="row" alignItems="center">
-          {txInfo.fromProfile ? (
-            <Typography variant="caption" fontSize={smallScreen ? 13 : 15}>
-              <b>{txInfo.fromProfile.displayName}</b> @{txInfo.fromProfile.username}
+        <Box display="flex" flexDirection="row" alignItems="center" justifyContent="space-between">
+          <Stack spacing={0.5} direction="row" alignItems="center">
+            {txInfo.fromProfile ? (
+              <ProfileDisplayNameWithLink profile={txInfo.fromProfile} />
+            ) : (
+              <AddressOrEnsWithLink
+                address={txInfo.from}
+                blockExplorerUrl={defultBlockExplorerUrl}
+                ens={ensNameFrom ?? undefined}
+              />
+            )}
+            <Typography variant="caption" fontSize={isMobile ? 13 : 15}>
+              •
             </Typography>
-          ) : (
-            <Typography variant="caption" fontSize={smallScreen ? 13 : 15}>
-              <b>{ensNameFrom ? ensNameFrom : shortenWalletAddressLabel(txInfo.from)}</b>
+            <Typography noWrap variant="caption" fontSize={isMobile ? 13 : 15}>
+              {timeAgo.format(new Date(txInfo.timestamp), isMobile ? 'mini' : 'round')}
             </Typography>
-          )}
-          <Typography noWrap variant="caption" fontSize={smallScreen ? 13 : 15}>
-            •
-          </Typography>
-          <Typography noWrap variant="caption" fontSize={smallScreen ? 13 : 15}>
-            {timeAgo.format(new Date(txInfo.timestamp), 'round')}
-          </Typography>
-        </Stack>
+          </Stack>
+          {/* <Tooltip title="Transaction details">
+            <IconButton
+              href={`${defultBlockExplorerUrl}/tx/${txInfo.hash}`}
+              target="_blank"
+              size="small"
+              color="inherit">
+              <MoreHoriz fontSize="small" />
+            </IconButton>
+          </Tooltip> */}
+        </Box>
 
         <Stack direction="row" alignItems="center" spacing={0.5}>
-          <Typography variant="caption" fontSize={smallScreen ? 12 : 14}>
+          <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
             {getActivityLabel(txInfo.activity)}
           </Typography>
           {txInfo.toProfile ? (
@@ -112,18 +121,18 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
             <AddressAvatar address={txInfo.to} scale={3} sx={{ width: 25, height: 25 }} />
           )}
           {txInfo.toProfile ? (
-            <Typography variant="caption" fontSize={smallScreen ? 12 : 14}>
-              <b>{txInfo.toProfile.displayName}</b> @{txInfo.toProfile.username}
-            </Typography>
+            <ProfileDisplayNameWithLink profile={txInfo.toProfile} />
           ) : (
-            <Typography variant="caption" fontSize={smallScreen ? 12 : 14}>
-              <b>{ensNameTo ? ensNameTo : shortenWalletAddressLabel(txInfo.to)}</b>
-            </Typography>
+            <AddressOrEnsWithLink
+              address={txInfo.to}
+              blockExplorerUrl={defultBlockExplorerUrl}
+              ens={ensNameTo ?? undefined}
+            />
           )}
         </Stack>
         <Box display="flex" flexDirection="row" alignItems="center" justifyContent="space-between">
           <Stack direction="row" spacing={0.5} alignItems="center">
-            <Typography variant="caption" fontSize={smallScreen ? 12 : 14}>
+            <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
               on {getNetworkDisplayName(txInfo.chainId)}
             </Typography>
             <NetworkAvatar
@@ -135,34 +144,28 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
             />
           </Stack>
 
-          <Box
-            display="flex"
-            flexDirection="row"
-            justifyContent="center"
-            sx={{ minWidth: 80, maxWidth: 200 }}>
-            <Chip
-              size="medium"
-              label={
-                (txInfo.activity !== 'self' ? (txInfo.activity === 'inbound' ? '+' : '-') : '') +
-                ('$' +
-                  (parseFloat(formatEther(BigInt(txInfo.value ?? 0))) * (ethUsdPrice ?? 0)).toFixed(
-                    1
-                  ))
-              }
-              sx={{
-                border: txInfo.activity === 'self' ? 0.5 : 0,
-                minWidth: 60,
-                alignSelf: 'center',
-                fontSize: smallScreen ? 12 : 14,
-                bgcolor:
-                  txInfo.activity === 'self'
-                    ? 'inherit'
-                    : txInfo.activity === 'inbound'
-                    ? lightGreen.A700
-                    : red.A400
-              }}
-            />
-          </Box>
+          <Chip
+            size="medium"
+            label={
+              (txInfo.activity !== 'self' ? (txInfo.activity === 'inbound' ? '+' : '-') : '') +
+              ('$' +
+                (parseFloat(formatEther(BigInt(txInfo.value ?? 0))) * (ethUsdPrice ?? 0)).toFixed(
+                  1
+                ))
+            }
+            sx={{
+              minWidth: 60,
+              border: txInfo.activity === 'self' ? 0.5 : 0,
+              alignSelf: 'center',
+              fontSize: isMobile ? 12 : 14,
+              bgcolor:
+                txInfo.activity === 'self'
+                  ? 'inherit'
+                  : txInfo.activity === 'inbound'
+                  ? lightGreen.A700
+                  : red.A400
+            }}
+          />
         </Box>
       </Stack>
     </Stack>

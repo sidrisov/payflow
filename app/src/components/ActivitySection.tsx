@@ -20,14 +20,10 @@ import { TxInfo } from '../types/ActivityFetchResultType';
 import NetworkAvatar from './NetworkAvatar';
 import ProfileSectionButton from './ProfileSectionButton';
 import AddressSectionButton from './AddressSectionButton';
-import { SUPPORTED_CHAINS } from '../utils/networks';
-import TimeAgo from 'javascript-time-ago';
-import en from 'javascript-time-ago/locale/en';
+import { getNetworkDefaultBlockExplorerUrl } from '../utils/networks';
+import { timeAgo } from '../utils/time';
 
-TimeAgo.addDefaultLocale(en);
-const timeAgo = new TimeAgo('en-US');
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
-
 function getActivityLabel(activity: string) {
   return activity === 'self' ? 'Self' : activity === 'inbound' ? 'Received' : 'Sent';
 }
@@ -68,8 +64,7 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
   const { ethUsdPrice } = useContext(ProfileContext);
   const { txInfo } = props;
 
-  const blockExplorerUrl = SUPPORTED_CHAINS.find((c) => c.id === txInfo.chainId)?.blockExplorers
-    ?.default?.url;
+  const blockExplorerUrl = getNetworkDefaultBlockExplorerUrl(txInfo.chainId);
 
   return (
     <Box
