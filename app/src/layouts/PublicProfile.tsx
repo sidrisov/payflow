@@ -28,7 +28,7 @@ import HomeLogo from '../components/Logo';
 import { WalletMenu } from '../components/WalletMenu';
 import { useAccount, useContractRead, useEnsAddress } from 'wagmi';
 import PayProfileDialog from '../components/PayProfileDialog';
-import { getProfileByAddressOrName } from '../services/user';
+import { getProfileByAddressOrName, me } from '../services/user';
 import { AnonymousUserContext } from '../contexts/UserContext';
 import { formatUnits } from 'viem';
 
@@ -48,6 +48,7 @@ export default function PublicProfile({
 
   const { username } = useParams();
   const [profile, setProfile] = useState<ProfileType>();
+  const [loggedProfile, setLoggedProfile] = useState<ProfileType>();
   const [loadingProfile, setLoadingProfile] = useState<boolean>();
 
   const { darkMode } = appSettings;
@@ -90,12 +91,19 @@ export default function PublicProfile({
     }
   }, [username]);
 
+  useMemo(async () => {
+    if (!loggedProfile) {
+      setLoggedProfile(await me());
+    }
+  }, []);
+
   return (
     <AnonymousUserContext.Provider
       value={{
         appSettings,
         setAppSettings,
-        ethUsdPrice
+        ethUsdPrice,
+        profile: loggedProfile
       }}>
       <Helmet>
         <title> Payflow {profile ? '| ' + profile.displayName : ''} </title>
