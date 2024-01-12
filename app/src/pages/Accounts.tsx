@@ -58,7 +58,7 @@ export default function Accounts() {
   }, [selectedFlow?.wallets]);
 
   const { loading, fetched, balances } = useBalanceFetcher(assets);
-  const activityFetcherResult = useTransactionsFetcher(selectedFlow?.wallets ?? []);
+  const activityFetchResult = useTransactionsFetcher(selectedFlow?.wallets ?? []);
 
   console.debug('Loading balances: ', loading, balances);
 
@@ -101,7 +101,7 @@ export default function Accounts() {
               ) : (
                 <Activity
                   selectedNetwork={selectedNetwork}
-                  activityFetchResult={activityFetcherResult}
+                  activityFetchResult={activityFetchResult}
                 />
               )}
             </Box>
