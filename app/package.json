@@ -13,7 +13,7 @@
     "@airstack/airstack-react": "^0.6.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@farcaster/connect-kit": "^0.0.31",
+    "@farcaster/auth-kit": "^0.0.35",
     "@fontsource/roboto": "^5.0.8",
     "@gelatonetwork/relay-sdk": "^5.5.2",
     "@mui/icons-material": "^5.14.3",

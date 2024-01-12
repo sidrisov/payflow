@@ -8,7 +8,7 @@ import { useContext, useMemo, useState } from 'react';
 import { AnonymousUserContext } from '../contexts/UserContext';
 
 export type AssetsProps = {
-  selectedNetwork: Chain | undefined;
+  selectedNetwork?: Chain | undefined;
   activityFetchResult: ActivityFetchResultType;
 };
 

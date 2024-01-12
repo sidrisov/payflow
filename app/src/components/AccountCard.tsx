@@ -17,7 +17,7 @@ import AccountSendDialog from './AccountSendDialog';
 import { ProfileContext } from '../contexts/UserContext';
 import { BalanceFetchResultType } from '../types/BalanceFetchResultType';
 import { formatEther } from 'viem';
-import { WalletsPopover } from './WalletsInfoPopover';
+import { WalletsInfoPopover } from './WalletsInfoPopover';
 import { FlowType } from '../types/FlowType';
 import { ChooseFlowMenu } from './ChooseFlowMenu';
 import { FlowTopUpMenu } from './FlowTopUpMenu';
@@ -206,7 +206,7 @@ export function AccountCard(props: AccountNewDialogProps) {
           closeStateCallback={async () => setOpenWithdrawalDialog(false)}
         />
       )}
-      <WalletsPopover
+      <WalletsInfoPopover
         open={openWalletDetailsPopover}
         onClose={async () => setOpenWalletDetailsPopover(false)}
         anchorEl={walletAnchorEl}

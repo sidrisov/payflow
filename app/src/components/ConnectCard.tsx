@@ -9,11 +9,7 @@ import {
   useTheme
 } from '@mui/material';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import {
-  ConnectError,
-  ConnectButton as FarcasterConnectButton,
-  StatusAPIResponse
-} from '@farcaster/connect-kit';
+import { AuthClientError, SignInButton, StatusAPIResponse } from '@farcaster/auth-kit';
 
 import { useAccount } from 'wagmi';
 import { green } from '@mui/material/colors';
@@ -84,7 +80,7 @@ export function ConnectCard() {
     }
   }
 
-  async function onFarcasterSignInError(error: ConnectError | undefined) {
+  async function onFarcasterSignInError(error: AuthClientError | undefined) {
     if (error) {
       console.error(error);
     }
@@ -154,7 +150,7 @@ export function ConnectCard() {
                   borderRadius: 3,
                   overflow: 'hidden'
                 }}>
-                <FarcasterConnectButton
+                <SignInButton
                   nonce={siweNonce}
                   onSuccess={onFarcasterSignInSuccess}
                   onError={onFarcasterSignInError}

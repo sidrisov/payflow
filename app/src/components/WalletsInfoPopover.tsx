@@ -6,7 +6,7 @@ import { formatEther } from 'viem';
 import { useContext } from 'react';
 import { ProfileContext } from '../contexts/UserContext';
 
-export function WalletsPopover({
+export function WalletsInfoPopover({
   flow,
   balanceFetchResult,
   ...props
