@@ -15,7 +15,7 @@ export function PublicProfileDetailsPopover({
         mt: 1,
         '.MuiPopover-paper': {
           width: 250,
-          maxHeight: 300,
+          maxHeight: 350,
           borderRadius: 5,
           p: 1,
           pb: 2,
