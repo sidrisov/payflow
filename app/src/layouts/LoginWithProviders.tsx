@@ -7,8 +7,8 @@ import {
   RainbowKitProvider
 } from '@rainbow-me/rainbowkit';
 
-import '@farcaster/connect-kit/styles.css';
-import { ConnectKitProvider } from '@farcaster/connect-kit';
+import '@farcaster/auth-kit/styles.css';
+import { AuthKitProvider } from '@farcaster/auth-kit';
 
 import { configureChains, createConfig, mainnet, WagmiConfig } from 'wagmi';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
@@ -201,9 +201,9 @@ export default function AppWithProviders() {
           modalSize="compact"
           chains={chains}
           initialChain={1}>
-          <ConnectKitProvider config={config}>
+          <AuthKitProvider config={config}>
             <Login authStatus={authStatus} profile={profile} settings={appSettings} />
-          </ConnectKitProvider>
+          </AuthKitProvider>
         </RainbowKitProvider>
       </RainbowKitAuthenticationProvider>
       <CustomToastContainer />
