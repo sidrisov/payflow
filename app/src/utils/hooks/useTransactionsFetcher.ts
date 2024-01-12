@@ -14,6 +14,7 @@ import {
   zoraTestnet
 } from 'viem/chains';
 import { API_URL } from '../urlConstants';
+import { sortAndFilterFlowWallets } from '../sortAndFilterFlows';
 
 interface NextPageParams {
   block_number: number;
@@ -71,12 +72,19 @@ export const useTransactionsFetcher = (wallets: FlowWalletType[]): ActivityFetch
               (w: WalletWithProfileType) => w.address === tx.to && w.network === tx.chainId
             )?.profile;
 
+            // TODO: for now filter here, need to do at the top level, or even on back-end, to request the list of chains
             if (fromProfile) {
-              tx.fromProfile = fromProfile;
+              tx.fromProfile = {
+                ...fromProfile,
+                defaultFlow: sortAndFilterFlowWallets(fromProfile.defaultFlow)
+              };
             }
 
             if (toProfile) {
-              tx.toProfile = toProfile;
+              tx.toProfile = {
+                ...toProfile,
+                defaultFlow: sortAndFilterFlowWallets(toProfile.defaultFlow)
+              };
             }
             return tx;
           });
