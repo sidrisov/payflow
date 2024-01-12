@@ -80,7 +80,7 @@ public class UserController {
         if (users != null) {
             return users.stream().map(user -> new ProfileMetaMessage(user.getIdentity(), user.getDisplayName(),
                     user.getUsername(),
-                    user.getProfileImage(), user.getCreatedDate().toString())).toList();
+                    user.getProfileImage(), user.getCreatedDate().toString(), null)).toList();
         } else {
             return Collections.emptyList();
         }
@@ -146,7 +146,11 @@ public class UserController {
                         wu.getValue() != null
                                 ? new ProfileMetaMessage(wu.getValue().getIdentity(), wu.getValue().getDisplayName(),
                                         wu.getValue().getUsername(),
-                                        wu.getValue().getProfileImage(), wu.getValue().getCreatedDate().toString())
+                                        wu.getValue().getProfileImage(),
+                                        wu.getValue().getCreatedDate().toString(),
+                                        wu.getValue().getDefaultFlow() != null
+                                                ? FlowMessage.convert(wu.getValue().getDefaultFlow(), null)
+                                                : null)
                                 : null))
                 .collect(Collectors.toList());
     }

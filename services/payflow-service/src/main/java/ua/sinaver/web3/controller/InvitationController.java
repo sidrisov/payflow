@@ -53,7 +53,7 @@ public class InvitationController {
         val user = userService.findByIdentity(principal.getName());
         if (user != null) {
             val invitedBy = new ProfileMetaMessage(user.getIdentity(), user.getDisplayName(), user.getUsername(),
-                    user.getProfileImage(), user.getCreatedDate().toString());
+                    user.getProfileImage(), user.getCreatedDate().toString(), null);
 
             val invitations = invitationRepository.findByInvitedBy(user);
             val invitationMessages = invitations.stream()
@@ -64,7 +64,7 @@ public class InvitationController {
                                             invite.getInvitee().getDisplayName(),
                                             invite.getInvitee().getUsername(),
                                             invite.getInvitee().getProfileImage(),
-                                            invite.getInvitee().getCreatedDate().toString())
+                                            invite.getInvitee().getCreatedDate().toString(), null)
                                     : null,
                             invite.getIdentity(), invite.getCode(), invite.getCreatedDate(), invite.getExpiryDate()))
                     .toList();
