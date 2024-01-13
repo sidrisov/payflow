@@ -74,7 +74,7 @@ export default function Widgets() {
           <Box m={2} display="flex" flexWrap="wrap">
             <Box display="flex" flexDirection="column" sx={{ p: 1, minHeight: 300, minWidth: 300 }}>
               <Card
-                elevation={10}
+                elevation={5}
                 sx={{
                   p: 2,
                   border: 3,
@@ -238,7 +238,7 @@ export default function Widgets() {
               </Card>
               {componentVariant && componentVariant !== ComponentVariant.QR && (
                 <Card
-                  elevation={10}
+                  elevation={5}
                   sx={{
                     mt: 2,
                     p: 2,
@@ -339,7 +339,7 @@ export default function Widgets() {
                 sx={{ p: 1 }}>
                 {componentVariant === ComponentVariant.Button && (
                   <Card
-                    elevation={10}
+                    elevation={5}
                     sx={{
                       bgcolor: colors[componentColor],
                       p: 2,
@@ -374,7 +374,7 @@ export default function Widgets() {
                 )}
                 {componentVariant === ComponentVariant.Widget && (
                   <Card
-                    elevation={10}
+                    elevation={5}
                     sx={{
                       p: 3,
                       border: 2,
@@ -477,7 +477,7 @@ export default function Widgets() {
                 )}
                 {componentVariant === ComponentVariant.QR && (
                   <Card
-                    elevation={10}
+                    elevation={5}
                     sx={{
                       p: 2,
                       border: 3,

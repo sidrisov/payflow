@@ -118,7 +118,7 @@ export default function Flows() {
               justifyContent: 'center'
             }}>
             <Card
-              elevation={10}
+              elevation={5}
               sx={{
                 m: 2,
                 p: 2,
@@ -165,7 +165,7 @@ export default function Flows() {
               flows.map((flow) => (
                 <Card
                   key={`flow_card_${flow.uuid}`}
-                  elevation={10}
+                  elevation={5}
                   sx={{
                     m: 2,
                     p: 2,
