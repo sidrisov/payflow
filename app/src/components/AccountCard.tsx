@@ -70,15 +70,15 @@ export function AccountCard(props: AccountNewDialogProps) {
 
   return (
     <Card
-      elevation={10}
+      elevation={5}
       sx={{
         m: 2,
         p: 2,
         width: 350,
         height: 200,
-        border: 3,
+        border: 2,
         borderRadius: 5,
-        borderStyle: 'double',
+        borderStyle: "double",
         borderColor: 'divider',
         display: 'flex',
         flexDirection: 'column',

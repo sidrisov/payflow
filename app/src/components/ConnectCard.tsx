@@ -1,17 +1,7 @@
-import {
-  Avatar,
-  Box,
-  Card,
-  Divider,
-  Stack,
-  Typography,
-  useMediaQuery,
-  useTheme
-} from '@mui/material';
+import { Avatar, Box, Card, Divider, Stack, Typography } from '@mui/material';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { AuthClientError, SignInButton, StatusAPIResponse } from '@farcaster/auth-kit';
 
-import { useAccount } from 'wagmi';
 import { green } from '@mui/material/colors';
 import { CheckCircle } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
@@ -34,10 +24,6 @@ function FeatureSection({ description }: { description: string }) {
   );
 }
 export function ConnectCard() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-  const { address } = useAccount();
   const [siweNonce, setSiweNonce] = useState<string>();
 
   const navigate = useNavigate();
@@ -89,13 +75,12 @@ export function ConnectCard() {
 
   return (
     <Card
-      elevation={10}
+      elevation={5}
       sx={{
         m: 2,
         p: 1,
-        border: 3,
+        border: 1.5,
         borderRadius: 5,
-        borderStyle: 'double',
         borderColor: 'divider',
         maxWidth: 400
       }}>
@@ -132,26 +117,28 @@ export function ConnectCard() {
           <u>
             <b>{'Identity'}</b>
           </u>
-          {': '}your ethereum address linked to web3 socials (ens, farcaster, lens), facilitates
+          {': '}your ethereum address linked to web3 socials (farcaster, lens, ens), facilitates
           seamless profile discovery and payments with your friends
         </Typography>
 
         <Stack my={2} spacing={1} alignItems="center">
           <ConnectButton
-            label={address ? 'Verify Identity Wallet' : 'Connect Identity Wallet'}
+            label={'Sign in with Ethereum'}
             showBalance={{ smallScreen: false, largeScreen: false }}
           />
-          {!isMobile && FARCASTER_CONNECT_ENABLED && (
+          {FARCASTER_CONNECT_ENABLED && (
             <>
               <Divider flexItem>or</Divider>
               <Box
                 sx={{
-                  fontSize: 16,
+                  p: -10,
+                  fontSize: 10,
                   borderRadius: 3,
-                  overflow: 'hidden'
+                  overflow: 'auto'
                 }}>
                 <SignInButton
                   nonce={siweNonce}
+                  key={'dasdfasf'}
                   onSuccess={onFarcasterSignInSuccess}
                   onError={onFarcasterSignInError}
                 />

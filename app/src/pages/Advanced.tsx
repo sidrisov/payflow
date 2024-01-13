@@ -27,7 +27,7 @@ export default function Advanced() {
                 Identity
               </Typography>
               <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
-                Your ethereum address linked to web3 socials (ens, farcaster, lens) for seamless
+                Your ethereum address linked to web3 socials (farcaster, lens, ens) for seamless
                 profile discovery and payments with your friends.
               </Typography>
               <Typography variant="subtitle2" fontSize={isMobile ? 12 : 14}>

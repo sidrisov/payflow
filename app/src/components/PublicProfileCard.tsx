@@ -64,7 +64,7 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
           flows.map((flow) => (
             <Card
               key={`flow_card_${flow.uuid}`}
-              elevation={10}
+              elevation={5}
               sx={{
                 m: 2,
                 p: 2,

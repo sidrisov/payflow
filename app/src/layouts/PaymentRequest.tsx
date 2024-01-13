@@ -184,7 +184,7 @@ export default function PaymentRequest({ appSettings, setAppSettings }: any) {
         justifyContent="center"
         sx={{ inset: 0 }}>
         <Card
-          elevation={10}
+          elevation={5}
           sx={{
             p: 5,
             width: 400,
@@ -198,7 +198,7 @@ export default function PaymentRequest({ appSettings, setAppSettings }: any) {
             <Box display="flex" flexDirection="column" alignItems="center">
               <Divider flexItem sx={{ my: 1 }}>
                 <Card
-                  elevation={10}
+                  elevation={5}
                   sx={{
                     p: 1,
                     border: 2,
