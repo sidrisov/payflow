@@ -61,7 +61,8 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
     "typescript": "^5.1.6",
-    "vite": "^5.0.2"
+    "vite": "^5.0.2",
+    "vite-plugin-pwa": "^0.17.4"
   },
   "overrides": {
     "agp-js": "github:runic-inc/apg-js#8bb92ff0780819170fee7e756d26e0562e442983"
