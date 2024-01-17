@@ -25,7 +25,7 @@ import { toast } from 'react-toastify';
 import { updateProfile } from '../services/user';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../utils/urlConstants';
-import { QUERY_SOCIALS, converSocialResults } from '../services/socials';
+import { QUERY_SOCIALS, convertSocialResults } from '../services/socials';
 import { useQuery } from '@airstack/airstack-react';
 import CenteredCircularProgress from './CenteredCircularProgress';
 import { isAlphanumericPlusFewSpecialChars as isAlphanumericWithSpecials } from '../utils/regex';
@@ -81,7 +81,7 @@ export default function ProfileOnboardingDialog({
     if (socialInfo) {
       console.log(loadingSocials, socialInfo);
 
-      const meta = converSocialResults(socialInfo.Wallet);
+      const meta = convertSocialResults(socialInfo.Wallet);
 
       console.log(meta);
 

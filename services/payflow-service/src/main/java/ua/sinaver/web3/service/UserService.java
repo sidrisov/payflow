@@ -9,6 +9,9 @@ import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -147,6 +150,7 @@ public class UserService implements IUserService {
         return walletUserMap;
     }
 
+    @Cacheable(cacheNames = "users")
     @Override
     public List<User> findAll() {
         return userRepository.findByAllowedTrueOrderByLastSeenDesc();

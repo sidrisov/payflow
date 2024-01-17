@@ -30,10 +30,15 @@ repositories {
 
 dependencies {
 	implementation ("org.springframework.boot:spring-boot-starter-web")
+	implementation ("org.springframework.boot:spring-boot-starter-webflux")
 	implementation ("org.springframework.boot:spring-boot-starter-data-jpa")
+	implementation ("org.springframework.boot:spring-boot-starter-cache")
 	implementation ("org.springframework.boot:spring-boot-starter-security")
 	implementation ("org.springframework.boot:spring-boot-starter-actuator")
+	implementation ("org.springframework.boot:spring-boot-starter-graphql")
 	implementation ("org.springframework.session:spring-session-jdbc")
+
+    implementation("com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter")
 
 	if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local")) {
 		project.logger.info("Including GCP dependencies")
@@ -46,6 +51,10 @@ dependencies {
   		runtimeOnly ("com.mysql:mysql-connector-j")
 	}
 
+	// caching
+	implementation ("com.github.ben-manes.caffeine:caffeine")
+
+	// db migration
 	implementation ("org.flywaydb:flyway-core:10.4.1")
 	implementation ("org.flywaydb:flyway-mysql:10.4.1")
 
@@ -69,6 +78,8 @@ dependencies {
 
 dependencyManagement {
   imports {
+	mavenBom("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:latest.release")
+
 	if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local")) {
 		// gcp
     	mavenBom("com.google.cloud:spring-cloud-gcp-dependencies:${property("springCloudGcpVersion")}")

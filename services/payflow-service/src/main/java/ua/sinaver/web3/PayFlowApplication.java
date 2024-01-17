@@ -6,6 +6,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.env.Environment;
@@ -19,6 +20,7 @@ import io.micrometer.core.instrument.logging.LoggingRegistryConfig;
 @EnableJpaRepositories(basePackages = "ua.sinaver.web3.repository")
 @EntityScan(basePackages = "ua.sinaver.web3.data")
 @ComponentScan(basePackages = "ua.sinaver.web3")
+@EnableCaching
 public class PayFlowApplication {
 
 	static {

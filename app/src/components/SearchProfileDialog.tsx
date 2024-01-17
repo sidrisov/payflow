@@ -12,20 +12,24 @@ import {
   Typography,
   CircularProgress,
   IconButton,
-  Avatar
+  Avatar,
+  Chip
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
-import { ArrowBack, Clear, Menu } from '@mui/icons-material';
+import { ArrowBack, Clear, Menu, People, Star } from '@mui/icons-material';
 import { useMemo, useState } from 'react';
 import { ProfileWithSocialsType, SelectedProfileWithSocialsType } from '../types/ProfleType';
 
 import { Address, isAddress } from 'viem';
-import { useNavigate } from 'react-router-dom';
 import { searchProfile, sortBySocialScore } from '../services/socials';
 
 import { useDebounce } from 'use-debounce';
-import { SearchProfileListItem } from './SearchProfileListItem';
 import { WalletMenu } from './WalletMenu';
+import { green, yellow } from '@mui/material/colors';
+import axios from 'axios';
+import { API_URL } from '../utils/urlConstants';
+import { FavouriteType } from '../types/FavouriteType';
+import { SearchProfileResultView } from './SearchProfileResultView';
 
 export type SelectProfileResultCallbackType = {
   selectProfileCallback?: (selectedProfileWithSocials: SelectedProfileWithSocialsType) => void;
@@ -37,6 +41,7 @@ export type SearchProfileDialogProps = DialogProps &
     address?: Address;
     profileRedirect?: boolean;
     walletMenuEnabled?: boolean;
+    addressBookEnabled?: boolean;
   };
 
 // TODO: back button + title alignment hack - check with someone knowledgeable on proper solution
@@ -44,6 +49,7 @@ export default function SearchProfileDialog({
   address,
   profileRedirect,
   walletMenuEnabled,
+  addressBookEnabled = false,
   closeStateCallback,
   selectProfileCallback,
   ...props
@@ -51,17 +57,22 @@ export default function SearchProfileDialog({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const navigate = useNavigate();
-
   const [searchString, setSearchString] = useState<string>();
 
-  const [debouncedSearchString] = useDebounce(searchString, 500);
+  const [debouncedSearchString] = useDebounce(searchString?.replace(' ', ''), 500);
 
   const [profiles, setProfiles] = useState<ProfileWithSocialsType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
   const [walletMenuAnchorEl, setWalletMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [openWalletMenu, setOpenWalletMenu] = useState(false);
+
+  const [addressBookView, setAddressBookView] = useState<'favourites' | 'friends'>('favourites');
+
+  const [favourites, setFavourites] = useState<FavouriteType[]>();
+  const [contacts, setContacts] = useState<Address[]>();
+  const [favouriteProfiles, setFavouriteProfiles] = useState<ProfileWithSocialsType[]>([]);
+  const [contactProfiles, setContactProfiles] = useState<ProfileWithSocialsType[]>([]);
 
   function handleCloseCampaignDialog() {
     closeStateCallback();
@@ -80,6 +91,70 @@ export default function SearchProfileDialog({
       setProfiles([]);
     }
   }, [debouncedSearchString, address]);
+
+  useMemo(() => {
+    if (favourites && favourites.length > 0) {
+      let favouriteProfiles: ProfileWithSocialsType[] = [];
+      const promises = favourites
+        .filter((f) => f.addressChecked || f.profileChecked)
+        .map(async (f) => await searchProfile(f.identity, address));
+
+      Promise.all(promises).then((results) => {
+        results.forEach((socials) => {
+          favouriteProfiles = favouriteProfiles.concat(socials);
+          setFavouriteProfiles(favouriteProfiles);
+        });
+      });
+    } else {
+      setFavouriteProfiles([]);
+    }
+  }, [favourites?.length]);
+
+  useMemo(() => {
+    if (contacts && contacts.length > 0) {
+      console.debug('contacts', contacts);
+
+      let contactProfiles: ProfileWithSocialsType[] = [];
+      const promises = contacts.map(async (f) => await searchProfile(f, address));
+
+      Promise.all(promises).then((results) => {
+        results.forEach((socials) => {
+          contactProfiles = contactProfiles.concat(socials);
+          setContactProfiles(contactProfiles);
+        });
+      });
+    } else {
+      setContactProfiles([]);
+    }
+  }, [contacts?.length]);
+
+  useMemo(async () => {
+    if (addressBookEnabled) {
+      try {
+        const response = await axios.get(`${API_URL}/api/user/me/favourites`, {
+          withCredentials: true
+        });
+
+        if (response.status === 200) {
+          setFavourites(response.data as FavouriteType[]);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+
+      try {
+        const response = await axios.get(`${API_URL}/api/user/me/contacts`, {
+          withCredentials: true
+        });
+
+        if (response.status === 200) {
+          setContacts(response.data as Address[]);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }, [addressBookEnabled]);
 
   const [shrink, setShrink] = useState(false);
 
@@ -138,6 +213,7 @@ export default function SearchProfileDialog({
               endAdornment: debouncedSearchString && (
                 <InputAdornment position="end">
                   <IconButton
+                    size="small"
                     onClick={async () => {
                       setProfiles([]);
                       setSearchString(undefined);
@@ -158,6 +234,49 @@ export default function SearchProfileDialog({
               setSearchString(event.target.value);
             }}
           />
+          {addressBookEnabled && !searchString && (
+            <Stack my={1} spacing={1} direction="row" alignItems="center">
+              <Chip
+                clickable
+                icon={<Star fontSize="small" />}
+                label={
+                  <Typography variant="caption" fontWeight="bold">
+                    Favourites
+                  </Typography>
+                }
+                sx={{
+                  color: yellow.A700,
+                  '& .MuiChip-icon': {
+                    color: yellow.A700
+                  },
+                  backgroundColor: addressBookView === 'favourites' ? '' : 'inherit'
+                }}
+                onClick={async () => {
+                  setAddressBookView('favourites');
+                }}
+              />
+              <Chip
+                clickable
+                icon={<People fontSize="small" />}
+                label={
+                  <Typography variant="caption" fontWeight="bold">
+                    People you know
+                  </Typography>
+                }
+                sx={{
+                  p: 1,
+                  color: green.A700,
+                  '& .MuiChip-icon': {
+                    color: green.A700
+                  },
+                  backgroundColor: addressBookView === 'friends' ? '' : 'inherit'
+                }}
+                onClick={async () => {
+                  setAddressBookView('friends');
+                }}
+              />
+            </Stack>
+          )}
         </Stack>
       </DialogTitle>
       <DialogContent>
@@ -167,64 +286,74 @@ export default function SearchProfileDialog({
           alignContent="center"
           minHeight={300}
           maxHeight={500}>
-          {profiles.filter((profileWithSocials) => profileWithSocials.profile).length > 0 && (
-            <>
-              <Typography variant="subtitle2">Profiles</Typography>
+          {addressBookEnabled &&
+            !searchString &&
+            (addressBookView === 'favourites'
+              ? favouriteProfiles &&
+                favouriteProfiles.length > 0 && (
+                  <SearchProfileResultView
+                    key={'search_profile_results_view_favourites'}
+                    addressBookEnabled={addressBookEnabled}
+                    profileRedirect={profileRedirect}
+                    closeStateCallback={closeStateCallback}
+                    selectProfileCallback={selectProfileCallback}
+                    favourites={favourites}
+                    profiles={favouriteProfiles.filter(
+                      (profileWithSocials) =>
+                        profileWithSocials.profile &&
+                        favourites?.find(
+                          (f) =>
+                            f.identity.toLowerCase() ===
+                            profileWithSocials.profile?.identity.toLowerCase()
+                        )?.profileChecked
+                    )}
+                    addresses={favouriteProfiles.filter(
+                      (profileWithSocials) =>
+                        profileWithSocials.meta &&
+                        favourites?.find(
+                          (f) => f.identity === profileWithSocials.meta?.addresses[0]
+                        )?.addressChecked
+                    )}
+                  />
+                )
+              : contactProfiles &&
+                contactProfiles.length > 0 && (
+                  <SearchProfileResultView
+                    key={'search_profile_results_view_favourites'}
+                    addressBookEnabled={addressBookEnabled}
+                    profileRedirect={profileRedirect}
+                    closeStateCallback={closeStateCallback}
+                    selectProfileCallback={selectProfileCallback}
+                    favourites={favourites}
+                    profiles={contactProfiles.filter(
+                      (profileWithSocials) => profileWithSocials.profile
+                    )}
+                    addresses={contactProfiles.filter(
+                      (profileWithSocials) => profileWithSocials.meta
+                    )}
+                  />
+                ))}
 
-              <Stack m={1} spacing={1}>
-                {profiles
-                  .filter((profileWithSocials) => profileWithSocials.profile)
-                  .map((profileWithSocials) => (
-                    <SearchProfileListItem
-                      key={profileWithSocials.profile?.username}
-                      view="profile"
-                      profileWithSocials={profileWithSocials}
-                      onClick={() => {
-                        if (profileWithSocials.profile) {
-                          if (profileRedirect) {
-                            navigate(`/${profileWithSocials.profile.username}`);
-                          } else if (selectProfileCallback) {
-                            selectProfileCallback({ type: 'profile', data: profileWithSocials });
-                          }
-                          closeStateCallback();
-                        }
-                      }}
-                    />
-                  ))}
-              </Stack>
-            </>
-          )}
-
-          {searchString &&
-            (isAddress(searchString) ||
-              searchString.endsWith('.eth') ||
-              searchString.endsWith('.xyz') ||
-              searchString.endsWith('.id') ||
-              searchString.startsWith('fc:') ||
-              searchString.startsWith('lens:')) &&
-            profiles.length > 0 && (
-              <>
-                <Typography variant="subtitle2">Addresses</Typography>
-
-                <Stack m={1} spacing={1}>
-                  {profiles
-                    .filter((profileWithSocials) => profileWithSocials.meta)
-                    .map((profileWithSocials) => (
-                      <SearchProfileListItem
-                        key={profileWithSocials.meta?.addresses[0]}
-                        view="address"
-                        profileWithSocials={profileWithSocials}
-                        onClick={() => {
-                          if (selectProfileCallback) {
-                            selectProfileCallback({ type: 'address', data: profileWithSocials });
-                            closeStateCallback();
-                          }
-                        }}
-                      />
-                    ))}
-                </Stack>
-              </>
-            )}
+          <SearchProfileResultView
+            key={'search_profile_results_view'}
+            addressBookEnabled={addressBookEnabled}
+            profileRedirect={profileRedirect}
+            closeStateCallback={closeStateCallback}
+            selectProfileCallback={selectProfileCallback}
+            favourites={favourites}
+            profiles={profiles.filter((profileWithSocials) => profileWithSocials.profile)}
+            addresses={
+              searchString &&
+              (isAddress(searchString) ||
+                searchString.endsWith('.eth') ||
+                searchString.endsWith('.xyz') ||
+                searchString.endsWith('.id') ||
+                searchString.startsWith('fc:') ||
+                searchString.startsWith('lens:'))
+                ? profiles.filter((profileWithSocials) => profileWithSocials.meta)
+                : []
+            }
+          />
 
           {debouncedSearchString &&
             debouncedSearchString.length > 1 &&
@@ -234,7 +363,6 @@ export default function SearchProfileDialog({
                 No results found.
               </Typography>
             )}
-
           {loading && (
             <Box m={1} alignSelf="center">
               <CircularProgress color="inherit" size={20} />

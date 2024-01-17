@@ -9,7 +9,7 @@ import {
   Avatar,
   Typography
 } from '@mui/material';
-import { HowToReg, StarBorder } from '@mui/icons-material';
+import { HowToReg, Star, StarBorder } from '@mui/icons-material';
 import { ProfileWithSocialsType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
@@ -23,16 +23,23 @@ import { API_URL } from '../utils/urlConstants';
 import { toast } from 'react-toastify';
 import { shortenWalletAddressLabel } from '../utils/address';
 import PayflowChip from './PayflowChip';
-import { green, grey, lightGreen, orange } from '@mui/material/colors';
+import { green, grey, lightGreen, orange, yellow } from '@mui/material/colors';
 import { useAccount } from 'wagmi';
 // TODO: add 3 color gradation for connection: mutual, ... poap, etc...
 export function SearchProfileListItem(
-  props: BoxProps & { profileWithSocials: ProfileWithSocialsType; view: 'address' | 'profile' }
+  props: BoxProps & {
+    profileWithSocials: ProfileWithSocialsType;
+    view: 'address' | 'profile';
+    favouritesEnabled?: boolean;
+    favourite?: boolean;
+    invited?: boolean;
+  }
 ) {
   const { profile, isAuthenticated } = useContext(ProfileContext);
-  const { profileWithSocials, view } = props;
+  const { profileWithSocials, view, favouritesEnabled, favourite: favouriteProp } = props;
   const [disableClick, setDisableClick] = useState<boolean>(false);
   const [invited, setInvited] = useState<boolean>();
+  const [favourite, setFavourite] = useState<boolean>(favouriteProp ?? false);
 
   const { address } = useAccount();
   // fetch in batch for all addresses in parent component
@@ -118,9 +125,11 @@ export function SearchProfileListItem(
                       setInvited(true);
 
                       toast.success(
-                        `${shortenWalletAddressLabel(
-                          profileWithSocials.meta?.addresses[0]
-                        )} is whitelisted!`
+                        `${
+                          profileWithSocials.meta?.ens
+                            ? profileWithSocials.meta?.ens
+                            : shortenWalletAddressLabel(profileWithSocials.meta?.addresses[0])
+                        } is invited!`
                       );
                     } catch (error) {
                       toast.error('Invitation failed!');
@@ -230,11 +239,40 @@ export function SearchProfileListItem(
               }}
             />
           </Tooltip>
-          <Tooltip title="Add to favourites">
-            <IconButton size="small" onClick={() => comingSoonToast()}>
-              <StarBorder fontSize="small" />
-            </IconButton>
-          </Tooltip>
+          {favouritesEnabled && (
+            <Tooltip
+              title={
+                <Typography variant="caption" fontWeight="bold">
+                  {favourite ? 'Remove from favourites' : 'Add to favourites'}
+                </Typography>
+              }>
+              <IconButton
+                size="small"
+                onClick={async () => {
+                  try {
+                    await axios.post(
+                      `${API_URL}/api/user/me/favourites`,
+                      {
+                        identity: profileWithSocials.meta?.addresses[0],
+                        addressChecked: view === 'address' ? !favourite : undefined,
+                        profileChecked: view === 'profile' ? !favourite : undefined
+                      },
+                      { withCredentials: true }
+                    );
+
+                    setFavourite(!favourite);
+                  } catch (error) {
+                    toast.error('Favourite failed!');
+                  }
+                }}>
+                {favourite ? (
+                  <Star fontSize="small" sx={{ color: yellow.A700 }} />
+                ) : (
+                  <StarBorder fontSize="small" />
+                )}
+              </IconButton>
+            </Tooltip>
+          )}
         </Stack>
       </Box>
     )

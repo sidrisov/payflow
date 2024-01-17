@@ -232,7 +232,7 @@ export async function searchProfile(
           console.log(social);
 
           social.userAssociatedAddressDetails.forEach((s: any) => {
-            const meta = converSocialResults(s);
+            const meta = convertSocialResults(s);
             if (meta) {
               userAssociatedAddressSocials.push(meta);
             }
@@ -272,7 +272,7 @@ export async function searchProfile(
     );
 
     if (data && data.Wallet) {
-      const meta = converSocialResults(data.Wallet);
+      const meta = convertSocialResults(data.Wallet);
 
       if (meta && meta.addresses[0]) {
         const profile = await getProfileByAddressOrName(data.Wallet.addresses[0]);
@@ -290,7 +290,7 @@ export async function searchProfile(
   return foundProfiles;
 }
 
-export function converSocialResults(walletInfo: any): MetaType | undefined {
+export function convertSocialResults(walletInfo: any): MetaType | undefined {
   console.debug('Converting wallet info: ', walletInfo);
   let meta = {} as MetaType;
 

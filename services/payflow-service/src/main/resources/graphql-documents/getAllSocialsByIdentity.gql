@@ -1,0 +1,50 @@
+query GetSocials($identity: Identity!, $me: Identity!) {
+                  Wallet(input: {identity: $identity, blockchain: ethereum}) {
+                    addresses
+                    primaryDomain {
+                      name
+                      tokenNft {
+                        contentValue {
+                          image {
+                            small
+                          }
+                        }
+                      }
+                    }
+                    socials(input: {limit: 5}) {
+                      dappName
+                      profileName
+                      profileDisplayName
+                      profileImage
+                      profileImageContentValue {
+                        image {
+                          small
+                        }
+                      }
+                      followerCount
+                    }
+                    xmtp {
+                      isXMTPEnabled
+                    }
+                    socialFollowers(
+                      input: {filter: {identity: {_in: [$me]}, dappName: {_in: [farcaster,lens]}}}
+                    ) {
+                      Follower {
+                        dappName
+                      }
+                    }
+                    socialFollowings(
+                      input: {filter: {identity: {_in: [$me]}, dappName: {_in: [farcaster,lens]}}}
+                    ) {
+                      Following {
+                       dappName
+                      }
+                    }
+                    ethTransfers: tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: ethereum}) {
+                      type
+                    }
+                    baseTransfers: tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: base}) {
+                      type
+                    }
+                  }
+                }

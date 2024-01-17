@@ -6,7 +6,7 @@ import { Send } from '@mui/icons-material';
 import { useLazyQuery } from '@airstack/airstack-react';
 import { ProfileSection } from './ProfileSection';
 import SocialPresenceChipWithLink from './SocialPresenceChipWithLink';
-import { QUERY_SOCIALS_MINIMAL, converSocialResults } from '../services/socials';
+import { QUERY_SOCIALS_MINIMAL, convertSocialResults } from '../services/socials';
 import PayProfileDialog from './PayProfileDialog';
 import { green } from '@mui/material/colors';
 
@@ -21,7 +21,7 @@ export function PublicProfileDetails({ profile }: { profile: ProfileType }) {
     {
       cache: true,
       dataFormatter(data) {
-        return converSocialResults(data.Wallet) as MetaType;
+        return convertSocialResults(data.Wallet) as MetaType;
       }
     }
   );

@@ -1,34 +1,24 @@
 package ua.sinaver.web3.controller;
 
+import io.micrometer.core.annotation.Timed;
+import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import ua.sinaver.web3.data.User;
+import ua.sinaver.web3.message.*;
+import ua.sinaver.web3.service.IContactBookService;
+import ua.sinaver.web3.service.IFavouriteService;
+import ua.sinaver.web3.service.IFlowService;
+import ua.sinaver.web3.service.IUserService;
+
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import io.micrometer.core.annotation.Timed;
-import jakarta.transaction.Transactional;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-import ua.sinaver.web3.data.User;
-import ua.sinaver.web3.message.FlowMessage;
-import ua.sinaver.web3.message.ProfileMessage;
-import ua.sinaver.web3.message.ProfileMetaMessage;
-import ua.sinaver.web3.message.WalletProfileRequestMessage;
-import ua.sinaver.web3.message.WalletProfileResponseMessage;
-import ua.sinaver.web3.service.FlowService;
-import ua.sinaver.web3.service.UserService;
 
 @RestController
 @RequestMapping("/user")
@@ -39,15 +29,22 @@ import ua.sinaver.web3.service.UserService;
 public class UserController {
 
     @Autowired
-    private UserService userService;
+    private IUserService userService;
 
     @Autowired
-    private FlowService flowService;
+    private IFlowService flowService;
+
+    @Autowired
+    private IFavouriteService favouriteService;
+
+    @Autowired
+    private IContactBookService contactService;
 
     @GetMapping("/me")
     public ProfileMessage user(Principal principal) {
         log.trace("{}", principal);
         val user = userService.findByIdentity(principal.getName());
+
         if (user != null) {
             user.setLastSeen(new Date());
 
@@ -61,6 +58,41 @@ public class UserController {
                             : -1);
         } else {
             return null;
+        }
+    }
+
+    @GetMapping("/me/favourites")
+    public List<FavouriteMessage> favourites(Principal principal) {
+        log.trace("{}", principal);
+        val user = userService.findByIdentity(principal.getName());
+        if (user != null) {
+            return favouriteService.getAllFavourites(user);
+        } else {
+            throw new Error("User doesn't exist");
+        }
+    }
+
+    @GetMapping("/me/contacts")
+    public List<String> contacts(Principal principal) {
+        log.trace("{}", principal);
+        val user = userService.findByIdentity(principal.getName());
+        if (user != null) {
+            val contacts = contactService.getAllContacts(user.getIdentity());
+            log.trace("Social Contacts for {}: {}", principal.getName(), contacts);
+            return contacts;
+        } else {
+            throw new Error("User doesn't exist");
+        }
+    }
+
+    @PostMapping("/me/favourites")
+    public void updateFavourite(Principal principal, @RequestBody FavouriteMessage favouriteMessage) {
+        log.trace("{}", principal);
+        val user = userService.findByIdentity(principal.getName());
+        if (user != null) {
+            favouriteService.update(favouriteMessage, user);
+        } else {
+            throw new Error("User doesn't exist");
         }
     }
 
