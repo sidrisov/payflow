@@ -102,8 +102,8 @@ export default function SearchProfileDialog({
       Promise.all(promises).then((results) => {
         results.forEach((socials) => {
           favouriteProfiles = favouriteProfiles.concat(socials);
-          setFavouriteProfiles(favouriteProfiles);
         });
+        setFavouriteProfiles(sortBySocialScore(favouriteProfiles));
       });
     } else {
       setFavouriteProfiles([]);
@@ -120,8 +120,8 @@ export default function SearchProfileDialog({
       Promise.all(promises).then((results) => {
         results.forEach((socials) => {
           contactProfiles = contactProfiles.concat(socials);
-          setContactProfiles(contactProfiles);
         });
+        setContactProfiles(sortBySocialScore(contactProfiles));
       });
     } else {
       setContactProfiles([]);

@@ -12,6 +12,7 @@ import ua.sinaver.web3.data.gql.SocialFollowing;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ContactBookService implements IContactBookService {
@@ -35,17 +36,18 @@ public class ContactBookService implements IContactBookService {
     @Override
     @Cacheable(cacheNames = "socials")
     public List<String> getAllContacts(String identity) {
-        val top30FollowersMono = graphQlClient.documentName("getTop30FarcasterFollowings")
+        val topFollowings = graphQlClient.documentName("getSocialFollowings")
                 .variable("identity", identity)
                 .variable("limit", contactsLimit)
-                .execute();
-        val top30Followers = top30FollowersMono.block();
+                .execute().block();
 
-        if (top30Followers != null) {
-            return top30Followers.field("SocialFollowings.Following")
+        if (topFollowings != null) {
+            return topFollowings.field("SocialFollowings.Following")
                     .toEntityList(SocialFollowing.class).stream()
-                    .map(f -> f.getFollowingAddress().getAddresses().getFirst())
-                    .toList();
+                    .map(f -> f.getFollowingAddress().getAddresses())
+                    .flatMap(List::stream)
+                    .distinct().limit(contactsLimit * 2L)
+                    .collect(Collectors.toList());
         } else {
             return Collections.emptyList();
         }

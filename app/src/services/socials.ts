@@ -149,6 +149,11 @@ export const QUERY_SOCIALS_MINIMAL = `query GetSocial($identity: Identity!, $me:
   }
 }`;
 
+const FOLLOWING = 7;
+const FOLLOWER = 3;
+const TRANSACTED_BASE = 10;
+const PER_TRANSACTION = 1;
+
 const FARCASTER_SCORE = 4;
 const LENS_SCORE = 4;
 const ENS_SCORE = 3;
@@ -180,6 +185,26 @@ function calculateScore(profilesWithSocials: ProfileWithSocialsType): number {
         score += LENS_SCORE;
       }
     });
+
+    if (profilesWithSocials.meta.farcasterFollow === 'following') {
+      score += FOLLOWING;
+    }
+
+    if (profilesWithSocials.meta.farcasterFollow === 'mutual') {
+      score += FOLLOWING + FOLLOWER;
+    }
+
+    if (profilesWithSocials.meta.lensFollow === 'following') {
+      score += FOLLOWING;
+    }
+
+    if (profilesWithSocials.meta.lensFollow === 'mutual') {
+      score += FOLLOWING + FOLLOWER;
+    }
+
+    if (profilesWithSocials.meta.sentTxs > 0) {
+      score += TRANSACTED_BASE + profilesWithSocials.meta.sentTxs * PER_TRANSACTION;
+    }
   }
   return score;
 }
