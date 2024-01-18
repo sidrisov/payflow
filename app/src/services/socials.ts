@@ -4,6 +4,8 @@ import { isAddress } from 'viem';
 import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';
 import { getProfileByAddressOrName, searchByListOfAddressesOrUsernames } from './user';
 import { GetSocialsForAssociatedAddressesQueryVariables } from '../generated/graphql/types';
+import axios from 'axios';
+import { API_URL } from '../utils/urlConstants';
 
 export const QUERY_SOCIALS = /* GraphQL */ `
   query GetSocial($identity: Identity!, $me: Identity!) {
@@ -18,6 +20,9 @@ export const QUERY_SOCIALS = /* GraphQL */ `
             }
           }
         }
+      }
+      domains(input: { limit: 1 }) {
+        name
       }
       socials(input: { limit: 5 }) {
         dappName
@@ -89,6 +94,9 @@ export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = /
               }
             }
           }
+          domains(input: { limit: 1 }) {
+            name
+          }
           socials(input: { limit: 5 }) {
             userAssociatedAddresses
             dappName
@@ -139,6 +147,9 @@ export const QUERY_SOCIALS_MINIMAL = /* GraphQL */ `
   query GetSocialMini($identity: Identity!, $me: Identity!) {
     Wallet(input: { identity: $identity, blockchain: ethereum }) {
       primaryDomain {
+        name
+      }
+      domains(input: { limit: 1 }) {
         name
       }
       socials(input: { limit: 5 }) {
@@ -314,13 +325,21 @@ export async function searchProfile(
     searchValue.endsWith('.xyz') ||
     searchValue.endsWith('.id')
   ) {
-    const { data, error } = await fetchQuery(
+    /*     const { data, error } = await fetchQuery(
       QUERY_SOCIALS,
       { identity: searchValue, me },
       {
         cache: true
       }
-    );
+    ); */
+
+    const response = await axios.get(`${API_URL}/api/user/me/contacts/${searchValue}`, {
+      withCredentials: true
+    });
+
+    console.debug('Response', response);
+
+    const data = { Wallet: response.data };
 
     if (data && data.Wallet) {
       const meta = convertSocialResults(data.Wallet);
@@ -353,6 +372,8 @@ export function convertSocialResults(walletInfo: any): MetaType | undefined {
 
   if (walletInfo.primaryDomain) {
     meta.ens = walletInfo.primaryDomain.name;
+  } else if (walletInfo.domains && walletInfo.domains.length > 0) {
+    meta.ens = walletInfo.domains[0].name;
   }
 
   if (walletInfo.socials) {
@@ -386,12 +407,35 @@ export function convertSocialResults(walletInfo: any): MetaType | undefined {
     meta.xmtp = false;
   }
 
+  // TODO: java returns lowerCamelCase for FOllowing & Follower
+  if (
+    walletInfo.socialFollowers &&
+    walletInfo.socialFollowings &&
+    walletInfo.socialFollowings.following
+  ) {
+    if (walletInfo.socialFollowings.following?.find((f: any) => f.dappName === FARCASTER_DAPP)) {
+      if (walletInfo.socialFollowers.follower?.find((f: any) => f.dappName === FARCASTER_DAPP)) {
+        meta.farcasterFollow = 'mutual';
+      } else {
+        meta.farcasterFollow = 'following';
+      }
+    }
+
+    if (walletInfo.socialFollowings.following?.find((f: any) => f.dappName === LENS_DAPP)) {
+      if (walletInfo.socialFollowers.follower?.find((f: any) => f.dappName === LENS_DAPP)) {
+        meta.lensFollow = 'mutual';
+      } else {
+        meta.lensFollow = 'following';
+      }
+    }
+  }
+
   if (
     walletInfo.socialFollowers &&
     walletInfo.socialFollowings &&
     walletInfo.socialFollowings.Following
   ) {
-    if (walletInfo.socialFollowings.Following.find((f: any) => f.dappName === FARCASTER_DAPP)) {
+    if (walletInfo.socialFollowings.Following?.find((f: any) => f.dappName === FARCASTER_DAPP)) {
       if (walletInfo.socialFollowers.Follower?.find((f: any) => f.dappName === FARCASTER_DAPP)) {
         meta.farcasterFollow = 'mutual';
       } else {
@@ -399,13 +443,17 @@ export function convertSocialResults(walletInfo: any): MetaType | undefined {
       }
     }
 
-    if (walletInfo.socialFollowings.Following.find((f: any) => f.dappName === LENS_DAPP)) {
+    if (walletInfo.socialFollowings.Following?.find((f: any) => f.dappName === LENS_DAPP)) {
       if (walletInfo.socialFollowers.Follower?.find((f: any) => f.dappName === LENS_DAPP)) {
         meta.lensFollow = 'mutual';
       } else {
         meta.lensFollow = 'following';
       }
     }
+  }
+
+  if (walletInfo.tokenTransfers && walletInfo.tokenTransfers.length > 0) {
+    meta.sentTxs = walletInfo.tokenTransfers.length;
   }
 
   if (walletInfo.ethTransfers && walletInfo.ethTransfers.length > 0) {

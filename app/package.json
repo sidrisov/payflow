@@ -6,7 +6,7 @@
   "scripts": {
     "generate": "npx graphql-codegen",
     "prestart": "npm run generate",
-    "predev": "npm run generate",
+    "prebuild": "npm run generate",
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",

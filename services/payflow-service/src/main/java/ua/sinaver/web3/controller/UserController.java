@@ -7,6 +7,7 @@ import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.data.User;
+import ua.sinaver.web3.graphql.generated.types.Wallet;
 import ua.sinaver.web3.message.*;
 import ua.sinaver.web3.service.IContactBookService;
 import ua.sinaver.web3.service.IFavouriteService;
@@ -85,6 +86,19 @@ public class UserController {
 		}
 	}
 
+	@GetMapping("/me/contacts/{identity}")
+	public Wallet contacts(@PathVariable String identity, Principal principal) {
+		log.trace("{}", principal);
+		val user = userService.findByIdentity(principal.getName());
+		if (user != null) {
+			val metadata = contactService.getSocialMetadata(identity, user.getIdentity());
+			log.trace("Social Metadata for {}: {}", identity, metadata);
+			return metadata;
+		} else {
+			throw new Error("User doesn't exist");
+		}
+	}
+
 	@PostMapping("/me/favourites")
 	public void updateFavourite(Principal principal, @RequestBody FavouriteMessage favouriteMessage) {
 		log.trace("{}", principal);
@@ -123,7 +137,7 @@ public class UserController {
 		val users = new ArrayList<User>();
 
 		// TODO: batch it in query
-		usernames.stream().forEach(username -> {
+		usernames.forEach(username -> {
 			users.addAll(userService.searchByUsernameQuery(username));
 		});
 
@@ -133,8 +147,7 @@ public class UserController {
 			return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
 					user.getIdentity(),
 					null,
-					user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
-							: null,
+					FlowMessage.convert(user.getDefaultFlow(), user),
 					null,
 					-1);
 		}).toList();
@@ -149,8 +162,7 @@ public class UserController {
 			return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
 					user.getIdentity(),
 					null,
-					user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
-							: null,
+					FlowMessage.convert(user.getDefaultFlow(), user),
 					null,
 					-1);
 		} else {

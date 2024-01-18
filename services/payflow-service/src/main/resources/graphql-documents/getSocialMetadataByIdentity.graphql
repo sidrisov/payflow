@@ -1,4 +1,4 @@
-query GetSocials($identity: Identity!, $me: Identity!) {
+query GetSocialMetadataByIdentity($identity: Identity!, $me: Identity!) {
     Wallet(input: {identity: $identity, blockchain: ethereum}) {
         addresses
         primaryDomain {
@@ -10,6 +10,9 @@ query GetSocials($identity: Identity!, $me: Identity!) {
                     }
                 }
             }
+        }
+        domains(input: { limit: 1 }) {
+            name
         }
         socials(input: {limit: 5}) {
             dappName

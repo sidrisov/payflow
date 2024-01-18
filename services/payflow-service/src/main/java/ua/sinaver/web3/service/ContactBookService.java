@@ -1,19 +1,26 @@
 package ua.sinaver.web3.service;
 
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.graphql.client.ClientGraphQlResponse;
 import org.springframework.graphql.client.GraphQlClient;
 import org.springframework.graphql.client.HttpGraphQlClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import ua.sinaver.web3.graphql.generated.types.SocialFollower;
 import ua.sinaver.web3.graphql.generated.types.SocialFollowing;
+import ua.sinaver.web3.graphql.generated.types.TokenTransfer;
+import ua.sinaver.web3.graphql.generated.types.Wallet;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class ContactBookService implements IContactBookService {
 
@@ -50,5 +57,56 @@ public class ContactBookService implements IContactBookService {
 		} else {
 			return Collections.emptyList();
 		}
+	}
+
+	@Override
+	@Cacheable(cacheNames = "socials")
+	public Wallet getSocialMetadata(String identity, String me) {
+		try {
+
+			ClientGraphQlResponse socialMetadata = graphQlClient.documentName(
+							"getSocialMetadataByIdentity")
+					.variable("identity", identity)
+					.variable("me", me)
+					.execute().block();
+
+			if (socialMetadata != null) {
+				log.trace("socialMetadata: {}", socialMetadata);
+
+				// TODO: some issue with projections, set manually
+				val wallet = socialMetadata.field("Wallet").toEntity(Wallet.class);
+
+				if (wallet != null) {
+					val followings =
+							socialMetadata.field("Wallet.socialFollowings.Following")
+									.toEntityList(SocialFollowing.class);
+
+					val followers =
+							socialMetadata.field("Wallet.socialFollowers.Follower")
+									.toEntityList(SocialFollower.class);
+
+					val ethTransfers =
+							socialMetadata.field("Wallet.ethTransfers")
+									.toEntityList(TokenTransfer.class);
+					val baseTransfers =
+							socialMetadata.field("Wallet.baseTransfers")
+									.toEntityList(TokenTransfer.class);
+
+					wallet.getSocialFollowings().setFollowing(followings);
+					wallet.getSocialFollowers().setFollower(followers);
+
+					val tokenTransfers = new ArrayList<TokenTransfer>();
+					tokenTransfers.addAll(ethTransfers);
+					tokenTransfers.addAll(baseTransfers);
+					wallet.setTokenTransfers(tokenTransfers);
+
+				}
+				return wallet;
+			}
+		} catch (Throwable t) {
+			log.error("Error", t);
+		}
+
+		return null;
 	}
 }

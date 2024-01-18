@@ -83,6 +83,8 @@ dependencies {
 	implementation("com.google.guava:guava:33.0.0-jre")
    	implementation("com.google.code.gson:gson:2.10.1")
 
+	//runtimeOnly("io.netty:netty-resolver-dns-native-macos:osx-aarch_64")
+
 	// crypto
 	implementation("org.bouncycastle:bcprov-jdk18on:1.74")
 
