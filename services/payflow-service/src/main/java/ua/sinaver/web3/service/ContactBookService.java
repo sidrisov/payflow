@@ -17,39 +17,38 @@ import java.util.stream.Collectors;
 @Service
 public class ContactBookService implements IContactBookService {
 
-    @Value("${payflow.airstack.contacts.limit:10}")
-    private int contactsLimit;
+	private final GraphQlClient graphQlClient;
+	@Value("${payflow.airstack.contacts.limit:10}")
+	private int contactsLimit;
 
-    private final GraphQlClient graphQlClient;
+	public ContactBookService(@Value("${payflow.airstack.api.url}") String airstackUrl,
+	                          @Value("${payflow.airstack.api.key}") String airstackApiKey) {
+		WebClient client = WebClient.builder()
+				.baseUrl(airstackUrl)
+				.build();
 
-    public ContactBookService(@Value("${payflow.airstack.api.url}") String airstackUrl,
-                              @Value("${payflow.airstack.api.key}") String airstackApiKey) {
-        WebClient client = WebClient.builder()
-                .baseUrl(airstackUrl)
-                .build();
+		graphQlClient = HttpGraphQlClient.builder(client)
+				.header(HttpHeaders.AUTHORIZATION, airstackApiKey)
+				.build();
+	}
 
-        graphQlClient = HttpGraphQlClient.builder(client)
-                .header(HttpHeaders.AUTHORIZATION, airstackApiKey)
-                .build();
-    }
+	@Override
+	@Cacheable(cacheNames = "socials")
+	public List<String> getAllContacts(String identity) {
+		val topFollowings = graphQlClient.documentName("getSocialFollowings")
+				.variable("identity", identity)
+				.variable("limit", contactsLimit)
+				.execute().block();
 
-    @Override
-    @Cacheable(cacheNames = "socials")
-    public List<String> getAllContacts(String identity) {
-        val topFollowings = graphQlClient.documentName("getSocialFollowings")
-                .variable("identity", identity)
-                .variable("limit", contactsLimit)
-                .execute().block();
-
-        if (topFollowings != null) {
-            return topFollowings.field("SocialFollowings.Following")
-                    .toEntityList(SocialFollowing.class).stream()
-                    .map(f -> f.getFollowingAddress().getAddresses())
-                    .flatMap(List::stream)
-                    .distinct().limit(contactsLimit * 2L)
-                    .collect(Collectors.toList());
-        } else {
-            return Collections.emptyList();
-        }
-    }
+		if (topFollowings != null) {
+			return topFollowings.field("SocialFollowings.Following")
+					.toEntityList(SocialFollowing.class).stream()
+					.map(f -> f.getFollowingAddress().getAddresses())
+					.flatMap(List::stream)
+					.distinct().limit(contactsLimit * 2L)
+					.collect(Collectors.toList());
+		} else {
+			return Collections.emptyList();
+		}
+	}
 }

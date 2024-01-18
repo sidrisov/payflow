@@ -1,47 +1,49 @@
-{"properties": [
-  {
-    "name": "dapp.url",
-    "type": "java.lang.String",
-    "description": "dApp Client Url"
-  },
-  {
-    "name": "payflow.invitation.allowance.enabled",
-    "type": "java.lang.String",
-    "description": "A description for 'payflow.invitation.allowance.enabled'"
-  },
-  {
-    "name": "payflow.invitation.whitelisted.default.users",
-    "type": "java.lang.String",
-    "description": "A description for 'payflow.invitation.whitelisted.default.users'"
-  },
-  {
-    "name": "payflow.invitation.whitelisted.default.allowance",
-    "type": "java.lang.String",
-    "description": "A description for 'payflow.invitation.whitelisted.default.allowance'"
-  },
-  {
-    "name": "logging.step",
-    "type": "java.lang.String",
-    "description": "A description for 'logging.step'"
-  },
-  {
-    "name": "management.metrics.export.logging.step",
-    "type": "java.lang.String",
-    "description": "A description for 'management.metrics.export.logging.step'"
-  },
-  {
-    "name": "spring.cloud.gcp.config.project-id",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gcp.config.project-id'"
-  },
-  {
-    "name": "spring.cloud.gcp.sql.instance-connection-name",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gcp.sql.instance-connection-name'"
-  },
-  {
-    "name": "spring.cloud.gcp.sql.database-name",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gcp.sql.database-name'"
-  }
-]}
+{
+  "properties": [
+    {
+      "name": "dapp.url",
+      "type": "java.lang.String",
+      "description": "dApp Client Url"
+    },
+    {
+      "name": "payflow.invitation.allowance.enabled",
+      "type": "java.lang.String",
+      "description": "A description for 'payflow.invitation.allowance.enabled'"
+    },
+    {
+      "name": "payflow.invitation.whitelisted.default.users",
+      "type": "java.lang.String",
+      "description": "A description for 'payflow.invitation.whitelisted.default.users'"
+    },
+    {
+      "name": "payflow.invitation.whitelisted.default.allowance",
+      "type": "java.lang.String",
+      "description": "A description for 'payflow.invitation.whitelisted.default.allowance'"
+    },
+    {
+      "name": "logging.step",
+      "type": "java.lang.String",
+      "description": "A description for 'logging.step'"
+    },
+    {
+      "name": "management.metrics.export.logging.step",
+      "type": "java.lang.String",
+      "description": "A description for 'management.metrics.export.logging.step'"
+    },
+    {
+      "name": "spring.cloud.gcp.config.project-id",
+      "type": "java.lang.String",
+      "description": "A description for 'spring.cloud.gcp.config.project-id'"
+    },
+    {
+      "name": "spring.cloud.gcp.sql.instance-connection-name",
+      "type": "java.lang.String",
+      "description": "A description for 'spring.cloud.gcp.sql.instance-connection-name'"
+    },
+    {
+      "name": "spring.cloud.gcp.sql.database-name",
+      "type": "java.lang.String",
+      "description": "A description for 'spring.cloud.gcp.sql.database-name'"
+    }
+  ]
+}

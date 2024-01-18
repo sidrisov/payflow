@@ -8,5 +8,5 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class SocialFollowing {
-    private FollowingAddress followingAddress;
+	private FollowingAddress followingAddress;
 }

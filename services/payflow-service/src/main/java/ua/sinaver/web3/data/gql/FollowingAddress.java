@@ -5,9 +5,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
 public class FollowingAddress {
-    private List<String> addresses;
+	private List<String> addresses;
 }
