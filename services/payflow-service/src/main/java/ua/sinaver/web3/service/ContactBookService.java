@@ -8,7 +8,7 @@ import org.springframework.graphql.client.HttpGraphQlClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import ua.sinaver.web3.data.gql.SocialFollowing;
+import ua.sinaver.web3.graphql.generated.types.SocialFollowing;
 
 import java.util.Collections;
 import java.util.List;
