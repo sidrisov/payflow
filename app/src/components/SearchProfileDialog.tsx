@@ -69,9 +69,7 @@ export default function SearchProfileDialog({
 
   const [addressBookView, setAddressBookView] = useState<'favourites' | 'friends'>('favourites');
 
-  const [favourites, setFavourites] = useState<FavouriteType[]>();
-  const [contacts, setContacts] = useState<Address[]>();
-  const [favouriteProfiles, setFavouriteProfiles] = useState<ProfileWithSocialsType[]>([]);
+  const [contacts, setContacts] = useState<FavouriteType[]>();
   const [contactProfiles, setContactProfiles] = useState<ProfileWithSocialsType[]>([]);
 
   function handleCloseCampaignDialog() {
@@ -93,29 +91,9 @@ export default function SearchProfileDialog({
   }, [debouncedSearchString, address]);
 
   useMemo(() => {
-    if (favourites && favourites.length > 0) {
-      let favouriteProfiles: ProfileWithSocialsType[] = [];
-      const promises = favourites
-        .filter((f) => f.addressChecked || f.profileChecked)
-        .map(async (f) => await searchProfile(f.identity, address));
-
-      Promise.all(promises).then((results) => {
-        results.forEach((socials) => {
-          favouriteProfiles = favouriteProfiles.concat(socials);
-        });
-        setFavouriteProfiles(sortBySocialScore(favouriteProfiles));
-      });
-    } else {
-      setFavouriteProfiles([]);
-    }
-  }, [favourites?.length]);
-
-  useMemo(() => {
     if (contacts && contacts.length > 0) {
-      console.debug('contacts', contacts);
-
       let contactProfiles: ProfileWithSocialsType[] = [];
-      const promises = contacts.map(async (f) => await searchProfile(f, address));
+      const promises = contacts.map(async (f) => await searchProfile(f.identity, address));
 
       Promise.all(promises).then((results) => {
         results.forEach((socials) => {
@@ -131,24 +109,12 @@ export default function SearchProfileDialog({
   useMemo(async () => {
     if (addressBookEnabled) {
       try {
-        const response = await axios.get(`${API_URL}/api/user/me/favourites`, {
-          withCredentials: true
-        });
-
-        if (response.status === 200) {
-          setFavourites(response.data as FavouriteType[]);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-
-      try {
         const response = await axios.get(`${API_URL}/api/user/me/contacts`, {
           withCredentials: true
         });
 
         if (response.status === 200) {
-          setContacts(response.data as Address[]);
+          setContacts(response.data as FavouriteType[]);
         }
       } catch (error) {
         console.error(error);
@@ -289,30 +255,29 @@ export default function SearchProfileDialog({
           {addressBookEnabled &&
             !searchString &&
             (addressBookView === 'favourites'
-              ? favouriteProfiles &&
-                favouriteProfiles.length > 0 && (
+              ? contactProfiles &&
+                contactProfiles.length > 0 && (
                   <SearchProfileResultView
                     key={'search_profile_results_view_favourites'}
                     addressBookEnabled={addressBookEnabled}
                     profileRedirect={profileRedirect}
                     closeStateCallback={closeStateCallback}
                     selectProfileCallback={selectProfileCallback}
-                    favourites={favourites}
-                    profiles={favouriteProfiles.filter(
+                    favourites={contacts?.filter((c) => c.addressChecked || c.profileChecked)}
+                    profiles={contactProfiles.filter(
                       (profileWithSocials) =>
                         profileWithSocials.profile &&
-                        favourites?.find(
+                        contacts?.find(
                           (f) =>
                             f.identity.toLowerCase() ===
                             profileWithSocials.profile?.identity.toLowerCase()
                         )?.profileChecked
                     )}
-                    addresses={favouriteProfiles.filter(
+                    addresses={contactProfiles.filter(
                       (profileWithSocials) =>
                         profileWithSocials.meta &&
-                        favourites?.find(
-                          (f) => f.identity === profileWithSocials.meta?.addresses[0]
-                        )?.addressChecked
+                        contacts?.find((f) => f.identity === profileWithSocials.meta?.addresses[0])
+                          ?.addressChecked
                     )}
                   />
                 )
@@ -324,7 +289,7 @@ export default function SearchProfileDialog({
                     profileRedirect={profileRedirect}
                     closeStateCallback={closeStateCallback}
                     selectProfileCallback={selectProfileCallback}
-                    favourites={favourites}
+                    favourites={contacts?.filter((c) => c.addressChecked || c.profileChecked)}
                     profiles={contactProfiles.filter(
                       (profileWithSocials) => profileWithSocials.profile
                     )}
@@ -340,7 +305,9 @@ export default function SearchProfileDialog({
             profileRedirect={profileRedirect}
             closeStateCallback={closeStateCallback}
             selectProfileCallback={selectProfileCallback}
-            favourites={favourites}
+            favourites={contacts?.filter(
+              (c) => c.addressChecked === true || c.profileChecked === true
+            )}
             profiles={profiles.filter((profileWithSocials) => profileWithSocials.profile)}
             addresses={
               searchString &&

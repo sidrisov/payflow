@@ -10,7 +10,6 @@ import ua.sinaver.web3.data.User;
 import ua.sinaver.web3.graphql.generated.types.Wallet;
 import ua.sinaver.web3.message.*;
 import ua.sinaver.web3.service.IContactBookService;
-import ua.sinaver.web3.service.IFavouriteService;
 import ua.sinaver.web3.service.IFlowService;
 import ua.sinaver.web3.service.IUserService;
 
@@ -36,10 +35,7 @@ public class UserController {
 	private IFlowService flowService;
 
 	@Autowired
-	private IFavouriteService favouriteService;
-
-	@Autowired
-	private IContactBookService contactService;
+	private IContactBookService contactBookService;
 
 	@GetMapping("/me")
 	public ProfileMessage user(Principal principal) {
@@ -62,24 +58,13 @@ public class UserController {
 		}
 	}
 
-	@GetMapping("/me/favourites")
-	public List<FavouriteMessage> favourites(Principal principal) {
-		log.trace("{}", principal);
-		val user = userService.findByIdentity(principal.getName());
-		if (user != null) {
-			return favouriteService.getAllFavourites(user);
-		} else {
-			throw new Error("User doesn't exist");
-		}
-	}
-
 	@GetMapping("/me/contacts")
-	public List<String> contacts(Principal principal) {
+	public List<ContactMessage> contacts(Principal principal) {
 		log.trace("{}", principal);
 		val user = userService.findByIdentity(principal.getName());
 		if (user != null) {
-			val contacts = contactService.getAllContacts(user.getIdentity());
-			log.trace("Social Contacts for {}: {}", principal.getName(), contacts);
+			val contacts = contactBookService.getAllContacts(user);
+			log.trace("All Contacts for {}: {}", principal.getName(), contacts);
 			return contacts;
 		} else {
 			throw new Error("User doesn't exist");
@@ -91,7 +76,7 @@ public class UserController {
 		log.trace("{}", principal);
 		val user = userService.findByIdentity(principal.getName());
 		if (user != null) {
-			val metadata = contactService.getSocialMetadata(identity, user.getIdentity());
+			val metadata = contactBookService.getSocialMetadata(identity, user.getIdentity());
 			log.trace("Social Metadata for {}: {}", identity, metadata);
 			return metadata;
 		} else {
@@ -100,11 +85,12 @@ public class UserController {
 	}
 
 	@PostMapping("/me/favourites")
-	public void updateFavourite(Principal principal, @RequestBody FavouriteMessage favouriteMessage) {
+	public void updateFavouriteContact(Principal principal,
+	                                   @RequestBody ContactMessage contactMessage) {
 		log.trace("{}", principal);
 		val user = userService.findByIdentity(principal.getName());
 		if (user != null) {
-			favouriteService.update(favouriteMessage, user);
+			contactBookService.update(contactMessage, user);
 		} else {
 			throw new Error("User doesn't exist");
 		}

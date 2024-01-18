@@ -14,8 +14,9 @@ import java.util.Date;
 @NoArgsConstructor
 @Entity
 @Table(uniqueConstraints = {
-		@UniqueConstraint(name = "uc_favourite_user_id_identity", columnNames = {"user_id", "identity"})})
-public class Favourite {
+		@UniqueConstraint(name = "uc_contact_user_id_identity", columnNames = {"user_id",
+				"identity"})})
+public class Contact {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
@@ -40,7 +41,7 @@ public class Favourite {
 	@Version
 	private Long version;
 
-	public Favourite(User user, String identity) {
+	public Contact(User user, String identity) {
 		this.identity = identity;
 		this.user = user;
 	}
