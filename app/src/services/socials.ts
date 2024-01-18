@@ -17,6 +17,9 @@ export const QUERY_SOCIALS = `query GetSocial($identity: Identity!, $me: Identit
         }
       }
     }
+    domains(input: { limit: 1 }) {
+      name
+    }
     socials(input: {limit: 5}) {
       dappName
       profileName
@@ -72,6 +75,9 @@ export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = `
             }
           }
         }
+        domains(input: { limit: 1 }) {
+          name
+        }
         socials(input: {limit: 5}) {  
           userAssociatedAddresses
           dappName
@@ -116,6 +122,9 @@ export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = `
 export const QUERY_SOCIALS_MINIMAL = `query GetSocial($identity: Identity!, $me: Identity!) {
   Wallet(input: {identity: $identity, blockchain: ethereum}) {
     primaryDomain {
+      name
+    }
+    domains(input: { limit: 1 }) {
       name
     }
     socials(input: {limit: 5}) {
@@ -302,6 +311,8 @@ export function converSocialResults(walletInfo: any): MetaType | undefined {
 
   if (walletInfo.primaryDomain) {
     meta.ens = walletInfo.primaryDomain.name;
+  } else if (walletInfo.domains && walletInfo.domains.length > 0) {
+    meta.ens = walletInfo.domains[0].name;
   }
 
   if (walletInfo.socials) {
