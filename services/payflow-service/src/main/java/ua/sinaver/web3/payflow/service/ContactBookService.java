@@ -95,7 +95,6 @@ public class ContactBookService implements IContactBookService {
 		}
 	}
 
-	// TODO: filter on db level
 	@Override
 	@Cacheable("contacts")
 	public List<ContactMessage> getAllContacts(User user) {
@@ -145,8 +144,6 @@ public class ContactBookService implements IContactBookService {
 
 				}
 				return wallet;
-			} else {
-				log.error("NULL!!!");
 			}
 		} catch (Throwable t) {
 			log.error("Error", t);

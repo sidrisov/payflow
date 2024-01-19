@@ -131,10 +131,16 @@ export default function SearchProfileDialog({
       sx={{
         backdropFilter: 'blur(5px)'
       }}
-      PaperProps={{ sx: { borderRadius: 5 } }}
+      PaperProps={{
+        sx: {
+          borderRadius: 5,
+          minWidth: 350,
+          ...(!isMobile && { minHeight: 500, maxHeight: 600 })
+        }
+      }}
       {...props}>
       <DialogTitle>
-        <Stack minWidth={300}>
+        <Stack>
           <Box
             display="flex"
             flexDirection="row"
@@ -201,7 +207,7 @@ export default function SearchProfileDialog({
             }}
           />
           {addressBookEnabled && !searchString && (
-            <Stack my={1} spacing={1} direction="row" alignItems="center">
+            <Stack my={1} spacing={1} direction="row" alignItems="center" alignSelf="center">
               <Chip
                 clickable
                 icon={<Star fontSize="small" />}
@@ -245,13 +251,8 @@ export default function SearchProfileDialog({
           )}
         </Stack>
       </DialogTitle>
-      <DialogContent>
-        <Box
-          display="flex"
-          flexDirection="column"
-          alignContent="center"
-          minHeight={300}
-          maxHeight={500}>
+      <DialogContent sx={{ mb: 0.5 }}>
+        <Box display="flex" flexDirection="column" alignContent="center">
           {addressBookEnabled &&
             !searchString &&
             (addressBookView === 'favourites'

@@ -37,7 +37,6 @@ export function SearchProfileListItem(
 ) {
   const { profile, isAuthenticated } = useContext(ProfileContext);
   const { profileWithSocials, view, favouritesEnabled, favourite: favouriteProp } = props;
-  const [disableClick, setDisableClick] = useState<boolean>(false);
   const [invited, setInvited] = useState<boolean>();
   const [favourite, setFavourite] = useState<boolean>(favouriteProp ?? false);
 
@@ -56,19 +55,15 @@ export function SearchProfileListItem(
 
   return (
     (view === 'profile' ? profileWithSocials.profile : profileWithSocials.meta) && (
-      <Box display="flex" flexDirection="row" justifyContent="space-between" alignItems="center">
+      <Box m={1} display="flex" flexDirection="row" justifyContent="space-between" alignItems="center" height={60}>
         <Box
+          justifyContent="flex-start"
+          width={150}
           color="inherit"
-          p={1}
-          flexGrow={1}
-          display="flex"
-          flexDirection="row"
-          justifyContent="space-between"
-          alignItems="center"
           component={Button}
+          onClick={props.onClick}
           textTransform="none"
-          onClick={!disableClick ? props.onClick : undefined}
-          sx={{ borderRadius: 5, height: 60 }}>
+          sx={{ borderRadius: 5 }}>
           {view === 'profile' && profileWithSocials.profile && (
             <ProfileSection maxWidth={200} profile={profileWithSocials.profile} />
           )}
@@ -76,94 +71,84 @@ export function SearchProfileListItem(
           {view === 'address' && profileWithSocials.meta && (
             <AddressSection maxWidth={200} meta={profileWithSocials.meta} />
           )}
-
-          <Stack
-            direction="column"
-            spacing={0.5}
-            alignItems="center"
-            sx={{ minWidth: 70, maxWidth: 100 }}>
-            {view === 'profile' ? (
-              <PayflowChip />
-            ) : (
-              isAuthenticated &&
-              !profileWithSocials.profile && (
-                <Chip
-                  size="small"
-                  variant="filled"
-                  label={invited ? 'invited' : 'invite'}
-                  clickable={!invited}
-                  onMouseEnter={() => {
-                    !invited && setDisableClick(true);
-                  }}
-                  onMouseLeave={() => {
-                    !invited && setDisableClick(false);
-                  }}
-                  onClick={async () => {
-                    if (invited) {
-                      return;
-                    }
-
-                    if (profile.identityInviteLimit === -1) {
-                      comingSoonToast();
-                      return;
-                    }
-
-                    if (profile.identityInviteLimit === 0) {
-                      toast.warn("You don't have any invites");
-                      return;
-                    }
-
-                    try {
-                      await axios.post(
-                        `${API_URL}/api/invitations`,
-                        {
-                          identityBased: profileWithSocials.meta?.addresses[0]
-                        },
-                        { withCredentials: true }
-                      );
-
-                      setInvited(true);
-
-                      toast.success(
-                        `${
-                          profileWithSocials.meta?.ens
-                            ? profileWithSocials.meta?.ens
-                            : shortenWalletAddressLabel(profileWithSocials.meta?.addresses[0])
-                        } is invited!`
-                      );
-                    } catch (error) {
-                      toast.error('Invitation failed!');
-                    }
-                  }}
-                  sx={{
-                    bgcolor: invited ? lightGreen.A700 : orange.A700,
-                    '&:hover': { bgcolor: lightGreen.A700 }
-                  }}
-                />
-              )
-            )}
-
-            {profileWithSocials.meta && (
-              <Stack direction="row" spacing={0.5} alignItems="center">
-                {profileWithSocials.meta.ens && (
-                  <SocialPresenceAvatar dappName="ens" profileName={profileWithSocials.meta.ens} />
-                )}
-                {profileWithSocials.meta.socials
-                  .filter((s) => s.profileName && s.dappName)
-                  .map((s) => (
-                    <SocialPresenceAvatar
-                      key={s.dappName}
-                      dappName={s.dappName as dAppType}
-                      profileName={s.profileName}
-                      followerCount={s.followerCount}
-                    />
-                  ))}
-                {profileWithSocials.meta.xmtp && <SocialPresenceAvatar dappName="xmtp" />}
-              </Stack>
-            )}
-          </Stack>
         </Box>
-        <Stack ml={1} spacing={1} direction="row" alignItems="center">
+
+        <Stack direction="column" spacing={0.5} alignItems="center" sx={{ width: 100 }}>
+          {view === 'profile' ? (
+            <PayflowChip />
+          ) : (
+            isAuthenticated &&
+            !profileWithSocials.profile && (
+              <Chip
+                size="small"
+                variant="filled"
+                label={invited ? 'invited' : 'invite'}
+                clickable={!invited}
+                onClick={async () => {
+                  if (invited) {
+                    return;
+                  }
+
+                  if (profile.identityInviteLimit === -1) {
+                    comingSoonToast();
+                    return;
+                  }
+
+                  if (profile.identityInviteLimit === 0) {
+                    toast.warn("You don't have any invites");
+                    return;
+                  }
+
+                  try {
+                    await axios.post(
+                      `${API_URL}/api/invitations`,
+                      {
+                        identityBased: profileWithSocials.meta?.addresses[0]
+                      },
+                      { withCredentials: true }
+                    );
+
+                    setInvited(true);
+
+                    toast.success(
+                      `${
+                        profileWithSocials.meta?.ens
+                          ? profileWithSocials.meta?.ens
+                          : shortenWalletAddressLabel(profileWithSocials.meta?.addresses[0])
+                      } is invited!`
+                    );
+                  } catch (error) {
+                    toast.error('Invitation failed!');
+                  }
+                }}
+                sx={{
+                  bgcolor: invited ? lightGreen.A700 : orange.A700,
+                  '&:hover': { bgcolor: lightGreen.A700 }
+                }}
+              />
+            )
+          )}
+
+          {profileWithSocials.meta && (
+            <Stack direction="row" spacing={0.5} alignItems="center">
+              {profileWithSocials.meta.ens && (
+                <SocialPresenceAvatar dappName="ens" profileName={profileWithSocials.meta.ens} />
+              )}
+              {profileWithSocials.meta.socials
+                .filter((s) => s.profileName && s.dappName)
+                .map((s) => (
+                  <SocialPresenceAvatar
+                    key={s.dappName}
+                    dappName={s.dappName as dAppType}
+                    profileName={s.profileName}
+                    followerCount={s.followerCount}
+                  />
+                ))}
+              {profileWithSocials.meta.xmtp && <SocialPresenceAvatar dappName="xmtp" />}
+            </Stack>
+          )}
+        </Stack>
+        <Stack spacing={1} direction="row" alignItems="center">
           <Tooltip
             title={
               profile?.identity || address ? (
