@@ -47,6 +47,9 @@ public class ContactBookService implements IContactBookService {
 
 	@Value("${payflow.airstack.contacts.limit:10}")
 	private int contactsLimit;
+
+	@Value("${payflow.favourites.limit:0}")
+	private int defaultFavouriteContactLimit;
 	@Autowired
 	private ContactRepository contactRepository;
 
@@ -86,18 +89,49 @@ public class ContactBookService implements IContactBookService {
 
 	@Override
 	public void update(ContactMessage contactMessage, User user) {
-		val contact = contactRepository.findByUserAndIdentity(user, contactMessage.identity());
-		if (contact != null) {
-			// update only fields passed
-			if (contactMessage.addressChecked() != null) {
-				contact.setAddressChecked(contactMessage.addressChecked());
-			}
-			if (contactMessage.profileChecked() != null) {
-				contact.setProfileChecked(contactMessage.profileChecked());
-			}
-		} else {
-			contactRepository.save(ContactMessage.convert(contactMessage, user));
+		var contact = contactRepository.findByUserAndIdentity(user, contactMessage.identity());
+		if (contact == null) {
+			contact = new Contact(user, contactMessage.identity());
 		}
+
+		var availableFavouriteLimit =
+				user.getUserAllowance().getFavouriteContactLimit();
+
+		if (availableFavouriteLimit == null) {
+			availableFavouriteLimit = defaultFavouriteContactLimit;
+		}
+
+		// update only fields passed
+		if (contactMessage.addressChecked() != null && contact.isAddressChecked() != contactMessage.addressChecked()) {
+			if (contactMessage.addressChecked()) {
+				if (availableFavouriteLimit == 0) {
+					log.error("Favourite limit reached for user {}: {}", user.getUsername(), availableFavouriteLimit);
+					throw new Error("Favourite limit reached");
+				}
+				contact.setAddressChecked(true);
+				availableFavouriteLimit--;
+			} else {
+				contact.setAddressChecked(false);
+				availableFavouriteLimit++;
+			}
+		}
+
+		if (contactMessage.profileChecked() != null && contact.isProfileChecked() != contactMessage.profileChecked()) {
+			if (contactMessage.profileChecked()) {
+				if (availableFavouriteLimit == 0) {
+					log.error("Favourite limit reached for user {}: {}", user.getUsername(), availableFavouriteLimit);
+					throw new Error("Favourite limit reached");
+				}
+				contact.setProfileChecked(true);
+				availableFavouriteLimit--;
+			} else {
+				contact.setProfileChecked(false);
+				availableFavouriteLimit++;
+			}
+		}
+
+		user.getUserAllowance().setFavouriteContactLimit(availableFavouriteLimit);
+		contactRepository.save(contact);
 	}
 
 	@Override

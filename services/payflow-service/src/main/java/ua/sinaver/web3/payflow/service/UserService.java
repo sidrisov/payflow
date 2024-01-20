@@ -8,8 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import ua.sinaver.web3.payflow.data.Invitation;
-import ua.sinaver.web3.payflow.data.InvitationAllowance;
 import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.data.UserAllowance;
 import ua.sinaver.web3.payflow.message.FlowMessage;
 import ua.sinaver.web3.payflow.message.ProfileMessage;
 import ua.sinaver.web3.payflow.message.WalletProfileRequestMessage;
@@ -25,12 +25,19 @@ import java.util.regex.Pattern;
 public class UserService implements IUserService {
 
 	private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_-]*$");
+
 	@Value("${payflow.invitation.allowance.enabled:false}")
 	private boolean invitationAllowanceEnabled;
-	@Value("${payflow.invitation.whitelisted.default.users}")
+
+	@Value("${payflow.invitation.whitelisted.default.users:0}")
 	private Set<String> defaultWhitelistedUsers;
-	@Value("${payflow.invitation.whitelisted.default.allowance}")
+
+	@Value("${payflow.invitation.whitelisted.default.allowance:0}")
 	private int defaultWhitelistedAllowance;
+
+	@Value("${payflow.favourites.limit:0}")
+	private int defaultFavouriteContactLimit;
+
 	@Autowired
 	private UserRepository userRepository;
 
@@ -64,10 +71,10 @@ public class UserService implements IUserService {
 			if (defaultWhitelistedUsers.contains(user.getIdentity())) {
 				user.setAllowed(true);
 				user.setCreatedDate(new Date());
-				val defaultAllowance = new InvitationAllowance(defaultWhitelistedAllowance,
-						defaultWhitelistedAllowance);
+				val defaultAllowance = new UserAllowance(defaultWhitelistedAllowance,
+						defaultWhitelistedAllowance, defaultFavouriteContactLimit);
 				defaultAllowance.setUser(user);
-				user.setInvitationAllowance(defaultAllowance);
+				user.setUserAllowance(defaultAllowance);
 			} else {
 				Invitation invitation = invitationRepository.findFirstValidByIdentityOrCode(identity, invitationCode);
 				if (invitation != null) {
@@ -76,10 +83,10 @@ public class UserService implements IUserService {
 					invitation.setInvitee(user);
 					invitation.setExpiryDate(null);
 					if (invitationAllowanceEnabled) {
-						val defaultInvitationAllowance = new InvitationAllowance(1,
-								1);
-						defaultInvitationAllowance.setUser(user);
-						user.setInvitationAllowance(defaultInvitationAllowance);
+						val defaultUserAllowance = new UserAllowance(1,
+								1, defaultFavouriteContactLimit);
+						defaultUserAllowance.setUser(user);
+						user.setUserAllowance(defaultUserAllowance);
 					}
 				} else {
 					throw new Error("Access not allowed");

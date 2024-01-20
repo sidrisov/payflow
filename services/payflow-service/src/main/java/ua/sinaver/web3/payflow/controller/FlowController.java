@@ -17,7 +17,7 @@ import java.util.List;
 // TODO: inject Authenticated user directly instead of fetching it with principal on every request
 @RestController
 @RequestMapping("/flows")
-@CrossOrigin(origins = "${dapp.url}", allowCredentials = "true")
+@CrossOrigin(origins = "${payflow.dapp.url}", allowCredentials = "true")
 @Transactional
 @Slf4j
 class FlowController {

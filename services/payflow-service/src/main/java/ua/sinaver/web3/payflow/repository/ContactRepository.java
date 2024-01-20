@@ -17,4 +17,11 @@ public interface ContactRepository extends CrudRepository<Contact, Integer> {
 	Contact findByUserAndIdentity(
 			User user,
 			String identity);
+
+	@Query("SELECT " +
+			"SUM(CASE WHEN c.addressChecked IS TRUE THEN 1 ELSE 0 END + " +
+			"CASE WHEN c.profileChecked IS TRUE THEN 1 ELSE 0 END) " +
+			"FROM Contact c " +
+			"WHERE c.user = :user AND (c.addressChecked IS TRUE OR c.profileChecked IS TRUE)")
+	int findTotalFavouriteCountByUser(User user);
 }

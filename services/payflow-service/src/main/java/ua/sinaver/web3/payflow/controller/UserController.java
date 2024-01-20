@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/user")
-@CrossOrigin(origins = "${dapp.url}", allowCredentials = "true")
+@CrossOrigin(origins = "${payflow.dapp.url}", allowCredentials = "true")
 @Transactional
 @Slf4j
 @Timed(value = "api.user")
@@ -51,7 +51,7 @@ public class UserController {
 					user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
 							: null,
 					flowService.getAllFlows(user),
-					user.getInvitationAllowance() != null ? user.getInvitationAllowance().getIdenityInviteLimit()
+					user.getUserAllowance() != null ? user.getUserAllowance().getIdentityInviteLimit()
 							: -1);
 		} else {
 			return null;

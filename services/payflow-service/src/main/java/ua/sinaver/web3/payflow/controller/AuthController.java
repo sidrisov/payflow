@@ -20,7 +20,7 @@ import ua.sinaver.web3.payflow.service.IUserService;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "${dapp.url}", allowCredentials = "true")
+@CrossOrigin(origins = "${payflow.dapp.url}", allowCredentials = "true")
 @Transactional
 @Slf4j
 public class AuthController {
@@ -31,7 +31,7 @@ public class AuthController {
 	@Autowired
 	private IUserService userService;
 
-	@Value("${dapp.url}")
+	@Value("${payflow.dapp.url}")
 	private String dappUri;
 
 	@GetMapping("/nonce")

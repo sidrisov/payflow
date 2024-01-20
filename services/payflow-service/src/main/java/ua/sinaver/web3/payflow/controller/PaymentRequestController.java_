@@ -24,7 +24,7 @@ import service.ua.sinaver.web3.payflow.IUserService;
 
 @RestController
 @RequestMapping("/requests")
-@CrossOrigin(origins = "${dapp.url}", allowCredentials = "true")
+@CrossOrigin(origins = "${payflow.dapp.url}", allowCredentials = "true")
 @Transactional
 @Slf4j
 public class PaymentRequestController {

@@ -26,7 +26,7 @@ import java.util.stream.IntStream;
 
 @RestController
 @RequestMapping("/invitations")
-@CrossOrigin(origins = "${dapp.url}", allowCredentials = "true")
+@CrossOrigin(origins = "${payflow.dapp.url}", allowCredentials = "true")
 @Transactional
 @Slf4j
 public class InvitationController {
@@ -103,11 +103,11 @@ public class InvitationController {
 			throw new Error("User doesn't exist");
 		}
 
-		val allowance = user.getInvitationAllowance();
+		val allowance = user.getUserAllowance();
 
 		if (!StringUtils.isBlank(invitationMessage.identityBased())) {
-			if (allowance != null && allowance.getIdenityInviteLimit() > 0) {
-				allowance.setIdenityInviteLimit(allowance.getIdenityInviteLimit() - 1);
+			if (allowance != null && allowance.getIdentityInviteLimit() > 0) {
+				allowance.setIdentityInviteLimit(allowance.getIdentityInviteLimit() - 1);
 				val invitation = new Invitation(invitationMessage.identityBased(), null);
 				invitation.setInvitedBy(user);
 				invitation.setExpiryDate(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(invitationExpiryPeriod.getDays())));

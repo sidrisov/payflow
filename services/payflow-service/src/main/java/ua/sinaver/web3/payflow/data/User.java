@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 // TODO: add indexes (for query search)
-@ToString(exclude = "invitationAllowance")
+@ToString(exclude = "userAllowance")
 @Setter
 @Getter
 @NoArgsConstructor
@@ -60,7 +60,7 @@ public class User {
 	private List<Flow> flows;
 
 	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	private InvitationAllowance invitationAllowance;
+	private UserAllowance userAllowance;
 
 	// TODO: replace legacy Date with proper Instant/LocalDateTime etc.
 	@Column

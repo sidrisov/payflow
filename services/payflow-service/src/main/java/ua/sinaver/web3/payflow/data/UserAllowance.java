@@ -12,7 +12,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @Entity
 @Table
-public class InvitationAllowance {
+public class UserAllowance {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
@@ -22,16 +22,20 @@ public class InvitationAllowance {
 	private User user;
 
 	@Column
-	private Integer idenityInviteLimit = 0;
+	private Integer identityInviteLimit = 0;
 
 	@Column
 	private Integer codeInviteLimit = 0;
 
+	@Column
+	private Integer favouriteContactLimit = 0;
+
 	@Version
 	private Long version;
 
-	public InvitationAllowance(Integer idenityInviteLimit, Integer codeInviteLimit) {
-		this.idenityInviteLimit = idenityInviteLimit;
+	public UserAllowance(Integer identityInviteLimit, Integer codeInviteLimit, Integer favouriteContactLimit) {
+		this.identityInviteLimit = identityInviteLimit;
 		this.codeInviteLimit = codeInviteLimit;
+		this.favouriteContactLimit = favouriteContactLimit;
 	}
 }

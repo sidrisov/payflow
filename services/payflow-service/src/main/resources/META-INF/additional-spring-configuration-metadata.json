@@ -1,7 +1,7 @@
 {
   "properties": [
     {
-      "name": "dapp.url",
+      "name": "payflow.dapp.url",
       "type": "java.lang.String",
       "description": "dApp Client Url"
     },
