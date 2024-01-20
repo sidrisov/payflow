@@ -39,7 +39,7 @@ public class UserController {
 
 	@GetMapping("/me")
 	public ProfileMessage user(Principal principal) {
-		log.trace("{}", principal);
+		log.trace("{} fetching its profile info", principal.getName());
 		val user = userService.findByIdentity(principal.getName());
 
 		if (user != null) {
@@ -60,7 +60,7 @@ public class UserController {
 
 	@GetMapping("/me/contacts")
 	public List<ContactMessage> contacts(Principal principal) {
-		log.trace("{}", principal);
+		log.trace("{} fetching contracts", principal.getName());
 		val user = userService.findByIdentity(principal.getName());
 		if (user != null) {
 			val contacts = contactBookService.getAllContacts(user);
@@ -73,7 +73,7 @@ public class UserController {
 
 	@GetMapping("/me/contacts/{identity}")
 	public Wallet contacts(@PathVariable String identity, Principal principal) {
-		log.trace("{}", principal);
+		log.trace("{} fetching contact identity {}", principal.getName(), identity);
 		val user = userService.findByIdentity(principal.getName());
 		if (user != null) {
 			val metadata = contactBookService.getSocialMetadata(identity, user.getIdentity());
@@ -87,7 +87,7 @@ public class UserController {
 	@PostMapping("/me/favourites")
 	public void updateFavouriteContact(Principal principal,
 	                                   @RequestBody ContactMessage contactMessage) {
-		log.trace("{}", principal);
+		log.trace("{} updates favourite contact {}", principal.getName(), contactMessage);
 		val user = userService.findByIdentity(principal.getName());
 		if (user != null) {
 			contactBookService.update(contactMessage, user);

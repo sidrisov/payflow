@@ -7,7 +7,6 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 @ToString
 @Setter
@@ -43,8 +42,7 @@ public class Invitation {
 
 	@Column
 	@Temporal(TemporalType.TIMESTAMP)
-	// TODO: make expiry configurable
-	private Date expiryDate = new Date(new Date().getTime() + TimeUnit.DAYS.toMillis(14));
+	private Date expiryDate;
 
 	@Version
 	private Long version;

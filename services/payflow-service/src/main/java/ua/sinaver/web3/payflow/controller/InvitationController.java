@@ -17,8 +17,11 @@ import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.service.UserService;
 
 import java.security.Principal;
+import java.time.Period;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 @RestController
@@ -36,6 +39,9 @@ public class InvitationController {
 
 	@Value("${payflow.invitation.whitelisted.default.users}")
 	private Set<String> defaultWhitelistedUsers;
+
+	@Value("${payflow.invitation.expiry:2w}")
+	private Period invitationExpiryPeriod;
 
 	// TODO: add converter to messages
 	@GetMapping
@@ -104,6 +110,7 @@ public class InvitationController {
 				allowance.setIdenityInviteLimit(allowance.getIdenityInviteLimit() - 1);
 				val invitation = new Invitation(invitationMessage.identityBased(), null);
 				invitation.setInvitedBy(user);
+				invitation.setExpiryDate(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(invitationExpiryPeriod.getDays())));
 				invitationRepository.save(invitation);
 			} else {
 				throw new Error("User reached his invitation limit");

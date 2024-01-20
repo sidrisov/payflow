@@ -62,6 +62,7 @@ public class User {
 	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private InvitationAllowance invitationAllowance;
 
+	// TODO: replace legacy Date with proper Instant/LocalDateTime etc.
 	@Column
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createdDate = new Date();

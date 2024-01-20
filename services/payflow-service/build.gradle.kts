@@ -83,6 +83,9 @@ dependencies {
     implementation("com.google.guava:guava:33.0.0-jre")
     implementation("com.google.code.gson:gson:2.10.1")
 
+    // java.lang.NoSuchMethodError: 'reactor.core.publisher.Mono reactor.core.publisher.Mono.onErrorComplete()'
+    implementation("io.projectreactor:reactor-core:3.6.2")
+
     runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.105.Final:osx-aarch_64")
 
     // crypto

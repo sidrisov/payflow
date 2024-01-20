@@ -23,6 +23,8 @@ import ua.sinaver.web3.payflow.message.ContactMessage;
 import ua.sinaver.web3.payflow.repository.ContactRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
 
+import java.time.Duration;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -37,8 +39,11 @@ public class ContactBookService implements IContactBookService {
 
 	private final GraphQlClient graphQlClient;
 
-	@Value("${payflow.airstack.contacts.update.period-in-hours:24}")
-	private int contactsUpdatePeriod;
+	@Value("${payflow.airstack.contacts.update.duration:24h}")
+	private Duration contactsUpdateDuration;
+
+	@Value("${payflow.airstack.contacts.update.last-seen-period:3d}")
+	private Period contactsUpdateLastSeenPeriod;
 
 	@Value("${payflow.airstack.contacts.limit:10}")
 	private int contactsLimit;
@@ -103,14 +108,15 @@ public class ContactBookService implements IContactBookService {
 	}
 
 	@Override
-	@Cacheable(cacheNames = "socials")
+	@Cacheable(cacheNames = "socials", unless = "#result==null")
 	public Wallet getSocialMetadata(String identity, String me) {
 		try {
 			ClientGraphQlResponse socialMetadata = graphQlClient.documentName(
 							"getSocialMetadataByIdentity")
 					.variable("identity", identity)
 					.variable("me", me)
-					.execute().block();
+					.execute()
+					.block();
 
 			if (socialMetadata != null) {
 				log.trace("socialMetadata: {}", socialMetadata);
@@ -154,13 +160,20 @@ public class ContactBookService implements IContactBookService {
 
 	@Scheduled(fixedRate = 60000)
 	public void updateContactsAtFixedRate() {
-		log.debug("Updating contact list at {}", new Date());
+		val lastUpdateDate =
+				new Date(System.currentTimeMillis() - contactsUpdateDuration.toMillis());
+		val lastSeenDate =
+				new Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(contactsUpdateLastSeenPeriod.getDays()));
 
-		val staleBeforeDate =
-				new Date(new Date().getTime() - TimeUnit.HOURS.toMillis(contactsUpdatePeriod));
+		// find all allowed users which were active after some date and contacts weren't updated
+		// since another date
 		val users =
-				userRepository.findByAllowedTrueAndLastUpdatedContactsBefore(staleBeforeDate);
-		log.debug("Users with stale contacts: {}", users.stream().map(u -> u.getUsername()).toList());
+				userRepository.findByAllowedTrueAndLastUpdatedContactsBeforeAndLastSeenAfter(lastUpdateDate, lastSeenDate);
+
+		if (log.isDebugEnabled()) {
+			log.debug("Updating contacts list for profiles: {}",
+					users.stream().map(User::getUsername).toList());
+		}
 
 		// TODO: for now update all, in future spin off a separate thread, batch, or via events
 		for (val user : users) {
@@ -172,8 +185,14 @@ public class ContactBookService implements IContactBookService {
 								.map(address -> new Contact(user, address)).toList();
 				contactRepository.saveAll(followContacts);
 				user.setLastUpdatedContacts(new Date());
+
+				if (log.isDebugEnabled()) {
+					log.debug("Updated {} contacts for profile: {}",
+							followContacts.size(), user.getUsername());
+				}
+
 			} catch (Throwable t) {
-				log.error("Couldn't fetch following addresses", t);
+				log.error("Couldn't fetch following contacts for {}", user.getUsername(), t);
 			}
 		}
 	}

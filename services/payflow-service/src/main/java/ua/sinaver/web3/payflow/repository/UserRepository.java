@@ -30,8 +30,10 @@ public interface UserRepository extends CrudRepository<User, Integer> {
 
 	List<User> findByAllowedTrueOrderByLastSeenDesc();
 
-	@Query("SELECT u FROM User u WHERE u.allowed = true AND " +
-			"(u.lastUpdatedContacts < :date" +
+	// TODO: index: allowed, lastSeen, lastUpdatedContacts
+	@Query("SELECT u FROM User u WHERE u.allowed = true AND u.lastSeen > :lastSeenDate AND " +
+			"(u.lastUpdatedContacts < :updateDate" +
 			" OR u.lastUpdatedContacts IS NULL)")
-	List<User> findByAllowedTrueAndLastUpdatedContactsBefore(Date date);
+	List<User> findByAllowedTrueAndLastUpdatedContactsBeforeAndLastSeenAfter(Date updateDate,
+	                                                                         Date lastSeenDate);
 }
