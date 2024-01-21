@@ -18,10 +18,10 @@ public interface ContactRepository extends CrudRepository<Contact, Integer> {
 			User user,
 			String identity);
 
-	@Query("SELECT " +
-			"SUM(CASE WHEN c.addressChecked IS TRUE THEN 1 ELSE 0 END + " +
-			"CASE WHEN c.profileChecked IS TRUE THEN 1 ELSE 0 END) " +
+/*	@Query("SELECT " +
+			"SUM(CASE WHEN c.favouriteAddress IS TRUE THEN 1 ELSE 0 END + " +
+			"CASE WHEN c.favouriteProfile IS TRUE THEN 1 ELSE 0 END) " +
 			"FROM Contact c " +
-			"WHERE c.user = :user AND (c.addressChecked IS TRUE OR c.profileChecked IS TRUE)")
-	int findTotalFavouriteCountByUser(User user);
+			"WHERE c.user = :user AND (c.favouriteAddress IS TRUE OR c.favouriteProfile IS TRUE)")
+	int findTotalFavouriteCountByUser(User user);*/
 }

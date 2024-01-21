@@ -3,7 +3,7 @@ import { CloseCallbackType } from '../types/CloseCallbackType';
 import { ProfileWithSocialsType } from '../types/ProfleType';
 import { useNavigate } from 'react-router-dom';
 import { SearchProfileListItem } from './SearchProfileListItem';
-import { FavouriteType } from '../types/FavouriteType';
+import { ContactType } from '../types/ContactType';
 import { SelectProfileResultCallbackType } from './SearchProfileDialog';
 
 export function SearchProfileResultView({
@@ -17,7 +17,7 @@ export function SearchProfileResultView({
 }: {
   addressBookEnabled?: boolean;
   profileRedirect?: boolean;
-  favourites?: FavouriteType[];
+  favourites?: ContactType[];
   profiles: ProfileWithSocialsType[];
   addresses: ProfileWithSocialsType[];
 } & CloseCallbackType &
@@ -46,8 +46,11 @@ export function SearchProfileResultView({
                       (f) =>
                         f.identity.toLowerCase() ===
                         profileWithSocials.profile?.identity.toLowerCase()
-                    )?.profileChecked
+                    )?.favouriteProfile
                   }
+                  setFavourite={({ profileWithSocials, favourite }) => {
+                    console.log(profileWithSocials, favourite);
+                  }}
                   onClick={() => {
                     if (profileWithSocials.profile) {
                       if (profileRedirect) {
@@ -81,8 +84,11 @@ export function SearchProfileResultView({
                   favouritesEnabled={addressBookEnabled}
                   favourite={
                     favourites?.find((f) => f.identity === profileWithSocials.meta?.addresses[0])
-                      ?.addressChecked
+                      ?.favouriteAddress
                   }
+                  setFavourite={({ profileWithSocials, favourite }) => {
+                    console.log(profileWithSocials, favourite);
+                  }}
                   onClick={() => {
                     if (selectProfileCallback) {
                       selectProfileCallback({ type: 'address', data: profileWithSocials });

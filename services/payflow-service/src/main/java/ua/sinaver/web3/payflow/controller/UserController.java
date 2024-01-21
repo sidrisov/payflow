@@ -11,6 +11,7 @@ import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 import ua.sinaver.web3.payflow.message.*;
 import ua.sinaver.web3.payflow.service.IContactBookService;
 import ua.sinaver.web3.payflow.service.IFlowService;
+import ua.sinaver.web3.payflow.service.ISocialGraphService;
 import ua.sinaver.web3.payflow.service.IUserService;
 
 import java.security.Principal;
@@ -36,6 +37,9 @@ public class UserController {
 
 	@Autowired
 	private IContactBookService contactBookService;
+
+	@Autowired
+	private ISocialGraphService socialGraphService;
 
 	@GetMapping("/me")
 	public ProfileMessage user(Principal principal) {
@@ -76,7 +80,7 @@ public class UserController {
 		log.trace("{} fetching contact identity {}", principal.getName(), identity);
 		val user = userService.findByIdentity(principal.getName());
 		if (user != null) {
-			val metadata = contactBookService.getSocialMetadata(identity, user.getIdentity());
+			val metadata = socialGraphService.getSocialMetadata(identity, user.getIdentity());
 			log.trace("Social Metadata for {}: {}", identity, metadata);
 			return metadata;
 		} else {

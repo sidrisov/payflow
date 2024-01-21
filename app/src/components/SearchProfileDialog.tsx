@@ -18,17 +18,21 @@ import {
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { ArrowBack, Clear, Menu, People, Star } from '@mui/icons-material';
 import { useMemo, useState } from 'react';
-import { ProfileWithSocialsType, SelectedProfileWithSocialsType } from '../types/ProfleType';
+import {
+  MetaType,
+  ProfileWithSocialsType,
+  SelectedProfileWithSocialsType
+} from '../types/ProfleType';
 
 import { Address, isAddress } from 'viem';
-import { searchProfile, sortBySocialScore } from '../services/socials';
+import { convertSocialResults, searchProfile, sortBySocialScore } from '../services/socials';
 
 import { useDebounce } from 'use-debounce';
 import { WalletMenu } from './WalletMenu';
 import { green, yellow } from '@mui/material/colors';
 import axios from 'axios';
 import { API_URL } from '../utils/urlConstants';
-import { FavouriteType } from '../types/FavouriteType';
+import { ContactType } from '../types/ContactType';
 import { SearchProfileResultView } from './SearchProfileResultView';
 
 export type SelectProfileResultCallbackType = {
@@ -61,7 +65,7 @@ export default function SearchProfileDialog({
 
   const [debouncedSearchString] = useDebounce(searchString?.replace(' ', ''), 500);
 
-  const [profiles, setProfiles] = useState<ProfileWithSocialsType[]>([]);
+  const [foundProfiles, setFoundProfiles] = useState<ProfileWithSocialsType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
   const [walletMenuAnchorEl, setWalletMenuAnchorEl] = useState<null | HTMLElement>(null);
@@ -69,7 +73,7 @@ export default function SearchProfileDialog({
 
   const [addressBookView, setAddressBookView] = useState<'favourites' | 'friends'>('favourites');
 
-  const [contacts, setContacts] = useState<FavouriteType[]>();
+  const [contacts, setContacts] = useState<ContactType[]>();
   const [contactProfiles, setContactProfiles] = useState<ProfileWithSocialsType[]>([]);
 
   function handleCloseCampaignDialog() {
@@ -81,30 +85,34 @@ export default function SearchProfileDialog({
       try {
         setLoading(true);
         const profiles = sortBySocialScore(await searchProfile(debouncedSearchString, address));
-        setProfiles(profiles);
+        setFoundProfiles(profiles);
       } finally {
         setLoading(false);
       }
     } else {
-      setProfiles([]);
+      setFoundProfiles([]);
     }
   }, [debouncedSearchString, address]);
 
   useMemo(() => {
-    if (contacts && contacts.length > 0) {
-      let contactProfiles: ProfileWithSocialsType[] = [];
-      const promises = contacts.map(async (f) => await searchProfile(f.identity, address));
-
-      Promise.all(promises).then((results) => {
-        results.forEach((socials) => {
-          contactProfiles = contactProfiles.concat(socials);
+    if (addressBookEnabled) {
+      if (contacts && contacts.length > 0) {
+        let contactProfiles: ProfileWithSocialsType[] = contacts.map((c) => {
+          const profileWithSocialMeta = {
+            meta:
+              convertSocialResults(c.socialMetadata) ?? ({ addresses: [c.identity] } as MetaType),
+            profile: c.profile
+          } as ProfileWithSocialsType;
+          return profileWithSocialMeta;
         });
+
+        console.log('Contact profiles: ', contactProfiles);
         setContactProfiles(sortBySocialScore(contactProfiles));
-      });
-    } else {
-      setContactProfiles([]);
+      } else {
+        setContactProfiles([]);
+      }
     }
-  }, [contacts?.length]);
+  }, [contacts?.length, addressBookEnabled]);
 
   useMemo(async () => {
     if (addressBookEnabled) {
@@ -114,7 +122,8 @@ export default function SearchProfileDialog({
         });
 
         if (response.status === 200) {
-          setContacts(response.data as FavouriteType[]);
+          console.log('Contacts: ', response.data);
+          setContacts(response.data as ContactType[]);
         }
       } catch (error) {
         console.error(error);
@@ -187,7 +196,7 @@ export default function SearchProfileDialog({
                   <IconButton
                     size="small"
                     onClick={async () => {
-                      setProfiles([]);
+                      setFoundProfiles([]);
                       setSearchString(undefined);
                       setShrink(false);
                     }}>
@@ -202,7 +211,7 @@ export default function SearchProfileDialog({
             onBlur={(e) => setShrink(!!e.target.value)}
             InputLabelProps={{ shrink, margin: 'dense' }}
             onChange={async (event) => {
-              setProfiles([]);
+              setFoundProfiles([]);
               setSearchString(event.target.value);
             }}
           />
@@ -264,7 +273,7 @@ export default function SearchProfileDialog({
                     profileRedirect={profileRedirect}
                     closeStateCallback={closeStateCallback}
                     selectProfileCallback={selectProfileCallback}
-                    favourites={contacts?.filter((c) => c.addressChecked || c.profileChecked)}
+                    favourites={contacts?.filter((c) => c.favouriteAddress || c.favouriteProfile)}
                     profiles={contactProfiles.filter(
                       (profileWithSocials) =>
                         profileWithSocials.profile &&
@@ -272,13 +281,13 @@ export default function SearchProfileDialog({
                           (f) =>
                             f.identity.toLowerCase() ===
                             profileWithSocials.profile?.identity.toLowerCase()
-                        )?.profileChecked
+                        )?.favouriteProfile
                     )}
                     addresses={contactProfiles.filter(
                       (profileWithSocials) =>
                         profileWithSocials.meta &&
                         contacts?.find((f) => f.identity === profileWithSocials.meta?.addresses[0])
-                          ?.addressChecked
+                          ?.favouriteAddress
                     )}
                   />
                 )
@@ -290,7 +299,7 @@ export default function SearchProfileDialog({
                     profileRedirect={profileRedirect}
                     closeStateCallback={closeStateCallback}
                     selectProfileCallback={selectProfileCallback}
-                    favourites={contacts?.filter((c) => c.addressChecked || c.profileChecked)}
+                    favourites={contacts?.filter((c) => c.favouriteAddress || c.favouriteProfile)}
                     profiles={contactProfiles.filter(
                       (profileWithSocials) => profileWithSocials.profile
                     )}
@@ -307,9 +316,9 @@ export default function SearchProfileDialog({
             closeStateCallback={closeStateCallback}
             selectProfileCallback={selectProfileCallback}
             favourites={contacts?.filter(
-              (c) => c.addressChecked === true || c.profileChecked === true
+              (c) => c.favouriteAddress === true || c.favouriteProfile === true
             )}
-            profiles={profiles.filter((profileWithSocials) => profileWithSocials.profile)}
+            profiles={foundProfiles.filter((profileWithSocials) => profileWithSocials.profile)}
             addresses={
               searchString &&
               (isAddress(searchString) ||
@@ -318,14 +327,14 @@ export default function SearchProfileDialog({
                 searchString.endsWith('.id') ||
                 searchString.startsWith('fc:') ||
                 searchString.startsWith('lens:'))
-                ? profiles.filter((profileWithSocials) => profileWithSocials.meta)
+                ? foundProfiles.filter((profileWithSocials) => profileWithSocials.meta)
                 : []
             }
           />
 
           {debouncedSearchString &&
             debouncedSearchString.length > 1 &&
-            profiles.length === 0 &&
+            foundProfiles.length === 0 &&
             !loading && (
               <Typography alignSelf="center" variant="subtitle2">
                 No results found.

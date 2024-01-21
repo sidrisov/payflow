@@ -3,7 +3,7 @@ import { fetchQuery } from '@airstack/airstack-react';
 import { isAddress } from 'viem';
 import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';
 import { getProfileByAddressOrName, searchByListOfAddressesOrUsernames } from './user';
-import { GetSocialsForAssociatedAddressesQueryVariables } from '../generated/graphql/types';
+import { GetSocialsForAssociatedAddressesQueryVariables, Wallet } from '../generated/graphql/types';
 import axios from 'axios';
 import { API_URL } from '../utils/urlConstants';
 
@@ -215,7 +215,7 @@ function calculateScore(profilesWithSocials: ProfileWithSocialsType): number {
       score += XMTP_SCORE;
     }
 
-    profilesWithSocials.meta.socials.forEach((s) => {
+    profilesWithSocials.meta.socials?.forEach((s) => {
       if (s.dappName === 'farcaster') {
         score += FARCASTER_SCORE;
       }
@@ -325,24 +325,16 @@ export async function searchProfile(
     searchValue.endsWith('.xyz') ||
     searchValue.endsWith('.id')
   ) {
-    /*     const { data, error } = await fetchQuery(
+    const { data, error } = await fetchQuery(
       QUERY_SOCIALS,
       { identity: searchValue, me },
       {
         cache: true
       }
-    ); */
-
-    const response = await axios.get(`${API_URL}/api/user/me/contacts/${searchValue}`, {
-      withCredentials: true
-    });
-
-    console.debug('Response', response);
-
-    const data = { Wallet: response.data };
+    );
 
     if (data && data.Wallet) {
-      const meta = convertSocialResults(data.Wallet);
+      const meta = convertSocialResults(data.Wallet as Wallet);
 
       if (meta && meta.addresses[0]) {
         const profile = await getProfileByAddressOrName(data.Wallet.addresses[0]);
@@ -362,6 +354,11 @@ export async function searchProfile(
 
 export function convertSocialResults(walletInfo: any): MetaType | undefined {
   console.debug('Converting wallet info: ', walletInfo);
+
+  if (!walletInfo) {
+    return;
+  }
+
   let meta = {} as MetaType;
 
   if (walletInfo.addresses) {

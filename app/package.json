@@ -46,7 +46,7 @@
     "react-helmet-async": "^2.0.1",
     "react-qr-code": "^2.0.11",
     "react-router-dom": "^6.15.0",
-    "react-toastify": "^10.0.3",
+    "react-toastify": "^10.0.4",
     "siwe": "^2.1.4",
     "url": "^0.11.1",
     "use-debounce": "^10.0.0",

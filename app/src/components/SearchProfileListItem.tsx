@@ -32,13 +32,19 @@ export function SearchProfileListItem(
     view: 'address' | 'profile';
     favouritesEnabled?: boolean;
     favourite?: boolean;
+    setFavourite?: ({
+      profileWithSocials,
+      favourite
+    }: {
+      profileWithSocials: ProfileWithSocialsType;
+      favourite: boolean;
+    }) => void;
     invited?: boolean;
   }
 ) {
   const { profile, isAuthenticated } = useContext(ProfileContext);
-  const { profileWithSocials, view, favouritesEnabled, favourite: favouriteProp } = props;
+  const { profileWithSocials, view, favouritesEnabled, favourite, setFavourite } = props;
   const [invited, setInvited] = useState<boolean>();
-  const [favourite, setFavourite] = useState<boolean>(favouriteProp ?? false);
 
   const { address } = useAccount();
   // fetch in batch for all addresses in parent component
@@ -55,7 +61,13 @@ export function SearchProfileListItem(
 
   return (
     (view === 'profile' ? profileWithSocials.profile : profileWithSocials.meta) && (
-      <Box m={1} display="flex" flexDirection="row" justifyContent="space-between" alignItems="center" height={60}>
+      <Box
+        m={1}
+        display="flex"
+        flexDirection="row"
+        justifyContent="space-between"
+        alignItems="center"
+        height={60}>
         <Box
           justifyContent="flex-start"
           width={150}
@@ -134,16 +146,17 @@ export function SearchProfileListItem(
               {profileWithSocials.meta.ens && (
                 <SocialPresenceAvatar dappName="ens" profileName={profileWithSocials.meta.ens} />
               )}
-              {profileWithSocials.meta.socials
-                .filter((s) => s.profileName && s.dappName)
-                .map((s) => (
-                  <SocialPresenceAvatar
-                    key={s.dappName}
-                    dappName={s.dappName as dAppType}
-                    profileName={s.profileName}
-                    followerCount={s.followerCount}
-                  />
-                ))}
+              {profileWithSocials.meta.socials &&
+                profileWithSocials.meta.socials
+                  .filter((s) => s.profileName && s.dappName)
+                  .map((s) => (
+                    <SocialPresenceAvatar
+                      key={s.dappName}
+                      dappName={s.dappName as dAppType}
+                      profileName={s.profileName}
+                      followerCount={s.followerCount}
+                    />
+                  ))}
               {profileWithSocials.meta.xmtp && <SocialPresenceAvatar dappName="xmtp" />}
             </Stack>
           )}
@@ -239,13 +252,14 @@ export function SearchProfileListItem(
                       `${API_URL}/api/user/me/favourites`,
                       {
                         identity: profileWithSocials.meta?.addresses[0],
-                        addressChecked: view === 'address' ? !favourite : undefined,
-                        profileChecked: view === 'profile' ? !favourite : undefined
+                        favouriteAddress: view === 'address' ? !favourite : undefined,
+                        favouriteProfile: view === 'profile' ? !favourite : undefined
                       },
                       { withCredentials: true }
                     );
-
-                    setFavourite(!favourite);
+                    if (favourite) {
+                      setFavourite?.({ profileWithSocials, favourite });
+                    }
                   } catch (error) {
                     toast.error('Favourite failed!');
                   }

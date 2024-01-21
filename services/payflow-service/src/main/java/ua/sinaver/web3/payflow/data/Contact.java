@@ -45,5 +45,4 @@ public class Contact {
 		this.identity = identity;
 		this.user = user;
 	}
-
 }
