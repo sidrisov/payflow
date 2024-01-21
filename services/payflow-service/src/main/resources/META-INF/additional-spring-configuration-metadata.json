@@ -1,49 +1,102 @@
-{
-  "properties": [
-    {
-      "name": "payflow.dapp.url",
-      "type": "java.lang.String",
-      "description": "dApp Client Url"
-    },
-    {
-      "name": "payflow.invitation.allowance.enabled",
-      "type": "java.lang.String",
-      "description": "A description for 'payflow.invitation.allowance.enabled'"
-    },
-    {
-      "name": "payflow.invitation.whitelisted.default.users",
-      "type": "java.lang.String",
-      "description": "A description for 'payflow.invitation.whitelisted.default.users'"
-    },
-    {
-      "name": "payflow.invitation.whitelisted.default.allowance",
-      "type": "java.lang.String",
-      "description": "A description for 'payflow.invitation.whitelisted.default.allowance'"
-    },
-    {
-      "name": "logging.step",
-      "type": "java.lang.String",
-      "description": "A description for 'logging.step'"
-    },
-    {
-      "name": "management.metrics.export.logging.step",
-      "type": "java.lang.String",
-      "description": "A description for 'management.metrics.export.logging.step'"
-    },
-    {
-      "name": "spring.cloud.gcp.config.project-id",
-      "type": "java.lang.String",
-      "description": "A description for 'spring.cloud.gcp.config.project-id'"
-    },
-    {
-      "name": "spring.cloud.gcp.sql.instance-connection-name",
-      "type": "java.lang.String",
-      "description": "A description for 'spring.cloud.gcp.sql.instance-connection-name'"
-    },
-    {
-      "name": "spring.cloud.gcp.sql.database-name",
-      "type": "java.lang.String",
-      "description": "A description for 'spring.cloud.gcp.sql.database-name'"
-    }
-  ]
-}
+{"properties": [
+  {
+    "name": "payflow.dapp.url",
+    "type": "java.lang.String",
+    "description": "dApp Client Url"
+  },
+  {
+    "name": "payflow.invitation.allowance.enabled",
+    "type": "java.lang.String",
+    "description": "A description for 'payflow.invitation.allowance.enabled'"
+  },
+  {
+    "name": "payflow.invitation.whitelisted.default.users",
+    "type": "java.lang.String",
+    "description": "A description for 'payflow.invitation.whitelisted.default.users'"
+  },
+  {
+    "name": "payflow.invitation.whitelisted.default.allowance",
+    "type": "java.lang.String",
+    "description": "A description for 'payflow.invitation.whitelisted.default.allowance'"
+  },
+  {
+    "name": "logging.step",
+    "type": "java.lang.String",
+    "description": "A description for 'logging.step'"
+  },
+  {
+    "name": "management.metrics.export.logging.step",
+    "type": "java.lang.String",
+    "description": "A description for 'management.metrics.export.logging.step'"
+  },
+  {
+    "name": "spring.cloud.gcp.config.project-id",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cloud.gcp.config.project-id'"
+  },
+  {
+    "name": "spring.cloud.gcp.sql.instance-connection-name",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cloud.gcp.sql.instance-connection-name'"
+  },
+  {
+    "name": "spring.cloud.gcp.sql.database-name",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cloud.gcp.sql.database-name'"
+  },
+  {
+    "name": "payflow.airstack.contacts.update.duration",
+    "type": "java.lang.String",
+    "description": "A description for 'payflow.airstack.contacts.update.duration'"
+  },
+  {
+    "name": "payflow.airstack.contacts.limit",
+    "type": "java.lang.String",
+    "description": "A description for 'payflow.airstack.contacts.limit'"
+  },
+  {
+    "name": "payflow.invitation.expiry",
+    "type": "java.lang.String",
+    "description": "A description for 'payflow.invitation.expiry'"
+  },
+  {
+    "name": "payflow.airstack.contacts.update.last-seen-period",
+    "type": "java.lang.String",
+    "description": "A description for 'payflow.airstack.contacts.update.last-seen-period'"
+  },
+  {
+    "name": "payflow.favourites.limit",
+    "type": "java.lang.String",
+    "description": "A description for 'payflow.favourites.limit'"
+  },
+  {
+    "name": "spring.cache.caffeine.contacts.expireAfterWrite",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cache.caffeine.contacts.expireAfterWrite'"
+  },
+  {
+    "name": "spring.cache.caffeine.socials.expireAfterWrite",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cache.caffeine.socials.expireAfterWrite'"
+  },
+  {
+    "name": "payflow.airstack.api.url",
+    "type": "java.lang.String",
+    "description": "A description for 'payflow.airstack.api.url'"
+  },
+  {
+    "name": "payflow.airstack.api.key",
+    "type": "java.lang.String",
+    "description": "A description for 'payflow.airstack.api.key'"
+  },
+  {
+    "name": "spring.cache.contacts.expireAfterWrite",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cache.contacts.expireAfterWrite'"
+  },
+  {
+    "name": "spring.cache.socials.expireAfterWrite",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cache.socials.expireAfterWrite'"
+  }
+]}

@@ -102,6 +102,14 @@ public class ContactBookService implements IContactBookService {
 			val contactMessage = ContactMessage.convert(contact, profile, socialMetadata);
 			contactMessages.add(contactMessage);
 		});
+
+		if (log.isTraceEnabled()) {
+			log.trace("Fetched {} contacts for {}: {}", contactMessages.size(), user.getUsername(),
+					contactMessages.stream().map(c -> c.identity()).toList());
+		} else {
+			log.debug("Fetched {} contacts for {}", contactMessages.size(), user.getUsername());
+		}
+
 		return contactMessages;
 	}
 
