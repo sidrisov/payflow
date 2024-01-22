@@ -1,12 +1,12 @@
 import { Avatar, Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
-import { useMemo, useState } from 'react';
-import { MetaType, ProfileType } from '../types/ProfleType';
+import { useState } from 'react';
+import { IdentityType, ProfileType } from '../types/ProfleType';
 import { useAccount } from 'wagmi';
 import { Send } from '@mui/icons-material';
-import { useLazyQuery } from '@airstack/airstack-react';
+import { useQuery } from '@airstack/airstack-react';
 import { ProfileSection } from './ProfileSection';
 import SocialPresenceChipWithLink from './SocialPresenceChipWithLink';
-import { QUERY_SOCIALS_MINIMAL, convertSocialResults } from '../services/socials';
+import { QUERY_SOCIALS_LIGHT, convertSocialResults } from '../services/socials';
 import PayProfileDialog from './PayProfileDialog';
 import { green } from '@mui/material/colors';
 
@@ -15,26 +15,19 @@ export function PublicProfileDetails({ profile }: { profile: ProfileType }) {
 
   const { address } = useAccount();
 
-  const [fetch, { data: socialInfo, loading: loadingSocials }] = useLazyQuery(
-    QUERY_SOCIALS_MINIMAL,
+  const { data: socialInfo, loading: loadingSocials } = useQuery(
+    QUERY_SOCIALS_LIGHT,
     { identity: profile.identity, me: address ?? '' },
     {
       cache: true,
       dataFormatter(data) {
-        return convertSocialResults(data.Wallet) as MetaType;
+        return convertSocialResults(data.Wallet).meta;
       }
     }
   );
 
-  useMemo(async () => {
-    if (profile) {
-      fetch();
-    }
-  }, [profile, address]);
-
   return (
     <>
-      {' '}
       <Stack spacing={1} direction="column" alignItems="center">
         <Stack direction="row" alignItems="center" spacing={1}>
           <ProfileSection profile={profile} avatarSize={48} maxWidth={300} />
@@ -60,42 +53,51 @@ export function PublicProfileDetails({ profile }: { profile: ProfileType }) {
                   ))}
             </Box>
 
-            {(socialInfo.farcasterFollow || socialInfo.lensFollow || socialInfo.sentTxs) && (
-              <Stack my={1} spacing={1} alignSelf="center" alignItems="flex-start">
-                {socialInfo.farcasterFollow && (
-                  <Stack spacing={1} direction="row" alignItems="center">
-                    <Avatar variant="rounded" src="farcaster.svg" sx={{ width: 15, height: 15 }} />
-                    <Typography variant="caption" fontWeight="bold" color={green.A700}>
-                      {socialInfo.farcasterFollow === 'mutual'
-                        ? 'Mutual follow on farcaster'
-                        : 'You follow them on farcaster'}
-                    </Typography>
-                  </Stack>
-                )}
-                {socialInfo.lensFollow && (
-                  <Stack spacing={1} direction="row" alignItems="center">
-                    <Avatar variant="rounded" src="lens.svg" sx={{ width: 15, height: 15 }} />
-                    <Typography variant="caption" fontWeight="bold" color={green.A700}>
-                      {socialInfo.lensFollow === 'mutual'
-                        ? 'Mutual follow on lens'
-                        : 'You follow them on lens'}
-                    </Typography>
-                  </Stack>
-                )}
-                {socialInfo.sentTxs && (
-                  <Stack spacing={1} direction="row" alignItems="center">
-                    <Avatar variant="rounded" src="ethereum.png" sx={{ width: 15, height: 15 }} />
-                    <Typography variant="caption" fontWeight="bold" color={green.A700}>
-                      {`Transacted ${
-                        socialInfo.sentTxs === 1
-                          ? 'once'
-                          : (socialInfo.sentTxs > 5 ? '5+' : socialInfo.sentTxs) + ' times'
-                      } onchain`}
-                    </Typography>
-                  </Stack>
-                )}
-              </Stack>
-            )}
+            {socialInfo.insights &&
+              (socialInfo.insights.farcasterFollow ||
+                socialInfo.insights.lensFollow ||
+                socialInfo.insights.sentTxs) && (
+                <Stack my={1} spacing={1} alignSelf="center" alignItems="flex-start">
+                  {socialInfo.insights.farcasterFollow && (
+                    <Stack spacing={1} direction="row" alignItems="center">
+                      <Avatar
+                        variant="rounded"
+                        src="farcaster.svg"
+                        sx={{ width: 15, height: 15 }}
+                      />
+                      <Typography variant="caption" fontWeight="bold" color={green.A700}>
+                        {socialInfo.insights.farcasterFollow === 'mutual'
+                          ? 'Mutual follow on farcaster'
+                          : 'You follow them on farcaster'}
+                      </Typography>
+                    </Stack>
+                  )}
+                  {socialInfo.insights.lensFollow && (
+                    <Stack spacing={1} direction="row" alignItems="center">
+                      <Avatar variant="rounded" src="lens.svg" sx={{ width: 15, height: 15 }} />
+                      <Typography variant="caption" fontWeight="bold" color={green.A700}>
+                        {socialInfo.insights.lensFollow === 'mutual'
+                          ? 'Mutual follow on lens'
+                          : 'You follow them on lens'}
+                      </Typography>
+                    </Stack>
+                  )}
+                  {socialInfo.insights.sentTxs && (
+                    <Stack spacing={1} direction="row" alignItems="center">
+                      <Avatar variant="rounded" src="ethereum.png" sx={{ width: 15, height: 15 }} />
+                      <Typography variant="caption" fontWeight="bold" color={green.A700}>
+                        {`Transacted ${
+                          socialInfo.insights.sentTxs === 1
+                            ? 'once'
+                            : (socialInfo.insights.sentTxs > 5
+                                ? '5+'
+                                : socialInfo.insights.sentTxs) + ' times'
+                        } onchain`}
+                      </Typography>
+                    </Stack>
+                  )}
+                </Stack>
+              )}
           </Stack>
         )}
         <Stack direction="row" spacing={1} alignItems="center">
@@ -120,7 +122,7 @@ export function PublicProfileDetails({ profile }: { profile: ProfileType }) {
           open={openPayDialog}
           recipient={{
             type: 'profile',
-            data: { profile }
+            identity: { profile } as IdentityType
           }}
           closeStateCallback={async () => setOpenPayDialog(false)}
         />

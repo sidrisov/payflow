@@ -18,30 +18,41 @@ import {
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { ArrowBack, Clear, Menu, People, Star } from '@mui/icons-material';
 import { useMemo, useState } from 'react';
-import {
-  MetaType,
-  ProfileWithSocialsType,
-  SelectedProfileWithSocialsType
-} from '../types/ProfleType';
+import { IdentityType, SelectedIdentityType } from '../types/ProfleType';
 
-import { Address, isAddress } from 'viem';
-import { convertSocialResults, searchProfile, sortBySocialScore } from '../services/socials';
+import { Address } from 'viem';
+import {
+  searchProfile as searchIdentity,
+  sortBySocialScore
+} from '../services/socials';
 
 import { useDebounce } from 'use-debounce';
 import { WalletMenu } from './WalletMenu';
 import { green, yellow } from '@mui/material/colors';
 import axios from 'axios';
 import { API_URL } from '../utils/urlConstants';
-import { ContactType } from '../types/ContactType';
 import { SearchProfileResultView } from './SearchProfileResultView';
 
 export type SelectProfileResultCallbackType = {
-  selectProfileCallback?: (selectedProfileWithSocials: SelectedProfileWithSocialsType) => void;
+  selectProfileCallback?: (selectedidentity: SelectedIdentityType) => void;
+};
+
+export type SetFavouriteCallbackType = {
+  setFavouriteCallback?: ({
+    identity,
+    view,
+    favourite
+  }: {
+    identity: IdentityType;
+    view: 'address' | 'profile';
+    favourite: boolean;
+  }) => void;
 };
 
 export type SearchProfileDialogProps = DialogProps &
   CloseCallbackType &
-  SelectProfileResultCallbackType & {
+  SelectProfileResultCallbackType &
+  SetFavouriteCallbackType & {
     address?: Address;
     profileRedirect?: boolean;
     walletMenuEnabled?: boolean;
@@ -65,7 +76,7 @@ export default function SearchProfileDialog({
 
   const [debouncedSearchString] = useDebounce(searchString?.replace(' ', ''), 500);
 
-  const [foundProfiles, setFoundProfiles] = useState<ProfileWithSocialsType[]>([]);
+  const [foundProfiles, setFoundProfiles] = useState<IdentityType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
   const [walletMenuAnchorEl, setWalletMenuAnchorEl] = useState<null | HTMLElement>(null);
@@ -73,8 +84,7 @@ export default function SearchProfileDialog({
 
   const [addressBookView, setAddressBookView] = useState<'favourites' | 'friends'>('favourites');
 
-  const [contacts, setContacts] = useState<ContactType[]>();
-  const [contactProfiles, setContactProfiles] = useState<ProfileWithSocialsType[]>([]);
+  const [contactProfiles, setContactProfiles] = useState<IdentityType[]>([]);
 
   function handleCloseCampaignDialog() {
     closeStateCallback();
@@ -84,35 +94,46 @@ export default function SearchProfileDialog({
     if (debouncedSearchString && debouncedSearchString?.length > 1) {
       try {
         setLoading(true);
-        const profiles = sortBySocialScore(await searchProfile(debouncedSearchString, address));
-        setFoundProfiles(profiles);
+        // search among contacts
+        let foundAmongContacts: IdentityType[] = [];
+        if (contactProfiles?.length > 0) {
+          // support different search criterias, e.g. if with fc search only among fc name, if lens, if eth...,
+          // also if search by ens and result is found, skip online search
+          foundAmongContacts = contactProfiles.filter(
+            (c) =>
+              c.profile?.username?.includes(debouncedSearchString) ||
+              c.profile?.displayName?.includes(debouncedSearchString) ||
+              c.meta?.ens?.includes(debouncedSearchString) ||
+              c.meta?.socials?.find(
+                (s) =>
+                  s.profileDisplayName.includes(debouncedSearchString) ||
+                  s.profileName.includes(debouncedSearchString)
+              )
+          );
+
+          setFoundProfiles(foundAmongContacts);
+
+          console.debug('Found among contacts: ', foundAmongContacts);
+        }
+
+        // general search
+        const identities = await searchIdentity(debouncedSearchString, address);
+        const addresses = identities.map((p) => p.address);
+
+        const allFoundProfiles = sortBySocialScore(
+          identities.concat(foundAmongContacts.filter((fc) => !addresses.includes(fc.address)))
+        );
+
+        console.debug('All found profiles:', allFoundProfiles);
+
+        setFoundProfiles(allFoundProfiles);
       } finally {
         setLoading(false);
       }
     } else {
       setFoundProfiles([]);
     }
-  }, [debouncedSearchString, address]);
-
-  useMemo(() => {
-    if (addressBookEnabled) {
-      if (contacts && contacts.length > 0) {
-        let contactProfiles: ProfileWithSocialsType[] = contacts.map((c) => {
-          const profileWithSocialMeta = {
-            meta:
-              convertSocialResults(c.socialMetadata) ?? ({ addresses: [c.identity] } as MetaType),
-            profile: c.profile
-          } as ProfileWithSocialsType;
-          return profileWithSocialMeta;
-        });
-
-        console.log('Contact profiles: ', contactProfiles);
-        setContactProfiles(sortBySocialScore(contactProfiles));
-      } else {
-        setContactProfiles([]);
-      }
-    }
-  }, [contacts?.length, addressBookEnabled]);
+  }, [contactProfiles, debouncedSearchString, address]);
 
   useMemo(async () => {
     if (addressBookEnabled) {
@@ -122,14 +143,60 @@ export default function SearchProfileDialog({
         });
 
         if (response.status === 200) {
-          console.log('Contacts: ', response.data);
-          setContacts(response.data as ContactType[]);
+          const contactProfiles = response.data as IdentityType[];
+
+          console.log('Contact profiles: ', contactProfiles);
+          setContactProfiles(sortBySocialScore(contactProfiles));
+        } else {
+          setContactProfiles([]);
         }
       } catch (error) {
         console.error(error);
+        setContactProfiles([]);
       }
     }
   }, [addressBookEnabled]);
+
+  function updateFavourite(
+    identity: IdentityType,
+    view: 'address' | 'profile',
+    favourite: boolean
+  ) {
+    console.log('I am here');
+    const contact = contactProfiles?.find((c) => c.address === identity.address);
+    let updatedContacts;
+
+    if (contact) {
+      updatedContacts = contactProfiles?.map((c) => {
+        if (c.address === identity.address) {
+          if (view === 'profile') {
+            return { ...c, favouriteProfile: favourite };
+          } else {
+            return {
+              ...c,
+              favouriteAddress: favourite
+            };
+          }
+        } else {
+          return c;
+        }
+      });
+    } else {
+      // TODO: fix social conversion from search to contacts
+      console.log('favourite from search');
+      updatedContacts = [
+        ...(contactProfiles ?? []),
+        {
+          address: identity.address,
+          profile: identity.profile,
+          favouriteAddress: view === 'address' ? true : undefined,
+          favouriteProfile: view === 'profile' ? true : undefined
+        } as IdentityType
+      ];
+    }
+
+    setContactProfiles(updatedContacts);
+  }
 
   const [shrink, setShrink] = useState(false);
 
@@ -273,39 +340,36 @@ export default function SearchProfileDialog({
                     profileRedirect={profileRedirect}
                     closeStateCallback={closeStateCallback}
                     selectProfileCallback={selectProfileCallback}
-                    favourites={contacts?.filter((c) => c.favouriteAddress || c.favouriteProfile)}
+                    favourites={contactProfiles?.filter(
+                      (c) => c.favouriteAddress || c.favouriteProfile
+                    )}
+                    setFavouriteCallback={({ identity: identity, view, favourite }) => {
+                      updateFavourite(identity, view, favourite);
+                    }}
                     profiles={contactProfiles.filter(
-                      (profileWithSocials) =>
-                        profileWithSocials.profile &&
-                        contacts?.find(
-                          (f) =>
-                            f.identity.toLowerCase() ===
-                            profileWithSocials.profile?.identity.toLowerCase()
-                        )?.favouriteProfile
+                      (identity) => identity.profile && identity.favouriteProfile
                     )}
                     addresses={contactProfiles.filter(
-                      (profileWithSocials) =>
-                        profileWithSocials.meta &&
-                        contacts?.find((f) => f.identity === profileWithSocials.meta?.addresses[0])
-                          ?.favouriteAddress
+                      (identity) => identity.meta && identity.favouriteAddress
                     )}
                   />
                 )
               : contactProfiles &&
                 contactProfiles.length > 0 && (
                   <SearchProfileResultView
-                    key={'search_profile_results_view_favourites'}
+                    key={'search_profile_results_view_friends'}
                     addressBookEnabled={addressBookEnabled}
                     profileRedirect={profileRedirect}
                     closeStateCallback={closeStateCallback}
                     selectProfileCallback={selectProfileCallback}
-                    favourites={contacts?.filter((c) => c.favouriteAddress || c.favouriteProfile)}
-                    profiles={contactProfiles.filter(
-                      (profileWithSocials) => profileWithSocials.profile
+                    favourites={contactProfiles?.filter(
+                      (c) => c.favouriteAddress || c.favouriteProfile
                     )}
-                    addresses={contactProfiles.filter(
-                      (profileWithSocials) => profileWithSocials.meta
-                    )}
+                    setFavouriteCallback={({ identity, view, favourite }) => {
+                      updateFavourite(identity, view, favourite);
+                    }}
+                    profiles={contactProfiles.filter((identity) => identity.profile)}
+                    addresses={contactProfiles.filter((identity) => identity.meta)}
                   />
                 ))}
 
@@ -315,21 +379,14 @@ export default function SearchProfileDialog({
             profileRedirect={profileRedirect}
             closeStateCallback={closeStateCallback}
             selectProfileCallback={selectProfileCallback}
-            favourites={contacts?.filter(
+            favourites={contactProfiles?.filter(
               (c) => c.favouriteAddress === true || c.favouriteProfile === true
             )}
-            profiles={foundProfiles.filter((profileWithSocials) => profileWithSocials.profile)}
-            addresses={
-              searchString &&
-              (isAddress(searchString) ||
-                searchString.endsWith('.eth') ||
-                searchString.endsWith('.xyz') ||
-                searchString.endsWith('.id') ||
-                searchString.startsWith('fc:') ||
-                searchString.startsWith('lens:'))
-                ? foundProfiles.filter((profileWithSocials) => profileWithSocials.meta)
-                : []
-            }
+            profiles={foundProfiles.filter((identity) => identity.profile)}
+            setFavouriteCallback={({ identity, view, favourite }) => {
+              updateFavourite(identity, view, favourite);
+            }}
+            addresses={foundProfiles.filter((identity) => identity.meta)}
           />
 
           {debouncedSearchString &&

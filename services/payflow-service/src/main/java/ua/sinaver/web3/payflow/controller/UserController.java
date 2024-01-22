@@ -62,11 +62,16 @@ public class UserController {
 
 	@GetMapping("/me/contacts")
 	public List<ContactMessage> contacts(Principal principal) {
-		log.trace("{} fetching contracts", principal.getName());
+		log.debug("{} fetching contacts", principal.getName());
 		val user = userService.findByIdentity(principal.getName());
 		if (user != null) {
 			val contacts = contactBookService.getAllContacts(user);
-			log.trace("All Contacts for {}: {}", principal.getName(), contacts);
+			if (log.isTraceEnabled()) {
+				log.trace("All contacts for {}: {}", principal.getName(), contacts);
+			} else {
+				log.debug("All contacts for {}: {}", principal.getName(),
+						contacts.stream().map(ContactMessage::address).toList());
+			}
 			return contacts;
 		} else {
 			throw new Error("User doesn't exist");

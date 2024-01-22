@@ -55,7 +55,7 @@ export default function FlowNewDialog({ closeStateCallback, ...props }: FlowNewD
           walletProvider: 'safe',
           wallets: paymentOnLoggedAddress
             ? paymentNetworks.map((network) => ({
-                address: address,
+                address,
                 network: network,
                 smart: false
               }))

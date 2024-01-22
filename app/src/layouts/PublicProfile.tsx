@@ -16,7 +16,7 @@ import {
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ProfileType, SelectedProfileWithSocialsType } from '../types/ProfleType';
+import { ProfileType, SelectedIdentityType } from '../types/ProfleType';
 import { HomeOutlined, Menu } from '@mui/icons-material';
 import SearchProfileDialog from '../components/SearchProfileDialog';
 import { green, grey, orange } from '@mui/material/colors';
@@ -59,7 +59,7 @@ export default function PublicProfile({
 
   const { address } = useAccount();
 
-  const [selectedRecipient, setSelectedRecipient] = useState<SelectedProfileWithSocialsType>();
+  const [selectedRecipient, setSelectedRecipient] = useState<SelectedIdentityType>();
 
   const { isSuccess: isEnsSuccess, data: ethUsdPriceFeedAddress } = useEnsAddress({
     name: 'eth-usd.data.eth',
@@ -265,8 +265,8 @@ export default function PublicProfile({
         address={address}
         profileRedirect={true}
         walletMenuEnabled={true}
-        selectProfileCallback={(selectedProfileWithSocials) => {
-          setSelectedRecipient(selectedProfileWithSocials);
+        selectProfileCallback={(selectedidentity) => {
+          setSelectedRecipient(selectedidentity);
         }}
         open={openSearchProfile}
         sx={{

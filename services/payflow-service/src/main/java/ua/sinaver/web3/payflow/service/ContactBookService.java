@@ -44,9 +44,9 @@ public class ContactBookService implements IContactBookService {
 
 	@Override
 	public void update(ContactMessage contactMessage, User user) {
-		var contact = contactRepository.findByUserAndIdentity(user, contactMessage.identity());
+		var contact = contactRepository.findByUserAndIdentity(user, contactMessage.address());
 		if (contact == null) {
-			contact = new Contact(user, contactMessage.identity());
+			contact = new Contact(user, contactMessage.address());
 		}
 
 		var availableFavouriteLimit =
@@ -90,25 +90,28 @@ public class ContactBookService implements IContactBookService {
 	}
 
 	@Override
-	@Cacheable(value = "contacts", key = "#user.identity")
+	@Cacheable(value = "contacts", key = "#user.identity", unless = "#result.isEmpty()")
 	public List<ContactMessage> getAllContacts(User user) {
-		val contactMessages = Flux.fromIterable(contactRepository.findAllByUser(user))
-				.flatMap(contact -> Mono.zip(
-								Mono.fromCallable(() ->
-										Optional.ofNullable(userRepository.findByIdentity(contact.getIdentity()))),
-								Mono.fromCallable(() -> socialGraphService.getSocialMetadata(contact.getIdentity(), user.getIdentity()))
-						)
-						.subscribeOn(Schedulers.boundedElastic())
-						.map(tuple -> ContactMessage.convert(
-								contact,
-								tuple.getT1().orElse(null),
-								tuple.getT2())))
-				.collectList()
-				.block();
+		val contactMessages =
+				Flux.fromIterable(contactRepository.findAllByUser(user).stream().limit(200).toList())
+						.flatMap(contact -> Mono.zip(
+										Mono.fromCallable(() ->
+												Optional.ofNullable(userRepository.findByIdentity(contact.getIdentity()))),
+										Mono.fromCallable(() -> socialGraphService.getSocialMetadata(contact.getIdentity(), user.getIdentity()))
+								)
+								.subscribeOn(Schedulers.newBoundedElastic(2, 300,
+										"contacts-bounded-elastic"))
+								.map(tuple -> ContactMessage.convert(
+										contact,
+										tuple.getT1().orElse(null),
+										tuple.getT2())))
+						.timeout(Duration.ofSeconds(30), Mono.empty())
+						.collectList()
+						.block();
 
 		if (log.isTraceEnabled()) {
 			log.trace("Fetched {} contacts for {}: {}", contactMessages.size(), user.getUsername(),
-					contactMessages.stream().map(c -> c.identity()).toList());
+					contactMessages.stream().map(ContactMessage::address).toList());
 		} else {
 			log.debug("Fetched {} contacts for {}", contactMessages.size(), user.getUsername());
 		}
@@ -150,7 +153,8 @@ public class ContactBookService implements IContactBookService {
 				}
 
 			} catch (Throwable t) {
-				log.error("Couldn't fetch following contacts for {}", user.getUsername(), t);
+				log.error("Couldn't fetch following contacts for {}, error: {}", user.getUsername(),
+						t.getMessage(), log.isTraceEnabled() ? t : null);
 			}
 		}
 	}

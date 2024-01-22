@@ -81,16 +81,16 @@ export default function ProfileOnboardingDialog({
     if (socialInfo) {
       console.log(loadingSocials, socialInfo);
 
-      const meta = convertSocialResults(socialInfo.Wallet);
+      const identity = convertSocialResults(socialInfo.Wallet);
 
-      console.log(meta);
+      console.log(identity);
 
-      if (meta) {
-        if (meta.socials && meta.socials.length > 0) {
+      if (identity) {
+        if (identity.meta?.socials && identity.meta?.socials.length > 0) {
           const socialInfo =
-            meta.socials.find((s) => s.dappName === FARCASTER_DAPP) ??
-            meta.socials.find((s) => s.dappName === LENS_DAPP) ??
-            meta.socials[0];
+            identity.meta?.socials.find((s) => s.dappName === FARCASTER_DAPP) ??
+            identity.meta?.socials.find((s) => s.dappName === LENS_DAPP) ??
+            identity.meta?.socials[0];
 
           if (!displayName) {
             setDisplayName(socialInfo.profileDisplayName);
@@ -114,16 +114,16 @@ export default function ProfileOnboardingDialog({
           }
         } else {
           // TODO: allow .eth, .xyz, etc in the username?
-          if (!displayName && meta.ens) {
+          if (!displayName && identity.meta?.ens) {
             //setDisplayName(meta.ens);
           }
 
-          if ((!username || username === profile.identity) && meta.ens) {
+          if ((!username || username === profile.identity) && identity.meta?.ens) {
             //setUsername(meta.ens);
           }
 
-          if (!profile.profileImage && meta.ensAvatar) {
-            setProfileImage(meta.ensAvatar);
+          if (!profile.profileImage && identity.meta?.ensAvatar) {
+            setProfileImage(identity.meta?.ensAvatar);
           }
         }
       }

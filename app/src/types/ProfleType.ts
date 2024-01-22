@@ -13,17 +13,23 @@ export interface ProfileType {
   identityInviteLimit: number;
 }
 
-export interface ProfileWithSocialsType {
+export interface IdentityType {
+  address: Address;
+  favouriteAddress?: boolean;
+  favouriteProfile?: boolean;
   profile?: ProfileType;
   meta?: MetaType;
 }
 
 export interface MetaType {
-  addresses: Address[];
   ens?: string;
   ensAvatar?: string;
   socials: SocialInfoType[];
   xmtp: boolean;
+  insights?: InsightsType;
+}
+
+export interface InsightsType {
   farcasterFollow: 'following' | 'mutual';
   lensFollow: 'following' | 'mutual';
   sentTxs: number;
@@ -37,7 +43,7 @@ export interface SocialInfoType {
   followerCount: number;
 }
 
-export interface SelectedProfileWithSocialsType {
+export interface SelectedIdentityType {
   type: 'address' | 'profile';
-  data: ProfileWithSocialsType;
+  identity: IdentityType;
 }

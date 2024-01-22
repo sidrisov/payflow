@@ -1,27 +1,28 @@
 import { Stack, Typography } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
-import { ProfileWithSocialsType } from '../types/ProfleType';
+import { IdentityType } from '../types/ProfleType';
 import { useNavigate } from 'react-router-dom';
 import { SearchProfileListItem } from './SearchProfileListItem';
-import { ContactType } from '../types/ContactType';
-import { SelectProfileResultCallbackType } from './SearchProfileDialog';
+import { SelectProfileResultCallbackType, SetFavouriteCallbackType } from './SearchProfileDialog';
 
 export function SearchProfileResultView({
   addressBookEnabled = false,
   profileRedirect,
   closeStateCallback,
   selectProfileCallback,
+  setFavouriteCallback,
   favourites = [],
   profiles,
   addresses
 }: {
   addressBookEnabled?: boolean;
   profileRedirect?: boolean;
-  favourites?: ContactType[];
-  profiles: ProfileWithSocialsType[];
-  addresses: ProfileWithSocialsType[];
+  favourites?: IdentityType[];
+  profiles: IdentityType[];
+  addresses: IdentityType[];
 } & CloseCallbackType &
-  SelectProfileResultCallbackType) {
+  SelectProfileResultCallbackType &
+  SetFavouriteCallbackType) {
   const navigate = useNavigate();
 
   return (
@@ -34,29 +35,25 @@ export function SearchProfileResultView({
 
           <Stack m={1} spacing={1}>
             {profiles
-              .filter((profileWithSocials) => profileWithSocials.profile)
-              .map((profileWithSocials) => (
+              .filter((identity) => identity.profile)
+              .map((identity) => (
                 <SearchProfileListItem
-                  key={profileWithSocials.profile?.username}
+                  key={identity.profile?.username}
                   view="profile"
-                  profileWithSocials={profileWithSocials}
+                  identity={identity}
                   favouritesEnabled={addressBookEnabled}
                   favourite={
                     favourites?.find(
-                      (f) =>
-                        f.identity.toLowerCase() ===
-                        profileWithSocials.profile?.identity.toLowerCase()
+                      (f) => f.address.toLowerCase() === identity.profile?.identity.toLowerCase()
                     )?.favouriteProfile
                   }
-                  setFavourite={({ profileWithSocials, favourite }) => {
-                    console.log(profileWithSocials, favourite);
-                  }}
+                  setFavouriteCallback={setFavouriteCallback}
                   onClick={() => {
-                    if (profileWithSocials.profile) {
+                    if (identity.profile) {
                       if (profileRedirect) {
-                        navigate(`/${profileWithSocials.profile.username}`);
+                        navigate(`/${identity.profile.username}`);
                       } else if (selectProfileCallback) {
-                        selectProfileCallback({ type: 'profile', data: profileWithSocials });
+                        selectProfileCallback({ type: 'profile', identity: identity });
                       }
                       closeStateCallback();
                     }
@@ -75,23 +72,20 @@ export function SearchProfileResultView({
 
           <Stack m={1} spacing={1}>
             {addresses
-              .filter((profileWithSocials) => profileWithSocials.meta)
-              .map((profileWithSocials) => (
+              .filter((identity) => identity.meta)
+              .map((identity) => (
                 <SearchProfileListItem
-                  key={profileWithSocials.meta?.addresses[0]}
+                  key={identity.address}
                   view="address"
-                  profileWithSocials={profileWithSocials}
+                  identity={identity}
                   favouritesEnabled={addressBookEnabled}
                   favourite={
-                    favourites?.find((f) => f.identity === profileWithSocials.meta?.addresses[0])
-                      ?.favouriteAddress
+                    favourites?.find((f) => f.address === identity.address)?.favouriteAddress
                   }
-                  setFavourite={({ profileWithSocials, favourite }) => {
-                    console.log(profileWithSocials, favourite);
-                  }}
+                  setFavouriteCallback={setFavouriteCallback}
                   onClick={() => {
                     if (selectProfileCallback) {
-                      selectProfileCallback({ type: 'address', data: profileWithSocials });
+                      selectProfileCallback({ type: 'address', identity: identity });
                       closeStateCallback();
                     }
                   }}

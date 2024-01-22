@@ -36,7 +36,7 @@ import { Address, formatEther, parseEther } from 'viem';
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 import { FlowType, FlowWalletType } from '../types/FlowType';
 import SearchProfileDialog from './SearchProfileDialog';
-import { SelectedProfileWithSocialsType } from '../types/ProfleType';
+import { IdentityType, SelectedIdentityType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -77,7 +77,7 @@ export default function AccountSendDialog({
 
   const { chain } = useNetwork();
 
-  const [selectedRecipient, setSelectedRecipient] = useState<SelectedProfileWithSocialsType>();
+  const [selectedRecipient, setSelectedRecipient] = useState<SelectedIdentityType>();
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
   const [compatibleWallets, setCompatibleWallets] = useState<FlowWalletType[]>([]);
 
@@ -113,7 +113,7 @@ export default function AccountSendDialog({
     const compatibleSenderWallets =
       selectedRecipient.type === 'profile'
         ? flow.wallets.filter((w) =>
-            selectedRecipient.data.profile?.defaultFlow?.wallets.find(
+            selectedRecipient.identity.profile?.defaultFlow?.wallets.find(
               (rw) => rw.network === w.network
             )
           )
@@ -160,7 +160,7 @@ export default function AccountSendDialog({
       toast.dismiss();
       sendToastId.current = toast.loading(
         <TransferToastContent
-          from={{ type: 'profile', data: { profile: profile } }}
+          from={{ type: 'profile', identity: { profile: profile } as IdentityType }}
           to={selectedRecipient}
           ethAmount={sendAmount}
           ethUsdPrice={ethUsdPrice}
@@ -176,7 +176,7 @@ export default function AccountSendDialog({
       toast.update(sendToastId.current, {
         render: (
           <TransferToastContent
-            from={{ type: 'profile', data: { profile: profile } }}
+            from={{ type: 'profile', identity: { profile: profile } as IdentityType }}
             to={selectedRecipient}
             ethAmount={sendAmount}
             ethUsdPrice={ethUsdPrice}
@@ -197,7 +197,7 @@ export default function AccountSendDialog({
       toast.update(sendToastId.current, {
         render: (
           <TransferToastContent
-            from={{ type: 'profile', data: { profile: profile } }}
+            from={{ type: 'profile', identity: { profile: profile } as IdentityType }}
             to={selectedRecipient}
             ethAmount={sendAmount}
             ethUsdPrice={ethUsdPrice}
@@ -274,10 +274,10 @@ export default function AccountSendDialog({
     }
 
     if (selectedRecipient.type === 'address') {
-      setToAddress(selectedRecipient.data.meta?.addresses[0]);
+      setToAddress(selectedRecipient.identity.address);
     } else {
       setToAddress(
-        selectedRecipient.data.profile?.defaultFlow?.wallets.find(
+        selectedRecipient.identity.profile?.defaultFlow?.wallets.find(
           (w) => w.network === selectedWallet.network
         )?.address
       );
@@ -373,11 +373,14 @@ export default function AccountSendDialog({
                   }}>
                   {selectedRecipient &&
                     (selectedRecipient.type === 'profile'
-                      ? selectedRecipient.data.profile && (
-                          <ProfileSection maxWidth={200} profile={selectedRecipient.data.profile} />
+                      ? selectedRecipient.identity.profile && (
+                          <ProfileSection
+                            maxWidth={200}
+                            profile={selectedRecipient.identity.profile}
+                          />
                         )
-                      : selectedRecipient.data.meta && (
-                          <AddressSection maxWidth={200} meta={selectedRecipient.data.meta} />
+                      : selectedRecipient.identity.meta && (
+                          <AddressSection maxWidth={200} identity={selectedRecipient.identity} />
                         ))}
 
                   {!selectedRecipient && (
@@ -571,8 +574,8 @@ export default function AccountSendDialog({
           setOpenSearchProfile(false);
         }}
         addressBookEnabled={true}
-        selectProfileCallback={(selectedProfileWithSocials) => {
-          setSelectedRecipient(selectedProfileWithSocials);
+        selectProfileCallback={(selectedidentity) => {
+          setSelectedRecipient(selectedidentity);
         }}
       />
 

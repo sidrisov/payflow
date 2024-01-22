@@ -10,7 +10,7 @@ import {
   Typography
 } from '@mui/material';
 import { HowToReg, Star, StarBorder } from '@mui/icons-material';
-import { ProfileWithSocialsType } from '../types/ProfleType';
+import { IdentityType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
 import { comingSoonToast } from './Toasts';
@@ -25,42 +25,36 @@ import { shortenWalletAddressLabel } from '../utils/address';
 import PayflowChip from './PayflowChip';
 import { green, grey, lightGreen, orange, yellow } from '@mui/material/colors';
 import { useAccount } from 'wagmi';
-// TODO: add 3 color gradation for connection: mutual, ... poap, etc...
+import { SetFavouriteCallbackType } from './SearchProfileDialog';
+
 export function SearchProfileListItem(
-  props: BoxProps & {
-    profileWithSocials: ProfileWithSocialsType;
-    view: 'address' | 'profile';
-    favouritesEnabled?: boolean;
-    favourite?: boolean;
-    setFavourite?: ({
-      profileWithSocials,
-      favourite
-    }: {
-      profileWithSocials: ProfileWithSocialsType;
-      favourite: boolean;
-    }) => void;
-    invited?: boolean;
-  }
+  props: BoxProps &
+    SetFavouriteCallbackType & {
+      identity: IdentityType;
+      view: 'address' | 'profile';
+      favouritesEnabled?: boolean;
+      favourite?: boolean;
+      invited?: boolean;
+    }
 ) {
   const { profile, isAuthenticated } = useContext(ProfileContext);
-  const { profileWithSocials, view, favouritesEnabled, favourite, setFavourite } = props;
+  const { identity, view, favouritesEnabled, favourite, setFavouriteCallback } = props;
   const [invited, setInvited] = useState<boolean>();
 
   const { address } = useAccount();
   // fetch in batch for all addresses in parent component
   useMemo(async () => {
-    if (profile && !profileWithSocials.profile) {
-      const response = await axios.get(
-        `${API_URL}/api/invitations/identity/${profileWithSocials.meta?.addresses[0]}`,
-        { withCredentials: true }
-      );
+    if (profile && !identity.profile) {
+      const response = await axios.get(`${API_URL}/api/invitations/identity/${identity.address}`, {
+        withCredentials: true
+      });
 
       setInvited(response.data);
     }
-  }, [profileWithSocials.profile, profile]);
+  }, [identity.profile, profile]);
 
   return (
-    (view === 'profile' ? profileWithSocials.profile : profileWithSocials.meta) && (
+    (view === 'profile' ? identity.profile : identity.meta) && (
       <Box
         m={1}
         display="flex"
@@ -76,12 +70,12 @@ export function SearchProfileListItem(
           onClick={props.onClick}
           textTransform="none"
           sx={{ borderRadius: 5 }}>
-          {view === 'profile' && profileWithSocials.profile && (
-            <ProfileSection maxWidth={200} profile={profileWithSocials.profile} />
+          {view === 'profile' && identity.profile && (
+            <ProfileSection maxWidth={200} profile={identity.profile} />
           )}
 
-          {view === 'address' && profileWithSocials.meta && (
-            <AddressSection maxWidth={200} meta={profileWithSocials.meta} />
+          {view === 'address' && identity.meta && (
+            <AddressSection maxWidth={200} identity={identity} />
           )}
         </Box>
 
@@ -90,7 +84,7 @@ export function SearchProfileListItem(
             <PayflowChip />
           ) : (
             isAuthenticated &&
-            !profileWithSocials.profile && (
+            !identity.profile && (
               <Chip
                 size="small"
                 variant="filled"
@@ -115,7 +109,7 @@ export function SearchProfileListItem(
                     await axios.post(
                       `${API_URL}/api/invitations`,
                       {
-                        identityBased: profileWithSocials.meta?.addresses[0]
+                        identityBased: identity.address
                       },
                       { withCredentials: true }
                     );
@@ -124,9 +118,9 @@ export function SearchProfileListItem(
 
                     toast.success(
                       `${
-                        profileWithSocials.meta?.ens
-                          ? profileWithSocials.meta?.ens
-                          : shortenWalletAddressLabel(profileWithSocials.meta?.addresses[0])
+                        identity.meta?.ens
+                          ? identity.meta?.ens
+                          : shortenWalletAddressLabel(identity.address)
                       } is invited!`
                     );
                   } catch (error) {
@@ -141,13 +135,13 @@ export function SearchProfileListItem(
             )
           )}
 
-          {profileWithSocials.meta && (
+          {identity.meta && (
             <Stack direction="row" spacing={0.5} alignItems="center">
-              {profileWithSocials.meta.ens && (
-                <SocialPresenceAvatar dappName="ens" profileName={profileWithSocials.meta.ens} />
+              {identity.meta.ens && (
+                <SocialPresenceAvatar dappName="ens" profileName={identity.meta.ens} />
               )}
-              {profileWithSocials.meta.socials &&
-                profileWithSocials.meta.socials
+              {identity.meta.socials &&
+                identity.meta.socials
                   .filter((s) => s.profileName && s.dappName)
                   .map((s) => (
                     <SocialPresenceAvatar
@@ -157,7 +151,7 @@ export function SearchProfileListItem(
                       followerCount={s.followerCount}
                     />
                   ))}
-              {profileWithSocials.meta.xmtp && <SocialPresenceAvatar dappName="xmtp" />}
+              {identity.meta.xmtp && <SocialPresenceAvatar dappName="xmtp" />}
             </Stack>
           )}
         </Stack>
@@ -165,44 +159,44 @@ export function SearchProfileListItem(
           <Tooltip
             title={
               profile?.identity || address ? (
-                (profile?.identity ?? address) === profileWithSocials.profile?.identity ? (
+                (profile?.identity ?? address) === identity.profile?.identity ? (
                   <Typography variant="caption" fontWeight="bold">
                     Your {view === 'profile' ? 'profile' : 'address'}
                   </Typography>
-                ) : profileWithSocials?.meta?.farcasterFollow ||
-                  profileWithSocials?.meta?.lensFollow ||
-                  profileWithSocials?.meta?.sentTxs ? (
+                ) : identity?.meta?.insights?.farcasterFollow ||
+                  identity?.meta?.insights?.lensFollow ||
+                  identity?.meta?.insights?.sentTxs ? (
                   <>
-                    {profileWithSocials.meta.farcasterFollow && (
+                    {identity.meta.insights.farcasterFollow && (
                       <Stack spacing={1} direction="row" alignItems="center">
                         <Avatar src="farcaster.svg" sx={{ width: 15, height: 15 }} />
                         <Typography variant="caption" fontWeight="bold">
-                          {profileWithSocials.meta.farcasterFollow === 'mutual'
+                          {identity.meta.insights.farcasterFollow === 'mutual'
                             ? 'Mutual follow'
                             : 'You follow them'}
                         </Typography>
                       </Stack>
                     )}
-                    {profileWithSocials.meta.lensFollow && (
+                    {identity.meta.insights.lensFollow && (
                       <Stack spacing={1} direction="row" alignItems="center">
                         <Avatar src="lens.svg" sx={{ width: 15, height: 15 }} />
                         <Typography variant="caption" fontWeight="bold">
-                          {profileWithSocials.meta.lensFollow === 'mutual'
+                          {identity.meta.insights.lensFollow === 'mutual'
                             ? 'Mutual follow'
                             : 'You follow them'}
                         </Typography>
                       </Stack>
                     )}
-                    {profileWithSocials.meta.sentTxs && (
+                    {identity.meta.insights.sentTxs > 0 && (
                       <Stack spacing={1} direction="row" alignItems="center">
                         <Avatar src="ethereum.png" sx={{ width: 15, height: 15 }} />
                         <Typography variant="caption" fontWeight="bold">
                           {`Transacted ${
-                            profileWithSocials.meta.sentTxs === 1
+                            identity.meta.insights.sentTxs === 1
                               ? 'once'
-                              : (profileWithSocials.meta.sentTxs > 5
+                              : (identity.meta.insights.sentTxs > 5
                                   ? '5+'
-                                  : profileWithSocials.meta.sentTxs) + ' times'
+                                  : identity.meta.insights.sentTxs) + ' times'
                           }`}
                         </Typography>
                       </Stack>
@@ -222,11 +216,11 @@ export function SearchProfileListItem(
             <HowToReg
               sx={{
                 color:
-                  profileWithSocials?.meta?.farcasterFollow ||
-                  profileWithSocials?.meta?.lensFollow ||
-                  profileWithSocials?.meta?.sentTxs ||
+                  identity?.meta?.insights?.farcasterFollow ||
+                  identity?.meta?.insights?.lensFollow ||
+                  identity?.meta?.insights?.sentTxs ||
                   ((profile?.identity || address) &&
-                    (profile?.identity ?? address) === profileWithSocials.profile?.identity)
+                    (profile?.identity ?? address) === identity.profile?.identity)
                     ? green.A700
                     : grey.A700,
                 border: 1,
@@ -238,39 +232,34 @@ export function SearchProfileListItem(
             />
           </Tooltip>
           {favouritesEnabled && (
-            <Tooltip
-              title={
-                <Typography variant="caption" fontWeight="bold">
-                  {favourite ? 'Remove from favourites' : 'Add to favourites'}
-                </Typography>
-              }>
-              <IconButton
-                size="small"
-                onClick={async () => {
-                  try {
-                    await axios.post(
-                      `${API_URL}/api/user/me/favourites`,
-                      {
-                        identity: profileWithSocials.meta?.addresses[0],
-                        favouriteAddress: view === 'address' ? !favourite : undefined,
-                        favouriteProfile: view === 'profile' ? !favourite : undefined
-                      },
-                      { withCredentials: true }
-                    );
-                    if (favourite) {
-                      setFavourite?.({ profileWithSocials, favourite });
-                    }
-                  } catch (error) {
-                    toast.error('Favourite failed!');
-                  }
-                }}>
-                {favourite ? (
-                  <Star fontSize="small" sx={{ color: yellow.A700 }} />
-                ) : (
-                  <StarBorder fontSize="small" />
-                )}
-              </IconButton>
-            </Tooltip>
+            <IconButton
+              size="small"
+              onClick={async () => {
+                try {
+                  await axios.post(
+                    `${API_URL}/api/user/me/favourites`,
+                    {
+                      address: identity.address,
+                      favouriteAddress: view === 'address' ? !favourite : undefined,
+                      favouriteProfile: view === 'profile' ? !favourite : undefined
+                    } as IdentityType,
+                    { withCredentials: true }
+                  );
+                  setFavouriteCallback?.({
+                    identity: identity,
+                    view,
+                    favourite: !favourite
+                  });
+                } catch (error) {
+                  toast.error('Favourite failed!');
+                }
+              }}>
+              {favourite ? (
+                <Star fontSize="small" sx={{ color: yellow.A700 }} />
+              ) : (
+                <StarBorder fontSize="small" />
+              )}
+            </IconButton>
           )}
         </Stack>
       </Box>
