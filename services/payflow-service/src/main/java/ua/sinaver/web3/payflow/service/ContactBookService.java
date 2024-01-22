@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import ua.sinaver.web3.payflow.data.Contact;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.message.ContactMessage;
@@ -16,9 +19,9 @@ import ua.sinaver.web3.payflow.repository.UserRepository;
 
 import java.time.Duration;
 import java.time.Period;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -28,18 +31,14 @@ public class ContactBookService implements IContactBookService {
 
 	@Value("${payflow.airstack.contacts.update.duration:24h}")
 	private Duration contactsUpdateDuration;
-
 	@Value("${payflow.airstack.contacts.update.last-seen-period:3d}")
 	private Period contactsUpdateLastSeenPeriod;
-
 	@Value("${payflow.favourites.limit:0}")
 	private int defaultFavouriteContactLimit;
 	@Autowired
 	private ContactRepository contactRepository;
-
 	@Autowired
 	private UserRepository userRepository;
-
 	@Autowired
 	private ISocialGraphService socialGraphService;
 
@@ -93,15 +92,19 @@ public class ContactBookService implements IContactBookService {
 	@Override
 	@Cacheable(value = "contacts", key = "#user.identity")
 	public List<ContactMessage> getAllContacts(User user) {
-		val contactMessages = new ArrayList<ContactMessage>();
-		// TODO: map User in Contact entity
-		contactRepository.findAllByUser(user).forEach(contact -> {
-			val profile = userRepository.findByIdentity(contact.getIdentity());
-			val socialMetadata = socialGraphService.getSocialMetadata(contact.getIdentity(),
-					user.getIdentity());
-			val contactMessage = ContactMessage.convert(contact, profile, socialMetadata);
-			contactMessages.add(contactMessage);
-		});
+		val contactMessages = Flux.fromIterable(contactRepository.findAllByUser(user))
+				.flatMap(contact -> Mono.zip(
+								Mono.fromCallable(() ->
+										Optional.ofNullable(userRepository.findByIdentity(contact.getIdentity()))),
+								Mono.fromCallable(() -> socialGraphService.getSocialMetadata(contact.getIdentity(), user.getIdentity()))
+						)
+						.subscribeOn(Schedulers.boundedElastic())
+						.map(tuple -> ContactMessage.convert(
+								contact,
+								tuple.getT1().orElse(null),
+								tuple.getT2())))
+				.collectList()
+				.block();
 
 		if (log.isTraceEnabled()) {
 			log.trace("Fetched {} contacts for {}: {}", contactMessages.size(), user.getUsername(),

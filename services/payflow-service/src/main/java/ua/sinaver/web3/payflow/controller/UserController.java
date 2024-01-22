@@ -1,6 +1,5 @@
 package ua.sinaver.web3.payflow.controller;
 
-import io.micrometer.core.annotation.Timed;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -26,7 +25,6 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "${payflow.dapp.url}", allowCredentials = "true")
 @Transactional
 @Slf4j
-@Timed(value = "api.user")
 public class UserController {
 
 	@Autowired
@@ -163,7 +161,11 @@ public class UserController {
 	@PostMapping("/search/wallets")
 	public List<WalletProfileResponseMessage> findProfilesWithWallets(
 			@RequestBody List<WalletProfileRequestMessage> wallets) {
-		log.debug("Searching profiles by wallets: {}", wallets);
+		if (log.isTraceEnabled()) {
+			log.trace("Searching profiles for wallets: {}", wallets);
+		} else {
+			log.debug("Searching profiles for {} wallets", wallets.size());
+		}
 
 		if (wallets.isEmpty()) {
 			return Collections.emptyList();
@@ -171,7 +173,12 @@ public class UserController {
 
 		val walletUserMap = userService.searchByOwnedWallets(wallets);
 
-		log.debug("Found profiles for owned wallets {} : {}", wallets, walletUserMap);
+		if (log.isTraceEnabled()) {
+			log.trace("Found profiles for wallets {} : {}", wallets, walletUserMap);
+		} else {
+			log.debug("Found profiles for {} wallets - {} profiles", wallets.size(),
+					walletUserMap.size());
+		}
 
 		// remove unnecessory information from the profiles (later on could be done on
 		// sql level)

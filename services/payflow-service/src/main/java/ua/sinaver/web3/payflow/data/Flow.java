@@ -43,7 +43,8 @@ public class Flow {
 	@Column
 	private String saltNonce;
 
-	@OneToMany(mappedBy = "flow", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "flow", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval =
+			true)
 	private List<Wallet> wallets;
 
 	@Column
