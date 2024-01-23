@@ -54,7 +54,7 @@ public class InvitationController {
 					user.getProfileImage(), user.getCreatedDate().toString(), null);
 
 			val invitations = invitationRepository.findByInvitedBy(user);
-			val invitationMessages = invitations.stream()
+			return invitations.stream()
 					.map(invite -> new InvitationMessage(
 							invitedBy,
 							invite.getInvitee() != null
@@ -66,8 +66,6 @@ public class InvitationController {
 									: null,
 							invite.getIdentity(), invite.getCode(), invite.getCreatedDate(), invite.getExpiryDate()))
 					.toList();
-
-			return invitationMessages;
 
 		}
 
@@ -139,5 +137,4 @@ public class InvitationController {
 			}
 		}
 	}
-
 }

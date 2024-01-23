@@ -52,7 +52,7 @@ export default function Leaderboard() {
   const [profiles, setProfiles] = useState<ProfileType[]>();
   const [loadingProfiles, setLoadingProfiles] = useState<boolean>();
 
-  const [openSearchProfile, setOpenSearchProfile] = useState<boolean>(false);
+  const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(false);
 
   const navigate = useNavigate();
 
@@ -116,7 +116,7 @@ export default function Leaderboard() {
                       justifyContent: 'space-evenly'
                     }}
                     onClick={async () => {
-                      setOpenSearchProfile(true);
+                      setOpenSearchIdentity(true);
                     }}>
                     <Avatar src="payflow.png" sx={{ width: 24, height: 24 }} />
                     <Typography variant="subtitle2">Search ... </Typography>
@@ -166,12 +166,9 @@ export default function Leaderboard() {
           </Card>
         </Container>
         <SearchIdentityDialog
-          open={openSearchProfile}
-          sx={{
-            backdropFilter: 'blur(10px)'
-          }}
+          open={openSearchIdentity}
           closeStateCallback={() => {
-            setOpenSearchProfile(false);
+            setOpenSearchIdentity(false);
           }}
         />
       </CustomThemeProvider>

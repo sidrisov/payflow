@@ -53,7 +53,7 @@ export default function PublicProfile({
 
   const { darkMode } = appSettings;
 
-  const [openSearchProfile, setOpenSearchProfile] = useState<boolean>(false);
+  const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(false);
   const [walletMenuAnchorEl, setWalletMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [openWalletMenu, setOpenWalletMenu] = useState(false);
 
@@ -171,7 +171,7 @@ export default function PublicProfile({
                         justifyContent: 'space-evenly'
                       }}
                       onClick={async () => {
-                        setOpenSearchProfile(true);
+                        setOpenSearchIdentity(true);
                       }}>
                       <Avatar src="payflow.png" sx={{ width: 24, height: 24 }} />
                       <Typography variant="subtitle2">Search ... </Typography>
@@ -244,7 +244,7 @@ export default function PublicProfile({
                 variant="outlined"
                 label="search & pay"
                 onClick={() => {
-                  setOpenSearchProfile(true);
+                  setOpenSearchIdentity(true);
                 }}
                 sx={{
                   border: 2,
@@ -265,15 +265,12 @@ export default function PublicProfile({
         address={address}
         profileRedirect={true}
         walletMenuEnabled={true}
-        selectProfileCallback={(selectedidentity) => {
-          setSelectedRecipient(selectedidentity);
+        selectIdentityCallback={(selectedIdentity) => {
+          setSelectedRecipient(selectedIdentity);
         }}
-        open={openSearchProfile}
-        sx={{
-          backdropFilter: 'blur(10px)'
-        }}
+        open={openSearchIdentity}
         closeStateCallback={() => {
-          setOpenSearchProfile(false);
+          setOpenSearchIdentity(false);
         }}
       />
       {selectedRecipient && (

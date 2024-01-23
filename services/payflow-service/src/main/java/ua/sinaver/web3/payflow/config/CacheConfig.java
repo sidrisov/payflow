@@ -14,11 +14,14 @@ import java.time.Duration;
 public class CacheConfig {
 
 	// TODO: either bind CaffeineSpec per cache or find out if nesting works automatically
-	@Value("${spring.cache.contacts.expireAfterWrite:30m}")
+	@Value("${spring.cache.contacts.expireAfterWrite:10m}")
 	private Duration contactsExpireAfterWriteDuration;
 
-	@Value("${spring.cache.socials.expireAfterWrite:1h}")
+	@Value("${spring.cache.socials.expireAfterWrite:24h}")
 	private Duration socialsExpireAfterWriteDuration;
+
+	@Value("${spring.cache.socials.maxSize:1000}")
+	private int socialsMaxSize;
 
 	@Bean
 	public CacheManager cacheManager() {
@@ -28,10 +31,7 @@ public class CacheConfig {
 				buildCache(contactsExpireAfterWriteDuration));
 
 		cacheManager.registerCustomCache("socials",
-				buildCache(socialsExpireAfterWriteDuration));
-
-		cacheManager.registerCustomCache("socials",
-				buildCache(socialsExpireAfterWriteDuration));
+				buildCache(socialsExpireAfterWriteDuration, socialsMaxSize));
 
 		cacheManager.registerCustomCache("users",
 				buildCache(Duration.ofHours(24)));
@@ -42,9 +42,14 @@ public class CacheConfig {
 		return cacheManager;
 	}
 
-	private Cache buildCache(Duration expireAfterWrite) {
+	private Cache buildCache(Duration expireAfterWrite, int maximumSize) {
 		return Caffeine.newBuilder()
 				.expireAfterWrite(expireAfterWrite)
+				.maximumSize(maximumSize)
 				.build();
+	}
+
+	private Cache buildCache(Duration expireAfterWrite) {
+		return buildCache(expireAfterWrite, 200);
 	}
 }

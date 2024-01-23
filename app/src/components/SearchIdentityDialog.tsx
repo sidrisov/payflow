@@ -12,11 +12,10 @@ import {
   Typography,
   CircularProgress,
   IconButton,
-  Avatar,
-  Chip
+  Avatar
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
-import { ArrowBack, Clear, Menu, People, Star } from '@mui/icons-material';
+import { ArrowBack, Clear, Menu } from '@mui/icons-material';
 import { useContext, useMemo, useState } from 'react';
 import { IdentityType, SelectedIdentityType } from '../types/ProfleType';
 
@@ -25,15 +24,15 @@ import { searchProfile as searchIdentity, sortBySocialScore } from '../services/
 
 import { useDebounce } from 'use-debounce';
 import { WalletMenu } from './WalletMenu';
-import { green, yellow } from '@mui/material/colors';
 import axios from 'axios';
 import { API_URL } from '../utils/urlConstants';
 import { SearchResultView } from './SearchResultView';
 import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';
 import { ProfileContext } from '../contexts/UserContext';
+import { AddressBookToolBar } from './AddressBookChip';
 
-export type SelectProfileResultCallbackType = {
-  selectProfileCallback?: (selectedidentity: SelectedIdentityType) => void;
+export type SelectIdentityCallbackType = {
+  selectIdentityCallback?: (selectedIdentity: SelectedIdentityType) => void;
 };
 
 export type UpdateIdentityCallbackType = {
@@ -52,7 +51,7 @@ export type UpdateIdentityCallbackType = {
 
 export type SearchIdentityDialogProps = DialogProps &
   CloseCallbackType &
-  SelectProfileResultCallbackType &
+  SelectIdentityCallbackType &
   UpdateIdentityCallbackType & {
     address?: Address;
     profileRedirect?: boolean;
@@ -65,7 +64,7 @@ export default function SearchIdentityDialog({
   profileRedirect,
   walletMenuEnabled,
   closeStateCallback,
-  selectProfileCallback,
+  selectIdentityCallback,
   ...props
 }: SearchIdentityDialogProps) {
   const theme = useTheme();
@@ -86,6 +85,7 @@ export default function SearchIdentityDialog({
   const [addressBookView, setAddressBookView] = useState<'favourites' | 'friends'>('favourites');
 
   const [contacts, setContacts] = useState<IdentityType[]>([]);
+  const [shrink, setShrink] = useState(false);
 
   function handleCloseCampaignDialog() {
     closeStateCallback();
@@ -170,6 +170,20 @@ export default function SearchIdentityDialog({
     }
   }, [isAuthenticated]);
 
+  const updateIdentityCallback = ({
+    identity,
+    view,
+    favourite,
+    invited
+  }: {
+    identity: IdentityType;
+    view: 'address' | 'profile';
+    favourite?: boolean | undefined;
+    invited?: boolean | undefined;
+  }) => {
+    updateIdentity(identity, view, favourite, invited);
+  };
+
   function updateIdentity(
     identity: IdentityType,
     view: 'address' | 'profile',
@@ -232,8 +246,6 @@ export default function SearchIdentityDialog({
 
     setFoundIdentities(identities);
   }
-
-  const [shrink, setShrink] = useState(false);
 
   return (
     <Dialog
@@ -317,47 +329,10 @@ export default function SearchIdentityDialog({
             }}
           />
           {isAuthenticated && !searchString && (
-            <Stack my={1} spacing={1} direction="row" alignItems="center" alignSelf="center">
-              <Chip
-                clickable
-                icon={<Star fontSize="small" />}
-                label={
-                  <Typography variant="caption" fontWeight="bold">
-                    Favourites
-                  </Typography>
-                }
-                sx={{
-                  color: yellow.A700,
-                  '& .MuiChip-icon': {
-                    color: yellow.A700
-                  },
-                  backgroundColor: addressBookView === 'favourites' ? '' : 'inherit'
-                }}
-                onClick={async () => {
-                  setAddressBookView('favourites');
-                }}
-              />
-              <Chip
-                clickable
-                icon={<People fontSize="small" />}
-                label={
-                  <Typography variant="caption" fontWeight="bold">
-                    People you know
-                  </Typography>
-                }
-                sx={{
-                  p: 1,
-                  color: green.A700,
-                  '& .MuiChip-icon': {
-                    color: green.A700
-                  },
-                  backgroundColor: addressBookView === 'friends' ? '' : 'inherit'
-                }}
-                onClick={async () => {
-                  setAddressBookView('friends');
-                }}
-              />
-            </Stack>
+            <AddressBookToolBar
+              addressBookView={addressBookView}
+              setAddressBookView={setAddressBookView}
+            />
           )}
         </Stack>
       </DialogTitle>
@@ -371,10 +346,8 @@ export default function SearchIdentityDialog({
                 key={'search_identity_favourites_view'}
                 profileRedirect={profileRedirect}
                 closeStateCallback={closeStateCallback}
-                selectProfileCallback={selectProfileCallback}
-                updateIdentityCallback={({ identity, view, favourite, invited }) => {
-                  updateIdentity(identity, view, favourite, invited);
-                }}
+                selectIdentityCallback={selectIdentityCallback}
+                updateIdentityCallback={updateIdentityCallback}
                 filterByFafourites={true}
                 identities={contacts}
               />
@@ -383,10 +356,8 @@ export default function SearchIdentityDialog({
                 key={'search_identity_friends_view'}
                 profileRedirect={profileRedirect}
                 closeStateCallback={closeStateCallback}
-                selectProfileCallback={selectProfileCallback}
-                updateIdentityCallback={({ identity, view, favourite, invited }) => {
-                  updateIdentity(identity, view, favourite, invited);
-                }}
+                selectIdentityCallback={selectIdentityCallback}
+                updateIdentityCallback={updateIdentityCallback}
                 identities={contacts}
               />
             ))}
@@ -395,11 +366,9 @@ export default function SearchIdentityDialog({
             key={'search_identity_results_view'}
             profileRedirect={profileRedirect}
             closeStateCallback={closeStateCallback}
-            selectProfileCallback={selectProfileCallback}
+            selectIdentityCallback={selectIdentityCallback}
             identities={foundIdentities}
-            updateIdentityCallback={({ identity, view, favourite, invited }) => {
-              updateIdentity(identity, view, favourite, invited);
-            }}
+            updateIdentityCallback={updateIdentityCallback}
           />
 
           {debouncedSearchString &&

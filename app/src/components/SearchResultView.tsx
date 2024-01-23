@@ -3,16 +3,13 @@ import { CloseCallbackType } from '../types/CloseCallbackType';
 import { IdentityType } from '../types/ProfleType';
 import { useNavigate } from 'react-router-dom';
 import { SearchIdentityListItem } from './SearchIdentityListItem';
-import {
-  SelectProfileResultCallbackType,
-  UpdateIdentityCallbackType
-} from './SearchIdentityDialog';
+import { SelectIdentityCallbackType, UpdateIdentityCallbackType } from './SearchIdentityDialog';
 
 export function SearchResultView({
   profileRedirect,
   filterByFafourites = false,
   closeStateCallback,
-  selectProfileCallback,
+  selectIdentityCallback: selectProfileCallback,
   updateIdentityCallback: setFavouriteCallback,
   identities
 }: {
@@ -20,7 +17,7 @@ export function SearchResultView({
   profileRedirect?: boolean;
   identities: IdentityType[];
 } & CloseCallbackType &
-  SelectProfileResultCallbackType &
+  SelectIdentityCallbackType &
   UpdateIdentityCallbackType) {
   const navigate = useNavigate();
 

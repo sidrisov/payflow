@@ -48,13 +48,12 @@ export default function AppLayout({
 
   const [walletBalances, setWalletBalances] = useState<Map<string, bigint>>(new Map());
   const [smartAccountAllowedChains, setSmartAccountAllowedChains] = useState<Chain[]>([]);
-  const [initiateFlowsRefresh, setInitiateFlowsRefresh] = useState(false);
 
   const [authorized, setAuthorized] = useState<boolean>(false);
 
   const [profileMenuAnchorEl, setProfileMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [openProfileMenu, setOpenProfileMenu] = useState(false);
-  const [openSearchProfile, setOpenSearchProfile] = useState(false);
+  const [openSearchIdentity, setOpenSearchIdentity] = useState(false);
 
   const location = useLocation();
 
@@ -82,13 +81,6 @@ export default function AppLayout({
     }
   }, [profile]);
 
-  /*   useMemo(async () => {
-    if (initiateFlowsRefresh && flows) {
-      setInitiateFlowsRefresh(false);
-      await fetchFlows();
-    }
-  }, [flows, initiateFlowsRefresh]); */
-
   return (
     <ProfileContext.Provider
       value={{
@@ -98,7 +90,6 @@ export default function AppLayout({
         setAppSettings,
         smartAccountAllowedChains,
         setSmartAccountAllowedChains,
-        setInitiateFlowsRefresh,
         walletBalances,
         setWalletBalances,
         ethUsdPrice
@@ -155,7 +146,7 @@ export default function AppLayout({
                         justifyContent: 'space-evenly'
                       }}
                       onClick={async () => {
-                        setOpenSearchProfile(true);
+                        setOpenSearchIdentity(true);
                       }}>
                       <Avatar src="payflow.png" sx={{ width: 24, height: 24 }} />
                       <Typography variant="subtitle2">Search ... </Typography>
@@ -199,9 +190,9 @@ export default function AppLayout({
       <SearchIdentityDialog
         address={profile.identity}
         profileRedirect={true}
-        open={openSearchProfile}
+        open={openSearchIdentity}
         closeStateCallback={() => {
-          setOpenSearchProfile(false);
+          setOpenSearchIdentity(false);
         }}
       />
       {profile && !profile.defaultFlow && (

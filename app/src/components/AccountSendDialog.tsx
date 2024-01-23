@@ -54,7 +54,6 @@ import { TransferToastContent } from './toasts/TransferToastContent';
 import { LoadingSwitchNetworkButton } from './LoadingSwitchNetworkButton';
 import { LoadingConnectWalletButton } from './LoadingConnectWalletButton';
 import { shortenWalletAddressLabel } from '../utils/address';
-import { WalletMenu } from './WalletMenu';
 
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
@@ -95,11 +94,8 @@ export default function AccountSendDialog({
 
   const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
 
-  const [openSearchProfile, setOpenSearchProfile] = useState<boolean>(true);
+  const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(true);
   const sendToastId = useRef<Id>();
-
-  const [walletMenuAnchorEl, setWalletMenuAnchorEl] = useState<null | HTMLElement>(null);
-  const [openWalletMenu, setOpenWalletMenu] = useState(false);
 
   useMemo(async () => {
     if (!selectedRecipient) {
@@ -326,15 +322,6 @@ export default function AccountSendDialog({
               flow
             </Typography>
           </Stack>
-
-          {/* <IconButton
-            color="inherit"
-            onClick={async (event) => {
-              setWalletMenuAnchorEl(event.currentTarget);
-              setOpenWalletMenu(true);
-            }}>
-            <Menu />
-          </IconButton> */}
         </Box>
       </DialogTitle>
       <DialogContent
@@ -363,7 +350,7 @@ export default function AccountSendDialog({
                   justifyContent="space-between"
                   component={Button}
                   color="inherit"
-                  onClick={async () => setOpenSearchProfile(true)}
+                  onClick={async () => setOpenSearchIdentity(true)}
                   sx={{
                     height: 56,
                     border: 1,
@@ -569,21 +556,13 @@ export default function AccountSendDialog({
 
       <SearchIdentityDialog
         address={profile.identity}
-        open={openSearchProfile}
+        open={openSearchIdentity}
         closeStateCallback={() => {
-          setOpenSearchProfile(false);
+          setOpenSearchIdentity(false);
         }}
-        selectProfileCallback={(selectedidentity) => {
-          setSelectedRecipient(selectedidentity);
+        selectIdentityCallback={(selectedIdentity) => {
+          setSelectedRecipient(selectedIdentity);
         }}
-      />
-
-      <WalletMenu
-        contextType="profile"
-        anchorEl={walletMenuAnchorEl}
-        open={openWalletMenu}
-        onClose={() => setOpenWalletMenu(false)}
-        closeStateCallback={() => setOpenWalletMenu(false)}
       />
     </Dialog>
   );
