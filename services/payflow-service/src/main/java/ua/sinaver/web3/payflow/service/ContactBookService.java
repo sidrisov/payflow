@@ -51,6 +51,9 @@ public class ContactBookService implements IContactBookService {
 	@Value("${payflow.invitation.whitelisted.default.users}")
 	private Set<String> defaultWhitelistedUsers;
 
+	@Value("${payflow.airstack.contacts.limit:10}")
+	private int contactsLimit;
+
 	@Override
 	public void update(ContactMessage contactMessage, User user) {
 		var contact = contactRepository.findByUserAndIdentity(user, contactMessage.address());
@@ -103,7 +106,7 @@ public class ContactBookService implements IContactBookService {
 	@Cacheable(value = "contacts", key = "#user.identity", unless = "#result.isEmpty()")
 	public List<ContactMessage> getAllContacts(User user) {
 		val contactMessages =
-				Flux.fromIterable(contactRepository.findAllByUser(user).stream().limit(50).toList())
+				Flux.fromIterable(contactRepository.findAllByUser(user).stream().limit(contactsLimit * 2L).toList())
 						.flatMapSequential(contact -> Mono.zip(
 										Mono.fromCallable(
 												() -> Optional.ofNullable(userRepository.findByIdentity(contact.getIdentity()))),
@@ -114,7 +117,7 @@ public class ContactBookService implements IContactBookService {
 												() -> defaultWhitelistedUsers.contains(contact.getIdentity()) || invitationRepository.existsByIdentityAndValid(contact.getIdentity()))
 								)
 								// TODO: fail fast, seems doesn't to work properly with threads
-								.subscribeOn(Schedulers.newBoundedElastic(2, 300,
+								.subscribeOn(Schedulers.newBoundedElastic(2, contactsLimit * 4,
 										"contacts-bounded-elastic"))
 								.map(tuple -> ContactMessage.convert(
 										contact,
@@ -135,7 +138,7 @@ public class ContactBookService implements IContactBookService {
 		return contactMessages;
 	}
 
-	@Scheduled(fixedRate = 60000)
+	@Scheduled(fixedRate = 60 * 1000)
 	public void updateContactsAtFixedRate() {
 		val lastUpdateDate = new Date(System.currentTimeMillis() - contactsUpdateDuration.toMillis());
 		val lastSeenDate = new Date(

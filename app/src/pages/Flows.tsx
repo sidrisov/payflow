@@ -32,7 +32,6 @@ export default function Flows() {
     profile: { flows },
     walletBalances,
     setWalletBalances,
-    setInitiateFlowsRefresh,
     ethUsdPrice
   } = useContext(ProfileContext);
 
@@ -250,7 +249,7 @@ export default function Flows() {
         closeStateCallback={async () => {
           setOpenFlowCreate(false);
           // TODO: just refresh, lately it's better to track each flow's update separately
-          setInitiateFlowsRefresh(true);
+          //setInitiateFlowsRefresh(true);
         }}
       />
       <ShareDialog

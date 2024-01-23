@@ -30,6 +30,7 @@ import { SearchResultView } from './SearchResultView';
 import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';
 import { ProfileContext } from '../contexts/UserContext';
 import { AddressBookToolBar } from './AddressBookChip';
+import { identitiesInvited } from '../services/invitation';
 
 export type SelectIdentityCallbackType = {
   selectIdentityCallback?: (selectedIdentity: SelectedIdentityType) => void;
@@ -74,7 +75,7 @@ export default function SearchIdentityDialog({
 
   const [searchString, setSearchString] = useState<string>();
 
-  const [debouncedSearchString] = useDebounce(searchString?.replace(' ', ''), 500);
+  const [debouncedSearchString] = useDebounce(searchString?.replace(' ', '').toLowerCase(), 500);
 
   const [foundIdentities, setFoundIdentities] = useState<IdentityType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -103,7 +104,7 @@ export default function SearchIdentityDialog({
           foundAmongContacts = contacts.filter(
             (c) =>
               c.profile?.username?.includes(debouncedSearchString) ||
-              c.profile?.displayName?.includes(debouncedSearchString) ||
+              c.profile?.displayName?.toLowerCase().includes(debouncedSearchString) ||
               c.meta?.ens?.includes(debouncedSearchString) ||
               c.meta?.socials?.find((s) => {
                 let socialSearchStr = debouncedSearchString;
@@ -116,7 +117,7 @@ export default function SearchIdentityDialog({
                 }
 
                 return (
-                  s.profileDisplayName.includes(socialSearchStr) ||
+                  s.profileDisplayName.toLowerCase().includes(socialSearchStr) ||
                   s.profileName.includes(socialSearchStr)
                 );
               })
@@ -130,13 +131,25 @@ export default function SearchIdentityDialog({
 
         // skip search if we have 5 results
         if (foundAmongContacts.length <= 5) {
-          // general search
-          const identities = await searchIdentity(debouncedSearchString, address);
           const addresses = foundAmongContacts.map((p) => p.address);
 
-          const allFoundProfiles = sortBySocialScore(
-            foundAmongContacts.concat(identities.filter((fi) => !addresses.includes(fi.address)))
+          // general search
+          const identities = (await searchIdentity(debouncedSearchString, address)).filter(
+            (fi) => !addresses.includes(fi.address)
           );
+
+          if (identities.length > 0) {
+            const inviteStatuses = await identitiesInvited(
+              identities.map((identity) => identity.address)
+            );
+
+            // Update identities in a single pass:
+            identities.forEach((identity) => {
+              identity.invited = inviteStatuses[identity.address];
+            });
+          }
+
+          const allFoundProfiles = sortBySocialScore(foundAmongContacts.concat(identities));
           console.debug('All found profiles:', allFoundProfiles);
           setFoundIdentities(allFoundProfiles);
         }

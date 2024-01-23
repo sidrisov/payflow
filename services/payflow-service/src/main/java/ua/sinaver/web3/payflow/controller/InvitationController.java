@@ -20,8 +20,10 @@ import java.security.Principal;
 import java.time.Period;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @RestController
@@ -80,6 +82,17 @@ public class InvitationController {
 				|| defaultWhitelistedUsers.contains(identity);
 	}
 
+	@GetMapping("/identity")
+	public Map<String, Boolean> identitiesInvited(@RequestParam(value = "identities") List<String> identities) {
+		// don't check whitelisted, not to reveal default config
+		// TODO: optimize to fetch in batch
+		return identities.stream()
+				.collect(Collectors.toMap(
+						identity -> identity,
+						identity -> invitationRepository.existsByIdentityAndValid(identity)
+				));
+	}
+
 	@GetMapping("/code/{code}")
 	@ResponseStatus(HttpStatus.OK)
 	public Boolean isCodeValid(@PathVariable String code) {
@@ -115,7 +128,7 @@ public class InvitationController {
 			}
 		} else {
 			val numberOfCodes = invitationMessage.codeBased().number() == null ? 1
-					: invitationMessage.codeBased().number().intValue();
+					: invitationMessage.codeBased().number();
 
 			if (allowance != null && allowance.getCodeInviteLimit() >= numberOfCodes) {
 				allowance.setCodeInviteLimit(allowance.getCodeInviteLimit() - numberOfCodes);

@@ -137,7 +137,7 @@ export function SearchIdentityListItem(
                   .filter((s) => s.profileName && s.dappName)
                   .map((s) => (
                     <SocialPresenceAvatar
-                      key={s.dappName}
+                      key={`social_presence_avatar_${s.dappName}_${identity.address}`}
                       dappName={s.dappName as dAppType}
                       profileName={s.profileName}
                       followerCount={s.followerCount}
