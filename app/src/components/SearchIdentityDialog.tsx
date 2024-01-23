@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { ArrowBack, Clear, Menu, People, Star } from '@mui/icons-material';
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { IdentityType, SelectedIdentityType } from '../types/ProfleType';
 
 import { Address } from 'viem';
@@ -29,31 +29,34 @@ import { green, yellow } from '@mui/material/colors';
 import axios from 'axios';
 import { API_URL } from '../utils/urlConstants';
 import { SearchResultView } from './SearchResultView';
+import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';
+import { ProfileContext } from '../contexts/UserContext';
 
 export type SelectProfileResultCallbackType = {
   selectProfileCallback?: (selectedidentity: SelectedIdentityType) => void;
 };
 
-export type SetFavouriteCallbackType = {
-  setFavouriteCallback?: ({
+export type UpdateIdentityCallbackType = {
+  updateIdentityCallback?: ({
     identity,
     view,
-    favourite
+    favourite,
+    invited
   }: {
     identity: IdentityType;
     view: 'address' | 'profile';
-    favourite: boolean;
+    favourite?: boolean;
+    invited?: boolean;
   }) => void;
 };
 
 export type SearchIdentityDialogProps = DialogProps &
   CloseCallbackType &
   SelectProfileResultCallbackType &
-  SetFavouriteCallbackType & {
+  UpdateIdentityCallbackType & {
     address?: Address;
     profileRedirect?: boolean;
     walletMenuEnabled?: boolean;
-    addressBookEnabled?: boolean;
   };
 
 // TODO: back button + title alignment hack - check with someone knowledgeable on proper solution
@@ -61,13 +64,14 @@ export default function SearchIdentityDialog({
   address,
   profileRedirect,
   walletMenuEnabled,
-  addressBookEnabled = false,
   closeStateCallback,
   selectProfileCallback,
   ...props
 }: SearchIdentityDialogProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const { isAuthenticated } = useContext(ProfileContext);
 
   const [searchString, setSearchString] = useState<string>();
 
@@ -101,16 +105,28 @@ export default function SearchIdentityDialog({
               c.profile?.username?.includes(debouncedSearchString) ||
               c.profile?.displayName?.includes(debouncedSearchString) ||
               c.meta?.ens?.includes(debouncedSearchString) ||
-              c.meta?.socials?.find(
-                (s) =>
-                  s.profileDisplayName.includes(debouncedSearchString) ||
-                  s.profileName.includes(debouncedSearchString)
-              )
+              c.meta?.socials?.find((s) => {
+                let socialSearchStr = debouncedSearchString;
+
+                if (
+                  (s.dappName === FARCASTER_DAPP && debouncedSearchString.startsWith('fc:')) ||
+                  (s.dappName === LENS_DAPP && debouncedSearchString.startsWith('lens:'))
+                ) {
+                  socialSearchStr = socialSearchStr.substring(socialSearchStr.indexOf(':') + 1);
+                }
+
+                return (
+                  s.profileDisplayName.includes(socialSearchStr) ||
+                  s.profileName.includes(socialSearchStr)
+                );
+              })
           );
 
           setFoundIdentities(foundAmongContacts);
           console.debug('Found among contacts: ', foundAmongContacts);
         }
+
+        // todo fetch invited list
 
         // skip search if we have 5 results
         if (foundAmongContacts.length <= 5) {
@@ -133,7 +149,7 @@ export default function SearchIdentityDialog({
   }, [debouncedSearchString, address]);
 
   useMemo(async () => {
-    if (addressBookEnabled) {
+    if (isAuthenticated) {
       try {
         const response = await axios.get(`${API_URL}/api/user/me/contacts`, {
           withCredentials: true
@@ -152,64 +168,69 @@ export default function SearchIdentityDialog({
         setContacts([]);
       }
     }
-  }, [addressBookEnabled]);
+  }, [isAuthenticated]);
 
-  function updateFavourite(
+  function updateIdentity(
     identity: IdentityType,
     view: 'address' | 'profile',
-    favourite: boolean
+    favourite?: boolean,
+    invited?: boolean
   ) {
-    const contact = contacts?.find((c) => c.address === identity.address);
+    const contact = contacts.find((c) => c.address === identity.address);
     let updatedContacts;
 
-    // updating identity from address book
+    console.log(identity, view, favourite, invited);
+
     if (contact) {
-      updatedContacts = contacts?.map((c) => {
+      // updating identity from address book
+      updatedContacts = contacts.map((c) => {
         if (c.address === identity.address) {
-          if (view === 'profile') {
-            return { ...c, favouriteProfile: favourite };
-          } else {
-            return {
-              ...c,
-              favouriteAddress: favourite
-            };
-          }
+          return {
+            ...c,
+            ...(favourite !== undefined &&
+              (view === 'profile'
+                ? { favouriteProfile: favourite }
+                : { favouriteAddress: favourite })),
+            ...(invited !== undefined && { invited: true })
+          };
         } else {
           return c;
         }
       });
     } else {
       // updating identity from search result
-      // TODO: fix social conversion from search to contacts
       console.log('favourite from search');
       updatedContacts = [
-        ...(contacts ?? []),
+        ...contacts,
         {
           ...identity,
-          favouriteAddress: view === 'address' ? true : undefined,
-          favouriteProfile: view === 'profile' ? true : undefined
+          ...(favourite !== undefined &&
+            (view === 'profile'
+              ? { favouriteProfile: favourite }
+              : { favouriteAddress: favourite })),
+          ...(invited !== undefined && { invited: true })
         }
       ];
-
-      const identities = foundIdentities?.map((fi) => {
-        if (fi.address === identity.address) {
-          if (view === 'profile') {
-            return { ...fi, favouriteProfile: favourite };
-          } else {
-            return {
-              ...fi,
-              favouriteAddress: favourite
-            };
-          }
-        } else {
-          return fi;
-        }
-      });
-
-      setFoundIdentities(identities);
     }
 
     setContacts(updatedContacts);
+
+    const identities = foundIdentities.map((fi) => {
+      if (fi.address === identity.address) {
+        return {
+          ...fi,
+          ...(favourite !== undefined &&
+            (view === 'profile'
+              ? { favouriteProfile: favourite }
+              : { favouriteAddress: favourite })),
+          ...(invited !== undefined && { invited: true })
+        };
+      } else {
+        return fi;
+      }
+    });
+
+    setFoundIdentities(identities);
   }
 
   const [shrink, setShrink] = useState(false);
@@ -295,7 +316,7 @@ export default function SearchIdentityDialog({
               setSearchString(event.target.value);
             }}
           />
-          {addressBookEnabled && !searchString && (
+          {isAuthenticated && !searchString && (
             <Stack my={1} spacing={1} direction="row" alignItems="center" alignSelf="center">
               <Chip
                 clickable
@@ -342,18 +363,17 @@ export default function SearchIdentityDialog({
       </DialogTitle>
       <DialogContent sx={{ mb: 0.5 }}>
         <Box display="flex" flexDirection="column" alignContent="center">
-          {addressBookEnabled &&
+          {isAuthenticated &&
             !searchString &&
             contacts.length > 0 &&
             (addressBookView === 'favourites' ? (
               <SearchResultView
                 key={'search_identity_favourites_view'}
-                addressBookEnabled={addressBookEnabled}
                 profileRedirect={profileRedirect}
                 closeStateCallback={closeStateCallback}
                 selectProfileCallback={selectProfileCallback}
-                setFavouriteCallback={({ identity, view, favourite }) => {
-                  updateFavourite(identity, view, favourite);
+                updateIdentityCallback={({ identity, view, favourite, invited }) => {
+                  updateIdentity(identity, view, favourite, invited);
                 }}
                 filterByFafourites={true}
                 identities={contacts}
@@ -361,12 +381,11 @@ export default function SearchIdentityDialog({
             ) : (
               <SearchResultView
                 key={'search_identity_friends_view'}
-                addressBookEnabled={addressBookEnabled}
                 profileRedirect={profileRedirect}
                 closeStateCallback={closeStateCallback}
                 selectProfileCallback={selectProfileCallback}
-                setFavouriteCallback={({ identity, view, favourite }) => {
-                  updateFavourite(identity, view, favourite);
+                updateIdentityCallback={({ identity, view, favourite, invited }) => {
+                  updateIdentity(identity, view, favourite, invited);
                 }}
                 identities={contacts}
               />
@@ -374,13 +393,12 @@ export default function SearchIdentityDialog({
 
           <SearchResultView
             key={'search_identity_results_view'}
-            addressBookEnabled={addressBookEnabled}
             profileRedirect={profileRedirect}
             closeStateCallback={closeStateCallback}
             selectProfileCallback={selectProfileCallback}
             identities={foundIdentities}
-            setFavouriteCallback={({ identity, view, favourite }) => {
-              updateFavourite(identity, view, favourite);
+            updateIdentityCallback={({ identity, view, favourite, invited }) => {
+              updateIdentity(identity, view, favourite, invited);
             }}
           />
 

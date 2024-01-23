@@ -573,7 +573,6 @@ export default function AccountSendDialog({
         closeStateCallback={() => {
           setOpenSearchProfile(false);
         }}
-        addressBookEnabled={true}
         selectProfileCallback={(selectedidentity) => {
           setSelectedRecipient(selectedidentity);
         }}

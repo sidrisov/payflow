@@ -17,6 +17,7 @@ export interface IdentityType {
   address: Address;
   favouriteAddress?: boolean;
   favouriteProfile?: boolean;
+  invited?: boolean;
   profile?: ProfileType;
   meta?: MetaType;
 }

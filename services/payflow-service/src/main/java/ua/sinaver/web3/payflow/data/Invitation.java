@@ -8,7 +8,7 @@ import lombok.ToString;
 
 import java.util.Date;
 
-@ToString
+@ToString(exclude = "invitedBy")
 @Setter
 @Getter
 @NoArgsConstructor

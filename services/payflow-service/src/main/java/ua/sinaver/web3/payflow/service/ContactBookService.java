@@ -15,6 +15,7 @@ import ua.sinaver.web3.payflow.data.Contact;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.message.ContactMessage;
 import ua.sinaver.web3.payflow.repository.ContactRepository;
+import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
 
 import java.time.Duration;
@@ -22,6 +23,7 @@ import java.time.Period;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -37,10 +39,17 @@ public class ContactBookService implements IContactBookService {
 	private int defaultFavouriteContactLimit;
 	@Autowired
 	private ContactRepository contactRepository;
+
+	@Autowired
+	private InvitationRepository invitationRepository;
+
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
 	private ISocialGraphService socialGraphService;
+
+	@Value("${payflow.invitation.whitelisted.default.users}")
+	private Set<String> defaultWhitelistedUsers;
 
 	@Override
 	public void update(ContactMessage contactMessage, User user) {
@@ -99,7 +108,10 @@ public class ContactBookService implements IContactBookService {
 										Mono.fromCallable(
 												() -> Optional.ofNullable(userRepository.findByIdentity(contact.getIdentity()))),
 										Mono.fromCallable(
-												() -> socialGraphService.getSocialMetadata(contact.getIdentity(), user.getIdentity()))
+												() -> socialGraphService.getSocialMetadata(contact.getIdentity(), user.getIdentity())),
+										// TODO: fetch only if social graph fetched
+										Mono.fromCallable(
+												() -> defaultWhitelistedUsers.contains(contact.getIdentity()) || invitationRepository.existsByIdentityAndValid(contact.getIdentity()))
 								)
 								// TODO: fail fast, seems doesn't to work properly with threads
 								.subscribeOn(Schedulers.newBoundedElastic(2, 300,
@@ -107,7 +119,8 @@ public class ContactBookService implements IContactBookService {
 								.map(tuple -> ContactMessage.convert(
 										contact,
 										tuple.getT1().orElse(null),
-										tuple.getT2())))
+										tuple.getT2(),
+										tuple.getT3())))
 						.timeout(Duration.ofSeconds(30), Mono.empty())
 						.collectList()
 						.block();

@@ -12,11 +12,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public record ContactMessage(
-		String address, Boolean favouriteProfile, Boolean favouriteAddress,
+		String address, Boolean favouriteProfile, Boolean favouriteAddress, Boolean invited,
 		ProfileMessage profile,
 		SocialMetadata meta) {
 
-	public static ContactMessage convert(Contact contact, User profile, Wallet wallet) {
+	public static ContactMessage convert(Contact contact, User profile, Wallet wallet,
+	                                     Boolean invited) {
 		ProfileMessage profileMessage = null;
 		if (profile != null) {
 			profileMessage = new ProfileMessage(profile.getDisplayName(),
@@ -64,7 +65,7 @@ public record ContactMessage(
 		val meta = new SocialMetadata(xmtp, ens, ensAvatar, socials, insights);
 
 		return new ContactMessage(contact.getIdentity(), contact.isProfileChecked(),
-				contact.isAddressChecked(), profileMessage, meta);
+				contact.isAddressChecked(), invited, profileMessage, meta);
 	}
 
 

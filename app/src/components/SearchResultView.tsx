@@ -3,25 +3,25 @@ import { CloseCallbackType } from '../types/CloseCallbackType';
 import { IdentityType } from '../types/ProfleType';
 import { useNavigate } from 'react-router-dom';
 import { SearchIdentityListItem } from './SearchIdentityListItem';
-import { SelectProfileResultCallbackType, SetFavouriteCallbackType } from './SearchIdentityDialog';
+import {
+  SelectProfileResultCallbackType,
+  UpdateIdentityCallbackType
+} from './SearchIdentityDialog';
 
 export function SearchResultView({
-  addressBookEnabled = false,
   profileRedirect,
   filterByFafourites = false,
   closeStateCallback,
   selectProfileCallback,
-  setFavouriteCallback,
+  updateIdentityCallback: setFavouriteCallback,
   identities
 }: {
-  addressBookEnabled?: boolean;
   filterByFafourites?: boolean;
-
   profileRedirect?: boolean;
   identities: IdentityType[];
 } & CloseCallbackType &
   SelectProfileResultCallbackType &
-  SetFavouriteCallbackType) {
+  UpdateIdentityCallbackType) {
   const navigate = useNavigate();
 
   function SearchResultProfileListView({
@@ -46,11 +46,7 @@ export function SearchResultView({
                   key={view === 'profile' ? identity.profile?.username : identity.address}
                   view={view}
                   identity={identity}
-                  favouritesEnabled={addressBookEnabled}
-                  favourite={
-                    view === 'profile' ? identity.favouriteProfile : identity.favouriteAddress
-                  }
-                  setFavouriteCallback={setFavouriteCallback}
+                  updateIdentityCallback={setFavouriteCallback}
                   onClick={() => {
                     if (view === 'profile') {
                       if (identity.profile) {

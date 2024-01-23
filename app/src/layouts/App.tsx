@@ -200,7 +200,6 @@ export default function AppLayout({
         address={profile.identity}
         profileRedirect={true}
         open={openSearchProfile}
-        addressBookEnabled={true}
         closeStateCallback={() => {
           setOpenSearchProfile(false);
         }}

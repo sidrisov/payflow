@@ -16,7 +16,7 @@ import { AddressSection } from './AddressSection';
 import { comingSoonToast } from './Toasts';
 import SocialPresenceAvatar from './SocialPresenceAvatar';
 import { dAppType } from '../utils/dapps';
-import { useContext, useMemo, useState } from 'react';
+import { useContext } from 'react';
 import { ProfileContext } from '../contexts/UserContext';
 import axios from 'axios';
 import { API_URL } from '../utils/urlConstants';
@@ -25,33 +25,21 @@ import { shortenWalletAddressLabel } from '../utils/address';
 import PayflowChip from './PayflowChip';
 import { green, grey, lightGreen, orange, yellow } from '@mui/material/colors';
 import { useAccount } from 'wagmi';
-import { SetFavouriteCallbackType } from './SearchIdentityDialog';
+import { UpdateIdentityCallbackType } from './SearchIdentityDialog';
 
 export function SearchIdentityListItem(
   props: BoxProps &
-    SetFavouriteCallbackType & {
+    UpdateIdentityCallbackType & {
       identity: IdentityType;
       view: 'address' | 'profile';
-      favouritesEnabled?: boolean;
-      favourite?: boolean;
-      invited?: boolean;
     }
 ) {
   const { profile, isAuthenticated } = useContext(ProfileContext);
-  const { identity, view, favouritesEnabled, favourite, setFavouriteCallback } = props;
-  const [invited, setInvited] = useState<boolean>();
+  const { identity, view, updateIdentityCallback } = props;
+
+  const favourite = view === 'address' ? identity.favouriteAddress : identity.favouriteProfile;
 
   const { address } = useAccount();
-  // fetch in batch for all addresses in parent component
-  useMemo(async () => {
-    /* if (profile && !identity.profile) {
-      const response = await axios.get(`${API_URL}/api/invitations/identity/${identity.address}`, {
-        withCredentials: true
-      });
-
-      setInvited(response.data);
-    } */
-  }, [identity.profile, profile]);
 
   return (
     (view === 'profile' ? identity.profile : identity.meta) && (
@@ -88,10 +76,10 @@ export function SearchIdentityListItem(
               <Chip
                 size="small"
                 variant="filled"
-                label={invited ? 'invited' : 'invite'}
-                clickable={!invited}
+                label={identity.invited ? 'invited' : 'invite'}
+                clickable={!identity.invited}
                 onClick={async () => {
-                  if (invited) {
+                  if (identity.invited) {
                     return;
                   }
 
@@ -114,8 +102,6 @@ export function SearchIdentityListItem(
                       { withCredentials: true }
                     );
 
-                    setInvited(true);
-
                     toast.success(
                       `${
                         identity.meta?.ens
@@ -123,12 +109,18 @@ export function SearchIdentityListItem(
                           : shortenWalletAddressLabel(identity.address)
                       } is invited!`
                     );
+
+                    updateIdentityCallback?.({
+                      identity: identity,
+                      view,
+                      invited: true
+                    });
                   } catch (error) {
                     toast.error('Invitation failed!');
                   }
                 }}
                 sx={{
-                  bgcolor: invited ? lightGreen.A700 : orange.A700,
+                  bgcolor: identity.invited ? lightGreen.A700 : orange.A700,
                   '&:hover': { bgcolor: lightGreen.A700 }
                 }}
               />
@@ -231,7 +223,7 @@ export function SearchIdentityListItem(
               }}
             />
           </Tooltip>
-          {favouritesEnabled && (
+          {isAuthenticated && (
             <IconButton
               size="small"
               onClick={async () => {
@@ -245,7 +237,8 @@ export function SearchIdentityListItem(
                     } as IdentityType,
                     { withCredentials: true }
                   );
-                  setFavouriteCallback?.({
+
+                  updateIdentityCallback?.({
                     identity: identity,
                     view,
                     favourite: !favourite
