@@ -35,7 +35,7 @@ import { Address, formatEther, parseEther } from 'viem';
 
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 import { FlowType, FlowWalletType } from '../types/FlowType';
-import SearchProfileDialog from './SearchProfileDialog';
+import SearchIdentityDialog from './SearchIdentityDialog';
 import { IdentityType, SelectedIdentityType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
@@ -567,7 +567,7 @@ export default function AccountSendDialog({
         </Box>
       </DialogContent>
 
-      <SearchProfileDialog
+      <SearchIdentityDialog
         address={profile.identity}
         open={openSearchProfile}
         closeStateCallback={() => {

@@ -25,7 +25,7 @@ import { HomeOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import HideOnScroll from '../components/HideOnScroll';
 import HomeLogo from '../components/Logo';
-import SearchProfileDialog from '../components/SearchProfileDialog';
+import SearchIdentityDialog from '../components/SearchIdentityDialog';
 
 const AIRSTACK_API_KEY = import.meta.env.VITE_AIRSTACK_API_KEY;
 
@@ -165,7 +165,7 @@ export default function Leaderboard() {
             )}
           </Card>
         </Container>
-        <SearchProfileDialog
+        <SearchIdentityDialog
           open={openSearchProfile}
           sx={{
             backdropFilter: 'blur(10px)'

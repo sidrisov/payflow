@@ -18,7 +18,7 @@ import { Helmet } from 'react-helmet-async';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ProfileType, SelectedIdentityType } from '../types/ProfleType';
 import { HomeOutlined, Menu } from '@mui/icons-material';
-import SearchProfileDialog from '../components/SearchProfileDialog';
+import SearchIdentityDialog from '../components/SearchIdentityDialog';
 import { green, grey, orange } from '@mui/material/colors';
 import { AppSettings } from '../types/AppSettingsType';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
@@ -261,7 +261,7 @@ export default function PublicProfile({
           </Box>
         )}
       </Container>
-      <SearchProfileDialog
+      <SearchIdentityDialog
         address={address}
         profileRedirect={true}
         walletMenuEnabled={true}

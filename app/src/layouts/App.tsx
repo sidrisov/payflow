@@ -25,7 +25,7 @@ import { formatUnits } from 'viem';
 import { ProfileType } from '../types/ProfleType';
 import { AppSettings } from '../types/AppSettingsType';
 import { ProfileMenu } from '../components/ProfileMenu';
-import SearchProfileDialog from '../components/SearchProfileDialog';
+import SearchIdentityDialog from '../components/SearchIdentityDialog';
 import HomeLogo from '../components/Logo';
 import { comingSoonToast } from '../components/Toasts';
 import { Chain } from '@rainbow-me/rainbowkit';
@@ -196,7 +196,7 @@ export default function AppLayout({
         onClose={() => setOpenProfileMenu(false)}
         closeStateCallback={() => setOpenProfileMenu(false)}
       />
-      <SearchProfileDialog
+      <SearchIdentityDialog
         address={profile.identity}
         profileRedirect={true}
         open={openSearchProfile}

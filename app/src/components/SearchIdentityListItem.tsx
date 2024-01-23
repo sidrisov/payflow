@@ -25,9 +25,9 @@ import { shortenWalletAddressLabel } from '../utils/address';
 import PayflowChip from './PayflowChip';
 import { green, grey, lightGreen, orange, yellow } from '@mui/material/colors';
 import { useAccount } from 'wagmi';
-import { SetFavouriteCallbackType } from './SearchProfileDialog';
+import { SetFavouriteCallbackType } from './SearchIdentityDialog';
 
-export function SearchProfileListItem(
+export function SearchIdentityListItem(
   props: BoxProps &
     SetFavouriteCallbackType & {
       identity: IdentityType;
@@ -44,13 +44,13 @@ export function SearchProfileListItem(
   const { address } = useAccount();
   // fetch in batch for all addresses in parent component
   useMemo(async () => {
-    if (profile && !identity.profile) {
+    /* if (profile && !identity.profile) {
       const response = await axios.get(`${API_URL}/api/invitations/identity/${identity.address}`, {
         withCredentials: true
       });
 
       setInvited(response.data);
-    }
+    } */
   }, [identity.profile, profile]);
 
   return (
