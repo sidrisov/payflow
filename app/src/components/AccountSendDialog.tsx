@@ -16,7 +16,7 @@ import {
   Tooltip
 } from '@mui/material';
 
-import { providers } from 'ethers';
+import { JsonRpcSigner } from 'ethers';
 
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useContext, useMemo, useRef, useState } from 'react';
@@ -35,8 +35,8 @@ import { Address, formatEther, parseEther } from 'viem';
 
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 import { FlowType, FlowWalletType } from '../types/FlowType';
-import SearchProfileDialog from './SearchProfileDialog';
-import { SelectedProfileWithSocialsType } from '../types/ProfleType';
+import SearchIdentityDialog from './SearchIdentityDialog';
+import { IdentityType, SelectedIdentityType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -54,7 +54,7 @@ import { TransferToastContent } from './toasts/TransferToastContent';
 import { LoadingSwitchNetworkButton } from './LoadingSwitchNetworkButton';
 import { LoadingConnectWalletButton } from './LoadingConnectWalletButton';
 import { shortenWalletAddressLabel } from '../utils/address';
-import { WalletMenu } from './WalletMenu';
+import { useEthersProvider } from '../utils/hooks/useEthersProvider';
 
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
@@ -72,12 +72,13 @@ export default function AccountSendDialog({
   const { profile, ethUsdPrice } = useContext(ProfileContext);
 
   const ethersSigner = useEthersSigner();
+  const ethersProvider = useEthersProvider();
 
   const { address } = useAccount();
 
   const { chain } = useNetwork();
 
-  const [selectedRecipient, setSelectedRecipient] = useState<SelectedProfileWithSocialsType>();
+  const [selectedRecipient, setSelectedRecipient] = useState<SelectedIdentityType>();
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
   const [compatibleWallets, setCompatibleWallets] = useState<FlowWalletType[]>([]);
 
@@ -95,11 +96,8 @@ export default function AccountSendDialog({
 
   const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
 
-  const [openSearchProfile, setOpenSearchProfile] = useState<boolean>(true);
+  const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(true);
   const sendToastId = useRef<Id>();
-
-  const [walletMenuAnchorEl, setWalletMenuAnchorEl] = useState<null | HTMLElement>(null);
-  const [openWalletMenu, setOpenWalletMenu] = useState(false);
 
   useMemo(async () => {
     if (!selectedRecipient) {
@@ -113,7 +111,7 @@ export default function AccountSendDialog({
     const compatibleSenderWallets =
       selectedRecipient.type === 'profile'
         ? flow.wallets.filter((w) =>
-            selectedRecipient.data.profile?.defaultFlow?.wallets.find(
+            selectedRecipient.identity.profile?.defaultFlow?.wallets.find(
               (rw) => rw.network === w.network
             )
           )
@@ -137,10 +135,10 @@ export default function AccountSendDialog({
 
     if (
       selectedWallet &&
-      ethersSigner &&
-      selectedWallet.network === (await ethersSigner.getChainId())
+      ethersProvider &&
+      selectedWallet.network === Number((await ethersProvider.getNetwork()).chainId)
     ) {
-      const sponsored = await isSafeSponsored(ethersSigner, selectedWallet.address);
+      const sponsored = await isSafeSponsored(ethersProvider, selectedWallet.address);
       setGasFee(
         BigInt(
           sponsored
@@ -149,7 +147,7 @@ export default function AccountSendDialog({
         )
       );
     }
-  }, [selectedWallet, ethersSigner]);
+  }, [selectedWallet, ethersProvider]);
 
   useMemo(async () => {
     if (!sendAmount || !selectedRecipient || !selectedWallet) {
@@ -160,7 +158,7 @@ export default function AccountSendDialog({
       toast.dismiss();
       sendToastId.current = toast.loading(
         <TransferToastContent
-          from={{ type: 'profile', data: { profile: profile } }}
+          from={{ type: 'profile', identity: { profile: profile } as IdentityType }}
           to={selectedRecipient}
           ethAmount={sendAmount}
           ethUsdPrice={ethUsdPrice}
@@ -176,7 +174,7 @@ export default function AccountSendDialog({
       toast.update(sendToastId.current, {
         render: (
           <TransferToastContent
-            from={{ type: 'profile', data: { profile: profile } }}
+            from={{ type: 'profile', identity: { profile: profile } as IdentityType }}
             to={selectedRecipient}
             ethAmount={sendAmount}
             ethUsdPrice={ethUsdPrice}
@@ -197,7 +195,7 @@ export default function AccountSendDialog({
       toast.update(sendToastId.current, {
         render: (
           <TransferToastContent
-            from={{ type: 'profile', data: { profile: profile } }}
+            from={{ type: 'profile', identity: { profile: profile } as IdentityType }}
             to={selectedRecipient}
             ethAmount={sendAmount}
             ethUsdPrice={ethUsdPrice}
@@ -225,7 +223,7 @@ export default function AccountSendDialog({
     from: FlowWalletType,
     to: Address,
     amount: bigint,
-    ethersSigner: providers.JsonRpcSigner
+    ethersSigner: JsonRpcSigner
   ) {
     reset();
 
@@ -274,10 +272,10 @@ export default function AccountSendDialog({
     }
 
     if (selectedRecipient.type === 'address') {
-      setToAddress(selectedRecipient.data.meta?.addresses[0]);
+      setToAddress(selectedRecipient.identity.address);
     } else {
       setToAddress(
-        selectedRecipient.data.profile?.defaultFlow?.wallets.find(
+        selectedRecipient.identity.profile?.defaultFlow?.wallets.find(
           (w) => w.network === selectedWallet.network
         )?.address
       );
@@ -326,15 +324,6 @@ export default function AccountSendDialog({
               flow
             </Typography>
           </Stack>
-
-          {/* <IconButton
-            color="inherit"
-            onClick={async (event) => {
-              setWalletMenuAnchorEl(event.currentTarget);
-              setOpenWalletMenu(true);
-            }}>
-            <Menu />
-          </IconButton> */}
         </Box>
       </DialogTitle>
       <DialogContent
@@ -363,7 +352,7 @@ export default function AccountSendDialog({
                   justifyContent="space-between"
                   component={Button}
                   color="inherit"
-                  onClick={async () => setOpenSearchProfile(true)}
+                  onClick={async () => setOpenSearchIdentity(true)}
                   sx={{
                     height: 56,
                     border: 1,
@@ -373,11 +362,14 @@ export default function AccountSendDialog({
                   }}>
                   {selectedRecipient &&
                     (selectedRecipient.type === 'profile'
-                      ? selectedRecipient.data.profile && (
-                          <ProfileSection maxWidth={200} profile={selectedRecipient.data.profile} />
+                      ? selectedRecipient.identity.profile && (
+                          <ProfileSection
+                            maxWidth={200}
+                            profile={selectedRecipient.identity.profile}
+                          />
                         )
-                      : selectedRecipient.data.meta && (
-                          <AddressSection maxWidth={200} meta={selectedRecipient.data.meta} />
+                      : selectedRecipient.identity.meta && (
+                          <AddressSection maxWidth={200} identity={selectedRecipient.identity} />
                         ))}
 
                   {!selectedRecipient && (
@@ -564,23 +556,15 @@ export default function AccountSendDialog({
         </Box>
       </DialogContent>
 
-      <SearchProfileDialog
+      <SearchIdentityDialog
         address={profile.identity}
-        open={openSearchProfile}
+        open={openSearchIdentity}
         closeStateCallback={() => {
-          setOpenSearchProfile(false);
+          setOpenSearchIdentity(false);
         }}
-        selectProfileCallback={(selectedProfileWithSocials) => {
-          setSelectedRecipient(selectedProfileWithSocials);
+        selectIdentityCallback={(selectedIdentity) => {
+          setSelectedRecipient(selectedIdentity);
         }}
-      />
-
-      <WalletMenu
-        contextType="profile"
-        anchorEl={walletMenuAnchorEl}
-        open={openWalletMenu}
-        onClose={() => setOpenWalletMenu(false)}
-        closeStateCallback={() => setOpenWalletMenu(false)}
       />
     </Dialog>
   );

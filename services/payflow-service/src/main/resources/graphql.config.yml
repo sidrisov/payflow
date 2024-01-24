@@ -1,0 +1,5 @@
+schema: '**/*.graphqls'
+documents: '**/*.graphql'
+
+# npm install -g get-graphql-schema
+# get-graphql-schema https://api.airstack.xyz/gql > schema.graphql

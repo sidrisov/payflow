@@ -21,7 +21,7 @@ export async function signTransactionBySafe(
   signer: Safe,
   transaction: SafeTransaction
 ): Promise<SafeSignature | undefined> {
-  const chainId = await signer.getChainId();
+  const chainId = Number(await signer.getChainId());
   const pubClient = getPublicClient({ chainId });
 
   const targetAddress = (await target.getAddress()) as Address;

@@ -1,5 +1,5 @@
-import { Box, Divider, ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material';
-import { MetaType } from '../types/ProfleType';
+import { Divider, ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material';
+import { IdentityType } from '../types/ProfleType';
 import {
   AccountBalanceWallet,
   DarkModeOutlined,
@@ -13,7 +13,6 @@ import { disconnect } from 'wagmi/actions';
 import { AddressSection } from './AddressSection';
 import { useAccount } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
-import { AnonymousUserContextType, ProfileContextType } from '../types/UserContextType';
 
 export function WalletMenu({
   contextType = 'anonymous',
@@ -38,7 +37,7 @@ export function WalletMenu({
           component="a"
           href={`https://etherscan.io/address/${address}`}
           target="_blank">
-          <AddressSection meta={{ addresses: [address] } as MetaType} />
+          <AddressSection identity={{ address } as IdentityType} />
         </MenuItem>
       ) : (
         <MenuItem

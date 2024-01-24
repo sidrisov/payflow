@@ -16,9 +16,9 @@ import {
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ProfileType, SelectedProfileWithSocialsType } from '../types/ProfleType';
+import { ProfileType, SelectedIdentityType } from '../types/ProfleType';
 import { HomeOutlined, Menu } from '@mui/icons-material';
-import SearchProfileDialog from '../components/SearchProfileDialog';
+import SearchIdentityDialog from '../components/SearchIdentityDialog';
 import { green, grey, orange } from '@mui/material/colors';
 import { AppSettings } from '../types/AppSettingsType';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
@@ -53,13 +53,13 @@ export default function PublicProfile({
 
   const { darkMode } = appSettings;
 
-  const [openSearchProfile, setOpenSearchProfile] = useState<boolean>(false);
+  const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(false);
   const [walletMenuAnchorEl, setWalletMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [openWalletMenu, setOpenWalletMenu] = useState(false);
 
   const { address } = useAccount();
 
-  const [selectedRecipient, setSelectedRecipient] = useState<SelectedProfileWithSocialsType>();
+  const [selectedRecipient, setSelectedRecipient] = useState<SelectedIdentityType>();
 
   const { isSuccess: isEnsSuccess, data: ethUsdPriceFeedAddress } = useEnsAddress({
     name: 'eth-usd.data.eth',
@@ -171,7 +171,7 @@ export default function PublicProfile({
                         justifyContent: 'space-evenly'
                       }}
                       onClick={async () => {
-                        setOpenSearchProfile(true);
+                        setOpenSearchIdentity(true);
                       }}>
                       <Avatar src="payflow.png" sx={{ width: 24, height: 24 }} />
                       <Typography variant="subtitle2">Search ... </Typography>
@@ -244,7 +244,7 @@ export default function PublicProfile({
                 variant="outlined"
                 label="search & pay"
                 onClick={() => {
-                  setOpenSearchProfile(true);
+                  setOpenSearchIdentity(true);
                 }}
                 sx={{
                   border: 2,
@@ -261,19 +261,16 @@ export default function PublicProfile({
           </Box>
         )}
       </Container>
-      <SearchProfileDialog
+      <SearchIdentityDialog
         address={address}
         profileRedirect={true}
         walletMenuEnabled={true}
-        selectProfileCallback={(selectedProfileWithSocials) => {
-          setSelectedRecipient(selectedProfileWithSocials);
+        selectIdentityCallback={(selectedIdentity) => {
+          setSelectedRecipient(selectedIdentity);
         }}
-        open={openSearchProfile}
-        sx={{
-          backdropFilter: 'blur(10px)'
-        }}
+        open={openSearchIdentity}
         closeStateCallback={() => {
-          setOpenSearchProfile(false);
+          setOpenSearchIdentity(false);
         }}
       />
       {selectedRecipient && (

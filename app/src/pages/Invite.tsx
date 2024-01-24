@@ -44,7 +44,6 @@ export default function Invite() {
         setCodes(codes);
       }
 
-      console.debug(invitations);
       setInvitations(invitations);
     } finally {
       setLoadingInvitations(false);
@@ -115,7 +114,7 @@ export default function Invite() {
                         }}>
                         <ProfileSection maxWidth={150} profile={invitee} />
                         <Typography variant="caption">
-                          joined on: {new Date(profile.createdDate).toLocaleDateString()}
+                          joined on: {new Date(invitee.createdDate).toLocaleDateString()}
                         </Typography>
                       </Box>
                     ))}
