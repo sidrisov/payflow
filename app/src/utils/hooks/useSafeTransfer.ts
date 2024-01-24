@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Address, Chain, Hash } from 'viem';
 import { safeTransferEthWithDeploy } from '../safeTransactions';
 
-import { providers } from 'ethers';
+import { JsonRpcSigner } from 'ethers';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { useWaitForTransaction } from 'wagmi';
@@ -19,7 +19,7 @@ export const useSafeTransfer = (): {
   status: string | undefined;
   txHash: Hash | undefined;
   transfer: (
-    ethersSigner: providers.JsonRpcSigner,
+    ethersSigner: JsonRpcSigner,
     tx: { from: Address; to: Address; amount: bigint; safeSigner?: Address },
     safeAccountConfig: SafeAccountConfig,
     safeVersion: SafeVersion,
@@ -63,7 +63,7 @@ export const useSafeTransfer = (): {
   };
 
   const transfer = useCallback(async function (
-    ethersSigner: providers.JsonRpcSigner,
+    ethersSigner: JsonRpcSigner,
     tx: { from: Address; to: Address; amount: bigint; safeSigner?: Address },
     safeAccountConfig: SafeAccountConfig,
     safeVersion: SafeVersion,

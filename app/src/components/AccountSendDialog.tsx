@@ -16,7 +16,7 @@ import {
   Tooltip
 } from '@mui/material';
 
-import { providers } from 'ethers';
+import { JsonRpcSigner } from 'ethers';
 
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useContext, useMemo, useRef, useState } from 'react';
@@ -54,6 +54,7 @@ import { TransferToastContent } from './toasts/TransferToastContent';
 import { LoadingSwitchNetworkButton } from './LoadingSwitchNetworkButton';
 import { LoadingConnectWalletButton } from './LoadingConnectWalletButton';
 import { shortenWalletAddressLabel } from '../utils/address';
+import { useEthersProvider } from '../utils/hooks/useEthersProvider';
 
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
@@ -71,6 +72,7 @@ export default function AccountSendDialog({
   const { profile, ethUsdPrice } = useContext(ProfileContext);
 
   const ethersSigner = useEthersSigner();
+  const ethersProvider = useEthersProvider();
 
   const { address } = useAccount();
 
@@ -133,10 +135,10 @@ export default function AccountSendDialog({
 
     if (
       selectedWallet &&
-      ethersSigner &&
-      selectedWallet.network === (await ethersSigner.getChainId())
+      ethersProvider &&
+      selectedWallet.network === Number((await ethersProvider.getNetwork()).chainId)
     ) {
-      const sponsored = await isSafeSponsored(ethersSigner, selectedWallet.address);
+      const sponsored = await isSafeSponsored(ethersProvider, selectedWallet.address);
       setGasFee(
         BigInt(
           sponsored
@@ -145,7 +147,7 @@ export default function AccountSendDialog({
         )
       );
     }
-  }, [selectedWallet, ethersSigner]);
+  }, [selectedWallet, ethersProvider]);
 
   useMemo(async () => {
     if (!sendAmount || !selectedRecipient || !selectedWallet) {
@@ -221,7 +223,7 @@ export default function AccountSendDialog({
     from: FlowWalletType,
     to: Address,
     amount: bigint,
-    ethersSigner: providers.JsonRpcSigner
+    ethersSigner: JsonRpcSigner
   ) {
     reset();
 
