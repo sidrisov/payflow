@@ -24,8 +24,12 @@ export function PublicProfileDetailsPopover({
         }
       }}
       anchorOrigin={{
+        vertical: 'top',
+        horizontal: 'center'
+      }}
+      transformOrigin={{
         vertical: 'bottom',
-        horizontal: 'left'
+        horizontal: 'center'
       }}>
       <IconButton
         color="inherit"

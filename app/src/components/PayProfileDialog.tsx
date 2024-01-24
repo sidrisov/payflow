@@ -25,7 +25,7 @@ import { Id, toast } from 'react-toastify';
 import { Address, formatEther, parseEther } from 'viem';
 
 import { FlowWalletType } from '../types/FlowType';
-import { MetaType, SelectedProfileWithSocialsType } from '../types/ProfleType';
+import { IdentityType, SelectedIdentityType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -43,7 +43,7 @@ import { AnonymousUserContext } from '../contexts/UserContext';
 
 export type PayProfileDialogProps = DialogProps &
   CloseCallbackType & {
-    recipient: SelectedProfileWithSocialsType;
+    recipient: SelectedIdentityType;
   };
 
 export default function PayProfileDialog({
@@ -91,7 +91,7 @@ export default function PayProfileDialog({
     const compatibleSenderWallets =
       recipient.type === 'address'
         ? SUPPORTED_CHAINS.map((c) => ({ address, network: c.id } as FlowWalletType))
-        : recipient.data.profile?.defaultFlow?.wallets.map(
+        : recipient.identity.profile?.defaultFlow?.wallets.map(
             (wallet) => ({ address, network: wallet.network } as FlowWalletType)
           ) ?? [];
 
@@ -119,10 +119,10 @@ export default function PayProfileDialog({
     }
 
     if (recipient.type === 'address') {
-      setToAddress(recipient.data.meta?.addresses[0]);
+      setToAddress(recipient.identity.address);
     } else {
       setToAddress(
-        recipient.data.profile?.defaultFlow?.wallets.find(
+        recipient.identity.profile?.defaultFlow?.wallets.find(
           (w) => w.network === selectedWallet.network
         )?.address
       );
@@ -138,7 +138,7 @@ export default function PayProfileDialog({
       toast.dismiss();
       sendToastId.current = toast.loading(
         <TransferToastContent
-          from={{ type: 'address', data: { meta: { addresses: [address] } as MetaType } }}
+          from={{ type: 'address', identity: { address } as IdentityType }}
           to={recipient}
           ethAmount={sendAmount}
           ethUsdPrice={ethUsdPrice}
@@ -154,7 +154,7 @@ export default function PayProfileDialog({
       toast.update(sendToastId.current, {
         render: (
           <TransferToastContent
-            from={{ type: 'address', data: { meta: { addresses: [address] } as MetaType } }}
+            from={{ type: 'address', identity: { address } as IdentityType }}
             to={recipient}
             ethAmount={sendAmount}
             ethUsdPrice={ethUsdPrice}
@@ -170,7 +170,7 @@ export default function PayProfileDialog({
       toast.update(sendToastId.current, {
         render: (
           <TransferToastContent
-            from={{ type: 'address', data: { meta: { addresses: [address] } as MetaType } }}
+            from={{ type: 'address', identity: { address } as IdentityType }}
             to={recipient}
             ethAmount={sendAmount}
             ethUsdPrice={ethUsdPrice}
@@ -283,11 +283,11 @@ export default function PayProfileDialog({
                     }}>
                     {recipient &&
                       (recipient.type === 'profile'
-                        ? recipient.data.profile && (
-                            <ProfileSection maxWidth={200} profile={recipient.data.profile} />
+                        ? recipient.identity.profile && (
+                            <ProfileSection maxWidth={200} profile={recipient.identity.profile} />
                           )
-                        : recipient.data.meta && (
-                            <AddressSection maxWidth={200} meta={recipient.data.meta} />
+                        : recipient.identity.meta && (
+                            <AddressSection maxWidth={200} identity={recipient.identity} />
                           ))}
 
                     {!recipient && (

@@ -1,4 +1,4 @@
-import { GelatoRelayPack, RelayPack } from '@safe-global/relay-kit';
+import { GelatoRelayPack } from '@safe-global/relay-kit';
 import {
   arbitrumGoerli,
   base,
@@ -10,13 +10,11 @@ import {
 import { Hash } from 'viem';
 import { delay } from './delay';
 import { TaskState } from '../types/TaskState';
+import Safe from '@safe-global/protocol-kit';
 
 const GELATO_TESTNET_API_KEY = import.meta.env.VITE_GELATO_TESTNET_API_KEY;
 const GELATO_MAINNET_API_KEY = import.meta.env.VITE_GELATO_MAINNET_API_KEY;
 const GELATO_SPONSORED_ENABLED = parseInt(import.meta.env.VITE_GELATO_SPONSORED_ENABLED) ?? 0;
-
-const RELAY_KIT_TESTNET = new GelatoRelayPack(GELATO_TESTNET_API_KEY);
-const RELAY_KIT_MAINNET = new GelatoRelayPack(GELATO_MAINNET_API_KEY);
 
 const MAINNET_CHAINS_SUPPORTING_RELAY: number[] = [optimism.id, base.id];
 const TESTNET_CHAINS_SUPPORTING_RELAY: number[] = [
@@ -26,13 +24,13 @@ const TESTNET_CHAINS_SUPPORTING_RELAY: number[] = [
   zkSyncTestnet.id
 ];
 
-export function getRelayKitForChainId(chainId: number) {
+export function getRelayKitForChainId(chainId: number, protocolKit: Safe) {
   if (MAINNET_CHAINS_SUPPORTING_RELAY.includes(chainId)) {
-    return RELAY_KIT_MAINNET;
+    return new GelatoRelayPack({ apiKey: GELATO_MAINNET_API_KEY, protocolKit });
   }
 
   if (TESTNET_CHAINS_SUPPORTING_RELAY.includes(chainId)) {
-    return RELAY_KIT_TESTNET;
+    return new GelatoRelayPack({ apiKey: GELATO_TESTNET_API_KEY, protocolKit });
   }
 
   return;
@@ -56,7 +54,7 @@ export function getSponsoredCount() {
 }
 
 export async function waitForRelayTaskToComplete(
-  relayKit: RelayPack,
+  relayKit: GelatoRelayPack,
   taskId: string,
   period: number = 3000,
   timeout: number = 60000

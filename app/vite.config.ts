@@ -5,6 +5,8 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vite';
 // https://vitejs.dev/config/
 export default defineConfig({
+  // specify same port for dev as for preview
+  server: { port: 4173 },
   plugins: [
     react(),
     svgr({ include: '**/*.svg?react' }),
@@ -12,7 +14,8 @@ export default defineConfig({
       injectRegister: 'auto',
       registerType: 'autoUpdate',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        maximumFileSizeToCacheInBytes: 5000000
       },
       devOptions: {
         enabled: true

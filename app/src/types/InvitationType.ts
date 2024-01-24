@@ -1,3 +1,4 @@
+import { Address } from 'viem';
 import { ProfileType } from './ProfleType';
 
 export interface InvitationType {
@@ -7,4 +8,8 @@ export interface InvitationType {
   identity: string;
   createdDate: string;
   expiryDate: string;
+}
+
+export interface IdentityInvitedStatusType {
+  [address: Address]: boolean;
 }

@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { lightGreen, red } from '@mui/material/colors';
 import { formatEther } from 'viem';
-import { MetaType } from '../types/ProfleType';
+import { IdentityType } from '../types/ProfleType';
 import { useContext } from 'react';
 import { ProfileContext } from '../contexts/UserContext';
 import { TxInfo } from '../types/ActivityFetchResultType';
@@ -109,10 +109,10 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
           href={`${blockExplorerUrl}/address/${
             txInfo.activity === 'inbound' ? txInfo.from : txInfo.to
           }`}
-          meta={
+          identity={
             {
-              addresses: [txInfo.activity === 'inbound' ? txInfo.from : txInfo.to]
-            } as MetaType
+              address: txInfo.activity === 'inbound' ? txInfo.from : txInfo.to
+            } as IdentityType
           }
         />
       )}

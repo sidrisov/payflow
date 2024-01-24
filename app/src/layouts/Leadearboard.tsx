@@ -25,7 +25,7 @@ import { HomeOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import HideOnScroll from '../components/HideOnScroll';
 import HomeLogo from '../components/Logo';
-import SearchProfileDialog from '../components/SearchProfileDialog';
+import SearchIdentityDialog from '../components/SearchIdentityDialog';
 
 const AIRSTACK_API_KEY = import.meta.env.VITE_AIRSTACK_API_KEY;
 
@@ -52,7 +52,7 @@ export default function Leaderboard() {
   const [profiles, setProfiles] = useState<ProfileType[]>();
   const [loadingProfiles, setLoadingProfiles] = useState<boolean>();
 
-  const [openSearchProfile, setOpenSearchProfile] = useState<boolean>(false);
+  const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(false);
 
   const navigate = useNavigate();
 
@@ -116,7 +116,7 @@ export default function Leaderboard() {
                       justifyContent: 'space-evenly'
                     }}
                     onClick={async () => {
-                      setOpenSearchProfile(true);
+                      setOpenSearchIdentity(true);
                     }}>
                     <Avatar src="payflow.png" sx={{ width: 24, height: 24 }} />
                     <Typography variant="subtitle2">Search ... </Typography>
@@ -165,13 +165,10 @@ export default function Leaderboard() {
             )}
           </Card>
         </Container>
-        <SearchProfileDialog
-          open={openSearchProfile}
-          sx={{
-            backdropFilter: 'blur(10px)'
-          }}
+        <SearchIdentityDialog
+          open={openSearchIdentity}
           closeStateCallback={() => {
-            setOpenSearchProfile(false);
+            setOpenSearchIdentity(false);
           }}
         />
       </CustomThemeProvider>
