@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -55,6 +56,7 @@ public class ContactBookService implements IContactBookService {
 	private int contactsLimit;
 
 	@Override
+	@CacheEvict(value = "contacts", key = "#user.identity")
 	public void update(ContactMessage contactMessage, User user) {
 		var contact = contactRepository.findByUserAndIdentity(user, contactMessage.address());
 		if (contact == null) {
@@ -105,28 +107,28 @@ public class ContactBookService implements IContactBookService {
 	@Override
 	@Cacheable(value = "contacts", key = "#user.identity", unless = "#result.isEmpty()")
 	public List<ContactMessage> getAllContacts(User user) {
-		val contactMessages =
-				Flux.fromIterable(contactRepository.findAllByUser(user).stream().limit(contactsLimit * 2L).toList())
-						.flatMapSequential(contact -> Mono.zip(
-										Mono.fromCallable(
-												() -> Optional.ofNullable(userRepository.findByIdentity(contact.getIdentity()))),
-										Mono.fromCallable(
-												() -> socialGraphService.getSocialMetadata(contact.getIdentity(), user.getIdentity())),
-										// TODO: fetch only if social graph fetched
-										Mono.fromCallable(
-												() -> defaultWhitelistedUsers.contains(contact.getIdentity()) || invitationRepository.existsByIdentityAndValid(contact.getIdentity()))
-								)
-								// TODO: fail fast, seems doesn't to work properly with threads
-								.subscribeOn(Schedulers.newBoundedElastic(2, contactsLimit * 4,
-										"contacts-bounded-elastic"))
-								.map(tuple -> ContactMessage.convert(
-										contact,
-										tuple.getT1().orElse(null),
-										tuple.getT2(),
-										tuple.getT3())))
-						.timeout(Duration.ofSeconds(30), Mono.empty())
-						.collectList()
-						.block();
+		val contactMessages = Flux
+				.fromIterable(contactRepository.findAllByUser(user).stream().limit(contactsLimit * 2L).toList())
+				.flatMapSequential(contact -> Mono.zip(
+						Mono.fromCallable(
+								() -> Optional.ofNullable(userRepository.findByIdentity(contact.getIdentity()))),
+						Mono.fromCallable(
+								() -> socialGraphService.getSocialMetadata(contact.getIdentity(), user.getIdentity())),
+						// TODO: fetch only if social graph fetched
+						Mono.fromCallable(
+								() -> defaultWhitelistedUsers.contains(contact.getIdentity())
+										|| invitationRepository.existsByIdentityAndValid(contact.getIdentity())))
+						// TODO: fail fast, seems doesn't to work properly with threads
+						.subscribeOn(Schedulers.newBoundedElastic(2, contactsLimit * 4,
+								"contacts-bounded-elastic"))
+						.map(tuple -> ContactMessage.convert(
+								contact,
+								tuple.getT1().orElse(null),
+								tuple.getT2(),
+								tuple.getT3())))
+				.timeout(Duration.ofSeconds(30), Mono.empty())
+				.collectList()
+				.block();
 
 		if (log.isTraceEnabled()) {
 			log.trace("Fetched {} contacts for {}: {}", contactMessages.size(), user.getUsername(),

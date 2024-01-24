@@ -75,7 +75,11 @@ export default function SearchIdentityDialog({
 
   const [searchString, setSearchString] = useState<string>();
 
-  const [debouncedSearchString] = useDebounce(searchString?.replace(' ', '').toLowerCase(), 500);
+  const [debouncedSearchString] = useDebounce(searchString?.replace(' ', '').toLowerCase(), 500, {
+    leading: true,
+    trailing: true,
+    maxWait: 5000
+  });
 
   const [foundIdentities, setFoundIdentities] = useState<IdentityType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
