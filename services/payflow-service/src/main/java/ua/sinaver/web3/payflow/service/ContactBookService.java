@@ -112,8 +112,8 @@ public class ContactBookService implements IContactBookService {
 				Schedulers.DEFAULT_POOL_SIZE, Schedulers.DEFAULT_BOUNDED_ELASTIC_SIZE,
 				Schedulers.DEFAULT_BOUNDED_ELASTIC_QUEUESIZE);
 
-		val contactsLimitAdjusted = whitelistedUsers.contains(user.getIdentity()) ?
-				contactsLimit * 5 : 2;
+		val contactsLimitAdjusted = contactsLimit * (whitelistedUsers.contains(user.getIdentity()) ?
+				5 : 2);
 		try {
 			val contactMessages = Flux
 					.fromIterable(contactRepository.findAllByUser(user)

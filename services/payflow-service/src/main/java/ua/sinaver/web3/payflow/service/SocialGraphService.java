@@ -44,11 +44,11 @@ public class SocialGraphService implements ISocialGraphService {
 
 	@Override
 	public List<String> getAllFollowingContacts(String identity) {
-		val identityLimitAdjusted = whitelistedUsers.contains(identity) ?
-				contactsLimit * 3 : 1;
+		val identityLimitAdjusted = contactsLimit * (whitelistedUsers.contains(identity) ?
+				3 : 1);
 
-		val addressesLimitAdjusted = whitelistedUsers.contains(identity) ?
-				contactsLimit * 5 : 2;
+		val addressesLimitAdjusted = contactsLimit * (whitelistedUsers.contains(identity) ?
+				5 : 2);
 
 		val topFollowings = graphQlClient.documentName("getSocialFollowings")
 				.variable("identity", identity)
