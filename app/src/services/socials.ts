@@ -195,27 +195,27 @@ const FOLLOWER = 3;
 const TRANSACTED_BASE = 10;
 const PER_TRANSACTION = 1;
 
+const ENS_SCORE = 5;
 const FARCASTER_SCORE = 4;
 const LENS_SCORE = 4;
-const ENS_SCORE = 3;
-const XMTP_SCORE = 1;
+const XMTP_SCORE = 2;
 
-export function sortBySocialScore(profilesWithSocials: IdentityType[]): IdentityType[] {
-  return profilesWithSocials.sort((left, right) => calculateScore(right) - calculateScore(left));
+export function sortBySocialScore(identities: IdentityType[]): IdentityType[] {
+  return identities.sort((left, right) => calculateScore(right) - calculateScore(left));
 }
 
-function calculateScore(profilesWithSocials: IdentityType): number {
+function calculateScore(identity: IdentityType): number {
   let score = 0;
-  if (profilesWithSocials.meta) {
-    if (profilesWithSocials.meta.ens) {
+  if (identity.meta) {
+    if (identity.meta.ens) {
       score += ENS_SCORE;
     }
 
-    if (profilesWithSocials.meta.xmtp) {
+    if (identity.meta.xmtp) {
       score += XMTP_SCORE;
     }
 
-    profilesWithSocials.meta.socials?.forEach((s) => {
+    identity.meta.socials?.forEach((s) => {
       if (s.dappName === 'farcaster') {
         score += FARCASTER_SCORE;
       }
@@ -225,25 +225,25 @@ function calculateScore(profilesWithSocials: IdentityType): number {
       }
     });
 
-    if (profilesWithSocials.meta.insights) {
-      if (profilesWithSocials.meta.insights.farcasterFollow === 'following') {
+    if (identity.meta.insights) {
+      if (identity.meta.insights.farcasterFollow === 'following') {
         score += FOLLOWING;
       }
 
-      if (profilesWithSocials.meta.insights.farcasterFollow === 'mutual') {
+      if (identity.meta.insights.farcasterFollow === 'mutual') {
         score += FOLLOWING + FOLLOWER;
       }
 
-      if (profilesWithSocials.meta.insights.lensFollow === 'following') {
+      if (identity.meta.insights.lensFollow === 'following') {
         score += FOLLOWING;
       }
 
-      if (profilesWithSocials.meta.insights.lensFollow === 'mutual') {
+      if (identity.meta.insights.lensFollow === 'mutual') {
         score += FOLLOWING + FOLLOWER;
       }
 
-      if (profilesWithSocials.meta.insights.sentTxs > 0) {
-        score += TRANSACTED_BASE + profilesWithSocials.meta.insights.sentTxs * PER_TRANSACTION;
+      if (identity.meta.insights.sentTxs > 0) {
+        score += TRANSACTED_BASE + identity.meta.insights.sentTxs * PER_TRANSACTION;
       }
     }
   }

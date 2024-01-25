@@ -219,7 +219,12 @@ export default function PayProfileDialog({
         fullScreen={isMobile}
         onClose={closeStateCallback}
         {...props}
-        PaperProps={{ sx: { borderRadius: 5 } }}
+        PaperProps={{
+          sx: {
+            borderRadius: 5,
+            ...(!isMobile && { width: 375, height: 375 })
+          }
+        }}
         sx={{
           backdropFilter: 'blur(5px)'
         }}>
@@ -250,19 +255,14 @@ export default function PayProfileDialog({
         </DialogTitle>
         <DialogContent
           sx={{
-            p: 2,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center'
+            p: 2
           }}>
           <Box
-            display="flex"
-            minWidth={350}
-            maxWidth={isMobile ? 450 : 350}
             height="100%"
+            display="flex"
             flexDirection="column"
             alignItems="center"
-            justifyContent={address ? 'space-between' : 'flex-end'}>
+            justifyContent={address && recipient ? 'space-between' : 'flex-end'}>
             {address ? (
               <>
                 <Stack width="100%" spacing={2} alignItems="center">
