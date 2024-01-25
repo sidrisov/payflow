@@ -21,10 +21,7 @@ import ua.sinaver.web3.payflow.repository.UserRepository;
 
 import java.time.Duration;
 import java.time.Period;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -49,11 +46,15 @@ public class ContactBookService implements IContactBookService {
 	@Autowired
 	private ISocialGraphService socialGraphService;
 
-	@Value("${payflow.invitation.whitelisted.default.users}")
-	private Set<String> defaultWhitelistedUsers;
-
 	@Value("${payflow.airstack.contacts.limit:10}")
 	private int contactsLimit;
+
+	@Value("${payflow.airstack.contacts.fetch.timeout:30s}")
+	private Duration contactsFetchTimeout;
+
+	// reuse property to increase the contacts limit
+	@Value("${payflow.invitation.whitelisted.default.users}")
+	private Set<String> whitelistedUsers;
 
 	@Override
 	@CacheEvict(value = "contacts", key = "#user.identity")
@@ -107,37 +108,63 @@ public class ContactBookService implements IContactBookService {
 	@Override
 	@Cacheable(value = "contacts", key = "#user.identity", unless = "#result.isEmpty()")
 	public List<ContactMessage> getAllContacts(User user) {
-		val contactMessages = Flux
-				.fromIterable(contactRepository.findAllByUser(user).stream().limit(contactsLimit * 2L).toList())
-				.flatMapSequential(contact -> Mono.zip(
-						Mono.fromCallable(
-								() -> Optional.ofNullable(userRepository.findByIdentity(contact.getIdentity()))),
-						Mono.fromCallable(
-								() -> socialGraphService.getSocialMetadata(contact.getIdentity(), user.getIdentity())),
-						// TODO: fetch only if social graph fetched
-						Mono.fromCallable(
-								() -> defaultWhitelistedUsers.contains(contact.getIdentity())
-										|| invitationRepository.existsByIdentityAndValid(contact.getIdentity())))
-						// TODO: fail fast, seems doesn't to work properly with threads
-						.subscribeOn(Schedulers.newBoundedElastic(2, contactsLimit * 4,
-								"contacts-bounded-elastic"))
-						.map(tuple -> ContactMessage.convert(
-								contact,
-								tuple.getT1().orElse(null),
-								tuple.getT2(),
-								tuple.getT3())))
-				.timeout(Duration.ofSeconds(30), Mono.empty())
-				.collectList()
-				.block();
+		val contactsLimitAdjusted = whitelistedUsers.contains(user.getIdentity()) ?
+				contactsLimit * 5 : 2;
+		try {
+			val contactMessages = Flux
+					.fromIterable(contactRepository.findAllByUser(user)
+							.stream().limit(contactsLimit * contactsLimitAdjusted).toList())
+					.flatMapSequential(contact -> Mono.zip(
+									Mono.fromCallable(
+													() -> Optional.ofNullable(userRepository.findByIdentityAndAllowedTrue(contact.getIdentity())))
+											.onErrorResume(exception -> {
+												log.error("Error fetching user {} - {}",
+														contact.getIdentity(),
+														exception.getMessage());
+												return Mono.empty();
+											}),
+									Mono.fromCallable(
+													() -> socialGraphService.getSocialMetadata(contact.getIdentity(), user.getIdentity()))
+											.onErrorResume(exception -> {
+												log.error("Error fetching social graph for {} - {}",
+														contact.getIdentity(),
+														exception.getMessage());
+												return Mono.empty();
+											}),
+									// TODO: fetch only if social graph fetched
+									Mono.fromCallable(
+													() -> whitelistedUsers.contains(contact.getIdentity())
+															|| invitationRepository.existsByIdentityAndValid(contact.getIdentity()))
+											.onErrorResume(exception -> {
+												log.error("Error checking invitation status for user {} - {}",
+														contact.getIdentity(),
+														exception.getMessage());
+												return Mono.empty();
+											}))
 
-		if (log.isTraceEnabled()) {
-			log.trace("Fetched {} contacts for {}: {}", contactMessages.size(), user.getUsername(),
-					contactMessages.stream().map(ContactMessage::address).toList());
-		} else {
-			log.debug("Fetched {} contacts for {}", contactMessages.size(), user.getUsername());
+							// TODO: fail fast, seems doesn't to work properly with threads
+							.subscribeOn(Schedulers.newBoundedElastic(2, contactsLimit * 4,
+									"contacts-bounded-elastic"))
+							.map(tuple -> ContactMessage.convert(
+									contact,
+									tuple.getT1().orElse(null),
+									tuple.getT2(),
+									tuple.getT3())))
+					.timeout(contactsFetchTimeout, Mono.empty())
+					.collectList()
+					.block();
+
+			if (log.isTraceEnabled()) {
+				log.trace("Fetched {} contacts for {}: {}", contactMessages.size(), user.getUsername(),
+						contactMessages.stream().map(ContactMessage::address).toList());
+			} else {
+				log.debug("Fetched {} contacts for {}", contactMessages.size(), user.getUsername());
+			}
+			return contactMessages;
+		} catch (Throwable t) {
+			log.error("Failed to fetch contacts", t);
+			return Collections.emptyList();
 		}
-
-		return contactMessages;
 	}
 
 	@Scheduled(fixedRate = 60 * 1000)
@@ -145,10 +172,8 @@ public class ContactBookService implements IContactBookService {
 		val lastUpdateDate = new Date(System.currentTimeMillis() - contactsUpdateDuration.toMillis());
 		val lastSeenDate = new Date(
 				System.currentTimeMillis() - TimeUnit.DAYS.toMillis(contactsUpdateLastSeenPeriod.getDays()));
-
-		// find all allowed users which were active after some date and contacts weren't
-		// updated
-		// since another date
+		// find all allowed users which were active after some date
+		// and contacts weren't updated since another date
 		val users = userRepository.findByAllowedTrueAndLastUpdatedContactsBeforeAndLastSeenAfter(lastUpdateDate,
 				lastSeenDate);
 
@@ -179,5 +204,4 @@ public class ContactBookService implements IContactBookService {
 			}
 		}
 	}
-
 }

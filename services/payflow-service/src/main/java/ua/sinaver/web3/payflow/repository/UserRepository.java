@@ -1,6 +1,5 @@
 package ua.sinaver.web3.payflow.repository;
 
-import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +11,8 @@ import java.util.List;
 
 public interface UserRepository extends CrudRepository<User, Integer> {
 	User findByIdentity(String identity);
+
+	User findByIdentityAndAllowedTrue(String identity);
 
 	User findByUsernameOrIdentity(String username, String identity);
 
