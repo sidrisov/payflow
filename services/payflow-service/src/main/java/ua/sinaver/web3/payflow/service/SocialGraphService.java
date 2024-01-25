@@ -11,10 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import ua.sinaver.web3.payflow.graphql.generated.types.SocialFollower;
-import ua.sinaver.web3.payflow.graphql.generated.types.SocialFollowing;
-import ua.sinaver.web3.payflow.graphql.generated.types.TokenTransfer;
-import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
+import ua.sinaver.web3.payflow.graphql.generated.types.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -110,9 +107,15 @@ public class SocialGraphService implements ISocialGraphService {
 					val baseTransfers =
 							socialMetadata.field("Wallet.baseTransfers")
 									.toEntityList(TokenTransfer.class);
+					
+					val socialFollowings =
+							new SocialFollowingOutput.Builder().Following(followings).build();
 
-					wallet.getSocialFollowings().setFollowing(followings);
-					wallet.getSocialFollowers().setFollower(followers);
+					val socialFollowers =
+							new SocialFollowerOutput.Builder().Follower(followers).build();
+
+					wallet.setSocialFollowings(socialFollowings);
+					wallet.setSocialFollowers(socialFollowers);
 
 					val tokenTransfers = new ArrayList<TokenTransfer>();
 					tokenTransfers.addAll(ethTransfers);
