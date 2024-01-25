@@ -108,48 +108,53 @@ public class ContactBookService implements IContactBookService {
 	@Override
 	@Cacheable(value = "contacts", key = "#user.identity", unless = "#result.isEmpty()")
 	public List<ContactMessage> getAllContacts(User user) {
+		log.debug("VIRTUAL {} {} {} {}", Schedulers.DEFAULT_BOUNDED_ELASTIC_ON_VIRTUAL_THREADS,
+				Schedulers.DEFAULT_POOL_SIZE, Schedulers.DEFAULT_BOUNDED_ELASTIC_SIZE,
+				Schedulers.DEFAULT_BOUNDED_ELASTIC_QUEUESIZE);
+
 		val contactsLimitAdjusted = whitelistedUsers.contains(user.getIdentity()) ?
 				contactsLimit * 5 : 2;
 		try {
 			val contactMessages = Flux
 					.fromIterable(contactRepository.findAllByUser(user)
-							.stream().limit(contactsLimit * contactsLimitAdjusted).toList())
-					.flatMapSequential(contact -> Mono.zip(
-									Mono.fromCallable(
-													() -> Optional.ofNullable(userRepository.findByIdentityAndAllowedTrue(contact.getIdentity())))
-											.onErrorResume(exception -> {
-												log.error("Error fetching user {} - {}",
-														contact.getIdentity(),
-														exception.getMessage());
-												return Mono.empty();
-											}),
-									Mono.fromCallable(
-													() -> socialGraphService.getSocialMetadata(contact.getIdentity(), user.getIdentity()))
-											.onErrorResume(exception -> {
-												log.error("Error fetching social graph for {} - {}",
-														contact.getIdentity(),
-														exception.getMessage());
-												return Mono.empty();
-											}),
-									// TODO: fetch only if social graph fetched
-									Mono.fromCallable(
-													() -> whitelistedUsers.contains(contact.getIdentity())
-															|| invitationRepository.existsByIdentityAndValid(contact.getIdentity()))
-											.onErrorResume(exception -> {
-												log.error("Error checking invitation status for user {} - {}",
-														contact.getIdentity(),
-														exception.getMessage());
-												return Mono.empty();
-											}))
-
+							.stream().limit(contactsLimitAdjusted).toList())
+					.flatMap(contact -> Mono.zip(
+											Mono.just(contact),
+											Mono.fromCallable(
+															() -> Optional.ofNullable(userRepository.findByIdentityAndAllowedTrue(contact.getIdentity())))
+													.onErrorResume(exception -> {
+														log.error("Error fetching user {} - {}",
+																contact.getIdentity(),
+																exception.getMessage());
+														return Mono.empty();
+													}),
+											Mono.fromCallable(
+															() -> socialGraphService.getSocialMetadata(contact.getIdentity(), user.getIdentity()))
+													.subscribeOn(Schedulers.boundedElastic())
+													.onErrorResume(exception -> {
+														log.error("Error fetching social graph for {} - " +
+																		"{}",
+																contact.getIdentity(),
+																exception.getMessage());
+														return Mono.empty();
+													}),
+											// TODO: fetch only if social graph fetched
+											Mono.fromCallable(
+															() -> whitelistedUsers.contains(contact.getIdentity())
+																	|| invitationRepository.existsByIdentityAndValid(contact.getIdentity()))
+													.onErrorResume(exception -> {
+														log.error("Error checking invitation status for user {} - {}",
+																contact.getIdentity(),
+																exception.getMessage());
+														return Mono.empty();
+													}))
+									.map(tuple -> ContactMessage.convert(
+											tuple.getT1(),
+											tuple.getT2().orElse(null),
+											tuple.getT3(),
+											tuple.getT4()))
 							// TODO: fail fast, seems doesn't to work properly with threads
-							.subscribeOn(Schedulers.newBoundedElastic(2, contactsLimit * 4,
-									"contacts-bounded-elastic"))
-							.map(tuple -> ContactMessage.convert(
-									contact,
-									tuple.getT1().orElse(null),
-									tuple.getT2(),
-									tuple.getT3())))
+					)
 					.timeout(contactsFetchTimeout, Mono.empty())
 					.collectList()
 					.block();

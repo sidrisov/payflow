@@ -83,6 +83,7 @@ export default function SearchIdentityDialog({
 
   const [foundIdentities, setFoundIdentities] = useState<IdentityType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [loadingContacts, setLoadingContacts] = useState<boolean>(false);
 
   const [walletMenuAnchorEl, setWalletMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [openWalletMenu, setOpenWalletMenu] = useState(false);
@@ -168,6 +169,7 @@ export default function SearchIdentityDialog({
   useMemo(async () => {
     if (isAuthenticated) {
       try {
+        setLoadingContacts(true);
         const response = await axios.get(`${API_URL}/api/user/me/contacts`, {
           withCredentials: true
         });
@@ -183,6 +185,8 @@ export default function SearchIdentityDialog({
       } catch (error) {
         console.error(error);
         setContacts([]);
+      } finally {
+        setLoadingContacts(false);
       }
     }
   }, [isAuthenticated]);
@@ -396,11 +400,19 @@ export default function SearchIdentityDialog({
                 No results found.
               </Typography>
             )}
-          {loading && (
-            <Box m={1} alignSelf="center">
-              <CircularProgress color="inherit" size={20} />
-            </Box>
+
+          {contacts.length === 0 && !loadingContacts && (
+            <Typography alignSelf="center" variant="subtitle2">
+              No results found.
+            </Typography>
           )}
+
+          {loading ||
+            (loadingContacts && (
+              <Box m={1} alignSelf="center">
+                <CircularProgress color="inherit" size={20} />
+              </Box>
+            ))}
         </Box>
       </DialogContent>
       {walletMenuEnabled && (

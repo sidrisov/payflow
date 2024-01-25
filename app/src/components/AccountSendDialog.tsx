@@ -113,9 +113,7 @@ export default function AccountSendDialog({
     const compatibleSenderWallets =
       recipient.type === 'profile'
         ? flow.wallets.filter((w) =>
-            recipient.identity.profile?.defaultFlow?.wallets.find(
-              (rw) => rw.network === w.network
-            )
+            recipient.identity.profile?.defaultFlow?.wallets.find((rw) => rw.network === w.network)
           )
         : flow.wallets;
 
@@ -367,10 +365,7 @@ export default function AccountSendDialog({
                   {recipient &&
                     (recipient.type === 'profile'
                       ? recipient.identity.profile && (
-                          <ProfileSection
-                            maxWidth={200}
-                            profile={recipient.identity.profile}
-                          />
+                          <ProfileSection maxWidth={200} profile={recipient.identity.profile} />
                         )
                       : recipient.identity.meta && (
                           <AddressSection maxWidth={200} identity={recipient.identity} />
@@ -581,10 +576,14 @@ export default function AccountSendDialog({
       <SearchIdentityDialog
         address={profile.identity}
         open={openSearchIdentity}
-        closeStateCallback={() => {
+        closeStateCallback={async () => {
           setOpenSearchIdentity(false);
+          // close payment dialog if search was closed and no recipient was chosen
+          if (!recipient) {
+            closeStateCallback();
+          }
         }}
-        selectIdentityCallback={(selectedIdentity) => {
+        selectIdentityCallback={async (selectedIdentity) => {
           setRecipient(selectedIdentity);
         }}
       />
