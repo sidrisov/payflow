@@ -579,9 +579,9 @@ export default function AccountSendDialog({
         closeStateCallback={async () => {
           setOpenSearchIdentity(false);
           // close payment dialog if search was closed and no recipient was chosen
-          if (!recipient) {
-            closeStateCallback();
-          }
+          //if (!recipient) {
+            //closeStateCallback();
+          //}
         }}
         selectIdentityCallback={async (selectedIdentity) => {
           setRecipient(selectedIdentity);
