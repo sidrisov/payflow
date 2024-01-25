@@ -10,6 +10,7 @@ import org.springframework.graphql.client.HttpGraphQlClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 import ua.sinaver.web3.payflow.graphql.generated.types.SocialFollower;
 import ua.sinaver.web3.payflow.graphql.generated.types.SocialFollowing;
 import ua.sinaver.web3.payflow.graphql.generated.types.TokenTransfer;
@@ -18,6 +19,7 @@ import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,6 +30,9 @@ public class SocialGraphService implements ISocialGraphService {
 
 	@Value("${payflow.airstack.contacts.limit:10}")
 	private int contactsLimit;
+
+	@Value("${payflow.invitation.whitelisted.default.users}")
+	private Set<String> whitelistedUsers;
 
 	public SocialGraphService(@Value("${payflow.airstack.api.url}") String airstackUrl,
 	                          @Value("${payflow.airstack.api.key}") String airstackApiKey) {
@@ -42,9 +47,15 @@ public class SocialGraphService implements ISocialGraphService {
 
 	@Override
 	public List<String> getAllFollowingContacts(String identity) {
+		val identityLimitAdjusted = whitelistedUsers.contains(identity) ?
+				contactsLimit * 3 : 1;
+
+		val addressesLimitAdjusted = whitelistedUsers.contains(identity) ?
+				contactsLimit * 5 : 2;
+
 		val topFollowings = graphQlClient.documentName("getSocialFollowings")
 				.variable("identity", identity)
-				.variable("limit", contactsLimit)
+				.variable("limit", identityLimitAdjusted)
 				.execute().block();
 
 		if (topFollowings != null) {
@@ -52,7 +63,7 @@ public class SocialGraphService implements ISocialGraphService {
 					.toEntityList(SocialFollowing.class).stream()
 					.map(f -> f.getFollowingAddress().getAddresses())
 					.flatMap(List::stream)
-					.distinct().limit(contactsLimit * 2L)
+					.distinct().limit(addressesLimitAdjusted)
 					.collect(Collectors.toList());
 		} else {
 			return Collections.emptyList();
@@ -68,6 +79,10 @@ public class SocialGraphService implements ISocialGraphService {
 					.variable("identity", identity)
 					.variable("me", me)
 					.execute()
+					.onErrorResume(exception -> {
+						log.error("Error fetching {} - {}", identity, exception.getMessage());
+						return Mono.empty();
+					})
 					.block();
 
 			if (socialMetadata != null) {

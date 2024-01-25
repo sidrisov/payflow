@@ -25,7 +25,8 @@ public record ContactMessage(
 					profile.getProfileImage(),
 					profile.getIdentity(),
 					null,
-					FlowMessage.convert(profile.getDefaultFlow(), profile),
+					profile.getDefaultFlow() != null ?
+							FlowMessage.convert(profile.getDefaultFlow(), profile) : null,
 					null,
 					-1);
 		}

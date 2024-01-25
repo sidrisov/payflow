@@ -27,6 +27,7 @@ import {
   AttachMoney,
   ExpandMore,
   LocalGasStation,
+  Logout,
   PriorityHigh
 } from '@mui/icons-material';
 import { Id, toast } from 'react-toastify';
@@ -55,6 +56,7 @@ import { LoadingSwitchNetworkButton } from './LoadingSwitchNetworkButton';
 import { LoadingConnectWalletButton } from './LoadingConnectWalletButton';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { useEthersProvider } from '../utils/hooks/useEthersProvider';
+import { disconnect } from 'wagmi/actions';
 
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
@@ -78,7 +80,7 @@ export default function AccountSendDialog({
 
   const { chain } = useNetwork();
 
-  const [selectedRecipient, setSelectedRecipient] = useState<SelectedIdentityType>();
+  const [recipient, setRecipient] = useState<SelectedIdentityType>();
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
   const [compatibleWallets, setCompatibleWallets] = useState<FlowWalletType[]>([]);
 
@@ -100,7 +102,7 @@ export default function AccountSendDialog({
   const sendToastId = useRef<Id>();
 
   useMemo(async () => {
-    if (!selectedRecipient) {
+    if (!recipient) {
       setSelectedWallet(undefined);
       setCompatibleWallets([]);
       return;
@@ -109,9 +111,9 @@ export default function AccountSendDialog({
     // TODO: what if there is not a single compatible wallet between sender & recipient
     // in case a new wallet chain added, not all users maybe be compatible, limit by chains recipient supports
     const compatibleSenderWallets =
-      selectedRecipient.type === 'profile'
+      recipient.type === 'profile'
         ? flow.wallets.filter((w) =>
-            selectedRecipient.identity.profile?.defaultFlow?.wallets.find(
+            recipient.identity.profile?.defaultFlow?.wallets.find(
               (rw) => rw.network === w.network
             )
           )
@@ -128,7 +130,7 @@ export default function AccountSendDialog({
       (chain && compatibleSenderWallets.find((w) => w.network === chain.id)) ??
         compatibleSenderWallets[0]
     );
-  }, [selectedRecipient]);
+  }, [recipient]);
 
   useMemo(async () => {
     setGasFee(undefined);
@@ -150,7 +152,7 @@ export default function AccountSendDialog({
   }, [selectedWallet, ethersProvider]);
 
   useMemo(async () => {
-    if (!sendAmount || !selectedRecipient || !selectedWallet) {
+    if (!sendAmount || !recipient || !selectedWallet) {
       return;
     }
 
@@ -159,7 +161,7 @@ export default function AccountSendDialog({
       sendToastId.current = toast.loading(
         <TransferToastContent
           from={{ type: 'profile', identity: { profile: profile } as IdentityType }}
-          to={selectedRecipient}
+          to={recipient}
           ethAmount={sendAmount}
           ethUsdPrice={ethUsdPrice}
         />
@@ -175,7 +177,7 @@ export default function AccountSendDialog({
         render: (
           <TransferToastContent
             from={{ type: 'profile', identity: { profile: profile } as IdentityType }}
-            to={selectedRecipient}
+            to={recipient}
             ethAmount={sendAmount}
             ethUsdPrice={ethUsdPrice}
           />
@@ -196,7 +198,7 @@ export default function AccountSendDialog({
         render: (
           <TransferToastContent
             from={{ type: 'profile', identity: { profile: profile } as IdentityType }}
-            to={selectedRecipient}
+            to={recipient}
             ethAmount={sendAmount}
             ethUsdPrice={ethUsdPrice}
             status="error"
@@ -216,7 +218,7 @@ export default function AccountSendDialog({
         toast.error('Insufficient Gas Fees', { closeButton: false, autoClose: 5000 });
       }
     }
-  }, [loading, confirmed, error, status, txHash, sendAmount, selectedRecipient]);
+  }, [loading, confirmed, error, status, txHash, sendAmount, recipient]);
 
   async function sendSafeTransaction(
     flow: FlowType,
@@ -266,21 +268,21 @@ export default function AccountSendDialog({
   }, [sendAmountUSD, chain?.id]);
 
   useMemo(async () => {
-    if (!selectedRecipient || !selectedWallet) {
+    if (!recipient || !selectedWallet) {
       setToAddress(undefined);
       return;
     }
 
-    if (selectedRecipient.type === 'address') {
-      setToAddress(selectedRecipient.identity.address);
+    if (recipient.type === 'address') {
+      setToAddress(recipient.identity.address);
     } else {
       setToAddress(
-        selectedRecipient.identity.profile?.defaultFlow?.wallets.find(
+        recipient.identity.profile?.defaultFlow?.wallets.find(
           (w) => w.network === selectedWallet.network
         )?.address
       );
     }
-  }, [selectedWallet, selectedRecipient]);
+  }, [selectedWallet, recipient]);
 
   function getGasFeeText(gasFee: bigint | undefined): string {
     return 'fee: '.concat(
@@ -299,7 +301,12 @@ export default function AccountSendDialog({
       fullScreen={isMobile}
       onClose={closeStateCallback}
       {...props}
-      PaperProps={{ sx: { borderRadius: 5 } }}
+      PaperProps={{
+        sx: {
+          borderRadius: 5,
+          ...(!isMobile && { width: 375, height: 375 })
+        }
+      }}
       sx={{
         backdropFilter: 'blur(5px)'
       }}>
@@ -328,19 +335,16 @@ export default function AccountSendDialog({
       </DialogTitle>
       <DialogContent
         sx={{
-          p: 2,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center'
+          p: 2
         }}>
         <Box
-          display="flex"
-          minWidth={350}
-          maxWidth={isMobile ? 450 : 350}
           height="100%"
+          display="flex"
           flexDirection="column"
           alignItems="center"
-          justifyContent="space-between">
+          justifyContent={
+            address && address === flow.owner && recipient ? 'space-between' : 'flex-end'
+          }>
           {address && address === flow.owner ? (
             <>
               <Stack width="100%" spacing={2} alignItems="center">
@@ -360,30 +364,30 @@ export default function AccountSendDialog({
                     p: 1.5,
                     textTransform: 'none'
                   }}>
-                  {selectedRecipient &&
-                    (selectedRecipient.type === 'profile'
-                      ? selectedRecipient.identity.profile && (
+                  {recipient &&
+                    (recipient.type === 'profile'
+                      ? recipient.identity.profile && (
                           <ProfileSection
                             maxWidth={200}
-                            profile={selectedRecipient.identity.profile}
+                            profile={recipient.identity.profile}
                           />
                         )
-                      : selectedRecipient.identity.meta && (
-                          <AddressSection maxWidth={200} identity={selectedRecipient.identity} />
+                      : recipient.identity.meta && (
+                          <AddressSection maxWidth={200} identity={recipient.identity} />
                         ))}
 
-                  {!selectedRecipient && (
+                  {!recipient && (
                     <Typography alignSelf="center" flexGrow={1}>
                       Choose Recipient
                     </Typography>
                   )}
 
                   <Stack direction="row">
-                    {selectedRecipient && selectedRecipient.type === 'profile' && <PayflowChip />}
+                    {recipient && recipient.type === 'profile' && <PayflowChip />}
                     <ExpandMore />
                   </Stack>
                 </Box>
-                {selectedRecipient && selectedWallet && (
+                {recipient && selectedWallet && (
                   <Box width="100%" display="flex" flexDirection="column">
                     <TextField
                       fullWidth
@@ -507,7 +511,7 @@ export default function AccountSendDialog({
                   </Box>
                 )}
               </Stack>
-              {selectedRecipient &&
+              {recipient &&
                 selectedWallet &&
                 (chain?.id === selectedWallet.network ? (
                   <LoadingButton
@@ -544,14 +548,32 @@ export default function AccountSendDialog({
                 ))}
             </>
           ) : address && address !== flow.owner ? (
-            <Typography variant="subtitle2" color={red.A700}>
-              Please, connect following flow signer:{' '}
-              <u>
-                <b>{shortenWalletAddressLabel(flow.owner)}</b>
-              </u>
-            </Typography>
+            <Stack spacing={1} alignItems="center">
+              <Typography variant="subtitle2">
+                Please, connect following flow signer:{' '}
+                <u>
+                  <b>{shortenWalletAddressLabel(flow.owner)}</b>
+                </u>
+                {'!'}
+              </Typography>
+
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Typography variant="subtitle2">
+                  Currently connected signer:{' '}
+                  <u>
+                    <b>{shortenWalletAddressLabel(address)}</b>
+                  </u>
+                </Typography>
+                <IconButton
+                  size="small"
+                  onClick={async () => await disconnect()}
+                  sx={{ color: red.A700 }}>
+                  <Logout />
+                </IconButton>
+              </Stack>
+            </Stack>
           ) : (
-            <LoadingConnectWalletButton title="Connect Signer" />
+            <LoadingConnectWalletButton fullWidth title="Connect Signer" />
           )}
         </Box>
       </DialogContent>
@@ -563,7 +585,7 @@ export default function AccountSendDialog({
           setOpenSearchIdentity(false);
         }}
         selectIdentityCallback={(selectedIdentity) => {
-          setSelectedRecipient(selectedIdentity);
+          setRecipient(selectedIdentity);
         }}
       />
     </Dialog>
