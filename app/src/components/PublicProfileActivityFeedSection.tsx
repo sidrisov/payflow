@@ -45,31 +45,39 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
   const defultBlockExplorerUrl = getNetworkDefaultBlockExplorerUrl(txInfo.chainId);
 
   const { data: ensNameFrom } = useEnsName({
-    enabled: !txInfo.fromProfile,
     address: txInfo.from,
     chainId: 1,
-    cacheTime: 300_000
+    query: {
+      enabled: !txInfo.fromProfile,
+      staleTime: 300_000
+    }
   });
 
   const { data: ensNameTo } = useEnsName({
-    enabled: !txInfo.toProfile,
     address: txInfo.to,
     chainId: 1,
-    cacheTime: 300_000
+    query: {
+      enabled: !txInfo.toProfile,
+      staleTime: 300_000
+    }
   });
 
   const avatarFrom = useEnsAvatar({
-    enabled: !txInfo.fromProfile,
-    name: ensNameFrom,
+    name: ensNameFrom as string,
     chainId: 1,
-    cacheTime: 300_000
+    query: {
+      enabled: !txInfo.fromProfile,
+      staleTime: 300_000
+    }
   });
 
   const avatarTo = useEnsAvatar({
-    enabled: !txInfo.toProfile,
-    name: ensNameTo,
+    name: ensNameTo as string,
     chainId: 1,
-    cacheTime: 300_000
+    query: {
+      enabled: !txInfo.toProfile,
+      staleTime: 300_000
+    }
   });
 
   return (
@@ -163,7 +171,7 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
                 on {getNetworkDisplayName(txInfo.chainId)}
               </Typography>
               <NetworkAvatar
-                network={txInfo.chainId}
+                chainId={txInfo.chainId}
                 sx={{
                   width: 15,
                   height: 15

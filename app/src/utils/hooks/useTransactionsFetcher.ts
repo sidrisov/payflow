@@ -232,24 +232,24 @@ function getWalletTxsFetchAPI(wallet: FlowWalletType): string | undefined {
   }
 }
 
-function getBlockscoutBaseUrl(network: number) {
+function getBlockscoutBaseUrl(chainId: number) {
   let baseUrl;
 
-  switch (network) {
+  switch (chainId) {
     case baseGoerli.id:
-      baseUrl = `https://${baseGoerli.network}.blockscout.com`;
+      baseUrl = 'https://base-goerli.blockscout.com';
       break;
     case base.id:
-      baseUrl = `https://${base.network}.blockscout.com`;
+      baseUrl = 'https://base.blockscout.com';
       break;
     case optimismGoerli.id:
-      baseUrl = `https://${optimismGoerli.network}.blockscout.com`;
+      baseUrl = 'https://optimism-goerli.blockscout.com';
       break;
     case optimism.id:
-      baseUrl = `https://${optimism.network}.blockscout.com`;
+      baseUrl = 'https://optimism.blockscout.com';
       break;
     case modeTestnet.id:
-      baseUrl = `https://sepolia.explorer.mode.network`;
+      baseUrl = 'https://sepolia.explorer.mode.network';
       break;
     case zoraTestnet.id:
       baseUrl = 'https://testnet.explorer.zora.energy';

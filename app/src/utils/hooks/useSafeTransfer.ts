@@ -5,7 +5,7 @@ import { safeTransferEthWithDeploy } from '../safeTransactions';
 import { JsonRpcSigner } from 'ethers';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
-import { useWaitForTransaction } from 'wagmi';
+import { useWaitForTransactionReceipt } from 'wagmi';
 
 export type SafeWallet = {
   chain: Chain;
@@ -37,7 +37,7 @@ export const useSafeTransfer = (): {
     isSuccess: isTxConfirmed,
     isLoading: isTxLoading,
     isError: isTxError
-  } = useWaitForTransaction({
+  } = useWaitForTransactionReceipt({
     hash: txHash
   });
 

@@ -1,7 +1,7 @@
 import { Box, Container, useMediaQuery, useTheme } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
-import { useNetwork, useSwitchNetwork } from 'wagmi';
+import { useAccount, useSwitchChain } from 'wagmi';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useEffect, useMemo } from 'react';
 import ProfileOnboardingDialog from '../components/ProfileOnboardingDialog';
@@ -29,15 +29,15 @@ export default function Login({
 
   const navigate = useNavigate();
 
-  const { chain } = useNetwork();
-  const { switchNetwork, pendingChainId } = useSwitchNetwork();
+  const { chain } = useAccount();
+  const { switchChain, isPending } = useSwitchChain();
 
   useMemo(() => {
-    if (authStatus === 'unauthenticated' && chain && chain.id !== 1 && pendingChainId !== 1) {
+    if (authStatus === 'unauthenticated' && chain && chain.id !== 1 && !isPending) {
       toast.warning('Please, switch to Ethereum!', { autoClose: 10000 });
-      switchNetwork?.(1);
+      switchChain?.({ chainId: 1 });
     }
-  }, [chain, pendingChainId, authStatus]);
+  }, [chain, isPending, authStatus]);
 
   useEffect(() => {
     console.debug(profile, authStatus);

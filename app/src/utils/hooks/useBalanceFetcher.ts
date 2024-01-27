@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
-import { fetchBalance } from 'wagmi/actions';
+import { getBalance } from 'wagmi/actions';
 import { AssetType, AssetBalanceType } from '../../types/AssetType';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
+import { wagmiConfig } from '../wagmiConfig';
 
 export const useBalanceFetcher = (assets: AssetType[]): BalanceFetchResultType => {
   const [balances, setBalances] = useState<AssetBalanceType[]>([]);
@@ -13,7 +14,11 @@ export const useBalanceFetcher = (assets: AssetType[]): BalanceFetchResultType =
 
     Promise.allSettled(
       assets.map((asset) =>
-        fetchBalance({ address: asset.address, chainId: asset.chainId, token: asset.token })
+        getBalance(wagmiConfig, {
+          address: asset.address,
+          chainId: asset.chainId,
+          token: asset.token
+        })
       )
     )
       .then((data) => {

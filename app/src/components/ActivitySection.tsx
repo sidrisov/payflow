@@ -79,7 +79,7 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           badgeContent={
             <NetworkAvatar
-              network={txInfo.chainId}
+              chainId={txInfo.chainId}
               sx={{
                 width: 15,
                 height: 15

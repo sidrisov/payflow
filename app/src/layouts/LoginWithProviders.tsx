@@ -1,8 +1,6 @@
 import {
   AuthenticationStatus,
-  connectorsForWallets,
   createAuthenticationAdapter,
-  getDefaultWallets,
   RainbowKitAuthenticationProvider,
   RainbowKitProvider
 } from '@rainbow-me/rainbowkit';
@@ -10,9 +8,7 @@ import {
 import '@farcaster/auth-kit/styles.css';
 import { AuthKitProvider } from '@farcaster/auth-kit';
 
-import { configureChains, createConfig, mainnet, WagmiConfig } from 'wagmi';
-import { alchemyProvider } from 'wagmi/providers/alchemy';
-import { publicProvider } from 'wagmi/providers/public';
+import { WagmiProvider } from 'wagmi';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Login from './Login';
 import { CustomAvatar } from '../components/CustomAvatar';
@@ -26,27 +22,9 @@ import { toast } from 'react-toastify';
 import { AppSettings } from '../types/AppSettingsType';
 import { useMediaQuery } from '@mui/material';
 import CustomToastContainer from '../components/toasts/CustomToastContainer';
-
-const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
-
-const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [mainnet],
-  [alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }), publicProvider()]
-);
-
-const { wallets } = getDefaultWallets({
-  appName: 'Payflow',
-  projectId: WALLET_CONNECT_PROJECT_ID,
-  chains
-});
-
-const connectors = connectorsForWallets([
-  ...wallets
-  /* {
-    groupName: 'Other',
-    wallets: [rainbowWeb3AuthConnector({ chains })]
-  } */
-]);
+import { QueryClientProvider } from '@tanstack/react-query';
+import { loginWagmiConfig } from '../utils/wagmiConfig';
+import { queryClient } from '../utils/query';
 
 const appSettingsStorageItem = localStorage.getItem('appSettings');
 const appSettingsStored = appSettingsStorageItem
@@ -59,7 +37,6 @@ export default function AppWithProviders() {
     appSettingsStored
       ? appSettingsStored
       : {
-          autoConnect: import.meta.env.VITE_INIT_CONNECT === 'true',
           darkMode: prefersDarkMode
         }
   );
@@ -175,13 +152,6 @@ export default function AppWithProviders() {
     });
   }, []);
 
-  const wagmiConfig = createConfig({
-    autoConnect: true,
-    connectors,
-    publicClient,
-    webSocketPublicClient
-  });
-
   const config = {
     // For a production app, replace this with an Optimism Mainnet
     // RPC URL from a provider like Alchemy or Infura.
@@ -193,20 +163,21 @@ export default function AppWithProviders() {
   };
 
   return (
-    <WagmiConfig config={wagmiConfig}>
-      <RainbowKitAuthenticationProvider adapter={authAdapter} status={authStatus}>
-        <RainbowKitProvider
-          theme={appSettings.darkMode ? customDarkTheme : customLightTheme}
-          avatar={CustomAvatar}
-          modalSize="compact"
-          chains={chains}
-          initialChain={1}>
-          <AuthKitProvider config={config}>
-            <Login authStatus={authStatus} profile={profile} settings={appSettings} />
-          </AuthKitProvider>
-        </RainbowKitProvider>
-      </RainbowKitAuthenticationProvider>
-      <CustomToastContainer />
-    </WagmiConfig>
+    <WagmiProvider config={loginWagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitAuthenticationProvider adapter={authAdapter} status={authStatus}>
+          <RainbowKitProvider
+            theme={appSettings.darkMode ? customDarkTheme : customLightTheme}
+            avatar={CustomAvatar}
+            modalSize="compact"
+            initialChain={1}>
+            <AuthKitProvider config={config}>
+              <Login authStatus={authStatus} profile={profile} settings={appSettings} />
+            </AuthKitProvider>
+          </RainbowKitProvider>
+        </RainbowKitAuthenticationProvider>
+        <CustomToastContainer />
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }

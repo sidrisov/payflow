@@ -16,17 +16,18 @@
     "@airstack/airstack-react": "^0.6.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@farcaster/auth-kit": "^0.0.39",
+    "@farcaster/auth-kit": "^0.1.4",
     "@fontsource/roboto": "^5.0.8",
     "@mui/icons-material": "^5.14.3",
     "@mui/lab": "^5.0.0-alpha.151",
     "@mui/material": "^5.14.4",
-    "@rainbow-me/rainbowkit": "^1.3.3",
+    "@rainbow-me/rainbowkit": "^2.0.0-beta.2",
     "@safe-global/api-kit": "^2.0.0",
     "@safe-global/protocol-kit": "^2.0.0",
     "@safe-global/relay-kit": "^2.0.0",
     "@safe-global/safe-core-sdk-types": "^3.0.1",
     "@spruceid/siwe-parser": "^2.0.2",
+    "@tanstack/react-query": "^5.17.19",
     "@typescript-eslint/parser": "^6.3.0",
     "@vercel/speed-insights": "^1.0.1",
     "@vitejs/plugin-react": "^4.1.0",
@@ -46,9 +47,9 @@
     "siwe": "^2.1.4",
     "url": "^0.11.1",
     "use-debounce": "^10.0.0",
-    "viem": "^1.6.0",
+    "viem": "^2.5.0",
     "vite-plugin-svgr": "^4.0.0",
-    "wagmi": "^1.3.10"
+    "wagmi": "^2.5.4"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.0",
@@ -65,7 +66,7 @@
     "eslint-plugin-react-refresh": "^0.4.3",
     "typescript": "^5.1.6",
     "vite": "^5.0.2",
-    "vite-plugin-pwa": "^0.17.4"
+    "vite-plugin-pwa": "^0.17.5"
   },
   "overrides": {
     "agp-js": "github:runic-inc/apg-js#8bb92ff0780819170fee7e756d26e0562e442983"

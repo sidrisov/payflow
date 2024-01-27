@@ -18,7 +18,7 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 5000000
       },
       devOptions: {
-        enabled: true
+        enabled: false
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {

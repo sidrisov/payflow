@@ -27,7 +27,7 @@ export function NetworkSelectorButton({
             setWalletAnchorEl(event.currentTarget);
             setOpenSelectWallet(true);
           }}>
-          <NetworkAvatar tooltip network={selectedWallet.network} sx={{ width: 28, height: 28 }} />
+          <NetworkAvatar tooltip chainId={selectedWallet.network} sx={{ width: 28, height: 28 }} />
         </IconButton>
         <ChooseWalletMenu
           anchorEl={walletAnchorEl}

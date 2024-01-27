@@ -18,7 +18,7 @@ import {
 
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { useAccount, useBalance, useNetwork } from 'wagmi';
+import { useAccount, useBalance } from 'wagmi';
 import { AddComment, ArrowBack, AttachMoney, ExpandMore, PriorityHigh } from '@mui/icons-material';
 import { Id, toast } from 'react-toastify';
 
@@ -56,8 +56,7 @@ export default function PayProfileDialog({
 
   const { ethUsdPrice } = useContext(AnonymousUserContext);
 
-  const { address } = useAccount();
-  const { chain } = useNetwork();
+  const { address, chain } = useAccount();
 
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
   const [compatibleWallets, setCompatibleWallets] = useState<FlowWalletType[]>([]);
@@ -427,7 +426,13 @@ export default function PayProfileDialog({
                       }
                       size="large"
                       color="inherit"
-                      onClick={() => sendTransaction?.()}
+                      onClick={() => {
+                        if (!toAddress || !sendAmount) {
+                          return;
+                        }
+
+                        sendTransaction?.({ to: toAddress, value: sendAmount });
+                      }}
                       sx={{ mt: 3, mb: 1, borderRadius: 5 }}>
                       Pay
                     </LoadingButton>

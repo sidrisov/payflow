@@ -18,7 +18,7 @@ import { toast } from 'react-toastify';
 
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import axios from 'axios';
-import { useAccount, useNetwork } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { useContext, useState } from 'react';
 import { ProfileContext } from '../contexts/UserContext';
 import { API_URL } from '../utils/urlConstants';

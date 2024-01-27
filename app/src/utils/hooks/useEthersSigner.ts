@@ -1,11 +1,12 @@
-import React from 'react';
-
-import { type WalletClient, useWalletClient } from 'wagmi';
 import { BrowserProvider, JsonRpcSigner } from 'ethers';
-import { getWalletClient } from 'wagmi/actions';
+import { useMemo } from 'react';
+import type { Account, Chain, Client, Transport } from 'viem';
+import { type Config, useConnectorClient } from 'wagmi';
+import { getConnectorClient } from 'wagmi/actions';
+import { wagmiConfig } from '../wagmiConfig';
 
-export function walletClientToSigner(walletClient: WalletClient) {
-  const { account, chain, transport } = walletClient;
+export function clientToSigner(client: Client<Transport, Chain, Account>) {
+  const { account, chain, transport } = client;
   const network = {
     chainId: chain.id,
     name: chain.name,
@@ -16,18 +17,15 @@ export function walletClientToSigner(walletClient: WalletClient) {
   return signer;
 }
 
-/** Action to convert a viem Wallet Client to an ethers.js Signer. */
-export async function getEthersSigner({ chainId }: { chainId?: number } = {}) {
-  const walletClient = await getWalletClient({ chainId });
-  if (!walletClient) return undefined;
-  return walletClientToSigner(walletClient);
-}
-
 /** Hook to convert a viem Wallet Client to an ethers.js Signer. */
 export function useEthersSigner({ chainId }: { chainId?: number } = {}) {
-  const { data: walletClient } = useWalletClient({ chainId });
-  return React.useMemo(
-    () => (walletClient ? walletClientToSigner(walletClient) : undefined),
-    [walletClient]
-  );
+  const { data: client } = useConnectorClient<Config>({ chainId });
+  return useMemo(() => (client ? clientToSigner(client) : undefined), [client]);
+}
+
+/** Action to convert a viem Wallet Client to an ethers.js Signer. */
+export async function getEthersSigner({ chainId }: { chainId?: number } = {}) {
+  const client = await getConnectorClient(wagmiConfig, { chainId });
+  if (!client) return undefined;
+  return clientToSigner(client);
 }

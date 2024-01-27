@@ -1,14 +1,14 @@
 import { Box, NativeSelect, Stack, Typography } from '@mui/material';
 import { ActivityFetchResultType } from '../types/ActivityFetchResultType';
 import { ActivitySkeletonSection } from './ActivitySkeletonSection';
-import { Chain } from '@rainbow-me/rainbowkit';
 import PublicProfileActivityFeedSection from './PublicProfileActivityFeedSection';
 import { useAccount } from 'wagmi';
 import { useContext, useMemo, useState } from 'react';
 import { AnonymousUserContext } from '../contexts/UserContext';
+import { Chain } from 'viem';
 
 export type AssetsProps = {
-  selectedNetwork?: Chain | undefined;
+  selectedChain?: Chain | undefined;
   activityFetchResult: ActivityFetchResultType;
 };
 
@@ -16,7 +16,7 @@ export default function PublicProfileActivityFeed(props: AssetsProps) {
   const { profile } = useContext(AnonymousUserContext);
   const { address } = useAccount();
 
-  const { selectedNetwork } = props;
+  const { selectedChain } = props;
   const { loading, fetched, transactions } = props.activityFetchResult;
 
   const [feedOption, setFeedOption] = useState<number>(1);
@@ -57,7 +57,7 @@ export default function PublicProfileActivityFeed(props: AssetsProps) {
           transactions
             .filter((tx) => {
               return (
-                (selectedNetwork ? tx.chainId === selectedNetwork.id : true) &&
+                (selectedChain ? tx.chainId === selectedChain.id : true) &&
                 (feedOption !== 1
                   ? tx.to === address ||
                     tx.from === address ||

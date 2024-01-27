@@ -20,7 +20,7 @@ import { JsonRpcSigner } from 'ethers';
 
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useContext, useMemo, useRef, useState } from 'react';
-import { useAccount, useBalance, useNetwork } from 'wagmi';
+import { useAccount, useBalance, useConfig } from 'wagmi';
 import {
   AddComment,
   ArrowBack,
@@ -76,9 +76,9 @@ export default function AccountSendDialog({
   const ethersSigner = useEthersSigner();
   const ethersProvider = useEthersProvider();
 
-  const { address } = useAccount();
+  const wagmiConfig = useConfig();
 
-  const { chain } = useNetwork();
+  const { address, chain } = useAccount();
 
   const [recipient, setRecipient] = useState<SelectedIdentityType>();
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
@@ -561,7 +561,7 @@ export default function AccountSendDialog({
                 </Typography>
                 <IconButton
                   size="small"
-                  onClick={async () => await disconnect()}
+                  onClick={async () => await disconnect(wagmiConfig)}
                   sx={{ color: red.A700 }}>
                   <Logout />
                 </IconButton>
@@ -580,7 +580,7 @@ export default function AccountSendDialog({
           setOpenSearchIdentity(false);
           // close payment dialog if search was closed and no recipient was chosen
           //if (!recipient) {
-            //closeStateCallback();
+          //closeStateCallback();
           //}
         }}
         selectIdentityCallback={async (selectedIdentity) => {

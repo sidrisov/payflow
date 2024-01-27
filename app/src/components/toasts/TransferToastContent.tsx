@@ -28,7 +28,7 @@ export function TransferToastContent({
       justifyContent="space-between">
       {from.type === 'profile'
         ? from.identity.profile && <ProfileSection profile={from.identity.profile} />
-        : from.identity.meta && <AddressSection identity={from.identity} />}
+        : from.identity.address && <AddressSection identity={from.identity} />}
       <Stack mx={1} width={50} alignItems="center" justifyContent="center">
         <Typography noWrap variant="subtitle2">
           ${(parseFloat(formatEther(ethAmount)) * (ethUsdPrice ?? 0)).toPrecision(3)}
@@ -37,7 +37,7 @@ export function TransferToastContent({
       </Stack>
       {to.type === 'profile'
         ? to.identity.profile && <ProfileSection profile={to.identity.profile} />
-        : to.identity.meta && <AddressSection identity={to.identity} />}
+        : to.identity.address && <AddressSection identity={to.identity} />}
     </Box>
   );
 }

@@ -401,18 +401,17 @@ export default function SearchIdentityDialog({
               </Typography>
             )}
 
-          {contacts.length === 0 && !loadingContacts && (
+          {isAuthenticated && contacts.length === 0 && !loadingContacts && (
             <Typography alignSelf="center" variant="subtitle2">
               No results found.
             </Typography>
           )}
 
-          {loading ||
-            (loadingContacts && (
-              <Box m={1} alignSelf="center">
-                <CircularProgress color="inherit" size={20} />
-              </Box>
-            ))}
+          {(loading || loadingContacts) && (
+            <Box m={1} alignSelf="center">
+              <CircularProgress color="inherit" size={20} />
+            </Box>
+          )}
         </Box>
       </DialogContent>
       {walletMenuEnabled && (

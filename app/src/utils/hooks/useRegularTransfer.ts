@@ -1,7 +1,10 @@
 import { useMemo, useState } from 'react';
 import { Address, Chain, Hash } from 'viem';
 
-import { usePrepareSendTransaction, useSendTransaction, useWaitForTransaction } from 'wagmi';
+import { Config, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
+import { estimateGas } from 'wagmi/actions';
+import { SendTransactionMutate } from 'wagmi/query';
+import { wagmiConfig } from '../wagmiConfig';
 
 export type SafeWallet = {
   chain: Chain;
@@ -17,33 +20,32 @@ export const useRegularTransfer = (tx: {
   error: boolean;
   status: string | undefined;
   txHash: Hash | undefined;
-  sendTransaction: any;
+  sendTransaction: SendTransactionMutate<Config, unknown>;
   reset: () => void;
 } => {
   const [status, setStatus] = useState<string>();
 
-  const { config } = usePrepareSendTransaction({
-    enabled: tx.to !== undefined,
+  const result = estimateGas(wagmiConfig, {
     to: tx.to,
     value: tx.amount
   });
 
   const {
-    isLoading: isSendTxLoading,
+    isPending: isSendTxLoading,
     isSuccess: isSendTxSuccess,
     isError: isSendTxError,
     error: sendError,
     data: sendTxHash,
     sendTransaction,
     reset
-  } = useSendTransaction(config);
+  } = useSendTransaction();
 
   const {
     isLoading: isTxConfirmationLoading,
     isSuccess: isTxConfirmed,
     isError: isTxConfirmationError
-  } = useWaitForTransaction({
-    hash: sendTxHash?.hash
+  } = useWaitForTransactionReceipt({
+    hash: sendTxHash
   });
 
   useMemo(async () => {
@@ -73,7 +75,7 @@ export const useRegularTransfer = (tx: {
     confirmed: isTxConfirmed,
     error: isSendTxError || isTxConfirmationError,
     status: status,
-    txHash: sendTxHash?.hash,
+    txHash: sendTxHash,
     sendTransaction,
     reset
   };

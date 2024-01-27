@@ -2,7 +2,7 @@ import { Stack, Typography } from '@mui/material';
 import { ActivityFetchResultType } from '../types/ActivityFetchResultType';
 import ActivitySection from './ActivitySection';
 import { ActivitySkeletonSection } from './ActivitySkeletonSection';
-import { Chain } from '@rainbow-me/rainbowkit';
+import { Chain } from 'viem';
 
 export type AssetsProps = {
   selectedNetwork: Chain | undefined;

@@ -1,26 +1,26 @@
 import { Avatar, AvatarProps, Tooltip } from '@mui/material';
 import getNetworkImageSrc, { SUPPORTED_CHAINS, getNetworkDisplayName } from '../utils/networks';
-import { Chain } from 'wagmi';
 import { pink } from '@mui/material/colors';
+import { Chain } from 'viem';
 
 function isTestnetChain(chains: Chain[], chainId: number): boolean {
   return chains.find((c) => c.id === chainId)?.testnet ?? false;
 }
 
 export default function NetworkAvatar({
-  network,
+  chainId,
   tooltip,
   ...props
 }: AvatarProps & {
-  network: string | number;
+  chainId: number;
   tooltip?: boolean;
 }) {
   const { sx: sxProps, ...restProps } = props;
 
-  const imageSrc = getNetworkImageSrc(network);
-  const title = tooltip ? getNetworkDisplayName(network) : '';
+  const imageSrc = getNetworkImageSrc(chainId);
+  const title = tooltip ? getNetworkDisplayName(chainId) : '';
 
-  const testnet = isTestnetChain(SUPPORTED_CHAINS, network as number) ?? false;
+  const testnet = isTestnetChain(SUPPORTED_CHAINS, chainId) ?? false;
 
   return tooltip ? (
     <Tooltip title={title}>

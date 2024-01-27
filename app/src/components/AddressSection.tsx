@@ -12,18 +12,22 @@ export function AddressSection(props: {
   const { identity: identity, fontSize, maxWidth } = props;
 
   const { data: ensName } = useEnsName({
-    enabled: !identity.meta?.ens,
     address: identity.address,
     chainId: 1,
-    cacheTime: 300_000
+    query: {
+      enabled: !identity.meta?.ens,
+      staleTime: 300_000
+    }
   });
 
   const avatar = useEnsAvatar({
-    enabled:
-      !identity.meta?.ensAvatar && (identity.meta?.ens !== undefined || ensName !== undefined),
-    name: identity.meta?.ens ?? ensName,
+    name: identity.meta?.ens ?? (ensName as string),
     chainId: 1,
-    cacheTime: 300_000
+    query: {
+      enabled:
+        !identity.meta?.ensAvatar && (identity.meta?.ens !== undefined || ensName !== undefined),
+      staleTime: 300_000
+    }
   });
 
   return (

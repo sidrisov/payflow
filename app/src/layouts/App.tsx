@@ -18,17 +18,16 @@ import { Home, HomeOutlined, AppsOutlined } from '@mui/icons-material';
 
 import { ProfileContext } from '../contexts/UserContext';
 import HideOnScroll from '../components/HideOnScroll';
-import { useContractRead, useEnsAddress } from 'wagmi';
+import { useEnsAddress, useReadContract } from 'wagmi';
 
 import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
-import { formatUnits } from 'viem';
+import { Chain, formatUnits } from 'viem';
 import { ProfileType } from '../types/ProfleType';
 import { AppSettings } from '../types/AppSettingsType';
 import { ProfileMenu } from '../components/ProfileMenu';
 import SearchIdentityDialog from '../components/SearchIdentityDialog';
 import HomeLogo from '../components/Logo';
 import { comingSoonToast } from '../components/Toasts';
-import { Chain } from '@rainbow-me/rainbowkit';
 import ProfileAvatar from '../components/ProfileAvatar';
 import DefaultFlowOnboardingDialog from '../components/DefaultFlowOnboardingDialog';
 
@@ -60,17 +59,22 @@ export default function AppLayout({
   const { isSuccess: isEnsSuccess, data: ethUsdPriceFeedAddress } = useEnsAddress({
     name: 'eth-usd.data.eth',
     chainId: 1,
-    cacheTime: 300_000
+    query: {
+      staleTime: 300_000
+    }
   });
 
-  const { data: ethUsdPrice } = useContractRead({
-    enabled: isEnsSuccess && ethUsdPriceFeedAddress !== undefined,
+  const { data: ethUsdPrice } = useReadContract({
     chainId: 1,
     address: ethUsdPriceFeedAddress ?? undefined,
     abi: AggregatorV2V3Interface.abi,
     functionName: 'latestAnswer',
-    select: (data) => Number(formatUnits(data as bigint, 8)),
-    cacheTime: 10_000
+
+    query: {
+      enabled: isEnsSuccess && ethUsdPriceFeedAddress !== undefined,
+      select: (data) => Number(formatUnits(data as bigint, 8)),
+      staleTime: 10_000
+    }
   });
 
   useEffect(() => {

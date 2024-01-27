@@ -2,7 +2,7 @@ import { Avatar, Badge, Box, Stack, Typography } from '@mui/material';
 import NetworkAvatar from './NetworkAvatar';
 
 export function NetworkAssetBalanceSection(props: {
-  network: number;
+  chainId: number;
   asset: string;
   balance: string;
   price: number;
@@ -22,7 +22,7 @@ export function NetworkAssetBalanceSection(props: {
           badgeContent={
             <NetworkAvatar
               tooltip
-              network={props.network}
+              chainId={props.chainId}
               sx={{
                 width: 15,
                 height: 15
