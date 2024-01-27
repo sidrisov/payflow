@@ -4,13 +4,13 @@ cd ./../payflow-service
 # via gradle with Paketo Buildpack
 PROJECT_ID=$(gcloud config get-value project)
 VERSION=$(gradle properties -q | awk '/^version:/ {print $2}')
-PROFILE=gcp
+PROFILE=gcp,caffeine
 
 GCP_SQL_INSTANCE_NAME=${PROJECT_ID}:europe-west4:${PROJECT_ID}-mysql-eu
 SQL_DB_NAME=payflow_db
 DAPP_URL=https://app.stg.payflow.me
 COOKIE_DOMAIN=payflow.me
-AIRSTACK_API_KEY=<TO SPECIFY>
+AIRSTACK_API_KEY=
 
 gradle -s bootBuildImage -P${PROFILE} \
  -Pgcp-image-name=europe-docker.pkg.dev/${PROJECT_ID}/services/api-payflow-service

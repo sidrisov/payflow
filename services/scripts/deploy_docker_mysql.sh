@@ -1,5 +1,5 @@
 #!/bin/sh
-docker run -d \
+docker run -d --restart always \
      --network payflow-network --network-alias mysql \
      --name payflow-mysql \
      -p 3306:3306 \

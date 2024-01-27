@@ -7,6 +7,12 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
 
 import java.time.Duration;
 
@@ -23,8 +29,31 @@ public class CacheConfig {
 	@Value("${spring.cache.socials.maxSize:1000}")
 	private int socialsMaxSize;
 
+	// redis cache
 	@Bean
-	public CacheManager cacheManager() {
+	RedisCacheConfiguration cacheConfiguration() {
+		return RedisCacheConfiguration
+				.defaultCacheConfig()
+				.entryTtl(Duration.ofDays(1))
+				.enableTimeToIdle()
+				.serializeValuesWith(RedisSerializationContext
+						.SerializationPair
+						.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+	}
+
+	@Bean
+	@Profile("redis")
+	CacheManager redisCacheManager(RedisConnectionFactory connectionFactory,
+	                               RedisCacheConfiguration configuration) {
+		return RedisCacheManager.builder(connectionFactory)
+				.cacheDefaults(configuration)
+				.build();
+	}
+
+	// caffeine cache
+	@Bean
+	@Profile("caffeine")
+	CacheManager caffeineCacheManager() {
 		CaffeineCacheManager cacheManager = new CaffeineCacheManager();
 
 		cacheManager.registerCustomCache("contacts",
@@ -38,6 +67,7 @@ public class CacheConfig {
 
 		cacheManager.registerCustomCache("invitations",
 				buildCache(Duration.ofHours(24)));
+
 
 		return cacheManager;
 	}
