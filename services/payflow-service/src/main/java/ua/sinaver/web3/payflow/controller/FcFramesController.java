@@ -116,7 +116,7 @@ public class FcFramesController {
 						              <head>
 						                  <meta property="fc:frame" content="vNext" />
 						                     <meta property="fc:frame:image" content="https://i.imgur.com/J1mYWw1.jpg"/>
-						                     <meta property="fc:frame:button:1" content="You don't have invitation 🤷🏻‍" />
+						                     <meta property="fc:frame:button:1" content="🤷🏻 not invited" />
 						              </head>
 						        </html>
 						""";
