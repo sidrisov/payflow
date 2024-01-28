@@ -15,6 +15,8 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 public class CacheConfig {
@@ -34,7 +36,8 @@ public class CacheConfig {
 	RedisCacheConfiguration cacheConfiguration() {
 		return RedisCacheConfiguration
 				.defaultCacheConfig()
-				.entryTtl(Duration.ofDays(1))
+				.disableCachingNullValues()
+				.entryTtl(Duration.ofMinutes(30))
 				.enableTimeToIdle()
 				.serializeValuesWith(RedisSerializationContext
 						.SerializationPair
@@ -45,8 +48,32 @@ public class CacheConfig {
 	@Profile("redis")
 	CacheManager redisCacheManager(RedisConnectionFactory connectionFactory,
 	                               RedisCacheConfiguration configuration) {
-		return RedisCacheManager.builder(connectionFactory)
+
+		RedisCacheConfiguration contactsCacheConfigs = RedisCacheConfiguration.defaultCacheConfig()
+				.disableCachingNullValues()
+				.entryTtl(contactsExpireAfterWriteDuration)
+				.serializeValuesWith(RedisSerializationContext
+						.SerializationPair
+						.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+		;
+
+		RedisCacheConfiguration socialsCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
+				.disableCachingNullValues()
+				.entryTtl(socialsExpireAfterWriteDuration)
+				.serializeValuesWith(RedisSerializationContext
+						.SerializationPair
+						.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+
+		Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
+		cacheConfigurations.put("contacts", contactsCacheConfigs);
+		cacheConfigurations.put("socials", socialsCacheConfig);
+		cacheConfigurations.put("users", configuration);
+		cacheConfigurations.put("invitations", configuration);
+
+		return RedisCacheManager
+				.builder(connectionFactory)
 				.cacheDefaults(configuration)
+				.withInitialCacheConfigurations(cacheConfigurations)
 				.build();
 	}
 

@@ -26,8 +26,8 @@ repositories {
 }
 
 if (project.hasProperty("gcp")) {
-    extra["springCloudGcpVersion"] = "4.8.4"
-    extra["springCloudVersion"] = "2022.0.4"
+    extra["springCloudGcpVersion"] = "5.0.1"
+    extra["springCloudVersion"] = "2023.0.0"
 }
 
 extra["flywayVersion"] = "10.4.1"
@@ -65,6 +65,7 @@ dependencies {
         // gcp
         implementation("com.google.cloud:spring-cloud-gcp-starter")
         implementation("com.google.cloud:spring-cloud-gcp-starter-sql-mysql")
+        implementation("com.google.cloud:google-cloud-redis")
     } else {
         // local
         //runtimeOnly ("com.h2database:h2")

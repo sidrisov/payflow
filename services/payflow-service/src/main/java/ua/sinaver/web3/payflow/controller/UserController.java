@@ -65,17 +65,22 @@ public class UserController {
 		log.debug("{} fetching contacts", principal.getName());
 		val user = userService.findByIdentity(principal.getName());
 		if (user != null) {
-			val contacts = contactBookService.getAllContacts(user);
-			if (log.isTraceEnabled()) {
-				log.trace("All contacts for {}: {}", principal.getName(), contacts);
-			} else {
-				log.debug("All contacts for {}: {}", principal.getName(),
-						contacts.stream().map(ContactMessage::address).toList());
+			try {
+				val contacts = contactBookService.getAllContacts(user);
+				if (log.isTraceEnabled()) {
+					log.trace("All contacts for {}: {}", principal.getName(), contacts);
+				} else {
+					log.debug("All contacts for {}: {}", principal.getName(),
+							contacts.stream().map(ContactMessage::address).toList());
+				}
+				return contacts;
+			} catch (Throwable t) {
+				log.debug("Error fetching contacts for {}", user.getUsername(), t);
 			}
-			return contacts;
-		} else {
-			throw new Error("User doesn't exist");
+
 		}
+
+		return Collections.emptyList();
 	}
 
 	@GetMapping("/me/contacts/{identity}")
