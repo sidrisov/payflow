@@ -50,6 +50,9 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.GET, "/user").permitAll()
 						.requestMatchers(HttpMethod.GET, "/user/{username}").permitAll()
 						.requestMatchers(HttpMethod.POST, "/user/search/wallets").permitAll()
+						// farcaster frames
+						.requestMatchers(HttpMethod.POST, "/farcaster/frames/connect").permitAll()
+						.requestMatchers(HttpMethod.POST, "/farcaster/frames/actions").permitAll()
 						.anyRequest()
 						.authenticated())
 				.sessionManagement(session -> session

@@ -14,6 +14,7 @@ import Profile from './pages/Profile';
 import Invite from './pages/Invite';
 import Leaderboard from './layouts/Leadearboard';
 import Advanced from './pages/Advanced';
+import ProfileStatus from './pages/fc-frames/ProfileStatus';
 
 export const appRoutes = ['/home', '/flows', '/requests', '/settings'];
 
@@ -54,6 +55,11 @@ export const appRouter = createBrowserRouter([
       { path: '404', element: <Page404 /> },
       { path: '*', element: <Navigate to="/404" replace /> }
     ]
+  },
+  {
+    path: '/frames/status',
+    element: <ProfileStatus />,
+    errorElement: <Page404 />
   },
   {
     path: '/jar/:uuid',
