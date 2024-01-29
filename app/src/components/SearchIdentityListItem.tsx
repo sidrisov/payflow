@@ -1,4 +1,14 @@
-import { Box, Stack, Button, Chip, BoxProps, Avatar, IconButton, Tooltip, Typography } from '@mui/material';
+import {
+  Box,
+  Stack,
+  Button,
+  Chip,
+  BoxProps,
+  Avatar,
+  IconButton,
+  Tooltip,
+  Typography
+} from '@mui/material';
 import { IdentityType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
@@ -122,115 +132,114 @@ export function SearchIdentityListItem(
               meta={identity.meta}
             />
           )}
-
-          <Stack spacing={1} direction="row" alignItems="center">
-            <Tooltip
-              title={
-                profile?.identity || address ? (
-                  (profile?.identity ?? address) === identity.profile?.identity ? (
-                    <Typography variant="caption" fontWeight="bold">
-                      Your {view === 'profile' ? 'profile' : 'address'}
-                    </Typography>
-                  ) : identity?.meta?.insights?.farcasterFollow ||
-                    identity?.meta?.insights?.lensFollow ||
-                    identity?.meta?.insights?.sentTxs ? (
-                    <>
-                      {identity.meta.insights.farcasterFollow && (
-                        <Stack spacing={1} direction="row" alignItems="center">
-                          <Avatar src="farcaster.svg" sx={{ width: 15, height: 15 }} />
-                          <Typography variant="caption" fontWeight="bold">
-                            {identity.meta.insights.farcasterFollow === 'mutual'
-                              ? 'Mutual follow'
-                              : 'You follow them'}
-                          </Typography>
-                        </Stack>
-                      )}
-                      {identity.meta.insights.lensFollow && (
-                        <Stack spacing={1} direction="row" alignItems="center">
-                          <Avatar src="lens.svg" sx={{ width: 15, height: 15 }} />
-                          <Typography variant="caption" fontWeight="bold">
-                            {identity.meta.insights.lensFollow === 'mutual'
-                              ? 'Mutual follow'
-                              : 'You follow them'}
-                          </Typography>
-                        </Stack>
-                      )}
-                      {identity.meta.insights.sentTxs > 0 && (
-                        <Stack spacing={1} direction="row" alignItems="center">
-                          <Avatar src="ethereum.png" sx={{ width: 15, height: 15 }} />
-                          <Typography variant="caption" fontWeight="bold">
-                            {`Transacted ${
-                              identity.meta.insights.sentTxs === 1
-                                ? 'once'
-                                : (identity.meta.insights.sentTxs > 5
-                                    ? '5+'
-                                    : identity.meta.insights.sentTxs) + ' times'
-                            }`}
-                          </Typography>
-                        </Stack>
-                      )}
-                    </>
-                  ) : (
-                    <Typography variant="caption" fontWeight="bold">
-                      No connection insights
-                    </Typography>
-                  )
+        </Stack>
+        <Stack spacing={1} direction="row" alignItems="center">
+          <Tooltip
+            title={
+              profile?.identity || address ? (
+                (profile?.identity ?? address) === identity.profile?.identity ? (
+                  <Typography variant="caption" fontWeight="bold">
+                    Your {view === 'profile' ? 'profile' : 'address'}
+                  </Typography>
+                ) : identity?.meta?.insights?.farcasterFollow ||
+                  identity?.meta?.insights?.lensFollow ||
+                  identity?.meta?.insights?.sentTxs ? (
+                  <>
+                    {identity.meta.insights.farcasterFollow && (
+                      <Stack spacing={1} direction="row" alignItems="center">
+                        <Avatar src="farcaster.svg" sx={{ width: 15, height: 15 }} />
+                        <Typography variant="caption" fontWeight="bold">
+                          {identity.meta.insights.farcasterFollow === 'mutual'
+                            ? 'Mutual follow'
+                            : 'You follow them'}
+                        </Typography>
+                      </Stack>
+                    )}
+                    {identity.meta.insights.lensFollow && (
+                      <Stack spacing={1} direction="row" alignItems="center">
+                        <Avatar src="lens.svg" sx={{ width: 15, height: 15 }} />
+                        <Typography variant="caption" fontWeight="bold">
+                          {identity.meta.insights.lensFollow === 'mutual'
+                            ? 'Mutual follow'
+                            : 'You follow them'}
+                        </Typography>
+                      </Stack>
+                    )}
+                    {identity.meta.insights.sentTxs > 0 && (
+                      <Stack spacing={1} direction="row" alignItems="center">
+                        <Avatar src="ethereum.png" sx={{ width: 15, height: 15 }} />
+                        <Typography variant="caption" fontWeight="bold">
+                          {`Transacted ${
+                            identity.meta.insights.sentTxs === 1
+                              ? 'once'
+                              : (identity.meta.insights.sentTxs > 5
+                                  ? '5+'
+                                  : identity.meta.insights.sentTxs) + ' times'
+                          }`}
+                        </Typography>
+                      </Stack>
+                    )}
+                  </>
                 ) : (
                   <Typography variant="caption" fontWeight="bold">
-                    For connection insights connect wallet
+                    No connection insights
                   </Typography>
                 )
-              }>
-              <HowToReg
-                sx={{
-                  color:
-                    identity?.meta?.insights?.farcasterFollow ||
-                    identity?.meta?.insights?.lensFollow ||
-                    identity?.meta?.insights?.sentTxs ||
-                    ((profile?.identity || address) &&
-                      (profile?.identity ?? address) === identity.profile?.identity)
-                      ? green.A700
-                      : grey.A700,
-                  border: 1,
-                  borderRadius: 5,
-                  p: 0.05,
-                  width: 16,
-                  height: 16
-                }}
-              />
-            </Tooltip>
-            {isAuthenticated && (
-              <IconButton
-                size="small"
-                onClick={async () => {
-                  try {
-                    await axios.post(
-                      `${API_URL}/api/user/me/favourites`,
-                      {
-                        address: identity.address,
-                        favouriteAddress: view === 'address' ? !favourite : undefined,
-                        favouriteProfile: view === 'profile' ? !favourite : undefined
-                      } as IdentityType,
-                      { withCredentials: true }
-                    );
+              ) : (
+                <Typography variant="caption" fontWeight="bold">
+                  For connection insights connect wallet
+                </Typography>
+              )
+            }>
+            <HowToReg
+              sx={{
+                color:
+                  identity?.meta?.insights?.farcasterFollow ||
+                  identity?.meta?.insights?.lensFollow ||
+                  identity?.meta?.insights?.sentTxs ||
+                  ((profile?.identity || address) &&
+                    (profile?.identity ?? address) === identity.profile?.identity)
+                    ? green.A700
+                    : grey.A700,
+                border: 1,
+                borderRadius: 5,
+                p: 0.05,
+                width: 16,
+                height: 16
+              }}
+            />
+          </Tooltip>
+          {isAuthenticated && (
+            <IconButton
+              size="small"
+              onClick={async () => {
+                try {
+                  await axios.post(
+                    `${API_URL}/api/user/me/favourites`,
+                    {
+                      address: identity.address,
+                      favouriteAddress: view === 'address' ? !favourite : undefined,
+                      favouriteProfile: view === 'profile' ? !favourite : undefined
+                    } as IdentityType,
+                    { withCredentials: true }
+                  );
 
-                    updateIdentityCallback?.({
-                      identity: identity,
-                      view,
-                      favourite: !favourite
-                    });
-                  } catch (error) {
-                    toast.error('Favourite failed!');
-                  }
-                }}>
-                {favourite ? (
-                  <Star fontSize="small" sx={{ color: yellow.A700 }} />
-                ) : (
-                  <StarBorder fontSize="small" />
-                )}
-              </IconButton>
-            )}
-          </Stack>
+                  updateIdentityCallback?.({
+                    identity: identity,
+                    view,
+                    favourite: !favourite
+                  });
+                } catch (error) {
+                  toast.error('Favourite failed!');
+                }
+              }}>
+              {favourite ? (
+                <Star fontSize="small" sx={{ color: yellow.A700 }} />
+              ) : (
+                <StarBorder fontSize="small" />
+              )}
+            </IconButton>
+          )}
         </Stack>
       </Box>
     )
