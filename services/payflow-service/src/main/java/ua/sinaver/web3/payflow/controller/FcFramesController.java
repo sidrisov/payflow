@@ -41,6 +41,25 @@ public class FcFramesController {
 		return prefix + "..." + suffix;
 	}
 
+	@Autowired
+	private SocialGraphService socialGraphService;
+
+	@Autowired
+	private UserRepository userRepository;
+
+	@Autowired
+	private InvitationRepository invitationRepository;
+
+	private static String shortedWalletAddress(String originalAddress) {
+		// Extract the first 4 characters
+		String prefix = originalAddress.substring(0, 5);
+		// Extract the last 4 characters
+		String suffix = originalAddress.substring(originalAddress.length() - 3);
+
+		// Combine the prefix, ellipsis, and suffix
+		return prefix + "..." + suffix;
+	}
+
 	@PostMapping("/connect")
 	public ResponseEntity<String> connect(@RequestBody FrameMessage frameMessage) {
 		log.debug("Received connect frame: {}", frameMessage);
@@ -54,10 +73,8 @@ public class FcFramesController {
 
 		log.debug("Addresses for {}: {}", fid, addresses);
 
-
-		val profiles =
-				addresses.stream().map(address -> userRepository.findByIdentityAndAllowedTrue(address))
-						.filter(Objects::nonNull).limit(4).toList();
+		val profiles = addresses.stream().map(address -> userRepository.findByIdentityAndAllowedTrue(address))
+				.filter(Objects::nonNull).limit(4).toList();
 
 		String html;
 		if (!profiles.isEmpty()) {
@@ -83,9 +100,9 @@ public class FcFramesController {
 					</html>
 					""", profileButtonsMeta);
 		} else {
-			val invitations =
-					addresses.stream().map(address -> invitationRepository.findFirstValidByIdentityOrCode(address, null))
-							.filter(Objects::nonNull).limit(4).toList();
+			val invitations = addresses.stream()
+					.map(address -> invitationRepository.findFirstValidByIdentityOrCode(address, null))
+					.filter(Objects::nonNull).limit(4).toList();
 
 			if (!invitations.isEmpty()) {
 				String invitedButtonsMeta = "";
@@ -136,7 +153,7 @@ public class FcFramesController {
 				          <html>
 				              <head>
 				                  <meta property="fc:frame" content="vNext" />
-				                     <meta property="fc:frame:image" content="https://drive.google.com/uc?id=12uZfK2BiPoVQOVJt1Kh2H9usgN29H_Dq"/>
+				                     <meta property="fc:frame:image" content="https://i.imgur.com/Vs0loYg.png"/>
 				              </head>
 				        </html>
 				""");
