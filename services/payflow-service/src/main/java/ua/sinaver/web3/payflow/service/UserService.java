@@ -6,8 +6,8 @@ import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.web3j.crypto.WalletUtils;
 import ua.sinaver.web3.payflow.data.Invitation;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.data.UserAllowance;
@@ -99,7 +99,7 @@ public class UserService implements IUserService {
 
 		if (profile != null) {
 			user.setDisplayName(profile.displayName());
-			if (profile.username().toLowerCase().startsWith("0x")) {
+			if (WalletUtils.isValidAddress(profile.username())) {
 				throw new Error("Username can't be an address");
 			}
 
@@ -149,7 +149,6 @@ public class UserService implements IUserService {
 		return walletUserMap;
 	}
 
-	@Cacheable(cacheNames = "users", unless = "#result.isEmpty()")
 	@Override
 	public List<User> findAll() {
 		return userRepository.findByAllowedTrueOrderByLastSeenDesc();

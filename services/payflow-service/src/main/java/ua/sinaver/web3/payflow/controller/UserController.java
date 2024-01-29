@@ -118,16 +118,21 @@ public class UserController {
 	}
 
 	@GetMapping("/all")
+	//@Cacheable(cacheNames = "users", unless = "#result.isEmpty()")
 	public List<ProfileMetaMessage> getAllProfiles() {
-		List<User> users = userService.findAll();
-		log.debug("Fetching all profiles");
-		if (users != null) {
-			return users.stream().map(user -> new ProfileMetaMessage(user.getIdentity(), user.getDisplayName(),
-					user.getUsername(),
-					user.getProfileImage(), user.getCreatedDate().toString(), null)).toList();
-		} else {
-			return Collections.emptyList();
+		try {
+			List<User> users = userService.findAll();
+			log.debug("Fetching all profiles");
+			if (users != null) {
+				return users.stream().map(user -> new ProfileMetaMessage(user.getIdentity(), user.getDisplayName(),
+						user.getUsername(),
+						user.getProfileImage(), user.getCreatedDate().toString(), null)).toList();
+			}
+		} catch (Throwable t) {
+			log.error("Error fetching all profiles: ", t);
 		}
+
+		return Collections.emptyList();
 	}
 
 	@GetMapping

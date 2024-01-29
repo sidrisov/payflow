@@ -94,6 +94,7 @@ dependencies {
 
     // crypto
     implementation("org.bouncycastle:bcprov-jdk18on:1.77")
+    implementation("org.web3j:core:4.10.3")
 
     //siwe
     implementation("com.moonstoneid:siwe-java:1.0.2")
