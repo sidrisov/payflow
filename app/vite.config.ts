@@ -11,7 +11,6 @@ export default defineConfig({
     react(),
     svgr({ include: '**/*.svg?react' }),
     VitePWA({
-      disable: true,
       injectRegister: 'auto',
       registerType: 'autoUpdate',
       workbox: {

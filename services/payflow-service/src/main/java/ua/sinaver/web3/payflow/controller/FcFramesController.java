@@ -54,10 +54,8 @@ public class FcFramesController {
 
 		log.debug("Addresses for {}: {}", fid, addresses);
 
-
-		val profiles =
-				addresses.stream().map(address -> userRepository.findByIdentityAndAllowedTrue(address))
-						.filter(Objects::nonNull).limit(4).toList();
+		val profiles = addresses.stream().map(address -> userRepository.findByIdentityAndAllowedTrue(address))
+				.filter(Objects::nonNull).limit(4).toList();
 
 		String html;
 		if (!profiles.isEmpty()) {
@@ -83,9 +81,9 @@ public class FcFramesController {
 					</html>
 					""", profileButtonsMeta);
 		} else {
-			val invitations =
-					addresses.stream().map(address -> invitationRepository.findFirstValidByIdentityOrCode(address, null))
-							.filter(Objects::nonNull).limit(4).toList();
+			val invitations = addresses.stream()
+					.map(address -> invitationRepository.findFirstValidByIdentityOrCode(address, null))
+					.filter(Objects::nonNull).limit(4).toList();
 
 			if (!invitations.isEmpty()) {
 				String invitedButtonsMeta = "";
@@ -136,7 +134,7 @@ public class FcFramesController {
 				          <html>
 				              <head>
 				                  <meta property="fc:frame" content="vNext" />
-				                     <meta property="fc:frame:image" content="https://drive.google.com/uc?id=12uZfK2BiPoVQOVJt1Kh2H9usgN29H_Dq"/>
+				                     <meta property="fc:frame:image" content="https://i.imgur.com/Vs0loYg.png"/>
 				              </head>
 				        </html>
 				""");
