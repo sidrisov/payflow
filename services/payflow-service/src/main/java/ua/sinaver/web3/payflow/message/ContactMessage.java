@@ -70,7 +70,7 @@ public record ContactMessage(
 	}
 
 
-	private static SocialInsights getWalletInsights(Wallet wallet) {
+	public static SocialInsights getWalletInsights(Wallet wallet) {
 		var sentTxs = 0;
 		String farcasterFollow = null;
 		String lensFollow = null;
