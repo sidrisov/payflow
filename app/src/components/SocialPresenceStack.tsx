@@ -10,13 +10,16 @@ export function SocialPresenceStack({ meta, ...props }: { meta: MetaType & Stack
       title={
         <>
           {meta.ens && <SocialPresenceAvatarWithMeta dappName="ens" profileName={meta.ens} />}
-          {meta.socials.map((s) => (
-            <SocialPresenceAvatarWithMeta
-              dappName={s.dappName as dAppType}
-              profileName={s.profileName}
-              followerCount={s.followerCount}
-            />
-          ))}
+          {meta.socials &&
+            meta.socials
+              .filter((s) => s.profileName && s.dappName)
+              .map((s) => (
+                <SocialPresenceAvatarWithMeta
+                  dappName={s.dappName as dAppType}
+                  profileName={s.profileName}
+                  followerCount={s.followerCount}
+                />
+              ))}
 
           {meta.ens && <SocialPresenceAvatarWithMeta dappName="xmtp" />}
         </>
