@@ -7,8 +7,16 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 public class CacheConfig {
@@ -23,8 +31,56 @@ public class CacheConfig {
 	@Value("${spring.cache.socials.maxSize:1000}")
 	private int socialsMaxSize;
 
+	// redis cache
 	@Bean
-	public CacheManager cacheManager() {
+	RedisCacheConfiguration cacheConfiguration() {
+		return RedisCacheConfiguration
+				.defaultCacheConfig()
+				.disableCachingNullValues()
+				.entryTtl(Duration.ofMinutes(30))
+				.enableTimeToIdle()
+				.serializeValuesWith(RedisSerializationContext
+						.SerializationPair
+						.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+	}
+
+	@Bean
+	@Profile("redis")
+	CacheManager redisCacheManager(RedisConnectionFactory connectionFactory,
+	                               RedisCacheConfiguration configuration) {
+
+		RedisCacheConfiguration contactsCacheConfigs = RedisCacheConfiguration.defaultCacheConfig()
+				.disableCachingNullValues()
+				.entryTtl(contactsExpireAfterWriteDuration)
+				.serializeValuesWith(RedisSerializationContext
+						.SerializationPair
+						.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+		;
+
+		RedisCacheConfiguration socialsCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
+				.disableCachingNullValues()
+				.entryTtl(socialsExpireAfterWriteDuration)
+				.serializeValuesWith(RedisSerializationContext
+						.SerializationPair
+						.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+
+		Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
+		cacheConfigurations.put("contacts", contactsCacheConfigs);
+		cacheConfigurations.put("socials", socialsCacheConfig);
+		cacheConfigurations.put("users", configuration);
+		cacheConfigurations.put("invitations", configuration);
+
+		return RedisCacheManager
+				.builder(connectionFactory)
+				.cacheDefaults(configuration)
+				.withInitialCacheConfigurations(cacheConfigurations)
+				.build();
+	}
+
+	// caffeine cache
+	@Bean
+	@Profile("caffeine")
+	CacheManager caffeineCacheManager() {
 		CaffeineCacheManager cacheManager = new CaffeineCacheManager();
 
 		cacheManager.registerCustomCache("contacts",
@@ -38,6 +94,7 @@ public class CacheConfig {
 
 		cacheManager.registerCustomCache("invitations",
 				buildCache(Duration.ofHours(24)));
+
 
 		return cacheManager;
 	}

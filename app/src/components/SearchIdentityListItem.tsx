@@ -2,20 +2,17 @@ import {
   Box,
   Stack,
   Button,
-  IconButton,
   Chip,
-  Tooltip,
   BoxProps,
   Avatar,
+  IconButton,
+  Tooltip,
   Typography
 } from '@mui/material';
-import { HowToReg, Star, StarBorder } from '@mui/icons-material';
 import { IdentityType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
 import { comingSoonToast } from './Toasts';
-import SocialPresenceAvatar from './SocialPresenceAvatar';
-import { dAppType } from '../utils/dapps';
 import { useContext } from 'react';
 import { ProfileContext } from '../contexts/UserContext';
 import axios from 'axios';
@@ -26,6 +23,8 @@ import PayflowChip from './PayflowChip';
 import { green, grey, lightGreen, orange, yellow } from '@mui/material/colors';
 import { useAccount } from 'wagmi';
 import { UpdateIdentityCallbackType } from './SearchIdentityDialog';
+import { SocialPresenceStack } from './SocialPresenceStack';
+import { HowToReg, Star, StarBorder } from '@mui/icons-material';
 
 export function SearchIdentityListItem(
   props: BoxProps &
@@ -128,23 +127,10 @@ export function SearchIdentityListItem(
           )}
 
           {identity.meta && (
-            <Stack direction="row" spacing={0.5} alignItems="center">
-              {identity.meta.ens && (
-                <SocialPresenceAvatar dappName="ens" profileName={identity.meta.ens} />
-              )}
-              {identity.meta.socials &&
-                identity.meta.socials
-                  .filter((s) => s.profileName && s.dappName)
-                  .map((s) => (
-                    <SocialPresenceAvatar
-                      key={`social_presence_avatar_${s.dappName}_${identity.address}`}
-                      dappName={s.dappName as dAppType}
-                      profileName={s.profileName}
-                      followerCount={s.followerCount}
-                    />
-                  ))}
-              {identity.meta.xmtp && <SocialPresenceAvatar dappName="xmtp" />}
-            </Stack>
+            <SocialPresenceStack
+              key={`social_presence_stack_${identity.address}`}
+              meta={identity.meta}
+            />
           )}
         </Stack>
         <Stack spacing={1} direction="row" alignItems="center">
