@@ -25,9 +25,9 @@ repositories {
     mavenCentral()
 }
 
-if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local")) {
-    extra["springCloudGcpVersion"] = "4.8.4"
-    extra["springCloudVersion"] = "2022.0.4"
+if (project.hasProperty("gcp")) {
+    extra["springCloudGcpVersion"] = "5.0.1"
+    extra["springCloudVersion"] = "2023.0.0"
 }
 
 extra["flywayVersion"] = "10.4.1"
@@ -60,11 +60,12 @@ dependencies {
     //implementation("com.graphql-java:graphql-java-extended-scalars:21.0")
 
 
-    if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local")) {
+    if (project.hasProperty("gcp")) {
         project.logger.info("Including GCP dependencies")
         // gcp
         implementation("com.google.cloud:spring-cloud-gcp-starter")
         implementation("com.google.cloud:spring-cloud-gcp-starter-sql-mysql")
+        implementation("com.google.cloud:google-cloud-redis")
     } else {
         // local
         //runtimeOnly ("com.h2database:h2")
@@ -73,6 +74,9 @@ dependencies {
 
     // caching
     implementation("com.github.ben-manes.caffeine:caffeine")
+
+    // redis
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
     // db migration
     implementation("org.flywaydb:flyway-core:${property("flywayVersion")}")
@@ -90,6 +94,7 @@ dependencies {
 
     // crypto
     implementation("org.bouncycastle:bcprov-jdk18on:1.77")
+    implementation("org.web3j:core:4.10.3")
 
     //siwe
     implementation("com.moonstoneid:siwe-java:1.0.2")
@@ -105,7 +110,7 @@ dependencyManagement {
     imports {
         mavenBom("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:latest.release")
 
-        if (project.hasProperty("gcp") || project.hasProperty("gcp-dev") || project.hasProperty("gcp-local")) {
+        if (project.hasProperty("gcp")) {
             // gcp
             mavenBom("com.google.cloud:spring-cloud-gcp-dependencies:${property("springCloudGcpVersion")}")
             mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
@@ -128,16 +133,10 @@ tasks.withType<GenerateJavaTask> {
 }
 
 tasks.withType<BootRun> {
-    if (project.hasProperty("gcp")) {
-        systemProperty("spring.profiles.active", "gcp")
-    }
-
-    if (project.hasProperty("gcp-dev")) {
-        systemProperty("spring.profiles.active", "gcp-dev")
-    }
-
-    if (project.hasProperty("gcp-local")) {
-        systemProperty("spring.profiles.active", "gcp-local")
+    if (project.hasProperty("redis")) {
+        systemProperty("spring.profiles.active", "local,redis")
+    } else {
+        systemProperty("spring.profiles.active", "local,caffeine")
     }
 }
 

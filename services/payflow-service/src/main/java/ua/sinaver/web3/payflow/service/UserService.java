@@ -5,8 +5,9 @@ import lombok.extern.log4j.Log4j2;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
+import org.web3j.crypto.WalletUtils;
 import ua.sinaver.web3.payflow.data.Invitation;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.data.UserAllowance;
@@ -45,11 +46,13 @@ public class UserService implements IUserService {
 	private InvitationRepository invitationRepository;
 
 	@Override
+	@CacheEvict(value = "users")
 	public void saveUser(String identity) {
 		userRepository.save(new User(identity));
 	}
 
 	@Override
+	@CacheEvict(value = "users")
 	public void updateProfile(String identity, ProfileMessage profile, String invitationCode) {
 		User user = userRepository.findByIdentity(identity);
 
@@ -96,7 +99,7 @@ public class UserService implements IUserService {
 
 		if (profile != null) {
 			user.setDisplayName(profile.displayName());
-			if (profile.username().toLowerCase().startsWith("0x")) {
+			if (WalletUtils.isValidAddress(profile.username())) {
 				throw new Error("Username can't be an address");
 			}
 
@@ -139,14 +142,13 @@ public class UserService implements IUserService {
 	public Map<WalletProfileRequestMessage, User> searchByOwnedWallets(List<WalletProfileRequestMessage> wallets) {
 		// TODO: do lazy way for now, combine results within query later
 		val walletUserMap = new HashMap<WalletProfileRequestMessage, User>();
-		wallets.stream().forEach(w -> {
+		wallets.forEach(w -> {
 			val user = userRepository.findByOwnedWallet(w);
 			walletUserMap.put(w, user);
 		});
 		return walletUserMap;
 	}
 
-	@Cacheable(cacheNames = "users")
 	@Override
 	public List<User> findAll() {
 		return userRepository.findByAllowedTrueOrderByLastSeenDesc();

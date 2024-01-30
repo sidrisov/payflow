@@ -2,6 +2,7 @@ package ua.sinaver.web3.payflow.service;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.graphql.client.ClientGraphQlResponse;
@@ -71,8 +72,10 @@ public class SocialGraphService implements ISocialGraphService {
 	@Cacheable(cacheNames = "socials", unless = "#result==null")
 	public Wallet getSocialMetadata(String identity, String me) {
 		try {
+			val documentName = StringUtils.isBlank(me) ? "getSocialMetadataByIdentity" :
+					"getSocialMetadataAndInsightsByIdentity";
 			ClientGraphQlResponse socialMetadata = graphQlClient.documentName(
-							"getSocialMetadataByIdentity")
+							documentName)
 					.variable("identity", identity)
 					.variable("me", me)
 					.execute()
@@ -107,7 +110,7 @@ public class SocialGraphService implements ISocialGraphService {
 					val baseTransfers =
 							socialMetadata.field("Wallet.baseTransfers")
 									.toEntityList(TokenTransfer.class);
-					
+
 					val socialFollowings =
 							new SocialFollowingOutput.Builder().Following(followings).build();
 

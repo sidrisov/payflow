@@ -65,17 +65,22 @@ public class UserController {
 		log.debug("{} fetching contacts", principal.getName());
 		val user = userService.findByIdentity(principal.getName());
 		if (user != null) {
-			val contacts = contactBookService.getAllContacts(user);
-			if (log.isTraceEnabled()) {
-				log.trace("All contacts for {}: {}", principal.getName(), contacts);
-			} else {
-				log.debug("All contacts for {}: {}", principal.getName(),
-						contacts.stream().map(ContactMessage::address).toList());
+			try {
+				val contacts = contactBookService.getAllContacts(user);
+				if (log.isTraceEnabled()) {
+					log.trace("All contacts for {}: {}", principal.getName(), contacts);
+				} else {
+					log.debug("All contacts for {}: {}", principal.getName(),
+							contacts.stream().map(ContactMessage::address).toList());
+				}
+				return contacts;
+			} catch (Throwable t) {
+				log.debug("Error fetching contacts for {}", user.getUsername(), t);
 			}
-			return contacts;
-		} else {
-			throw new Error("User doesn't exist");
+
 		}
+
+		return Collections.emptyList();
 	}
 
 	@GetMapping("/me/contacts/{identity}")
@@ -113,16 +118,21 @@ public class UserController {
 	}
 
 	@GetMapping("/all")
+	//@Cacheable(cacheNames = "users", unless = "#result.isEmpty()")
 	public List<ProfileMetaMessage> getAllProfiles() {
-		List<User> users = userService.findAll();
-		log.debug("Fetching all profiles");
-		if (users != null) {
-			return users.stream().map(user -> new ProfileMetaMessage(user.getIdentity(), user.getDisplayName(),
-					user.getUsername(),
-					user.getProfileImage(), user.getCreatedDate().toString(), null)).toList();
-		} else {
-			return Collections.emptyList();
+		try {
+			List<User> users = userService.findAll();
+			log.debug("Fetching all profiles");
+			if (users != null) {
+				return users.stream().map(user -> new ProfileMetaMessage(user.getIdentity(), user.getDisplayName(),
+						user.getUsername(),
+						user.getProfileImage(), user.getCreatedDate().toString(), null)).toList();
+			}
+		} catch (Throwable t) {
+			log.error("Error fetching all profiles: ", t);
 		}
+
+		return Collections.emptyList();
 	}
 
 	@GetMapping
