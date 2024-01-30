@@ -193,22 +193,31 @@ public class FarcasterFramesController {
 		if (!profiles.isEmpty() && profileButtonIndex > 0 && profileButtonIndex <= profiles.size()) {
 			val clickedProfile = profiles.get(profileButtonIndex - 1);
 
-			String socialInsightsButton = fid != casterFid ? """
-										<meta property="fc:frame:button:2" content="Social Insights"/>
-					""" : "";
+			String socialInsightsButton = "";
+
+			var nextButtonIndex = 2;
+			if (fid != casterFid) {
+				socialInsightsButton = String.format("""
+											<meta property="fc:frame:button:%s" content="Social Insights"/>
+						""", nextButtonIndex);
+				nextButtonIndex++;
+			}
 
 			return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(String.format("""
-					<!DOCTYPE html>
-					<html>
-					<head>
-					<meta property="fc:frame" content="vNext" />
-					<meta property="fc:frame:button:1" content="Balance"/>
-					%s
-					<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
-					<meta property="fc:frame:post_url" content="https://api.alpha.payflow.me/api/farcaster/frames/actions/%s" />
-					</head>
-					</html>
-					""", socialInsightsButton, clickedProfile.getIdentity()));
+							<!DOCTYPE html>
+							<html>
+							<head>
+							<meta property="fc:frame" content="vNext" />
+							<meta property="fc:frame:button:1" content="Balance"/>
+							%s
+							<meta property="fc:frame:button:%s" content="Go To App ↗️"/>
+							<meta property="fc:frame:button:%s:action" content="post_redirect"/>
+							<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
+							<meta property="fc:frame:post_url" content="https://api.alpha.payflow.me/api/farcaster/frames/actions/%s" />
+							</head>
+							</html>
+							""", socialInsightsButton, nextButtonIndex, nextButtonIndex,
+					clickedProfile.getIdentity()));
 		}
 
 		return DEFAULT_HTML_RESPONSE;
@@ -217,7 +226,7 @@ public class FarcasterFramesController {
 	@PostMapping("/actions/{identity}")
 	public ResponseEntity<String> identityAction(@PathVariable String identity,
 	                                             @RequestBody FrameMessage frameMessage) {
-		log.debug("Received balance frame: {}", frameMessage);
+		log.debug("Received actions frame: {}", frameMessage);
 
 		val profileButtonIndex = frameMessage.untrustedData().buttonIndex();
 		val fid = frameMessage.untrustedData().fid();
@@ -233,7 +242,7 @@ public class FarcasterFramesController {
 		val clickedProfile =
 				getFidProfiles(addresses).stream().filter(p -> p.getIdentity().equals(identity)).findFirst().orElse(null);
 
-		if (clickedProfile != null && profileButtonIndex > 0 && profileButtonIndex <= 2) {
+		if (clickedProfile != null && profileButtonIndex > 0 && profileButtonIndex <= 3) {
 
 			// handle balance
 			if (profileButtonIndex == 1) {
@@ -288,6 +297,10 @@ public class FarcasterFramesController {
 							</html>
 							""", insightsMeta));
 				}
+			}
+
+			if ((profileButtonIndex == 2 && fid == casterFid) || (profileButtonIndex == 3 && fid != casterFid)) {
+				return ResponseEntity.status(HttpStatus.FOUND).contentType(MediaType.TEXT_PLAIN).body(String.format("https://app.payflow.me/%s", clickedProfile.getUsername()));
 			}
 		}
 
