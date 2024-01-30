@@ -2,17 +2,7 @@ import { useMemo, useState } from 'react';
 import { ActivityFetchResultType, TxInfo } from '../../types/ActivityFetchResultType';
 import { FlowWalletType, WalletWithProfileType } from '../../types/FlowType';
 import axios from 'axios';
-import {
-  base,
-  baseGoerli,
-  modeTestnet,
-  optimism,
-  optimismGoerli,
-  polygonZkEvm,
-  polygonZkEvmTestnet,
-  zora,
-  zoraTestnet
-} from 'viem/chains';
+import { base, baseSepolia, optimism, zora } from 'viem/chains';
 import { API_URL } from '../urlConstants';
 import { sortAndFilterFlowWallets } from '../sortAndFilterFlows';
 
@@ -236,32 +226,18 @@ function getBlockscoutBaseUrl(chainId: number) {
   let baseUrl;
 
   switch (chainId) {
-    case baseGoerli.id:
-      baseUrl = 'https://base-goerli.blockscout.com';
+    case baseSepolia.id:
+      baseUrl = 'https://base-sepolia.blockscout.com';
       break;
     case base.id:
       baseUrl = 'https://base.blockscout.com';
       break;
-    case optimismGoerli.id:
-      baseUrl = 'https://optimism-goerli.blockscout.com';
-      break;
     case optimism.id:
       baseUrl = 'https://optimism.blockscout.com';
-      break;
-    case modeTestnet.id:
-      baseUrl = 'https://sepolia.explorer.mode.network';
-      break;
-    case zoraTestnet.id:
-      baseUrl = 'https://testnet.explorer.zora.energy';
       break;
     case zora.id:
       baseUrl = 'https://explorer.zora.energy';
       break;
-    case polygonZkEvmTestnet.id:
-      baseUrl = 'https://testnet.explorer.zora.energy';
-      break;
-    case polygonZkEvm.id:
-      baseUrl = 'https://explorer.zora.energy';
   }
 
   return baseUrl;

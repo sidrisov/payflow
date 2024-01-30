@@ -6,9 +6,7 @@ import {
   zkSync,
   mainnet,
   baseSepolia,
-  optimismGoerli,
-  zkSyncSepoliaTestnet,
-  baseGoerli,
+  sepolia,
   goerli
 } from 'viem/chains';
 
@@ -21,29 +19,32 @@ export const SUPPORTED_CHAINS = [
   zora,
   zkSync,
   mainnet,
-  goerli,
-  baseGoerli,
-  baseSepolia,
-  optimismGoerli,
-  zkSyncSepoliaTestnet
-]; /* .filter((c) => ENABLED_CHAINS.includes(c.network)); */
+  sepolia,
+  baseSepolia
+].filter((c) => ENABLED_CHAINS.includes(c.name));
 
-export const DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS = [base, optimism, baseGoerli];
+export const DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS = [base, optimism, zora];
 
 export default function getNetworkImageSrc(chainId: number): string {
   let fileName;
 
   switch (chainId) {
     case mainnet.id:
+    case sepolia.id:
       fileName = 'ethereum';
       break;
     case base.id:
-    case baseGoerli.id:
+    case baseSepolia.id:
       fileName = 'base';
       break;
     case optimism.id:
-    case optimismGoerli.id:
       fileName = 'optimism';
+      break;
+    case zkSync.id:
+      fileName = 'zksync-era';
+      break;
+    case arbitrum.id:
+      fileName = 'arbitrum';
       break;
     case zora.id:
       fileName = 'zora';

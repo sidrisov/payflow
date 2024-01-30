@@ -24,7 +24,7 @@ import {
 import { Hash, Address, keccak256, toBytes } from 'viem';
 import { getRelayKitForChainId, getSponsoredCount, waitForRelayTaskToComplete } from './relayer';
 import { getGasPrice } from 'wagmi/actions';
-import { arbitrumGoerli, zkSyncSepoliaTestnet } from 'viem/chains';
+import { arbitrumGoerli, sepolia, zkSyncSepoliaTestnet } from 'viem/chains';
 import { SUPPORTED_CHAINS } from './networks';
 import { wagmiConfig } from './wagmiConfig';
 
@@ -158,7 +158,7 @@ export async function estimateFee(isSafeDeployed: boolean, chainId: number): Pro
   const isMainnetChain = !SUPPORTED_CHAINS.find((c) => c.id === chainId)?.testnet;
 
   const l1GasPrice = await getGasPrice(wagmiConfig, {
-    chainId: isMainnetChain ? 1 : 5
+    chainId: isMainnetChain ? 1 : 11155111
   });
   const l2GasPrice = await getGasPrice(wagmiConfig, { chainId });
 

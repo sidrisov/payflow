@@ -1,5 +1,4 @@
 import { Address, zeroAddress } from 'viem';
-import { optimismGoerli } from 'wagmi/chains';
 
 export const ERC20_CONTRACTS = {
   /* [optimismGoerli.id]: [
