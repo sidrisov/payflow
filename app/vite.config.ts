@@ -2,7 +2,12 @@ import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import { VitePWA } from 'vite-plugin-pwa';
 
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
+
+const env = loadEnv('all', process.cwd());
+
+const API_URL_HOST = env.VITE_PAYFLOW_SERVICE_API_URL.replace(/^(http|https):\/\/+/, '');
+
 // https://vitejs.dev/config/
 export default defineConfig({
   // specify same port for dev as for preview
@@ -19,6 +24,7 @@ export default defineConfig({
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/[^\.]+\.blockscout\.com\/.*/i,
+            method: 'GET',
             handler: 'CacheFirst',
             options: {
               cacheName: 'blockscout-txs-cache',
@@ -30,11 +36,56 @@ export default defineConfig({
                 statuses: [0, 200]
               }
             }
+          },
+          {
+            urlPattern: new RegExp(`^(http|https):\/\/${API_URL_HOST}\/api\/user\/me$`),
+            method: 'GET',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'auth-cache',
+              expiration: {
+                maxEntries: 1,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: new RegExp(`^(http|https):\/\/${API_URL_HOST}\/api\/user\/me\/contacts$`),
+            method: 'GET',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'contacts-cache',
+              expiration: {
+                maxEntries: 1,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: new RegExp(`^(http|https):\/\/${API_URL_HOST}\/api\/user\/`),
+            method: 'GET',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'profiles-cache',
+              expiration: {
+                maxEntries: 1,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
           }
         ]
       },
       devOptions: {
-        enabled: false
+        enabled: true
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
