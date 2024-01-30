@@ -17,6 +17,7 @@ import ua.sinaver.web3.payflow.repository.UserRepository;
 import ua.sinaver.web3.payflow.service.SocialGraphService;
 import ua.sinaver.web3.payflow.service.WalletBalanceService;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -153,6 +154,7 @@ public class FarcasterFramesController {
 						<meta property="fc:frame" content="vNext" />
 						<meta property="fc:frame:image" content="https://i.imgur.com/9DanrMv.jpg"/>
 						%s
+						<meta property="fc:frame:post_url" content="https://api.alpha.payflow.me/api/farcaster/frames/actions"
 						</head>
 						</html>
 						""", invitedButtonsMeta);
@@ -177,7 +179,7 @@ public class FarcasterFramesController {
 	public ResponseEntity<String> actions(@RequestBody FrameMessage frameMessage) {
 		log.debug("Received actions frame: {}", frameMessage);
 
-		val profileButtonIndex = frameMessage.untrustedData().buttonIndex();
+		val buttonIndex = frameMessage.untrustedData().buttonIndex();
 		val fid = frameMessage.untrustedData().fid();
 		val casterFid = frameMessage.untrustedData().castId().fid();
 
@@ -190,8 +192,8 @@ public class FarcasterFramesController {
 
 		val profiles = getFidProfiles(addresses);
 
-		if (!profiles.isEmpty() && profileButtonIndex > 0 && profileButtonIndex <= profiles.size()) {
-			val clickedProfile = profiles.get(profileButtonIndex - 1);
+		if (!profiles.isEmpty() && buttonIndex > 0 && buttonIndex <= profiles.size()) {
+			val clickedProfile = profiles.get(buttonIndex - 1);
 
 			String socialInsightsButton = "";
 
@@ -210,7 +212,7 @@ public class FarcasterFramesController {
 							<meta property="fc:frame" content="vNext" />
 							<meta property="fc:frame:button:1" content="Balance"/>
 							%s
-							<meta property="fc:frame:button:%s" content="Go To App ↗️"/>
+							<meta property="fc:frame:button:%s" content="Profile"/>
 							<meta property="fc:frame:button:%s:action" content="post_redirect"/>
 							<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
 							<meta property="fc:frame:post_url" content="https://api.alpha.payflow.me/api/farcaster/frames/actions/%s" />
@@ -218,6 +220,28 @@ public class FarcasterFramesController {
 							</html>
 							""", socialInsightsButton, nextButtonIndex, nextButtonIndex,
 					clickedProfile.getIdentity()));
+		} else {
+			val invitations = addresses.stream()
+					.map(address -> invitationRepository.findFirstValidByIdentityOrCode(address, null))
+					.filter(Objects::nonNull).limit(4).toList();
+
+			if (!invitations.isEmpty() && buttonIndex > 0 && buttonIndex <= invitations.size()) {
+
+				val clickedInvitee = invitations.get(buttonIndex - 1);
+
+				return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(String.format("""
+						<!DOCTYPE html>
+						<html>
+						<head>
+						<meta property="fc:frame" content="vNext" />
+						<meta property="fc:frame:button:1" content="Sign Up"/>
+						<meta property="fc:frame:button:1:action" content="post_redirect"/>
+						<meta property="fc:frame:image" content="https://i.imgur.com/9DanrMv.jpg"/>
+						<meta property="fc:frame:post_url" content="https://api.alpha.payflow.me/api/farcaster/frames/actions/%s" />
+						</head>
+						</html>
+						""", clickedInvitee.getIdentity()));
+			}
 		}
 
 		return DEFAULT_HTML_RESPONSE;
@@ -228,7 +252,7 @@ public class FarcasterFramesController {
 	                                             @RequestBody FrameMessage frameMessage) {
 		log.debug("Received actions frame: {}", frameMessage);
 
-		val profileButtonIndex = frameMessage.untrustedData().buttonIndex();
+		val buttonIndex = frameMessage.untrustedData().buttonIndex();
 		val fid = frameMessage.untrustedData().fid();
 		val casterFid = frameMessage.untrustedData().castId().fid();
 
@@ -242,10 +266,10 @@ public class FarcasterFramesController {
 		val clickedProfile =
 				getFidProfiles(addresses).stream().filter(p -> p.getIdentity().equals(identity)).findFirst().orElse(null);
 
-		if (clickedProfile != null && profileButtonIndex > 0 && profileButtonIndex <= 3) {
+		if (clickedProfile != null && buttonIndex > 0 && buttonIndex <= 3) {
 
 			// handle balance
-			if (profileButtonIndex == 1) {
+			if (buttonIndex == 1) {
 				val defaultFlow = clickedProfile.getDefaultFlow();
 
 				AtomicReference<String> balance = new AtomicReference<>();
@@ -278,7 +302,7 @@ public class FarcasterFramesController {
 			}
 
 			// handle insights
-			if (profileButtonIndex == 2 && fid != casterFid) {
+			if (buttonIndex == 2 && fid != casterFid) {
 
 				val casterWallet = socialGraphService.getSocialMetadata(
 						"fc_fid:".concat(String.valueOf(casterFid)), "fc_fid:".concat(String.valueOf(fid)));
@@ -299,8 +323,32 @@ public class FarcasterFramesController {
 				}
 			}
 
-			if ((profileButtonIndex == 2 && fid == casterFid) || (profileButtonIndex == 3 && fid != casterFid)) {
-				return ResponseEntity.status(HttpStatus.FOUND).contentType(MediaType.TEXT_PLAIN).body(String.format("https://app.payflow.me/%s", clickedProfile.getUsername()));
+			if ((buttonIndex == 2 && fid == casterFid) || (buttonIndex == 3 && fid != casterFid)) {
+
+				try {
+					val location = new URI(String.format("https://app.payflow.me/%s",
+							clickedProfile.getUsername()));
+
+					log.debug("Redirecting to {}", location);
+					return ResponseEntity.status(HttpStatus.FOUND).contentType(MediaType.TEXT_PLAIN).location(location).body(String.format("https://app.payflow.me/%s", clickedProfile.getUsername()));
+
+				} catch (Throwable t) {
+					log.debug("Error:", t);
+				}
+			}
+		} else {
+			val invitee = invitationRepository.findFirstValidByIdentityOrCode(identity, null);
+
+			if (invitee != null & buttonIndex == 1) {
+
+				try {
+					val location = new URI("https://app.payflow.me/connect");
+
+					log.debug("Redirecting to {}", location);
+					return ResponseEntity.status(HttpStatus.FOUND).contentType(MediaType.TEXT_PLAIN).location(location).body("https://app.payflow.me/connect");
+				} catch (Throwable t) {
+					log.debug("Error:", t);
+				}
 			}
 		}
 
