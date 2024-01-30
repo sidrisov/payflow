@@ -16,7 +16,7 @@
     "@airstack/airstack-react": "^0.6.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@farcaster/auth-kit": "^0.1.4",
+    "@farcaster/auth-kit": "^0.2.0",
     "@fontsource/roboto": "^5.0.8",
     "@mui/icons-material": "^5.14.3",
     "@mui/lab": "^5.0.0-alpha.151",
