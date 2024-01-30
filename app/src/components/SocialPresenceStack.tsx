@@ -21,7 +21,7 @@ export function SocialPresenceStack({ meta, ...props }: { meta: MetaType & Stack
                 />
               ))}
 
-          {meta.ens && <SocialPresenceAvatarWithMeta dappName="xmtp" />}
+          {meta.xmtp && <SocialPresenceAvatarWithMeta dappName="xmtp" />}
         </>
       }>
       <Stack {...props} direction="row" spacing={0.5} alignItems="center">
