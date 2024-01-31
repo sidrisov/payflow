@@ -19,18 +19,24 @@ export default defineConfig({
       injectRegister: 'auto',
       registerType: 'autoUpdate',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,jpg,svg}'],
         maximumFileSizeToCacheInBytes: 5000000,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/[^\.]+\.blockscout\.com\/.*/i,
             method: 'GET',
-            handler: 'CacheFirst',
+            handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'blockscout-txs-cache',
               expiration: {
                 maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
+              },
+              backgroundSync: {
+                name: 'cacheSyncQueue',
+                options: {
+                  maxRetentionTime: 24 * 60
+                }
               },
               cacheableResponse: {
                 statuses: [0, 200]
@@ -55,12 +61,18 @@ export default defineConfig({
           {
             urlPattern: new RegExp(`^(http|https):\/\/${API_URL_HOST}\/api\/user\/me\/contacts$`),
             method: 'GET',
-            handler: 'NetworkFirst',
+            handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'contacts-cache',
               expiration: {
                 maxEntries: 1,
                 maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
+              },
+              backgroundSync: {
+                name: 'cacheSyncQueue',
+                options: {
+                  maxRetentionTime: 24 * 60
+                }
               },
               cacheableResponse: {
                 statuses: [0, 200]
@@ -76,6 +88,12 @@ export default defineConfig({
               expiration: {
                 maxEntries: 1,
                 maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
+              },
+              backgroundSync: {
+                name: 'cacheSyncQueue',
+                options: {
+                  maxRetentionTime: 24 * 60
+                }
               },
               cacheableResponse: {
                 statuses: [0, 200]
