@@ -2,7 +2,12 @@ import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import { VitePWA } from 'vite-plugin-pwa';
 
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
+
+const env = loadEnv('all', process.cwd());
+
+const API_URL_HOST = env.VITE_PAYFLOW_SERVICE_API_URL.replace(/^(http|https):\/\/+/, '');
+
 // https://vitejs.dev/config/
 export default defineConfig({
   // specify same port for dev as for preview
@@ -19,13 +24,64 @@ export default defineConfig({
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/[^\.]+\.blockscout\.com\/.*/i,
-            handler: 'CacheFirst',
+            method: 'GET',
+            handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'blockscout-txs-cache',
               expiration: {
                 maxEntries: 100,
-                // TODO: make 2 mins for now (since pageInfo might be stale), add backgrount sync later
-                maxAgeSeconds: 60 * 2 // <== 2 mins,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
+              },
+              /* backgroundSync: {
+                name: 'cacheSyncQueue',
+                options: {
+                  maxRetentionTime: 24 * 60
+                }
+              }, */
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: new RegExp(`^(http|https):\/\/${API_URL_HOST}\/api\/user\/me$`),
+            method: 'GET',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'auth-cache',
+              expiration: {
+                maxEntries: 1,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: new RegExp(`^(http|https):\/\/${API_URL_HOST}\/api\/user\/me\/contacts$`),
+            method: 'GET',
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'contacts-cache',
+              expiration: {
+                maxEntries: 1,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: new RegExp(`^(http|https):\/\/${API_URL_HOST}\/api\/user\/`),
+            method: 'GET',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'profiles-cache',
+              expiration: {
+                maxEntries: 1,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
               },
               cacheableResponse: {
                 statuses: [0, 200]
