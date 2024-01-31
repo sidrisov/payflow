@@ -24,7 +24,8 @@ export default defineConfig({
               cacheName: 'blockscout-txs-cache',
               expiration: {
                 maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
+                // TODO: make 2 mins for now (since pageInfo might be stale), add backgrount sync later
+                maxAgeSeconds: 60 * 2 // <== 2 mins,
               },
               cacheableResponse: {
                 statuses: [0, 200]
