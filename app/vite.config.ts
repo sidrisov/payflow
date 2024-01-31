@@ -33,7 +33,28 @@ export default defineConfig({
                 maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
               },
               backgroundSync: {
-                name: 'cacheSyncQueue',
+                name: 'blockscout-cache-queue',
+                options: {
+                  maxRetentionTime: 24 * 60
+                }
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/ipfs\.io\/.*/i,
+            method: 'GET',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'ipfs-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
+              },
+              backgroundSync: {
+                name: 'ipfs-cache-queue',
                 options: {
                   maxRetentionTime: 24 * 60
                 }
@@ -51,7 +72,7 @@ export default defineConfig({
               cacheName: 'auth-cache',
               expiration: {
                 maxEntries: 1,
-                maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
+                maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days // TODO: shorter?
               },
               cacheableResponse: {
                 statuses: [0, 200]
@@ -69,7 +90,7 @@ export default defineConfig({
                 maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
               },
               backgroundSync: {
-                name: 'cacheSyncQueue',
+                name: 'contacts-cache-queue',
                 options: {
                   maxRetentionTime: 24 * 60
                 }
@@ -90,7 +111,7 @@ export default defineConfig({
                 maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
               },
               backgroundSync: {
-                name: 'cacheSyncQueue',
+                name: 'profiles-cache-queue',
                 options: {
                   maxRetentionTime: 24 * 60
                 }
