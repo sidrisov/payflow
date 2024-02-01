@@ -1,6 +1,5 @@
 package ua.sinaver.web3.payflow.auth;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.access.AccessDeniedException;
@@ -16,22 +15,22 @@ public class Web3AuthenticationEntryPoint implements AuthenticationEntryPoint {
 	@Override
 	public void commence(HttpServletRequest request, HttpServletResponse response,
 	                     AuthenticationException authException)
-			throws IOException, ServletException {
+			throws IOException {
 		// 401
 		response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication Failed");
 	}
 
 	@ExceptionHandler(value = {AccessDeniedException.class})
 	public void commence(HttpServletRequest request, HttpServletResponse response,
-	                     AccessDeniedException accessDeniedException) throws IOException, ServletException {
+	                     AccessDeniedException accessDeniedException) throws IOException {
 		// 403
 		response.sendError(HttpServletResponse.SC_FORBIDDEN,
 				"Authorization Failed : " + accessDeniedException.getMessage());
 	}
 
-	@ExceptionHandler(value = {Exception.class})
+	@ExceptionHandler(value = {Exception.class, Throwable.class})
 	public void commence(HttpServletRequest request, HttpServletResponse response,
-	                     Exception exception) throws IOException, ServletException {
+	                     Exception exception) throws IOException {
 		// 500
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
 				"Internal Server Error : " + exception.getMessage());

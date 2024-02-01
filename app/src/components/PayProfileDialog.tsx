@@ -30,7 +30,7 @@ import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { comingSoonToast } from './Toasts';
-import PayflowChip from './PayflowChip';
+import { PayflowChip } from './IdentityStatusChips';
 import { red } from '@mui/material/colors';
 import { NetworkSelectorButton } from './NetworkSelectorButton';
 import { TransferToastContent } from './toasts/TransferToastContent';

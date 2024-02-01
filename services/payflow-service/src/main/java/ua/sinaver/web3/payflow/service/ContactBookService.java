@@ -192,7 +192,7 @@ public class ContactBookService implements IContactBookService {
 		for (val user : users) {
 			try {
 				val existingContactIdentities = contactRepository.findAllIdentitiesByUser(user);
-				val followContacts = socialGraphService.getAllFollowingContacts(user.getIdentity()).stream()
+				val followContacts = socialGraphService.getSocialFollowings(user.getIdentity()).stream()
 						.filter(address -> !existingContactIdentities.contains(address))
 						.map(address -> new Contact(user, address)).toList();
 				contactRepository.saveAll(followContacts);

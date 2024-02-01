@@ -125,7 +125,7 @@ export default function AppWithProviders() {
 
         try {
           const response = await axios.post(
-            `${API_URL}/api/auth/verify`,
+            `${API_URL}/api/auth/verify/${message.address}`,
             { message, signature },
             { withCredentials: true }
           );

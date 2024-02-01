@@ -2,16 +2,24 @@ package ua.sinaver.web3.payflow.auth;
 
 import com.moonstoneid.siwe.error.SiweException;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
+import ua.sinaver.web3.payflow.message.ConnectedAddresses;
 import ua.sinaver.web3.payflow.message.SiweMessage;
+import ua.sinaver.web3.payflow.service.ISocialGraphService;
 
 @Slf4j
 @Component
 public class Web3AuthenticationProvider implements AuthenticationProvider {
+
+	@Autowired
+	private ISocialGraphService socialGraphService;
 
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -43,8 +51,38 @@ public class Web3AuthenticationProvider implements AuthenticationProvider {
 			authentication.setAuthenticated(false);
 		}
 
-		log.debug("Auth after verification {}", authentication);
+		// check if it's needed to verify through connected addresses
+		if (!StringUtils.equalsIgnoreCase(authentication.getPrincipal().toString(),
+				siweMessage.address())) {
+			log.debug("Checking if {} in {} verifications", authentication.getPrincipal(),
+					siweMessage.address());
+			// find connected addresses for the siwf signer
+			ConnectedAddresses connectedAddresses =
+					socialGraphService.getIdentityConnectedAddresses(siweMessage.address());
 
+			if (connectedAddresses == null) {
+				log.error("Failed to fetch verifications for {}",
+						siweMessage.address());
+				authentication.setAuthenticated(false);
+				// check if userAddress is the same that signed SIWF (custodial wallet)
+			} else if (!StringUtils.equalsIgnoreCase(connectedAddresses.userAddress(),
+					siweMessage.address())) {
+				log.error("Found user address {} is different from the address which signed siwf {}",
+						connectedAddresses.userAddress(), siweMessage.address());
+				authentication.setAuthenticated(false);
+			} else {
+				val identityInConnectedAddresses =
+						connectedAddresses.connectedAddresses().contains(authentication.getPrincipal().toString());
+
+				if (!identityInConnectedAddresses) {
+					log.debug("Identity {} is not in {} connected addresses",
+							authentication.getPrincipal(), siweMessage.address());
+					authentication.setAuthenticated(false);
+				}
+			}
+		}
+
+		log.debug("Auth after verification {}", authentication);
 		return authentication;
 	}
 

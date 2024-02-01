@@ -5,11 +5,13 @@ import ua.sinaver.web3.payflow.message.SiweMessage;
 
 public class Web3Authentication extends AbstractAuthenticationToken {
 
+	private final String identity;
 	private final SiweMessage siweMessage;
 	private final String signature;
 
-	public Web3Authentication(SiweMessage siweMessage, String signature) {
+	public Web3Authentication(String identity, SiweMessage siweMessage, String signature) {
 		super(null);
+		this.identity = identity;
 		this.siweMessage = siweMessage;
 		this.signature = signature;
 	}
@@ -26,7 +28,7 @@ public class Web3Authentication extends AbstractAuthenticationToken {
 
 	@Override
 	public Object getPrincipal() {
-		return siweMessage.address();
+		return identity;
 	}
 
 }

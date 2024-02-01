@@ -44,13 +44,35 @@ export default defineConfig({
             }
           },
           {
-            urlPattern: /^https:\/\/ipfs\.io\/.*/i,
+            urlPattern: /^https:\/\/assets\.airstack\.xyz\/image\/social\//,
+            method: 'GET',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'airstack-assets-cache',
+              expiration: {
+                maxEntries: 1000,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
+              },
+              backgroundSync: {
+                name: 'ipfs-cache-queue',
+                options: {
+                  maxRetentionTime: 24 * 60
+                }
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          //https://assets.airstack.xyz/image/social/s79snJH9FHzdPOzoIGNApRyYXXlvxak9CehFX1XUUuAaPcGZ7VYe0eMB8vQGkGW1/small.png
+          {
+            urlPattern: /^https:\/\/ipfs\.io\/image\/.*/i,
             method: 'GET',
             handler: 'CacheFirst',
             options: {
               cacheName: 'ipfs-cache',
               expiration: {
-                maxEntries: 100,
+                maxEntries: 1000,
                 maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
               },
               backgroundSync: {

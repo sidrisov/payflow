@@ -47,7 +47,7 @@ import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { useSafeTransfer } from '../utils/hooks/useSafeTransfer';
 import { comingSoonToast } from './Toasts';
 import { updateWallet } from '../services/flow';
-import PayflowChip from './PayflowChip';
+import { PayflowChip } from './IdentityStatusChips';
 import { estimateFee as estimateSafeTransferFee, isSafeSponsored } from '../utils/safeTransactions';
 import { green, red } from '@mui/material/colors';
 import { NetworkSelectorButton } from './NetworkSelectorButton';

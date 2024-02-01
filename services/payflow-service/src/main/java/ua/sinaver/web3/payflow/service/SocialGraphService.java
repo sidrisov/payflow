@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import ua.sinaver.web3.payflow.graphql.generated.types.*;
+import ua.sinaver.web3.payflow.message.ConnectedAddresses;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,20 +45,20 @@ public class SocialGraphService implements ISocialGraphService {
 	}
 
 	@Override
-	public List<String> getAllFollowingContacts(String identity) {
+	public List<String> getSocialFollowings(String identity) {
 		val identityLimitAdjusted = contactsLimit * (whitelistedUsers.contains(identity) ?
 				3 : 1);
 
 		val addressesLimitAdjusted = contactsLimit * (whitelistedUsers.contains(identity) ?
 				5 : 2);
 
-		val topFollowings = graphQlClient.documentName("getSocialFollowings")
+		val topFollowingsResponse = graphQlClient.documentName("getSocialFollowings")
 				.variable("identity", identity)
 				.variable("limit", identityLimitAdjusted)
 				.execute().block();
 
-		if (topFollowings != null) {
-			return topFollowings.field("SocialFollowings.Following")
+		if (topFollowingsResponse != null) {
+			return topFollowingsResponse.field("SocialFollowings.Following")
 					.toEntityList(SocialFollowing.class).stream()
 					.map(f -> f.getFollowingAddress().getAddresses())
 					.flatMap(List::stream)
@@ -69,12 +70,32 @@ public class SocialGraphService implements ISocialGraphService {
 	}
 
 	@Override
+	public ConnectedAddresses getIdentityConnectedAddresses(String identity) {
+		val connectedAddressesResponse = graphQlClient.documentName("getIdentityConnectedAddresses")
+				.variable("identity", identity)
+				.execute().block();
+
+		if (connectedAddressesResponse == null) {
+			log.error("No connected addresses for {}", identity);
+			return null;
+		}
+
+		val connectedAddresses = connectedAddressesResponse.field("Socials.Social")
+				.toEntityList(Social.class).stream()
+				.limit(1).findFirst()
+				.map(s -> new ConnectedAddresses(s.getUserAddress(),
+						s.getUserAssociatedAddresses())).orElse(null);
+		log.debug("Found connected addresses for {} - {}", connectedAddresses, identity);
+		return connectedAddresses;
+	}
+
+	@Override
 	@Cacheable(cacheNames = "socials", unless = "#result==null")
 	public Wallet getSocialMetadata(String identity, String me) {
 		try {
-			val documentName = StringUtils.isBlank(me) ? "getSocialMetadataByIdentity" :
-					"getSocialMetadataAndInsightsByIdentity";
-			ClientGraphQlResponse socialMetadata = graphQlClient.documentName(
+			val documentName = StringUtils.isBlank(me) ? "getSocialMetadata" :
+					"getSocialMetadataAndInsights";
+			ClientGraphQlResponse socialMetadataResponse = graphQlClient.documentName(
 							documentName)
 					.variable("identity", identity)
 					.variable("me", me)
@@ -85,30 +106,30 @@ public class SocialGraphService implements ISocialGraphService {
 					})
 					.block();
 
-			if (socialMetadata != null) {
+			if (socialMetadataResponse != null) {
 				if (log.isTraceEnabled()) {
-					log.trace("Fetched socialMetadata for {}: {}", identity, socialMetadata);
+					log.trace("Fetched socialMetadata for {}: {}", identity, socialMetadataResponse);
 				} else {
 					log.debug("Fetched socialMetadata for {}", identity);
 				}
 
 				// TODO: some issue with projections, set manually
-				val wallet = socialMetadata.field("Wallet").toEntity(Wallet.class);
+				val wallet = socialMetadataResponse.field("Wallet").toEntity(Wallet.class);
 
 				if (wallet != null) {
 					val followings =
-							socialMetadata.field("Wallet.socialFollowings.Following")
+							socialMetadataResponse.field("Wallet.socialFollowings.Following")
 									.toEntityList(SocialFollowing.class);
 
 					val followers =
-							socialMetadata.field("Wallet.socialFollowers.Follower")
+							socialMetadataResponse.field("Wallet.socialFollowers.Follower")
 									.toEntityList(SocialFollower.class);
 
 					val ethTransfers =
-							socialMetadata.field("Wallet.ethTransfers")
+							socialMetadataResponse.field("Wallet.ethTransfers")
 									.toEntityList(TokenTransfer.class);
 					val baseTransfers =
-							socialMetadata.field("Wallet.baseTransfers")
+							socialMetadataResponse.field("Wallet.baseTransfers")
 									.toEntityList(TokenTransfer.class);
 
 					val socialFollowings =

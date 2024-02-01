@@ -37,7 +37,7 @@ public class SecurityConfig {
 				.authorizeHttpRequests(requests -> requests
 						// siwe
 						.requestMatchers(HttpMethod.GET, "/auth/nonce").permitAll()
-						.requestMatchers(HttpMethod.POST, "/auth/verify").permitAll()
+						.requestMatchers(HttpMethod.POST, "/auth/verify/{identity}").permitAll()
 						// flow payment
 						.requestMatchers(HttpMethod.GET, "/flows/{uuid}").permitAll()
 						.requestMatchers(HttpMethod.GET, "/flows/public/{username}").permitAll()
