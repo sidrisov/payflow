@@ -8,10 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 import ua.sinaver.web3.payflow.message.*;
-import ua.sinaver.web3.payflow.service.IContactBookService;
-import ua.sinaver.web3.payflow.service.IFlowService;
-import ua.sinaver.web3.payflow.service.ISocialGraphService;
-import ua.sinaver.web3.payflow.service.IUserService;
+import ua.sinaver.web3.payflow.service.*;
 
 import java.security.Principal;
 import java.util.ArrayList;
@@ -38,6 +35,9 @@ public class UserController {
 
 	@Autowired
 	private ISocialGraphService socialGraphService;
+
+	@Autowired
+	private IIdentityService identityService;
 
 	@GetMapping("/me")
 	public ProfileMessage user(Principal principal) {
@@ -132,6 +132,17 @@ public class UserController {
 			log.error("Error fetching all profiles: ", t);
 		}
 
+		return Collections.emptyList();
+	}
+
+	// TODO: limit the info returned as it is public
+	@GetMapping("/identities")
+	public List<IdentityMessage> getIdentities(@RequestParam(value = "identities") List<String> identities) {
+		try {
+			return identityService.getIdentitiesInfo(identities);
+		} catch (Throwable t) {
+			log.error("Error fetching identities: {}", identities, t);
+		}
 		return Collections.emptyList();
 	}
 

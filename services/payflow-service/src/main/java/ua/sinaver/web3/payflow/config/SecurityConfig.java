@@ -48,6 +48,7 @@ public class SecurityConfig {
 						// TODO: {username} behaves like a wildcard for other APIs, as well,
 						// e.g. /user/all will get whitelisted too, a bit dangerous behaviour
 						.requestMatchers(HttpMethod.GET, "/user").permitAll()
+						.requestMatchers(HttpMethod.GET, "/user/{identities}").permitAll()
 						.requestMatchers(HttpMethod.GET, "/user/{username}").permitAll()
 						.requestMatchers(HttpMethod.POST, "/user/search/wallets").permitAll()
 						// farcaster frames

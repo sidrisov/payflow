@@ -1,14 +1,14 @@
 import { Box, Button, Card, CardProps, Stack, Typography } from '@mui/material';
 import { StatusAPIResponse } from '@farcaster/auth-kit';
 
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { API_URL } from '../utils/urlConstants';
 import { ParsedMessage } from '@spruceid/siwe-parser';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Address } from 'viem';
-import { searchProfile } from '../services/socials';
+import { sortBySocialScore } from '../services/socials';
 import { IdentityType } from '../types/ProfleType';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { LoadingFarcasterAccountsSkeleton } from './LoadingFarcasterAccountsSkeleton';
@@ -29,19 +29,22 @@ export function FarcasterAccountsCard({
   const [identities, setIdentities] = useState<IdentityType[]>();
   const [signUpIdentity, setSignUpIdentity] = useState<Address>();
 
-  useEffect(() => {
+  useMemo(async () => {
     if (verifications) {
-      setLoading(true);
-      Promise.all(verifications.map((identity) => searchProfile(identity, '')))
-        .then((result) => {
-          const farcasterIdentities = result
-            .flat()
-            .map((identity) => ({ ...identity, invited: true }));
-          setIdentities(farcasterIdentities);
-        })
-        .finally(() => {
-          setLoading(false);
+      try {
+        setLoading(true);
+        const response = await axios.get(`${API_URL}/api/user/identities`, {
+          params: { identities: verifications },
+          paramsSerializer: {
+            indexes: null
+          }
         });
+        setIdentities(sortBySocialScore(response.data));
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
     }
   }, [verifications.length]);
 
