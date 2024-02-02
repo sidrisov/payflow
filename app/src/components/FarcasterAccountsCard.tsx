@@ -28,6 +28,7 @@ export function FarcasterAccountsCard({
   const [loading, setLoading] = useState<boolean>();
   const [identities, setIdentities] = useState<IdentityType[]>();
   const [signUpIdentity, setSignUpIdentity] = useState<Address>();
+  const [loadingVerify, setLoadingVerify] = useState<boolean>();
 
   useMemo(async () => {
     if (verifications) {
@@ -62,6 +63,7 @@ export function FarcasterAccountsCard({
         console.debug(parsedMessage, signature, verifications);
 
         try {
+          setLoadingVerify(true);
           const response = await axios.post(
             `${API_URL}/api/auth/verify/${signUpIdentity}`,
             { message: parsedMessage, signature },
@@ -76,6 +78,8 @@ export function FarcasterAccountsCard({
         } catch (error) {
           toast.error('Failed to sign in with Farcaster');
           console.error(error);
+        } finally {
+          setLoadingVerify(false);
         }
       }
     }
@@ -142,7 +146,7 @@ export function FarcasterAccountsCard({
           fullWidth
           disabled={!signUpIdentity}
           variant="outlined"
-          loading={false}
+          loading={loadingVerify}
           size="large"
           color="inherit"
           onClick={completeSignUp}
