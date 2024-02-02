@@ -24,6 +24,8 @@ import { FlowTopUpMenu } from './FlowTopUpMenu';
 import WalletQRCodeShareDialog from './WalletQRCodeShareDialog';
 import NetworkAvatar from './NetworkAvatar';
 import { useAccount } from 'wagmi';
+import SearchIdentityDialog from './SearchIdentityDialog';
+import { SelectedIdentityType } from '../types/ProfleType';
 
 export type AccountNewDialogProps = CardProps & {
   flows: FlowType[];
@@ -39,6 +41,7 @@ export function AccountCard(props: AccountNewDialogProps) {
   const { flows, selectedFlow, setSelectedFlow } = props;
 
   const [openWithdrawalDialog, setOpenWithdrawalDialog] = useState(false);
+  const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(false);
   const [openWalletDetailsPopover, setOpenWalletDetailsPopover] = useState(false);
   const [openSelectFlow, setOpenSelectFlow] = useState(false);
   const [openTopUpMenu, setOpenTopUpMenu] = useState(false);
@@ -50,6 +53,8 @@ export function AccountCard(props: AccountNewDialogProps) {
 
   const { loading, fetched, balances } = props.balanceFetchResult;
   const [totalBalance, setTotalBalance] = useState<string>();
+
+  const [recipient, setRecipient] = useState<SelectedIdentityType>();
 
   const { chain } = useAccount();
 
@@ -180,7 +185,7 @@ export function AccountCard(props: AccountNewDialogProps) {
           <IconButton
             color="inherit"
             onClick={async () => {
-              setOpenWithdrawalDialog(true);
+              setOpenSearchIdentity(true);
             }}
             sx={{ border: 1, borderStyle: 'dashed' }}>
             <Send />
@@ -199,13 +204,31 @@ export function AccountCard(props: AccountNewDialogProps) {
           </IconButton>
         </Tooltip>
       </Stack>
-      {openWithdrawalDialog && (
+      {recipient && (
         <AccountSendDialog
-          open={openWithdrawalDialog}
+          open={recipient != null}
           flow={selectedFlow}
-          closeStateCallback={async () => setOpenWithdrawalDialog(false)}
+          recipient={recipient}
+          setOpenSearchIdentity={setOpenSearchIdentity}
+          closeStateCallback={async () => {
+            setRecipient(undefined);
+          }}
         />
       )}
+
+      {openSearchIdentity && (
+        <SearchIdentityDialog
+          address={profile.identity}
+          open={openSearchIdentity}
+          closeStateCallback={async () => {
+            setOpenSearchIdentity(false);
+          }}
+          selectIdentityCallback={async (recipient) => {
+            setRecipient(recipient);
+          }}
+        />
+      )}
+
       <WalletsInfoPopover
         open={openWalletDetailsPopover}
         onClose={async () => setOpenWalletDetailsPopover(false)}

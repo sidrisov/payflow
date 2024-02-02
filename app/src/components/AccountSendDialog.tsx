@@ -36,7 +36,6 @@ import { Address, formatEther, parseEther } from 'viem';
 
 import { useEthersSigner } from '../utils/hooks/useEthersSigner';
 import { FlowType, FlowWalletType } from '../types/FlowType';
-import SearchIdentityDialog from './SearchIdentityDialog';
 import { IdentityType, SelectedIdentityType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
@@ -61,11 +60,14 @@ import { disconnect } from 'wagmi/actions';
 export type AccountSendDialogProps = DialogProps &
   CloseCallbackType & {
     flow: FlowType;
-  };
+    recipient: SelectedIdentityType;
+  } & { setOpenSearchIdentity: React.Dispatch<React.SetStateAction<boolean>> };
 
 export default function AccountSendDialog({
   closeStateCallback,
+  setOpenSearchIdentity,
   flow,
+  recipient,
   ...props
 }: AccountSendDialogProps) {
   const theme = useTheme();
@@ -80,7 +82,6 @@ export default function AccountSendDialog({
 
   const { address, chain } = useAccount();
 
-  const [recipient, setRecipient] = useState<SelectedIdentityType>();
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
   const [compatibleWallets, setCompatibleWallets] = useState<FlowWalletType[]>([]);
 
@@ -98,7 +99,6 @@ export default function AccountSendDialog({
 
   const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
 
-  const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(true);
   const sendToastId = useRef<Id>();
 
   useMemo(async () => {
@@ -572,21 +572,6 @@ export default function AccountSendDialog({
           )}
         </Box>
       </DialogContent>
-
-      <SearchIdentityDialog
-        address={profile.identity}
-        open={openSearchIdentity}
-        closeStateCallback={async () => {
-          setOpenSearchIdentity(false);
-          // close payment dialog if search was closed and no recipient was chosen
-          //if (!recipient) {
-          //closeStateCallback();
-          //}
-        }}
-        selectIdentityCallback={async (selectedIdentity) => {
-          setRecipient(selectedIdentity);
-        }}
-      />
     </Dialog>
   );
 }

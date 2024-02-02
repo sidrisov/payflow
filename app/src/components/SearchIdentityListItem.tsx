@@ -6,7 +6,8 @@ import {
   Avatar,
   IconButton,
   Tooltip,
-  Typography} from '@mui/material';
+  Typography
+} from '@mui/material';
 import { IdentityType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
@@ -51,9 +52,9 @@ export function SearchIdentityListItem(
           justifyContent="flex-start"
           width={150}
           color="inherit"
-          component={Button}
-          onClick={props.onClick}
-          textTransform="none"
+          {...(props.onClick
+            ? { component: Button, onClick: props.onClick, textTransform: 'none' }
+            : {})}
           sx={{ borderRadius: 5 }}>
           {view === 'profile' && identity.profile && (
             <ProfileSection maxWidth={200} profile={identity.profile} />

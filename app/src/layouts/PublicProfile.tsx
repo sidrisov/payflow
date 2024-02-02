@@ -26,7 +26,7 @@ import { PublicProfileCard } from '../components/PublicProfileCard';
 import HideOnScroll from '../components/HideOnScroll';
 import HomeLogo from '../components/Logo';
 import { WalletMenu } from '../components/WalletMenu';
-import { useAccount, useContractRead, useEnsAddress, useReadContract } from 'wagmi';
+import { useAccount, useEnsAddress, useReadContract } from 'wagmi';
 import PayProfileDialog from '../components/PayProfileDialog';
 import { getProfileByAddressOrName, me } from '../services/user';
 import { AnonymousUserContext } from '../contexts/UserContext';
