@@ -3,9 +3,7 @@ import svgr from 'vite-plugin-svgr';
 import { VitePWA } from 'vite-plugin-pwa';
 
 import { defineConfig, loadEnv } from 'vite';
-
 const env = loadEnv('all', process.cwd());
-
 const API_URL_HOST = env.VITE_PAYFLOW_SERVICE_API_URL.replace(/^(http|https):\/\/+/, '');
 
 // https://vitejs.dev/config/
