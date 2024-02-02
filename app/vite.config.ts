@@ -52,7 +52,7 @@ export default defineConfig({
                 maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
               },
               backgroundSync: {
-                name: 'ipfs-cache-queue',
+                name: 'airstack-assets-cache-queue',
                 options: {
                   maxRetentionTime: 24 * 60
                 }
