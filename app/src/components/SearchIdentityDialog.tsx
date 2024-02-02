@@ -143,7 +143,7 @@ export default function SearchIdentityDialog({
             (fi) => !addresses.includes(fi.address)
           );
 
-          if (identities.length > 0) {
+          if (identities.length > 0 && isAuthenticated) {
             const inviteStatuses = await identitiesInvited(
               identities.map((identity) => identity.address)
             );
