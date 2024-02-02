@@ -1,6 +1,7 @@
 import { formatEther } from 'viem';
-import { fetchBalance } from 'wagmi/actions';
+import { getBalance } from 'wagmi/actions';
 import { FlowType, FlowWalletType } from '../types/FlowType';
+import { wagmiConfig } from './wagmiConfig';
 
 export async function getFlowBalance(flow: FlowType, ethUsdPrice: number) {
   const balances = (
@@ -21,7 +22,7 @@ export async function getFlowBalance(flow: FlowType, ethUsdPrice: number) {
 }
 
 export async function getWalletBalance(wallet: FlowWalletType) {
-  const balance = await fetchBalance({
+  const balance = await getBalance(wagmiConfig, {
     address: wallet.address,
     chainId: wallet.network
   });

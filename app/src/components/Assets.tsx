@@ -22,9 +22,12 @@ export default function Assets(props: {
       ) : fetched && ethUsdPrice ? (
         balances
           .filter((assetBalance) => {
-            return selectedNetwork
-              ? assetBalance.asset.chainId === selectedNetwork.id
-              : true /* && assetBalance.balance?.value !== BigInt(0) */;
+            return (
+              assetBalance.balance &&
+              (selectedNetwork
+                ? assetBalance.asset.chainId === selectedNetwork.id
+                : true) /* && assetBalance.balance?.value !== BigInt(0) */
+            );
           })
           // TODO: sort on fetch
           // TODO: works for now, since we have only eth
@@ -36,7 +39,7 @@ export default function Assets(props: {
             return (
               <NetworkAssetBalanceSection
                 key={`network_asset_balance_${assetBalance.asset.chainId}_${assetBalance.asset.address}_${assetBalance.asset.token}`}
-                network={assetBalance.asset.chainId}
+                chainId={assetBalance.asset.chainId}
                 asset={assetBalance.balance?.symbol ?? ''}
                 balance={formatEther(assetBalance.balance?.value ?? BigInt(0))}
                 price={ethUsdPrice}

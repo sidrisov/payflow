@@ -1,4 +1,4 @@
-import Send from './Send';
+import Send from './Send.tsx_';
 
 import {
   connectorsForWallets,

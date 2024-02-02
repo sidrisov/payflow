@@ -1,10 +1,11 @@
 import Safe, { EthSafeSignature } from '@safe-global/protocol-kit';
 import { SafeSignature, SafeTransaction } from '@safe-global/safe-core-sdk-types';
 import { Address, Hex, slice, trim } from 'viem';
-import { getPublicClient } from 'wagmi/actions';
+import { call } from 'wagmi/actions';
 
 import { getFallbackHandlerDeployment } from '@safe-global/safe-deployments';
 import { CUSTOM_CONTRACTS, CUSTOM_CONTRACTS_CHAINS } from './safeContracts';
+import { wagmiConfig } from './wagmiConfig';
 
 export function generatePreValidatedSignature(ownerAddress: string): SafeSignature {
   const signature =
@@ -22,7 +23,6 @@ export async function signTransactionBySafe(
   transaction: SafeTransaction
 ): Promise<SafeSignature | undefined> {
   const chainId = Number(await signer.getChainId());
-  const pubClient = getPublicClient({ chainId });
 
   const targetAddress = (await target.getAddress()) as Address;
   const signerAddress = (await signer.getAddress()) as Address;
@@ -62,7 +62,8 @@ export async function signTransactionBySafe(
   ]) as Hex;
 
   const txDataRaw = (
-    await pubClient.call({
+    await call(wagmiConfig, {
+      chainId,
       data: encodedTransactionData,
       to: targetAddress
     })
@@ -81,7 +82,8 @@ export async function signTransactionBySafe(
   const encodedGetMessageHash = fallbackHandlerContract.encode('getMessageHash', [txData]);
 
   const safeMessageHash = (
-    await pubClient.call({
+    await call(wagmiConfig, {
+      chainId,
       data: encodedGetMessageHash as Hex,
       to: signerAddress
     })

@@ -3,6 +3,7 @@ import { ToastContainer } from 'react-toastify';
 export default function CustomToastContainer() {
   return (
     <ToastContainer
+      stacked
       position="top-center"
       autoClose={3000}
       limit={5}

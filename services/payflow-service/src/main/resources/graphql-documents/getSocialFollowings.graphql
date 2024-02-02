@@ -1,4 +1,4 @@
-query getSocialFollowings($identity: Identity!, $limit: Int) {
+query GetSocialFollowings($identity: Identity!, $limit: Int) {
     SocialFollowings(
         input: {limit: $limit, filter: {dappName: {_in: [farcaster, lens]}, identity: {_eq: $identity}}, blockchain: ALL}
     ) {

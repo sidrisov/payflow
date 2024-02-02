@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { useContext, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import FlowNewDialog from '../components/FlowNewDialog';
+import FlowNewDialog from '../components/FlowNewDialog.tsx_';
 import { FlowType, FlowWalletType } from '../types/FlowType';
 import { Add, OpenInFull, ShareOutlined } from '@mui/icons-material';
 import ShareDialog from '../components/ShareDialog';
@@ -217,7 +217,7 @@ export default function Flows() {
                         <NetworkAvatar
                           key={`wallet_avatar_${flow.uuid}_${i}`}
                           tooltip
-                          network={flow.wallets[i].network}
+                          chainId={flow.wallets[i].network}
                         />
                       ))}
                     </AvatarGroup>

@@ -2,13 +2,11 @@ import {
   Box,
   Stack,
   Button,
-  Chip,
   BoxProps,
   Avatar,
   IconButton,
   Tooltip,
-  Typography
-} from '@mui/material';
+  Typography} from '@mui/material';
 import { IdentityType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
@@ -19,8 +17,8 @@ import axios from 'axios';
 import { API_URL } from '../utils/urlConstants';
 import { toast } from 'react-toastify';
 import { shortenWalletAddressLabel } from '../utils/address';
-import PayflowChip from './PayflowChip';
-import { green, grey, lightGreen, orange, yellow } from '@mui/material/colors';
+import { PayflowChip, InvitedChip, InviteChip } from './IdentityStatusChips';
+import { green, grey, yellow } from '@mui/material/colors';
 import { useAccount } from 'wagmi';
 import { UpdateIdentityCallbackType } from './SearchIdentityDialog';
 import { SocialPresenceStack } from './SocialPresenceStack';
@@ -69,19 +67,13 @@ export function SearchIdentityListItem(
         <Stack direction="column" spacing={0.5} alignItems="center" sx={{ width: 100 }}>
           {view === 'profile' ? (
             <PayflowChip />
+          ) : identity.invited ? (
+            <InvitedChip />
           ) : (
-            isAuthenticated &&
-            !identity.profile && (
-              <Chip
-                size="small"
-                variant="filled"
-                label={identity.invited ? 'invited' : 'invite'}
-                clickable={!identity.invited}
+            isAuthenticated && (
+              <InviteChip
+                identity={identity}
                 onClick={async () => {
-                  if (identity.invited) {
-                    return;
-                  }
-
                   if (profile.identityInviteLimit === -1) {
                     comingSoonToast();
                     return;
@@ -117,10 +109,6 @@ export function SearchIdentityListItem(
                   } catch (error) {
                     toast.error('Invitation failed!');
                   }
-                }}
-                sx={{
-                  bgcolor: identity.invited ? lightGreen.A700 : orange.A700,
-                  '&:hover': { bgcolor: lightGreen.A700 }
                 }}
               />
             )

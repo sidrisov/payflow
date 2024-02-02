@@ -170,7 +170,7 @@ export default function RequestNewDialog({ closeStateCallback, ...props }: Reque
               flexDirection="row"
               alignItems="center"
               justifyContent="center">
-              <NetworkAvatar network={selectedWallet.network} sx={{ width: 24, height: 24 }} />
+              <NetworkAvatar chainId={selectedWallet.network} sx={{ width: 24, height: 24 }} />
               <Typography ml={1}>{shortenWalletAddressLabel(selectedWallet.address)}</Typography>
               <IconButton
                 size="small"

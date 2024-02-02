@@ -2,7 +2,7 @@ import { SelectAll } from '@mui/icons-material';
 import { ChipProps, Chip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { Chain } from 'viem';
 import { WalletType } from '../types/FlowType';
-import { useNetwork } from 'wagmi';
+import { useConfig } from 'wagmi';
 import NetworkAvatar from './NetworkAvatar';
 import { getNetworkDisplayName } from '../utils/networks';
 
@@ -19,7 +19,7 @@ export default function NetworkSelectorChip({
   const theme = useTheme();
   const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { chains } = useNetwork();
+  const { chains } = useConfig();
 
   return (
     <Chip
@@ -27,7 +27,7 @@ export default function NetworkSelectorChip({
       clickable
       icon={
         wallet ? (
-          <NetworkAvatar network={wallet.network} sx={{ width: 20, height: 20 }} />
+          <NetworkAvatar chainId={wallet.network} sx={{ width: 20, height: 20 }} />
         ) : (
           <SelectAll />
         )

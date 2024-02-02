@@ -45,7 +45,7 @@ export function ChooseWalletMenu({
               alignItems="center"
               justifyContent="space-between">
               <Box display="flex" flexDirection="row" alignItems="center">
-                <NetworkAvatar tooltip network={wallet.network} sx={{ width: 24, height: 24 }} />
+                <NetworkAvatar tooltip chainId={wallet.network} sx={{ width: 24, height: 24 }} />
                 <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
               </Box>
               {wallet === selectedWallet && <Check sx={{ color: green.A700 }} />}

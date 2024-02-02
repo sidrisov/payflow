@@ -26,7 +26,7 @@ import { PublicProfileCard } from '../components/PublicProfileCard';
 import HideOnScroll from '../components/HideOnScroll';
 import HomeLogo from '../components/Logo';
 import { WalletMenu } from '../components/WalletMenu';
-import { useAccount, useContractRead, useEnsAddress } from 'wagmi';
+import { useAccount, useContractRead, useEnsAddress, useReadContract } from 'wagmi';
 import PayProfileDialog from '../components/PayProfileDialog';
 import { getProfileByAddressOrName, me } from '../services/user';
 import { AnonymousUserContext } from '../contexts/UserContext';
@@ -64,17 +64,21 @@ export default function PublicProfile({
   const { isSuccess: isEnsSuccess, data: ethUsdPriceFeedAddress } = useEnsAddress({
     name: 'eth-usd.data.eth',
     chainId: 1,
-    cacheTime: 300_000
+    query: {
+      staleTime: 300_000
+    }
   });
 
-  const { data: ethUsdPrice } = useContractRead({
-    enabled: isEnsSuccess && ethUsdPriceFeedAddress !== undefined,
+  const { data: ethUsdPrice } = useReadContract({
     chainId: 1,
     address: ethUsdPriceFeedAddress ?? undefined,
     abi: AggregatorV2V3Interface.abi,
     functionName: 'latestAnswer',
-    select: (data) => Number(formatUnits(data as bigint, 8)),
-    cacheTime: 10_000
+    query: {
+      enabled: isEnsSuccess && ethUsdPriceFeedAddress !== undefined,
+      staleTime: 10_000,
+      select: (data) => Number(formatUnits(data as bigint, 8))
+    }
   });
 
   useMemo(async () => {

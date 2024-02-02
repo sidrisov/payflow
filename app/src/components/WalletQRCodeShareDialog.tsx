@@ -76,7 +76,7 @@ export default function WalletQRCodeShareDialog({
                 }}>
                 <NetworkAvatar
                   tooltip
-                  network={selectedWallet.network}
+                  chainId={selectedWallet.network}
                   sx={{ width: 28, height: 28 }}
                 />
               </IconButton>

@@ -1,64 +1,68 @@
 import {
-  mainnet,
   base,
-  baseGoerli,
-  modeTestnet,
   optimism,
-  optimismGoerli,
-  zkSyncSepoliaTestnet,
   arbitrum,
   zora,
   zkSync,
+  mainnet,
   baseSepolia,
-  Chain
-} from 'wagmi/chains';
+  sepolia,
+  goerli
+} from 'viem/chains';
 
 const ENABLED_CHAINS = JSON.parse(import.meta.env.VITE_ENABLED_CHAINS) as string[];
 
-export const SUPPORTED_CHAINS: Chain[] = [
+export const SUPPORTED_CHAINS = [
   base,
   optimism,
   arbitrum,
   zora,
   zkSync,
   mainnet,
-  baseGoerli,
-  baseSepolia,
-  optimismGoerli,
-  {
-    ...modeTestnet,
-    iconUrl:
-      'https://uploads-ssl.webflow.com/64c906a6ed3c4d809558853b/64d0b11158be9cdd5c89a2fe_webc.png'
-  },
-  {
-    ...zkSyncSepoliaTestnet,
-    iconUrl: 'https://zksync.io/apple-touch-icon.png'
+  sepolia,
+  baseSepolia
+].filter((c) => ENABLED_CHAINS.includes(c.name));
+
+export const DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS = [base, optimism, zora];
+
+export default function getNetworkImageSrc(chainId: number): string {
+  let fileName;
+
+  switch (chainId) {
+    case mainnet.id:
+    case sepolia.id:
+      fileName = 'ethereum';
+      break;
+    case base.id:
+    case baseSepolia.id:
+      fileName = 'base';
+      break;
+    case optimism.id:
+      fileName = 'optimism';
+      break;
+    case zkSync.id:
+      fileName = 'zksync-era';
+      break;
+    case arbitrum.id:
+      fileName = 'arbitrum';
+      break;
+    case zora.id:
+      fileName = 'zora';
+      break;
   }
-].filter((c) => ENABLED_CHAINS.includes(c.network));
-
-export const DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS = [base, optimism, baseGoerli];
-
-export default function getNetworkImageSrc(network: number | string): string {
-  const fileName =
-    typeof network === 'number'
-      ? network === 1
-        ? 'ethereum'
-        : SUPPORTED_CHAINS.find((c) => c.id === network)?.network
-      : network;
 
   if (!fileName) {
-    throw new Error(`Chain ${network} not supported!`);
+    throw new Error(`Chain ${chainId} not supported!`);
   }
 
   return `/networks/${fileName}.png`;
 }
 
-export function getNetworkDisplayName(network: number | string): string {
-  const displayName =
-    typeof network === 'number' ? SUPPORTED_CHAINS.find((c) => c.id === network)?.name : network;
+export function getNetworkDisplayName(chainId: number): string {
+  const displayName = SUPPORTED_CHAINS.find((c) => c.id === chainId)?.name;
 
   if (!displayName) {
-    throw new Error(`Chain ${network} not supported!`);
+    throw new Error(`Chain ${chainId} not supported!`);
   }
 
   return displayName;

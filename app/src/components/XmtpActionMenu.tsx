@@ -22,11 +22,14 @@ export function XmtpActionMenu({
 }) {
   // TODO: small hack for coinbase wallet not supporting ens names
   const { isSuccess: isEnsSuccess, data: addressEns } = useEnsAddress({
-    enabled: !isAddress(addressOrEns),
     name: addressOrEns,
     chainId: 1,
-    cacheTime: 300_000
+    query: {
+      enabled: !isAddress(addressOrEns),
+      staleTime: 300_000
+    }
   });
+  
   return (
     <Menu
       {...props}

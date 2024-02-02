@@ -4,12 +4,11 @@ import { AuthClientError, SignInButton, StatusAPIResponse } from '@farcaster/aut
 
 import { green } from '@mui/material/colors';
 import { CheckCircle } from '@mui/icons-material';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { API_URL } from '../utils/urlConstants';
-import { ParsedMessage } from '@spruceid/siwe-parser';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { FarcasterAccountsCard } from './FarcasterAccountsCard';
 
 const FARCASTER_CONNECT_ENABLED = import.meta.env.VITE_FARCASTER_CONNECT_ENABLED === 'true';
 
@@ -23,57 +22,34 @@ function FeatureSection({ description }: { description: string }) {
     </Stack>
   );
 }
+
 export function ConnectCard() {
-  const [siweNonce, setSiweNonce] = useState<string>();
+  const [siwfNonce, setSiwfNonce] = useState<string>();
+  const [sifwResponse, setSifeResponse] = useState<StatusAPIResponse>();
 
-  const navigate = useNavigate();
+  useMemo(async () => {
+    if (FARCASTER_CONNECT_ENABLED && !siwfNonce) {
+      const response = await axios.get(`${API_URL}/api/auth/nonce`, {
+        withCredentials: true
+      });
 
-  useEffect(() => {
-    if (FARCASTER_CONNECT_ENABLED) {
-      axios
-        .get(`${API_URL}/api/auth/nonce`, {
-          withCredentials: true
-        })
-        .then((response) => {
-          console.debug(response.data);
-          setSiweNonce(response.data);
-        });
+      const nonce = response.data;
+
+      console.debug('Nonce: ', nonce);
+
+      setSiwfNonce(nonce);
     }
   }, []);
 
-  async function onFarcasterSignInSuccess(data: StatusAPIResponse) {
-    if (data.message && data.signature && data.state === 'completed') {
-      const parsedMessage = new ParsedMessage(data.message);
-      const signature = data.signature;
-      console.debug(parsedMessage, signature);
-
-      try {
-        const response = await axios.post(
-          `${API_URL}/api/auth/verify`,
-          { message: parsedMessage, signature },
-          { withCredentials: true }
-        );
-
-        if (response.status === 200) {
-          navigate('/');
-        } else {
-          toast.error('Failed to sign in with Farcaster');
-        }
-      } catch (error) {
-        toast.error('Failed to sign in with Farcaster');
-        console.error(error);
-      }
-    }
-  }
-
   async function onFarcasterSignInError(error: AuthClientError | undefined) {
+    setSiwfNonce(undefined);
     if (error) {
       console.error(error);
     }
     toast.error('Failed to sign in with Farcaster. Try again!');
   }
 
-  return (
+  return !sifwResponse || sifwResponse.state !== 'completed' ? (
     <Card
       elevation={5}
       sx={{
@@ -126,7 +102,7 @@ export function ConnectCard() {
             label={'Sign in with Ethereum'}
             showBalance={{ smallScreen: false, largeScreen: false }}
           />
-          {FARCASTER_CONNECT_ENABLED && (
+          {FARCASTER_CONNECT_ENABLED && siwfNonce && (
             <>
               <Divider flexItem>or</Divider>
               <Box
@@ -137,9 +113,11 @@ export function ConnectCard() {
                   overflow: 'auto'
                 }}>
                 <SignInButton
-                  nonce={siweNonce}
-                  key={'dasdfasf'}
-                  onSuccess={onFarcasterSignInSuccess}
+                  hideSignOut
+                  nonce={siwfNonce}
+                  onSuccess={async (response) => {
+                    setSifeResponse(response);
+                  }}
                   onError={onFarcasterSignInError}
                 />
               </Box>
@@ -148,5 +126,7 @@ export function ConnectCard() {
         </Stack>
       </Box>
     </Card>
+  ) : (
+    <FarcasterAccountsCard siwfResponse={sifwResponse} />
   );
 }

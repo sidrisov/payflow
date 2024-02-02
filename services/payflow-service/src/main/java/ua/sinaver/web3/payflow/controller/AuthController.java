@@ -1,7 +1,5 @@
 package ua.sinaver.web3.payflow.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -38,19 +36,20 @@ public class AuthController {
 	public String nonce(HttpSession session) {
 		val nonce = RandomStringUtils.random(10, true, true);
 		session.setAttribute("nonce", nonce);
-		log.debug("SessioId: {} - nonce: {} ", session.getId(), nonce);
+		log.debug("SessionId: {} - nonce: {} ", session.getId(), nonce);
 		return nonce;
 	}
 
-	@PostMapping("/verify")
-	public ResponseEntity<String> verify(@RequestBody SiweChallengeMessage siwe, HttpServletRequest request,
-	                                     HttpServletResponse response, HttpSession session) {
-		log.debug("SessionId: {} - siwe challenge request: {}", session.getId(), siwe);
+	@PostMapping("/verify/{identity}")
+	public ResponseEntity<String> verify(@PathVariable String identity,
+	                                     @RequestBody SiweChallengeMessage siwe,
+	                                     HttpSession session) {
+		log.debug("SessionId: {} - siwe challenge request: {} for {}", session.getId(), siwe, identity);
 
 		val sessionNonce = (String) session.getAttribute("nonce");
 		log.debug("nonce from session {}", sessionNonce);
 
-		// check if nonce match with previosly generated for this session
+		// check if nonce match with previously generated for this session
 
 		if (sessionNonce == null || siwe.message().nonce() == null) {
 			log.error("Nonce is empty - session: {}, challenge {}", sessionNonce, siwe.message().nonce());
@@ -74,7 +73,7 @@ public class AuthController {
 		}
 
 		val authentication = authManager.authenticate(
-				new Web3Authentication(siwe.message(), siwe.signature()));
+				new Web3Authentication(identity, siwe.message(), siwe.signature()));
 
 		if (authentication.isAuthenticated()) {
 			// save authentication to security context
@@ -84,17 +83,16 @@ public class AuthController {
 			session.removeAttribute("nonce");
 
 			// create a user if not exist
-			val identity = authentication.getPrincipal().toString();
-			val user = userService.findByIdentity(identity);
+			val authenticatedIdentity = authentication.getPrincipal().toString();
+			val user = userService.findByIdentity(authenticatedIdentity);
 			if (user == null) {
-				userService.saveUser(identity);
+				userService.saveUser(authenticatedIdentity);
 			}
 
 			return ResponseEntity.ok().build();
 		}
 
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-
 	}
 
 	@GetMapping("/logout")

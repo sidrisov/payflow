@@ -1,30 +1,30 @@
 import LoadingButton, { LoadingButtonProps } from '@mui/lab/LoadingButton';
 import { useMemo } from 'react';
-import { useSwitchNetwork } from 'wagmi';
+import { useSwitchChain } from 'wagmi';
 
 export function LoadingSwitchNetworkButton({
   chainId,
   ...props
 }: { chainId: number } & LoadingButtonProps) {
-  const { switchNetworkAsync, isLoading, pendingChainId, isError } = useSwitchNetwork();
+  const { switchChainAsync, isPending, isError } = useSwitchChain();
 
   useMemo(async () => {
-    if (chainId !== pendingChainId) {
-      await switchNetworkAsync?.(chainId);
+    if (!isPending) {
+      await switchChainAsync?.({ chainId });
     }
-  }, [chainId, pendingChainId]);
+  }, [chainId, isPending]);
 
   return (
     <LoadingButton
       {...props}
       fullWidth
       variant="outlined"
-      loading={isLoading && !isError}
+      loading={isPending && !isError}
       size="large"
       color="inherit"
       onClick={async () => {
-        if (isError || chainId !== pendingChainId) {
-          await switchNetworkAsync?.(chainId);
+        if (isError || !isPending) {
+          await switchChainAsync?.({ chainId });
         }
       }}
       sx={{ mt: 3, mb: 1, borderRadius: 5 }}>

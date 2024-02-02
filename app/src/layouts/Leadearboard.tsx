@@ -42,7 +42,6 @@ export default function Leaderboard() {
     appSettingsStored
       ? appSettingsStored
       : {
-          autoConnect: import.meta.env.VITE_INIT_CONNECT === 'true',
           darkMode: prefersDarkMode
         }
   );

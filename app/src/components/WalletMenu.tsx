@@ -9,10 +9,10 @@ import {
 import { useContext } from 'react';
 import { AnonymousUserContext, ProfileContext } from '../contexts/UserContext';
 import { CloseCallbackType } from '../types/CloseCallbackType';
-import { disconnect } from 'wagmi/actions';
 import { AddressSection } from './AddressSection';
-import { useAccount } from 'wagmi';
+import { useAccount, useConfig } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
+import { disconnect } from 'wagmi/actions';
 
 export function WalletMenu({
   contextType = 'anonymous',
@@ -22,6 +22,7 @@ export function WalletMenu({
   const { appSettings, setAppSettings } =
     contextType === 'anonymous' ? useContext(AnonymousUserContext) : useContext(ProfileContext);
 
+  const wagmiConfig = useConfig();
   const { address, isConnected } = useAccount();
   const { openConnectModal } = useConnectModal();
 
@@ -70,7 +71,7 @@ export function WalletMenu({
           <MenuItem
             sx={{ color: 'red' }}
             onClick={async () => {
-              await disconnect();
+              await disconnect(wagmiConfig);
               closeStateCallback();
             }}>
             <ListItemIcon sx={{ color: 'red' }}>

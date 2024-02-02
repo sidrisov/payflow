@@ -20,6 +20,7 @@ import { ProfileContext } from '../contexts/UserContext';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { disconnect } from 'wagmi/actions';
 import { comingSoonToast } from './Toasts';
+import { useConfig } from 'wagmi';
 
 export function ProfileMenu({
   profile,
@@ -31,6 +32,7 @@ export function ProfileMenu({
   }) {
   const navigate = useNavigate();
 
+  const wagmiConfig = useConfig();
   const { appSettings, setAppSettings } = useContext(ProfileContext);
 
   return (
@@ -117,7 +119,7 @@ export function ProfileMenu({
             await axios.get(`${API_URL}/api/auth/logout`, {
               withCredentials: true
             });
-            await disconnect();
+            await disconnect(wagmiConfig);
             navigate('/connect');
           } catch (error) {
             toast.error('Failed to logout!');

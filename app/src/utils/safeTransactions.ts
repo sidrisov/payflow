@@ -23,9 +23,10 @@ import {
 
 import { Hash, Address, keccak256, toBytes } from 'viem';
 import { getRelayKitForChainId, getSponsoredCount, waitForRelayTaskToComplete } from './relayer';
-import { getPublicClient } from 'wagmi/actions';
-import { arbitrumGoerli, zkSyncTestnet } from 'viem/chains';
+import { getGasPrice } from 'wagmi/actions';
+import { arbitrumGoerli, sepolia, zkSyncSepoliaTestnet } from 'viem/chains';
 import { SUPPORTED_CHAINS } from './networks';
+import { wagmiConfig } from './wagmiConfig';
 
 export async function safeTransferEthWithDeploy(
   ethersSigner: JsonRpcSigner,
@@ -156,8 +157,10 @@ export async function isSafeSponsored(
 export async function estimateFee(isSafeDeployed: boolean, chainId: number): Promise<string> {
   const isMainnetChain = !SUPPORTED_CHAINS.find((c) => c.id === chainId)?.testnet;
 
-  const l1GasPrice = await getPublicClient({ chainId: isMainnetChain ? 1 : 5 }).getGasPrice();
-  const l2GasPrice = await getPublicClient({ chainId }).getGasPrice();
+  const l1GasPrice = await getGasPrice(wagmiConfig, {
+    chainId: isMainnetChain ? 1 : 11155111
+  });
+  const l2GasPrice = await getGasPrice(wagmiConfig, { chainId });
 
   const l1GasLimit = BigInt(isSafeDeployed ? 8_500 : 13_000);
   const l2GasLimit = BigInt(isSafeDeployed ? 200_000 : 500_000);
@@ -173,7 +176,7 @@ export async function estimateFee(isSafeDeployed: boolean, chainId: number): Pro
 }
 
 export function getFallbackHandler(chainId: number): Address {
-  return chainId == zkSyncTestnet.id
+  return chainId == zkSyncSepoliaTestnet.id
     ? '0x2f870a80647BbC554F3a0EBD093f11B4d2a7492A'
     : chainId === arbitrumGoerli.id
     ? '0xf48f2b2d2a534e402487b3ee7c18c33aec0fe5e4'

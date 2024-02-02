@@ -1,11 +1,9 @@
 import { GelatoRelayPack } from '@safe-global/relay-kit';
 import {
-  arbitrumGoerli,
   base,
-  baseGoerli,
+  baseSepolia,
   optimism,
-  optimismGoerli,
-  zkSyncTestnet
+  zora
 } from 'viem/chains';
 import { Hash } from 'viem';
 import { delay } from './delay';
@@ -16,13 +14,8 @@ const GELATO_TESTNET_API_KEY = import.meta.env.VITE_GELATO_TESTNET_API_KEY;
 const GELATO_MAINNET_API_KEY = import.meta.env.VITE_GELATO_MAINNET_API_KEY;
 const GELATO_SPONSORED_ENABLED = parseInt(import.meta.env.VITE_GELATO_SPONSORED_ENABLED) ?? 0;
 
-const MAINNET_CHAINS_SUPPORTING_RELAY: number[] = [optimism.id, base.id];
-const TESTNET_CHAINS_SUPPORTING_RELAY: number[] = [
-  optimismGoerli.id,
-  baseGoerli.id,
-  arbitrumGoerli.id,
-  zkSyncTestnet.id
-];
+const MAINNET_CHAINS_SUPPORTING_RELAY: number[] = [optimism.id, base.id, zora.id];
+const TESTNET_CHAINS_SUPPORTING_RELAY: number[] = [baseSepolia.id];
 
 export function getRelayKitForChainId(chainId: number, protocolKit: Safe) {
   if (MAINNET_CHAINS_SUPPORTING_RELAY.includes(chainId)) {

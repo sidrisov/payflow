@@ -1,0 +1,17 @@
+query GetFarcasterVerifications($identity: Identity!) {
+    Socials(
+        input: {
+            filter: {
+                identity: { _eq: $identity }
+                dappName: { _eq: farcaster }
+            }
+            blockchain: ethereum
+            limit: 1
+        }
+    ) {
+        Social {
+            userAddress
+            userAssociatedAddresses
+        }
+    }
+}

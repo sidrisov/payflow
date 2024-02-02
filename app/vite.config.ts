@@ -3,9 +3,7 @@ import svgr from 'vite-plugin-svgr';
 import { VitePWA } from 'vite-plugin-pwa';
 
 import { defineConfig, loadEnv } from 'vite';
-
 const env = loadEnv('all', process.cwd());
-
 const API_URL_HOST = env.VITE_PAYFLOW_SERVICE_API_URL.replace(/^(http|https):\/\/+/, '');
 
 // https://vitejs.dev/config/
@@ -19,7 +17,7 @@ export default defineConfig({
       injectRegister: 'auto',
       registerType: 'autoUpdate',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,jpg,svg}'],
         maximumFileSizeToCacheInBytes: 5000000,
         runtimeCaching: [
           {
@@ -32,12 +30,55 @@ export default defineConfig({
                 maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
               },
-              /* backgroundSync: {
-                name: 'cacheSyncQueue',
+              backgroundSync: {
+                name: 'blockscout-cache-queue',
                 options: {
                   maxRetentionTime: 24 * 60
                 }
-              }, */
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/assets\.airstack\.xyz\/image\/social\//,
+            method: 'GET',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'airstack-assets-cache',
+              expiration: {
+                maxEntries: 1000,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
+              },
+              backgroundSync: {
+                name: 'ipfs-cache-queue',
+                options: {
+                  maxRetentionTime: 24 * 60
+                }
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          //https://assets.airstack.xyz/image/social/s79snJH9FHzdPOzoIGNApRyYXXlvxak9CehFX1XUUuAaPcGZ7VYe0eMB8vQGkGW1/small.png
+          {
+            urlPattern: /^https:\/\/ipfs\.io\/image\/.*/i,
+            method: 'GET',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'ipfs-cache',
+              expiration: {
+                maxEntries: 1000,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
+              },
+              backgroundSync: {
+                name: 'ipfs-cache-queue',
+                options: {
+                  maxRetentionTime: 24 * 60
+                }
+              },
               cacheableResponse: {
                 statuses: [0, 200]
               }
@@ -51,7 +92,7 @@ export default defineConfig({
               cacheName: 'auth-cache',
               expiration: {
                 maxEntries: 1,
-                maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
+                maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days // TODO: shorter?
               },
               cacheableResponse: {
                 statuses: [0, 200]
@@ -68,6 +109,12 @@ export default defineConfig({
                 maxEntries: 1,
                 maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
               },
+              backgroundSync: {
+                name: 'contacts-cache-queue',
+                options: {
+                  maxRetentionTime: 24 * 60
+                }
+              },
               cacheableResponse: {
                 statuses: [0, 200]
               }
@@ -82,6 +129,12 @@ export default defineConfig({
               expiration: {
                 maxEntries: 1,
                 maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
+              },
+              backgroundSync: {
+                name: 'profiles-cache-queue',
+                options: {
+                  maxRetentionTime: 24 * 60
+                }
               },
               cacheableResponse: {
                 statuses: [0, 200]

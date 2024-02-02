@@ -8,9 +8,7 @@ import {
   FormControlLabel,
   FormGroup,
   FormLabel,
-  Switch,
-  Typography
-} from '@mui/material';
+  Switch} from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 
 export default function Settings() {
@@ -49,25 +47,6 @@ export default function Settings() {
                   />
                 }
                 label="Dark Theme"
-              />
-            </FormGroup>
-          </FormControl>
-          <FormControl sx={{ m: 1, p: 1 }}>
-            <FormLabel>Wallet Connection</FormLabel>
-            <FormGroup sx={{ m: 1 }}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={appSettings.autoConnect}
-                    onChange={() => {
-                      setAppSettings({
-                        ...appSettings,
-                        autoConnect: !appSettings.autoConnect
-                      });
-                    }}
-                  />
-                }
-                label="Auto connect"
               />
             </FormGroup>
           </FormControl>
