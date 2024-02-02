@@ -4,7 +4,6 @@ import {
   DialogContent,
   useMediaQuery,
   useTheme,
-  DialogProps,
   Typography,
   Stack,
   Box,
@@ -12,11 +11,9 @@ import {
   TextField,
   Button,
   InputAdornment,
-  CircularProgress,
   Tooltip
 } from '@mui/material';
 
-import { CloseCallbackType } from '../types/CloseCallbackType';
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useAccount, useBalance } from 'wagmi';
 import { AddComment, ArrowBack, AttachMoney, ExpandMore, PriorityHigh } from '@mui/icons-material';
@@ -25,38 +22,35 @@ import { Id, toast } from 'react-toastify';
 import { Address, formatEther, parseEther } from 'viem';
 
 import { FlowWalletType } from '../types/FlowType';
-import { IdentityType, SelectedIdentityType } from '../types/ProfleType';
+import { IdentityType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
-import LoadingButton from '@mui/lab/LoadingButton';
 import { comingSoonToast } from './Toasts';
 import { PayflowChip } from './IdentityStatusChips';
 import { red } from '@mui/material/colors';
 import { NetworkSelectorButton } from './NetworkSelectorButton';
 import { TransferToastContent } from './toasts/TransferToastContent';
-import { LoadingConnectWalletButton } from './LoadingConnectWalletButton';
-import { LoadingSwitchNetworkButton } from './LoadingSwitchNetworkButton';
+import { LoadingConnectWalletButton } from './buttons/LoadingConnectWalletButton';
+import { LoadingSwitchNetworkButton } from './buttons/LoadingSwitchNetworkButton';
 import { useRegularTransfer } from '../utils/hooks/useRegularTransfer';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { SUPPORTED_CHAINS } from '../utils/networks';
 import { AnonymousUserContext } from '../contexts/UserContext';
-
-export type PayProfileDialogProps = DialogProps &
-  CloseCallbackType & {
-    recipient: SelectedIdentityType;
-  };
+import { PaymentDialogProps } from './AccountSendDialog';
+import { LoadingPaymentButton } from './buttons/LoadingPaymentButton';
 
 export default function PayProfileDialog({
   closeStateCallback,
+  sender,
   recipient,
   ...props
-}: PayProfileDialogProps) {
+}: PaymentDialogProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const { ethUsdPrice } = useContext(AnonymousUserContext);
 
-  const { address, chain } = useAccount();
+  const { chain } = useAccount();
 
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
   const [compatibleWallets, setCompatibleWallets] = useState<FlowWalletType[]>([]);
@@ -66,8 +60,6 @@ export default function PayProfileDialog({
   const [sendAmount, setSendAmount] = useState<bigint>();
   const [balanceEnough, setBalanceEnough] = useState<boolean>();
   const [minAmountSatisfied, setMinAmountSatisfied] = useState<boolean>();
-  /*   const [gasFee, setGasFee] = useState<bigint>();
-   */
   const { isSuccess, data: balance } = useBalance({
     address: selectedWallet?.address,
     chainId: chain?.id
@@ -81,7 +73,7 @@ export default function PayProfileDialog({
   });
 
   useEffect(() => {
-    if (!recipient || !address) {
+    if (!recipient || !(sender as Address)) {
       setSelectedWallet(undefined);
       setCompatibleWallets([]);
       return;
@@ -89,9 +81,11 @@ export default function PayProfileDialog({
 
     const compatibleSenderWallets =
       recipient.type === 'address'
-        ? SUPPORTED_CHAINS.map((c) => ({ address, network: c.id } as FlowWalletType))
+        ? SUPPORTED_CHAINS.map(
+            (c) => ({ address: sender as Address, network: c.id } as FlowWalletType)
+          )
         : recipient.identity.profile?.defaultFlow?.wallets.map(
-            (wallet) => ({ address, network: wallet.network } as FlowWalletType)
+            (wallet) => ({ address: sender as Address, network: wallet.network } as FlowWalletType)
           ) ?? [];
 
     setCompatibleWallets(compatibleSenderWallets);
@@ -102,7 +96,7 @@ export default function PayProfileDialog({
       toast.error('No compatible wallets available!');
       return;
     }
-  }, [address]);
+  }, [sender]);
 
   useEffect(() => {
     const wallet =
@@ -137,7 +131,7 @@ export default function PayProfileDialog({
       toast.dismiss();
       sendToastId.current = toast.loading(
         <TransferToastContent
-          from={{ type: 'address', identity: { address } as IdentityType }}
+          from={{ type: 'address', identity: { address: sender as Address } as IdentityType }}
           to={recipient}
           ethAmount={sendAmount}
           ethUsdPrice={ethUsdPrice}
@@ -153,7 +147,7 @@ export default function PayProfileDialog({
       toast.update(sendToastId.current, {
         render: (
           <TransferToastContent
-            from={{ type: 'address', identity: { address } as IdentityType }}
+            from={{ type: 'address', identity: { address: sender as Address } as IdentityType }}
             to={recipient}
             ethAmount={sendAmount}
             ethUsdPrice={ethUsdPrice}
@@ -169,7 +163,7 @@ export default function PayProfileDialog({
       toast.update(sendToastId.current, {
         render: (
           <TransferToastContent
-            from={{ type: 'address', identity: { address } as IdentityType }}
+            from={{ type: 'address', identity: { address: sender as Address } as IdentityType }}
             to={recipient}
             ethAmount={sendAmount}
             ethUsdPrice={ethUsdPrice}
@@ -240,11 +234,11 @@ export default function PayProfileDialog({
             )}
             <Stack ml={isMobile ? '18vw' : 0} alignItems="center">
               <Typography variant="h6">Pay</Typography>{' '}
-              {address && (
+              {sender && (
                 <Typography textAlign="center" variant="caption" fontWeight="bold">
                   from:{' '}
                   <b>
-                    <u>{shortenWalletAddressLabel(address)}</u>
+                    <u>{shortenWalletAddressLabel(sender as Address)}</u>
                   </b>{' '}
                   wallet
                 </Typography>
@@ -261,8 +255,8 @@ export default function PayProfileDialog({
             display="flex"
             flexDirection="column"
             alignItems="center"
-            justifyContent={address && recipient ? 'space-between' : 'flex-end'}>
-            {address ? (
+            justifyContent={sender && recipient ? 'space-between' : 'flex-end'}>
+            {sender ? (
               <>
                 <Stack width="100%" spacing={2} alignItems="center">
                   <Box
@@ -413,29 +407,18 @@ export default function PayProfileDialog({
                 {recipient &&
                   selectedWallet &&
                   (chain?.id === selectedWallet.network ? (
-                    <LoadingButton
-                      fullWidth
-                      variant="outlined"
+                    <LoadingPaymentButton
+                      title="Pay"
+                      status={status}
                       loading={loading || (txHash && !confirmed && !error)}
                       disabled={!(toAddress && sendAmount)}
-                      loadingIndicator={
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <CircularProgress color="inherit" size={16} />
-                          <Typography variant="button">{status}</Typography>
-                        </Stack>
-                      }
-                      size="large"
-                      color="inherit"
                       onClick={() => {
                         if (!toAddress || !sendAmount) {
                           return;
                         }
-
                         sendTransaction?.({ to: toAddress, value: sendAmount });
                       }}
-                      sx={{ mt: 3, mb: 1, borderRadius: 5 }}>
-                      Pay
-                    </LoadingButton>
+                    />
                   ) : (
                     <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
                   ))}

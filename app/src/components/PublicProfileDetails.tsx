@@ -9,6 +9,7 @@ import SocialPresenceChipWithLink from './SocialPresenceChipWithLink';
 import { QUERY_SOCIALS_LIGHT, convertSocialResults } from '../services/socials';
 import PayProfileDialog from './PayProfileDialog';
 import { green } from '@mui/material/colors';
+import { Address } from 'viem';
 
 export function PublicProfileDetails({ profile }: { profile: ProfileType }) {
   const [openPayDialog, setOpenPayDialog] = useState(false);
@@ -120,6 +121,8 @@ export function PublicProfileDetails({ profile }: { profile: ProfileType }) {
       {openPayDialog && (
         <PayProfileDialog
           open={openPayDialog}
+          // TODO: might be undefined
+          sender={address as Address}
           recipient={{
             type: 'profile',
             identity: { profile } as IdentityType

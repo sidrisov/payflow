@@ -207,7 +207,7 @@ export function AccountCard(props: AccountNewDialogProps) {
       {recipient && (
         <AccountSendDialog
           open={recipient != null}
-          flow={selectedFlow}
+          sender={selectedFlow}
           recipient={recipient}
           setOpenSearchIdentity={setOpenSearchIdentity}
           closeStateCallback={async () => {

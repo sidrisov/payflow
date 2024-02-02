@@ -12,7 +12,6 @@ import {
   TextField,
   Button,
   InputAdornment,
-  CircularProgress,
   Tooltip
 } from '@mui/material';
 
@@ -39,7 +38,6 @@ import { FlowType, FlowWalletType } from '../types/FlowType';
 import { IdentityType, SelectedIdentityType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
-import LoadingButton from '@mui/lab/LoadingButton';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { ProfileContext } from '../contexts/UserContext';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
@@ -51,25 +49,27 @@ import { estimateFee as estimateSafeTransferFee, isSafeSponsored } from '../util
 import { green, red } from '@mui/material/colors';
 import { NetworkSelectorButton } from './NetworkSelectorButton';
 import { TransferToastContent } from './toasts/TransferToastContent';
-import { LoadingSwitchNetworkButton } from './LoadingSwitchNetworkButton';
-import { LoadingConnectWalletButton } from './LoadingConnectWalletButton';
+import { LoadingSwitchNetworkButton } from './buttons/LoadingSwitchNetworkButton';
+import { LoadingConnectWalletButton } from './buttons/LoadingConnectWalletButton';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { useEthersProvider } from '../utils/hooks/useEthersProvider';
 import { disconnect } from 'wagmi/actions';
+import { LoadingPaymentButton } from './buttons/LoadingPaymentButton';
+import { getGasFeeText } from '../types/gas';
 
-export type AccountSendDialogProps = DialogProps &
+export type PaymentDialogProps = DialogProps &
   CloseCallbackType & {
-    flow: FlowType;
+    sender: FlowType | Address;
     recipient: SelectedIdentityType;
-  } & { setOpenSearchIdentity: React.Dispatch<React.SetStateAction<boolean>> };
+  } & { setOpenSearchIdentity?: React.Dispatch<React.SetStateAction<boolean>> };
 
 export default function AccountSendDialog({
   closeStateCallback,
   setOpenSearchIdentity,
-  flow,
+  sender,
   recipient,
   ...props
-}: AccountSendDialogProps) {
+}: PaymentDialogProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -112,10 +112,10 @@ export default function AccountSendDialog({
     // in case a new wallet chain added, not all users maybe be compatible, limit by chains recipient supports
     const compatibleSenderWallets =
       recipient.type === 'profile'
-        ? flow.wallets.filter((w) =>
+        ? (sender as FlowType).wallets.filter((w) =>
             recipient.identity.profile?.defaultFlow?.wallets.find((rw) => rw.network === w.network)
           )
-        : flow.wallets;
+        : (sender as FlowType).wallets;
 
     setCompatibleWallets(compatibleSenderWallets);
 
@@ -189,7 +189,7 @@ export default function AccountSendDialog({
       // if tx was successfull, mark wallet as deployed if it wasn't
       if (!selectedWallet.deployed) {
         selectedWallet.deployed = true;
-        updateWallet(flow.uuid, selectedWallet);
+        updateWallet((sender as FlowType).uuid, selectedWallet);
       }
     } else if (error) {
       toast.update(sendToastId.current, {
@@ -282,18 +282,6 @@ export default function AccountSendDialog({
     }
   }, [selectedWallet, recipient]);
 
-  function getGasFeeText(gasFee: bigint | undefined): string {
-    return 'fee: '.concat(
-      gasFee !== undefined
-        ? gasFee === BigInt(0)
-          ? 'sponsored'
-          : `${parseFloat(formatEther(gasFee)).toFixed(5)} ETH ≈ $${(
-              parseFloat(formatEther(gasFee)) * (ethUsdPrice ?? 0)
-            ).toFixed(2)}`
-        : '...'
-    );
-  }
-
   return (
     <Dialog
       fullScreen={isMobile}
@@ -324,7 +312,7 @@ export default function AccountSendDialog({
             <Typography textAlign="center" variant="caption" fontWeight="bold">
               from:{' '}
               <b>
-                <u>{flow.title}</u>
+                <u>{(sender as FlowType).title}</u>
               </b>{' '}
               flow
             </Typography>
@@ -341,9 +329,11 @@ export default function AccountSendDialog({
           flexDirection="column"
           alignItems="center"
           justifyContent={
-            address && address === flow.owner && recipient ? 'space-between' : 'flex-end'
+            address && address === (sender as FlowType).owner && recipient
+              ? 'space-between'
+              : 'flex-end'
           }>
-          {address && address === flow.owner ? (
+          {address && address === (sender as FlowType).owner ? (
             <>
               <Stack width="100%" spacing={2} alignItems="center">
                 <Box
@@ -352,9 +342,10 @@ export default function AccountSendDialog({
                   width="100%"
                   alignItems="center"
                   justifyContent="space-between"
-                  component={Button}
+                  {...(setOpenSearchIdentity
+                    ? { component: Button, onClick: async () => setOpenSearchIdentity(true) }
+                    : {})}
                   color="inherit"
-                  onClick={async () => setOpenSearchIdentity(true)}
                   sx={{
                     height: 56,
                     border: 1,
@@ -500,7 +491,7 @@ export default function AccountSendDialog({
                         ml={1}
                         variant="caption"
                         color={gasFee === BigInt(0) ? green.A700 : 'inherit'}>
-                        {getGasFeeText(gasFee)}
+                        {getGasFeeText(gasFee, ethUsdPrice)}
                       </Typography>
                     </Stack>
                   </Box>
@@ -509,45 +500,37 @@ export default function AccountSendDialog({
               {recipient &&
                 selectedWallet &&
                 (chain?.id === selectedWallet.network ? (
-                  <LoadingButton
-                    fullWidth
-                    variant="outlined"
-                    loading={loading || (txHash && !confirmed && !error)}
-                    disabled={!(toAddress && sendAmount)}
-                    loadingIndicator={
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <CircularProgress color="inherit" size={16} />
-                        <Typography variant="button">{status}</Typography>
-                      </Stack>
-                    }
-                    size="large"
-                    color="inherit"
-                    onClick={async () => {
-                      if (toAddress && sendAmount && ethersSigner) {
-                        await sendSafeTransaction(
-                          flow,
-                          selectedWallet,
-                          toAddress,
-                          sendAmount,
-                          ethersSigner
-                        );
-                      } else {
-                        toast.error("Can't send to this profile");
-                      }
-                    }}
-                    sx={{ mt: 3, mb: 1, borderRadius: 5 }}>
-                    Send
-                  </LoadingButton>
+                  <>
+                    <LoadingPaymentButton
+                      title="Send"
+                      loading={loading || (txHash && !confirmed && !error)}
+                      disabled={!(toAddress && sendAmount)}
+                      status={status}
+                      onClick={async () => {
+                        if (toAddress && sendAmount && ethersSigner) {
+                          await sendSafeTransaction(
+                            sender as FlowType,
+                            selectedWallet,
+                            toAddress,
+                            sendAmount,
+                            ethersSigner
+                          );
+                        } else {
+                          toast.error("Can't send to this profile");
+                        }
+                      }}
+                    />
+                  </>
                 ) : (
                   <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
                 ))}
             </>
-          ) : address && address !== flow.owner ? (
+          ) : address && address !== (sender as FlowType).owner ? (
             <Stack spacing={1} alignItems="center">
               <Typography variant="subtitle2">
                 Please, connect following flow signer:{' '}
                 <u>
-                  <b>{shortenWalletAddressLabel(flow.owner)}</b>
+                  <b>{shortenWalletAddressLabel((sender as FlowType).owner)}</b>
                 </u>
                 {'!'}
               </Typography>

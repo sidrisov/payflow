@@ -11,7 +11,7 @@ import { Address } from 'viem';
 import { sortBySocialScore } from '../services/socials';
 import { IdentityType } from '../types/ProfleType';
 import LoadingButton from '@mui/lab/LoadingButton';
-import { LoadingFarcasterAccountsSkeleton } from './LoadingFarcasterAccountsSkeleton';
+import { LoadingFarcasterAccountsSkeleton } from './buttons/LoadingFarcasterAccountsSkeleton';
 import { FarcasterIdentitySelectOption } from './FarcasterIdentitySelectOption';
 
 export function FarcasterAccountsCard({

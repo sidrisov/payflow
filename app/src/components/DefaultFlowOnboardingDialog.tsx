@@ -25,7 +25,7 @@ import { FlowType } from '../types/FlowType';
 import { useNavigate } from 'react-router-dom';
 import { DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS } from '../utils/networks';
 import { updateProfile } from '../services/user';
-import { LoadingConnectWalletButton } from './LoadingConnectWalletButton';
+import { LoadingConnectWalletButton } from './buttons/LoadingConnectWalletButton';
 import { useAccount, useConfig } from 'wagmi';
 import { green, red } from '@mui/material/colors';
 import { shortenWalletAddressLabel } from '../utils/address';

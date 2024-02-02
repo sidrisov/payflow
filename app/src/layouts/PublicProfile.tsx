@@ -30,7 +30,7 @@ import { useAccount, useEnsAddress, useReadContract } from 'wagmi';
 import PayProfileDialog from '../components/PayProfileDialog';
 import { getProfileByAddressOrName, me } from '../services/user';
 import { AnonymousUserContext } from '../contexts/UserContext';
-import { formatUnits } from 'viem';
+import { Address, formatUnits } from 'viem';
 
 import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
 
@@ -280,6 +280,8 @@ export default function PublicProfile({
       {selectedRecipient && (
         <PayProfileDialog
           open={selectedRecipient !== undefined}
+          // TODO: might be undefined
+          sender={address as Address}
           recipient={selectedRecipient}
           closeStateCallback={async () => {
             setSelectedRecipient(undefined);

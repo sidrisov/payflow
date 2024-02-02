@@ -62,7 +62,6 @@ export default defineConfig({
               }
             }
           },
-          //https://assets.airstack.xyz/image/social/s79snJH9FHzdPOzoIGNApRyYXXlvxak9CehFX1XUUuAaPcGZ7VYe0eMB8vQGkGW1/small.png
           {
             urlPattern: /^https:\/\/ipfs\.io\/image\/.*/i,
             method: 'GET',
