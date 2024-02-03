@@ -71,7 +71,8 @@ export function SearchIdentityListItem(
           ) : identity.invited ? (
             <InvitedChip />
           ) : (
-            isAuthenticated && (
+            isAuthenticated &&
+            !identity.profile && (
               <InviteChip
                 identity={identity}
                 onClick={async () => {
