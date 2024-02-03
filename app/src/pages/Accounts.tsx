@@ -1,7 +1,7 @@
 import { Box, Container, useMediaQuery, useTheme } from '@mui/material';
 import { useContext, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { AccountCard } from '../components/AccountCard';
+import { AccountCard } from '../components/cards/AccountCard';
 import { ProfileContext } from '../contexts/UserContext';
 import Assets from '../components/Assets';
 import { AssetType } from '../types/AssetType';

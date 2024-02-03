@@ -1,5 +1,5 @@
 import { Box, Typography } from '@mui/material';
-import CopyToClipboardIconButton from './CopyToClipboardIconButton';
+import CopyToClipboardIconButton from './buttons/CopyToClipboardIconButton';
 import { isAddress } from 'viem';
 import { shortenWalletAddressLabel } from '../utils/address';
 

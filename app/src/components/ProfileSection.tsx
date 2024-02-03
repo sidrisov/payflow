@@ -1,6 +1,6 @@
 import { Stack, Typography } from '@mui/material';
 import { ProfileType } from '../types/ProfleType';
-import ProfileAvatar from './ProfileAvatar';
+import ProfileAvatar from './avatars/ProfileAvatar';
 
 export function ProfileSection({
   profile,

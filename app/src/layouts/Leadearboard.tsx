@@ -19,13 +19,13 @@ import { useMemo, useState } from 'react';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import { getAllActiveProfiles } from '../services/user';
 import { ProfileType } from '../types/ProfleType';
-import ProfileSectionButton from '../components/ProfileSectionButton';
+import ProfileSectionButton from '../components/buttons/ProfileSectionButton';
 import { delay } from '../utils/delay';
 import { HomeOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import HideOnScroll from '../components/HideOnScroll';
 import HomeLogo from '../components/Logo';
-import SearchIdentityDialog from '../components/SearchIdentityDialog';
+import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 
 const AIRSTACK_API_KEY = import.meta.env.VITE_AIRSTACK_API_KEY;
 

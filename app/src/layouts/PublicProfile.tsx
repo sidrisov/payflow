@@ -18,19 +18,19 @@ import { Helmet } from 'react-helmet-async';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ProfileType, SelectedIdentityType } from '../types/ProfleType';
 import { HomeOutlined, Menu } from '@mui/icons-material';
-import SearchIdentityDialog from '../components/SearchIdentityDialog';
+import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import { green, grey, orange } from '@mui/material/colors';
 import { AppSettings } from '../types/AppSettingsType';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
-import { PublicProfileCard } from '../components/PublicProfileCard';
+import { PublicProfileCard } from '../components/cards/PublicProfileCard';
 import HideOnScroll from '../components/HideOnScroll';
 import HomeLogo from '../components/Logo';
-import { WalletMenu } from '../components/WalletMenu';
-import { useAccount, useContractRead, useEnsAddress, useReadContract } from 'wagmi';
-import PayProfileDialog from '../components/PayProfileDialog';
+import { WalletMenu } from '../components/menu/WalletMenu';
+import { useAccount, useEnsAddress, useReadContract } from 'wagmi';
+import PayProfileDialog from '../components/dialogs/PayProfileDialog';
 import { getProfileByAddressOrName, me } from '../services/user';
 import { AnonymousUserContext } from '../contexts/UserContext';
-import { formatUnits } from 'viem';
+import { Address, formatUnits } from 'viem';
 
 import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
 
@@ -280,6 +280,8 @@ export default function PublicProfile({
       {selectedRecipient && (
         <PayProfileDialog
           open={selectedRecipient !== undefined}
+          // TODO: might be undefined
+          sender={address as Address}
           recipient={selectedRecipient}
           closeStateCallback={async () => {
             setSelectedRecipient(undefined);

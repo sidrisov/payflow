@@ -4,11 +4,11 @@ import CustomThemeProvider from '../theme/CustomThemeProvider';
 import { useAccount, useSwitchChain } from 'wagmi';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useEffect, useMemo } from 'react';
-import ProfileOnboardingDialog from '../components/ProfileOnboardingDialog';
+import ProfileOnboardingDialog from '../components/dialogs/ProfileOnboardingDialog';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { ProfileType } from '../types/ProfleType';
 import { toast } from 'react-toastify';
-import { ConnectCard } from '../components/ConnectCard';
+import { ConnectCard } from '../components/cards/ConnectCard';
 import { AppSettings } from '../types/AppSettingsType';
 
 export default function Login({

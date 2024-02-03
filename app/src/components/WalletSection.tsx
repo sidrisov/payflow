@@ -3,8 +3,8 @@ import { FlagOutlined } from '@mui/icons-material';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { FlowWalletType } from '../types/FlowType';
 import { shortNetworkName } from '../utils/networks';
-import NetworkAvatar from './NetworkAvatar';
-import CopyToClipboardIconButton from './CopyToClipboardIconButton';
+import NetworkAvatar from './avatars/NetworkAvatar';
+import CopyToClipboardIconButton from './buttons/CopyToClipboardIconButton';
 
 // TODO: for now since we have only safe wallets check version field to display safe indicator
 export function WalletSection(props: { wallet: FlowWalletType; balance?: string }) {

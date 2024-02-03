@@ -3,7 +3,10 @@ import { CloseCallbackType } from '../types/CloseCallbackType';
 import { IdentityType } from '../types/ProfleType';
 import { useNavigate } from 'react-router-dom';
 import { SearchIdentityListItem } from './SearchIdentityListItem';
-import { SelectIdentityCallbackType, UpdateIdentityCallbackType } from './SearchIdentityDialog';
+import {
+  SelectIdentityCallbackType,
+  UpdateIdentityCallbackType
+} from './dialogs/SearchIdentityDialog';
 import { useState } from 'react';
 
 const pageSize = 20;
@@ -42,6 +45,25 @@ export function SearchResultView({
     const maxPages = calculateMaxPages(identities.length, pageSize);
     const [page, setPage] = useState<number>(1);
 
+    const onIdentityClick =
+      selectProfileCallback || view === 'profile'
+        ? (identity: IdentityType) => {
+            if (view === 'profile') {
+              if (identity.profile) {
+                if (profileRedirect) {
+                  navigate(`/${identity.profile.username}`);
+                } else if (selectProfileCallback) {
+                  selectProfileCallback({ type: 'profile', identity: identity });
+                }
+                closeStateCallback();
+              }
+            } else if (selectProfileCallback) {
+              selectProfileCallback({ type: 'address', identity: identity });
+              closeStateCallback();
+            }
+          }
+        : undefined;
+
     return (
       <>
         {identities.length > 0 && (
@@ -58,23 +80,7 @@ export function SearchResultView({
                   view={view}
                   identity={identity}
                   updateIdentityCallback={setFavouriteCallback}
-                  onClick={() => {
-                    if (view === 'profile') {
-                      if (identity.profile) {
-                        if (profileRedirect) {
-                          navigate(`/${identity.profile.username}`);
-                        } else if (selectProfileCallback) {
-                          selectProfileCallback({ type: 'profile', identity: identity });
-                        }
-                        closeStateCallback();
-                      }
-                    } else {
-                      if (selectProfileCallback) {
-                        selectProfileCallback({ type: 'address', identity: identity });
-                        closeStateCallback();
-                      }
-                    }
-                  }}
+                  {...(onIdentityClick ? { onClick: () => onIdentityClick?.(identity) } : {})}
                 />
               ))}
               {page < maxPages && (

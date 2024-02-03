@@ -139,6 +139,7 @@ public class ContactBookService implements IContactBookService {
 														return Mono.empty();
 													}),
 											// TODO: fetch only if social graph fetched
+											// TODO: also no need to fetch for users with profile since they're already signe in
 											Mono.fromCallable(
 															() -> whitelistedUsers.contains(contact.getIdentity())
 																	|| invitationRepository.existsByIdentityAndValid(contact.getIdentity()))

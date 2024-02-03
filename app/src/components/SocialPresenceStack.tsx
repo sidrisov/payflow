@@ -1,8 +1,8 @@
 import { Stack, Tooltip, StackProps } from '@mui/material';
 import { MetaType } from '../types/ProfleType';
-import SocialPresenceAvatar from './SocialPresenceAvatar';
+import SocialPresenceAvatar from './avatars/SocialPresenceAvatar';
 import { dAppType } from '../utils/dapps';
-import SocialPresenceAvatarWithMeta from './SocialPresenceAvatarWithMeta';
+import SocialPresenceAvatarWithMeta from './avatars/SocialPresenceAvatarWithMeta';
 
 export function SocialPresenceStack({ meta, ...props }: { meta: MetaType & StackProps }) {
   return (

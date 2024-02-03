@@ -12,17 +12,17 @@ import { formatEther } from 'viem';
 import { useContext, useState } from 'react';
 import { AnonymousUserContext } from '../contexts/UserContext';
 import { TxInfo } from '../types/ActivityFetchResultType';
-import NetworkAvatar from './NetworkAvatar';
+import NetworkAvatar from './avatars/NetworkAvatar';
 import { getNetworkDefaultBlockExplorerUrl, getNetworkDisplayName } from '../utils/networks';
 
-import AddressAvatar from './AddressAvatar';
+import AddressAvatar from './avatars/AddressAvatar';
 import { lightGreen, red } from '@mui/material/colors';
 import { useEnsAvatar, useEnsName } from 'wagmi';
 import { timeAgo } from '../utils/time';
-import ProfileAvatar from './ProfileAvatar';
+import ProfileAvatar from './avatars/ProfileAvatar';
 import { AddressOrEnsWithLink } from './AddressOrEnsWithLink';
 import { ProfileDisplayNameWithLink } from './ProfileDisplayNameWithLink';
-import { PublicProfileDetailsPopover } from './PublicProfileDetailsPopover';
+import { PublicProfileDetailsPopover } from './menu/PublicProfileDetailsPopover';
 import { ProfileType } from '../types/ProfleType';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)

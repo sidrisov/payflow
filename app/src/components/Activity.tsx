@@ -1,7 +1,7 @@
 import { Stack, Typography } from '@mui/material';
 import { ActivityFetchResultType } from '../types/ActivityFetchResultType';
 import ActivitySection from './ActivitySection';
-import { ActivitySkeletonSection } from './ActivitySkeletonSection';
+import { ActivitySkeletonSection } from './skeletons/ActivitySkeletonSection';
 import { Chain } from 'viem';
 
 export type AssetsProps = {

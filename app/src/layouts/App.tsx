@@ -24,12 +24,12 @@ import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts
 import { Chain, formatUnits } from 'viem';
 import { ProfileType } from '../types/ProfleType';
 import { AppSettings } from '../types/AppSettingsType';
-import { ProfileMenu } from '../components/ProfileMenu';
-import SearchIdentityDialog from '../components/SearchIdentityDialog';
+import { ProfileMenu } from '../components/menu/ProfileMenu';
+import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import HomeLogo from '../components/Logo';
 import { comingSoonToast } from '../components/Toasts';
-import ProfileAvatar from '../components/ProfileAvatar';
-import DefaultFlowOnboardingDialog from '../components/DefaultFlowOnboardingDialog';
+import ProfileAvatar from '../components/avatars/ProfileAvatar';
+import DefaultFlowOnboardingDialog from '../components/dialogs/DefaultFlowOnboardingDialog';
 
 export default function AppLayout({
   profile,

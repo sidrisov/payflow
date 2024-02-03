@@ -5,7 +5,7 @@ import { Chain, formatEther } from 'viem';
 import { NetworkAssetBalanceSection } from './NetworkAssetBalanceSection';
 import { BalanceFetchResultType } from '../types/BalanceFetchResultType';
 import { ProfileContext } from '../contexts/UserContext';
-import { ActivitySkeletonSection } from './ActivitySkeletonSection';
+import { ActivitySkeletonSection } from './skeletons/ActivitySkeletonSection';
 
 export default function Assets(props: {
   selectedNetwork: Chain | undefined;

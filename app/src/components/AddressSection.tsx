@@ -1,6 +1,6 @@
 import { Avatar, Stack, Typography } from '@mui/material';
 import { IdentityType } from '../types/ProfleType';
-import AddressAvatar from './AddressAvatar';
+import AddressAvatar from './avatars/AddressAvatar';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { useEnsAvatar, useEnsName } from 'wagmi';
 

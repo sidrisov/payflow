@@ -6,7 +6,8 @@ import {
   Avatar,
   IconButton,
   Tooltip,
-  Typography} from '@mui/material';
+  Typography
+} from '@mui/material';
 import { IdentityType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
@@ -17,10 +18,10 @@ import axios from 'axios';
 import { API_URL } from '../utils/urlConstants';
 import { toast } from 'react-toastify';
 import { shortenWalletAddressLabel } from '../utils/address';
-import { PayflowChip, InvitedChip, InviteChip } from './IdentityStatusChips';
+import { PayflowChip, InvitedChip, InviteChip } from './chips/IdentityStatusChips';
 import { green, grey, yellow } from '@mui/material/colors';
 import { useAccount } from 'wagmi';
-import { UpdateIdentityCallbackType } from './SearchIdentityDialog';
+import { UpdateIdentityCallbackType } from './dialogs/SearchIdentityDialog';
 import { SocialPresenceStack } from './SocialPresenceStack';
 import { HowToReg, Star, StarBorder } from '@mui/icons-material';
 
@@ -51,9 +52,9 @@ export function SearchIdentityListItem(
           justifyContent="flex-start"
           width={150}
           color="inherit"
-          component={Button}
-          onClick={props.onClick}
-          textTransform="none"
+          {...(props.onClick
+            ? { component: Button, onClick: props.onClick, textTransform: 'none' }
+            : {})}
           sx={{ borderRadius: 5 }}>
           {view === 'profile' && identity.profile && (
             <ProfileSection maxWidth={200} profile={identity.profile} />
@@ -70,7 +71,8 @@ export function SearchIdentityListItem(
           ) : identity.invited ? (
             <InvitedChip />
           ) : (
-            isAuthenticated && !identity.profile && (
+            isAuthenticated &&
+            !identity.profile && (
               <InviteChip
                 identity={identity}
                 onClick={async () => {

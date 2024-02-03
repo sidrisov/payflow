@@ -11,7 +11,7 @@ import { AuthKitProvider } from '@farcaster/auth-kit';
 import { WagmiProvider } from 'wagmi';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Login from './Login';
-import { CustomAvatar } from '../components/CustomAvatar';
+import { CustomAvatar } from '../components/avatars/CustomAvatar';
 import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
 import { SiweMessage } from 'siwe';
 import axios, { AxiosError } from 'axios';
