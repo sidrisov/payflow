@@ -3,8 +3,10 @@ package ua.sinaver.web3.payflow.controller;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static ua.sinaver.web3.payflow.message.ContactMessage.getWalletInsights;
 
+// TODO: create template builder
 @RestController
 @RequestMapping("/farcaster/frames")
 @CrossOrigin(origins = "${payflow.dapp.url}", allowCredentials = "true")
@@ -31,7 +34,10 @@ import static ua.sinaver.web3.payflow.message.ContactMessage.getWalletInsights;
 @Slf4j
 public class FarcasterFramesController {
 
-	private static ResponseEntity<String> DEFAULT_HTML_RESPONSE =
+	private static final String CONNECT_ACTIONS = "/api/farcaster/frames/actions";
+	private static final String CONNECT_IDENTITY_ACTIONS = "/api/farcaster/frames/actions/%s";
+	private static final String CONNECT_IDENTITY_ACTIONS_INVITE = "/api/farcaster/frames/actions/%s/invite";
+	private static final ResponseEntity<String> DEFAULT_HTML_RESPONSE =
 			ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body("""
 					<!DOCTYPE html>
 					<html>
@@ -41,6 +47,11 @@ public class FarcasterFramesController {
 					</head>
 					</html>
 					""");
+
+	@Value("${payflow.dapp.url}")
+	private String dAppServiceUrl;
+	@Value("${payflow.api.url}")
+	private String apiServiceUrl;
 	@Autowired
 	private SocialGraphService socialGraphService;
 	@Autowired
@@ -106,6 +117,7 @@ public class FarcasterFramesController {
 
 		val profiles = getFidProfiles(addresses);
 
+		val postUrl = apiServiceUrl.concat(CONNECT_ACTIONS);
 		String html;
 		if (!profiles.isEmpty()) {
 			log.debug("Found profiles for {}: {}", fid, profiles);
@@ -119,7 +131,6 @@ public class FarcasterFramesController {
 						""", i + 1, profile.getDisplayName(), profile.getUsername()));
 			}
 
-
 			html = String.format("""
 					<!DOCTYPE html>
 					<html>
@@ -127,10 +138,10 @@ public class FarcasterFramesController {
 					<meta property="fc:frame" content="vNext" />
 					<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
 					%s
-					<meta property="fc:frame:post_url" content="https://api.alpha.payflow.me/api/farcaster/frames/actions" />
+					<meta property="fc:frame:post_url" content="%s" />
 					</head>
 					</html>
-					""", profileButtonsMeta);
+					""", profileButtonsMeta, postUrl);
 		} else {
 			val invitations = addresses.stream()
 					.map(address -> invitationRepository.findFirstValidByIdentityOrCode(address, null))
@@ -154,10 +165,10 @@ public class FarcasterFramesController {
 						<meta property="fc:frame" content="vNext" />
 						<meta property="fc:frame:image" content="https://i.imgur.com/9DanrMv.jpg"/>
 						%s
-						<meta property="fc:frame:post_url" content="https://api.alpha.payflow.me/api/farcaster/frames/actions"
+						<meta property="fc:frame:post_url" content="%s"
 						</head>
 						</html>
-						""", invitedButtonsMeta);
+						""", invitedButtonsMeta, postUrl);
 			} else {
 				html = """
 						<!DOCTYPE html>
@@ -194,10 +205,12 @@ public class FarcasterFramesController {
 
 		if (!profiles.isEmpty() && buttonIndex > 0 && buttonIndex <= profiles.size()) {
 			val clickedProfile = profiles.get(buttonIndex - 1);
+			val postUrl = apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS,
+					clickedProfile.getIdentity()));
 
 			String socialInsightsButton = "";
 
-			var nextButtonIndex = 2;
+			var nextButtonIndex = 3;
 			if (fid != casterFid) {
 				socialInsightsButton = String.format("""
 											<meta property="fc:frame:button:%s" content="Social Insights"/>
@@ -211,15 +224,16 @@ public class FarcasterFramesController {
 							<head>
 							<meta property="fc:frame" content="vNext" />
 							<meta property="fc:frame:button:1" content="Balance"/>
+							<meta property="fc:frame:button:2" content="Invite"/>
 							%s
 							<meta property="fc:frame:button:%s" content="Profile"/>
 							<meta property="fc:frame:button:%s:action" content="post_redirect"/>
 							<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
-							<meta property="fc:frame:post_url" content="https://api.alpha.payflow.me/api/farcaster/frames/actions/%s" />
+							<meta property="fc:frame:post_url" content="%s" />
 							</head>
 							</html>
 							""", socialInsightsButton, nextButtonIndex, nextButtonIndex,
-					clickedProfile.getIdentity()));
+					postUrl));
 		} else {
 			val invitations = addresses.stream()
 					.map(address -> invitationRepository.findFirstValidByIdentityOrCode(address, null))
@@ -228,7 +242,8 @@ public class FarcasterFramesController {
 			if (!invitations.isEmpty() && buttonIndex > 0 && buttonIndex <= invitations.size()) {
 
 				val clickedInvitee = invitations.get(buttonIndex - 1);
-
+				val postUrl = apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS,
+						clickedInvitee.getIdentity()));
 				return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(String.format("""
 						<!DOCTYPE html>
 						<html>
@@ -237,10 +252,10 @@ public class FarcasterFramesController {
 						<meta property="fc:frame:button:1" content="Sign Up"/>
 						<meta property="fc:frame:button:1:action" content="post_redirect"/>
 						<meta property="fc:frame:image" content="https://i.imgur.com/9DanrMv.jpg"/>
-						<meta property="fc:frame:post_url" content="https://api.alpha.payflow.me/api/farcaster/frames/actions/%s" />
+						<meta property="fc:frame:post_url" content="%s" />
 						</head>
 						</html>
-						""", clickedInvitee.getIdentity()));
+						""", postUrl));
 			}
 		}
 
@@ -266,7 +281,7 @@ public class FarcasterFramesController {
 		val clickedProfile =
 				getFidProfiles(addresses).stream().filter(p -> p.getIdentity().equals(identity)).findFirst().orElse(null);
 
-		if (clickedProfile != null && buttonIndex > 0 && buttonIndex <= 3) {
+		if (clickedProfile != null && buttonIndex > 0 && buttonIndex <= 4) {
 
 			// handle balance
 			if (buttonIndex == 1) {
@@ -282,27 +297,38 @@ public class FarcasterFramesController {
 				}
 
 				if (balance.get() != null) {
-
-					String balanceMeta = String.format(
-							"""
-									<meta property="fc:frame:button:1" content="Base: %s ETH"/>
-									""", balance.get());
-
 					return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(String.format("""
 							<!DOCTYPE html>
 							<html>
 							<head>
 							<meta property="fc:frame" content="vNext" />
 							<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
-							%s
+							<meta property="fc:frame:button:1" content="Base: %s ETH"/>
 							</head>
 							</html>
-							""", balanceMeta));
+							""", balance.get()));
 				}
 			}
 
+			if (buttonIndex == 2) {
+				val postUrl = apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS_INVITE,
+						clickedProfile.getIdentity()));
+				return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(String.format("""
+						<!DOCTYPE html>
+						<html>
+						<head>
+						<meta property="fc:frame" content="vNext" />
+						<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
+						<meta property="fc:frame:input:text" content="Enter farcaster username ..." />
+						<meta property="fc:frame:button:1" content="Confirm"/>
+						<meta property="fc:frame:post_url" content="%s" />
+						</head>
+						</html>
+						""", postUrl));
+			}
+
 			// handle insights
-			if (buttonIndex == 2 && fid != casterFid) {
+			if (buttonIndex == 3 && fid != casterFid) {
 
 				val casterWallet = socialGraphService.getSocialMetadata(
 						"fc_fid:".concat(String.valueOf(casterFid)), "fc_fid:".concat(String.valueOf(fid)));
@@ -323,14 +349,14 @@ public class FarcasterFramesController {
 				}
 			}
 
-			if ((buttonIndex == 2 && fid == casterFid) || (buttonIndex == 3 && fid != casterFid)) {
+			if ((buttonIndex == 3 && fid == casterFid) || (buttonIndex == 4 && fid != casterFid)) {
 
 				try {
-					val location = new URI(String.format("https://app.payflow.me/%s",
-							clickedProfile.getUsername()));
+					val location = new URI(dAppServiceUrl.concat(String.format("/%s",
+							clickedProfile.getUsername())));
 
 					log.debug("Redirecting to {}", location);
-					return ResponseEntity.status(HttpStatus.FOUND).contentType(MediaType.TEXT_PLAIN).location(location).body(String.format("https://app.payflow.me/%s", clickedProfile.getUsername()));
+					return ResponseEntity.status(HttpStatus.FOUND).location(location).build();
 
 				} catch (Throwable t) {
 					log.debug("Error:", t);
@@ -342,14 +368,49 @@ public class FarcasterFramesController {
 			if (invitee != null & buttonIndex == 1) {
 
 				try {
-					val location = new URI("https://app.payflow.me/connect");
-
+					val location = new URI(dAppServiceUrl.concat("/connect"));
 					log.debug("Redirecting to {}", location);
-					return ResponseEntity.status(HttpStatus.FOUND).contentType(MediaType.TEXT_PLAIN).location(location).body("https://app.payflow.me/connect");
+					return ResponseEntity.status(HttpStatus.FOUND).location(location).build();
 				} catch (Throwable t) {
 					log.debug("Error:", t);
 				}
 			}
+		}
+
+		return DEFAULT_HTML_RESPONSE;
+	}
+
+
+	@PostMapping("/actions/{identity}/invite")
+	public ResponseEntity<String> identityActionInvite(@PathVariable String identity,
+	                                                   @RequestBody FrameMessage frameMessage) {
+		log.debug("Received actions invite frame: {}", frameMessage);
+
+		val buttonIndex = frameMessage.untrustedData().buttonIndex();
+		val fid = frameMessage.untrustedData().fid();
+		val casterFid = frameMessage.untrustedData().castId().fid();
+
+		val wallet = socialGraphService.getSocialMetadata(
+				"fc_fid:".concat(String.valueOf(fid)), null);
+
+		val addresses = wallet.getAddresses();
+
+		log.debug("Addresses for {}: {}", fid, addresses);
+
+		val clickedProfile =
+				getFidProfiles(addresses).stream().filter(p -> p.getIdentity().equals(identity)).findFirst().orElse(null);
+		val inputText = frameMessage.untrustedData().inputText();
+		if (clickedProfile != null && buttonIndex == 1 && !StringUtils.isBlank(inputText)) {
+			return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(String.format("""
+					<!DOCTYPE html>
+					<html>
+					<head>
+					<meta property="fc:frame" content="vNext" />
+					<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
+					<meta property="fc:frame:button:1" content="🎉 successfully invited %s"/>
+					</head>
+					</html>
+					""", inputText));
 		}
 
 		return DEFAULT_HTML_RESPONSE;
