@@ -14,19 +14,18 @@ import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.Invitation;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.message.FrameMessage;
+import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.message.SocialInsights;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
 import ua.sinaver.web3.payflow.service.IFarcasterHubService;
+import ua.sinaver.web3.payflow.service.IdentityService;
 import ua.sinaver.web3.payflow.service.SocialGraphService;
 import ua.sinaver.web3.payflow.service.WalletBalanceService;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -67,7 +66,8 @@ public class FarcasterFramesController {
 	private InvitationRepository invitationRepository;
 	@Autowired
 	private WalletBalanceService walletBalanceService;
-
+	@Autowired
+	private IdentityService identityService;
 
 	private static String shortedWalletAddress(String originalAddress) {
 		// Extract the first 4 characters
@@ -348,7 +348,7 @@ public class FarcasterFramesController {
 						<head>
 						<meta property="fc:frame" content="vNext" />
 						<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
-						<meta property="fc:frame:input:text" content="Enter farcaster username ..." />
+						<meta property="fc:frame:input:text" content="Enter username to invite ..." />
 						<meta property="fc:frame:button:1" content="Submit"/>
 						<meta property="fc:frame:post_url" content="%s" />
 						</head>
@@ -408,7 +408,6 @@ public class FarcasterFramesController {
 
 		return DEFAULT_HTML_RESPONSE;
 	}
-
 
 	@PostMapping("/actions/{identity}/invite")
 	public ResponseEntity<String> identityActionInvite(@PathVariable String identity,
@@ -484,7 +483,12 @@ public class FarcasterFramesController {
 								""", inputText));
 					} else {
 						// for now invite first
-						val invitation = new Invitation(inviteAddresses.getFirst(), null);
+
+						val identityToInvite =
+								identityService.getIdentitiesInfo(inviteAddresses).stream().sorted(Comparator.comparingInt(IdentityMessage::score).reversed()).toList().getFirst();
+						log.debug("Identity to invite: {} ", identityToInvite);
+
+						val invitation = new Invitation(identityToInvite.address(), null);
 						invitation.setInvitedBy(clickedProfile);
 						invitation.setExpiryDate(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(30)));
 						invitationRepository.save(invitation);
@@ -495,7 +499,7 @@ public class FarcasterFramesController {
 								<head>
 								<meta property="fc:frame" content="vNext" />
 								<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
-								<meta property="fc:frame:button:1" content="🎉 successfully invited %s (not really, test)"/>
+								<meta property="fc:frame:button:1" content="🎉 Successfully invited %s to Payflow"/>
 								</head>
 								</html>
 								""", inputText));
@@ -510,8 +514,8 @@ public class FarcasterFramesController {
 						<head>
 						<meta property="fc:frame" content="vNext" />
 						<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
-						<meta property="fc:frame:input:text" content="Enter farcaster username ..." />
-						<meta property="fc:frame:button:1" content="Empty input, submit again"/>
+						<meta property="fc:frame:input:text" content="Enter username to invite ..." />
+						<meta property="fc:frame:button:1" content="Empty username, submit again"/>
 						<meta property="fc:frame:post_url" content="%s" />
 						</head>
 						</html>
