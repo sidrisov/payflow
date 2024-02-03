@@ -17,9 +17,9 @@ import { IdentityType } from '../types/ProfleType';
 import { useContext } from 'react';
 import { ProfileContext } from '../contexts/UserContext';
 import { TxInfo } from '../types/ActivityFetchResultType';
-import NetworkAvatar from './NetworkAvatar';
-import ProfileSectionButton from './ProfileSectionButton';
-import AddressSectionButton from './AddressSectionButton';
+import NetworkAvatar from './avatars/NetworkAvatar';
+import ProfileSectionButton from './buttons/ProfileSectionButton';
+import AddressSectionButton from './menu/AddressSectionButton';
 import { getNetworkDefaultBlockExplorerUrl } from '../utils/networks';
 import { timeAgo } from '../utils/time';
 

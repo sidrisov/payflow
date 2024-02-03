@@ -3,7 +3,7 @@ import { WagmiProvider } from 'wagmi';
 import { useMediaQuery } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { AppSettings } from '../types/AppSettingsType';
-import { CustomAvatar } from '../components/CustomAvatar';
+import { CustomAvatar } from '../components/avatars/CustomAvatar';
 import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
 import PublicProfile from './PublicProfile';
 

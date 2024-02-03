@@ -1,5 +1,5 @@
 import { Avatar, Badge, Box, Stack, Typography } from '@mui/material';
-import NetworkAvatar from './NetworkAvatar';
+import NetworkAvatar from './avatars/NetworkAvatar';
 
 export function NetworkAssetBalanceSection(props: {
   chainId: number;

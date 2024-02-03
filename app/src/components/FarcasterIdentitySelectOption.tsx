@@ -1,10 +1,8 @@
-import {
-  Box,
-  Stack} from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import { IdentityType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
-import { PayflowChip, InvitedChip } from './IdentityStatusChips';
+import { PayflowChip, InvitedChip } from './chips/IdentityStatusChips';
 import { SocialPresenceStack } from './SocialPresenceStack';
 
 export function FarcasterIdentitySelectOption({ identity }: { identity: IdentityType }) {

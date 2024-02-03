@@ -6,7 +6,7 @@ import { WagmiProvider } from 'wagmi';
 import { useMediaQuery } from '@mui/material';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AppSettings } from '../types/AppSettingsType';
-import { CustomAvatar } from '../components/CustomAvatar';
+import { CustomAvatar } from '../components/avatars/CustomAvatar';
 import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
 import { AirstackProvider, init } from '@airstack/airstack-react';
 import { me } from '../services/user';

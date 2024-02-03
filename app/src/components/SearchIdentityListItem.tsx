@@ -18,10 +18,10 @@ import axios from 'axios';
 import { API_URL } from '../utils/urlConstants';
 import { toast } from 'react-toastify';
 import { shortenWalletAddressLabel } from '../utils/address';
-import { PayflowChip, InvitedChip, InviteChip } from './IdentityStatusChips';
+import { PayflowChip, InvitedChip, InviteChip } from './chips/IdentityStatusChips';
 import { green, grey, yellow } from '@mui/material/colors';
 import { useAccount } from 'wagmi';
-import { UpdateIdentityCallbackType } from './SearchIdentityDialog';
+import { UpdateIdentityCallbackType } from './dialogs/SearchIdentityDialog';
 import { SocialPresenceStack } from './SocialPresenceStack';
 import { HowToReg, Star, StarBorder } from '@mui/icons-material';
 

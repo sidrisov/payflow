@@ -1,5 +1,5 @@
 import { Stack, StackProps } from '@mui/material';
-import NetworkSelectorChip from './NetworkSelectorChip';
+import NetworkSelectorChip from './chips/NetworkSelectorChip';
 import { WalletType } from '../types/FlowType';
 import { Chain } from 'viem';
 

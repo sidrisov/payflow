@@ -1,6 +1,6 @@
 import { Box, NativeSelect, Stack, Typography } from '@mui/material';
 import { ActivityFetchResultType } from '../types/ActivityFetchResultType';
-import { ActivitySkeletonSection } from './ActivitySkeletonSection';
+import { ActivitySkeletonSection } from './skeletons/ActivitySkeletonSection';
 import PublicProfileActivityFeedSection from './PublicProfileActivityFeedSection';
 import { useAccount } from 'wagmi';
 import { useContext, useMemo, useState } from 'react';

@@ -3,7 +3,10 @@ import { CloseCallbackType } from '../types/CloseCallbackType';
 import { IdentityType } from '../types/ProfleType';
 import { useNavigate } from 'react-router-dom';
 import { SearchIdentityListItem } from './SearchIdentityListItem';
-import { SelectIdentityCallbackType, UpdateIdentityCallbackType } from './SearchIdentityDialog';
+import {
+  SelectIdentityCallbackType,
+  UpdateIdentityCallbackType
+} from './dialogs/SearchIdentityDialog';
 import { useState } from 'react';
 
 const pageSize = 20;
