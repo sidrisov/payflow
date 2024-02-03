@@ -11,17 +11,23 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ua.sinaver.web3.payflow.data.Invitation;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.message.FrameMessage;
 import ua.sinaver.web3.payflow.message.SocialInsights;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
+import ua.sinaver.web3.payflow.service.IFarcasterHubService;
 import ua.sinaver.web3.payflow.service.SocialGraphService;
 import ua.sinaver.web3.payflow.service.WalletBalanceService;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static ua.sinaver.web3.payflow.message.ContactMessage.getWalletInsights;
@@ -47,7 +53,8 @@ public class FarcasterFramesController {
 					</head>
 					</html>
 					""");
-
+	@Autowired
+	private IFarcasterHubService farcasterHubService;
 	@Value("${payflow.dapp.url}")
 	private String dAppServiceUrl;
 	@Value("${payflow.api.url}")
@@ -60,6 +67,7 @@ public class FarcasterFramesController {
 	private InvitationRepository invitationRepository;
 	@Autowired
 	private WalletBalanceService walletBalanceService;
+
 
 	private static String shortedWalletAddress(String originalAddress) {
 		// Extract the first 4 characters
@@ -104,9 +112,16 @@ public class FarcasterFramesController {
 
 	@PostMapping("/connect")
 	public ResponseEntity<String> connect(@RequestBody FrameMessage frameMessage) {
-		log.debug("Received connect frame: {}", frameMessage);
+		log.debug("Received connect frame message request: {}", frameMessage);
 
-		val fid = frameMessage.untrustedData().fid();
+		val validateMessage = farcasterHubService.validateFrameMessage(
+				frameMessage.trustedData().messageBytes());
+		log.debug("Validated frame message response: {}", validateMessage);
+
+		if (!validateMessage.valid()) {
+			return DEFAULT_HTML_RESPONSE;
+		}
+		val fid = validateMessage.message().data().fid();
 
 		val wallet = socialGraphService.getSocialMetadata(
 				"fc_fid:".concat(String.valueOf(fid)), null);
@@ -190,9 +205,17 @@ public class FarcasterFramesController {
 	public ResponseEntity<String> actions(@RequestBody FrameMessage frameMessage) {
 		log.debug("Received actions frame: {}", frameMessage);
 
-		val buttonIndex = frameMessage.untrustedData().buttonIndex();
-		val fid = frameMessage.untrustedData().fid();
-		val casterFid = frameMessage.untrustedData().castId().fid();
+		val validateMessage = farcasterHubService.validateFrameMessage(
+				frameMessage.trustedData().messageBytes());
+		log.debug("Validated frame message response: {}", validateMessage);
+
+		if (!validateMessage.valid()) {
+			return DEFAULT_HTML_RESPONSE;
+		}
+		val fid = validateMessage.message().data().fid();
+
+		val buttonIndex = validateMessage.message().data().frameActionBody().buttonIndex();
+		val casterFid = validateMessage.message().data().frameActionBody().castId().fid();
 
 		val wallet = socialGraphService.getSocialMetadata(
 				"fc_fid:".concat(String.valueOf(fid)), null);
@@ -266,10 +289,16 @@ public class FarcasterFramesController {
 	public ResponseEntity<String> identityAction(@PathVariable String identity,
 	                                             @RequestBody FrameMessage frameMessage) {
 		log.debug("Received actions frame: {}", frameMessage);
+		val validateMessage = farcasterHubService.validateFrameMessage(
+				frameMessage.trustedData().messageBytes());
+		log.debug("Validated frame message response: {}", validateMessage);
 
-		val buttonIndex = frameMessage.untrustedData().buttonIndex();
-		val fid = frameMessage.untrustedData().fid();
-		val casterFid = frameMessage.untrustedData().castId().fid();
+		if (!validateMessage.valid()) {
+			return DEFAULT_HTML_RESPONSE;
+		}
+		val fid = validateMessage.message().data().fid();
+		val buttonIndex = validateMessage.message().data().frameActionBody().buttonIndex();
+		val casterFid = validateMessage.message().data().frameActionBody().castId().fid();
 
 		val wallet = socialGraphService.getSocialMetadata(
 				"fc_fid:".concat(String.valueOf(fid)), null);
@@ -320,7 +349,7 @@ public class FarcasterFramesController {
 						<meta property="fc:frame" content="vNext" />
 						<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
 						<meta property="fc:frame:input:text" content="Enter farcaster username ..." />
-						<meta property="fc:frame:button:1" content="Confirm"/>
+						<meta property="fc:frame:button:1" content="Submit"/>
 						<meta property="fc:frame:post_url" content="%s" />
 						</head>
 						</html>
@@ -386,9 +415,18 @@ public class FarcasterFramesController {
 	                                                   @RequestBody FrameMessage frameMessage) {
 		log.debug("Received actions invite frame: {}", frameMessage);
 
-		val buttonIndex = frameMessage.untrustedData().buttonIndex();
-		val fid = frameMessage.untrustedData().fid();
-		val casterFid = frameMessage.untrustedData().castId().fid();
+		val validateMessage = farcasterHubService.validateFrameMessage(
+				frameMessage.trustedData().messageBytes());
+		log.debug("Validated frame message response: {}", validateMessage);
+
+		if (!validateMessage.valid()) {
+			return DEFAULT_HTML_RESPONSE;
+		}
+		val fid = validateMessage.message().data().fid();
+
+		val buttonIndex = validateMessage.message().data().frameActionBody().buttonIndex();
+		val casterFid = validateMessage.message().data().frameActionBody().castId().fid();
+		val inputTextBase64 = validateMessage.message().data().frameActionBody().inputText();
 
 		val wallet = socialGraphService.getSocialMetadata(
 				"fc_fid:".concat(String.valueOf(fid)), null);
@@ -399,18 +437,87 @@ public class FarcasterFramesController {
 
 		val clickedProfile =
 				getFidProfiles(addresses).stream().filter(p -> p.getIdentity().equals(identity)).findFirst().orElse(null);
-		val inputText = frameMessage.untrustedData().inputText();
-		if (clickedProfile != null && buttonIndex == 1 && !StringUtils.isBlank(inputText)) {
-			return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(String.format("""
-					<!DOCTYPE html>
-					<html>
-					<head>
-					<meta property="fc:frame" content="vNext" />
-					<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
-					<meta property="fc:frame:button:1" content="🎉 successfully invited %s"/>
-					</head>
-					</html>
-					""", inputText));
+		if (clickedProfile != null && buttonIndex == 1) {
+
+			if (!StringUtils.isBlank(inputTextBase64)) {
+				val inputText = new String(Base64.getDecoder().decode(inputTextBase64),
+						StandardCharsets.UTF_8);
+
+				// check if profile exist
+				val inviteWallet = socialGraphService.getSocialMetadata(
+						"fc_fname:".concat(inputText), null);
+
+				val inviteAddresses = inviteWallet.getAddresses();
+
+				log.debug("Addresses for fname {}: {}", inputText, inviteAddresses);
+
+				val inviteProfile =
+						getFidProfiles(inviteAddresses).stream().filter(p -> p.getIdentity().equals(identity)).findFirst().orElse(null);
+
+				if (inviteProfile != null) {
+					return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(String.format("""
+							<!DOCTYPE html>
+							<html>
+							<head>
+							<meta property="fc:frame" content="vNext" />
+							<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
+							<meta property="fc:frame:button:1" content="✅ %s already signed up"/>
+							</head>
+							</html>
+							""", inputText));
+				} else {
+					// check if invited
+					val invitations = inviteAddresses.stream()
+							.map(address -> invitationRepository.findFirstValidByIdentityOrCode(address, null))
+							.filter(Objects::nonNull).limit(4).toList();
+
+					if (!invitations.isEmpty()) {
+						return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(String.format("""
+								<!DOCTYPE html>
+								<html>
+								<head>
+								<meta property="fc:frame" content="vNext" />
+								<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
+								<meta property="fc:frame:button:1" content="✅ %s already invited"/>
+								</head>
+								</html>
+								""", inputText));
+					} else {
+						// for now invite first
+						val invitation = new Invitation(inviteAddresses.getFirst(), null);
+						invitation.setInvitedBy(clickedProfile);
+						invitation.setExpiryDate(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(30)));
+						invitationRepository.save(invitation);
+
+						return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(String.format("""
+								<!DOCTYPE html>
+								<html>
+								<head>
+								<meta property="fc:frame" content="vNext" />
+								<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
+								<meta property="fc:frame:button:1" content="🎉 successfully invited %s (not really, test)"/>
+								</head>
+								</html>
+								""", inputText));
+					}
+				}
+			} else {
+				val postUrl = apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS_INVITE,
+						clickedProfile.getIdentity()));
+				return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(String.format("""
+						<!DOCTYPE html>
+						<html>
+						<head>
+						<meta property="fc:frame" content="vNext" />
+						<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
+						<meta property="fc:frame:input:text" content="Enter farcaster username ..." />
+						<meta property="fc:frame:button:1" content="Empty input, submit again"/>
+						<meta property="fc:frame:post_url" content="%s" />
+						</head>
+						</html>
+						""", postUrl));
+			}
+
 		}
 
 		return DEFAULT_HTML_RESPONSE;
