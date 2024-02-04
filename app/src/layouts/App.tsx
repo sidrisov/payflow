@@ -21,7 +21,7 @@ import HideOnScroll from '../components/HideOnScroll';
 import { useEnsAddress, useReadContract } from 'wagmi';
 
 import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
-import { Chain, formatUnits } from 'viem';
+import { formatUnits } from 'viem';
 import { ProfileType } from '../types/ProfleType';
 import { AppSettings } from '../types/AppSettingsType';
 import { ProfileMenu } from '../components/menu/ProfileMenu';
@@ -44,9 +44,6 @@ export default function AppLayout({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const navigate = useNavigate();
-
-  const [walletBalances, setWalletBalances] = useState<Map<string, bigint>>(new Map());
-  const [smartAccountAllowedChains, setSmartAccountAllowedChains] = useState<Chain[]>([]);
 
   const [authorized, setAuthorized] = useState<boolean>(false);
 
@@ -92,10 +89,6 @@ export default function AppLayout({
         profile,
         appSettings,
         setAppSettings,
-        smartAccountAllowedChains,
-        setSmartAccountAllowedChains,
-        walletBalances,
-        setWalletBalances,
         ethUsdPrice
       }}>
       {authorized && (

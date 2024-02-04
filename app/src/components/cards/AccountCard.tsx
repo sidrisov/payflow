@@ -13,7 +13,6 @@ import {
 } from '@mui/material';
 import { Receipt, ArrowDownward, Send, AccountBalance, Toll } from '@mui/icons-material';
 import { useContext, useMemo, useState } from 'react';
-import AccountSendDialog from '../dialogs/AccountSendDialog';
 import { ProfileContext } from '../../contexts/UserContext';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
 import { formatEther } from 'viem';
@@ -26,6 +25,7 @@ import NetworkAvatar from '../avatars/NetworkAvatar';
 import { useAccount } from 'wagmi';
 import SearchIdentityDialog from '../dialogs/SearchIdentityDialog';
 import { SelectedIdentityType } from '../../types/ProfleType';
+import PaymentDialog from '../dialogs/PaymentDialog';
 
 export type AccountNewDialogProps = CardProps & {
   flows: FlowType[];
@@ -205,7 +205,7 @@ export function AccountCard(props: AccountNewDialogProps) {
         </Tooltip>
       </Stack>
       {recipient && (
-        <AccountSendDialog
+        <PaymentDialog
           open={recipient != null}
           sender={selectedFlow}
           recipient={recipient}

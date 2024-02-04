@@ -55,6 +55,8 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.POST, "/farcaster/frames/connect").permitAll()
 						.requestMatchers(HttpMethod.POST, "/farcaster/frames/actions").permitAll()
 						.requestMatchers(HttpMethod.POST, "/farcaster/frames/actions/{identity}").permitAll()
+						.requestMatchers(HttpMethod.POST,
+								"/farcaster/frames/actions/{identity}/invite").permitAll()
 						.anyRequest()
 						.authenticated())
 				.sessionManagement(session -> session

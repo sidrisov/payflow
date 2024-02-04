@@ -1,5 +1,8 @@
 export { Head };
 
+const API_URL = import.meta.env.VITE_PAYFLOW_SERVICE_API_URL;
+const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
+
 function Head() {
   return (
     <>
@@ -19,7 +22,7 @@ function Head() {
           content="Onchain Social Payments across Farcaster, Lens, and Ens."
         />
 
-        <meta property="og:url" content="https://app.payflow.me" />
+        <meta property="og:url" content={DAPP_URL} />
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Payflow | Search & Pay" />
         <meta
@@ -30,7 +33,7 @@ function Head() {
 
         <meta name="twitter:card" content="summary_large_image" />
         <meta property="twitter:domain" content="app.payflow.me" />
-        <meta property="twitter:url" content="https://app.payflow.me" />
+        <meta property="twitter:url" content={DAPP_URL} />
         <meta name="twitter:title" content="Payflow | Search & Pay" />
         <meta
           name="twitter:description"
@@ -41,10 +44,7 @@ function Head() {
         <meta property="fc:frame" content="vNext" />
         <meta property="fc:frame:image" content="https://i.imgur.com/Vs0loYg.png" />
         <meta property="fc:frame:button:1" content="Connect" />
-        <meta
-          property="fc:frame:post_url"
-          content="https://api.alpha.payflow.me/api/farcaster/frames/connect"
-        />
+        <meta property="fc:frame:post_url" content={`${API_URL}/api/farcaster/frames/connect`} />
       </head>
     </>
   );

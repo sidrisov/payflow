@@ -15,6 +15,11 @@ public record IdentityMessage(
 		ProfileMessage profile,
 		SocialMetadata meta) {
 
+	private static final int ENS_SCORE = 5;
+	private static final int FARCASTER_SCORE = 4;
+	private static final int LENS_SCORE = 4;
+	private static final int XMTP_SCORE = 2;
+
 	public static IdentityMessage convert(String identity, User profile, Wallet wallet,
 	                                      Boolean invited) {
 		ProfileMessage profileMessage = null;
@@ -65,7 +70,6 @@ public record IdentityMessage(
 
 		return new IdentityMessage(identity, invited, profileMessage, meta);
 	}
-
 
 	public static SocialInsights getWalletInsights(Wallet wallet) {
 		var sentTxs = 0;
@@ -126,5 +130,32 @@ public record IdentityMessage(
 		} else {
 			return Collections.emptyList();
 		}
+	}
+
+	public int score() {
+		var score = 0;
+		val meta = this.meta();
+		if (meta != null) {
+			if (meta.ens() != null) {
+				score += ENS_SCORE;
+			}
+
+			if (meta.xmtp()) {
+				score += XMTP_SCORE;
+			}
+
+			if (meta.socials() != null) {
+				for (val s : meta.socials()) {
+					if (s.dappName().equals("farcaster")) {
+						score += FARCASTER_SCORE;
+					}
+
+					if (s.dappName().equals("lens")) {
+						score += LENS_SCORE;
+					}
+				}
+			}
+		}
+		return score;
 	}
 }

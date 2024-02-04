@@ -1,5 +1,5 @@
 import { Avatar, Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { IdentityType, ProfileType } from '../../types/ProfleType';
 import { useAccount } from 'wagmi';
 import { Send } from '@mui/icons-material';
@@ -7,12 +7,15 @@ import { useQuery } from '@airstack/airstack-react';
 import { ProfileSection } from '../ProfileSection';
 import SocialPresenceChipWithLink from '../chips/SocialPresenceChipWithLink';
 import { QUERY_SOCIALS_LIGHT, convertSocialResults } from '../../services/socials';
-import PayProfileDialog from './PayProfileDialog';
 import { green } from '@mui/material/colors';
 import { Address } from 'viem';
+import PaymentDialog from './PaymentDialog';
+import { ProfileContext } from '../../contexts/UserContext';
 
 export function PublicProfileDetails({ profile }: { profile: ProfileType }) {
   const [openPayDialog, setOpenPayDialog] = useState(false);
+
+  const { profile: loggedProfile } = useContext(ProfileContext);
 
   const { address } = useAccount();
 
@@ -118,11 +121,16 @@ export function PublicProfileDetails({ profile }: { profile: ProfileType }) {
           )}
         </Stack>
       </Stack>
+
       {openPayDialog && (
-        <PayProfileDialog
+        <PaymentDialog
           open={openPayDialog}
           // TODO: might be undefined
-          sender={address as Address}
+          sender={
+            loggedProfile && loggedProfile.defaultFlow
+              ? loggedProfile.defaultFlow
+              : (address as Address)
+          }
           recipient={{
             type: 'profile',
             identity: { profile } as IdentityType
