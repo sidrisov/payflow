@@ -301,6 +301,7 @@ export default function PublicProfile({
       )}
       {loggedProfile ? (
         <ProfileMenu
+          loginRedirectOnLogout={false}
           profile={loggedProfile}
           anchorEl={walletMenuAnchorEl}
           open={openWalletMenu}

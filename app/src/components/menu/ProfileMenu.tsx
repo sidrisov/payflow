@@ -25,8 +25,9 @@ import { useConfig } from 'wagmi';
 export function ProfileMenu({
   profile,
   closeStateCallback,
+  loginRedirectOnLogout = true,
   ...props
-}: MenuProps &
+}: { loginRedirectOnLogout?: boolean } & MenuProps &
   CloseCallbackType & {
     profile: ProfileType;
   }) {
@@ -120,7 +121,9 @@ export function ProfileMenu({
               withCredentials: true
             });
             await disconnect(wagmiConfig);
-            navigate('/connect');
+            if (loginRedirectOnLogout) {
+              navigate('/connect');
+            }
           } catch (error) {
             toast.error('Failed to logout!');
           }
