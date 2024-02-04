@@ -4,7 +4,7 @@ import { ActivitySkeletonSection } from './skeletons/ActivitySkeletonSection';
 import PublicProfileActivityFeedSection from './PublicProfileActivityFeedSection';
 import { useAccount } from 'wagmi';
 import { useContext, useMemo, useState } from 'react';
-import { AnonymousUserContext } from '../contexts/UserContext';
+import { ProfileContext } from '../contexts/UserContext';
 import { Chain } from 'viem';
 
 export type AssetsProps = {
@@ -13,7 +13,7 @@ export type AssetsProps = {
 };
 
 export default function PublicProfileActivityFeed(props: AssetsProps) {
-  const { profile } = useContext(AnonymousUserContext);
+  const { profile } = useContext(ProfileContext);
   const { address } = useAccount();
 
   const { selectedChain } = props;

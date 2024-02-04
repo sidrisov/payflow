@@ -27,12 +27,14 @@ import HideOnScroll from '../components/HideOnScroll';
 import HomeLogo from '../components/Logo';
 import { WalletMenu } from '../components/menu/WalletMenu';
 import { useAccount, useEnsAddress, useReadContract } from 'wagmi';
-import PayProfileDialog from '../components/dialogs/PayProfileDialog';
 import { getProfileByAddressOrName, me } from '../services/user';
-import { AnonymousUserContext } from '../contexts/UserContext';
+import { ProfileContext } from '../contexts/UserContext';
 import { Address, formatUnits } from 'viem';
 
 import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
+import PaymentDialog from '../components/dialogs/PaymentDialog';
+import { ProfileMenu } from '../components/menu/ProfileMenu';
+import ProfileAvatar from '../components/avatars/ProfileAvatar';
 
 export default function PublicProfile({
   appSettings,
@@ -102,12 +104,13 @@ export default function PublicProfile({
   }, []);
 
   return (
-    <AnonymousUserContext.Provider
+    <ProfileContext.Provider
       value={{
+        isAuthenticated: false,
         appSettings,
         setAppSettings,
         ethUsdPrice,
-        profile: loggedProfile
+        profile: loggedProfile as any
       }}>
       <Helmet>
         <title> Payflow {profile ? '| ' + profile.displayName : ''} </title>
@@ -187,7 +190,11 @@ export default function PublicProfile({
                         setWalletMenuAnchorEl(event.currentTarget);
                         setOpenWalletMenu(true);
                       }}>
-                      <Menu />
+                      {loggedProfile ? (
+                        <ProfileAvatar profile={loggedProfile} sx={{ width: 36, height: 36 }} />
+                      ) : (
+                        <Menu />
+                      )}
                     </IconButton>
                   </Box>
                 </Toolbar>
@@ -277,23 +284,37 @@ export default function PublicProfile({
           setOpenSearchIdentity(false);
         }}
       />
-      {selectedRecipient && (
-        <PayProfileDialog
+      {selectedRecipient && ((loggedProfile && loggedProfile.defaultFlow) || address) && (
+        <PaymentDialog
           open={selectedRecipient !== undefined}
           // TODO: might be undefined
-          sender={address as Address}
+          sender={
+            loggedProfile && loggedProfile.defaultFlow
+              ? loggedProfile.defaultFlow
+              : (address as Address)
+          }
           recipient={selectedRecipient}
           closeStateCallback={async () => {
             setSelectedRecipient(undefined);
           }}
         />
       )}
-      <WalletMenu
-        anchorEl={walletMenuAnchorEl}
-        open={openWalletMenu}
-        onClose={() => setOpenWalletMenu(false)}
-        closeStateCallback={() => setOpenWalletMenu(false)}
-      />
-    </AnonymousUserContext.Provider>
+      {loggedProfile ? (
+        <ProfileMenu
+          profile={loggedProfile}
+          anchorEl={walletMenuAnchorEl}
+          open={openWalletMenu}
+          onClose={() => setOpenWalletMenu(false)}
+          closeStateCallback={() => setOpenWalletMenu(false)}
+        />
+      ) : (
+        <WalletMenu
+          anchorEl={walletMenuAnchorEl}
+          open={openWalletMenu}
+          onClose={() => setOpenWalletMenu(false)}
+          closeStateCallback={() => setOpenWalletMenu(false)}
+        />
+      )}
+    </ProfileContext.Provider>
   );
 }

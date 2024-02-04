@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import { formatEther } from 'viem';
 import { useContext, useState } from 'react';
-import { AnonymousUserContext } from '../contexts/UserContext';
+import { ProfileContext } from '../contexts/UserContext';
 import { TxInfo } from '../types/ActivityFetchResultType';
 import NetworkAvatar from './avatars/NetworkAvatar';
 import { getNetworkDefaultBlockExplorerUrl, getNetworkDisplayName } from '../utils/networks';
@@ -35,7 +35,7 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { ethUsdPrice } = useContext(AnonymousUserContext);
+  const { ethUsdPrice } = useContext(ProfileContext);
   const { txInfo } = props;
 
   const [profileDetailsPopoverAnchorEl, setProfileDetailsPopoverAnchorEl] =
