@@ -73,17 +73,18 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
   const [maxBalanceUsd, setMaxBalanceUsd] = useState<string>();
 
   useMemo(async () => {
-    const maxBalance = isSuccess
-      ? balance && parseFloat(formatUnits(balance.value, balance.decimals))
-      : 0;
+    if (selectedTokenPrice) {
+      const maxBalance = isSuccess
+        ? balance && parseFloat(formatUnits(balance.value, balance.decimals))
+        : 0;
 
-    const maxBalanceUsd = isSuccess
-      ? balance &&
-        parseFloat(formatUnits(balance.value, balance.decimals)) * (selectedTokenPrice ?? 0)
-      : 0;
+      const maxBalanceUsd = isSuccess
+        ? balance && parseFloat(formatUnits(balance.value, balance.decimals)) * selectedTokenPrice
+        : 0;
 
-    setMaxBalance(normalizeNumberPrecision(maxBalance));
-    setMaxBalanceUsd(normalizeNumberPrecision(maxBalanceUsd));
+      setMaxBalance(normalizeNumberPrecision(maxBalance));
+      setMaxBalanceUsd(normalizeNumberPrecision(maxBalanceUsd));
+    }
   }, [isSuccess, balance, selectedTokenPrice]);
 
   const sendToastId = useRef<Id>();
@@ -91,7 +92,7 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
   const { loading, confirmed, error, status, txHash, sendTransaction, writeContract, reset } =
     useRegularTransfer();
 
-  function getTokenPrice(token: string | undefined) {
+  function getTokenPrice(token: string) {
     let price = 0;
     switch (token) {
       case ETH_TOKEN:
@@ -119,7 +120,7 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
     } else {
       setSelectedTokenPrice(undefined);
     }
-  }, [selectedToken]);
+  }, [selectedToken, ethUsdPrice, degenUsdPrice]);
 
   useEffect(() => {
     if (!recipient || !(sender as Address)) {
