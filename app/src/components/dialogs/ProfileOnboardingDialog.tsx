@@ -25,12 +25,13 @@ import { toast } from 'react-toastify';
 import { updateProfile } from '../../services/user';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../../utils/urlConstants';
-import { QUERY_SOCIALS, convertSocialResults } from '../../services/socials';
+import { convertSocialResults } from '../../services/socials';
 import { useQuery } from '@airstack/airstack-react';
 import CenteredCircularProgress from '../CenteredCircularProgress';
 import { isAlphanumericPlusFewSpecialChars as isAlphanumericWithSpecials } from '../../utils/regex';
 import { green, lightGreen, red } from '@mui/material/colors';
 import { FARCASTER_DAPP, LENS_DAPP } from '../../utils/dapps';
+import { QUERY_SOCIALS } from '../../utils/airstackQueries';
 
 export type ProfileOnboardingDialogProps = DialogProps &
   CloseCallbackType & {
@@ -66,7 +67,7 @@ export default function ProfileOnboardingDialog({
 
   const { data: socialInfo, loading: loadingSocials } = useQuery(
     QUERY_SOCIALS,
-    { identity: profile.identity, me: '' },
+    { identity: profile.identity },
     {
       cache: true
     }
