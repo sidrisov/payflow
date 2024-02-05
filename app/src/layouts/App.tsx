@@ -77,12 +77,15 @@ export default function AppLayout({
 
   const [degenUsdPrice, setDegenUsdPrice] = useState<number>(0);
 
-  useMemo(async () => {
-    const response = await axios.get(
-      'https://api.dexscreener.com/latest/dex/pairs/base/0xc9034c3E7F58003E6ae0C8438e7c8f4598d5ACAA'
-    );
-
-    setDegenUsdPrice(response.data.pair.priceUsd);
+  useEffect(() => {
+    // TODO: replace with more known price source
+    axios
+      .get(
+        'https://api.dexscreener.com/latest/dex/pairs/base/0xc9034c3E7F58003E6ae0C8438e7c8f4598d5ACAA'
+      )
+      .then((response) => {
+        setDegenUsdPrice(response.data.pair.priceUsd);
+      });
   }, []);
 
   useEffect(() => {

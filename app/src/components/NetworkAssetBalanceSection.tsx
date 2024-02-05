@@ -1,5 +1,6 @@
 import { Avatar, Badge, Box, Stack, Typography } from '@mui/material';
 import NetworkAvatar from './avatars/NetworkAvatar';
+import { normalizeNumberPrecision } from '../utils/normalizeNumberPrecision';
 
 export function NetworkAssetBalanceSection(props: {
   chainId: number;
@@ -33,7 +34,9 @@ export function NetworkAssetBalanceSection(props: {
         </Badge>
         <Stack ml={1} direction="column" spacing={0.2}>
           <Typography variant="subtitle2">{props.asset}</Typography>
-          <Typography variant="caption">{parseFloat(props.balance).toPrecision(3)}</Typography>
+          <Typography variant="caption">
+            {normalizeNumberPrecision(parseFloat(props.balance))}
+          </Typography>
         </Stack>
       </Box>
 
