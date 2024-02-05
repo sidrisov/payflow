@@ -147,8 +147,7 @@ export default function AccountSendDialog({
         <TransferToastContent
           from={{ type: 'profile', identity: { profile: profile } as IdentityType }}
           to={recipient}
-          ethAmount={sendAmount}
-          ethUsdPrice={ethUsdPrice}
+          usdAmount={sendAmountUSD ?? 0}
         />
       );
     }
@@ -163,8 +162,7 @@ export default function AccountSendDialog({
           <TransferToastContent
             from={{ type: 'profile', identity: { profile: profile } as IdentityType }}
             to={recipient}
-            ethAmount={sendAmount}
-            ethUsdPrice={ethUsdPrice}
+            usdAmount={sendAmountUSD ?? 0}
           />
         ),
         type: 'success',
@@ -184,8 +182,7 @@ export default function AccountSendDialog({
           <TransferToastContent
             from={{ type: 'profile', identity: { profile: profile } as IdentityType }}
             to={recipient}
-            ethAmount={sendAmount}
-            ethUsdPrice={ethUsdPrice}
+            usdAmount={sendAmountUSD ?? 0}
             status="error"
           />
         ),

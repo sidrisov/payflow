@@ -57,7 +57,7 @@ export default function Accounts() {
     setAssets(assets);
   }, [selectedFlow?.wallets]);
 
-  const { loading, fetched, balances } = useBalanceFetcher(assets, ethUsdPrice);
+  const { loading, fetched, balances } = useBalanceFetcher(assets);
   const activityFetchResult = useTransactionsFetcher(selectedFlow?.wallets ?? []);
 
   console.debug('Loading balances: ', loading, balances);

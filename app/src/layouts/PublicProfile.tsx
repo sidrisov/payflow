@@ -35,6 +35,7 @@ import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts
 import PaymentDialog from '../components/dialogs/PaymentDialog';
 import { ProfileMenu } from '../components/menu/ProfileMenu';
 import ProfileAvatar from '../components/avatars/ProfileAvatar';
+import axios from 'axios';
 
 export default function PublicProfile({
   appSettings,
@@ -84,6 +85,16 @@ export default function PublicProfile({
     }
   });
 
+  const [degenUsdPrice, setDegenUsdPrice] = useState<number>(0);
+
+  useMemo(async () => {
+    const response = await axios.get(
+      'https://api.dexscreener.com/latest/dex/pairs/base/0xc9034c3E7F58003E6ae0C8438e7c8f4598d5ACAA'
+    );
+
+    setDegenUsdPrice(response.data.pair.priceUsd);
+  }, []);
+
   useMemo(async () => {
     if (username) {
       setLoadingProfile(true);
@@ -111,6 +122,7 @@ export default function PublicProfile({
         appSettings,
         setAppSettings,
         ethUsdPrice,
+        degenUsdPrice,
         profile: loggedProfile as any
       }}>
       <Helmet>

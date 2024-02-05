@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { getBalance } from 'wagmi/actions';
 import { AssetType, AssetBalanceType } from '../../types/AssetType';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
@@ -6,14 +6,14 @@ import { wagmiConfig } from '../wagmiConfig';
 import { formatUnits } from 'viem';
 import { ETH_TOKEN, DEGEN_TOKEN, USDC_TOKEN } from '../erc20contracts';
 import { GetBalanceData } from 'wagmi/query';
+import { ProfileContext } from '../../contexts/UserContext';
 
-export const useBalanceFetcher = (
-  assets: AssetType[],
-  ethUsdPrice: number | undefined
-): BalanceFetchResultType => {
+export const useBalanceFetcher = (assets: AssetType[]): BalanceFetchResultType => {
   const [balances, setBalances] = useState<AssetBalanceType[]>([]);
   const [fetched, setFetched] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+
+  const { ethUsdPrice, degenUsdPrice } = useContext(ProfileContext);
 
   function getTokenPrice(token: string | undefined) {
     let price = 0;
@@ -24,7 +24,10 @@ export const useBalanceFetcher = (
         }
         break;
       case DEGEN_TOKEN:
-        price = 0.00258;
+        if (degenUsdPrice) {
+          price = degenUsdPrice;
+        }
+
         break;
       case USDC_TOKEN:
         price = 1;

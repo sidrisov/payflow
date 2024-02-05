@@ -5,18 +5,17 @@ import { formatEther } from 'viem';
 import { SelectedIdentityType } from '../../types/ProfleType';
 import { ProfileSection } from '../ProfileSection';
 import { AddressSection } from '../AddressSection';
+import { normalizeNumberPrecision } from '../../utils/normalizeNumberPrecision';
 
 export function TransferToastContent({
   from,
   to,
-  ethAmount,
-  ethUsdPrice,
+  usdAmount,
   status
 }: {
   from: SelectedIdentityType;
   to: SelectedIdentityType;
-  ethAmount: bigint;
-  ethUsdPrice: number | undefined;
+  usdAmount: number;
   status?: TypeOptions;
 }) {
   return (
@@ -31,7 +30,7 @@ export function TransferToastContent({
         : from.identity.address && <AddressSection identity={from.identity} />}
       <Stack mx={1} width={50} alignItems="center" justifyContent="center">
         <Typography noWrap variant="subtitle2">
-          ${(parseFloat(formatEther(ethAmount)) * (ethUsdPrice ?? 0)).toPrecision(3)}
+          ${normalizeNumberPrecision(usdAmount)}
         </Typography>
         {status === 'error' ? <Close /> : <ArrowForward />}
       </Stack>

@@ -8,4 +8,5 @@ export interface ProfileContextType {
   appSettings: AppSettings;
   setAppSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
   ethUsdPrice: number | undefined;
+  degenUsdPrice: number | undefined;
 }
