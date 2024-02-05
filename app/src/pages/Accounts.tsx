@@ -18,7 +18,7 @@ export default function Accounts() {
   const theme = useTheme();
   const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { isAuthenticated, profile } = useContext(ProfileContext);
+  const { isAuthenticated, profile, ethUsdPrice } = useContext(ProfileContext);
 
   const { flows } = profile;
 
@@ -57,7 +57,7 @@ export default function Accounts() {
     setAssets(assets);
   }, [selectedFlow?.wallets]);
 
-  const { loading, fetched, balances } = useBalanceFetcher(assets);
+  const { loading, fetched, balances } = useBalanceFetcher(assets, ethUsdPrice);
   const activityFetchResult = useTransactionsFetcher(selectedFlow?.wallets ?? []);
 
   console.debug('Loading balances: ', loading, balances);

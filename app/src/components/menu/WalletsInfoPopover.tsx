@@ -2,7 +2,6 @@ import { Popover, PopoverProps, Stack } from '@mui/material';
 import { WalletSection } from '../WalletSection';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
-import { formatEther } from 'viem';
 import { useContext } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 
@@ -15,17 +14,12 @@ export function WalletsInfoPopover({
 
   function calculateBalance(wallet: FlowWalletType) {
     if (balanceFetchResult && ethUsdPrice) {
-      const totalBalance = formatEther(
-        balanceFetchResult.balances
-          .filter((balance) => balance.asset.chainId === wallet.network)
-          // don't count ERC20 for now
-          .filter((balance) => !balance.asset.token && balance.balance)
-          .reduce((previousValue, currentValue) => {
-            return previousValue + (currentValue.balance?.value ?? BigInt(0));
-          }, BigInt(0))
-      );
-
-      return (parseFloat(totalBalance) * ethUsdPrice).toFixed(1);
+      return balanceFetchResult.balances
+        .filter((balance) => balance.balance && balance.asset.chainId === wallet.network)
+        .reduce((previousValue, currentValue) => {
+          return previousValue + currentValue.usdValue;
+        }, 0)
+        .toFixed(1);
     } else {
       return 'N/A';
     }

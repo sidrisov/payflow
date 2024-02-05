@@ -1,10 +1,15 @@
 import { Address, zeroAddress } from 'viem';
+import { base } from 'viem/chains';
+
+export const USDC_TOKEN = 'USDC';
+export const DEGEN_TOKEN = 'DEGEN';
+export const ETH_TOKEN = 'ETH';
 
 export const ERC20_CONTRACTS = {
-  /* [optimismGoerli.id]: [
-    { name: 'USDC', address: '0x7E07E15D2a87A24492740D16f5bdF58c16db0c4E' },
-    { name: 'USDT', address: '0x853eb4bA5D0Ba2B77a0A5329Fd2110d5CE149ECE' } 
-  ]  as Token[]*/
+  [base.id]: [
+    { name: USDC_TOKEN, address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' },
+    { name: DEGEN_TOKEN, address: '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed' }
+  ] as Token[]
 } as {
   [id: number]: Token[];
 };
@@ -26,4 +31,4 @@ export function getSupportedTokens(chainId: number | undefined): Token[] {
   }
 }
 
-export const ETH: Token = { name: 'ETH', address: zeroAddress };
+export const ETH: Token = { name: ETH_TOKEN, address: zeroAddress };

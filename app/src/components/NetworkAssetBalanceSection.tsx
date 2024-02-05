@@ -5,7 +5,7 @@ export function NetworkAssetBalanceSection(props: {
   chainId: number;
   asset: string;
   balance: string;
-  price: number;
+  usdValue: number;
 }) {
   return (
     <Box
@@ -37,7 +37,7 @@ export function NetworkAssetBalanceSection(props: {
         </Stack>
       </Box>
 
-      <Typography>${(parseFloat(props.balance) * props.price).toFixed(1)}</Typography>
+      <Typography>${props.usdValue.toFixed(1)}</Typography>
     </Box>
   );
 }
