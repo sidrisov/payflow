@@ -146,7 +146,6 @@ public class FarcasterFramesController {
 		}
 
 		val fid = validateMessage.message().data().fid();
-
 		val wallet = socialGraphService.getSocialMetadata(
 				"fc_fid:".concat(String.valueOf(fid)), null);
 
@@ -155,6 +154,26 @@ public class FarcasterFramesController {
 		log.debug("Addresses for {}: {}", fid, addresses);
 
 		val profiles = getFidProfiles(addresses);
+
+		val casterFid = validateMessage.message().data().frameActionBody().castId().fid();
+
+		User casterProfile;
+		if (fid != casterFid) {
+			val casterWallet = socialGraphService.getSocialMetadata(
+					"fc_fid:".concat(String.valueOf(casterFid)), null);
+			casterProfile =
+					getFidProfiles(casterWallet.getAddresses()).stream().findFirst().orElse(null);
+		} else {
+			casterProfile = profiles.stream().findFirst().orElse(null);
+		}
+
+		String payMeta = "";
+		if (casterProfile != null) {
+			payMeta = """
+					<meta property="fc:frame:button:%s" content="Pay"/>
+					<meta property="fc:frame:button:%s:action" content="post_redirect"/>
+					""";
+		}
 
 		val postUrl = apiServiceUrl.concat(CONNECT_ACTIONS);
 		String html;
@@ -170,6 +189,11 @@ public class FarcasterFramesController {
 						""", i + 1, profile.getDisplayName(), profile.getUsername()));
 			}
 
+			if (!StringUtils.isEmpty(payMeta)) {
+				val payButtonIndex = profiles.size() + 1;
+				payMeta = String.format(payMeta, payButtonIndex, payButtonIndex);
+			}
+
 			html = String.format("""
 					<!DOCTYPE html>
 					<html>
@@ -177,14 +201,13 @@ public class FarcasterFramesController {
 					<meta property="fc:frame" content="vNext" />
 					<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
 					%s
+					%s
 					<meta property="fc:frame:post_url" content="%s" />
 					</head>
 					</html>
-					""", profileButtonsMeta, postUrl);
+					""", profileButtonsMeta, payMeta, postUrl);
 		} else {
-			val invitations = addresses.stream()
-					.map(address -> invitationRepository.findFirstValidByIdentityOrCode(address, null))
-					.filter(Objects::nonNull).limit(4).toList();
+			val invitations = getInvitations(addresses);
 
 			if (!invitations.isEmpty()) {
 				String invitedButtonsMeta = "";
@@ -197,6 +220,11 @@ public class FarcasterFramesController {
 									invitations.get(i).getInvitedBy().getUsername()));
 				}
 
+				if (!StringUtils.isEmpty(payMeta)) {
+					val payButtonIndex = invitations.size() + 1;
+					payMeta = String.format(payMeta, payButtonIndex, payButtonIndex);
+				}
+
 				html = String.format("""
 						<!DOCTYPE html>
 						<html>
@@ -204,21 +232,29 @@ public class FarcasterFramesController {
 						<meta property="fc:frame" content="vNext" />
 						<meta property="fc:frame:image" content="https://i.imgur.com/9DanrMv.jpg"/>
 						%s
+						%s
 						<meta property="fc:frame:post_url" content="%s"
 						</head>
 						</html>
-						""", invitedButtonsMeta, postUrl);
+						""", invitedButtonsMeta, payMeta, postUrl);
 			} else {
-				html = """
+				if (!StringUtils.isEmpty(payMeta)) {
+					val payButtonIndex = 2;
+					payMeta = String.format(payMeta, payButtonIndex, payButtonIndex);
+				}
+
+				html = String.format("""
 						<!DOCTYPE html>
 						          <html>
 						              <head>
 						                  <meta property="fc:frame" content="vNext" />
 						                     <meta property="fc:frame:image" content="https://i.imgur.com/J1mYWw1.jpg"/>
-						                     <meta property="fc:frame:button:1" content="🤷🏻 not invited" />
+						                     <meta property="fc:frame:button:1" content="🤷🏻 Not invited" />
+						                     %s
+						                     <meta property="fc:frame:post_url" content="%s"
 						              </head>
 						        </html>
-						""";
+						""", payMeta, postUrl);
 			}
 		}
 
@@ -252,45 +288,67 @@ public class FarcasterFramesController {
 
 		val profiles = getFidProfiles(addresses);
 
-		if (!profiles.isEmpty() && buttonIndex > 0 && buttonIndex <= profiles.size()) {
-			val clickedProfile = profiles.get(buttonIndex - 1);
-			val postUrl = apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS,
-					clickedProfile.getIdentity()));
-
-			String socialInsightsButton = "";
-
-			var nextButtonIndex = 3;
-			if (fid != casterFid) {
-				socialInsightsButton = String.format("""
-											<meta property="fc:frame:button:%s" content="Social Insights"/>
-						""", nextButtonIndex);
-				nextButtonIndex++;
-			}
-
-			return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(String.format("""
-							<!DOCTYPE html>
-							<html>
-							<head>
-							<meta property="fc:frame" content="vNext" />
-							<meta property="fc:frame:button:1" content="Balance"/>
-							<meta property="fc:frame:button:2" content="Invite"/>
-							%s
-							<meta property="fc:frame:button:%s" content="Profile"/>
-							<meta property="fc:frame:button:%s:action" content="post_redirect"/>
-							<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
-							<meta property="fc:frame:post_url" content="%s" />
-							</head>
-							</html>
-							""", socialInsightsButton, nextButtonIndex, nextButtonIndex,
-					postUrl));
+		User casterProfile;
+		if (fid != casterFid) {
+			val casterWallet = socialGraphService.getSocialMetadata(
+					"fc_fid:".concat(String.valueOf(casterFid)), null);
+			casterProfile =
+					getFidProfiles(casterWallet.getAddresses()).stream().findFirst().orElse(null);
 		} else {
-			val invitations = addresses.stream()
-					.map(address -> invitationRepository.findFirstValidByIdentityOrCode(address, null))
-					.filter(Objects::nonNull).limit(4).toList();
+			casterProfile = profiles.stream().findFirst().orElse(null);
+		}
 
-			if (!invitations.isEmpty() && buttonIndex > 0 && buttonIndex <= invitations.size()) {
+		if (!profiles.isEmpty()) {
+			if (buttonIndex > 0 && buttonIndex <= profiles.size()) {
+				val clickedProfile = profiles.get(buttonIndex - 1);
+				val postUrl = apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS,
+						clickedProfile.getIdentity()));
 
-				val clickedInvitee = invitations.get(buttonIndex - 1);
+				String socialInsightsButton = "";
+
+				var nextButtonIndex = 3;
+				if (fid != casterFid) {
+					socialInsightsButton = String.format("""
+												<meta property="fc:frame:button:%s" content="Social Insights"/>
+							""", nextButtonIndex);
+					nextButtonIndex++;
+				}
+
+				return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(String.format("""
+								<!DOCTYPE html>
+								<html>
+								<head>
+								<meta property="fc:frame" content="vNext" />
+								<meta property="fc:frame:button:1" content="Balance"/>
+								<meta property="fc:frame:button:2" content="Invite"/>
+								%s
+								<meta property="fc:frame:button:%s" content="Profile"/>
+								<meta property="fc:frame:button:%s:action" content="post_redirect"/>
+								<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
+								<meta property="fc:frame:post_url" content="%s" />
+								</head>
+								</html>
+								""", socialInsightsButton, nextButtonIndex, nextButtonIndex,
+						postUrl));
+			} else if (casterProfile != null && buttonIndex == profiles.size() + 1) {
+				log.debug("Handling profile payment action: {}", validateMessage);
+
+				try {
+					val location = new URI(dAppServiceUrl.concat(String.format("/%s?pay",
+							casterProfile.getUsername())));
+
+					log.debug("Redirecting to {}", location);
+					return ResponseEntity.status(HttpStatus.FOUND).location(location).build();
+
+				} catch (Throwable t) {
+					log.debug("Error:", t);
+				}
+			}
+		} else {
+			val invitations = getInvitations(addresses);
+
+			if (!invitations.isEmpty() && buttonIndex == 1) {
+				val clickedInvitee = invitations.getFirst();
 				val postUrl = apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS,
 						clickedInvitee.getIdentity()));
 				return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(String.format("""
@@ -305,6 +363,19 @@ public class FarcasterFramesController {
 						</head>
 						</html>
 						""", postUrl));
+			}
+
+			if (casterProfile != null && buttonIndex == 2) {
+				log.debug("Handling profile payment action: {}", validateMessage);
+				try {
+					val location = new URI(dAppServiceUrl.concat(String.format("/%s?pay",
+							casterProfile.getUsername())));
+
+					log.debug("Redirecting to {}", location);
+					return ResponseEntity.status(HttpStatus.FOUND).location(location).build();
+				} catch (Throwable t) {
+					log.debug("Error:", t);
+				}
 			}
 		}
 
@@ -466,7 +537,6 @@ public class FarcasterFramesController {
 		val fid = validateMessage.message().data().fid();
 
 		val buttonIndex = validateMessage.message().data().frameActionBody().buttonIndex();
-		val casterFid = validateMessage.message().data().frameActionBody().castId().fid();
 		val inputTextBase64 = validateMessage.message().data().frameActionBody().inputText();
 
 		val wallet = socialGraphService.getSocialMetadata(
@@ -507,9 +577,7 @@ public class FarcasterFramesController {
 							""", inputText));
 				} else {
 					// check if invited
-					val invitations = inviteAddresses.stream()
-							.map(address -> invitationRepository.findFirstValidByIdentityOrCode(address, null))
-							.filter(Objects::nonNull).limit(4).toList();
+					val invitations = getInvitations(inviteAddresses);
 
 					if (!invitations.isEmpty()) {
 						return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(String.format("""
@@ -570,6 +638,12 @@ public class FarcasterFramesController {
 
 	private List<User> getFidProfiles(List<String> addresses) {
 		return addresses.stream().map(address -> userRepository.findByIdentityAndAllowedTrue(address))
-				.filter(Objects::nonNull).limit(4).toList();
+				.filter(Objects::nonNull).limit(3).toList();
+	}
+
+	private List<Invitation> getInvitations(List<String> addresses) {
+		return addresses.stream()
+				.map(address -> invitationRepository.findFirstValidByIdentityOrCode(address, null))
+				.filter(Objects::nonNull).limit(3).toList();
 	}
 }
