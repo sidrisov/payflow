@@ -273,7 +273,7 @@ export default function PublicProfile({
         )}
       </Container>
       <SearchIdentityDialog
-        address={address}
+        address={address ?? loggedProfile?.identity}
         profileRedirect={true}
         walletMenuEnabled={true}
         selectIdentityCallback={(selectedIdentity) => {

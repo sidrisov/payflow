@@ -8,187 +8,12 @@ import {
   Wallet,
   GetSocialsQuery
 } from '../generated/graphql/types';
-
-export const QUERY_SOCIALS = /* GraphQL */ `
-  query GetSocials($identity: Identity!, $me: Identity!) {
-    Wallet(input: { identity: $identity, blockchain: ethereum }) {
-      addresses
-      primaryDomain {
-        name
-        tokenNft {
-          contentValue {
-            image {
-              small
-            }
-          }
-        }
-      }
-      domains(input: { limit: 1 }) {
-        name
-      }
-      socials(input: { limit: 5 }) {
-        dappName
-        profileName
-        profileDisplayName
-        profileImage
-        profileImageContentValue {
-          image {
-            small
-          }
-        }
-        followerCount
-      }
-      xmtp {
-        isXMTPEnabled
-      }
-      socialFollowers(
-        input: { filter: { identity: { _in: [$me] }, dappName: { _in: [farcaster, lens] } } }
-      ) {
-        Follower {
-          dappName
-        }
-      }
-      socialFollowings(
-        input: { filter: { identity: { _in: [$me] }, dappName: { _in: [farcaster, lens] } } }
-      ) {
-        Following {
-          dappName
-        }
-      }
-      ethTransfers: tokenTransfers(
-        input: { limit: 6, filter: { from: { _in: [$me] } }, blockchain: ethereum }
-      ) {
-        type
-      }
-      baseTransfers: tokenTransfers(
-        input: { limit: 6, filter: { from: { _in: [$me] } }, blockchain: base }
-      ) {
-        type
-      }
-    }
-  }
-`;
-
-export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = /* GraphQL */ `
-  query GetSocialsForAssociatedAddresses(
-    $dappName: SocialDappName!
-    $profileName: String!
-    $me: Identity!
-  ) {
-    Socials(
-      input: {
-        limit: 10
-        filter: { dappName: { _eq: $dappName }, profileName: { _regex: $profileName } }
-        blockchain: ethereum
-        order: { followerCount: DESC }
-      }
-    ) {
-      Social {
-        userAssociatedAddressDetails {
-          addresses
-          primaryDomain {
-            name
-            tokenNft {
-              contentValue {
-                image {
-                  small
-                }
-              }
-            }
-          }
-          domains(input: { limit: 1 }) {
-            name
-          }
-          socials(input: { limit: 5 }) {
-            userAssociatedAddresses
-            dappName
-            profileName
-            profileDisplayName
-            profileImage
-            profileImageContentValue {
-              image {
-                small
-              }
-            }
-            followerCount
-          }
-          xmtp {
-            isXMTPEnabled
-          }
-          socialFollowers(
-            input: { filter: { identity: { _in: [$me] }, dappName: { _in: [farcaster, lens] } } }
-          ) {
-            Follower {
-              dappName
-            }
-          }
-          socialFollowings(
-            input: { filter: { identity: { _in: [$me] }, dappName: { _in: [farcaster, lens] } } }
-          ) {
-            Following {
-              dappName
-            }
-          }
-          ethTransfers: tokenTransfers(
-            input: { limit: 6, filter: { from: { _in: [$me] } }, blockchain: ethereum }
-          ) {
-            type
-          }
-          baseTransfers: tokenTransfers(
-            input: { limit: 6, filter: { from: { _in: [$me] } }, blockchain: base }
-          ) {
-            type
-          }
-        }
-      }
-    }
-  }
-`;
-
-export const QUERY_SOCIALS_LIGHT = /* GraphQL */ `
-  query GetSocialsLight($identity: Identity!, $me: Identity!) {
-    Wallet(input: { identity: $identity, blockchain: ethereum }) {
-      primaryDomain {
-        name
-      }
-      domains(input: { limit: 1 }) {
-        name
-      }
-      socials(input: { limit: 5 }) {
-        dappName
-        profileName
-        followerCount
-      }
-      xmtp {
-        isXMTPEnabled
-      }
-      socialFollowers(
-        input: { filter: { identity: { _in: [$me] }, dappName: { _in: [farcaster, lens] } } }
-      ) {
-        Follower {
-          dappName
-        }
-      }
-      socialFollowings(
-        input: { filter: { identity: { _in: [$me] }, dappName: { _in: [farcaster, lens] } } }
-      ) {
-        Following {
-          dappName
-        }
-      }
-      ethTransfers: tokenTransfers(
-        input: { limit: 6, filter: { from: { _in: [$me] } }, blockchain: ethereum }
-      ) {
-        type
-      }
-      baseTransfers: tokenTransfers(
-        input: { limit: 6, filter: { from: { _in: [$me] } }, blockchain: base }
-      ) {
-        type
-      }
-    }
-  }
-`;
+import {
+  QUERY_SOCIALS_INSIGHTS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME,
+  QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME,
+  QUERY_SOCIALS_INSIGHTS,
+  QUERY_SOCIALS
+} from '../utils/airstackQueries';
 
 const FOLLOWING = 7;
 const FOLLOWER = 3;
@@ -250,7 +75,7 @@ function calculateScore(identity: IdentityType): number {
   return score;
 }
 
-export async function searchProfile(searchValue: string, me: string = ''): Promise<IdentityType[]> {
+export async function searchIdentity(searchValue: string, me?: string): Promise<IdentityType[]> {
   let foundProfiles: IdentityType[] = [];
 
   if (!searchValue.includes(':') && !searchValue.includes('.') && !isAddress(searchValue)) {
@@ -258,7 +83,7 @@ export async function searchProfile(searchValue: string, me: string = ''): Promi
     if (profiles) {
       foundProfiles = foundProfiles.concat(
         ...(await Promise.all(
-          profiles.filter((p) => p.defaultFlow).map((p) => searchProfile(p.identity, me))
+          profiles.filter((p) => p.defaultFlow).map((p) => searchIdentity(p.identity, me))
         ))
       );
     }
@@ -269,17 +94,28 @@ export async function searchProfile(searchValue: string, me: string = ''): Promi
       : 'lens/@'.concat(searchValue.substring(searchValue.indexOf(':') + 1));
 
     if (profileName.length > 0) {
-      const { data: dataInBatch } = await fetchQuery<GetSocialsForAssociatedAddressesQuery>(
-        QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME,
-        {
-          dappName,
-          profileName: '^'.concat(profileName.toLowerCase()),
-          me
-        },
-        {
-          cache: true
-        }
-      );
+      const { data: dataInBatch } = me
+        ? await fetchQuery<GetSocialsForAssociatedAddressesQuery>(
+            QUERY_SOCIALS_INSIGHTS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME,
+            {
+              dappName,
+              profileName: '^'.concat(profileName.toLowerCase()),
+              me
+            },
+            {
+              cache: true
+            }
+          )
+        : await fetchQuery<GetSocialsForAssociatedAddressesQuery>(
+            QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME,
+            {
+              dappName,
+              profileName: '^'.concat(profileName.toLowerCase())
+            },
+            {
+              cache: true
+            }
+          );
 
       if (
         dataInBatch &&
@@ -321,13 +157,21 @@ export async function searchProfile(searchValue: string, me: string = ''): Promi
     searchValue.endsWith('.xyz') ||
     searchValue.endsWith('.id')
   ) {
-    const { data } = await fetchQuery<GetSocialsQuery>(
-      QUERY_SOCIALS,
-      { identity: searchValue, me },
-      {
-        cache: true
-      }
-    );
+    const { data } = me
+      ? await fetchQuery<GetSocialsQuery>(
+          QUERY_SOCIALS_INSIGHTS,
+          { identity: searchValue, me },
+          {
+            cache: true
+          }
+        )
+      : await fetchQuery<GetSocialsQuery>(
+          QUERY_SOCIALS,
+          { identity: searchValue },
+          {
+            cache: true
+          }
+        );
 
     if (data && data.Wallet) {
       const identity = convertSocialResults(data.Wallet as unknown as Wallet);

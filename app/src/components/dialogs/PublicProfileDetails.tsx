@@ -6,11 +6,12 @@ import { Send } from '@mui/icons-material';
 import { useQuery } from '@airstack/airstack-react';
 import { ProfileSection } from '../ProfileSection';
 import SocialPresenceChipWithLink from '../chips/SocialPresenceChipWithLink';
-import { QUERY_SOCIALS_LIGHT, convertSocialResults } from '../../services/socials';
+import { convertSocialResults } from '../../services/socials';
 import { green } from '@mui/material/colors';
 import { Address } from 'viem';
 import PaymentDialog from './PaymentDialog';
 import { ProfileContext } from '../../contexts/UserContext';
+import { QUERY_SOCIALS_INSIGHTS_LIGHT, QUERY_SOCIALS_LIGHT } from '../../utils/airstackQueries';
 
 export function PublicProfileDetails({ profile }: { profile: ProfileType }) {
   const [openPayDialog, setOpenPayDialog] = useState(false);
@@ -20,8 +21,8 @@ export function PublicProfileDetails({ profile }: { profile: ProfileType }) {
   const { address } = useAccount();
 
   const { data: socialInfo, loading: loadingSocials } = useQuery(
-    QUERY_SOCIALS_LIGHT,
-    { identity: profile.identity, me: address ?? '' },
+    address ?? loggedProfile?.identity ? QUERY_SOCIALS_INSIGHTS_LIGHT : QUERY_SOCIALS_LIGHT,
+    { identity: profile.identity, me: address ?? loggedProfile?.identity },
     {
       cache: true,
       dataFormatter(data) {

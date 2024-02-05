@@ -20,7 +20,7 @@ import { useContext, useMemo, useState } from 'react';
 import { IdentityType, SelectedIdentityType } from '../../types/ProfleType';
 
 import { Address } from 'viem';
-import { searchProfile as searchIdentity, sortBySocialScore } from '../../services/socials';
+import { searchIdentity, sortBySocialScore } from '../../services/socials';
 
 import { useDebounce } from 'use-debounce';
 import { WalletMenu } from '../menu/WalletMenu';
