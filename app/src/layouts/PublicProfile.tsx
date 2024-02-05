@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ProfileType, SelectedIdentityType } from '../types/ProfleType';
 import { HomeOutlined, Menu } from '@mui/icons-material';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
@@ -49,6 +49,7 @@ export default function PublicProfile({
   const navigate = useNavigate();
 
   const { username } = useParams();
+
   const [profile, setProfile] = useState<ProfileType>();
   const [loggedProfile, setLoggedProfile] = useState<ProfileType>();
   const [loadingProfile, setLoadingProfile] = useState<boolean>();

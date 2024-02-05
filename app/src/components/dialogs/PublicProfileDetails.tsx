@@ -13,8 +13,14 @@ import PaymentDialog from './PaymentDialog';
 import { ProfileContext } from '../../contexts/UserContext';
 import { QUERY_SOCIALS_INSIGHTS_LIGHT, QUERY_SOCIALS_LIGHT } from '../../utils/airstackQueries';
 
-export function PublicProfileDetails({ profile }: { profile: ProfileType }) {
-  const [openPayDialog, setOpenPayDialog] = useState(false);
+export function PublicProfileDetails({
+  openPayDialogParam = false,
+  profile
+}: {
+  openPayDialogParam?: boolean;
+  profile: ProfileType;
+}) {
+  const [openPayDialog, setOpenPayDialog] = useState(openPayDialogParam);
 
   const { profile: loggedProfile } = useContext(ProfileContext);
 
