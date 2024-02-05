@@ -123,6 +123,9 @@ export function ProfileMenu({
             await disconnect(wagmiConfig);
             if (loginRedirectOnLogout) {
               navigate('/connect');
+            } else {
+              // just refresh
+              navigate(0);
             }
           } catch (error) {
             toast.error('Failed to logout!');

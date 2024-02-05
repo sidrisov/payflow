@@ -27,7 +27,11 @@ export function PublicProfileDetails({
   const { address } = useAccount();
 
   const { data: socialInfo, loading: loadingSocials } = useQuery(
-    address ?? loggedProfile?.identity ? QUERY_SOCIALS_INSIGHTS_LIGHT : QUERY_SOCIALS_LIGHT,
+    (address ?? loggedProfile?.identity) &&
+      profile.identity !== loggedProfile?.identity &&
+      profile.identity !== address
+      ? QUERY_SOCIALS_INSIGHTS_LIGHT
+      : QUERY_SOCIALS_LIGHT,
     { identity: profile.identity, me: address ?? loggedProfile?.identity },
     {
       cache: true,
