@@ -14,7 +14,7 @@ import { useAccount, useBalance } from 'wagmi';
 import { AddComment, AttachMoney, ExpandMore, PriorityHigh } from '@mui/icons-material';
 import { Id, toast } from 'react-toastify';
 
-import { Address, formatEther, parseEther } from 'viem';
+import { Address, erc20Abi, formatUnits, parseUnits } from 'viem';
 
 import { FlowWalletType } from '../../types/FlowType';
 import { IdentityType } from '../../types/ProfleType';
@@ -32,14 +32,27 @@ import { SUPPORTED_CHAINS } from '../../utils/networks';
 import { ProfileContext } from '../../contexts/UserContext';
 import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';
 import { PaymentDialogProps } from './PaymentDialog';
+import { TokenSelectorButton } from '../buttons/TokenSelectorButton';
+import {
+  DEGEN_TOKEN,
+  ETH,
+  ETH_TOKEN,
+  Token,
+  USDC_TOKEN,
+  getSupportedTokens
+} from '../../utils/erc20contracts';
+import { normalizeNumberPrecision } from '../../utils/normalizeNumberPrecision';
 
 export default function PayProfileDialog({ sender, recipient }: PaymentDialogProps) {
-  const { ethUsdPrice } = useContext(ProfileContext);
+  const { ethUsdPrice, degenUsdPrice } = useContext(ProfileContext);
 
   const { chain } = useAccount();
 
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
+  const [selectedToken, setSelectedToken] = useState<Token>();
+  const [selectedTokenPrice, setSelectedTokenPrice] = useState<number>();
   const [compatibleWallets, setCompatibleWallets] = useState<FlowWalletType[]>([]);
+  const [compatibleTokens, setCompatibleTokens] = useState<Token[]>([]);
 
   const [toAddress, setToAddress] = useState<Address>();
   const [sendAmountUSD, setSendAmountUSD] = useState<number>();
@@ -48,15 +61,65 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
   const [minAmountSatisfied, setMinAmountSatisfied] = useState<boolean>();
   const { isSuccess, data: balance } = useBalance({
     address: selectedWallet?.address,
-    chainId: chain?.id
+    chainId: chain?.id,
+    token: selectedToken !== ETH ? selectedToken?.address : undefined,
+    query: {
+      enabled: selectedWallet !== undefined && selectedToken != undefined,
+      gcTime: 5000
+    }
   });
+
+  const [maxBalance, setMaxBalance] = useState<string>();
+  const [maxBalanceUsd, setMaxBalanceUsd] = useState<string>();
+
+  useMemo(async () => {
+    const maxBalance = isSuccess
+      ? balance && parseFloat(formatUnits(balance.value, balance.decimals))
+      : 0;
+
+    const maxBalanceUsd = isSuccess
+      ? balance &&
+        parseFloat(formatUnits(balance.value, balance.decimals)) * (selectedTokenPrice ?? 0)
+      : 0;
+
+    setMaxBalance(normalizeNumberPrecision(maxBalance));
+    setMaxBalanceUsd(normalizeNumberPrecision(maxBalanceUsd));
+  }, [isSuccess, balance, selectedTokenPrice]);
 
   const sendToastId = useRef<Id>();
 
-  const { loading, confirmed, error, status, txHash, sendTransaction, reset } = useRegularTransfer({
-    to: toAddress,
-    amount: sendAmount
-  });
+  const { loading, confirmed, error, status, txHash, sendTransaction, writeContract, reset } =
+    useRegularTransfer();
+
+  function getTokenPrice(token: string | undefined) {
+    let price = 0;
+    switch (token) {
+      case ETH_TOKEN:
+        if (ethUsdPrice) {
+          price = ethUsdPrice;
+        }
+        break;
+      case DEGEN_TOKEN:
+        if (degenUsdPrice) {
+          price = degenUsdPrice;
+        }
+        break;
+      case USDC_TOKEN:
+        price = 1;
+        break;
+    }
+    return price;
+  }
+
+  useMemo(async () => {
+    if (selectedToken) {
+      const price = getTokenPrice(selectedToken.name);
+      console.log(price);
+      setSelectedTokenPrice(price);
+    } else {
+      setSelectedTokenPrice(undefined);
+    }
+  }, [selectedToken]);
 
   useEffect(() => {
     if (!recipient || !(sender as Address)) {
@@ -91,6 +154,10 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
     console.debug('selected sender wallet: ', wallet);
   }, [compatibleWallets, chain]);
 
+  useEffect(() => {
+    setSelectedToken(compatibleTokens[0]);
+  }, [compatibleTokens, chain]);
+
   useMemo(() => {
     if (!recipient || !selectedWallet) {
       setToAddress(undefined);
@@ -106,6 +173,9 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
         )?.address
       );
     }
+
+    const tokens = getSupportedTokens(selectedWallet.network);
+    setCompatibleTokens(tokens);
   }, [selectedWallet]);
 
   useMemo(async () => {
@@ -119,8 +189,7 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
         <TransferToastContent
           from={{ type: 'address', identity: { address: sender as Address } as IdentityType }}
           to={recipient}
-          ethAmount={sendAmount}
-          ethUsdPrice={ethUsdPrice}
+          usdAmount={sendAmountUSD ?? 0}
         />
       );
     }
@@ -135,8 +204,7 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
           <TransferToastContent
             from={{ type: 'address', identity: { address: sender as Address } as IdentityType }}
             to={recipient}
-            ethAmount={sendAmount}
-            ethUsdPrice={ethUsdPrice}
+            usdAmount={sendAmountUSD ?? 0}
           />
         ),
         type: 'success',
@@ -151,8 +219,7 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
           <TransferToastContent
             from={{ type: 'address', identity: { address: sender as Address } as IdentityType }}
             to={recipient}
-            ethAmount={sendAmount}
-            ethUsdPrice={ethUsdPrice}
+            usdAmount={sendAmountUSD ?? 0}
             status="error"
           />
         ),
@@ -172,8 +239,9 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
   }, [status]);
 
   useMemo(async () => {
-    if (sendAmountUSD !== undefined && ethUsdPrice) {
-      const amount = parseEther((sendAmountUSD / ethUsdPrice).toString());
+    if (sendAmountUSD !== undefined && selectedToken && balance) {
+      const tokenPrice = getTokenPrice(selectedToken?.name);
+      const amount = parseUnits((sendAmountUSD / tokenPrice).toString(), balance.decimals);
 
       const balanceEnough = balance && amount <= balance?.value;
       const minAmount = sendAmountUSD >= 1;
@@ -190,7 +258,7 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
       setBalanceEnough(undefined);
       setMinAmountSatisfied(undefined);
     }
-  }, [sendAmountUSD, chain?.id]);
+  }, [sendAmountUSD, chain?.id, balance]);
 
   return (
     <Box
@@ -237,7 +305,7 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
                 <ExpandMore />
               </Stack>
             </Box>
-            {recipient && selectedWallet && (
+            {recipient && selectedWallet && selectedToken && (
               <Box width="100%" display="flex" flexDirection="column">
                 <TextField
                   fullWidth
@@ -265,13 +333,22 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
                           flexDirection="row"
                           justifyContent="space-between"
                           alignItems="center"
-                          minWidth={150}>
+                          minWidth={200}>
                           <Typography>$</Typography>
                           <Typography>≈</Typography>
                           <Typography>
-                            {`${sendAmount ? parseFloat(formatEther(sendAmount)).toPrecision(3) : 0}
-                        ETH`}
+                            {`${normalizeNumberPrecision(
+                              sendAmount && balance
+                                ? parseFloat(formatUnits(sendAmount, balance.decimals))
+                                : 0
+                            )}
+                        ${selectedToken.name}`}
                           </Typography>
+                          <TokenSelectorButton
+                            selectedToken={selectedToken}
+                            setSelectedToken={setSelectedToken}
+                            tokens={compatibleTokens}
+                          />
                         </Box>
                       </InputAdornment>
                     ),
@@ -308,14 +385,7 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
                   <Stack ml={0.5} direction="row" spacing={0.5} alignItems="center">
                     <AttachMoney fontSize="small" />
                     <Typography variant="caption">
-                      {`max: ${
-                        isSuccess ? balance && parseFloat(formatEther(balance.value)).toFixed(5) : 0
-                      } ETH ≈ $${
-                        isSuccess
-                          ? balance &&
-                            (parseFloat(formatEther(balance.value)) * (ethUsdPrice ?? 0)).toFixed(2)
-                          : 0.0
-                      }`}
+                      {`max: ${maxBalance} ${selectedToken?.name} ≈ $${maxBalanceUsd}`}
                     </Typography>
                   </Stack>
                   <Tooltip title="Add a note">
@@ -343,10 +413,20 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
                 loading={loading || (txHash && !confirmed && !error)}
                 disabled={!(toAddress && sendAmount)}
                 onClick={() => {
-                  if (!toAddress || !sendAmount) {
+                  if (!toAddress || !sendAmount || !selectedToken || !selectedToken) {
                     return;
                   }
-                  sendTransaction?.({ to: toAddress, value: sendAmount });
+
+                  if (selectedToken.name === ETH_TOKEN) {
+                    sendTransaction?.({ to: toAddress, value: sendAmount });
+                  } else {
+                    writeContract?.({
+                      abi: erc20Abi,
+                      address: selectedToken.address,
+                      functionName: 'transfer',
+                      args: [toAddress, sendAmount]
+                    });
+                  }
                 }}
               />
             ) : (

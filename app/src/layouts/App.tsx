@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 import {
@@ -30,6 +30,7 @@ import HomeLogo from '../components/Logo';
 import { comingSoonToast } from '../components/Toasts';
 import ProfileAvatar from '../components/avatars/ProfileAvatar';
 import DefaultFlowOnboardingDialog from '../components/dialogs/DefaultFlowOnboardingDialog';
+import axios from 'axios';
 
 export default function AppLayout({
   profile,
@@ -74,6 +75,16 @@ export default function AppLayout({
     }
   });
 
+  const [degenUsdPrice, setDegenUsdPrice] = useState<number>(0);
+
+  useMemo(async () => {
+    const response = await axios.get(
+      'https://api.dexscreener.com/latest/dex/pairs/base/0xc9034c3E7F58003E6ae0C8438e7c8f4598d5ACAA'
+    );
+
+    setDegenUsdPrice(response.data.pair.priceUsd);
+  }, []);
+
   useEffect(() => {
     if (profile && profile.username) {
       setAuthorized(true);
@@ -89,7 +100,8 @@ export default function AppLayout({
         profile,
         appSettings,
         setAppSettings,
-        ethUsdPrice
+        ethUsdPrice,
+        degenUsdPrice
       }}>
       {authorized && (
         <Box height="100vh" display="flex" flexDirection="column" justifyContent="flex-start">
