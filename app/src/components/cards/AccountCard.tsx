@@ -15,7 +15,6 @@ import { Receipt, ArrowDownward, Send, AccountBalance, Toll } from '@mui/icons-m
 import { useContext, useMemo, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
-import { formatEther } from 'viem';
 import { WalletsInfoPopover } from '../menu/WalletsInfoPopover';
 import { FlowType } from '../../types/FlowType';
 import { ChooseFlowMenu } from '../menu/ChooseFlowMenu';
@@ -40,7 +39,6 @@ export function AccountCard(props: AccountNewDialogProps) {
   const { ethUsdPrice, profile } = useContext(ProfileContext);
   const { flows, selectedFlow, setSelectedFlow } = props;
 
-  const [openWithdrawalDialog, setOpenWithdrawalDialog] = useState(false);
   const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(false);
   const [openWalletDetailsPopover, setOpenWalletDetailsPopover] = useState(false);
   const [openSelectFlow, setOpenSelectFlow] = useState(false);
@@ -59,19 +57,17 @@ export function AccountCard(props: AccountNewDialogProps) {
   const { chain } = useAccount();
 
   useMemo(async () => {
-    if (fetched && balances.length > 0 && ethUsdPrice) {
-      const totalBalance = formatEther(
-        balances
-          // don't count ERC20 for now
-          .filter((balance) => !balance.asset.token && balance.balance)
-          .reduce((previousValue, currentValue) => {
-            return previousValue + (currentValue.balance?.value ?? BigInt(0));
-          }, BigInt(0))
-      );
+    if (fetched && balances.length > 0) {
+      const totalBalance = balances
+        .filter((balance) => balance.balance)
+        .reduce((previousValue, currentValue) => {
+          return previousValue + currentValue.usdValue;
+        }, 0)
+        .toFixed(1);
 
-      setTotalBalance((parseFloat(totalBalance) * ethUsdPrice).toFixed(1));
+      setTotalBalance(totalBalance);
     }
-  }, [fetched, balances.length, ethUsdPrice]);
+  }, [fetched, balances.length]);
 
   return (
     <Card

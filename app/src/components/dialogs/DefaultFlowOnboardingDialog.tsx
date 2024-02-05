@@ -52,7 +52,7 @@ export default function DefaultFlowOnboardingDialog({
   const { loading: loadingWallets, error, wallets, create, reset } = usePreCreateSafeWallets();
   const [loadingUpdateProfile, setLoadingUpdateProfile] = useState<boolean>(false);
 
-  const [signerAsIdentity, setSignerAsIdentity] = useState<boolean>(false);
+  const [signerAsIdentity, setSignerAsIdentity] = useState<boolean>(true);
 
   const { address } = useAccount();
 

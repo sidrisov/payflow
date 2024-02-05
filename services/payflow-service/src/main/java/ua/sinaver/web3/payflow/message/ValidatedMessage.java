@@ -32,7 +32,7 @@ public record ValidatedMessage(
 
 	public record MessageData(
 			MessageType type,
-			int fid,
+			long fid,
 			long timestamp,
 			Network network,
 			FrameActionBody frameActionBody

@@ -1,7 +1,7 @@
 import { Stack, Typography } from '@mui/material';
 import { useContext } from 'react';
 
-import { Chain, formatEther } from 'viem';
+import { Chain, formatUnits } from 'viem';
 import { NetworkAssetBalanceSection } from './NetworkAssetBalanceSection';
 import { BalanceFetchResultType } from '../types/BalanceFetchResultType';
 import { ProfileContext } from '../contexts/UserContext';
@@ -29,20 +29,19 @@ export default function Assets(props: {
                 : true) /* && assetBalance.balance?.value !== BigInt(0) */
             );
           })
-          // TODO: sort on fetch
-          // TODO: works for now, since we have only eth
-          .sort((left, right) =>
-            Number((right.balance?.value ?? BigInt(0)) - (left.balance?.value ?? BigInt(0)))
-          )
           .map((assetBalance) => {
             console.debug(assetBalance);
+
             return (
               <NetworkAssetBalanceSection
                 key={`network_asset_balance_${assetBalance.asset.chainId}_${assetBalance.asset.address}_${assetBalance.asset.token}`}
                 chainId={assetBalance.asset.chainId}
                 asset={assetBalance.balance?.symbol ?? ''}
-                balance={formatEther(assetBalance.balance?.value ?? BigInt(0))}
-                price={ethUsdPrice}
+                balance={formatUnits(
+                  assetBalance.balance?.value ?? BigInt(0),
+                  assetBalance.balance?.decimals ?? 0
+                )}
+                usdValue={assetBalance.usdValue}
               />
             );
           })
