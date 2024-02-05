@@ -219,7 +219,7 @@ export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = /
 `;
 
 export const QUERY_SOCIALS_INSIGHTS_LIGHT = /* GraphQL */ `
-  query GetSocialsLight($identity: Identity!, $me: Identity!) {
+  query GetSocialsInsightsLight($identity: Identity!, $me: Identity!) {
     Wallet(input: { identity: $identity, blockchain: ethereum }) {
       primaryDomain {
         name

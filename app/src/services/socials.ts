@@ -6,7 +6,9 @@ import { getProfileByAddressOrName, searchByListOfAddressesOrUsernames } from '.
 import {
   GetSocialsForAssociatedAddressesQuery,
   Wallet,
-  GetSocialsQuery
+  GetSocialsQuery,
+  GetSocialsInsightsForAssociatedAddressesQuery,
+  GetSocialsInsightsQuery
 } from '../generated/graphql/types';
 import {
   QUERY_SOCIALS_INSIGHTS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME,
@@ -95,7 +97,7 @@ export async function searchIdentity(searchValue: string, me?: string): Promise<
 
     if (profileName.length > 0) {
       const { data: dataInBatch } = me
-        ? await fetchQuery<GetSocialsForAssociatedAddressesQuery>(
+        ? await fetchQuery<GetSocialsInsightsForAssociatedAddressesQuery>(
             QUERY_SOCIALS_INSIGHTS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME,
             {
               dappName,
@@ -158,7 +160,7 @@ export async function searchIdentity(searchValue: string, me?: string): Promise<
     searchValue.endsWith('.id')
   ) {
     const { data } = me
-      ? await fetchQuery<GetSocialsQuery>(
+      ? await fetchQuery<GetSocialsInsightsQuery>(
           QUERY_SOCIALS_INSIGHTS,
           { identity: searchValue, me },
           {
