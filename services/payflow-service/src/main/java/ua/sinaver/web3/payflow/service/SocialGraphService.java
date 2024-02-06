@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.graphql.client.ClientGraphQlResponse;
 import org.springframework.graphql.client.GraphQlClient;
@@ -87,6 +88,12 @@ public class SocialGraphService implements ISocialGraphService {
 						s.getUserAssociatedAddresses())).orElse(null);
 		log.debug("Found connected addresses for {} - {}", connectedAddresses, identity);
 		return connectedAddresses;
+	}
+
+	@Override
+	@CacheEvict(cacheNames = "socials")
+	public void cleanCache(String identity, String me) {
+		log.debug("Evicting socials cache for {}_{} key", identity, me);
 	}
 
 	@Override

@@ -10,5 +10,7 @@ public interface ISocialGraphService {
 
 	ConnectedAddresses getIdentityConnectedAddresses(String identity);
 
+	void cleanCache(String identity, String me);
+
 	Wallet getSocialMetadata(String identity, String me);
 }

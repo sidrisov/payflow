@@ -52,7 +52,7 @@ public class UserService implements IUserService {
 	}
 
 	@Override
-	@CacheEvict(value = "users")
+	@CacheEvict(value = "users", key = "#identity")
 	public void updateProfile(String identity, ProfileMessage profile, String invitationCode) {
 		User user = userRepository.findByIdentity(identity);
 
