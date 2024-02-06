@@ -66,11 +66,11 @@ public class AuthController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 		}
 
-		// check chainId (added 10 - Optimism For Farcaster)
-		if (siwe.message().chainId() != 1 && siwe.message().chainId() != 10) {
+		// remove the check since SIWE verification implies using and EOA
+		/*if (siwe.message().chainId() != 1 && siwe.message().chainId() != 10) {
 			log.error("Wrong chainId  - expected: {} or {}, actual {}", 1, 10, siwe.message().chainId());
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-		}
+		}*/
 
 		val authentication = authManager.authenticate(
 				new Web3Authentication(identity, siwe.message(), siwe.signature()));

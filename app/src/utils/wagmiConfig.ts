@@ -31,14 +31,3 @@ export const wagmiConfig = getDefaultConfig({
     )
   }
 });
-
-export const loginWagmiConfig = getDefaultConfig({
-  appName: 'Payflow',
-  projectId: WALLET_CONNECT_PROJECT_ID,
-  chains: [mainnet],
-  transports: {
-    [mainnet.id]: http(
-      `https://eth-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`
-    )
-  }
-});
