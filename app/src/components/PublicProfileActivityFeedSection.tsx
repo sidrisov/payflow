@@ -3,12 +3,13 @@ import {
   Box,
   BoxProps,
   Chip,
+  Link,
   Stack,
   Typography,
   useMediaQuery,
   useTheme
 } from '@mui/material';
-import { formatEther } from 'viem';
+import { formatUnits } from 'viem';
 import { useContext, useState } from 'react';
 import { ProfileContext } from '../contexts/UserContext';
 import { TxInfo } from '../types/ActivityFetchResultType';
@@ -25,6 +26,8 @@ import { ProfileDisplayNameWithLink } from './ProfileDisplayNameWithLink';
 import { PublicProfileDetailsPopover } from './menu/PublicProfileDetailsPopover';
 import { ProfileType } from '../types/ProfleType';
 import { ETH_TOKEN } from '../utils/erc20contracts';
+import { normalizeNumberPrecision } from '../utils/normalizeNumberPrecision';
+import TokenAvatar from './avatars/TokenAvatar';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
 
@@ -167,28 +170,46 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
             flexDirection="row"
             alignItems="center"
             justifyContent="space-between">
-            <Stack direction="row" spacing={0.5} alignItems="center">
-              <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
-                on {getNetworkDisplayName(txInfo.chainId)}
-              </Typography>
-              <NetworkAvatar
-                chainId={txInfo.chainId}
-                sx={{
-                  width: 15,
-                  height: 15
-                }}
-              />
-            </Stack>
+            <Link
+              href={`${defultBlockExplorerUrl}/tx/${txInfo.hash}`}
+              target="_blank"
+              underline="hover"
+              color="inherit"
+              overflow="clip"
+              textOverflow="ellipsis">
+              <Stack direction="row" spacing={0.5} alignItems="center">
+                <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
+                  {normalizeNumberPrecision(parseFloat(formatUnits(BigInt(txInfo.value ?? 0), 18)))}
+                </Typography>
+                <TokenAvatar
+                  tokenName={ETH_TOKEN}
+                  sx={{
+                    width: 15,
+                    height: 15
+                  }}
+                />
+                <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
+                  on <b>{getNetworkDisplayName(txInfo.chainId)}</b>
+                </Typography>
+                <NetworkAvatar
+                  chainId={txInfo.chainId}
+                  sx={{
+                    width: 15,
+                    height: 15
+                  }}
+                />
+              </Stack>
+            </Link>
 
             <Chip
               size="medium"
               label={
                 (txInfo.activity !== 'self' ? (txInfo.activity === 'inbound' ? '+' : '-') : '') +
                 ('$' +
-                  (
-                    parseFloat(formatEther(BigInt(txInfo.value ?? 0))) *
-                    (tokenPrices ? tokenPrices[ETH_TOKEN] : 0)
-                  ).toFixed(1))
+                  normalizeNumberPrecision(
+                    parseFloat(formatUnits(BigInt(txInfo.value ?? 0), 18)) *
+                      (tokenPrices ? tokenPrices[ETH_TOKEN] : 0)
+                  ))
               }
               sx={{
                 minWidth: 60,
