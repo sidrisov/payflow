@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import ua.sinaver.web3.payflow.message.ValidatedMessage;
@@ -27,11 +28,13 @@ public class FarcasterHubService implements IFarcasterHubService {
 	}
 
 	@Override
+	@Retryable
 	public ValidatedMessage validateFrameMessage(String frameMessageInHex) {
+		log.debug("Calling Hubs ValidateMessage API for message {}",
+				frameMessageInHex);
 		return client.post()
 				.bodyValue(HexFormat.of().parseHex(frameMessageInHex))
-				.exchangeToMono(clientResponse -> clientResponse.bodyToMono(ValidatedMessage.class))
-				.block();
+				.retrieve().bodyToMono(ValidatedMessage.class).block();
 	}
 }
 
