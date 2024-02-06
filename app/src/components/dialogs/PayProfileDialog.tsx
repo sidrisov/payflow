@@ -34,12 +34,9 @@ import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';
 import { PaymentDialogProps } from './PaymentDialog';
 import { TokenSelectorButton } from '../buttons/TokenSelectorButton';
 import {
-  DEGEN_TOKEN,
   ETH,
   ETH_TOKEN,
   Token,
-  TokenPrices,
-  USDC_TOKEN,
   getSupportedTokens
 } from '../../utils/erc20contracts';
 import { normalizeNumberPrecision } from '../../utils/normalizeNumberPrecision';

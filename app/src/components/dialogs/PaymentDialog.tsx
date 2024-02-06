@@ -19,6 +19,7 @@ import { ArrowBack } from '@mui/icons-material';
 import { shortenWalletAddressLabel } from '../../utils/address';
 import AccountSendDialog from './AccountSendDialog';
 import PayProfileDialog from './PayProfileDialog';
+import { useAccount } from 'wagmi';
 
 export type PaymentDialogProps = DialogProps &
   CloseCallbackType & {
@@ -35,6 +36,8 @@ export default function PaymentDialog({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+  const { address } = useAccount();
+
   return (
     recipient && (
       <Dialog
@@ -44,7 +47,7 @@ export default function PaymentDialog({
         PaperProps={{
           sx: {
             borderRadius: 5,
-            ...(!isMobile && { width: 375, height: 375 })
+            ...(!isMobile && { width: 375, ...(address && { height: 375 }) })
           }
         }}
         sx={{
