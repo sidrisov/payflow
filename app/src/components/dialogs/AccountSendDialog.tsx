@@ -268,14 +268,7 @@ export default function AccountSendDialog({
   }, [selectedWallet, recipient]);
 
   return (
-    <Box
-      height="100%"
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      justifyContent={
-        address && address === (sender as FlowType).owner ? 'space-between' : 'flex-end'
-      }>
+    <>
       {address && address === (sender as FlowType).owner ? (
         <>
           <Stack width="100%" spacing={2} alignItems="center">
@@ -460,7 +453,7 @@ export default function AccountSendDialog({
               <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
             ))}
         </>
-      ) : address && address !== (sender as FlowType).owner ? (
+      ) : address && address !== (sender as FlowType).owner && (
         <Stack spacing={1} alignItems="center">
           <Typography variant="subtitle2">
             Please, connect following flow signer:{' '}
@@ -485,9 +478,7 @@ export default function AccountSendDialog({
             </IconButton>
           </Stack>
         </Stack>
-      ) : (
-        <LoadingConnectWalletButton fullWidth title="Connect Signer" />
       )}
-    </Box>
+    </>
   );
 }

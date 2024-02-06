@@ -20,6 +20,7 @@ import { shortenWalletAddressLabel } from '../../utils/address';
 import AccountSendDialog from './AccountSendDialog';
 import PayProfileDialog from './PayProfileDialog';
 import { useAccount } from 'wagmi';
+import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
 
 export type PaymentDialogProps = DialogProps &
   CloseCallbackType & {
@@ -38,6 +39,16 @@ export default function PaymentDialog({
 
   const { address } = useAccount();
 
+  const dialogJustifyContent =
+    sender && (isAddress(sender as any) || (address && address === (sender as FlowType).owner))
+      ? 'space-between'
+      : 'flex-end';
+  const isConnectWalletRequired = !(sender && (isAddress(sender as any) || address));
+  const dialogHeight = sender &&
+    (isAddress(sender as any) || (address && address === (sender as FlowType).owner)) && {
+      height: 375
+    };
+
   return (
     recipient && (
       <Dialog
@@ -47,7 +58,10 @@ export default function PaymentDialog({
         PaperProps={{
           sx: {
             borderRadius: 5,
-            ...(!isMobile && { width: 375, ...(address && { height: 375 }) })
+            ...(!isMobile && {
+              width: 375,
+              ...dialogHeight
+            })
           }
         }}
         sx={{
@@ -58,11 +72,20 @@ export default function PaymentDialog({
           sx={{
             p: 2
           }}>
-          {sender && !isAddress(sender as any) ? (
-            <AccountSendDialog {...{ sender, recipient, closeStateCallback, ...props }} />
-          ) : (
-            <PayProfileDialog {...{ sender, recipient, closeStateCallback, ...props }} />
-          )}
+          <Box
+            height="100%"
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent={dialogJustifyContent}>
+            {isConnectWalletRequired ? (
+              <LoadingConnectWalletButton fullWidth />
+            ) : !isAddress(sender as any) ? (
+              <AccountSendDialog {...{ sender, recipient, closeStateCallback, ...props }} />
+            ) : (
+              <PayProfileDialog {...{ sender, recipient, closeStateCallback, ...props }} />
+            )}
+          </Box>
         </DialogContent>
       </Dialog>
     )
