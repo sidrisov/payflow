@@ -36,7 +36,7 @@ export type AccountNewDialogProps = CardProps & {
 };
 
 export function AccountCard(props: AccountNewDialogProps) {
-  const { ethUsdPrice, profile } = useContext(ProfileContext);
+  const { profile } = useContext(ProfileContext);
   const { flows, selectedFlow, setSelectedFlow } = props;
 
   const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(false);

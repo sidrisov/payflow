@@ -38,13 +38,14 @@ import {
   ETH,
   ETH_TOKEN,
   Token,
+  TokenPrices,
   USDC_TOKEN,
   getSupportedTokens
 } from '../../utils/erc20contracts';
 import { normalizeNumberPrecision } from '../../utils/normalizeNumberPrecision';
 
 export default function PayProfileDialog({ sender, recipient }: PaymentDialogProps) {
-  const { ethUsdPrice, degenUsdPrice } = useContext(ProfileContext);
+  const { tokenPrices } = useContext(ProfileContext);
 
   const { chain } = useAccount();
 
@@ -92,35 +93,14 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
   const { loading, confirmed, error, status, txHash, sendTransaction, writeContract, reset } =
     useRegularTransfer();
 
-  function getTokenPrice(token: string) {
-    let price = 0;
-    switch (token) {
-      case ETH_TOKEN:
-        if (ethUsdPrice) {
-          price = ethUsdPrice;
-        }
-        break;
-      case DEGEN_TOKEN:
-        if (degenUsdPrice) {
-          price = degenUsdPrice;
-        }
-        break;
-      case USDC_TOKEN:
-        price = 1;
-        break;
-    }
-    return price;
-  }
-
   useMemo(async () => {
-    if (selectedToken) {
-      const price = getTokenPrice(selectedToken.name);
-      console.log(price);
+    if (selectedToken && tokenPrices) {
+      const price = tokenPrices[selectedToken.name];
       setSelectedTokenPrice(price);
     } else {
       setSelectedTokenPrice(undefined);
     }
-  }, [selectedToken, ethUsdPrice, degenUsdPrice]);
+  }, [selectedToken, tokenPrices]);
 
   useEffect(() => {
     if (!recipient || !(sender as Address)) {
@@ -240,8 +220,8 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
   }, [status]);
 
   useMemo(async () => {
-    if (sendAmountUSD !== undefined && selectedToken && balance) {
-      const tokenPrice = getTokenPrice(selectedToken?.name);
+    if (sendAmountUSD !== undefined && selectedToken && balance && tokenPrices) {
+      const tokenPrice = tokenPrices[selectedToken.name] ?? 0;
       const amount = parseUnits((sendAmountUSD / tokenPrice).toString(), balance.decimals);
 
       const balanceEnough = balance && amount <= balance?.value;
@@ -259,7 +239,7 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
       setBalanceEnough(undefined);
       setMinAmountSatisfied(undefined);
     }
-  }, [sendAmountUSD, chain?.id, balance]);
+  }, [sendAmountUSD, chain?.id, balance, tokenPrices]);
 
   return (
     <Box

@@ -31,6 +31,7 @@ import { comingSoonToast } from '../components/Toasts';
 import ProfileAvatar from '../components/avatars/ProfileAvatar';
 import DefaultFlowOnboardingDialog from '../components/dialogs/DefaultFlowOnboardingDialog';
 import axios from 'axios';
+import { DEGEN_TOKEN, ETH_TOKEN, TokenPrices, USDC_TOKEN } from '../utils/erc20contracts';
 
 export default function AppLayout({
   profile,
@@ -54,6 +55,8 @@ export default function AppLayout({
 
   const location = useLocation();
 
+  const [tokenPrices, setTokenPrices] = useState<TokenPrices>();
+
   const { isSuccess: isEnsSuccess, data: ethUsdPriceFeedAddress } = useEnsAddress({
     name: 'eth-usd.data.eth',
     chainId: 1,
@@ -75,18 +78,23 @@ export default function AppLayout({
     }
   });
 
-  const [degenUsdPrice, setDegenUsdPrice] = useState<number>(0);
-
-  useEffect(() => {
-    // TODO: replace with more known price source
-    axios
-      .get(
+  // TODO: create hook for fetching prices
+  useMemo(async () => {
+    if (ethUsdPrice) {
+      // TODO: replace with more known price source
+      const response = await axios.get(
         'https://api.dexscreener.com/latest/dex/pairs/base/0xc9034c3E7F58003E6ae0C8438e7c8f4598d5ACAA'
-      )
-      .then((response) => {
-        setDegenUsdPrice(response.data.pair.priceUsd);
-      });
-  }, []);
+      );
+
+      const tokenPrices = {
+        [ETH_TOKEN]: ethUsdPrice,
+        [USDC_TOKEN]: 1,
+        [DEGEN_TOKEN]: response.data.pair.priceUsd
+      } as TokenPrices;
+
+      setTokenPrices(tokenPrices);
+    }
+  }, [ethUsdPrice]);
 
   useEffect(() => {
     if (profile && profile.username) {
@@ -103,8 +111,7 @@ export default function AppLayout({
         profile,
         appSettings,
         setAppSettings,
-        ethUsdPrice,
-        degenUsdPrice
+        tokenPrices
       }}>
       {authorized && (
         <Box height="100vh" display="flex" flexDirection="column" justifyContent="flex-start">

@@ -18,7 +18,7 @@ export default function Accounts() {
   const theme = useTheme();
   const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { isAuthenticated, profile, ethUsdPrice } = useContext(ProfileContext);
+  const { isAuthenticated, profile } = useContext(ProfileContext);
 
   const { flows } = profile;
 

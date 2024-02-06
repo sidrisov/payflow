@@ -36,6 +36,7 @@ import PaymentDialog from '../components/dialogs/PaymentDialog';
 import { ProfileMenu } from '../components/menu/ProfileMenu';
 import ProfileAvatar from '../components/avatars/ProfileAvatar';
 import axios from 'axios';
+import { DEGEN_TOKEN, ETH_TOKEN, TokenPrices, USDC_TOKEN } from '../utils/erc20contracts';
 
 export default function PublicProfile({
   appSettings,
@@ -65,6 +66,8 @@ export default function PublicProfile({
 
   const [selectedRecipient, setSelectedRecipient] = useState<SelectedIdentityType>();
 
+  const [tokenPrices, setTokenPrices] = useState<TokenPrices>();
+
   const { isSuccess: isEnsSuccess, data: ethUsdPriceFeedAddress } = useEnsAddress({
     name: 'eth-usd.data.eth',
     chainId: 1,
@@ -85,15 +88,23 @@ export default function PublicProfile({
     }
   });
 
-  const [degenUsdPrice, setDegenUsdPrice] = useState<number>(0);
-
+  // TODO: create hook for fetching prices
   useMemo(async () => {
-    const response = await axios.get(
-      'https://api.dexscreener.com/latest/dex/pairs/base/0xc9034c3E7F58003E6ae0C8438e7c8f4598d5ACAA'
-    );
+    if (ethUsdPrice) {
+      // TODO: replace with more known price source
+      const response = await axios.get(
+        'https://api.dexscreener.com/latest/dex/pairs/base/0xc9034c3E7F58003E6ae0C8438e7c8f4598d5ACAA'
+      );
 
-    setDegenUsdPrice(response.data.pair.priceUsd);
-  }, []);
+      const tokenPrices = {
+        [ETH_TOKEN]: ethUsdPrice,
+        [USDC_TOKEN]: 1,
+        [DEGEN_TOKEN]: response.data.pair.priceUsd
+      } as TokenPrices;
+
+      setTokenPrices(tokenPrices);
+    }
+  }, [ethUsdPrice]);
 
   useMemo(async () => {
     if (username) {
@@ -121,8 +132,7 @@ export default function PublicProfile({
         isAuthenticated: false,
         appSettings,
         setAppSettings,
-        ethUsdPrice,
-        degenUsdPrice,
+        tokenPrices,
         profile: loggedProfile as any
       }}>
       <Helmet>

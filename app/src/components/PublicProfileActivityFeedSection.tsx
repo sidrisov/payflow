@@ -24,6 +24,7 @@ import { AddressOrEnsWithLink } from './AddressOrEnsWithLink';
 import { ProfileDisplayNameWithLink } from './ProfileDisplayNameWithLink';
 import { PublicProfileDetailsPopover } from './menu/PublicProfileDetailsPopover';
 import { ProfileType } from '../types/ProfleType';
+import { ETH_TOKEN } from '../utils/erc20contracts';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
 
@@ -35,7 +36,7 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { ethUsdPrice } = useContext(ProfileContext);
+  const { tokenPrices } = useContext(ProfileContext);
   const { txInfo } = props;
 
   const [profileDetailsPopoverAnchorEl, setProfileDetailsPopoverAnchorEl] =
@@ -184,9 +185,10 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
               label={
                 (txInfo.activity !== 'self' ? (txInfo.activity === 'inbound' ? '+' : '-') : '') +
                 ('$' +
-                  (parseFloat(formatEther(BigInt(txInfo.value ?? 0))) * (ethUsdPrice ?? 0)).toFixed(
-                    1
-                  ))
+                  (
+                    parseFloat(formatEther(BigInt(txInfo.value ?? 0))) *
+                    (tokenPrices ? tokenPrices[ETH_TOKEN] : 0)
+                  ).toFixed(1))
               }
               sx={{
                 minWidth: 60,

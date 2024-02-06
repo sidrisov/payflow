@@ -20,6 +20,10 @@ export interface Token {
   name: string;
 }
 
+export interface TokenPrices {
+  [name: string]: number;
+}
+
 export function getSupportedTokens(chainId: number | undefined): Token[] {
   if (!chainId) {
     return [];

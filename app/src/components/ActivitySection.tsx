@@ -22,6 +22,7 @@ import ProfileSectionButton from './buttons/ProfileSectionButton';
 import AddressSectionButton from './menu/AddressSectionButton';
 import { getNetworkDefaultBlockExplorerUrl } from '../utils/networks';
 import { timeAgo } from '../utils/time';
+import { ETH_TOKEN } from '../utils/erc20contracts';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
 function getActivityLabel(activity: string) {
@@ -61,7 +62,7 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
   const theme = useTheme();
   const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { ethUsdPrice } = useContext(ProfileContext);
+  const { tokenPrices } = useContext(ProfileContext);
   const { txInfo } = props;
 
   const blockExplorerUrl = getNetworkDefaultBlockExplorerUrl(txInfo.chainId);
@@ -126,7 +127,10 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
           label={
             (txInfo.activity !== 'self' ? (txInfo.activity === 'inbound' ? '+' : '-') : '') +
             (' $' +
-              (parseFloat(formatEther(BigInt(txInfo.value ?? 0))) * (ethUsdPrice ?? 0)).toFixed(1))
+              (
+                parseFloat(formatEther(BigInt(txInfo.value ?? 0))) *
+                (tokenPrices ? tokenPrices[ETH_TOKEN] : 0)
+              ).toFixed(1))
           }
           sx={{
             border: txInfo.activity === 'self' ? 0.5 : 0,
