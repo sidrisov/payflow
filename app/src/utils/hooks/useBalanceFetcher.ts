@@ -4,7 +4,6 @@ import { AssetType, AssetBalanceType } from '../../types/AssetType';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
 import { wagmiConfig } from '../wagmiConfig';
 import { formatUnits } from 'viem';
-import { ETH_TOKEN, DEGEN_TOKEN, USDC_TOKEN } from '../erc20contracts';
 import { GetBalanceData } from 'wagmi/query';
 import { ProfileContext } from '../../contexts/UserContext';
 
@@ -13,37 +12,15 @@ export const useBalanceFetcher = (assets: AssetType[]): BalanceFetchResultType =
   const [fetched, setFetched] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const { ethUsdPrice, degenUsdPrice } = useContext(ProfileContext);
+  const { tokenPrices } = useContext(ProfileContext);
 
-  function getTokenPrice(token: string | undefined) {
-    let price = 0;
-    switch (token) {
-      case ETH_TOKEN:
-        if (ethUsdPrice) {
-          price = ethUsdPrice;
-        }
-        break;
-      case DEGEN_TOKEN:
-        if (degenUsdPrice) {
-          price = degenUsdPrice;
-        }
-
-        break;
-      case USDC_TOKEN:
-        price = 1;
-        break;
-    }
-    return price;
-  }
-
-  function getAssetValue(assetBalance: GetBalanceData | undefined) {
+  function getAssetValue(assetBalance: GetBalanceData, price: number) {
     const value = formatUnits(assetBalance?.value ?? BigInt(0), assetBalance?.decimals ?? 0);
-    const price = getTokenPrice(assetBalance?.symbol);
     return parseFloat(value) * price;
   }
 
   useMemo(() => {
-    if (ethUsdPrice) {
+    if (tokenPrices) {
       setLoading(true);
 
       Promise.allSettled(
@@ -60,8 +37,8 @@ export const useBalanceFetcher = (assets: AssetType[]): BalanceFetchResultType =
             .map((result, index) => ({
               asset: assets[index],
               balance: result.status === 'fulfilled' ? result.value : undefined,
-              usdPrice: result.status === 'fulfilled' ? getTokenPrice(result.value?.symbol) : 0,
-              usdValue: result.status === 'fulfilled' ? getAssetValue(result.value) : 0
+              usdPrice: result.status === 'fulfilled' ? tokenPrices[result.value?.symbol] : 0,
+              usdValue: result.status === 'fulfilled' ? getAssetValue(result.value, tokenPrices[result.value?.symbol]) : 0
             }))
             .sort((left, right) => Number(right.usdValue - left.usdValue));
 
@@ -75,6 +52,6 @@ export const useBalanceFetcher = (assets: AssetType[]): BalanceFetchResultType =
           setFetched(false);
         });
     }
-  }, [assets.toString(), ethUsdPrice]);
+  }, [assets.toString(), tokenPrices]);
   return { loading, fetched, balances };
 };

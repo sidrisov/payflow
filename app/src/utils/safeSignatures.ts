@@ -93,7 +93,7 @@ export async function signTransactionBySafe(
     return;
   }
 
-  const signature = await signer.signTransactionHash(safeMessageHash);
+  const signature = await signer.signHash(safeMessageHash);
   const safeContractSignature = buildContractSignature(signerAddress, signature.data);
 
   // small hack, concatanate signatures here, and pass as a single signature, safe sdk will just append

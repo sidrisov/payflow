@@ -23,7 +23,7 @@ import { AppSettings } from '../types/AppSettingsType';
 import { useMediaQuery } from '@mui/material';
 import CustomToastContainer from '../components/toasts/CustomToastContainer';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { loginWagmiConfig } from '../utils/wagmiConfig';
+import { wagmiConfig } from '../utils/wagmiConfig';
 import { queryClient } from '../utils/query';
 
 const appSettingsStorageItem = localStorage.getItem('appSettings');
@@ -153,9 +153,7 @@ export default function AppWithProviders() {
   }, []);
 
   const config = {
-    // For a production app, replace this with an Optimism Mainnet
-    // RPC URL from a provider like Alchemy or Infura.
-    rpcUrl: 'https://mainnet.optimism.io',
+    rpcUrl: `https://opt-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`,
     domain: window.location.hostname,
     siweUri: window.location.origin,
     relay: 'https://relay.farcaster.xyz',
@@ -163,7 +161,7 @@ export default function AppWithProviders() {
   };
 
   return (
-    <WagmiProvider config={loginWagmiConfig}>
+    <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitAuthenticationProvider adapter={authAdapter} status={authStatus}>
           <RainbowKitProvider

@@ -24,7 +24,7 @@ import {
 import { Hash, Address, keccak256, toBytes } from 'viem';
 import { getRelayKitForChainId, getSponsoredCount, waitForRelayTaskToComplete } from './relayer';
 import { getGasPrice } from 'wagmi/actions';
-import { arbitrumGoerli, sepolia, zkSyncSepoliaTestnet } from 'viem/chains';
+import { arbitrumGoerli, zkSyncSepoliaTestnet } from 'viem/chains';
 import { SUPPORTED_CHAINS } from './networks';
 import { wagmiConfig } from './wagmiConfig';
 

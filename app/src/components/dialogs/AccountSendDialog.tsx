@@ -52,13 +52,14 @@ import { disconnect } from 'wagmi/actions';
 import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';
 import { getGasFeeText } from '../../types/gas';
 import { PaymentDialogProps } from './PaymentDialog';
+import { ETH_TOKEN } from '../../utils/erc20contracts';
 
 export default function AccountSendDialog({
   setOpenSearchIdentity,
   sender,
   recipient
 }: PaymentDialogProps) {
-  const { profile, ethUsdPrice } = useContext(ProfileContext);
+  const { profile, tokenPrices } = useContext(ProfileContext);
 
   const ethersSigner = useEthersSigner();
   const ethersProvider = useEthersProvider();
@@ -229,8 +230,8 @@ export default function AccountSendDialog({
   }
 
   useMemo(async () => {
-    if (sendAmountUSD !== undefined && ethUsdPrice) {
-      const amount = parseEther((sendAmountUSD / ethUsdPrice).toString());
+    if (sendAmountUSD !== undefined && tokenPrices) {
+      const amount = parseEther((sendAmountUSD / tokenPrices[ETH_TOKEN]).toString());
 
       const balanceEnough = balance && amount <= balance?.value;
       const minAmount = sendAmountUSD >= 1;
@@ -247,7 +248,7 @@ export default function AccountSendDialog({
       setBalanceEnough(undefined);
       setMinAmountSatisfied(undefined);
     }
-  }, [sendAmountUSD, chain?.id]);
+  }, [sendAmountUSD, chain?.id, tokenPrices]);
 
   useMemo(async () => {
     if (!recipient || !selectedWallet) {
@@ -267,14 +268,7 @@ export default function AccountSendDialog({
   }, [selectedWallet, recipient]);
 
   return (
-    <Box
-      height="100%"
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      justifyContent={
-        address && address === (sender as FlowType).owner ? 'space-between' : 'flex-end'
-      }>
+    <>
       {address && address === (sender as FlowType).owner ? (
         <>
           <Stack width="100%" spacing={2} alignItems="center">
@@ -396,7 +390,7 @@ export default function AccountSendDialog({
                         isSuccess && balance && balance.value - (gasFee ?? BigInt(0)) > BigInt(0)
                           ? (
                               parseFloat(formatEther(balance.value - (gasFee ?? BigInt(0)))) *
-                              (ethUsdPrice ?? 0)
+                              (tokenPrices ? tokenPrices[ETH_TOKEN] : 0)
                             ).toFixed(2)
                           : 0
                       }`}
@@ -425,7 +419,7 @@ export default function AccountSendDialog({
                     ml={1}
                     variant="caption"
                     color={gasFee === BigInt(0) ? green.A700 : 'inherit'}>
-                    {getGasFeeText(gasFee, ethUsdPrice)}
+                    {getGasFeeText(gasFee, tokenPrices?.[ETH_TOKEN])}
                   </Typography>
                 </Stack>
               </Box>
@@ -459,7 +453,7 @@ export default function AccountSendDialog({
               <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
             ))}
         </>
-      ) : address && address !== (sender as FlowType).owner ? (
+      ) : address && address !== (sender as FlowType).owner && (
         <Stack spacing={1} alignItems="center">
           <Typography variant="subtitle2">
             Please, connect following flow signer:{' '}
@@ -484,9 +478,7 @@ export default function AccountSendDialog({
             </IconButton>
           </Stack>
         </Stack>
-      ) : (
-        <LoadingConnectWalletButton fullWidth title="Connect Signer" />
       )}
-    </Box>
+    </>
   );
 }

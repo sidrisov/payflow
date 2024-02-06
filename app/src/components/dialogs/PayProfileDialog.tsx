@@ -25,7 +25,6 @@ import { PayflowChip } from '../chips/IdentityStatusChips';
 import { red } from '@mui/material/colors';
 import { NetworkSelectorButton } from '../buttons/NetworkSelectorButton';
 import { TransferToastContent } from '../toasts/TransferToastContent';
-import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
 import { LoadingSwitchNetworkButton } from '../buttons/LoadingSwitchNetworkButton';
 import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
 import { SUPPORTED_CHAINS } from '../../utils/networks';
@@ -33,18 +32,11 @@ import { ProfileContext } from '../../contexts/UserContext';
 import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';
 import { PaymentDialogProps } from './PaymentDialog';
 import { TokenSelectorButton } from '../buttons/TokenSelectorButton';
-import {
-  DEGEN_TOKEN,
-  ETH,
-  ETH_TOKEN,
-  Token,
-  USDC_TOKEN,
-  getSupportedTokens
-} from '../../utils/erc20contracts';
+import { ETH, ETH_TOKEN, Token, getSupportedTokens } from '../../utils/erc20contracts';
 import { normalizeNumberPrecision } from '../../utils/normalizeNumberPrecision';
 
 export default function PayProfileDialog({ sender, recipient }: PaymentDialogProps) {
-  const { ethUsdPrice, degenUsdPrice } = useContext(ProfileContext);
+  const { tokenPrices } = useContext(ProfileContext);
 
   const { chain } = useAccount();
 
@@ -92,35 +84,14 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
   const { loading, confirmed, error, status, txHash, sendTransaction, writeContract, reset } =
     useRegularTransfer();
 
-  function getTokenPrice(token: string) {
-    let price = 0;
-    switch (token) {
-      case ETH_TOKEN:
-        if (ethUsdPrice) {
-          price = ethUsdPrice;
-        }
-        break;
-      case DEGEN_TOKEN:
-        if (degenUsdPrice) {
-          price = degenUsdPrice;
-        }
-        break;
-      case USDC_TOKEN:
-        price = 1;
-        break;
-    }
-    return price;
-  }
-
   useMemo(async () => {
-    if (selectedToken) {
-      const price = getTokenPrice(selectedToken.name);
-      console.log(price);
+    if (selectedToken && tokenPrices) {
+      const price = tokenPrices[selectedToken.name];
       setSelectedTokenPrice(price);
     } else {
       setSelectedTokenPrice(undefined);
     }
-  }, [selectedToken, ethUsdPrice, degenUsdPrice]);
+  }, [selectedToken, tokenPrices]);
 
   useEffect(() => {
     if (!recipient || !(sender as Address)) {
@@ -240,8 +211,8 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
   }, [status]);
 
   useMemo(async () => {
-    if (sendAmountUSD !== undefined && selectedToken && balance) {
-      const tokenPrice = getTokenPrice(selectedToken?.name);
+    if (sendAmountUSD !== undefined && selectedToken && balance && tokenPrices) {
+      const tokenPrice = tokenPrices[selectedToken.name] ?? 0;
       const amount = parseUnits((sendAmountUSD / tokenPrice).toString(), balance.decimals);
 
       const balanceEnough = balance && amount <= balance?.value;
@@ -259,184 +230,173 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
       setBalanceEnough(undefined);
       setMinAmountSatisfied(undefined);
     }
-  }, [sendAmountUSD, chain?.id, balance]);
+  }, [sendAmountUSD, chain?.id, balance, tokenPrices]);
 
   return (
-    <Box
-      height="100%"
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      justifyContent={sender ? 'space-between' : 'flex-end'}>
-      {sender ? (
-        <>
-          <Stack width="100%" spacing={2} alignItems="center">
+    <>
+      <Stack width="100%" spacing={2} alignItems="center">
+        <Box
+          display="flex"
+          flexDirection="row"
+          width="100%"
+          alignItems="center"
+          justifyContent="space-between"
+          component={Button}
+          color="inherit"
+          sx={{
+            height: 56,
+            border: 1,
+            borderRadius: 5,
+            p: 1.5,
+            textTransform: 'none'
+          }}>
+          {recipient &&
+            (recipient.type === 'profile'
+              ? recipient.identity.profile && (
+                  <ProfileSection maxWidth={200} profile={recipient.identity.profile} />
+                )
+              : recipient.identity.meta && (
+                  <AddressSection maxWidth={200} identity={recipient.identity} />
+                ))}
+
+          {!recipient && (
+            <Typography alignSelf="center" flexGrow={1}>
+              Choose Recipient
+            </Typography>
+          )}
+
+          <Stack direction="row">
+            {recipient && recipient.type === 'profile' && <PayflowChip />}
+            <ExpandMore />
+          </Stack>
+        </Box>
+        {recipient && selectedWallet && selectedToken && (
+          <Box width="100%" display="flex" flexDirection="column">
+            <TextField
+              fullWidth
+              variant="outlined"
+              type="number"
+              error={
+                sendAmountUSD !== undefined &&
+                (minAmountSatisfied === false || balanceEnough === false)
+              }
+              inputProps={{ style: { textAlign: 'center', fontSize: 20 } }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <NetworkSelectorButton
+                      selectedWallet={selectedWallet}
+                      setSelectedWallet={setSelectedWallet}
+                      wallets={compatibleWallets}
+                    />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Box
+                      display="flex"
+                      flexDirection="row"
+                      justifyContent="space-between"
+                      alignItems="center"
+                      minWidth={200}>
+                      <Typography>$</Typography>
+                      <Typography>≈</Typography>
+                      <Typography>
+                        {`${normalizeNumberPrecision(
+                          sendAmount && balance
+                            ? parseFloat(formatUnits(sendAmount, balance.decimals))
+                            : 0
+                        )}
+                        ${selectedToken.name}`}
+                      </Typography>
+                      <TokenSelectorButton
+                        selectedToken={selectedToken}
+                        setSelectedToken={setSelectedToken}
+                        tokens={compatibleTokens}
+                      />
+                    </Box>
+                  </InputAdornment>
+                ),
+                inputMode: 'decimal',
+                sx: { borderRadius: 5, height: 56 }
+              }}
+              onChange={(event) => {
+                if (event.target.value) {
+                  const amountUSD = parseFloat(event.target.value);
+                  setSendAmountUSD(amountUSD);
+                } else {
+                  setSendAmountUSD(undefined);
+                }
+              }}
+            />
+
+            {sendAmountUSD !== undefined &&
+              (minAmountSatisfied === false || balanceEnough === false) && (
+                <Stack ml={0.5} mt={0.5} direction="row" spacing={0.5} alignItems="center">
+                  <PriorityHigh fontSize="small" sx={{ color: red.A400 }} />
+                  <Typography ml={1} variant="caption" color={red.A400}>
+                    {sendAmountUSD !== undefined &&
+                      ((minAmountSatisfied === false && 'min: $1') ||
+                        (balanceEnough === false && 'balance: not enough'))}
+                  </Typography>
+                </Stack>
+              )}
+
             <Box
               display="flex"
               flexDirection="row"
-              width="100%"
-              alignItems="center"
               justifyContent="space-between"
-              component={Button}
-              color="inherit"
-              sx={{
-                height: 56,
-                border: 1,
-                borderRadius: 5,
-                p: 1.5,
-                textTransform: 'none'
-              }}>
-              {recipient &&
-                (recipient.type === 'profile'
-                  ? recipient.identity.profile && (
-                      <ProfileSection maxWidth={200} profile={recipient.identity.profile} />
-                    )
-                  : recipient.identity.meta && (
-                      <AddressSection maxWidth={200} identity={recipient.identity} />
-                    ))}
-
-              {!recipient && (
-                <Typography alignSelf="center" flexGrow={1}>
-                  Choose Recipient
+              alignItems="center">
+              <Stack ml={0.5} direction="row" spacing={0.5} alignItems="center">
+                <AttachMoney fontSize="small" />
+                <Typography variant="caption">
+                  {`max: ${maxBalance} ${selectedToken?.name} ≈ $${maxBalanceUsd}`}
                 </Typography>
-              )}
-
-              <Stack direction="row">
-                {recipient && recipient.type === 'profile' && <PayflowChip />}
-                <ExpandMore />
               </Stack>
+              <Tooltip title="Add a note">
+                <IconButton
+                  size="small"
+                  color="inherit"
+                  sx={{ mr: 0.5, alignSelf: 'flex-end' }}
+                  onClick={() => {
+                    comingSoonToast();
+                  }}>
+                  <AddComment fontSize="small" />
+                </IconButton>
+              </Tooltip>
             </Box>
-            {recipient && selectedWallet && selectedToken && (
-              <Box width="100%" display="flex" flexDirection="column">
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  type="number"
-                  error={
-                    sendAmountUSD !== undefined &&
-                    (minAmountSatisfied === false || balanceEnough === false)
-                  }
-                  inputProps={{ style: { textAlign: 'center', fontSize: 20 } }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <NetworkSelectorButton
-                          selectedWallet={selectedWallet}
-                          setSelectedWallet={setSelectedWallet}
-                          wallets={compatibleWallets}
-                        />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <Box
-                          display="flex"
-                          flexDirection="row"
-                          justifyContent="space-between"
-                          alignItems="center"
-                          minWidth={200}>
-                          <Typography>$</Typography>
-                          <Typography>≈</Typography>
-                          <Typography>
-                            {`${normalizeNumberPrecision(
-                              sendAmount && balance
-                                ? parseFloat(formatUnits(sendAmount, balance.decimals))
-                                : 0
-                            )}
-                        ${selectedToken.name}`}
-                          </Typography>
-                          <TokenSelectorButton
-                            selectedToken={selectedToken}
-                            setSelectedToken={setSelectedToken}
-                            tokens={compatibleTokens}
-                          />
-                        </Box>
-                      </InputAdornment>
-                    ),
-                    inputMode: 'decimal',
-                    sx: { borderRadius: 5, height: 56 }
-                  }}
-                  onChange={(event) => {
-                    if (event.target.value) {
-                      const amountUSD = parseFloat(event.target.value);
-                      setSendAmountUSD(amountUSD);
-                    } else {
-                      setSendAmountUSD(undefined);
-                    }
-                  }}
-                />
+          </Box>
+        )}
+      </Stack>
 
-                {sendAmountUSD !== undefined &&
-                  (minAmountSatisfied === false || balanceEnough === false) && (
-                    <Stack ml={0.5} mt={0.5} direction="row" spacing={0.5} alignItems="center">
-                      <PriorityHigh fontSize="small" sx={{ color: red.A400 }} />
-                      <Typography ml={1} variant="caption" color={red.A400}>
-                        {sendAmountUSD !== undefined &&
-                          ((minAmountSatisfied === false && 'min: $1') ||
-                            (balanceEnough === false && 'balance: not enough'))}
-                      </Typography>
-                    </Stack>
-                  )}
+      {recipient &&
+        selectedWallet &&
+        (chain?.id === selectedWallet.network ? (
+          <LoadingPaymentButton
+            title="Pay"
+            status={status}
+            loading={loading || (txHash && !confirmed && !error)}
+            disabled={!(toAddress && sendAmount)}
+            onClick={() => {
+              if (!toAddress || !sendAmount || !selectedToken || !selectedToken) {
+                return;
+              }
 
-                <Box
-                  display="flex"
-                  flexDirection="row"
-                  justifyContent="space-between"
-                  alignItems="center">
-                  <Stack ml={0.5} direction="row" spacing={0.5} alignItems="center">
-                    <AttachMoney fontSize="small" />
-                    <Typography variant="caption">
-                      {`max: ${maxBalance} ${selectedToken?.name} ≈ $${maxBalanceUsd}`}
-                    </Typography>
-                  </Stack>
-                  <Tooltip title="Add a note">
-                    <IconButton
-                      size="small"
-                      color="inherit"
-                      sx={{ mr: 0.5, alignSelf: 'flex-end' }}
-                      onClick={() => {
-                        comingSoonToast();
-                      }}>
-                      <AddComment fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              </Box>
-            )}
-          </Stack>
-
-          {recipient &&
-            selectedWallet &&
-            (chain?.id === selectedWallet.network ? (
-              <LoadingPaymentButton
-                title="Pay"
-                status={status}
-                loading={loading || (txHash && !confirmed && !error)}
-                disabled={!(toAddress && sendAmount)}
-                onClick={() => {
-                  if (!toAddress || !sendAmount || !selectedToken || !selectedToken) {
-                    return;
-                  }
-
-                  if (selectedToken.name === ETH_TOKEN) {
-                    sendTransaction?.({ to: toAddress, value: sendAmount });
-                  } else {
-                    writeContract?.({
-                      abi: erc20Abi,
-                      address: selectedToken.address,
-                      functionName: 'transfer',
-                      args: [toAddress, sendAmount]
-                    });
-                  }
-                }}
-              />
-            ) : (
-              <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
-            ))}
-        </>
-      ) : (
-        <LoadingConnectWalletButton />
-      )}
-    </Box>
+              if (selectedToken.name === ETH_TOKEN) {
+                sendTransaction?.({ to: toAddress, value: sendAmount });
+              } else {
+                writeContract?.({
+                  abi: erc20Abi,
+                  address: selectedToken.address,
+                  functionName: 'transfer',
+                  args: [toAddress, sendAmount]
+                });
+              }
+            }}
+          />
+        ) : (
+          <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
+        ))}
+    </>
   );
 }

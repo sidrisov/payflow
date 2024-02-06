@@ -11,7 +11,7 @@ export default function Assets(props: {
   selectedNetwork: Chain | undefined;
   balanceFetchResult: BalanceFetchResultType;
 }) {
-  const { ethUsdPrice } = useContext(ProfileContext);
+  const { tokenPrices } = useContext(ProfileContext);
   const { selectedNetwork } = props;
   const { loading, fetched, balances } = props.balanceFetchResult;
 
@@ -19,7 +19,7 @@ export default function Assets(props: {
     <Stack pt={1} px={1} spacing={1} width="100%" maxHeight={350} overflow="auto">
       {loading || balances.length === 0 ? (
         <ActivitySkeletonSection />
-      ) : fetched && ethUsdPrice ? (
+      ) : fetched && tokenPrices ? (
         balances
           .filter((assetBalance) => {
             return (

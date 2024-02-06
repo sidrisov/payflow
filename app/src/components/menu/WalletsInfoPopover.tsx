@@ -2,18 +2,14 @@ import { Popover, PopoverProps, Stack } from '@mui/material';
 import { WalletSection } from '../WalletSection';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
-import { useContext } from 'react';
-import { ProfileContext } from '../../contexts/UserContext';
 
 export function WalletsInfoPopover({
   flow,
   balanceFetchResult,
   ...props
 }: PopoverProps & { flow: FlowType; balanceFetchResult: BalanceFetchResultType }) {
-  const { ethUsdPrice } = useContext(ProfileContext);
-
   function calculateBalance(wallet: FlowWalletType) {
-    if (balanceFetchResult && ethUsdPrice) {
+    if (balanceFetchResult) {
       return balanceFetchResult.balances
         .filter((balance) => balance.balance && balance.asset.chainId === wallet.network)
         .reduce((previousValue, currentValue) => {
