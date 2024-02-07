@@ -18,9 +18,19 @@ export interface TxInfo {
   to: Address;
   type: string | number;
   value: number;
+  token?: TxToken;
   activity: 'inbound' | 'outbound' | 'self';
   fromProfile?: ProfileType;
   toProfile?: ProfileType;
+}
+
+export interface TxToken {
+  address: Address;
+  decimals: number;
+  exchange_rate: number;
+  name: string;
+  symbol: string;
+  type: string;
 }
 
 export type WalletActivityType = { wallet: FlowWalletType; txs: TxInfo[] | undefined };

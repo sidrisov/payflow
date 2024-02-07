@@ -50,8 +50,6 @@ export const useTransactionsFetcher = (wallets: FlowWalletType[]): ActivityFetch
           wallets
         );
 
-        console.debug(walletProfiles);
-
         if (status === 200 && walletProfiles) {
           txs.forEach((tx) => {
             const fromProfile = walletProfiles.find(
@@ -93,7 +91,12 @@ export const useTransactionsFetcher = (wallets: FlowWalletType[]): ActivityFetch
   return { loading, fetched, transactions };
 };
 
-function parseTxHistoryResponse(wallet: FlowWalletType, internalTxs: any[], txs: any[]): TxInfo[] {
+function parseTxHistoryResponse(
+  wallet: FlowWalletType,
+  internalTxs: any[],
+  erc20txs: any[],
+  txs: any[]
+): TxInfo[] {
   if (!internalTxs || !txs) {
     return [];
   }
@@ -109,6 +112,28 @@ function parseTxHistoryResponse(wallet: FlowWalletType, internalTxs: any[], txs:
       to: item.to?.hash,
       type: item.type,
       value: item.value,
+      activity:
+        item.to?.hash === item.from?.hash
+          ? 'self'
+          : wallet.address === item.to?.hash
+          ? 'inbound'
+          : 'outbound'
+    };
+    return txInfo;
+  });
+
+  const erc20TxsInfo: TxInfo[] = erc20txs.map((item: any) => {
+    const txInfo: TxInfo = {
+      chainId: wallet.network,
+      block: item.block,
+      success: true,
+      hash: item.tx_hash,
+      timestamp: item.timestamp,
+      from: item.from?.hash,
+      to: item.to?.hash,
+      type: item.type,
+      value: item.total.value,
+      token: item.token,
       activity:
         item.to?.hash === item.from?.hash
           ? 'self'
@@ -140,16 +165,16 @@ function parseTxHistoryResponse(wallet: FlowWalletType, internalTxs: any[], txs:
     return txInfo;
   });
 
-  console.debug(txsInfo);
-
   return interalTxsInfo
+    .concat(erc20TxsInfo)
     .concat(txsInfo)
     .filter(
       (tx) =>
-        (tx.type === 'call' || tx.type === 2) &&
+        (tx.type === 'call' || tx.type === 2 || tx.type === 'token_transfer') &&
         tx.to !== '0x3AC05161b76a35c1c28dC99Aa01BEd7B24cEA3bf' &&
         tx.value > 0 &&
-        tx.success
+        tx.success &&
+        (tx.token ? ['USDC', 'DEGEN'].includes(tx.token.symbol) : true)
     );
 }
 
@@ -159,44 +184,51 @@ async function fetchTransactions(wallet: FlowWalletType): Promise<TxInfo[]> {
   }
 
   const internalTxsUrl = getWalletInternalTxsFetchAPI(wallet);
+  const erc20TxsUrl = getWalletErc20TxsFetchAPI(wallet);
   const txsUrl = getWalletTxsFetchAPI(wallet);
 
   if (!internalTxsUrl || !txsUrl) {
     return [];
   }
 
-  const internalTxs = await fetchAnyTxs(internalTxsUrl);
-  const txs = await fetchAnyTxs(txsUrl);
+  const internalTxs = internalTxsUrl ? await fetchAnyTxs(internalTxsUrl) : [];
+  const erc20Txs = erc20TxsUrl ? await fetchAnyTxs(erc20TxsUrl) : [];
+  const txs = txsUrl ? await fetchAnyTxs(txsUrl) : [];
 
-  const txInfos: TxInfo[] = parseTxHistoryResponse(wallet, internalTxs, txs);
+  const txInfos: TxInfo[] = parseTxHistoryResponse(wallet, internalTxs, erc20Txs, txs);
 
   return txInfos;
 }
 
 // TODO: later introduce the page number limit
 async function fetchAnyTxs(url: string, params?: NextPageParams): Promise<any[]> {
-  const response = await axios.get(url.concat(getNextPageParamsUrlProps(params)));
+  try {
+    const response = await axios.get(url.concat(getNextPageParamsUrlProps(params)), {
+      timeout: 1500
+    });
+    if (response.status !== 200 || !response.data) {
+      return [];
+    }
 
-  if (response.status !== 200 || !response.data) {
+    let items: any[] = response.data.items;
+    const nextPageParams = response.data.next_page_params as NextPageParams;
+
+    if (nextPageParams) {
+      try {
+        const nextPageItems = await fetchAnyTxs(url, nextPageParams);
+
+        if (nextPageItems) {
+          items = items.concat(nextPageItems);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    return items;
+  } catch (error) {
+    console.error(error);
     return [];
   }
-
-  let items: any[] = response.data.items;
-  const nextPageParams = response.data.next_page_params as NextPageParams;
-
-  if (nextPageParams) {
-    try {
-      const nextPageItems = await fetchAnyTxs(url, nextPageParams);
-
-      if (nextPageItems) {
-        items = items.concat(nextPageItems);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  return items;
 }
 
 function getNextPageParamsUrlProps(params?: NextPageParams) {
@@ -219,6 +251,14 @@ function getWalletTxsFetchAPI(wallet: FlowWalletType): string | undefined {
 
   if (baseUrl) {
     return baseUrl.concat(`/api/v2/addresses/${wallet.address}/transactions`);
+  }
+}
+
+function getWalletErc20TxsFetchAPI(wallet: FlowWalletType): string | undefined {
+  let baseUrl = getBlockscoutBaseUrl(wallet.network);
+
+  if (baseUrl) {
+    return baseUrl.concat(`/api/v2/addresses/${wallet.address}/token-transfers`);
   }
 }
 

@@ -16,7 +16,6 @@ import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.message.FrameMessage;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.message.SocialInsights;
-import ua.sinaver.web3.payflow.message.ValidatedMessage;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
 import ua.sinaver.web3.payflow.service.IFarcasterHubService;
@@ -25,8 +24,10 @@ import ua.sinaver.web3.payflow.service.SocialGraphService;
 import ua.sinaver.web3.payflow.service.WalletBalanceService;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -35,11 +36,9 @@ import static ua.sinaver.web3.payflow.message.ContactMessage.getWalletInsights;
 // TODO: create template builder
 @RestController
 @RequestMapping("/farcaster/frames")
-@CrossOrigin(origins = "${payflow.dapp.url}", allowCredentials = "true")
 @Transactional
 @Slf4j
 public class FarcasterFramesController {
-
 	private static final String CONNECT_ACTIONS = "/api/farcaster/frames/actions";
 	private static final String CONNECT_IDENTITY_ACTIONS = "/api/farcaster/frames/actions/%s";
 	private static final String CONNECT_IDENTITY_ACTIONS_INVITE = "/api/farcaster/frames/actions/%s/invite";
@@ -118,34 +117,26 @@ public class FarcasterFramesController {
 		return insightsMeta;
 	}
 
-	private static String parseBase64Url(ValidatedMessage message) {
-		val base64Url = message.message().data().frameActionBody().url();
-		return new String(Base64.getUrlDecoder().decode(base64Url),
-				StandardCharsets.UTF_8);
-	}
-
-	private static String parseBase64InputText(String base64InputText) {
-		return new String(Base64.getDecoder().decode(base64InputText),
-				StandardCharsets.UTF_8);
-
-	}
-
 	@PostMapping("/connect")
 	public ResponseEntity<String> connect(@RequestBody FrameMessage frameMessage) {
 		log.debug("Received connect frame message request: {}", frameMessage);
 
-		val validateMessage = farcasterHubService.validateFrameMessage(
-				frameMessage.trustedData().messageBytes());
 
-		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
-				parseBase64Url(validateMessage));
+		val validateMessage =
+				farcasterHubService.validateFrameMessageWithNeynar(
+						frameMessage.trustedData().messageBytes());
 
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
 			return DEFAULT_HTML_RESPONSE;
 		}
+		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
+				validateMessage.action().url());
 
-		val fid = validateMessage.message().data().fid();
+		val fid = validateMessage.action().interactor().fid();
+		
+		// evict cache
+		socialGraphService.cleanCache("fc_fid:".concat(String.valueOf(fid)), null);
 		val wallet = socialGraphService.getSocialMetadata(
 				"fc_fid:".concat(String.valueOf(fid)), null);
 
@@ -155,7 +146,7 @@ public class FarcasterFramesController {
 
 		val profiles = getFidProfiles(addresses);
 
-		val casterFid = validateMessage.message().data().frameActionBody().castId().fid();
+		val casterFid = validateMessage.action().cast().fid();
 
 		User casterProfile;
 		if (fid != casterFid) {
@@ -265,20 +256,23 @@ public class FarcasterFramesController {
 	public ResponseEntity<String> actions(@RequestBody FrameMessage frameMessage) {
 		log.debug("Received actions frame: {}", frameMessage);
 
-		val validateMessage = farcasterHubService.validateFrameMessage(
+		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
-		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
-				parseBase64Url(validateMessage));
-
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
 			return DEFAULT_HTML_RESPONSE;
 		}
-		val fid = validateMessage.message().data().fid();
+		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
+				validateMessage.action().url());
 
-		val buttonIndex = validateMessage.message().data().frameActionBody().buttonIndex();
-		val casterFid = validateMessage.message().data().frameActionBody().castId().fid();
 
+		val fid = validateMessage.action().interactor().fid();
+
+		val buttonIndex = validateMessage.action().tappedButton().index();
+		val casterFid = validateMessage.action().cast().fid();
+
+		// evict cache
+		socialGraphService.cleanCache("fc_fid:".concat(String.valueOf(fid)), null);
 		val wallet = socialGraphService.getSocialMetadata(
 				"fc_fid:".concat(String.valueOf(fid)), null);
 
@@ -386,19 +380,22 @@ public class FarcasterFramesController {
 	public ResponseEntity<String> identityAction(@PathVariable String identity,
 	                                             @RequestBody FrameMessage frameMessage) {
 		log.debug("Received actions frame: {}", frameMessage);
-		val validateMessage = farcasterHubService.validateFrameMessage(
-				frameMessage.trustedData().messageBytes());
-		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
-				parseBase64Url(validateMessage));
 
+		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
+				frameMessage.trustedData().messageBytes());
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
 			return DEFAULT_HTML_RESPONSE;
 		}
-		val fid = validateMessage.message().data().fid();
-		val buttonIndex = validateMessage.message().data().frameActionBody().buttonIndex();
-		val casterFid = validateMessage.message().data().frameActionBody().castId().fid();
+		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
+				validateMessage.action().url());
 
+		val fid = validateMessage.action().interactor().fid();
+		val buttonIndex = validateMessage.action().tappedButton().index();
+		val casterFid = validateMessage.action().cast().fid();
+
+		// evict cache
+		socialGraphService.cleanCache("fc_fid:".concat(String.valueOf(fid)), null);
 		val wallet = socialGraphService.getSocialMetadata(
 				"fc_fid:".concat(String.valueOf(fid)), null);
 
@@ -465,6 +462,9 @@ public class FarcasterFramesController {
 
 				log.debug("Handling insights action: {}", validateMessage);
 
+				// clean cache
+				socialGraphService.cleanCache(String.format("fc_fid:%s", casterFid),
+						String.format("fc_fid:%s", fid));
 				val casterWallet = socialGraphService.getSocialMetadata(
 						String.format("fc_fid:%s", casterFid),
 						String.format("fc_fid:%s", fid));
@@ -525,20 +525,22 @@ public class FarcasterFramesController {
 	                                                   @RequestBody FrameMessage frameMessage) {
 		log.debug("Received actions invite frame: {}", frameMessage);
 
-		val validateMessage = farcasterHubService.validateFrameMessage(
+		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
-		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
-				parseBase64Url(validateMessage));
-
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
 			return DEFAULT_HTML_RESPONSE;
 		}
-		val fid = validateMessage.message().data().fid();
+		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
+				validateMessage.action().url());
 
-		val buttonIndex = validateMessage.message().data().frameActionBody().buttonIndex();
-		val inputTextBase64 = validateMessage.message().data().frameActionBody().inputText();
+		val fid = validateMessage.action().interactor().fid();
 
+		val buttonIndex = validateMessage.action().tappedButton().index();
+		val inputText = validateMessage.action().input().text();
+
+		// evict cache
+		socialGraphService.cleanCache("fc_fid:".concat(String.valueOf(fid)), null);
 		val wallet = socialGraphService.getSocialMetadata(
 				"fc_fid:".concat(String.valueOf(fid)), null);
 
@@ -550,10 +552,11 @@ public class FarcasterFramesController {
 				getFidProfiles(addresses).stream().filter(p -> p.getIdentity().equals(identity)).findFirst().orElse(null);
 		if (clickedProfile != null && buttonIndex == 1) {
 
-			if (!StringUtils.isBlank(inputTextBase64)) {
-				val inputText = parseBase64InputText(inputTextBase64);
-
+			if (!StringUtils.isBlank(inputText)) {
 				// check if profile exist
+
+				// evict cache
+				socialGraphService.cleanCache("fc_fname:".concat(inputText), null);
 				val inviteWallet = socialGraphService.getSocialMetadata(
 						"fc_fname:".concat(inputText), null);
 

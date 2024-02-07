@@ -3,15 +3,16 @@ import {
   Box,
   BoxProps,
   Chip,
+  Link,
   Stack,
   Typography,
   useMediaQuery,
   useTheme
 } from '@mui/material';
-import { formatEther } from 'viem';
+import { formatUnits } from 'viem';
 import { useContext, useState } from 'react';
 import { ProfileContext } from '../contexts/UserContext';
-import { TxInfo } from '../types/ActivityFetchResultType';
+import { TxInfo, TxToken } from '../types/ActivityFetchResultType';
 import NetworkAvatar from './avatars/NetworkAvatar';
 import { getNetworkDefaultBlockExplorerUrl, getNetworkDisplayName } from '../utils/networks';
 
@@ -25,6 +26,8 @@ import { ProfileDisplayNameWithLink } from './ProfileDisplayNameWithLink';
 import { PublicProfileDetailsPopover } from './menu/PublicProfileDetailsPopover';
 import { ProfileType } from '../types/ProfleType';
 import { ETH_TOKEN } from '../utils/erc20contracts';
+import { normalizeNumberPrecision } from '../utils/normalizeNumberPrecision';
+import TokenAvatar from './avatars/TokenAvatar';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
 
@@ -81,6 +84,10 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
     }
   });
 
+  const token = txInfo.token ?? ({ name: 'Ether', decimals: 18, symbol: ETH_TOKEN } as TxToken);
+  const value = parseFloat(formatUnits(BigInt(txInfo.value ?? 0), token.decimals));
+  const price = tokenPrices ? tokenPrices[token.symbol] : 0;
+
   return (
     <>
       <Stack
@@ -124,15 +131,6 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
                 {timeAgo.format(new Date(txInfo.timestamp), isMobile ? 'mini' : 'round')}
               </Typography>
             </Stack>
-            {/* <Tooltip title="Transaction details">
-            <IconButton
-              href={`${defultBlockExplorerUrl}/tx/${txInfo.hash}`}
-              target="_blank"
-              size="small"
-              color="inherit">
-              <MoreHoriz fontSize="small" />
-            </IconButton>
-          </Tooltip> */}
           </Box>
 
           <Stack direction="row" alignItems="center" spacing={0.5}>
@@ -162,14 +160,26 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
               />
             )}
           </Stack>
-          <Box
-            display="flex"
-            flexDirection="row"
-            alignItems="center"
-            justifyContent="space-between">
+          <Link
+            href={`${defultBlockExplorerUrl}/tx/${txInfo.hash}`}
+            target="_blank"
+            underline="hover"
+            color="inherit"
+            overflow="clip"
+            textOverflow="ellipsis">
             <Stack direction="row" spacing={0.5} alignItems="center">
+              <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
+                {normalizeNumberPrecision(value) + ' ' + token.name}
+              </Typography>
+              <TokenAvatar
+                tokenName={token.symbol}
+                sx={{
+                  width: 15,
+                  height: 15
+                }}
+              />
               <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
-                on {getNetworkDisplayName(txInfo.chainId)}
+                on <b>{getNetworkDisplayName(txInfo.chainId)}</b>
               </Typography>
               <NetworkAvatar
                 chainId={txInfo.chainId}
@@ -179,16 +189,13 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
                 }}
               />
             </Stack>
-
+          </Link>
+          <Box display="flex" flexDirection="row" alignItems="center" justifyContent="flex-end">
             <Chip
               size="medium"
               label={
                 (txInfo.activity !== 'self' ? (txInfo.activity === 'inbound' ? '+' : '-') : '') +
-                ('$' +
-                  (
-                    parseFloat(formatEther(BigInt(txInfo.value ?? 0))) *
-                    (tokenPrices ? tokenPrices[ETH_TOKEN] : 0)
-                  ).toFixed(1))
+                ('$' + normalizeNumberPrecision(value * price))
               }
               sx={{
                 minWidth: 60,

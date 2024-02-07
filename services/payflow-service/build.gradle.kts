@@ -41,7 +41,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-graphql")
     implementation("org.springframework.session:spring-session-jdbc")
-
+    implementation("org.springframework.boot:spring-boot-starter-aop")
     /**
      * TODO: disable for now due the following, generating types with gradle plugin is enough for now
      * There are problems with the GraphQL Schema:
@@ -77,6 +77,9 @@ dependencies {
 
     // redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+    // retry
+    implementation("org.springframework.retry:spring-retry")
 
     // db migration
     implementation("org.flywaydb:flyway-core:${property("flywayVersion")}")
