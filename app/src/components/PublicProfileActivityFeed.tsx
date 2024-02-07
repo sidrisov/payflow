@@ -69,7 +69,7 @@ export default function PublicProfileActivityFeed(props: AssetsProps) {
             })
             .map((txInfo) => (
               <PublicProfileActivityFeedSection
-                key={`activity_section_${txInfo.hash}`}
+                key={`activity_section_${txInfo.chainId}_${txInfo.hash}`}
                 txInfo={txInfo}
               />
             ))

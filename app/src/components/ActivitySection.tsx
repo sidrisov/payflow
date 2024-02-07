@@ -12,17 +12,18 @@ import {
   useTheme
 } from '@mui/material';
 import { lightGreen, red } from '@mui/material/colors';
-import { formatEther } from 'viem';
+import { formatUnits } from 'viem';
 import { IdentityType } from '../types/ProfleType';
 import { useContext } from 'react';
 import { ProfileContext } from '../contexts/UserContext';
-import { TxInfo } from '../types/ActivityFetchResultType';
+import { TxInfo, TxToken } from '../types/ActivityFetchResultType';
 import NetworkAvatar from './avatars/NetworkAvatar';
 import ProfileSectionButton from './buttons/ProfileSectionButton';
 import AddressSectionButton from './menu/AddressSectionButton';
 import { getNetworkDefaultBlockExplorerUrl } from '../utils/networks';
 import { timeAgo } from '../utils/time';
 import { ETH_TOKEN } from '../utils/erc20contracts';
+import { normalizeNumberPrecision } from '../utils/normalizeNumberPrecision';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
 function getActivityLabel(activity: string) {
@@ -66,6 +67,12 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
   const { txInfo } = props;
 
   const blockExplorerUrl = getNetworkDefaultBlockExplorerUrl(txInfo.chainId);
+
+  const token = txInfo.token ?? ({ name: 'Ether', decimals: 18, symbol: ETH_TOKEN } as TxToken);
+  const price = tokenPrices ? tokenPrices[token.symbol] : 0;
+  const value = normalizeNumberPrecision(
+    parseFloat(formatUnits(BigInt(txInfo.value ?? 0), token.decimals)) * price
+  );
 
   return (
     <Box
@@ -126,11 +133,7 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
           size="medium"
           label={
             (txInfo.activity !== 'self' ? (txInfo.activity === 'inbound' ? '+' : '-') : '') +
-            (' $' +
-              (
-                parseFloat(formatEther(BigInt(txInfo.value ?? 0))) *
-                (tokenPrices ? tokenPrices[ETH_TOKEN] : 0)
-              ).toFixed(1))
+            (' $' + value)
           }
           sx={{
             border: txInfo.activity === 'self' ? 0.5 : 0,

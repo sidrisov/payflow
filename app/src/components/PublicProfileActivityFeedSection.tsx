@@ -12,7 +12,7 @@ import {
 import { formatUnits } from 'viem';
 import { useContext, useState } from 'react';
 import { ProfileContext } from '../contexts/UserContext';
-import { TxInfo } from '../types/ActivityFetchResultType';
+import { TxInfo, TxToken } from '../types/ActivityFetchResultType';
 import NetworkAvatar from './avatars/NetworkAvatar';
 import { getNetworkDefaultBlockExplorerUrl, getNetworkDisplayName } from '../utils/networks';
 
@@ -84,6 +84,10 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
     }
   });
 
+  const token = txInfo.token ?? ({ name: 'Ether', decimals: 18, symbol: ETH_TOKEN } as TxToken);
+  const value = parseFloat(formatUnits(BigInt(txInfo.value ?? 0), token.decimals));
+  const price = tokenPrices ? tokenPrices[token.symbol] : 0;
+
   return (
     <>
       <Stack
@@ -127,15 +131,6 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
                 {timeAgo.format(new Date(txInfo.timestamp), isMobile ? 'mini' : 'round')}
               </Typography>
             </Stack>
-            {/* <Tooltip title="Transaction details">
-            <IconButton
-              href={`${defultBlockExplorerUrl}/tx/${txInfo.hash}`}
-              target="_blank"
-              size="small"
-              color="inherit">
-              <MoreHoriz fontSize="small" />
-            </IconButton>
-          </Tooltip> */}
           </Box>
 
           <Stack direction="row" alignItems="center" spacing={0.5}>
@@ -165,51 +160,42 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
               />
             )}
           </Stack>
-          <Box
-            display="flex"
-            flexDirection="row"
-            alignItems="center"
-            justifyContent="space-between">
-            <Link
-              href={`${defultBlockExplorerUrl}/tx/${txInfo.hash}`}
-              target="_blank"
-              underline="hover"
-              color="inherit"
-              overflow="clip"
-              textOverflow="ellipsis">
-              <Stack direction="row" spacing={0.5} alignItems="center">
-                <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
-                  {normalizeNumberPrecision(parseFloat(formatUnits(BigInt(txInfo.value ?? 0), 18)))}
-                </Typography>
-                <TokenAvatar
-                  tokenName={ETH_TOKEN}
-                  sx={{
-                    width: 15,
-                    height: 15
-                  }}
-                />
-                <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
-                  on <b>{getNetworkDisplayName(txInfo.chainId)}</b>
-                </Typography>
-                <NetworkAvatar
-                  chainId={txInfo.chainId}
-                  sx={{
-                    width: 15,
-                    height: 15
-                  }}
-                />
-              </Stack>
-            </Link>
-
+          <Link
+            href={`${defultBlockExplorerUrl}/tx/${txInfo.hash}`}
+            target="_blank"
+            underline="hover"
+            color="inherit"
+            overflow="clip"
+            textOverflow="ellipsis">
+            <Stack direction="row" spacing={0.5} alignItems="center">
+              <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
+                {normalizeNumberPrecision(value) + ' ' + token.name}
+              </Typography>
+              <TokenAvatar
+                tokenName={token.symbol}
+                sx={{
+                  width: 15,
+                  height: 15
+                }}
+              />
+              <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
+                on <b>{getNetworkDisplayName(txInfo.chainId)}</b>
+              </Typography>
+              <NetworkAvatar
+                chainId={txInfo.chainId}
+                sx={{
+                  width: 15,
+                  height: 15
+                }}
+              />
+            </Stack>
+          </Link>
+          <Box display="flex" flexDirection="row" alignItems="center" justifyContent="flex-end">
             <Chip
               size="medium"
               label={
                 (txInfo.activity !== 'self' ? (txInfo.activity === 'inbound' ? '+' : '-') : '') +
-                ('$' +
-                  normalizeNumberPrecision(
-                    parseFloat(formatUnits(BigInt(txInfo.value ?? 0), 18)) *
-                      (tokenPrices ? tokenPrices[ETH_TOKEN] : 0)
-                  ))
+                ('$' + normalizeNumberPrecision(value * price))
               }
               sx={{
                 minWidth: 60,
