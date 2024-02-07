@@ -61,21 +61,21 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
     }
   });
 
-  const [maxBalance, setMaxBalance] = useState<string>('...');
-  const [maxBalanceUsd, setMaxBalanceUsd] = useState<string>('...');
+  const [maxBalance, setMaxBalance] = useState<string>('0.0');
+  const [maxBalanceUsd, setMaxBalanceUsd] = useState<string>('0.0');
 
   useMemo(async () => {
     if (selectedTokenPrice) {
       const maxBalance =
-        isSuccess && balance && parseFloat(formatUnits(balance.value, balance.decimals));
+        isSuccess && balance ? parseFloat(formatUnits(balance.value, balance.decimals)) : 0;
 
       const maxBalanceUsd =
-        isSuccess &&
-        balance &&
-        parseFloat(formatUnits(balance.value, balance.decimals)) * selectedTokenPrice;
+        isSuccess && balance
+          ? parseFloat(formatUnits(balance.value, balance.decimals)) * selectedTokenPrice
+          : 0;
 
-      setMaxBalance(maxBalance ? normalizeNumberPrecision(maxBalance) : '...');
-      setMaxBalanceUsd(maxBalanceUsd ? normalizeNumberPrecision(maxBalanceUsd) : "'...'");
+      setMaxBalance(normalizeNumberPrecision(maxBalance));
+      setMaxBalanceUsd(normalizeNumberPrecision(maxBalanceUsd));
     }
   }, [isSuccess, balance, selectedTokenPrice]);
 
@@ -302,13 +302,11 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
                       <Typography>$</Typography>
                       <Typography>≈</Typography>
                       <Typography>
-                        {`${
+                        {`${normalizeNumberPrecision(
                           sendAmount && balance
-                            ? normalizeNumberPrecision(
-                                parseFloat(formatUnits(sendAmount, balance.decimals))
-                              )
-                            : '...'
-                        }
+                            ? parseFloat(formatUnits(sendAmount, balance.decimals))
+                            : 0
+                        )}
                         ${selectedToken.name}`}
                       </Typography>
                       <TokenSelectorButton

@@ -24,7 +24,6 @@ import {
 import { Hash, Address, keccak256, toBytes } from 'viem';
 import { getRelayKitForChainId, getSponsoredCount, waitForRelayTaskToComplete } from './relayer';
 import { getGasPrice } from 'wagmi/actions';
-import { arbitrumGoerli, zkSyncSepoliaTestnet } from 'viem/chains';
 import { SUPPORTED_CHAINS } from './networks';
 import { wagmiConfig } from './wagmiConfig';
 
@@ -51,13 +50,8 @@ export async function safeTransferEthWithDeploy(
     safeVersion
   } as SafeDeploymentConfig;
 
-  const fallbackHandler = getFallbackHandler(chainId);
-
   const predictedSafe: PredictedSafeProps = {
-    safeAccountConfig: {
-      ...safeAccountConfig,
-      fallbackHandler
-    },
+    safeAccountConfig,
     safeDeploymentConfig
   };
 
@@ -76,10 +70,7 @@ export async function safeTransferEthWithDeploy(
   });
 
   const predictedAddress = await safeFactory.predictSafeAddress(
-    {
-      ...safeAccountConfig,
-      fallbackHandler
-    },
+    safeAccountConfig,
     keccak256(toBytes(saltNonce))
   );
 
@@ -173,12 +164,4 @@ export async function estimateFee(isSafeDeployed: boolean, chainId: number): Pro
   console.debug(isSafeDeployed, chainId, isMainnetChain, manualFeeEstimation);
 
   return parseFloat(manualFeeEstimation.toString()).toFixed().toString();
-}
-
-export function getFallbackHandler(chainId: number): Address {
-  return chainId == zkSyncSepoliaTestnet.id
-    ? '0x2f870a80647BbC554F3a0EBD093f11B4d2a7492A'
-    : chainId === arbitrumGoerli.id
-    ? '0xf48f2b2d2a534e402487b3ee7c18c33aec0fe5e4'
-    : '0x017062a1dE2FE6b99BE3d9d37841FeD19F573804';
 }
