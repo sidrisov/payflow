@@ -50,7 +50,7 @@ export default function PublicProfileActivityFeed(props: AssetsProps) {
           {(address || profile) && <option value={2}>Between you</option>}
         </NativeSelect>
       </Box>
-      <Stack p={1} spacing={2} width="100%" maxHeight={425} overflow="auto">
+      <Stack p={1} spacing={2} width="100%" maxHeight={430} overflow="auto">
         {loading ? (
           <ActivitySkeletonSection />
         ) : fetched ? (

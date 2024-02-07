@@ -204,7 +204,7 @@ async function fetchTransactions(wallet: FlowWalletType): Promise<TxInfo[]> {
 async function fetchAnyTxs(url: string, params?: NextPageParams): Promise<any[]> {
   try {
     const response = await axios.get(url.concat(getNextPageParamsUrlProps(params)), {
-      timeout: 1500
+      timeout: 2000
     });
     if (response.status !== 200 || !response.data) {
       return [];

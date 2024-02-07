@@ -77,10 +77,9 @@ export function AccountCard(props: AccountNewDialogProps) {
         p: 2,
         width: 350,
         height: 200,
-        border: 2,
-        borderRadius: 5,
-        borderStyle: 'double',
+        border: 1.5,
         borderColor: 'divider',
+        borderRadius: 5,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between'
