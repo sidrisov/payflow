@@ -136,11 +136,11 @@ export default function AppLayout({
                       {location.pathname === '/home' ? <Home /> : <HomeOutlined />}
                     </IconButton>
 
-                    <IconButton
+                    {/* <IconButton
                       color={location.pathname === '/flows' ? 'inherit' : undefined}
                       onClick={() => comingSoonToast()}>
                       <AppsOutlined />
-                    </IconButton>
+                    </IconButton> */}
 
                     {/*
                       <IconButton

@@ -65,7 +65,7 @@ public class FarcasterHubService implements IFarcasterHubService {
 					.retrieve().bodyToMono(ValidatedFrameMessage.class).block();
 		} catch (Throwable t) {
 			log.debug("Exception calling Neynar Frame Validate API: {}", t.getMessage());
-			throw new Error(t.getMessage());
+			throw t;
 		}
 	}
 }

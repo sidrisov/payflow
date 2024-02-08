@@ -134,7 +134,7 @@ public class FarcasterFramesController {
 				validateMessage.action().url());
 
 		val fid = validateMessage.action().interactor().fid();
-		
+
 		// evict cache
 		socialGraphService.cleanCache("fc_fid:".concat(String.valueOf(fid)), null);
 		val wallet = socialGraphService.getSocialMetadata(
@@ -160,10 +160,13 @@ public class FarcasterFramesController {
 
 		String payMeta = "";
 		if (casterProfile != null) {
-			payMeta = """
-					<meta property="fc:frame:button:%s" content="Pay"/>
-					<meta property="fc:frame:button:%s:action" content="post_redirect"/>
-					""";
+			val paymentLink = dAppServiceUrl.concat(String.format("/%s?pay",
+					casterProfile.getUsername()));
+			payMeta = String.format("""
+					<meta property="fc:frame:button:next_button_index" content="Pay"/>
+					<meta property="fc:frame:button:next_button_index:action" content="link"/>
+					<meta property="fc:frame:button:next_button_index:target" content="%s" />
+					""", paymentLink);
 		}
 
 		val postUrl = apiServiceUrl.concat(CONNECT_ACTIONS);
@@ -182,7 +185,7 @@ public class FarcasterFramesController {
 
 			if (!StringUtils.isEmpty(payMeta)) {
 				val payButtonIndex = profiles.size() + 1;
-				payMeta = String.format(payMeta, payButtonIndex, payButtonIndex);
+				payMeta = payMeta.replace("next_button_index", String.valueOf(payButtonIndex));
 			}
 
 			html = String.format("""
@@ -213,7 +216,7 @@ public class FarcasterFramesController {
 
 				if (!StringUtils.isEmpty(payMeta)) {
 					val payButtonIndex = invitations.size() + 1;
-					payMeta = String.format(payMeta, payButtonIndex, payButtonIndex);
+					payMeta = payMeta.replace("next_button_index", String.valueOf(payButtonIndex));
 				}
 
 				html = String.format("""
@@ -231,7 +234,7 @@ public class FarcasterFramesController {
 			} else {
 				if (!StringUtils.isEmpty(payMeta)) {
 					val payButtonIndex = 2;
-					payMeta = String.format(payMeta, payButtonIndex, payButtonIndex);
+					payMeta = payMeta.replace("next_button_index", String.valueOf(payButtonIndex));
 				}
 
 				html = String.format("""
@@ -308,6 +311,8 @@ public class FarcasterFramesController {
 					nextButtonIndex++;
 				}
 
+				val profileLink = dAppServiceUrl.concat(String.format("/%s",
+						clickedProfile.getUsername()));
 				return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(String.format("""
 								<!DOCTYPE html>
 								<html>
@@ -317,46 +322,32 @@ public class FarcasterFramesController {
 								<meta property="fc:frame:button:2" content="Invite"/>
 								%s
 								<meta property="fc:frame:button:%s" content="Profile"/>
-								<meta property="fc:frame:button:%s:action" content="post_redirect"/>
+								<meta property="fc:frame:button:%s:action" content="link"/>
+								<meta property="fc:frame:button:%s:target" content="%s" />
 								<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
 								<meta property="fc:frame:post_url" content="%s" />
 								</head>
 								</html>
 								""", socialInsightsButton, nextButtonIndex, nextButtonIndex,
-						postUrl));
-			} else if (casterProfile != null && buttonIndex == profiles.size() + 1) {
-				log.debug("Handling profile payment action: {}", validateMessage);
-
-				try {
-					val location = new URI(dAppServiceUrl.concat(String.format("/%s?pay",
-							casterProfile.getUsername())));
-
-					log.debug("Redirecting to {}", location);
-					return ResponseEntity.status(HttpStatus.FOUND).location(location).build();
-
-				} catch (Throwable t) {
-					log.debug("Error:", t);
-				}
+						nextButtonIndex, profileLink, postUrl));
 			}
 		} else {
 			val invitations = getInvitations(addresses);
 
 			if (!invitations.isEmpty() && buttonIndex == 1) {
-				val clickedInvitee = invitations.getFirst();
-				val postUrl = apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS,
-						clickedInvitee.getIdentity()));
+				val linkUrl = dAppServiceUrl.concat("/connect");
 				return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(String.format("""
 						<!DOCTYPE html>
 						<html>
 						<head>
 						<meta property="fc:frame" content="vNext" />
 						<meta property="fc:frame:button:1" content="Sign Up"/>
-						<meta property="fc:frame:button:1:action" content="post_redirect"/>
+						<meta property="fc:frame:button:1:action" content="link"/>
+						<meta property="fc:frame:button:1:target" content="%s" />
 						<meta property="fc:frame:image" content="https://i.imgur.com/9DanrMv.jpg"/>
-						<meta property="fc:frame:post_url" content="%s" />
 						</head>
 						</html>
-						""", postUrl));
+						""", linkUrl));
 			}
 
 			if (casterProfile != null && buttonIndex == 2) {
@@ -484,35 +475,6 @@ public class FarcasterFramesController {
 							</head>
 							</html>
 							""", insightsMeta));
-				}
-			}
-
-			if ((buttonIndex == 3 && fid == casterFid) || (buttonIndex == 4 && fid != casterFid)) {
-
-				log.debug("Handling profile redirect action: {}", validateMessage);
-
-				try {
-					val location = new URI(dAppServiceUrl.concat(String.format("/%s",
-							clickedProfile.getUsername())));
-
-					log.debug("Redirecting to {}", location);
-					return ResponseEntity.status(HttpStatus.FOUND).location(location).build();
-
-				} catch (Throwable t) {
-					log.debug("Error:", t);
-				}
-			}
-		} else {
-			val invitee = invitationRepository.findFirstValidByIdentityOrCode(identity, null);
-
-			if (invitee != null & buttonIndex == 1) {
-
-				try {
-					val location = new URI(dAppServiceUrl.concat("/connect"));
-					log.debug("Redirecting to {}", location);
-					return ResponseEntity.status(HttpStatus.FOUND).location(location).build();
-				} catch (Throwable t) {
-					log.debug("Error:", t);
 				}
 			}
 		}

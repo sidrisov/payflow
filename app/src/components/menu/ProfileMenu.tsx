@@ -71,7 +71,7 @@ export function ProfileMenu({
         </ListItemIcon>
         Invite
       </MenuItem>
-      <MenuItem
+      {/* <MenuItem
         onClick={async () => {
           comingSoonToast();
         }}>
@@ -79,7 +79,7 @@ export function ProfileMenu({
           <Verified fontSize="small" />
         </ListItemIcon>
         Attest
-      </MenuItem>
+      </MenuItem> */}
       <MenuItem
         onClick={async () => {
           closeStateCallback();

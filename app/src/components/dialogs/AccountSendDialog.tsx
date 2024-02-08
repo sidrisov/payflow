@@ -396,7 +396,7 @@ export default function AccountSendDialog({
                       }`}
                     </Typography>
                   </Stack>
-                  <Tooltip title="Add a note">
+                  {/* <Tooltip title="Add a note">
                     <IconButton
                       size="small"
                       color="inherit"
@@ -406,7 +406,7 @@ export default function AccountSendDialog({
                       }}>
                       <AddComment fontSize="small" />
                     </IconButton>
-                  </Tooltip>
+                  </Tooltip> */}
                 </Box>
 
                 <Stack ml={0.5} direction="row" spacing={0.5} alignItems="center">
@@ -453,31 +453,34 @@ export default function AccountSendDialog({
               <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
             ))}
         </>
-      ) : address && address !== (sender as FlowType).owner && (
-        <Stack spacing={1} alignItems="center">
-          <Typography variant="subtitle2">
-            Please, connect following flow signer:{' '}
-            <u>
-              <b>{shortenWalletAddressLabel((sender as FlowType).owner)}</b>
-            </u>
-            {'!'}
-          </Typography>
-
-          <Stack direction="row" spacing={1} alignItems="center">
+      ) : (
+        address &&
+        address.toLowerCase() !== (sender as FlowType).owner.toLowerCase() && (
+          <Stack spacing={1} alignItems="center">
             <Typography variant="subtitle2">
-              Currently connected signer:{' '}
+              Please, connect following flow signer:{' '}
               <u>
-                <b>{shortenWalletAddressLabel(address)}</b>
+                <b>{shortenWalletAddressLabel((sender as FlowType).owner)}</b>
               </u>
+              {'!'}
             </Typography>
-            <IconButton
-              size="small"
-              onClick={async () => await disconnect(wagmiConfig)}
-              sx={{ color: red.A700 }}>
-              <Logout />
-            </IconButton>
+
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Typography variant="subtitle2">
+                Currently connected signer:{' '}
+                <u>
+                  <b>{shortenWalletAddressLabel(address)}</b>
+                </u>
+              </Typography>
+              <IconButton
+                size="small"
+                onClick={async () => await disconnect(wagmiConfig)}
+                sx={{ color: red.A700 }}>
+                <Logout />
+              </IconButton>
+            </Stack>
           </Stack>
-        </Stack>
+        )
       )}
     </>
   );
