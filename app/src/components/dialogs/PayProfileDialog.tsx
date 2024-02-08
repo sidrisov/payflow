@@ -353,7 +353,7 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
                   {`max: ${maxBalance} ${selectedToken?.name} ≈ $${maxBalanceUsd}`}
                 </Typography>
               </Stack>
-              <Tooltip title="Add a note">
+              {/* <Tooltip title="Add a note">
                 <IconButton
                   size="small"
                   color="inherit"
@@ -363,7 +363,7 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
                   }}>
                   <AddComment fontSize="small" />
                 </IconButton>
-              </Tooltip>
+              </Tooltip> */}
             </Box>
           </Box>
         )}

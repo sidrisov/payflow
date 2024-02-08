@@ -396,7 +396,7 @@ export default function AccountSendDialog({
                       }`}
                     </Typography>
                   </Stack>
-                  <Tooltip title="Add a note">
+                  {/* <Tooltip title="Add a note">
                     <IconButton
                       size="small"
                       color="inherit"
@@ -406,7 +406,7 @@ export default function AccountSendDialog({
                       }}>
                       <AddComment fontSize="small" />
                     </IconButton>
-                  </Tooltip>
+                  </Tooltip> */}
                 </Box>
 
                 <Stack ml={0.5} direction="row" spacing={0.5} alignItems="center">
