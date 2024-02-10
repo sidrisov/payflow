@@ -76,12 +76,12 @@ export function SearchIdentityListItem(
               <InviteChip
                 identity={identity}
                 onClick={async () => {
-                  if (profile.identityInviteLimit === -1) {
+                  if (profile?.identityInviteLimit === -1) {
                     comingSoonToast();
                     return;
                   }
 
-                  if (profile.identityInviteLimit === 0) {
+                  if (profile?.identityInviteLimit === 0) {
                     toast.warn("You don't have any invites");
                     return;
                   }

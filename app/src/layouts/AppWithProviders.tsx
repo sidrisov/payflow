@@ -66,7 +66,7 @@ export default function AppWithProviders() {
 
           setProfile(profile);
         } else {
-          navigate('/connect');
+          //navigate('/connect');
         }
       } catch (error) {
         if (axios.isAxiosError(error)) {
@@ -103,13 +103,11 @@ export default function AppWithProviders() {
               {loading ? (
                 <CenteredCircularProgress />
               ) : (
-                profile && (
-                  <App
-                    profile={profile}
-                    appSettings={appSettings}
-                    setAppSettings={setAppSettings}
-                  />
-                )
+                <App
+                  profile={profile}
+                  appSettings={appSettings}
+                  setAppSettings={setAppSettings}
+                />
               )}
             </CustomThemeProvider>
           </RainbowKitProvider>

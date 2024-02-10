@@ -1,9 +1,11 @@
-import { getDefaultConfig } from '@rainbow-me/rainbowkit';
+import { getDefaultConfig, getDefaultWallets } from '@rainbow-me/rainbowkit';
+import { trustWallet, injectedWallet } from '@rainbow-me/rainbowkit/wallets';
 import { SUPPORTED_CHAINS } from '../utils/networks';
 import { http, fallback } from 'viem';
-import { mainnet, base, optimism, goerli, baseSepolia, zora, sepolia } from 'viem/chains';
+import { mainnet, base, optimism, baseSepolia, zora, sepolia } from 'viem/chains';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
+const { wallets } = getDefaultWallets();
 
 export const wagmiConfig = getDefaultConfig({
   appName: 'Payflow',
@@ -29,5 +31,16 @@ export const wagmiConfig = getDefaultConfig({
     [baseSepolia.id]: http(
       `https://base-sepolia.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`
     )
-  }
+  },
+  syncConnectedChain: true,
+  appDescription: 'On-chain Social Payments',
+  appUrl: 'https://payflow.me',
+  appIcon: 'https://payflow.me/favicon.ico',
+  wallets: [
+    ...wallets,
+    {
+      groupName: 'More',
+      wallets: [trustWallet, injectedWallet]
+    }
+  ]
 });

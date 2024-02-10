@@ -1,5 +1,5 @@
 import { Box, Container, useMediaQuery, useTheme } from '@mui/material';
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { AccountCard } from '../components/cards/AccountCard';
 import { ProfileContext } from '../contexts/UserContext';
@@ -13,6 +13,7 @@ import { FlowType } from '../types/FlowType';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { useTransactionsFetcher } from '../utils/hooks/useTransactionsFetcher';
 import NetworkSelectorSection from '../components/NetworkSelectorSection';
+import { useNavigate } from 'react-router-dom';
 
 export default function Accounts() {
   const theme = useTheme();
@@ -20,16 +21,24 @@ export default function Accounts() {
 
   const { isAuthenticated, profile } = useContext(ProfileContext);
 
-  const { flows } = profile;
+  const navigate = useNavigate();
+
+  const { flows } = profile ?? { flows: [] };
 
   const [assetsOrActivityView, setAssetsOrActivityView] = useState<'assets' | 'activity'>('assets');
 
   const [selectedFlow, setSelectedFlow] = useState<FlowType>();
 
+  useEffect(() => {
+    if (!profile) {
+      navigate('/search');
+    }
+  }, []);
+
   // TODO: for now just select the first, later on we need to choose the main one
   useMemo(async () => {
     if (flows && flows.length > 0) {
-      setSelectedFlow(flows.find((f) => f.uuid === profile.defaultFlow?.uuid));
+      setSelectedFlow(flows.find((f) => f.uuid === profile?.defaultFlow?.uuid));
     }
   }, [flows]);
 

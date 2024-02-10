@@ -18,7 +18,6 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
         elevation={3}
         sx={{
           m: 2,
-          mt: 5,
           p: 2,
           border: 1.5,
           borderColor: 'divider',

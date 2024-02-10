@@ -30,9 +30,9 @@ export default function Profile() {
 
   const { profile } = useContext(ProfileContext);
 
-  const [displayName, setDisplayName] = useState<string>(profile.displayName ?? '');
-  const [username, setUsername] = useState<string>(profile.username ?? '');
-  const [profileImage, setProfileImage] = useState<string>(profile.profileImage ?? '');
+  const [displayName, setDisplayName] = useState<string>(profile?.displayName ?? '');
+  const [username, setUsername] = useState<string>(profile?.username ?? '');
+  const [profileImage, setProfileImage] = useState<string>(profile?.profileImage ?? '');
 
   const [usernameAvailable, setUsernameAvailable] = useState<boolean>();
   const [usernameValid, setUsernameValid] = useState<boolean>();
@@ -43,7 +43,7 @@ export default function Profile() {
 
   useMemo(async () => {
     if (username) {
-      if (username === profile.username) {
+      if (username === profile?.username) {
         setUsernameAvailable(true);
         setUsernameValid(true);
         return;
@@ -96,99 +96,101 @@ export default function Profile() {
   }
 
   return (
-    <>
-      <Helmet>
-        <title> Payflow | Profile </title>
-      </Helmet>
-      <Container maxWidth="xs" sx={{ height: '100%' }}>
-        <Box
-          height="100%"
-          display="flex"
-          flexDirection="column"
-          justifyContent={isMobile ? 'space-between' : 'flex-start'}
-          sx={{ p: 3 }}>
-          <Stack mb={3} direction="column" spacing={3}>
-            <ProfileSection profile={profile} avatarSize={48} maxWidth={200} />
-            <TextField
-              fullWidth
-              value={displayName}
-              label={'Display Name'}
-              InputProps={{
-                inputProps: { maxLength: 16, inputMode: 'text' },
-                sx: { borderRadius: 5 }
-              }}
-              onChange={async (event) => {
-                setDisplayName(event.target.value);
-              }}
-            />
+    profile && (
+      <>
+        <Helmet>
+          <title> Payflow | Profile </title>
+        </Helmet>
+        <Container maxWidth="xs" sx={{ height: '100%' }}>
+          <Box
+            height="100%"
+            display="flex"
+            flexDirection="column"
+            justifyContent={isMobile ? 'space-between' : 'flex-start'}
+            sx={{ p: 3 }}>
+            <Stack mb={3} direction="column" spacing={3}>
+              <ProfileSection profile={profile} avatarSize={48} maxWidth={200} />
+              <TextField
+                fullWidth
+                value={displayName}
+                label={'Display Name'}
+                InputProps={{
+                  inputProps: { maxLength: 16, inputMode: 'text' },
+                  sx: { borderRadius: 5 }
+                }}
+                onChange={async (event) => {
+                  setDisplayName(event.target.value);
+                }}
+              />
 
-            <TextField
-              error={username !== '' && (!usernameAvailable || !usernameValid)}
-              helperText={
-                (username && !usernameAvailable && 'username not available') ||
-                (!usernameValid && 'username invalid format')
-              }
-              fullWidth
-              value={username}
-              label={'Username'}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Typography variant="subtitle2">payflow.me/</Typography>
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    {username ? (
-                      usernameAvailable && usernameValid ? (
-                        <Check sx={{ color: green.A700 }} />
+              <TextField
+                error={username !== '' && (!usernameAvailable || !usernameValid)}
+                helperText={
+                  (username && !usernameAvailable && 'username not available') ||
+                  (!usernameValid && 'username invalid format')
+                }
+                fullWidth
+                value={username}
+                label={'Username'}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Typography variant="subtitle2">payflow.me/</Typography>
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      {username ? (
+                        usernameAvailable && usernameValid ? (
+                          <Check sx={{ color: green.A700 }} />
+                        ) : (
+                          <Error color="error" />
+                        )
                       ) : (
-                        <Error color="error" />
-                      )
-                    ) : (
-                      <></>
-                    )}
-                  </InputAdornment>
-                ),
-                inputProps: { maxLength: 16, inputMode: 'text' },
-                sx: { borderRadius: 5 }
-              }}
-              onChange={async (event) => {
-                setUsername(event.target.value.toLowerCase());
-              }}
-            />
+                        <></>
+                      )}
+                    </InputAdornment>
+                  ),
+                  inputProps: { maxLength: 16, inputMode: 'text' },
+                  sx: { borderRadius: 5 }
+                }}
+                onChange={async (event) => {
+                  setUsername(event.target.value.toLowerCase());
+                }}
+              />
 
-            <TextField
+              <TextField
+                fullWidth
+                value={profileImage}
+                label={'Profile Image'}
+                InputProps={{
+                  inputProps: { maxLength: 128, inputMode: 'url' },
+                  sx: { borderRadius: 5 },
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      {profileImage && <Avatar src={profileImage} />}
+                    </InputAdornment>
+                  )
+                }}
+                onChange={async (event) => {
+                  setProfileImage(event.target.value);
+                }}
+              />
+            </Stack>
+            <LoadingButton
+              loading={loadingUpdateProfile}
+              disabled={!usernameAvailable || !usernameValid || !username}
               fullWidth
-              value={profileImage}
-              label={'Profile Image'}
-              InputProps={{
-                inputProps: { maxLength: 128, inputMode: 'url' },
-                sx: { borderRadius: 5 },
-                endAdornment: (
-                  <InputAdornment position="end">
-                    {profileImage && <Avatar src={profileImage} />}
-                  </InputAdornment>
-                )
-              }}
-              onChange={async (event) => {
-                setProfileImage(event.target.value);
-              }}
-            />
-          </Stack>
-          <LoadingButton
-            loading={loadingUpdateProfile}
-            disabled={!usernameAvailable || !usernameValid || !username}
-            fullWidth
-            variant="outlined"
-            size="large"
-            color="inherit"
-            onClick={save}
-            sx={{ borderRadius: 5 }}>
-            Save
-          </LoadingButton>
-        </Box>
-      </Container>
-    </>
+              variant="outlined"
+              size="large"
+              color="inherit"
+              onClick={save}
+              sx={{ borderRadius: 5 }}>
+              Save
+            </LoadingButton>
+          </Box>
+        </Container>
+      </>
+    )
   );
 }
