@@ -11,10 +11,11 @@ import {
   Button,
   Avatar,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  Container
 } from '@mui/material';
 
-import { Home, HomeOutlined, AppsOutlined } from '@mui/icons-material';
+import { Home, HomeOutlined } from '@mui/icons-material';
 
 import { ProfileContext } from '../contexts/UserContext';
 import HideOnScroll from '../components/HideOnScroll';
@@ -27,18 +28,18 @@ import { AppSettings } from '../types/AppSettingsType';
 import { ProfileMenu } from '../components/menu/ProfileMenu';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import HomeLogo from '../components/Logo';
-import { comingSoonToast } from '../components/Toasts';
 import ProfileAvatar from '../components/avatars/ProfileAvatar';
 import DefaultFlowOnboardingDialog from '../components/dialogs/DefaultFlowOnboardingDialog';
 import axios from 'axios';
 import { DEGEN_TOKEN, ETH_TOKEN, TokenPrices, USDC_TOKEN } from '../utils/erc20contracts';
+import { DAPP_URL } from '../utils/urlConstants';
 
 export default function AppLayout({
   profile,
   appSettings,
   setAppSettings
 }: {
-  profile: ProfileType;
+  profile: ProfileType | undefined;
   appSettings: AppSettings;
   setAppSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
 }) {
@@ -100,7 +101,7 @@ export default function AppLayout({
     if (profile && profile.username) {
       setAuthorized(true);
     } else {
-      navigate('/connect');
+      //navigate('/connect');
     }
   }, [profile]);
 
@@ -113,7 +114,7 @@ export default function AppLayout({
         setAppSettings,
         tokenPrices
       }}>
-      {authorized && (
+      <Container maxWidth="xs">
         <Box height="100vh" display="flex" flexDirection="column" justifyContent="flex-start">
           <HideOnScroll>
             <AppBar
@@ -128,86 +129,94 @@ export default function AppLayout({
                   alignItems="center"
                   justifyContent="space-between"
                   flexGrow={1}>
-                  <HomeLogo />
                   <Stack direction="row" alignItems="center">
-                    <IconButton
-                      color={location.pathname === '/home' ? 'inherit' : undefined}
-                      onClick={() => navigate('/home')}>
-                      {location.pathname === '/home' ? <Home /> : <HomeOutlined />}
-                    </IconButton>
-
-                    {/* <IconButton
-                      color={location.pathname === '/flows' ? 'inherit' : undefined}
-                      onClick={() => comingSoonToast()}>
-                      <AppsOutlined />
-                    </IconButton> */}
-
-                    {/*
+                    {profile && (
                       <IconButton
-                        color={location.pathname === '/requests' ? 'inherit' : undefined}
-                        onClick={() => comingSoonToast()}>
-                        {location.pathname === '/requests' ? <Payments /> : <PaymentsOutlined />}
-                      </IconButton> */}
-
-                    <Box
-                      ml={1}
-                      display="flex"
-                      flexDirection="row"
-                      alignItems="center"
-                      component={Button}
-                      color="inherit"
-                      sx={{
-                        width: 120,
-                        borderRadius: 5,
-                        border: 1,
-                        borderColor: 'inherit',
-                        textTransform: 'none',
-                        justifyContent: 'space-evenly'
-                      }}
-                      onClick={async () => {
-                        setOpenSearchIdentity(true);
-                      }}>
-                      <Avatar src="payflow.png" sx={{ width: 24, height: 24 }} />
-                      <Typography variant="subtitle2">Search ... </Typography>
-                    </Box>
+                        color={location.pathname === '/home' ? 'inherit' : undefined}
+                        onClick={() => navigate('/home')}>
+                        {location.pathname === '/home' ? <Home /> : <HomeOutlined />}
+                      </IconButton>
+                    )}
+                    <HomeLogo />
                   </Stack>
+                  {location.pathname !== '/search' && (
+                    <Stack direction="row" alignItems="center">
+                      {/*                   <IconButton
+                    color={location.pathname === '/flows' ? 'inherit' : undefined}
+                    onClick={() => comingSoonToast()}>
+                    <AppsOutlined />
+                  </IconButton> */}
+                      <Box
+                        ml={1}
+                        display="flex"
+                        flexDirection="row"
+                        alignItems="center"
+                        component={Button}
+                        color="inherit"
+                        sx={{
+                          width: 120,
+                          borderRadius: 5,
+                          border: 1,
+                          borderColor: 'inherit',
+                          textTransform: 'none',
+                          justifyContent: 'space-evenly'
+                        }}
+                        onClick={async () => {
+                          setOpenSearchIdentity(true);
+                        }}>
+                        <Avatar src="payflow.png" sx={{ width: 24, height: 24 }} />
+                        <Typography variant="subtitle2">Search ... </Typography>
+                      </Box>
+                    </Stack>
+                  )}
                   <Stack direction="row" spacing={0.5} alignItems="center">
-                    {/*                       <IconButton color="inherit" onClick={() => comingSoonToast()}>
-                        <Badge variant="dot" color="info">
-                          <NotificationsOutlined />
-                        </Badge>
-                      </IconButton> */}
-
-                    <IconButton
-                      size="small"
-                      onClick={async (event) => {
-                        setProfileMenuAnchorEl(event.currentTarget);
-                        setOpenProfileMenu(true);
-                      }}>
-                      <ProfileAvatar profile={profile} sx={{ width: 36, height: 36 }} />
-                    </IconButton>
+                    {profile ? (
+                      <IconButton
+                        size="small"
+                        onClick={async (event) => {
+                          setProfileMenuAnchorEl(event.currentTarget);
+                          setOpenProfileMenu(true);
+                        }}>
+                        <ProfileAvatar profile={profile} sx={{ width: 36, height: 36 }} />
+                      </IconButton>
+                    ) : (
+                      <Button
+                        variant="text"
+                        color="inherit"
+                        size="medium"
+                        href={`${DAPP_URL}/connect`}
+                        sx={{
+                          borderRadius: 5,
+                          fontWeight: 'bold',
+                          fontSize: 18,
+                          fontFamily: 'monospace',
+                          textTransform: 'none'
+                        }}>
+                        sign in
+                      </Button>
+                    )}
                   </Stack>
                 </Box>
               </Toolbar>
             </AppBar>
           </HideOnScroll>
-
-          {profile && profile.defaultFlow && (
-            <Box display="flex" mt={3} height="100%">
-              <Outlet />
-            </Box>
-          )}
+          <Box display="flex" mt={3} height="100%">
+            <Outlet />
+          </Box>
         </Box>
+      </Container>
+
+      {profile && (
+        <ProfileMenu
+          profile={profile}
+          anchorEl={profileMenuAnchorEl}
+          open={openProfileMenu}
+          onClose={() => setOpenProfileMenu(false)}
+          closeStateCallback={() => setOpenProfileMenu(false)}
+        />
       )}
-      <ProfileMenu
-        profile={profile}
-        anchorEl={profileMenuAnchorEl}
-        open={openProfileMenu}
-        onClose={() => setOpenProfileMenu(false)}
-        closeStateCallback={() => setOpenProfileMenu(false)}
-      />
       <SearchIdentityDialog
-        address={profile.identity}
+        address={profile?.identity}
         profileRedirect={true}
         open={openSearchIdentity}
         closeStateCallback={() => {

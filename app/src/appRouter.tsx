@@ -3,13 +3,12 @@ import Accounts from './pages/Accounts';
 import Page404 from './pages/Page404';
 
 import AppWithProviders from './layouts/AppWithProviders';
-import PublicProfileWithProviders from './layouts/PublicProfileWithProviders';
 import LoginWithProviders from './layouts/LoginWithProviders';
 import Profile from './pages/Profile';
 import Invite from './pages/Invite';
 import Leaderboard from './layouts/Leadearboard';
 import Advanced from './pages/Advanced';
-import ProfileStatus from './pages/fc-frames/ProfileStatus';
+import PublicProfile from './layouts/PublicProfile';
 
 export const appRoutes = ['/home', '/flows', '/requests', '/settings'];
 
@@ -41,6 +40,13 @@ export const appRouter = createBrowserRouter([
         path: 'invite',
         element: <Invite />
       },
+      { path: '/search', element: <PublicProfile />, errorElement: <Page404 /> },
+      { path: '/leaderboard', element: <Leaderboard />, errorElement: <Page404 /> },
+      {
+        path: '/:username',
+        element: <PublicProfile />,
+        errorElement: <Page404 />
+      },
       /*
       {
         path: 'flows',
@@ -51,12 +57,7 @@ export const appRouter = createBrowserRouter([
       { path: '404', element: <Page404 /> },
       { path: '*', element: <Navigate to="/404" replace /> }
     ]
-  },
-  {
-    path: '/frames/status',
-    element: <ProfileStatus />,
-    errorElement: <Page404 />
-  },
+  }
   /*{
     path: '/jar/:uuid',
     element: <SendWithProviders />,
@@ -67,13 +68,4 @@ export const appRouter = createBrowserRouter([
     element: <PaymentRequestWithProviders />,
     errorElement: <Page404 />
   }, */
-
-  { path: '/search', element: <PublicProfileWithProviders />, errorElement: <Page404 /> },
-  { path: '/leaderboard', element: <Leaderboard />, errorElement: <Page404 /> },
-
-  {
-    path: '/:username',
-    element: <PublicProfileWithProviders />,
-    errorElement: <Page404 />
-  }
 ]);

@@ -23,8 +23,8 @@ export function SearchResultView({
   profileRedirect,
   filterByFafourites = false,
   closeStateCallback,
-  selectIdentityCallback: selectProfileCallback,
-  updateIdentityCallback: setFavouriteCallback,
+  selectIdentityCallback,
+  updateIdentityCallback,
   identities
 }: {
   filterByFafourites?: boolean;
@@ -46,19 +46,19 @@ export function SearchResultView({
     const [page, setPage] = useState<number>(1);
 
     const onIdentityClick =
-      selectProfileCallback || view === 'profile'
+      selectIdentityCallback || view === 'profile'
         ? (identity: IdentityType) => {
             if (view === 'profile') {
               if (identity.profile) {
                 if (profileRedirect) {
                   navigate(`/${identity.profile.username}`);
-                } else if (selectProfileCallback) {
-                  selectProfileCallback({ type: 'profile', identity: identity });
+                } else if (selectIdentityCallback) {
+                  selectIdentityCallback({ type: 'profile', identity: identity });
                 }
                 closeStateCallback();
               }
-            } else if (selectProfileCallback) {
-              selectProfileCallback({ type: 'address', identity: identity });
+            } else if (selectIdentityCallback) {
+              selectIdentityCallback({ type: 'address', identity: identity });
               closeStateCallback();
             }
           }
@@ -79,7 +79,7 @@ export function SearchResultView({
                   key={view === 'profile' ? identity.profile?.username : identity.address}
                   view={view}
                   identity={identity}
-                  updateIdentityCallback={setFavouriteCallback}
+                  updateIdentityCallback={updateIdentityCallback}
                   {...(onIdentityClick ? { onClick: () => onIdentityClick?.(identity) } : {})}
                 />
               ))}

@@ -5,7 +5,7 @@ import { TokenPrices } from '../utils/erc20contracts';
 
 export interface ProfileContextType {
   isAuthenticated: boolean;
-  profile: ProfileType;
+  profile: ProfileType | undefined;
   appSettings: AppSettings;
   setAppSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
   tokenPrices: TokenPrices | undefined;

@@ -8,9 +8,13 @@ import { useMemo, useState } from 'react';
 import { API_URL } from '../../utils/urlConstants';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+
+//import Capsule, { Environment, Button, Modal } from '@usecapsule/web-sdk';
 import { FarcasterAccountsCard } from './FarcasterAccountsCard';
 
 const FARCASTER_CONNECT_ENABLED = import.meta.env.VITE_FARCASTER_CONNECT_ENABLED === 'true';
+
+//const capsule = new Capsule(Environment.DEVELOPMENT, 'e2ad011eabf2e68e56603572d03c9851');
 
 function FeatureSection({ description }: { description: string }) {
   return (
@@ -123,6 +127,8 @@ export function ConnectCard() {
               </Box>
             </>
           )}
+          {/* <Divider flexItem>or</Divider>
+          <Button capsule={capsule} appName="Payflow" twoFactorAuthEnabled={false} /> */}
         </Stack>
       </Box>
     </Card>

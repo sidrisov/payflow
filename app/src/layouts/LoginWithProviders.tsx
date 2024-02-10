@@ -168,7 +168,7 @@ export default function AppWithProviders() {
             theme={appSettings.darkMode ? customDarkTheme : customLightTheme}
             avatar={CustomAvatar}
             modalSize="compact"
-            initialChain={1}>
+            appInfo={{ appName: 'Payflow', learnMoreUrl: 'https://payflow.super.site' }}>
             <AuthKitProvider config={config}>
               <Login authStatus={authStatus} profile={profile} settings={appSettings} />
             </AuthKitProvider>
