@@ -4,7 +4,6 @@ import {
   Box,
   IconButton,
   TextField,
-  Button,
   InputAdornment,
   Tooltip
 } from '@mui/material';
@@ -14,9 +13,7 @@ import { JsonRpcSigner } from 'ethers';
 import { useContext, useMemo, useRef, useState } from 'react';
 import { useAccount, useBalance, useConfig } from 'wagmi';
 import {
-  AddComment,
   AttachMoney,
-  ExpandMore,
   LocalGasStation,
   Logout,
   PriorityHigh
@@ -28,15 +25,11 @@ import { Address, formatEther, parseEther } from 'viem';
 import { useEthersSigner } from '../../utils/hooks/useEthersSigner';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { IdentityType } from '../../types/ProfleType';
-import { ProfileSection } from '../ProfileSection';
-import { AddressSection } from '../AddressSection';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { ProfileContext } from '../../contexts/UserContext';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { useSafeTransfer } from '../../utils/hooks/useSafeTransfer';
-import { comingSoonToast } from '../Toasts';
 import { updateWallet } from '../../services/flow';
-import { PayflowChip } from '../chips/IdentityStatusChips';
 import {
   estimateFee as estimateSafeTransferFee,
   isSafeSponsored
@@ -45,7 +38,6 @@ import { green, red } from '@mui/material/colors';
 import { NetworkSelectorButton } from '../buttons/NetworkSelectorButton';
 import { TransferToastContent } from '../toasts/TransferToastContent';
 import { LoadingSwitchNetworkButton } from '../buttons/LoadingSwitchNetworkButton';
-import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
 import { shortenWalletAddressLabel } from '../../utils/address';
 import { useEthersProvider } from '../../utils/hooks/useEthersProvider';
 import { disconnect } from 'wagmi/actions';
@@ -53,6 +45,7 @@ import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';
 import { getGasFeeText } from '../../types/gas';
 import { PaymentDialogProps } from './PaymentDialog';
 import { ETH_TOKEN } from '../../utils/erc20contracts';
+import { RecipientField } from '../RecipientField';
 
 export default function AccountSendDialog({
   setOpenSearchIdentity,
@@ -272,43 +265,7 @@ export default function AccountSendDialog({
       {address && address === (sender as FlowType).owner ? (
         <>
           <Stack width="100%" spacing={2} alignItems="center">
-            <Box
-              display="flex"
-              flexDirection="row"
-              width="100%"
-              alignItems="center"
-              justifyContent="space-between"
-              {...(setOpenSearchIdentity
-                ? { component: Button, onClick: async () => setOpenSearchIdentity(true) }
-                : {})}
-              color="inherit"
-              sx={{
-                height: 56,
-                border: 1,
-                borderRadius: 5,
-                p: 1.5,
-                textTransform: 'none'
-              }}>
-              {recipient &&
-                (recipient.type === 'profile'
-                  ? recipient.identity.profile && (
-                      <ProfileSection maxWidth={200} profile={recipient.identity.profile} />
-                    )
-                  : recipient.identity.meta && (
-                      <AddressSection maxWidth={200} identity={recipient.identity} />
-                    ))}
-
-              {!recipient && (
-                <Typography alignSelf="center" flexGrow={1}>
-                  Choose Recipient
-                </Typography>
-              )}
-
-              <Stack direction="row">
-                {recipient && recipient.type === 'profile' && <PayflowChip />}
-                <ExpandMore />
-              </Stack>
-            </Box>
+            <RecipientField recipient={recipient} setOpenSearchIdentity={setOpenSearchIdentity} />
             {recipient && selectedWallet && (
               <Box width="100%" display="flex" flexDirection="column">
                 <TextField
