@@ -11,6 +11,7 @@ export function ProfileDisplayNameWithLink({
 
   return (
     <Link
+      aria-haspopup="true"
       maxWidth={200}
       href={socialLink('payflow', profile.username)}
       target="_blank"

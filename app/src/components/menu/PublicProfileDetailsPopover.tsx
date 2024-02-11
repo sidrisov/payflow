@@ -10,6 +10,8 @@ export function PublicProfileDetailsPopover({
 }: PopoverProps & { profile: ProfileType }) {
   return (
     <Popover
+      id="public-profile-popover"
+      disableRestoreFocus
       {...props}
       sx={{
         mt: 1,
@@ -21,16 +23,11 @@ export function PublicProfileDetailsPopover({
           pb: 2,
           display: 'flex',
           flexDirection: 'column'
-        }
+        },
+        pointerEvents: 'none'
       }}
-      anchorOrigin={{
-        vertical: 'top',
-        horizontal: 'center'
-      }}
-      transformOrigin={{
-        vertical: 'bottom',
-        horizontal: 'center'
-      }}>
+      transformOrigin={{ horizontal: 'left', vertical: 'top' }}
+      anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
       <IconButton
         color="inherit"
         size="small"

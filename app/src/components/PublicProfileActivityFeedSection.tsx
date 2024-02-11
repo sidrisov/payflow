@@ -112,9 +112,14 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
               {txInfo.fromProfile ? (
                 <ProfileDisplayNameWithLink
                   profile={txInfo.fromProfile}
-                  onMouseOverCapture={(event) => {
+                  aria-owns={popoverProfile ? 'public-profile-popover' : undefined}
+                  onMouseEnter={(event) => {
                     setProfileDetailsPopoverAnchorEl(event.currentTarget);
                     setPopOverProfile(txInfo.fromProfile);
+                  }}
+                  onMouseLeave={() => {
+                    setProfileDetailsPopoverAnchorEl(null);
+                    setPopOverProfile(undefined);
                   }}
                 />
               ) : (
@@ -147,9 +152,14 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
             {txInfo.toProfile ? (
               <ProfileDisplayNameWithLink
                 profile={txInfo.toProfile}
-                onMouseOverCapture={(event) => {
+                aria-owns={popoverProfile ? 'public-profile-popover' : undefined}
+                onMouseEnter={(event) => {
                   setProfileDetailsPopoverAnchorEl(event.currentTarget);
                   setPopOverProfile(txInfo.toProfile);
+                }}
+                onMouseLeave={() => {
+                  setProfileDetailsPopoverAnchorEl(null);
+                  setPopOverProfile(undefined);
                 }}
               />
             ) : (
