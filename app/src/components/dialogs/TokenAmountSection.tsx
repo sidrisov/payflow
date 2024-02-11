@@ -56,8 +56,13 @@ export function TokenAmountSection({
   });
 
   useEffect(() => {
+    // don't update if selected token was already selected
+    if (selectedToken && compatibleTokens.find((t) => t === selectedToken)) {
+      return;
+    }
+
     setSelectedToken(compatibleTokens[0]);
-  }, [compatibleTokens, chain]);
+  }, [selectedToken, compatibleTokens, chain]);
 
   useMemo(() => {
     const tokens = getSupportedTokens(selectedWallet.network);
