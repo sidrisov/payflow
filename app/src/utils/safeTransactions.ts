@@ -21,15 +21,16 @@ import {
   SafeVersion
 } from '@safe-global/safe-core-sdk-types';
 
-import { Hash, Address, keccak256, toBytes } from 'viem';
+import { Hash, Address, keccak256, toBytes, erc20Abi, encodeFunctionData } from 'viem';
 import { getRelayKitForChainId, getSponsoredCount, waitForRelayTaskToComplete } from './relayer';
 import { getGasPrice } from 'wagmi/actions';
 import { SUPPORTED_CHAINS } from './networks';
 import { wagmiConfig } from './wagmiConfig';
+import { ETH, ETH_TOKEN, Token } from './erc20contracts';
 
 export async function safeTransferEthWithDeploy(
   ethersSigner: JsonRpcSigner,
-  tx: { from: Address; to: Address; amount: bigint },
+  tx: { from: Address; to: Address; amount: bigint; token?: Token },
   safeAccountConfig: SafeAccountConfig,
   safeVersion: SafeVersion,
   saltNonce: string,
@@ -79,12 +80,23 @@ export async function safeTransferEthWithDeploy(
   );
 
   const safeTransactions: MetaTransactionData[] = [
-    {
-      to: tx.to,
-      value: tx.amount.toString(),
-      data: '0x',
-      operation: OperationType.Call
-    }
+    tx.token && tx.token !== ETH
+      ? {
+          to: tx.token.address,
+          value: '0',
+          data: encodeFunctionData({
+            abi: erc20Abi,
+            functionName: 'transfer',
+            args: [tx.to, tx.amount]
+          }),
+          operation: OperationType.Call
+        }
+      : {
+          to: tx.to,
+          value: tx.amount.toString(),
+          data: '0x',
+          operation: OperationType.Call
+        }
   ];
 
   console.debug('Safe txs', JSON.stringify(safeTransactions, null, 2));

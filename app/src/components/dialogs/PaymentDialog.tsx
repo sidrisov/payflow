@@ -82,7 +82,7 @@ export default function PaymentDialog({
             alignItems="center"
             justifyContent={dialogJustifyContent}>
             {isConnectWalletRequired ? (
-              <LoadingConnectWalletButton fullWidth />
+              <LoadingConnectWalletButton />
             ) : !isAddress(sender as any) ? (
               <AccountSendDialog {...{ sender, recipient, closeStateCallback, ...props }} />
             ) : (
@@ -142,3 +142,15 @@ export function PaymentDialogTitle({
     </DialogTitle>
   );
 }
+
+/* <Tooltip title="Add a note">
+                <IconButton
+                  size="small"
+                  color="inherit"
+                  sx={{ mr: 0.5, alignSelf: 'flex-end' }}
+                  onClick={() => {
+                    comingSoonToast();
+                  }}>
+                  <AddComment fontSize="small" />
+                </IconButton>
+              </Tooltip> */

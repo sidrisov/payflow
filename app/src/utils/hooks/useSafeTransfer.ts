@@ -6,6 +6,7 @@ import { JsonRpcSigner } from 'ethers';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { useWaitForTransactionReceipt } from 'wagmi';
+import { Token } from '../erc20contracts';
 
 export type SafeWallet = {
   chain: Chain;
@@ -64,7 +65,7 @@ export const useSafeTransfer = (): {
 
   const transfer = useCallback(async function (
     ethersSigner: JsonRpcSigner,
-    tx: { from: Address; to: Address; amount: bigint; safeSigner?: Address },
+    tx: { from: Address; to: Address; amount: bigint; token?: Token; safeSigner?: Address },
     safeAccountConfig: SafeAccountConfig,
     safeVersion: SafeVersion,
     saltNonce: string

@@ -1,6 +1,6 @@
 import { Stack } from '@mui/material';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useAccount } from 'wagmi';
 import { Id, toast } from 'react-toastify';
 
@@ -11,90 +11,45 @@ import { IdentityType } from '../../types/ProfleType';
 import { TransferToastContent } from '../toasts/TransferToastContent';
 import { LoadingSwitchNetworkButton } from '../buttons/LoadingSwitchNetworkButton';
 import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
-import { SUPPORTED_CHAINS } from '../../utils/networks';
 import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';
 import { PaymentDialogProps } from './PaymentDialog';
-import { ETH_TOKEN, Token, getSupportedTokens } from '../../utils/erc20contracts';
+import { ETH_TOKEN, Token } from '../../utils/erc20contracts';
 import { RecipientField } from '../RecipientField';
 import { TokenAmountSection } from './TokenAmountSection';
+import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
 
 export default function PayProfileDialog({ sender, recipient }: PaymentDialogProps) {
   const { chain } = useAccount();
 
-  const [compatibleWallets, setCompatibleWallets] = useState<FlowWalletType[]>([]);
-  const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
+  const [paymentPending, setPaymentPending] = useState<boolean>(false);
+  const [paymentEnabled, setPaymentEnabled] = useState<boolean>(false);
 
-  const [compatibleTokens, setCompatibleTokens] = useState<Token[]>([]);
+  const compatibleWallets = useCompatibleWallets({ sender, recipient });
+  const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
   const [selectedToken, setSelectedToken] = useState<Token>();
 
-  const [toAddress, setToAddress] = useState<Address>();
-  const [sendAmountUSD, setSendAmountUSD] = useState<number>();
+  const toAddress = useToAddress({ recipient, selectedWallet });
+
   const [sendAmount, setSendAmount] = useState<bigint>();
+  const [sendAmountUSD, setSendAmountUSD] = useState<number>();
 
   const sendToastId = useRef<Id>();
 
   const { loading, confirmed, error, status, txHash, sendTransaction, writeContract, reset } =
     useRegularTransfer();
 
-  useEffect(() => {
-    if (!recipient || !(sender as Address)) {
+  useMemo(async () => {
+    if (compatibleWallets.length === 0) {
       setSelectedWallet(undefined);
-      setCompatibleWallets([]);
       return;
     }
-
-    const compatibleSenderWallets =
-      recipient.type === 'address'
-        ? SUPPORTED_CHAINS.map(
-            (c) => ({ address: sender as Address, network: c.id } as FlowWalletType)
-          )
-        : recipient.identity.profile?.defaultFlow?.wallets.map(
-            (wallet) => ({ address: sender as Address, network: wallet.network } as FlowWalletType)
-          ) ?? [];
-
-    setCompatibleWallets(compatibleSenderWallets);
-
-    console.debug('compatible sender wallets: ', compatibleSenderWallets);
-
-    if (compatibleSenderWallets.length === 0) {
-      toast.error('No compatible wallets available!');
-      return;
-    }
-  }, [sender]);
-
-  useEffect(() => {
-    const wallet =
-      (chain && compatibleWallets.find((w) => w.network === chain.id)) ?? compatibleWallets[0];
-    setSelectedWallet(wallet);
-    console.debug('selected sender wallet: ', wallet);
+    setSelectedWallet(
+      (chain && compatibleWallets.find((w) => w.network === chain.id)) ?? compatibleWallets[0]
+    );
   }, [compatibleWallets, chain]);
 
-  useEffect(() => {
-    setSelectedToken(compatibleTokens[0]);
-  }, [compatibleTokens, chain]);
-
-  useMemo(() => {
-    if (!recipient || !selectedWallet) {
-      setToAddress(undefined);
-      return;
-    }
-
-    if (recipient.type === 'address') {
-      setToAddress(recipient.identity.address);
-    } else {
-      setToAddress(
-        recipient.identity.profile?.defaultFlow?.wallets.find(
-          (w) => w.network === selectedWallet.network
-        )?.address
-      );
-    }
-
-    const tokens = getSupportedTokens(selectedWallet.network);
-    setCompatibleTokens(tokens);
-  }, [selectedWallet]);
-
   useMemo(async () => {
-    if (!sendAmount || !recipient || !selectedWallet) {
+    if (!sendAmountUSD || !selectedWallet) {
       return;
     }
 
@@ -145,24 +100,42 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
       sendToastId.current = undefined;
       reset();
     }
-  }, [loading, confirmed, error, txHash, sendAmount, recipient]);
+  }, [loading, confirmed, error, txHash, sendAmountUSD]);
+
+  async function submitTransaction() {
+    if (!toAddress || !sendAmount || !selectedToken) {
+      return;
+    }
+
+    if (selectedToken.name === ETH_TOKEN) {
+      sendTransaction?.({ to: toAddress, value: sendAmount });
+    } else {
+      writeContract?.({
+        abi: erc20Abi,
+        address: selectedToken.address,
+        functionName: 'transfer',
+        args: [toAddress, sendAmount]
+      });
+    }
+  }
 
   useMemo(async () => {
-    if (status === 'rejected') {
-      toast.error('Cancelled', { closeButton: false, autoClose: 5000 });
-    }
-  }, [status]);
+    setPaymentPending(Boolean(loading || (txHash && !confirmed && !error)));
+  }, [loading, txHash, confirmed, error]);
+
+  useMemo(async () => {
+    setPaymentEnabled(Boolean(toAddress && sendAmount));
+  }, [toAddress, sendAmount]);
 
   return (
-    <>
-      <Stack width="100%" spacing={2} alignItems="center">
-        <RecipientField recipient={recipient} />
-        {recipient && selectedWallet && selectedToken && (
+    selectedWallet && (
+      <>
+        <Stack width="100%" spacing={2} alignItems="center">
+          <RecipientField recipient={recipient} />
           <TokenAmountSection
             selectedWallet={selectedWallet}
             setSelectedWallet={setSelectedWallet}
             compatibleWallets={compatibleWallets}
-            compatibleTokens={compatibleTokens}
             selectedToken={selectedToken}
             setSelectedToken={setSelectedToken}
             sendAmount={sendAmount}
@@ -170,48 +143,19 @@ export default function PayProfileDialog({ sender, recipient }: PaymentDialogPro
             sendAmountUSD={sendAmountUSD}
             setSendAmountUSD={setSendAmountUSD}
           />
-        )}
-      </Stack>
-      {recipient &&
-        selectedWallet &&
-        (chain?.id === selectedWallet.network ? (
+        </Stack>
+        {chain?.id === selectedWallet.network ? (
           <LoadingPaymentButton
             title="Pay"
+            loading={paymentPending}
+            disabled={!paymentEnabled}
             status={status}
-            loading={loading || (txHash && !confirmed && !error)}
-            disabled={!(toAddress && sendAmount)}
-            onClick={() => {
-              if (!toAddress || !sendAmount || !selectedToken || !selectedToken) {
-                return;
-              }
-
-              if (selectedToken.name === ETH_TOKEN) {
-                sendTransaction?.({ to: toAddress, value: sendAmount });
-              } else {
-                writeContract?.({
-                  abi: erc20Abi,
-                  address: selectedToken.address,
-                  functionName: 'transfer',
-                  args: [toAddress, sendAmount]
-                });
-              }
-            }}
+            onClick={submitTransaction}
           />
         ) : (
           <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
-        ))}
-    </>
+        )}
+      </>
+    )
   );
 }
-
-/* <Tooltip title="Add a note">
-                <IconButton
-                  size="small"
-                  color="inherit"
-                  sx={{ mr: 0.5, alignSelf: 'flex-end' }}
-                  onClick={() => {
-                    comingSoonToast();
-                  }}>
-                  <AddComment fontSize="small" />
-                </IconButton>
-              </Tooltip> */
