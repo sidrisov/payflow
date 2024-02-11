@@ -40,12 +40,15 @@ export default function PaymentDialog({
   const { address } = useAccount();
 
   const dialogJustifyContent =
-    sender && (isAddress(sender as any) || (address && address === (sender as FlowType).owner))
+    sender &&
+    (isAddress(sender as any) ||
+      (address && address.toLowerCase() === (sender as FlowType).owner.toLowerCase()))
       ? 'space-between'
       : 'flex-end';
   const isConnectWalletRequired = !(sender && (isAddress(sender as any) || address));
   const dialogHeight = sender &&
-    (isAddress(sender as any) || (address && address === (sender as FlowType).owner)) && {
+    (isAddress(sender as any) ||
+      (address && address.toLowerCase() === (sender as FlowType).owner.toLowerCase())) && {
       height: 375
     };
 
