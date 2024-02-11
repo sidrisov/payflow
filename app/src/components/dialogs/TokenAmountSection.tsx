@@ -1,5 +1,5 @@
 import { Typography, Stack, Box, TextField, Button, InputAdornment } from '@mui/material';
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { useAccount, useBalance } from 'wagmi';
 import { AttachMoney, PriorityHigh } from '@mui/icons-material';
 import { formatUnits, parseUnits } from 'viem';
@@ -8,24 +8,24 @@ import { red } from '@mui/material/colors';
 import { NetworkSelectorButton } from '../buttons/NetworkSelectorButton';
 import { ProfileContext } from '../../contexts/UserContext';
 import { TokenSelectorButton } from '../buttons/TokenSelectorButton';
-import { ETH, Token } from '../../utils/erc20contracts';
+import { ETH, Token, getSupportedTokens } from '../../utils/erc20contracts';
 import { normalizeNumberPrecision } from '../../utils/normalizeNumberPrecision';
 
 export function TokenAmountSection({
   selectedWallet,
   setSelectedWallet,
   compatibleWallets,
-  compatibleTokens,
   selectedToken,
   setSelectedToken,
   sendAmount,
-  setSendAmount
+  setSendAmount,
+  sendAmountUSD,
+  setSendAmountUSD
 }: {
   selectedWallet: FlowWalletType;
   setSelectedWallet: React.Dispatch<React.SetStateAction<FlowWalletType | undefined>>;
   compatibleWallets: FlowWalletType[];
-  compatibleTokens: Token[];
-  selectedToken: Token;
+  selectedToken?: Token;
   setSelectedToken: React.Dispatch<React.SetStateAction<Token | undefined>>;
   sendAmount?: bigint;
   setSendAmount: React.Dispatch<React.SetStateAction<bigint | undefined>>;
@@ -43,17 +43,26 @@ export function TokenAmountSection({
   const [maxBalanceUsd, setMaxBalanceUsd] = useState<string>('0.0');
   const [selectedTokenPrice, setSelectedTokenPrice] = useState<number>();
 
-  const [sendAmountUSD, setSendAmountUSD] = useState<number>();
+  const [compatibleTokens, setCompatibleTokens] = useState<Token[]>([]);
 
   const { isSuccess, data: balance } = useBalance({
     address: selectedWallet?.address,
     chainId: chain?.id,
     token: selectedToken !== ETH ? selectedToken?.address : undefined,
     query: {
-      enabled: selectedWallet !== undefined && selectedToken != undefined,
+      enabled: selectedWallet !== undefined && selectedToken !== undefined,
       gcTime: 5000
     }
   });
+
+  useEffect(() => {
+    setSelectedToken(compatibleTokens[0]);
+  }, [compatibleTokens, chain]);
+
+  useMemo(() => {
+    const tokens = getSupportedTokens(selectedWallet.network);
+    setCompatibleTokens(tokens);
+  }, [selectedWallet]);
 
   useMemo(async () => {
     if (selectedToken && tokenPrices) {
@@ -143,7 +152,7 @@ export function TokenAmountSection({
             inputMode: 'decimal',
             disableUnderline: true
           }}
-          onChange={(event) => {
+          onChange={async (event) => {
             if (event.target.value) {
               const amountUSD = parseFloat(event.target.value);
               setSendAmountUSD(amountUSD);
@@ -170,13 +179,13 @@ export function TokenAmountSection({
             {`${normalizeNumberPrecision(
               sendAmount && balance ? parseFloat(formatUnits(sendAmount, balance.decimals)) : 0
             )}
-                        ${selectedToken.name}`}
+                        ${selectedToken?.name}`}
           </Typography>
           <Button
             variant="text"
             size="small"
             color="inherit"
-            onClick={() => setSendAmountUSD(Number.parseInt(maxBalanceUsd))}
+            onClick={async () => setSendAmountUSD(Number.parseInt(maxBalanceUsd))}
             sx={{
               mx: 0.5,
               minWidth: 35,
