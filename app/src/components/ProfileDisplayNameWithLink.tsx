@@ -1,6 +1,6 @@
 import { Link, LinkProps, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { ProfileType } from '../types/ProfleType';
-import { socialLink } from '../utils/dapps';
+import { useNavigate } from 'react-router-dom';
 
 export function ProfileDisplayNameWithLink({
   profile,
@@ -8,13 +8,13 @@ export function ProfileDisplayNameWithLink({
 }: { profile: ProfileType } & LinkProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const navigate = useNavigate();
 
   return (
     <Link
       aria-haspopup="true"
       maxWidth={200}
-      href={socialLink('payflow', profile.username)}
-      target="_blank"
+      href={`/${profile.username}`}
       underline="hover"
       color="inherit"
       overflow="clip"
