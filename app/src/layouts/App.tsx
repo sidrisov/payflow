@@ -189,7 +189,6 @@ export default function AppLayout({
                           borderRadius: 5,
                           fontWeight: 'bold',
                           fontSize: 18,
-                          fontFamily: 'monospace',
                           textTransform: 'none'
                         }}>
                         sign in
@@ -200,15 +199,45 @@ export default function AppLayout({
               </Toolbar>
             </AppBar>
           </HideOnScroll>
-          <Box display="flex" mt={3} height="100%">
+          <Box display="flex" mt={3}>
             <Outlet />
           </Box>
+          {/* <Paper sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: grey[100] }}>
+            <BottomNavigation
+              onChange={(_, value) => {
+                switch (value) {
+                  case 0:
+                    navigate('/');
+                    break;
+                  case 1:
+                    setOpenSearchIdentity(true);
+                    break;
+                  case 2:
+                    navigate(`/${profile?.username}`);
+                }
+              }}>
+              <BottomNavigationAction
+                icon={location.pathname === '/home' ? <Home color="inherit" /> : <HomeOutlined />}
+              />
+              <BottomNavigationAction icon={<Search />} />
+              <BottomNavigationAction
+                icon={
+                  location.pathname === `/${profile?.username}` ? (
+                    <Person color="inherit" />
+                  ) : (
+                    <PersonOutline />
+                  )
+                }
+              />
+            </BottomNavigation>
+          </Paper> */}
         </Box>
       </Container>
 
       {profile && (
         <ProfileMenu
           profile={profile}
+          loginRedirectOnLogout={false}
           anchorEl={profileMenuAnchorEl}
           open={openProfileMenu}
           onClose={() => setOpenProfileMenu(false)}

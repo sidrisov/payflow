@@ -16,8 +16,10 @@ export default function PublicProfileActivityFeed(props: AssetsProps) {
   const { profile } = useContext(ProfileContext);
   const { address } = useAccount();
 
-  const { selectedChain } = props;
-  const { loading, fetched, transactions } = props.activityFetchResult;
+  const {
+    selectedChain,
+    activityFetchResult: { loading, fetched, transactions }
+  } = props;
 
   const [feedOption, setFeedOption] = useState<number>(1);
 

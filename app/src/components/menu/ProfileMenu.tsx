@@ -8,9 +8,7 @@ import {
   Logout,
   Person,
   PersonAdd,
-  Settings,
-  Verified
-} from '@mui/icons-material';
+  Settings} from '@mui/icons-material';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ProfileSection } from '../ProfileSection';
@@ -19,7 +17,6 @@ import { useContext } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { disconnect } from 'wagmi/actions';
-import { comingSoonToast } from '../Toasts';
 import { useConfig } from 'wagmi';
 
 export function ProfileMenu({

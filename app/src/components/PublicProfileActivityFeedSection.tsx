@@ -145,7 +145,7 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
             {txInfo.toProfile ? (
               <ProfileAvatar profile={txInfo.toProfile} sx={{ width: 25, height: 25 }} />
             ) : avatarTo.data ? (
-              <Avatar src={avatarTo.data} />
+              <Avatar src={avatarTo.data} sx={{ width: 25, height: 25 }} />
             ) : (
               <AddressAvatar address={txInfo.to} scale={3} sx={{ width: 25, height: 25 }} />
             )}

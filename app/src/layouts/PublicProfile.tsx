@@ -97,7 +97,6 @@ export default function PublicProfile() {
       {selectedRecipient && (
         <PaymentDialog
           open={selectedRecipient !== undefined}
-          // TODO: might be undefined
           sender={
             loggedProfile && loggedProfile.defaultFlow
               ? loggedProfile.defaultFlow

@@ -1,8 +1,6 @@
-import { IconButton, Popover, PopoverProps } from '@mui/material';
+import { Popover, PopoverProps } from '@mui/material';
 import { ProfileType } from '../../types/ProfleType';
 import { PublicProfileDetails } from '../dialogs/PublicProfileDetails';
-import { ArrowOutward } from '@mui/icons-material';
-import { socialLink } from '../../utils/dapps';
 
 export function PublicProfileDetailsPopover({
   profile,
@@ -28,14 +26,14 @@ export function PublicProfileDetailsPopover({
       }}
       transformOrigin={{ horizontal: 'left', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
-      <IconButton
+      {/* <IconButton
         color="inherit"
         size="small"
         href={socialLink('payflow', profile.username) ?? ''}
         target="_blank"
         sx={{ alignSelf: 'flex-end' }}>
         <ArrowOutward fontSize="small" />
-      </IconButton>
+      </IconButton> */}
       <PublicProfileDetails profile={profile} />
     </Popover>
   );
