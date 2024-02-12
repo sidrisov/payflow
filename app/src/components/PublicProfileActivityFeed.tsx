@@ -16,8 +16,10 @@ export default function PublicProfileActivityFeed(props: AssetsProps) {
   const { profile } = useContext(ProfileContext);
   const { address } = useAccount();
 
-  const { selectedChain } = props;
-  const { loading, fetched, transactions } = props.activityFetchResult;
+  const {
+    selectedChain,
+    activityFetchResult: { loading, fetched, transactions }
+  } = props;
 
   const [feedOption, setFeedOption] = useState<number>(1);
 
@@ -38,23 +40,17 @@ export default function PublicProfileActivityFeed(props: AssetsProps) {
         alignItems="center"
         justifyContent="space-between">
         <Typography variant="subtitle2">Activity feed</Typography>
-        {address !== profile?.identity ? (
-          <NativeSelect
-            variant="outlined"
-            disableUnderline
-            value={feedOption}
-            onChange={(event) => {
-              setFeedOption(parseInt(event.target.value));
-            }}
-            sx={{ fontSize: 14, fontWeight: 500 }}>
-            <option value={1}>All payments</option>
-            {(address || profile) && <option value={2}>Between you</option>}
-          </NativeSelect>
-        ) : (
-          <Typography mr={1} variant="subtitle2">
-            Your Payments
-          </Typography>
-        )}
+        <NativeSelect
+          variant="outlined"
+          disableUnderline
+          value={feedOption}
+          onChange={(event) => {
+            setFeedOption(parseInt(event.target.value));
+          }}
+          sx={{ fontSize: 14, fontWeight: 500 }}>
+          <option value={1}>All payments</option>
+          {(address || profile) && <option value={2}>Between you</option>}
+        </NativeSelect>
       </Box>
       <Stack p={1} spacing={2} width="100%" maxHeight={430} overflow="auto">
         {loading ? (
