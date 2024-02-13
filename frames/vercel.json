@@ -1,8 +1,12 @@
 {
   "rewrites": [
     {
+      "source": "/images/welcome.png",
+      "destination": "/api/images/welcome.png"
+    },
+    {
       "source": "/((?!assets/).*)",
-      "destination": "/api/ssr.js"
+      "destination": "/api/ssr"
     }
   ]
 }
