@@ -1,5 +1,5 @@
-import { htmlToImage } from '../../src/utils/image';
-import { test } from '../../src/components/test';
+import { htmlToImage } from '../../utils/image';
+import { test } from '../../components/test';
 
 import { VercelRequest, VercelResponse } from '@vercel/node';
 

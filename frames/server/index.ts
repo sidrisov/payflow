@@ -16,8 +16,8 @@ import compression from 'compression';
 import { renderPage } from 'vike/server';
 import { root } from './root.js';
 
-import { htmlToImage } from './utils/image.js';
-import { test } from './components/test.js';
+import { htmlToImage } from '../src/utils/image.js';
+import { test } from '../src/components/test.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
