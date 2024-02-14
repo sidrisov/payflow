@@ -98,10 +98,12 @@ export default function AppLayout({
   }, [ethUsdPrice]);
 
   useEffect(() => {
-    if (profile && profile.username) {
-      setAuthorized(true);
-    } else {
-      //navigate('/connect');
+    if (profile) {
+      if (profile.username) {
+        setAuthorized(true);
+      } else {
+        navigate('/connect');
+      }
     }
   }, [profile]);
 
