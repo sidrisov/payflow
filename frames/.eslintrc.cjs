@@ -1,6 +1,6 @@
 module.exports = {
   rules: {
-    'react-refresh/only-export-components': 'warn',
+    'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     '@typescript-eslint/no-namespace': 'off'
   },
   reportUnusedDisableDirectives: true,
@@ -17,4 +17,4 @@ module.exports = {
     'plugin:@typescript-eslint/recommended'
   ],
   parser: '@typescript-eslint/parser'
-}
+};
