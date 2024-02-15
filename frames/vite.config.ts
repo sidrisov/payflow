@@ -1,9 +1,7 @@
-import react from '@vitejs/plugin-react'
-import vike from 'vike/plugin'
-import { UserConfig } from 'vite'
+import vike from 'vike/plugin';
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
 
-const config: UserConfig = {
+export default defineConfig({
   plugins: [react(), vike()]
-}
-
-export default config
+});

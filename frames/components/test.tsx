@@ -1,6 +1,6 @@
-export const test = (text: string) => <Test text={text} />;
+const test = (text: string) => <Test text={text} />;
 
-export function Test({ text }: { text: string }) {
+function Test({ text }: { text: string }) {
   return (
     <div
       style={{
@@ -30,3 +30,5 @@ export function Test({ text }: { text: string }) {
     </div>
   );
 }
+
+export { test, Test };
