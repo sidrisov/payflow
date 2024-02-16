@@ -12,8 +12,7 @@ export default function LayoutDefault({ children }: { children: React.ReactNode 
         <Logo />
         <Link href="/">Welcome</Link>
 
-        <Link href="/frame1">Frame 1</Link>
-        <Link href="/frame2">Frame 2</Link>
+        <Link href="/gift">Gift</Link>
       </Sidebar>
       <Content>{children}</Content>
     </div>

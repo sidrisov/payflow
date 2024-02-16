@@ -9,6 +9,9 @@ import { profileHtml } from './components/Profile';
 import { ProfileType } from './types/ProfleType';
 
 import dotenv from 'dotenv';
+import { chooseProfileHtml } from './components/ChooseProfile';
+import { invitedHtml } from './components/Invited';
+import { notInvitedHtml } from './components/NotInvited';
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -47,6 +50,21 @@ async function startServer() {
     res.type('png').send(image);
   });
 
+  app.get('/images/profile/choose.png', async (req, res) => {
+    const image = await htmlToImage(chooseProfileHtml(), 'landscape');
+    res.type('png').send(image);
+  });
+
+  app.get('/images/profile/invited.png', async (req, res) => {
+    const image = await htmlToImage(invitedHtml(), 'landscape');
+    res.type('png').send(image);
+  });
+
+  app.get('/images/profile/notinvited.png', async (req, res) => {
+    const image = await htmlToImage(notInvitedHtml(), 'landscape');
+    res.type('png').send(image);
+  });
+
   app.get('/images/profile/:identity/image.png', async (req, res) => {
     const identity = req.params.identity;
 
@@ -57,7 +75,7 @@ async function startServer() {
       res.type('png').send(image);
     } catch (error) {
       console.error(error);
-      res.status(500).send('Error retrieving user data');
+      res.status(500).send('Error retrieving profile data');
     }
   });
 

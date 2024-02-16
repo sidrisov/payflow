@@ -12,7 +12,8 @@ function Profile({ profile }: { profile: ProfileType }) {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#f8fafc'
+        backgroundColor: '#f8fafc',
+        fontFamily: 'Roboto'
       }}>
       <div
         style={{
@@ -27,8 +28,8 @@ function Profile({ profile }: { profile: ProfileType }) {
           style={{ height: '80%', margin: 10, borderRadius: 25 }}
         />
         <div style={{ margin: 10, display: 'flex', flexDirection: 'column' }}>
-          <p style={{ fontSize: 64, fontWeight: 'bolder' }}>{profile.displayName}</p>
-          <p style={{ marginTop: 10, fontSize: 64 }}>@{profile.username}</p>
+          <p style={{ fontSize: 64, fontWeight: 'bold' }}>{profile.displayName}</p>
+          <p style={{ marginTop: 10, fontSize: 64, fontWeight: 'normal' }}>@{profile.username}</p>
         </div>
       </div>
     </div>
