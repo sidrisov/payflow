@@ -24,10 +24,7 @@ import ua.sinaver.web3.payflow.service.SocialGraphService;
 import ua.sinaver.web3.payflow.service.WalletBalanceService;
 
 import java.net.URI;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -58,6 +55,8 @@ public class FarcasterFramesController {
 	private String dAppServiceUrl;
 	@Value("${payflow.api.url}")
 	private String apiServiceUrl;
+	@Value("${payflow.frames.url}")
+	private String framesServiceUrl;
 	@Autowired
 	private SocialGraphService socialGraphService;
 	@Autowired
@@ -115,6 +114,41 @@ public class FarcasterFramesController {
 							""", buttonIndex));
 		}
 		return insightsMeta;
+	}
+
+	private static String frameHtmlResponseBody(String image, String url, List<FrameButton> buttons) {
+		var buttonsMeta = "";
+
+		for (val button : buttons) {
+			buttonsMeta = buttonsMeta.concat(frameButtonMeta(button));
+		}
+		return String.format("""
+				<!DOCTYPE html>
+				<html>
+				<head>
+				<meta property="fc:frame" content="vNext" />
+				<meta property="fc:frame:image" content="%s"/>
+				<meta property="fc:frame:post_url" content="%s" />
+				%s
+				</head>
+				</html>
+				""", image, url, buttonsMeta);
+	}
+
+	private static String frameButtonMeta(FrameButton frameButton) {
+		var frameButtonMeta = String.format("""
+				<meta property="fc:frame:button:%s" content="%s"/>
+				""", frameButton.index, frameButton.name);
+
+		if (frameButton.action.equals(ButtonActionType.LINK)) {
+			frameButtonMeta = frameButtonMeta.concat(String.format(
+					"""
+											<meta property="fc:frame:button:%s:action" content="%s"/>
+											<meta property="fc:frame:button:%s:target" content="%s" />
+							""", frameButton.index, frameButton.action.toString().toLowerCase(),
+					frameButton.index, frameButton.target));
+		}
+		return frameButtonMeta;
 	}
 
 	@PostMapping("/connect")
@@ -301,35 +335,27 @@ public class FarcasterFramesController {
 				val postUrl = apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS,
 						clickedProfile.getIdentity()));
 
-				String socialInsightsButton = "";
+				val profileLink = dAppServiceUrl.concat(String.format("/%s",
+						clickedProfile.getUsername()));
+				val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
+								"/image.png",
+						clickedProfile.getIdentity()));
+
+				val buttons = new ArrayList<FrameButton>();
+
+				buttons.add(new FrameButton(1, "Balance", ButtonActionType.POST, null));
+				buttons.add(new FrameButton(2, "Invite", ButtonActionType.POST, null));
 
 				var nextButtonIndex = 3;
 				if (fid != casterFid) {
-					socialInsightsButton = String.format("""
-												<meta property="fc:frame:button:%s" content="Social Insights"/>
-							""", nextButtonIndex);
-					nextButtonIndex++;
+					buttons.add(new FrameButton(buttons.size() + 1, "Social Insights", ButtonActionType.POST,
+							null));
 				}
+				buttons.add(new FrameButton(buttons.size() + 1, "Profile", ButtonActionType.LINK,
+						profileLink));
 
-				val profileLink = dAppServiceUrl.concat(String.format("/%s",
-						clickedProfile.getUsername()));
-				return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(String.format("""
-								<!DOCTYPE html>
-								<html>
-								<head>
-								<meta property="fc:frame" content="vNext" />
-								<meta property="fc:frame:button:1" content="Balance"/>
-								<meta property="fc:frame:button:2" content="Invite"/>
-								%s
-								<meta property="fc:frame:button:%s" content="Profile"/>
-								<meta property="fc:frame:button:%s:action" content="link"/>
-								<meta property="fc:frame:button:%s:target" content="%s" />
-								<meta property="fc:frame:image" content="https://i.imgur.com/9b2C82J.jpg"/>
-								<meta property="fc:frame:post_url" content="%s" />
-								</head>
-								</html>
-								""", socialInsightsButton, nextButtonIndex, nextButtonIndex,
-						nextButtonIndex, profileLink, postUrl));
+				val body = frameHtmlResponseBody(profileImage, postUrl, buttons);
+				return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(body);
 			}
 		} else {
 			val invitations = getInvitations(addresses);
@@ -610,5 +636,15 @@ public class FarcasterFramesController {
 		return addresses.stream()
 				.map(address -> invitationRepository.findFirstValidByIdentityOrCode(address, null))
 				.filter(Objects::nonNull).limit(3).toList();
+	}
+
+	enum ButtonActionType {
+		POST,
+		POST_REDIRECT,
+		MINT,
+		LINK
+	}
+
+	record FrameButton(int index, String name, ButtonActionType action, String target) {
 	}
 }

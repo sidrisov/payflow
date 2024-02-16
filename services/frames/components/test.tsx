@@ -10,7 +10,7 @@ function Test({ text }: { text: string }) {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgb(45,26,84)',
+        backgroundColor: '#f8fafc',
         fontSize: '32px',
         fontWeight: '600'
       }}>
@@ -20,11 +20,10 @@ function Test({ text }: { text: string }) {
           marginTop: '38px',
           display: 'flex',
           flexDirection: 'column',
-          color: 'white'
         }}>
         <span>
-          Hello from
-          <span style={{ marginLeft: '15ch', color: 'rgb(255,93,1)' }}>{text}</span>
+          Welcome to
+          <span style={{ marginLeft: '15ch', color: 'rgb(255,93,1)' }}>{text} | Frames</span>
         </span>
       </div>
     </div>

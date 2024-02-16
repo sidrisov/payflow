@@ -4,16 +4,25 @@ import express from 'express';
 import { renderPage } from 'vike/server';
 import { test } from './components/test';
 import { htmlToImage } from './utils/image';
+import axios from 'axios';
+import { profileHtml } from './components/Profile';
+import { ProfileType } from './types/ProfleType';
+
+import dotenv from 'dotenv';
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const isProduction = process.env.NODE_ENV === 'production';
 const root = __dirname;
 
+const API_URL = process.env.VITE_PAYFLOW_SERVICE_API_URL;
+
 startServer();
 
 async function startServer() {
   const app = express();
+  app.use(express.static('assets'));
 
   if (isProduction) {
     app.use(express.static(`${root}/dist/client`));
@@ -32,9 +41,24 @@ async function startServer() {
   }
 
   // handling frames image generation
+
   app.get('/images/welcome.png', async (_, res) => {
     const image = await htmlToImage(test('Payflow'), 'landscape');
     res.type('png').send(image);
+  });
+
+  app.get('/images/profile/:identity/image.png', async (req, res) => {
+    const identity = req.params.identity;
+
+    try {
+      const response = await axios.get(`${API_URL}/api/user/${identity}`);
+      const profileData = response.data as ProfileType;
+      const image = await htmlToImage(profileHtml(profileData), 'landscape');
+      res.type('png').send(image);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error retrieving user data');
+    }
   });
 
   /**
