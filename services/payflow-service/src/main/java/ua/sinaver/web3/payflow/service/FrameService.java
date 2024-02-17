@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.message.ContactMessage;
 import ua.sinaver.web3.payflow.repository.UserRepository;
+import ua.sinaver.web3.payflow.service.api.IContactBookService;
+import ua.sinaver.web3.payflow.service.api.IFrameService;
+import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
 import java.util.List;
 import java.util.Objects;
@@ -116,3 +119,69 @@ public class FrameService implements IFrameService {
 				.filter(Objects::nonNull).limit(3).toList();
 	}
 }
+
+/*
+@NotNull
+private static String getInsightsMeta(SocialInsights insights) {
+	String insightsMeta = "";
+	var buttonIndex = 1;
+
+	if (insights.farcasterFollow() != null) {
+		insightsMeta = insightsMeta.concat(String.format(
+				"""
+						<meta property="fc:frame:button:%s" content="Farcaster %s"/>
+						""", buttonIndex, insights.farcasterFollow()));
+		buttonIndex++;
+	}
+
+	if (insights.lensFollow() != null) {
+		insightsMeta = insightsMeta.concat(String.format(
+				"""
+						<meta property="fc:frame:button:%s" content="Lens %s"/>
+						""", buttonIndex, insights.lensFollow()));
+		buttonIndex++;
+	}
+
+	if (insights.sentTxs() != 0) {
+		insightsMeta = insightsMeta.concat(String.format(
+				"""
+						<meta property="fc:frame:button:%s" content="Transacted %s"/>
+						""", buttonIndex,
+				insights.sentTxs() == 1 ? "once" : String.format("%s times", insights.sentTxs())));
+	}
+
+	if (insightsMeta.isEmpty()) {
+		insightsMeta = insightsMeta.concat(String.format(
+				"""
+						<meta property="fc:frame:button:%s" content="🤷🏻 No social insights between you"/>
+						""", buttonIndex));
+	}
+	return insightsMeta;
+}
+*/
+
+// handle insights
+			/*if (buttonIndex == 3 && fid != casterFid) {
+				log.debug("Handling insights action: {}", validateMessage);
+				// clean cache
+				socialGraphService.cleanCache(String.format("fc_fid:%s", casterFid),
+						String.format("fc_fid:%s", fid));
+				val casterWallet = socialGraphService.getSocialMetadata(
+						String.format("fc_fid:%s", casterFid),
+						String.format("fc_fid:%s", fid));
+				log.debug("Found caster wallet meta {}", casterWallet);
+				if (casterWallet != null) {
+					val insights = getWalletInsights(casterWallet);
+					String insightsMeta = getInsightsMeta(insights);
+					return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(String.format("""
+							<!DOCTYPE html>
+							<html>
+							<head>
+							<meta property="fc:frame" content="vNext" />
+							<meta property="fc:frame:image" content="%s"/>
+							%s
+							</head>
+							</html>
+							""", profileImage, insightsMeta));
+				}
+			}*/

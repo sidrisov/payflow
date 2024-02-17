@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 import ua.sinaver.web3.payflow.message.*;
-import ua.sinaver.web3.payflow.service.*;
+import ua.sinaver.web3.payflow.service.api.*;
 
 import java.security.Principal;
 import java.util.ArrayList;

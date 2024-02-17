@@ -16,6 +16,7 @@ import ua.sinaver.web3.payflow.message.ProfileMessage;
 import ua.sinaver.web3.payflow.message.WalletProfileRequestMessage;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
+import ua.sinaver.web3.payflow.service.api.IUserService;
 
 import java.util.*;
 import java.util.regex.Pattern;

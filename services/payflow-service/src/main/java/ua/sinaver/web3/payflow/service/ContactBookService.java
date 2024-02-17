@@ -18,10 +18,15 @@ import ua.sinaver.web3.payflow.message.ContactMessage;
 import ua.sinaver.web3.payflow.repository.ContactRepository;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
+import ua.sinaver.web3.payflow.service.api.IContactBookService;
+import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
 import java.time.Duration;
 import java.time.Period;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -113,21 +118,16 @@ public class ContactBookService implements IContactBookService {
 				Schedulers.DEFAULT_BOUNDED_ELASTIC_QUEUESIZE);
 
 		val contactsLimitAdjusted = contactsLimit * (whitelistedUsers.contains(user.getIdentity()) ?
-				5 : 2);
+				3 : 1);
+
+		val contacts = contactRepository.findAllByUser(user)
+				.stream().limit(contactsLimitAdjusted).toList();
+
 		try {
 			val contactMessages = Flux
-					.fromIterable(contactRepository.findAllByUser(user)
-							.stream().limit(contactsLimitAdjusted).toList())
+					.fromIterable(contacts)
 					.flatMap(contact -> Mono.zip(
 											Mono.just(contact),
-											Mono.fromCallable(
-															() -> Optional.ofNullable(userRepository.findByIdentityAndAllowedTrue(contact.getIdentity())))
-													.onErrorResume(exception -> {
-														log.error("Error fetching user {} - {}",
-																contact.getIdentity(),
-																exception.getMessage());
-														return Mono.empty();
-													}),
 											Mono.fromCallable(
 															() -> socialGraphService.getSocialMetadata(contact.getIdentity(), user.getIdentity()))
 													.subscribeOn(Schedulers.boundedElastic())
@@ -138,8 +138,6 @@ public class ContactBookService implements IContactBookService {
 																exception.getMessage());
 														return Mono.empty();
 													}),
-											// TODO: fetch only if social graph fetched
-											// TODO: also no need to fetch for users with profile since they're already signe in
 											Mono.fromCallable(
 															() -> whitelistedUsers.contains(contact.getIdentity())
 																	|| invitationRepository.existsByIdentityAndValid(contact.getIdentity()))
@@ -151,9 +149,8 @@ public class ContactBookService implements IContactBookService {
 													}))
 									.map(tuple -> ContactMessage.convert(
 											tuple.getT1(),
-											tuple.getT2().orElse(null),
-											tuple.getT3(),
-											tuple.getT4()))
+											tuple.getT2(),
+											tuple.getT3()))
 							// TODO: fail fast, seems doesn't to work properly with threads
 					)
 					.timeout(contactsFetchTimeout, Mono.empty())

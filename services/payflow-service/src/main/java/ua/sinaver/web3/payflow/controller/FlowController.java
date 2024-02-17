@@ -8,8 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.message.FlowMessage;
 import ua.sinaver.web3.payflow.message.WalletMessage;
-import ua.sinaver.web3.payflow.service.IFlowService;
-import ua.sinaver.web3.payflow.service.IUserService;
+import ua.sinaver.web3.payflow.service.api.IFlowService;
+import ua.sinaver.web3.payflow.service.api.IUserService;
 
 import java.security.Principal;
 import java.util.List;

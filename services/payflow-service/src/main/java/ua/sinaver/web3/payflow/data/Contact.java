@@ -21,12 +21,16 @@ public class Contact {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
 
+	@Column(nullable = false)
+	private String identity;
+
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
 	private User user;
 
-	@Column(nullable = false)
-	private String identity;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "identity", referencedColumnName = "identity", insertable = false, updatable = false)
+	private User profile;
 
 	@Column(columnDefinition = "boolean")
 	private boolean profileChecked;

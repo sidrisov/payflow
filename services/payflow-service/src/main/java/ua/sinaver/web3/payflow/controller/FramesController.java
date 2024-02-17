@@ -4,7 +4,6 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +13,12 @@ import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.message.FrameButton;
 import ua.sinaver.web3.payflow.message.FrameMessage;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
-import ua.sinaver.web3.payflow.message.SocialInsights;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
-import ua.sinaver.web3.payflow.service.*;
+import ua.sinaver.web3.payflow.service.IdentityService;
+import ua.sinaver.web3.payflow.service.WalletBalanceService;
+import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
+import ua.sinaver.web3.payflow.service.api.IFrameService;
+import ua.sinaver.web3.payflow.service.api.IUserService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.util.Comparator;
@@ -36,16 +38,15 @@ public class FramesController {
 			"/gift";
 	private static final ResponseEntity<String> DEFAULT_HTML_RESPONSE =
 			FrameResponse.builder().image("https://i.imgur.com/Vs0loYg.png").build().toHtmlResponse();
-	@Autowired
-	private IFarcasterHubService farcasterHubService;
 	@Value("${payflow.dapp.url}")
 	private String dAppServiceUrl;
 	@Value("${payflow.api.url}")
 	private String apiServiceUrl;
 	@Value("${payflow.frames.url}")
 	private String framesServiceUrl;
+
 	@Autowired
-	private SocialGraphService socialGraphService;
+	private IFarcasterHubService farcasterHubService;
 
 	@Autowired
 	private InvitationRepository invitationRepository;
@@ -60,49 +61,9 @@ public class FramesController {
 	@Autowired
 	private IUserService userService;
 
-	@NotNull
-	private static String getInsightsMeta(SocialInsights insights) {
-		String insightsMeta = "";
-		var buttonIndex = 1;
-
-		if (insights.farcasterFollow() != null) {
-			insightsMeta = insightsMeta.concat(String.format(
-					"""
-							<meta property="fc:frame:button:%s" content="Farcaster %s"/>
-							""", buttonIndex, insights.farcasterFollow()));
-			buttonIndex++;
-		}
-
-		if (insights.lensFollow() != null) {
-			insightsMeta = insightsMeta.concat(String.format(
-					"""
-							<meta property="fc:frame:button:%s" content="Lens %s"/>
-							""", buttonIndex, insights.lensFollow()));
-			buttonIndex++;
-		}
-
-		if (insights.sentTxs() != 0) {
-			insightsMeta = insightsMeta.concat(String.format(
-					"""
-							<meta property="fc:frame:button:%s" content="Transacted %s"/>
-							""", buttonIndex,
-					insights.sentTxs() == 1 ? "once" : String.format("%s times", insights.sentTxs())));
-		}
-
-		if (insightsMeta.isEmpty()) {
-			insightsMeta = insightsMeta.concat(String.format(
-					"""
-							<meta property="fc:frame:button:%s" content="🤷🏻 No social insights between you"/>
-							""", buttonIndex));
-		}
-		return insightsMeta;
-	}
-
 	@PostMapping("/connect")
 	public ResponseEntity<String> connect(@RequestBody FrameMessage frameMessage) {
 		log.debug("Received connect frame message request: {}", frameMessage);
-
-
 		val validateMessage =
 				farcasterHubService.validateFrameMessageWithNeynar(
 						frameMessage.trustedData().messageBytes());
@@ -397,29 +358,3 @@ public class FramesController {
 		return DEFAULT_HTML_RESPONSE;
 	}
 }
-
-// handle insights
-			/*if (buttonIndex == 3 && fid != casterFid) {
-				log.debug("Handling insights action: {}", validateMessage);
-				// clean cache
-				socialGraphService.cleanCache(String.format("fc_fid:%s", casterFid),
-						String.format("fc_fid:%s", fid));
-				val casterWallet = socialGraphService.getSocialMetadata(
-						String.format("fc_fid:%s", casterFid),
-						String.format("fc_fid:%s", fid));
-				log.debug("Found caster wallet meta {}", casterWallet);
-				if (casterWallet != null) {
-					val insights = getWalletInsights(casterWallet);
-					String insightsMeta = getInsightsMeta(insights);
-					return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(String.format("""
-							<!DOCTYPE html>
-							<html>
-							<head>
-							<meta property="fc:frame" content="vNext" />
-							<meta property="fc:frame:image" content="%s"/>
-							%s
-							</head>
-							</html>
-							""", profileImage, insightsMeta));
-				}
-			}*/

@@ -10,6 +10,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import ua.sinaver.web3.payflow.message.ValidateMessageRequest;
 import ua.sinaver.web3.payflow.message.ValidatedFrameMessage;
 import ua.sinaver.web3.payflow.message.ValidatedMessage;
+import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
 
 import java.util.HexFormat;
 

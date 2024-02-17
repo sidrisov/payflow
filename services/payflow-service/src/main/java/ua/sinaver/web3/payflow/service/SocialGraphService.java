@@ -15,6 +15,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import ua.sinaver.web3.payflow.graphql.generated.types.*;
 import ua.sinaver.web3.payflow.message.ConnectedAddresses;
+import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
 import java.util.ArrayList;
 import java.util.Collections;
