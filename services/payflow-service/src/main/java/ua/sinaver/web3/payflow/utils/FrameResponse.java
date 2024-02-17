@@ -2,7 +2,11 @@ package ua.sinaver.web3.payflow.utils;
 
 import lombok.Builder;
 import lombok.Singular;
+import lombok.val;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import ua.sinaver.web3.payflow.message.FrameButton;
 
 import java.util.List;
@@ -33,7 +37,7 @@ public class FrameResponse {
 		return frameButtonMeta;
 	}
 
-	public String toHtml() {
+	public ResponseEntity<String> toHtmlResponse() {
 		var buttonsMeta = "";
 		for (int i = 0; i < buttons.size(); i++) {
 			buttonsMeta = buttonsMeta.concat(frameButtonMeta(i + 1, buttons.get(i)));
@@ -46,7 +50,7 @@ public class FrameResponse {
 					""", input);
 		}
 
-		return String.format("""
+		val html = String.format("""
 				<!DOCTYPE html>
 				<html>
 				<head>
@@ -58,5 +62,7 @@ public class FrameResponse {
 				</head>
 				</html>
 				""", image, postUrl, buttonsMeta, inputMeta);
+
+		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(html);
 	}
 }

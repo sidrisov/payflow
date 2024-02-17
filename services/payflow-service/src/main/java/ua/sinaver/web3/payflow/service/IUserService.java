@@ -1,5 +1,6 @@
 package ua.sinaver.web3.payflow.service;
 
+import ua.sinaver.web3.payflow.data.Invitation;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.message.ProfileMessage;
 import ua.sinaver.web3.payflow.message.WalletProfileRequestMessage;
@@ -22,4 +23,6 @@ public interface IUserService {
 	List<User> findAll();
 
 	Map<WalletProfileRequestMessage, User> searchByOwnedWallets(List<WalletProfileRequestMessage> wallets);
+
+	List<Invitation> getInvitations(List<String> addresses);
 }

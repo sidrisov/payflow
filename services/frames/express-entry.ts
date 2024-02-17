@@ -9,9 +9,10 @@ import { profileHtml } from './components/Profile';
 import { ProfileType } from './types/ProfleType';
 
 import dotenv from 'dotenv';
-import { chooseProfileHtml } from './components/ChooseProfile';
+import { welcomeProfileHtml } from './components/WelcomeProfile';
 import { invitedHtml } from './components/Invited';
 import { notInvitedHtml } from './components/NotInvited';
+import { giftHtml } from './components/Gift';
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -50,8 +51,10 @@ async function startServer() {
     res.type('png').send(image);
   });
 
-  app.get('/images/profile/choose.png', async (req, res) => {
-    const image = await htmlToImage(chooseProfileHtml(), 'landscape');
+  app.get('/images/profile/:fname/welcome.png', async (req, res) => {
+    const fname = req.params.fname;
+
+    const image = await htmlToImage(welcomeProfileHtml(fname), 'landscape');
     res.type('png').send(image);
   });
 
@@ -72,6 +75,36 @@ async function startServer() {
       const response = await axios.get(`${API_URL}/api/user/${identity}`);
       const profileData = response.data as ProfileType;
       const image = await htmlToImage(profileHtml(profileData), 'landscape');
+      res.type('png').send(image);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error retrieving profile data');
+    }
+  });
+
+  app.get('/images/profile/:identity/gift/image.png', async (req, res) => {
+    const gifter = req.params.identity;
+
+    try {
+      const gifterProfile = (await axios.get(`${API_URL}/api/user/${gifter}`)).data as ProfileType;
+
+      const image = await htmlToImage(giftHtml(gifterProfile, undefined), 'landscape');
+      res.type('png').send(image);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error retrieving profile data');
+    }
+  });
+
+  app.get('/images/profile/:identity/gift/:contact/image.png', async (req, res) => {
+    const gifter = req.params.identity;
+    const gifted = req.params.contact;
+
+    try {
+      const gifterProfile = (await axios.get(`${API_URL}/api/user/${gifter}`)).data as ProfileType;
+      const giftedProfile = (await axios.get(`${API_URL}/api/user/${gifted}`)).data as ProfileType;
+
+      const image = await htmlToImage(giftHtml(gifterProfile, giftedProfile), 'landscape');
       res.type('png').send(image);
     } catch (error) {
       console.error(error);

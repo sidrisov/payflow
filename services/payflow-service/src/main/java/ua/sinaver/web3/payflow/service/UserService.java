@@ -153,4 +153,11 @@ public class UserService implements IUserService {
 	public List<User> findAll() {
 		return userRepository.findByAllowedTrueOrderByLastSeenDesc();
 	}
+
+	@Override
+	public List<Invitation> getInvitations(List<String> addresses) {
+		return addresses.stream()
+				.map(address -> invitationRepository.findFirstValidByIdentityOrCode(address, null))
+				.filter(Objects::nonNull).limit(3).toList();
+	}
 }

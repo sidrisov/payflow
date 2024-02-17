@@ -5,6 +5,9 @@ import { join } from 'node:path';
 
 const robotoFont = fs.readFileSync(join(process.cwd(), '/assets/fonts/roboto/Roboto-Regular.ttf'));
 const robotoFontBold = fs.readFileSync(join(process.cwd(), '/assets/fonts/roboto/Roboto-Bold.ttf'));
+const robotoFontItalic = fs.readFileSync(
+  join(process.cwd(), '/assets/fonts/roboto/Roboto-Italic.ttf')
+);
 
 async function htmlToImage(html: React.ReactNode, ratio: 'landscape' | 'portrait') {
   const svg = await satori(html, {
@@ -22,6 +25,12 @@ async function htmlToImage(html: React.ReactNode, ratio: 'landscape' | 'portrait
         data: robotoFontBold,
         style: 'normal',
         weight: 700
+      },
+      {
+        name: 'Roboto',
+        data: robotoFontItalic,
+        style: 'italic',
+        weight: 400
       }
     ]
   });

@@ -1,7 +1,7 @@
 # Build dependencies
 FROM node:21-alpine as dependencies
 WORKDIR /frames
-COPY package.json .
+COPY package*.json ./
 RUN npm i
 COPY . . 
 # Build production image

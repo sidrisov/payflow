@@ -1,6 +1,6 @@
-export const chooseProfileHtml = () => <ChooseProfile />;
+export const welcomeProfileHtml = (fname: string) => <WelcomeProfile fname={fname} />;
 
-function ChooseProfile() {
+function WelcomeProfile({ fname }: { fname: string }) {
   return (
     <div
       style={{
@@ -20,8 +20,11 @@ function ChooseProfile() {
           alignItems: 'center',
           textAlign: 'center'
         }}>
-        <p style={{ fontSize: 64, fontWeight: 'bold' }}>You're part of Payflow</p>
-        <p style={{ fontSize: 64 }}>Choose profile to continue</p>
+        <p style={{ fontSize: 64, fontWeight: 'bold' }}>
+          Welcome to Payflow{', '}
+          <u>{fname}</u>
+        </p>
+        <p style={{ fontSize: 64 }}>select profile to continue</p>
       </div>
     </div>
   );
