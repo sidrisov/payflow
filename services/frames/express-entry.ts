@@ -58,12 +58,12 @@ async function startServer() {
     res.type('png').send(image);
   });
 
-  app.get('/images/profile/invited.png', async (req, res) => {
+  app.get('/images/profile/invited.png', async (_, res) => {
     const image = await htmlToImage(invitedHtml(), 'landscape');
     res.type('png').send(image);
   });
 
-  app.get('/images/profile/notinvited.png', async (req, res) => {
+  app.get('/images/profile/notinvited.png', async (_, res) => {
     const image = await htmlToImage(notInvitedHtml(), 'landscape');
     res.type('png').send(image);
   });
@@ -84,11 +84,12 @@ async function startServer() {
 
   app.get('/images/profile/:identity/gift/image.png', async (req, res) => {
     const gifter = req.params.identity;
+    const error = req.query.error?.toString();
 
     try {
       const gifterProfile = (await axios.get(`${API_URL}/api/user/${gifter}`)).data as ProfileType;
 
-      const image = await htmlToImage(giftHtml(gifterProfile, undefined), 'landscape');
+      const image = await htmlToImage(giftHtml(gifterProfile, undefined, error), 'landscape');
       res.type('png').send(image);
     } catch (error) {
       console.error(error);

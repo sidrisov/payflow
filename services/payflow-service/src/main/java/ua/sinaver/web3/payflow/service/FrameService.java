@@ -6,8 +6,10 @@ import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ua.sinaver.web3.payflow.data.Gift;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.message.ContactMessage;
+import ua.sinaver.web3.payflow.repository.GiftRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
 import ua.sinaver.web3.payflow.service.api.IContactBookService;
 import ua.sinaver.web3.payflow.service.api.IFrameService;
@@ -31,20 +33,35 @@ public class FrameService implements IFrameService {
 	@Autowired
 	private IContactBookService contactBookService;
 
+	@Autowired
+	private GiftRepository giftRepository;
+
 	@Override
-	public ContactMessage giftSpin(User initiator) {
-		val contacts = contactBookService.getAllContacts(initiator)
-				.stream().filter(c -> c.profile() != null).toList();
+	public ContactMessage giftSpin(User gifter) throws Exception {
+		val existingUserGifts =
+				giftRepository.findAllByGifter(gifter).stream().map(g -> g.getGifted().getIdentity()).toList();
+		if (existingUserGifts.size() == 10) {
+			log.warn("Gift spin limit reached for {}", gifter.getUsername());
+			throw new Exception("GIFT_SPIN_LIMIT_REACHED");
+		}
+
+		val contacts = contactBookService.getAllContacts(gifter)
+				.stream().filter(c -> c.profile() != null)
+				.filter(c -> !existingUserGifts.contains(c.profile().identity()))
+				.toList();
 
 		if (contacts.isEmpty()) {
-			return null;
+			log.warn("No contacts available to gift for {}",
+					gifter.getUsername());
+			throw new Exception("NO_CONTACT_TO_GIFT");
 		}
 
 		val random = new Random();
 		val randomContactIndex = random.nextInt(contacts.size());
-
-		return contacts.get(randomContactIndex);
-
+		val giftedContact = contacts.get(randomContactIndex);
+		val gifted = userRepository.findByIdentity(giftedContact.profile().identity());
+		giftRepository.save(new Gift(gifter, gifted));
+		return giftedContact;
 	}
 
 	@Override

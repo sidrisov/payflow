@@ -6,7 +6,7 @@ import ua.sinaver.web3.payflow.message.ContactMessage;
 import java.util.List;
 
 public interface IFrameService {
-	ContactMessage giftSpin(User initiator);
+	ContactMessage giftSpin(User initiator) throws Exception;
 
 	User getFidProfile(int fid, String identity);
 

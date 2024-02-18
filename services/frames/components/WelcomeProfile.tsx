@@ -20,7 +20,7 @@ function WelcomeProfile({ fname }: { fname: string }) {
           alignItems: 'center',
           textAlign: 'center'
         }}>
-        <p style={{ fontSize: 64, fontWeight: 'bold' }}>
+        <p style={{ fontSize: 64, fontWeight: 'bold', whiteSpace: 'pre-wrap' }}>
           Welcome to Payflow{', '}
           <u>{fname}</u>
         </p>

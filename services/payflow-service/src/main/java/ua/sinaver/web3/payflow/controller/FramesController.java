@@ -270,13 +270,22 @@ public class FramesController {
 		val clickedFid = validateMessage.action().interactor().fid();
 		val clickedProfile = frameService.getFidProfile(clickedFid, identity);
 		if (clickedProfile != null) {
-			val giftedContact = frameService.giftSpin(clickedProfile);
-			val giftImage = framesServiceUrl.concat(String.format("/images/profile/%s/gift" +
-							"/%s/image.png",
-					clickedProfile.getIdentity(), giftedContact.address()));
+			var giftImage = "";
+			try {
+				val giftedContact = frameService.giftSpin(clickedProfile);
+				giftImage = framesServiceUrl.concat(String.format("/images/profile/%s/gift" +
+								"/%s/image.png",
+						clickedProfile.getIdentity(), giftedContact.address()));
+			} catch (Exception error) {
+				giftImage = framesServiceUrl.concat(String.format("/images/profile/%s/gift/image.png?error=%s",
+						clickedProfile.getIdentity(),
+						error.getMessage()));
+			}
+
 			val giftPostUrl =
 					apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS_GIFT,
 							clickedProfile.getIdentity()));
+
 			return FrameResponse.builder().image(giftImage)
 					.postUrl(giftPostUrl)
 					.button(new FrameButton(
@@ -284,6 +293,7 @@ public class FramesController {
 							FrameButton.ActionType.POST,
 							null))
 					.build().toHtmlResponse();
+
 		}
 
 		return FrameResponse.builder().build().toHtmlResponse();
