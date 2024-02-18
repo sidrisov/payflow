@@ -8,11 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ua.sinaver.web3.payflow.data.Gift;
 import ua.sinaver.web3.payflow.data.Invitation;
 import ua.sinaver.web3.payflow.data.User;
-import ua.sinaver.web3.payflow.message.FrameButton;
-import ua.sinaver.web3.payflow.message.FrameMessage;
-import ua.sinaver.web3.payflow.message.IdentityMessage;
+import ua.sinaver.web3.payflow.message.*;
+import ua.sinaver.web3.payflow.repository.GiftRepository;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.service.IdentityService;
 import ua.sinaver.web3.payflow.service.WalletBalanceService;
@@ -21,10 +21,10 @@ import ua.sinaver.web3.payflow.service.api.IFrameService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
-import java.util.Comparator;
-import java.util.Date;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/farcaster/frames")
@@ -36,8 +36,15 @@ public class FramesController {
 	private static final String CONNECT_IDENTITY_ACTIONS_INVITE = "/api/farcaster/frames/actions/%s/invite";
 	private static final String CONNECT_IDENTITY_ACTIONS_GIFT = "/api/farcaster/frames/actions/%s" +
 			"/gift";
+	private static final String CONNECT_IDENTITY_ACTIONS_GIFT_BACK = "/api/farcaster/frames" +
+			"/actions/%s/gift/back";
+
+	private static final String CONNECT_IDENTITY_ACTIONS_BACK = "/api/farcaster/frames" +
+			"/actions/%s/back";
 	private static final ResponseEntity<String> DEFAULT_HTML_RESPONSE =
 			FrameResponse.builder().image("https://i.imgur.com/Vs0loYg.png").build().toHtmlResponse();
+	@Autowired
+	private GiftRepository giftRepository;
 	@Value("${payflow.dapp.url}")
 	private String dAppServiceUrl;
 	@Value("${payflow.api.url}")
@@ -237,7 +244,6 @@ public class FramesController {
 				// gifts
 				case 3:
 					log.debug("Handling gift action: {}", validateMessage);
-
 					val giftImage = framesServiceUrl.concat(String.format("/images/profile/%s/gift/image.png",
 							clickedProfile.getIdentity()));
 					val giftPostUrl =
@@ -246,17 +252,19 @@ public class FramesController {
 					return FrameResponse.builder().image(giftImage)
 							.postUrl(giftPostUrl)
 							.button(new FrameButton(
-									"\uD83C\uDFB2 Spin a gift ", FrameButton.ActionType.POST, null))
+									"\uD83C\uDFB2 Spin a gift", FrameButton.ActionType.POST, null))
+							.button(new FrameButton(
+									"\uD83C\uDFC6 Leaderboard", FrameButton.ActionType.POST, null))
 							.build().toHtmlResponse();
 			}
 		}
 		return DEFAULT_HTML_RESPONSE;
 	}
 
-	@PostMapping("/actions/{identity}/gift")
-	public ResponseEntity<String> handleGiftAction(@PathVariable String identity,
-	                                               @RequestBody FrameMessage frameMessage) {
-		log.debug("Received actions invite frame: {}", frameMessage);
+	@PostMapping("/actions/{identity}/back")
+	public ResponseEntity<String> handleActionsBackAction(@PathVariable String identity,
+	                                                      @RequestBody FrameMessage frameMessage) {
+		log.debug("Received actions back frame: {}", frameMessage);
 
 		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
@@ -268,35 +276,175 @@ public class FramesController {
 				validateMessage.action().url());
 
 		val clickedFid = validateMessage.action().interactor().fid();
+		val buttonIndex = validateMessage.action().tappedButton().index();
+		val clickedProfile = frameService.getFidProfile(clickedFid, identity);
+		if (clickedProfile != null && buttonIndex == 1) {
+			val postUrl = apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS,
+					clickedProfile.getIdentity()));
+			val profileLink = dAppServiceUrl.concat(String.format("/%s",
+					clickedProfile.getUsername()));
+			val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
+							"/image.png",
+					clickedProfile.getIdentity()));
+			val responseBuilder = FrameResponse.builder().image(profileImage).postUrl(postUrl)
+					.button(new FrameButton("\uD83D\uDCB0 Balance", FrameButton.ActionType.POST,
+							null))
+					.button(new FrameButton("\uD83D\uDC8C Invite",
+							FrameButton.ActionType.POST, null))
+					.button(new FrameButton("\uD83C\uDF81 Gift", FrameButton.ActionType.POST,
+							null))
+					.button(new FrameButton("Profile",
+							FrameButton.ActionType.LINK,
+							profileLink));
+			return responseBuilder.build().toHtmlResponse();
+		}
+		return DEFAULT_HTML_RESPONSE;
+	}
+
+	@PostMapping("/actions/{identity}/gift")
+	public ResponseEntity<String> handleGiftAction(@PathVariable String identity,
+	                                               @RequestBody FrameMessage frameMessage) {
+		log.debug("Received actions gift frame: {}", frameMessage);
+
+		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
+				frameMessage.trustedData().messageBytes());
+		if (!validateMessage.valid()) {
+			log.error("Frame message failed validation {}", validateMessage);
+			return DEFAULT_HTML_RESPONSE;
+		}
+		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
+				validateMessage.action().url());
+
+		val buttonIndex = validateMessage.action().tappedButton().index();
+		val clickedFid = validateMessage.action().interactor().fid();
 		val clickedProfile = frameService.getFidProfile(clickedFid, identity);
 		if (clickedProfile != null) {
-			var giftImage = "";
-			try {
-				val giftedContact = frameService.giftSpin(clickedProfile);
-				giftImage = framesServiceUrl.concat(String.format("/images/profile/%s/gift" +
-								"/%s/image.png",
-						clickedProfile.getIdentity(), giftedContact.address()));
-			} catch (Exception error) {
-				giftImage = framesServiceUrl.concat(String.format("/images/profile/%s/gift/image.png?error=%s",
-						clickedProfile.getIdentity(),
-						error.getMessage()));
+
+			if (buttonIndex == 1) {
+				log.debug("Handling gift spin action: {}", validateMessage);
+				var giftImage = "";
+
+				val responseBuilder = FrameResponse.builder();
+				try {
+					val giftedContact = frameService.giftSpin(clickedProfile);
+					giftImage = framesServiceUrl.concat(String.format("/images/profile/%s/gift" +
+									"/%s/image.png",
+							clickedProfile.getIdentity(), giftedContact.address()));
+					val giftPostUrl =
+							apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS_GIFT,
+									clickedProfile.getIdentity()));
+					responseBuilder.image(giftImage)
+							.postUrl(giftPostUrl)
+							.button(new FrameButton(
+									"\uD83C\uDFB2 Spin one more time",
+									FrameButton.ActionType.POST,
+									null));
+				} catch (Exception error) {
+					giftImage = framesServiceUrl.concat(String.format("/images/profile/%s/gift/image.png?error=%s",
+							clickedProfile.getIdentity(),
+							error.getMessage()));
+					val giftPostUrl =
+							apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS_BACK,
+									clickedProfile.getIdentity()));
+					responseBuilder.image(giftImage)
+							.postUrl(giftPostUrl)
+							.button(new FrameButton(
+									"⬅\uFE0F Back",
+									FrameButton.ActionType.POST,
+									null));
+				}
+
+				return responseBuilder
+						.button(new FrameButton(
+								"\uD83C\uDFC6 Leaderboard", FrameButton.ActionType.POST, null))
+						.build().toHtmlResponse();
+			} else if (buttonIndex == 2) {
+				log.debug("Handling gift leaderboard action: {}", validateMessage);
+				val leaderboardImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
+						"/gift/leaderboard.png", clickedProfile.getIdentity()));
+				val giftPostUrl =
+						apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS_GIFT_BACK,
+								clickedProfile.getIdentity()));
+				return FrameResponse.builder().image(leaderboardImage)
+						.postUrl(giftPostUrl)
+						.button(new FrameButton(
+								"⬅\uFE0F Back",
+								FrameButton.ActionType.POST,
+								null))
+						.build().toHtmlResponse();
 			}
-
-			val giftPostUrl =
-					apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS_GIFT,
-							clickedProfile.getIdentity()));
-
-			return FrameResponse.builder().image(giftImage)
-					.postUrl(giftPostUrl)
-					.button(new FrameButton(
-							"\uD83C\uDFB2 Spin one more time \uD83D\uDE09",
-							FrameButton.ActionType.POST,
-							null))
-					.build().toHtmlResponse();
-
 		}
 
-		return FrameResponse.builder().build().toHtmlResponse();
+		return DEFAULT_HTML_RESPONSE;
+	}
+
+	@GetMapping("/gift/{identity}/leaderboard")
+	public List<GiftProfileMessage> getGiftLeaderboard(@PathVariable String identity) {
+		log.debug("Received get gift leaderboard request from: {}", identity);
+
+		try {
+			val allGifts = giftRepository.findAllBy();
+
+			// Group gifts by the profile user
+			Map<User, List<Gift>> giftsByGiftedUser = allGifts.stream()
+					.collect(Collectors.groupingBy(Gift::getGifted));
+
+			// Convert each group into GiftProfileMessage
+			return giftsByGiftedUser.entrySet().stream()
+					.map(entry -> new GiftProfileMessage(
+							ProfileMessage.convert(entry.getKey()),
+							entry.getValue().stream()
+									.map(gift -> new GiftProfileMessage.GiftMessage(ProfileMessage.convert(gift.getGifter())))
+									.collect(Collectors.toList())
+					))
+					.sorted(Comparator.comparing(gpm -> gpm.gifts().size(), Comparator.reverseOrder()))
+					.collect(Collectors.toList());
+		} catch (Exception e) {
+			log.error("Error:", e);
+		}
+
+		return Collections.emptyList();
+	}
+
+
+	@PostMapping("/actions/{identity}/gift/back")
+	public ResponseEntity<String> handleGiftBackAction(@PathVariable String identity,
+	                                                   @RequestBody FrameMessage frameMessage) {
+		log.debug("Received actions gift back frame: {}", frameMessage);
+
+		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
+				frameMessage.trustedData().messageBytes());
+		if (!validateMessage.valid()) {
+			log.error("Frame message failed validation {}", validateMessage);
+			return DEFAULT_HTML_RESPONSE;
+		}
+		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
+				validateMessage.action().url());
+
+		val buttonIndex = validateMessage.action().tappedButton().index();
+		val clickedFid = validateMessage.action().interactor().fid();
+		val clickedProfile = frameService.getFidProfile(clickedFid, identity);
+		if (clickedProfile != null) {
+			if (buttonIndex == 1) {
+
+				log.debug("Handling gift back action: {}", validateMessage);
+
+				val giftImage = framesServiceUrl.concat(String.format("/images/profile/%s/gift/image.png",
+						clickedProfile.getIdentity()));
+				val giftPostUrl =
+						apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS_GIFT,
+								clickedProfile.getIdentity()));
+				return FrameResponse.builder().image(giftImage)
+						.postUrl(giftPostUrl)
+						.button(new FrameButton(
+								"\uD83C\uDFB2 Spin a gift ", FrameButton.ActionType.POST, null))
+						.button(new FrameButton(
+								"\uD83C\uDFC6 Leaderboard ", FrameButton.ActionType.POST, null))
+						.build().toHtmlResponse();
+			}
+		}
+
+		return DEFAULT_HTML_RESPONSE;
 	}
 
 	@PostMapping("/actions/{identity}/invite")

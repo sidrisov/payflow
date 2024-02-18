@@ -9,4 +9,6 @@ import java.util.List;
 public interface GiftRepository extends CrudRepository<Gift, Integer> {
 
 	List<Gift> findAllByGifter(User gifter);
+
+	List<Gift> findAllBy();
 }

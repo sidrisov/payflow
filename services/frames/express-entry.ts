@@ -13,6 +13,8 @@ import { welcomeProfileHtml } from './components/WelcomeProfile';
 import { invitedHtml } from './components/Invited';
 import { notInvitedHtml } from './components/NotInvited';
 import { giftHtml } from './components/Gift';
+import { giftLeaderboardHtml } from './components/GiftLeaderboard';
+import { GiftProfileType } from './types/GiftType';
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -106,6 +108,29 @@ async function startServer() {
       const giftedProfile = (await axios.get(`${API_URL}/api/user/${gifted}`)).data as ProfileType;
 
       const image = await htmlToImage(giftHtml(gifterProfile, giftedProfile), 'landscape');
+      res.type('png').send(image);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error retrieving profile data');
+    }
+  });
+
+  app.get('/images/profile/:identity/gift/leaderboard.png', async (req, res) => {
+    const identity = req.params.identity;
+
+    try {
+      const profile = (await axios.get(`${API_URL}/api/user/${identity}`))
+        .data as ProfileType;
+
+      const giftLeaderboard = (
+        await axios.get(`${API_URL}/api/farcaster/frames/gift/${identity}/leaderboard`)
+      ).data as GiftProfileType[];
+
+  
+      const image = await htmlToImage(
+        giftLeaderboardHtml(profile, giftLeaderboard),
+        'landscape'
+      );
       res.type('png').send(image);
     } catch (error) {
       console.error(error);

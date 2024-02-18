@@ -28,7 +28,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@hattip/adapter-node": "^0.0.42",
+    "@hattip/adapter-node": "^0.0.43",
     "@resvg/resvg-js": "^2.6.0",
     "@tanstack/react-query": "^5.20.5",
     "@vitejs/plugin-react": "^4.2.1",
