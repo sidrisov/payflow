@@ -28,7 +28,7 @@
     "@safe-global/safe-core-sdk-types": "^4.0.0",
     "@spruceid/siwe-parser": "^2.0.2",
     "@tanstack/react-query": "^5.17.19",
-    "@typescript-eslint/parser": "^6.3.0",
+    "@typescript-eslint/parser": "^7.0.1",
     "@vercel/speed-insights": "^1.0.1",
     "@vitejs/plugin-react": "^4.1.0",
     "@web3auth/ethereum-provider": "^7.3.1",
@@ -60,14 +60,14 @@
     "@types/react": "^18.2.20",
     "@types/react-blockies": "^1.4.1",
     "@types/react-dom": "^18.2.7",
-    "@typescript-eslint/eslint-plugin": "^6.3.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.1",
     "eslint": "^8.47.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
     "typescript": "^5.1.6",
     "vite": "^5.0.2",
     "vite-plugin-node-polyfills": "^0.21.0",
-    "vite-plugin-pwa": "^0.18.1"
+    "vite-plugin-pwa": "^0.19.0"
   },
   "overrides": {
     "agp-js": "github:runic-inc/apg-js#8bb92ff0780819170fee7e756d26e0562e442983"
