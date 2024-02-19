@@ -60,4 +60,10 @@ async function htmlToImage(html: React.ReactNode, ratio: 'landscape' | 'portrait
   //return await sharp(Buffer.from(svg)).png().toBuffer();
 }
 
-export { htmlToImage };
+function assetImageSrc(path: string) {
+  return `data:image/png;base64,${fs.readFileSync(join(process.cwd(), path), {
+    encoding: 'base64'
+  })}`;
+}
+
+export { htmlToImage, assetImageSrc };

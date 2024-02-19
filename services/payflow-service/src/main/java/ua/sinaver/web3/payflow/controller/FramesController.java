@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 import ua.sinaver.web3.payflow.data.Gift;
 import ua.sinaver.web3.payflow.data.Invitation;
 import ua.sinaver.web3.payflow.data.User;
@@ -219,24 +220,30 @@ public class FramesController {
 				case 1:
 					log.debug("Handling balance action: {}", validateMessage);
 					val defaultFlow = clickedProfile.getDefaultFlow();
-					AtomicReference<String> balance = new AtomicReference<>();
+					AtomicReference<Map<String, String>> balances = new AtomicReference<>();
 					if (defaultFlow != null) {
 						defaultFlow.getWallets().stream()
 								.filter(w -> w.getNetwork() == 8453).findFirst()
 								.ifPresent(flowBaseWallet -> {
-									balance.set(walletBalanceService.getWalletBalance(flowBaseWallet.getAddress()));
+									balances.set(walletBalanceService.getWalletBalance(flowBaseWallet.getAddress()));
 								});
 					}
-					if (balance.get() != null) {
-
+					if (balances.get() != null) {
+						val balanceImageBase = framesServiceUrl.concat(String.format("/images" +
+										"/profile" +
+										"/%s" +
+										"/balance.png",
+								clickedProfile.getIdentity()));
+						val balanceImageBuilder =
+								UriComponentsBuilder.fromHttpUrl(balanceImageBase);
+						balances.get().forEach(balanceImageBuilder::queryParam);
+						val balanceImage = balanceImageBuilder.build().toUriString();
 						val giftPostUrl =
 								apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS_BACK,
 										clickedProfile.getIdentity()));
-						return FrameResponse.builder().imageUrl(profileImage)
+						return FrameResponse.builder().imageUrl(balanceImage)
 								.postUrl(giftPostUrl)
 								.button(BACK_FRAME_BUTTON)
-								.button(new FrameButton(
-										String.format("Base: %s ETH", balance.get()), FrameButton.ActionType.POST, null))
 								.build().toHtmlResponse();
 					}
 					break;

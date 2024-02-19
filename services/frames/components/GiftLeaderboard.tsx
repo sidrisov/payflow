@@ -1,18 +1,12 @@
 import { ProfileType } from '../types/ProfleType';
-import fs from 'node:fs';
-import { join } from 'node:path';
 import { GiftProfileType } from '../types/GiftType';
+import { assetImageSrc } from '../utils/image';
 
 export const giftLeaderboardHtml = (profile: ProfileType, leaderboard: GiftProfileType[]) => (
   <GiftLeaderboard profile={profile} leaderboard={leaderboard} />
 );
 
-const base64EncodedContactsImage = fs.readFileSync(
-  join(process.cwd(), '/assets/app-portrait-contacts.png'),
-  {
-    encoding: 'base64'
-  }
-);
+const contactImage = assetImageSrc('/assets/app-portrait-contacts.png');
 
 function GiftLeaderboard({
   profile,
@@ -40,11 +34,7 @@ function GiftLeaderboard({
           alignItems: 'center',
           justifyContent: 'space-around'
         }}>
-        <img
-          src={`data:image/png;base64,${base64EncodedContactsImage}`}
-          alt="contacts"
-          style={{ height: '95%' }}
-        />
+        <img src={contactImage} alt="contacts" style={{ height: '95%' }} />
         <div
           style={{
             marginLeft: 50,
@@ -82,7 +72,7 @@ function GiftLeaderboard({
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    padding: 8,
+                    padding: 12,
                     height: 50,
                     width: 350,
                     backgroundColor: '#e0e0e0',
@@ -122,7 +112,7 @@ function GiftLeaderboard({
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                padding: 8,
+                padding: 12,
                 height: 50,
                 width: 150,
                 backgroundColor: '#e0e0e0',
