@@ -9,14 +9,17 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import ua.sinaver.web3.payflow.message.FrameButton;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Builder
 public class FrameResponse {
-
-	private String image;
+	private String imageUrl;
 	private String postUrl;
-	private String input;
+	private String textInput;
+	@Builder.Default
+	private boolean cacheImage = true;
 
 	@Singular
 	private List<FrameButton> buttons;
@@ -44,10 +47,10 @@ public class FrameResponse {
 		}
 
 		var inputMeta = "";
-		if (!StringUtils.isBlank(input)) {
+		if (!StringUtils.isBlank(textInput)) {
 			inputMeta = String.format("""
 					<meta property="fc:frame:input:text" content="%s" />
-					""", input);
+					""", textInput);
 		}
 
 		val html = String.format("""
@@ -61,8 +64,24 @@ public class FrameResponse {
 				%s
 				</head>
 				</html>
-				""", image, postUrl, buttonsMeta, inputMeta);
+				""", cacheAdjustedImageUrl(), postUrl, buttonsMeta, inputMeta);
 
 		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(html);
+	}
+
+	// if not cached, add timestamp
+	private String cacheAdjustedImageUrl() {
+		val currentTime = Instant.now();
+		val adjustedTimestamp = (cacheImage ? currentTime.truncatedTo(ChronoUnit.HOURS) :
+				currentTime).toEpochMilli();
+
+		if (!StringUtils.isBlank(imageUrl)) {
+			return imageUrl.concat(
+					String.format("%stimestamp=%s",
+							imageUrl.contains("?") ? "&" : "?",
+							adjustedTimestamp));
+		} else {
+			return "";
+		}
 	}
 }

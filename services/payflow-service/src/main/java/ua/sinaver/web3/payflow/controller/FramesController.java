@@ -42,7 +42,7 @@ public class FramesController {
 	private static final String CONNECT_IDENTITY_ACTIONS_BACK = "/api/farcaster/frames" +
 			"/actions/%s/back";
 	private static final ResponseEntity<String> DEFAULT_HTML_RESPONSE =
-			FrameResponse.builder().image("https://i.imgur.com/Vs0loYg.png").build().toHtmlResponse();
+			FrameResponse.builder().imageUrl("https://i.imgur.com/Vs0loYg.png").build().toHtmlResponse();
 
 	private static final FrameButton BACK_FRAME_BUTTON = new FrameButton(
 			"⬅\uFE0F Back",
@@ -112,17 +112,17 @@ public class FramesController {
 			}
 			val image = framesServiceUrl.concat(String.format("/images/profile/%s/welcome.png",
 					validateMessage.action().interactor().username()));
-			frameResponseBuilder.image(image);
+			frameResponseBuilder.imageUrl(image);
 		} else {
 			val invitations = userService.getInvitations(addresses);
 			if (!invitations.isEmpty()) {
 				val image = framesServiceUrl.concat("/images/profile/invited.png");
 				val linkUrl = dAppServiceUrl.concat("/connect");
-				frameResponseBuilder.image(image).button(new FrameButton(
+				frameResponseBuilder.imageUrl(image).button(new FrameButton(
 						"Sign Up", FrameButton.ActionType.LINK, linkUrl));
 			} else {
 				val image = framesServiceUrl.concat("/images/profile/notinvited.png");
-				frameResponseBuilder.image(image);
+				frameResponseBuilder.imageUrl(image);
 			}
 		}
 
@@ -168,7 +168,7 @@ public class FramesController {
 								"/image.png",
 						clickedProfile.getIdentity()));
 
-				val responseBuilder = FrameResponse.builder().image(profileImage).postUrl(postUrl)
+				val responseBuilder = FrameResponse.builder().imageUrl(profileImage).postUrl(postUrl)
 						.button(new FrameButton("\uD83D\uDCB0 Balance", FrameButton.ActionType.POST,
 								null))
 						.button(new FrameButton("\uD83D\uDC8C Invite",
@@ -232,7 +232,7 @@ public class FramesController {
 						val giftPostUrl =
 								apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS_BACK,
 										clickedProfile.getIdentity()));
-						return FrameResponse.builder().image(profileImage)
+						return FrameResponse.builder().imageUrl(profileImage)
 								.postUrl(giftPostUrl)
 								.button(BACK_FRAME_BUTTON)
 								.button(new FrameButton(
@@ -246,9 +246,9 @@ public class FramesController {
 					val invitePostUrl =
 							apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS_INVITE,
 									clickedProfile.getIdentity()));
-					return FrameResponse.builder().image(profileImage)
+					return FrameResponse.builder().imageUrl(profileImage)
 							.postUrl(invitePostUrl)
-							.input("Enter farcaster username")
+							.textInput("Enter farcaster username")
 							.button(BACK_FRAME_BUTTON)
 							.button(new FrameButton(
 									"Submit", FrameButton.ActionType.POST, null))
@@ -261,7 +261,7 @@ public class FramesController {
 					val giftPostUrl =
 							apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS_GIFT,
 									clickedProfile.getIdentity()));
-					return FrameResponse.builder().image(giftImage)
+					return FrameResponse.builder().imageUrl(giftImage)
 							.postUrl(giftPostUrl)
 							.button(new FrameButton(
 									"\uD83C\uDFB2 Spin a gift", FrameButton.ActionType.POST, null))
@@ -298,7 +298,7 @@ public class FramesController {
 			val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
 							"/image.png",
 					clickedProfile.getIdentity()));
-			val responseBuilder = FrameResponse.builder().image(profileImage).postUrl(postUrl)
+			val responseBuilder = FrameResponse.builder().imageUrl(profileImage).postUrl(postUrl)
 					.button(new FrameButton("\uD83D\uDCB0 Balance", FrameButton.ActionType.POST,
 							null))
 					.button(new FrameButton("\uD83D\uDC8C Invite",
@@ -345,7 +345,7 @@ public class FramesController {
 					val giftPostUrl =
 							apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS_GIFT,
 									clickedProfile.getIdentity()));
-					responseBuilder.image(giftImage)
+					responseBuilder.imageUrl(giftImage)
 							.postUrl(giftPostUrl)
 							.button(new FrameButton(
 									"\uD83C\uDFB2 Spin one more time",
@@ -358,7 +358,7 @@ public class FramesController {
 					val giftPostUrl =
 							apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS_BACK,
 									clickedProfile.getIdentity()));
-					responseBuilder.image(giftImage)
+					responseBuilder.imageUrl(giftImage)
 							.postUrl(giftPostUrl)
 							.button(BACK_FRAME_BUTTON);
 				}
@@ -374,7 +374,8 @@ public class FramesController {
 				val giftPostUrl =
 						apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS_GIFT_BACK,
 								clickedProfile.getIdentity()));
-				return FrameResponse.builder().image(leaderboardImage)
+				return FrameResponse.builder()
+						.imageUrl(leaderboardImage).cacheImage(false)
 						.postUrl(giftPostUrl)
 						.button(BACK_FRAME_BUTTON)
 						.build().toHtmlResponse();
@@ -440,7 +441,7 @@ public class FramesController {
 				val giftPostUrl =
 						apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS_GIFT,
 								clickedProfile.getIdentity()));
-				return FrameResponse.builder().image(giftImage)
+				return FrameResponse.builder().imageUrl(giftImage)
 						.postUrl(giftPostUrl)
 						.button(new FrameButton(
 								"\uD83C\uDFB2 Spin a gift ", FrameButton.ActionType.POST, null))
@@ -481,7 +482,7 @@ public class FramesController {
 				val profileLink = dAppServiceUrl.concat(String.format("/%s",
 						clickedProfile.getUsername()));
 
-				val responseBuilder = FrameResponse.builder().image(profileImage).postUrl(postUrl)
+				val responseBuilder = FrameResponse.builder().imageUrl(profileImage).postUrl(postUrl)
 						.button(new FrameButton("\uD83D\uDCB0 Balance", FrameButton.ActionType.POST,
 								null))
 						.button(new FrameButton("\uD83D\uDC8C Invite",
@@ -497,7 +498,7 @@ public class FramesController {
 					// check if profile exist
 					val inviteProfile = frameService.getFidProfile(inputText, identity);
 					if (inviteProfile != null) {
-						return FrameResponse.builder().image(profileImage)
+						return FrameResponse.builder().imageUrl(profileImage)
 								.button(new FrameButton(String.format("✅ %s already signed up",
 										inputText), FrameButton.ActionType.POST, null)).build().toHtmlResponse();
 					} else {
@@ -505,7 +506,7 @@ public class FramesController {
 						val inviteAddresses = frameService.getFnameAddresses(inputText);
 						val invitations = userService.getInvitations(inviteAddresses);
 						if (!invitations.isEmpty()) {
-							return FrameResponse.builder().image(profileImage)
+							return FrameResponse.builder().imageUrl(profileImage)
 									.button(new FrameButton(String.format("✅ %s already invited",
 											inputText), FrameButton.ActionType.POST, null)).build().toHtmlResponse();
 						} else {
@@ -519,7 +520,7 @@ public class FramesController {
 							invitation.setExpiryDate(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(30)));
 							invitationRepository.save(invitation);
 
-							return FrameResponse.builder().image(profileImage)
+							return FrameResponse.builder().imageUrl(profileImage)
 									.button(new FrameButton(String.format("🎉 Successfully invited %s to Payflow",
 											inputText), FrameButton.ActionType.POST, null)).build().toHtmlResponse();
 						}
@@ -528,9 +529,9 @@ public class FramesController {
 					val postUrl = apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS_INVITE,
 							clickedProfile.getIdentity()));
 
-					return FrameResponse.builder().image(profileImage)
+					return FrameResponse.builder().imageUrl(profileImage)
 							.postUrl(postUrl)
-							.input("Enter farcaster username")
+							.textInput("Enter farcaster username")
 							.button(BACK_FRAME_BUTTON)
 							.button(new FrameButton(
 									"Empty username, submit again", FrameButton.ActionType.POST, null))
