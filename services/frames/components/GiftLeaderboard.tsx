@@ -1,5 +1,6 @@
+/* eslint-disable jsx-a11y/alt-text */
 import { ProfileType } from '../types/ProfleType';
-import { GiftProfileType } from '../types/GiftType';
+import { GiftProfileType, GiftType } from '../types/GiftType';
 import { assetImageSrc } from '../utils/image';
 
 export const giftLeaderboardHtml = (profile: ProfileType, leaderboard: GiftProfileType[]) => (
@@ -8,6 +9,35 @@ export const giftLeaderboardHtml = (profile: ProfileType, leaderboard: GiftProfi
 
 const contactImage = assetImageSrc('/assets/app-portrait-contacts.png');
 
+const ProfileGifts = ({ gifts }: { gifts: GiftType[] }) => {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 3
+      }}>
+      {gifts.slice(0, 3).map((g) => (
+        <GiftTokenImg token={g.token} />
+      ))}
+      {gifts.length > 3 && (
+        <span style={{ fontSize: 20, fontWeight: 'bold' }}>+{gifts.length - 3}</span>
+      )}
+    </div>
+  );
+};
+
+const GiftTokenImg = ({ token }: { token: string }) => {
+  return (
+    <img
+      src={assetImageSrc(`/assets/coins/${token}.png`)}
+      style={{ width: 24, height: 24, borderRadius: '50%' }}
+    />
+  );
+};
+
 function GiftLeaderboard({
   profile,
   leaderboard
@@ -15,6 +45,8 @@ function GiftLeaderboard({
   profile: ProfileType;
   leaderboard: GiftProfileType[];
 }) {
+  const profileGifts = leaderboard.find((l) => l.profile.identity === profile.identity)?.gifts;
+
   return (
     <div
       style={{
@@ -44,7 +76,7 @@ function GiftLeaderboard({
             height: '95%',
             width: 600
           }}>
-          <p style={{ fontSize: 64, fontWeight: 'bold' }}>🏆 Gift Leadearboard</p>
+          <p style={{ fontSize: 60, fontWeight: 'bold' }}>🏆 Gift Leadearboard</p>
           <div
             style={{
               marginTop: 20,
@@ -61,7 +93,7 @@ function GiftLeaderboard({
                 flexDirection: 'column',
                 justifyContent: 'flex-start',
                 alignItems: 'flex-start',
-                width: 350,
+                width: 400,
                 height: 300,
                 gap: 15
               }}>
@@ -73,8 +105,8 @@ function GiftLeaderboard({
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     padding: 12,
+                    width: 400,
                     height: 50,
-                    width: 350,
                     backgroundColor: '#e0e0e0',
                     borderRadius: 20
                   }}>
@@ -84,7 +116,7 @@ function GiftLeaderboard({
                       flexDirection: 'row',
                       justifyContent: 'flex-start',
                       alignItems: 'center',
-                      width: 300,
+                      width: 250,
                       whiteSpace: 'nowrap'
                     }}>
                     <span style={{ marginRight: 10, fontWeight: 'bold' }}>#{index + 1}</span>
@@ -102,27 +134,24 @@ function GiftLeaderboard({
                       {l.profile.username}
                     </span>
                   </div>
-                  <span style={{ marginLeft: 10, fontWeight: 'bold' }}>{l.gifts.length}</span>
+                  <ProfileGifts gifts={l.gifts} />
                 </div>
               ))}
             </div>
             <div
               style={{
                 display: 'flex',
-                flexDirection: 'row',
+                flexDirection: 'column',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 padding: 12,
-                height: 50,
+                height: 115,
                 width: 150,
                 backgroundColor: '#e0e0e0',
                 borderRadius: 20
               }}>
               <span>You</span>
-              <span style={{ fontWeight: 'bold' }}>
-                {leaderboard.find((l) => l.profile.identity === profile.identity)?.gifts.length ??
-                  0}
-              </span>
+              {profileGifts && <ProfileGifts gifts={profileGifts} />}
             </div>
           </div>
         </div>

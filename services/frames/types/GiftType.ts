@@ -7,4 +7,5 @@ export interface GiftProfileType {
 
 export interface GiftType {
   gifter: ProfileType;
+  token: string;
 }

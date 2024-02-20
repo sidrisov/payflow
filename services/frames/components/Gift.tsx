@@ -17,6 +17,52 @@ const base64EncodedGiftImage = fs.readFileSync(join(process.cwd(), '/assets/gift
   encoding: 'base64'
 });
 
+const GiftErrorMessage = ({ error }: { error: string }) => {
+  switch (error) {
+    case 'GIFT_SPIN_LIMIT_REACHED':
+      return (
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            justifyContent: 'flex-start'
+          }}>
+          <p>Your have reached 10 spin gift limit 🎉</p>
+          <p>Thank you 🙏🏻</p>
+        </div>
+      );
+    case 'NO_CONTACT_TO_GIFT':
+      return (
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            justifyContent: 'flex-start'
+          }}>
+          <p>You spinned to all your contacts 🎉</p>
+          <p>Invite more friends to Payflow to continue 💌 </p>
+        </div>
+      );
+    case 'GIFT_CAMPAIGN_LIMIT_REACHED':
+      return (
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            justifyContent: 'flex-start'
+          }}>
+          <p>We have reached 100 total gifts 🎉</p>
+          <p>Thank you for spinning a gift 🙏🏻</p>
+        </div>
+      );
+    default:
+      return <p>Error</p>;
+  }
+};
+
 function Gift({
   gifter,
   gifted,
@@ -59,10 +105,10 @@ function Gift({
             height: '95%',
             width: 600
           }}>
-          <p style={{ fontSize: 64, fontWeight: 'bold' }}>Gift your friend</p>
+          <p style={{ fontSize: 60, fontWeight: 'bold' }}>Gift your friend</p>
           <p style={{ marginTop: 30, fontSize: 28, whiteSpace: 'pre-wrap' }}>
             When you spin a gift, one of your contacts on Payflow will receive $1 in ETH, USDC, or
-            DEGEN 🖼️
+            DEGEN
           </p>
 
           {gifted ? (
@@ -95,24 +141,14 @@ function Gift({
             <div
               style={{
                 marginTop: 30,
+                fontSize: 24,
+                color: 'green',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
-                height: 150
+                height: 100
               }}>
-              <p
-                style={{
-                  fontSize: 28,
-                  fontStyle: 'italic',
-                  color: 'red',
-                  whiteSpace: 'pre-wrap'
-                }}>
-                {error === 'GIFT_SPIN_LIMIT_REACHED'
-                  ? 'Your reached the spin limit - 10 gifts!'
-                  : error === 'NO_CONTACT_TO_GIFT'
-                    ? "You don't have more contacts to spin a gift! Invite your friends to Payflow!"
-                    : 'Error'}
-              </p>
+              <GiftErrorMessage error={error} />
             </div>
           ) : (
             <img

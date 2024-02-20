@@ -27,6 +27,9 @@ public class Gift {
 	@JoinColumn(name = "gifted_user_id", referencedColumnName = "id", nullable = false)
 	private User gifted;
 
+	@Column(nullable = false)
+	private String token;
+
 	@Column
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createdDate = new Date();
@@ -34,8 +37,9 @@ public class Gift {
 	@Version
 	private Long version;
 
-	public Gift(User gifter, User gifted) {
+	public Gift(User gifter, User gifted, String token) {
 		this.gifter = gifter;
 		this.gifted = gifted;
+		this.token = token;
 	}
 }

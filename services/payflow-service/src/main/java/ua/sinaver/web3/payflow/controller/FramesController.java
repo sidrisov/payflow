@@ -408,7 +408,7 @@ public class FramesController {
 					.map(entry -> new GiftProfileMessage(
 							ProfileMessage.convert(entry.getKey()),
 							entry.getValue().stream()
-									.map(gift -> new GiftProfileMessage.GiftMessage(ProfileMessage.convert(gift.getGifter())))
+									.map(gift -> new GiftProfileMessage.GiftMessage(ProfileMessage.convert(gift.getGifter()), gift.getToken()))
 									.collect(Collectors.toList())
 					))
 					.sorted(Comparator.comparing(gpm -> gpm.gifts().size(), Comparator.reverseOrder()))

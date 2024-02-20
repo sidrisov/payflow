@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ua.sinaver.web3.payflow.data.Gift;
 import ua.sinaver.web3.payflow.data.User;
@@ -15,6 +16,7 @@ import ua.sinaver.web3.payflow.service.api.IContactBookService;
 import ua.sinaver.web3.payflow.service.api.IFrameService;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
@@ -24,20 +26,28 @@ import java.util.Random;
 @Slf4j
 public class FrameService implements IFrameService {
 
+	private static final List<String> TOKENS = Arrays.asList("eth", "usdc", "degen");
 	@Autowired
 	private ISocialGraphService socialGraphService;
-
 	@Autowired
 	private UserRepository userRepository;
-
 	@Autowired
 	private IContactBookService contactBookService;
-
 	@Autowired
 	private GiftRepository giftRepository;
+	@Value("${payflow.frames.gift.limit:100}")
+	private long totalGiftNumberLimit;
 
 	@Override
 	public ContactMessage giftSpin(User gifter) throws Exception {
+
+		long totalGiftNumber = giftRepository.count();
+
+		if (totalGiftNumber >= totalGiftNumberLimit) {
+			log.warn("Total gift spin limit reached: {}", totalGiftNumberLimit);
+			throw new Exception("GIFT_CAMPAIGN_LIMIT_REACHED");
+		}
+
 		val existingUserGifts =
 				giftRepository.findAllByGifter(gifter).stream().map(g -> g.getGifted().getIdentity()).toList();
 		if (existingUserGifts.size() == 10) {
@@ -59,8 +69,11 @@ public class FrameService implements IFrameService {
 		val random = new Random();
 		val randomContactIndex = random.nextInt(contacts.size());
 		val giftedContact = contacts.get(randomContactIndex);
+
+		val randomTokenIndex = random.nextInt(TOKENS.size());
+		val randomToken = TOKENS.get(randomTokenIndex);
 		val gifted = userRepository.findByIdentity(giftedContact.profile().identity());
-		giftRepository.save(new Gift(gifter, gifted));
+		giftRepository.save(new Gift(gifter, gifted, randomToken));
 		return giftedContact;
 	}
 
