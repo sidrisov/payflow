@@ -297,25 +297,41 @@ public class FramesController {
 		val clickedFid = validateMessage.action().interactor().fid();
 		val buttonIndex = validateMessage.action().tappedButton().index();
 		val clickedProfile = frameService.getFidProfile(clickedFid, identity);
-		if (clickedProfile != null && buttonIndex == 1) {
-			val postUrl = apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS,
-					clickedProfile.getIdentity()));
-			val profileLink = dAppServiceUrl.concat(String.format("/%s",
-					clickedProfile.getUsername()));
-			val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
-							"/image.png",
-					clickedProfile.getIdentity()));
-			val responseBuilder = FrameResponse.builder().imageUrl(profileImage).postUrl(postUrl)
-					.button(new FrameButton("\uD83D\uDCB0 Balance", FrameButton.ActionType.POST,
-							null))
-					.button(new FrameButton("\uD83D\uDC8C Invite",
-							FrameButton.ActionType.POST, null))
-					.button(new FrameButton("\uD83C\uDF81 Gift", FrameButton.ActionType.POST,
-							null))
-					.button(new FrameButton("Profile",
-							FrameButton.ActionType.LINK,
-							profileLink));
-			return responseBuilder.build().toHtmlResponse();
+		if (clickedProfile != null) {
+			if (buttonIndex == 1) {
+				val postUrl = apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS,
+						clickedProfile.getIdentity()));
+				val profileLink = dAppServiceUrl.concat(String.format("/%s",
+						clickedProfile.getUsername()));
+				val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
+								"/image.png",
+						clickedProfile.getIdentity()));
+				val responseBuilder = FrameResponse.builder().imageUrl(profileImage).postUrl(postUrl)
+						.button(new FrameButton("\uD83D\uDCB0 Balance", FrameButton.ActionType.POST,
+								null))
+						.button(new FrameButton("\uD83D\uDC8C Invite",
+								FrameButton.ActionType.POST, null))
+						.button(new FrameButton("\uD83C\uDF81 Gift", FrameButton.ActionType.POST,
+								null))
+						.button(new FrameButton("Profile",
+								FrameButton.ActionType.LINK,
+								profileLink));
+				return responseBuilder.build().toHtmlResponse();
+				// TODO: a bit hacky, as other frames might also have additional buttons besides
+				//  back button
+			} else if (buttonIndex == 2) {
+				log.debug("Handling gift leaderboard action: {}", validateMessage);
+				val leaderboardImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
+						"/gift/leaderboard.png", clickedProfile.getIdentity()));
+				val giftPostUrl =
+						apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS_GIFT_BACK,
+								clickedProfile.getIdentity()));
+				return FrameResponse.builder()
+						.imageUrl(leaderboardImage).cacheImage(false)
+						.postUrl(giftPostUrl)
+						.button(BACK_FRAME_BUTTON)
+						.build().toHtmlResponse();
+			}
 		}
 		return DEFAULT_HTML_RESPONSE;
 	}
