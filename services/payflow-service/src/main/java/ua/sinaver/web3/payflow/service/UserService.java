@@ -21,6 +21,8 @@ import ua.sinaver.web3.payflow.service.api.IUserService;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import static ua.sinaver.web3.payflow.config.CacheConfig.USERS_CACHE_NAME;
+
 @Service
 @Transactional
 @Log4j2
@@ -47,13 +49,13 @@ public class UserService implements IUserService {
 	private InvitationRepository invitationRepository;
 
 	@Override
-	@CacheEvict(value = "users")
+	@CacheEvict(value = USERS_CACHE_NAME)
 	public void saveUser(String identity) {
 		userRepository.save(new User(identity));
 	}
 
 	@Override
-	@CacheEvict(value = "users", key = "#identity")
+	@CacheEvict(value = USERS_CACHE_NAME, key = "#identity")
 	public void updateProfile(String identity, ProfileMessage profile, String invitationCode) {
 		User user = userRepository.findByIdentity(identity);
 

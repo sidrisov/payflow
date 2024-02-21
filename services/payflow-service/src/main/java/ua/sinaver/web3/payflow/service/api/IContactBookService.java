@@ -9,4 +9,7 @@ public interface IContactBookService {
 	void update(ContactMessage contactMessage, User user);
 
 	List<ContactMessage> getAllContacts(User user);
+
+	// run only once
+	List<ContactMessage> getEthDenverParticipants();
 }

@@ -20,6 +20,7 @@ export interface IdentityType {
   invited?: boolean;
   profile?: ProfileType;
   meta?: MetaType;
+  tags?: string[];
 }
 
 export interface MetaType {

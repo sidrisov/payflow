@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/user")
@@ -66,14 +67,19 @@ public class UserController {
 		val user = userService.findByIdentity(principal.getName());
 		if (user != null) {
 			try {
-				val contacts = contactBookService.getAllContacts(user);
+				// TODO: combine tags field in case there is an overlap
+				val userContacts = contactBookService.getAllContacts(user);
+				val ethDenverParticipants = contactBookService.getEthDenverParticipants();
+				val allContacts = Stream.concat(userContacts.stream(),
+						ethDenverParticipants.stream()).toList();
 				if (log.isTraceEnabled()) {
-					log.trace("All contacts for {}: {}", principal.getName(), contacts);
+					log.trace("All contacts for {}: {}", principal.getName(), allContacts);
 				} else {
 					log.debug("All contacts for {}: {}", principal.getName(),
-							contacts.stream().map(ContactMessage::address).toList());
+							allContacts.size());
 				}
-				return contacts;
+
+				return allContacts;
 			} catch (Throwable t) {
 				log.debug("Error fetching contacts for {}", user.getUsername(), t);
 			}
@@ -118,7 +124,7 @@ public class UserController {
 	}
 
 	@GetMapping("/all")
-	//@Cacheable(cacheNames = "users", unless = "#result.isEmpty()")
+	//@Cacheable(cacheNames = USERS_CACHE_NAME, unless = "#result.isEmpty()")
 	public List<ProfileMetaMessage> getAllProfiles() {
 		try {
 			List<User> users = userService.findAll();
@@ -206,7 +212,7 @@ public class UserController {
 					walletUserMap.size());
 		}
 
-		// remove unnecessory information from the profiles (later on could be done on
+		// remove unnecessary information from the profiles (later on could be done on
 		// sql level)
 		return walletUserMap.entrySet().stream()
 				.map(wu -> new WalletProfileResponseMessage(wu.getKey().address(), wu.getKey().network(),

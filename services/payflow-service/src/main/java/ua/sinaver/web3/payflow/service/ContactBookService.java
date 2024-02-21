@@ -23,11 +23,10 @@ import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
 import java.time.Duration;
 import java.time.Period;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+
+import static ua.sinaver.web3.payflow.config.CacheConfig.CONTACTS_CACHE_NAME;
 
 @Slf4j
 @Service
@@ -64,8 +63,10 @@ public class ContactBookService implements IContactBookService {
 	@Value("${payflow.invitation.whitelisted.default.users}")
 	private Set<String> whitelistedUsers;
 
+	private List<ContactMessage> ethDenverParticipants = new ArrayList<>();
+
 	@Override
-	@CacheEvict(value = "contacts", key = "#user.identity")
+	@CacheEvict(value = CONTACTS_CACHE_NAME, key = "#user.identity")
 	public void update(ContactMessage contactMessage, User user) {
 		var contact = contactRepository.findByUserAndIdentity(user, contactMessage.address());
 		if (contact == null) {
@@ -114,7 +115,7 @@ public class ContactBookService implements IContactBookService {
 	}
 
 	@Override
-	@Cacheable(value = "contacts", key = "#user.identity", unless = "#result.isEmpty()")
+	@Cacheable(value = CONTACTS_CACHE_NAME, key = "#user.identity", unless = "#result.isEmpty()")
 	public List<ContactMessage> getAllContacts(User user) {
 		log.debug("VIRTUAL {} {} {} {}", Schedulers.DEFAULT_BOUNDED_ELASTIC_ON_VIRTUAL_THREADS,
 				Schedulers.DEFAULT_POOL_SIZE, Schedulers.DEFAULT_BOUNDED_ELASTIC_SIZE,
@@ -153,7 +154,8 @@ public class ContactBookService implements IContactBookService {
 									.map(tuple -> ContactMessage.convert(
 											tuple.getT1(),
 											tuple.getT2(),
-											tuple.getT3()))
+											tuple.getT3(),
+											Collections.singletonList("user-contacts")))
 							// TODO: fail fast, seems doesn't to work properly with threads
 					)
 					.timeout(contactsFetchTimeout, Mono.empty())
@@ -212,10 +214,18 @@ public class ContactBookService implements IContactBookService {
 		}
 	}
 
-
 	// run only once
+	@Override
+	public List<ContactMessage> getEthDenverParticipants() {
+		if (!ethDenverContactsEnabled) {
+			return Collections.emptyList();
+		}
+
+		return ethDenverParticipants;
+	}
+
 	@Scheduled(fixedRate = Long.MAX_VALUE)
-	public void fetchEthDenverParticipants() {
+	public void preFetchEthDenverParticipants() {
 		if (!ethDenverContactsEnabled) {
 			return;
 		}
@@ -229,13 +239,14 @@ public class ContactBookService implements IContactBookService {
 
 			if (log.isDebugEnabled()) {
 				log.debug("Fetched EthDenver participants: {}",
-						ethDenverParticipants.size());
+						log.isTraceEnabled() ? ethDenverParticipants :
+								ethDenverParticipants.size());
 			}
 
+			this.ethDenverParticipants = ethDenverParticipants;
 		} catch (Throwable t) {
 			log.error("Couldn't fetch EthDenver participants {}, {}", t.getMessage(),
 					log.isTraceEnabled() ? t : null);
 		}
-
 	}
 }

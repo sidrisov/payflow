@@ -13,8 +13,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import ua.sinaver.web3.payflow.data.Contact;
 import ua.sinaver.web3.payflow.graphql.generated.types.*;
 import ua.sinaver.web3.payflow.message.ConnectedAddresses;
+import ua.sinaver.web3.payflow.message.ContactMessage;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
 import java.util.ArrayList;
@@ -22,6 +24,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static ua.sinaver.web3.payflow.config.CacheConfig.ETH_DENVER_PARTICIPANTS_CACHE_NAME;
+import static ua.sinaver.web3.payflow.config.CacheConfig.SOCIALS_CACHE_NAME;
 
 @Service
 @Slf4j
@@ -47,14 +52,16 @@ public class SocialGraphService implements ISocialGraphService {
 	}
 
 	@Override
-	public List<String> getEthDenverParticipants() {
-
+	@Cacheable(value = ETH_DENVER_PARTICIPANTS_CACHE_NAME, unless = "#result.isEmpty()")
+	public List<ContactMessage> getEthDenverParticipants() {
 		var hasNextPage = false;
-		val participants = new ArrayList<String>();
+		var nextCursor = "";
+		val participants = new ArrayList<ContactMessage>();
 
 		do {
 			try {
 				val ethDenverParticipantsResponse = graphQlClient.documentName("getEthDenverParticipants")
+						.variable("cursor", nextCursor)
 						.execute().block();
 
 				if (ethDenverParticipantsResponse != null) {
@@ -62,6 +69,7 @@ public class SocialGraphService implements ISocialGraphService {
 							.field("polygon.pageInfo")
 							.toEntity(PageInfo.class);
 					hasNextPage = pageInfo != null && pageInfo.getHasNextPage();
+					nextCursor = pageInfo != null ? pageInfo.getNextCursor() : "";
 
 					val rawParticipants = ethDenverParticipantsResponse
 							.field("polygon.TokenBalance")
@@ -72,9 +80,13 @@ public class SocialGraphService implements ISocialGraphService {
 									tb.getOwner().getPrimaryDomain() != null ||
 											(tb.getOwner().getSocials() != null && !tb.getOwner().getSocials().isEmpty())
 							)
-							.map(tb -> tb.getOwner().getIdentity())
+							.map(tb -> ContactMessage.convert(new Contact(null,
+											tb.getOwner().getIdentity()), tb.getOwner(), null,
+									Collections.singletonList("eth-denver-contacts")))
 							.distinct()
 							.toList());
+
+					log.debug("Fetched {} participants", participants.size());
 
 				} else {
 					hasNextPage = false;
@@ -135,13 +147,13 @@ public class SocialGraphService implements ISocialGraphService {
 	}
 
 	@Override
-	@CacheEvict(cacheNames = "socials")
+	@CacheEvict(cacheNames = SOCIALS_CACHE_NAME)
 	public void cleanCache(String identity, String me) {
 		log.debug("Evicting socials cache for {}_{} key", identity, me);
 	}
 
 	@Override
-	@Cacheable(cacheNames = "socials", unless = "#result==null")
+	@Cacheable(cacheNames = SOCIALS_CACHE_NAME, unless = "#result==null")
 	public Wallet getSocialMetadata(String identity, String me) {
 		try {
 			val documentName = StringUtils.isBlank(me) ? "getSocialMetadata" :

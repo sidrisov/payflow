@@ -371,16 +371,25 @@ export default function SearchIdentityDialog({
                 selectIdentityCallback={selectIdentityCallback}
                 updateIdentityCallback={updateIdentityCallback}
                 filterByFafourites={true}
-                identities={contacts}
+                identities={contacts.filter((c) => c.tags?.includes('user-contacts'))}
               />
-            ) : (
+            ) : addressBookView === 'friends' ? (
               <SearchResultView
                 key={'search_identity_friends_view'}
                 profileRedirect={profileRedirect}
                 closeStateCallback={closeStateCallback}
                 selectIdentityCallback={selectIdentityCallback}
                 updateIdentityCallback={updateIdentityCallback}
-                identities={contacts}
+                identities={contacts.filter((c) => c.tags?.includes('user-contacts'))}
+              />
+            ) : (
+              <SearchResultView
+                key={'search_identity_eth_denver_view'}
+                profileRedirect={profileRedirect}
+                closeStateCallback={closeStateCallback}
+                selectIdentityCallback={selectIdentityCallback}
+                updateIdentityCallback={updateIdentityCallback}
+                identities={contacts.filter((c) => c.tags?.includes('eth-denver-contacts'))}
               />
             ))}
 

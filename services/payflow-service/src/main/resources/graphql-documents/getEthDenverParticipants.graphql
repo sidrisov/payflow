@@ -1,10 +1,11 @@
-query GetEthDenverParticipants {
+query GetEthDenverParticipants($cursor: String) {
     polygon: TokenBalances(
         input: {filter: {tokenAddress: {_eq: "0x058d96baa6f9d16853970b333ed993acc0c35add"}},
-            blockchain: polygon, limit: 200}
+            blockchain: polygon, cursor: $cursor, limit: 200}
     ) {
         TokenBalance {
             owner {
+                identity
                 primaryDomain {
                     name
                     resolvedAddress
@@ -38,6 +39,7 @@ query GetEthDenverParticipants {
         }
         pageInfo {
             hasNextPage
+            nextCursor
         }
     }
 }
