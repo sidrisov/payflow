@@ -30,6 +30,8 @@ export function AddressSection(props: {
     }
   });
 
+  const ens = identity.meta?.ens || ensName;
+
   return (
     <Stack maxWidth={maxWidth ?? 130} direction="row" spacing={0.5} alignItems="center">
       {identity.meta?.ensAvatar || (avatar.isSuccess && avatar.data) ? (
@@ -53,14 +55,14 @@ export function AddressSection(props: {
             display: 'none' // Hide the scrollbar for IE
           }
         }}>
-        <Typography noWrap variant="subtitle2" fontSize={fontSize}>
-          {shortenWalletAddressLabel(identity.address)}
-        </Typography>
-        {(identity.meta?.ens || ensName) && (
-          <Typography noWrap variant="caption">
-            {identity.meta?.ens ?? ensName}
+        {ens && (
+          <Typography noWrap variant="subtitle2" fontSize={fontSize}>
+            {ens}
           </Typography>
         )}
+        <Typography noWrap variant={ens ? 'caption' : 'subtitle2'} {...(!ens && { fontSize })}>
+          {shortenWalletAddressLabel(identity.address)}
+        </Typography>
       </Stack>
     </Stack>
   );
