@@ -40,6 +40,9 @@ public class ContactBookService implements IContactBookService {
 	private Period contactsUpdateLastSeenPeriod;
 	@Value("${payflow.favourites.limit:0}")
 	private int defaultFavouriteContactLimit;
+
+	@Value("${payflow.contacts.eth-denver.enabled:false}")
+	private boolean ethDenverContactsEnabled;
 	@Autowired
 	private ContactRepository contactRepository;
 
@@ -202,9 +205,37 @@ public class ContactBookService implements IContactBookService {
 				}
 
 			} catch (Throwable t) {
-				log.error("Couldn't fetch following contacts for {}, error: {}", user.getUsername(),
+				log.error("Couldn't fetch following contacts for {}, error: {} - {}",
+						user.getUsername(),
 						t.getMessage(), log.isTraceEnabled() ? t : null);
 			}
 		}
+	}
+
+
+	// run only once
+	@Scheduled(fixedRate = Long.MAX_VALUE)
+	public void fetchEthDenverParticipants() {
+		if (!ethDenverContactsEnabled) {
+			return;
+		}
+
+		if (log.isDebugEnabled()) {
+			log.debug("Fetching EthDenver participants list");
+		}
+
+		try {
+			val ethDenverParticipants = socialGraphService.getEthDenverParticipants();
+
+			if (log.isDebugEnabled()) {
+				log.debug("Fetched EthDenver participants: {}",
+						ethDenverParticipants.size());
+			}
+
+		} catch (Throwable t) {
+			log.error("Couldn't fetch EthDenver participants {}, {}", t.getMessage(),
+					log.isTraceEnabled() ? t : null);
+		}
+
 	}
 }

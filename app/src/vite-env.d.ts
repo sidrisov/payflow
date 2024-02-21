@@ -16,6 +16,8 @@ interface ImportMetaEnv {
   readonly VITE_ENABLED_CHAINS: string;
   readonly VITE_GELATO_SPONSORED_ENABLED: string;
   readonly VITE_FARCASTER_CONNECT_ENABLED: string;
+  readonly VITE_PIMLICO_API_KEY: string;
+  readonly VITE_ETH_DENVER_CONTACTS_ENABLED: string;
 }
 
 interface ImportMeta {

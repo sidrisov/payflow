@@ -29,8 +29,9 @@ import { API_URL } from '../../utils/urlConstants';
 import { SearchResultView } from '../SearchResultView';
 import { FARCASTER_DAPP, LENS_DAPP } from '../../utils/dapps';
 import { ProfileContext } from '../../contexts/UserContext';
-import { AddressBookToolBar } from '../chips/AddressBookChip';
+import { AddressBookType } from '../../types/ContactType';
 import { identitiesInvited } from '../../services/invitation';
+import { AddressBookToolBar } from '../chips/AddressBookChip';
 
 export type SelectIdentityCallbackType = {
   selectIdentityCallback?: (selectedIdentity: SelectedIdentityType) => void;
@@ -88,7 +89,7 @@ export default function SearchIdentityDialog({
   const [walletMenuAnchorEl, setWalletMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [openWalletMenu, setOpenWalletMenu] = useState(false);
 
-  const [addressBookView, setAddressBookView] = useState<'favourites' | 'friends'>('favourites');
+  const [addressBookView, setAddressBookView] = useState<AddressBookType>('favourites');
 
   const [contacts, setContacts] = useState<IdentityType[]>([]);
   const [shrink, setShrink] = useState(false);

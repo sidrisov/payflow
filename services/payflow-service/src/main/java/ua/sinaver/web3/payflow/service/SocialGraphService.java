@@ -47,6 +47,49 @@ public class SocialGraphService implements ISocialGraphService {
 	}
 
 	@Override
+	public List<String> getEthDenverParticipants() {
+
+		var hasNextPage = false;
+		val participants = new ArrayList<String>();
+
+		do {
+			try {
+				val ethDenverParticipantsResponse = graphQlClient.documentName("getEthDenverParticipants")
+						.execute().block();
+
+				if (ethDenverParticipantsResponse != null) {
+					val pageInfo = ethDenverParticipantsResponse
+							.field("polygon.pageInfo")
+							.toEntity(PageInfo.class);
+					hasNextPage = pageInfo != null && pageInfo.getHasNextPage();
+
+					val rawParticipants = ethDenverParticipantsResponse
+							.field("polygon.TokenBalance")
+							.toEntityList(TokenBalance.class);
+
+					participants.addAll(rawParticipants.stream()
+							.filter(tb ->
+									tb.getOwner().getPrimaryDomain() != null ||
+											(tb.getOwner().getSocials() != null && !tb.getOwner().getSocials().isEmpty())
+							)
+							.map(tb -> tb.getOwner().getIdentity())
+							.distinct()
+							.toList());
+
+				} else {
+					hasNextPage = false;
+				}
+			} catch (Exception e) {
+				log.error("Error fetching EthDenver participants: {}", e.getMessage());
+				hasNextPage = false;
+			}
+
+		} while (hasNextPage);
+
+		return participants;
+	}
+
+	@Override
 	public List<String> getSocialFollowings(String identity) {
 		val identityLimitAdjusted = contactsLimit * (whitelistedUsers.contains(identity) ?
 				3 : 1);
