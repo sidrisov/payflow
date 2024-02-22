@@ -12,6 +12,8 @@ import reactor.core.scheduler.Schedulers;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
+import ua.sinaver.web3.payflow.service.api.IIdentityService;
+import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
 import java.time.Duration;
 import java.util.Collections;

@@ -12,7 +12,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import ua.sinaver.web3.payflow.message.ConnectedAddresses;
 import ua.sinaver.web3.payflow.message.SiweMessage;
-import ua.sinaver.web3.payflow.service.ISocialGraphService;
+import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
 @Slf4j
 @Component

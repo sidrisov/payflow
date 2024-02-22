@@ -21,13 +21,16 @@ import java.util.Map;
 @Configuration
 public class CacheConfig {
 
-	// TODO: either bind CaffeineSpec per cache or find out if nesting works automatically
+	public static final String CONTACTS_CACHE_NAME = "contacts";
+	public static final String SOCIALS_CACHE_NAME = "socials";
+	public static final String ETH_DENVER_PARTICIPANTS_CACHE_NAME = "eth-denver-contacts";
+	public static final String USERS_CACHE_NAME = "users";
+	public static final String INVITATIONS_CACHE_NAME = "invitations";
+
 	@Value("${spring.cache.contacts.expireAfterWrite:10m}")
 	private Duration contactsExpireAfterWriteDuration;
-
 	@Value("${spring.cache.socials.expireAfterWrite:24h}")
 	private Duration socialsExpireAfterWriteDuration;
-
 	@Value("${spring.cache.socials.maxSize:1000}")
 	private int socialsMaxSize;
 
@@ -65,10 +68,11 @@ public class CacheConfig {
 						.fromSerializer(new GenericJackson2JsonRedisSerializer()));
 
 		Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
-		cacheConfigurations.put("contacts", contactsCacheConfigs);
-		cacheConfigurations.put("socials", socialsCacheConfig);
-		cacheConfigurations.put("users", configuration);
-		cacheConfigurations.put("invitations", configuration);
+		cacheConfigurations.put(CONTACTS_CACHE_NAME, contactsCacheConfigs);
+		cacheConfigurations.put(ETH_DENVER_PARTICIPANTS_CACHE_NAME, contactsCacheConfigs);
+		cacheConfigurations.put(SOCIALS_CACHE_NAME, socialsCacheConfig);
+		cacheConfigurations.put(USERS_CACHE_NAME, configuration);
+		cacheConfigurations.put(INVITATIONS_CACHE_NAME, configuration);
 
 		return RedisCacheManager
 				.builder(connectionFactory)
@@ -83,16 +87,19 @@ public class CacheConfig {
 	CacheManager caffeineCacheManager() {
 		CaffeineCacheManager cacheManager = new CaffeineCacheManager();
 
-		cacheManager.registerCustomCache("contacts",
+		cacheManager.registerCustomCache(CONTACTS_CACHE_NAME,
 				buildCache(contactsExpireAfterWriteDuration));
 
-		cacheManager.registerCustomCache("socials",
+		cacheManager.registerCustomCache(ETH_DENVER_PARTICIPANTS_CACHE_NAME,
+				buildCache(contactsExpireAfterWriteDuration));
+
+		cacheManager.registerCustomCache(SOCIALS_CACHE_NAME,
 				buildCache(socialsExpireAfterWriteDuration, socialsMaxSize));
 
-		cacheManager.registerCustomCache("users",
+		cacheManager.registerCustomCache(USERS_CACHE_NAME,
 				buildCache(Duration.ofHours(24)));
 
-		cacheManager.registerCustomCache("invitations",
+		cacheManager.registerCustomCache(INVITATIONS_CACHE_NAME,
 				buildCache(Duration.ofHours(24)));
 
 

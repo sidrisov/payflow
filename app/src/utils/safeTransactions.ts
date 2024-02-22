@@ -26,11 +26,12 @@ import { getRelayKitForChainId, getSponsoredCount, waitForRelayTaskToComplete } 
 import { getGasPrice } from 'wagmi/actions';
 import { SUPPORTED_CHAINS } from './networks';
 import { wagmiConfig } from './wagmiConfig';
-import { ETH, ETH_TOKEN, Token } from './erc20contracts';
+import { ETH, Token } from './erc20contracts';
 
-export async function safeTransferEthWithDeploy(
+export async function transferWithGelato(
   ethersSigner: JsonRpcSigner,
   tx: { from: Address; to: Address; amount: bigint; token?: Token },
+  isSafeDeployed: boolean,
   safeAccountConfig: SafeAccountConfig,
   safeVersion: SafeVersion,
   saltNonce: string,
@@ -43,8 +44,6 @@ export async function safeTransferEthWithDeploy(
 
   const safeAddress = tx.from;
   const chainId = Number(await ethAdapter.getChainId());
-
-  const isSafeDeployed = await ethAdapter.isContractDeployed(safeAddress);
 
   const safeDeploymentConfig = {
     saltNonce: keccak256(toBytes(saltNonce)),

@@ -1,0 +1,28 @@
+package ua.sinaver.web3.payflow.service.api;
+
+import ua.sinaver.web3.payflow.data.Invitation;
+import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.message.ProfileMessage;
+import ua.sinaver.web3.payflow.message.WalletProfileRequestMessage;
+
+import java.util.List;
+import java.util.Map;
+
+public interface IUserService {
+	void saveUser(String identity);
+
+	void updateProfile(String identity, ProfileMessage profile, String invitationCode);
+
+	User findByIdentity(String identity);
+
+	User findByUsername(String username);
+
+	List<User> searchByUsernameQuery(String query);
+
+	// TODO: add pagination
+	List<User> findAll();
+
+	Map<WalletProfileRequestMessage, User> searchByOwnedWallets(List<WalletProfileRequestMessage> wallets);
+
+	List<Invitation> getInvitations(List<String> addresses);
+}

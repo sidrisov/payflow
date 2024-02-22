@@ -1,26 +1,62 @@
-import { Star } from '@mui/icons-material';
-import { Chip, Stack, Typography } from '@mui/material';
-import { yellow, green, grey } from '@mui/material/colors';
+import { People, Star } from '@mui/icons-material';
+import { Avatar, Chip, Stack, Typography } from '@mui/material';
+import { yellow, green, grey, deepPurple, purple } from '@mui/material/colors';
+import { AddressBookType } from '../../types/ContactType';
+
+const contactTypeLabel = (type: AddressBookType) => {
+  switch (type) {
+    case 'favourites':
+      return 'Favourites';
+    case 'friends':
+      return 'Friends';
+    case 'ethdenver':
+      return 'ETHDenver';
+  }
+};
+
+const contactTypeColor = (type: AddressBookType) => {
+  switch (type) {
+    case 'favourites':
+      return yellow.A700;
+    case 'friends':
+      return green.A700;
+    case 'ethdenver':
+      return deepPurple.A100;
+  }
+};
+
+const contactTypeIcon = (type: AddressBookType) => {
+  switch (type) {
+    case 'favourites':
+      return <Star fontSize="medium" />;
+    case 'friends':
+      return <People fontSize="medium" />;
+    case 'ethdenver':
+      return <Avatar variant="rounded" src="/ethdenver.png" sx={{ width: 20, height: 20 }} />;
+  }
+};
+
+type AddressBookChipProps = {
+  type: AddressBookType;
+  addressBookView: AddressBookType;
+  setAddressBookView: (value: React.SetStateAction<AddressBookType>) => void;
+};
 
 export function AddressBookChip({
   type,
   addressBookView,
   setAddressBookView
-}: {
-  type: 'favourites' | 'friends';
-  addressBookView: 'favourites' | 'friends';
-  setAddressBookView: (value: React.SetStateAction<'favourites' | 'friends'>) => void;
-}) {
-  const color = type === 'favourites' ? yellow.A700 : green.A700;
+}: AddressBookChipProps) {
+  const color = contactTypeColor(type);
   const bgcolor = grey[700];
 
   return (
     <Chip
       clickable
-      icon={<Star fontSize="small" />}
+      icon={contactTypeIcon(type)}
       label={
         <Typography variant="caption" fontWeight="bold">
-          {type === 'favourites' ? 'Favourites' : 'People you know'}
+          {contactTypeLabel(type)}
         </Typography>
       }
       sx={{
@@ -42,8 +78,8 @@ export function AddressBookToolBar({
   addressBookView,
   setAddressBookView
 }: {
-  addressBookView: 'favourites' | 'friends';
-  setAddressBookView: (value: React.SetStateAction<'favourites' | 'friends'>) => void;
+  addressBookView: AddressBookType;
+  setAddressBookView: (value: React.SetStateAction<AddressBookType>) => void;
 }) {
   return (
     <Stack my={1} spacing={1} direction="row" alignItems="center" alignSelf="center">
@@ -53,13 +89,21 @@ export function AddressBookToolBar({
         addressBookView={addressBookView}
         setAddressBookView={setAddressBookView}
       />
-
       <AddressBookChip
         key="friends"
         type="friends"
         addressBookView={addressBookView}
         setAddressBookView={setAddressBookView}
       />
+
+      {import.meta.env.VITE_ETH_DENVER_CONTACTS_ENABLED === 'true' && (
+        <AddressBookChip
+          key="ethdenver"
+          type="ethdenver"
+          addressBookView={addressBookView}
+          setAddressBookView={setAddressBookView}
+        />
+      )}
     </Stack>
   );
 }

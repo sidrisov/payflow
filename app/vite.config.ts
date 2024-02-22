@@ -1,6 +1,7 @@
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import { VitePWA } from 'vite-plugin-pwa';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 import { defineConfig, loadEnv } from 'vite';
 const env = loadEnv('all', process.cwd());
@@ -12,6 +13,7 @@ export default defineConfig({
   server: { port: 4173 },
   plugins: [
     react(),
+    nodePolyfills(),
     svgr({ include: '**/*.svg?react' }),
     VitePWA({
       injectRegister: 'auto',
@@ -143,7 +145,7 @@ export default defineConfig({
         ]
       },
       devOptions: {
-        enabled: true
+        enabled: false
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {

@@ -2,7 +2,6 @@ package ua.sinaver.web3.payflow.message;
 
 import lombok.val;
 import ua.sinaver.web3.payflow.data.Contact;
-import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
 import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 
@@ -14,12 +13,14 @@ import java.util.stream.Collectors;
 public record ContactMessage(
 		String address, Boolean favouriteProfile, Boolean favouriteAddress, Boolean invited,
 		ProfileMessage profile,
-		SocialMetadata meta) {
+		SocialMetadata meta,
+		List<String> tags) {
 
-	public static ContactMessage convert(Contact contact, User profile, Wallet wallet,
-	                                     Boolean invited) {
+	public static ContactMessage convert(Contact contact, Wallet wallet,
+	                                     Boolean invited, List<String> tags) {
 		ProfileMessage profileMessage = null;
-		if (profile != null) {
+		val profile = contact.getProfile();
+		if (profile != null && profile.isAllowed()) {
 			profileMessage = new ProfileMessage(profile.getDisplayName(),
 					profile.getUsername(),
 					profile.getProfileImage(),
@@ -66,7 +67,7 @@ public record ContactMessage(
 		val meta = new SocialMetadata(xmtp, ens, ensAvatar, socials, insights);
 
 		return new ContactMessage(contact.getIdentity(), contact.isProfileChecked(),
-				contact.isAddressChecked(), invited, profileMessage, meta);
+				contact.isAddressChecked(), invited, profileMessage, meta, tags);
 	}
 
 

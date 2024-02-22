@@ -1,0 +1,45 @@
+query GetEthDenverParticipants($cursor: String) {
+    polygon: TokenBalances(
+        input: {filter: {tokenAddress: {_eq: "0x058d96baa6f9d16853970b333ed993acc0c35add"}},
+            blockchain: polygon, cursor: $cursor, limit: 200}
+    ) {
+        TokenBalance {
+            owner {
+                identity
+                primaryDomain {
+                    name
+                    resolvedAddress
+                    tokenNft {
+                        contentValue {
+                            image {
+                                small
+                            }
+                        }
+                    }
+                }
+                domains(input: { limit: 1 }) {
+                    name
+                }
+                socials(input: {limit: 5, filter: {followerCount: {_gt: 10}}}) {
+                    dappName
+                    profileName
+                    profileDisplayName
+                    profileImage
+                    profileImageContentValue {
+                        image {
+                            small
+                        }
+                    }
+                    followerCount
+                }
+                xmtp {
+                    isXMTPEnabled
+                }
+            }
+        }
+        pageInfo {
+            hasNextPage
+            nextCursor
+        }
+    }
+}

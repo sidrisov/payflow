@@ -103,5 +103,30 @@
     "name": "payflow.airstack.contacts.fetch.timeout",
     "type": "java.lang.String",
     "description": "A description for 'payflow.airstack.contacts.fetch.timeout'"
+  },
+  {
+    "name": "payflow.hub.api.url",
+    "type": "java.lang.String",
+    "description": "A description for 'payflow.hub.api.url'"
+  },
+  {
+    "name": "payflow.hub.api.key",
+    "type": "java.lang.String",
+    "description": "A description for 'payflow.hub.api.key'"
+  },
+  {
+    "name": "payflow.frames.url",
+    "type": "java.lang.String",
+    "description": "A description for 'payflow.frames.url'"
+  },
+  {
+    "name": "payflow.api.url",
+    "type": "java.lang.String",
+    "description": "A description for 'payflow.api.url'"
+  },
+  {
+    "name": "spring.cache.socials.maxSize",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cache.socials.maxSize'"
   }
 ]}

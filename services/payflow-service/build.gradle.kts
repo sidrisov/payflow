@@ -98,7 +98,7 @@ dependencies {
     // crypto
     implementation("org.bouncycastle:bcprov-jdk18on:1.77")
     implementation("org.web3j:core:4.10.3")
-
+    implementation("org.web3j:contracts:4.10.3")
     //siwe
     implementation("com.moonstoneid:siwe-java:1.0.2")
 
@@ -129,10 +129,10 @@ tasks.withType<GenerateJavaTask> {
     packageName = "ua.sinaver.web3.payflow.graphql.generated"
     generateClientv2 = true
 
-    typeMapping.put("Address", "java.lang.String")
-    typeMapping.put("Identity", "java.lang.String")
-    typeMapping.put("Map", "java.util.Map")
-    typeMapping.put("Time", "java.time.LocalTime")
+    typeMapping["Address"] = "java.lang.String"
+    typeMapping["Identity"] = "java.lang.String"
+    typeMapping["Map"] = "java.util.Map"
+    typeMapping["Time"] = "java.time.LocalTime"
 }
 
 tasks.withType<BootRun> {

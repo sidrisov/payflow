@@ -16,9 +16,12 @@ import ua.sinaver.web3.payflow.message.ProfileMessage;
 import ua.sinaver.web3.payflow.message.WalletProfileRequestMessage;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
+import ua.sinaver.web3.payflow.service.api.IUserService;
 
 import java.util.*;
 import java.util.regex.Pattern;
+
+import static ua.sinaver.web3.payflow.config.CacheConfig.USERS_CACHE_NAME;
 
 @Service
 @Transactional
@@ -46,13 +49,13 @@ public class UserService implements IUserService {
 	private InvitationRepository invitationRepository;
 
 	@Override
-	@CacheEvict(value = "users")
+	@CacheEvict(value = USERS_CACHE_NAME)
 	public void saveUser(String identity) {
 		userRepository.save(new User(identity));
 	}
 
 	@Override
-	@CacheEvict(value = "users", key = "#identity")
+	@CacheEvict(value = USERS_CACHE_NAME, key = "#identity")
 	public void updateProfile(String identity, ProfileMessage profile, String invitationCode) {
 		User user = userRepository.findByIdentity(identity);
 
@@ -152,5 +155,12 @@ public class UserService implements IUserService {
 	@Override
 	public List<User> findAll() {
 		return userRepository.findByAllowedTrueOrderByLastSeenDesc();
+	}
+
+	@Override
+	public List<Invitation> getInvitations(List<String> addresses) {
+		return addresses.stream()
+				.map(address -> invitationRepository.findFirstValidByIdentityOrCode(address, null))
+				.filter(Objects::nonNull).limit(3).toList();
 	}
 }

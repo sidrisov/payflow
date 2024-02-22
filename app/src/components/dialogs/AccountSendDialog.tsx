@@ -1,14 +1,11 @@
 import { Stack } from '@mui/material';
 
-import { JsonRpcSigner } from 'ethers';
-
 import { useContext, useMemo, useRef, useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useClient, useWalletClient } from 'wagmi';
 import { Id, toast } from 'react-toastify';
 
-import { Address } from 'viem';
+import { Account, Address, Chain, Client, Transport, WalletClient } from 'viem';
 
-import { useEthersSigner } from '../../utils/hooks/useEthersSigner';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { IdentityType } from '../../types/ProfleType';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
@@ -31,6 +28,7 @@ import { TokenAmountSection } from './TokenAmountSection';
 import { GasFeeSection } from './GasFeeSection';
 import { SwitchFlowSignerSection } from './SwitchFlowSignerSection';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
+import { base } from 'viem/chains';
 
 export default function AccountSendDialog({
   setOpenSearchIdentity,
@@ -39,7 +37,9 @@ export default function AccountSendDialog({
 }: PaymentDialogProps) {
   const { profile } = useContext(ProfileContext);
 
-  const ethersSigner = useEthersSigner();
+  const { data: signer } = useWalletClient();
+  const client = useClient();
+
   const ethersProvider = useEthersProvider();
 
   const { address, chain } = useAccount();
@@ -154,13 +154,14 @@ export default function AccountSendDialog({
   }, [loading, confirmed, error, status, txHash, sendAmountUSD]);
 
   async function submitTransaction() {
-    if (selectedWallet && toAddress && sendAmount && ethersSigner) {
+    if (selectedWallet && toAddress && sendAmount && client && signer) {
       await sendSafeTransaction(
+        client,
+        signer,
         sender as FlowType,
         selectedWallet,
         toAddress,
-        sendAmount,
-        ethersSigner
+        sendAmount
       );
     } else {
       toast.error("Can't send to this profile");
@@ -168,11 +169,12 @@ export default function AccountSendDialog({
   }
 
   async function sendSafeTransaction(
+    client: Client<Transport, Chain>,
+    signer: WalletClient<Transport, Chain, Account>,
     flow: FlowType,
     from: FlowWalletType,
     to: Address,
-    amount: bigint,
-    ethersSigner: JsonRpcSigner
+    amount: bigint
   ) {
     reset();
 
@@ -191,7 +193,7 @@ export default function AccountSendDialog({
     const saltNonce = flow.saltNonce as string;
     const safeVersion = from.version as SafeVersion;
 
-    transfer(ethersSigner, txData, safeAccountConfig, safeVersion, saltNonce);
+    transfer(client, signer, txData, safeAccountConfig, safeVersion, saltNonce);
   }
 
   useMemo(async () => {

@@ -29,8 +29,9 @@ import { API_URL } from '../../utils/urlConstants';
 import { SearchResultView } from '../SearchResultView';
 import { FARCASTER_DAPP, LENS_DAPP } from '../../utils/dapps';
 import { ProfileContext } from '../../contexts/UserContext';
-import { AddressBookToolBar } from '../chips/AddressBookChip';
+import { AddressBookType } from '../../types/ContactType';
 import { identitiesInvited } from '../../services/invitation';
+import { AddressBookToolBar } from '../chips/AddressBookChip';
 
 export type SelectIdentityCallbackType = {
   selectIdentityCallback?: (selectedIdentity: SelectedIdentityType) => void;
@@ -88,7 +89,7 @@ export default function SearchIdentityDialog({
   const [walletMenuAnchorEl, setWalletMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [openWalletMenu, setOpenWalletMenu] = useState(false);
 
-  const [addressBookView, setAddressBookView] = useState<'favourites' | 'friends'>('favourites');
+  const [addressBookView, setAddressBookView] = useState<AddressBookType>('favourites');
 
   const [contacts, setContacts] = useState<IdentityType[]>([]);
   const [shrink, setShrink] = useState(false);
@@ -370,16 +371,25 @@ export default function SearchIdentityDialog({
                 selectIdentityCallback={selectIdentityCallback}
                 updateIdentityCallback={updateIdentityCallback}
                 filterByFafourites={true}
-                identities={contacts}
+                identities={contacts.filter((c) => c.tags?.includes('user-contacts'))}
               />
-            ) : (
+            ) : addressBookView === 'friends' ? (
               <SearchResultView
                 key={'search_identity_friends_view'}
                 profileRedirect={profileRedirect}
                 closeStateCallback={closeStateCallback}
                 selectIdentityCallback={selectIdentityCallback}
                 updateIdentityCallback={updateIdentityCallback}
-                identities={contacts}
+                identities={contacts.filter((c) => c.tags?.includes('user-contacts'))}
+              />
+            ) : (
+              <SearchResultView
+                key={'search_identity_eth_denver_view'}
+                profileRedirect={profileRedirect}
+                closeStateCallback={closeStateCallback}
+                selectIdentityCallback={selectIdentityCallback}
+                updateIdentityCallback={updateIdentityCallback}
+                identities={contacts.filter((c) => c.tags?.includes('eth-denver-contacts'))}
               />
             ))}
 

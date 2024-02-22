@@ -10,6 +10,7 @@ import ua.sinaver.web3.payflow.message.FlowMessage;
 import ua.sinaver.web3.payflow.message.WalletMessage;
 import ua.sinaver.web3.payflow.repository.FlowRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
+import ua.sinaver.web3.payflow.service.api.IFlowService;
 
 import java.util.Collections;
 import java.util.List;

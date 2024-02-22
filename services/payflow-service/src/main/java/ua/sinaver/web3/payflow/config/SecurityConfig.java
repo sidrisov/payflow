@@ -52,13 +52,9 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.GET, "/user/{username}").permitAll()
 						.requestMatchers(HttpMethod.POST, "/user/search/wallets").permitAll()
 						// farcaster frames
-						.requestMatchers(HttpMethod.POST, "/farcaster/frames/connect").permitAll()
-						.requestMatchers(HttpMethod.POST, "/farcaster/frames/actions").permitAll()
-						.requestMatchers(HttpMethod.POST, "/farcaster/frames/actions/{identity}").permitAll()
-						.requestMatchers(HttpMethod.POST,
-								"/farcaster/frames/actions/{identity}/invite").permitAll()
-						.anyRequest()
-						.authenticated())
+						.requestMatchers(HttpMethod.POST, "/farcaster/frames/**").permitAll()
+						.requestMatchers(HttpMethod.GET, "/farcaster/frames/**").permitAll()
+						.anyRequest().authenticated())
 				.sessionManagement(session -> session
 						.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
 				// set to false, so that context is saved into session automatically

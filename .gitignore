@@ -52,6 +52,7 @@ artifacts
 */*.openzeppelin/unknown-*.json
 
 temp
-**/application-local.properties
-**/deploy_cloud_run_payflow_service-alpha.sh
-**/generated
+application-local.properties
+deploy_cloud_run_payflow_service-alpha.sh
+deploy_cloud_run_payflow_frames.sh
+generated

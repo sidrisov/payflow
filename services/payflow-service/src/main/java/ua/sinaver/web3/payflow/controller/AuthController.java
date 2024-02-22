@@ -14,7 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.auth.Web3Authentication;
 import ua.sinaver.web3.payflow.message.SiweChallengeMessage;
-import ua.sinaver.web3.payflow.service.IUserService;
+import ua.sinaver.web3.payflow.service.api.IUserService;
 
 @RestController
 @RequestMapping("/auth")

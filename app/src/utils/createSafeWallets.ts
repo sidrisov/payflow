@@ -1,15 +1,13 @@
-import Safe, {
-  EthersAdapter,
-  SafeAccountConfig,
-  SafeDeploymentConfig
-} from '@safe-global/protocol-kit';
 import { Address, Chain, keccak256, toBytes } from 'viem';
-import { getEthersProvider } from './hooks/useEthersProvider';
 
-import { ethers } from 'ethers';
 import { FlowWalletType } from '../types/FlowType';
+import { signerToSafeSmartAccount } from './signerToSafeSmartAccount';
+import { isSmartAccountDeployed } from 'permissionless';
+import { getClient } from 'wagmi/actions';
+import { wagmiConfig } from './wagmiConfig';
+import { SmartAccountSigner } from 'permissionless/accounts';
 
-const DEFAULT_SAFE_VERSION = '1.3.0';
+const DEFAULT_SAFE_VERSION = '1.4.1';
 
 export default async function createSafeWallets(
   owner: Address,
@@ -17,46 +15,32 @@ export default async function createSafeWallets(
   chains: Chain[]
 ): Promise<FlowWalletType[]> {
   const deployPromises = chains.map(async (chain) => {
-    const ethersProvider = getEthersProvider({ chainId: chain.id });
+    const client = getClient(wagmiConfig, { chainId: chain.id });
 
-    const ethAdapter = new EthersAdapter({
-      ethers,
-      signerOrProvider: ethersProvider
-    });
+    if (client) {
+      const safeAccount = await signerToSafeSmartAccount(client, {
+        entryPoint: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789', // global entrypoint
+        signer: {} as SmartAccountSigner,
+        owners: [owner],
+        threshold: 1,
+        safeVersion: '1.4.1',
+        saltNonce: BigInt(keccak256(toBytes(saltNonce)))
+      });
 
-    // probably the same issue with Safe singleton address
-    const safeAccountConfig: SafeAccountConfig = {
-      owners: [owner],
-      threshold: 1
-    };
+      const predictedAddress = safeAccount.address;
+      const isSafeDeployed = await isSmartAccountDeployed(client, predictedAddress);
 
-    const safeDeploymentConfig = {
-      safeVersion: DEFAULT_SAFE_VERSION,
-      saltNonce: keccak256(toBytes(saltNonce))
-    } as SafeDeploymentConfig;
+      console.debug(predictedAddress, chain.name, isSafeDeployed);
 
-    console.debug(safeAccountConfig, safeDeploymentConfig);
-
-    const safe = await Safe.create({
-      ethAdapter: ethAdapter,
-      predictedSafe: {
-        safeAccountConfig,
-        safeDeploymentConfig
-      }
-    });
-
-    const predictedAddress = (await safe.getAddress()) as Address;
-
-    const isSafeDeployed = await ethAdapter.isContractDeployed(predictedAddress);
-
-    console.debug(predictedAddress, chain.name, isSafeDeployed);
-
-    return {
-      network: chain.id,
-      address: predictedAddress,
-      deployed: isSafeDeployed,
-      version: DEFAULT_SAFE_VERSION
-    } as FlowWalletType;
+      return {
+        network: chain.id,
+        address: predictedAddress,
+        deployed: isSafeDeployed,
+        version: DEFAULT_SAFE_VERSION
+      } as FlowWalletType;
+    } else {
+      throw Error('Empty client');
+    }
   });
 
   return Promise.all(deployPromises);
