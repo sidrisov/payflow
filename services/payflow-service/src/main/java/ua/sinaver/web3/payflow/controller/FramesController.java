@@ -19,6 +19,7 @@ import ua.sinaver.web3.payflow.service.IdentityService;
 import ua.sinaver.web3.payflow.service.WalletBalanceService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
 import ua.sinaver.web3.payflow.service.api.IFrameService;
+import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
@@ -74,6 +75,9 @@ public class FramesController {
 	@Autowired
 	private IUserService userService;
 
+	@Autowired
+	private ISocialGraphService socialGraphService;
+
 	@PostMapping("/connect")
 	public ResponseEntity<String> connect(@RequestBody FrameMessage frameMessage) {
 		log.debug("Received connect frame message request: {}", frameMessage);
@@ -90,6 +94,9 @@ public class FramesController {
 
 		val clickedFid = validateMessage.action().interactor().fid();
 		val casterFid = validateMessage.action().cast().fid();
+
+		// clear cache only on connect
+		socialGraphService.cleanCache("fc_fid:".concat(String.valueOf(clickedFid)), null);
 
 		val addresses = frameService.getFidAddresses(clickedFid);
 		val profiles = frameService.getFidProfiles(addresses);

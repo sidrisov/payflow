@@ -1,5 +1,6 @@
-const API_URL = import.meta.env.VITE_PAYFLOW_SERVICE_API_URL;
-const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
+// TODO: investigate why not loaded env variables
+const API_URL = 'https://api.alpha.payflow.me';
+const DAPP_URL = 'https://app.payfow.me';
 
 export function Head() {
   return (
@@ -39,7 +40,10 @@ export function Head() {
         />
         <meta name="twitter:image" content="https://i.imgur.com/Vs0loYg.png" />
 
+        <meta property="of:accepts:xmtp" content="2024-02-01" />
+        <meta property="of:accepts:lens" content="1.1" />
         <meta property="fc:frame" content="vNext" />
+
         <meta property="fc:frame:image" content="https://i.imgur.com/Vs0loYg.png" />
         <meta property="fc:frame:button:1" content="Connect" />
         <meta property="fc:frame:post_url" content={`${API_URL}/api/farcaster/frames/connect`} />
