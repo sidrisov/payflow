@@ -16,6 +16,9 @@ export default defineConfig({
     nodePolyfills(),
     svgr({ include: '**/*.svg?react' }),
     VitePWA({
+      devOptions: {
+        enabled: true
+      },
       injectRegister: 'auto',
       registerType: 'autoUpdate',
       workbox: {
@@ -143,9 +146,6 @@ export default defineConfig({
             }
           }
         ]
-      },
-      devOptions: {
-        enabled: false
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
