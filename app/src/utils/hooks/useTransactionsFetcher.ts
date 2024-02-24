@@ -101,69 +101,98 @@ function parseTxHistoryResponse(
     return [];
   }
 
-  const interalTxsInfo: TxInfo[] = internalTxs.map((item: any) => {
-    const txInfo: TxInfo = {
-      chainId: wallet.network,
-      block: item.block,
-      success: item.success,
-      hash: item.transaction_hash,
-      timestamp: item.timestamp,
-      from: item.from?.hash,
-      to: item.to?.hash,
-      type: item.type,
-      value: item.value,
-      activity:
-        item.to?.hash === item.from?.hash
-          ? 'self'
-          : wallet.address === item.to?.hash
-          ? 'inbound'
-          : 'outbound'
-    };
-    return txInfo;
-  });
+  const uniqueHashes: { [key: string]: boolean } = {};
 
-  const erc20TxsInfo: TxInfo[] = erc20txs.map((item: any) => {
-    const txInfo: TxInfo = {
-      chainId: wallet.network,
-      block: item.block,
-      success: true,
-      hash: item.tx_hash,
-      timestamp: item.timestamp,
-      from: item.from?.hash,
-      to: item.to?.hash,
-      type: item.type,
-      value: item.total.value,
-      token: item.token,
-      activity:
-        item.to?.hash === item.from?.hash
-          ? 'self'
-          : wallet.address === item.to?.hash
-          ? 'inbound'
-          : 'outbound'
-    };
-    return txInfo;
-  });
+  const interalTxsInfo: TxInfo[] = internalTxs
+    .filter((item: any) => {
+      if (uniqueHashes[item.transaction_hash]) {
+        console.log('Exists already: ', item.transaction_hash);
+        return false;
+      }
+      uniqueHashes[item.transaction_hash] = true;
+      return true;
+    })
+    .map((item: any) => {
+      const txInfo: TxInfo = {
+        chainId: wallet.network,
+        block: item.block,
+        success: item.success,
+        hash: item.transaction_hash,
+        timestamp: item.timestamp,
+        from: item.from?.hash,
+        to: item.to?.hash,
+        type: item.type,
+        value: item.value,
+        activity:
+          item.to?.hash === item.from?.hash
+            ? 'self'
+            : wallet.address === item.to?.hash
+            ? 'inbound'
+            : 'outbound'
+      };
+      return txInfo;
+    });
 
-  const txsInfo: TxInfo[] = txs.map((item: any) => {
-    const txInfo: TxInfo = {
-      chainId: wallet.network,
-      block: item.block,
-      success: item.result === 'success',
-      hash: item.hash,
-      timestamp: item.timestamp,
-      from: item.from?.hash,
-      to: item.to?.hash,
-      type: item.type,
-      value: item.value,
-      activity:
-        item.to?.hash === item.from?.hash
-          ? 'self'
-          : wallet.address === item.to?.hash
-          ? 'inbound'
-          : 'outbound'
-    };
-    return txInfo;
-  });
+  const erc20TxsInfo: TxInfo[] = erc20txs
+    .filter((item: any) => {
+      if (uniqueHashes[item.tx_hash]) {
+        console.log('Exists already: ', item.tx_hash);
+        return false;
+      }
+      uniqueHashes[item.tx_hash] = true;
+      return true;
+    })
+    .map((item: any) => {
+      const txInfo: TxInfo = {
+        chainId: wallet.network,
+        block: item.block,
+        success: true,
+        hash: item.tx_hash,
+        timestamp: item.timestamp,
+        from: item.from?.hash,
+        to: item.to?.hash,
+        type: item.type,
+        value: item.total.value,
+        token: item.token,
+        activity:
+          item.to?.hash === item.from?.hash
+            ? 'self'
+            : wallet.address === item.to?.hash
+            ? 'inbound'
+            : 'outbound'
+      };
+      return txInfo;
+    });
+
+  const txsInfo: TxInfo[] = txs
+    .filter((item: any) => {
+      if (uniqueHashes[item.hash]) {
+        console.log('Exists already: ', item.hash);
+        return false;
+      }
+      uniqueHashes[item.hash] = true;
+      return true;
+    })
+    .map((item: any) => {
+      const txInfo: TxInfo = {
+        chainId: wallet.network,
+        block: item.block,
+        success: item.result === 'success',
+        hash: item.hash,
+        timestamp: item.timestamp,
+        from: item.from?.hash,
+        to: item.to?.hash,
+        type: item.type,
+        value: item.value,
+        activity:
+          item.to?.hash === item.from?.hash
+            ? 'self'
+            : wallet.address === item.to?.hash
+            ? 'inbound'
+            : 'outbound'
+      };
+      return txInfo;
+    });
 
   return interalTxsInfo
     .concat(erc20TxsInfo)
@@ -196,6 +225,8 @@ async function fetchTransactions(wallet: FlowWalletType): Promise<TxInfo[]> {
   const txs = txsUrl ? await fetchAnyTxs(txsUrl) : [];
 
   const txInfos: TxInfo[] = parseTxHistoryResponse(wallet, internalTxs, erc20Txs, txs);
+
+  console.log('Aggregated txs:', txInfos);
 
   return txInfos;
 }
