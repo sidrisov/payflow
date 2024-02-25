@@ -163,14 +163,13 @@ public class UserController {
 
 		log.debug("User: {} for {}", users, usernames);
 		// TODO: for now filter by whitelisted
-		return users.stream().filter(user -> user.isAllowed() && user.getDefaultFlow() != null).map(user -> {
-			return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
-					user.getIdentity(),
-					null,
-					FlowMessage.convert(user.getDefaultFlow(), user),
-					null,
-					-1);
-		}).toList();
+		return users.stream().filter(user -> user.isAllowed() && user.getDefaultFlow() != null)
+				.map(user -> new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
+						user.getIdentity(),
+						null,
+						FlowMessage.convert(user.getDefaultFlow(), user),
+						null,
+						-1)).toList();
 	}
 
 	@GetMapping("/{username}")

@@ -41,6 +41,9 @@ public class Flow {
 	private String walletProvider;
 
 	@Column
+	private String signer;
+
+	@Column
 	private String saltNonce;
 
 	@OneToMany(mappedBy = "flow", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval =
@@ -54,12 +57,15 @@ public class Flow {
 	@Version
 	private Long version;
 
-	public Flow(Integer userId, String title, String description, String walletProvider, String saltNonce) {
+	public Flow(Integer userId, String title, String description, String signer,
+	            String walletProvider,
+	            String saltNonce) {
 		this.userId = userId;
 		this.title = title;
 		this.description = description;
 		this.uuid = RandomStringUtils.random(8, true, true);
 
+		this.signer = signer;
 		this.walletProvider = walletProvider;
 		if (StringUtils.isBlank(saltNonce)) {
 			this.saltNonce = this.uuid;
