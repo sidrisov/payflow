@@ -1,13 +1,14 @@
-import { Logout } from "@mui/icons-material";
-import { Stack, Typography, IconButton } from "@mui/material";
-import { red } from "@mui/material/colors";
-import { useAccount, useConfig } from "wagmi";
-import { disconnect } from "wagmi/actions";
-import { FlowType } from "../../types/FlowType";
-import { shortenWalletAddressLabel } from "../../utils/address";
+import { Logout } from '@mui/icons-material';
+import { Stack, Typography, IconButton } from '@mui/material';
+import { red } from '@mui/material/colors';
+import { useAccount, useConfig, useDisconnect } from 'wagmi';
+import { disconnect } from 'wagmi/actions';
+import { FlowType } from '../../types/FlowType';
+import { shortenWalletAddressLabel } from '../../utils/address';
 
 export function SwitchFlowSignerSection({ flow }: { flow: FlowType }) {
   const { address } = useAccount();
+  const { disconnectAsync } = useDisconnect();
   const wagmiConfig = useConfig();
 
   return (
@@ -29,7 +30,7 @@ export function SwitchFlowSignerSection({ flow }: { flow: FlowType }) {
         </Typography>
         <IconButton
           size="small"
-          onClick={async () => await disconnect(wagmiConfig)}
+          onClick={async () => await disconnectAsync()}
           sx={{ color: red.A700 }}>
           <Logout />
         </IconButton>

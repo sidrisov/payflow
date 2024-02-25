@@ -32,7 +32,7 @@ const commonWagmiConfig = {
       `https://base-sepolia.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`
     )
   },
-  syncConnectedChain: false
+  syncConnectedChain: true
 };
 
 export const wagmiConfig = getDefaultConfig({

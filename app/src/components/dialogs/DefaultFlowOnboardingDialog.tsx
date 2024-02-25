@@ -26,11 +26,10 @@ import { useNavigate } from 'react-router-dom';
 import { DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS } from '../../utils/networks';
 import { updateProfile } from '../../services/user';
 import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
-import { useAccount, useConfig } from 'wagmi';
+import { useAccount, useConfig, useDisconnect } from 'wagmi';
 import { green, red } from '@mui/material/colors';
 import { shortenWalletAddressLabel } from '../../utils/address';
 import { Logout } from '@mui/icons-material';
-import { disconnect } from 'wagmi/actions';
 
 export type DefaultFlowOnboardingDialogProps = DialogProps &
   CloseCallbackType & {
@@ -55,6 +54,8 @@ export default function DefaultFlowOnboardingDialog({
   const [signerAsIdentity, setSignerAsIdentity] = useState<boolean>(true);
 
   const { address } = useAccount();
+
+  const { disconnectAsync } = useDisconnect();
 
   const navigate = useNavigate();
 
@@ -178,7 +179,7 @@ export default function DefaultFlowOnboardingDialog({
                     <b>{shortenWalletAddressLabel(address)}</b>
                   </u>
                 </Typography>
-                <IconButton onClick={async () => await disconnect(config)} sx={{ color: red.A700 }}>
+                <IconButton onClick={async () => await disconnectAsync()} sx={{ color: red.A700 }}>
                   <Logout />
                 </IconButton>
               </Box>

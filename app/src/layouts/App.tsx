@@ -33,15 +33,18 @@ import DefaultFlowOnboardingDialog from '../components/dialogs/DefaultFlowOnboar
 import axios from 'axios';
 import { DEGEN_TOKEN, ETH_TOKEN, TokenPrices, USDC_TOKEN } from '../utils/erc20contracts';
 import { DAPP_URL } from '../utils/urlConstants';
+import { WalletProviderType } from '../utils/providers';
 
 export default function AppLayout({
   profile,
   appSettings,
-  setAppSettings
+  setAppSettings,
+  walletProvider
 }: {
   profile: ProfileType | undefined;
   appSettings: AppSettings;
   setAppSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
+  walletProvider: WalletProviderType;
 }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -107,6 +110,28 @@ export default function AppLayout({
     }
   }, [profile]);
 
+  /* const { setActiveWallet } = useSetActiveWallet();
+  const { wallets, ready } = useWallets();
+  const { user } = usePrivy();
+  const { status, address } = useAccount();
+
+  useEffect(() => {
+    console.log(
+      'Available wallets (privy), ready, user, account: ',
+      wallets,
+      ready,
+      user,
+      status,
+      address
+    );
+
+    if (ready && wallets.length !== 0) {
+      const wallet = wallets[0]; //wallets.find((w) => w.walletClientType === 'privy') ?? wallets[0];
+      console.log('Setting active wallet: ', wallet);
+      setActiveWallet(wallet);
+    }
+  }, [wallets, ready, status, address]); */
+
   return (
     <ProfileContext.Provider
       value={{
@@ -114,7 +139,8 @@ export default function AppLayout({
         profile,
         appSettings,
         setAppSettings,
-        tokenPrices
+        tokenPrices,
+        walletProvider
       }}>
       <Container maxWidth="xs">
         <Box height="100vh" display="flex" flexDirection="column" justifyContent="flex-start">

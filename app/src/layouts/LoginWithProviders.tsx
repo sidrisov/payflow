@@ -1,18 +1,9 @@
-import {
-  AuthenticationStatus,
-  createAuthenticationAdapter,
-  RainbowKitAuthenticationProvider,
-  RainbowKitProvider
-} from '@rainbow-me/rainbowkit';
+import { AuthenticationStatus, createAuthenticationAdapter } from '@rainbow-me/rainbowkit';
 
 import '@farcaster/auth-kit/styles.css';
-import { AuthKitProvider } from '@farcaster/auth-kit';
 
-import { WagmiProvider } from 'wagmi';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Login from './Login';
-import { CustomAvatar } from '../components/avatars/CustomAvatar';
-import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
 import { SiweMessage } from 'siwe';
 import axios, { AxiosError } from 'axios';
 import { ProfileType } from '../types/ProfleType';
@@ -21,19 +12,16 @@ import { API_URL } from '../utils/urlConstants';
 import { toast } from 'react-toastify';
 import { AppSettings } from '../types/AppSettingsType';
 import { useMediaQuery } from '@mui/material';
-import CustomToastContainer from '../components/toasts/CustomToastContainer';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { wagmiConfig } from '../utils/wagmiConfig';
-import { queryClient } from '../utils/query';
+import { LoginProviders } from '../utils/providers';
 
 const appSettingsStorageItem = localStorage.getItem('appSettings');
 const appSettingsStored = appSettingsStorageItem
   ? (JSON.parse(appSettingsStorageItem) as AppSettings)
   : null;
 
-export default function AppWithProviders() {
+export default function LoginWithProviders() {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const [appSettings, setAppSettings] = useState<AppSettings>(
+  const [appSettings] = useState<AppSettings>(
     appSettingsStored
       ? appSettingsStored
       : {
@@ -152,30 +140,11 @@ export default function AppWithProviders() {
     });
   }, []);
 
-  const config = {
-    rpcUrl: `https://opt-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`,
-    domain: window.location.hostname,
-    siweUri: window.location.origin,
-    relay: 'https://relay.farcaster.xyz',
-    version: 'v1'
-  };
-
   return (
-    <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <RainbowKitAuthenticationProvider adapter={authAdapter} status={authStatus}>
-          <RainbowKitProvider
-            theme={appSettings.darkMode ? customDarkTheme : customLightTheme}
-            avatar={CustomAvatar}
-            modalSize="compact"
-            appInfo={{ appName: 'Payflow', learnMoreUrl: 'https://payflow.super.site' }}>
-            <AuthKitProvider config={config}>
-              <Login authStatus={authStatus} profile={profile} settings={appSettings} />
-            </AuthKitProvider>
-          </RainbowKitProvider>
-        </RainbowKitAuthenticationProvider>
-        <CustomToastContainer />
-      </QueryClientProvider>
-    </WagmiProvider>
+    <LoginProviders
+      darkMode={appSettings.darkMode}
+      authConfig={{ adapter: authAdapter, status: authStatus }}>
+      <Login authStatus={authStatus} profile={profile} settings={appSettings} />
+    </LoginProviders>
   );
 }

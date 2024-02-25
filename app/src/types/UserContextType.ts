@@ -1,4 +1,3 @@
-import { Chain } from 'viem';
 import { AppSettings } from './AppSettingsType';
 import { ProfileType } from './ProfleType';
 import { TokenPrices } from '../utils/erc20contracts';
@@ -9,4 +8,5 @@ export interface ProfileContextType {
   appSettings: AppSettings;
   setAppSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
   tokenPrices: TokenPrices | undefined;
+  walletProvider: 'privy' | 'rainbowkit';
 }

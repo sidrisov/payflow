@@ -28,9 +28,8 @@ import { TokenAmountSection } from './TokenAmountSection';
 import { GasFeeSection } from './GasFeeSection';
 import { SwitchFlowSignerSection } from './SwitchFlowSignerSection';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
-import { base } from 'viem/chains';
 
-export default function AccountSendDialog({
+export default function PayWithPayflowDialog({
   setOpenSearchIdentity,
   sender,
   recipient

@@ -10,14 +10,13 @@ import { useContext } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { AddressSection } from '../AddressSection';
-import { useAccount, useConfig } from 'wagmi';
+import { useAccount, useDisconnect } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
-import { disconnect } from 'wagmi/actions';
 
 export function WalletMenu({ closeStateCallback, ...props }: MenuProps & CloseCallbackType) {
   const { appSettings, setAppSettings } = useContext(ProfileContext);
 
-  const wagmiConfig = useConfig();
+  const { disconnectAsync } = useDisconnect();
   const { address, isConnected } = useAccount();
   const { openConnectModal } = useConnectModal();
 
@@ -66,7 +65,7 @@ export function WalletMenu({ closeStateCallback, ...props }: MenuProps & CloseCa
           <MenuItem
             sx={{ color: 'red' }}
             onClick={async () => {
-              await disconnect(wagmiConfig);
+              await disconnectAsync();
               closeStateCallback();
             }}>
             <ListItemIcon sx={{ color: 'red' }}>

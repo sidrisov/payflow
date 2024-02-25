@@ -12,15 +12,16 @@ import {
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { AccountBalanceWallet } from '@mui/icons-material';
+import { PaymentType } from './PaymentDialog';
 
 export type ChoosePaymentOptionDialogProps = DialogProps &
   CloseCallbackType & {
-    setPaymentMethod: React.Dispatch<React.SetStateAction<'payflow' | 'wallet' | 'none'>>;
+    setPaymentType: React.Dispatch<React.SetStateAction<PaymentType>>;
   } & { setOpenSearchIdentity?: React.Dispatch<React.SetStateAction<boolean>> };
 
 const paymentOptionButton = (
-  option: 'payflow' | 'wallet',
-  setPaymentMethod: React.Dispatch<React.SetStateAction<'payflow' | 'wallet' | 'none'>>
+  option: PaymentType,
+  setPaymentType: React.Dispatch<React.SetStateAction<PaymentType>>
 ) => (
   <Button
     fullWidth
@@ -28,7 +29,7 @@ const paymentOptionButton = (
     size="small"
     color="inherit"
     onClick={() => {
-      setPaymentMethod(option);
+      setPaymentType(option);
     }}
     sx={{
       borderRadius: 5,
@@ -58,7 +59,7 @@ const paymentOptionButton = (
 );
 
 export default function ChoosePaymentOptionDialog({
-  setPaymentMethod,
+  setPaymentType,
   closeStateCallback,
   ...props
 }: ChoosePaymentOptionDialogProps) {
@@ -82,7 +83,7 @@ export default function ChoosePaymentOptionDialog({
       }}>
       <DialogTitle>
         <Typography variant="h6" textAlign="center">
-          Select Payment Method
+          Select payment method
         </Typography>
       </DialogTitle>
       <DialogContent
@@ -91,8 +92,8 @@ export default function ChoosePaymentOptionDialog({
           justifyContent: isMobile ? 'flex-end' : 'center'
         }}>
         <Stack alignItems="center" spacing={1}>
-          {paymentOptionButton('payflow', setPaymentMethod)}
-          {paymentOptionButton('wallet', setPaymentMethod)}
+          {paymentOptionButton('payflow', setPaymentType)}
+          {paymentOptionButton('wallet', setPaymentType)}
         </Stack>
       </DialogContent>
     </Dialog>

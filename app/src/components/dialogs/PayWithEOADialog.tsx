@@ -18,7 +18,7 @@ import { RecipientField } from '../RecipientField';
 import { TokenAmountSection } from './TokenAmountSection';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
 
-export default function PayProfileDialog({ sender, recipient }: PaymentDialogProps) {
+export default function PayWithEOADialog({ sender, recipient }: PaymentDialogProps) {
   const { chain } = useAccount();
 
   const [paymentPending, setPaymentPending] = useState<boolean>(false);
