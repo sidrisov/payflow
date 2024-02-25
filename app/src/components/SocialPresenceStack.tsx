@@ -1,10 +1,13 @@
 import { Stack, Tooltip, StackProps } from '@mui/material';
 import { MetaType } from '../types/ProfleType';
 import SocialPresenceAvatar from './avatars/SocialPresenceAvatar';
-import { dAppType } from '../utils/dapps';
+import { FARCASTER_DAPP, LENS_DAPP, dAppType } from '../utils/dapps';
 import SocialPresenceAvatarWithMeta from './avatars/SocialPresenceAvatarWithMeta';
 
 export function SocialPresenceStack({ meta, ...props }: { meta: MetaType & StackProps }) {
+  let farcasterFound = false;
+  let lensFound = false;
+
   return (
     <Tooltip
       title={
@@ -28,7 +31,27 @@ export function SocialPresenceStack({ meta, ...props }: { meta: MetaType & Stack
         {meta.ens && <SocialPresenceAvatar dappName="ens" />}
         {meta.socials &&
           meta.socials
-            .filter((s) => s.profileName && s.dappName)
+            .filter((s) => {
+              if (s.profileName && s.dappName) {
+                switch (s.dappName) {
+                  case FARCASTER_DAPP:
+                    if (!farcasterFound) {
+                      farcasterFound = true;
+                      return true;
+                    }
+                    break;
+                  case LENS_DAPP:
+                    if (!lensFound) {
+                      lensFound = true;
+                      return true;
+                    }
+                    break;
+                  default:
+                    return true;
+                }
+              }
+              return false;
+            })
             .map((s) => (
               <SocialPresenceAvatar
                 key={`social_presence_avatar_${s.dappName}_${s.profileName}`}

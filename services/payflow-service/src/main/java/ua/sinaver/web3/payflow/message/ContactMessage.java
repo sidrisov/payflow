@@ -7,6 +7,7 @@ import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -126,7 +127,9 @@ public record ContactMessage(
 
 						return new SocialInfo(s.getDappName().name(), s.getProfileName(),
 								s.getProfileDisplayName(), profileImage, s.getFollowerCount());
-					}).collect(Collectors.toList());
+					})
+					.sorted(Comparator.comparingInt(SocialInfo::followerCount).reversed())
+					.collect(Collectors.toList());
 		} else {
 			return Collections.emptyList();
 		}

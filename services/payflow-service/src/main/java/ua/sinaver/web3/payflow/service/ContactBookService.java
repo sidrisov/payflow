@@ -225,7 +225,8 @@ public class ContactBookService implements IContactBookService {
 	}
 
 	@Scheduled(fixedRate = Long.MAX_VALUE)
-	//@CacheEvict(cacheNames = CONTACTS_CACHE_NAME, beforeInvocation = true, allEntries = true)
+	//@CacheEvict(cacheNames = ETH_DENVER_PARTICIPANTS_CACHE_NAME, beforeInvocation = true,
+	// allEntries = true)
 	public void preFetchEthDenverParticipants() {
 		if (!ethDenverContactsEnabled) {
 			return;

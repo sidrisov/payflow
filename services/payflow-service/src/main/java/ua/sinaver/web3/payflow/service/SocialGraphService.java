@@ -77,7 +77,7 @@ public class SocialGraphService implements ISocialGraphService {
 
 					participants.addAll(rawParticipants.stream()
 							.filter(tb ->
-									tb.getOwner().getPrimaryDomain() != null ||
+									tb.getOwner().getPrimaryDomain() != null || (tb.getOwner().getDomains() != null && !tb.getOwner().getDomains().isEmpty()) ||
 											(tb.getOwner().getSocials() != null && !tb.getOwner().getSocials().isEmpty())
 							)
 							.map(tb -> ContactMessage.convert(new Contact(null,
