@@ -278,8 +278,7 @@ export default function SearchIdentityDialog({
       }}
       PaperProps={{
         sx: {
-          borderRadius: 5,
-          ...(!isMobile && { width: 375, height: 600 })
+          ...(!isMobile && { width: 375, height: 600, borderRadius: 5 })
         }
       }}
       {...props}>

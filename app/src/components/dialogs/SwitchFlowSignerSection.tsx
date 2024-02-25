@@ -1,15 +1,13 @@
 import { Logout } from '@mui/icons-material';
 import { Stack, Typography, IconButton } from '@mui/material';
 import { red } from '@mui/material/colors';
-import { useAccount, useConfig, useDisconnect } from 'wagmi';
-import { disconnect } from 'wagmi/actions';
+import { useAccount, useDisconnect } from 'wagmi';
 import { FlowType } from '../../types/FlowType';
 import { shortenWalletAddressLabel } from '../../utils/address';
 
 export function SwitchFlowSignerSection({ flow }: { flow: FlowType }) {
   const { address } = useAccount();
   const { disconnectAsync } = useDisconnect();
-  const wagmiConfig = useConfig();
 
   return (
     <Stack spacing={1} alignItems="center">

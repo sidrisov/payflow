@@ -23,7 +23,7 @@ import { useCreateSafeWallets as usePreCreateSafeWallets } from '../../utils/hoo
 
 import { FlowType } from '../../types/FlowType';
 import { useNavigate } from 'react-router-dom';
-import { DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS } from '../../utils/networks';
+import { DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS as PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS } from '../../utils/networks';
 import { updateProfile } from '../../services/user';
 import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
 import { useAccount, useConfig, useDisconnect } from 'wagmi';
@@ -31,7 +31,7 @@ import { green, red } from '@mui/material/colors';
 import { shortenWalletAddressLabel } from '../../utils/address';
 import { Logout } from '@mui/icons-material';
 
-export type DefaultFlowOnboardingDialogProps = DialogProps &
+export type PrimaryFlowOnboardingDialogProps = DialogProps &
   CloseCallbackType & {
     profile: ProfileType;
     username?: string | null;
@@ -40,11 +40,11 @@ export type DefaultFlowOnboardingDialogProps = DialogProps &
 
 const SALT_NONCE = import.meta.env.VITE_DEFAULT_FLOW_CREATE2_SALT_NONCE;
 
-export default function DefaultFlowOnboardingDialog({
+export default function PrimaryFlowOnboardingDialog({
   closeStateCallback,
   profile,
   ...props
-}: DefaultFlowOnboardingDialogProps) {
+}: PrimaryFlowOnboardingDialogProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -66,7 +66,7 @@ export default function DefaultFlowOnboardingDialog({
   }
 
   async function createMainFlow() {
-    console.debug(profile.identity, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
+    console.debug(profile.identity, SALT_NONCE, PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS);
 
     let owners = [profile.identity];
     if (extraSigner) {
@@ -78,17 +78,17 @@ export default function DefaultFlowOnboardingDialog({
       }
     }
 
-    create(owners, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
+    create(owners, SALT_NONCE, PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS);
   }
 
   useMemo(async () => {
     if (error) {
       toast.error('Failed to prepare flow, try again!');
       await reset();
-    } else if (wallets && wallets.length === DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS.length) {
-      const defaultFlow = {
+    } else if (wallets && wallets.length === PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS.length) {
+      const primaryFlow = {
         ...(extraSigner && { owner: address }),
-        title: 'main flow',
+        title: 'Primary flow',
         description: '',
         walletProvider: 'safe',
         saltNonce: SALT_NONCE,
@@ -97,7 +97,7 @@ export default function DefaultFlowOnboardingDialog({
       const updatedProfile = {
         ...profile,
         ...(extraSigner && { owner: address }),
-        defaultFlow
+        defaultFlow: primaryFlow
       } as ProfileType;
       setLoadingUpdateProfile(true);
       try {
@@ -120,7 +120,13 @@ export default function DefaultFlowOnboardingDialog({
     <Dialog
       onClose={handleCloseCampaignDialog}
       {...props}
-      PaperProps={{ sx: { borderRadius: 5 } }}
+      PaperProps={{
+        sx: {
+          ...(!isMobile && {
+            borderRadius: 5
+          })
+        }
+      }}
       sx={{
         backdropFilter: 'blur(5px)'
       }}>

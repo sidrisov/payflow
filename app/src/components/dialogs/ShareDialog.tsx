@@ -6,7 +6,9 @@ import {
   Stack,
   Chip,
   Typography,
-  Box
+  Box,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import QRCode from 'react-qr-code';
@@ -30,11 +32,20 @@ export default function ShareDialog({
     closeStateCallback();
   }
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
     <Dialog
       onClose={handleCloseCampaignDialog}
       {...props}
-      PaperProps={{ sx: { borderRadius: 5 } }}
+      PaperProps={{
+        sx: {
+          ...(!isMobile && {
+            borderRadius: 5
+          })
+        }
+      }}
       sx={{
         backdropFilter: 'blur(5px)'
       }}>

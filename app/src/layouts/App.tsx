@@ -29,7 +29,7 @@ import { ProfileMenu } from '../components/menu/ProfileMenu';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import HomeLogo from '../components/Logo';
 import ProfileAvatar from '../components/avatars/ProfileAvatar';
-import DefaultFlowOnboardingDialog from '../components/dialogs/DefaultFlowOnboardingDialog';
+import PrimaryFlowOnboardingDialog from '../components/dialogs/PrimaryFlowOnboardingDialog';
 import axios from 'axios';
 import { DEGEN_TOKEN, ETH_TOKEN, TokenPrices, USDC_TOKEN } from '../utils/erc20contracts';
 import { DAPP_URL } from '../utils/urlConstants';
@@ -281,7 +281,7 @@ export default function AppLayout({
         }}
       />
       {profile && !profile.defaultFlow && (
-        <DefaultFlowOnboardingDialog
+        <PrimaryFlowOnboardingDialog
           fullScreen={isMobile}
           open={!profile.defaultFlow}
           profile={profile}

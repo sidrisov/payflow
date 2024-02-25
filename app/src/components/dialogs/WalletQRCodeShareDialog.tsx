@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import QRCode from 'react-qr-code';
-import { ContentCopy } from '@mui/icons-material';
+import { ArrowBack, ContentCopy } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { shortenWalletAddressLabel } from '../../utils/address';
 import { copyToClipboard } from '../../utils/copyToClipboard';
@@ -36,7 +36,7 @@ export default function WalletQRCodeShareDialog({
   ...props
 }: WalletQRCodeShareDialogProps) {
   const theme = useTheme();
-  const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [openSelectWallet, setOpenSelectWallet] = useState(false);
   const [walletAnchorEl, setWalletAnchorEl] = useState<null | HTMLElement>(null);
@@ -49,14 +49,25 @@ export default function WalletQRCodeShareDialog({
   return (
     selectedWallet && (
       <Dialog
-        fullScreen={smallScreen}
+        fullScreen={isMobile}
         onClose={handleCloseCampaignDialog}
         {...props}
-        PaperProps={{ sx: { borderRadius: 5 } }}
+        PaperProps={{
+          sx: {
+            ...(!isMobile && {
+              borderRadius: 5
+            })
+          }
+        }}
         sx={{
           backdropFilter: 'blur(5px)'
         }}>
         <DialogTitle>
+          {isMobile && (
+            <IconButton onClick={closeStateCallback}>
+              <ArrowBack />
+            </IconButton>
+          )}
           <Typography textAlign="center" variant="subtitle2">
             Send only on{' '}
             <b>

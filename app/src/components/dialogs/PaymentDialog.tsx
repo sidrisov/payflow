@@ -75,9 +75,9 @@ export default function PaymentDialog({
         {...props}
         PaperProps={{
           sx: {
-            borderRadius: 5,
             ...(!isMobile && {
               width: 375,
+              borderRadius: 5,
               ...dialogHeight
             })
           }

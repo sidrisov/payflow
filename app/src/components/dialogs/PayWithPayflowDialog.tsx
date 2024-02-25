@@ -7,7 +7,7 @@ import { Id, toast } from 'react-toastify';
 import { Account, Address, Chain, Client, Transport, WalletClient } from 'viem';
 
 import { FlowType, FlowWalletType } from '../../types/FlowType';
-import { IdentityType } from '../../types/ProfleType';
+import { IdentityType, ProfileType } from '../../types/ProfleType';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { ProfileContext } from '../../contexts/UserContext';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
@@ -153,10 +153,11 @@ export default function PayWithPayflowDialog({
   }, [loading, confirmed, error, status, txHash, sendAmountUSD]);
 
   async function submitTransaction() {
-    if (selectedWallet && toAddress && sendAmount && client && signer) {
+    if (selectedWallet && toAddress && sendAmount && client && signer && profile) {
       await sendSafeTransaction(
         client,
         signer,
+        profile,
         sender as FlowType,
         selectedWallet,
         toAddress,
@@ -170,6 +171,7 @@ export default function PayWithPayflowDialog({
   async function sendSafeTransaction(
     client: Client<Transport, Chain>,
     signer: WalletClient<Transport, Chain, Account>,
+    profile: ProfileType,
     flow: FlowType,
     from: FlowWalletType,
     to: Address,
@@ -185,7 +187,7 @@ export default function PayWithPayflowDialog({
     };
 
     const safeAccountConfig: SafeAccountConfig = {
-      owners: [flow.owner],
+      owners: [profile.identity, flow.owner],
       threshold: 1
     };
 

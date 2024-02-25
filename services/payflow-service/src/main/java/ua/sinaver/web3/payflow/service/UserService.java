@@ -114,6 +114,7 @@ public class UserService implements IUserService {
 			user.setProfileImage(profile.profileImage());
 			if (user.getDefaultFlow() == null && profile.defaultFlow() != null) {
 				val defaultFlow = FlowMessage.convert(profile.defaultFlow(), user);
+				log.debug("Setting primary flow to: {}", defaultFlow);
 				user.setDefaultFlow(defaultFlow);
 			} else {
 				// check if any extra wallets need to be added
