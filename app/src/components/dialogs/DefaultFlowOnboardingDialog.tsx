@@ -51,7 +51,7 @@ export default function DefaultFlowOnboardingDialog({
   const { loading: loadingWallets, error, wallets, create, reset } = usePreCreateSafeWallets();
   const [loadingUpdateProfile, setLoadingUpdateProfile] = useState<boolean>(false);
 
-  const [signerAsIdentity, setSignerAsIdentity] = useState<boolean>(true);
+  const [extraSigner, setExtraSigner] = useState<boolean>(true);
 
   const { address } = useAccount();
 
@@ -67,13 +67,18 @@ export default function DefaultFlowOnboardingDialog({
 
   async function createMainFlow() {
     console.debug(profile.identity, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
-    if (signerAsIdentity) {
-      create(profile.identity, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
-    } else if (address) {
-      create(address, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
-    } else {
-      toast.error('No wallet connected!');
+
+    let owners = [profile.identity];
+    if (extraSigner) {
+      if (address) {
+        owners.push(address);
+      } else {
+        toast.error('Signer not connected!');
+        return;
+      }
     }
+
+    create(owners, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
   }
 
   useMemo(async () => {
@@ -82,8 +87,8 @@ export default function DefaultFlowOnboardingDialog({
       await reset();
     } else if (wallets && wallets.length === DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS.length) {
       const defaultFlow = {
-        owner: signerAsIdentity ? undefined : address,
-        title: 'default',
+        ...(extraSigner && { owner: address }),
+        title: 'main flow',
         description: '',
         walletProvider: 'safe',
         saltNonce: SALT_NONCE,
@@ -91,7 +96,7 @@ export default function DefaultFlowOnboardingDialog({
       } as FlowType;
       const updatedProfile = {
         ...profile,
-        signer: signerAsIdentity ? undefined : address,
+        ...(extraSigner && { owner: address }),
         defaultFlow
       } as ProfileType;
       setLoadingUpdateProfile(true);
@@ -122,7 +127,7 @@ export default function DefaultFlowOnboardingDialog({
       <DialogTitle>
         <Box display="flex" justifyContent="center">
           <Typography variant="h6" sx={{ overflow: 'auto' }}>
-            Initialize default flow and signer
+            Flow initialization
           </Typography>
         </Box>
       </DialogTitle>
@@ -138,35 +143,46 @@ export default function DefaultFlowOnboardingDialog({
           <Stack spacing={2} alignItems="flex-start">
             <Typography variant="caption" fontSize={isMobile ? 14 : 16}>
               <b>
-                <u>Default Flow</u>
+                <u>Primary flow</u>
               </b>
               {': '}
-              abstracted set of smart wallets across various chains, funds sent to your profile are
-              received on default flow.
+              abstracted set of multi-chain wallets, primary flow receives funds sent to your
+              profile
             </Typography>
             <Typography variant="caption" fontSize={isMobile ? 14 : 16}>
               <b>
-                <u>Flow Signer</u>
+                <u>Flow signer</u>
               </b>
               {': '}
-              your ethereum address used to sign all flow related transactions, reducing the need
-              for additional identity wallet signatures.
+              address used to sign all flow related transactions, by default your identity wallet is
+              added as flow signer
             </Typography>
-
             <FormControlLabel
               control={
                 <Switch
-                  checked={signerAsIdentity}
+                  checked={extraSigner}
+                  color="success"
                   onChange={(event) => {
-                    setSignerAsIdentity(event.target.checked);
+                    setExtraSigner(event.target.checked);
                   }}
                   sx={{ accentColor: green.A700 }}
                 />
               }
-              label="Use your identity wallet as signer"
+              label="Add additional flow signer"
             />
-
-            {!signerAsIdentity && address && (
+            {extraSigner && address === profile.identity && (
+              <Typography
+                variant="subtitle2"
+                color={red.A700}
+                fontSize={isMobile ? 15 : 16}
+                sx={{ pl: 1 }}>
+                Additional flow signer should be different from identity address:{' '}
+                <u>
+                  <b>{shortenWalletAddressLabel(profile.identity)}</b>
+                </u>
+              </Typography>
+            )}
+            {extraSigner && address && (
               <Box
                 width="100%"
                 display="flex"
@@ -174,7 +190,7 @@ export default function DefaultFlowOnboardingDialog({
                 alignItems="center"
                 justifyContent="space-between">
                 <Typography variant="subtitle2" fontSize={isMobile ? 15 : 16} sx={{ pl: 1 }}>
-                  Connected Signer:{' '}
+                  Connected signer:{' '}
                   <u>
                     <b>{shortenWalletAddressLabel(address)}</b>
                   </u>
@@ -185,9 +201,10 @@ export default function DefaultFlowOnboardingDialog({
               </Box>
             )}
           </Stack>
-          {signerAsIdentity || address ? (
+          {!extraSigner || address ? (
             <LoadingButton
               loading={loadingWallets || loadingUpdateProfile}
+              disabled={extraSigner && address === profile.identity}
               fullWidth
               variant="outlined"
               color="inherit"
