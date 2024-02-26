@@ -3,6 +3,7 @@ import { IdentityType } from '../types/ProfleType';
 import AddressAvatar from './avatars/AddressAvatar';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { useEnsAvatar, useEnsName } from 'wagmi';
+import CopyToClipboardIconButton from './buttons/CopyToClipboardIconButton';
 
 export function AddressSection(props: {
   identity: IdentityType;
@@ -60,9 +61,13 @@ export function AddressSection(props: {
             {ens}
           </Typography>
         )}
-        <Typography noWrap variant={ens ? 'caption' : 'subtitle2'} {...(!ens && { fontSize })}>
-          {shortenWalletAddressLabel(identity.address)}
-        </Typography>
+
+        <Stack direction="row" spacing={0.1} alignItems="center">
+          <Typography noWrap variant={ens ? 'caption' : 'subtitle2'} {...(!ens && { fontSize })}>
+            {shortenWalletAddressLabel(identity.address)}
+          </Typography>
+          <CopyToClipboardIconButton tooltip="Copy address" value={identity.address} />
+        </Stack>
       </Stack>
     </Stack>
   );

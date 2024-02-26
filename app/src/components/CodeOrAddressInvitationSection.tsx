@@ -20,6 +20,7 @@ export default function CodeOrAddressInvitationSection({
         color="inherit"
         tooltip={isAddress(codeOrAddress) ? 'Copy address' : 'Copy invite'}
         value={codeOrAddress}
+        iconSize={15}
       />
     </Box>
   );

@@ -21,7 +21,7 @@ export function WalletSection(props: { wallet: FlowWalletType; balance?: string 
       <Box display="flex" flexDirection="row" alignItems="center">
         <NetworkAvatar tooltip chainId={wallet.network} sx={{ width: 24, height: 24 }} />
         <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
-        <CopyToClipboardIconButton tooltip="Copy address" value={wallet.address} />
+        <CopyToClipboardIconButton iconSize={16} tooltip="Copy address" value={wallet.address} />
         {wallet.version && (
           <>
             <Tooltip title="Open in Safe Web Wallet">
