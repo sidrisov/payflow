@@ -11,10 +11,8 @@ import ua.sinaver.web3.payflow.message.*;
 import ua.sinaver.web3.payflow.service.api.*;
 
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -67,11 +65,28 @@ public class UserController {
 		val user = userService.findByIdentity(principal.getName());
 		if (user != null) {
 			try {
-				// TODO: combine tags field in case there is an overlap
+
+				// TODO: merge before in service layer
 				val userContacts = contactBookService.getAllContacts(user);
 				val ethDenverParticipants = contactBookService.getEthDenverParticipants(user);
-				val allContacts = Stream.concat(userContacts.stream(),
-						ethDenverParticipants.stream()).toList();
+				val contactsIdentities =
+						userContacts.stream().collect(Collectors.toMap(ContactMessage::address,
+								Function.identity()));
+
+				val ethDenverIdentities =
+						ethDenverParticipants.stream().collect(Collectors.toMap(ContactMessage::address,
+								Function.identity()));
+
+				val mergedContacts = new HashMap<>(ethDenverIdentities);
+
+				contactsIdentities.forEach((key, value) ->
+						mergedContacts.merge(key, value,
+								(v1, v2) -> new ContactMessage(v2.address(), v2.favouriteProfile(),
+										v2.favouriteAddress(), v2.invited(), v2.profile(),
+										v2.meta(),
+										Stream.concat(v1.tags().stream(), v2.tags().stream()).toList())));
+
+				val allContacts = mergedContacts.values().stream().toList();
 				if (log.isTraceEnabled()) {
 					log.trace("All contacts for {}: {}", principal.getName(), allContacts);
 				} else {

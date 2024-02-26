@@ -30,7 +30,7 @@ public class CacheConfig {
 	@Value("${spring.cache.contacts.expireAfterWrite:10m}")
 	private Duration contactsExpireAfterWriteDuration;
 
-	@Value("${spring.cache.eth-denver.contacts.expireAfterWrite:10m}")
+	@Value("${spring.cache.contacts.eth-denver.expireAfterWrite:10m}")
 	private Duration ethDenverContactsExpireAfterWriteDuration;
 	@Value("${spring.cache.socials.expireAfterWrite:24h}")
 	private Duration socialsExpireAfterWriteDuration;
