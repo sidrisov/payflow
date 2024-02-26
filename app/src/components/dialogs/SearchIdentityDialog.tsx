@@ -384,6 +384,7 @@ export default function SearchIdentityDialog({
             ) : (
               <SearchResultView
                 key={'search_identity_eth_denver_view'}
+                insightsEnabled={false}
                 profileRedirect={profileRedirect}
                 closeStateCallback={closeStateCallback}
                 selectIdentityCallback={selectIdentityCallback}

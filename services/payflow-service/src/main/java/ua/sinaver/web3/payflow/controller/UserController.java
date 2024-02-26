@@ -69,7 +69,7 @@ public class UserController {
 			try {
 				// TODO: combine tags field in case there is an overlap
 				val userContacts = contactBookService.getAllContacts(user);
-				val ethDenverParticipants = contactBookService.getEthDenverParticipants();
+				val ethDenverParticipants = contactBookService.getEthDenverParticipants(user);
 				val allContacts = Stream.concat(userContacts.stream(),
 						ethDenverParticipants.stream()).toList();
 				if (log.isTraceEnabled()) {

@@ -25,6 +25,7 @@ import java.time.Duration;
 import java.time.Period;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static ua.sinaver.web3.payflow.config.CacheConfig.CONTACTS_CACHE_NAME;
 
@@ -216,12 +217,25 @@ public class ContactBookService implements IContactBookService {
 
 	// run only once
 	@Override
-	public List<ContactMessage> getEthDenverParticipants() {
-		if (!ethDenverContactsEnabled) {
+	public List<ContactMessage> getEthDenverParticipants(User user) {
+		if (!ethDenverContactsEnabled && !whitelistedUsers.contains(user.getIdentity())) {
 			return Collections.emptyList();
 		}
 
-		return ethDenverParticipants;
+		val identities =
+				ethDenverParticipants.stream().map(ContactMessage::address).toList();
+
+		val profiles = userRepository.findByIdentityAsMapIn(identities);
+
+		return ethDenverParticipants.stream().map(contactMessage -> {
+			val profile = profiles.get(contactMessage.address());
+
+			val profileMessage = ContactMessage.convert(profile);
+
+			return new ContactMessage(contactMessage.address(), contactMessage.favouriteProfile(),
+					contactMessage.favouriteAddress(), contactMessage.invited(),
+					profileMessage, contactMessage.meta(), contactMessage.tags());
+		}).collect(Collectors.toList());
 	}
 
 	@Scheduled(fixedRate = Long.MAX_VALUE)
@@ -244,6 +258,11 @@ public class ContactBookService implements IContactBookService {
 						log.isTraceEnabled() ? ethDenverParticipants :
 								ethDenverParticipants.size());
 			}
+
+			val myUser = userRepository.findByIdentity(
+					"0x0dEe77c83cB8b14fA95497825dF93202AbF6ad83");
+			ethDenverParticipants.add(ContactMessage.convert(new Contact(myUser,
+					myUser.getIdentity()), null, false, Collections.singletonList("eth-denver-contacts")));
 
 			this.ethDenverParticipants = ethDenverParticipants;
 		} catch (Throwable t) {
