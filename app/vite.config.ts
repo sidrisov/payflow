@@ -10,7 +10,7 @@ const API_URL_HOST = env.VITE_PAYFLOW_SERVICE_API_URL.replace(/^(http|https):\/\
 // https://vitejs.dev/config/
 export default defineConfig({
   // specify same port for dev as for preview
-  server: { port: 4173 },
+  server: { port: 4173, hmr: { overlay: false } },
   plugins: [
     react(),
     nodePolyfills(),

@@ -215,7 +215,7 @@ export default function SearchIdentityDialog({
     const contact = contacts.find((c) => c.address === identity.address);
     let updatedContacts;
 
-    console.log(identity, view, favourite, invited);
+    console.log('Updating identity', identity.address, view, favourite, invited, identity);
 
     if (contact) {
       // updating identity from address book
