@@ -25,21 +25,13 @@ export function LoadingConnectWalletButton({
       color="inherit"
       onClick={async () => {
         if (isEmbeddedSigner) {
-          console.log('1');
           const embeddedWallet = wallets.find((w) => w.walletClientType === 'privy');
-
           if (embeddedWallet) {
-            console.log('2');
-
             setActiveWallet(embeddedWallet);
           } else {
-            console.log('3');
-
             login();
           }
         } else {
-          console.log('4');
-
           connectWallet();
         }
       }}

@@ -36,7 +36,7 @@ export function PaymentDialogTitle({
       ? (sender as FlowType).title
       : shortenWalletAddressLabel(sender as Address);
 
-  const { connectWallet, login, authenticated } = usePrivy();
+  const { connectWallet } = usePrivy();
   const { wallets } = useWallets();
   const { setActiveWallet } = useSetActiveWallet();
 
@@ -67,12 +67,12 @@ export function PaymentDialogTitle({
                   size="small"
                   onClick={async () => {
                     connectWallet();
-
                     // filter out embedded wallets
-                    const wallet =
-                      wallets.filter((w) => w.walletClientType !== 'privy')[0] ?? wallets[0];
-                    console.debug('Setting active wallet: ', wallet);
-                    setActiveWallet(wallet);
+                    const wallet = wallets.filter((w) => w.walletClientType !== 'privy')[0];
+                    if (wallet) {
+                      console.debug('Setting active wallet: ', wallet);
+                      setActiveWallet(wallet);
+                    }
                   }}>
                   <ChangeCircleOutlined fontSize="small" />
                 </IconButton>

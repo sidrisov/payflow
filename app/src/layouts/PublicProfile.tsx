@@ -96,6 +96,7 @@ export default function PublicProfile() {
       />
       {selectedRecipient && (
         <PaymentDialog
+          paymentType={loggedProfile ? 'payflow' : 'wallet'}
           open={selectedRecipient !== undefined}
           sender={
             loggedProfile && loggedProfile.defaultFlow

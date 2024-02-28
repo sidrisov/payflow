@@ -1,4 +1,9 @@
-import { ChangeCircle } from '@mui/icons-material';
+import {
+  ChangeCircle,
+  ChangeCircleOutlined,
+  ChangeCircleRounded,
+  ChangeCircleTwoTone
+} from '@mui/icons-material';
 import { Stack, Typography, IconButton } from '@mui/material';
 import { useAccount } from 'wagmi';
 import { FlowType } from '../../types/FlowType';
@@ -41,17 +46,16 @@ export function SwitchFlowSignerSection({ flow }: { flow: FlowType }) {
               if (!authenticated) {
                 login();
               } else {
-                console.log('3');
-
-                setActiveWallet(wallets.find((w) => w.walletClientType === 'privy') ?? wallets[0]);
+                const embeddedWallet = wallets.find((w) => w.walletClientType === 'privy');
+                if (embeddedWallet) {
+                  setActiveWallet(embeddedWallet);
+                }
               }
             } else {
-              console.log('4');
-
               connectWallet();
             }
           }}>
-          <ChangeCircle />
+          <ChangeCircleOutlined />
         </IconButton>
       </Stack>
     </Stack>

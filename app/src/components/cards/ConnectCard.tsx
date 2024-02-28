@@ -71,8 +71,8 @@ export function ConnectCard() {
 
   console.log(signer);
 
-  useMemo(async () => {
-    if (isSuccess && signer && authStatus === 'loading') {
+  async function signInWithEthereum() {
+    if (isSuccess && signer && authStatus === 'unauthenticated') {
       setAuthStatus('loading');
       const siweMessage = new SiweMessage({
         domain: window.location.host,
@@ -108,7 +108,7 @@ export function ConnectCard() {
         setAuthStatus('unauthenticated');
       }
     }
-  }, [isSuccess, signer, authStatus]);
+  }
 
   async function onFarcasterSignInError(error: AuthClientError | undefined) {
     setSiwfNonce(undefined);
@@ -205,11 +205,11 @@ export function ConnectCard() {
               fontWeight: 'bold',
               fontSize: 18
             }}
-            onClick={() => {
+            onClick={async () => {
               if (!signer) {
                 connectWallet();
               } else {
-                setAuthStatus('loading');
+                signInWithEthereum();
               }
             }}>
             {!signer ? 'Sign in' : 'Verify'}
