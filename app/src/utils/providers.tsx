@@ -1,15 +1,11 @@
 import { QueryClientProvider } from '@tanstack/react-query';
-import { WagmiProvider } from 'wagmi';
-import { privyQueryClient, queryClient } from './query';
+import { privyQueryClient } from './query';
 import { AirstackProvider, init } from '@airstack/airstack-react';
-import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
-import { CustomAvatar } from '../components/avatars/CustomAvatar';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import CustomToastContainer from '../components/toasts/CustomToastContainer';
-import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
 import { PrivyClientConfig, PrivyProvider } from '@privy-io/react-auth';
 import { WagmiProvider as PrivyWagmiProvider } from '@privy-io/wagmi';
-import { privyWagmiConfig, rainbowkitWagmiConfig } from './wagmiConfig';
+import { privyWagmiConfig } from './wagmiConfig';
 import { AuthKitProvider } from '@farcaster/auth-kit';
 import { useMediaQuery } from '@mui/material';
 
@@ -26,8 +22,6 @@ const farcasterAuthConfig = {
   version: 'v1'
 };
 
-export const WALLET_PROVIDER = import.meta.env.VITE_WALLET_PROVIDER as WalletProviderType;
-
 export type WalletProviderType = 'privy' | 'rainbowkit';
 
 export default function AppProviders({
@@ -39,16 +33,17 @@ export default function AppProviders({
 }) {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
-  return WALLET_PROVIDER === 'privy' ? (
+  /* return WALLET_PROVIDER === 'privy' ? (
     <PrivyAppProviders darkMode={darkMode ?? prefersDarkMode}>{children}</PrivyAppProviders>
   ) : (
     <RainbowKitAppProviders darkMode={darkMode ?? prefersDarkMode}>
       {children}
     </RainbowKitAppProviders>
-  );
+  ); */
+  return <PrivyAppProviders darkMode={darkMode ?? prefersDarkMode}>{children}</PrivyAppProviders>;
 }
 
-function RainbowKitAppProviders({
+/* function RainbowKitAppProviders({
   children,
   darkMode
 }: {
@@ -57,7 +52,7 @@ function RainbowKitAppProviders({
 }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <WagmiProvider config={rainbowkitWagmiConfig}>
+      <WagmiProvider config={privyWagmiConfig}>
         <AirstackProvider apiKey={AIRSTACK_API_KEY}>
           <RainbowKitProvider
             theme={darkMode ? customDarkTheme : customLightTheme}
@@ -70,7 +65,7 @@ function RainbowKitAppProviders({
       </WagmiProvider>
     </QueryClientProvider>
   );
-}
+} */
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 
@@ -78,12 +73,9 @@ const privyConfig = (darkMode: boolean): PrivyClientConfig => {
   return {
     embeddedWallets: {
       createOnLogin: 'users-without-wallets',
-      requireUserPasswordOnCreate: false,
-      priceDisplay: { primary: 'fiat-currency', secondary: 'native-token' },
-      waitForTransactionConfirmation: true
+      requireUserPasswordOnCreate: false
     },
     appearance: {
-      showWalletLoginFirst: false,
       theme: darkMode ? 'dark' : 'light',
       walletList: ['detected_wallets', 'metamask', 'rainbow', 'coinbase_wallet', 'wallet_connect']
     },

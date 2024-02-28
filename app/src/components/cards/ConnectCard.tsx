@@ -3,19 +3,18 @@ import { AuthClientError, SignInButton, StatusAPIResponse } from '@farcaster/aut
 
 import { green } from '@mui/material/colors';
 import { CheckCircle } from '@mui/icons-material';
-import { useContext, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { API_URL } from '../../utils/urlConstants';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 
 import { FarcasterAccountsCard } from './FarcasterAccountsCard';
 import { SiweMessage } from 'siwe';
-import { usePrivy } from '@privy-io/react-auth';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useWalletClient } from 'wagmi';
 import { useNavigate } from 'react-router-dom';
 import LoadingButton from '@mui/lab/LoadingButton';
-import { useConnectModal } from '@rainbow-me/rainbowkit';
-import { WALLET_PROVIDER } from '../../utils/providers';
+import { useSetActiveWallet } from '@privy-io/wagmi';
 
 const FARCASTER_CONNECT_ENABLED = import.meta.env.VITE_FARCASTER_CONNECT_ENABLED === 'true';
 
@@ -36,13 +35,25 @@ export function ConnectCard() {
   const [siwfNonce, setSiwfNonce] = useState<string>();
   const [sifwResponse, setSifeResponse] = useState<StatusAPIResponse>();
 
-  const { openConnectModal, connectModalOpen } = useConnectModal();
   const { connectWallet, isModalOpen } = usePrivy();
 
   const { data: signer, isSuccess } = useWalletClient();
   const [authStatus, setAuthStatus] = useState<AuthenticationStatus>('unauthenticated');
 
   const navigate = useNavigate();
+
+  const { wallets } = useWallets();
+  const { ready } = usePrivy();
+  const { setActiveWallet } = useSetActiveWallet();
+
+  useEffect(() => {
+    if (ready && wallets.length !== 0) {
+      // filter out embedded wallets
+      const wallet = wallets.filter((w) => w.walletClientType !== 'privy')[0] ?? wallets[0];
+      console.debug('Setting active wallet: ', wallet);
+      setActiveWallet(wallet);
+    }
+  }, [wallets, ready]);
 
   useMemo(async () => {
     if (FARCASTER_CONNECT_ENABLED && !siwfNonce) {
@@ -57,6 +68,8 @@ export function ConnectCard() {
       setSiwfNonce(nonce);
     }
   }, []);
+
+  console.log(signer);
 
   useMemo(async () => {
     if (isSuccess && signer && authStatus === 'loading') {
@@ -154,37 +167,8 @@ export function ConnectCard() {
         </Typography>
 
         <Stack my={2} spacing={1} alignItems="center">
-          <LoadingButton
-            variant="contained"
-            color="inherit"
-            loading={
-              (WALLET_PROVIDER === 'privy' ? isModalOpen : connectModalOpen) ||
-              authStatus === 'loading'
-            }
-            sx={{
-              borderRadius: 3,
-              height: 50,
-              textTransform: 'none',
-              fontWeight: 'bold',
-              fontSize: 18
-            }}
-            onClick={() => {
-              if (!signer) {
-                console.log(WALLET_PROVIDER, connectWallet);
-                if (WALLET_PROVIDER === 'privy') {
-                  connectWallet();
-                } else {
-                  openConnectModal?.();
-                }
-              } else {
-                setAuthStatus('loading');
-              }
-            }}>
-            Sign in with Ethereum
-          </LoadingButton>
           {FARCASTER_CONNECT_ENABLED && siwfNonce && (
             <>
-              <Divider flexItem>or</Divider>
               <Box
                 sx={{
                   p: -10,
@@ -201,8 +185,35 @@ export function ConnectCard() {
                   onError={onFarcasterSignInError}
                 />
               </Box>
+              <Divider flexItem>or</Divider>
             </>
           )}
+          <LoadingButton
+            variant="contained"
+            color="inherit"
+            loading={isModalOpen || authStatus === 'loading'}
+            startIcon={
+              !(isModalOpen || authStatus === 'loading') && (
+                <Avatar src="/networks/ethereum.png" sx={{ width: 28, height: 28 }} />
+              )
+            }
+            sx={{
+              borderRadius: 3,
+              width: 135,
+              height: 50,
+              textTransform: 'none',
+              fontWeight: 'bold',
+              fontSize: 18
+            }}
+            onClick={() => {
+              if (!signer) {
+                connectWallet();
+              } else {
+                setAuthStatus('loading');
+              }
+            }}>
+            {!signer ? 'Sign in' : 'Verify'}
+          </LoadingButton>
         </Stack>
       </Box>
     </Card>

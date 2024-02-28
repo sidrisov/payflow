@@ -2,7 +2,7 @@ import { useContext, useMemo, useState } from 'react';
 import { getBalance } from 'wagmi/actions';
 import { AssetType, AssetBalanceType } from '../../types/AssetType';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
-import { rainbowkitWagmiConfig } from '../wagmiConfig';
+import { privyWagmiConfig } from '../wagmiConfig';
 import { formatUnits } from 'viem';
 import { GetBalanceData } from 'wagmi/query';
 import { ProfileContext } from '../../contexts/UserContext';
@@ -25,7 +25,7 @@ export const useBalanceFetcher = (assets: AssetType[]): BalanceFetchResultType =
 
       Promise.allSettled(
         assets.map((asset) =>
-          getBalance(rainbowkitWagmiConfig, {
+          getBalance(privyWagmiConfig, {
             address: asset.address,
             chainId: asset.chainId,
             token: asset.token

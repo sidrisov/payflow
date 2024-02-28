@@ -13,9 +13,8 @@ import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { FlowType } from '../../types/FlowType';
 import { ArrowBack, ChangeCircleOutlined } from '@mui/icons-material';
 import { shortenWalletAddressLabel } from '../../utils/address';
-import { useConnectWallet } from '@privy-io/react-auth';
-import { useConnectModal } from '@rainbow-me/rainbowkit';
-import { WALLET_PROVIDER } from '../../utils/providers';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { useSetActiveWallet } from '@privy-io/wagmi';
 
 export function PaymentDialogTitle({
   paymentType,
@@ -27,7 +26,6 @@ export function PaymentDialogTitle({
   sender: FlowType | Address;
 } & CloseCallbackType &
   DialogTitleProps) {
-
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -38,8 +36,9 @@ export function PaymentDialogTitle({
       ? (sender as FlowType).title
       : shortenWalletAddressLabel(sender as Address);
 
-  const { connectWallet } = useConnectWallet();
-  const { openConnectModal } = useConnectModal();
+  const { connectWallet, login, authenticated } = usePrivy();
+  const { wallets } = useWallets();
+  const { setActiveWallet } = useSetActiveWallet();
 
   return (
     <DialogTitle {...props}>
@@ -67,11 +66,13 @@ export function PaymentDialogTitle({
                 <IconButton
                   size="small"
                   onClick={async () => {
-                    if (WALLET_PROVIDER === 'privy') {
-                      connectWallet();
-                    } else {
-                      openConnectModal?.();
-                    }
+                    connectWallet();
+
+                    // filter out embedded wallets
+                    const wallet =
+                      wallets.filter((w) => w.walletClientType !== 'privy')[0] ?? wallets[0];
+                    console.debug('Setting active wallet: ', wallet);
+                    setActiveWallet(wallet);
                   }}>
                   <ChangeCircleOutlined fontSize="small" />
                 </IconButton>

@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import type { Account, Chain, Client, Transport } from 'viem';
 import { type Config, useConnectorClient } from 'wagmi';
 import { getConnectorClient } from 'wagmi/actions';
-import { rainbowkitWagmiConfig } from '../wagmiConfig';
+import { privyWagmiConfig } from '../wagmiConfig';
 
 export function clientToSigner(client: Client<Transport, Chain, Account>) {
   const { account, chain, transport } = client;
@@ -25,7 +25,7 @@ export function useEthersSigner({ chainId }: { chainId?: number } = {}) {
 
 /** Action to convert a viem Wallet Client to an ethers.js Signer. */
 export async function getEthersSigner({ chainId }: { chainId?: number } = {}) {
-  const client = await getConnectorClient(rainbowkitWagmiConfig, { chainId });
+  const client = await getConnectorClient(privyWagmiConfig, { chainId });
   if (!client) return undefined;
   return clientToSigner(client);
 }

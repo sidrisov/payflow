@@ -10,6 +10,8 @@ import { toast } from 'react-toastify';
 import { AppSettings } from '../types/AppSettingsType';
 import { useMediaQuery } from '@mui/material';
 import { AuthenticationStatus } from '../components/cards/ConnectCard';
+import { usePrivy } from '@privy-io/react-auth';
+import CenteredCircularProgress from '../components/CenteredCircularProgress';
 
 const appSettingsStorageItem = localStorage.getItem('appSettings');
 const appSettingsStored = appSettingsStorageItem
@@ -30,6 +32,8 @@ export default function LoginWithProviders() {
   const verifyingRef = useRef(false);
   const [authStatus, setAuthStatus] = useState<AuthenticationStatus>('loading');
   const [profile, setProfile] = useState<ProfileType>();
+
+  const { ready } = usePrivy();
 
   useMemo(() => {
     localStorage.setItem('appSettings', JSON.stringify(appSettings));
@@ -82,5 +86,9 @@ export default function LoginWithProviders() {
     }
   }, [authStatus, profile]);
 
-  return <Login authStatus={authStatus} profile={profile} settings={appSettings} />;
+  return !ready ? (
+    <CenteredCircularProgress />
+  ) : (
+    <Login authStatus={authStatus} profile={profile} settings={appSettings} />
+  );
 }

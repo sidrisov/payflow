@@ -25,7 +25,7 @@ import { Hash, Address, keccak256, toBytes, erc20Abi, encodeFunctionData } from 
 import { getRelayKitForChainId, getSponsoredCount, waitForRelayTaskToComplete } from './relayer';
 import { getGasPrice } from 'wagmi/actions';
 import { SUPPORTED_CHAINS } from './networks';
-import { rainbowkitWagmiConfig } from './wagmiConfig';
+import { privyWagmiConfig } from './wagmiConfig';
 import { ETH, Token } from './erc20contracts';
 
 export async function transferWithGelato(
@@ -159,10 +159,10 @@ export async function isSafeSponsored(
 export async function estimateFee(isSafeDeployed: boolean, chainId: number): Promise<string> {
   const isMainnetChain = !SUPPORTED_CHAINS.find((c) => c.id === chainId)?.testnet;
 
-  const l1GasPrice = await getGasPrice(rainbowkitWagmiConfig, {
+  const l1GasPrice = await getGasPrice(privyWagmiConfig, {
     chainId: isMainnetChain ? 1 : 11155111
   });
-  const l2GasPrice = await getGasPrice(rainbowkitWagmiConfig, { chainId });
+  const l2GasPrice = await getGasPrice(privyWagmiConfig, { chainId });
 
   const l1GasLimit = BigInt(isSafeDeployed ? 8_500 : 13_000);
   const l2GasLimit = BigInt(isSafeDeployed ? 200_000 : 500_000);

@@ -120,6 +120,7 @@ export default function PrimaryFlowOnboardingDialog({
 
   return (
     <Dialog
+      disableEnforceFocus
       onClose={handleCloseCampaignDialog}
       {...props}
       PaperProps={{

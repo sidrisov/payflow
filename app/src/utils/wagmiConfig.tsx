@@ -1,14 +1,13 @@
-import { getDefaultConfig, getDefaultWallets } from '@rainbow-me/rainbowkit';
-import { trustWallet, injectedWallet } from '@rainbow-me/rainbowkit/wallets';
 import { SUPPORTED_CHAINS } from './networks';
 import { http, fallback } from 'viem';
 import { mainnet, base, optimism, baseSepolia, zora, sepolia } from 'viem/chains';
 
 import { createConfig } from '@privy-io/wagmi';
+import { Config } from 'wagmi';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
-const { wallets } = getDefaultWallets();
-
+/* const { wallets } = getDefaultWallets();
+ */
 const commonWagmiConfig = {
   chains: SUPPORTED_CHAINS as any,
   transports: {
@@ -35,7 +34,7 @@ const commonWagmiConfig = {
   syncConnectedChain: true
 };
 
-export const rainbowkitWagmiConfig = getDefaultConfig({
+/* export const privyWagmiConfig = getDefaultConfig({
   ...commonWagmiConfig,
   appName: 'Payflow',
   projectId: WALLET_CONNECT_PROJECT_ID,
@@ -49,8 +48,8 @@ export const rainbowkitWagmiConfig = getDefaultConfig({
       wallets: [trustWallet, injectedWallet]
     }
   ]
-});
+}); */
 
 export const privyWagmiConfig = createConfig({
   ...commonWagmiConfig
-});
+}) as Config;

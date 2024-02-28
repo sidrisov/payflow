@@ -6,10 +6,10 @@ import { AppSettings } from '../types/AppSettingsType';
 import { me } from '../services/user';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { ProfileType } from '../types/ProfleType';
-import { useNavigate } from 'react-router-dom';
 import sortAndFilterFlows from '../utils/sortAndFilterFlows';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import { usePrivy } from '@privy-io/react-auth';
 
 const appSettingsStorageItem = localStorage.getItem('appSettings');
 const appSettingsStored = appSettingsStorageItem
@@ -26,11 +26,11 @@ export default function AppWithProviders() {
         }
   );
 
-  const navigate = useNavigate();
-
   const fetchingStatusRef = useRef(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [profile, setProfile] = useState<ProfileType>();
+
+  const { ready } = usePrivy();
 
   // Fetch user when:
   useEffect(() => {
@@ -71,7 +71,7 @@ export default function AppWithProviders() {
     localStorage.setItem('appSettings', JSON.stringify(appSettings));
   }, [appSettings]);
 
-  return loading ? (
+  return loading || !ready ? (
     <CenteredCircularProgress />
   ) : (
     <App profile={profile} appSettings={appSettings} setAppSettings={setAppSettings} />

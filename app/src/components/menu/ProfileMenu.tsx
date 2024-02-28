@@ -18,6 +18,7 @@ import { useContext } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { useDisconnect } from 'wagmi';
+import { usePrivy } from '@privy-io/react-auth';
 
 export function ProfileMenu({
   profile,
@@ -30,8 +31,8 @@ export function ProfileMenu({
   }) {
   const navigate = useNavigate();
 
-  const { disconnectAsync } = useDisconnect();
   const { appSettings, setAppSettings } = useContext(ProfileContext);
+  const { logout } = usePrivy();
 
   return (
     <Menu
@@ -117,7 +118,7 @@ export function ProfileMenu({
             await axios.get(`${API_URL}/api/auth/logout`, {
               withCredentials: true
             });
-            await disconnectAsync();
+            await logout();
             if (loginRedirectOnLogout) {
               navigate('/connect');
             } else {
