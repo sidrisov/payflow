@@ -121,8 +121,8 @@ export const useSafeTransfer = (): {
         const smartAccountClient = createSmartAccountClient({
           account: safeAccount,
           chain,
-          transport: transport(chain.id),
-          sponsorUserOperation: paymasterClient(chain.id).sponsorUserOperation
+          transport: transport(chain.id)
+          //sponsorUserOperation: paymasterClient(chain.id).sponsorUserOperation
         });
 
         const gasPrices = await bundlerClient(chain.id).getUserOperationGasPrice();
