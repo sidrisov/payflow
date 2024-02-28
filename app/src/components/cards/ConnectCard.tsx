@@ -1,20 +1,22 @@
 import { Avatar, Box, Card, Divider, Stack, Typography } from '@mui/material';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { AuthClientError, SignInButton, StatusAPIResponse } from '@farcaster/auth-kit';
 
 import { green } from '@mui/material/colors';
 import { CheckCircle } from '@mui/icons-material';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { API_URL } from '../../utils/urlConstants';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 
-//import Capsule, { Environment, Button, Modal } from '@usecapsule/web-sdk';
 import { FarcasterAccountsCard } from './FarcasterAccountsCard';
+import { SiweMessage } from 'siwe';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { useWalletClient } from 'wagmi';
+import { useNavigate } from 'react-router-dom';
+import LoadingButton from '@mui/lab/LoadingButton';
+import { useSetActiveWallet } from '@privy-io/wagmi';
 
 const FARCASTER_CONNECT_ENABLED = import.meta.env.VITE_FARCASTER_CONNECT_ENABLED === 'true';
-
-//const capsule = new Capsule(Environment.DEVELOPMENT, 'e2ad011eabf2e68e56603572d03c9851');
 
 function FeatureSection({ description }: { description: string }) {
   return (
@@ -27,9 +29,31 @@ function FeatureSection({ description }: { description: string }) {
   );
 }
 
+export type AuthenticationStatus = 'loading' | 'unauthenticated' | 'authenticated';
+
 export function ConnectCard() {
   const [siwfNonce, setSiwfNonce] = useState<string>();
   const [sifwResponse, setSifeResponse] = useState<StatusAPIResponse>();
+
+  const { connectWallet, isModalOpen } = usePrivy();
+
+  const { data: signer, isSuccess } = useWalletClient();
+  const [authStatus, setAuthStatus] = useState<AuthenticationStatus>('unauthenticated');
+
+  const navigate = useNavigate();
+
+  const { wallets } = useWallets();
+  const { ready } = usePrivy();
+  const { setActiveWallet } = useSetActiveWallet();
+
+  useEffect(() => {
+    if (ready && wallets.length !== 0) {
+      // filter out embedded wallets
+      const wallet = wallets.filter((w) => w.walletClientType !== 'privy')[0] ?? wallets[0];
+      console.debug('Setting active wallet: ', wallet);
+      setActiveWallet(wallet);
+    }
+  }, [wallets, ready]);
 
   useMemo(async () => {
     if (FARCASTER_CONNECT_ENABLED && !siwfNonce) {
@@ -44,6 +68,47 @@ export function ConnectCard() {
       setSiwfNonce(nonce);
     }
   }, []);
+
+  console.log(signer);
+
+  async function signInWithEthereum() {
+    if (isSuccess && signer && authStatus === 'unauthenticated') {
+      setAuthStatus('loading');
+      const siweMessage = new SiweMessage({
+        domain: window.location.host,
+        address: signer.account.address,
+        statement: 'Sign in with Ethereum to Payflow',
+        uri: window.location.origin,
+        version: '1',
+        chainId: signer.chain.id,
+        nonce: siwfNonce
+      });
+
+      try {
+        const signature = await signer.signMessage({
+          message: siweMessage.prepareMessage()
+        });
+
+        console.log(siweMessage, signature);
+
+        const response = await axios.post(
+          `${API_URL}/api/auth/verify/${siweMessage.address}`,
+          { message: siweMessage, signature },
+          { withCredentials: true }
+        );
+
+        if (response.status === 200) {
+          setAuthStatus('authenticated');
+          navigate('/');
+        } else {
+          toast.error('Failed to sign in with Ethereum');
+          setAuthStatus('unauthenticated');
+        }
+      } catch (error) {
+        setAuthStatus('unauthenticated');
+      }
+    }
+  }
 
   async function onFarcasterSignInError(error: AuthClientError | undefined) {
     setSiwfNonce(undefined);
@@ -102,13 +167,8 @@ export function ConnectCard() {
         </Typography>
 
         <Stack my={2} spacing={1} alignItems="center">
-          <ConnectButton
-            label={'Sign in with Ethereum'}
-            showBalance={{ smallScreen: false, largeScreen: false }}
-          />
           {FARCASTER_CONNECT_ENABLED && siwfNonce && (
             <>
-              <Divider flexItem>or</Divider>
               <Box
                 sx={{
                   p: -10,
@@ -125,10 +185,35 @@ export function ConnectCard() {
                   onError={onFarcasterSignInError}
                 />
               </Box>
+              <Divider flexItem>or</Divider>
             </>
           )}
-          {/* <Divider flexItem>or</Divider>
-          <Button capsule={capsule} appName="Payflow" twoFactorAuthEnabled={false} /> */}
+          <LoadingButton
+            variant="contained"
+            color="inherit"
+            loading={isModalOpen || authStatus === 'loading'}
+            startIcon={
+              !(isModalOpen || authStatus === 'loading') && (
+                <Avatar src="/networks/ethereum.png" sx={{ width: 28, height: 28 }} />
+              )
+            }
+            sx={{
+              borderRadius: 3,
+              width: 135,
+              height: 50,
+              textTransform: 'none',
+              fontWeight: 'bold',
+              fontSize: 18
+            }}
+            onClick={async () => {
+              if (!signer) {
+                connectWallet();
+              } else {
+                signInWithEthereum();
+              }
+            }}>
+            {!signer ? 'Sign in' : 'Verify'}
+          </LoadingButton>
         </Stack>
       </Box>
     </Card>

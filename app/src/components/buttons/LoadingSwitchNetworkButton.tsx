@@ -6,13 +6,11 @@ export function LoadingSwitchNetworkButton({
   chainId,
   ...props
 }: { chainId: number } & LoadingButtonProps) {
-  const { switchChainAsync, isPending, isError } = useSwitchChain();
+  const { switchChainAsync, isError, isPending } = useSwitchChain();
 
   useMemo(async () => {
-    if (!isPending) {
-      await switchChainAsync?.({ chainId });
-    }
-  }, [chainId, isPending]);
+    await switchChainAsync?.({ chainId });
+  }, [chainId]);
 
   return (
     <LoadingButton

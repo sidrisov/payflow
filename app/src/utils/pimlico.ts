@@ -3,7 +3,7 @@ import {
   createPimlicoPaymasterClient
 } from 'permissionless/clients/pimlico';
 import { http } from 'viem';
-import { arbitrum, base, baseSepolia, mainnet, optimism, sepolia, zkSync, zora } from 'viem/chains';
+import { arbitrum, base, baseSepolia, optimism, zkSync, zora } from 'viem/chains';
 
 export const transport = (chainId: number) => {
   return http(
@@ -36,10 +36,6 @@ export const paymasterClient = (chainId: number) => {
 const pimlicoRpcNetworkName = (chainId: number) => {
   let network = '';
   switch (chainId) {
-    case mainnet.id:
-    case sepolia.id:
-      network = 'ethereum';
-      break;
     case base.id:
       network = 'base';
       break;

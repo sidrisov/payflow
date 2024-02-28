@@ -1,19 +1,7 @@
-import {
-  AuthenticationStatus,
-  createAuthenticationAdapter,
-  RainbowKitAuthenticationProvider,
-  RainbowKitProvider
-} from '@rainbow-me/rainbowkit';
-
 import '@farcaster/auth-kit/styles.css';
-import { AuthKitProvider } from '@farcaster/auth-kit';
 
-import { WagmiProvider } from 'wagmi';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Login from './Login';
-import { CustomAvatar } from '../components/avatars/CustomAvatar';
-import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
-import { SiweMessage } from 'siwe';
 import axios, { AxiosError } from 'axios';
 import { ProfileType } from '../types/ProfleType';
 import { me } from '../services/user';
@@ -21,19 +9,18 @@ import { API_URL } from '../utils/urlConstants';
 import { toast } from 'react-toastify';
 import { AppSettings } from '../types/AppSettingsType';
 import { useMediaQuery } from '@mui/material';
-import CustomToastContainer from '../components/toasts/CustomToastContainer';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { wagmiConfig } from '../utils/wagmiConfig';
-import { queryClient } from '../utils/query';
+import { AuthenticationStatus } from '../components/cards/ConnectCard';
+import { usePrivy } from '@privy-io/react-auth';
+import CenteredCircularProgress from '../components/CenteredCircularProgress';
 
 const appSettingsStorageItem = localStorage.getItem('appSettings');
 const appSettingsStored = appSettingsStorageItem
   ? (JSON.parse(appSettingsStorageItem) as AppSettings)
   : null;
 
-export default function AppWithProviders() {
+export default function LoginWithProviders() {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const [appSettings, setAppSettings] = useState<AppSettings>(
+  const [appSettings] = useState<AppSettings>(
     appSettingsStored
       ? appSettingsStored
       : {
@@ -45,6 +32,8 @@ export default function AppWithProviders() {
   const verifyingRef = useRef(false);
   const [authStatus, setAuthStatus] = useState<AuthenticationStatus>('loading');
   const [profile, setProfile] = useState<ProfileType>();
+
+  const { ready } = usePrivy();
 
   useMemo(() => {
     localStorage.setItem('appSettings', JSON.stringify(appSettings));
@@ -97,85 +86,9 @@ export default function AppWithProviders() {
     }
   }, [authStatus, profile]);
 
-  const authAdapter = useMemo(() => {
-    return createAuthenticationAdapter({
-      getNonce: async () => {
-        const response = await axios.get(`${API_URL}/api/auth/nonce`, { withCredentials: true });
-        return await response.data;
-      },
-
-      createMessage: ({ nonce, address, chainId }) => {
-        return new SiweMessage({
-          domain: window.location.host,
-          address,
-          statement: 'Sign in with Ethereum to Payflow',
-          uri: window.location.origin,
-          version: '1',
-          chainId,
-          nonce
-        });
-      },
-
-      getMessageBody: ({ message }) => {
-        return message.prepareMessage();
-      },
-
-      verify: async ({ message, signature }) => {
-        verifyingRef.current = true;
-
-        try {
-          const response = await axios.post(
-            `${API_URL}/api/auth/verify/${message.address}`,
-            { message, signature },
-            { withCredentials: true }
-          );
-
-          const authenticated = Boolean(response.status === 200);
-
-          if (authenticated) {
-            setAuthStatus(authenticated ? 'authenticated' : 'unauthenticated');
-          }
-
-          return authenticated;
-        } catch (error) {
-          return false;
-        } finally {
-          verifyingRef.current = false;
-        }
-      },
-
-      signOut: async () => {
-        setAuthStatus('unauthenticated');
-        setProfile(undefined);
-        await axios.get(`${API_URL}/api/auth/logout`, { withCredentials: true });
-      }
-    });
-  }, []);
-
-  const config = {
-    rpcUrl: `https://opt-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`,
-    domain: window.location.hostname,
-    siweUri: window.location.origin,
-    relay: 'https://relay.farcaster.xyz',
-    version: 'v1'
-  };
-
-  return (
-    <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <RainbowKitAuthenticationProvider adapter={authAdapter} status={authStatus}>
-          <RainbowKitProvider
-            theme={appSettings.darkMode ? customDarkTheme : customLightTheme}
-            avatar={CustomAvatar}
-            modalSize="compact"
-            appInfo={{ appName: 'Payflow', learnMoreUrl: 'https://payflow.super.site' }}>
-            <AuthKitProvider config={config}>
-              <Login authStatus={authStatus} profile={profile} settings={appSettings} />
-            </AuthKitProvider>
-          </RainbowKitProvider>
-        </RainbowKitAuthenticationProvider>
-        <CustomToastContainer />
-      </QueryClientProvider>
-    </WagmiProvider>
+  return !ready ? (
+    <CenteredCircularProgress />
+  ) : (
+    <Login authStatus={authStatus} profile={profile} settings={appSettings} />
   );
 }

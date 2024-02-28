@@ -11,5 +11,5 @@ public interface IContactBookService {
 	List<ContactMessage> getAllContacts(User user);
 
 	// run only once
-	List<ContactMessage> getEthDenverParticipants();
+	List<ContactMessage> getEthDenverParticipants(User user);
 }

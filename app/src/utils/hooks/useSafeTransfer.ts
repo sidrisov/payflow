@@ -103,13 +103,15 @@ export const useSafeTransfer = (): {
       // handle AA with pimlico, we only use to send tx once it was deployed
       if (safeVersion === '1.4.1') {
         const chain = signer.chain;
+
         const safeAccount = await signerToSafeSmartAccount(client, {
           entryPoint: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789', // global entrypoint
           signer: walletClientToSmartAccountSigner(signer),
           owners: safeAccountConfig.owners as Address[],
           threshold: safeAccountConfig.threshold,
           safeVersion: '1.4.1',
-          saltNonce: BigInt(keccak256(toBytes(saltNonce)))
+          saltNonce: BigInt(keccak256(toBytes(saltNonce))),
+          address: tx.from
         });
 
         console.log(
@@ -119,8 +121,8 @@ export const useSafeTransfer = (): {
         const smartAccountClient = createSmartAccountClient({
           account: safeAccount,
           chain,
-          transport: transport(chain.id),
-          sponsorUserOperation: paymasterClient(chain.id).sponsorUserOperation
+          transport: transport(chain.id)
+          //sponsorUserOperation: paymasterClient(chain.id).sponsorUserOperation
         });
 
         const gasPrices = await bundlerClient(chain.id).getUserOperationGasPrice();
@@ -136,16 +138,18 @@ export const useSafeTransfer = (): {
                   functionName: 'transfer',
                   args: [tx.to, tx.amount]
                 }),
-                maxFeePerGas: gasPrices.fast.maxFeePerGas, // if using Pimlico
-                maxPriorityFeePerGas: gasPrices.fast.maxPriorityFeePerGas // if using Pimlico
+                maxFeePerGas: gasPrices.standard.maxFeePerGas, // if using Pimlico
+                maxPriorityFeePerGas: gasPrices.standard.maxPriorityFeePerGas // if using Pimlico
               }
             : {
                 to: tx.to,
                 value: tx.amount,
-                maxFeePerGas: gasPrices.fast.maxFeePerGas, // if using Pimlico
-                maxPriorityFeePerGas: gasPrices.fast.maxPriorityFeePerGas // if using Pimlico,
+                maxFeePerGas: gasPrices.standard.maxFeePerGas, // if using Pimlico
+                maxPriorityFeePerGas: gasPrices.standard.maxPriorityFeePerGas // if using Pimlico
               }
         );
+
+        console.log('Tx hash: ', txHash, chain.name);
 
         setTxHash(txHash);
       } else {

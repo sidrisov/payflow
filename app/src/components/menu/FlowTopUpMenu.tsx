@@ -1,7 +1,6 @@
 import { ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material';
 import { ProfileType } from '../../types/ProfleType';
-import { Link, Payments, QrCode } from '@mui/icons-material';
-import { comingSoonToast } from '../Toasts';
+import { Link, QrCode } from '@mui/icons-material';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { DAPP_URL } from '../../utils/urlConstants';
 import { toast } from 'react-toastify';
@@ -37,7 +36,7 @@ export function FlowTopUpMenu({
         </ListItemIcon>
         Link
       </MenuItem>
-      <MenuItem
+      {/* <MenuItem
         onClick={() => {
           comingSoonToast();
         }}>
@@ -45,7 +44,7 @@ export function FlowTopUpMenu({
           <Payments fontSize="small" />
         </ListItemIcon>
         Request
-      </MenuItem>
+      </MenuItem> */}
     </Menu>
   );
 }

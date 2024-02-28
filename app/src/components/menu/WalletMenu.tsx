@@ -10,16 +10,15 @@ import { useContext } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { AddressSection } from '../AddressSection';
-import { useAccount, useConfig } from 'wagmi';
-import { useConnectModal } from '@rainbow-me/rainbowkit';
-import { disconnect } from 'wagmi/actions';
+import { useAccount, useDisconnect } from 'wagmi';
+import { usePrivy } from '@privy-io/react-auth';
 
 export function WalletMenu({ closeStateCallback, ...props }: MenuProps & CloseCallbackType) {
   const { appSettings, setAppSettings } = useContext(ProfileContext);
 
-  const wagmiConfig = useConfig();
+  const { disconnectAsync } = useDisconnect();
   const { address, isConnected } = useAccount();
-  const { openConnectModal } = useConnectModal();
+  const { connectWallet } = usePrivy();
 
   return (
     <Menu
@@ -38,7 +37,7 @@ export function WalletMenu({ closeStateCallback, ...props }: MenuProps & CloseCa
       ) : (
         <MenuItem
           onClick={async () => {
-            openConnectModal?.();
+            connectWallet();
           }}>
           <ListItemIcon>
             <AccountBalanceWallet fontSize="small" />
@@ -66,7 +65,7 @@ export function WalletMenu({ closeStateCallback, ...props }: MenuProps & CloseCa
           <MenuItem
             sx={{ color: 'red' }}
             onClick={async () => {
-              await disconnect(wagmiConfig);
+              await disconnectAsync();
               closeStateCallback();
             }}>
             <ListItemIcon sx={{ color: 'red' }}>

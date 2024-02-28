@@ -360,6 +360,7 @@ const getAccountAddress = async <
 >({
   client,
   owners,
+  threshold,
   addModuleLibAddress,
   safe4337ModuleAddress,
   safeProxyFactoryAddress,
@@ -412,6 +413,7 @@ const getAccountAddress = async <
 
   const initializer = await getInitializerCode({
     owners,
+    threshold,
     addModuleLibAddress,
     safe4337ModuleAddress,
     multiSendAddress,

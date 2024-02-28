@@ -190,6 +190,7 @@ const SHORT_NAME_NETWORKS: NetworkShortName[] = [
   { chainId: 73799, shortName: 'vt' },
   { chainId: 80001, shortName: 'maticmum' },
   { chainId: 84531, shortName: 'base-gor' },
+  { chainId: 84531, shortName: 'basesep' },
   { chainId: 200101, shortName: 'milktada' },
   { chainId: 200202, shortName: 'milktalgo' },
   { chainId: 333999, shortName: 'olympus' },

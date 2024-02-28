@@ -8,9 +8,20 @@ import ua.sinaver.web3.payflow.message.WalletProfileRequestMessage;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public interface UserRepository extends CrudRepository<User, Integer> {
 	User findByIdentity(String identity);
+
+	Stream<User> findByIdentityIn(List<String> identities);
+
+	default Map<String, User> findByIdentityAsMapIn(List<String> identities) {
+		return findByIdentityIn(identities)
+				.collect(Collectors.toMap(User::getIdentity, Function.identity()));
+	}
 
 	User findByIdentityAndAllowedTrue(String identity);
 

@@ -2,11 +2,13 @@ package ua.sinaver.web3.payflow.message;
 
 import lombok.val;
 import ua.sinaver.web3.payflow.data.Contact;
+import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
 import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,12 +18,9 @@ public record ContactMessage(
 		SocialMetadata meta,
 		List<String> tags) {
 
-	public static ContactMessage convert(Contact contact, Wallet wallet,
-	                                     Boolean invited, List<String> tags) {
-		ProfileMessage profileMessage = null;
-		val profile = contact.getProfile();
+	public static ProfileMessage convert(User profile) {
 		if (profile != null && profile.isAllowed()) {
-			profileMessage = new ProfileMessage(profile.getDisplayName(),
+			return new ProfileMessage(profile.getDisplayName(),
 					profile.getUsername(),
 					profile.getProfileImage(),
 					profile.getIdentity(),
@@ -30,8 +29,13 @@ public record ContactMessage(
 							FlowMessage.convert(profile.getDefaultFlow(), profile) : null,
 					null,
 					-1);
+		} else {
+			return null;
 		}
+	}
 
+	public static ContactMessage convert(Contact contact, Wallet wallet,
+	                                     Boolean invited, List<String> tags) {
 
 		var xmtp = false;
 		String ens = null;
@@ -39,6 +43,8 @@ public record ContactMessage(
 		List<SocialInfo> socials = new ArrayList<>();
 		SocialInsights insights = null;
 
+		val profileMessage = convert(contact.getProfile());
+		
 		if (wallet != null) {
 			xmtp = wallet.getXmtp() != null && !wallet.getXmtp().isEmpty() && wallet.getXmtp().getFirst().getIsXMTPEnabled();
 
@@ -126,7 +132,9 @@ public record ContactMessage(
 
 						return new SocialInfo(s.getDappName().name(), s.getProfileName(),
 								s.getProfileDisplayName(), profileImage, s.getFollowerCount());
-					}).collect(Collectors.toList());
+					})
+					.sorted(Comparator.comparingInt(SocialInfo::followerCount).reversed())
+					.collect(Collectors.toList());
 		} else {
 			return Collections.emptyList();
 		}

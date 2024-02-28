@@ -1,0 +1,2 @@
+ALTER TABLE flow
+ADD COLUMN signer VARCHAR(255);

@@ -101,7 +101,7 @@ export function FarcasterAccountsCard({
         flexDirection: 'column'
       }}>
       <Typography variant="h6" textAlign="center">
-        Select Profile Identity
+        Select profile identity
       </Typography>
       <Typography variant="subtitle2" textAlign="center">
         farcaster connected addresses

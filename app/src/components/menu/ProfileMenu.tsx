@@ -8,7 +8,8 @@ import {
   Logout,
   Person,
   PersonAdd,
-  Settings} from '@mui/icons-material';
+  Settings
+} from '@mui/icons-material';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ProfileSection } from '../ProfileSection';
@@ -16,8 +17,8 @@ import { API_URL } from '../../utils/urlConstants';
 import { useContext } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { disconnect } from 'wagmi/actions';
-import { useConfig } from 'wagmi';
+import { useDisconnect } from 'wagmi';
+import { usePrivy } from '@privy-io/react-auth';
 
 export function ProfileMenu({
   profile,
@@ -30,8 +31,8 @@ export function ProfileMenu({
   }) {
   const navigate = useNavigate();
 
-  const wagmiConfig = useConfig();
   const { appSettings, setAppSettings } = useContext(ProfileContext);
+  const { logout } = usePrivy();
 
   return (
     <Menu
@@ -117,7 +118,7 @@ export function ProfileMenu({
             await axios.get(`${API_URL}/api/auth/logout`, {
               withCredentials: true
             });
-            await disconnect(wagmiConfig);
+            await logout();
             if (loginRedirectOnLogout) {
               navigate('/connect');
             } else {

@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import type { Chain, Client, Transport } from 'viem';
 import { type Config, useClient } from 'wagmi';
 import { getClient } from 'wagmi/actions';
-import { wagmiConfig } from '../wagmiConfig';
+import { privyWagmiConfig } from '../wagmiConfig';
 
 export function clientToProvider(client: Client<Transport, Chain>) {
   const { chain, transport } = client;
@@ -30,6 +30,6 @@ export function useEthersProvider({ chainId }: { chainId?: number } = {}) {
 
 /** Action to convert a viem Public Client to an ethers.js Provider. */
 export function getEthersProvider({ chainId }: { chainId?: number } = {}) {
-  const client = getClient(wagmiConfig, { chainId });
+  const client = getClient(privyWagmiConfig, { chainId });
   return clientToProvider(client as Client<Transport, Chain>);
 }

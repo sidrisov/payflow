@@ -9,7 +9,7 @@ import SocialPresenceChipWithLink from '../chips/SocialPresenceChipWithLink';
 import { convertSocialResults } from '../../services/socials';
 import { green } from '@mui/material/colors';
 import { Address } from 'viem';
-import PaymentDialog from './PaymentDialog';
+import PaymentDialog, { PaymentType } from './PaymentDialog';
 import { ProfileContext } from '../../contexts/UserContext';
 import { QUERY_SOCIALS_INSIGHTS_LIGHT, QUERY_SOCIALS_LIGHT } from '../../utils/airstackQueries';
 import ChoosePaymentOptionDialog from './ChoosePaymentOptionDialog';
@@ -27,9 +27,7 @@ export function PublicProfileDetails({
 
   const { address } = useAccount();
 
-  const [paymentMethod, setPaymentMethod] = useState<'payflow' | 'wallet' | 'none'>(
-    !loggedProfile ? 'wallet' : 'none'
-  );
+  const [paymentType, setPaymentType] = useState<PaymentType>(!loggedProfile ? 'wallet' : 'none');
 
   const { data: socialInfo, loading: loadingSocials } = useQuery(
     (address ?? loggedProfile?.identity) &&
@@ -141,9 +139,10 @@ export function PublicProfileDetails({
       {openPayDialog && (
         <>
           <PaymentDialog
-            open={openPayDialog && (!loggedProfile || paymentMethod !== 'none')}
+            open={openPayDialog && (!loggedProfile || paymentType !== 'none')}
+            paymentType={paymentType}
             sender={
-              paymentMethod === 'wallet'
+              paymentType === 'wallet'
                 ? (address as Address)
                 : loggedProfile && loggedProfile.defaultFlow
                 ? loggedProfile.defaultFlow
@@ -155,13 +154,13 @@ export function PublicProfileDetails({
             }}
             closeStateCallback={async () => {
               setOpenPayDialog(false);
-              setPaymentMethod('none');
+              setPaymentType('none');
             }}
           />
 
           <ChoosePaymentOptionDialog
-            open={Boolean(loggedProfile) && paymentMethod === 'none'}
-            setPaymentMethod={setPaymentMethod}
+            open={Boolean(loggedProfile) && paymentType === 'none'}
+            setPaymentType={setPaymentType}
             closeStateCallback={async () => setOpenPayDialog(false)}
           />
         </>

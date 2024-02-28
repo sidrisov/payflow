@@ -1,4 +1,3 @@
-import { Chain } from 'viem';
 import { AppSettings } from './AppSettingsType';
 import { ProfileType } from './ProfleType';
 import { TokenPrices } from '../utils/erc20contracts';

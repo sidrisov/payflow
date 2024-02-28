@@ -128,5 +128,10 @@
     "name": "spring.cache.socials.maxSize",
     "type": "java.lang.String",
     "description": "A description for 'spring.cache.socials.maxSize'"
+  },
+  {
+    "name": "spring.cache.eth-denver.contacts.expireAfterWrite",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cache.eth-denver.contacts.expireAfterWrite'"
   }
 ]}

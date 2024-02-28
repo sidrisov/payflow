@@ -30,10 +30,11 @@ export function SearchIdentityListItem(
     UpdateIdentityCallbackType & {
       identity: IdentityType;
       view: 'address' | 'profile';
+      insightsEnabled: boolean;
     }
 ) {
   const { profile, isAuthenticated } = useContext(ProfileContext);
-  const { identity, view, updateIdentityCallback } = props;
+  const { identity, view, updateIdentityCallback, insightsEnabled } = props;
 
   const favourite = view === 'address' ? identity.favouriteAddress : identity.favouriteProfile;
 

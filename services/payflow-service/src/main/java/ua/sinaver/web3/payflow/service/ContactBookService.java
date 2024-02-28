@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import ua.sinaver.web3.payflow.data.Contact;
 import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 import ua.sinaver.web3.payflow.message.ContactMessage;
 import ua.sinaver.web3.payflow.repository.ContactRepository;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
@@ -25,6 +26,7 @@ import java.time.Duration;
 import java.time.Period;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static ua.sinaver.web3.payflow.config.CacheConfig.CONTACTS_CACHE_NAME;
 
@@ -63,7 +65,7 @@ public class ContactBookService implements IContactBookService {
 	@Value("${payflow.invitation.whitelisted.default.users}")
 	private Set<String> whitelistedUsers;
 
-	private List<ContactMessage> ethDenverParticipants = new ArrayList<>();
+	private List<Wallet> ethDenverParticipants = new ArrayList<>();
 
 	@Override
 	@CacheEvict(value = CONTACTS_CACHE_NAME, key = "#user.identity")
@@ -127,6 +129,11 @@ public class ContactBookService implements IContactBookService {
 		val contacts = contactRepository.findAllByUser(user)
 				.stream().limit(contactsLimitAdjusted).toList();
 
+		val invitations =
+				invitationRepository.existsByIdentityInAndValid(
+						contacts.stream().map(Contact::getIdentity).filter(identity -> !whitelistedUsers.contains(identity)).toList()
+				);
+
 		try {
 			val contactMessages = Flux
 					.fromIterable(contacts)
@@ -144,7 +151,7 @@ public class ContactBookService implements IContactBookService {
 													}),
 											Mono.fromCallable(
 															() -> whitelistedUsers.contains(contact.getIdentity())
-																	|| invitationRepository.existsByIdentityAndValid(contact.getIdentity()))
+																	|| invitations.containsKey(contact.getIdentity()))
 													.onErrorResume(exception -> {
 														log.error("Error checking invitation status for user {} - {}",
 																contact.getIdentity(),
@@ -214,18 +221,33 @@ public class ContactBookService implements IContactBookService {
 		}
 	}
 
-	// run only once
 	@Override
-	public List<ContactMessage> getEthDenverParticipants() {
-		if (!ethDenverContactsEnabled) {
+	public List<ContactMessage> getEthDenverParticipants(User user) {
+		if (!ethDenverContactsEnabled && !whitelistedUsers.contains(user.getIdentity())) {
 			return Collections.emptyList();
 		}
 
-		return ethDenverParticipants;
+		val identities = ethDenverParticipants.stream()
+				.map(Wallet::getIdentity).toList();
+		val profiles = userRepository.findByIdentityAsMapIn(identities);
+		val invitations =
+				invitationRepository.existsByIdentityInAndValid(identities.stream().filter(identity -> !whitelistedUsers.contains(identity)).toList());
+
+		return ethDenverParticipants.stream().map(wallet -> {
+			val identity = wallet.getIdentity();
+			val profile = profiles.get(identity);
+			val invited = whitelistedUsers.contains(identity)
+					|| invitations.containsKey(identity);
+			return ContactMessage.convert(new Contact(profile,
+							wallet.getIdentity()), wallet, invited,
+					Collections.singletonList("eth-denver-contacts"));
+		}).collect(Collectors.toList());
 	}
 
+	// run only once
 	@Scheduled(fixedRate = Long.MAX_VALUE)
-	//@CacheEvict(cacheNames = CONTACTS_CACHE_NAME, beforeInvocation = true, allEntries = true)
+	//@CacheEvict(cacheNames = ETH_DENVER_PARTICIPANTS_CACHE_NAME,
+	//		beforeInvocation = true, allEntries = true)
 	public void preFetchEthDenverParticipants() {
 		if (!ethDenverContactsEnabled) {
 			return;

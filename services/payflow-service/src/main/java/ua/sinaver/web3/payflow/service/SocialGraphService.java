@@ -13,10 +13,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import ua.sinaver.web3.payflow.data.Contact;
 import ua.sinaver.web3.payflow.graphql.generated.types.*;
 import ua.sinaver.web3.payflow.message.ConnectedAddresses;
-import ua.sinaver.web3.payflow.message.ContactMessage;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
 import java.util.ArrayList;
@@ -53,10 +51,10 @@ public class SocialGraphService implements ISocialGraphService {
 
 	@Override
 	@Cacheable(value = ETH_DENVER_PARTICIPANTS_CACHE_NAME, unless = "#result.isEmpty()")
-	public List<ContactMessage> getEthDenverParticipants() {
+	public List<Wallet> getEthDenverParticipants() {
 		var hasNextPage = false;
 		var nextCursor = "";
-		val participants = new ArrayList<ContactMessage>();
+		val participants = new ArrayList<Wallet>();
 
 		do {
 			try {
@@ -77,13 +75,10 @@ public class SocialGraphService implements ISocialGraphService {
 
 					participants.addAll(rawParticipants.stream()
 							.filter(tb ->
-									tb.getOwner().getPrimaryDomain() != null ||
+									tb.getOwner().getPrimaryDomain() != null || (tb.getOwner().getDomains() != null && !tb.getOwner().getDomains().isEmpty()) ||
 											(tb.getOwner().getSocials() != null && !tb.getOwner().getSocials().isEmpty())
 							)
-							.map(tb -> ContactMessage.convert(new Contact(null,
-											tb.getOwner().getIdentity()), tb.getOwner(), null,
-									Collections.singletonList("eth-denver-contacts")))
-							.distinct()
+							.map(TokenBalance::getOwner)
 							.toList());
 
 					log.debug("Fetched {} participants", participants.size());

@@ -214,7 +214,8 @@ export function convertSocialResults(wallet: Wallet): IdentityType {
             profileImage: s.profileImageContentValue?.image?.small ?? s.profileImage,
             followerCount: s.followerCount
           } as SocialInfoType)
-      );
+      )
+      .sort((a, b) => b.followerCount - a.followerCount);
   } else {
     meta.socials = [];
   }

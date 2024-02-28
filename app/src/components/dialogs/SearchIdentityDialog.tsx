@@ -215,7 +215,7 @@ export default function SearchIdentityDialog({
     const contact = contacts.find((c) => c.address === identity.address);
     let updatedContacts;
 
-    console.log(identity, view, favourite, invited);
+    console.log('Updating identity', identity.address, view, favourite, invited, identity);
 
     if (contact) {
       // updating identity from address book
@@ -278,8 +278,7 @@ export default function SearchIdentityDialog({
       }}
       PaperProps={{
         sx: {
-          borderRadius: 5,
-          ...(!isMobile && { width: 375, height: 600 })
+          ...(!isMobile && { width: 375, height: 600, borderRadius: 5 })
         }
       }}
       {...props}>
@@ -385,6 +384,7 @@ export default function SearchIdentityDialog({
             ) : (
               <SearchResultView
                 key={'search_identity_eth_denver_view'}
+                insightsEnabled={false}
                 profileRedirect={profileRedirect}
                 closeStateCallback={closeStateCallback}
                 selectIdentityCallback={selectIdentityCallback}

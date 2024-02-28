@@ -93,7 +93,7 @@ export function TokenAmountSection({
     }
   }, [isSuccess, balance, selectedTokenPrice]);
 
-  useMemo(async () => {
+  useEffect(() => {
     if (sendAmountUSD !== undefined && selectedToken && balance && tokenPrices) {
       const tokenPrice = tokenPrices[selectedToken.name] ?? 0;
       const amount = parseUnits((sendAmountUSD / tokenPrice).toString(), balance.decimals);

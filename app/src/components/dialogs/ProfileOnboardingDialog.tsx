@@ -220,7 +220,13 @@ export default function ProfileOnboardingDialog({
     <Dialog
       onClose={handleCloseCampaignDialog}
       {...props}
-      PaperProps={{ sx: { borderRadius: 5 } }}
+      PaperProps={{
+        sx: {
+          ...(!isMobile && {
+            borderRadius: 5
+          })
+        }
+      }}
       sx={{
         backdropFilter: 'blur(5px)'
       }}>

@@ -29,15 +29,16 @@ import { ProfileMenu } from '../components/menu/ProfileMenu';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import HomeLogo from '../components/Logo';
 import ProfileAvatar from '../components/avatars/ProfileAvatar';
-import DefaultFlowOnboardingDialog from '../components/dialogs/DefaultFlowOnboardingDialog';
+import PrimaryFlowOnboardingDialog from '../components/dialogs/PrimaryFlowOnboardingDialog';
 import axios from 'axios';
 import { DEGEN_TOKEN, ETH_TOKEN, TokenPrices, USDC_TOKEN } from '../utils/erc20contracts';
 import { DAPP_URL } from '../utils/urlConstants';
+import { WalletProviderType } from '../utils/providers';
 
 export default function AppLayout({
   profile,
   appSettings,
-  setAppSettings
+  setAppSettings,
 }: {
   profile: ProfileType | undefined;
   appSettings: AppSettings;
@@ -107,6 +108,29 @@ export default function AppLayout({
     }
   }, [profile]);
 
+  /*   const { setActiveWallet } = useSetActiveWallet();
+  const { wallets } = useWallets();
+  const { user, ready, authenticated } = usePrivy();
+  const { status, address } = useAccount();
+
+  useEffect(() => {
+    console.log(
+      'Available wallets (privy), ready, authenticated, user, status, address: ',
+      wallets,
+      ready,
+      authenticated,
+      user,
+      status,
+      address
+    );
+
+    if (ready && wallets.length !== 0) {
+      const wallet = wallets[0]; //wallets.find((w) => w.walletClientType === 'privy') ?? wallets[0];
+      console.log('Setting active wallet: ', wallet);
+      setActiveWallet(wallet);
+    }
+  }, [wallets, ready, status, address, authenticated]); */
+
   return (
     <ProfileContext.Provider
       value={{
@@ -114,7 +138,7 @@ export default function AppLayout({
         profile,
         appSettings,
         setAppSettings,
-        tokenPrices
+        tokenPrices,
       }}>
       <Container maxWidth="xs">
         <Box height="100vh" display="flex" flexDirection="column" justifyContent="flex-start">
@@ -255,7 +279,7 @@ export default function AppLayout({
         }}
       />
       {profile && !profile.defaultFlow && (
-        <DefaultFlowOnboardingDialog
+        <PrimaryFlowOnboardingDialog
           fullScreen={isMobile}
           open={!profile.defaultFlow}
           profile={profile}

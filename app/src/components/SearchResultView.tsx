@@ -22,6 +22,7 @@ function calculateMaxPages(totalNumber: number, pageSize: number) {
 export function SearchResultView({
   profileRedirect,
   filterByFafourites = false,
+  insightsEnabled = true,
   closeStateCallback,
   selectIdentityCallback,
   updateIdentityCallback,
@@ -29,6 +30,7 @@ export function SearchResultView({
 }: {
   filterByFafourites?: boolean;
   profileRedirect?: boolean;
+  insightsEnabled?: boolean;
   identities: IdentityType[];
 } & CloseCallbackType &
   SelectIdentityCallbackType &
@@ -37,10 +39,12 @@ export function SearchResultView({
 
   function SearchResultProfileListView({
     view,
-    identities
+    identities,
+    insightsEnabled
   }: {
     view: 'address' | 'profile';
     identities: IdentityType[];
+    insightsEnabled: boolean;
   }) {
     const maxPages = calculateMaxPages(identities.length, pageSize);
     const [page, setPage] = useState<number>(1);
@@ -78,6 +82,7 @@ export function SearchResultView({
                 <SearchIdentityListItem
                   key={view === 'profile' ? identity.profile?.username : identity.address}
                   view={view}
+                  insightsEnabled={insightsEnabled}
                   identity={identity}
                   updateIdentityCallback={updateIdentityCallback}
                   {...(onIdentityClick ? { onClick: () => onIdentityClick?.(identity) } : {})}
@@ -111,12 +116,14 @@ export function SearchResultView({
     <>
       <SearchResultProfileListView
         view="profile"
+        insightsEnabled={insightsEnabled}
         identities={identities.filter((identity) =>
           filterByFafourites ? identity.favouriteProfile : true && identity.profile
         )}
       />
       <SearchResultProfileListView
         view="address"
+        insightsEnabled={insightsEnabled}
         identities={identities.filter((identity) =>
           filterByFafourites ? identity.favouriteAddress : true && identity.meta
         )}

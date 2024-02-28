@@ -1,15 +1,14 @@
-import { getDefaultConfig, getDefaultWallets } from '@rainbow-me/rainbowkit';
-import { trustWallet, injectedWallet } from '@rainbow-me/rainbowkit/wallets';
-import { SUPPORTED_CHAINS } from '../utils/networks';
+import { SUPPORTED_CHAINS } from './networks';
 import { http, fallback } from 'viem';
 import { mainnet, base, optimism, baseSepolia, zora, sepolia } from 'viem/chains';
 
-const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
-const { wallets } = getDefaultWallets();
+import { createConfig } from '@privy-io/wagmi';
+import { Config } from 'wagmi';
 
-export const wagmiConfig = getDefaultConfig({
-  appName: 'Payflow',
-  projectId: WALLET_CONNECT_PROJECT_ID,
+const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
+/* const { wallets } = getDefaultWallets();
+ */
+const commonWagmiConfig = {
   chains: SUPPORTED_CHAINS as any,
   transports: {
     [mainnet.id]: http(
@@ -32,7 +31,13 @@ export const wagmiConfig = getDefaultConfig({
       `https://base-sepolia.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`
     )
   },
-  syncConnectedChain: true,
+  syncConnectedChain: true
+};
+
+/* export const privyWagmiConfig = getDefaultConfig({
+  ...commonWagmiConfig,
+  appName: 'Payflow',
+  projectId: WALLET_CONNECT_PROJECT_ID,
   appDescription: 'On-chain Social Payments',
   appUrl: 'https://payflow.me',
   appIcon: 'https://payflow.me/favicon.ico',
@@ -43,4 +48,8 @@ export const wagmiConfig = getDefaultConfig({
       wallets: [trustWallet, injectedWallet]
     }
   ]
-});
+}); */
+
+export const privyWagmiConfig = createConfig({
+  ...commonWagmiConfig
+}) as Config;

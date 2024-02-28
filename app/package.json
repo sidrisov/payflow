@@ -1,7 +1,7 @@
 {
   "name": "payflow-app",
   "private": true,
-  "version": "0.0.5-alpha",
+  "version": "0.0.7-alpha",
   "type": "module",
   "scripts": {
     "generate": "npx graphql-codegen",
@@ -21,7 +21,8 @@
     "@mui/icons-material": "^5.14.3",
     "@mui/lab": "^5.0.0-alpha.151",
     "@mui/material": "^5.14.4",
-    "@rainbow-me/rainbowkit": "^2.0.0",
+    "@privy-io/react-auth": "^1.56.2",
+    "@privy-io/wagmi": "^0.2.0",
     "@safe-global/api-kit": "^2.0.0",
     "@safe-global/protocol-kit": "^3.0.0",
     "@safe-global/relay-kit": "^2.0.0",

@@ -23,16 +23,15 @@ import { useCreateSafeWallets as usePreCreateSafeWallets } from '../../utils/hoo
 
 import { FlowType } from '../../types/FlowType';
 import { useNavigate } from 'react-router-dom';
-import { DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS } from '../../utils/networks';
+import { DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS as PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS } from '../../utils/networks';
 import { updateProfile } from '../../services/user';
 import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
-import { useAccount, useConfig } from 'wagmi';
+import { useAccount, useConfig, useDisconnect } from 'wagmi';
 import { green, red } from '@mui/material/colors';
 import { shortenWalletAddressLabel } from '../../utils/address';
 import { Logout } from '@mui/icons-material';
-import { disconnect } from 'wagmi/actions';
 
-export type DefaultFlowOnboardingDialogProps = DialogProps &
+export type PrimaryFlowOnboardingDialogProps = DialogProps &
   CloseCallbackType & {
     profile: ProfileType;
     username?: string | null;
@@ -41,20 +40,24 @@ export type DefaultFlowOnboardingDialogProps = DialogProps &
 
 const SALT_NONCE = import.meta.env.VITE_DEFAULT_FLOW_CREATE2_SALT_NONCE;
 
-export default function DefaultFlowOnboardingDialog({
+export default function PrimaryFlowOnboardingDialog({
   closeStateCallback,
   profile,
   ...props
-}: DefaultFlowOnboardingDialogProps) {
+}: PrimaryFlowOnboardingDialogProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const { loading: loadingWallets, error, wallets, create, reset } = usePreCreateSafeWallets();
   const [loadingUpdateProfile, setLoadingUpdateProfile] = useState<boolean>(false);
 
-  const [signerAsIdentity, setSignerAsIdentity] = useState<boolean>(true);
+  const [extraSigner, setExtraSigner] = useState<boolean>(true);
 
-  const { address } = useAccount();
+  const { address, connector } = useAccount();
+
+  console.log('Hello', connector);
+
+  const { disconnectAsync } = useDisconnect();
 
   const navigate = useNavigate();
 
@@ -65,24 +68,30 @@ export default function DefaultFlowOnboardingDialog({
   }
 
   async function createMainFlow() {
-    console.debug(profile.identity, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
-    if (signerAsIdentity) {
-      create(profile.identity, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
-    } else if (address) {
-      create(address, SALT_NONCE, DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS);
-    } else {
-      toast.error('No wallet connected!');
+    console.debug(profile.identity, SALT_NONCE, PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS);
+
+    let owners = [profile.identity];
+    if (extraSigner) {
+      if (address) {
+        owners.push(address);
+      } else {
+        toast.error('Signer not connected!');
+        return;
+      }
     }
+
+    create(owners, SALT_NONCE, PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS);
   }
 
   useMemo(async () => {
     if (error) {
       toast.error('Failed to prepare flow, try again!');
       await reset();
-    } else if (wallets && wallets.length === DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS.length) {
-      const defaultFlow = {
-        owner: profile.identity,
-        title: 'default',
+    } else if (wallets && wallets.length === PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS.length) {
+      const primaryFlow = {
+        // TODO: choose different one
+        ...(extraSigner && { signer: address, signerProvider: 'privy' }),
+        title: 'Primary flow',
         description: '',
         walletProvider: 'safe',
         saltNonce: SALT_NONCE,
@@ -90,8 +99,7 @@ export default function DefaultFlowOnboardingDialog({
       } as FlowType;
       const updatedProfile = {
         ...profile,
-        signer: signerAsIdentity ? undefined : address,
-        defaultFlow
+        defaultFlow: primaryFlow
       } as ProfileType;
       setLoadingUpdateProfile(true);
       try {
@@ -112,16 +120,23 @@ export default function DefaultFlowOnboardingDialog({
 
   return (
     <Dialog
+      disableEnforceFocus
       onClose={handleCloseCampaignDialog}
       {...props}
-      PaperProps={{ sx: { borderRadius: 5 } }}
+      PaperProps={{
+        sx: {
+          ...(!isMobile && {
+            borderRadius: 5
+          })
+        }
+      }}
       sx={{
         backdropFilter: 'blur(5px)'
       }}>
       <DialogTitle>
         <Box display="flex" justifyContent="center">
           <Typography variant="h6" sx={{ overflow: 'auto' }}>
-            Initialize default flow and signer
+            Flow initialization
           </Typography>
         </Box>
       </DialogTitle>
@@ -137,35 +152,46 @@ export default function DefaultFlowOnboardingDialog({
           <Stack spacing={2} alignItems="flex-start">
             <Typography variant="caption" fontSize={isMobile ? 14 : 16}>
               <b>
-                <u>Default Flow</u>
+                <u>Primary flow</u>
               </b>
               {': '}
-              abstracted set of smart wallets across various chains, funds sent to your profile are
-              received on default flow.
+              abstracted set of multi-chain wallets, primary flow receives funds sent to your
+              profile
             </Typography>
             <Typography variant="caption" fontSize={isMobile ? 14 : 16}>
               <b>
-                <u>Flow Signer</u>
+                <u>Flow signer</u>
               </b>
               {': '}
-              your ethereum address used to sign all flow related transactions, reducing the need
-              for additional identity wallet signatures.
+              address used to sign all flow related transactions, by default your identity wallet is
+              added as flow signer
             </Typography>
-
             <FormControlLabel
               control={
                 <Switch
-                  checked={signerAsIdentity}
+                  checked={extraSigner}
+                  color="success"
                   onChange={(event) => {
-                    setSignerAsIdentity(event.target.checked);
+                    setExtraSigner(event.target.checked);
                   }}
                   sx={{ accentColor: green.A700 }}
                 />
               }
-              label="Use your identity wallet as signer"
+              label="Enable signless flow payments"
             />
-
-            {!signerAsIdentity && address && (
+            {/* {extraSigner && address === profile.identity && (
+              <Typography
+                variant="subtitle2"
+                color={red.A700}
+                fontSize={isMobile ? 15 : 16}
+                sx={{ pl: 1 }}>
+                Additional flow signer should be different from identity address:{' '}
+                <u>
+                  <b>{shortenWalletAddressLabel(profile.identity)}</b>
+                </u>
+              </Typography>
+            )} */}
+            {extraSigner && address && connector?.id === 'io.privy.wallet' && (
               <Box
                 width="100%"
                 display="flex"
@@ -173,20 +199,21 @@ export default function DefaultFlowOnboardingDialog({
                 alignItems="center"
                 justifyContent="space-between">
                 <Typography variant="subtitle2" fontSize={isMobile ? 15 : 16} sx={{ pl: 1 }}>
-                  Connected Signer:{' '}
+                  Connected signer:{' '}
                   <u>
                     <b>{shortenWalletAddressLabel(address)}</b>
                   </u>
                 </Typography>
-                <IconButton onClick={async () => await disconnect(config)} sx={{ color: red.A700 }}>
+                {/* <IconButton onClick={async () => await disconnectAsync()} sx={{ color: red.A700 }}>
                   <Logout />
-                </IconButton>
+                </IconButton> */}
               </Box>
             )}
           </Stack>
-          {signerAsIdentity || address ? (
+          {!extraSigner || (address && connector?.id === 'io.privy.wallet') ? (
             <LoadingButton
               loading={loadingWallets || loadingUpdateProfile}
+              disabled={extraSigner && address === profile.identity}
               fullWidth
               variant="outlined"
               color="inherit"
@@ -210,7 +237,7 @@ export default function DefaultFlowOnboardingDialog({
               Initialize
             </LoadingButton>
           ) : (
-            <LoadingConnectWalletButton title="Connect Signer" />
+            <LoadingConnectWalletButton isEmbeddedSigner={true} title="Connect Signer" />
           )}
         </Box>
       </DialogContent>

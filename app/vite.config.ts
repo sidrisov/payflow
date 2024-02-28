@@ -10,17 +10,20 @@ const API_URL_HOST = env.VITE_PAYFLOW_SERVICE_API_URL.replace(/^(http|https):\/\
 // https://vitejs.dev/config/
 export default defineConfig({
   // specify same port for dev as for preview
-  server: { port: 4173 },
+  server: { port: 4173, hmr: { overlay: false } },
   plugins: [
     react(),
     nodePolyfills(),
     svgr({ include: '**/*.svg?react' }),
     VitePWA({
+      devOptions: {
+        enabled: true
+      },
       injectRegister: 'auto',
       registerType: 'autoUpdate',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,jpg,svg}'],
-        maximumFileSizeToCacheInBytes: 5000000,
+        maximumFileSizeToCacheInBytes: 6000000,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/[^\.]+\.blockscout\.com\/.*/i,
@@ -143,9 +146,6 @@ export default defineConfig({
             }
           }
         ]
-      },
-      devOptions: {
-        enabled: false
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {

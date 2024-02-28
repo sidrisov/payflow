@@ -2,7 +2,7 @@ import { useContext, useMemo, useState } from 'react';
 import { getBalance } from 'wagmi/actions';
 import { AssetType, AssetBalanceType } from '../../types/AssetType';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
-import { wagmiConfig } from '../wagmiConfig';
+import { privyWagmiConfig } from '../wagmiConfig';
 import { formatUnits } from 'viem';
 import { GetBalanceData } from 'wagmi/query';
 import { ProfileContext } from '../../contexts/UserContext';
@@ -25,7 +25,7 @@ export const useBalanceFetcher = (assets: AssetType[]): BalanceFetchResultType =
 
       Promise.allSettled(
         assets.map((asset) =>
-          getBalance(wagmiConfig, {
+          getBalance(privyWagmiConfig, {
             address: asset.address,
             chainId: asset.chainId,
             token: asset.token
@@ -38,7 +38,10 @@ export const useBalanceFetcher = (assets: AssetType[]): BalanceFetchResultType =
               asset: assets[index],
               balance: result.status === 'fulfilled' ? result.value : undefined,
               usdPrice: result.status === 'fulfilled' ? tokenPrices[result.value?.symbol] : 0,
-              usdValue: result.status === 'fulfilled' ? getAssetValue(result.value, tokenPrices[result.value?.symbol]) : 0
+              usdValue:
+                result.status === 'fulfilled'
+                  ? getAssetValue(result.value, tokenPrices[result.value?.symbol])
+                  : 0
             }))
             .sort((left, right) => Number(right.usdValue - left.usdValue));
 
