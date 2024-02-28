@@ -2,7 +2,8 @@ import { Address } from 'viem';
 import { ProfileType } from './ProfleType';
 
 export interface FlowType {
-  owner: Address;
+  signer: Address;
+  signerProvider?: string;
   title: string;
   description: string;
   uuid: string;

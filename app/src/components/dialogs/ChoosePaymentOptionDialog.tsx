@@ -81,10 +81,8 @@ export default function ChoosePaymentOptionDialog({
       sx={{
         backdropFilter: 'blur(5px)'
       }}>
-      <DialogTitle>
-        <Typography variant="h6" textAlign="center">
-          Select payment method
-        </Typography>
+      <DialogTitle variant="h6" textAlign="center">
+        Select payment method
       </DialogTitle>
       <DialogContent
         sx={{

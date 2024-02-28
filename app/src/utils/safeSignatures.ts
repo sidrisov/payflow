@@ -5,7 +5,7 @@ import { call } from 'wagmi/actions';
 
 import { getFallbackHandlerDeployment } from '@safe-global/safe-deployments';
 import { CUSTOM_CONTRACTS, CUSTOM_CONTRACTS_CHAINS } from './safeContracts';
-import { wagmiConfig } from './wagmiConfig';
+import { rainbowkitWagmiConfig } from './wagmiConfig';
 
 export function generatePreValidatedSignature(ownerAddress: string): SafeSignature {
   const signature =
@@ -62,7 +62,7 @@ export async function signTransactionBySafe(
   ]) as Hex;
 
   const txDataRaw = (
-    await call(wagmiConfig, {
+    await call(rainbowkitWagmiConfig, {
       chainId,
       data: encodedTransactionData,
       to: targetAddress
@@ -82,7 +82,7 @@ export async function signTransactionBySafe(
   const encodedGetMessageHash = fallbackHandlerContract.encode('getMessageHash', [txData]);
 
   const safeMessageHash = (
-    await call(wagmiConfig, {
+    await call(rainbowkitWagmiConfig, {
       chainId,
       data: encodedGetMessageHash as Hex,
       to: signerAddress

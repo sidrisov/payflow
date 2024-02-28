@@ -2,41 +2,49 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { WagmiProvider } from 'wagmi';
 import { privyQueryClient, queryClient } from './query';
 import { AirstackProvider, init } from '@airstack/airstack-react';
-import {
-  AuthenticationConfig,
-  RainbowKitAuthenticationProvider,
-  RainbowKitProvider
-} from '@rainbow-me/rainbowkit';
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { CustomAvatar } from '../components/avatars/CustomAvatar';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import CustomToastContainer from '../components/toasts/CustomToastContainer';
 import { customDarkTheme, customLightTheme } from '../theme/rainbowTheme';
 import { PrivyClientConfig, PrivyProvider } from '@privy-io/react-auth';
 import { WagmiProvider as PrivyWagmiProvider } from '@privy-io/wagmi';
-import { privyWagmiConfig, wagmiConfig } from './wagmiConfig';
+import { privyWagmiConfig, rainbowkitWagmiConfig } from './wagmiConfig';
 import { AuthKitProvider } from '@farcaster/auth-kit';
-import { SiweMessage } from 'siwe';
+import { useMediaQuery } from '@mui/material';
 
 const AIRSTACK_API_KEY = import.meta.env.VITE_AIRSTACK_API_KEY;
 init(AIRSTACK_API_KEY);
 
 const PRIVY_API_KEY = import.meta.env.VITE_PRIVY_API_KEY;
 
+const farcasterAuthConfig = {
+  rpcUrl: `https://opt-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`,
+  domain: window.location.hostname,
+  siweUri: window.location.origin,
+  relay: 'https://relay.farcaster.xyz',
+  version: 'v1'
+};
+
+export const WALLET_PROVIDER = import.meta.env.VITE_WALLET_PROVIDER as WalletProviderType;
+
 export type WalletProviderType = 'privy' | 'rainbowkit';
 
 export default function AppProviders({
   children,
-  walletProvider,
   darkMode
 }: {
   children: React.ReactNode;
-  walletProvider: WalletProviderType;
-  darkMode: boolean;
+  darkMode?: boolean;
 }) {
-  return walletProvider === 'privy' ? (
-    <PrivyAppProviders darkMode={darkMode}>{children}</PrivyAppProviders>
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+
+  return WALLET_PROVIDER === 'privy' ? (
+    <PrivyAppProviders darkMode={darkMode ?? prefersDarkMode}>{children}</PrivyAppProviders>
   ) : (
-    <RainbowKitAppProviders darkMode={darkMode}>{children}</RainbowKitAppProviders>
+    <RainbowKitAppProviders darkMode={darkMode ?? prefersDarkMode}>
+      {children}
+    </RainbowKitAppProviders>
   );
 }
 
@@ -49,7 +57,7 @@ function RainbowKitAppProviders({
 }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <WagmiProvider config={wagmiConfig}>
+      <WagmiProvider config={rainbowkitWagmiConfig}>
         <AirstackProvider apiKey={AIRSTACK_API_KEY}>
           <RainbowKitProvider
             theme={darkMode ? customDarkTheme : customLightTheme}
@@ -91,55 +99,35 @@ function PrivyAppProviders({
   darkMode: boolean;
 }) {
   return (
-    <QueryClientProvider client={privyQueryClient}>
-      <PrivyProvider
-        appId={PRIVY_API_KEY}
-        config={privyConfig(darkMode)}
-        onSuccess={(user, isNewUser) => {
-          console.log('Privy success: ', user, isNewUser);
-        }}>
+    <PrivyProvider
+      appId={PRIVY_API_KEY}
+      config={privyConfig(darkMode)}
+      onSuccess={(user, isNewUser) => {
+        console.log('Privy success: ', user, isNewUser);
+      }}>
+      <QueryClientProvider client={privyQueryClient}>
         <PrivyWagmiProvider config={privyWagmiConfig}>
-          <AirstackProvider apiKey={AIRSTACK_API_KEY}>
-            <CustomThemeProvider darkMode={darkMode}>{children}</CustomThemeProvider>
-          </AirstackProvider>
+          <CommonoProviders darkMode={darkMode}>{children}</CommonoProviders>
           <CustomToastContainer />
         </PrivyWagmiProvider>
-      </PrivyProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </PrivyProvider>
   );
 }
 
-const config = {
-  rpcUrl: `https://opt-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`,
-  domain: window.location.hostname,
-  siweUri: window.location.origin,
-  relay: 'https://relay.farcaster.xyz',
-  version: 'v1'
-};
-
-export function LoginProviders({
+function CommonoProviders({
   children,
-  darkMode,
-  authConfig
+  darkMode
 }: {
   children: React.ReactNode;
   darkMode: boolean;
-  authConfig: AuthenticationConfig<SiweMessage>;
 }) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <WagmiProvider config={wagmiConfig}>
-        <RainbowKitAuthenticationProvider adapter={authConfig.adapter} status={authConfig.status}>
-          <RainbowKitProvider
-            theme={darkMode ? customDarkTheme : customLightTheme}
-            avatar={CustomAvatar}
-            modalSize="compact"
-            appInfo={{ appName: 'Payflow', learnMoreUrl: 'https://payflow.super.site' }}>
-            <AuthKitProvider config={config}>{children}</AuthKitProvider>
-          </RainbowKitProvider>
-        </RainbowKitAuthenticationProvider>
+    <AirstackProvider apiKey={AIRSTACK_API_KEY}>
+      <AuthKitProvider config={farcasterAuthConfig}>
+        <CustomThemeProvider darkMode={darkMode}>{children}</CustomThemeProvider>
         <CustomToastContainer />
-      </WagmiProvider>
-    </QueryClientProvider>
+      </AuthKitProvider>
+    </AirstackProvider>
   );
 }

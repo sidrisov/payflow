@@ -10,7 +10,6 @@ import { useNavigate } from 'react-router-dom';
 import sortAndFilterFlows from '../utils/sortAndFilterFlows';
 import { toast } from 'react-toastify';
 import axios from 'axios';
-import AppProviders from '../utils/providers';
 
 const appSettingsStorageItem = localStorage.getItem('appSettings');
 const appSettingsStored = appSettingsStorageItem
@@ -72,19 +71,9 @@ export default function AppWithProviders() {
     localStorage.setItem('appSettings', JSON.stringify(appSettings));
   }, [appSettings]);
 
-  const walletProvider = 'rainbowkit';
-  return (
-    <AppProviders darkMode={appSettings.darkMode} walletProvider={walletProvider}>
-      {loading ? (
-        <CenteredCircularProgress />
-      ) : (
-        <App
-          profile={profile}
-          appSettings={appSettings}
-          setAppSettings={setAppSettings}
-          walletProvider={walletProvider}
-        />
-      )}
-    </AppProviders>
+  return loading ? (
+    <CenteredCircularProgress />
+  ) : (
+    <App profile={profile} appSettings={appSettings} setAppSettings={setAppSettings} />
   );
 }

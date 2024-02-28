@@ -1,10 +1,7 @@
-import { AuthenticationStatus, createAuthenticationAdapter } from '@rainbow-me/rainbowkit';
-
 import '@farcaster/auth-kit/styles.css';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Login from './Login';
-import { SiweMessage } from 'siwe';
 import axios, { AxiosError } from 'axios';
 import { ProfileType } from '../types/ProfleType';
 import { me } from '../services/user';
@@ -12,7 +9,7 @@ import { API_URL } from '../utils/urlConstants';
 import { toast } from 'react-toastify';
 import { AppSettings } from '../types/AppSettingsType';
 import { useMediaQuery } from '@mui/material';
-import { LoginProviders } from '../utils/providers';
+import { AuthenticationStatus } from '../components/cards/ConnectCard';
 
 const appSettingsStorageItem = localStorage.getItem('appSettings');
 const appSettingsStored = appSettingsStorageItem
@@ -85,66 +82,5 @@ export default function LoginWithProviders() {
     }
   }, [authStatus, profile]);
 
-  const authAdapter = useMemo(() => {
-    return createAuthenticationAdapter({
-      getNonce: async () => {
-        const response = await axios.get(`${API_URL}/api/auth/nonce`, { withCredentials: true });
-        return await response.data;
-      },
-
-      createMessage: ({ nonce, address, chainId }) => {
-        return new SiweMessage({
-          domain: window.location.host,
-          address,
-          statement: 'Sign in with Ethereum to Payflow',
-          uri: window.location.origin,
-          version: '1',
-          chainId,
-          nonce
-        });
-      },
-
-      getMessageBody: ({ message }) => {
-        return message.prepareMessage();
-      },
-
-      verify: async ({ message, signature }) => {
-        verifyingRef.current = true;
-
-        try {
-          const response = await axios.post(
-            `${API_URL}/api/auth/verify/${message.address}`,
-            { message, signature },
-            { withCredentials: true }
-          );
-
-          const authenticated = Boolean(response.status === 200);
-
-          if (authenticated) {
-            setAuthStatus(authenticated ? 'authenticated' : 'unauthenticated');
-          }
-
-          return authenticated;
-        } catch (error) {
-          return false;
-        } finally {
-          verifyingRef.current = false;
-        }
-      },
-
-      signOut: async () => {
-        setAuthStatus('unauthenticated');
-        setProfile(undefined);
-        await axios.get(`${API_URL}/api/auth/logout`, { withCredentials: true });
-      }
-    });
-  }, []);
-
-  return (
-    <LoginProviders
-      darkMode={appSettings.darkMode}
-      authConfig={{ adapter: authAdapter, status: authStatus }}>
-      <Login authStatus={authStatus} profile={profile} settings={appSettings} />
-    </LoginProviders>
-  );
+  return <Login authStatus={authStatus} profile={profile} settings={appSettings} />;
 }

@@ -35,7 +35,7 @@ const commonWagmiConfig = {
   syncConnectedChain: true
 };
 
-export const wagmiConfig = getDefaultConfig({
+export const rainbowkitWagmiConfig = getDefaultConfig({
   ...commonWagmiConfig,
   appName: 'Payflow',
   projectId: WALLET_CONNECT_PROJECT_ID,

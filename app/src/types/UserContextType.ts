@@ -8,5 +8,4 @@ export interface ProfileContextType {
   appSettings: AppSettings;
   setAppSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
   tokenPrices: TokenPrices | undefined;
-  walletProvider: 'privy' | 'rainbowkit';
 }

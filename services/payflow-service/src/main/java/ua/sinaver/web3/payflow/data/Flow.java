@@ -43,6 +43,9 @@ public class Flow {
 	@Column
 	private String signer;
 
+	@Column(name = "signer_provider")
+	private String signerProvider;
+
 	@Column
 	private String saltNonce;
 
@@ -58,6 +61,7 @@ public class Flow {
 	private Long version;
 
 	public Flow(Integer userId, String title, String description, String signer,
+	            String signerProvider,
 	            String walletProvider,
 	            String saltNonce) {
 		this.userId = userId;
@@ -66,6 +70,7 @@ public class Flow {
 		this.uuid = RandomStringUtils.random(8, true, true);
 
 		this.signer = signer;
+		this.signerProvider = signerProvider;
 		this.walletProvider = walletProvider;
 		if (StringUtils.isBlank(saltNonce)) {
 			this.saltNonce = this.uuid;

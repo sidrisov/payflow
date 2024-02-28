@@ -6,7 +6,8 @@ import ua.sinaver.web3.payflow.data.User;
 
 import java.util.List;
 
-public record FlowMessage(String owner, String title, String description, String uuid,
+public record FlowMessage(String signer, String signerProvider, String title, String description,
+                          String uuid,
                           String walletProvider,
                           String saltNonce, List<WalletMessage> wallets) {
 	public static String getFlowSigner(Flow flow, User user) {
@@ -28,10 +29,19 @@ public record FlowMessage(String owner, String title, String description, String
 		}
 	}
 
+	public static String getFlowSignerProvider(Flow flow, User user) {
+		// required only because when we don't want to return flow signer info
+		if (user == null) {
+			return null;
+		}
+
+		return flow.getSignerProvider();
+	}
+
 	public static String getFlowSigner(FlowMessage flow, User user) {
 		// return flow specific signer
-		if (flow.owner() != null) {
-			return flow.owner();
+		if (flow.signer() != null) {
+			return flow.signer();
 		}
 
 		// if not specified fallback to default user's signer, otherwise return identity
@@ -42,12 +52,22 @@ public record FlowMessage(String owner, String title, String description, String
 		}
 	}
 
+	public static String getFlowSignerProvider(FlowMessage flow) {
+		if (flow.signerProvider() != null) {
+			return flow.signerProvider();
+		}
+
+		return null;
+	}
+
 	public static FlowMessage convert(Flow flow, User user) {
 		// still try fetch, since old flows were without signer field
 		val flowSigner = getFlowSigner(flow, user);
+		val flowSignerProvider = getFlowSignerProvider(flow, user);
+
 		val wallets = flow.getWallets().stream().map(WalletMessage::convert)
 				.toList();
-		return new FlowMessage(flowSigner,
+		return new FlowMessage(flowSigner, flowSignerProvider,
 				flow.getTitle(), flow.getDescription(),
 				flow.getUuid(),
 				flow.getWalletProvider(), flow.getSaltNonce(), wallets);
@@ -55,8 +75,10 @@ public record FlowMessage(String owner, String title, String description, String
 
 	public static Flow convert(FlowMessage flowMessage, User user) {
 		val flowSigner = getFlowSigner(flowMessage, user);
+		val flowSignerProvider = getFlowSignerProvider(flowMessage);
+
 		val flow = new Flow(user.getId(), flowMessage.title(), flowMessage.description(),
-				flowSigner, flowMessage.walletProvider(),
+				flowSigner, flowSignerProvider, flowMessage.walletProvider(),
 				flowMessage.saltNonce());
 		val wallets = flowMessage.wallets().stream().map(w -> {
 			val wallet = WalletMessage.convert(w);

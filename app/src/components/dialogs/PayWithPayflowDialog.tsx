@@ -187,7 +187,7 @@ export default function PayWithPayflowDialog({
     };
 
     const safeAccountConfig: SafeAccountConfig = {
-      owners: [profile.identity, flow.owner],
+      owners: [profile.identity, flow.signer],
       threshold: 1
     };
 
@@ -208,7 +208,7 @@ export default function PayWithPayflowDialog({
   return (
     <>
       {address &&
-        (address.toLowerCase() === (sender as FlowType).owner.toLowerCase() ? (
+        (address.toLowerCase() === (sender as FlowType).signer.toLowerCase() ? (
           selectedWallet && (
             <>
               <Stack width="100%" spacing={2} alignItems="flex-start">

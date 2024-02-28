@@ -13,6 +13,7 @@ export default function CopyToClipboardIconButton({
     <Tooltip title={tooltip}>
       <IconButton
         {...props}
+        color="inherit"
         sx={{ width: iconSize + 5, height: iconSize + 5 }}
         onClick={(event) => {
           event.stopPropagation();

@@ -53,7 +53,9 @@ export default function PrimaryFlowOnboardingDialog({
 
   const [extraSigner, setExtraSigner] = useState<boolean>(true);
 
-  const { address } = useAccount();
+  const { address, connector } = useAccount();
+
+  console.log('Hello', connector);
 
   const { disconnectAsync } = useDisconnect();
 
@@ -87,7 +89,8 @@ export default function PrimaryFlowOnboardingDialog({
       await reset();
     } else if (wallets && wallets.length === PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS.length) {
       const primaryFlow = {
-        ...(extraSigner && { owner: address }),
+        // TODO: choose different one
+        ...(extraSigner && { signer: address, signerProvider: 'privy' }),
         title: 'Primary flow',
         description: '',
         walletProvider: 'safe',
@@ -96,7 +99,6 @@ export default function PrimaryFlowOnboardingDialog({
       } as FlowType;
       const updatedProfile = {
         ...profile,
-        ...(extraSigner && { owner: address }),
         defaultFlow: primaryFlow
       } as ProfileType;
       setLoadingUpdateProfile(true);
@@ -174,9 +176,9 @@ export default function PrimaryFlowOnboardingDialog({
                   sx={{ accentColor: green.A700 }}
                 />
               }
-              label="Add additional flow signer"
+              label="Enable signless flow payments"
             />
-            {extraSigner && address === profile.identity && (
+            {/* {extraSigner && address === profile.identity && (
               <Typography
                 variant="subtitle2"
                 color={red.A700}
@@ -187,8 +189,8 @@ export default function PrimaryFlowOnboardingDialog({
                   <b>{shortenWalletAddressLabel(profile.identity)}</b>
                 </u>
               </Typography>
-            )}
-            {extraSigner && address && (
+            )} */}
+            {extraSigner && address && connector?.id === 'io.privy.wallet' && (
               <Box
                 width="100%"
                 display="flex"
@@ -201,13 +203,13 @@ export default function PrimaryFlowOnboardingDialog({
                     <b>{shortenWalletAddressLabel(address)}</b>
                   </u>
                 </Typography>
-                <IconButton onClick={async () => await disconnectAsync()} sx={{ color: red.A700 }}>
+                {/* <IconButton onClick={async () => await disconnectAsync()} sx={{ color: red.A700 }}>
                   <Logout />
-                </IconButton>
+                </IconButton> */}
               </Box>
             )}
           </Stack>
-          {!extraSigner || address ? (
+          {!extraSigner || (address && connector?.id === 'io.privy.wallet') ? (
             <LoadingButton
               loading={loadingWallets || loadingUpdateProfile}
               disabled={extraSigner && address === profile.identity}
@@ -234,7 +236,7 @@ export default function PrimaryFlowOnboardingDialog({
               Initialize
             </LoadingButton>
           ) : (
-            <LoadingConnectWalletButton title="Connect Signer" />
+            <LoadingConnectWalletButton isEmbeddedSigner={true} title="Connect Signer" />
           )}
         </Box>
       </DialogContent>

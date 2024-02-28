@@ -39,12 +39,10 @@ export default function AppLayout({
   profile,
   appSettings,
   setAppSettings,
-  walletProvider
 }: {
   profile: ProfileType | undefined;
   appSettings: AppSettings;
   setAppSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
-  walletProvider: WalletProviderType;
 }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -110,16 +108,17 @@ export default function AppLayout({
     }
   }, [profile]);
 
-  /* const { setActiveWallet } = useSetActiveWallet();
-  const { wallets, ready } = useWallets();
-  const { user } = usePrivy();
+  /*   const { setActiveWallet } = useSetActiveWallet();
+  const { wallets } = useWallets();
+  const { user, ready, authenticated } = usePrivy();
   const { status, address } = useAccount();
 
   useEffect(() => {
     console.log(
-      'Available wallets (privy), ready, user, account: ',
+      'Available wallets (privy), ready, authenticated, user, status, address: ',
       wallets,
       ready,
+      authenticated,
       user,
       status,
       address
@@ -130,7 +129,7 @@ export default function AppLayout({
       console.log('Setting active wallet: ', wallet);
       setActiveWallet(wallet);
     }
-  }, [wallets, ready, status, address]); */
+  }, [wallets, ready, status, address, authenticated]); */
 
   return (
     <ProfileContext.Provider
@@ -140,7 +139,6 @@ export default function AppLayout({
         appSettings,
         setAppSettings,
         tokenPrices,
-        walletProvider
       }}>
       <Container maxWidth="xs">
         <Box height="100vh" display="flex" flexDirection="column" justifyContent="flex-start">
