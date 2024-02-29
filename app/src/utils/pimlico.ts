@@ -1,3 +1,4 @@
+import { ENTRYPOINT_ADDRESS_V06, bundlerActions } from 'permissionless';
 import {
   createPimlicoBundlerClient,
   createPimlicoPaymasterClient
@@ -21,8 +22,9 @@ export const bundlerClient = (chainId: number) => {
       `https://api.pimlico.io/v1/${pimlicoRpcNetworkName(chainId)}/rpc?apikey=${
         import.meta.env.VITE_PIMLICO_API_KEY
       }`
-    )
-  });
+    ),
+    entryPoint: ENTRYPOINT_ADDRESS_V06
+  }).extend(bundlerActions(ENTRYPOINT_ADDRESS_V06));
 };
 
 export const paymasterClient = (chainId: number) => {
@@ -31,7 +33,8 @@ export const paymasterClient = (chainId: number) => {
       `https://api.pimlico.io/v2/${pimlicoRpcNetworkName(chainId)}/rpc?apikey=${
         import.meta.env.VITE_PIMLICO_API_KEY
       }`
-    )
+    ),
+    entryPoint: ENTRYPOINT_ADDRESS_V06
   });
 };
 

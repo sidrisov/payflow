@@ -22,7 +22,8 @@ import { clientToSigner } from './useEthersSigner';
 import {
   walletClientToSmartAccountSigner,
   createSmartAccountClient,
-  isSmartAccountDeployed
+  isSmartAccountDeployed,
+  ENTRYPOINT_ADDRESS_V06
 } from 'permissionless';
 import { paymasterClient, bundlerClient, transport, PIMLICO_SPONSORED_ENABLED } from '../pimlico';
 import { signerToSafeSmartAccount } from '../signerToSafeSmartAccount';
@@ -105,7 +106,7 @@ export const useSafeTransfer = (): {
         const chain = signer.chain;
 
         const safeAccount = await signerToSafeSmartAccount(client, {
-          entryPoint: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789', // global entrypoint
+          entryPoint: ENTRYPOINT_ADDRESS_V06,
           signer: walletClientToSmartAccountSigner(signer),
           owners: safeAccountConfig.owners as Address[],
           threshold: safeAccountConfig.threshold,
@@ -120,14 +121,18 @@ export const useSafeTransfer = (): {
 
         const smartAccountClient = createSmartAccountClient({
           account: safeAccount,
+          entryPoint: ENTRYPOINT_ADDRESS_V06,
           chain,
-          transport: transport(chain.id),
+          bundlerTransport: transport(chain.id),
           ...(PIMLICO_SPONSORED_ENABLED && {
-            sponsorUserOperation: paymasterClient(chain.id).sponsorUserOperation
+            middleware: {
+              gasPrice: async () => {
+                return (await bundlerClient(chain.id).getUserOperationGasPrice()).standard;
+              },
+              sponsorUserOperation: paymasterClient(chain.id).sponsorUserOperation
+            }
           })
         });
-
-        const gasPrices = await bundlerClient(chain.id).getUserOperationGasPrice();
 
         statusCallback?.('signing');
 
@@ -139,15 +144,11 @@ export const useSafeTransfer = (): {
                   abi: erc20Abi,
                   functionName: 'transfer',
                   args: [tx.to, tx.amount]
-                }),
-                maxFeePerGas: gasPrices.standard.maxFeePerGas, // if using Pimlico
-                maxPriorityFeePerGas: gasPrices.standard.maxPriorityFeePerGas // if using Pimlico
+                })
               }
             : {
                 to: tx.to,
-                value: tx.amount,
-                maxFeePerGas: gasPrices.standard.maxFeePerGas, // if using Pimlico
-                maxPriorityFeePerGas: gasPrices.standard.maxPriorityFeePerGas // if using Pimlico
+                value: tx.amount
               }
         );
 
