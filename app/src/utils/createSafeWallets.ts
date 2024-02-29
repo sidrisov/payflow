@@ -2,7 +2,7 @@ import { Address, Chain, keccak256, toBytes } from 'viem';
 
 import { FlowWalletType } from '../types/FlowType';
 import { signerToSafeSmartAccount } from './signerToSafeSmartAccount';
-import { isSmartAccountDeployed } from 'permissionless';
+import { ENTRYPOINT_ADDRESS_V06, isSmartAccountDeployed } from 'permissionless';
 import { getClient } from 'wagmi/actions';
 import { privyWagmiConfig } from './wagmiConfig';
 import { SmartAccountSigner } from 'permissionless/accounts';
@@ -19,7 +19,7 @@ export default async function createSafeWallets(
 
     if (client) {
       const safeAccount = await signerToSafeSmartAccount(client, {
-        entryPoint: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789', // global entrypoint
+        entryPoint: ENTRYPOINT_ADDRESS_V06, // global entrypoint
         signer: {} as SmartAccountSigner,
         owners: owners,
         threshold: 1,

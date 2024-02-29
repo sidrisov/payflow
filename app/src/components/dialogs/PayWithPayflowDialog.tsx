@@ -186,8 +186,14 @@ export default function PayWithPayflowDialog({
       amount
     };
 
+    // TODO: hard to figure out if there 2 signers or one, for now consider if signerProvider not specified - 1, otherwise - 2
+    const owners = [flow.signer];
+    if (flow.signerProvider && flow.signer.toLowerCase() !== profile.identity.toLowerCase()) {
+      owners.push(profile.identity);
+    }
+
     const safeAccountConfig: SafeAccountConfig = {
-      owners: [profile.identity, flow.signer],
+      owners,
       threshold: 1
     };
 
