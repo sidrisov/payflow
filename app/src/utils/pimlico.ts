@@ -5,6 +5,8 @@ import {
 import { http } from 'viem';
 import { arbitrum, base, baseSepolia, optimism, zkSync, zora } from 'viem/chains';
 
+export const PIMLICO_SPONSORED_ENABLED = import.meta.env.VITE_PIMLICO_SPONSORED_ENABLED === 'true';
+
 export const transport = (chainId: number) => {
   return http(
     `https://api.pimlico.io/v1/${pimlicoRpcNetworkName(chainId)}/rpc?apikey=${
