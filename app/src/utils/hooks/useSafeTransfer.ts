@@ -24,7 +24,7 @@ import {
   createSmartAccountClient,
   isSmartAccountDeployed
 } from 'permissionless';
-import { paymasterClient, bundlerClient, transport } from '../pimlico';
+import { paymasterClient, bundlerClient, transport, PIMLICO_SPONSORED_ENABLED } from '../pimlico';
 import { signerToSafeSmartAccount } from '../signerToSafeSmartAccount';
 
 export type SafeWallet = {
@@ -121,8 +121,10 @@ export const useSafeTransfer = (): {
         const smartAccountClient = createSmartAccountClient({
           account: safeAccount,
           chain,
-          transport: transport(chain.id)
-          //sponsorUserOperation: paymasterClient(chain.id).sponsorUserOperation
+          transport: transport(chain.id),
+          ...(PIMLICO_SPONSORED_ENABLED && {
+            sponsorUserOperation: paymasterClient(chain.id).sponsorUserOperation
+          })
         });
 
         const gasPrices = await bundlerClient(chain.id).getUserOperationGasPrice();
