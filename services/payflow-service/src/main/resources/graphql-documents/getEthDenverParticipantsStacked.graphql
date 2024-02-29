@@ -1,4 +1,4 @@
-query GetEthDenverParticipants($cursor: String) {
+query GetEthDenverParticipantsStacked($cursor: String) {
     polygon: TokenBalances(
         input: {filter: {tokenAddress: {_eq: "0x058d96baa6f9d16853970b333ed993acc0c35add"}},
             blockchain: polygon, cursor: $cursor, limit: 200}

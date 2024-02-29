@@ -26,7 +26,9 @@ import java.time.Duration;
 import java.time.Period;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static ua.sinaver.web3.payflow.config.CacheConfig.CONTACTS_CACHE_NAME;
 
@@ -65,7 +67,7 @@ public class ContactBookService implements IContactBookService {
 	@Value("${payflow.invitation.whitelisted.default.users}")
 	private Set<String> whitelistedUsers;
 
-	private List<Wallet> ethDenverParticipants = new ArrayList<>();
+	private Map<String, Wallet> ethDenverParticipants = new HashMap<>();
 
 	@Override
 	@CacheEvict(value = CONTACTS_CACHE_NAME, key = "#user.identity")
@@ -223,17 +225,16 @@ public class ContactBookService implements IContactBookService {
 
 	@Override
 	public List<ContactMessage> getEthDenverParticipants(User user) {
-		if (!ethDenverContactsEnabled && !whitelistedUsers.contains(user.getIdentity())) {
+		if (!ethDenverContactsEnabled) {
 			return Collections.emptyList();
 		}
 
-		val identities = ethDenverParticipants.stream()
-				.map(Wallet::getIdentity).toList();
-		val profiles = userRepository.findByIdentityAsMapIn(identities);
+		val profiles = userRepository.findByIdentityAsMapIn(ethDenverParticipants.keySet().stream().toList());
 		val invitations =
-				invitationRepository.existsByIdentityInAndValid(identities.stream().filter(identity -> !whitelistedUsers.contains(identity)).toList());
+				invitationRepository.existsByIdentityInAndValid(
+						ethDenverParticipants.keySet().stream().filter(identity -> !whitelistedUsers.contains(identity)).toList());
 
-		return ethDenverParticipants.stream().map(wallet -> {
+		return ethDenverParticipants.values().stream().map(wallet -> {
 			val identity = wallet.getIdentity();
 			val profile = profiles.get(identity);
 			val invited = whitelistedUsers.contains(identity)
@@ -246,8 +247,10 @@ public class ContactBookService implements IContactBookService {
 
 	// run only once
 	@Scheduled(fixedRate = Long.MAX_VALUE)
-	//@CacheEvict(cacheNames = ETH_DENVER_PARTICIPANTS_CACHE_NAME,
-	//		beforeInvocation = true, allEntries = true)
+	//@CacheEvict(cacheNames = {ETH_DENVER_PARTICIPANTS_CACHE_NAME,
+	// ETH_DENVER_PARTICIPANTS_POAP_CACHE_NAME},
+	//		beforeInvocation = true,
+	//		allEntries = true)
 	public void preFetchEthDenverParticipants() {
 		if (!ethDenverContactsEnabled) {
 			return;
@@ -258,7 +261,13 @@ public class ContactBookService implements IContactBookService {
 		}
 
 		try {
-			val ethDenverParticipants = socialGraphService.getEthDenverParticipants();
+			// instead use single cache, where key is the contact list name, e.g.:
+			// {identity}-contacts, eth-denver-poap, eth-denver-stacked, etc
+			val ethDenverParticipantsStaked = socialGraphService.getEthDenverParticipantsStaked();
+			val ethDenverParticipantsPoap = socialGraphService.getEthDenverParticipantsPoap();
+			val ethDenverParticipants = Stream.concat(ethDenverParticipantsStaked.stream(), ethDenverParticipantsPoap.stream())
+					.collect(Collectors.toMap(Wallet::getIdentity, Function.identity(),
+							(existing, replacement) -> existing));
 
 			if (log.isDebugEnabled()) {
 				log.debug("Fetched EthDenver participants: {}",

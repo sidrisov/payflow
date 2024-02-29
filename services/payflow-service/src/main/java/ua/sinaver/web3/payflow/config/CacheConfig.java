@@ -24,6 +24,8 @@ public class CacheConfig {
 	public static final String CONTACTS_CACHE_NAME = "contacts";
 	public static final String SOCIALS_CACHE_NAME = "socials";
 	public static final String ETH_DENVER_PARTICIPANTS_CACHE_NAME = "eth-denver-contacts";
+	public static final String ETH_DENVER_PARTICIPANTS_POAP_CACHE_NAME = "eth-denver-poap-contacts";
+
 	public static final String USERS_CACHE_NAME = "users";
 	public static final String INVITATIONS_CACHE_NAME = "invitations";
 
@@ -81,6 +83,7 @@ public class CacheConfig {
 		val cacheConfigurations = new HashMap<String, RedisCacheConfiguration>();
 		cacheConfigurations.put(CONTACTS_CACHE_NAME, contactsCacheConfigs);
 		cacheConfigurations.put(ETH_DENVER_PARTICIPANTS_CACHE_NAME, ethDenverContactsCacheConfigs);
+		cacheConfigurations.put(ETH_DENVER_PARTICIPANTS_POAP_CACHE_NAME, ethDenverContactsCacheConfigs);
 		cacheConfigurations.put(SOCIALS_CACHE_NAME, socialsCacheConfig);
 		cacheConfigurations.put(USERS_CACHE_NAME, configuration);
 		cacheConfigurations.put(INVITATIONS_CACHE_NAME, configuration);
@@ -102,6 +105,9 @@ public class CacheConfig {
 				buildCache(contactsExpireAfterWriteDuration));
 
 		cacheManager.registerCustomCache(ETH_DENVER_PARTICIPANTS_CACHE_NAME,
+				buildCache(ethDenverContactsExpireAfterWriteDuration));
+
+		cacheManager.registerCustomCache(ETH_DENVER_PARTICIPANTS_POAP_CACHE_NAME,
 				buildCache(ethDenverContactsExpireAfterWriteDuration));
 
 		cacheManager.registerCustomCache(SOCIALS_CACHE_NAME,

@@ -111,7 +111,7 @@ export default defineConfig({
               cacheName: 'contacts-cache',
               expiration: {
                 maxEntries: 1,
-                maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
+                maxAgeSeconds: 60 * 60 // <== 1 hour
               },
               backgroundSync: {
                 name: 'contacts-cache-queue',

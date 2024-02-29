@@ -6,7 +6,10 @@ import ua.sinaver.web3.payflow.message.ConnectedAddresses;
 import java.util.List;
 
 public interface ISocialGraphService {
-	List<Wallet> getEthDenverParticipants();
+
+	List<Wallet> getEthDenverParticipantsStaked();
+
+	List<Wallet> getEthDenverParticipantsPoap();
 
 	List<String> getSocialFollowings(String identity);
 
