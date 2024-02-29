@@ -106,7 +106,6 @@ function parseTxHistoryResponse(
   const interalTxsInfo: TxInfo[] = internalTxs
     .filter((item: any) => {
       if (uniqueHashes[item.transaction_hash]) {
-        console.log('Exists already: ', item.transaction_hash);
         return false;
       }
       uniqueHashes[item.transaction_hash] = true;
@@ -136,7 +135,6 @@ function parseTxHistoryResponse(
   const erc20TxsInfo: TxInfo[] = erc20txs
     .filter((item: any) => {
       if (uniqueHashes[item.tx_hash]) {
-        console.log('Exists already: ', item.tx_hash);
         return false;
       }
       uniqueHashes[item.tx_hash] = true;
@@ -167,7 +165,6 @@ function parseTxHistoryResponse(
   const txsInfo: TxInfo[] = txs
     .filter((item: any) => {
       if (uniqueHashes[item.hash]) {
-        console.log('Exists already: ', item.hash);
         return false;
       }
       uniqueHashes[item.hash] = true;

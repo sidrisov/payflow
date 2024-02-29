@@ -23,8 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static ua.sinaver.web3.payflow.config.CacheConfig.ETH_DENVER_PARTICIPANTS_CACHE_NAME;
-import static ua.sinaver.web3.payflow.config.CacheConfig.SOCIALS_CACHE_NAME;
+import static ua.sinaver.web3.payflow.config.CacheConfig.*;
 
 @Service
 @Slf4j
@@ -51,14 +50,15 @@ public class SocialGraphService implements ISocialGraphService {
 
 	@Override
 	@Cacheable(value = ETH_DENVER_PARTICIPANTS_CACHE_NAME, unless = "#result.isEmpty()")
-	public List<Wallet> getEthDenverParticipants() {
+	public List<Wallet> getEthDenverParticipantsStaked() {
 		var hasNextPage = false;
 		var nextCursor = "";
 		val participants = new ArrayList<Wallet>();
 
 		do {
 			try {
-				val ethDenverParticipantsResponse = graphQlClient.documentName("getEthDenverParticipants")
+				val ethDenverParticipantsResponse = graphQlClient.documentName(
+								"getEthDenverParticipantsStaked")
 						.variable("cursor", nextCursor)
 						.execute().block();
 
@@ -81,13 +81,62 @@ public class SocialGraphService implements ISocialGraphService {
 							.map(TokenBalance::getOwner)
 							.toList());
 
-					log.debug("Fetched {} participants", participants.size());
+					log.debug("Fetched {} participants (spork based)", participants.size());
 
 				} else {
 					hasNextPage = false;
 				}
 			} catch (Exception e) {
-				log.error("Error fetching EthDenver participants: {}", e.getMessage());
+				log.error("Error fetching EthDenver participants (spork based): {}",
+						e.getMessage());
+				hasNextPage = false;
+			}
+
+		} while (hasNextPage);
+
+		return participants;
+	}
+
+	@Override
+	@Cacheable(value = ETH_DENVER_PARTICIPANTS_POAP_CACHE_NAME, unless = "#result.isEmpty()")
+	public List<Wallet> getEthDenverParticipantsPoap() {
+		var hasNextPage = false;
+		var nextCursor = "";
+		val participants = new ArrayList<Wallet>();
+
+		do {
+			try {
+				val ethDenverParticipantsResponse = graphQlClient.documentName(
+								"getEthDenverParticipantsPoap")
+						.variable("cursor", nextCursor)
+						.execute().block();
+
+				if (ethDenverParticipantsResponse != null) {
+					val pageInfo = ethDenverParticipantsResponse
+							.field("Poaps.pageInfo")
+							.toEntity(PageInfo.class);
+					hasNextPage = pageInfo != null && pageInfo.getHasNextPage();
+					nextCursor = pageInfo != null ? pageInfo.getNextCursor() : "";
+
+					val rawParticipants = ethDenverParticipantsResponse
+							.field("Poaps.Poap")
+							.toEntityList(TokenBalance.class);
+
+					participants.addAll(rawParticipants.stream()
+							.filter(tb ->
+									tb.getOwner().getPrimaryDomain() != null || (tb.getOwner().getDomains() != null && !tb.getOwner().getDomains().isEmpty()) ||
+											(tb.getOwner().getSocials() != null && !tb.getOwner().getSocials().isEmpty())
+							)
+							.map(TokenBalance::getOwner)
+							.toList());
+
+					log.debug("Fetched {} participants (poap based)", participants.size());
+
+				} else {
+					hasNextPage = false;
+				}
+			} catch (Exception e) {
+				log.error("Error fetching EthDenver participants (poap based): {}", e.getMessage());
 				hasNextPage = false;
 			}
 

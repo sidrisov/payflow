@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { ArrowBack, Clear, Menu } from '@mui/icons-material';
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { IdentityType, SelectedIdentityType } from '../../types/ProfleType';
 
 import { Address } from 'viem';
@@ -32,6 +32,7 @@ import { ProfileContext } from '../../contexts/UserContext';
 import { AddressBookType } from '../../types/ContactType';
 import { identitiesInvited } from '../../services/invitation';
 import { AddressBookToolBar } from '../chips/AddressBookChip';
+import { useContacts } from '../../utils/queries/contacts';
 
 export type SelectIdentityCallbackType = {
   selectIdentityCallback?: (selectedIdentity: SelectedIdentityType) => void;
@@ -84,19 +85,28 @@ export default function SearchIdentityDialog({
 
   const [foundIdentities, setFoundIdentities] = useState<IdentityType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [loadingContacts, setLoadingContacts] = useState<boolean>(false);
 
   const [walletMenuAnchorEl, setWalletMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [openWalletMenu, setOpenWalletMenu] = useState(false);
 
   const [addressBookView, setAddressBookView] = useState<AddressBookType>('favourites');
 
+  const { isFetching: isFetchingContacts, data } = useContacts(isAuthenticated);
+
   const [contacts, setContacts] = useState<IdentityType[]>([]);
+
   const [shrink, setShrink] = useState(false);
 
   function handleCloseCampaignDialog() {
     closeStateCallback();
   }
+
+  useEffect(() => {
+    console.log('Is fetching contacts', isFetchingContacts);
+    if (!isFetchingContacts && data) {
+      setContacts(data);
+    }
+  }, [data, isFetchingContacts]);
 
   useMemo(async () => {
     if (debouncedSearchString && debouncedSearchString?.length > 1) {
@@ -167,30 +177,6 @@ export default function SearchIdentityDialog({
     }
   }, [debouncedSearchString, address]);
 
-  useMemo(async () => {
-    if (isAuthenticated) {
-      try {
-        setLoadingContacts(true);
-        const response = await axios.get(`${API_URL}/api/user/me/contacts`, {
-          withCredentials: true
-        });
-
-        if (response.status === 200) {
-          const contacts = response.data as IdentityType[];
-
-          console.log('Contact profiles: ', contacts);
-          setContacts(sortBySocialScore(contacts));
-        } else {
-          setContacts([]);
-        }
-      } catch (error) {
-        console.error(error);
-        setContacts([]);
-      } finally {
-        setLoadingContacts(false);
-      }
-    }
-  }, [isAuthenticated]);
 
   const updateIdentityCallback = ({
     identity,
@@ -411,13 +397,13 @@ export default function SearchIdentityDialog({
               </Typography>
             )}
 
-          {isAuthenticated && contacts.length === 0 && !loadingContacts && (
+          {isAuthenticated && contacts.length === 0 && !isFetchingContacts && (
             <Typography alignSelf="center" variant="subtitle2">
               No results found.
             </Typography>
           )}
 
-          {(loading || loadingContacts) && (
+          {(loading || isFetchingContacts) && (
             <Box m={1} alignSelf="center">
               <CircularProgress color="inherit" size={20} />
             </Box>

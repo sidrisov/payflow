@@ -33,12 +33,11 @@ import PrimaryFlowOnboardingDialog from '../components/dialogs/PrimaryFlowOnboar
 import axios from 'axios';
 import { DEGEN_TOKEN, ETH_TOKEN, TokenPrices, USDC_TOKEN } from '../utils/erc20contracts';
 import { DAPP_URL } from '../utils/urlConstants';
-import { WalletProviderType } from '../utils/providers';
 
 export default function AppLayout({
   profile,
   appSettings,
-  setAppSettings,
+  setAppSettings
 }: {
   profile: ProfileType | undefined;
   appSettings: AppSettings;
@@ -72,7 +71,6 @@ export default function AppLayout({
     address: ethUsdPriceFeedAddress ?? undefined,
     abi: AggregatorV2V3Interface.abi,
     functionName: 'latestAnswer',
-
     query: {
       enabled: isEnsSuccess && ethUsdPriceFeedAddress !== undefined,
       select: (data) => Number(formatUnits(data as bigint, 8)),
@@ -108,29 +106,6 @@ export default function AppLayout({
     }
   }, [profile]);
 
-  /*   const { setActiveWallet } = useSetActiveWallet();
-  const { wallets } = useWallets();
-  const { user, ready, authenticated } = usePrivy();
-  const { status, address } = useAccount();
-
-  useEffect(() => {
-    console.log(
-      'Available wallets (privy), ready, authenticated, user, status, address: ',
-      wallets,
-      ready,
-      authenticated,
-      user,
-      status,
-      address
-    );
-
-    if (ready && wallets.length !== 0) {
-      const wallet = wallets[0]; //wallets.find((w) => w.walletClientType === 'privy') ?? wallets[0];
-      console.log('Setting active wallet: ', wallet);
-      setActiveWallet(wallet);
-    }
-  }, [wallets, ready, status, address, authenticated]); */
-
   return (
     <ProfileContext.Provider
       value={{
@@ -138,7 +113,7 @@ export default function AppLayout({
         profile,
         appSettings,
         setAppSettings,
-        tokenPrices,
+        tokenPrices
       }}>
       <Container maxWidth="xs">
         <Box height="100vh" display="flex" flexDirection="column" justifyContent="flex-start">
@@ -270,14 +245,16 @@ export default function AppLayout({
           closeStateCallback={() => setOpenProfileMenu(false)}
         />
       )}
-      <SearchIdentityDialog
-        address={profile?.identity}
-        profileRedirect={true}
-        open={openSearchIdentity}
-        closeStateCallback={() => {
-          setOpenSearchIdentity(false);
-        }}
-      />
+      {openSearchIdentity && (
+        <SearchIdentityDialog
+          address={profile?.identity}
+          profileRedirect={true}
+          open={openSearchIdentity}
+          closeStateCallback={() => {
+            setOpenSearchIdentity(false);
+          }}
+        />
+      )}
       {profile && !profile.defaultFlow && (
         <PrimaryFlowOnboardingDialog
           fullScreen={isMobile}
