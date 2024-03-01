@@ -305,7 +305,7 @@ const getAccountInitCode = async ({
   }[];
   safeModules?: Address[];
 }): Promise<Hex> => {
-  if (!owners || owners.length == 0) throw new Error('Owner account not found');
+  if (!owners || owners.length === 0) throw new Error('Owner account not found');
   const initializer = await getInitializerCode({
     owners,
     threshold,
@@ -577,7 +577,7 @@ export async function signerToSafeSmartAccount<
     address ??
     (await getAccountAddress<TTransport, TChain>({
       client,
-      owners: owners && owners.length != 0 ? owners : [viemSigner.address],
+      owners: owners && owners.length !== 0 ? owners : [viemSigner.address],
       threshold,
       addModuleLibAddress,
       safe4337ModuleAddress,
