@@ -30,7 +30,7 @@ import {
   bundlerClient,
   transport,
   PIMLICO_SPONSORED_ENABLED,
-  paymasterSponsorshipPolicyId
+  paymasterSponsorshipPolicyIds
 } from '../pimlico';
 import { signerToSafeSmartAccount } from '../signerToSafeSmartAccount';
 import { PimlicoSponsorUserOperationParameters } from 'permissionless/actions/pimlico';
@@ -132,27 +132,31 @@ export const useSafeTransfer = (): {
         const sponsorUserOperation = async (
           args: PimlicoSponsorUserOperationParameters<ENTRYPOINT_ADDRESS_V06_TYPE>
         ) => {
-          const sponsorshipPolicyId = paymasterSponsorshipPolicyId(chain.id);
+          const sponsorshipPolicyIds = paymasterSponsorshipPolicyIds(chain.id);
           console.log(
-            `Using sponsorshipPolicyId ${sponsorshipPolicyId} for userOperation: `,
+            `Available sponsorshipPolicyIds ${sponsorshipPolicyIds} for userOperation: `,
             args.userOperation
           );
 
-          const isUserOpSponsored = Boolean(
-            (
-              await paymasterClient(chain.id).validateSponsorshipPolicies({
-                userOperation: args.userOperation,
-                sponsorshipPolicyIds: [sponsorshipPolicyId]
-              })
-            ).find((p) => p.sponsorshipPolicyId === sponsorshipPolicyId)
-          );
+          const validatedPoliciyIds = await paymasterClient(chain.id).validateSponsorshipPolicies({
+            userOperation: args.userOperation,
+            sponsorshipPolicyIds
+          });
 
           console.log(
-            `Can be sponsored by ${sponsorshipPolicyId} - ${isUserOpSponsored} for userOperation: `,
+            `Can be sponsored by ${JSON.stringify(validatedPoliciyIds)} for userOperation: `,
             args.userOperation
           );
 
-          return paymasterClient(chain.id).sponsorUserOperation({ ...args, sponsorshipPolicyId });
+          if (validatedPoliciyIds.length === 0) {
+            throw Error('Sponsorshipt not available');
+          }
+
+          // return first
+          return paymasterClient(chain.id).sponsorUserOperation({
+            ...args,
+            sponsorshipPolicyId: validatedPoliciyIds[0].sponsorshipPolicyId
+          });
         };
 
         const smartAccountClient = createSmartAccountClient({
