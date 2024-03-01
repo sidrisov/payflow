@@ -10,9 +10,7 @@ import {
   useTheme,
   useMediaQuery,
   FormControlLabel,
-  Switch,
-  IconButton
-} from '@mui/material';
+  Switch} from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 
 import { CloseCallbackType } from '../../types/CloseCallbackType';
@@ -26,10 +24,9 @@ import { useNavigate } from 'react-router-dom';
 import { DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS as PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS } from '../../utils/networks';
 import { updateProfile } from '../../services/user';
 import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
-import { useAccount, useConfig, useDisconnect } from 'wagmi';
-import { green, red } from '@mui/material/colors';
+import { useAccount } from 'wagmi';
+import { green } from '@mui/material/colors';
 import { shortenWalletAddressLabel } from '../../utils/address';
-import { Logout } from '@mui/icons-material';
 
 export type PrimaryFlowOnboardingDialogProps = DialogProps &
   CloseCallbackType & {
@@ -55,13 +52,8 @@ export default function PrimaryFlowOnboardingDialog({
 
   const { address, connector } = useAccount();
 
-  console.log('Hello', connector);
-
-  const { disconnectAsync } = useDisconnect();
-
   const navigate = useNavigate();
 
-  const config = useConfig();
 
   function handleCloseCampaignDialog() {
     closeStateCallback();

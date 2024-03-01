@@ -2,6 +2,7 @@ import { useContext } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ProfileContext } from '../contexts/UserContext';
 import { Box, Container, Divider, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { AddressSection } from '../components/AddressSection';
 
 export default function Advanced() {
   const theme = useTheme();
@@ -31,35 +32,34 @@ export default function Advanced() {
                   Your ethereum address linked to web3 socials (farcaster, lens, ens) for seamless
                   profile discovery and payments with your friends.
                 </Typography>
-                <Typography variant="subtitle2" fontSize={isMobile ? 12 : 14}>
-                  {profile.identity}
-                </Typography>
+                <AddressSection identity={{ address: profile.identity }} maxWidth={200} />
               </Stack>
 
               <Divider />
 
-              <Stack spacing={1}>
+              <Stack spacing={3}>
                 <Typography variant="subtitle2" fontSize={18}>
-                  Flow Signer
+                  Flow Signers
                 </Typography>
                 <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
-                  Your ethereum address used to sign all flow related transactions, reducing the
-                  need for additional identity wallet signatures.
+                  Ethereum addresses used to sign flow related transactions
                 </Typography>
-                <Typography variant="subtitle2" fontSize={isMobile ? 12 : 14}>
-                  {profile.signer ?? profile.identity}
-                </Typography>
+
+                <Stack spacing={2}>
+                  {profile.flows?.map((f) => (
+                    <Stack spacing={1} border={1} borderRadius={5} p={2} borderColor="divider">
+                      <Typography variant="subtitle2" fontSize={isMobile ? 12 : 14}>
+                        <u>{f.title}</u>
+                      </Typography>
+                      {f.signerProvider && (
+                        <AddressSection identity={{ address: profile.identity }} maxWidth={200} />
+                      )}
+                      <AddressSection identity={{ address: f.signer }} maxWidth={200} />
+                    </Stack>
+                  ))}
+                </Stack>
               </Stack>
             </Stack>
-
-            {/* <LoadingButton
-            fullWidth
-            variant="outlined"
-            size="large"
-            onClick={() => comingSoonToast()}
-            sx={{ borderRadius: 5 }}>
-            Save
-          </LoadingButton> */}
           </Box>
         </Container>
       </>
