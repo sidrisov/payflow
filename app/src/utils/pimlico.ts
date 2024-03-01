@@ -62,3 +62,20 @@ const pimlicoRpcNetworkName = (chainId: number) => {
   }
   return network;
 };
+
+export const paymasterSponsorshipPolicyId = (chainId: number) => {
+  // default to dummy, so that sponsorship works only for supported chains
+  let policyId = 'dummy';
+  switch (chainId) {
+    case base.id:
+      policyId = import.meta.env.VITE_PIMLICO_SPONSORED_POLICY_BASE;
+      break;
+    case baseSepolia.id:
+      policyId = import.meta.env.VITE_PIMLICO_SPONSORED_POLICY_BASE_SEPOLIA;
+      break;
+    case optimism.id:
+      policyId = import.meta.env.VITE_PIMLICO_SPONSORED_POLICY_OP;
+      break;
+  }
+  return policyId;
+};

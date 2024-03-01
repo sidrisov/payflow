@@ -147,7 +147,14 @@ export default function PayWithPayflowDialog({
       sendToastId.current = undefined;
 
       if (status === 'insufficient_fees') {
-        toast.error('Insufficient Gas Fees', { closeButton: false, autoClose: 5000 });
+        toast.error('Insufficient gas fees', { closeButton: false, autoClose: 5000 });
+      }
+
+      if (status?.includes('gas_sponsorship_failure')) {
+        toast.error(`Failed to sponsor tx: ${status.split(':')[1]}`, {
+          closeButton: false,
+          autoClose: 5000
+        });
       }
     }
   }, [loading, confirmed, error, status, txHash, sendAmountUSD]);

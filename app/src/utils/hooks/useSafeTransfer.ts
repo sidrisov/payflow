@@ -25,8 +25,18 @@ import {
   isSmartAccountDeployed,
   ENTRYPOINT_ADDRESS_V06
 } from 'permissionless';
-import { paymasterClient, bundlerClient, transport, PIMLICO_SPONSORED_ENABLED } from '../pimlico';
+import {
+  paymasterClient,
+  bundlerClient,
+  transport,
+  PIMLICO_SPONSORED_ENABLED,
+  paymasterSponsorshipPolicyId
+} from '../pimlico';
 import { signerToSafeSmartAccount } from '../signerToSafeSmartAccount';
+import { PimlicoSponsorUserOperationParameters } from 'permissionless/actions/pimlico';
+import { baseSepolia } from 'viem/chains';
+import { ENTRYPOINT_ADDRESS_V06_TYPE } from '../entrypoint';
+import { toast } from 'react-toastify';
 
 export type SafeWallet = {
   chain: Chain;
@@ -119,19 +129,45 @@ export const useSafeTransfer = (): {
           `Safe addresss: calculated with Pimlico - ${safeAccount.address} vs existing ${tx.from}`
         );
 
+        const sponsorUserOperation = async (
+          args: PimlicoSponsorUserOperationParameters<ENTRYPOINT_ADDRESS_V06_TYPE>
+        ) => {
+          const sponsorshipPolicyId = paymasterSponsorshipPolicyId(chain.id);
+          console.log(
+            `Using sponsorshipPolicyId ${sponsorshipPolicyId} for userOperation: `,
+            args.userOperation
+          );
+
+          const isUserOpSponsored = Boolean(
+            (
+              await paymasterClient(chain.id).validateSponsorshipPolicies({
+                userOperation: args.userOperation,
+                sponsorshipPolicyIds: [sponsorshipPolicyId]
+              })
+            ).find((p) => p.sponsorshipPolicyId === sponsorshipPolicyId)
+          );
+
+          console.log(
+            `Can be sponsored by ${sponsorshipPolicyId} - ${isUserOpSponsored} for userOperation: `,
+            args.userOperation
+          );
+
+          return paymasterClient(chain.id).sponsorUserOperation({ ...args, sponsorshipPolicyId });
+        };
+
         const smartAccountClient = createSmartAccountClient({
           account: safeAccount,
           entryPoint: ENTRYPOINT_ADDRESS_V06,
           chain,
           bundlerTransport: transport(chain.id),
-          ...(PIMLICO_SPONSORED_ENABLED && {
-            middleware: {
-              gasPrice: async () => {
-                return (await bundlerClient(chain.id).getUserOperationGasPrice()).standard;
-              },
-              sponsorUserOperation: paymasterClient(chain.id).sponsorUserOperation
-            }
-          })
+          middleware: {
+            gasPrice: async () => {
+              return (await bundlerClient(chain.id).getUserOperationGasPrice()).standard;
+            },
+            ...(PIMLICO_SPONSORED_ENABLED && {
+              sponsorUserOperation
+            })
+          }
         });
 
         statusCallback?.('signing');
@@ -171,7 +207,12 @@ export const useSafeTransfer = (): {
     } catch (error) {
       const message = (error as Error).message;
 
-      console.debug(message);
+      const sponsoredPolicyErrorRegex = /Details: sponsorshipPolicy (.+)/g;
+      const sponsoredPolicyErrorMatches = sponsoredPolicyErrorRegex.exec(message);
+      if (sponsoredPolicyErrorMatches) {
+        setStatus(`gas_sponsorship_failure:${sponsoredPolicyErrorMatches[1]}`);
+      }
+
       if (message.includes('ACTION_REJECTED')) {
         setStatus('rejected');
       }
@@ -179,7 +220,7 @@ export const useSafeTransfer = (): {
         setStatus('insufficient_fees');
       }
 
-      console.error(error);
+      console.error('Failed to send tx: ', error);
       setConfirmed(false);
       setError(true);
     } finally {
