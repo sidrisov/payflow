@@ -69,7 +69,7 @@ export function SearchIdentityListItem(
         <Stack direction="column" spacing={0.5} alignItems="center" sx={{ width: 100 }}>
           {view === 'profile' ? (
             <PayflowChip />
-          ) : identity.invited ? (
+          ) : identity.invited && !identity.profile ? (
             <InvitedChip />
           ) : (
             isAuthenticated &&
