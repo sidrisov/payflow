@@ -1,6 +1,6 @@
 import { ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material';
 import { ProfileType } from '../../types/ProfleType';
-import { Link, QrCode } from '@mui/icons-material';
+import { Add, AddCircle, Link, QrCode } from '@mui/icons-material';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { DAPP_URL } from '../../utils/urlConstants';
 import { toast } from 'react-toastify';
@@ -8,10 +8,12 @@ import { toast } from 'react-toastify';
 export function FlowTopUpMenu({
   profile,
   qrClickCallback,
+  depositClickCallback,
   ...props
 }: MenuProps & {
   profile: ProfileType;
   qrClickCallback: () => void;
+  depositClickCallback: () => void;
 }) {
   return (
     <Menu
@@ -20,11 +22,17 @@ export function FlowTopUpMenu({
       style={{ borderRadius: '50px' }}
       transformOrigin={{ horizontal: 'left', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
+      <MenuItem onClick={depositClickCallback}>
+        <ListItemIcon>
+          <AddCircle fontSize="small" />
+        </ListItemIcon>
+        Top up
+      </MenuItem>
       <MenuItem onClick={qrClickCallback}>
         <ListItemIcon>
           <QrCode fontSize="small" />
         </ListItemIcon>
-        QR
+        QR code
       </MenuItem>
       <MenuItem
         onClick={() => {
@@ -34,7 +42,7 @@ export function FlowTopUpMenu({
         <ListItemIcon>
           <Link fontSize="small" />
         </ListItemIcon>
-        Link
+        Profile link
       </MenuItem>
       {/* <MenuItem
         onClick={() => {

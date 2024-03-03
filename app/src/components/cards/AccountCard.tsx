@@ -23,8 +23,9 @@ import WalletQRCodeShareDialog from '../dialogs/WalletQRCodeShareDialog';
 import NetworkAvatar from '../avatars/NetworkAvatar';
 import { useAccount } from 'wagmi';
 import SearchIdentityDialog from '../dialogs/SearchIdentityDialog';
-import { SelectedIdentityType } from '../../types/ProfleType';
-import PaymentDialog from '../dialogs/PaymentDialog';
+import { IdentityType, SelectedIdentityType } from '../../types/ProfleType';
+import PaymentDialog, { PaymentType } from '../dialogs/PaymentDialog';
+import { Address } from 'viem';
 
 export type AccountNewDialogProps = CardProps & {
   flows: FlowType[];
@@ -52,9 +53,10 @@ export function AccountCard(props: AccountNewDialogProps) {
   const { loading, fetched, balances } = props.balanceFetchResult;
   const [totalBalance, setTotalBalance] = useState<string>();
 
+  const [paymentType, setPaymentType] = useState<PaymentType>();
   const [recipient, setRecipient] = useState<SelectedIdentityType>();
 
-  const { chain } = useAccount();
+  const { chain, address } = useAccount();
 
   useMemo(async () => {
     if (fetched && balances.length > 0) {
@@ -203,7 +205,10 @@ export function AccountCard(props: AccountNewDialogProps) {
         {recipient && (
           <PaymentDialog
             open={recipient != null}
-            sender={selectedFlow}
+            paymentType={paymentType}
+            sender={
+              paymentType === 'wallet' ? (address as Address) : selectedFlow ?? (address as Address)
+            }
             recipient={recipient}
             setOpenSearchIdentity={setOpenSearchIdentity}
             closeStateCallback={async () => {
@@ -220,6 +225,7 @@ export function AccountCard(props: AccountNewDialogProps) {
               setOpenSearchIdentity(false);
             }}
             selectIdentityCallback={async (recipient) => {
+              setPaymentType('payflow');
               setRecipient(recipient);
             }}
           />
@@ -244,6 +250,10 @@ export function AccountCard(props: AccountNewDialogProps) {
           profile={profile}
           anchorEl={topUpMenuAnchorEl}
           open={openTopUpMenu}
+          depositClickCallback={() => {
+            setPaymentType('wallet');
+            setRecipient({ type: 'profile', identity: { profile } as IdentityType });
+          }}
           qrClickCallback={() => setOpenFlowReceiveQRCode(true)}
           onClose={() => setOpenTopUpMenu(false)}
           onClick={() => setOpenTopUpMenu(false)}
