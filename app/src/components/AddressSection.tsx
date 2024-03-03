@@ -9,8 +9,9 @@ export function AddressSection(props: {
   identity: IdentityType;
   fontSize?: number;
   maxWidth?: number;
+  copy?: boolean;
 }) {
-  const { identity: identity, fontSize, maxWidth } = props;
+  const { identity: identity, fontSize, maxWidth, copy = true } = props;
 
   const { data: ensName } = useEnsName({
     address: identity.address,
@@ -66,7 +67,7 @@ export function AddressSection(props: {
           <Typography noWrap variant={ens ? 'caption' : 'subtitle2'} {...(!ens && { fontSize })}>
             {shortenWalletAddressLabel(identity.address)}
           </Typography>
-          <CopyToClipboardIconButton tooltip="Copy address" value={identity.address} />
+          {copy && <CopyToClipboardIconButton tooltip="Copy address" value={identity.address} />}
         </Stack>
       </Stack>
     </Stack>

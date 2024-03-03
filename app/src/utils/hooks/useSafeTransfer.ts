@@ -174,7 +174,7 @@ export const useSafeTransfer = (): {
           }
         });
 
-        statusCallback?.('signing');
+        statusCallback?.('processing');
 
         const txHash = await smartAccountClient.sendTransaction(
           tx.token && tx.token !== ETH
