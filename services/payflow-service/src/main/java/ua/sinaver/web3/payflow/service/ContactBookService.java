@@ -125,16 +125,13 @@ public class ContactBookService implements IContactBookService {
 				Schedulers.DEFAULT_POOL_SIZE, Schedulers.DEFAULT_BOUNDED_ELASTIC_SIZE,
 				Schedulers.DEFAULT_BOUNDED_ELASTIC_QUEUESIZE);
 
-		val contactsLimitAdjusted = contactsLimit * (whitelistedUsers.contains(user.getIdentity()) ?
-				3 : 1);
+		val contactsLimitAdjusted =
+				contactsLimit * (whitelistedUsers.contains(user.getIdentity().toLowerCase()) ? 3 : 1);
 
 		val contacts = contactRepository.findAllByUser(user)
 				.stream().limit(contactsLimitAdjusted).toList();
 
-		val invitations =
-				invitationRepository.existsByIdentityInAndValid(
-						contacts.stream().map(Contact::getIdentity).filter(identity -> !whitelistedUsers.contains(identity)).toList()
-				);
+		val invited = filterByInvited(contacts.stream().map(Contact::getIdentity).toList());
 
 		try {
 			val contactMessages = Flux
@@ -142,7 +139,8 @@ public class ContactBookService implements IContactBookService {
 					.flatMap(contact -> Mono.zip(
 											Mono.just(contact),
 											Mono.fromCallable(
-															() -> socialGraphService.getSocialMetadata(contact.getIdentity(), user.getIdentity()))
+															() -> socialGraphService.getSocialMetadata(contact.getIdentity(),
+																	user.getIdentity()))
 													.subscribeOn(Schedulers.boundedElastic())
 													.onErrorResume(exception -> {
 														log.error("Error fetching social graph for {} - " +
@@ -152,8 +150,7 @@ public class ContactBookService implements IContactBookService {
 														return Mono.empty();
 													}),
 											Mono.fromCallable(
-															() -> whitelistedUsers.contains(contact.getIdentity())
-																	|| invitations.containsKey(contact.getIdentity()))
+															() -> invited.contains(contact.getIdentity()))
 													.onErrorResume(exception -> {
 														log.error("Error checking invitation status for user {} - {}",
 																contact.getIdentity(),
@@ -230,27 +227,43 @@ public class ContactBookService implements IContactBookService {
 		}
 
 		val profiles = userRepository.findByIdentityAsMapIn(ethDenverParticipants.keySet().stream().toList());
-		val invitations =
-				invitationRepository.existsByIdentityInAndValid(
-						ethDenverParticipants.keySet().stream().filter(identity -> !whitelistedUsers.contains(identity)).toList());
+		val invited = this.filterByInvited(
+				ethDenverParticipants.keySet().stream().toList());
 
 		return ethDenverParticipants.values().stream().map(wallet -> {
 			val identity = wallet.getIdentity();
 			val profile = profiles.get(identity);
-			val invited = whitelistedUsers.contains(identity)
-					|| invitations.containsKey(identity);
-			return ContactMessage.convert(new Contact(profile,
-							wallet.getIdentity()), wallet, invited,
+
+			return ContactMessage.convert(new Contact(profile, identity),
+					wallet, invited.contains(identity),
 					Collections.singletonList("eth-denver-contacts"));
 		}).collect(Collectors.toList());
 	}
 
+	@Override
+	public List<String> filterByInvited(List<String> addresses) {
+		log.debug("Whitelisted {}", whitelistedUsers);
+		var whitelistedAddresses = addresses.stream()
+				.filter(address -> whitelistedUsers.contains(address.toLowerCase())
+						|| ethDenverParticipants.containsKey(address.toLowerCase()))
+				.toList();
+		log.debug("Whitelisted addresses {} {}", addresses, whitelistedUsers);
+
+		val notWhitelisted = addresses.stream()
+				.filter(address -> !whitelistedAddresses.contains(address.toLowerCase()))
+				.toList();
+		val invitations = invitationRepository.existsByIdentityInAndValid(
+				notWhitelisted);
+		return Stream.concat(whitelistedAddresses.stream(),
+				invitations.keySet().stream()).collect(Collectors.toList());
+	}
+
 	// run only once
 	@Scheduled(fixedRate = Long.MAX_VALUE)
-	//@CacheEvict(cacheNames = {ETH_DENVER_PARTICIPANTS_CACHE_NAME,
+	// @CacheEvict(cacheNames = {ETH_DENVER_PARTICIPANTS_CACHE_NAME,
 	// ETH_DENVER_PARTICIPANTS_POAP_CACHE_NAME},
-	//		beforeInvocation = true,
-	//		allEntries = true)
+	// beforeInvocation = true,
+	// allEntries = true)
 	public void preFetchEthDenverParticipants() {
 		if (!ethDenverContactsEnabled) {
 			return;
@@ -265,14 +278,14 @@ public class ContactBookService implements IContactBookService {
 			// {identity}-contacts, eth-denver-poap, eth-denver-stacked, etc
 			val ethDenverParticipantsStaked = socialGraphService.getEthDenverParticipantsStaked();
 			val ethDenverParticipantsPoap = socialGraphService.getEthDenverParticipantsPoap();
-			val ethDenverParticipants = Stream.concat(ethDenverParticipantsStaked.stream(), ethDenverParticipantsPoap.stream())
+			val ethDenverParticipants = Stream
+					.concat(ethDenverParticipantsStaked.stream(), ethDenverParticipantsPoap.stream())
 					.collect(Collectors.toMap(Wallet::getIdentity, Function.identity(),
 							(existing, replacement) -> existing));
 
 			if (log.isDebugEnabled()) {
 				log.debug("Fetched EthDenver participants: {}",
-						log.isTraceEnabled() ? ethDenverParticipants :
-								ethDenverParticipants.size());
+						log.isTraceEnabled() ? ethDenverParticipants : ethDenverParticipants.size());
 			}
 
 			this.ethDenverParticipants = ethDenverParticipants;

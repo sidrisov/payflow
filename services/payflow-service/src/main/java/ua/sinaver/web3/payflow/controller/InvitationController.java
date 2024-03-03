@@ -15,13 +15,11 @@ import ua.sinaver.web3.payflow.message.ProfileMetaMessage;
 import ua.sinaver.web3.payflow.message.SubmitInvitationMessage;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.service.UserService;
+import ua.sinaver.web3.payflow.service.api.IContactBookService;
 
 import java.security.Principal;
 import java.time.Period;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -44,6 +42,9 @@ public class InvitationController {
 
 	@Value("${payflow.invitation.expiry:2w}")
 	private Period invitationExpiryPeriod;
+
+	@Autowired
+	private IContactBookService contactBookService;
 
 	// TODO: add converter to messages
 	@GetMapping
@@ -78,18 +79,16 @@ public class InvitationController {
 	@GetMapping("/identity/{identity}")
 	@ResponseStatus(HttpStatus.OK)
 	public Boolean isInvited(@PathVariable String identity) {
-		return invitationRepository.existsByIdentityAndValid(identity)
-				|| defaultWhitelistedUsers.contains(identity);
+		return !contactBookService.filterByInvited(Collections.singletonList(identity)).isEmpty();
 	}
 
 	@GetMapping("/identity")
 	public Map<String, Boolean> identitiesInvited(@RequestParam(value = "identities") List<String> identities) {
-		// don't check whitelisted, not to reveal default config
-		// TODO: optimize to fetch in batch
+		val invited = contactBookService.filterByInvited(identities);
 		return identities.stream()
 				.collect(Collectors.toMap(
 						identity -> identity,
-						identity -> invitationRepository.existsByIdentityAndValid(identity)
+						invited::contains
 				));
 	}
 
