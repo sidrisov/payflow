@@ -17,10 +17,7 @@ import ua.sinaver.web3.payflow.repository.GiftRepository;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.service.IdentityService;
 import ua.sinaver.web3.payflow.service.WalletBalanceService;
-import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
-import ua.sinaver.web3.payflow.service.api.IFrameService;
-import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
-import ua.sinaver.web3.payflow.service.api.IUserService;
+import ua.sinaver.web3.payflow.service.api.*;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.util.*;
@@ -78,6 +75,9 @@ public class FramesController {
 	@Autowired
 	private ISocialGraphService socialGraphService;
 
+	@Autowired
+	private IContactBookService contactBookService;
+
 	@PostMapping("/connect")
 	public ResponseEntity<String> connect(@RequestBody FrameMessage frameMessage) {
 		log.debug("Received connect frame message request: {}", frameMessage);
@@ -122,12 +122,15 @@ public class FramesController {
 					validateMessage.action().interactor().username()));
 			frameResponseBuilder.imageUrl(image);
 		} else {
-			val invitations = userService.getInvitations(addresses);
+			val invitations = contactBookService.filterByInvited(addresses);
+			log.debug("Invitations for addresses {} {}", addresses, invitations);
+
 			if (!invitations.isEmpty()) {
 				val image = framesServiceUrl.concat("/images/profile/invited.png");
 				val linkUrl = dAppServiceUrl.concat("/connect");
-				frameResponseBuilder.imageUrl(image).button(new FrameButton(
-						"Sign Up", FrameButton.ActionType.LINK, linkUrl));
+				frameResponseBuilder.imageUrl(image)
+						.cacheImage(false)
+						.button(new FrameButton("Sign Up", FrameButton.ActionType.LINK, linkUrl));
 			} else {
 				val image = framesServiceUrl.concat("/images/profile/notinvited.png");
 				frameResponseBuilder.imageUrl(image);
@@ -534,7 +537,7 @@ public class FramesController {
 					} else {
 						// check if invited
 						val inviteAddresses = frameService.getFnameAddresses(inputText);
-						val invitations = userService.getInvitations(inviteAddresses);
+						val invitations = contactBookService.filterByInvited(inviteAddresses);
 						if (!invitations.isEmpty()) {
 							return FrameResponse.builder().imageUrl(profileImage)
 									.button(new FrameButton(String.format("✅ %s already invited",

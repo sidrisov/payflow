@@ -27,7 +27,7 @@ export function FarcasterIdentitySelectOption({ identity }: { identity: Identity
           )}
 
           {type === 'address' && identity.meta && (
-            <AddressSection maxWidth={200} identity={identity} />
+            <AddressSection maxWidth={200} identity={identity} copy={false} />
           )}
         </Box>
 

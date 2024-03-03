@@ -16,6 +16,7 @@ import ua.sinaver.web3.payflow.message.ProfileMessage;
 import ua.sinaver.web3.payflow.message.WalletProfileRequestMessage;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
+import ua.sinaver.web3.payflow.service.api.IContactBookService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
 
 import java.util.*;
@@ -33,13 +34,13 @@ public class UserService implements IUserService {
 	@Value("${payflow.invitation.allowance.enabled:false}")
 	private boolean invitationAllowanceEnabled;
 
-	@Value("${payflow.invitation.whitelisted.default.users:0}")
+	@Value("${payflow.invitation.whitelisted.default.users}")
 	private Set<String> defaultWhitelistedUsers;
 
-	@Value("${payflow.invitation.whitelisted.default.allowance:0}")
-	private int defaultWhitelistedAllowance;
+	@Value("${payflow.invitation.default.allowance:10}")
+	private int defaultInvitationAllowance;
 
-	@Value("${payflow.favourites.limit:0}")
+	@Value("${payflow.favourites.limit:10}")
 	private int defaultFavouriteContactLimit;
 
 	@Autowired
@@ -47,6 +48,9 @@ public class UserService implements IUserService {
 
 	@Autowired
 	private InvitationRepository invitationRepository;
+
+	@Autowired
+	private IContactBookService contactBookService;
 
 	@Override
 	@CacheEvict(value = USERS_CACHE_NAME)
@@ -70,15 +74,13 @@ public class UserService implements IUserService {
 		// TODO: add roles later on instead
 		if (!user.isAllowed()) {
 			log.debug("Checking invitation for {} code {}", user, invitationCode);
-
-			log.debug("default whitelisted users {} and allowance {}", defaultWhitelistedUsers,
-					defaultWhitelistedAllowance);
-
-			if (defaultWhitelistedUsers.contains(user.getIdentity())) {
+			val whitelisted = !contactBookService.filterByInvited(
+					Collections.singletonList(user.getIdentity().toLowerCase())).isEmpty();
+			if (whitelisted) {
 				user.setAllowed(true);
 				user.setCreatedDate(new Date());
-				val defaultAllowance = new UserAllowance(defaultWhitelistedAllowance,
-						defaultWhitelistedAllowance, defaultFavouriteContactLimit);
+				val defaultAllowance = new UserAllowance(defaultInvitationAllowance,
+						defaultInvitationAllowance, defaultFavouriteContactLimit);
 				defaultAllowance.setUser(user);
 				user.setUserAllowance(defaultAllowance);
 			} else {
@@ -89,8 +91,8 @@ public class UserService implements IUserService {
 					invitation.setInvitee(user);
 					invitation.setExpiryDate(null);
 					if (invitationAllowanceEnabled) {
-						val defaultUserAllowance = new UserAllowance(1,
-								1, defaultFavouriteContactLimit);
+						val defaultUserAllowance = new UserAllowance(defaultInvitationAllowance,
+								defaultInvitationAllowance, defaultFavouriteContactLimit);
 						defaultUserAllowance.setUser(user);
 						user.setUserAllowance(defaultUserAllowance);
 					}
@@ -156,12 +158,5 @@ public class UserService implements IUserService {
 	@Override
 	public List<User> findAll() {
 		return userRepository.findByAllowedTrueOrderByLastSeenDesc();
-	}
-
-	@Override
-	public List<Invitation> getInvitations(List<String> addresses) {
-		return addresses.stream()
-				.map(address -> invitationRepository.findFirstValidByIdentityOrCode(address, null))
-				.filter(Objects::nonNull).limit(3).toList();
 	}
 }

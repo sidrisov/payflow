@@ -12,4 +12,6 @@ public interface IContactBookService {
 
 	// run only once
 	List<ContactMessage> getEthDenverParticipants(User user);
+
+	List<String> filterByInvited(List<String> addresses);
 }

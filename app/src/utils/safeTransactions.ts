@@ -69,6 +69,14 @@ export async function transferWithGelato(
     safeVersion
   });
 
+  /*  safeFactory.deploySafe({
+    safeAccountConfig: {
+      ...safeAccountConfig,
+      owners: ['']
+    },
+    saltNonce: keccak256(toBytes(saltNonce))
+  }); */
+
   const predictedAddress = await safeFactory.predictSafeAddress(
     safeAccountConfig,
     keccak256(toBytes(saltNonce))
