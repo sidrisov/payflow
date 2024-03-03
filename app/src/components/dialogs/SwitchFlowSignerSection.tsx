@@ -1,9 +1,5 @@
 import {
-  ChangeCircle,
-  ChangeCircleOutlined,
-  ChangeCircleRounded,
-  ChangeCircleTwoTone
-} from '@mui/icons-material';
+  ChangeCircleOutlined} from '@mui/icons-material';
 import { Stack, Typography, IconButton } from '@mui/material';
 import { useAccount } from 'wagmi';
 import { FlowType } from '../../types/FlowType';
@@ -13,7 +9,7 @@ import { useSetActiveWallet } from '@privy-io/wagmi';
 
 export function SwitchFlowSignerSection({ flow }: { flow: FlowType }) {
   const { address } = useAccount();
-  const { connectWallet, login, authenticated } = usePrivy();
+  const { connectWallet, login, authenticated, logout } = usePrivy();
   const { wallets } = useWallets();
   const { setActiveWallet } = useSetActiveWallet();
 
@@ -26,7 +22,6 @@ export function SwitchFlowSignerSection({ flow }: { flow: FlowType }) {
         <u>
           <b>{shortenWalletAddressLabel(flow.signer)}</b>
         </u>
-        {'!'}
       </Typography>
 
       <Stack direction="row" spacing={1} alignItems="center">
@@ -38,17 +33,21 @@ export function SwitchFlowSignerSection({ flow }: { flow: FlowType }) {
         </Typography>
         <IconButton
           size="small"
-          onClick={() => {
-            console.log('1');
+          onClick={async () => {
             if (flow.signerProvider === 'privy') {
-              console.log('2');
-
               if (!authenticated) {
                 login();
               } else {
-                const embeddedWallet = wallets.find((w) => w.walletClientType === 'privy');
+                const embeddedWallet = wallets.find(
+                  (w) => w.walletClientType === 'privy' && w.address === flow.signer
+                );
                 if (embeddedWallet) {
                   setActiveWallet(embeddedWallet);
+                } else {
+                  // logout previously connected social wallet
+                  await logout();
+                  // login again
+                  login();
                 }
               }
             } else {
