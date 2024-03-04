@@ -92,6 +92,7 @@ function parseTxHistoryResponse(
   console.log('Internal Txs: ', internalTxs);
 
   const uniqueHashes: { [key: string]: boolean } = {};
+  const uniqueFromToGasLimitValue: { [key: string]: boolean } = {};
 
   const interalTxsInfo: TxInfo[] = internalTxs
     .filter((item: any) => {
@@ -99,6 +100,12 @@ function parseTxHistoryResponse(
         return false;
       }
       uniqueHashes[item.transaction_hash] = true;
+
+      const fromToGasLimitValueKey = `${item.from?.hash}_${item.to?.hash}_${item.gas_limit}_${item.value}`;
+      if (uniqueFromToGasLimitValue[fromToGasLimitValueKey]) {
+        return false;
+      }
+      uniqueFromToGasLimitValue[fromToGasLimitValueKey] = true;
       return true;
     })
     .map((item: any) => {
