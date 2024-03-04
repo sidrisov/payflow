@@ -1,13 +1,10 @@
 import { Box, Card, CardProps } from '@mui/material';
 import { ProfileType } from '../../types/ProfleType';
-import { useTransactionsFetcher } from '../../utils/hooks/useTransactionsFetcher';
 import PublicProfileActivityFeed from '../PublicProfileActivityFeed';
 import { PublicProfileDetails } from '../dialogs/PublicProfileDetails';
 import { useSearchParams } from 'react-router-dom';
 
 export function PublicProfileCard({ profile, ...props }: { profile: ProfileType } & CardProps) {
-  const activityFetchResult = useTransactionsFetcher(profile?.defaultFlow?.wallets ?? []);
-
   const [searchParams] = useSearchParams();
   const pay = searchParams.get('pay');
 
@@ -27,7 +24,7 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
       </Card>
 
       <Box mx={1}>
-        <PublicProfileActivityFeed activityFetchResult={activityFetchResult} />
+        <PublicProfileActivityFeed profile={profile} />
       </Box>
     </>
   );

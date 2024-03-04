@@ -11,13 +11,13 @@ export type AssetsProps = {
 
 export default function Activity(props: AssetsProps) {
   const { selectedNetwork } = props;
-  const { loading, fetched, transactions } = props.activityFetchResult;
+  const { isLoading: loading, isFetched: fetched, transactions } = props.activityFetchResult;
 
   return (
     <Stack pt={1} px={1} spacing={2} width="100%" maxHeight={430} overflow="auto">
-      {loading || transactions.length === 0 ? (
+      {loading ? (
         <ActivitySkeletonSection />
-      ) : fetched ? (
+      ) : fetched && transactions ? (
         transactions
           .filter((tx) => {
             return selectedNetwork ? tx.chainId === selectedNetwork.id : true;

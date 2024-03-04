@@ -1,7 +1,7 @@
 import { AssetBalanceType } from './AssetType';
 
 export type BalanceFetchResultType = {
-  loading: boolean;
-  fetched: boolean;
-  balances: AssetBalanceType[];
+  isLoading: boolean;
+  isFetched: boolean;
+  balances: AssetBalanceType[] | undefined;
 };

@@ -1,28 +1,20 @@
-import { useMemo, useState } from 'react';
-import { ActivityFetchResultType, TxInfo } from '../../types/ActivityFetchResultType';
+import { useQuery } from '@tanstack/react-query';
 import { FlowWalletType, WalletWithProfileType } from '../../types/FlowType';
-import axios from 'axios';
-import { base, baseSepolia, optimism, zora } from 'viem/chains';
-import { API_URL } from '../urlConstants';
 import { sortAndFilterFlowWallets } from '../sortAndFilterFlows';
+import { API_URL } from '../urlConstants';
+import { TxInfo } from '../../types/ActivityFetchResultType';
+import axios from 'axios';
+import { baseSepolia, base, optimism, zora } from 'viem/chains';
 
-interface NextPageParams {
-  block_number: number;
-  index: number;
-  items_count: number;
-  transaction_index: number;
-}
-
-export const useTransactionsFetcher = (wallets: FlowWalletType[]): ActivityFetchResultType => {
-  const [transactions, setTransactions] = useState<TxInfo[]>([]);
-  const [fetched, setFetched] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
-
-  useMemo(() => {
-    setLoading(true);
-
-    Promise.allSettled(wallets.map((wallet) => fetchTransactions(wallet)))
-      .then(async (data) => {
+export const useTransactions = (wallets: FlowWalletType[]) => {
+  return useQuery({
+    enabled: wallets.length > 0,
+    queryKey: ['balances', { wallets }],
+    staleTime: Infinity,
+    // optimize refetch, to only fetch latest txs
+    refetchInterval: 120,
+    queryFn: () =>
+      Promise.allSettled(wallets.map((wallet) => fetchTransactions(wallet))).then(async (data) => {
         const txs = (
           data
             .filter((result) => result.status === 'fulfilled')
@@ -76,20 +68,18 @@ export const useTransactionsFetcher = (wallets: FlowWalletType[]): ActivityFetch
             }
             return tx;
           });
+          return txs;
         }
-        setLoading(false);
-        setFetched(true);
-        setTransactions(txs);
       })
-      .catch((error) => {
-        console.error(error);
-        setLoading(false);
-        setFetched(false);
-      });
-    setTransactions([]);
-  }, [wallets.toString()]);
-  return { loading, fetched, transactions };
+  });
 };
+
+interface NextPageParams {
+  block_number: number;
+  index: number;
+  items_count: number;
+  transaction_index: number;
+}
 
 function parseTxHistoryResponse(
   wallet: FlowWalletType,

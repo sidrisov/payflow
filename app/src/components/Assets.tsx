@@ -1,25 +1,22 @@
 import { Stack, Typography } from '@mui/material';
-import { useContext } from 'react';
 
 import { Chain, formatUnits } from 'viem';
 import { NetworkAssetBalanceSection } from './NetworkAssetBalanceSection';
-import { BalanceFetchResultType } from '../types/BalanceFetchResultType';
-import { ProfileContext } from '../contexts/UserContext';
+import { BalanceFetchResultType as AssetBalancesResultType } from '../types/BalanceFetchResultType';
 import { ActivitySkeletonSection } from './skeletons/ActivitySkeletonSection';
 
-export default function Assets(props: {
+export default function Assets({
+  selectedNetwork,
+  assetBalancesResult: { isLoading, isFetched, balances }
+}: {
   selectedNetwork: Chain | undefined;
-  balanceFetchResult: BalanceFetchResultType;
+  assetBalancesResult: AssetBalancesResultType;
 }) {
-  const { tokenPrices } = useContext(ProfileContext);
-  const { selectedNetwork } = props;
-  const { loading, fetched, balances } = props.balanceFetchResult;
-
   return (
     <Stack pt={1} px={1} spacing={1} width="100%" maxHeight={430} overflow="auto">
-      {loading || balances.length === 0 ? (
+      {isLoading ? (
         <ActivitySkeletonSection />
-      ) : fetched && tokenPrices ? (
+      ) : isFetched && balances ? (
         balances
           .filter((assetBalance) => {
             return (

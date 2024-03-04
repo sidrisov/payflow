@@ -31,14 +31,20 @@ export type AccountNewDialogProps = CardProps & {
   flows: FlowType[];
   selectedFlow: FlowType;
   setSelectedFlow: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
-  balanceFetchResult: BalanceFetchResultType;
+  assetBalancesResult: BalanceFetchResultType;
   assetsOrActivityView: 'assets' | 'activity';
   setAssetsOrActivityView: React.Dispatch<React.SetStateAction<'assets' | 'activity'>>;
 };
 
-export function AccountCard(props: AccountNewDialogProps) {
+export function AccountCard({
+  flows,
+  selectedFlow,
+  setSelectedFlow,
+  assetsOrActivityView,
+  setAssetsOrActivityView,
+  assetBalancesResult: { isLoading, isFetched, balances }
+}: AccountNewDialogProps) {
   const { profile } = useContext(ProfileContext);
-  const { flows, selectedFlow, setSelectedFlow } = props;
 
   const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(false);
   const [openWalletDetailsPopover, setOpenWalletDetailsPopover] = useState(false);
@@ -50,7 +56,6 @@ export function AccountCard(props: AccountNewDialogProps) {
   const [flowAnchorEl, setFlowAnchorEl] = useState<null | HTMLElement>(null);
   const [topUpMenuAnchorEl, setTopUpMenuAnchorEl] = useState<null | HTMLElement>(null);
 
-  const { loading, fetched, balances } = props.balanceFetchResult;
   const [totalBalance, setTotalBalance] = useState<string>();
 
   const [paymentType, setPaymentType] = useState<PaymentType>();
@@ -59,7 +64,7 @@ export function AccountCard(props: AccountNewDialogProps) {
   const { chain, address } = useAccount();
 
   useMemo(async () => {
-    if (fetched && balances.length > 0) {
+    if (isFetched && balances && balances.length > 0) {
       const totalBalance = balances
         .filter((balance) => balance.balance)
         .reduce((previousValue, currentValue) => {
@@ -69,7 +74,7 @@ export function AccountCard(props: AccountNewDialogProps) {
 
       setTotalBalance(totalBalance);
     }
-  }, [fetched, balances.length]);
+  }, [isFetched, balances]);
 
   return (
     profile && (
@@ -123,22 +128,26 @@ export function AccountCard(props: AccountNewDialogProps) {
               ))}
             </AvatarGroup>
           </Tooltip>
-
-          <Stack
-            spacing={1}
-            direction="row"
-            alignItems="center"
-            sx={{ p: 0, border: 1, borderStyle: 'dashed', borderRadius: 5 }}>
-            <Tooltip title="Select flow">
-              <IconButton
-                size="medium"
-                onClick={(event) => {
-                  setFlowAnchorEl(event.currentTarget);
-                  setOpenSelectFlow(true);
-                }}>
-                <Toll fontSize="small" />
-              </IconButton>
-            </Tooltip>
+          <Stack direction="row">
+            <Typography p={1} variant="subtitle2" fontWeight="bold">
+              {selectedFlow.title}
+            </Typography>
+            <Stack
+              spacing={1}
+              direction="row"
+              alignItems="center"
+              sx={{ p: 0, border: 1, borderStyle: 'dashed', borderRadius: 5 }}>
+              <Tooltip title="Select flow">
+                <IconButton
+                  size="medium"
+                  onClick={(event) => {
+                    setFlowAnchorEl(event.currentTarget);
+                    setOpenSelectFlow(true);
+                  }}>
+                  <Toll fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Stack>
           </Stack>
         </Box>
         <Divider
@@ -160,10 +169,10 @@ export function AccountCard(props: AccountNewDialogProps) {
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-            {loading || !totalBalance ? (
+            {isLoading || !totalBalance ? (
               <Skeleton variant="rectangular" height={40} width={80} sx={{ borderRadius: 3 }} />
             ) : (
-              <Typography variant="h4">${fetched ? totalBalance : 'N/A'}</Typography>
+              <Typography variant="h4">${isFetched ? totalBalance : 'N/A'}</Typography>
             )}
           </Box>
         </Divider>
@@ -189,16 +198,14 @@ export function AccountCard(props: AccountNewDialogProps) {
               <Send />
             </IconButton>
           </Tooltip>
-          <Tooltip title={props.assetsOrActivityView === 'assets' ? ' Activity' : 'Assets'}>
+          <Tooltip title={assetsOrActivityView === 'assets' ? ' Activity' : 'Assets'}>
             <IconButton
               color="inherit"
               onClick={() => {
-                props.setAssetsOrActivityView(
-                  props.assetsOrActivityView === 'assets' ? 'activity' : 'assets'
-                );
+                setAssetsOrActivityView(assetsOrActivityView === 'assets' ? 'activity' : 'assets');
               }}
               sx={{ border: 1, borderStyle: 'dashed' }}>
-              {props.assetsOrActivityView === 'assets' ? <Receipt /> : <AccountBalance />}
+              {assetsOrActivityView === 'assets' ? <Receipt /> : <AccountBalance />}
             </IconButton>
           </Tooltip>
         </Stack>
@@ -236,7 +243,7 @@ export function AccountCard(props: AccountNewDialogProps) {
           onClose={async () => setOpenWalletDetailsPopover(false)}
           anchorEl={walletAnchorEl}
           flow={selectedFlow}
-          balanceFetchResult={{ loading, fetched, balances }}
+          balanceFetchResult={{ isLoading, isFetched, balances }}
         />
         <ChooseFlowMenu
           anchorEl={flowAnchorEl}

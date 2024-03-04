@@ -9,7 +9,7 @@ export function WalletsInfoPopover({
   ...props
 }: PopoverProps & { flow: FlowType; balanceFetchResult: BalanceFetchResultType }) {
   function calculateBalance(wallet: FlowWalletType) {
-    if (balanceFetchResult) {
+    if (balanceFetchResult && balanceFetchResult.balances) {
       return balanceFetchResult.balances
         .filter((balance) => balance.balance && balance.asset.chainId === wallet.network)
         .reduce((previousValue, currentValue) => {

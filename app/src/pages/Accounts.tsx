@@ -8,12 +8,12 @@ import { AssetType } from '../types/AssetType';
 import Activity from '../components/Activity';
 import { Chain, zeroAddress } from 'viem';
 import { getSupportedTokens } from '../utils/erc20contracts';
-import { useBalanceFetcher } from '../utils/hooks/useBalanceFetcher';
 import { FlowType } from '../types/FlowType';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
-import { useTransactionsFetcher } from '../utils/hooks/useTransactionsFetcher';
 import NetworkSelectorSection from '../components/NetworkSelectorSection';
 import { useNavigate } from 'react-router-dom';
+import { useBalances as useAssetBalances } from '../utils/queries/balances';
+import { useTransactions } from '../utils/queries/transactions';
 
 export default function Accounts() {
   const theme = useTheme();
@@ -35,12 +35,11 @@ export default function Accounts() {
     }
   }, []);
 
-  // TODO: for now just select the first, later on we need to choose the main one
-  useMemo(async () => {
-    if (flows && flows.length > 0) {
+  useEffect(() => {
+    if (!selectedFlow && flows && flows.length > 0) {
       setSelectedFlow(flows.find((f) => f.uuid === profile?.defaultFlow?.uuid));
     }
-  }, [flows]);
+  }, [selectedFlow, flows]);
 
   const [assets, setAssets] = useState<AssetType[]>([]);
 
@@ -63,13 +62,17 @@ export default function Accounts() {
       });
     }
 
+    console.log('Assets:', assets);
+
     setAssets(assets);
-  }, [selectedFlow?.wallets]);
+  }, [selectedFlow]);
 
-  const { loading, fetched, balances } = useBalanceFetcher(assets);
-  const activityFetchResult = useTransactionsFetcher(selectedFlow?.wallets ?? []);
-
-  console.debug('Loading balances: ', loading, balances);
+  const { isLoading, isFetched, data: balances } = useAssetBalances(assets);
+  const {
+    isLoading: isLoadingActivity,
+    isFetched: isFetchedActivity,
+    data: transactions
+  } = useTransactions(selectedFlow?.wallets ?? []);
 
   const [selectedNetwork, setSelectedNetwork] = useState<Chain>();
 
@@ -86,7 +89,7 @@ export default function Accounts() {
               flows={flows ?? []}
               selectedFlow={selectedFlow}
               setSelectedFlow={setSelectedFlow}
-              balanceFetchResult={{ loading, fetched, balances }}
+              assetBalancesResult={{ isLoading, isFetched, balances }}
               assetsOrActivityView={assetsOrActivityView}
               setAssetsOrActivityView={setAssetsOrActivityView}
             />
@@ -105,12 +108,16 @@ export default function Accounts() {
               {assetsOrActivityView === 'assets' ? (
                 <Assets
                   selectedNetwork={selectedNetwork}
-                  balanceFetchResult={{ loading, fetched, balances }}
+                  assetBalancesResult={{ isLoading, isFetched, balances }}
                 />
               ) : (
                 <Activity
                   selectedNetwork={selectedNetwork}
-                  activityFetchResult={activityFetchResult}
+                  activityFetchResult={{
+                    isLoading: isLoadingActivity,
+                    isFetched: isFetchedActivity,
+                    transactions
+                  }}
                 />
               )}
             </Box>

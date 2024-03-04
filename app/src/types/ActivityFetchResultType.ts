@@ -3,9 +3,9 @@ import { FlowWalletType } from './FlowType';
 import { ProfileType } from './ProfleType';
 
 export type ActivityFetchResultType = {
-  loading: boolean;
-  fetched: boolean;
-  transactions: TxInfo[];
+  isLoading: boolean;
+  isFetched: boolean;
+  transactions: TxInfo[] | undefined;
 };
 
 export interface TxInfo {
