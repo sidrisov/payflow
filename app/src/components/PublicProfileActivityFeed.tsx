@@ -1,33 +1,35 @@
 import { Box, NativeSelect, Stack, Typography } from '@mui/material';
-import { ActivityFetchResultType } from '../types/ActivityFetchResultType';
 import { ActivitySkeletonSection } from './skeletons/ActivitySkeletonSection';
 import PublicProfileActivityFeedSection from './PublicProfileActivityFeedSection';
 import { useAccount } from 'wagmi';
 import { useContext, useMemo, useState } from 'react';
 import { ProfileContext } from '../contexts/UserContext';
 import { Chain } from 'viem';
+import { ProfileType } from '../types/ProfleType';
+import { useTransactions } from '../utils/queries/transactions';
 
 export type AssetsProps = {
   selectedChain?: Chain | undefined;
-  activityFetchResult: ActivityFetchResultType;
+  profile: ProfileType;
 };
 
-export default function PublicProfileActivityFeed(props: AssetsProps) {
-  const { profile } = useContext(ProfileContext);
+export default function PublicProfileActivityFeed({ profile, selectedChain }: AssetsProps) {
+  const { profile: loggedProfile } = useContext(ProfileContext);
   const { address } = useAccount();
 
   const {
-    selectedChain,
-    activityFetchResult: { loading, fetched, transactions }
-  } = props;
+    isLoading,
+    isFetched,
+    data: transactions
+  } = useTransactions(profile?.defaultFlow?.wallets ?? []);
 
   const [feedOption, setFeedOption] = useState<number>(1);
 
   useMemo(async () => {
-    if (!address && !profile) {
+    if (!address && !loggedProfile) {
       setFeedOption(1);
     }
-  }, [address, profile]);
+  }, [address, loggedProfile]);
 
   return (
     <>
@@ -49,13 +51,13 @@ export default function PublicProfileActivityFeed(props: AssetsProps) {
           }}
           sx={{ fontSize: 14, fontWeight: 500 }}>
           <option value={1}>All payments</option>
-          {(address || profile) && <option value={2}>Between you</option>}
+          {(address || loggedProfile) && <option value={2}>Between you</option>}
         </NativeSelect>
       </Box>
       <Stack p={1} spacing={2} width="100%" maxHeight={430} overflow="auto">
-        {loading ? (
+        {isLoading ? (
           <ActivitySkeletonSection />
-        ) : fetched ? (
+        ) : isFetched && transactions ? (
           transactions
             .filter((tx) => {
               return (
@@ -63,9 +65,9 @@ export default function PublicProfileActivityFeed(props: AssetsProps) {
                 (feedOption !== 1
                   ? tx.to === address ||
                     tx.from === address ||
-                    (profile &&
-                      (tx.fromProfile?.identity === profile.identity ||
-                        tx.toProfile?.identity === profile.identity))
+                    (loggedProfile &&
+                      (tx.fromProfile?.identity === loggedProfile.identity ||
+                        tx.toProfile?.identity === loggedProfile.identity))
                   : true)
               );
             })
