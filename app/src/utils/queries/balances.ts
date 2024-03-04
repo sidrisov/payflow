@@ -19,7 +19,7 @@ export const useBalances = (assets: AssetType[]) => {
     enabled: tokenPrices !== null,
     queryKey: ['balances', { tokenPrices, assets }],
     staleTime: Infinity,
-    refetchInterval: 60,
+    refetchInterval: 60_000,
     queryFn: () =>
       Promise.allSettled(
         assets.map((asset) =>
