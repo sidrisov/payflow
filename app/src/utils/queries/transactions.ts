@@ -12,7 +12,7 @@ export const useTransactions = (wallets: FlowWalletType[]) => {
     queryKey: ['balances', { wallets }],
     staleTime: Infinity,
     // optimize refetch, to only fetch latest txs
-    refetchInterval: 120,
+    refetchInterval: 120_000,
     queryFn: () =>
       Promise.allSettled(wallets.map((wallet) => fetchTransactions(wallet))).then(async (data) => {
         const txs = (
@@ -23,9 +23,7 @@ export const useTransactions = (wallets: FlowWalletType[]) => {
             .filter((tx) => tx) as TxInfo[]
         ).sort((left, right) => right.timestamp.localeCompare(left.timestamp));
 
-        // TODO: get unique
         let wallets: any = [];
-
         txs.forEach((tx) => {
           wallets.push({
             address: tx.from,
@@ -90,6 +88,8 @@ function parseTxHistoryResponse(
   if (!internalTxs || !txs) {
     return [];
   }
+
+  console.log('Internal Txs: ', internalTxs);
 
   const uniqueHashes: { [key: string]: boolean } = {};
 
