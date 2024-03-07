@@ -374,13 +374,14 @@ public class FramesController {
 			log.debug("Previous payment state: {}", state);
 
 			var usdAmount = switch (buttonIndex) {
-				case 1 -> 1;
-				case 2 -> 3;
-				case 3 -> 5;
+				case 1 -> 1.0;
+				case 2 -> 3.0;
+				case 3 -> 5.0;
 				case 4 -> {
 					try {
-						int parsedAmount = Integer.parseInt(validateMessage.action().input().text());
-						if (parsedAmount > 0 && parsedAmount <= 10) {
+						val parsedAmount =
+								Double.parseDouble(validateMessage.action().input().text());
+						if (parsedAmount > 0 && parsedAmount <= 10.0) {
 							yield parsedAmount;
 						} else {
 							log.error("Parsed input token amount {} is not within the valid range" +

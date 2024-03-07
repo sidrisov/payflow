@@ -77,8 +77,8 @@ function PayProfile({
               height: 230,
               display: 'flex',
               flexDirection: 'column',
+              justifyContent: 'flex-start',
               alignItems: 'stretch',
-              justifyContent: 'center',
               padding: 16,
               fontSize: 36,
               backgroundColor: '#e0e0e0',
@@ -146,7 +146,8 @@ function PayProfile({
                   flexDirection: 'row',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
+                  gap: 5
                 }}>
                 <span>Amount</span>
                 <div
