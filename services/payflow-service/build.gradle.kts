@@ -5,7 +5,7 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
     application
-    id("org.springframework.boot") version "3.2.2"
+    id("org.springframework.boot") version "3.2.3"
     id("io.spring.dependency-management") version "1.1.4"
     id("com.google.cloud.artifactregistry.gradle-plugin") version "2.2.1"
     id("io.freefair.lombok") version "8.4"

@@ -1,52 +1,71 @@
 package ua.sinaver.web3.payflow.controller;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import ua.sinaver.web3.payflow.data.Gift;
 import ua.sinaver.web3.payflow.data.Invitation;
 import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.data.Wallet;
 import ua.sinaver.web3.payflow.message.*;
 import ua.sinaver.web3.payflow.repository.GiftRepository;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.service.IdentityService;
-import ua.sinaver.web3.payflow.service.WalletBalanceService;
+import ua.sinaver.web3.payflow.service.TransactionService;
 import ua.sinaver.web3.payflow.service.api.*;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+
+import static ua.sinaver.web3.payflow.service.TransactionService.*;
 
 @RestController
 @RequestMapping("/farcaster/frames")
 @Transactional
 @Slf4j
 public class FramesController {
-	private static final String CONNECT_ACTIONS = "/api/farcaster/frames/actions";
-	private static final String CONNECT_IDENTITY_ACTIONS = "/api/farcaster/frames/actions/%s";
-	private static final String CONNECT_IDENTITY_ACTIONS_INVITE = "/api/farcaster/frames/actions/%s/invite";
-	private static final String CONNECT_IDENTITY_ACTIONS_GIFT = "/api/farcaster/frames/actions/%s" +
-			"/gift";
-	private static final String CONNECT_IDENTITY_ACTIONS_GIFT_BACK = "/api/farcaster/frames" +
+	private static final String BASE_PATH = "/api/farcaster/frames";
+	private static final String CONNECT_ACTIONS = BASE_PATH +
+			"/actions";
+	private static final String CONNECT_IDENTITY_ACTIONS = BASE_PATH +
+			"/actions/%s";
+	private static final String CONNECT_IDENTITY_ACTIONS_INVITE = BASE_PATH +
+			"/actions/%s/invite";
+	private static final String CONNECT_IDENTITY_ACTIONS_GIFT = BASE_PATH +
+			"/actions/%s/gift";
+	private static final String CONNECT_IDENTITY_ACTIONS_GIFT_BACK = BASE_PATH +
 			"/actions/%s/gift/back";
-
-	private static final String CONNECT_IDENTITY_ACTIONS_BACK = "/api/farcaster/frames" +
+	private static final String CONNECT_IDENTITY_ACTIONS_BACK = BASE_PATH +
 			"/actions/%s/back";
+	private static final String PAY = BASE_PATH +
+			"/pay";
+	private static final String PAY_IN_FRAME = BASE_PATH +
+			"/pay/frame";
+	private static final String PAY_IN_FRAME_TOKEN = BASE_PATH +
+			"/pay/frame/token";
+	private static final String PAY_IN_FRAME_AMOUNT = BASE_PATH +
+			"/pay/frame/amount";
+	private static final String PAY_IN_FRAME_CONFIRM = BASE_PATH +
+			"/pay/frame/confirm";
 	private static final ResponseEntity<String> DEFAULT_HTML_RESPONSE =
 			FrameResponse.builder().imageUrl("https://i.imgur.com/Vs0loYg.png").build().toHtmlResponse();
+	private static final FrameButton BACK_FRAME_BUTTON = backFrameButton(null);
+	private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-	private static final FrameButton BACK_FRAME_BUTTON = new FrameButton(
-			"⬅\uFE0F Back",
-			FrameButton.ActionType.POST,
-			null);
 	@Autowired
 	private GiftRepository giftRepository;
 	@Value("${payflow.dapp.url}")
@@ -55,28 +74,37 @@ public class FramesController {
 	private String apiServiceUrl;
 	@Value("${payflow.frames.url}")
 	private String framesServiceUrl;
-
 	@Autowired
 	private IFarcasterHubService farcasterHubService;
-
 	@Autowired
 	private InvitationRepository invitationRepository;
 	@Autowired
-	private WalletBalanceService walletBalanceService;
-	@Autowired
 	private IdentityService identityService;
-
 	@Autowired
 	private IFrameService frameService;
-
 	@Autowired
 	private IUserService userService;
-
 	@Autowired
 	private ISocialGraphService socialGraphService;
-
 	@Autowired
 	private IContactBookService contactBookService;
+
+	@Autowired
+	private TransactionService transactionService;
+
+	private static FrameButton backFrameButton(String target) {
+		return new FrameButton("⬅\uFE0F Back",
+				FrameButton.ActionType.POST,
+				target);
+	}
+
+	private static String roundTokenAmount(double amount) {
+		val scale = amount < 1.0 ? 5 : 1;
+		val amountInDecimals = BigDecimal.valueOf(amount);
+		val roundedAmount = amountInDecimals.setScale(scale, RoundingMode.HALF_UP).toString();
+		log.debug("roundTokenAmount: before {} after {} with scale {}", amountInDecimals, roundedAmount, scale);
+		return roundedAmount;
+	}
 
 	@PostMapping("/connect")
 	public ResponseEntity<String> connect(@RequestBody FrameMessage frameMessage) {
@@ -138,13 +166,372 @@ public class FramesController {
 		}
 
 		if (casterProfile != null) {
-			val paymentLink = dAppServiceUrl.concat(String.format("/%s?pay",
-					casterProfile.getUsername()));
-
-			frameResponseBuilder.button(new FrameButton("Pay", FrameButton.ActionType.LINK,
-					paymentLink));
+			frameResponseBuilder.button(new FrameButton("Pay", FrameButton.ActionType.POST,
+					apiServiceUrl.concat(PAY)));
 		}
 		return frameResponseBuilder.build().toHtmlResponse();
+	}
+
+	@PostMapping("/pay")
+	public ResponseEntity<String> payProfileOptions(@RequestBody FrameMessage frameMessage) {
+		log.debug("Received pay profile options frame message request: {}", frameMessage);
+		val validateMessage =
+				farcasterHubService.validateFrameMessageWithNeynar(
+						frameMessage.trustedData().messageBytes());
+
+		if (!validateMessage.valid()) {
+			log.error("Frame message failed validation {}", validateMessage);
+			return DEFAULT_HTML_RESPONSE;
+		}
+		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
+				validateMessage.action().url());
+
+		val clickedFid = validateMessage.action().interactor().fid();
+		val casterFid = validateMessage.action().cast().fid();
+
+		val addresses = frameService.getFidAddresses(clickedFid);
+		val profiles = frameService.getFidProfiles(addresses);
+
+		User casterProfile;
+		if (clickedFid != casterFid) {
+			casterProfile =
+					frameService.getFidProfile(casterFid, null);
+		} else {
+			casterProfile = profiles.stream().findFirst().orElse(null);
+		}
+
+		if (casterProfile != null) {
+			val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
+							"/payment.png?step=start",
+					casterProfile.getIdentity()));
+			val paymentLink = dAppServiceUrl.concat(String.format("/%s?pay",
+					casterProfile.getUsername()));
+			return FrameResponse.builder()
+					.imageUrl(profileImage)
+					.button(new FrameButton("\uD83D\uDDBC\uFE0F via Frame",
+							FrameButton.ActionType.POST,
+							apiServiceUrl.concat(PAY_IN_FRAME)))
+					.button(new FrameButton("\uD83D\uDCF1 via App", FrameButton.ActionType.LINK,
+							paymentLink))
+					.build().toHtmlResponse();
+		}
+		return DEFAULT_HTML_RESPONSE;
+	}
+
+	@PostMapping("/pay/frame")
+	public ResponseEntity<String> payProfileInFrame(@RequestBody FrameMessage frameMessage) {
+		log.debug("Received pay profile in frame message request: {}", frameMessage);
+		val validateMessage =
+				farcasterHubService.validateFrameMessageWithNeynar(
+						frameMessage.trustedData().messageBytes());
+
+		if (!validateMessage.valid()) {
+			log.error("Frame message failed validation {}", validateMessage);
+			return DEFAULT_HTML_RESPONSE;
+		}
+		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
+				validateMessage.action().url());
+
+		val clickedFid = validateMessage.action().interactor().fid();
+		val casterFid = validateMessage.action().cast().fid();
+
+		val addresses = frameService.getFidAddresses(clickedFid);
+		val profiles = frameService.getFidProfiles(addresses);
+
+		User casterProfile;
+		if (clickedFid != casterFid) {
+			casterProfile =
+					frameService.getFidProfile(casterFid, null);
+		} else {
+			casterProfile = profiles.stream().findFirst().orElse(null);
+		}
+
+
+		if (casterProfile != null) {
+			val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
+							"/payment.png?step=token&chainId=%s",
+					casterProfile.getIdentity(), BASE_CHAIN_ID));
+
+			val flowWalletAddress = casterProfile.getDefaultFlow().getWallets().stream()
+					.map(Wallet::getAddress).findFirst().orElse(null);
+
+			if (StringUtils.isBlank(flowWalletAddress)) {
+				log.error("Profile doesn't support payments on chainId: {}", DEFAULT_FRAME_PAYMENTS_CHAIN_ID);
+				return DEFAULT_HTML_RESPONSE;
+			}
+
+			val state = gson.toJson(new FramePaymentMessage(flowWalletAddress, DEFAULT_FRAME_PAYMENTS_CHAIN_ID, null,
+					null));
+
+			return FrameResponse.builder()
+					.imageUrl(profileImage)
+					.postUrl(apiServiceUrl.concat(PAY_IN_FRAME_TOKEN))
+					.button(new FrameButton("ETH", FrameButton.ActionType.POST, null))
+					.button(new FrameButton("USDC", FrameButton.ActionType.POST, null))
+					.button(new FrameButton("DEGEN", FrameButton.ActionType.POST, null))
+					.state(Base64.getEncoder().encodeToString(state.getBytes()))
+					.build().toHtmlResponse();
+		}
+		return DEFAULT_HTML_RESPONSE;
+	}
+
+	@PostMapping("/pay/frame/token")
+	public ResponseEntity<String> choosePaymentToken(@RequestBody FrameMessage frameMessage) {
+		log.debug("Received choose payment token message request: {}", frameMessage);
+		val validateMessage =
+				farcasterHubService.validateFrameMessageWithNeynar(
+						frameMessage.trustedData().messageBytes());
+
+		if (!validateMessage.valid()) {
+			log.error("Frame message failed validation {}", validateMessage);
+			return DEFAULT_HTML_RESPONSE;
+		}
+		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
+				validateMessage.action().url());
+
+		val clickedFid = validateMessage.action().interactor().fid();
+		val casterFid = validateMessage.action().cast().fid();
+		val buttonIndex = validateMessage.action().tappedButton().index();
+
+		val addresses = frameService.getFidAddresses(clickedFid);
+		val profiles = frameService.getFidProfiles(addresses);
+
+		User casterProfile;
+		if (clickedFid != casterFid) {
+			casterProfile =
+					frameService.getFidProfile(casterFid, null);
+		} else {
+			casterProfile = profiles.stream().findFirst().orElse(null);
+		}
+
+		var state = gson.fromJson(
+				new String(Base64.getDecoder().decode(validateMessage.action().state().serialized())),
+				FramePaymentMessage.class);
+
+		if (casterProfile != null && state != null) {
+			val token = switch (buttonIndex) {
+				case 1 -> ETH_TOKEN;
+				case 2 -> USDC_TOKEN;
+				case 3 -> DEGEN_TOKEN;
+				default -> null;
+			};
+
+			if (token != null) {
+				val updatedState = gson.toJson(new FramePaymentMessage(state.address(),
+						state.chainId(), token, null));
+				val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
+								"/payment.png?step=amount&chainId=%s&token=%s",
+						casterProfile.getIdentity(), BASE_CHAIN_ID, token));
+				return FrameResponse.builder()
+						.textInput("Enter amount, $ (1-10)")
+						.postUrl(apiServiceUrl.concat(PAY_IN_FRAME_AMOUNT))
+						.button(new FrameButton("$1", FrameButton.ActionType.POST, null))
+						.button(new FrameButton("$3", FrameButton.ActionType.POST, null))
+						.button(new FrameButton("$5", FrameButton.ActionType.POST, null))
+						.button(new FrameButton("Next", FrameButton.ActionType.POST, null))
+						.imageUrl(profileImage)
+						.state(Base64.getEncoder().encodeToString(updatedState.getBytes()))
+						.build().toHtmlResponse();
+			}
+		}
+		return DEFAULT_HTML_RESPONSE;
+	}
+
+	@PostMapping("/pay/frame/amount")
+	public ResponseEntity<String> paymentAmount(@RequestBody FrameMessage frameMessage) {
+		log.debug("Received enter payment amount message request: {}", frameMessage);
+		val validateMessage =
+				farcasterHubService.validateFrameMessageWithNeynar(
+						frameMessage.trustedData().messageBytes());
+
+		if (!validateMessage.valid()) {
+			log.error("Frame message failed validation {}", validateMessage);
+			return DEFAULT_HTML_RESPONSE;
+		}
+		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
+				validateMessage.action().url());
+
+		val clickedFid = validateMessage.action().interactor().fid();
+		val casterFid = validateMessage.action().cast().fid();
+		val buttonIndex = validateMessage.action().tappedButton().index();
+
+		val addresses = frameService.getFidAddresses(clickedFid);
+		val profiles = frameService.getFidProfiles(addresses);
+
+		User casterProfile;
+		if (clickedFid != casterFid) {
+			casterProfile =
+					frameService.getFidProfile(casterFid, null);
+		} else {
+			casterProfile = profiles.stream().findFirst().orElse(null);
+		}
+
+		var state = gson.fromJson(
+				new String(Base64.getDecoder().decode(validateMessage.action().state().serialized())),
+				FramePaymentMessage.class);
+
+		if (casterProfile != null && state != null) {
+			log.debug("Previous payment state: {}", state);
+
+			var usdAmount = switch (buttonIndex) {
+				case 1 -> 1;
+				case 2 -> 3;
+				case 3 -> 5;
+				case 4 -> {
+					try {
+						int parsedAmount = Integer.parseInt(validateMessage.action().input().text());
+						if (parsedAmount > 0 && parsedAmount <= 10) {
+							yield parsedAmount;
+						} else {
+							log.error("Parsed input token amount {} is not within the valid range" +
+									" (1-10)", parsedAmount);
+							yield null;
+						}
+					} catch (NumberFormatException ignored) {
+						log.error("Failed to parse input token amount.");
+						yield null;
+					}
+				}
+				default -> null;
+			};
+
+			// fallback to previous state
+			if (usdAmount == null && state.usdAmount() != null) {
+				usdAmount = state.usdAmount();
+			}
+
+			val updatedState = gson.toJson(new FramePaymentMessage(state.address(),
+					state.chainId(), state.token(), usdAmount));
+
+			if (usdAmount != null && buttonIndex == 4) {
+				val tokenAmount = roundTokenAmount(
+						usdAmount / transactionService.getPrice(state.token()));
+
+				val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
+								"/payment.png?step=confirm&chainId=%s&token=%s&usdAmount=%s&amount=%s",
+						casterProfile.getIdentity(), state.chainId(), state.token(), usdAmount, tokenAmount));
+				val frameResponseBuilder = FrameResponse.builder()
+						.postUrl(apiServiceUrl.concat(PAY_IN_FRAME_CONFIRM))
+						.button(new FrameButton("Pay now", FrameButton.ActionType.TX,
+								apiServiceUrl.concat(PAY_IN_FRAME_CONFIRM)))
+						.imageUrl(profileImage)
+						.state(Base64.getEncoder().encodeToString(updatedState.getBytes()));
+
+				// for now just check if profile exists
+				if (!profiles.isEmpty()) {
+					frameResponseBuilder.button(new FrameButton("Pay later", FrameButton.ActionType.POST,
+							apiServiceUrl.concat(PAY_IN_FRAME_CONFIRM)));
+				}
+
+				return frameResponseBuilder.build().toHtmlResponse();
+			} else {
+				val tokenAmount = usdAmount != null ? roundTokenAmount(
+						usdAmount / transactionService.getPrice(state.token())) : "";
+
+				val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
+								"/payment.png?step=amount&chainId=%s&token=%s&usdAmount=%s&amount=%s",
+						casterProfile.getIdentity(), state.chainId(), state.token(),
+						usdAmount != null ? usdAmount : "", tokenAmount));
+				return FrameResponse.builder()
+						.textInput(String.format("Enter amount%s, $ (1-10)", usdAmount == null ?
+								" again" : ""))
+						.postUrl(apiServiceUrl.concat(PAY_IN_FRAME_AMOUNT))
+						.button(new FrameButton("$1", FrameButton.ActionType.POST, null))
+						.button(new FrameButton("$3", FrameButton.ActionType.POST, null))
+						.button(new FrameButton("$5", FrameButton.ActionType.POST, null))
+						.button(new FrameButton("Next", FrameButton.ActionType.POST, null))
+						.imageUrl(profileImage)
+						.state(Base64.getEncoder().encodeToString(updatedState.getBytes()))
+						.build().toHtmlResponse();
+			}
+		}
+		return DEFAULT_HTML_RESPONSE;
+	}
+
+	@PostMapping("/pay/frame/confirm")
+	public ResponseEntity<String> paymentConfirm(@RequestBody FrameMessage frameMessage) {
+		log.debug("Received payment next message request: {}", frameMessage);
+		val validateMessage =
+				farcasterHubService.validateFrameMessageWithNeynar(
+						frameMessage.trustedData().messageBytes());
+
+		if (!validateMessage.valid()) {
+			log.error("Frame message failed validation {}", validateMessage);
+			return DEFAULT_HTML_RESPONSE;
+		}
+		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
+				validateMessage.action().url());
+
+		val clickedFid = validateMessage.action().interactor().fid();
+		val casterFid = validateMessage.action().cast().fid();
+		val buttonIndex = validateMessage.action().tappedButton().index();
+		// TODO: use from untrusted for now
+		var transactionId = frameMessage.untrustedData().transactionId();
+		//validateMessage.action().transactionId();
+
+		val addresses = frameService.getFidAddresses(clickedFid);
+		val profiles = frameService.getFidProfiles(addresses);
+
+		User casterProfile;
+		if (clickedFid != casterFid) {
+			casterProfile =
+					frameService.getFidProfile(casterFid, null);
+		} else {
+			casterProfile = profiles.stream().findFirst().orElse(null);
+		}
+
+		var state = gson.fromJson(
+				new String(Base64.getDecoder().decode(validateMessage.action().state().serialized())),
+				FramePaymentMessage.class);
+
+		if (casterProfile != null && state != null) {
+			log.debug("Previous payment state: {}", state);
+			if (isFramePaymentMessageComplete(state)) {
+				val flowWalletAddress =
+						casterProfile.getDefaultFlow().getWallets().stream()
+								.filter(wallet -> wallet.getNetwork() == state.chainId())
+								.map(Wallet::getAddress).findFirst().orElse(null);
+
+				if (!state.address().equals(flowWalletAddress)) {
+					log.error("Transaction address doesn't match profile's flow wallet address: " +
+							"{} vs {}", state.address(), flowWalletAddress);
+					return DEFAULT_HTML_RESPONSE;
+				}
+
+				// handle transaction execution result
+				if (!StringUtils.isBlank(transactionId)) {
+					log.debug("Handling tx id {} for {}", transactionId, state);
+					// TODO: check tx execution status
+					val tokenAmount = roundTokenAmount(
+							state.usdAmount() / transactionService.getPrice(state.token()));
+					val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
+									"/payment.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
+									"&amount=%s&status=%s",
+							casterProfile.getIdentity(), state.chainId(), state.token(),
+							state.usdAmount(), tokenAmount, "success"));
+					return FrameResponse.builder()
+							.imageUrl(profileImage)
+							.button(new FrameButton("\uD83D\uDD0E Check tx details",
+									FrameButton.ActionType.LINK,
+									"https://basescan.org/tx/" + transactionId))
+							.imageUrl(profileImage)
+							.build().toHtmlResponse();
+				} else if (buttonIndex == 1) {
+					log.debug("Handling payment through frame tx: {}", state);
+					val callData = transactionService.generateTxCallData(state);
+					log.debug("Returning callData for tx payment: {} - {}", callData, state);
+					return ResponseEntity.ok()
+							.contentType(MediaType.APPLICATION_JSON)
+							.body(callData);
+				} else if (buttonIndex == 2) {
+					log.debug("Submitting payment for later in app execution: {}", state);
+				}
+			} else {
+				log.debug("Frame payment message is not complete or valid: {}", state);
+			}
+		}
+
+		return DEFAULT_HTML_RESPONSE;
 	}
 
 	@PostMapping("/actions")
@@ -163,8 +550,6 @@ public class FramesController {
 		val clickedFid = validateMessage.action().interactor().fid();
 
 		val buttonIndex = validateMessage.action().tappedButton().index();
-		val casterFid = validateMessage.action().cast().fid();
-
 		val profiles = frameService.getFidProfiles(clickedFid);
 
 		if (!profiles.isEmpty()) {
@@ -189,10 +574,6 @@ public class FramesController {
 						.button(new FrameButton("Profile",
 								FrameButton.ActionType.LINK,
 								profileLink));
-				/*if (fid != casterFid) {
-					responseBuilder.button(new FrameButton("Social Insights", FrameButton.ActionType.POST,
-							null));
-				}*/
 
 				return responseBuilder.build().toHtmlResponse();
 			}
@@ -216,8 +597,6 @@ public class FramesController {
 
 		val clickedFid = validateMessage.action().interactor().fid();
 		val buttonIndex = validateMessage.action().tappedButton().index();
-		val casterFid = validateMessage.action().cast().fid();
-
 		val clickedProfile = frameService.getFidProfile(clickedFid, identity);
 
 		if (clickedProfile != null && buttonIndex > 0 && buttonIndex <= 3) {
@@ -235,7 +614,7 @@ public class FramesController {
 						defaultFlow.getWallets().stream()
 								.filter(w -> w.getNetwork() == 8453).findFirst()
 								.ifPresent(flowBaseWallet -> {
-									balances.set(walletBalanceService.getWalletBalance(flowBaseWallet.getAddress()));
+									balances.set(transactionService.getWalletBalance(flowBaseWallet.getAddress()));
 								});
 					}
 					if (balances.get() != null) {
@@ -445,7 +824,6 @@ public class FramesController {
 
 		return Collections.emptyList();
 	}
-
 
 	@PostMapping("/actions/{identity}/gift/back")
 	public ResponseEntity<String> handleGiftBackAction(@PathVariable String identity,

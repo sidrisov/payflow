@@ -16,6 +16,8 @@ import { giftHtml } from './components/Gift';
 import { giftLeaderboardHtml } from './components/GiftLeaderboard';
 import { GiftProfileType } from './types/GiftType';
 import { BalanceType } from './types/BalanceType';
+import { PaymentType } from './types/PaymentType';
+import { payProfileHtml } from './components/PayProfile';
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -80,6 +82,31 @@ async function startServer() {
       const response = await axios.get(`${API_URL}/api/user/${identity}`);
       const profileData = response.data as ProfileType;
       const image = await htmlToImage(profileHtml(profileData), 'landscape');
+      res.type('png').send(image);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error retrieving profile data');
+    }
+  });
+
+  app.get('/images/profile/:identity/payment.png', async (req, res) => {
+    const identity = req.params.identity;
+    const step = req.query.step;
+    const payment = {
+      chainId: req.query.chainId,
+      token: req.query.token,
+      amount: req.query.amount,
+      usdAmount: req.query.usdAmount,
+      status: req.query.status
+    } as PaymentType;
+
+    try {
+      const response = await axios.get(`${API_URL}/api/user/${identity}`);
+      const profileData = response.data as ProfileType;
+      const image = await htmlToImage(
+        payProfileHtml(profileData, step as any, payment),
+        'landscape'
+      );
       res.type('png').send(image);
     } catch (error) {
       console.error(error);

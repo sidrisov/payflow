@@ -18,6 +18,8 @@ public class FrameResponse {
 	private String imageUrl;
 	private String postUrl;
 	private String textInput;
+	private String state;
+
 	@Builder.Default
 	private boolean cacheImage = true;
 
@@ -29,7 +31,10 @@ public class FrameResponse {
 				<meta property="fc:frame:button:%s" content="%s"/>
 				""", index, frameButton.name());
 
-		if (frameButton.action().equals(FrameButton.ActionType.LINK)) {
+		if ((frameButton.action().equals(FrameButton.ActionType.LINK)
+				|| frameButton.action().equals(FrameButton.ActionType.POST)
+				|| frameButton.action().equals(FrameButton.ActionType.TX))
+				&& frameButton.target() != null) {
 			frameButtonMeta = frameButtonMeta.concat(String.format(
 					"""
 											<meta property="fc:frame:button:%s:action" content="%s"/>
@@ -41,6 +46,14 @@ public class FrameResponse {
 	}
 
 	public ResponseEntity<String> toHtmlResponse() {
+
+		var postMeta = "";
+		if (!StringUtils.isBlank(postUrl)) {
+			postMeta = String.format("""
+					<meta property="fc:frame:post_url" content="%s" />
+					""", postUrl);
+		}
+
 		var buttonsMeta = "";
 		for (int i = 0; i < buttons.size(); i++) {
 			buttonsMeta = buttonsMeta.concat(frameButtonMeta(i + 1, buttons.get(i)));
@@ -53,18 +66,26 @@ public class FrameResponse {
 					""", textInput);
 		}
 
+		var stateMeta = "";
+		if (!StringUtils.isBlank(state)) {
+			stateMeta = String.format("""
+					<meta property="fc:frame:state" content="%s" />
+					""", state);
+		}
+
 		val html = String.format("""
 				<!DOCTYPE html>
 				<html>
 				<head>
 				<meta property="fc:frame" content="vNext" />
 				<meta property="fc:frame:image" content="%s"/>
-				<meta property="fc:frame:post_url" content="%s" />
+				%s
+				%s
 				%s
 				%s
 				</head>
 				</html>
-				""", cacheAdjustedImageUrl(), postUrl, buttonsMeta, inputMeta);
+				""", cacheAdjustedImageUrl(), postMeta, stateMeta, buttonsMeta, inputMeta);
 
 		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XHTML_XML).body(html);
 	}

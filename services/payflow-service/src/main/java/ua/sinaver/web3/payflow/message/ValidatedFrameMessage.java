@@ -15,7 +15,9 @@ public record ValidatedFrameMessage(
 			@JsonProperty("tapped_button") TappedButton tappedButton,
 			Input input,
 			String url,
-			Cast cast
+			State state,
+			Cast cast,
+			@JsonProperty("transaction_id") String transactionId
 	) {
 	}
 
@@ -31,6 +33,11 @@ public record ValidatedFrameMessage(
 			@JsonProperty("following_count") int followingCount,
 			List<String> verifications,
 			@JsonProperty("active_status") String activeStatus
+	) {
+	}
+
+	public record State(
+			String serialized
 	) {
 	}
 

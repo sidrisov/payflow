@@ -7,6 +7,7 @@ public record FrameButton(String name, ActionType action,
 		POST,
 		POST_REDIRECT,
 		MINT,
+		TX,
 		LINK
 	}
 }
