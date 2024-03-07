@@ -1,23 +1,22 @@
-import { useContext } from 'react';
 import { getBalance } from 'wagmi/actions';
 import { AssetType, AssetBalanceType } from '../../types/AssetType';
 import { privyWagmiConfig } from '../wagmiConfig';
 import { formatUnits } from 'viem';
 import { GetBalanceData } from 'wagmi/query';
-import { ProfileContext } from '../../contexts/UserContext';
 import { useQuery } from '@tanstack/react-query';
+import { useTokenPrices as useTokenPrices } from './prices';
 
 function getAssetValue(assetBalance: GetBalanceData, price: number) {
   const value = formatUnits(assetBalance?.value ?? BigInt(0), assetBalance?.decimals ?? 0);
   return parseFloat(value) * price;
 }
 
-export const useBalances = (assets: AssetType[]) => {
-  const { tokenPrices } = useContext(ProfileContext);
+export const useAssetBalances = (assets: AssetType[]) => {
+  const { isFetched, data: tokenPrices } = useTokenPrices();
 
   return useQuery({
-    enabled: tokenPrices !== null,
-    queryKey: ['balances', { tokenPrices, assets }],
+    enabled: isFetched && Boolean(tokenPrices) && assets && assets.length > 0,
+    queryKey: ['balances', { assets, tokenPrices }],
     staleTime: Infinity,
     refetchInterval: 60_000,
     queryFn: () =>
@@ -43,7 +42,7 @@ export const useBalances = (assets: AssetType[]) => {
                       : 0
                 }))
                 .sort((left, right) => Number(right.usdValue - left.usdValue))
-            : []
+            : undefined
         ) as AssetBalanceType[];
       })
   });
