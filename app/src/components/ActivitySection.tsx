@@ -14,8 +14,6 @@ import {
 import { lightGreen, red } from '@mui/material/colors';
 import { formatUnits } from 'viem';
 import { IdentityType } from '../types/ProfleType';
-import { useContext } from 'react';
-import { ProfileContext } from '../contexts/UserContext';
 import { TxInfo, TxToken } from '../types/ActivityFetchResultType';
 import NetworkAvatar from './avatars/NetworkAvatar';
 import ProfileSectionButton from './buttons/ProfileSectionButton';
@@ -24,6 +22,7 @@ import { getNetworkDefaultBlockExplorerUrl } from '../utils/networks';
 import { timeAgo } from '../utils/time';
 import { ETH_TOKEN } from '../utils/erc20contracts';
 import { normalizeNumberPrecision } from '../utils/normalizeNumberPrecision';
+import { useTokenPrices } from '../utils/queries/prices';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
 function getActivityLabel(activity: string) {
@@ -63,7 +62,7 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
   const theme = useTheme();
   const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { tokenPrices } = useContext(ProfileContext);
+  const { data: tokenPrices } = useTokenPrices();
   const { txInfo } = props;
 
   const blockExplorerUrl = getNetworkDefaultBlockExplorerUrl(txInfo.chainId);

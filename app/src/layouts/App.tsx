@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 import {
@@ -19,10 +19,7 @@ import { Home, HomeOutlined } from '@mui/icons-material';
 
 import { ProfileContext } from '../contexts/UserContext';
 import HideOnScroll from '../components/HideOnScroll';
-import { useEnsAddress, useReadContract } from 'wagmi';
 
-import AggregatorV2V3Interface from '../../../smart-accounts/zksync-aa/artifacts-zk/contracts/interfaces/AggregatorV2V3Interface.sol/AggregatorV2V3Interface.json';
-import { formatUnits } from 'viem';
 import { ProfileType } from '../types/ProfleType';
 import { AppSettings } from '../types/AppSettingsType';
 import { ProfileMenu } from '../components/menu/ProfileMenu';
@@ -30,9 +27,8 @@ import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import HomeLogo from '../components/Logo';
 import ProfileAvatar from '../components/avatars/ProfileAvatar';
 import PrimaryFlowOnboardingDialog from '../components/dialogs/PrimaryFlowOnboardingDialog';
-import axios from 'axios';
-import { DEGEN_TOKEN, ETH_TOKEN, TokenPrices, USDC_TOKEN } from '../utils/erc20contracts';
 import { DAPP_URL } from '../utils/urlConstants';
+import { useTokenPrices } from '../utils/queries/prices';
 
 export default function AppLayout({
   profile,
@@ -56,45 +52,9 @@ export default function AppLayout({
 
   const location = useLocation();
 
-  const [tokenPrices, setTokenPrices] = useState<TokenPrices>();
+  const { isLoading, isFetched, data: prices } = useTokenPrices();
 
-  const { isSuccess: isEnsSuccess, data: ethUsdPriceFeedAddress } = useEnsAddress({
-    name: 'eth-usd.data.eth',
-    chainId: 1,
-    query: {
-      staleTime: 300_000
-    }
-  });
-
-  const { data: ethUsdPrice } = useReadContract({
-    chainId: 1,
-    address: ethUsdPriceFeedAddress ?? undefined,
-    abi: AggregatorV2V3Interface.abi,
-    functionName: 'latestAnswer',
-    query: {
-      enabled: isEnsSuccess && ethUsdPriceFeedAddress !== undefined,
-      select: (data) => Number(formatUnits(data as bigint, 8)),
-      staleTime: 10_000
-    }
-  });
-
-  // TODO: create hook for fetching prices
-  useMemo(async () => {
-    if (ethUsdPrice) {
-      // TODO: replace with more known price source
-      const response = await axios.get(
-        'https://api.dexscreener.com/latest/dex/pairs/base/0xc9034c3E7F58003E6ae0C8438e7c8f4598d5ACAA'
-      );
-
-      const tokenPrices = {
-        [ETH_TOKEN]: ethUsdPrice,
-        [USDC_TOKEN]: 1,
-        [DEGEN_TOKEN]: response.data.pair.priceUsd
-      } as TokenPrices;
-
-      setTokenPrices(tokenPrices);
-    }
-  }, [ethUsdPrice]);
+  console.log('prices: ', isLoading, isFetched, prices);
 
   useEffect(() => {
     if (profile) {
@@ -112,8 +72,7 @@ export default function AppLayout({
         isAuthenticated: authorized,
         profile,
         appSettings,
-        setAppSettings,
-        tokenPrices
+        setAppSettings
       }}>
       <Container maxWidth="xs">
         <Box height="100vh" display="flex" flexDirection="column" justifyContent="flex-start">

@@ -12,7 +12,7 @@ import { FlowType } from '../types/FlowType';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import NetworkSelectorSection from '../components/NetworkSelectorSection';
 import { useNavigate } from 'react-router-dom';
-import { useBalances as useAssetBalances } from '../utils/queries/balances';
+import { useAssetBalances } from '../utils/queries/balances';
 import { useTransactions } from '../utils/queries/transactions';
 
 export default function Accounts() {

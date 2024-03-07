@@ -14,7 +14,7 @@ export default function Assets({
 }) {
   return (
     <Stack pt={1} px={1} spacing={1} width="100%" maxHeight={430} overflow="auto">
-      {isLoading ? (
+      {isLoading || !isFetched ? (
         <ActivitySkeletonSection />
       ) : isFetched && balances ? (
         balances

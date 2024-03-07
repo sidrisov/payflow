@@ -1,15 +1,15 @@
 import { Typography, Stack, Box, TextField, Button, InputAdornment } from '@mui/material';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAccount, useBalance } from 'wagmi';
 import { AttachMoney, PriorityHigh } from '@mui/icons-material';
 import { formatUnits, parseUnits } from 'viem';
 import { FlowWalletType } from '../../types/FlowType';
 import { red } from '@mui/material/colors';
 import { NetworkSelectorButton } from '../buttons/NetworkSelectorButton';
-import { ProfileContext } from '../../contexts/UserContext';
 import { TokenSelectorButton } from '../buttons/TokenSelectorButton';
 import { ETH, Token, getSupportedTokens } from '../../utils/erc20contracts';
 import { normalizeNumberPrecision } from '../../utils/normalizeNumberPrecision';
+import { useTokenPrices } from '../../utils/queries/prices';
 
 export function TokenAmountSection({
   selectedWallet,
@@ -34,7 +34,7 @@ export function TokenAmountSection({
 }) {
   const { chain } = useAccount();
 
-  const { tokenPrices } = useContext(ProfileContext);
+  const { data: tokenPrices } = useTokenPrices();
 
   const [balanceEnough, setBalanceEnough] = useState<boolean>();
   const [minAmountSatisfied, setMinAmountSatisfied] = useState<boolean>();

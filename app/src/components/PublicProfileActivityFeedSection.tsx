@@ -10,8 +10,7 @@ import {
   useTheme
 } from '@mui/material';
 import { formatUnits } from 'viem';
-import { useContext, useState } from 'react';
-import { ProfileContext } from '../contexts/UserContext';
+import { useState } from 'react';
 import { TxInfo, TxToken } from '../types/ActivityFetchResultType';
 import NetworkAvatar from './avatars/NetworkAvatar';
 import { getNetworkDefaultBlockExplorerUrl, getNetworkDisplayName } from '../utils/networks';
@@ -28,6 +27,7 @@ import { ProfileType } from '../types/ProfleType';
 import { ETH_TOKEN } from '../utils/erc20contracts';
 import { normalizeNumberPrecision } from '../utils/normalizeNumberPrecision';
 import TokenAvatar from './avatars/TokenAvatar';
+import { useTokenPrices } from '../utils/queries/prices';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
 
@@ -39,7 +39,7 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { tokenPrices } = useContext(ProfileContext);
+  const { data: tokenPrices } = useTokenPrices();
   const { txInfo } = props;
 
   const [profileDetailsPopoverAnchorEl, setProfileDetailsPopoverAnchorEl] =
