@@ -62,7 +62,7 @@ public class FarcasterHubService implements IFarcasterHubService {
 		try {
 			return neynarClient.post()
 					.uri("/v2/farcaster/frame/validate")
-					.bodyValue(new ValidateMessageRequest(false, false, frameMessageInHex))
+					.bodyValue(new ValidateMessageRequest(false, false, true, frameMessageInHex))
 					.retrieve().bodyToMono(ValidatedFrameMessage.class).block();
 		} catch (Throwable t) {
 			log.debug("Exception calling Neynar Frame Validate API: {}", t.getMessage());

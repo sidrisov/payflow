@@ -267,7 +267,7 @@ public class FramesController {
 			return FrameResponse.builder()
 					.imageUrl(profileImage)
 					.postUrl(apiServiceUrl.concat(PAY_IN_FRAME_TOKEN))
-					.button(new FrameButton("ETH", FrameButton.ActionType.POST, null))
+					//.button(new FrameButton("ETH", FrameButton.ActionType.POST, null))
 					.button(new FrameButton("USDC", FrameButton.ActionType.POST, null))
 					.button(new FrameButton("DEGEN", FrameButton.ActionType.POST, null))
 					.state(Base64.getEncoder().encodeToString(state.getBytes()))
@@ -311,9 +311,9 @@ public class FramesController {
 
 		if (casterProfile != null && state != null) {
 			val token = switch (buttonIndex) {
-				case 1 -> ETH_TOKEN;
-				case 2 -> USDC_TOKEN;
-				case 3 -> DEGEN_TOKEN;
+				//case 1 -> ETH_TOKEN;
+				case 1 -> USDC_TOKEN;
+				case 2 -> DEGEN_TOKEN;
 				default -> null;
 			};
 
@@ -479,10 +479,8 @@ public class FramesController {
 		val clickedFid = validateMessage.action().interactor().fid();
 		val casterFid = validateMessage.action().cast().fid();
 		val buttonIndex = validateMessage.action().tappedButton().index();
-		val transactionId = frameMessage.untrustedData().transactionId();/*validateMessage.action
-		().transaction()
-		 != null ?
-				validateMessage.action().transaction().hash() : null;*/
+		val transactionId = validateMessage.action().transaction() != null ?
+				validateMessage.action().transaction().hash() : null;
 
 		val addresses = frameService.getFidAddresses(clickedFid);
 		val profiles = frameService.getFidProfiles(addresses);
@@ -532,7 +530,7 @@ public class FramesController {
 					payment.setHash(transactionId);
 					payment.setStatus(Payment.PaymentStatus.COMPLETED);
 					payment.setUsdAmount(state.usdAmount().toString());
-					payment.setSourceApp("Warpcast");
+					payment.setSourceApp(validateMessage.action().signer().client().displayName());
 					payment.setSourceRef(String.format("https://warpcast.com/%s/%s",
 							casterFcName, validateMessage.action().cast().hash().substring(0, 10)));
 					payment.setCompletedDate(new Date());
