@@ -22,6 +22,7 @@ export interface TxInfo {
   activity: 'inbound' | 'outbound' | 'self';
   fromProfile?: ProfileType;
   toProfile?: ProfileType;
+  payment?: PaymentType;
 }
 
 export interface TxToken {
@@ -31,6 +32,12 @@ export interface TxToken {
   name: string;
   symbol: string;
   type: string;
+}
+
+export interface PaymentType {
+  hash: Hash;
+  source: { app: string; ref?: string };
+  comment?: string;
 }
 
 export type WalletActivityType = { wallet: FlowWalletType; txs: TxInfo[] | undefined };

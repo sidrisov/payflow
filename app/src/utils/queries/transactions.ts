@@ -2,11 +2,15 @@ import { useQuery } from '@tanstack/react-query';
 import { FlowWalletType, WalletWithProfileType } from '../../types/FlowType';
 import { sortAndFilterFlowWallets } from '../sortAndFilterFlows';
 import { API_URL } from '../urlConstants';
-import { TxInfo } from '../../types/ActivityFetchResultType';
+import { TxInfo, PaymentType } from '../../types/ActivityFetchResultType';
 import axios from 'axios';
 import { baseSepolia, base, optimism, zora } from 'viem/chains';
+import { useContext } from 'react';
+import { ProfileContext } from '../../contexts/UserContext';
 
 export const useTransactions = (wallets: FlowWalletType[]) => {
+  const { profile } = useContext(ProfileContext);
+
   return useQuery({
     enabled: wallets.length > 0,
     queryKey: ['balances', { wallets }],
@@ -35,12 +39,29 @@ export const useTransactions = (wallets: FlowWalletType[]) => {
           });
         });
 
-        const { status, data: walletProfiles } = await axios.post(
+        const { data: walletProfiles } = await axios.post(
           `${API_URL}/api/user/search/wallets`,
           wallets
         );
 
-        if (status === 200 && walletProfiles) {
+        const hashes = txs.map((tx) => tx.hash);
+
+        let payments: PaymentType[] = [];
+        if (profile) {
+          const { status, data } = await axios.get(`${API_URL}/api/payment`, {
+            params: { hashes },
+            paramsSerializer: {
+              indexes: null
+            },
+            withCredentials: true
+          });
+
+          if (status === 200 && data) {
+            payments = data;
+          }
+        }
+
+        if ((walletProfiles && walletProfiles.length > 0) || (payments && payments.length > 0)) {
           txs.forEach((tx) => {
             const fromProfile = walletProfiles.find(
               (w: WalletWithProfileType) => w.address === tx.from && w.network === tx.chainId
@@ -64,6 +85,12 @@ export const useTransactions = (wallets: FlowWalletType[]) => {
                 defaultFlow: sortAndFilterFlowWallets(toProfile.defaultFlow)
               };
             }
+
+            const payment = payments.find((p) => p.hash === tx.hash);
+            if (payment) {
+              tx.payment = payment;
+            }
+
             return tx;
           });
           return txs;

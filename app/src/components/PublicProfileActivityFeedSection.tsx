@@ -30,7 +30,6 @@ import TokenAvatar from './avatars/TokenAvatar';
 import { useTokenPrices } from '../utils/queries/prices';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
-
 function getActivityLabel(activity: string) {
   return activity === 'self' ? 'paid self' : 'paid';
 }
@@ -133,9 +132,25 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
                 •
               </Typography>
               <Typography noWrap variant="caption" fontSize={isMobile ? 13 : 15}>
-                {timeAgo.format(new Date(txInfo.timestamp), isMobile ? 'mini' : 'round')}
+                {timeAgo.format(new Date(txInfo.timestamp), 'mini')}
               </Typography>
             </Stack>
+
+            {txInfo.payment && txInfo.payment.source && (
+              <Chip
+                variant="outlined"
+                size="medium"
+                clickable
+                label={txInfo.payment.source.app}
+                avatar={<Avatar src={`/dapps/${txInfo.payment.source.app.toLowerCase()}.png`} />}
+                {...(txInfo.payment.source.ref && {
+                  component: 'a',
+                  href: txInfo.payment.source.ref,
+                  target: '_blank'
+                })}
+                sx={{ fontWeight: 'bold', border: 0 }}
+              />
+            )}
           </Box>
 
           <Stack direction="row" alignItems="center" spacing={0.5}>
@@ -200,7 +215,23 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
               />
             </Stack>
           </Link>
-          <Box display="flex" flexDirection="row" alignItems="center" justifyContent="flex-end">
+
+          <Box
+            display="flex"
+            flexDirection="row"
+            alignItems="center"
+            justifyContent={
+              txInfo.payment && txInfo.payment.comment ? 'space-between' : 'flex-end'
+            }>
+            {txInfo.payment && txInfo.payment.comment && (
+              <Typography
+                variant="caption"
+                fontWeight="bold"
+                fontSize={isMobile ? 12 : 14}
+                maxWidth={200}>
+                💬 {txInfo.payment.comment}
+              </Typography>
+            )}
             <Chip
               size="medium"
               label={

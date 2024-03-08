@@ -1,0 +1,102 @@
+package ua.sinaver.web3.payflow.data;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.apache.commons.lang3.RandomStringUtils;
+
+import java.util.Date;
+
+@Setter
+@Getter
+@NoArgsConstructor
+@Entity
+@Table(uniqueConstraints = {
+		@UniqueConstraint(name = "uc_payment_reference_id", columnNames = {"reference_id"}),
+		@UniqueConstraint(name = "uc_payment_hash", columnNames = {"hash"})
+})
+public class Payment {
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private Integer id;
+
+	@Column(columnDefinition = "VARCHAR(256)", nullable = false)
+	@Enumerated(EnumType.STRING)
+	private PaymentType type;
+
+	@Column(name = "reference_id", nullable = false)
+	private String referenceId;
+
+	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JoinColumn(name = "sender_user_id", referencedColumnName = "id")
+	private User sender;
+
+	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JoinColumn(name = "receiver_user_id", referencedColumnName = "id")
+	private User receiver;
+
+	@Column(nullable = false)
+	private Integer network;
+
+	@Column(name = "sender_address")
+	private String senderAddress;
+
+	@Column(name = "receiver_address")
+	private String receiverAddress;
+
+	@Column(nullable = false)
+	private String token;
+
+	@Column(name = "usd_amount")
+	private String usdAmount;
+
+	@Column(name = "token_amount")
+	private String tokenAmount;
+
+	@Column
+	private String hash;
+
+	@Column(columnDefinition = "VARCHAR(256)", nullable = false)
+	@Enumerated(EnumType.STRING)
+	private PaymentStatus status = PaymentStatus.PENDING;
+
+	@Column(name = "source_app")
+	private String sourceApp;
+
+	@Column(name = "source_ref")
+	private String sourceRef;
+
+	@Column
+	private String comment;
+
+	@Column(name = "created_date")
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date createdDate = new Date();
+
+	@Column(name = "completed_date")
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date completedDate;
+
+	@Version
+	private Long version;
+
+	public Payment(PaymentType type, User receiver, Integer network, String token) {
+		this.type = type;
+		this.receiver = receiver;
+		this.network = network;
+		this.token = token;
+		this.referenceId = RandomStringUtils.random(8, true, true);
+	}
+
+	public enum PaymentStatus {
+		PENDING,
+		COMPLETED,
+		CANCELLED
+	}
+
+	public enum PaymentType {
+		INTENT,
+		FRAME
+	}
+}

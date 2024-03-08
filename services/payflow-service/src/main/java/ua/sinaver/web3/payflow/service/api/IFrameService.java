@@ -21,4 +21,6 @@ public interface IFrameService {
 	List<String> getFnameAddresses(String fname);
 
 	List<User> getFidProfiles(List<String> addresses);
+
+	String getFidFname(int fid);
 }

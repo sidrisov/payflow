@@ -10,7 +10,7 @@ import jakarta.transaction.Transactional;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 import data.ua.sinaver.web3.payflow.Flow;
-import ua.sinaver.web3.data.PaymentRequest;
+import ua.sinaver.web3.data.Payment;
 import data.ua.sinaver.web3.payflow.User;
 import message.ua.sinaver.web3.payflow.PaymentRequestMessage;
 import repository.ua.sinaver.web3.payflow.FlowRepository;
