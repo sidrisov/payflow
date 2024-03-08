@@ -17,7 +17,7 @@ public record ValidatedFrameMessage(
 			String url,
 			State state,
 			Cast cast,
-			@JsonProperty("transaction_id") String transactionId
+			Transaction transaction
 	) {
 	}
 
@@ -57,6 +57,11 @@ public record ValidatedFrameMessage(
 			String object,
 			String hash,
 			int fid
+	) {
+	}
+
+	public record Transaction(
+			String hash
 	) {
 	}
 

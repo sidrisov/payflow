@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ua.sinaver.web3.payflow.data.Gift;
 import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.graphql.generated.types.Social;
+import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
 import ua.sinaver.web3.payflow.message.ContactMessage;
 import ua.sinaver.web3.payflow.repository.GiftRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
@@ -139,5 +141,16 @@ public class FrameService implements IFrameService {
 	public List<User> getFidProfiles(List<String> addresses) {
 		return addresses.stream().map(address -> userRepository.findByIdentityAndAllowedTrue(address))
 				.filter(Objects::nonNull).limit(3).toList();
+	}
+
+	@Override
+	public String getFidFname(int fid) {
+		val wallet = socialGraphService.getSocialMetadata(
+				"fc_fid:".concat(String.valueOf(fid)), null);
+		val username = wallet.getSocials().stream()
+				.filter(social -> social.getDappName().equals(SocialDappName.farcaster))
+				.findFirst().map(Social::getProfileName).orElse(null);
+		log.debug("Username for {}: {}", fid, username);
+		return username;
 	}
 }

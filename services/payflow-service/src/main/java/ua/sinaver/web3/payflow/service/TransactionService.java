@@ -314,7 +314,7 @@ public class TransactionService {
 		return !StringUtils.isBlank(paymentMessage.address())
 				&& SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS.contains(paymentMessage.chainId())
 				&& SUPPORTED_FRAME_PAYMENTS_TOKENS.contains(paymentMessage.token())
-				&& paymentMessage.usdAmount() >= 1;
+				&& paymentMessage.usdAmount() >= 1 && !StringUtils.isBlank(paymentMessage.refId());
 	}
 
 	public String generateTxCallData(FramePaymentMessage paymentMessage) {
