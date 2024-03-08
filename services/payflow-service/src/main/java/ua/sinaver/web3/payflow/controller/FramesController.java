@@ -267,7 +267,7 @@ public class FramesController {
 			return FrameResponse.builder()
 					.imageUrl(profileImage)
 					.postUrl(apiServiceUrl.concat(PAY_IN_FRAME_TOKEN))
-					.button(new FrameButton("ETH", FrameButton.ActionType.POST, null))
+					//.button(new FrameButton("ETH", FrameButton.ActionType.POST, null))
 					.button(new FrameButton("USDC", FrameButton.ActionType.POST, null))
 					.button(new FrameButton("DEGEN", FrameButton.ActionType.POST, null))
 					.state(Base64.getEncoder().encodeToString(state.getBytes()))
@@ -311,9 +311,9 @@ public class FramesController {
 
 		if (casterProfile != null && state != null) {
 			val token = switch (buttonIndex) {
-				case 1 -> ETH_TOKEN;
-				case 2 -> USDC_TOKEN;
-				case 3 -> DEGEN_TOKEN;
+				//case 1 -> ETH_TOKEN;
+				case 1 -> USDC_TOKEN;
+				case 2 -> DEGEN_TOKEN;
 				default -> null;
 			};
 
@@ -379,9 +379,12 @@ public class FramesController {
 				case 2 -> 3.0;
 				case 3 -> 5.0;
 				case 4 -> {
+					val input = validateMessage.action().input();
+					if (input == null) {
+						yield null;
+					}
 					try {
-						val parsedAmount =
-								Double.parseDouble(validateMessage.action().input().text());
+						val parsedAmount = Double.parseDouble(input.text());
 						if (parsedAmount > 0 && parsedAmount <= 10.0) {
 							yield parsedAmount;
 						} else {
@@ -423,7 +426,6 @@ public class FramesController {
 								apiServiceUrl.concat(PAY_IN_FRAME_CONFIRM)))
 						.imageUrl(profileImage)
 						.state(Base64.getEncoder().encodeToString(updatedState.getBytes()));
-
 
 				// for now just check if profile exists
 				if (!profiles.isEmpty()) {
@@ -528,7 +530,7 @@ public class FramesController {
 					payment.setHash(transactionId);
 					payment.setStatus(Payment.PaymentStatus.COMPLETED);
 					payment.setUsdAmount(state.usdAmount().toString());
-					payment.setSourceApp("Warpcast");
+					payment.setSourceApp(validateMessage.action().signer().client().displayName());
 					payment.setSourceRef(String.format("https://warpcast.com/%s/%s",
 							casterFcName, validateMessage.action().cast().hash().substring(0, 10)));
 					payment.setCompletedDate(new Date());
@@ -552,6 +554,7 @@ public class FramesController {
 									FrameButton.ActionType.LINK,
 									"https://basescan.org/tx/" + transactionId))
 							.imageUrl(profileImage)
+							.state(validateMessage.action().state().serialized())
 							.build().toHtmlResponse();
 				} else if (buttonIndex == 1) {
 					log.debug("Handling payment through frame tx: {}", state);
@@ -632,11 +635,15 @@ public class FramesController {
 							.button(new FrameButton("\uD83D\uDD0E Check tx details",
 									FrameButton.ActionType.LINK,
 									"https://basescan.org/tx/" + payment.getHash()))
-							.imageUrl(profileImage);
+							.imageUrl(profileImage)
+							.state(validateMessage.action().state().serialized());
 
-					val comment = validateMessage.action().input().text();
+					val input = validateMessage.action().input();
+
+					val comment = input != null ? input.text() : null;
 					if (!StringUtils.isBlank(comment)) {
 						payment.setComment(comment);
+					} else {
 						frameResponseBuilder.textInput("Enter your comment again")
 								.button(new FrameButton("\uD83D\uDCAC Add comment",
 										FrameButton.ActionType.POST,
@@ -998,7 +1005,8 @@ public class FramesController {
 
 		val clickedFid = validateMessage.action().interactor().fid();
 		val buttonIndex = validateMessage.action().tappedButton().index();
-		val inputText = validateMessage.action().input().text();
+		val input = validateMessage.action().input();
+		val inputText = input != null ? input.text() : null;
 		val clickedProfile = frameService.getFidProfile(clickedFid, identity);
 
 		if (clickedProfile != null) {

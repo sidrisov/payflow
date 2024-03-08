@@ -17,7 +17,8 @@ public record ValidatedFrameMessage(
 			String url,
 			State state,
 			Cast cast,
-			Transaction transaction
+			Transaction transaction,
+			Signer signer
 	) {
 	}
 
@@ -59,6 +60,14 @@ public record ValidatedFrameMessage(
 			int fid
 	) {
 	}
+
+	public record Signer(Client client) {
+	}
+
+	public record Client(String username, @JsonProperty("display_name") String displayName,
+	                     @JsonProperty("pfp_url") String pfpUrl) {
+	}
+
 
 	public record Transaction(
 			String hash
