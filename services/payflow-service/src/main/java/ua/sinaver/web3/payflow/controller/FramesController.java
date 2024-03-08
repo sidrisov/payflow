@@ -379,9 +379,12 @@ public class FramesController {
 				case 2 -> 3.0;
 				case 3 -> 5.0;
 				case 4 -> {
+					val input = validateMessage.action().input();
+					if (input == null) {
+						yield null;
+					}
 					try {
-						val parsedAmount =
-								Double.parseDouble(validateMessage.action().input().text());
+						val parsedAmount = Double.parseDouble(input.text());
 						if (parsedAmount > 0 && parsedAmount <= 10.0) {
 							yield parsedAmount;
 						} else {
@@ -423,7 +426,6 @@ public class FramesController {
 								apiServiceUrl.concat(PAY_IN_FRAME_CONFIRM)))
 						.imageUrl(profileImage)
 						.state(Base64.getEncoder().encodeToString(updatedState.getBytes()));
-
 
 				// for now just check if profile exists
 				if (!profiles.isEmpty()) {
@@ -477,8 +479,10 @@ public class FramesController {
 		val clickedFid = validateMessage.action().interactor().fid();
 		val casterFid = validateMessage.action().cast().fid();
 		val buttonIndex = validateMessage.action().tappedButton().index();
-		val transactionId = validateMessage.action().transaction() != null ?
-				validateMessage.action().transaction().hash() : null;
+		val transactionId = frameMessage.untrustedData().transactionId();/*validateMessage.action
+		().transaction()
+		 != null ?
+				validateMessage.action().transaction().hash() : null;*/
 
 		val addresses = frameService.getFidAddresses(clickedFid);
 		val profiles = frameService.getFidProfiles(addresses);
@@ -552,6 +556,7 @@ public class FramesController {
 									FrameButton.ActionType.LINK,
 									"https://basescan.org/tx/" + transactionId))
 							.imageUrl(profileImage)
+							.state(validateMessage.action().state().serialized())
 							.build().toHtmlResponse();
 				} else if (buttonIndex == 1) {
 					log.debug("Handling payment through frame tx: {}", state);
@@ -632,11 +637,15 @@ public class FramesController {
 							.button(new FrameButton("\uD83D\uDD0E Check tx details",
 									FrameButton.ActionType.LINK,
 									"https://basescan.org/tx/" + payment.getHash()))
-							.imageUrl(profileImage);
+							.imageUrl(profileImage)
+							.state(validateMessage.action().state().serialized());
 
-					val comment = validateMessage.action().input().text();
+					val input = validateMessage.action().input();
+
+					val comment = input != null ? input.text() : null;
 					if (!StringUtils.isBlank(comment)) {
 						payment.setComment(comment);
+					} else {
 						frameResponseBuilder.textInput("Enter your comment again")
 								.button(new FrameButton("\uD83D\uDCAC Add comment",
 										FrameButton.ActionType.POST,
@@ -998,7 +1007,8 @@ public class FramesController {
 
 		val clickedFid = validateMessage.action().interactor().fid();
 		val buttonIndex = validateMessage.action().tappedButton().index();
-		val inputText = validateMessage.action().input().text();
+		val input = validateMessage.action().input();
+		val inputText = input != null ? input.text() : null;
 		val clickedProfile = frameService.getFidProfile(clickedFid, identity);
 
 		if (clickedProfile != null) {

@@ -4,10 +4,12 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.Date;
 
+@ToString
 @Setter
 @Getter
 @NoArgsConstructor
