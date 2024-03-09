@@ -34,9 +34,7 @@ import {
 } from '../pimlico';
 import { signerToSafeSmartAccount } from '../signerToSafeSmartAccount';
 import { PimlicoSponsorUserOperationParameters } from 'permissionless/actions/pimlico';
-import { baseSepolia } from 'viem/chains';
-import { ENTRYPOINT_ADDRESS_V06_TYPE } from '../entrypoint';
-import { toast } from 'react-toastify';
+import { ENTRYPOINT_ADDRESS_V06_TYPE } from 'permissionless/types';
 
 export type SafeWallet = {
   chain: Chain;

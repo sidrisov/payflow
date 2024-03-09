@@ -145,9 +145,7 @@ public class UserController {
 			List<User> users = userService.findAll();
 			log.debug("Fetching all profiles");
 			if (users != null) {
-				return users.stream().map(user -> new ProfileMetaMessage(user.getIdentity(), user.getDisplayName(),
-						user.getUsername(),
-						user.getProfileImage(), user.getCreatedDate().toString(), null)).toList();
+				return users.stream().map(user -> ProfileMetaMessage.convert(user, false)).toList();
 			}
 		} catch (Throwable t) {
 			log.error("Error fetching all profiles: ", t);
@@ -231,13 +229,7 @@ public class UserController {
 		return walletUserMap.entrySet().stream()
 				.map(wu -> new WalletProfileResponseMessage(wu.getKey().address(), wu.getKey().network(),
 						wu.getValue() != null
-								? new ProfileMetaMessage(wu.getValue().getIdentity(), wu.getValue().getDisplayName(),
-								wu.getValue().getUsername(),
-								wu.getValue().getProfileImage(),
-								wu.getValue().getCreatedDate().toString(),
-								wu.getValue().getDefaultFlow() != null
-										? FlowMessage.convert(wu.getValue().getDefaultFlow(), null)
-										: null)
+								? ProfileMetaMessage.convert(wu.getValue(), true)
 								: null))
 				.collect(Collectors.toList());
 	}

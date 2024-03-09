@@ -167,7 +167,8 @@ public class FramesController {
 		}
 
 		if (casterProfile != null) {
-			frameResponseBuilder.button(new FrameButton("Pay", FrameButton.ActionType.POST,
+			frameResponseBuilder.button(new FrameButton("\uD83D\uDCB8 Pay",
+					FrameButton.ActionType.POST,
 					apiServiceUrl.concat(PAY)));
 		}
 		return frameResponseBuilder.build().toHtmlResponse();
@@ -406,11 +407,17 @@ public class FramesController {
 			}
 
 			if (usdAmount != null && buttonIndex == 4) {
+				val casterFcName = frameService.getFidFname(casterFid);
 				val tokenAmount = roundTokenAmount(
 						usdAmount / transactionService.getPrice(state.token()));
 
 				val payment = new Payment(Payment.PaymentType.FRAME, casterProfile,
 						state.chainId(), state.token());
+
+				payment.setUsdAmount(state.usdAmount().toString());
+				payment.setSourceApp(validateMessage.action().signer().client().displayName());
+				payment.setSourceRef(String.format("https://warpcast.com/%s/%s",
+						casterFcName, validateMessage.action().cast().hash().substring(0, 10)));
 
 				paymentRepository.save(payment);
 
@@ -429,7 +436,7 @@ public class FramesController {
 
 				// for now just check if profile exists
 				if (!profiles.isEmpty()) {
-					frameResponseBuilder.button(new FrameButton("Pay later (TBD)",
+					frameResponseBuilder.button(new FrameButton("Pay later \uD83D\uDD51",
 							FrameButton.ActionType.POST,
 							apiServiceUrl.concat(PAY_IN_FRAME_CONFIRM)));
 				}
@@ -484,7 +491,6 @@ public class FramesController {
 
 		val addresses = frameService.getFidAddresses(clickedFid);
 		val profiles = frameService.getFidProfiles(addresses);
-		val casterFcName = frameService.getFidFname(casterFid);
 
 		User casterProfile;
 		if (clickedFid != casterFid) {
@@ -529,10 +535,6 @@ public class FramesController {
 					// TODO: check tx execution status
 					payment.setHash(transactionId);
 					payment.setStatus(Payment.PaymentStatus.COMPLETED);
-					payment.setUsdAmount(state.usdAmount().toString());
-					payment.setSourceApp(validateMessage.action().signer().client().displayName());
-					payment.setSourceRef(String.format("https://warpcast.com/%s/%s",
-							casterFcName, validateMessage.action().cast().hash().substring(0, 10)));
 					payment.setCompletedDate(new Date());
 
 					log.debug("Updated payment for ref: {} - {}", refId, payment);
@@ -553,7 +555,6 @@ public class FramesController {
 							.button(new FrameButton("\uD83D\uDD0E Check tx details",
 									FrameButton.ActionType.LINK,
 									"https://basescan.org/tx/" + transactionId))
-							.imageUrl(profileImage)
 							.state(validateMessage.action().state().serialized())
 							.build().toHtmlResponse();
 				} else if (buttonIndex == 1) {
@@ -563,8 +564,24 @@ public class FramesController {
 					return ResponseEntity.ok()
 							.contentType(MediaType.APPLICATION_JSON)
 							.body(callData);
+
 				} else if (buttonIndex == 2) {
 					log.debug("Submitting payment for later in app execution: {}", state);
+					// TODO: for now set the first
+					payment.setSender(profiles.getFirst());
+					payment.setType(Payment.PaymentType.INTENT);
+					val tokenAmount = roundTokenAmount(
+							state.usdAmount() / transactionService.getPrice(state.token()));
+					val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
+									"/payment.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
+									"&amount=%s",
+							casterProfile.getIdentity(), state.chainId(), state.token(),
+							state.usdAmount(), tokenAmount));
+					return FrameResponse.builder()
+							.imageUrl(profileImage)
+							.button(new FrameButton("\uD83D\uDCF1 Payflow",
+									FrameButton.ActionType.LINK, dAppServiceUrl))
+							.build().toHtmlResponse();
 				}
 			} else {
 				log.error("Frame payment message is not complete or valid: {}", state);
@@ -635,7 +652,6 @@ public class FramesController {
 							.button(new FrameButton("\uD83D\uDD0E Check tx details",
 									FrameButton.ActionType.LINK,
 									"https://basescan.org/tx/" + payment.getHash()))
-							.imageUrl(profileImage)
 							.state(validateMessage.action().state().serialized());
 
 					val input = validateMessage.action().input();
