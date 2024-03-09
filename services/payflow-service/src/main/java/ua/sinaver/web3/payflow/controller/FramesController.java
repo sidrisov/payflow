@@ -414,7 +414,7 @@ public class FramesController {
 				val payment = new Payment(Payment.PaymentType.FRAME, casterProfile,
 						state.chainId(), state.token());
 
-				payment.setUsdAmount(state.usdAmount().toString());
+				payment.setUsdAmount(usdAmount.toString());
 				payment.setSourceApp(validateMessage.action().signer().client().displayName());
 				payment.setSourceRef(String.format("https://warpcast.com/%s/%s",
 						casterFcName, validateMessage.action().cast().hash().substring(0, 10)));
