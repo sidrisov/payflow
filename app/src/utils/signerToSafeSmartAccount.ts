@@ -9,6 +9,7 @@ import {
   SmartAccountSigner,
   SignTransactionNotSupportedBySmartAccount
 } from 'permissionless/accounts';
+import { ENTRYPOINT_ADDRESS_V06_TYPE, EntryPoint } from 'permissionless/types';
 
 import {
   type Address,
@@ -35,7 +36,6 @@ import {
 import { toAccount } from 'viem/accounts';
 import { getChainId, readContract, signMessage, signTypedData } from 'viem/actions';
 import { Prettify } from 'viem/chains';
-import { ENTRYPOINT_ADDRESS_V06_TYPE, EntryPoint } from './entrypoint';
 
 export type SafeVersion = '1.4.1';
 
