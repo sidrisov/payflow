@@ -167,7 +167,8 @@ public class FramesController {
 		}
 
 		if (casterProfile != null) {
-			frameResponseBuilder.button(new FrameButton("Pay", FrameButton.ActionType.POST,
+			frameResponseBuilder.button(new FrameButton("\uD83D\uDCB8 Pay",
+					FrameButton.ActionType.POST,
 					apiServiceUrl.concat(PAY)));
 		}
 		return frameResponseBuilder.build().toHtmlResponse();
@@ -578,7 +579,7 @@ public class FramesController {
 							state.usdAmount(), tokenAmount));
 					return FrameResponse.builder()
 							.imageUrl(profileImage)
-							.button(new FrameButton("\uD83D\uDCF1 App",
+							.button(new FrameButton("\uD83D\uDCF1 Payflow",
 									FrameButton.ActionType.LINK, dAppServiceUrl))
 							.build().toHtmlResponse();
 				}

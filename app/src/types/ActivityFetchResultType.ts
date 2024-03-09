@@ -1,6 +1,7 @@
 import { Address, Hash } from 'viem';
 import { FlowWalletType } from './FlowType';
 import { ProfileType } from './ProfleType';
+import { PaymentType } from './PaymentType';
 
 export type ActivityFetchResultType = {
   isLoading: boolean;
@@ -32,12 +33,6 @@ export interface TxToken {
   name: string;
   symbol: string;
   type: string;
-}
-
-export interface PaymentType {
-  hash: Hash;
-  source: { app: string; ref?: string };
-  comment?: string;
 }
 
 export type WalletActivityType = { wallet: FlowWalletType; txs: TxInfo[] | undefined };

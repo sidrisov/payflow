@@ -1,4 +1,4 @@
-import { Box, Container, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Container, Skeleton, useMediaQuery, useTheme } from '@mui/material';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { AccountCard } from '../components/cards/AccountCard';
@@ -14,6 +14,8 @@ import NetworkSelectorSection from '../components/NetworkSelectorSection';
 import { useNavigate } from 'react-router-dom';
 import { useAssetBalances } from '../utils/queries/balances';
 import { useTransactions } from '../utils/queries/transactions';
+import { usePendingPayments } from '../utils/queries/payments';
+import { PendingPaymentsSection } from '../components/PendingPaymentsSection';
 
 export default function Accounts() {
   const theme = useTheme();
@@ -76,6 +78,14 @@ export default function Accounts() {
 
   const [selectedNetwork, setSelectedNetwork] = useState<Chain>();
 
+  const {
+    isLoading: isPaymentLoading,
+    isFetched: isPaymentFetched,
+    data: payments
+  } = usePendingPayments(Boolean(profile));
+
+  console.log('Payments: ', isPaymentLoading, isPaymentFetched, payments);
+
   return (
     <>
       <Helmet>
@@ -99,6 +109,11 @@ export default function Accounts() {
               display="flex"
               flexDirection="column"
               alignItems="center">
+              {isPaymentLoading ? (
+                <Skeleton variant="rectangular" height={60} sx={{ borderRadius: 5 }} />
+              ) : (
+                isPaymentFetched && <PendingPaymentsSection width="100%" payments={payments} />
+              )}
               <NetworkSelectorSection
                 width="100%"
                 wallets={selectedFlow.wallets}

@@ -46,32 +46,23 @@ public class InvitationController {
 	@Autowired
 	private IContactBookService contactBookService;
 
-	// TODO: add converter to messages
 	@GetMapping
 	public List<InvitationMessage> getAll(Principal principal) {
 		log.debug("Getting all invitations for {}", principal.getName());
 
 		val user = userService.findByIdentity(principal.getName());
 		if (user != null) {
-			val invitedBy = new ProfileMetaMessage(user.getIdentity(), user.getDisplayName(), user.getUsername(),
-					user.getProfileImage(), user.getCreatedDate().toString(), null);
-
+			val invitedBy = ProfileMetaMessage.convert(user, false);
 			val invitations = invitationRepository.findByInvitedBy(user);
 			return invitations.stream()
 					.map(invite -> new InvitationMessage(
 							invitedBy,
 							invite.getInvitee() != null
-									? new ProfileMetaMessage(invite.getInvitee().getIdentity(),
-									invite.getInvitee().getDisplayName(),
-									invite.getInvitee().getUsername(),
-									invite.getInvitee().getProfileImage(),
-									invite.getInvitee().getCreatedDate().toString(), null)
+									? ProfileMetaMessage.convert(invite.getInvitee(), false)
 									: null,
 							invite.getIdentity(), invite.getCode(), invite.getCreatedDate(), invite.getExpiryDate()))
 					.toList();
-
 		}
-
 		return null;
 
 	}
