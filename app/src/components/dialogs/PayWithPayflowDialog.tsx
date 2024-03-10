@@ -28,9 +28,11 @@ import { TokenAmountSection } from './TokenAmountSection';
 import { GasFeeSection } from './GasFeeSection';
 import { SwitchFlowSignerSection } from './SwitchFlowSignerSection';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
+import { updatePayment } from '../../services/payments';
 
 export default function PayWithPayflowDialog({
   setOpenSearchIdentity,
+  payment,
   sender,
   recipient
 }: PaymentDialogProps) {
@@ -46,15 +48,15 @@ export default function PayWithPayflowDialog({
   const [paymentPending, setPaymentPending] = useState<boolean>(false);
   const [paymentEnabled, setPaymentEnabled] = useState<boolean>(false);
 
-  const compatibleWallets = useCompatibleWallets({ sender, recipient });
+  const compatibleWallets = useCompatibleWallets({ sender, recipient, payment });
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
   const [selectedToken, setSelectedToken] = useState<Token>();
 
   const toAddress = useToAddress({ recipient, selectedWallet });
 
   const [sendAmount, setSendAmount] = useState<bigint>();
-  const [sendAmountUSD, setSendAmountUSD] = useState<number>();
 
+  const [sendAmountUSD, setSendAmountUSD] = useState<number | undefined>(payment?.usdAmount);
   const sendToastId = useRef<Id>();
 
   const [gasFee, setGasFee] = useState<bigint>();
@@ -124,6 +126,11 @@ export default function PayWithPayflowDialog({
         autoClose: 5000
       });
       sendToastId.current = undefined;
+
+      if (payment?.referenceId) {
+        payment.hash = txHash;
+        updatePayment(payment);
+      }
 
       // if tx was successfull, mark wallet as deployed if it wasn't
       if (!selectedWallet.deployed) {
@@ -231,6 +238,7 @@ export default function PayWithPayflowDialog({
                   setOpenSearchIdentity={setOpenSearchIdentity}
                 />
                 <TokenAmountSection
+                  payment={payment}
                   selectedWallet={selectedWallet}
                   setSelectedWallet={setSelectedWallet}
                   compatibleWallets={compatibleWallets}

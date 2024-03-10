@@ -17,8 +17,9 @@ import { ETH_TOKEN, Token } from '../../utils/erc20contracts';
 import { RecipientField } from '../RecipientField';
 import { TokenAmountSection } from './TokenAmountSection';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
+import { updatePayment } from '../../services/payments';
 
-export default function PayWithEOADialog({ sender, recipient }: PaymentDialogProps) {
+export default function PayWithEOADialog({ sender, recipient, payment }: PaymentDialogProps) {
   const { chain } = useAccount();
 
   const [paymentPending, setPaymentPending] = useState<boolean>(false);
@@ -31,7 +32,7 @@ export default function PayWithEOADialog({ sender, recipient }: PaymentDialogPro
   const toAddress = useToAddress({ recipient, selectedWallet });
 
   const [sendAmount, setSendAmount] = useState<bigint>();
-  const [sendAmountUSD, setSendAmountUSD] = useState<number>();
+  const [sendAmountUSD, setSendAmountUSD] = useState<number | undefined>(payment?.usdAmount);
 
   const sendToastId = useRef<Id>();
 
@@ -82,6 +83,12 @@ export default function PayWithEOADialog({ sender, recipient }: PaymentDialogPro
         autoClose: 5000
       });
       sendToastId.current = undefined;
+
+      if (payment?.referenceId) {
+        payment.hash = txHash;
+        updatePayment(payment);
+      }
+
       reset();
     } else if (error) {
       toast.update(sendToastId.current, {
@@ -133,6 +140,7 @@ export default function PayWithEOADialog({ sender, recipient }: PaymentDialogPro
         <Stack width="100%" spacing={2} alignItems="center">
           <RecipientField recipient={recipient} />
           <TokenAmountSection
+            payment={payment}
             selectedWallet={selectedWallet}
             setSelectedWallet={setSelectedWallet}
             compatibleWallets={compatibleWallets}

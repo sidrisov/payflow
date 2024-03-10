@@ -1,5 +1,5 @@
 import LoadingButton, { LoadingButtonProps } from '@mui/lab/LoadingButton';
-import { PaymentType } from '../dialogs/PaymentDialog';
+import { PaymentSenderType } from '../dialogs/PaymentDialog';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useSetActiveWallet } from '@privy-io/wagmi';
 
@@ -8,7 +8,11 @@ export function LoadingConnectWalletButton({
   isEmbeddedSigner = false,
   title,
   ...props
-}: LoadingButtonProps & { paymentType?: PaymentType; isEmbeddedSigner?: boolean; title?: string }) {
+}: LoadingButtonProps & {
+  paymentType?: PaymentSenderType;
+  isEmbeddedSigner?: boolean;
+  title?: string;
+}) {
   const { connectWallet, login, isModalOpen } = usePrivy();
   const { wallets } = useWallets();
   const { setActiveWallet } = useSetActiveWallet();

@@ -8,18 +8,21 @@ import PayWithEOADialog from './PayWithEOADialog';
 import { useAccount } from 'wagmi';
 import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
 import { PaymentDialogTitle } from './PaymentDialogTitle';
+import { PaymentType } from '../../types/PaymentType';
 
-export type PaymentType = 'payflow' | 'wallet' | 'none';
+export type PaymentSenderType = 'payflow' | 'wallet' | 'none';
 
 export type PaymentDialogProps = DialogProps &
   CloseCallbackType & {
-    paymentType?: PaymentType;
+    paymentType?: PaymentSenderType;
+    payment?: PaymentType;
     sender: FlowType | Address;
     recipient: SelectedIdentityType;
   } & { setOpenSearchIdentity?: React.Dispatch<React.SetStateAction<boolean>> };
 
 export default function PaymentDialog({
   paymentType = 'payflow',
+  payment,
   recipient,
   sender,
   closeStateCallback,
@@ -94,6 +97,7 @@ export default function PaymentDialog({
               <PayWithPayflowDialog
                 {...{
                   paymentType,
+                  payment,
                   sender,
                   recipient,
                   closeStateCallback,
@@ -105,6 +109,7 @@ export default function PaymentDialog({
               <PayWithEOADialog
                 {...{
                   paymentType,
+                  payment,
                   sender,
                   recipient,
                   closeStateCallback,

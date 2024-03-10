@@ -10,8 +10,10 @@ import { TokenSelectorButton } from '../buttons/TokenSelectorButton';
 import { ETH, Token, getSupportedTokens } from '../../utils/erc20contracts';
 import { normalizeNumberPrecision } from '../../utils/normalizeNumberPrecision';
 import { useTokenPrices } from '../../utils/queries/prices';
+import { PaymentType } from '../../types/PaymentType';
 
 export function TokenAmountSection({
+  payment,
   selectedWallet,
   setSelectedWallet,
   compatibleWallets,
@@ -22,6 +24,7 @@ export function TokenAmountSection({
   sendAmountUSD,
   setSendAmountUSD
 }: {
+  payment?: PaymentType;
   selectedWallet: FlowWalletType;
   setSelectedWallet: React.Dispatch<React.SetStateAction<FlowWalletType | undefined>>;
   compatibleWallets: FlowWalletType[];
@@ -65,7 +68,10 @@ export function TokenAmountSection({
   }, [selectedToken, compatibleTokens, chain]);
 
   useMemo(() => {
-    const tokens = getSupportedTokens(selectedWallet.network);
+    // filter by passed token if available
+    const tokens = getSupportedTokens(selectedWallet.network).filter((t) =>
+      payment?.token ? t.name.toLowerCase() === payment.token : true
+    );
     setCompatibleTokens(tokens);
   }, [selectedWallet]);
 
@@ -158,6 +164,11 @@ export function TokenAmountSection({
             disableUnderline: true
           }}
           onChange={async (event) => {
+            // don't allow changing amount if passed
+            if (payment?.usdAmount) {
+              return;
+            }
+
             if (event.target.value) {
               const amountUSD = parseFloat(event.target.value);
               setSendAmountUSD(amountUSD);
@@ -176,6 +187,7 @@ export function TokenAmountSection({
             ≈
           </Typography>
           <Typography
+            mx={0.5}
             fontSize={14}
             fontWeight="bold"
             textOverflow="ellipsis"
@@ -186,22 +198,24 @@ export function TokenAmountSection({
             )}
                         ${selectedToken?.name}`}
           </Typography>
-          <Button
-            variant="text"
-            size="small"
-            color="inherit"
-            onClick={async () => setSendAmountUSD(Number.parseInt(maxBalanceUsd))}
-            sx={{
-              mx: 0.5,
-              minWidth: 35,
-              maxWidth: 40,
-              borderRadius: 5,
-              fontSize: 15,
-              fontWeight: 'bold',
-              textTransform: 'none'
-            }}>
-            max
-          </Button>
+          {!payment?.token && (
+            <Button
+              variant="text"
+              size="small"
+              color="inherit"
+              onClick={async () => setSendAmountUSD(Number.parseInt(maxBalanceUsd))}
+              sx={{
+                mx: 0.5,
+                minWidth: 35,
+                maxWidth: 40,
+                borderRadius: 5,
+                fontSize: 15,
+                fontWeight: 'bold',
+                textTransform: 'none'
+              }}>
+              max
+            </Button>
+          )}
         </Box>
         <TokenSelectorButton
           selectedToken={selectedToken}

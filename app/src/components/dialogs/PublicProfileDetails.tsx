@@ -9,7 +9,7 @@ import SocialPresenceChipWithLink from '../chips/SocialPresenceChipWithLink';
 import { convertSocialResults } from '../../services/socials';
 import { green } from '@mui/material/colors';
 import { Address } from 'viem';
-import PaymentDialog, { PaymentType } from './PaymentDialog';
+import PaymentDialog, { PaymentSenderType } from './PaymentDialog';
 import { ProfileContext } from '../../contexts/UserContext';
 import { QUERY_SOCIALS_INSIGHTS_LIGHT, QUERY_SOCIALS_LIGHT } from '../../utils/airstackQueries';
 import ChoosePaymentOptionDialog from './ChoosePaymentOptionDialog';
@@ -27,7 +27,9 @@ export function PublicProfileDetails({
 
   const { address } = useAccount();
 
-  const [paymentType, setPaymentType] = useState<PaymentType>(!loggedProfile ? 'wallet' : 'none');
+  const [paymentType, setPaymentType] = useState<PaymentSenderType>(
+    !loggedProfile ? 'wallet' : 'none'
+  );
 
   const { data: socialInfo, loading: loadingSocials } = useQuery(
     (address ?? loggedProfile?.identity) &&

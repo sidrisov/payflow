@@ -4,13 +4,16 @@ import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { SelectedIdentityType } from '../../types/ProfleType';
 import { Address, isAddress } from 'viem';
 import { SUPPORTED_CHAINS } from '../networks';
+import { PaymentType } from '../../types/PaymentType';
 
 export function useCompatibleWallets({
   sender,
-  recipient
+  recipient,
+  payment
 }: {
   sender: Address | FlowType;
   recipient: SelectedIdentityType;
+  payment?: PaymentType;
 }) {
   return useMemo(() => {
     let compatibleSenderWallets;
@@ -40,7 +43,10 @@ export function useCompatibleWallets({
         toast.error('No compatible wallets available!');
       }
     }
-    return compatibleSenderWallets;
+    // filter by passed chainId if available
+    return compatibleSenderWallets.filter((w) =>
+      payment?.chainId ? w.network === payment.chainId : true
+    );
   }, [sender, recipient]);
 }
 
