@@ -54,7 +54,7 @@ public class PaymentController {
 			return Collections.emptyList();
 		}
 
-		return paymentRepository.findBySenderAndStatusAndTypeIn(
+		return paymentRepository.findBySenderAndStatusAndTypeInOrderByCreatedDateDesc(
 						user, Payment.PaymentStatus.PENDING,
 						List.of(Payment.PaymentType.INTENT))
 				.stream()
