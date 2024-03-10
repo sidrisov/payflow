@@ -12,16 +12,16 @@ import {
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { AccountBalanceWallet } from '@mui/icons-material';
-import { PaymentType } from './PaymentDialog';
+import { PaymentSenderType } from './PaymentDialog';
 
 export type ChoosePaymentOptionDialogProps = DialogProps &
   CloseCallbackType & {
-    setPaymentType: React.Dispatch<React.SetStateAction<PaymentType>>;
+    setPaymentType: React.Dispatch<React.SetStateAction<PaymentSenderType>>;
   } & { setOpenSearchIdentity?: React.Dispatch<React.SetStateAction<boolean>> };
 
 const paymentOptionButton = (
-  option: PaymentType,
-  setPaymentType: React.Dispatch<React.SetStateAction<PaymentType>>
+  option: PaymentSenderType,
+  setPaymentType: React.Dispatch<React.SetStateAction<PaymentSenderType>>
 ) => (
   <Button
     fullWidth

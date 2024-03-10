@@ -24,7 +24,7 @@ import NetworkAvatar from '../avatars/NetworkAvatar';
 import { useAccount } from 'wagmi';
 import SearchIdentityDialog from '../dialogs/SearchIdentityDialog';
 import { IdentityType, SelectedIdentityType } from '../../types/ProfleType';
-import PaymentDialog, { PaymentType } from '../dialogs/PaymentDialog';
+import PaymentDialog, { PaymentSenderType } from '../dialogs/PaymentDialog';
 import { Address } from 'viem';
 
 export type AccountNewDialogProps = CardProps & {
@@ -58,7 +58,7 @@ export function AccountCard({
 
   const [totalBalance, setTotalBalance] = useState<string>();
 
-  const [paymentType, setPaymentType] = useState<PaymentType>();
+  const [paymentType, setPaymentType] = useState<PaymentSenderType>();
   const [recipient, setRecipient] = useState<SelectedIdentityType>();
 
   const { chain, address } = useAccount();

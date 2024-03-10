@@ -14,4 +14,7 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 	                                                                   List<Payment.PaymentType> types);
 
 	Payment findByReferenceId(String referenceId);
+
+	Payment findByReferenceIdAndSender(String referenceId, User sender);
+
 }
