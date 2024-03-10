@@ -14,7 +14,7 @@ export default function Activity(props: AssetsProps) {
   const { isLoading: loading, isFetched: fetched, transactions } = props.activityFetchResult;
 
   return (
-    <Stack pt={1} px={1} spacing={2} width="100%" maxHeight={290} overflow="auto">
+    <Stack pt={1} px={1} spacing={2} width="100%" maxHeight={360} overflow="auto">
       {loading ? (
         <ActivitySkeletonSection />
       ) : fetched && transactions ? (

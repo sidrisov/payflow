@@ -109,11 +109,7 @@ export default function Accounts() {
               display="flex"
               flexDirection="column"
               alignItems="center">
-              {isPaymentLoading ? (
-                <Skeleton variant="rectangular" height={60} sx={{ borderRadius: 5 }} />
-              ) : (
-                isPaymentFetched && <PendingPaymentsSection width="100%" payments={payments} />
-              )}
+              {isPaymentFetched && <PendingPaymentsSection width="100%" payments={payments} />}
               <NetworkSelectorSection
                 width="100%"
                 wallets={selectedFlow.wallets}
