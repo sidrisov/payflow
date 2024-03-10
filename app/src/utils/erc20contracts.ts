@@ -37,3 +37,21 @@ export function getSupportedTokens(chainId: number | undefined): Token[] {
 }
 
 export const ETH: Token = { name: ETH_TOKEN, address: zeroAddress };
+
+export default function getTokenName(token: string): string {
+  let name;
+  switch (token) {
+    case 'eth':
+      name = 'Ether';
+      break;
+    case 'usdc':
+      name = 'USD Coin';
+      break;
+    case 'degen':
+      name = 'Degen';
+      break;
+    default:
+      name = 'Unknown';
+  }
+  return name;
+}

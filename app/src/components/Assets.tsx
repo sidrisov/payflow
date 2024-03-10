@@ -13,7 +13,7 @@ export default function Assets({
   assetBalancesResult: AssetBalancesResultType;
 }) {
   return (
-    <Stack pt={1} px={1} spacing={1} width="100%" maxHeight={290} overflow="auto">
+    <Stack pt={1} px={1} spacing={1} width="100%" maxHeight={360} overflow="auto">
       {isLoading || !isFetched ? (
         <ActivitySkeletonSection />
       ) : isFetched && balances ? (
