@@ -140,6 +140,11 @@ public class UserService implements IUserService {
 	}
 
 	@Override
+	public User findByUsernameOrIdentity(String usernameOrIdentity) {
+		return userRepository.findByUsernameOrIdentity(usernameOrIdentity);
+	}
+
+	@Override
 	public List<User> searchByUsernameQuery(String query) {
 		return userRepository.findByDisplayNameContainingOrUsernameContainingOrIdentityContaining(query, query, query);
 	}
