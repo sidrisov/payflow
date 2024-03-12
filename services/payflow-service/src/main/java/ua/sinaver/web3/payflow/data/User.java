@@ -15,7 +15,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(name = "User", indexes = {
+@Table(indexes = {
 		// TODO: replace @Index(name = "idx_user_last_updated_contacts", columnList =
 		// "allowed", "last_updated_contacts"),
 		@Index(name = "idx_user_last_updated_contacts", columnList = "last_updated_contacts"),
