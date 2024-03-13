@@ -38,8 +38,15 @@ public class FarcasterPaymentBotService {
 	@Value("${payflow.farcaster.bot.signer}")
 	private String botSignerUuid;
 
+	@Value("${payflow.farcaster.bot.enabled:false}")
+	private boolean isBotEnabled;
+
 	@Scheduled(fixedRate = 5 * 1000)
 	void fetchBotMentions() {
+		if (!isBotEnabled) {
+			return;
+		}
+
 		val latestPaymentJob = paymentBotJobRepository.findFirstByOrderByCastedDateDesc();
 		val previousMostRecentTimestamp = latestPaymentJob
 				.map(PaymentBotJob::getCastedDate)
@@ -77,6 +84,10 @@ public class FarcasterPaymentBotService {
 
 	@Scheduled(fixedRate = 5 * 1000)
 	void castBotMessage() {
+		if (!isBotEnabled) {
+			return;
+		}
+
 		val jobs = paymentBotJobRepository.findTop10ByStatusOrderByCastedDateAsc(
 				PaymentBotJob.Status.PENDING);
 
