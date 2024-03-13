@@ -294,6 +294,8 @@ public class FramePaymentController {
 								"/payment.png?step=confirm&chainId=%s&token=%s&usdAmount=%s&amount=%s",
 						paymentProfile.getIdentity(), state.chainId(), state.token(), usdAmount, tokenAmount));
 				val frameResponseBuilder = FrameResponse.builder()
+						.postUrl(apiServiceUrl.concat(String.format(PAY_IN_FRAME_CONFIRM,
+								paymentProfile.getIdentity())))
 						.button(new FrameButton("Pay now", FrameButton.ActionType.TX,
 								apiServiceUrl.concat(String.format(PAY_IN_FRAME_CONFIRM, paymentProfile.getIdentity()))))
 						.imageUrl(profileImage)
