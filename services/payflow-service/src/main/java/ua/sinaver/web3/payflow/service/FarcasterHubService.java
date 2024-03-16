@@ -48,7 +48,7 @@ public class FarcasterHubService implements IFarcasterHubService {
 
 	@Override
 	public CastResponseMessage cast(String signer, String message, String parentHash,
-	                                List<CastRequestMessage.Embed> embeds) {
+	                                List<CastEmbed> embeds) {
 		log.debug("Calling Neynar Cast API with message {}",
 				message);
 		try {

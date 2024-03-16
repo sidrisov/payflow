@@ -3,12 +3,14 @@ package ua.sinaver.web3.payflow.service;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.data.bot.PaymentBotJob;
-import ua.sinaver.web3.payflow.message.CastRequestMessage;
+import ua.sinaver.web3.payflow.message.CastEmbed;
 import ua.sinaver.web3.payflow.message.NotificationResponse;
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
 import ua.sinaver.web3.payflow.service.api.IFrameService;
@@ -40,6 +42,12 @@ public class FarcasterPaymentBotService {
 
 	@Value("${payflow.farcaster.bot.enabled:false}")
 	private boolean isBotEnabled;
+
+	@Value("${payflow.farcaster.bot.cast.enabled:true}")
+	private boolean isBotCastEnabled;
+
+	@Value("${payflow.farcaster.bot.test.enabled:false}")
+	private boolean isTestBotEnabled;
 
 	@Scheduled(fixedRate = 5 * 1000)
 	void fetchBotMentions() {
@@ -91,97 +99,188 @@ public class FarcasterPaymentBotService {
 		val jobs = paymentBotJobRepository.findTop10ByStatusOrderByCastedDateAsc(
 				PaymentBotJob.Status.PENDING);
 
-		jobs.forEach(paymentBotJob -> {
-			val castText = paymentBotJob.getCast().text();
+		jobs.forEach(job -> {
+			val cast = job.getCast();
+			val botCommandPattern = String.format("\\s*(?<beforeText>.*?)?@payflow%s\\s+(?<command>\\w+)" +
+							"(?:\\s+(?<remaining>.+))?",
+					isTestBotEnabled ? "\\s+test" : "");
 
-			var matcher = Pattern.compile("@payflow receive")
-					.matcher(castText);
+			var matcher = Pattern.compile(botCommandPattern, Pattern.DOTALL)
+					.matcher(cast.text());
 			if (matcher.find()) {
-				log.debug("Payflow bot receive command detected for cast {}", paymentBotJob.getCast());
+				val beforeText = matcher.group("beforeText");
+				val command = matcher.group("command");
+				val remainingText = matcher.group("remaining");
+				log.debug("Bot command detected {} for {}, remaining {}", command, cast,
+						remainingText);
 
-				val addresses = paymentBotJob.getCast().author().verifications();
-				// add custodial if not verified present
-				if (addresses.isEmpty()) {
-					addresses.add(paymentBotJob.getCast().author().custodyAddress());
-				}
+				switch (command) {
+					case "receive": {
+						String token = null;
+						String chain = null;
 
-				val profile = frameService.getFidProfiles(addresses)
-						.stream().findFirst().orElse(null);
-				if (profile == null) {
-					log.error("Caster doesn't have payflow profile, " +
-							"rejecting bot receive command for cast: {}", paymentBotJob.getCast());
-					paymentBotJob.setStatus(PaymentBotJob.Status.REJECTED);
-					return;
-				}
+						if (!StringUtils.isBlank(remainingText)) {
+							log.debug("Processing {} bot command arguments {}", command, remainingText);
 
-				log.debug("Executing bot receive command for cast: {}", paymentBotJob.getCast());
-				val response = hubService.cast(botSignerUuid, String.format("@%s you can receive" +
-										" funds with the frame",
-								paymentBotJob.getCast().author().username()),
-						paymentBotJob.getCast().hash(),
-						Collections.singletonList(
-								new CastRequestMessage.Embed(
+							val receivePattern = "(?:on\\s+(?<chain>base|optimism))?" +
+									"(?<token>eth|degen|usdc)?";
+							matcher = Pattern.compile(receivePattern, Pattern.CASE_INSENSITIVE).matcher(remainingText);
+							if (matcher.find()) {
+								chain = matcher.group("chain");
+								token = matcher.group("token");
+							}
+						}
+
+						log.debug("Receiver: {}, token: {}, chain: {}",
+								cast.author().username(),
+								token, chain);
+
+						val addresses = cast.author().verifications();
+						// add custodial if not verified present
+						if (addresses.isEmpty()) {
+							addresses.add(cast.author().custodyAddress());
+						}
+
+						val profile = frameService.getFidProfiles(addresses)
+								.stream().findFirst().orElse(null);
+						if (profile == null) {
+							log.error("Caster doesn't have payflow profile, " +
+									"rejecting bot receive command for cast: {}", cast);
+							job.setStatus(PaymentBotJob.Status.REJECTED);
+							return;
+						}
+
+						log.debug("Executing bot receive command for cast: {}", cast);
+
+						val castText = String.format("@%s receive funds with the frame",
+								cast.author().username());
+						val embeds = Collections.singletonList(
+								new CastEmbed(
 										String.format("https://frames.payflow.me/%s",
-												profile.getUsername()))));
-				if (response.success()) {
-					log.debug("Successfully processed bot receive cast with reply: {}",
-							response.cast());
-					paymentBotJob.setStatus(PaymentBotJob.Status.PROCESSED);
+												profile.getUsername())));
+						if (isBotCastEnabled) {
+							val response = hubService.cast(botSignerUuid, castText, cast.hash(), embeds);
+							if (response.success()) {
+								log.debug("Successfully processed bot cast with reply: {}",
+										response.cast());
+								job.setStatus(PaymentBotJob.Status.PROCESSED);
+								return;
+							}
+						} else {
+							job.setStatus(PaymentBotJob.Status.PROCESSED);
+						}
+					}
+					case "send": {
+						String receiver = null;
+						String token = null;
+						String chain = null;
+
+						User receiverProfile = null;
+						if (!StringUtils.isBlank(remainingText)) {
+							log.debug("Processing {} bot command arguments {}", command, remainingText);
+
+							val sendPattern = "(?<=@)(?<receiver>[a-zA-Z0-9_.-]+)(?:\\s+)??" +
+									"(?:on\\s+(?<chain>base|optimism))?" +
+									"(?<token>eth|degen|usdc)?";
+							matcher = Pattern.compile(sendPattern, Pattern.CASE_INSENSITIVE).matcher(remainingText);
+							if (matcher.find()) {
+								receiver = matcher.group("receiver");
+								chain = matcher.group("chain");
+								token = matcher.group("token");
+
+								log.debug("Receiver: {}, token: {}, chain: {}", receiver, token, chain);
+
+								// if receiver passed fetch meta from mentions
+								if (!StringUtils.isBlank(receiver)) {
+									String finalReceiver = receiver;
+									val fcProfile = cast
+											.mentionedProfiles().stream()
+											.filter(p -> p.username().equals(finalReceiver)).findFirst().orElse(null);
+
+									if (fcProfile == null) {
+										log.error("Farcaster profile {} is not in the mentioned profiles list in {}",
+												receiver, cast);
+										job.setStatus(PaymentBotJob.Status.REJECTED);
+										return;
+									}
+
+									val addresses = fcProfile.verifications();
+									// add custodial if not verified present
+									if (addresses.isEmpty()) {
+										addresses.add(cast.author().custodyAddress());
+									}
+									receiverProfile = frameService.getFidProfiles(addresses)
+											.stream().findFirst().orElse(null);
+								}
+							}
+						}
+
+						// if a reply, fetch through airstack
+						if (StringUtils.isBlank(receiver) && cast.parentAuthor().fid() != null) {
+							receiver = frameService.getFidFname(cast.parentAuthor().fid());
+							receiverProfile = frameService.getFidProfiles(cast.parentAuthor().fid())
+									.stream().findFirst().orElse(null);
+						}
+
+						log.debug("Receiver profile: {}", receiverProfile);
+
+						if (receiverProfile != null) {
+							val castText = String.format("@%s send funds to @%s with the frame",
+									cast.author().username(),
+									receiver);
+							val embeds = Collections.singletonList(
+									new CastEmbed(
+											String.format("https://frames.payflow.me/%s",
+													receiverProfile.getUsername())));
+
+							if (isBotCastEnabled) {
+								val response = hubService.cast(botSignerUuid, castText, cast.hash(), embeds);
+								if (response.success()) {
+									log.debug("Successfully processed bot cast with reply: {}",
+											response.cast());
+									job.setStatus(PaymentBotJob.Status.PROCESSED);
+									return;
+								}
+							} else {
+								job.setStatus(PaymentBotJob.Status.PROCESSED);
+							}
+						} else {
+							log.error("Receiver should be specifier or it's optional if reply");
+						}
+					}
+					case "jar": {
+						if (!StringUtils.isBlank(remainingText)) {
+							val jarTitlePattern = "\"(?<title>[^\"]*)\"";
+							matcher = Pattern.compile(jarTitlePattern, Pattern.CASE_INSENSITIVE).matcher(remainingText);
+							if (matcher.find()) {
+								val jarTitle = matcher.group("title");
+								if (!StringUtils.isBlank(jarTitle)) {
+									val source = String.format("https://warpcast.com/%s/%s",
+											cast.author().username(),
+											cast.hash().substring(0, 10));
+									log.debug("Executing jar creation with title `{}`, desc `{}`, " +
+													"embeds {}, source {}",
+											jarTitle, beforeText, cast.embeds(),
+											source);
+									job.setStatus(PaymentBotJob.Status.PROCESSED);
+								} else {
+									log.error("Empty title");
+								}
+
+							} else {
+								log.error("Missing remaining text for title");
+							}
+						}
+					}
+					default: {
+						log.error("Command not supported: {}", command);
+					}
 				}
-				return;
+			} else {
+				log.error("Bot command not included in {}", cast);
 			}
 
-			matcher = Pattern.compile("@payflow send (@\\w+)")
-					.matcher(castText);
-			if (matcher.find()) {
-				log.debug("Payflow bot send command detected for cast {}", paymentBotJob.getCast());
-
-				val receiverFname = matcher.group(1).substring(1);
-				val receiverProfile = paymentBotJob.getCast()
-						.mentionedProfiles().stream()
-						.filter(p -> p.username().equals(receiverFname)).findFirst().orElse(null);
-
-				if (receiverProfile == null) {
-					log.error("Farcaster profile {} is not in the mentioned profiles list in {}",
-							receiverFname, paymentBotJob.getCast());
-					paymentBotJob.setStatus(PaymentBotJob.Status.REJECTED);
-					return;
-				}
-
-				val addresses = receiverProfile.verifications();
-				// add custodial if not verified present
-				if (addresses.isEmpty()) {
-					addresses.add(paymentBotJob.getCast().author().custodyAddress());
-				}
-
-				val profile = frameService.getFidProfiles(addresses)
-						.stream().findFirst().orElse(null);
-				if (profile == null) {
-					log.error("Mentioned in send command farcaster profile doesn't have " +
-							"payflow profile, rejecting bot command - cast: {}", paymentBotJob);
-					paymentBotJob.setStatus(PaymentBotJob.Status.REJECTED);
-					return;
-				}
-
-				log.debug("Executing bot send command for cast: {}", paymentBotJob);
-				val response = hubService.cast(botSignerUuid, String.format("@%s you can send " +
-										"funds to @%s with the frame",
-								paymentBotJob.getCast().author().username(), receiverProfile.username()),
-						paymentBotJob.getCast().hash(),
-						Collections.singletonList(
-								new CastRequestMessage.Embed(
-										String.format("https://frames.payflow.me/%s",
-												profile.getUsername()))));
-				if (response.success()) {
-					log.debug("Successfully processed bot cast with reply: {}",
-							response.cast());
-					paymentBotJob.setStatus(PaymentBotJob.Status.PROCESSED);
-				}
-				return;
-
-			}
-			log.debug("Bot command not included in {}", paymentBotJob);
-			paymentBotJob.setStatus(PaymentBotJob.Status.REJECTED);
+			job.setStatus(PaymentBotJob.Status.REJECTED);
 		});
 	}
 }

@@ -6,7 +6,5 @@ import java.util.List;
 
 public record CastRequestMessage(@JsonProperty("signer_uuid") String signerUuid, String text,
                                  String parent,
-                                 List<Embed> embeds) {
-	public record Embed(String url) {
-	}
+                                 List<CastEmbed> embeds) {
 }
