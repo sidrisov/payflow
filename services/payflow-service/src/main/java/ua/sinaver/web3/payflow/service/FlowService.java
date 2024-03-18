@@ -5,13 +5,19 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ua.sinaver.web3.payflow.data.Flow;
+import ua.sinaver.web3.payflow.data.Jar;
 import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.data.Wallet;
 import ua.sinaver.web3.payflow.message.FlowMessage;
+import ua.sinaver.web3.payflow.message.JarMessage;
 import ua.sinaver.web3.payflow.message.WalletMessage;
 import ua.sinaver.web3.payflow.repository.FlowRepository;
+import ua.sinaver.web3.payflow.repository.JarRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
 import ua.sinaver.web3.payflow.service.api.IFlowService;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -21,10 +27,32 @@ import java.util.Optional;
 @Transactional
 public class FlowService implements IFlowService {
 	@Autowired
+	private JarRepository jarRepository;
+	@Autowired
 	private FlowRepository flowRepository;
 
 	@Autowired
 	private UserRepository userRepository;
+
+	@Override
+	public Jar createJar(String title, String description, String image, String source, User user) {
+		// use same signer as default flow
+		val signer = user.getDefaultFlow().getSigner();
+		val signerProvider = user.getDefaultFlow().getSignerProvider();
+
+		val wallets = new ArrayList<Wallet>();
+
+		val flow = new Flow(user.getId(), title, signer, signerProvider, "safe", null);
+		val uuid = flow.getUuid();
+		val saltNonce = "payflow-alpha-".concat(uuid);
+		flow.setType(Flow.FlowType.JAR);
+		flow.setSaltNonce(saltNonce);
+		flow.setWallets(wallets);
+
+		val jar = new Jar(flow, description, image, source);
+		jarRepository.save(jar);
+		return jar;
+	}
 
 	@Override
 	public void saveFlow(FlowMessage flowDto, User user) {
@@ -58,6 +86,18 @@ public class FlowService implements IFlowService {
 	}
 
 	@Override
+	public JarMessage findJarByUUID(String uuid) {
+		val jar = jarRepository.findByFlowUuid(uuid);
+		if (jar != null) {
+			Optional<User> user = userRepository.findById(jar.getFlow().getUserId());
+			if (user.isPresent()) {
+				return JarMessage.convert(jar, user.get());
+			}
+		}
+		return null;
+	}
+
+	@Override
 	public void deleteFlowWallet(String uuid, WalletMessage walletDto, User user) throws Exception {
 		val flow = flowRepository.findByUuid(uuid);
 		if (flow == null) {
@@ -72,7 +112,7 @@ public class FlowService implements IFlowService {
 		val walletOptional = flow.getWallets().stream()
 				.filter(w -> w.getNetwork().equals(network) && w.getAddress().equals(address))
 				.findFirst();
-		if (!walletOptional.isPresent()) {
+		if (walletOptional.isEmpty()) {
 			return;
 		}
 
@@ -121,7 +161,7 @@ public class FlowService implements IFlowService {
 		val walletOptional = flow.getWallets().stream()
 				.filter(w -> w.getNetwork().equals(network) && w.getAddress().equals(address))
 				.findFirst();
-		if (!walletOptional.isPresent()) {
+		if (walletOptional.isEmpty()) {
 			throw new Exception("Wallet doesn't exist");
 		}
 

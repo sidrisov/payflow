@@ -48,7 +48,7 @@ export const useTransactions = (wallets: FlowWalletType[]) => {
         const hashes = txs.map((tx) => tx.hash);
 
         let payments: PaymentType[] = [];
-        if (profile) {
+        if (profile && hashes.length > 0) {
           const { status, data } = await axios.get(`${API_URL}/api/payment`, {
             params: { hashes },
             paramsSerializer: {

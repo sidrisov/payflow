@@ -1,6 +1,6 @@
 import { Box, Menu, MenuItem, MenuProps, Tooltip, Typography } from '@mui/material';
 import { FlowType } from '../../types/FlowType';
-import { Check, Stars } from '@mui/icons-material';
+import { Check, Star } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { useContext } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
@@ -21,6 +21,7 @@ export function ChooseFlowMenu({
   ...props
 }: ChooseFlowMenuProps) {
   const { profile } = useContext(ProfileContext);
+
   return (
     profile && (
       <Menu
@@ -42,8 +43,14 @@ export function ChooseFlowMenu({
               }}>
               <Box display="flex" alignItems="center" justifyContent="center" width={30}>
                 {option.uuid === profile.defaultFlow?.uuid && (
-                  <Tooltip title="Default flow">
-                    <Stars fontSize="small" />
+                  <Tooltip title="Primary">
+                    <Star />
+                  </Tooltip>
+                )}
+
+                {option.type === 'JAR' && (
+                  <Tooltip title="Jar">
+                    <Box src="/jar.png" component="img" sx={{ width: 20, height: 20 }} />
                   </Tooltip>
                 )}
               </Box>

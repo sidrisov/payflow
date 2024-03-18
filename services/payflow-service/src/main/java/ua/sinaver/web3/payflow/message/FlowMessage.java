@@ -6,7 +6,8 @@ import ua.sinaver.web3.payflow.data.User;
 
 import java.util.List;
 
-public record FlowMessage(String signer, String signerProvider, String title, String description,
+public record FlowMessage(String signer, String signerProvider, String title,
+                          String type,
                           String uuid,
                           String walletProvider,
                           String saltNonce, List<WalletMessage> wallets) {
@@ -68,7 +69,8 @@ public record FlowMessage(String signer, String signerProvider, String title, St
 		val wallets = flow.getWallets().stream().map(WalletMessage::convert)
 				.toList();
 		return new FlowMessage(flowSigner, flowSignerProvider,
-				flow.getTitle(), flow.getDescription(),
+				flow.getTitle(),
+				flow.getType() != null ? flow.getType().toString() : "",
 				flow.getUuid(),
 				flow.getWalletProvider(), flow.getSaltNonce(), wallets);
 	}
@@ -77,7 +79,7 @@ public record FlowMessage(String signer, String signerProvider, String title, St
 		val flowSigner = getFlowSigner(flowMessage, user);
 		val flowSignerProvider = getFlowSignerProvider(flowMessage);
 
-		val flow = new Flow(user.getId(), flowMessage.title(), flowMessage.description(),
+		val flow = new Flow(user.getId(), flowMessage.title(),
 				flowSigner, flowSignerProvider, flowMessage.walletProvider(),
 				flowMessage.saltNonce());
 		val wallets = flowMessage.wallets().stream().map(w -> {

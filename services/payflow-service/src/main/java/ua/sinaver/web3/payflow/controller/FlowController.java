@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.message.FlowMessage;
+import ua.sinaver.web3.payflow.message.JarMessage;
 import ua.sinaver.web3.payflow.message.WalletMessage;
 import ua.sinaver.web3.payflow.service.api.IFlowService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
@@ -56,6 +57,13 @@ class FlowController {
 		}
 
 		return flowService.getAllFlows(user);
+	}
+
+	@GetMapping("/jar/{uuid}")
+	public JarMessage getJarByUUID(@PathVariable String uuid) {
+		val jarMessage = flowService.findJarByUUID(uuid);
+		log.debug("{}", jarMessage);
+		return jarMessage;
 	}
 
 	@GetMapping("/{uuid}")

@@ -13,10 +13,12 @@ import ua.sinaver.web3.payflow.data.bot.PaymentBotJob;
 import ua.sinaver.web3.payflow.message.CastEmbed;
 import ua.sinaver.web3.payflow.message.NotificationResponse;
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
+import ua.sinaver.web3.payflow.service.api.IFlowService;
 import ua.sinaver.web3.payflow.service.api.IFrameService;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
@@ -37,17 +39,38 @@ public class FarcasterPaymentBotService {
 	@Autowired
 	private IFrameService frameService;
 
+	@Autowired
+	private IFlowService flowService;
+
 	@Value("${payflow.farcaster.bot.signer}")
 	private String botSignerUuid;
 
 	@Value("${payflow.farcaster.bot.enabled:false}")
 	private boolean isBotEnabled;
 
-	@Value("${payflow.farcaster.bot.cast.enabled:true}")
-	private boolean isBotCastEnabled;
+	@Value("${payflow.farcaster.bot.reply.enabled:true}")
+	private boolean isBotReplyEnabled;
 
 	@Value("${payflow.farcaster.bot.test.enabled:false}")
 	private boolean isTestBotEnabled;
+
+
+	private boolean reply(String text, String parentHash, List<CastEmbed> embeds) {
+		if (isBotReplyEnabled) {
+			val response = hubService.cast(botSignerUuid, text, parentHash, embeds);
+			if (response.success()) {
+				log.debug("Successfully processed bot cast with reply: {}",
+						response.cast());
+				return true;
+			}
+		} else {
+			log.debug("Bot reply disabled, skipping casting the reply");
+			return true;
+		}
+
+		return false;
+	}
+
 
 	@Scheduled(fixedRate = 5 * 1000)
 	void fetchBotMentions() {
@@ -158,16 +181,11 @@ public class FarcasterPaymentBotService {
 								new CastEmbed(
 										String.format("https://frames.payflow.me/%s",
 												profile.getUsername())));
-						if (isBotCastEnabled) {
-							val response = hubService.cast(botSignerUuid, castText, cast.hash(), embeds);
-							if (response.success()) {
-								log.debug("Successfully processed bot cast with reply: {}",
-										response.cast());
-								job.setStatus(PaymentBotJob.Status.PROCESSED);
-								return;
-							}
-						} else {
+
+						val processed = reply(castText, cast.hash(), embeds);
+						if (processed) {
 							job.setStatus(PaymentBotJob.Status.PROCESSED);
+							return;
 						}
 					}
 					case "send": {
@@ -233,16 +251,10 @@ public class FarcasterPaymentBotService {
 											String.format("https://frames.payflow.me/%s",
 													receiverProfile.getUsername())));
 
-							if (isBotCastEnabled) {
-								val response = hubService.cast(botSignerUuid, castText, cast.hash(), embeds);
-								if (response.success()) {
-									log.debug("Successfully processed bot cast with reply: {}",
-											response.cast());
-									job.setStatus(PaymentBotJob.Status.PROCESSED);
-									return;
-								}
-							} else {
+							val processed = reply(castText, cast.hash(), embeds);
+							if (processed) {
 								job.setStatus(PaymentBotJob.Status.PROCESSED);
+								return;
 							}
 						} else {
 							log.error("Receiver should be specifier or it's optional if reply");
@@ -253,16 +265,48 @@ public class FarcasterPaymentBotService {
 							val jarTitlePattern = "\"(?<title>[^\"]*)\"";
 							matcher = Pattern.compile(jarTitlePattern, Pattern.CASE_INSENSITIVE).matcher(remainingText);
 							if (matcher.find()) {
-								val jarTitle = matcher.group("title");
-								if (!StringUtils.isBlank(jarTitle)) {
+								val title = matcher.group("title");
+								val image = cast.embeds().stream()
+										.filter(embed -> embed.url().endsWith(".png"))
+										.findFirst().map(CastEmbed::url).orElse(null);
+								if (!StringUtils.isBlank(title)) {
 									val source = String.format("https://warpcast.com/%s/%s",
 											cast.author().username(),
 											cast.hash().substring(0, 10));
 									log.debug("Executing jar creation with title `{}`, desc `{}`, " +
 													"embeds {}, source {}",
-											jarTitle, beforeText, cast.embeds(),
+											title, beforeText, cast.embeds(),
 											source);
-									job.setStatus(PaymentBotJob.Status.PROCESSED);
+
+									val addresses = cast.author().verifications();
+									// add custodial if not verified present
+									if (addresses.isEmpty()) {
+										addresses.add(cast.author().custodyAddress());
+									}
+
+									val profile = frameService.getFidProfiles(addresses)
+											.stream().findFirst().orElse(null);
+									if (profile == null) {
+										log.error("Caster doesn't have payflow profile, " +
+												"rejecting bot jar command for cast: {}", cast);
+										job.setStatus(PaymentBotJob.Status.REJECTED);
+										return;
+									}
+
+									val jar = flowService.createJar(title, beforeText,
+											image, source, profile);
+									log.debug("Jar created {}", jar);
+
+									val castText = String.format("@%s receive jar contributions with the frame",
+											cast.author().username());
+									val embeds = Collections.singletonList(
+											new CastEmbed(String.format("https://frames.payflow.me/jar/%s",
+													jar.getFlow().getUuid())));
+									val processed = reply(castText, cast.hash(), embeds);
+									if (processed) {
+										job.setStatus(PaymentBotJob.Status.PROCESSED);
+										return;
+									}
 								} else {
 									log.error("Empty title");
 								}
@@ -279,7 +323,6 @@ public class FarcasterPaymentBotService {
 			} else {
 				log.error("Bot command not included in {}", cast);
 			}
-
 			job.setStatus(PaymentBotJob.Status.REJECTED);
 		});
 	}

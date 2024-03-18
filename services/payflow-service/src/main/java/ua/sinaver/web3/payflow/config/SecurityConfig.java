@@ -40,6 +40,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.POST, "/auth/verify/{identity}").permitAll()
 						// flow payment
 						.requestMatchers(HttpMethod.GET, "/flows/{uuid}").permitAll()
+						.requestMatchers(HttpMethod.GET, "/flows/jar/{uuid}").permitAll()
 						.requestMatchers(HttpMethod.GET, "/flows/public/{username}").permitAll()
 						// request payment
 						.requestMatchers(HttpMethod.GET, "/requests/{uuid}").permitAll()

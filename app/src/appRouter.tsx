@@ -9,6 +9,7 @@ import Invite from './pages/Invite';
 import Leaderboard from './layouts/Leadearboard';
 import Advanced from './pages/Advanced';
 import PublicProfile from './layouts/PublicProfile';
+import Jar from './pages/Jar';
 
 export const appRoutes = ['/home', '/flows', '/requests', '/settings'];
 
@@ -45,6 +46,11 @@ export const appRouter = createBrowserRouter([
       {
         path: '/:username',
         element: <PublicProfile />,
+        errorElement: <Page404 />
+      },
+      {
+        path: '/jar/:uuid',
+        element: <Jar />,
         errorElement: <Page404 />
       },
       /*

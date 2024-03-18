@@ -129,7 +129,7 @@ export function AccountCard({
             </AvatarGroup>
           </Tooltip>
           <Stack direction="row">
-            <Typography p={1} variant="subtitle2" fontWeight="bold">
+            <Typography maxWidth={200} p={1} variant="subtitle2" fontWeight="bold" noWrap>
               {selectedFlow.title}
             </Typography>
             <Stack

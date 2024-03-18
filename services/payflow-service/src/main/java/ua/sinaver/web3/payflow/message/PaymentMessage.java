@@ -1,5 +1,6 @@
 package ua.sinaver.web3.payflow.message;
 
+import org.apache.commons.lang3.StringUtils;
 import ua.sinaver.web3.payflow.data.Payment;
 
 public record PaymentMessage(String referenceId,
@@ -21,7 +22,8 @@ public record PaymentMessage(String referenceId,
 				ProfileMetaMessage.convert(payment.getReceiver(), true),
 				payment.getNetwork(),
 				payment.getToken(),
-				Double.parseDouble(payment.getUsdAmount()),
+				StringUtils.isNotBlank(payment.getUsdAmount()) ?
+						Double.parseDouble(payment.getUsdAmount()) : null,
 				payment.getHash(),
 				new PaymentMessage.PaymentSource(payment.getSourceApp(),
 						payment.getSourceRef()), payment.getComment());

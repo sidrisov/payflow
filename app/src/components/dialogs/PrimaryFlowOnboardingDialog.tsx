@@ -10,7 +10,8 @@ import {
   useTheme,
   useMediaQuery,
   FormControlLabel,
-  Switch} from '@mui/material';
+  Switch
+} from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 
 import { CloseCallbackType } from '../../types/CloseCallbackType';
@@ -54,7 +55,6 @@ export default function PrimaryFlowOnboardingDialog({
 
   const navigate = useNavigate();
 
-
   function handleCloseCampaignDialog() {
     closeStateCallback();
   }
@@ -84,7 +84,6 @@ export default function PrimaryFlowOnboardingDialog({
         // TODO: choose different one
         ...(extraSigner && { signer: address, signerProvider: 'privy' }),
         title: 'Primary flow',
-        description: '',
         walletProvider: 'safe',
         saltNonce: SALT_NONCE,
         wallets

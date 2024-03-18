@@ -1,9 +1,7 @@
 import { Box, NativeSelect, Stack, Typography } from '@mui/material';
 import { ActivitySkeletonSection } from './skeletons/ActivitySkeletonSection';
 import PublicProfileActivityFeedSection from './PublicProfileActivityFeedPayment';
-import { useAccount } from 'wagmi';
-import { useContext, useMemo, useState } from 'react';
-import { ProfileContext } from '../contexts/UserContext';
+import { useState } from 'react';
 import { Chain } from 'viem';
 import { useTransactions } from '../utils/queries/transactions';
 import { FlowType } from '../types/FlowType';
@@ -13,19 +11,9 @@ export type AssetsProps = {
   selectedChain?: Chain | undefined;
 };
 
-export default function PublicProfileActivityFeed({ flow, selectedChain }: AssetsProps) {
-  const { profile: loggedProfile } = useContext(ProfileContext);
-  const { address } = useAccount();
-
+export default function JarActivityFeed({ flow, selectedChain }: AssetsProps) {
   const { isLoading, isFetched, data: transactions } = useTransactions(flow?.wallets ?? []);
-
   const [feedOption, setFeedOption] = useState<number>(1);
-
-  useMemo(async () => {
-    if (!address && !loggedProfile) {
-      setFeedOption(1);
-    }
-  }, [address, loggedProfile]);
 
   return (
     <>
@@ -46,8 +34,8 @@ export default function PublicProfileActivityFeed({ flow, selectedChain }: Asset
             setFeedOption(parseInt(event.target.value));
           }}
           sx={{ fontSize: 14, fontWeight: 500 }}>
-          <option value={1}>All payments</option>
-          {(address || loggedProfile) && <option value={2}>Between you</option>}
+          <option value={1}>Contributions</option>
+          <option value={2}>Withdrawals</option>
         </NativeSelect>
       </Box>
       <Stack p={1} spacing={2} width="100%" maxHeight={430} overflow="auto">
@@ -59,13 +47,7 @@ export default function PublicProfileActivityFeed({ flow, selectedChain }: Asset
             .filter((tx) => {
               return (
                 (selectedChain ? tx.chainId === selectedChain.id : true) &&
-                (feedOption !== 1
-                  ? tx.to === address ||
-                    tx.from === address ||
-                    (loggedProfile &&
-                      (tx.fromProfile?.identity === loggedProfile.identity ||
-                        tx.toProfile?.identity === loggedProfile.identity))
-                  : true)
+                (feedOption === 1 ? tx.activity === 'inbound' : tx.activity === 'outbound')
               );
             })
             .map((txInfo) => (
