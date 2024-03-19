@@ -23,11 +23,9 @@ public interface InvitationRepository extends CrudRepository<Invitation, Integer
 
 	List<Invitation> findByInvitedBy(User invitedBy);
 
-	// TODO: fix a bug when searching by NULL
-	Invitation findFirstByIdentityAndExpiryDateAfterAndInviteeNullOrCodeAndCodeNotNullAndExpiryDateAfterAndInviteeNullOrderByCreatedDateAsc(
+	Invitation findFirstByIdentityAndInviteeNullOrCodeAndCodeNotNullAndInviteeNullOrderByCreatedDateAsc(
 			String identity,
-			Date before1,
-			String code, Date before2);
+			String code);
 
 	default boolean existsByIdentityAndValid(String identity) {
 		val now = new Date();
@@ -43,10 +41,8 @@ public interface InvitationRepository extends CrudRepository<Invitation, Integer
 
 	default Invitation findFirstValidByIdentityOrCode(String identity,
 	                                                  String code) {
-		val now = new Date();
-		return findFirstByIdentityAndExpiryDateAfterAndInviteeNullOrCodeAndCodeNotNullAndExpiryDateAfterAndInviteeNullOrderByCreatedDateAsc(
-				identity, now,
-				code, now);
+		return findFirstByIdentityAndInviteeNullOrCodeAndCodeNotNullAndInviteeNullOrderByCreatedDateAsc(
+				identity,
+				code);
 	}
-
 }

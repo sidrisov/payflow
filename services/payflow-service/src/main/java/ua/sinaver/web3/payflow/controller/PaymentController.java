@@ -41,7 +41,10 @@ public class PaymentController {
 			return Collections.emptyList();
 		}
 
-		return paymentRepository.findByHashInAndReceiver(hashes, user).stream()
+		val payments = paymentRepository.findByHashInAndReceiver(hashes, user);
+
+		log.debug("Fetched payments: {}", payments);
+		return payments.stream()
 				.map(payment -> PaymentMessage.convert(payment, false))
 				.toList();
 	}

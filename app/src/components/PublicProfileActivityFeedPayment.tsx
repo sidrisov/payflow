@@ -243,6 +243,13 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
                 border: txInfo.activity === 'self' ? 0.5 : 0,
                 alignSelf: 'center',
                 fontSize: isMobile ? 12 : 14,
+                fontWeight: 'bold',
+                color:
+                  txInfo.activity === 'self'
+                    ? 'inherit'
+                    : txInfo.activity === 'inbound'
+                    ? 'black'
+                    : 'white',
                 bgcolor:
                   txInfo.activity === 'self'
                     ? 'inherit'

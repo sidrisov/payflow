@@ -42,6 +42,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-graphql")
     implementation("org.springframework.session:spring-session-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-aop")
+
+    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.7.3")
+
     /**
      * TODO: disable for now due the following, generating types with gradle plugin is enough for now
      * There are problems with the GraphQL Schema:

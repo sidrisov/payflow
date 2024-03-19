@@ -85,6 +85,8 @@ public class UserService implements IUserService {
 				user.setUserAllowance(defaultAllowance);
 			} else {
 				Invitation invitation = invitationRepository.findFirstValidByIdentityOrCode(identity, invitationCode);
+
+				log.debug("Invitation: {} {} {}", invitation, identity, invitationCode);
 				if (invitation != null) {
 					user.setAllowed(true);
 					user.setCreatedDate(new Date());
@@ -140,8 +142,13 @@ public class UserService implements IUserService {
 	}
 
 	@Override
+	public User findByUsernameOrIdentity(String usernameOrIdentity) {
+		return userRepository.findByUsernameOrIdentity(usernameOrIdentity);
+	}
+
+	@Override
 	public List<User> searchByUsernameQuery(String query) {
-		return userRepository.findByDisplayNameContainingOrUsernameContainingOrIdentityContaining(query, query, query);
+		return userRepository.findBySearchQuery(query);
 	}
 
 	@Override

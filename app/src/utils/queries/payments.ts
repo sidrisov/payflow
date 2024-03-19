@@ -8,7 +8,7 @@ export const usePendingPayments = (enabled: boolean) => {
     enabled,
     queryKey: ['payments'],
     staleTime: 120_000,
-    refetchInterval: 60_000,
+    refetchInterval: 30_000,
     queryFn: () =>
       axios
         .get(`${API_URL}/api/payment/pending`, {

@@ -15,16 +15,21 @@ import java.util.List;
 
 @Builder
 public class FrameResponse {
+	public static final FrameButton BACK_FRAME_BUTTON = backFrameButton(null);
 	private String imageUrl;
 	private String postUrl;
 	private String textInput;
 	private String state;
-
 	@Builder.Default
 	private boolean cacheImage = true;
-
 	@Singular
 	private List<FrameButton> buttons;
+
+	private static FrameButton backFrameButton(String target) {
+		return new FrameButton("⬅\uFE0F Back",
+				FrameButton.ActionType.POST,
+				target);
+	}
 
 	private static String frameButtonMeta(int index, FrameButton frameButton) {
 		var frameButtonMeta = String.format("""

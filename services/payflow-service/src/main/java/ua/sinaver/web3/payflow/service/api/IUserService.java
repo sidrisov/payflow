@@ -16,6 +16,8 @@ public interface IUserService {
 
 	User findByUsername(String username);
 
+	User findByUsernameOrIdentity(String usernameOrIdentity);
+
 	List<User> searchByUsernameQuery(String query);
 
 	// TODO: add pagination

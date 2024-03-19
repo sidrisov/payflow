@@ -1,49 +1,31 @@
 import { Box, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
-import { ProfileType, SelectedIdentityType } from '../types/ProfleType';
+import { SelectedIdentityType } from '../types/ProfleType';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import { orange } from '@mui/material/colors';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { PublicProfileCard } from '../components/cards/PublicProfileCard';
 import { useAccount } from 'wagmi';
-import { getProfileByAddressOrName } from '../services/user';
 import { Address } from 'viem';
 
 import PaymentDialog from '../components/dialogs/PaymentDialog';
 import { PublicSearchPay } from './PublicSearchPay';
 import { ProfileContext } from '../contexts/UserContext';
+import { useProfile } from '../utils/queries/profiles';
 
 export default function PublicProfile() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const { username } = useParams();
-
-  const [profile, setProfile] = useState<ProfileType>();
+  const { isLoading: isProfileLoading, data: profile } = useProfile(username);
   const { profile: loggedProfile } = useContext(ProfileContext);
-  const [loadingProfile, setLoadingProfile] = useState<boolean>();
 
   const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(false);
-
   const { address } = useAccount();
-
   const [selectedRecipient, setSelectedRecipient] = useState<SelectedIdentityType>();
-
-  useMemo(async () => {
-    if (username) {
-      setLoadingProfile(true);
-      try {
-        const profile = await getProfileByAddressOrName(username);
-        setProfile(profile);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoadingProfile(false);
-      }
-    }
-  }, [username]);
 
   return (
     <>
@@ -51,7 +33,7 @@ export default function PublicProfile() {
         <title> Payflow {profile ? '| ' + profile.displayName : ''} </title>
       </Helmet>
       <Box width="100%">
-        {username && !loadingProfile && !profile && (
+        {username && !isProfileLoading && !profile && (
           <Stack mt={10}>
             <Typography
               variant="h6"
@@ -74,7 +56,7 @@ export default function PublicProfile() {
           </Stack>
         )}
 
-        {loadingProfile === true ? (
+        {isProfileLoading === true ? (
           <CenteredCircularProgress />
         ) : profile ? (
           <PublicProfileCard profile={profile} />

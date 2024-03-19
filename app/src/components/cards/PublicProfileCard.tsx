@@ -24,7 +24,7 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
       </Card>
 
       <Box mx={1}>
-        <PublicProfileActivityFeed profile={profile} />
+        <PublicProfileActivityFeed flow={profile.defaultFlow} />
       </Box>
     </>
   );

@@ -25,11 +25,12 @@ public class Flow {
 	@Column(name = "user_id")
 	private Integer userId;
 
-	@Column
-	private String title;
+	@Column(columnDefinition = "VARCHAR(256)")
+	@Enumerated(EnumType.STRING)
+	private FlowType type;
 
 	@Column
-	private String description;
+	private String title;
 
 	@Column(columnDefinition = "boolean")
 	private boolean shareable;
@@ -60,13 +61,12 @@ public class Flow {
 	@Version
 	private Long version;
 
-	public Flow(Integer userId, String title, String description, String signer,
+	public Flow(Integer userId, String title, String signer,
 	            String signerProvider,
 	            String walletProvider,
 	            String saltNonce) {
 		this.userId = userId;
 		this.title = title;
-		this.description = description;
 		this.uuid = RandomStringUtils.random(8, true, true);
 
 		this.signer = signer;
@@ -77,5 +77,10 @@ public class Flow {
 		} else {
 			this.saltNonce = saltNonce;
 		}
+	}
+
+	public enum FlowType {
+		REGULAR,
+		JAR
 	}
 }

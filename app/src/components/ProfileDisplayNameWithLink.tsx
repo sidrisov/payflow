@@ -1,6 +1,5 @@
 import { Link, LinkProps, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { ProfileType } from '../types/ProfleType';
-import { useNavigate } from 'react-router-dom';
 
 export function ProfileDisplayNameWithLink({
   profile,
@@ -8,7 +7,6 @@ export function ProfileDisplayNameWithLink({
 }: { profile: ProfileType } & LinkProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const navigate = useNavigate();
 
   return (
     <Link

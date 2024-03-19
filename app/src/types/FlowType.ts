@@ -5,11 +5,19 @@ export interface FlowType {
   signer: Address;
   signerProvider?: string;
   title: string;
-  description: string;
+  type: string;
   uuid: string;
   walletProvider: string;
   saltNonce: string;
   wallets: FlowWalletType[];
+}
+
+export interface JarType {
+  flow: FlowType;
+  profile: ProfileType;
+  description?: string;
+  image?: string;
+  link?: string;
 }
 
 export interface FlowWalletType {

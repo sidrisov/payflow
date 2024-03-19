@@ -31,9 +31,8 @@ public interface UserRepository extends CrudRepository<User, Integer> {
 		return findByUsernameOrIdentity(usernameOrIdentity, usernameOrIdentity);
 	}
 
-	List<User> findByDisplayNameContainingOrUsernameContainingOrIdentityContaining(String displayName,
-	                                                                               String username,
-	                                                                               String identity);
+	@Query("SELECT u FROM User u WHERE u.displayName LIKE %:query% OR u.username LIKE %:query% OR u.identity LIKE %:query%")
+	List<User> findBySearchQuery(@Param("query") String searchQuery);
 
 	@Query(value = "SELECT * FROM user WHERE id " +
 			"in (SELECT user_id FROM flow WHERE id " +

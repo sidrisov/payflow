@@ -29,7 +29,10 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -288,10 +291,17 @@ public class TransactionService {
 			    }
 			]
 			""";
+	public static final String BASE_CHAIN_NAME = "base";
 	public static final Integer BASE_CHAIN_ID = 8453;
+	public static final String OP_CHAIN_NAME = "optimism";
+	public static final Integer OP_CHAIN_ID = 10;
 	public static final Integer DEFAULT_FRAME_PAYMENTS_CHAIN_ID = BASE_CHAIN_ID;
 	public static final List<Integer> SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS =
-			Collections.singletonList(BASE_CHAIN_ID);
+			Arrays.asList(BASE_CHAIN_ID, OP_CHAIN_ID);
+
+	public static final Map<String, Integer> PAYMENT_CHAINS =
+			Map.of(BASE_CHAIN_NAME, BASE_CHAIN_ID,
+					OP_CHAIN_NAME, OP_CHAIN_ID);
 	public static final String ETH_TOKEN = "eth";
 	public static final String USDC_TOKEN = "usdc";
 	public static final String DEGEN_TOKEN = "degen";
