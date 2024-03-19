@@ -1,0 +1,823 @@
+// Forked from https://github.com/pimlicolabs/permissionless.js/blob/main/packages/permissionless/accounts/safe/signerToSafeSmartAccount.ts
+// All credits go to Pimlico Team (Kristof Gazso)
+
+// changes: added support for custom owners + threshold
+
+import { getEntryPointVersion, isSmartAccountDeployed, getAccountNonce } from 'permissionless';
+import {
+  SmartAccount,
+  SmartAccountSigner,
+  SignTransactionNotSupportedBySmartAccount
+} from 'permissionless/accounts';
+import { ENTRYPOINT_ADDRESS_V06_TYPE, EntryPoint } from 'permissionless/types';
+
+import {
+  type Address,
+  type Chain,
+  type Client,
+  type Hex,
+  type LocalAccount,
+  type SignableMessage,
+  type Transport,
+  type TypedData,
+  type TypedDataDefinition,
+  concat,
+  concatHex,
+  encodeFunctionData,
+  encodePacked,
+  getContractAddress,
+  hashMessage,
+  hashTypedData,
+  hexToBigInt,
+  keccak256,
+  toBytes,
+  zeroAddress
+} from 'viem';
+import { toAccount } from 'viem/accounts';
+import { getChainId, readContract, signMessage, signTypedData } from 'viem/actions';
+import { Prettify } from 'viem/chains';
+
+export type SafeVersion = '1.4.1';
+
+const EIP712_SAFE_OPERATION_TYPE = {
+  SafeOp: [
+    { type: 'address', name: 'safe' },
+    { type: 'uint256', name: 'nonce' },
+    { type: 'bytes', name: 'initCode' },
+    { type: 'bytes', name: 'callData' },
+    { type: 'uint256', name: 'callGasLimit' },
+    { type: 'uint256', name: 'verificationGasLimit' },
+    { type: 'uint256', name: 'preVerificationGas' },
+    { type: 'uint256', name: 'maxFeePerGas' },
+    { type: 'uint256', name: 'maxPriorityFeePerGas' },
+    { type: 'bytes', name: 'paymasterAndData' },
+    { type: 'uint48', name: 'validAfter' },
+    { type: 'uint48', name: 'validUntil' },
+    { type: 'address', name: 'entryPoint' }
+  ]
+};
+
+const SAFE_VERSION_TO_ADDRESSES_MAP: {
+  [key in SafeVersion]: {
+    ADD_MODULES_LIB_ADDRESS: Address;
+    SAFE_4337_MODULE_ADDRESS: Address;
+    SAFE_PROXY_FACTORY_ADDRESS: Address;
+    SAFE_SINGLETON_ADDRESS: Address;
+    MULTI_SEND_ADDRESS: Address;
+    MULTI_SEND_CALL_ONLY_ADDRESS: Address;
+  };
+} = {
+  '1.4.1': {
+    ADD_MODULES_LIB_ADDRESS: '0x8EcD4ec46D4D2a6B64fE960B3D64e8B94B2234eb',
+    SAFE_4337_MODULE_ADDRESS: '0xa581c4A4DB7175302464fF3C06380BC3270b4037',
+    SAFE_PROXY_FACTORY_ADDRESS: '0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67',
+    SAFE_SINGLETON_ADDRESS: '0x41675C099F32341bf84BFc5382aF534df5C7461a',
+    MULTI_SEND_ADDRESS: '0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526',
+    MULTI_SEND_CALL_ONLY_ADDRESS: '0x9641d764fc13c8B624c04430C7356C1C7C8102e2'
+  }
+};
+
+const adjustVInSignature = (
+  signingMethod: 'eth_sign' | 'eth_signTypedData',
+  signature: string
+): Hex => {
+  const ETHEREUM_V_VALUES = [0, 1, 27, 28];
+  const MIN_VALID_V_VALUE_FOR_SAFE_ECDSA = 27;
+  let signatureV = parseInt(signature.slice(-2), 16);
+  if (!ETHEREUM_V_VALUES.includes(signatureV)) {
+    throw new Error('Invalid signature');
+  }
+  if (signingMethod === 'eth_sign') {
+    if (signatureV < MIN_VALID_V_VALUE_FOR_SAFE_ECDSA) {
+      signatureV += MIN_VALID_V_VALUE_FOR_SAFE_ECDSA;
+    }
+    signatureV += 4;
+  }
+  if (signingMethod === 'eth_signTypedData') {
+    if (signatureV < MIN_VALID_V_VALUE_FOR_SAFE_ECDSA) {
+      signatureV += MIN_VALID_V_VALUE_FOR_SAFE_ECDSA;
+    }
+  }
+  return (signature.slice(0, -2) + signatureV.toString(16)) as Hex;
+};
+
+const generateSafeMessageMessage = <
+  const TTypedData extends TypedData | { [key: string]: unknown },
+  TPrimaryType extends keyof TTypedData | 'EIP712Domain' = keyof TTypedData
+>(
+  message: SignableMessage | TypedDataDefinition<TTypedData, TPrimaryType>
+): Hex => {
+  const signableMessage = message as SignableMessage;
+
+  if (typeof signableMessage === 'string' || signableMessage.raw) {
+    return hashMessage(signableMessage);
+  }
+
+  return hashTypedData(message as TypedDataDefinition<TTypedData, TPrimaryType>);
+};
+
+const encodeInternalTransaction = (tx: {
+  to: Address;
+  data: Address;
+  value: bigint;
+  operation: 0 | 1;
+}): string => {
+  const encoded = encodePacked(
+    ['uint8', 'address', 'uint256', 'uint256', 'bytes'],
+    [tx.operation, tx.to, tx.value, BigInt(tx.data.slice(2).length / 2), tx.data]
+  );
+  return encoded.slice(2);
+};
+
+const encodeMultiSend = (
+  txs: {
+    to: Address;
+    data: Address;
+    value: bigint;
+    operation: 0 | 1;
+  }[]
+): `0x${string}` => {
+  const data: `0x${string}` = `0x${txs.map((tx) => encodeInternalTransaction(tx)).join('')}`;
+
+  return encodeFunctionData({
+    abi: [
+      {
+        inputs: [
+          {
+            internalType: 'bytes',
+            name: 'transactions',
+            type: 'bytes'
+          }
+        ],
+        name: 'multiSend',
+        outputs: [],
+        stateMutability: 'payable',
+        type: 'function'
+      }
+    ],
+    functionName: 'multiSend',
+    args: [data]
+  });
+};
+
+export type SafeSmartAccount<
+  entryPoint extends ENTRYPOINT_ADDRESS_V06_TYPE = ENTRYPOINT_ADDRESS_V06_TYPE,
+  transport extends Transport = Transport,
+  chain extends Chain | undefined = Chain | undefined
+> = SmartAccount<entryPoint, 'SafeSmartAccount', transport, chain>;
+
+const getInitializerCode = async ({
+  owners,
+  threshold,
+  addModuleLibAddress,
+  safe4337ModuleAddress,
+  multiSendAddress,
+  setupTransactions = [],
+  safeModules = []
+}: {
+  owners: Address[];
+  threshold?: number;
+  addModuleLibAddress: Address;
+  safe4337ModuleAddress: Address;
+  multiSendAddress: Address;
+  setupTransactions?: {
+    to: Address;
+    data: Address;
+    value: bigint;
+  }[];
+  safeModules?: Address[];
+}) => {
+  const multiSendCallData = encodeMultiSend([
+    {
+      to: addModuleLibAddress,
+      data: encodeFunctionData({
+        abi: [
+          {
+            inputs: [
+              {
+                internalType: 'address[]',
+                name: 'modules',
+                type: 'address[]'
+              }
+            ],
+            name: 'enableModules',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function'
+          }
+        ],
+        functionName: 'enableModules',
+        args: [[safe4337ModuleAddress, ...safeModules]]
+      }),
+      value: 0n,
+      operation: 1
+    },
+    ...setupTransactions.map((tx) => ({ ...tx, operation: 0 as 0 | 1 }))
+  ]);
+
+  return encodeFunctionData({
+    abi: [
+      {
+        inputs: [
+          {
+            internalType: 'address[]',
+            name: '_owners',
+            type: 'address[]'
+          },
+          {
+            internalType: 'uint256',
+            name: '_threshold',
+            type: 'uint256'
+          },
+          {
+            internalType: 'address',
+            name: 'to',
+            type: 'address'
+          },
+          {
+            internalType: 'bytes',
+            name: 'data',
+            type: 'bytes'
+          },
+          {
+            internalType: 'address',
+            name: 'fallbackHandler',
+            type: 'address'
+          },
+          {
+            internalType: 'address',
+            name: 'paymentToken',
+            type: 'address'
+          },
+          {
+            internalType: 'uint256',
+            name: 'payment',
+            type: 'uint256'
+          },
+          {
+            internalType: 'address payable',
+            name: 'paymentReceiver',
+            type: 'address'
+          }
+        ],
+        name: 'setup',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function'
+      }
+    ],
+    functionName: 'setup',
+    args: [
+      owners,
+      threshold ? BigInt(threshold) : 1n,
+      multiSendAddress,
+      multiSendCallData,
+      safe4337ModuleAddress,
+      zeroAddress,
+      0n,
+      zeroAddress
+    ]
+  });
+};
+
+const getAccountInitCode = async ({
+  owners,
+  threshold,
+  addModuleLibAddress,
+  safe4337ModuleAddress,
+  safeSingletonAddress,
+  multiSendAddress,
+  saltNonce = 0n,
+  setupTransactions = [],
+  safeModules = []
+}: {
+  owners: Address[];
+  threshold?: number;
+  addModuleLibAddress: Address;
+  safe4337ModuleAddress: Address;
+  safeSingletonAddress: Address;
+  multiSendAddress: Address;
+  saltNonce?: bigint;
+  setupTransactions?: {
+    to: Address;
+    data: Address;
+    value: bigint;
+  }[];
+  safeModules?: Address[];
+}): Promise<Hex> => {
+  if (!owners || owners.length === 0) throw new Error('Owner account not found');
+  const initializer = await getInitializerCode({
+    owners,
+    threshold,
+    addModuleLibAddress,
+    safe4337ModuleAddress,
+    multiSendAddress,
+    setupTransactions,
+    safeModules
+  });
+
+  const initCodeCallData = encodeFunctionData({
+    abi: [
+      {
+        inputs: [
+          {
+            internalType: 'address',
+            name: '_singleton',
+            type: 'address'
+          },
+          {
+            internalType: 'bytes',
+            name: 'initializer',
+            type: 'bytes'
+          },
+          {
+            internalType: 'uint256',
+            name: 'saltNonce',
+            type: 'uint256'
+          }
+        ],
+        name: 'createProxyWithNonce',
+        outputs: [
+          {
+            internalType: 'contract SafeProxy',
+            name: 'proxy',
+            type: 'address'
+          }
+        ],
+        stateMutability: 'nonpayable',
+        type: 'function'
+      }
+    ],
+    functionName: 'createProxyWithNonce',
+    args: [safeSingletonAddress, initializer, saltNonce]
+  });
+
+  return initCodeCallData;
+};
+
+const getAccountAddress = async <
+  TTransport extends Transport = Transport,
+  TChain extends Chain | undefined = Chain | undefined
+>({
+  client,
+  owners,
+  threshold,
+  addModuleLibAddress,
+  safe4337ModuleAddress,
+  safeProxyFactoryAddress,
+  safeSingletonAddress,
+  multiSendAddress,
+  setupTransactions = [],
+  safeModules = [],
+  saltNonce = 0n
+}: {
+  client: Client<TTransport, TChain>;
+  owners: Address[];
+  threshold?: number;
+  addModuleLibAddress: Address;
+  safe4337ModuleAddress: Address;
+  safeProxyFactoryAddress: Address;
+  safeSingletonAddress: Address;
+  multiSendAddress: Address;
+  setupTransactions: {
+    to: Address;
+    data: Address;
+    value: bigint;
+  }[];
+  safeModules?: Address[];
+  saltNonce?: bigint;
+}): Promise<Address> => {
+  const proxyCreationCode = await readContract(client, {
+    abi: [
+      {
+        inputs: [],
+        name: 'proxyCreationCode',
+        outputs: [
+          {
+            internalType: 'bytes',
+            name: '',
+            type: 'bytes'
+          }
+        ],
+        stateMutability: 'pure',
+        type: 'function'
+      }
+    ],
+    address: safeProxyFactoryAddress,
+    functionName: 'proxyCreationCode'
+  });
+
+  const deploymentCode = encodePacked(
+    ['bytes', 'uint256'],
+    [proxyCreationCode, hexToBigInt(safeSingletonAddress)]
+  );
+
+  const initializer = await getInitializerCode({
+    owners,
+    threshold,
+    addModuleLibAddress,
+    safe4337ModuleAddress,
+    multiSendAddress,
+    setupTransactions,
+    safeModules
+  });
+
+  const salt = keccak256(
+    encodePacked(
+      ['bytes32', 'uint256'],
+      [keccak256(encodePacked(['bytes'], [initializer])), saltNonce]
+    )
+  );
+
+  return getContractAddress({
+    from: safeProxyFactoryAddress,
+    salt,
+    bytecode: deploymentCode,
+    opcode: 'CREATE2'
+  });
+};
+
+const getDefaultAddresses = (
+  safeVersion: SafeVersion,
+  {
+    addModuleLibAddress: _addModuleLibAddress,
+    safe4337ModuleAddress: _safe4337ModuleAddress,
+    safeProxyFactoryAddress: _safeProxyFactoryAddress,
+    safeSingletonAddress: _safeSingletonAddress,
+    multiSendAddress: _multiSendAddress,
+    multiSendCallOnlyAddress: _multiSendCallOnlyAddress
+  }: {
+    addModuleLibAddress?: Address;
+    safe4337ModuleAddress?: Address;
+    safeProxyFactoryAddress?: Address;
+    safeSingletonAddress?: Address;
+    multiSendAddress?: Address;
+    multiSendCallOnlyAddress?: Address;
+  }
+) => {
+  const addModuleLibAddress =
+    _addModuleLibAddress ?? SAFE_VERSION_TO_ADDRESSES_MAP[safeVersion].ADD_MODULES_LIB_ADDRESS;
+  const safe4337ModuleAddress =
+    _safe4337ModuleAddress ?? SAFE_VERSION_TO_ADDRESSES_MAP[safeVersion].SAFE_4337_MODULE_ADDRESS;
+  const safeProxyFactoryAddress =
+    _safeProxyFactoryAddress ??
+    SAFE_VERSION_TO_ADDRESSES_MAP[safeVersion].SAFE_PROXY_FACTORY_ADDRESS;
+  const safeSingletonAddress =
+    _safeSingletonAddress ?? SAFE_VERSION_TO_ADDRESSES_MAP[safeVersion].SAFE_SINGLETON_ADDRESS;
+  const multiSendAddress =
+    _multiSendAddress ?? SAFE_VERSION_TO_ADDRESSES_MAP[safeVersion].MULTI_SEND_ADDRESS;
+
+  const multiSendCallOnlyAddress =
+    _multiSendCallOnlyAddress ??
+    SAFE_VERSION_TO_ADDRESSES_MAP[safeVersion].MULTI_SEND_CALL_ONLY_ADDRESS;
+
+  return {
+    addModuleLibAddress,
+    safe4337ModuleAddress,
+    safeProxyFactoryAddress,
+    safeSingletonAddress,
+    multiSendAddress,
+    multiSendCallOnlyAddress
+  };
+};
+
+export type SignerToSafeSmartAccountParameters<
+  entryPoint extends EntryPoint,
+  TSource extends string = string,
+  TAddress extends Address = Address
+> = Prettify<{
+  signer: SmartAccountSigner<TSource, TAddress>;
+  owners?: Address[];
+  threshold?: number;
+  safeVersion: SafeVersion;
+  entryPoint: entryPoint;
+  address?: Address;
+  addModuleLibAddress?: Address;
+  safe4337ModuleAddress?: Address;
+  safeProxyFactoryAddress?: Address;
+  safeSingletonAddress?: Address;
+  multiSendAddress?: Address;
+  multiSendCallOnlyAddress?: Address;
+  saltNonce?: bigint;
+  validUntil?: number;
+  validAfter?: number;
+  setupTransactions?: {
+    to: Address;
+    data: Address;
+    value: bigint;
+  }[];
+  safeModules?: Address[];
+}>;
+
+/**
+ * @description Creates an Simple Account from a private key.
+ *
+ * @returns A Private Key Simple Account.
+ */
+export async function signerToSafeSmartAccount<
+  entryPoint extends ENTRYPOINT_ADDRESS_V06_TYPE,
+  TTransport extends Transport = Transport,
+  TChain extends Chain | undefined = Chain | undefined,
+  TSource extends string = string,
+  TAddress extends Address = Address
+>(
+  client: Client<TTransport, TChain>,
+  {
+    signer,
+    owners,
+    threshold,
+    address,
+    safeVersion,
+    entryPoint: entryPointAddress,
+    addModuleLibAddress: _addModuleLibAddress,
+    safe4337ModuleAddress: _safe4337ModuleAddress,
+    safeProxyFactoryAddress: _safeProxyFactoryAddress,
+    safeSingletonAddress: _safeSingletonAddress,
+    multiSendAddress: _multiSendAddress,
+    multiSendCallOnlyAddress: _multiSendCallOnlyAddress,
+    saltNonce = 0n,
+    validUntil = 0,
+    validAfter = 0,
+    safeModules = [],
+    setupTransactions = []
+  }: SignerToSafeSmartAccountParameters<entryPoint, TSource, TAddress>
+): Promise<SafeSmartAccount<entryPoint, TTransport, TChain>> {
+  const entryPointVersion = getEntryPointVersion(entryPointAddress);
+
+  if (entryPointVersion !== 'v0.6') {
+    throw new Error('Only EntryPoint 0.6 is supported');
+  }
+
+  const chainId = await getChainId(client);
+
+  const viemSigner: LocalAccount = {
+    ...signer,
+    signTransaction: (_, __) => {
+      throw new SignTransactionNotSupportedBySmartAccount();
+    }
+  } as LocalAccount;
+
+  const {
+    addModuleLibAddress,
+    safe4337ModuleAddress,
+    safeProxyFactoryAddress,
+    safeSingletonAddress,
+    multiSendAddress,
+    multiSendCallOnlyAddress
+  } = getDefaultAddresses(safeVersion, {
+    addModuleLibAddress: _addModuleLibAddress,
+    safe4337ModuleAddress: _safe4337ModuleAddress,
+    safeProxyFactoryAddress: _safeProxyFactoryAddress,
+    safeSingletonAddress: _safeSingletonAddress,
+    multiSendAddress: _multiSendAddress,
+    multiSendCallOnlyAddress: _multiSendCallOnlyAddress
+  });
+
+  const accountAddress =
+    address ??
+    (await getAccountAddress<TTransport, TChain>({
+      client,
+      owners: owners && owners.length !== 0 ? owners : [viemSigner.address],
+      threshold,
+      addModuleLibAddress,
+      safe4337ModuleAddress,
+      safeProxyFactoryAddress,
+      safeSingletonAddress,
+      multiSendAddress,
+      saltNonce,
+      setupTransactions,
+      safeModules
+    }));
+
+  if (!accountAddress) throw new Error('Account address not found');
+
+  let safeDeployed = await isSmartAccountDeployed(client, accountAddress);
+
+  const account = toAccount({
+    address: accountAddress,
+    async signMessage({ message }) {
+      const messageHash = hashTypedData({
+        domain: {
+          chainId: chainId,
+          verifyingContract: accountAddress
+        },
+        types: {
+          SafeMessage: [{ name: 'message', type: 'bytes' }]
+        },
+        primaryType: 'SafeMessage',
+        message: {
+          message: generateSafeMessageMessage(message)
+        }
+      });
+
+      return adjustVInSignature(
+        'eth_sign',
+        await signMessage(client, {
+          account: viemSigner,
+          message: {
+            raw: toBytes(messageHash)
+          }
+        })
+      );
+    },
+    async signTransaction(_, __) {
+      throw new SignTransactionNotSupportedBySmartAccount();
+    },
+    async signTypedData<
+      const TTypedData extends TypedData | Record<string, unknown>,
+      TPrimaryType extends keyof TTypedData | 'EIP712Domain' = keyof TTypedData
+    >(typedData: TypedDataDefinition<TTypedData, TPrimaryType>) {
+      return adjustVInSignature(
+        'eth_signTypedData',
+        await signTypedData(client, {
+          account: viemSigner,
+          domain: {
+            chainId: chainId,
+            verifyingContract: accountAddress
+          },
+          types: {
+            SafeMessage: [{ name: 'message', type: 'bytes' }]
+          },
+          primaryType: 'SafeMessage',
+          message: {
+            message: generateSafeMessageMessage<TTypedData, TPrimaryType>(typedData)
+          }
+        })
+      );
+    }
+  });
+
+  const safeSmartAccount: SafeSmartAccount<entryPoint, TTransport, TChain> = {
+    ...account,
+    client: client,
+    publicKey: accountAddress,
+    entryPoint: entryPointAddress,
+    source: 'SafeSmartAccount',
+    async getNonce() {
+      return getAccountNonce(client, {
+        sender: accountAddress,
+        entryPoint: entryPointAddress
+      });
+    },
+    async signUserOperation(userOperation) {
+      const signatures = [
+        {
+          signer: viemSigner.address,
+          data: await signTypedData(client, {
+            account: viemSigner,
+            domain: {
+              chainId: chainId,
+              verifyingContract: safe4337ModuleAddress
+            },
+            types: EIP712_SAFE_OPERATION_TYPE,
+            primaryType: 'SafeOp',
+            message: {
+              safe: accountAddress,
+              callData: userOperation.callData,
+              entryPoint: entryPointAddress,
+              nonce: userOperation.nonce,
+              initCode: userOperation.initCode,
+              maxFeePerGas: userOperation.maxFeePerGas,
+              maxPriorityFeePerGas: userOperation.maxPriorityFeePerGas,
+              preVerificationGas: userOperation.preVerificationGas,
+              verificationGasLimit: userOperation.verificationGasLimit,
+              callGasLimit: userOperation.callGasLimit,
+              paymasterAndData: userOperation.paymasterAndData,
+              validAfter: validAfter,
+              validUntil: validUntil
+            }
+          })
+        }
+      ];
+
+      signatures.sort((left, right) =>
+        left.signer.toLowerCase().localeCompare(right.signer.toLowerCase())
+      );
+
+      const signatureBytes = concat(signatures.map((sig) => sig.data));
+
+      return encodePacked(['uint48', 'uint48', 'bytes'], [validAfter, validUntil, signatureBytes]);
+    },
+    async getInitCode() {
+      if (safeDeployed) return '0x';
+
+      safeDeployed = await isSmartAccountDeployed(client, accountAddress);
+
+      if (safeDeployed) return '0x';
+
+      const initCodeCallData = await getAccountInitCode({
+        owners: owners && owners.length !== 0 ? owners : [viemSigner.address],
+        threshold,
+        addModuleLibAddress,
+        safe4337ModuleAddress,
+        safeSingletonAddress,
+        multiSendAddress,
+        saltNonce,
+        setupTransactions,
+        safeModules
+      });
+
+      return concatHex([safeProxyFactoryAddress, initCodeCallData]);
+    },
+    async getFactory() {
+      if (safeDeployed) return undefined;
+
+      safeDeployed = await isSmartAccountDeployed(client, accountAddress);
+
+      if (safeDeployed) return undefined;
+
+      return safeProxyFactoryAddress;
+    },
+    async getFactoryData() {
+      if (safeDeployed) return undefined;
+
+      safeDeployed = await isSmartAccountDeployed(client, accountAddress);
+
+      if (safeDeployed) return undefined;
+
+      return await getAccountInitCode({
+        owners: owners && owners.length !== 0 ? owners : [viemSigner.address],
+        threshold,
+        addModuleLibAddress,
+        safe4337ModuleAddress,
+        safeSingletonAddress,
+        multiSendAddress,
+        saltNonce,
+        setupTransactions,
+        safeModules
+      });
+    },
+    async encodeDeployCallData(_) {
+      throw new Error("Safe account doesn't support account deployment");
+    },
+    async encodeCallData(args) {
+      let to: Address;
+      let value: bigint;
+      let data: Hex;
+      let operationType = 0;
+
+      if (Array.isArray(args)) {
+        const argsArray = args as {
+          to: Address;
+          value: bigint;
+          data: Hex;
+        }[];
+
+        to = multiSendCallOnlyAddress;
+        value = 0n;
+
+        data = encodeMultiSend(argsArray.map((tx) => ({ ...tx, operation: 0 })));
+        operationType = 1;
+      } else {
+        const singleTransaction = args as {
+          to: Address;
+          value: bigint;
+          data: Hex;
+        };
+        to = singleTransaction.to;
+        data = singleTransaction.data;
+        value = singleTransaction.value;
+      }
+
+      return encodeFunctionData({
+        abi: [
+          {
+            inputs: [
+              {
+                internalType: 'address',
+                name: 'to',
+                type: 'address'
+              },
+              {
+                internalType: 'uint256',
+                name: 'value',
+                type: 'uint256'
+              },
+              {
+                internalType: 'bytes',
+                name: 'data',
+                type: 'bytes'
+              },
+              {
+                internalType: 'uint8',
+                name: 'operation',
+                type: 'uint8'
+              }
+            ],
+            name: 'executeUserOpWithErrorString',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function'
+          }
+        ],
+        functionName: 'executeUserOpWithErrorString',
+        args: [to, value, data, operationType]
+      });
+    },
+    async getDummySignature(_userOperation) {
+      return '0x000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+    }
+  };
+
+  return safeSmartAccount;
+}

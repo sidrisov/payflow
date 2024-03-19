@@ -2,6 +2,7 @@
 interface ImportMetaEnv {
   readonly VITE_PAYFLOW_SERVICE_API_URL: string;
   readonly VITE_PAYFLOW_SERVICE_DAPP_URL: string;
+  readonly VITE_PAYFLOW_SERVICE_FRAMES_URL: string;
 }
 
 interface ImportMeta {

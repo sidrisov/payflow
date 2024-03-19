@@ -1,9 +1,5 @@
 import { usePageContext } from 'vike-react/usePageContext';
-
-// TODO: investigate why not loaded env variables
-const API_URL = 'https://api.alpha.payflow.me';
-const DAPP_URL = 'https://app.payflow.me';
-const FRAMES_URL = 'https://frames.payflow.me';
+import { DAPP_URL, FRAMES_URL, API_URL } from '../../utils/constants';
 
 export function Head() {
   const { routeParams } = usePageContext();

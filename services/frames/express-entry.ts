@@ -18,6 +18,13 @@ import { GiftProfileType } from './types/GiftType';
 import { BalanceType } from './types/BalanceType';
 import { PaymentType } from './types/PaymentType';
 import { payProfileHtml } from './components/PayProfile';
+import { Address, createPublicClient, http, keccak256, toBytes } from 'viem';
+import { base, optimism } from 'viem/chains';
+import { signerToSafeSmartAccount } from './utils/signerToSafeSmartAccount';
+import { ENTRYPOINT_ADDRESS_V06, isSmartAccountDeployed } from 'permissionless';
+import { SmartAccountSigner } from 'permissionless/accounts';
+import { FlowWalletType, JarType } from './types/FlowType';
+import { jarHtml } from './components/Jar';
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -51,8 +58,61 @@ async function startServer() {
     app.use(viteDevMiddleware);
   }
 
-  // handling frames image generation
+  // TODO: for now re-use frame service, move to separate wallet-service,
+  // once there are enough APIs to handle
+  app.get('/wallets', async (req, res) => {
+    try {
+      const owners = req.query.owners as Address[];
+      const saltNonce = req.query.saltNonce as string;
+      const chains = [base, optimism];
+      const safeVersion = '1.4.1';
 
+      const wallets: FlowWalletType[] = [];
+
+      const promises = chains.map(async (chain) => {
+        const client = createPublicClient({
+          chain,
+          transport: http()
+        });
+
+        if (client) {
+          const safeAccount = await signerToSafeSmartAccount(client, {
+            entryPoint: ENTRYPOINT_ADDRESS_V06,
+            signer: {} as SmartAccountSigner,
+            owners: owners,
+            threshold: 1,
+            safeVersion,
+            saltNonce: BigInt(keccak256(toBytes(saltNonce)))
+          });
+
+          const predictedAddress = safeAccount.address;
+          const isSafeDeployed = await isSmartAccountDeployed(client, predictedAddress);
+
+          wallets.push({
+            address: predictedAddress,
+            network: chain.id,
+            version: safeVersion,
+            deployed: isSafeDeployed
+          });
+        }
+      });
+
+      await Promise.all(promises);
+
+      console.log('Wallets: ', wallets);
+
+      if (wallets.length === chains.length) {
+        res.status(200).json(wallets);
+      } else {
+        res.status(500).send('Failed to calculate wallets');
+      }
+    } catch (error) {
+      console.error('Error calculating wallets:', error);
+      res.status(500).send('Failed to calculate wallets');
+    }
+  });
+
+  // handling frames image generation
   app.get('/images/welcome.png', async (_, res) => {
     const image = await htmlToImage(test('Payflow'), 'landscape');
     res.type('png').send(image);
@@ -180,6 +240,18 @@ async function startServer() {
     } catch (error) {
       console.error(error);
       res.status(500).send('Error retrieving profile data');
+    }
+  });
+
+  app.get('/images/jar/:uuid/image.png', async (req, res) => {
+    const uuid = req.params.uuid;
+    try {
+      const jar = (await axios.get(`${API_URL}/api/flows/jar/${uuid}`)).data as JarType;
+      const image = await htmlToImage(jarHtml(jar), 'landscape');
+      res.type('png').send(image);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error retrieving jar data');
     }
   });
 

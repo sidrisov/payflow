@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import ua.sinaver.web3.payflow.data.Flow;
 import ua.sinaver.web3.payflow.data.Jar;
 import ua.sinaver.web3.payflow.data.User;
-import ua.sinaver.web3.payflow.data.Wallet;
 import ua.sinaver.web3.payflow.message.FlowMessage;
 import ua.sinaver.web3.payflow.message.JarMessage;
 import ua.sinaver.web3.payflow.message.WalletMessage;
@@ -34,19 +33,35 @@ public class FlowService implements IFlowService {
 	@Autowired
 	private UserRepository userRepository;
 
+	@Autowired
+	private WalletService walletService;
+
 	@Override
 	public Jar createJar(String title, String description, String image, String source, User user) {
 		// use same signer as default flow
 		val signer = user.getDefaultFlow().getSigner();
 		val signerProvider = user.getDefaultFlow().getSignerProvider();
 
-		val wallets = new ArrayList<Wallet>();
-
 		val flow = new Flow(user.getId(), title, signer, signerProvider, "safe", null);
 		val uuid = flow.getUuid();
 		val saltNonce = "payflow-alpha-".concat(uuid);
 		flow.setType(Flow.FlowType.JAR);
 		flow.setSaltNonce(saltNonce);
+
+		val owners = new ArrayList<String>();
+		owners.add(user.getIdentity());
+		if (signer != null) {
+			owners.add(signer);
+		}
+
+		val wallets = walletService.calculateWallets(owners, saltNonce)
+				.stream()
+				.map(w -> {
+					val wallet = WalletMessage.convert(w);
+					wallet.setFlow(flow);
+					return wallet;
+				}).toList();
+
 		flow.setWallets(wallets);
 
 		val jar = new Jar(flow, description, image, source);
