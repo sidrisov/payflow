@@ -85,6 +85,8 @@ public class UserService implements IUserService {
 				user.setUserAllowance(defaultAllowance);
 			} else {
 				Invitation invitation = invitationRepository.findFirstValidByIdentityOrCode(identity, invitationCode);
+
+				log.debug("Invitation: {} {} {}", invitation, identity, invitationCode);
 				if (invitation != null) {
 					user.setAllowed(true);
 					user.setCreatedDate(new Date());
