@@ -18,14 +18,16 @@ import { getSupportedTokens } from '../utils/erc20contracts';
 import { Address, zeroAddress } from 'viem';
 import { AssetType } from '../types/AssetType';
 import { useAssetBalances } from '../utils/queries/balances';
-import ProfileSectionButton from '../components/buttons/ProfileSectionButton';
 import { lightGreen } from '@mui/material/colors';
 import { Add } from '@mui/icons-material';
 import PaymentDialog, { PaymentSenderType } from '../components/dialogs/PaymentDialog';
 import { useAccount } from 'wagmi';
 import { ProfileContext } from '../contexts/UserContext';
 import ChoosePaymentOptionDialog from '../components/dialogs/ChoosePaymentOptionDialog';
-import { IdentityType } from '../types/ProfleType';
+import { IdentityType, ProfileType } from '../types/ProfleType';
+import ProfileAvatar from '../components/avatars/ProfileAvatar';
+import { ProfileDisplayNameWithLink } from '../components/ProfileDisplayNameWithLink';
+import { PublicProfileDetailsPopover } from '../components/menu/PublicProfileDetailsPopover';
 
 export default function Jar() {
   const theme = useTheme();
@@ -44,6 +46,10 @@ export default function Jar() {
   const { uuid } = useParams();
 
   const { isLoading, isFetched, data: jar } = useJar(uuid);
+
+  const [profileDetailsPopoverAnchorEl, setProfileDetailsPopoverAnchorEl] =
+    useState<null | HTMLElement>(null);
+  const [popoverProfile, setPopOverProfile] = useState<ProfileType>();
 
   const [assets, setAssets] = useState<AssetType[]>([]);
 
@@ -99,47 +105,47 @@ export default function Jar() {
       <Container maxWidth="xs">
         {jar && (
           <Stack spacing={2} alignItems="center" width={375}>
-            {jar.image && <Box component="img" src={jar.image} maxWidth="100%" borderRadius={3} />}
-
             <Typography textAlign="center" variant="h5">
               <b>{jar.flow.title}</b>
             </Typography>
-
             <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="h6">by</Typography>
-              <ProfileSectionButton profile={jar.profile} />
+              <Typography fontSize={isMobile ? 12 : 14}>created by</Typography>
+              <ProfileAvatar profile={jar.profile} sx={{ width: 25, height: 25 }} />
+              <ProfileDisplayNameWithLink
+                profile={jar.profile}
+                aria-owns={popoverProfile ? 'public-profile-popover' : undefined}
+                onMouseEnter={(event) => {
+                  setProfileDetailsPopoverAnchorEl(event.currentTarget);
+                  setPopOverProfile(jar.profile);
+                }}
+                onMouseLeave={() => {
+                  setProfileDetailsPopoverAnchorEl(null);
+                  setPopOverProfile(undefined);
+                }}
+              />
             </Stack>
 
-            <Box
-              px={1}
-              display="flex"
-              flexDirection="row"
-              alignItems="center"
-              justifyContent="space-between"
-              width="100%">
-              <Stack direction="row" spacing={1} alignItems="center">
-                {isBalanceLoading || !totalBalance ? (
-                  <Skeleton variant="rectangular" height={40} width={80} sx={{ borderRadius: 3 }} />
-                ) : (
-                  <Typography variant="h5" fontWeight="bold">
-                    {' '}
-                    ${isBalanceFetched ? totalBalance : 'N/A'}
-                  </Typography>
-                )}
-              </Stack>
-              <Button
-                variant="text"
-                startIcon={<Add />}
-                sx={{
-                  color: lightGreen.A700,
-                  borderRadius: 5,
-                  borderColor: lightGreen.A700,
-                  fontWeight: 'bold'
-                }}
-                onClick={() => setOpenPayDialog(true)}>
-                Contribute
-              </Button>
-            </Box>
+            {isBalanceLoading || !totalBalance ? (
+              <Skeleton variant="rectangular" height={40} width={80} sx={{ borderRadius: 3 }} />
+            ) : (
+              <Typography variant="h4" fontWeight="bold" sx={{ p: 1, border: 1, borderRadius: 5 }}>
+                {' '}
+                ${isBalanceFetched ? totalBalance : 'N/A'}
+              </Typography>
+            )}
+
+            <Button
+              variant="text"
+              startIcon={<Add />}
+              sx={{
+                color: lightGreen.A700,
+                borderRadius: 5,
+                borderColor: lightGreen.A700,
+                fontWeight: 'bold'
+              }}
+              onClick={() => setOpenPayDialog(true)}>
+              Contribute
+            </Button>
 
             <Typography
               variant="body1"
@@ -148,6 +154,7 @@ export default function Jar() {
               sx={{ px: 1, overflow: 'scroll' }}>
               {jar.description}
             </Typography>
+            {jar.image && <Box component="img" src={jar.image} maxWidth="100%" borderRadius={3} />}
             {jar.link && (
               <Link component="a" href={jar.link} target="_blank" underline="hover" color="inherit">
                 More details
@@ -187,6 +194,14 @@ export default function Jar() {
               closeStateCallback={async () => setOpenPayDialog(false)}
             />
           </>
+        )}
+        {popoverProfile !== undefined && (
+          <PublicProfileDetailsPopover
+            open={popoverProfile !== undefined}
+            onClose={async () => setPopOverProfile(undefined)}
+            anchorEl={profileDetailsPopoverAnchorEl}
+            profile={popoverProfile}
+          />
         )}
       </Container>
     </>

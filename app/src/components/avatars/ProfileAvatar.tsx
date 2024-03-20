@@ -9,6 +9,6 @@ export default function ProfileAvatar({
   return profile.profileImage ? (
     <Avatar {...props} alt={profile.displayName ?? profile.username} src={profile.profileImage} />
   ) : (
-    <AddressAvatar address={profile.identity} />
+    <AddressAvatar {...props} address={profile.identity} />
   );
 }
