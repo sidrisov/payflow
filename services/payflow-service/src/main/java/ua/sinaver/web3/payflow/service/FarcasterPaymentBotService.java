@@ -42,6 +42,9 @@ public class FarcasterPaymentBotService {
 	@Autowired
 	private IFlowService flowService;
 
+	@Autowired
+	private WalletService walletService;
+
 	@Value("${payflow.farcaster.bot.signer}")
 	private String botSignerUuid;
 
@@ -266,9 +269,9 @@ public class FarcasterPaymentBotService {
 							matcher = Pattern.compile(jarTitlePattern, Pattern.CASE_INSENSITIVE).matcher(remainingText);
 							if (matcher.find()) {
 								val title = matcher.group("title");
-								val image = cast.embeds().stream()
+								val image = cast.embeds() != null ? cast.embeds().stream()
 										.filter(embed -> embed.url().endsWith(".png"))
-										.findFirst().map(CastEmbed::url).orElse(null);
+										.findFirst().map(CastEmbed::url).orElse(null) : null;
 								if (!StringUtils.isBlank(title)) {
 									val source = String.format("https://warpcast.com/%s/%s",
 											cast.author().username(),

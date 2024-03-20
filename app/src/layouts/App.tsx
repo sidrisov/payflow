@@ -124,7 +124,7 @@ export default function AppLayout({
                         onClick={async () => {
                           setOpenSearchIdentity(true);
                         }}>
-                        <Avatar src="payflow.png" sx={{ width: 24, height: 24 }} />
+                        <Avatar src="/payflow.png" sx={{ width: 24, height: 24 }} />
                         <Typography variant="subtitle2">Search ... </Typography>
                       </Box>
                     </Stack>
