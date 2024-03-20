@@ -32,10 +32,11 @@
     "@resvg/resvg-js": "^2.6.0",
     "@tanstack/react-query": "^5.20.5",
     "@vitejs/plugin-react": "^4.2.1",
+    "@wagmi/core": "^2.6.9",
     "axios": "^1.6.7",
     "cross-fetch": "^4.0.0",
     "dotenv": "^16.4.4",
-    "express": "^4.18.2",
+    "express": "^4.19.0",
     "permissionless": "^0.1.10",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -43,10 +44,10 @@
     "sharp": "^0.33.2",
     "tsx": "^4.7.1",
     "twemoji": "^14.0.2",
-    "viem": "^2.7.9",
+    "viem": "^2.8.14",
     "vike": "^0.4.161",
     "vike-react": "^0.4.5",
     "vike-react-query": "^0.0.4",
-    "vite": "^5.1.1"
+    "vite": "^5.2.2"
   }
 }

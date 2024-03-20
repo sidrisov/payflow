@@ -3,9 +3,9 @@ import { JarType } from '../types/FlowType';
 
 import Card from './Card';
 
-export const jarHtml = (jar: JarType) => <Jar jar={jar} />;
+export const jarHtml = (jar: JarType, balance: string) => <Jar jar={jar} balance={balance} />;
 
-function Jar({ jar }: { jar: JarType }) {
+function Jar({ jar, balance }: { jar: JarType; balance: string }) {
   const profile = jar.profile;
   const flow = jar.flow;
   return (
@@ -16,7 +16,7 @@ function Jar({ jar }: { jar: JarType }) {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'flex-start',
-          height: 200,
+          height: 150,
           width: '100%',
           padding: 16,
           gap: 10
@@ -52,6 +52,17 @@ function Jar({ jar }: { jar: JarType }) {
           </span>
         </div>
       </div>
+      <span
+        style={{
+          fontSize: '54',
+          fontWeight: 'bold',
+          color: '#4caf50',
+          padding: 5,
+          border: '2px',
+          borderRadius: 15
+        }}>
+        ${balance}
+      </span>
       <div
         style={{
           margin: 10,
@@ -63,11 +74,6 @@ function Jar({ jar }: { jar: JarType }) {
           gap: 30,
           maxHeight: '50%'
         }}>
-        <img
-          src={jar.image}
-          alt="jar"
-          style={{ width: '50%', maxHeight: '100%', borderRadius: 10 }}
-        />
         <span
           style={{
             fontSize: 24,
@@ -78,6 +84,11 @@ function Jar({ jar }: { jar: JarType }) {
           }}>
           {jar.description}
         </span>
+        <img
+          src={jar.image}
+          alt="jar"
+          style={{ width: '50%', maxHeight: '100%', borderRadius: 10 }}
+        />
       </div>
     </Card>
   );

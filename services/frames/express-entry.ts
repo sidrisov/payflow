@@ -25,6 +25,10 @@ import { ENTRYPOINT_ADDRESS_V06, isSmartAccountDeployed } from 'permissionless';
 import { SmartAccountSigner } from 'permissionless/accounts';
 import { FlowWalletType, JarType } from './types/FlowType';
 import { jarHtml } from './components/Jar';
+import { fetchTokenPrices } from './utils/prices';
+import { TokenPrices } from './utils/erc20contracts';
+import { getAssetBalances, getFlowAssets, getTotalBalance } from './utils/balances';
+
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -247,8 +251,15 @@ async function startServer() {
     const uuid = req.params.uuid;
     try {
       const jar = (await axios.get(`${API_URL}/api/flows/jar/${uuid}`)).data as JarType;
-      const image = await htmlToImage(jarHtml(jar), 'landscape');
-      res.type('png').send(image);
+
+      const assets = getFlowAssets(jar.flow);
+      const assetBalances = await getAssetBalances(assets, currentPrices);
+      const totalBalance = getTotalBalance(assetBalances);
+
+      console.log(totalBalance);
+
+      const image = await htmlToImage(jarHtml(jar, totalBalance), 'landscape');
+      res.setHeader('Cache-Control', 'max-age=60').type('png').send(image);
     } catch (error) {
       console.error(error);
       res.status(500).send('Error retrieving jar data');
@@ -274,3 +285,24 @@ async function startServer() {
     console.log('Server listening on http://localhost:3000');
   });
 }
+
+// Placeholder for storing prices
+let currentPrices: TokenPrices = {};
+
+// Function to fetch prices from an API
+const fetchPrices = async () => {
+  try {
+    currentPrices = await fetchTokenPrices();
+    console.log('Fetched prices: ', currentPrices);
+  } catch (error) {
+    console.error('Error fetching prices:', error);
+  }
+};
+
+const initialDelay = 1000; // 5 seconds initial delay
+const intervalDuration = 60000; // 1 minute interval
+
+setTimeout(() => {
+  fetchPrices();
+  setInterval(fetchPrices, intervalDuration);
+}, initialDelay);
