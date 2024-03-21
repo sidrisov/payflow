@@ -125,7 +125,12 @@ export function PendingPaymentsSection({
             sender={profile.defaultFlow}
             recipient={
               {
-                identity: { profile: payment.receiver },
+                identity: {
+                  profile: {
+                    ...payment.receiver,
+                    ...(payment.receiverFlow && { defaultFlow: payment.receiverFlow })
+                  }
+                },
                 type: 'profile'
               } as SelectedIdentityType
             }
