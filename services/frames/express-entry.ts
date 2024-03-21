@@ -66,7 +66,7 @@ async function startServer() {
   // once there are enough APIs to handle
   app.get('/wallets', async (req, res) => {
     try {
-      const owners = req.query.owners as Address[];
+      const owners = Array.isArray(req.query.owners) ? req.query.owners : [req.query.owners];
       const saltNonce = req.query.saltNonce as string;
       const chains = [base, optimism];
       const safeVersion = '1.4.1';
@@ -83,7 +83,7 @@ async function startServer() {
           const safeAccount = await signerToSafeSmartAccount(client, {
             entryPoint: ENTRYPOINT_ADDRESS_V06,
             signer: {} as SmartAccountSigner,
-            owners: owners,
+            owners: owners as Address[],
             threshold: 1,
             safeVersion,
             saltNonce: BigInt(keccak256(toBytes(saltNonce)))
@@ -249,6 +249,15 @@ async function startServer() {
 
   app.get('/images/jar/:uuid/image.png', async (req, res) => {
     const uuid = req.params.uuid;
+    const step = req.query.step;
+    const state = {
+      chainId: req.query.chainId,
+      token: req.query.token,
+      amount: req.query.amount,
+      usdAmount: req.query.usdAmount,
+      status: req.query.status
+    } as PaymentType;
+
     try {
       const jar = (await axios.get(`${API_URL}/api/flows/jar/${uuid}`)).data as JarType;
 
@@ -258,7 +267,7 @@ async function startServer() {
 
       console.log(totalBalance);
 
-      const image = await htmlToImage(jarHtml(jar, totalBalance), 'landscape');
+      const image = await htmlToImage(jarHtml(jar, totalBalance, step as any, state), 'landscape');
       res.setHeader('Cache-Control', 'max-age=60').type('png').send(image);
     } catch (error) {
       console.error(error);

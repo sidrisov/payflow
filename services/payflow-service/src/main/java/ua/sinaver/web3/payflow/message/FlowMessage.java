@@ -63,8 +63,8 @@ public record FlowMessage(String signer, String signerProvider, String title,
 
 	public static FlowMessage convert(Flow flow, User user) {
 		// still try fetch, since old flows were without signer field
-		val flowSigner = getFlowSigner(flow, user);
-		val flowSignerProvider = getFlowSignerProvider(flow, user);
+		val flowSigner = user != null ? getFlowSigner(flow, user) : null;
+		val flowSignerProvider = user != null ? getFlowSignerProvider(flow, user) : null;
 
 		val wallets = flow.getWallets().stream().map(WalletMessage::convert)
 				.toList();

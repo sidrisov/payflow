@@ -30,13 +30,17 @@ public class Payment {
 	@Column(name = "reference_id", nullable = false)
 	private String referenceId;
 
-	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "sender_user_id", referencedColumnName = "id")
 	private User sender;
 
-	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "receiver_user_id", referencedColumnName = "id")
 	private User receiver;
+
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "receiver_flow_id", referencedColumnName = "id")
+	private Flow receiverFlow;
 
 	@Column(nullable = false)
 	private Integer network;

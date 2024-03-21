@@ -7,6 +7,7 @@ public record PaymentMessage(String referenceId,
                              Payment.PaymentType type,
                              Payment.PaymentStatus status,
                              ProfileMetaMessage receiver,
+                             FlowMessage receiverFlow,
                              int chainId,
                              String token,
                              Double usdAmount,
@@ -20,6 +21,9 @@ public record PaymentMessage(String referenceId,
 				payment.getType(),
 				payment.getStatus(),
 				ProfileMetaMessage.convert(payment.getReceiver(), true),
+				payment.getReceiverFlow() != null ?
+						FlowMessage.convert(payment.getReceiverFlow(), null)
+						: null,
 				payment.getNetwork(),
 				payment.getToken(),
 				StringUtils.isNotBlank(payment.getUsdAmount()) ?

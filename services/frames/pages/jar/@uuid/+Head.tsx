@@ -1,5 +1,5 @@
 import { usePageContext } from 'vike-react/usePageContext';
-import { DAPP_URL, FRAMES_URL } from '../../../utils/constants';
+import { API_URL, DAPP_URL, FRAMES_URL } from '../../../utils/constants';
 
 export function Head() {
   const { routeParams } = usePageContext();
@@ -39,9 +39,15 @@ export function Head() {
 
         <meta property="fc:frame" content="vNext" />
         <meta property="fc:frame:image" content={`${FRAMES_URL}/images/jar/${uuid}/image.png`} />
-        <meta property="fc:frame:button:1" content="View" />
-        <meta property="fc:frame:button:1:action" content="link" />
-        <meta property="fc:frame:button:1:target" content={`${DAPP_URL}/jar/${uuid}`} />
+        <meta property="fc:frame:button:1" content="💜 Contribute" />
+        <meta property="fc:frame:button:1:action" content="post" />
+        <meta
+          property="fc:frame:button:1:target"
+          content={`${API_URL}/api/farcaster/frames/jar/${uuid}/contribute`}
+        />
+        <meta property="fc:frame:button:2" content="📱 App" />
+        <meta property="fc:frame:button:2:action" content="link" />
+        <meta property="fc:frame:button:2:target" content={`${DAPP_URL}/jar/${uuid}`} />
       </head>
     </>
   );

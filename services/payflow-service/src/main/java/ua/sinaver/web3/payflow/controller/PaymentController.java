@@ -32,16 +32,17 @@ public class PaymentController {
 	@GetMapping
 	public List<PaymentMessage> payments(@RequestParam(value = "hashes") List<String> hashes,
 	                                     Principal principal) {
+
+		val username = principal != null ? principal.getName() : null;
 		log.debug("{} fetching payments info for {} ",
-				principal.getName(), hashes);
+				username, hashes);
 
-		val user = userService.findByIdentity(principal.getName());
-
-		if (user == null || hashes.isEmpty()) {
+		if (hashes.isEmpty()) {
 			return Collections.emptyList();
 		}
 
-		val payments = paymentRepository.findByHashInAndReceiver(hashes, user);
+		val user = username != null ? userService.findByIdentity(username) : null;
+		val payments = paymentRepository.findByHashIn(hashes, user);
 
 		log.debug("Fetched payments: {}", payments);
 		return payments.stream()
