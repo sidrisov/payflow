@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Chip,
   Container,
   Link,
   Skeleton,
@@ -19,7 +20,7 @@ import { Address, zeroAddress } from 'viem';
 import { AssetType } from '../types/AssetType';
 import { useAssetBalances } from '../utils/queries/balances';
 import { lightGreen } from '@mui/material/colors';
-import { Add } from '@mui/icons-material';
+import { Add, ArrowOutward, LinkOutlined, Public } from '@mui/icons-material';
 import PaymentDialog, { PaymentSenderType } from '../components/dialogs/PaymentDialog';
 import { useAccount } from 'wagmi';
 import { ProfileContext } from '../contexts/UserContext';
@@ -126,9 +127,12 @@ export default function Jar() {
             </Stack>
 
             {isBalanceLoading || !totalBalance ? (
-              <Skeleton variant="rectangular" height={40} width={80} sx={{ borderRadius: 3 }} />
+              <Skeleton variant="rectangular" height={50} width={80} sx={{ borderRadius: 3 }} />
             ) : (
-              <Typography variant="h4" fontWeight="bold" sx={{ p: 1, border: 1, borderRadius: 5 }}>
+              <Typography
+                variant="h5"
+                fontWeight="bold"
+                sx={{ p: 1.5, border: 1, borderRadius: 5 }}>
                 {' '}
                 ${isBalanceFetched ? totalBalance : 'N/A'}
               </Typography>
@@ -156,9 +160,16 @@ export default function Jar() {
             </Typography>
             {jar.image && <Box component="img" src={jar.image} maxWidth="100%" borderRadius={3} />}
             {jar.link && (
-              <Link component="a" href={jar.link} target="_blank" underline="hover" color="inherit">
-                More details
-              </Link>
+              <Chip
+                avatar={<ArrowOutward fontSize="small" />}
+                label={'More details'}
+                variant="outlined"
+                clickable
+                component="a"
+                target="_blank"
+                href={jar.link}
+                sx={{ fontWeight: 'bold' }}
+              />
             )}
 
             <Box width="100%">
