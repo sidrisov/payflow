@@ -6,6 +6,7 @@ interface ImportMetaEnv {
   readonly VITE_BASE_RPC_API_KEY: string;
   readonly VITE_PAYFLOW_SERVICE_API_URL: string;
   readonly VITE_PAYFLOW_SERVICE_DAPP_URL: string;
+  readonly VITE_PAYFLOW_SERVICE_FRAMES_URL: string;
   readonly VITE_DEFAULT_FLOW_CREATE2_SALT_NONCE: string;
   readonly VITE_WEB3AUTH_PNP_CLIENT_ID: string;
   readonly VITE_WEB3AUTH_TORUS_API_KEY: string;

@@ -82,7 +82,7 @@ export function PublicProfileDetails({
                     <Stack spacing={1} direction="row" alignItems="center">
                       <Avatar
                         variant="rounded"
-                        src="farcaster.svg"
+                        src="/farcaster.svg"
                         sx={{ width: 15, height: 15 }}
                       />
                       <Typography variant="caption" fontWeight="bold" color={green.A700}>
@@ -94,7 +94,7 @@ export function PublicProfileDetails({
                   )}
                   {socialInfo.insights.lensFollow && (
                     <Stack spacing={1} direction="row" alignItems="center">
-                      <Avatar variant="rounded" src="lens.svg" sx={{ width: 15, height: 15 }} />
+                      <Avatar variant="rounded" src="/lens.svg" sx={{ width: 15, height: 15 }} />
                       <Typography variant="caption" fontWeight="bold" color={green.A700}>
                         {socialInfo.insights.lensFollow === 'mutual'
                           ? 'Mutual follow on lens'
@@ -104,7 +104,7 @@ export function PublicProfileDetails({
                   )}
                   {socialInfo.insights.sentTxs && (
                     <Stack spacing={1} direction="row" alignItems="center">
-                      <Avatar variant="rounded" src="ethereum.png" sx={{ width: 15, height: 15 }} />
+                      <Avatar variant="rounded" src="/ethereum.png" sx={{ width: 15, height: 15 }} />
                       <Typography variant="caption" fontWeight="bold" color={green.A700}>
                         {`Transacted ${
                           socialInfo.insights.sentTxs === 1

@@ -138,7 +138,7 @@ export function SearchIdentityListItem(
                   <>
                     {identity.meta.insights.farcasterFollow && (
                       <Stack spacing={1} direction="row" alignItems="center">
-                        <Avatar src="farcaster.svg" sx={{ width: 15, height: 15 }} />
+                        <Avatar src="/farcaster.svg" sx={{ width: 15, height: 15 }} />
                         <Typography variant="caption" fontWeight="bold">
                           {identity.meta.insights.farcasterFollow === 'mutual'
                             ? 'Mutual follow'
@@ -148,7 +148,7 @@ export function SearchIdentityListItem(
                     )}
                     {identity.meta.insights.lensFollow && (
                       <Stack spacing={1} direction="row" alignItems="center">
-                        <Avatar src="lens.svg" sx={{ width: 15, height: 15 }} />
+                        <Avatar src="/lens.svg" sx={{ width: 15, height: 15 }} />
                         <Typography variant="caption" fontWeight="bold">
                           {identity.meta.insights.lensFollow === 'mutual'
                             ? 'Mutual follow'
@@ -158,7 +158,7 @@ export function SearchIdentityListItem(
                     )}
                     {identity.meta.insights.sentTxs > 0 && (
                       <Stack spacing={1} direction="row" alignItems="center">
-                        <Avatar src="ethereum.png" sx={{ width: 15, height: 15 }} />
+                        <Avatar src="/ethereum.png" sx={{ width: 15, height: 15 }} />
                         <Typography variant="caption" fontWeight="bold">
                           {`Transacted ${
                             identity.meta.insights.sentTxs === 1
