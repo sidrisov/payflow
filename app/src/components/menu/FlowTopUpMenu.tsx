@@ -1,17 +1,20 @@
-import { ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material';
+import { Avatar, ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material';
 import { ProfileType } from '../../types/ProfleType';
-import { Add, AddCircle, Link, QrCode } from '@mui/icons-material';
+import { AddCircle, FilterFrames, Person, QrCode } from '@mui/icons-material';
 import { copyToClipboard } from '../../utils/copyToClipboard';
-import { DAPP_URL } from '../../utils/urlConstants';
+import { DAPP_URL, FRAMES_URL } from '../../utils/urlConstants';
 import { toast } from 'react-toastify';
+import { FlowType } from '../../types/FlowType';
 
 export function FlowTopUpMenu({
   profile,
+  selectedFlow,
   qrClickCallback,
   depositClickCallback,
   ...props
 }: MenuProps & {
   profile: ProfileType;
+  selectedFlow: FlowType;
   qrClickCallback: () => void;
   depositClickCallback: () => void;
 }) {
@@ -40,19 +43,43 @@ export function FlowTopUpMenu({
           toast.success('Profile link copied!');
         }}>
         <ListItemIcon>
-          <Link fontSize="small" />
+          <Person fontSize="small" />
         </ListItemIcon>
         Profile link
       </MenuItem>
-      {/* <MenuItem
-        onClick={() => {
-          comingSoonToast();
-        }}>
-        <ListItemIcon>
-          <Payments fontSize="small" />
-        </ListItemIcon>
-        Request
-      </MenuItem> */}
+
+      {selectedFlow && selectedFlow.type === 'JAR' && (
+        <MenuItem
+          onClick={() => {
+            const link = `${DAPP_URL}/jar/${selectedFlow.uuid}`;
+            copyToClipboard(link);
+            toast.success('Jar link copied!');
+          }}
+          sx={{ fontSize: '10' }}>
+          <ListItemIcon>
+            <Avatar src="/jar.png" sx={{ width: 20, height: 20 }} />
+          </ListItemIcon>
+          Jar link
+        </MenuItem>
+      )}
+
+      {selectedFlow && (
+        <MenuItem
+          onClick={() => {
+            const isJar = selectedFlow.type === 'JAR';
+            const link = isJar
+              ? `${FRAMES_URL}/jar/${selectedFlow.uuid}`
+              : `${FRAMES_URL}/${profile.username}`;
+
+            copyToClipboard(link);
+            toast.success('Frame link copied!');
+          }}>
+          <ListItemIcon>
+            <FilterFrames fontSize="small" />
+          </ListItemIcon>
+          Frame link
+        </MenuItem>
+      )}
     </Menu>
   );
 }

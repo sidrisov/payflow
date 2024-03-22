@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   CardProps,
+  Chip,
   Divider,
   IconButton,
   Skeleton,
@@ -11,7 +12,14 @@ import {
   Tooltip,
   Typography
 } from '@mui/material';
-import { Receipt, ArrowDownward, Send, AccountBalance, Toll } from '@mui/icons-material';
+import {
+  Receipt,
+  ArrowDownward,
+  Send,
+  AccountBalance,
+  Toll,
+  ArrowOutward
+} from '@mui/icons-material';
 import { useContext, useMemo, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
@@ -26,6 +34,7 @@ import SearchIdentityDialog from '../dialogs/SearchIdentityDialog';
 import { IdentityType, SelectedIdentityType } from '../../types/ProfleType';
 import PaymentDialog, { PaymentSenderType } from '../dialogs/PaymentDialog';
 import { Address } from 'viem';
+import { useNavigate } from 'react-router-dom';
 
 export type AccountNewDialogProps = CardProps & {
   flows: FlowType[];
@@ -62,6 +71,8 @@ export function AccountCard({
   const [recipient, setRecipient] = useState<SelectedIdentityType>();
 
   const { chain, address } = useAccount();
+
+  const navigator = useNavigate();
 
   useMemo(async () => {
     if (isFetched && balances && balances.length > 0) {
@@ -128,10 +139,20 @@ export function AccountCard({
               ))}
             </AvatarGroup>
           </Tooltip>
-          <Stack direction="row">
-            <Typography maxWidth={200} p={1} variant="subtitle2" fontWeight="bold" noWrap>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Chip
+              label={selectedFlow.title}
+              variant="outlined"
+              {...(selectedFlow.type === 'JAR' && {
+                clickable: true,
+                onClick: () => navigator(`/jar/${selectedFlow.uuid}`),
+                avatar: <ArrowOutward fontSize="small" />
+              })}
+              sx={{ fontWeight: 'bold', maxWidth: 200, border: 0 }}
+            />
+            {/*  <Typography maxWidth={200} p={1} variant="subtitle2" fontWeight="bold" noWrap>
               {selectedFlow.title}
-            </Typography>
+            </Typography> */}
             <Stack
               spacing={1}
               direction="row"
@@ -255,6 +276,7 @@ export function AccountCard({
         />
         <FlowTopUpMenu
           profile={profile}
+          selectedFlow={selectedFlow}
           anchorEl={topUpMenuAnchorEl}
           open={openTopUpMenu}
           depositClickCallback={() => {

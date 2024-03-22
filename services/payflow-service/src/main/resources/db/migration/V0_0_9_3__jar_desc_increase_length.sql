@@ -1,0 +1,2 @@
+ALTER TABLE jar
+MODIFY COLUMN description VARCHAR(1024);

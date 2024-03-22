@@ -5,7 +5,7 @@ export interface FlowType {
   signer: Address;
   signerProvider?: string;
   title: string;
-  type: string;
+  type: 'JAR' | 'REGULAR' | undefined;
   uuid: string;
   walletProvider: string;
   saltNonce: string;
