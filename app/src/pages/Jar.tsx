@@ -167,7 +167,7 @@ export default function Jar() {
                 component="a"
                 target="_blank"
                 href={jar.link}
-                sx={{ fontWeight: 'bold' }}
+                sx={{ fontWeight: 'bold', border: 0 }}
               />
             )}
 
