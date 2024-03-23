@@ -270,7 +270,8 @@ public class FarcasterPaymentBotService {
 							if (matcher.find()) {
 								val title = matcher.group("title");
 								val image = cast.embeds() != null ? cast.embeds().stream()
-										.filter(embed -> embed.url().endsWith(".png") || embed.url().endsWith(".jpg"))
+										.filter(embed -> embed != null && embed.url() != null && (embed.url().endsWith(
+												".png") || embed.url().endsWith(".jpg")))
 										.findFirst().map(CastEmbed::url).orElse(null) : null;
 								if (!StringUtils.isBlank(title)) {
 									val source = String.format("https://warpcast.com/%s/%s",

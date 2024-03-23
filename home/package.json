@@ -1,7 +1,7 @@
 {
   "name": "payflow-home",
   "private": true,
-  "version": "0.0.8-alpha",
+  "version": "0.0.9-alpha",
   "type": "module",
   "scripts": {
     "dev": "vite",

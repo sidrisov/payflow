@@ -37,16 +37,19 @@ export function FlowTopUpMenu({
         </ListItemIcon>
         QR code
       </MenuItem>
-      <MenuItem
-        onClick={() => {
-          copyToClipboard(`${DAPP_URL}/${profile.username}`);
-          toast.success('Profile link copied!');
-        }}>
-        <ListItemIcon>
-          <Person fontSize="small" />
-        </ListItemIcon>
-        Profile link
-      </MenuItem>
+
+      {selectedFlow && selectedFlow.uuid === profile.defaultFlow?.uuid && (
+        <MenuItem
+          onClick={() => {
+            copyToClipboard(`${DAPP_URL}/${profile.username}`);
+            toast.success('Profile link copied!');
+          }}>
+          <ListItemIcon>
+            <Person fontSize="small" />
+          </ListItemIcon>
+          Profile link
+        </MenuItem>
+      )}
 
       {selectedFlow && selectedFlow.type === 'JAR' && (
         <MenuItem
