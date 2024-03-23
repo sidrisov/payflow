@@ -296,26 +296,24 @@ public class TransactionService {
 	public static final String OP_CHAIN_NAME = "optimism";
 	public static final Integer OP_CHAIN_ID = 10;
 	public static final Integer DEFAULT_FRAME_PAYMENTS_CHAIN_ID = BASE_CHAIN_ID;
-	public static final List<Integer> SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS =
-			Arrays.asList(BASE_CHAIN_ID, OP_CHAIN_ID);
+	public static final List<Integer> SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS = Arrays.asList(BASE_CHAIN_ID, OP_CHAIN_ID);
 
-	public static final Map<String, Integer> PAYMENT_CHAINS =
-			Map.of(BASE_CHAIN_NAME, BASE_CHAIN_ID,
-					OP_CHAIN_NAME, OP_CHAIN_ID);
+	public static final Map<String, Integer> PAYMENT_CHAINS = Map.of(BASE_CHAIN_NAME, BASE_CHAIN_ID,
+			OP_CHAIN_NAME, OP_CHAIN_ID);
 	public static final String ETH_TOKEN = "eth";
 	public static final String USDC_TOKEN = "usdc";
 	public static final String DEGEN_TOKEN = "degen";
-	public static final Map<String, String> ERC20_TOKEN_ADDRESSES =
-			Map.of(USDC_TOKEN, "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-					DEGEN_TOKEN, "0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed");
-	public static final List<String> SUPPORTED_FRAME_PAYMENTS_TOKENS =
-			Arrays.asList(ETH_TOKEN, USDC_TOKEN, DEGEN_TOKEN);
+	public static final Map<String, String> ERC20_TOKEN_ADDRESSES = Map.of(USDC_TOKEN,
+			"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+			DEGEN_TOKEN, "0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed");
+	public static final List<String> SUPPORTED_FRAME_PAYMENTS_TOKENS = Arrays.asList(ETH_TOKEN, USDC_TOKEN,
+			DEGEN_TOKEN);
 	private final Web3j web3j;
 	private final WebClient webClient;
 	private Map<String, CryptoPrice> prices = new HashMap<>();
 
 	public TransactionService(@Value("${payflow.crypto.base.rpc:https://mainnet.base.org}") String baseRpc,
-	                          WebClient.Builder webClientBuilder) {
+			WebClient.Builder webClientBuilder) {
 		web3j = Web3j.build(new HttpService(baseRpc));
 		webClient = webClientBuilder.baseUrl("https://api.coingecko.com/api/v3").build();
 	}
@@ -351,8 +349,7 @@ public class TransactionService {
 					"transfer",
 					Arrays.asList(new Address(paymentMessage.address()), new Uint256(value)),
 					List.of(new TypeReference<Bool>() {
-					})
-			);
+					}));
 			val encodedFunction = FunctionEncoder.encode(function);
 			return String.format("""
 					{
@@ -368,6 +365,7 @@ public class TransactionService {
 			val value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.ETHER)
 					.toBigInteger();
 
+			// TODO: pass "gas": "27500" when warpcast supports it
 			return String.format("""
 					{
 					  "chainId": "eip155:%s",
@@ -415,11 +413,11 @@ public class TransactionService {
 		try {
 			// fetch ether
 			val balanceEther = Convert.fromWei(web3j.ethGetBalance(address,
-							DefaultBlockParameterName.LATEST)
+					DefaultBlockParameterName.LATEST)
 					.send().getBalance().toString(), Convert.Unit.ETHER);
 			// Round to 5 decimal places using setScale
-			val roundedBalance = balanceEther.equals(new BigDecimal(0)) ? balanceEther :
-					balanceEther.setScale(5, RoundingMode.HALF_UP);
+			val roundedBalance = balanceEther.equals(new BigDecimal(0)) ? balanceEther
+					: balanceEther.setScale(5, RoundingMode.HALF_UP);
 
 			balanceMap.put(ETH_TOKEN, roundedBalance.toString());
 
@@ -440,7 +438,7 @@ public class TransactionService {
 	}
 
 	private String erc20Balance(String contractAddress, String walletAddress,
-	                            TransactionManager txManager) {
+			TransactionManager txManager) {
 		ERC20 contract = ERC20.load(contractAddress, web3j, txManager,
 				new DefaultGasProvider());
 		try {
@@ -449,8 +447,8 @@ public class TransactionService {
 			// Convert the balance to ether
 			val usdcBalance = new BigDecimal(balance
 					.divide(BigInteger.TEN.pow(decimals.intValue())));
-			return usdcBalance.equals(new BigDecimal(0)) ? usdcBalance.toString() :
-					usdcBalance.setScale(1, RoundingMode.HALF_UP).toString();
+			return usdcBalance.equals(new BigDecimal(0)) ? usdcBalance.toString()
+					: usdcBalance.setScale(1, RoundingMode.HALF_UP).toString();
 		} catch (InterruptedException | ExecutionException e) {
 			throw new RuntimeException(e);
 		}
