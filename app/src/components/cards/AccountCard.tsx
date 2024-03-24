@@ -14,11 +14,12 @@ import {
 } from '@mui/material';
 import {
   Receipt,
-  ArrowDownward,
   Send,
   AccountBalance,
   Toll,
-  ArrowOutward
+  ArrowOutward,
+  Add,
+  Share
 } from '@mui/icons-material';
 import { useContext, useMemo, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
@@ -35,6 +36,7 @@ import { IdentityType, SelectedIdentityType } from '../../types/ProfleType';
 import PaymentDialog, { PaymentSenderType } from '../dialogs/PaymentDialog';
 import { Address } from 'viem';
 import { useNavigate } from 'react-router-dom';
+import { ShareFlowMenu } from '../menu/ShareFlowMenu';
 
 export type AccountNewDialogProps = CardProps & {
   flows: FlowType[];
@@ -59,11 +61,14 @@ export function AccountCard({
   const [openWalletDetailsPopover, setOpenWalletDetailsPopover] = useState(false);
   const [openSelectFlow, setOpenSelectFlow] = useState(false);
   const [openTopUpMenu, setOpenTopUpMenu] = useState(false);
+  const [openShareMenu, setOpenShareMenu] = useState(false);
+
   const [openFlowReceiveQRCode, setOpenFlowReceiveQRCode] = useState(false);
 
   const [walletAnchorEl, setWalletAnchorEl] = useState<null | HTMLElement>(null);
   const [flowAnchorEl, setFlowAnchorEl] = useState<null | HTMLElement>(null);
   const [topUpMenuAnchorEl, setTopUpMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [shareMenuAnchorEl, setShareMenuAnchorEl] = useState<null | HTMLElement>(null);
 
   const [totalBalance, setTotalBalance] = useState<string>();
 
@@ -197,8 +202,8 @@ export function AccountCard({
             )}
           </Box>
         </Divider>
-        <Stack spacing={2} direction="row" alignSelf="center">
-          <Tooltip title="Receive">
+        <Stack spacing={1} direction="row" alignSelf="center">
+          <Tooltip title="Add funds">
             <IconButton
               color="inherit"
               onClick={(event) => {
@@ -206,7 +211,7 @@ export function AccountCard({
                 setOpenTopUpMenu(true);
               }}
               sx={{ border: 1, borderStyle: 'dashed' }}>
-              <ArrowDownward />
+              <Add />
             </IconButton>
           </Tooltip>
           <Tooltip title="Send">
@@ -227,6 +232,17 @@ export function AccountCard({
               }}
               sx={{ border: 1, borderStyle: 'dashed' }}>
               {assetsOrActivityView === 'assets' ? <Receipt /> : <AccountBalance />}
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Share">
+            <IconButton
+              color="inherit"
+              onClick={(event) => {
+                setShareMenuAnchorEl(event.currentTarget);
+                setOpenShareMenu(true);
+              }}
+              sx={{ border: 1, borderStyle: 'dashed' }}>
+              <Share />
             </IconButton>
           </Tooltip>
         </Stack>
@@ -275,8 +291,6 @@ export function AccountCard({
           setSelectedFlow={setSelectedFlow}
         />
         <FlowTopUpMenu
-          profile={profile}
-          selectedFlow={selectedFlow}
           anchorEl={topUpMenuAnchorEl}
           open={openTopUpMenu}
           depositClickCallback={() => {
@@ -286,6 +300,14 @@ export function AccountCard({
           qrClickCallback={() => setOpenFlowReceiveQRCode(true)}
           onClose={() => setOpenTopUpMenu(false)}
           onClick={() => setOpenTopUpMenu(false)}
+        />
+        <ShareFlowMenu
+          profile={profile}
+          selectedFlow={selectedFlow}
+          anchorEl={shareMenuAnchorEl}
+          open={openShareMenu}
+          onClose={() => setOpenShareMenu(false)}
+          onClick={() => setOpenShareMenu(false)}
         />
         <WalletQRCodeShareDialog
           open={openFlowReceiveQRCode}
