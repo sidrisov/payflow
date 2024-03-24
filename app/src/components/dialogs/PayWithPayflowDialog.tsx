@@ -13,13 +13,8 @@ import { ProfileContext } from '../../contexts/UserContext';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { useSafeTransfer } from '../../utils/hooks/useSafeTransfer';
 import { updateWallet } from '../../services/flow';
-import {
-  estimateFee as estimateSafeTransferFee,
-  isSafeSponsored
-} from '../../utils/safeTransactions';
 import { TransferToastContent } from '../toasts/TransferToastContent';
 import { LoadingSwitchNetworkButton } from '../buttons/LoadingSwitchNetworkButton';
-import { useEthersProvider } from '../../utils/hooks/useEthersProvider';
 import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';
 import { PaymentDialogProps } from './PaymentDialog';
 import { Token } from '../../utils/erc20contracts';
@@ -41,8 +36,6 @@ export default function PayWithPayflowDialog({
   const { data: signer } = useWalletClient();
   const client = useClient();
 
-  const ethersProvider = useEthersProvider();
-
   const { address, chain } = useAccount();
 
   const [paymentPending, setPaymentPending] = useState<boolean>(false);
@@ -59,7 +52,8 @@ export default function PayWithPayflowDialog({
   const [sendAmountUSD, setSendAmountUSD] = useState<number | undefined>(payment?.usdAmount);
   const sendToastId = useRef<Id>();
 
-  const [gasFee, setGasFee] = useState<bigint>();
+  // force to display sponsored
+  const [gasFee] = useState<bigint>(BigInt(0));
 
   const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
 
@@ -73,7 +67,7 @@ export default function PayWithPayflowDialog({
     );
   }, [compatibleWallets, chain]);
 
-  useMemo(async () => {
+  /* useMemo(async () => {
     setGasFee(undefined);
 
     if (
@@ -90,7 +84,7 @@ export default function PayWithPayflowDialog({
         )
       );
     }
-  }, [selectedWallet, ethersProvider]);
+  }, [selectedWallet, ethersProvider]); */
 
   useMemo(async () => {
     if (!sendAmountUSD || !selectedWallet) {
