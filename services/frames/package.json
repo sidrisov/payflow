@@ -33,6 +33,7 @@
     "@tanstack/react-query": "^5.20.5",
     "@vitejs/plugin-react": "^4.2.1",
     "@wagmi/core": "^2.6.9",
+    "@xmtp/frames-validator": "^0.5.2",
     "axios": "^1.6.7",
     "cross-fetch": "^4.0.0",
     "dotenv": "^16.4.4",
