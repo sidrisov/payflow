@@ -24,8 +24,8 @@ const commonWagmiConfig = {
       http(`https://base-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`)
     ]),
     [optimism.id]: fallback([
-      http(`https://opt-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`),
-      http()
+      http(),
+      http(`https://opt-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`)
     ]),
     [zora.id]: http('https://rpc.zora.energy'),
     [baseSepolia.id]: http(
