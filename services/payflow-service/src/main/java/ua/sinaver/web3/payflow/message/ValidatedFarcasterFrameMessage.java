@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
-public record ValidatedFrameMessage(
+public record ValidatedFarcasterFrameMessage(
 		boolean valid,
 		Action action,
 		@JsonProperty("signature_temporary_object") SignatureTemporaryObject signatureTemporaryObject

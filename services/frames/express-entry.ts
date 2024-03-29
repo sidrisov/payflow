@@ -1,6 +1,7 @@
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
+import bodyParser from 'body-parser';
 import { renderPage } from 'vike/server';
 import { test } from './components/test';
 import { htmlToImage } from './utils/image';
@@ -28,6 +29,7 @@ import { jarHtml } from './components/Jar';
 import { fetchTokenPrices } from './utils/prices';
 import { TokenPrices } from './utils/erc20contracts';
 import { getAssetBalances, getFlowAssets, getTotalBalance } from './utils/balances';
+import { XmtpOpenFramesRequest, validateFramesPost } from '@xmtp/frames-validator';
 
 dotenv.config();
 
@@ -61,6 +63,8 @@ async function startServer() {
     ).middlewares;
     app.use(viteDevMiddleware);
   }
+
+  app.use(bodyParser.json());
 
   // TODO: for now re-use frame service, move to separate wallet-service,
   // once there are enough APIs to handle
@@ -272,6 +276,25 @@ async function startServer() {
     } catch (error) {
       console.error(error);
       res.status(500).send('Error retrieving jar data');
+    }
+  });
+
+  app.post('/xmtp/validate', async (req, res) => {
+    try {
+      const xmtpFrameRequest = req.body as XmtpOpenFramesRequest;
+
+      console.debug('Verifying xmtp request message: ', xmtpFrameRequest);
+
+      if (xmtpFrameRequest.clientProtocol.startsWith('xmtp')) {
+        const xmtpFrameResponse = await validateFramesPost(xmtpFrameRequest);
+        console.debug('Validated xmtp response message: ', xmtpFrameResponse);
+        res.status(200).send(xmtpFrameResponse);
+      } else {
+        res.status(400).send('Frame Request not supported');
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error processing xmtp request message');
     }
   });
 

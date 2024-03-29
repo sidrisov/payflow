@@ -32,14 +32,14 @@ public class FarcasterHubService implements IFarcasterHubService {
 
 	@Override
 	@Retryable
-	public ValidatedFrameMessage validateFrameMessageWithNeynar(String frameMessageInHex) {
+	public ValidatedFarcasterFrameMessage validateFrameMessageWithNeynar(String frameMessageInHex) {
 		log.debug("Calling Neynar Frame Validate API for message {}",
 				frameMessageInHex);
 		try {
 			return neynarClient.post()
 					.uri("/v2/farcaster/frame/validate")
 					.bodyValue(new ValidateMessageRequest(false, false, true, frameMessageInHex))
-					.retrieve().bodyToMono(ValidatedFrameMessage.class).block();
+					.retrieve().bodyToMono(ValidatedFarcasterFrameMessage.class).block();
 		} catch (Throwable t) {
 			log.debug("Exception calling Neynar Frame Validate API: {}", t.getMessage());
 			throw t;

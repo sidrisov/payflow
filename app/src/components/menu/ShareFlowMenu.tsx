@@ -68,7 +68,7 @@ export function ShareFlowMenu({
           <ListItemIcon>
             <FilterFrames fontSize="small" />
           </ListItemIcon>
-          Frame link
+          Jar frame
         </MenuItem>
       )}
     </Menu>

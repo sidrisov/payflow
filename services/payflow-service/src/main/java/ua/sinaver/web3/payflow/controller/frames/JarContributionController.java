@@ -12,14 +12,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.Payment;
-import ua.sinaver.web3.payflow.message.FrameButton;
-import ua.sinaver.web3.payflow.message.FrameMessage;
-import ua.sinaver.web3.payflow.message.FramePaymentMessage;
-import ua.sinaver.web3.payflow.message.WalletMessage;
+import ua.sinaver.web3.payflow.message.*;
 import ua.sinaver.web3.payflow.repository.FlowRepository;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.FlowService;
 import ua.sinaver.web3.payflow.service.TransactionService;
+import ua.sinaver.web3.payflow.service.XmtpValidationService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
 import ua.sinaver.web3.payflow.service.api.IFrameService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
@@ -28,7 +26,9 @@ import ua.sinaver.web3.payflow.utils.FrameResponse;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.DEFAULT_HTML_RESPONSE;
 import static ua.sinaver.web3.payflow.service.TransactionService.*;
@@ -75,6 +75,9 @@ public class JarContributionController {
 	@Autowired
 	private FlowRepository flowRepository;
 
+	@Autowired
+	private XmtpValidationService xmtpValidationService;
+
 	private static String roundTokenAmount(double amount) {
 		val scale = amount < 1.0 ? 5 : 1;
 		val amountInDecimals = BigDecimal.valueOf(amount);
@@ -88,14 +91,35 @@ public class JarContributionController {
 	                                         @RequestBody FrameMessage frameMessage) {
 		log.debug("Received contribute jar {} in frame message request: {}",
 				uuid, frameMessage);
-		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
-				frameMessage.trustedData().messageBytes());
-		if (!validateMessage.valid()) {
-			log.error("Frame message failed validation {}", validateMessage);
-			return DEFAULT_HTML_RESPONSE;
+
+		ValidatedFarcasterFrameMessage validatedFarcasterMessage = null;
+		ValidatedXmtpFrameMessage validatedXmtpFrameMessage = null;
+
+		if (frameMessage.clientProtocol() != null &&
+				frameMessage.clientProtocol().startsWith("xmtp")) {
+			validatedXmtpFrameMessage = xmtpValidationService.validateMessage(frameMessage);
+			log.debug("Validation xmtp frame message response {} received on url: {}  ",
+					validatedXmtpFrameMessage,
+					validatedXmtpFrameMessage.actionBody().frameUrl());
+
+			if (StringUtils.isBlank(validatedXmtpFrameMessage.verifiedWalletAddress())) {
+				log.error("Xmtp frame message failed validation (missing verifiedWalletAddress) {}",
+						validatedXmtpFrameMessage);
+				return DEFAULT_HTML_RESPONSE;
+			}
+		} else {
+			validatedFarcasterMessage = farcasterHubService.validateFrameMessageWithNeynar(
+					frameMessage.trustedData().messageBytes());
+
+			log.debug("Validation farcaster frame message response {} received on url: {}  ",
+					validatedFarcasterMessage,
+					validatedFarcasterMessage.action().url());
+
+			if (!validatedFarcasterMessage.valid()) {
+				log.error("Frame message failed validation {}", validatedFarcasterMessage);
+				return DEFAULT_HTML_RESPONSE;
+			}
 		}
-		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
-				validateMessage.action().url());
 
 		val jar = flowService.findJarByUUID(uuid);
 		if (jar != null) {
@@ -129,21 +153,49 @@ public class JarContributionController {
 	public ResponseEntity<String> chooseToken(@PathVariable String uuid,
 	                                          @RequestBody FrameMessage frameMessage) {
 		log.debug("Received choose contribution token for {} message request: {}", uuid, frameMessage);
-		val validateMessage =
-				farcasterHubService.validateFrameMessageWithNeynar(
-						frameMessage.trustedData().messageBytes());
 
-		if (!validateMessage.valid()) {
-			log.error("Frame message failed validation {}", validateMessage);
-			return DEFAULT_HTML_RESPONSE;
+		int buttonIndex;
+		FramePaymentMessage state;
+
+		ValidatedFarcasterFrameMessage validatedFarcasterMessage;
+		ValidatedXmtpFrameMessage validatedXmtpFrameMessage;
+
+		if (frameMessage.clientProtocol() != null &&
+				frameMessage.clientProtocol().startsWith("xmtp")) {
+			validatedXmtpFrameMessage = xmtpValidationService.validateMessage(frameMessage);
+			log.debug("Validation xmtp frame message response {} received on url: {}  ",
+					validatedXmtpFrameMessage,
+					validatedXmtpFrameMessage.actionBody().frameUrl());
+
+			if (StringUtils.isBlank(validatedXmtpFrameMessage.verifiedWalletAddress())) {
+				log.error("Xmtp frame message failed validation (missing verifiedWalletAddress) {}",
+						validatedXmtpFrameMessage);
+				return DEFAULT_HTML_RESPONSE;
+			}
+
+			buttonIndex = validatedXmtpFrameMessage.actionBody().buttonIndex();
+			state = gson.fromJson(
+					new String(Base64.getDecoder().decode(validatedXmtpFrameMessage.actionBody().state())),
+					FramePaymentMessage.class);
+
+		} else {
+			validatedFarcasterMessage = farcasterHubService.validateFrameMessageWithNeynar(
+					frameMessage.trustedData().messageBytes());
+
+			log.debug("Validation farcaster frame message response {} received on url: {}  ",
+					validatedFarcasterMessage,
+					validatedFarcasterMessage.action().url());
+
+			if (!validatedFarcasterMessage.valid()) {
+				log.error("Frame message failed validation {}", validatedFarcasterMessage);
+				return DEFAULT_HTML_RESPONSE;
+			}
+
+			buttonIndex = validatedFarcasterMessage.action().tappedButton().index();
+			state = gson.fromJson(
+					new String(Base64.getDecoder().decode(validatedFarcasterMessage.action().state().serialized())),
+					FramePaymentMessage.class);
 		}
-		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
-				validateMessage.action().url());
-
-		val buttonIndex = validateMessage.action().tappedButton().index();
-		var state = gson.fromJson(
-				new String(Base64.getDecoder().decode(validateMessage.action().state().serialized())),
-				FramePaymentMessage.class);
 
 		if (state != null) {
 			val token = switch (buttonIndex) {
@@ -178,27 +230,70 @@ public class JarContributionController {
 	public ResponseEntity<String> chooseAmount(@PathVariable String uuid,
 	                                           @RequestBody FrameMessage frameMessage) {
 		log.debug("Received enter contribution amount message request: {}", frameMessage);
-		val validateMessage =
-				farcasterHubService.validateFrameMessageWithNeynar(
-						frameMessage.trustedData().messageBytes());
 
-		if (!validateMessage.valid()) {
-			log.error("Frame message failed validation {}", validateMessage);
-			return DEFAULT_HTML_RESPONSE;
+		int buttonIndex;
+		FramePaymentMessage state;
+		String inputText;
+		List<String> clickedProfileAddresses;
+
+		String sourceApp;
+		String sourceRef;
+
+		ValidatedFarcasterFrameMessage validatedFarcasterMessage;
+		ValidatedXmtpFrameMessage validatedXmtpFrameMessage;
+
+		if (frameMessage.clientProtocol() != null &&
+				frameMessage.clientProtocol().startsWith("xmtp")) {
+			validatedXmtpFrameMessage = xmtpValidationService.validateMessage(frameMessage);
+			log.debug("Validation xmtp frame message response {} received on url: {}  ",
+					validatedXmtpFrameMessage,
+					validatedXmtpFrameMessage.actionBody().frameUrl());
+
+			if (StringUtils.isBlank(validatedXmtpFrameMessage.verifiedWalletAddress())) {
+				log.error("Xmtp frame message failed validation (missing verifiedWalletAddress) {}",
+						validatedXmtpFrameMessage);
+				return DEFAULT_HTML_RESPONSE;
+			}
+			clickedProfileAddresses = Collections.singletonList(validatedXmtpFrameMessage.verifiedWalletAddress());
+			buttonIndex = validatedXmtpFrameMessage.actionBody().buttonIndex();
+			inputText = validatedXmtpFrameMessage.actionBody().inputText();
+			sourceApp = "Xmtp";
+			sourceRef = null; // maybe link the chat of the user who paid? or conversation?
+			state = gson.fromJson(
+					new String(Base64.getDecoder().decode(validatedXmtpFrameMessage.actionBody().state())),
+					FramePaymentMessage.class);
+		} else {
+			validatedFarcasterMessage = farcasterHubService.validateFrameMessageWithNeynar(
+					frameMessage.trustedData().messageBytes());
+
+			log.debug("Validation farcaster frame message response {} received on url: {}  ",
+					validatedFarcasterMessage,
+					validatedFarcasterMessage.action().url());
+
+			if (!validatedFarcasterMessage.valid()) {
+				log.error("Frame message failed validation {}", validatedFarcasterMessage);
+				return DEFAULT_HTML_RESPONSE;
+			}
+
+			clickedProfileAddresses = frameService.getFidAddresses(
+					validatedFarcasterMessage.action().interactor().fid());
+			buttonIndex = validatedFarcasterMessage.action().tappedButton().index();
+			inputText = validatedFarcasterMessage.action().input() != null ?
+					validatedFarcasterMessage.action().input().text() : null;
+
+			sourceApp = validatedFarcasterMessage.action().signer().client().displayName();
+			val casterFid = validatedFarcasterMessage.action().cast().fid();
+			val casterFcName = frameService.getFidFname(casterFid);
+			// maybe would make sense to reference top cast instead (if it's a bot cast)
+			sourceRef = String.format("https://warpcast.com/%s/%s",
+					casterFcName, validatedFarcasterMessage.action().cast().hash().substring(0,
+							10));
+			state = gson.fromJson(
+					new String(Base64.getDecoder().decode(validatedFarcasterMessage.action().state().serialized())),
+					FramePaymentMessage.class);
 		}
-		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
-				validateMessage.action().url());
 
-		val clickedFid = validateMessage.action().interactor().fid();
-		val casterFid = validateMessage.action().cast().fid();
-		val buttonIndex = validateMessage.action().tappedButton().index();
-
-		val addresses = frameService.getFidAddresses(clickedFid);
-		val profiles = frameService.getFidProfiles(addresses);
-
-		var state = gson.fromJson(
-				new String(Base64.getDecoder().decode(validateMessage.action().state().serialized())),
-				FramePaymentMessage.class);
+		val profiles = frameService.getFidProfiles(clickedProfileAddresses);
 
 		val jar = flowService.findJarByUUID(uuid);
 		if (jar != null && state != null) {
@@ -209,12 +304,11 @@ public class JarContributionController {
 				case 2 -> 3.0;
 				case 3 -> 5.0;
 				case 4 -> {
-					val input = validateMessage.action().input();
-					if (input == null) {
+					if (inputText == null) {
 						yield null;
 					}
 					try {
-						val parsedAmount = Double.parseDouble(input.text());
+						val parsedAmount = Double.parseDouble(inputText);
 						if (parsedAmount > 0 && parsedAmount <= 10.0) {
 							yield parsedAmount;
 						} else {
@@ -236,8 +330,7 @@ public class JarContributionController {
 			}
 
 			if (usdAmount != null && buttonIndex == 4) {
-				// maybe would make sense to reference top cast instead (if it's a bot cast)
-				val casterFcName = frameService.getFidFname(casterFid);
+
 				val tokenAmount = roundTokenAmount(
 						usdAmount / transactionService.getPrice(state.token()));
 
@@ -250,9 +343,8 @@ public class JarContributionController {
 				payment.setReceiverFlow(flow);
 
 				payment.setUsdAmount(usdAmount.toString());
-				payment.setSourceApp(validateMessage.action().signer().client().displayName());
-				payment.setSourceRef(String.format("https://warpcast.com/%s/%s",
-						casterFcName, validateMessage.action().cast().hash().substring(0, 10)));
+				payment.setSourceApp(sourceApp);
+				payment.setSourceRef(sourceRef);
 
 				paymentRepository.save(payment);
 
@@ -309,44 +401,73 @@ public class JarContributionController {
 	public ResponseEntity<String> confirm(@PathVariable String uuid,
 	                                      @RequestBody FrameMessage frameMessage) {
 		log.debug("Received contribution confirm message request: {}", frameMessage);
-		val validateMessage =
-				farcasterHubService.validateFrameMessageWithNeynar(
-						frameMessage.trustedData().messageBytes());
+		int buttonIndex;
+		FramePaymentMessage paymentState;
+		List<String> clickedProfileAddresses;
+		String transactionId = null;
+		String state;
 
-		if (!validateMessage.valid()) {
-			log.error("Frame message failed validation {}", validateMessage);
-			return DEFAULT_HTML_RESPONSE;
+		ValidatedFarcasterFrameMessage validatedFarcasterMessage;
+		ValidatedXmtpFrameMessage validatedXmtpFrameMessage;
+
+		if (frameMessage.clientProtocol() != null &&
+				frameMessage.clientProtocol().startsWith("xmtp")) {
+			validatedXmtpFrameMessage = xmtpValidationService.validateMessage(frameMessage);
+			log.debug("Validation xmtp frame message response {} received on url: {}  ",
+					validatedXmtpFrameMessage,
+					validatedXmtpFrameMessage.actionBody().frameUrl());
+
+			if (StringUtils.isBlank(validatedXmtpFrameMessage.verifiedWalletAddress())) {
+				log.error("Xmtp frame message failed validation (missing verifiedWalletAddress) {}",
+						validatedXmtpFrameMessage);
+				return DEFAULT_HTML_RESPONSE;
+			}
+			clickedProfileAddresses = Collections.singletonList(validatedXmtpFrameMessage.verifiedWalletAddress());
+			buttonIndex = validatedXmtpFrameMessage.actionBody().buttonIndex();
+			state = validatedXmtpFrameMessage.actionBody().state();
+		} else {
+			validatedFarcasterMessage = farcasterHubService.validateFrameMessageWithNeynar(
+					frameMessage.trustedData().messageBytes());
+
+			log.debug("Validation farcaster frame message response {} received on url: {}  ",
+					validatedFarcasterMessage,
+					validatedFarcasterMessage.action().url());
+
+			if (!validatedFarcasterMessage.valid()) {
+				log.error("Frame message failed validation {}", validatedFarcasterMessage);
+				return DEFAULT_HTML_RESPONSE;
+			}
+
+			clickedProfileAddresses = frameService.getFidAddresses(
+					validatedFarcasterMessage.action().interactor().fid());
+			buttonIndex = validatedFarcasterMessage.action().tappedButton().index();
+			state = validatedFarcasterMessage.action().state().serialized();
+			transactionId = validatedFarcasterMessage.action().transaction() != null ?
+					validatedFarcasterMessage.action().transaction().hash() : null;
 		}
-		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
-				validateMessage.action().url());
 
-		val clickedFid = validateMessage.action().interactor().fid();
-		val buttonIndex = validateMessage.action().tappedButton().index();
-		val transactionId = validateMessage.action().transaction() != null ?
-				validateMessage.action().transaction().hash() : null;
+		paymentState = gson.fromJson(
+				new String(Base64.getDecoder().decode(state)),
+				FramePaymentMessage.class);
 
-		val addresses = frameService.getFidAddresses(clickedFid);
-		val profiles = frameService.getFidProfiles(addresses);
+		val profiles = frameService.getFidProfiles(clickedProfileAddresses);
 
 		val jar = flowService.findJarByUUID(uuid);
-		var state = gson.fromJson(
-				new String(Base64.getDecoder().decode(validateMessage.action().state().serialized())),
-				FramePaymentMessage.class);
 
 		if (jar != null && state != null) {
 			log.debug("Previous payment state: {}", state);
-			if (isFramePaymentMessageComplete(state)) {
+			if (isFramePaymentMessageComplete(paymentState)) {
 				val flowWalletAddress = jar.flow().wallets().stream()
-						.filter(wallet -> wallet.network() == state.chainId())
+						.filter(wallet -> wallet.network() == paymentState.chainId())
 						.map(WalletMessage::address).findFirst().orElse(null);
 
-				if (!state.address().equals(flowWalletAddress)) {
+				if (!paymentState.address().equals(flowWalletAddress)) {
 					log.error("Transaction address doesn't match jar's wallet address: " +
-							"{} vs {}", state.address(), flowWalletAddress);
+							"{} vs {}", paymentState.address(), flowWalletAddress);
 					return DEFAULT_HTML_RESPONSE;
 				}
 
-				val refId = state.refId();
+				val refId = paymentState.refId();
 				val payment = paymentRepository.findByReferenceId(refId);
 				if (payment == null) {
 					log.error("Payment was not found for refId {}", refId);
@@ -367,11 +488,11 @@ public class JarContributionController {
 					log.debug("Updated payment for ref: {} - {}", refId, payment);
 
 					val tokenAmount = roundTokenAmount(
-							state.usdAmount() / transactionService.getPrice(state.token()));
+							paymentState.usdAmount() / transactionService.getPrice(paymentState.token()));
 					val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
 									"/image.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
-									"&amount=%s&status=%s", uuid, state.chainId(), state.token(),
-							state.usdAmount(), tokenAmount, "success"));
+									"&amount=%s&status=%s", uuid, paymentState.chainId(), paymentState.token(),
+							paymentState.usdAmount(), tokenAmount, "success"));
 					return FrameResponse.builder()
 							.imageUrl(jarImage)
 							.textInput("Enter your comment")
@@ -381,11 +502,11 @@ public class JarContributionController {
 							.button(new FrameButton("\uD83D\uDD0E Check tx details",
 									FrameButton.ActionType.LINK,
 									"https://basescan.org/tx/" + transactionId))
-							.state(validateMessage.action().state().serialized())
+							.state(state)
 							.build().toHtmlResponse();
 				} else if (buttonIndex == 1) {
 					log.debug("Handling payment through frame tx: {}", state);
-					val callData = transactionService.generateTxCallData(state);
+					val callData = transactionService.generateTxCallData(paymentState);
 					log.debug("Returning callData for tx payment: {} - {}", callData, state);
 					return ResponseEntity.ok()
 							.contentType(MediaType.APPLICATION_JSON)
@@ -397,12 +518,12 @@ public class JarContributionController {
 					payment.setSender(profiles.getFirst());
 					payment.setType(Payment.PaymentType.INTENT);
 					val tokenAmount = roundTokenAmount(
-							state.usdAmount() / transactionService.getPrice(state.token()));
+							paymentState.usdAmount() / transactionService.getPrice(paymentState.token()));
 					val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
 									"/image.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
 									"&amount=%s",
-							uuid, state.chainId(), state.token(),
-							state.usdAmount(), tokenAmount));
+							uuid, paymentState.chainId(), paymentState.token(),
+							paymentState.usdAmount(), tokenAmount));
 					return FrameResponse.builder()
 							.imageUrl(jarImage)
 							.button(new FrameButton("\uD83D\uDCF1 Payflow",
