@@ -3,6 +3,7 @@
 interface ImportMetaEnv {
   readonly VITE_INIT_CONNECT: string;
   readonly VITE_ALCHEMY_API_KEY: string;
+  readonly VITE_INFURA_API_KEY: string;
   readonly VITE_BASE_RPC_API_KEY: string;
   readonly VITE_PAYFLOW_SERVICE_API_URL: string;
   readonly VITE_PAYFLOW_SERVICE_DAPP_URL: string;
