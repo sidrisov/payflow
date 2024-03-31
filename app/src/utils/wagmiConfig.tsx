@@ -4,6 +4,7 @@ import { mainnet, base, optimism, baseSepolia, zora, sepolia } from 'viem/chains
 
 import { createConfig } from '@privy-io/wagmi';
 import { Config } from 'wagmi';
+import { degen } from '../types/degen';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 /* const { wallets } = getDefaultWallets();
@@ -30,7 +31,8 @@ const commonWagmiConfig = {
     [zora.id]: http('https://rpc.zora.energy'),
     [baseSepolia.id]: http(
       `https://base-sepolia.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`
-    )
+    ),
+    [degen.id]: http()
   },
   syncConnectedChain: true
 };
