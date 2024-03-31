@@ -1,10 +1,12 @@
 import { base, optimism, arbitrum, zora, zkSync, mainnet, baseSepolia, sepolia } from 'viem/chains';
+import { degen } from '../types/degen';
 
 const ENABLED_CHAINS = JSON.parse(import.meta.env.VITE_ENABLED_CHAINS) as string[];
 
 export const SUPPORTED_CHAINS = [
   base,
   optimism,
+  degen,
   arbitrum,
   zora,
   zkSync,
@@ -38,6 +40,9 @@ export default function getNetworkImageSrc(chainId: number): string {
       break;
     case zora.id:
       fileName = 'zora';
+      break;
+    case degen.id:
+      fileName = 'degen';
       break;
   }
 
