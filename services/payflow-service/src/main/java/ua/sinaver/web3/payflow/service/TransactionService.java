@@ -22,6 +22,8 @@ import org.web3j.tx.ClientTransactionManager;
 import org.web3j.tx.TransactionManager;
 import org.web3j.tx.gas.DefaultGasProvider;
 import org.web3j.utils.Convert;
+import ua.sinaver.web3.payflow.data.Payment;
+import ua.sinaver.web3.payflow.data.Wallet;
 import ua.sinaver.web3.payflow.message.CryptoPrice;
 import ua.sinaver.web3.payflow.message.FramePaymentMessage;
 
@@ -303,9 +305,14 @@ public class TransactionService {
 	public static final String ETH_TOKEN = "eth";
 	public static final String USDC_TOKEN = "usdc";
 	public static final String DEGEN_TOKEN = "degen";
-	public static final Map<String, String> ERC20_TOKEN_ADDRESSES = Map.of(USDC_TOKEN,
+
+	public static final Map<String, String> BASE_ERC20_TOKEN_ADDRESSES = Map.of(USDC_TOKEN,
 			"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
 			DEGEN_TOKEN, "0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed");
+
+	public static final Map<String, String> OPTIMISM_ERC20_TOKEN_ADDRESSES = Map.of(USDC_TOKEN,
+			"0x0b2c639c533813f4aa9d7837caf62653d097ff85");
+
 	public static final List<String> SUPPORTED_FRAME_PAYMENTS_TOKENS = Arrays.asList(ETH_TOKEN, USDC_TOKEN,
 			DEGEN_TOKEN);
 	private final Web3j web3j;
@@ -313,7 +320,7 @@ public class TransactionService {
 	private Map<String, CryptoPrice> prices = new HashMap<>();
 
 	public TransactionService(@Value("${payflow.crypto.base.rpc:https://mainnet.base.org}") String baseRpc,
-			WebClient.Builder webClientBuilder) {
+	                          WebClient.Builder webClientBuilder) {
 		web3j = Web3j.build(new HttpService(baseRpc));
 		webClient = webClientBuilder.baseUrl("https://api.coingecko.com/api/v3").build();
 	}
@@ -331,7 +338,9 @@ public class TransactionService {
 		var amount = paymentMessage.usdAmount() / getPrice(paymentMessage.token());
 
 		if (isERC20Transfer) {
-			val to = ERC20_TOKEN_ADDRESSES.get(paymentMessage.token());
+			val to = paymentMessage.chainId() == BASE_CHAIN_ID ?
+					BASE_ERC20_TOKEN_ADDRESSES.get(paymentMessage.token()) :
+					OPTIMISM_ERC20_TOKEN_ADDRESSES.get(paymentMessage.token());
 
 			var value = BigInteger.valueOf(0);
 			if (paymentMessage.token().equals(USDC_TOKEN)) {
@@ -365,17 +374,81 @@ public class TransactionService {
 			val value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.ETHER)
 					.toBigInteger();
 
-			// TODO: pass "gas": "27500" when warpcast supports it
+			return String.format("""
+					{
+					  "chainId": "eip155:%s",
+					  "method": "eth_sendTransaction",
+					  "attribution": false,
+					  "params": {
+					    "abi": [],
+					    "to": "%s",
+					    "value": "%s",
+					    "data": "0x"
+					  }
+					}""", paymentMessage.chainId(), paymentMessage.address(), value);
+		}
+	}
+
+	public String generateTxCallData(Payment payment) {
+		boolean isERC20Transfer = !payment.getToken().equals(ETH_TOKEN);
+
+		val address =
+				payment.getReceiver() != null ?
+						payment.getReceiver().getDefaultFlow().getWallets().stream()
+								.filter(wallet -> wallet.getNetwork().equals(payment.getNetwork()))
+								.map(Wallet::getAddress).findFirst().orElse(null) : payment.getReceiverAddress();
+
+		var amount = Double.parseDouble(payment.getUsdAmount()) / getPrice(payment.getToken());
+
+		if (isERC20Transfer) {
+			val to = payment.getNetwork().equals(BASE_CHAIN_ID) ?
+					BASE_ERC20_TOKEN_ADDRESSES.get(payment.getToken()) :
+					OPTIMISM_ERC20_TOKEN_ADDRESSES.get(payment.getToken());
+
+			var value = BigInteger.valueOf(0);
+			if (payment.getToken().equals(USDC_TOKEN)) {
+				value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.MWEI)
+						.toBigInteger();
+			} else if (payment.getToken().equals(DEGEN_TOKEN)) {
+				value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.ETHER)
+						.toBigInteger();
+			}
+
+			log.debug("Token amount {} value {} price {} for {}", amount, value,
+					getPrice(payment.getToken()), payment);
+
+			val function = new Function(
+					"transfer",
+					Arrays.asList(new Address(address), new Uint256(value)),
+					List.of(new TypeReference<Bool>() {
+					}));
+			val encodedFunction = FunctionEncoder.encode(function);
 			return String.format("""
 					{
 					  "chainId": "eip155:%s",
 					  "method": "eth_sendTransaction",
 					  "params": {
+					    "abi": %s,
+					    "to": "%s",
+					    "data": "%s"
+					  }
+					}""", payment.getNetwork(), ERC20_ABI_TRANSFER_JSON, to, encodedFunction);
+		} else {
+			val value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.ETHER)
+					.toBigInteger();
+
+			return String.format("""
+					{
+					  "chainId": "eip155:%s",
+					  "method": "eth_sendTransaction",
+					  "attribution": false,
+					  "params": {
 					    "abi": [],
 					    "to": "%s",
-					    "value": "%s"
+					    "value": "%s",
+					    "data": "0x"
 					  }
-					}""", paymentMessage.chainId(), paymentMessage.address(), value);
+					}""", payment.getNetwork(), address, value);
 		}
 	}
 
@@ -413,7 +486,7 @@ public class TransactionService {
 		try {
 			// fetch ether
 			val balanceEther = Convert.fromWei(web3j.ethGetBalance(address,
-					DefaultBlockParameterName.LATEST)
+							DefaultBlockParameterName.LATEST)
 					.send().getBalance().toString(), Convert.Unit.ETHER);
 			// Round to 5 decimal places using setScale
 			val roundedBalance = balanceEther.equals(new BigDecimal(0)) ? balanceEther
@@ -422,11 +495,11 @@ public class TransactionService {
 			balanceMap.put(ETH_TOKEN, roundedBalance.toString());
 
 			// fetch ERC20
-			val usdcBalance = erc20Balance(ERC20_TOKEN_ADDRESSES.get(USDC_TOKEN), address,
+			val usdcBalance = erc20Balance(BASE_ERC20_TOKEN_ADDRESSES.get(USDC_TOKEN), address,
 					transactionManager);
 			balanceMap.put(USDC_TOKEN, usdcBalance);
 
-			val degenBalance = erc20Balance(ERC20_TOKEN_ADDRESSES.get(DEGEN_TOKEN), address,
+			val degenBalance = erc20Balance(BASE_ERC20_TOKEN_ADDRESSES.get(DEGEN_TOKEN), address,
 					transactionManager);
 			balanceMap.put(DEGEN_TOKEN, degenBalance);
 
@@ -438,7 +511,7 @@ public class TransactionService {
 	}
 
 	private String erc20Balance(String contractAddress, String walletAddress,
-			TransactionManager txManager) {
+	                            TransactionManager txManager) {
 		ERC20 contract = ERC20.load(contractAddress, web3j, txManager,
 				new DefaultGasProvider());
 		try {

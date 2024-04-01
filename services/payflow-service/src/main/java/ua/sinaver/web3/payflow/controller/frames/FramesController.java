@@ -531,18 +531,21 @@ public class FramesController {
 											inputText), FrameButton.ActionType.POST, null)).build().toHtmlResponse();
 						} else {
 							// for now invite first
-							val identityToInvite =
-									identityService.getIdentitiesInfo(inviteAddresses).stream().sorted(Comparator.comparingInt(IdentityMessage::score).reversed()).toList().getFirst();
+							val identityToInvite = identityService.getIdentitiesInfo(inviteAddresses)
+									.stream().max(Comparator.comparingInt(IdentityMessage::score))
+									.orElse(null);
 							log.debug("Identity to invite: {} ", identityToInvite);
 
-							val invitation = new Invitation(identityToInvite.address(), null);
-							invitation.setInvitedBy(clickedProfile);
-							invitation.setExpiryDate(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(30)));
-							invitationRepository.save(invitation);
+							if (identityToInvite != null) {
+								val invitation = new Invitation(identityToInvite.address(), null);
+								invitation.setInvitedBy(clickedProfile);
+								invitation.setExpiryDate(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(30)));
+								invitationRepository.save(invitation);
 
-							return FrameResponse.builder().imageUrl(profileImage)
-									.button(new FrameButton(String.format("🎉 Successfully invited %s to Payflow",
-											inputText), FrameButton.ActionType.POST, null)).build().toHtmlResponse();
+								return FrameResponse.builder().imageUrl(profileImage)
+										.button(new FrameButton(String.format("🎉 Successfully invited %s to Payflow",
+												inputText), FrameButton.ActionType.POST, null)).build().toHtmlResponse();
+							}
 						}
 					}
 				} else {

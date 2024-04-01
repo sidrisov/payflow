@@ -8,6 +8,8 @@ public record PaymentMessage(String referenceId,
                              Payment.PaymentStatus status,
                              ProfileMetaMessage receiver,
                              FlowMessage receiverFlow,
+                             String receiverAddress,
+                             ProfileMetaMessage sender,
                              int chainId,
                              String token,
                              Double usdAmount,
@@ -15,22 +17,28 @@ public record PaymentMessage(String referenceId,
                              PaymentSource source,
                              String comment) {
 
-	public static PaymentMessage convert(Payment payment, boolean includeRef) {
+	public static PaymentMessage convert(Payment payment, boolean includeRef,
+	                                     boolean includeComment) {
 		return new PaymentMessage(
 				includeRef ? payment.getReferenceId() : null,
 				payment.getType(),
 				payment.getStatus(),
-				ProfileMetaMessage.convert(payment.getReceiver(), true),
+				payment.getReceiver() != null ?
+						ProfileMetaMessage.convert(payment.getReceiver(),
+								true) : null,
 				payment.getReceiverFlow() != null ?
 						FlowMessage.convert(payment.getReceiverFlow(), null)
 						: null,
+				payment.getReceiverAddress(),
+				payment.getSender() != null ?
+						ProfileMetaMessage.convert(payment.getSender(), false) : null,
 				payment.getNetwork(),
 				payment.getToken(),
 				StringUtils.isNotBlank(payment.getUsdAmount()) ?
 						Double.parseDouble(payment.getUsdAmount()) : null,
 				payment.getHash(),
-				new PaymentMessage.PaymentSource(payment.getSourceApp(),
-						payment.getSourceRef()), payment.getComment());
+				new PaymentMessage.PaymentSource(payment.getSourceApp(), payment.getSourceRef()),
+				includeComment ? payment.getComment() : null);
 	}
 
 	public record PaymentSource(String app, String ref) {

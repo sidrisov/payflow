@@ -112,4 +112,7 @@ public class FrameResponse {
 			return "";
 		}
 	}
+
+	public record FrameError(String message) {
+	}
 }

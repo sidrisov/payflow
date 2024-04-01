@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.message.PaymentHashMessage;
@@ -34,8 +35,7 @@ public class PaymentController {
 	                                     Principal principal) {
 
 		val username = principal != null ? principal.getName() : null;
-		log.debug("{} fetching payments info for {} ",
-				username, hashes);
+		log.debug("{} fetching payments info for {}", username, hashes);
 
 		if (hashes.isEmpty()) {
 			return Collections.emptyList();
@@ -45,18 +45,19 @@ public class PaymentController {
 		val payments = paymentRepository.findByHashIn(hashes, user);
 
 		log.debug("Fetched payments: {}", payments);
+
 		return payments.stream()
-				.map(payment -> PaymentMessage.convert(payment, false))
+				.map(payment -> PaymentMessage.convert(payment, false, true))
 				.toList();
+
 	}
 
 	@GetMapping("/pending")
 	public List<PaymentMessage> pendingPayments(Principal principal) {
-		log.debug("Fetching pending payments for {} ",
-				principal.getName());
+		val username = principal != null ? principal.getName() : null;
+		log.debug("Fetching pending payments for {} ", username);
 
-		val user = userService.findByIdentity(principal.getName());
-
+		val user = userService.findByIdentity(username);
 		if (user == null) {
 			return Collections.emptyList();
 		}
@@ -65,8 +66,30 @@ public class PaymentController {
 						user, Payment.PaymentStatus.PENDING,
 						List.of(Payment.PaymentType.INTENT))
 				.stream()
-				.map(payment -> PaymentMessage.convert(payment, true))
+				.map(payment -> PaymentMessage.convert(payment, true, true))
 				.toList();
+	}
+
+	@GetMapping("/{referenceId}")
+	@ResponseStatus(HttpStatus.OK)
+	public ResponseEntity<PaymentMessage> payment(@PathVariable String referenceId, Principal principal) {
+		val username = principal != null ? principal.getName() : null;
+		log.debug("Fetching payment by refId {} by user {}", referenceId, username);
+		val user = userService.findByIdentity(username);
+
+		val payment = paymentRepository.findByReferenceId(referenceId);
+		if (payment == null) {
+			log.error("Payment doesn't exist: {}", referenceId);
+			return ResponseEntity.notFound().build();
+		}
+
+		if (!payment.getType().equals(Payment.PaymentType.FRAME) && (user == null ||
+				!payment.getSender().getIdentity().equals(user.getIdentity()))) {
+			log.error("{} is not allowed to fetch payment: {}", principal, payment);
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+
+		return ResponseEntity.ok(PaymentMessage.convert(payment, true, false));
 	}
 
 	@PutMapping("/{referenceId}")

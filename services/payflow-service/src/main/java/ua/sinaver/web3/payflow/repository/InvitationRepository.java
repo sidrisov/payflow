@@ -43,6 +43,6 @@ public interface InvitationRepository extends CrudRepository<Invitation, Integer
 	                                                  String code) {
 		return findFirstByIdentityAndInviteeNullOrCodeAndCodeNotNullAndInviteeNullOrderByCreatedDateAsc(
 				identity,
-				code);
+				code.toLowerCase());
 	}
 }
