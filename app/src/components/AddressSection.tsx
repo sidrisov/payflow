@@ -12,7 +12,7 @@ export function AddressSection(props: {
   maxWidth?: number;
   copy?: boolean;
 }) {
-  const { identity: identity, fontSize, maxWidth, copy = true } = props;
+  const { identity, fontSize, maxWidth, copy = true } = props;
 
   const { data: ensName, isFetched } = useEnsName({
     address: identity.address,

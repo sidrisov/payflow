@@ -1,4 +1,4 @@
-import { Hash } from 'viem';
+import { Address, Hash } from 'viem';
 import { ProfileType } from './ProfleType';
 import { FlowType } from './FlowType';
 
@@ -8,6 +8,7 @@ export interface PaymentType {
   status: 'PENDING' | 'COMPLETED';
   receiver: ProfileType;
   receiverFlow: FlowType;
+  receiverAddress: Address;
   chainId: number;
   token: 'eth' | 'usdc' | 'degen';
   usdAmount: number;

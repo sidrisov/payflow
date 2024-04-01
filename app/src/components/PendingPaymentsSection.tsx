@@ -17,9 +17,10 @@ import TokenAvatar from './avatars/TokenAvatar';
 import { getNetworkDisplayName } from '../utils/networks';
 import NetworkAvatar from './avatars/NetworkAvatar';
 import getTokenName from '../utils/erc20contracts';
-import { SelectedIdentityType } from '../types/ProfleType';
+import { IdentityType, SelectedIdentityType } from '../types/ProfleType';
 import PaymentDialog from './dialogs/PaymentDialog';
 import { ProfileContext } from '../contexts/UserContext';
+import { AddressSection } from './AddressSection';
 
 export function PendingPaymentsSection({
   payments,
@@ -80,7 +81,11 @@ export function PendingPaymentsSection({
                     Intent to pay
                   </Typography>
 
-                  <ProfileSection profile={payment.receiver} />
+                  {payment.receiver ? (
+                    <ProfileSection profile={payment.receiver} />
+                  ) : (
+                    <AddressSection identity={{ address: payment.receiverAddress }} />
+                  )}
                   <Stack
                     direction="row"
                     alignItems="center"
@@ -126,12 +131,18 @@ export function PendingPaymentsSection({
             recipient={
               {
                 identity: {
-                  profile: {
-                    ...payment.receiver,
-                    ...(payment.receiverFlow && { defaultFlow: payment.receiverFlow })
-                  }
-                },
-                type: 'profile'
+                  ...(payment.receiver
+                    ? {
+                        profile: {
+                          ...payment.receiver,
+                          ...(payment.receiverFlow && { defaultFlow: payment.receiverFlow })
+                        }
+                      }
+                    : {
+                        address: payment.receiverAddress
+                      })
+                } as IdentityType,
+                type: payment.receiver ? 'profile' : 'address'
               } as SelectedIdentityType
             }
             closeStateCallback={async () => {

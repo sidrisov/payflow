@@ -31,13 +31,13 @@ export function RecipientField({
         textTransform: 'none'
       }}>
       {recipient &&
-        (recipient.type === 'profile'
-          ? recipient.identity.profile && (
-              <ProfileSection maxWidth={200} profile={recipient.identity.profile} />
-            )
-          : recipient.identity.meta && (
-              <AddressSection maxWidth={200} identity={recipient.identity} />
-            ))}
+        (recipient.type === 'profile' ? (
+          recipient.identity.profile && (
+            <ProfileSection maxWidth={200} profile={recipient.identity.profile} />
+          )
+        ) : (
+          <AddressSection maxWidth={200} identity={recipient.identity} />
+        ))}
 
       {!recipient && (
         <Typography alignSelf="center" flexGrow={1}>
