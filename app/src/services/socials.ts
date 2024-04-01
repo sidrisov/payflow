@@ -16,6 +16,8 @@ import {
   QUERY_SOCIALS_INSIGHTS,
   QUERY_SOCIALS
 } from '../utils/airstackQueries';
+import axios from 'axios';
+import { BaseNameReponseType } from '../types/BaseNameType';
 
 const FOLLOWING = 7;
 const FOLLOWER = 3;
@@ -157,19 +159,31 @@ export async function searchIdentity(searchValue: string, me?: string): Promise<
     searchValue.endsWith('.eth') ||
     isAddress(searchValue) ||
     searchValue.endsWith('.xyz') ||
-    searchValue.endsWith('.id')
+    searchValue.endsWith('.id') ||
+    searchValue.endsWith('.base')
   ) {
+    let identity = searchValue;
+    if (searchValue.endsWith('.base')) {
+      const response = await axios.get(`https://resolver-api.basename.app/v1/names/${searchValue}`);
+      const basename = response.data as BaseNameReponseType;
+      if (basename.address) {
+        identity = basename.address;
+      } else {
+        return foundProfiles;
+      }
+    }
+
     const { data } = me
       ? await fetchQuery<GetSocialsInsightsQuery>(
           QUERY_SOCIALS_INSIGHTS,
-          { identity: searchValue, me },
+          { identity, me },
           {
             cache: true
           }
         )
       : await fetchQuery<GetSocialsQuery>(
           QUERY_SOCIALS,
-          { identity: searchValue },
+          { identity },
           {
             cache: true
           }
