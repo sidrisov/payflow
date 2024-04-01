@@ -1,6 +1,6 @@
 import { SUPPORTED_CHAINS } from './networks';
 import { http, fallback } from 'viem';
-import { mainnet, base, optimism, baseSepolia, zora, sepolia } from 'viem/chains';
+import { mainnet, base, optimism, baseSepolia, zora, sepolia, arbitrum, zkSync } from 'viem/chains';
 
 import { createConfig } from '@privy-io/wagmi';
 import { Config } from 'wagmi';
@@ -32,7 +32,9 @@ const commonWagmiConfig = {
     [baseSepolia.id]: http(
       `https://base-sepolia.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`
     ),
-    [degen.id]: http()
+    [degen.id]: http(),
+    [arbitrum.id]: http(),
+    [zkSync.id]: http()
   },
   syncConnectedChain: true
 };
