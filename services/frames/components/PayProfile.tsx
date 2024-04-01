@@ -1,26 +1,26 @@
 /* eslint-disable jsx-a11y/alt-text */
 import { PaymentType } from '../types/PaymentType';
 import { ProfileType } from '../types/ProfleType';
+import { shortenWalletAddressLabel } from '../utils/address';
 import { assetImageSrc } from '../utils/image';
+import { base } from 'viem/chains';
 
 export const payProfileHtml = (
   profile: ProfileType,
-  step: 'start' | 'token' | 'amount' | 'confirm' | 'execute',
+  step: 'start' | 'amount' | 'confirm' | 'execute',
   payment: PaymentType
 ) => <PayProfile profile={profile} step={step} payment={payment} />;
 
-const paymentStepTitle = (step: 'start' | 'token' | 'amount' | 'confirm' | 'execute') => {
+const paymentStepTitle = (step: 'start' | 'amount' | 'confirm' | 'execute') => {
   switch (step) {
     case 'start':
-      return 'How you wanna pay the profile?';
-    case 'token':
-      return 'Choose payment token?';
+      return 'How you wanna pay?';
     case 'amount':
       return 'Choose payment amount?';
     case 'confirm':
-      return 'Do you wanna pay now or later (app)?';
+      return 'Pay now or later (app)?';
     case 'execute':
-      return 'Payment execution';
+      return 'Payment result';
   }
 };
 
@@ -30,10 +30,12 @@ function PayProfile({
   payment
 }: {
   profile: ProfileType;
-  step: 'start' | 'token' | 'amount' | 'confirm' | 'execute';
+  step: 'start' | 'amount' | 'confirm' | 'execute';
   payment: PaymentType;
 }) {
   const title = paymentStepTitle(step);
+
+  console.log('comparing: ', payment.chainId, base.id, payment.chainId === base.id);
 
   return (
     <div
@@ -58,17 +60,27 @@ function PayProfile({
           alignItems: 'center',
           justifyContent: 'flex-start'
         }}>
-        <img
-          src={profile.profileImage}
-          alt="profile"
-          style={{ height: 250, width: 250, margin: 10, borderRadius: 25 }}
-        />
-        <div style={{ margin: 10, display: 'flex', flexDirection: 'column' }}>
-          <span style={{ fontSize: 64, fontWeight: 'bold' }}>{profile.displayName}</span>
-          <span style={{ marginTop: 10, fontSize: 64, fontWeight: 'normal' }}>
-            @{profile.username}
-          </span>
-        </div>
+        {profile.profileImage && (
+          <img
+            src={profile.profileImage}
+            alt="profile"
+            style={{ height: 250, width: 250, margin: 10, borderRadius: 25 }}
+          />
+        )}
+        {profile.username ? (
+          <div style={{ margin: 10, display: 'flex', flexDirection: 'column' }}>
+            <span style={{ fontSize: 64, fontWeight: 'bold' }}>{profile.displayName}</span>
+            <span style={{ marginTop: 10, fontSize: 64, fontWeight: 'normal' }}>
+              @{profile.username}
+            </span>
+          </div>
+        ) : (
+          <div style={{ margin: 10, display: 'flex', flexDirection: 'column' }}>
+            <span style={{ marginTop: 10, fontSize: 64, fontWeight: 'normal' }}>
+              {shortenWalletAddressLabel(profile.identity)}
+            </span>
+          </div>
+        )}
         {step !== 'start' && (
           <div
             style={{
@@ -104,10 +116,16 @@ function PayProfile({
                     gap: 10
                   }}>
                   <img
-                    src={assetImageSrc(`/assets/chains/base.png`)}
+                    src={assetImageSrc(
+                      payment.chainId === base.id
+                        ? '/assets/chains/base.png'
+                        : '/assets/chains/optimism.png'
+                    )}
                     style={{ width: 36, height: 36, borderRadius: '50%' }}
                   />
-                  <span style={{ fontWeight: 'bold' }}>Base</span>
+                  <span style={{ fontWeight: 'bold' }}>
+                    {payment.chainId === base.id ? 'Base' : 'Optimism'}
+                  </span>
                 </div>
               </div>
             )}

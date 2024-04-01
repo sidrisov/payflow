@@ -8,18 +8,16 @@ import Card from './Card';
 export const jarHtml = (
   jar: JarType,
   balance: string,
-  step?: 'start' | 'token' | 'amount' | 'confirm' | 'execute',
+  step?: 'start' | 'amount' | 'confirm' | 'execute',
   state?: PaymentType
 ) => <Jar jar={jar} balance={balance} step={step} state={state} />;
 
-const contributionStepTitle = (step: 'start' | 'token' | 'amount' | 'confirm' | 'execute') => {
+const contributionStepTitle = (step: 'start' | 'amount' | 'confirm' | 'execute') => {
   switch (step) {
     case 'start':
       return 'How you wanna contribute?';
-    case 'token':
-      return 'Choose contribution token?';
     case 'amount':
-      return 'Enter contribution amount?';
+      return '💜 Enter your contribution';
     case 'confirm':
       return 'Contribute now or later (app)?';
     case 'execute':
@@ -35,7 +33,7 @@ function Jar({
 }: {
   jar: JarType;
   balance: string;
-  step?: 'start' | 'token' | 'amount' | 'confirm' | 'execute';
+  step?: 'start' | 'amount' | 'confirm' | 'execute';
   state?: PaymentType;
 }) {
   const profile = jar.profile;

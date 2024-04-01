@@ -86,7 +86,7 @@ public class InvitationController {
 	@GetMapping("/code/{code}")
 	@ResponseStatus(HttpStatus.OK)
 	public Boolean isCodeValid(@PathVariable String code) {
-		return invitationRepository.existsByCodeAndInviteeNull(code);
+		return invitationRepository.existsByCodeAndInviteeNull(code.toLowerCase());
 	}
 
 	@PostMapping

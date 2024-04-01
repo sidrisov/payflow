@@ -30,6 +30,7 @@ import { fetchTokenPrices } from './utils/prices';
 import { TokenPrices } from './utils/erc20contracts';
 import { getAssetBalances, getFlowAssets, getTotalBalance } from './utils/balances';
 import { XmtpOpenFramesRequest, validateFramesPost } from '@xmtp/frames-validator';
+import { normalizeNumberPrecision } from './utils/normalizeNumberPrecision';
 
 dotenv.config();
 
@@ -158,19 +159,27 @@ async function startServer() {
   });
 
   app.get('/images/profile/:identity/payment.png', async (req, res) => {
-    const identity = req.params.identity;
+    const identity = req.params.identity as Address;
     const step = req.query.step;
     const payment = {
-      chainId: req.query.chainId,
+      chainId: Number(req.query.chainId),
       token: req.query.token,
       amount: req.query.amount,
       usdAmount: req.query.usdAmount,
       status: req.query.status
     } as PaymentType;
 
+    if (!payment.amount && payment.usdAmount && payment.token) {
+      payment.amount = normalizeNumberPrecision(
+        Number.parseFloat(payment.usdAmount) / TOKEN_PRICES[payment.token.toUpperCase()]
+      ).toString();
+    }
+
+    console.debug('Payment: ', payment);
+
     try {
       const response = await axios.get(`${API_URL}/api/user/${identity}`);
-      const profileData = response.data as ProfileType;
+      let profileData = (response.data !== '' ? response.data : { identity }) as ProfileType;
       const image = await htmlToImage(
         payProfileHtml(profileData, step as any, payment),
         'landscape'
@@ -266,7 +275,7 @@ async function startServer() {
       const jar = (await axios.get(`${API_URL}/api/flows/jar/${uuid}`)).data as JarType;
 
       const assets = getFlowAssets(jar.flow);
-      const assetBalances = await getAssetBalances(assets, currentPrices);
+      const assetBalances = await getAssetBalances(assets, TOKEN_PRICES);
       const totalBalance = getTotalBalance(assetBalances);
 
       console.log(totalBalance);
@@ -319,13 +328,13 @@ async function startServer() {
 }
 
 // Placeholder for storing prices
-let currentPrices: TokenPrices = {};
+export let TOKEN_PRICES: TokenPrices = {};
 
 // Function to fetch prices from an API
 const fetchPrices = async () => {
   try {
-    currentPrices = await fetchTokenPrices();
-    console.log('Fetched prices: ', currentPrices);
+    TOKEN_PRICES = await fetchTokenPrices();
+    console.log('Fetched prices: ', TOKEN_PRICES);
   } catch (error) {
     console.error('Error fetching prices:', error);
   }
