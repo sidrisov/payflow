@@ -4,6 +4,7 @@ import AddressAvatar from './avatars/AddressAvatar';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { useEnsAvatar, useEnsName } from 'wagmi';
 import CopyToClipboardIconButton from './buttons/CopyToClipboardIconButton';
+import { useBaseName } from '../utils/queries/baseName';
 
 export function AddressSection(props: {
   identity: IdentityType;
@@ -13,7 +14,7 @@ export function AddressSection(props: {
 }) {
   const { identity: identity, fontSize, maxWidth, copy = true } = props;
 
-  const { data: ensName } = useEnsName({
+  const { data: ensName, isFetched } = useEnsName({
     address: identity.address,
     chainId: 1,
     query: {
@@ -21,6 +22,8 @@ export function AddressSection(props: {
       staleTime: 300_000
     }
   });
+
+  const { data: baseName } = useBaseName(identity.address, isFetched && !ensName);
 
   const avatar = useEnsAvatar({
     name: identity.meta?.ens ?? (ensName as string),
@@ -32,7 +35,7 @@ export function AddressSection(props: {
     }
   });
 
-  const ens = identity.meta?.ens || ensName;
+  const ens = identity.meta?.ens || ensName || baseName;
 
   return (
     <Stack maxWidth={maxWidth ?? 130} direction="row" spacing={0.5} alignItems="center">
