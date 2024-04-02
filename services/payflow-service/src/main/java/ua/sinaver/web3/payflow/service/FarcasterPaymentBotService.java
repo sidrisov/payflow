@@ -215,6 +215,7 @@ public class FarcasterPaymentBotService {
 							return;
 						}
 					}
+					case "intent":
 					case "send": {
 						String receiver = null;
 						String amount = null;
@@ -295,10 +296,11 @@ public class FarcasterPaymentBotService {
 										cast.author().username(),
 										cast.hash().substring(0, 10));
 								// TODO: check if token available for chain
-
-
-								val payment = new Payment(Payment.PaymentType.FRAME, receiverProfile,
-										PAYMENT_CHAINS.get(chain), token);
+								val payment =
+										new Payment(command.equals("send") ?
+												Payment.PaymentType.FRAME : Payment.PaymentType.INTENT,
+												receiverProfile,
+												PAYMENT_CHAINS.get(chain), token);
 								payment.setReceiverAddress(receiverAddress);
 								payment.setSender(casterProfile);
 								payment.setUsdAmount(amount);
@@ -308,19 +310,24 @@ public class FarcasterPaymentBotService {
 								refId = payment.getReferenceId();
 							}
 
-							val castText = String.format("@%s send funds to @%s with the frame",
-									cast.author().username(),
-									receiver);
-							val frameUrl = refId == null ?
-									String.format("https://frames.payflow.me/%s",
-											receiverProfile != null ?
-													receiverProfile.getUsername() : receiverAddresses) :
-									String.format("https://frames.payflow.me/payment/%s", refId);
-							val embeds = Collections.singletonList(
-									new CastEmbed(frameUrl));
+							if (command.equals("send")) {
+								val castText = String.format("@%s send funds to @%s with the frame",
+										cast.author().username(),
+										receiver);
+								val frameUrl = refId == null ?
+										String.format("https://frames.payflow.me/%s",
+												receiverProfile != null ?
+														receiverProfile.getUsername() : receiverAddresses) :
+										String.format("https://frames.payflow.me/payment/%s", refId);
+								val embeds = Collections.singletonList(
+										new CastEmbed(frameUrl));
 
-							val processed = reply(castText, cast.hash(), embeds);
-							if (processed) {
+								val processed = reply(castText, cast.hash(), embeds);
+								if (processed) {
+									job.setStatus(PaymentBotJob.Status.PROCESSED);
+									return;
+								}
+							} else {
 								job.setStatus(PaymentBotJob.Status.PROCESSED);
 								return;
 							}
