@@ -69,9 +69,10 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
   const blockExplorerUrl = getNetworkDefaultBlockExplorerUrl(txInfo.chainId);
 
   const token =
-    txInfo.token ?? txInfo.chainId === degen.id
+    txInfo.token ??
+    (txInfo.chainId === degen.id
       ? { name: 'Degen', decimals: 18, symbol: DEGEN_TOKEN }
-      : { name: 'Ether', decimals: 18, symbol: ETH_TOKEN };
+      : { name: 'Ether', decimals: 18, symbol: ETH_TOKEN });
   const price = tokenPrices ? tokenPrices[token.symbol] : 0;
   const value = normalizeNumberPrecision(
     parseFloat(formatUnits(BigInt(txInfo.value ?? 0), token.decimals)) * price
