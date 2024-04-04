@@ -83,8 +83,8 @@ public class PaymentController {
 			return ResponseEntity.notFound().build();
 		}
 
-		if (!payment.getType().equals(Payment.PaymentType.FRAME) && (user == null ||
-				!payment.getSender().getIdentity().equals(user.getIdentity()))) {
+		if (!(payment.getType().equals(Payment.PaymentType.FRAME) || payment.getType().equals(Payment.PaymentType.INTENT))
+				&& (user == null || !payment.getSender().getIdentity().equals(user.getIdentity()))) {
 			log.error("{} is not allowed to fetch payment: {}", principal, payment);
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}

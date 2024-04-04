@@ -20,7 +20,7 @@ const paymentStepTitle = (step: 'start' | 'amount' | 'confirm' | 'execute') => {
     case 'confirm':
       return 'Pay now or later (app)?';
     case 'execute':
-      return 'Payment result';
+      return 'Payment details';
   }
 };
 
@@ -184,21 +184,25 @@ function PayProfile({
                 </div>
               </div>
             )}
-            {payment.status && (
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  whiteSpace: 'nowrap'
-                }}>
-                <span>Tx status</span>
-                <span>
-                  <b>{payment.status === 'success' ? '✅ Success' : '❌ Failed'}</b>
-                </span>
-              </div>
-            )}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                whiteSpace: 'nowrap'
+              }}>
+              <span>Tx status</span>
+              <span>
+                <b>
+                  {payment.status
+                    ? payment.status === 'success'
+                      ? '✅ Success'
+                      : '❌ Failed'
+                    : '⏳ Pending'}
+                </b>
+              </span>
+            </div>
           </div>
         )}
       </div>

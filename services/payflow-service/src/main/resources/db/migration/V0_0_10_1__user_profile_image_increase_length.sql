@@ -1,0 +1,2 @@
+ALTER TABLE user
+MODIFY COLUMN profile_image VARCHAR(512);

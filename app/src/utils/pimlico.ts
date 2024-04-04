@@ -4,7 +4,7 @@ import {
   createPimlicoPaymasterClient
 } from 'permissionless/clients/pimlico';
 import { http } from 'viem';
-import { arbitrum, base, baseSepolia, optimism, zkSync, zora } from 'viem/chains';
+import { arbitrum, base, baseSepolia, degen, optimism, zkSync, zora } from 'viem/chains';
 
 export const PIMLICO_SPONSORED_ENABLED = import.meta.env.VITE_PIMLICO_SPONSORED_ENABLED === 'true';
 
@@ -59,6 +59,9 @@ const pimlicoRpcNetworkName = (chainId: number) => {
     case zora.id:
       network = 'zora';
       break;
+    case degen.id:
+      network = 'degen';
+      break;
   }
   return network;
 };
@@ -66,6 +69,7 @@ const pimlicoRpcNetworkName = (chainId: number) => {
 // mainnet sponsorship policies
 const BASE_POLICIES = JSON.parse(import.meta.env.VITE_PIMLICO_SPONSORED_POLICY_BASE) as string[];
 const OP_POLICIES = JSON.parse(import.meta.env.VITE_PIMLICO_SPONSORED_POLICY_OP) as string[];
+const DEGEN_POLICIES = JSON.parse(import.meta.env.VITE_PIMLICO_SPONSORED_POLICY_DEGEN) as string[];
 // testnet sponsorship policies
 const BASE_SEPOLIA_POLICIES = JSON.parse(
   import.meta.env.VITE_PIMLICO_SPONSORED_POLICY_BASE_SEPOLIA
@@ -75,9 +79,10 @@ export const paymasterSponsorshipPolicyIds = (chainId: number) => {
   switch (chainId) {
     case base.id:
       return BASE_POLICIES;
-
     case optimism.id:
       return OP_POLICIES;
+    case degen.id:
+      return DEGEN_POLICIES;
     case baseSepolia.id:
       return BASE_SEPOLIA_POLICIES;
     default:

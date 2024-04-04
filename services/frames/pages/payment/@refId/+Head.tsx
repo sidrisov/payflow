@@ -6,12 +6,15 @@ export function Head() {
   const payment = useData<Data>();
   const refId = payment.referenceId;
   const status = payment.status;
+  const type = payment.type;
 
   const identity = payment.receiver?.identity ?? payment.receiverAddress;
 
   const imageUrl =
     status === 'PENDING'
-      ? `${FRAMES_URL}/images/profile/${identity}/payment.png?step=confirm&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount}`
+      ? type === 'INTENT'
+        ? `${FRAMES_URL}/images/profile/${identity}/payment.png?step=execute&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount}`
+        : `${FRAMES_URL}/images/profile/${identity}/payment.png?step=confirm&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount}`
       : `${FRAMES_URL}/images/profile/${identity}/payment.png?step=execute&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount}&status=success`;
   return (
     <>
@@ -55,24 +58,32 @@ export function Head() {
         <meta property="fc:frame:image" content={imageUrl} />
 
         {status === 'PENDING' ? (
-          <>
-            <meta
-              property="fc:frame:post_url"
-              content={`${API_URL}/api/farcaster/frames/pay/${refId}/frame/confirm`}
-            />
-            <meta property="fc:frame:button:1" content="💜 Pay" />
-            <meta property="fc:frame:button:1:action" content="tx" />
-            <meta
-              property="fc:frame:button:1:target"
-              content={`${API_URL}/api/farcaster/frames/pay/${refId}/frame/confirm`}
-            />
-            <meta property="fc:frame:button:2" content="📱 Later" />
-            <meta property="fc:frame:button:2:action" content="post" />
-            <meta
-              property="fc:frame:button:2:target"
-              content={`${API_URL}/api/farcaster/frames/pay/${refId}/frame/confirm`}
-            />
-          </>
+          type === 'INTENT' ? (
+            <>
+              <meta property="fc:frame:button:1" content="📱 Payflow" />
+              <meta property="fc:frame:button:1:action" content="link" />
+              <meta property="fc:frame:button:1:target" content={DAPP_URL} />
+            </>
+          ) : (
+            <>
+              <meta
+                property="fc:frame:post_url"
+                content={`${API_URL}/api/farcaster/frames/pay/${refId}/frame/confirm`}
+              />
+              <meta property="fc:frame:button:1" content="💜 Pay" />
+              <meta property="fc:frame:button:1:action" content="tx" />
+              <meta
+                property="fc:frame:button:1:target"
+                content={`${API_URL}/api/farcaster/frames/pay/${refId}/frame/confirm`}
+              />
+              <meta property="fc:frame:button:2" content="📱 Later" />
+              <meta property="fc:frame:button:2:action" content="post" />
+              <meta
+                property="fc:frame:button:2:target"
+                content={`${API_URL}/api/farcaster/frames/pay/${refId}/frame/confirm`}
+              />
+            </>
+          )
         ) : (
           <>
             <meta property="fc:frame:button:1" content="🔎 Check tx details" />

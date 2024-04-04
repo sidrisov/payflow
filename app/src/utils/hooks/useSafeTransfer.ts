@@ -17,7 +17,7 @@ import { transferWithGelato } from '../safeTransactions';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { useWaitForTransactionReceipt } from 'wagmi';
-import { ETH, Token } from '../erc20contracts';
+import { DEGEN_TOKEN, ETH, Token } from '../erc20contracts';
 import { clientToSigner } from './useEthersSigner';
 import {
   walletClientToSmartAccountSigner,
@@ -104,6 +104,8 @@ export const useSafeTransfer = (): {
 
     const isSafeDeployed = await isSmartAccountDeployed(client, tx.from);
 
+    console.log('Tx: ', tx);
+
     try {
       console.log(
         `Safe transaction for: ${client.chain.name}:${tx.from} - ${safeVersion} - ${isSafeDeployed}`
@@ -175,7 +177,7 @@ export const useSafeTransfer = (): {
         statusCallback?.('processing');
 
         const txHash = await smartAccountClient.sendTransaction(
-          tx.token && tx.token !== ETH
+          tx.token && tx.token !== ETH && tx.token.name !== DEGEN_TOKEN
             ? {
                 to: tx.token.address,
                 data: encodeFunctionData({

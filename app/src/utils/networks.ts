@@ -1,5 +1,14 @@
-import { base, optimism, arbitrum, zora, zkSync, mainnet, baseSepolia, sepolia } from 'viem/chains';
-import { degen } from '../types/degen';
+import {
+  base,
+  optimism,
+  degen,
+  arbitrum,
+  zora,
+  zkSync,
+  mainnet,
+  baseSepolia,
+  sepolia
+} from 'viem/chains';
 
 const ENABLED_CHAINS = JSON.parse(import.meta.env.VITE_ENABLED_CHAINS) as string[];
 
@@ -15,7 +24,7 @@ export const SUPPORTED_CHAINS = [
   baseSepolia
 ].filter((c) => ENABLED_CHAINS.includes(c.name));
 
-export const DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS = [base, optimism];
+export const DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS = [base, optimism, degen];
 
 export default function getNetworkImageSrc(chainId: number): string {
   let fileName;

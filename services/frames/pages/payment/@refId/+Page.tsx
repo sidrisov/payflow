@@ -11,6 +11,8 @@ export default function Page() {
         Amount: ${payment.usdAmount} {payment.token} {payment.chainId}
       </h1>
       <br />
+      Type: {payment.type}
+      <br />
       Recipient: {payment.receiver ? `@${payment.receiver.username}` : payment.receiverAddress}
       {payment.sender && (
         <>

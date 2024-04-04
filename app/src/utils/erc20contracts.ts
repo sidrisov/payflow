@@ -1,6 +1,5 @@
 import { Address, zeroAddress } from 'viem';
-import { base, optimism } from 'viem/chains';
-import { degen } from '../types/degen';
+import { base, optimism, degen } from 'viem/chains';
 
 export const USDC_TOKEN = 'USDC';
 export const DEGEN_TOKEN = 'DEGEN';

@@ -215,6 +215,7 @@ public class FarcasterPaymentBotService {
 							return;
 						}
 					}
+					case "intent":
 					case "send": {
 						String receiver = null;
 						String amount = null;
@@ -295,10 +296,11 @@ public class FarcasterPaymentBotService {
 										cast.author().username(),
 										cast.hash().substring(0, 10));
 								// TODO: check if token available for chain
-
-
-								val payment = new Payment(Payment.PaymentType.FRAME, receiverProfile,
-										PAYMENT_CHAINS.get(chain), token);
+								val payment =
+										new Payment(command.equals("send") ?
+												Payment.PaymentType.FRAME : Payment.PaymentType.INTENT,
+												receiverProfile,
+												PAYMENT_CHAINS.get(chain), token);
 								payment.setReceiverAddress(receiverAddress);
 								payment.setSender(casterProfile);
 								payment.setUsdAmount(amount);
@@ -308,14 +310,23 @@ public class FarcasterPaymentBotService {
 								refId = payment.getReferenceId();
 							}
 
-							val castText = String.format("@%s send funds to @%s with the frame",
-									cast.author().username(),
-									receiver);
+							String castText;
+							if (command.equals("send")) {
+								castText = String.format("@%s send funds to @%s with the frame",
+										cast.author().username(),
+										receiver);
+							} else {
+								castText = String.format("@%s send funds to @%s in the app",
+										cast.author().username(),
+										receiver);
+							}
+
 							val frameUrl = refId == null ?
 									String.format("https://frames.payflow.me/%s",
 											receiverProfile != null ?
 													receiverProfile.getUsername() : receiverAddresses) :
 									String.format("https://frames.payflow.me/payment/%s", refId);
+
 							val embeds = Collections.singletonList(
 									new CastEmbed(frameUrl));
 
