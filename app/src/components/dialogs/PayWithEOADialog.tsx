@@ -18,7 +18,7 @@ import { RecipientField } from '../RecipientField';
 import { TokenAmountSection } from './TokenAmountSection';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
 import { updatePayment } from '../../services/payments';
-import { degen } from '../../types/degen';
+import { degen } from 'viem/chains';
 
 export default function PayWithEOADialog({ sender, recipient, payment }: PaymentDialogProps) {
   const { chain } = useAccount();

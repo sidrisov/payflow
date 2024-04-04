@@ -5,7 +5,7 @@ import { API_URL } from '../urlConstants';
 import { TxInfo } from '../../types/ActivityFetchResultType';
 import { PaymentType } from '../../types/PaymentType';
 import axios from 'axios';
-import { baseSepolia, base, optimism, zora } from 'viem/chains';
+import { baseSepolia, base, optimism, zora, degen } from 'viem/chains';
 import { useContext } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 
@@ -330,6 +330,9 @@ function getBlockscoutBaseUrl(chainId: number) {
       break;
     case zora.id:
       baseUrl = 'https://explorer.zora.energy';
+      break;
+    case degen.id:
+      baseUrl = 'https://explorer.degen.tips';
       break;
   }
 

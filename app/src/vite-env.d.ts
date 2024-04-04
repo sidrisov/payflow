@@ -23,6 +23,7 @@ interface ImportMetaEnv {
   readonly VITE_PIMLICO_SPONSORED_POLICY_BASE_SEPOLIA: string;
   readonly VITE_PIMLICO_SPONSORED_POLICY_BASE: string;
   readonly VITE_PIMLICO_SPONSORED_POLICY_OP: string;
+  readonly VITE_PIMLICO_SPONSORED_POLICY_DEGEN: string;
   readonly VITE_ETH_DENVER_CONTACTS_ENABLED: string;
   readonly VITE_PRIVY_API_KEY: string;
 }

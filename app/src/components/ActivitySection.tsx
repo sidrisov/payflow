@@ -20,9 +20,10 @@ import ProfileSectionButton from './buttons/ProfileSectionButton';
 import AddressSectionButton from './menu/AddressSectionButton';
 import { getNetworkDefaultBlockExplorerUrl } from '../utils/networks';
 import { timeAgo } from '../utils/time';
-import { ETH_TOKEN } from '../utils/erc20contracts';
+import { DEGEN_TOKEN, ETH_TOKEN } from '../utils/erc20contracts';
 import { normalizeNumberPrecision } from '../utils/normalizeNumberPrecision';
 import { useTokenPrices } from '../utils/queries/prices';
+import { degen } from 'viem/chains';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
 function getActivityLabel(activity: string) {
@@ -67,7 +68,10 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
 
   const blockExplorerUrl = getNetworkDefaultBlockExplorerUrl(txInfo.chainId);
 
-  const token = txInfo.token ?? ({ name: 'Ether', decimals: 18, symbol: ETH_TOKEN } as TxToken);
+  const token =
+    txInfo.token ?? txInfo.chainId === degen.id
+      ? { name: 'Degen', decimals: 18, symbol: DEGEN_TOKEN }
+      : { name: 'Ether', decimals: 18, symbol: ETH_TOKEN };
   const price = tokenPrices ? tokenPrices[token.symbol] : 0;
   const value = normalizeNumberPrecision(
     parseFloat(formatUnits(BigInt(txInfo.value ?? 0), token.decimals)) * price

@@ -1,10 +1,19 @@
 import { SUPPORTED_CHAINS } from './networks';
 import { http, fallback } from 'viem';
-import { mainnet, base, optimism, baseSepolia, zora, sepolia, arbitrum, zkSync } from 'viem/chains';
+import {
+  mainnet,
+  base,
+  optimism,
+  degen,
+  baseSepolia,
+  zora,
+  sepolia,
+  arbitrum,
+  zkSync
+} from 'viem/chains';
 
 import { createConfig } from '@privy-io/wagmi';
 import { Config } from 'wagmi';
-import { degen } from '../types/degen';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 /* const { wallets } = getDefaultWallets();
