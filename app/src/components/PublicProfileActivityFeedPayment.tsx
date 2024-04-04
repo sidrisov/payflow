@@ -85,9 +85,10 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
   });
 
   const token =
-    txInfo.token ?? txInfo.chainId === degen.id
+    txInfo.token ??
+    (txInfo.chainId === degen.id
       ? { name: 'Degen', decimals: 18, symbol: DEGEN_TOKEN }
-      : { name: 'Ether', decimals: 18, symbol: ETH_TOKEN };
+      : { name: 'Ether', decimals: 18, symbol: ETH_TOKEN });
 
   const value = parseFloat(formatUnits(BigInt(txInfo.value ?? 0), token.decimals));
   const price = tokenPrices ? tokenPrices[token.symbol] : 0;
