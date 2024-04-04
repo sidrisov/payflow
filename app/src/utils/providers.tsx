@@ -8,6 +8,7 @@ import { WagmiProvider as PrivyWagmiProvider } from '@privy-io/wagmi';
 import { privyWagmiConfig } from './wagmiConfig';
 import { AuthKitProvider } from '@farcaster/auth-kit';
 import { useMediaQuery } from '@mui/material';
+import { SUPPORTED_CHAINS } from './networks';
 
 const AIRSTACK_API_KEY = import.meta.env.VITE_AIRSTACK_API_KEY;
 init(AIRSTACK_API_KEY);
@@ -79,7 +80,8 @@ const privyConfig = (darkMode: boolean): PrivyClientConfig => {
       theme: darkMode ? 'dark' : 'light',
       walletList: ['detected_wallets', 'metamask', 'rainbow', 'coinbase_wallet', 'wallet_connect']
     },
-    walletConnectCloudProjectId: WALLET_CONNECT_PROJECT_ID
+    walletConnectCloudProjectId: WALLET_CONNECT_PROJECT_ID,
+    supportedChains: SUPPORTED_CHAINS
   };
 };
 

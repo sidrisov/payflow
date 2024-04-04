@@ -24,7 +24,7 @@ export const SUPPORTED_CHAINS = [
   baseSepolia
 ].filter((c) => ENABLED_CHAINS.includes(c.name));
 
-export const DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS = [base, optimism];
+export const DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS = [base, optimism, degen];
 
 export default function getNetworkImageSrc(chainId: number): string {
   let fileName;
