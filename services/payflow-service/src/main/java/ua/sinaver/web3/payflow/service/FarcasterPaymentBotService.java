@@ -118,6 +118,8 @@ public class FarcasterPaymentBotService {
 			val mentions = response.notifications().stream().filter(n -> n.type().equals("mention"))
 					.toList();
 
+			log.debug("Fetched payflow mentions: {}", mentions);
+
 			if (!mentions.isEmpty()) {
 				val jobs = mentions.stream().filter(mention -> {
 							if (mention.mostRecentTimestamp().after(previousMostRecentTimestamp)) {

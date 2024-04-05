@@ -76,7 +76,6 @@ public class FarcasterHubService implements IFarcasterHubService {
 					.uri(uriBuilder -> uriBuilder.path("/v2/farcaster/notifications")
 							.queryParam("fid", fid)
 							.queryParam("cursor", cursor)
-							.queryParam("limit", 50)
 							.build())
 					.retrieve().bodyToMono(NotificationResponse.class).block();
 
