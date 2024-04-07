@@ -297,11 +297,14 @@ public class TransactionService {
 	public static final Integer BASE_CHAIN_ID = 8453;
 	public static final String OP_CHAIN_NAME = "optimism";
 	public static final Integer OP_CHAIN_ID = 10;
+
+	public static final String DEGEN_CHAIN_NAME = "degen";
+	public static final Integer DEGEN_CHAIN_ID = 666666666;
 	public static final Integer DEFAULT_FRAME_PAYMENTS_CHAIN_ID = BASE_CHAIN_ID;
 	public static final List<Integer> SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS = Arrays.asList(BASE_CHAIN_ID, OP_CHAIN_ID);
 
 	public static final Map<String, Integer> PAYMENT_CHAINS = Map.of(BASE_CHAIN_NAME, BASE_CHAIN_ID,
-			OP_CHAIN_NAME, OP_CHAIN_ID);
+			OP_CHAIN_NAME, OP_CHAIN_ID, DEGEN_CHAIN_NAME, DEGEN_CHAIN_ID);
 	public static final String ETH_TOKEN = "eth";
 	public static final String USDC_TOKEN = "usdc";
 	public static final String DEGEN_TOKEN = "degen";

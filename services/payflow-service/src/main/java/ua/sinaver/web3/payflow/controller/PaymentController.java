@@ -94,7 +94,7 @@ public class PaymentController {
 
 	@PutMapping("/{referenceId}")
 	@ResponseStatus(HttpStatus.OK)
-	public void paymentComplete(@PathVariable String referenceId,
+	public void completePayment(@PathVariable String referenceId,
 	                            @RequestBody PaymentHashMessage hashMessage, Principal principal) {
 		log.debug("Marking pending payment {} as complete with hash {} by user {}", referenceId,
 				hashMessage,
@@ -112,6 +112,26 @@ public class PaymentController {
 			payment.setHash(hashMessage.hash());
 			payment.setCompletedDate(new Date());
 			log.debug("Payment was marked as complete: {}", payment);
+		}
+	}
+
+	@PutMapping("/{referenceId}/cancel")
+	@ResponseStatus(HttpStatus.OK)
+	public void cancelPayment(@PathVariable String referenceId, Principal principal) {
+		log.debug("Marking pending payment {} as cancelled by user {}", referenceId,
+				principal.getName());
+
+		val user = userService.findByIdentity(principal.getName());
+
+		if (user == null) {
+			return;
+		}
+
+		val payment = paymentRepository.findByReferenceIdAndSender(referenceId, user);
+		if (payment != null) {
+			payment.setStatus(Payment.PaymentStatus.CANCELLED);
+			payment.setCompletedDate(new Date());
+			log.debug("Payment was marked as cancelled: {}", payment);
 		}
 	}
 }

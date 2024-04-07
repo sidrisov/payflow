@@ -17,7 +17,6 @@ import { API_URL } from '../../utils/urlConstants';
 import { useContext } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { useDisconnect } from 'wagmi';
 import { usePrivy } from '@privy-io/react-auth';
 
 export function ProfileMenu({

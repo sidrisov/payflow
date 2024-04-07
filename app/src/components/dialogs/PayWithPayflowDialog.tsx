@@ -23,7 +23,7 @@ import { TokenAmountSection } from './TokenAmountSection';
 import { GasFeeSection } from './GasFeeSection';
 import { SwitchFlowSignerSection } from './SwitchFlowSignerSection';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
-import { updatePayment } from '../../services/payments';
+import { completePayment } from '../../services/payments';
 
 export default function PayWithPayflowDialog({
   setOpenSearchIdentity,
@@ -123,7 +123,7 @@ export default function PayWithPayflowDialog({
 
       if (payment?.referenceId) {
         payment.hash = txHash;
-        updatePayment(payment);
+        completePayment(payment);
       }
 
       // if tx was successfull, mark wallet as deployed if it wasn't
