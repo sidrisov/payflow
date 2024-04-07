@@ -1,5 +1,5 @@
 import { Avatar, Divider, ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material';
-import { ArrowOutward, Cancel } from '@mui/icons-material';
+import { ArrowOutward, Cancel, OpenInNew } from '@mui/icons-material';
 import { cancelPayment } from '../../services/payments';
 import { PaymentType } from '../../types/PaymentType';
 import { toast } from 'react-toastify';
@@ -26,7 +26,7 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
             />
           </ListItemIcon>
           {payment.source.app}
-          <ArrowOutward fontSize="small" sx={{ margin: 1 }} />
+          <OpenInNew fontSize="small" sx={{ margin: 1 }} />
         </MenuItem>
       )}
       {payment.source && <Divider />}
