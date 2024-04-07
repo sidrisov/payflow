@@ -20,7 +20,7 @@ import { BalanceType } from './types/BalanceType';
 import { PaymentType } from './types/PaymentType';
 import { payProfileHtml } from './components/PayProfile';
 import { Address, createPublicClient, http, keccak256, toBytes } from 'viem';
-import { base, optimism } from 'viem/chains';
+import { base, degen, optimism } from 'viem/chains';
 import { signerToSafeSmartAccount } from './utils/signerToSafeSmartAccount';
 import { ENTRYPOINT_ADDRESS_V06, isSmartAccountDeployed } from 'permissionless';
 import { SmartAccountSigner } from 'permissionless/accounts';
@@ -73,7 +73,7 @@ async function startServer() {
     try {
       const owners = Array.isArray(req.query.owners) ? req.query.owners : [req.query.owners];
       const saltNonce = req.query.saltNonce as string;
-      const chains = [base, optimism];
+      const chains = [base, optimism, degen];
       const safeVersion = '1.4.1';
 
       const wallets: FlowWalletType[] = [];

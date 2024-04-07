@@ -166,10 +166,7 @@ public class FarcasterPaymentBotService {
 						remainingText);
 
 				val casterAddresses = cast.author().verifications();
-				// add custodial if not verified present
-				if (casterAddresses.isEmpty()) {
-					casterAddresses.add(cast.author().custodyAddress());
-				}
+				casterAddresses.add(cast.author().custodyAddress());
 
 				val casterProfile = frameService.getFidProfiles(casterAddresses)
 						.stream().findFirst().orElse(null);
@@ -257,11 +254,7 @@ public class FarcasterPaymentBotService {
 									}
 
 									receiverAddresses = fcProfile.verifications();
-									// add custodial if not verified present
-									if (receiverAddresses.isEmpty()) {
-										receiverAddresses.add(cast.author().custodyAddress());
-									}
-
+									receiverAddresses.add(cast.author().custodyAddress());
 								}
 							}
 						}
@@ -361,10 +354,7 @@ public class FarcasterPaymentBotService {
 											source);
 
 									val addresses = cast.author().verifications();
-									// add custodial if not verified present
-									if (addresses.isEmpty()) {
-										addresses.add(cast.author().custodyAddress());
-									}
+									addresses.add(cast.author().custodyAddress());
 
 									val profile = frameService.getFidProfiles(addresses)
 											.stream().findFirst().orElse(null);

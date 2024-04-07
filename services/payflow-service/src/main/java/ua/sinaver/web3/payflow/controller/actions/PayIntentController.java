@@ -19,7 +19,7 @@ import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.util.Comparator;
 
-import static ua.sinaver.web3.payflow.service.TransactionService.BASE_CHAIN_ID;
+import static ua.sinaver.web3.payflow.service.TransactionService.PAYMENT_CHAINS;
 import static ua.sinaver.web3.payflow.service.TransactionService.SUPPORTED_FRAME_PAYMENTS_TOKENS;
 
 @RestController
@@ -48,8 +48,10 @@ public class PayIntentController {
 
 	@PostMapping("/intent")
 	public ResponseEntity<FrameResponse.FrameError> invite(@RequestBody FrameMessage castActionMessage,
-	                                                       @RequestParam(name = "token", required =
-			                                                       false, defaultValue = "degen") String token) {
+	                                                       @RequestParam(name = "token", required = false,
+			                                                       defaultValue = "degen") String token,
+	                                                       @RequestParam(name = "chain", required = false,
+			                                                       defaultValue = "base") String chain) {
 		log.debug("Received cast action: pay intent {}", castActionMessage);
 		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
 				castActionMessage.trustedData().messageBytes());
@@ -94,6 +96,23 @@ public class PayIntentController {
 			}
 		}
 
+		val chainId = PAYMENT_CHAINS.get(chain);
+
+		if (chainId == null) {
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameError("Chain not supported"));
+		}
+
+		// check if profile accepts payment on the chain
+		if (paymentProfile != null) {
+			val isWalletPresent = paymentProfile.getDefaultFlow().getWallets().stream()
+					.anyMatch(w -> w.getNetwork().equals(chainId));
+			if (!isWalletPresent) {
+				return ResponseEntity.badRequest().body(
+						new FrameResponse.FrameError("Chain not accepted!"));
+			}
+		}
+
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val casterFcName = frameService.getFidFname(casterFid);
 		// maybe would make sense to reference top cast instead (if it's a bot cast)
@@ -102,7 +121,7 @@ public class PayIntentController {
 						10));
 
 		val payment = new Payment(Payment.PaymentType.INTENT,
-				paymentProfile, BASE_CHAIN_ID, token);
+				paymentProfile, chainId, token);
 		payment.setReceiverAddress(paymentAddress);
 		payment.setSender(clickedProfile);
 		payment.setUsdAmount("1");

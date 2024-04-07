@@ -32,7 +32,7 @@ export default defineConfig({
             options: {
               cacheName: 'blockscout-txs-cache',
               expiration: {
-                maxEntries: 100,
+                maxEntries: 1000,
                 maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
               },
               backgroundSync: {
