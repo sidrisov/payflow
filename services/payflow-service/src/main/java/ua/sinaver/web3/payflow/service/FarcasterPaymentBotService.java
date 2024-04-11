@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
-import static ua.sinaver.web3.payflow.service.TransactionService.PAYMENT_CHAINS;
+import static ua.sinaver.web3.payflow.service.TransactionService.PAYMENT_CHAIN_IDS;
 
 @Service
 @Transactional
@@ -254,7 +254,7 @@ public class FarcasterPaymentBotService {
 									}
 
 									receiverAddresses = fcProfile.verifications();
-									receiverAddresses.add(cast.author().custodyAddress());
+									receiverAddresses.add(fcProfile.custodyAddress());
 								}
 							}
 						}
@@ -295,7 +295,7 @@ public class FarcasterPaymentBotService {
 										new Payment(command.equals("send") ?
 												Payment.PaymentType.FRAME : Payment.PaymentType.INTENT,
 												receiverProfile,
-												PAYMENT_CHAINS.get(chain), token);
+												PAYMENT_CHAIN_IDS.get(chain), token);
 								payment.setReceiverAddress(receiverAddress);
 								payment.setSender(casterProfile);
 								payment.setUsdAmount(amount);
