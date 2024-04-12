@@ -409,8 +409,10 @@ public class TransactionService {
 	}
 
 	public String generateTxCallData(Payment payment) {
-		boolean isERC20Transfer = !payment.getToken().equals(ETH_TOKEN);
-
+		// for now consider only that degen doesn't support any erc20
+		boolean isERC20Transfer =
+				!payment.getToken().equals(ETH_TOKEN)
+						&& !payment.getNetwork().equals(DEGEN_CHAIN_ID);
 		val address =
 				payment.getReceiver() != null ?
 						payment.getReceiver().getDefaultFlow().getWallets().stream()
