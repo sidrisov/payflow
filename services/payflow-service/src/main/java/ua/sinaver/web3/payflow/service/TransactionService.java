@@ -301,20 +301,33 @@ public class TransactionService {
 	public static final String DEGEN_CHAIN_NAME = "degen";
 	public static final Integer DEGEN_CHAIN_ID = 666666666;
 	public static final Integer DEFAULT_FRAME_PAYMENTS_CHAIN_ID = BASE_CHAIN_ID;
-	public static final List<Integer> SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS = Arrays.asList(BASE_CHAIN_ID, OP_CHAIN_ID);
+	public static final List<Integer> SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS =
+			Arrays.asList(BASE_CHAIN_ID, OP_CHAIN_ID, DEGEN_CHAIN_ID);
 
-	public static final Map<String, Integer> PAYMENT_CHAINS = Map.of(BASE_CHAIN_NAME, BASE_CHAIN_ID,
+	public static final Map<String, Integer> PAYMENT_CHAIN_IDS = Map.of(BASE_CHAIN_NAME,
+			BASE_CHAIN_ID,
 			OP_CHAIN_NAME, OP_CHAIN_ID, DEGEN_CHAIN_NAME, DEGEN_CHAIN_ID);
+
+	public static final Map<Integer, String> PAYMENT_CHAIN_NAMES = Map.of(BASE_CHAIN_ID,
+			BASE_CHAIN_NAME, OP_CHAIN_ID, OP_CHAIN_NAME, DEGEN_CHAIN_ID, DEGEN_CHAIN_NAME);
 	public static final String ETH_TOKEN = "eth";
 	public static final String USDC_TOKEN = "usdc";
 	public static final String DEGEN_TOKEN = "degen";
 
+	public static final List<String> PAYMENTS_BASE_TOKENS = Arrays.asList(ETH_TOKEN, USDC_TOKEN, DEGEN_TOKEN);
+
+	public static final List<String> PAYMENTS_OP_TOKENS = Arrays.asList(ETH_TOKEN, USDC_TOKEN);
+	public static final List<String> PAYMENTS_DEGEN_TOKENS = List.of(DEGEN_TOKEN);
+	public static final Map<Integer, List<String>> PAYMENTS_CHAIN_TOKENS = Map.of(BASE_CHAIN_ID,
+			PAYMENTS_BASE_TOKENS, OP_CHAIN_ID, PAYMENTS_OP_TOKENS, DEGEN_CHAIN_ID,
+			PAYMENTS_DEGEN_TOKENS);
 	public static final Map<String, String> BASE_ERC20_TOKEN_ADDRESSES = Map.of(USDC_TOKEN,
 			"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
 			DEGEN_TOKEN, "0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed");
 
 	public static final Map<String, String> OPTIMISM_ERC20_TOKEN_ADDRESSES = Map.of(USDC_TOKEN,
 			"0x0b2c639c533813f4aa9d7837caf62653d097ff85");
+
 
 	public static final List<String> SUPPORTED_FRAME_PAYMENTS_TOKENS = Arrays.asList(ETH_TOKEN, USDC_TOKEN,
 			DEGEN_TOKEN);
@@ -336,7 +349,10 @@ public class TransactionService {
 	}
 
 	public String generateTxCallData(FramePaymentMessage paymentMessage) {
-		boolean isERC20Transfer = !paymentMessage.token().equals(ETH_TOKEN);
+		// for now consider only that degen doesn't support any erc20
+		boolean isERC20Transfer =
+				!paymentMessage.token().equals(ETH_TOKEN)
+						&& paymentMessage.chainId() != DEGEN_CHAIN_ID;
 
 		var amount = paymentMessage.usdAmount() / getPrice(paymentMessage.token());
 
@@ -393,8 +409,10 @@ public class TransactionService {
 	}
 
 	public String generateTxCallData(Payment payment) {
-		boolean isERC20Transfer = !payment.getToken().equals(ETH_TOKEN);
-
+		// for now consider only that degen doesn't support any erc20
+		boolean isERC20Transfer =
+				!payment.getToken().equals(ETH_TOKEN)
+						&& !payment.getNetwork().equals(DEGEN_CHAIN_ID);
 		val address =
 				payment.getReceiver() != null ?
 						payment.getReceiver().getDefaultFlow().getWallets().stream()

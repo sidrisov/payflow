@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
-import static ua.sinaver.web3.payflow.service.TransactionService.PAYMENT_CHAINS;
+import static ua.sinaver.web3.payflow.service.TransactionService.*;
 
 @Service
 @Transactional
@@ -77,9 +77,16 @@ public class FarcasterPaymentBotService {
 	}
 
 	public static String parseChain(String text) {
-		val pattern = Pattern.compile("\\b(?<chain>base|optimism)\\b");
+		val pattern = Pattern.compile("\\b(?<chain>base|optimism|degen-l3)\\b");
 		val matcher = pattern.matcher(text);
-		return matcher.find() ? matcher.group("chain") : "base";
+		if (matcher.find()) {
+			var matched = matcher.group("chain");
+			if (matched.equals("degen-l3")) {
+				matched = DEGEN_CHAIN_NAME;
+			}
+			return matched;
+		}
+		return BASE_CHAIN_NAME;
 	}
 
 	private boolean reply(String text, String parentHash, List<CastEmbed> embeds) {
@@ -254,7 +261,7 @@ public class FarcasterPaymentBotService {
 									}
 
 									receiverAddresses = fcProfile.verifications();
-									receiverAddresses.add(cast.author().custodyAddress());
+									receiverAddresses.add(fcProfile.custodyAddress());
 								}
 							}
 						}
@@ -291,11 +298,10 @@ public class FarcasterPaymentBotService {
 										cast.author().username(),
 										cast.hash().substring(0, 10));
 								// TODO: check if token available for chain
-								val payment =
-										new Payment(command.equals("send") ?
-												Payment.PaymentType.FRAME : Payment.PaymentType.INTENT,
-												receiverProfile,
-												PAYMENT_CHAINS.get(chain), token);
+								val payment = new Payment(command.equals("send") ?
+										Payment.PaymentType.FRAME : Payment.PaymentType.INTENT,
+										receiverProfile,
+										PAYMENT_CHAIN_IDS.get(chain), token);
 								payment.setReceiverAddress(receiverAddress);
 								payment.setSender(casterProfile);
 								payment.setUsdAmount(amount);

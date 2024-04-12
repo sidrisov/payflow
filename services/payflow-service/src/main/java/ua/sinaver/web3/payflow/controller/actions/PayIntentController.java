@@ -19,7 +19,7 @@ import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.util.Comparator;
 
-import static ua.sinaver.web3.payflow.service.TransactionService.PAYMENT_CHAINS;
+import static ua.sinaver.web3.payflow.service.TransactionService.PAYMENT_CHAIN_IDS;
 import static ua.sinaver.web3.payflow.service.TransactionService.SUPPORTED_FRAME_PAYMENTS_TOKENS;
 
 @RestController
@@ -96,7 +96,7 @@ public class PayIntentController {
 			}
 		}
 
-		val chainId = PAYMENT_CHAINS.get(chain);
+		val chainId = PAYMENT_CHAIN_IDS.get(chain);
 
 		if (chainId == null) {
 			return ResponseEntity.badRequest().body(

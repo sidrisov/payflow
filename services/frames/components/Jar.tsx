@@ -2,20 +2,23 @@
 import { JarType } from '../types/FlowType';
 import { PaymentType } from '../types/PaymentType';
 import { assetImageSrc } from '../utils/image';
+import getNetworkImageSrc, { getNetworkDisplayName } from '../utils/networks';
 
 import Card from './Card';
 
 export const jarHtml = (
   jar: JarType,
   balance: string,
-  step?: 'start' | 'amount' | 'confirm' | 'execute',
+  step?: 'start' | 'chain' | 'amount' | 'confirm' | 'execute',
   state?: PaymentType
 ) => <Jar jar={jar} balance={balance} step={step} state={state} />;
 
-const contributionStepTitle = (step: 'start' | 'amount' | 'confirm' | 'execute') => {
+const contributionStepTitle = (step: 'start' | 'chain' | 'amount' | 'confirm' | 'execute') => {
   switch (step) {
     case 'start':
       return 'How you wanna contribute?';
+    case 'chain':
+      return '🔗 Choose chain';
     case 'amount':
       return '💜 Enter your contribution';
     case 'confirm':
@@ -33,7 +36,7 @@ function Jar({
 }: {
   jar: JarType;
   balance: string;
-  step?: 'start' | 'amount' | 'confirm' | 'execute';
+  step?: 'start' | 'chain' | 'amount' | 'confirm' | 'execute';
   state?: PaymentType;
 }) {
   const profile = jar.profile;
@@ -152,10 +155,12 @@ function Jar({
                       gap: 10
                     }}>
                     <img
-                      src={assetImageSrc(`/assets/chains/base.png`)}
+                      src={assetImageSrc(getNetworkImageSrc(state.chainId))}
                       style={{ width: 36, height: 36, borderRadius: '50%' }}
                     />
-                    <span style={{ fontWeight: 'bold' }}>Base</span>
+                    <span style={{ fontWeight: 'bold' }}>
+                      {getNetworkDisplayName(state.chainId)}
+                    </span>
                   </div>
                 </div>
               )}

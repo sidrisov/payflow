@@ -40,8 +40,9 @@ import static ua.sinaver.web3.payflow.service.TransactionService.*;
 public class JarContributionController {
 
 	private static final String PAY_JAR_PATH = "/api/farcaster/frames/jar/%s/contribute";
-	private static final String CHOOSE_TOKEN_PATH = PAY_JAR_PATH +
-			"/token";
+
+	private static final String CHOOSE_CHAIN_PATH = PAY_JAR_PATH +
+			"/chain";
 	private static final String CHOOSE_AMOUNT_PATH = PAY_JAR_PATH +
 			"/amount";
 	private static final String CONFIRM_PATH = PAY_JAR_PATH +
@@ -87,8 +88,8 @@ public class JarContributionController {
 	}
 
 	@PostMapping("/{uuid}/contribute")
-	public ResponseEntity<String> contribute(@PathVariable String uuid,
-	                                         @RequestBody FrameMessage frameMessage) {
+	public ResponseEntity<?> contribute(@PathVariable String uuid,
+	                                    @RequestBody FrameMessage frameMessage) {
 		log.debug("Received contribute jar {} in frame message request: {}",
 				uuid, frameMessage);
 
@@ -122,37 +123,128 @@ public class JarContributionController {
 		}
 
 		val jar = flowService.findJarByUUID(uuid);
-		if (jar != null) {
-			val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
-					"/image.png?step=amount&chainId=%s", uuid, BASE_CHAIN_ID));
+		if (jar == null) {
+			log.error("Jar doesn't exist: {}", uuid);
+			return ResponseEntity.badRequest()
+					.body(new FrameResponse.FrameError("Jar doesn't exist!"));
+		}
 
-			val flowWalletAddress = jar.flow().wallets().stream()
-					.map(WalletMessage::address).findFirst().orElse(null);
+		if (jar.flow().wallets().isEmpty()) {
+			log.error("Jar doesn't have any chains supported : {}", jar);
+			return ResponseEntity.internalServerError()
+					.body(new FrameResponse.FrameError("No chain options available"));
+		}
 
-			if (StringUtils.isBlank(flowWalletAddress)) {
-				log.error("Jar doesn't support payments on chainId: {}", DEFAULT_FRAME_PAYMENTS_CHAIN_ID);
+		val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
+				"/image.png?step=chain", uuid));
+
+		val frameResponseBuilder = FrameResponse.builder()
+				.imageUrl(jarImage)
+				.postUrl(apiServiceUrl.concat(String.format(CHOOSE_CHAIN_PATH, uuid)));
+		jar.flow().wallets().forEach(wallet -> {
+			val chainId = wallet.network();
+			if (PAYMENT_CHAIN_NAMES.containsKey(chainId))
+				frameResponseBuilder.button(new FrameButton(PAYMENT_CHAIN_NAMES.get(chainId).toUpperCase(),
+						FrameButton.ActionType.POST,
+						null));
+		});
+
+		return frameResponseBuilder.build().toHtmlResponse();
+	}
+
+	@PostMapping("/{uuid}/contribute/chain")
+	public ResponseEntity<?> chooseChain(@PathVariable String uuid,
+	                                     @RequestBody FrameMessage frameMessage) {
+		log.debug("Received contribute jar {} in frame message request: {}",
+				uuid, frameMessage);
+
+		ValidatedFarcasterFrameMessage validatedFarcasterMessage;
+		ValidatedXmtpFrameMessage validatedXmtpFrameMessage;
+
+		int buttonIndex;
+
+		if (frameMessage.clientProtocol() != null &&
+				frameMessage.clientProtocol().startsWith("xmtp")) {
+			validatedXmtpFrameMessage = xmtpValidationService.validateMessage(frameMessage);
+			log.debug("Validation xmtp frame message response {} received on url: {}  ",
+					validatedXmtpFrameMessage,
+					validatedXmtpFrameMessage.actionBody().frameUrl());
+
+			if (StringUtils.isBlank(validatedXmtpFrameMessage.verifiedWalletAddress())) {
+				log.error("Xmtp frame message failed validation (missing verifiedWalletAddress) {}",
+						validatedXmtpFrameMessage);
 				return DEFAULT_HTML_RESPONSE;
 			}
 
-			val state = gson.toJson(new FramePaymentMessage(flowWalletAddress, DEFAULT_FRAME_PAYMENTS_CHAIN_ID, null,
-					null, null));
+			buttonIndex = validatedXmtpFrameMessage.actionBody().buttonIndex();
+		} else {
+			validatedFarcasterMessage = farcasterHubService.validateFrameMessageWithNeynar(
+					frameMessage.trustedData().messageBytes());
 
-			return FrameResponse.builder()
-					.imageUrl(jarImage)
-					.textInput("Enter amount, $ (1-100)")
-					.postUrl(apiServiceUrl.concat(String.format(CHOOSE_AMOUNT_PATH, uuid)))
-					.button(new FrameButton("ETH", FrameButton.ActionType.POST, null))
-					.button(new FrameButton("USDC", FrameButton.ActionType.POST, null))
-					.button(new FrameButton("DEGEN", FrameButton.ActionType.POST, null))
-					.state(Base64.getEncoder().encodeToString(state.getBytes()))
-					.build().toHtmlResponse();
+			log.debug("Validation farcaster frame message response {} received on url: {}  ",
+					validatedFarcasterMessage,
+					validatedFarcasterMessage.action().url());
+
+			if (!validatedFarcasterMessage.valid()) {
+				log.error("Frame message failed validation {}", validatedFarcasterMessage);
+				return DEFAULT_HTML_RESPONSE;
+			}
+
+			buttonIndex = validatedFarcasterMessage.action().tappedButton().index();
 		}
-		return DEFAULT_HTML_RESPONSE;
+
+		val jar = flowService.findJarByUUID(uuid);
+		if (jar == null) {
+			log.error("Jar doesn't exist: {}", uuid);
+			return ResponseEntity.badRequest()
+					.body(new FrameResponse.FrameError("Jar doesn't exist!"));
+		}
+
+		if (jar.flow().wallets().isEmpty()) {
+			log.error("Jar doesn't have any chains supported : {}", jar);
+			return ResponseEntity.internalServerError()
+					.body(new FrameResponse.FrameError("No chain options available"));
+		}
+
+		if (buttonIndex > jar.flow().wallets().size()) {
+			log.error("Selected chain index not accepted: {} in {}", buttonIndex, jar);
+			return ResponseEntity.badRequest()
+					.body(new FrameResponse.FrameError("Selected chain not accepted!"));
+		}
+
+		val receivingJarWallet = jar.flow().wallets().get(buttonIndex - 1);
+
+		if (!PAYMENT_CHAIN_NAMES.containsKey(receivingJarWallet.network())) {
+			log.error("Selected chain id not allowed for payments: {} in {}",
+					receivingJarWallet.network(), jar);
+			return ResponseEntity.badRequest()
+					.body(new FrameResponse.FrameError("Selected chain not supported!"));
+		}
+
+		val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
+				"/image.png?step=amount&chainId=%s", uuid, receivingJarWallet.network()));
+
+		val state = gson.toJson(new FramePaymentMessage(receivingJarWallet.address(),
+				receivingJarWallet.network(), null,
+				null, null));
+
+		val frameResponseBuilder = FrameResponse.builder()
+				.imageUrl(jarImage)
+				.textInput("Enter amount, $ (1-100)")
+				.postUrl(apiServiceUrl.concat(String.format(CHOOSE_AMOUNT_PATH, uuid)))
+				.state(Base64.getEncoder().encodeToString(state.getBytes()));
+
+		val tokens = PAYMENTS_CHAIN_TOKENS.get(receivingJarWallet.network());
+		tokens.forEach(token -> {
+			frameResponseBuilder.button(new FrameButton(token.toUpperCase(), FrameButton.ActionType.POST, null));
+		});
+
+		return frameResponseBuilder.build().toHtmlResponse();
 	}
 
 	@PostMapping("/{uuid}/contribute/amount")
-	public ResponseEntity<String> chooseAmount(@PathVariable String uuid,
-	                                           @RequestBody FrameMessage frameMessage) {
+	public ResponseEntity<?> chooseAmount(@PathVariable String uuid,
+	                                      @RequestBody FrameMessage frameMessage) {
 		log.debug("Received enter contribution amount message request: {}", frameMessage);
 
 		int buttonIndex;
@@ -221,89 +313,104 @@ public class JarContributionController {
 		val profiles = frameService.getFidProfiles(clickedProfileAddresses);
 
 		val jar = flowService.findJarByUUID(uuid);
-		if (jar != null && paymentState != null) {
-			log.debug("Previous payment state: {}", paymentState);
 
-			Double usdAmount = null;
-			if (StringUtils.isNotBlank(inputText)) {
-				try {
-					val parsedAmount = Double.parseDouble(inputText);
-					if (parsedAmount > 0 && parsedAmount <= 100.0) {
-						usdAmount = parsedAmount;
-					} else {
-						log.error("Parsed input token amount {} is not within the valid range" +
-								" (1-100)", parsedAmount);
-					}
-				} catch (NumberFormatException ignored) {
-					log.error("Failed to parse input token amount.");
+
+		if (jar == null) {
+			log.error("Jar doesn't exist: {}", uuid);
+			return ResponseEntity.badRequest()
+					.body(new FrameResponse.FrameError("Jar doesn't exist!"));
+		}
+
+		if (jar.flow().wallets().isEmpty()) {
+			log.error("Jar doesn't have any chains supported : {}", jar);
+			return ResponseEntity.internalServerError()
+					.body(new FrameResponse.FrameError("No chain options available"));
+		}
+
+		if (paymentState == null) {
+			log.error("Absent payment state for {}", jar);
+			return ResponseEntity.internalServerError()
+					.body(new FrameResponse.FrameError("Absent payment state"));
+		}
+
+		log.debug("Previous payment state: {}", paymentState);
+
+		if (!PAYMENT_CHAIN_NAMES.containsKey(paymentState.chainId())) {
+			log.error("Selected chain id not allowed for payments: {} in {}",
+					paymentState.chainId(), jar);
+			return ResponseEntity.badRequest()
+					.body(new FrameResponse.FrameError("Selected chain not supported!"));
+		}
+
+		val tokens = PAYMENTS_CHAIN_TOKENS.get(paymentState.chainId());
+
+		if (buttonIndex > tokens.size()) {
+			log.error("Selected token index not accepted: {} in {}", buttonIndex, jar);
+			return ResponseEntity.badRequest()
+					.body(new FrameResponse.FrameError("Selected token not accepted!"));
+		}
+
+		Double usdAmount = null;
+		if (StringUtils.isNotBlank(inputText)) {
+			try {
+				val parsedAmount = Double.parseDouble(inputText);
+				if (parsedAmount > 0 && parsedAmount <= 100.0) {
+					usdAmount = parsedAmount;
+				} else {
+					log.error("Parsed input token amount {} is not within the valid range" +
+							" (1-100)", parsedAmount);
 				}
-			}
-
-			if (usdAmount != null) {
-				val token = switch (buttonIndex) {
-					case 1 -> ETH_TOKEN;
-					case 2 -> USDC_TOKEN;
-					case 3 -> DEGEN_TOKEN;
-					default -> null;
-				};
-
-				if (token != null) {
-					val tokenAmount = roundTokenAmount(
-							usdAmount / transactionService.getPrice(token));
-
-					val profile = userService.findByIdentity(jar.profile().identity());
-					val payment = new Payment(Payment.PaymentType.FRAME, profile,
-							paymentState.chainId(), token);
-
-					// TODO: refactor to fetch jar data object instead of message
-					val flow = flowRepository.findByUuid(uuid);
-					payment.setReceiverFlow(flow);
-
-					payment.setUsdAmount(usdAmount.toString());
-					payment.setSourceApp(sourceApp);
-					payment.setSourceRef(sourceRef);
-
-					paymentRepository.save(payment);
-
-					val refId = payment.getReferenceId();
-					val updatedState = gson.toJson(new FramePaymentMessage(paymentState.address(),
-							paymentState.chainId(), token, usdAmount, refId));
-					val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
-									"/image.png?step=confirm&chainId=%s&token=%s&usdAmount=%s&amount=%s",
-							uuid, paymentState.chainId(), token, usdAmount, tokenAmount));
-					val frameResponseBuilder = FrameResponse.builder()
-							.postUrl(apiServiceUrl.concat(String.format(CONFIRM_PATH, uuid)))
-							.button(new FrameButton("\uD83D\uDC9C Contribute",
-									FrameButton.ActionType.TX,
-									apiServiceUrl.concat(String.format(CONFIRM_PATH, uuid))))
-							.imageUrl(jarImage)
-							.state(Base64.getEncoder().encodeToString(updatedState.getBytes()));
-
-					// for now just check if profile exists
-					if (!profiles.isEmpty()) {
-						frameResponseBuilder.button(new FrameButton("\uD83D\uDCF1 Later",
-								FrameButton.ActionType.POST,
-								apiServiceUrl.concat(String.format(CONFIRM_PATH, uuid))));
-					}
-
-					return frameResponseBuilder.build().toHtmlResponse();
-				}
-			} else {
-				log.warn("Amount wasn't entered, responding with frame to enter again");
-				val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
-						"/image.png?step=amount&chainId=%s", uuid, BASE_CHAIN_ID));
-				return FrameResponse.builder()
-						.textInput("Enter amount again, $ (1-100)")
-						.imageUrl(jarImage)
-						.postUrl(apiServiceUrl.concat(String.format(CHOOSE_AMOUNT_PATH, uuid)))
-						//.button(new FrameButton("ETH", FrameButton.ActionType.POST, null))
-						.button(new FrameButton("USDC", FrameButton.ActionType.POST, null))
-						.button(new FrameButton("DEGEN", FrameButton.ActionType.POST, null))
-						.state(state)
-						.build().toHtmlResponse();
+			} catch (NumberFormatException ignored) {
+				log.error("Failed to parse input token amount.");
 			}
 		}
-		return DEFAULT_HTML_RESPONSE;
+
+		if (usdAmount == null) {
+			log.warn("Amount wasn't entered");
+			return ResponseEntity.badRequest()
+					.body(new FrameResponse.FrameError("Enter amount again!"));
+		}
+
+		val token = tokens.get(buttonIndex - 1);
+		val tokenAmount = roundTokenAmount(
+				usdAmount / transactionService.getPrice(token));
+
+		val profile = userService.findByIdentity(jar.profile().identity());
+		val payment = new Payment(Payment.PaymentType.FRAME, profile,
+				paymentState.chainId(), token);
+
+		// TODO: refactor to fetch jar data object instead of message
+		val flow = flowRepository.findByUuid(uuid);
+		payment.setReceiverFlow(flow);
+
+		payment.setUsdAmount(usdAmount.toString());
+		payment.setSourceApp(sourceApp);
+		payment.setSourceRef(sourceRef);
+
+		paymentRepository.save(payment);
+
+		val refId = payment.getReferenceId();
+		val updatedState = gson.toJson(new FramePaymentMessage(paymentState.address(),
+				paymentState.chainId(), token, usdAmount, refId));
+		val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
+						"/image.png?step=confirm&chainId=%s&token=%s&usdAmount=%s&amount=%s",
+				uuid, paymentState.chainId(), token, usdAmount, tokenAmount));
+		val frameResponseBuilder = FrameResponse.builder()
+				.postUrl(apiServiceUrl.concat(String.format(CONFIRM_PATH, uuid)))
+				.button(new FrameButton("\uD83D\uDC9C Contribute",
+						FrameButton.ActionType.TX,
+						apiServiceUrl.concat(String.format(CONFIRM_PATH, uuid))))
+				.imageUrl(jarImage)
+				.state(Base64.getEncoder().encodeToString(updatedState.getBytes()));
+
+		// for now just check if profile exists
+		if (!profiles.isEmpty()) {
+			frameResponseBuilder.button(new FrameButton("\uD83D\uDCF1 Later",
+					FrameButton.ActionType.POST,
+					apiServiceUrl.concat(String.format(CONFIRM_PATH, uuid))));
+		}
+
+		return frameResponseBuilder.build().toHtmlResponse();
 	}
 
 	@PostMapping("/{uuid}/contribute/confirm")

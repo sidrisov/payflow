@@ -264,7 +264,7 @@ async function startServer() {
     const uuid = req.params.uuid;
     const step = req.query.step;
     const state = {
-      chainId: req.query.chainId,
+      chainId: req.query.chainId ? parseInt(req.query.chainId as string) : undefined,
       token: req.query.token,
       amount: req.query.amount,
       usdAmount: req.query.usdAmount,

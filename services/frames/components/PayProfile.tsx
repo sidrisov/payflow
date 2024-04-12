@@ -4,6 +4,7 @@ import { ProfileType } from '../types/ProfleType';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { assetImageSrc } from '../utils/image';
 import { base } from 'viem/chains';
+import getNetworkImageSrc, { getNetworkDisplayName } from '../utils/networks';
 
 export const payProfileHtml = (
   profile: ProfileType,
@@ -116,15 +117,11 @@ function PayProfile({
                     gap: 10
                   }}>
                   <img
-                    src={assetImageSrc(
-                      payment.chainId === base.id
-                        ? '/assets/chains/base.png'
-                        : '/assets/chains/optimism.png'
-                    )}
+                    src={assetImageSrc(getNetworkImageSrc(payment.chainId))}
                     style={{ width: 36, height: 36, borderRadius: '50%' }}
                   />
                   <span style={{ fontWeight: 'bold' }}>
-                    {payment.chainId === base.id ? 'Base' : 'Optimism'}
+                    {getNetworkDisplayName(payment.chainId)}
                   </span>
                 </div>
               </div>
