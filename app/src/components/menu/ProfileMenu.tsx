@@ -2,6 +2,7 @@ import { Divider, ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material'
 import { ProfileType } from '../../types/ProfleType';
 import { useNavigate } from 'react-router-dom';
 import {
+  AutoFixHigh,
   DarkModeOutlined,
   LeaderboardRounded,
   LightModeOutlined,
@@ -68,15 +69,6 @@ export function ProfileMenu({
         </ListItemIcon>
         Invite
       </MenuItem>
-      {/* <MenuItem
-        onClick={async () => {
-          comingSoonToast();
-        }}>
-        <ListItemIcon>
-          <Verified fontSize="small" />
-        </ListItemIcon>
-        Attest
-      </MenuItem> */}
       <MenuItem
         onClick={async () => {
           closeStateCallback();
@@ -86,6 +78,16 @@ export function ProfileMenu({
           <Settings fontSize="small" />
         </ListItemIcon>
         Advanced
+      </MenuItem>
+      <MenuItem
+        onClick={async () => {
+          closeStateCallback();
+          navigate('/tools');
+        }}>
+        <ListItemIcon>
+          <AutoFixHigh fontSize="small" />
+        </ListItemIcon>
+        Tools
       </MenuItem>
       <Divider />
       <MenuItem
