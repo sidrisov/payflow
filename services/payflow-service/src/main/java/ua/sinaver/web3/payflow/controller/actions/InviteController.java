@@ -5,11 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.Invitation;
+import ua.sinaver.web3.payflow.message.CastActionMeta;
 import ua.sinaver.web3.payflow.message.FrameMessage;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
@@ -29,20 +27,27 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class InviteController {
 
+	private final static CastActionMeta INVITE_CAST_ACTION_META = new CastActionMeta(
+			"Invite to Payflow", "person-add",
+			"Use this action to invite farcaster users to Payflow",
+			"https://payflow.me",
+			new CastActionMeta.Action("post"));
 	@Autowired
 	private IFarcasterHubService farcasterHubService;
-
 	@Autowired
 	private IFrameService frameService;
-
 	@Autowired
 	private IContactBookService contactBookService;
-
 	@Autowired
 	private IdentityService identityService;
-
 	@Autowired
 	private InvitationRepository invitationRepository;
+
+	@GetMapping
+	public CastActionMeta metadata() {
+		log.debug("Received metadata request for cast action: invite");
+		return INVITE_CAST_ACTION_META;
+	}
 
 	@PostMapping
 	public ResponseEntity<FrameResponse.FrameError> invite(@RequestBody FrameMessage castActionMessage) {

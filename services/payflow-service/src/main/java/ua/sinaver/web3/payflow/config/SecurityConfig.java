@@ -60,6 +60,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.GET, "/farcaster/frames/**").permitAll()
 						// farcaster actions
 						.requestMatchers(HttpMethod.POST, "/farcaster/actions/**").permitAll()
+						.requestMatchers(HttpMethod.GET, "/farcaster/actions/**").permitAll()
 						.anyRequest().authenticated())
 				.sessionManagement(session -> session
 						.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
