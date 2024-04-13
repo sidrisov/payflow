@@ -105,7 +105,7 @@ export function TokenAmountSection({
       const amount = parseUnits((sendAmountUSD / tokenPrice).toString(), balance.decimals);
 
       const balanceEnough = balance && amount <= balance?.value;
-      const minAmount = sendAmountUSD >= 1;
+      const minAmount = sendAmountUSD >= 0.1;
 
       setBalanceEnough(balanceEnough);
       setMinAmountSatisfied(minAmount);
@@ -228,7 +228,7 @@ export function TokenAmountSection({
           <PriorityHigh fontSize="small" sx={{ color: red.A400 }} />
           <Typography ml={1} variant="caption" color={red.A400}>
             {sendAmountUSD !== undefined &&
-              ((minAmountSatisfied === false && 'min: $1') ||
+              ((minAmountSatisfied === false && 'min: $0.1') ||
                 (balanceEnough === false && 'balance: not enough'))}
           </Typography>
         </Stack>

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.Payment;
+import ua.sinaver.web3.payflow.message.CastActionMeta;
 import ua.sinaver.web3.payflow.message.FrameMessage;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
@@ -46,8 +47,33 @@ public class PayIntentController {
 	@Autowired
 	private PaymentRepository paymentRepository;
 
+	@GetMapping("/intent")
+	public CastActionMeta metadata(
+			@RequestParam(name = "amount", required = false,
+					defaultValue = "1.0") Double amount,
+			@RequestParam(name = "token", required = false,
+					defaultValue = "degen") String token,
+			@RequestParam(name = "chain", required = false,
+					defaultValue = "base") String chain) {
+		log.debug("Received metadata request for cast action: pay intent with params: " +
+				"amount = {}, token = {}, chain = {}", amount, token, chain);
+		// TODO: skip chain/token/amount validation
+		val castActionMeta = new CastActionMeta(
+				String.format("$%s %s via Payflow (%s)", amount, token, chain), "heart",
+				"Use this action to submit payment intent for the current farcaster user in " +
+						"Payflow app",
+				"https://payflow.me",
+				new CastActionMeta.Action("post"));
+
+		log.debug("Returning payment intent cast action meta: {}", castActionMeta);
+		return castActionMeta;
+	}
+
 	@PostMapping("/intent")
 	public ResponseEntity<FrameResponse.FrameError> invite(@RequestBody FrameMessage castActionMessage,
+	                                                       @RequestParam(name = "amount",
+			                                                       required = false,
+			                                                       defaultValue = "1.0") Double amount,
 	                                                       @RequestParam(name = "token", required = false,
 			                                                       defaultValue = "degen") String token,
 	                                                       @RequestParam(name = "chain", required = false,
@@ -96,6 +122,11 @@ public class PayIntentController {
 			}
 		}
 
+		if (amount.isNaN() && amount <= 0 && amount >= 10) {
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameError("Payment amount should be between $0-10"));
+		}
+
 		val chainId = PAYMENT_CHAIN_IDS.get(chain);
 
 		if (chainId == null) {
@@ -124,7 +155,7 @@ public class PayIntentController {
 				paymentProfile, chainId, token);
 		payment.setReceiverAddress(paymentAddress);
 		payment.setSender(clickedProfile);
-		payment.setUsdAmount("1");
+		payment.setUsdAmount(amount.toString());
 		payment.setSourceApp(sourceApp);
 		payment.setSourceRef(sourceRef);
 		paymentRepository.save(payment);
@@ -132,7 +163,7 @@ public class PayIntentController {
 		log.debug("Payment intent saved: {}", payment);
 
 		return ResponseEntity.ok().body(
-				new FrameResponse.FrameError("$1 payment intent submitted!"));
-
+				new FrameResponse.FrameError(String.format("$%s payment intent submitted!",
+						amount)));
 	}
 }
