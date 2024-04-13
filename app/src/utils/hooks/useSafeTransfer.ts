@@ -35,6 +35,7 @@ import {
 import { signerToSafeSmartAccount } from '../signerToSafeSmartAccount';
 import { PimlicoSponsorUserOperationParameters } from 'permissionless/actions/pimlico';
 import { ENTRYPOINT_ADDRESS_V06_TYPE } from 'permissionless/types';
+import { degen } from 'viem/chains';
 
 export type SafeWallet = {
   chain: Chain;
@@ -177,7 +178,7 @@ export const useSafeTransfer = (): {
         statusCallback?.('processing');
 
         const txHash = await smartAccountClient.sendTransaction(
-          tx.token && tx.token !== ETH && tx.token.name !== DEGEN_TOKEN
+          tx.token && tx.token !== ETH && (chain.id !== degen.id || tx.token.name !== DEGEN_TOKEN)
             ? {
                 to: tx.token.address,
                 data: encodeFunctionData({
