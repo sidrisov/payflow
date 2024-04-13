@@ -10,6 +10,7 @@ import Leaderboard from './layouts/Leadearboard';
 import Advanced from './pages/Advanced';
 import PublicProfile from './layouts/PublicProfile';
 import Jar from './pages/Jar';
+import Tools from './pages/Tools';
 
 export const appRoutes = ['/home', '/flows', '/requests', '/settings'];
 
@@ -36,6 +37,10 @@ export const appRouter = createBrowserRouter([
       {
         path: 'advanced',
         element: <Advanced />
+      },
+      {
+        path: 'tools',
+        element: <Tools />
       },
       {
         path: 'invite',
