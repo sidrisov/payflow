@@ -26,6 +26,46 @@ export const SUPPORTED_CHAINS = [
 
 export const DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS = [base, optimism, degen];
 
+export function getNetworkShortName(chainId: number): string {
+  let shortName;
+
+  switch (chainId) {
+    case mainnet.id:
+      shortName = 'ethereum';
+      break;
+    case sepolia.id:
+      shortName = 'sepolia';
+      break;
+    case base.id:
+      shortName = 'base';
+      break;
+    case baseSepolia.id:
+      shortName = 'base';
+      break;
+    case optimism.id:
+      shortName = 'optimism';
+      break;
+    case zkSync.id:
+      shortName = 'zksync-era';
+      break;
+    case arbitrum.id:
+      shortName = 'arbitrum';
+      break;
+    case zora.id:
+      shortName = 'zora';
+      break;
+    case degen.id:
+      shortName = 'degen';
+      break;
+  }
+
+  if (!shortName) {
+    throw new Error(`Chain ${chainId} not supported!`);
+  }
+
+  return shortName;
+}
+
 export default function getNetworkImageSrc(chainId: number): string {
   let fileName;
 
