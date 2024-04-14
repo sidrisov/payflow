@@ -35,11 +35,20 @@ export default defineConfig({
                 maxEntries: 1000,
                 maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
               },
-              backgroundSync: {
-                name: 'blockscout-cache-queue',
-                options: {
-                  maxRetentionTime: 24 * 60
-                }
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/explorer\.degen\.tips\/.*/i,
+            method: 'GET',
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'degen-blockscout-txs-cache',
+              expiration: {
+                maxEntries: 300,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // <== 7 days
               },
               cacheableResponse: {
                 statuses: [0, 200]
