@@ -288,7 +288,9 @@ function getNextPageParamsUrlProps(params?: NextPageParams) {
   if (!params) {
     return '';
   }
-  return `?block_number=${params.block_number}&index=${params.index}&items_count=${params.items_count}&transaction_index=${params.transaction_index}`;
+  return `?block_number=${params.block_number ?? ''}&index=${params.index ?? ''}&items_count=${
+    params.items_count ?? ''
+  }&transaction_index=${params.transaction_index}`;
 }
 
 function getWalletInternalTxsFetchAPI(wallet: FlowWalletType): string | undefined {
