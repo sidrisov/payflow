@@ -32,7 +32,7 @@ export function ChooseTokenMenu({
         tokens.map((token) => (
           <MenuItem
             key={token.name}
-            selected={token === selectedToken}
+            selected={token.name === selectedToken?.name}
             onClick={async () => {
               setSelectedToken(token);
               closeStateCallback();

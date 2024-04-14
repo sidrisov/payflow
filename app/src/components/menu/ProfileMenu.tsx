@@ -72,22 +72,22 @@ export function ProfileMenu({
       <MenuItem
         onClick={async () => {
           closeStateCallback();
-          navigate('/advanced');
-        }}>
-        <ListItemIcon>
-          <Settings fontSize="small" />
-        </ListItemIcon>
-        Advanced
-      </MenuItem>
-      <MenuItem
-        onClick={async () => {
-          closeStateCallback();
           navigate('/tools');
         }}>
         <ListItemIcon>
           <AutoFixHigh fontSize="small" />
         </ListItemIcon>
         Tools
+      </MenuItem>
+      <MenuItem
+        onClick={async () => {
+          closeStateCallback();
+          navigate('/advanced');
+        }}>
+        <ListItemIcon>
+          <Settings fontSize="small" />
+        </ListItemIcon>
+        Advanced
       </MenuItem>
       <Divider />
       <MenuItem

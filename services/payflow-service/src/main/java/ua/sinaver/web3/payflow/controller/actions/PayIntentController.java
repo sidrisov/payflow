@@ -60,7 +60,7 @@ public class PayIntentController {
 		// TODO: skip chain/token/amount validation
 		val castActionMeta = new CastActionMeta(
 				String.format("$%s %s via Payflow (%s)", amount, token, chain), "heart",
-				"Use this action to submit payment intent for the current farcaster user in " +
+				"Use this action to submit payment intent for farcaster users in " +
 						"Payflow app",
 				"https://payflow.me",
 				new CastActionMeta.Action("post"));
