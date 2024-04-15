@@ -9,8 +9,6 @@ interface ImportMetaEnv {
   readonly VITE_PAYFLOW_SERVICE_DAPP_URL: string;
   readonly VITE_PAYFLOW_SERVICE_FRAMES_URL: string;
   readonly VITE_DEFAULT_FLOW_CREATE2_SALT_NONCE: string;
-  readonly VITE_WEB3AUTH_PNP_CLIENT_ID: string;
-  readonly VITE_WEB3AUTH_TORUS_API_KEY: string;
   readonly VITE_WALLETCONNECT_PROJECT_ID: string;
   readonly VITE_GELATO_TESTNET_API_KEY: string;
   readonly VITE_GELATO_MAINNET_API_KEY: string;
