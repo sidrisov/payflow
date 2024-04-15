@@ -63,6 +63,9 @@ export default function Tools() {
       </Container>
       <PaymentCastActionDialog
         open={openPaymentActionDialog}
+        closeStateCallback={() => {
+          setOpenPaymentActionDialog(false);
+        }}
         onClose={() => {
           setOpenPaymentActionDialog(false);
         }}

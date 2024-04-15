@@ -21,8 +21,13 @@ import { ChooseChainMenu } from '../menu/ChooseChainMenu';
 import { TokenSelectorButton } from '../buttons/TokenSelectorButton';
 import { DEGEN_TOKEN, Token, getSupportedTokens } from '../../utils/erc20contracts';
 import { getNetworkShortName } from '../../utils/networks';
+import { ArrowBack } from '@mui/icons-material';
+import { CloseCallbackType } from '../../types/CloseCallbackType';
 
-export default function PaymentCastActionDialog(props: DialogProps) {
+export default function PaymentCastActionDialog({
+  closeStateCallback,
+  ...props
+}: DialogProps & CloseCallbackType) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -55,13 +60,24 @@ export default function PaymentCastActionDialog(props: DialogProps) {
         backdropFilter: 'blur(5px)'
       }}>
       <DialogTitle>
+        {isMobile && (
+          <IconButton onClick={closeStateCallback}>
+            <ArrowBack />
+          </IconButton>
+        )}
         <Box display="flex" justifyContent="center">
           <Typography variant="h6" sx={{ overflow: 'auto' }}>
             Payment Intent Action
           </Typography>
         </Box>
       </DialogTitle>
-      <DialogContent>
+      <DialogContent
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: isMobile ? 'space-between' : 'flex-start'
+        }}>
         <Stack my={3} p={1} direction="column" spacing={3} width="100%">
           <Stack direction="row" alignItems="center" spacing={1}>
             <IconButton
@@ -128,6 +144,7 @@ export default function PaymentCastActionDialog(props: DialogProps) {
           variant="outlined"
           color="inherit"
           fullWidth
+          size="large"
           sx={{ borderRadius: 5 }}
           href={`https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fpay%2Fintent%3Famount%3D${amount}%26token%3D${token?.name.toLocaleLowerCase()}%26chain%3D${getNetworkShortName(
             chain.id

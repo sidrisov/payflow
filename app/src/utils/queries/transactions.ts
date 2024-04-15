@@ -290,7 +290,7 @@ function getNextPageParamsUrlProps(params?: NextPageParams) {
   }
   return `?block_number=${params.block_number ?? ''}&index=${params.index ?? ''}&items_count=${
     params.items_count ?? ''
-  }&transaction_index=${params.transaction_index}`;
+  }&transaction_index=${params.transaction_index ?? ''}`;
 }
 
 function getWalletInternalTxsFetchAPI(wallet: FlowWalletType): string | undefined {
