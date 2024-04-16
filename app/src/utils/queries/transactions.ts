@@ -266,7 +266,14 @@ async function fetchAnyTxs(url: string, params?: NextPageParams): Promise<any[]>
     let items: any[] = response.data.items;
     const nextPageParams = response.data.next_page_params as NextPageParams;
 
-    if (nextPageParams) {
+    // fixing weird bug when blockscout returns the same params in deadlock
+    // check if params are propers
+    if (
+      nextPageParams &&
+      nextPageParams.block_number &&
+      nextPageParams.index &&
+      nextPageParams.items_count
+    ) {
       try {
         const nextPageItems = await fetchAnyTxs(url, nextPageParams);
 
