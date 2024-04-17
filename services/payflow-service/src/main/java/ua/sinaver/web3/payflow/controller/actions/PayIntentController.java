@@ -146,9 +146,10 @@ public class PayIntentController {
 
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val casterFcName = frameService.getFidFname(casterFid);
+		val castHash = validateMessage.action().cast().hash();
 		// maybe would make sense to reference top cast instead (if it's a bot cast)
 		val sourceRef = String.format("https://warpcast.com/%s/%s",
-				casterFcName, validateMessage.action().cast().hash().substring(0,
+				casterFcName, castHash.substring(0,
 						10));
 
 		val payment = new Payment(Payment.PaymentType.INTENT,
@@ -158,6 +159,7 @@ public class PayIntentController {
 		payment.setUsdAmount(amount.toString());
 		payment.setSourceApp(sourceApp);
 		payment.setSourceRef(sourceRef);
+		payment.setSourceHash(castHash);
 		paymentRepository.save(payment);
 
 		log.debug("Payment intent saved: {}", payment);

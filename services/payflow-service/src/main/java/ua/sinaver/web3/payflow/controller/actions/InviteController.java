@@ -8,15 +8,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.Invitation;
 import ua.sinaver.web3.payflow.message.CastActionMeta;
+import ua.sinaver.web3.payflow.message.CastEmbed;
 import ua.sinaver.web3.payflow.message.FrameMessage;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
+import ua.sinaver.web3.payflow.service.FarcasterPaymentBotService;
 import ua.sinaver.web3.payflow.service.IdentityService;
 import ua.sinaver.web3.payflow.service.api.IContactBookService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
 import ua.sinaver.web3.payflow.service.api.IFrameService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -43,6 +46,9 @@ public class InviteController {
 	@Autowired
 	private InvitationRepository invitationRepository;
 
+	@Autowired
+	private FarcasterPaymentBotService farcasterPaymentBotService;
+
 	@GetMapping
 	public CastActionMeta metadata() {
 		log.debug("Received metadata request for cast action: invite");
@@ -65,7 +71,6 @@ public class InviteController {
 
 		val clickedFid = validateMessage.action().interactor().fid();
 		val casterFid = validateMessage.action().cast().fid();
-
 
 		val clickedProfile = frameService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
@@ -99,7 +104,24 @@ public class InviteController {
 					invitation.setExpiryDate(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(30)));
 					invitationRepository.save(invitation);
 
-					// todo: add bot command to notify user he was invited
+					// TODO: fetch fname from validated message
+					val casterUsername = frameService.getFidFname(casterFid);
+					val castText = String.format("""
+									Congratulations @%s 🎉 You've been invited to @payflow by @%s
+																	\t
+									Proceed to app.payflow.me/connect for sign up!
+																	\t
+									p.s. `Sign In With Farcaster` is recommended for better experience 🙌🏻""",
+							casterUsername,
+							validateMessage.action().interactor().username());
+					val embeds = Collections.singletonList(new CastEmbed("https://app.payflow.me/connect"));
+
+					val processed = farcasterPaymentBotService.reply(castText,
+							validateMessage.action().cast().hash(),
+							embeds);
+					if (!processed) {
+						log.error("Failed to reply with {} for invitation", castText);
+					}
 
 					return ResponseEntity.ok().body(
 							new FrameResponse.FrameError("Invited to Payflow!"));
