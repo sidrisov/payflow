@@ -153,4 +153,14 @@ public class FrameService implements IFrameService {
 		log.debug("Username for {}: {}", fid, username);
 		return username;
 	}
+
+	@Override
+	public String getIdentityFname(String identity) {
+		val wallet = socialGraphService.getSocialMetadata(identity, null);
+		val username = wallet.getSocials().stream()
+				.filter(social -> social.getDappName().equals(SocialDappName.farcaster))
+				.findFirst().map(Social::getProfileName).orElse(null);
+		log.debug("Username for {}: {}", identity, username);
+		return username;
+	}
 }

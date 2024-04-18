@@ -73,6 +73,9 @@ public class Payment {
 	@Column(name = "source_ref")
 	private String sourceRef;
 
+	@Column(name = "source_hash")
+	private String sourceHash;
+
 	@Column
 	private String comment;
 

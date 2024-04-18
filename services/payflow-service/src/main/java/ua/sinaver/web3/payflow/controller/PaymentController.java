@@ -3,14 +3,18 @@ package ua.sinaver.web3.payflow.controller;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.Payment;
+import ua.sinaver.web3.payflow.message.CastEmbed;
 import ua.sinaver.web3.payflow.message.PaymentHashMessage;
 import ua.sinaver.web3.payflow.message.PaymentMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
+import ua.sinaver.web3.payflow.service.FarcasterPaymentBotService;
+import ua.sinaver.web3.payflow.service.FrameService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
 
 import java.security.Principal;
@@ -29,6 +33,12 @@ public class PaymentController {
 
 	@Autowired
 	private PaymentRepository paymentRepository;
+
+	@Autowired
+	private FarcasterPaymentBotService farcasterPaymentBotService;
+
+	@Autowired
+	private FrameService frameService;
 
 	@GetMapping
 	public List<PaymentMessage> payments(@RequestParam(value = "hashes") List<String> hashes,
@@ -112,6 +122,27 @@ public class PaymentController {
 			payment.setHash(hashMessage.hash());
 			payment.setCompletedDate(new Date());
 			log.debug("Payment was marked as complete: {}", payment);
+
+			if (!StringUtils.isBlank(payment.getSourceHash()) && !StringUtils.isBlank(payment.getHash())) {
+				val senderFname = frameService.getIdentityFname(user.getIdentity());
+				val receiverFname = frameService.getIdentityFname(payment.getReceiver() != null ?
+						payment.getReceiver().getIdentity() : payment.getReceiverAddress());
+				val castText = String.format("""
+								@%s, you've been paid $%s %s by @%s via @payflow payment action 🎉""",
+						receiverFname,
+						payment.getUsdAmount(),
+						payment.getToken(),
+						senderFname);
+				val embeds = Collections.singletonList(new CastEmbed(String.format(
+						"https://onceupon.gg/%s", payment.getHash())));
+
+				val processed = farcasterPaymentBotService.reply(castText,
+						payment.getSourceHash(),
+						embeds);
+				if (!processed) {
+					log.error("Failed to reply with {} for payment intent completion", castText);
+				}
+			}
 		}
 	}
 

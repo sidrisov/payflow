@@ -23,4 +23,6 @@ public interface IFrameService {
 	List<User> getFidProfiles(List<String> addresses);
 
 	String getFidFname(int fid);
+
+	String getIdentityFname(String identity);
 }
