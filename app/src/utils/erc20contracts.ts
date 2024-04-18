@@ -4,6 +4,8 @@ import { base, optimism, degen } from 'viem/chains';
 export const USDC_TOKEN = 'USDC';
 export const DEGEN_TOKEN = 'DEGEN';
 export const ETH_TOKEN = 'ETH';
+export const ATH_TOKEN = 'ATH';
+export const JAAD_TOKEN = 'JAAD';
 
 export const ERC20_CONTRACTS = {
   [base.id]: [
@@ -11,7 +13,11 @@ export const ERC20_CONTRACTS = {
     { name: DEGEN_TOKEN, address: '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed' }
   ],
   [optimism.id]: [{ name: USDC_TOKEN, address: '0x0b2c639c533813f4aa9d7837caf62653d097ff85' }],
-  [degen.id]: [{ name: DEGEN_TOKEN } as Token]
+  [degen.id]: [
+    { name: DEGEN_TOKEN } as Token,
+    { name: ATH_TOKEN, address: '0xeb1c32ea4e392346795aed3607f37646e2a9c13f' },
+    { name: JAAD_TOKEN, address: '0x373e256c754bf82f09071141b92beafb83c38c68' }
+  ]
 } as {
   [id: number]: Token[];
 };
