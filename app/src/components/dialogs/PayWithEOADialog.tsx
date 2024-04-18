@@ -13,7 +13,7 @@ import { LoadingSwitchNetworkButton } from '../buttons/LoadingSwitchNetworkButto
 import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
 import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';
 import { PaymentDialogProps } from './PaymentDialog';
-import { ETH_TOKEN, Token } from '../../utils/erc20contracts';
+import { DEGEN_TOKEN, ETH_TOKEN, Token } from '../../utils/erc20contracts';
 import { RecipientField } from '../RecipientField';
 import { TokenAmountSection } from './TokenAmountSection';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
@@ -115,7 +115,10 @@ export default function PayWithEOADialog({ sender, recipient, payment }: Payment
       return;
     }
 
-    if (selectedToken.name === ETH_TOKEN || chain?.id === degen.id) {
+    if (
+      selectedToken.name === ETH_TOKEN ||
+      (chain?.id === degen.id && selectedToken.name === DEGEN_TOKEN)
+    ) {
       sendTransaction?.({ to: toAddress, value: sendAmount });
     } else {
       writeContract?.({
