@@ -1,6 +1,6 @@
 import { MetaType, IdentityType, SocialInfoType, InsightsType } from '../types/ProfleType';
 import { fetchQuery } from '@airstack/airstack-react';
-import { isAddress } from 'viem';
+import { Address, isAddress } from 'viem';
 import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';
 import { getProfileByAddressOrName, searchByListOfAddressesOrUsernames } from './user';
 import {
@@ -18,6 +18,9 @@ import {
 } from '../utils/airstackQueries';
 import axios from 'axios';
 import { BaseNameReponseType } from '../types/BaseNameType';
+import { getPublicClient } from 'wagmi/actions';
+import { privyWagmiConfig } from '../utils/wagmiConfig';
+import { degen } from 'viem/chains';
 
 const FOLLOWING = 7;
 const FOLLOWER = 3;
@@ -160,7 +163,8 @@ export async function searchIdentity(searchValue: string, me?: string): Promise<
     isAddress(searchValue) ||
     searchValue.endsWith('.xyz') ||
     searchValue.endsWith('.id') ||
-    searchValue.endsWith('.base')
+    searchValue.endsWith('.base') ||
+    searchValue.endsWith('.degen')
   ) {
     let identity = searchValue;
     if (searchValue.endsWith('.base')) {
@@ -170,6 +174,33 @@ export async function searchIdentity(searchValue: string, me?: string): Promise<
         identity = basename.address;
       } else {
         return foundProfiles;
+      }
+    }
+
+    if (searchValue.endsWith('.degen')) {
+      const publicClient = getPublicClient(privyWagmiConfig, { chainId: degen.id });
+
+      if (publicClient) {
+        const degenDomainHolderAddress = await publicClient.readContract({
+          address: '0x4087fb91A1fBdef05761C02714335D232a2Bf3a1',
+          abi: [
+            {
+              inputs: [{ name: '_domainName', type: 'string' }],
+              name: 'getDomainHolder',
+              outputs: [{ name: '', type: 'address' }],
+              stateMutability: 'view',
+              type: 'function'
+            }
+          ],
+          functionName: 'getDomainHolder',
+          args: [searchValue.replace('.degen', '')]
+        });
+
+        if (degenDomainHolderAddress) {
+          identity = degenDomainHolderAddress as Address;
+        } else {
+          return foundProfiles;
+        }
       }
     }
 
