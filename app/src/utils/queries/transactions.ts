@@ -225,7 +225,7 @@ function parseTxHistoryResponse(
         tx.to !== '0x3AC05161b76a35c1c28dC99Aa01BEd7B24cEA3bf' &&
         tx.value > 0 &&
         tx.success &&
-        (tx.token ? ['USDC', 'DEGEN'].includes(tx.token.symbol) : true)
+        (tx.token ? ['USDC', 'DEGEN', 'JAAD', 'ATH'].includes(tx.token.symbol) : true)
     );
 }
 
