@@ -57,9 +57,7 @@ export default function Profile() {
       }
 
       try {
-        const response = await axios.get(`${API_URL}/api/user/${username}`, {
-          withCredentials: true
-        });
+        const response = await axios.get(`${API_URL}/api/user/${username}`);
         const profile = (await response.data) as ProfileType;
 
         setUsernameAvailable(!profile);
