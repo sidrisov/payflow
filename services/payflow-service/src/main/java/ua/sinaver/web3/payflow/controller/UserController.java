@@ -185,6 +185,7 @@ public class UserController {
 						-1)).toList();
 	}
 
+	@CrossOrigin
 	@GetMapping("/{username}")
 	public ProfileMessage findProfile(@PathVariable String username) {
 		val user = userService.findByUsername(username);
