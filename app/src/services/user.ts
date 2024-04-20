@@ -53,9 +53,7 @@ export async function searchByListOfAddressesOrUsernames(searchParams: string[])
 }
 
 export async function getProfileByAddressOrName(addressOrName: Address | string) {
-  const response = await axios.get(`${API_URL}/api/user/${addressOrName}`, {
-    withCredentials: true
-  });
+  const response = await axios.get(`${API_URL}/api/user/${addressOrName}`);
 
   const profile = response.data as ProfileType;
   if (!profile) {

@@ -11,9 +11,7 @@ export const useProfile = (addressOrName: string | undefined) => {
     staleTime: Infinity,
     queryFn: () =>
       axios
-        .get(`${API_URL}/api/user/${addressOrName}`, {
-          withCredentials: true
-        })
+        .get(`${API_URL}/api/user/${addressOrName}`)
         .then((res) => {
           const profile = res.data as ProfileType;
           const defaultFlow = profile.defaultFlow
