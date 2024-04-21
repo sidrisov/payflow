@@ -30,7 +30,7 @@ export const useDegenName = (address: Address | undefined, enabled: boolean) => 
     staleTime: Infinity,
     queryFn: async () => {
       if (publicClient && address) {
-        const degenName = publicClient.readContract({
+        const degenName = await publicClient.readContract({
           address: '0x4087fb91A1fBdef05761C02714335D232a2Bf3a1',
           abi: [
             {
@@ -44,7 +44,9 @@ export const useDegenName = (address: Address | undefined, enabled: boolean) => 
           functionName: 'defaultNames',
           args: [address as Address]
         });
-        return (await degenName).concat('.degen');
+        if (degenName && degenName.length > 0) {
+          return degenName.concat('.degen');
+        }
       }
     }
   });
