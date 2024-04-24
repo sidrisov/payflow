@@ -277,7 +277,8 @@ public class ContactBookService implements IContactBookService {
 			// instead use single cache, where key is the contact list name, e.g.:
 			// {identity}-contacts, eth-denver-poap, eth-denver-stacked, etc
 			val ethDenverParticipantsStaked = socialGraphService.getEthDenverParticipantsStaked();
-			val ethDenverParticipantsPoap = socialGraphService.getEthDenverParticipantsPoap();
+			List<Wallet> ethDenverParticipantsPoap = Collections.emptyList();//socialGraphService
+			// .getEthDenverParticipantsPoap();
 			val ethDenverParticipants = Stream
 					.concat(ethDenverParticipantsStaked.stream(), ethDenverParticipantsPoap.stream())
 					.collect(Collectors.toMap(Wallet::getIdentity, Function.identity(),

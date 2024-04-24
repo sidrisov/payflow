@@ -58,19 +58,19 @@ public class SocialGraphService implements ISocialGraphService {
 		do {
 			try {
 				val ethDenverParticipantsResponse = graphQlClient.documentName(
-								"getEthDenverParticipantsStaked")
+								"getFarConParticipants")
 						.variable("cursor", nextCursor)
 						.execute().block();
 
 				if (ethDenverParticipantsResponse != null) {
 					val pageInfo = ethDenverParticipantsResponse
-							.field("polygon.pageInfo")
+							.field("base.pageInfo")
 							.toEntity(PageInfo.class);
 					hasNextPage = pageInfo != null && pageInfo.getHasNextPage();
 					nextCursor = pageInfo != null ? pageInfo.getNextCursor() : "";
 
 					val rawParticipants = ethDenverParticipantsResponse
-							.field("polygon.TokenBalance")
+							.field("base.TokenBalance")
 							.toEntityList(TokenBalance.class);
 
 					participants.addAll(rawParticipants.stream()
@@ -81,13 +81,13 @@ public class SocialGraphService implements ISocialGraphService {
 							.map(TokenBalance::getOwner)
 							.toList());
 
-					log.debug("Fetched {} participants (spork based)", participants.size());
+					log.debug("Fetched {} participants ", participants.size());
 
 				} else {
 					hasNextPage = false;
 				}
 			} catch (Exception e) {
-				log.error("Error fetching EthDenver participants (spork based): {}",
+				log.error("Error fetching FarCon participants (spork based): {}",
 						e.getMessage());
 				hasNextPage = false;
 			}
