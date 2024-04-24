@@ -1,7 +1,7 @@
-query GetEthDenverParticipantsStaked($cursor: String) {
-    polygon: TokenBalances(
-        input: {filter: {tokenAddress: {_eq: "0x058d96baa6f9d16853970b333ed993acc0c35add"}},
-            blockchain: polygon, cursor: $cursor, limit: 200}
+query GetFarConParticipants($cursor: String) {
+    base: TokenBalances(
+        input: {filter: {tokenAddress: {_eq: "0x43ad2d5bd48de6d20530a48b5c357e26459afb3c"}},
+            blockchain: base, cursor: $cursor, limit: 200}
     ) {
         TokenBalance {
             owner {

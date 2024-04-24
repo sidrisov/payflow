@@ -10,7 +10,7 @@ const contactTypeLabel = (type: AddressBookType) => {
     case 'friends':
       return 'Friends';
     case 'ethdenver':
-      return 'ETHDenver';
+      return 'FarCon';
   }
 };
 
@@ -32,7 +32,7 @@ const contactTypeIcon = (type: AddressBookType) => {
     case 'friends':
       return <People fontSize="medium" />;
     case 'ethdenver':
-      return <Avatar variant="circular" src="/ethdenver.png" sx={{ width: 24, height: 24 }} />;
+      return <Avatar variant="circular" src="/farcon.png" sx={{ width: 24, height: 24 }} />;
   }
 };
 

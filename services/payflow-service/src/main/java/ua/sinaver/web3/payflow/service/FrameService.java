@@ -99,6 +99,8 @@ public class FrameService implements IFrameService {
 
 	@Override
 	public List<User> getFidProfiles(int fid) {
+		// TODO: temp solution to invalidate cache
+		socialGraphService.cleanCache("fc_fid:".concat(String.valueOf(fid)), null);
 		val wallet = socialGraphService.getSocialMetadata(
 				"fc_fid:".concat(String.valueOf(fid)), null);
 		val addresses = wallet.getAddresses();
