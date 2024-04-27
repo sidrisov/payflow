@@ -6,11 +6,8 @@ import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ua.sinaver.web3.payflow.data.Invitation;
 import ua.sinaver.web3.payflow.message.CastActionMeta;
-import ua.sinaver.web3.payflow.message.CastEmbed;
 import ua.sinaver.web3.payflow.message.FrameMessage;
-import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.service.FarcasterPaymentBotService;
 import ua.sinaver.web3.payflow.service.IdentityService;
@@ -19,22 +16,19 @@ import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
 import ua.sinaver.web3.payflow.service.api.IFrameService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
-
 @RestController
-@RequestMapping("/farcaster/actions/invite")
+@RequestMapping("/farcaster/actions/jar")
 @Transactional
 @Slf4j
-public class InviteController {
+public class JarController {
 
-	private final static CastActionMeta INVITE_CAST_ACTION_META = new CastActionMeta(
-			"Invite to Payflow", "person-add",
-			"Use this action to invite farcaster users to Payflow",
+	private final static CastActionMeta JAR_CAST_ACTION_META = new CastActionMeta(
+			"Create contribution jar", "beaker",
+			"Use this action to turn any existing cast into contribution jar " +
+					"to fundraise for any purpose via Payflow",
 			"https://payflow.me",
 			new CastActionMeta.Action("post"));
+
 	@Autowired
 	private IFarcasterHubService farcasterHubService;
 	@Autowired
@@ -51,13 +45,13 @@ public class InviteController {
 
 	@GetMapping
 	public CastActionMeta metadata() {
-		log.debug("Received metadata request for cast action: invite");
-		return INVITE_CAST_ACTION_META;
+		log.debug("Received metadata request for cast action: create jar");
+		return JAR_CAST_ACTION_META;
 	}
 
 	@PostMapping
-	public ResponseEntity<FrameResponse.FrameError> invite(@RequestBody FrameMessage castActionMessage) {
-		log.debug("Received cast action: invite {}", castActionMessage);
+	public ResponseEntity<?> create(@RequestBody FrameMessage castActionMessage) {
+		log.debug("Received cast action: jar {}", castActionMessage);
 		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
 				castActionMessage.trustedData().messageBytes());
 		if (!validateMessage.valid()) {
@@ -70,7 +64,6 @@ public class InviteController {
 				validateMessage.action().url());
 
 		val clickedFid = validateMessage.action().interactor().fid();
-		val casterFid = validateMessage.action().cast().fid();
 
 		val clickedProfile = frameService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
@@ -79,57 +72,8 @@ public class InviteController {
 					new FrameResponse.FrameError("Sign up on Payflow first!"));
 		}
 
-		// check if profile exist
-		val inviteProfiles = frameService.getFidProfiles(casterFid);
-		if (!inviteProfiles.isEmpty()) {
-			return ResponseEntity.ok().body(
-					new FrameResponse.FrameError("Already signed up on Payflow!"));
-		} else {
-			// check if invited
-			val inviteAddresses = frameService.getFidAddresses(casterFid);
-			val invitations = contactBookService.filterByInvited(inviteAddresses);
-			if (!invitations.isEmpty()) {
-				return ResponseEntity.ok().body(
-						new FrameResponse.FrameError("Already invited to Payflow!"));
-			} else {
-				// for now invite first
-				val identityToInvite = identityService.getIdentitiesInfo(inviteAddresses)
-						.stream().max(Comparator.comparingInt(IdentityMessage::score))
-						.orElse(null);
-				log.debug("Identity to invite: {} ", identityToInvite);
-
-				if (identityToInvite != null) {
-					val invitation = new Invitation(identityToInvite.address(), null);
-					invitation.setInvitedBy(clickedProfile);
-					invitation.setExpiryDate(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(30)));
-					invitationRepository.save(invitation);
-
-					// TODO: fetch fname from validated message
-					val casterUsername = frameService.getFidFname(casterFid);
-					val castText = String.format("""
-									Congratulations @%s 🎉 You've been invited to @payflow by @%s
-																	\t
-									Proceed to app.payflow.me/connect for sign up!
-																	\t
-									p.s. `Sign In With Farcaster` is recommended for better experience 🙌🏻""",
-							casterUsername,
-							validateMessage.action().interactor().username());
-					val embeds = Collections.singletonList(new CastEmbed("https://app.payflow.me/connect"));
-
-					val processed = farcasterPaymentBotService.reply(castText,
-							validateMessage.action().cast().hash(),
-							embeds);
-					if (!processed) {
-						log.error("Failed to reply with {} for invitation", castText);
-					}
-
-					return ResponseEntity.ok().body(
-							new FrameResponse.FrameError("Invited to Payflow!"));
-				} else {
-					return ResponseEntity.internalServerError().body(
-							new FrameResponse.FrameError("Oops, something went wrong!"));
-				}
-			}
-		}
+		// just responding with dummy frame
+		return ResponseEntity.ok().body(
+				new FrameResponse.ActionFrame("frame", "https://frames.payflow.me/jar/RqYQVhYa"));
 	}
 }
