@@ -54,6 +54,15 @@ export default function Tools() {
                 color="inherit"
                 fullWidth
                 sx={{ borderRadius: 5 }}
+                href="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fjar"
+                target="_blank">
+                Install Jar Action
+              </Button>
+              <Button
+                variant="outlined"
+                color="inherit"
+                fullWidth
+                sx={{ borderRadius: 5 }}
                 onClick={() => setOpenPaymentActionDialog(true)}>
                 Create Payment Action
               </Button>
