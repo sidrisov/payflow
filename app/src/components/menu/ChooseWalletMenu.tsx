@@ -29,6 +29,11 @@ export function ChooseWalletMenu({
         vertical: 'bottom',
         horizontal: 'left'
       }}>
+      <MenuItem disabled key="choose_wallet_menu_title">
+        <Typography fontWeight="bold" fontSize={15}>
+          Choose Wallet Chain
+        </Typography>
+      </MenuItem>
       {wallets &&
         wallets.map((wallet) => (
           <MenuItem
