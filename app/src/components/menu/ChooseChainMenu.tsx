@@ -28,6 +28,11 @@ export function ChooseChainMenu({
         vertical: 'bottom',
         horizontal: 'left'
       }}>
+      <MenuItem disabled key="choose_chain_menu_title">
+        <Typography fontWeight="bold" fontSize={15}>
+          Choose Chain
+        </Typography>
+      </MenuItem>
       {chains.map((chain) => (
         <MenuItem
           key={chain.name}

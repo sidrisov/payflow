@@ -28,6 +28,11 @@ export function ChooseTokenMenu({
         vertical: 'bottom',
         horizontal: 'left'
       }}>
+      <MenuItem disabled key="choose_token_menu_title">
+        <Typography fontWeight="bold" fontSize={15}>
+          Choose Token
+        </Typography>
+      </MenuItem>
       {tokens &&
         tokens.map((token) => (
           <MenuItem

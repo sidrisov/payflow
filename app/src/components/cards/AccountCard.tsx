@@ -12,15 +12,7 @@ import {
   Tooltip,
   Typography
 } from '@mui/material';
-import {
-  Receipt,
-  Send,
-  AccountBalance,
-  Toll,
-  ArrowOutward,
-  Add,
-  Share
-} from '@mui/icons-material';
+import { Receipt, Send, AccountBalance, Toll, ArrowOutward, Add, Share } from '@mui/icons-material';
 import { useContext, useMemo, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
@@ -109,7 +101,7 @@ export function AccountCard({
           justifyContent: 'space-between'
         }}>
         <Box display="flex" flexDirection="row" justifyContent="space-between" alignItems="center">
-          <Tooltip title="Flow wallets">
+          <Tooltip title="Smart Wallets">
             <AvatarGroup
               max={4}
               color="inherit"
@@ -163,7 +155,7 @@ export function AccountCard({
               direction="row"
               alignItems="center"
               sx={{ p: 0, border: 1, borderStyle: 'dashed', borderRadius: 5 }}>
-              <Tooltip title="Select flow">
+              <Tooltip title="Payment Flows">
                 <IconButton
                   size="medium"
                   onClick={(event) => {

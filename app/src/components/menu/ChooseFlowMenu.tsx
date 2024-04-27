@@ -32,6 +32,11 @@ export function ChooseFlowMenu({
           vertical: 'bottom',
           horizontal: 'left'
         }}>
+        <MenuItem disabled key="payment_flow_title">
+          <Typography fontWeight="bold" fontSize={16}>
+            Payment Flows
+          </Typography>
+        </MenuItem>
         {flows &&
           flows.map((option) => (
             <MenuItem

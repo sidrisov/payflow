@@ -1,4 +1,4 @@
-import { Popover, PopoverProps, Stack } from '@mui/material';
+import { Popover, PopoverProps, Stack, Typography } from '@mui/material';
 import { WalletSection } from '../WalletSection';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
@@ -29,6 +29,9 @@ export function WalletsInfoPopover({
         horizontal: 'left'
       }}>
       <Stack m={2} spacing={1} direction="column">
+        <Typography fontWeight="bold" fontSize={16} textAlign="start" color="grey">
+          Smart Wallets
+        </Typography>
         {flow.wallets.map((wallet) => (
           <WalletSection
             key={`wallet_popover_list_${wallet.network}`}
