@@ -115,4 +115,7 @@ public class FrameResponse {
 
 	public record FrameError(String message) {
 	}
+
+	public record ActionFrame(String type, String frameUrl) {
+	}
 }

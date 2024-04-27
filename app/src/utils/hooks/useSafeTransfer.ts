@@ -167,7 +167,7 @@ export const useSafeTransfer = (): {
           bundlerTransport: transport(chain.id),
           middleware: {
             gasPrice: async () => {
-              return (await bundlerClient(chain.id).getUserOperationGasPrice()).standard;
+              return (await bundlerClient(chain.id).getUserOperationGasPrice()).fast;
             },
             ...(PIMLICO_SPONSORED_ENABLED && {
               sponsorUserOperation
