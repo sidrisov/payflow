@@ -87,4 +87,23 @@ public class FarcasterHubService implements IFarcasterHubService {
 			throw t;
 		}
 	}
+
+	@Override
+	public CastMessage fetchCastByHash(String hash) {
+		log.debug("Calling Neynar Cast API to fetch by hash {}", hash);
+		try {
+			val response = neynarClient.get()
+					.uri(uriBuilder -> uriBuilder.path("/v2/farcaster/cast")
+							.queryParam("type", "hash")
+							.queryParam("identifier", hash)
+							.build())
+					.retrieve().bodyToMono(CastMessageResponse.class).block();
+
+			return response != null ? response.cast() : null;
+		} catch (Throwable t) {
+			log.debug("Exception calling Neynar Cast API to fetch by hash {} - {}",
+					hash, t.getMessage());
+			throw t;
+		}
+	}
 }

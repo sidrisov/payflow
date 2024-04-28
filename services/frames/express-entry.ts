@@ -31,6 +31,7 @@ import { TokenPrices } from './utils/erc20contracts';
 import { getAssetBalances, getFlowAssets, getTotalBalance } from './utils/balances';
 import { XmtpOpenFramesRequest, validateFramesPost } from '@xmtp/frames-validator';
 import { normalizeNumberPrecision } from './utils/normalizeNumberPrecision';
+import { createJarHtml } from './components/CreateJar';
 
 dotenv.config();
 
@@ -257,6 +258,16 @@ async function startServer() {
     } catch (error) {
       console.error(error);
       res.status(500).send('Error retrieving profile data');
+    }
+  });
+
+  app.get('/images/jar/create/image.png', async (_, res) => {
+    try {
+      const image = await htmlToImage(createJarHtml(), 'landscape');
+      res.type('png').send(image);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error generating create jar image');
     }
   });
 

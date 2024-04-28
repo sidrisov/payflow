@@ -1,2 +1,4 @@
-package ua.sinaver.web3.payflow.message;public class CastMessageResponse {
+package ua.sinaver.web3.payflow.message;
+
+public record CastMessageResponse(CastMessage cast) {
 }

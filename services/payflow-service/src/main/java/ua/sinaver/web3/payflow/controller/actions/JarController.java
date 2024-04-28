@@ -64,6 +64,14 @@ public class JarController {
 				validateMessage.action().url());
 
 		val clickedFid = validateMessage.action().interactor().fid();
+		val casterFid = validateMessage.action().cast().fid();
+
+		if (clickedFid != casterFid) {
+			log.error("Only the author of the cast is allowed to create the contribution " +
+					"jar for it - clicked fid {} vs caster fid {} ", clickedFid, casterFid);
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameError("Use only for your casts!"));
+		}
 
 		val clickedProfile = frameService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
@@ -74,6 +82,6 @@ public class JarController {
 
 		// just responding with dummy frame
 		return ResponseEntity.ok().body(
-				new FrameResponse.ActionFrame("frame", "https://frames.payflow.me/jar/RqYQVhYa"));
+				new FrameResponse.ActionFrame("frame", "https://frames.payflow.me/jar/create"));
 	}
 }
