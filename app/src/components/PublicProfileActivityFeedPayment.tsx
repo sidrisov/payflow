@@ -10,8 +10,7 @@ import {
   useTheme
 } from '@mui/material';
 import { formatUnits } from 'viem';
-import { useState } from 'react';
-import { TxInfo, TxToken } from '../types/ActivityFetchResultType';
+import { TxInfo } from '../types/ActivityFetchResultType';
 import NetworkAvatar from './avatars/NetworkAvatar';
 import { getNetworkDefaultBlockExplorerUrl, getNetworkDisplayName } from '../utils/networks';
 
@@ -22,13 +21,12 @@ import { timeAgo } from '../utils/time';
 import ProfileAvatar from './avatars/ProfileAvatar';
 import { AddressOrEnsWithLink } from './AddressOrEnsWithLink';
 import { ProfileDisplayNameWithLink } from './ProfileDisplayNameWithLink';
-import { PublicProfileDetailsPopover } from './menu/PublicProfileDetailsPopover';
-import { ProfileType } from '../types/ProfleType';
 import { DEGEN_TOKEN, ETH_TOKEN } from '../utils/erc20contracts';
 import { normalizeNumberPrecision } from '../utils/normalizeNumberPrecision';
 import TokenAvatar from './avatars/TokenAvatar';
 import { useTokenPrices } from '../utils/queries/prices';
 import { degen } from 'viem/chains';
+import { PublicProfileDetailsTooltip } from './tooltips/PublicProfileDetailsTooltip.tsx';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
 function getActivityLabel(activity: string) {
@@ -41,12 +39,7 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
 
   const { data: tokenPrices } = useTokenPrices();
   const { txInfo } = props;
-
-  const [profileDetailsPopoverAnchorEl, setProfileDetailsPopoverAnchorEl] =
-    useState<null | HTMLElement>(null);
-  const [popoverProfile, setPopOverProfile] = useState<ProfileType>();
-
-  const defultBlockExplorerUrl = getNetworkDefaultBlockExplorerUrl(txInfo.chainId);
+  const defaultBlockExplorerUrl = getNetworkDefaultBlockExplorerUrl(txInfo.chainId);
 
   const { data: ensNameFrom } = useEnsName({
     address: txInfo.from,
@@ -115,22 +108,14 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
             justifyContent="space-between">
             <Stack spacing={0.5} direction="row" alignItems="center">
               {txInfo.fromProfile ? (
-                <ProfileDisplayNameWithLink
-                  profile={txInfo.fromProfile}
-                  aria-owns={popoverProfile ? 'public-profile-popover' : undefined}
-                  onMouseEnter={(event) => {
-                    setProfileDetailsPopoverAnchorEl(event.currentTarget);
-                    setPopOverProfile(txInfo.fromProfile);
-                  }}
-                  onMouseLeave={() => {
-                    setProfileDetailsPopoverAnchorEl(null);
-                    setPopOverProfile(undefined);
-                  }}
-                />
+                <PublicProfileDetailsTooltip profile={txInfo.fromProfile}>
+                  {/*DIV is needed, because tooltip is shown only if you click the anchor el*/}
+                  <div><ProfileDisplayNameWithLink profile={txInfo.fromProfile} /></div>
+                </PublicProfileDetailsTooltip>
               ) : (
                 <AddressOrEnsWithLink
                   address={txInfo.from}
-                  blockExplorerUrl={defultBlockExplorerUrl}
+                  blockExplorerUrl={defaultBlockExplorerUrl}
                   ens={ensNameFrom ?? undefined}
                 />
               )}
@@ -171,28 +156,20 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
               <AddressAvatar address={txInfo.to} scale={3} sx={{ width: 25, height: 25 }} />
             )}
             {txInfo.toProfile ? (
-              <ProfileDisplayNameWithLink
-                profile={txInfo.toProfile}
-                aria-owns={popoverProfile ? 'public-profile-popover' : undefined}
-                onMouseEnter={(event) => {
-                  setProfileDetailsPopoverAnchorEl(event.currentTarget);
-                  setPopOverProfile(txInfo.toProfile);
-                }}
-                onMouseLeave={() => {
-                  setProfileDetailsPopoverAnchorEl(null);
-                  setPopOverProfile(undefined);
-                }}
-              />
+              <PublicProfileDetailsTooltip profile={txInfo.toProfile}>
+                {/*DIV is needed, because tooltip is shown only if you click the anchor el*/}
+                <div><ProfileDisplayNameWithLink profile={txInfo.toProfile} /></div>
+              </PublicProfileDetailsTooltip>
             ) : (
               <AddressOrEnsWithLink
                 address={txInfo.to}
-                blockExplorerUrl={defultBlockExplorerUrl}
+                blockExplorerUrl={defaultBlockExplorerUrl}
                 ens={ensNameTo ?? undefined}
               />
             )}
           </Stack>
           <Link
-            href={`${defultBlockExplorerUrl}/tx/${txInfo.hash}`}
+            href={`${defaultBlockExplorerUrl}/tx/${txInfo.hash}`}
             target="_blank"
             underline="hover"
             color="inherit"
@@ -267,14 +244,6 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
           </Box>
         </Stack>
       </Stack>
-      {popoverProfile !== undefined && (
-        <PublicProfileDetailsPopover
-          open={popoverProfile !== undefined}
-          onClose={async () => setPopOverProfile(undefined)}
-          anchorEl={profileDetailsPopoverAnchorEl}
-          profile={popoverProfile}
-        />
-      )}
     </>
   );
 }

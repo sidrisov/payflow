@@ -146,9 +146,11 @@ export function PublicProfileDetails({
             sender={
               paymentType === 'wallet'
                 ? (address as Address)
-                : loggedProfile && loggedProfile.defaultFlow
-                ? loggedProfile.defaultFlow
-                : (address as Address)
+                : (
+                  loggedProfile && loggedProfile.defaultFlow
+                    ? loggedProfile.defaultFlow
+                    : (address as Address)
+                )
             }
             recipient={{
               type: 'profile',
