@@ -13,15 +13,14 @@ import ua.sinaver.web3.payflow.service.api.IFrameService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 @RestController
-@RequestMapping("/farcaster/actions/jar")
+@RequestMapping("/farcaster/actions/profile")
 @Transactional
 @Slf4j
-public class JarController {
+public class PayProfileController {
 
-	private final static CastActionMeta JAR_CAST_ACTION_META = new CastActionMeta(
-			"Create payflow jar", "beaker",
-			"Use this action to turn any existing cast into contribution jar " +
-					"to fundraise for any purpose via Payflow",
+	private final static CastActionMeta PAY_PROFILE_CAST_ACTION_META = new CastActionMeta(
+			"Pay profile", "person",
+			"Use this action to pay cast author's payflow profile",
 			"https://payflow.me",
 			new CastActionMeta.Action("post"));
 
@@ -32,13 +31,13 @@ public class JarController {
 
 	@GetMapping
 	public CastActionMeta metadata() {
-		log.debug("Received metadata request for cast action: create jar");
-		return JAR_CAST_ACTION_META;
+		log.debug("Received metadata request for cast action: pay profile");
+		return PAY_PROFILE_CAST_ACTION_META;
 	}
 
 	@PostMapping
 	public ResponseEntity<?> create(@RequestBody FrameMessage castActionMessage) {
-		log.debug("Received cast action: jar {}", castActionMessage);
+		log.debug("Received cast action: pay profile {}", castActionMessage);
 		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
 				castActionMessage.trustedData().messageBytes());
 		if (!validateMessage.valid()) {
@@ -50,25 +49,17 @@ public class JarController {
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
 				validateMessage.action().url());
 
-		val clickedFid = validateMessage.action().interactor().fid();
 		val casterFid = validateMessage.action().cast().fid();
-
-		if (clickedFid != casterFid) {
-			log.error("Only the author of the cast is allowed to create the contribution " +
-					"jar for it - clicked fid {} vs caster fid {} ", clickedFid, casterFid);
-			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameError("Use only for your casts!"));
-		}
-
-		val clickedProfile = frameService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
+		val clickedProfile = frameService.getFidProfiles(casterFid).stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
-			log.error("Clicked fid {} is not on payflow", clickedFid);
+			log.error("Caster fid {} is not on Payflow", casterFid);
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameError("Sign up on Payflow first!"));
+					new FrameResponse.FrameError("User not on Payflow! Invite :)"));
 		}
 
 		// just responding with dummy frame
 		return ResponseEntity.ok().body(
-				new FrameResponse.ActionFrame("frame", "https://frames.payflow.me/jar/create"));
+				new FrameResponse.ActionFrame("frame", String.format("https://frames.payflow" +
+						".me/%s", clickedProfile.getUsername())));
 	}
 }

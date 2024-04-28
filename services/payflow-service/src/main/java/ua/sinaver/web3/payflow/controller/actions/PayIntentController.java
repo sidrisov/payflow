@@ -10,10 +10,8 @@ import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.message.CastActionMeta;
 import ua.sinaver.web3.payflow.message.FrameMessage;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
-import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.IdentityService;
-import ua.sinaver.web3.payflow.service.api.IContactBookService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
 import ua.sinaver.web3.payflow.service.api.IFrameService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
@@ -36,13 +34,7 @@ public class PayIntentController {
 	private IFrameService frameService;
 
 	@Autowired
-	private IContactBookService contactBookService;
-
-	@Autowired
 	private IdentityService identityService;
-
-	@Autowired
-	private InvitationRepository invitationRepository;
 
 	@Autowired
 	private PaymentRepository paymentRepository;
