@@ -98,7 +98,6 @@ public class FarcasterHubService implements IFarcasterHubService {
 							.queryParam("identifier", hash)
 							.build())
 					.retrieve().bodyToMono(CastMessageResponse.class).block();
-
 			return response != null ? response.cast() : null;
 		} catch (Throwable t) {
 			log.debug("Exception calling Neynar Cast API to fetch by hash {} - {}",

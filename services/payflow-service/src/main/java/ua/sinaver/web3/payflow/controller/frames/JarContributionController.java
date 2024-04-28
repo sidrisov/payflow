@@ -141,12 +141,13 @@ public class JarContributionController {
 		}
 
 		val source = String.format("https://warpcast.com/%s/%s",
-				cast.author().fid(),
+				cast.author().username(),
 				cast.hash().substring(0, 10));
 		val description = cast.text();
 		val image = cast.embeds() != null ? cast.embeds().stream()
 				.filter(embed -> embed != null && embed.url() != null && (embed.url().endsWith(
-						".png") || embed.url().endsWith(".jpg")))
+						".png") || embed.url().endsWith(".jpg") || embed.url().contains(
+						"imagedelivery.net")))
 				.findFirst().map(CastEmbed::url).orElse(null) : null;
 
 		log.debug("Executing jar creation with title `{}`, desc `{}` embeds {}, source {}",
@@ -159,8 +160,10 @@ public class JarContributionController {
 
 		val castText = String.format("@%s receive jar contributions with the frame",
 				cast.author().username());
+
+		val frameUrl = String.format("https://frames.payflow.me/jar/%s", uuid);
 		val embeds = Collections.singletonList(
-				new CastEmbed(String.format("https://frames.payflow.me/jar/%s", uuid)));
+				new CastEmbed(frameUrl));
 
 		val response = farcasterHubService.cast(botSignerUuid, castText, cast.hash(), embeds);
 
@@ -172,10 +175,15 @@ public class JarContributionController {
 
 		val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s/image.png", uuid));
 
+		val castAboutDeepLink = "https://warpcast.com/~/compose?text=Hey%20hey%0A%0AI%27ve%20created%20a%20contribution%20jar%20to%20collect%20funds%20%F0%9F%92%9C%0ACheck%20the%20original%20cast%20below%20for%20more%20details%20%F0%9F%91%87%F0%9F%8F%BB%0A%0Acc%3A%20%40sinaver.eth%20%40payflow" +
+				"&embeds%5B%5D=" + frameUrl + "&embeds%5B%5D=" + source;
+
 		return FrameResponse.builder()
 				.imageUrl(jarImage)
+				.button(new FrameButton(
+						"✍\uD83C\uDFFB Cast", FrameButton.ActionType.LINK, castAboutDeepLink))
 				.button(new FrameButton("\uD83D\uDCF1 " +
-						"App", FrameButton.ActionType.LINK, String.format("https://frames.payflow.me/jar/%s",
+						"App", FrameButton.ActionType.LINK, String.format("https://app.payflow.me/jar/%s",
 						jar.getFlow().getUuid())))
 				.build().toHtmlResponse();
 	}
