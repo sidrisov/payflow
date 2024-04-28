@@ -79,12 +79,105 @@ public class JarContributionController {
 	@Autowired
 	private XmtpValidationService xmtpValidationService;
 
+	@Value("${payflow.farcaster.bot.signer}")
+	private String botSignerUuid;
+
 	private static String roundTokenAmount(double amount) {
 		val scale = amount < 1.0 ? 5 : 1;
 		val amountInDecimals = BigDecimal.valueOf(amount);
 		val roundedAmount = amountInDecimals.setScale(scale, RoundingMode.HALF_UP).toString();
 		log.debug("roundTokenAmount: before {} after {} with scale {}", amountInDecimals, roundedAmount, scale);
 		return roundedAmount;
+	}
+
+	@PostMapping("/create")
+	public ResponseEntity<?> create(@RequestBody FrameMessage frameMessage) {
+		log.debug("Received create contribute jar in frame message request: {}", frameMessage);
+
+		val validateMessage =
+				farcasterHubService.validateFrameMessageWithNeynar(
+						frameMessage.trustedData().messageBytes());
+
+		log.debug("Validation farcaster frame message response {} received on url: {}  ",
+				validateMessage,
+				validateMessage.action().url());
+
+		if (!validateMessage.valid()) {
+			log.error("Frame message failed validation {}", validateMessage);
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameError("Something went wrong!"));
+		}
+
+		val clickedFid = validateMessage.action().interactor().fid();
+		val casterFid = validateMessage.action().cast().fid();
+		val title = validateMessage.action().input() != null ?
+				validateMessage.action().input().text() : null;
+
+		val clickedProfile = frameService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
+		if (clickedProfile == null) {
+			log.error("Clicked fid {} is not on payflow", clickedFid);
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameError("Sign up on Payflow first!"));
+		}
+
+		if (clickedFid != casterFid) {
+			log.error("Only the author of the cast is allowed to create the contribution " +
+					"jar for it - clicked fid {} vs caster fid {} ", clickedFid, casterFid);
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameError("Can be used only on your casts!"));
+		}
+
+		if (StringUtils.isBlank(title)) {
+			log.error("Contribution jar title wasn't entered for profile {}",
+					clickedProfile.getUsername());
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameError("Enter title again!"));
+		}
+
+		val cast = farcasterHubService.fetchCastByHash(validateMessage.action().cast().hash());
+		if (cast == null) {
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameError("Something went wrong!"));
+		}
+
+		val source = String.format("https://warpcast.com/%s/%s",
+				cast.author().fid(),
+				cast.hash().substring(0, 10));
+		val description = cast.text();
+		val image = cast.embeds() != null ? cast.embeds().stream()
+				.filter(embed -> embed != null && embed.url() != null && (embed.url().endsWith(
+						".png") || embed.url().endsWith(".jpg")))
+				.findFirst().map(CastEmbed::url).orElse(null) : null;
+
+		log.debug("Executing jar creation with title `{}`, desc `{}` embeds {}, source {}",
+				title, description, cast.embeds(), source);
+
+		val jar = flowService.createJar(title, description, image, source, clickedProfile);
+		log.debug("Jar created {} for {}", jar, clickedProfile.getUsername());
+
+		val uuid = jar.getFlow().getUuid();
+
+		val castText = String.format("@%s receive jar contributions with the frame",
+				cast.author().username());
+		val embeds = Collections.singletonList(
+				new CastEmbed(String.format("https://frames.payflow.me/jar/%s", uuid)));
+
+		val response = farcasterHubService.cast(botSignerUuid, castText, cast.hash(), embeds);
+
+		if (response.success()) {
+			log.debug("Successfully casted contribution jar frame reply : {}", response.cast());
+		} else {
+			log.error("Failed to caste contribution jar frame reply");
+		}
+
+		val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s/image.png", uuid));
+
+		return FrameResponse.builder()
+				.imageUrl(jarImage)
+				.button(new FrameButton("\uD83D\uDCF1 " +
+						"App", FrameButton.ActionType.LINK, String.format("https://frames.payflow.me/jar/%s",
+						jar.getFlow().getUuid())))
+				.build().toHtmlResponse();
 	}
 
 	@PostMapping("/{uuid}/contribute")

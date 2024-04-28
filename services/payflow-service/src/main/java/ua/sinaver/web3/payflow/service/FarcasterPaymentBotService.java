@@ -88,7 +88,7 @@ public class FarcasterPaymentBotService {
 		}
 		return BASE_CHAIN_NAME;
 	}
-	
+
 	public boolean reply(String text, String parentHash, List<CastEmbed> embeds) {
 		if (isBotReplyEnabled) {
 			val response = hubService.cast(botSignerUuid, text, parentHash, embeds);

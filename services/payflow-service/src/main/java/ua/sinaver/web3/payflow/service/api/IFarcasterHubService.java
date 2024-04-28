@@ -1,10 +1,7 @@
 package ua.sinaver.web3.payflow.service.api;
 
 import org.springframework.retry.annotation.Retryable;
-import ua.sinaver.web3.payflow.message.CastEmbed;
-import ua.sinaver.web3.payflow.message.CastResponseMessage;
-import ua.sinaver.web3.payflow.message.NotificationResponse;
-import ua.sinaver.web3.payflow.message.ValidatedFarcasterFrameMessage;
+import ua.sinaver.web3.payflow.message.*;
 
 import java.util.List;
 
@@ -18,4 +15,6 @@ public interface IFarcasterHubService {
 
 	@Retryable
 	NotificationResponse getFidNotifications(int fid, String cursor);
+
+	CastMessage fetchCastByHash(String hash);
 }
