@@ -23,7 +23,7 @@ import ua.sinaver.web3.payflow.utils.FrameResponse;
 public class JarController {
 
 	private final static CastActionMeta JAR_CAST_ACTION_META = new CastActionMeta(
-			"Create contribution jar", "beaker",
+			"Create payflow jar", "beaker",
 			"Use this action to turn any existing cast into contribution jar " +
 					"to fundraise for any purpose via Payflow",
 			"https://payflow.me",

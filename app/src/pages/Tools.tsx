@@ -38,7 +38,7 @@ export default function Tools() {
             borderRadius={5}
             borderColor="divider">
             <Avatar src="/farcaster.svg" variant="rounded" />
-            <Typography variant="h6">Farcaster Actions</Typography>
+            <Typography variant="h6">Install Farcaster Actions</Typography>
             <Stack spacing={1} alignItems="center">
               <Button
                 variant="outlined"
@@ -47,7 +47,7 @@ export default function Tools() {
                 sx={{ borderRadius: 5 }}
                 href="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Finvite"
                 target="_blank">
-                Install Invite Action
+                Invite Action
               </Button>
               <Button
                 variant="outlined"
@@ -56,7 +56,7 @@ export default function Tools() {
                 sx={{ borderRadius: 5 }}
                 href="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fjar"
                 target="_blank">
-                Install Create Jar Action
+                Create Jar Action
               </Button>
               <Button
                 variant="outlined"
@@ -64,7 +64,7 @@ export default function Tools() {
                 fullWidth
                 sx={{ borderRadius: 5 }}
                 onClick={() => setOpenPaymentActionDialog(true)}>
-                Create Payment Action
+                Payment Intent Action
               </Button>
             </Stack>
           </Stack>

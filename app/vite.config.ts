@@ -4,8 +4,10 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 import { defineConfig, loadEnv } from 'vite';
+
+// pass empty url if .env not available (for prodcution build should be poluted)
 const env = loadEnv('all', process.cwd());
-const API_URL_HOST = env.VITE_PAYFLOW_SERVICE_API_URL.replace(/^(http|https):\/\/+/, '');
+const API_URL_HOST = env ? env.VITE_PAYFLOW_SERVICE_API_URL.replace(/^(http|https):\/\/+/, '') : '';
 
 // https://vitejs.dev/config/
 export default defineConfig({
