@@ -19,8 +19,8 @@ import ua.sinaver.web3.payflow.utils.FrameResponse;
 public class PayProfileController {
 
 	private final static CastActionMeta PAY_PROFILE_CAST_ACTION_META = new CastActionMeta(
-			"Pay profile", "person",
-			"Use this action to pay cast author's payflow profile",
+			"Pay Profile", "person",
+			"Use this action to pay payflow profile of the cast author",
 			"https://payflow.me",
 			new CastActionMeta.Action("post"));
 

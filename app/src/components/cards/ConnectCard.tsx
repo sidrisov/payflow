@@ -1,7 +1,7 @@
 import { Avatar, Box, Card, Divider, Stack, Typography } from '@mui/material';
 import { AuthClientError, SignInButton, StatusAPIResponse } from '@farcaster/auth-kit';
 
-import { green } from '@mui/material/colors';
+import { green, grey } from '@mui/material/colors';
 import { CheckCircle } from '@mui/icons-material';
 import { useEffect, useMemo, useState } from 'react';
 import { API_URL } from '../../utils/urlConstants';
@@ -153,18 +153,28 @@ export function ConnectCard() {
         </Stack>
 
         <Stack my={1} p={1} spacing={2} alignItems="flex-start" color={green.A700}>
-          <FeatureSection description="create a flow abstracted from social wallet" />
-          <FeatureSection description="discover friends by farcaster, lens, and ens" />
-          <FeatureSection description="send, receive, request crypto, and more" />
+          <FeatureSection description="payment flows linked to social layer" />
+          <FeatureSection description="discover friends by their social layer" />
+          <FeatureSection description="send, receive, and embed payments" />
         </Stack>
 
-        <Typography my={1} mx={1} variant="caption" fontWeight="bold" textAlign="center">
-          <u>
-            <b>{'Identity'}</b>
-          </u>
-          {': '}your ethereum address linked to web3 socials (farcaster, lens, ens), facilitates
-          seamless profile discovery and payments with your friends
-        </Typography>
+        <Card
+          sx={{ mt: 1, mb: 2, p: 1.5, borderRadius: 3, border: 1, borderColor: 'divider' }}
+          elevation={5}>
+          <Typography variant="subtitle2" textAlign="center">
+            <u>Web3 Social Layer</u>
+          </Typography>
+
+          <Typography
+            mt={1}
+            mb={2}
+            variant="caption"
+            fontWeight="bold"
+            textAlign="center"
+            color={grey[400]}>
+            On-chain identity like Farcaster, Lens, or ENS
+          </Typography>
+        </Card>
 
         <Stack my={2} spacing={1} alignItems="center">
           {FARCASTER_CONNECT_ENABLED && siwfNonce && (
@@ -185,7 +195,9 @@ export function ConnectCard() {
                   onError={onFarcasterSignInError}
                 />
               </Box>
-              <Divider flexItem>or</Divider>
+              <Divider flexItem sx={{ color: grey[400] }}>
+                or
+              </Divider>
             </>
           )}
           <LoadingButton
