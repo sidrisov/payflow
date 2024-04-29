@@ -1,4 +1,4 @@
-import { Box, Button, Card, CardProps, Stack, Typography } from '@mui/material';
+import { Avatar, Box, Button, Card, CardProps, Stack, Typography } from '@mui/material';
 import { StatusAPIResponse } from '@farcaster/auth-kit';
 
 import { useMemo, useState } from 'react';
@@ -13,6 +13,7 @@ import { IdentityType } from '../../types/ProfleType';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { LoadingFarcasterAccountsSkeleton } from '../skeletons/LoadingFarcasterAccountsSkeleton';
 import { FarcasterIdentitySelectOption } from '../FarcasterIdentitySelectOption';
+import { grey } from '@mui/material/colors';
 
 export function FarcasterAccountsCard({
   siwfResponse,
@@ -96,16 +97,23 @@ export function FarcasterAccountsCard({
         borderRadius: 5,
         borderColor: 'divider',
         width: 360,
-        height: 500,
+        maxHeight: 550,
         display: 'flex',
         flexDirection: 'column'
       }}>
-      <Typography variant="h6" textAlign="center">
-        Select profile identity
-      </Typography>
-      <Typography variant="subtitle2" textAlign="center">
-        farcaster connected addresses
-      </Typography>
+
+      <Stack mt={1} alignSelf="center" alignItems="center" spacing={1}>
+        <Avatar src="/farcaster.svg" variant="rounded" />
+        <Stack alignItems="center">
+          <Typography variant="h6" textAlign="center">
+            Select profile identity
+          </Typography>
+          <Typography variant="caption" textAlign="center" color={grey[400]}>
+            verified addresses linked to <b>@{siwfResponse.username}</b>
+          </Typography>
+        </Stack>
+      </Stack>
+
       <Box
         height="100%"
         display="flex"
@@ -142,6 +150,7 @@ export function FarcasterAccountsCard({
             </Typography>
           )}
         </Stack>
+
         <LoadingButton
           fullWidth
           disabled={!signUpIdentity}

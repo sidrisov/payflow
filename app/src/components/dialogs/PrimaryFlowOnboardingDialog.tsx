@@ -127,7 +127,7 @@ export default function PrimaryFlowOnboardingDialog({
       <DialogTitle>
         <Box display="flex" justifyContent="center">
           <Typography variant="h6" sx={{ overflow: 'auto' }}>
-            Flow initialization
+            Set up payment flow
           </Typography>
         </Box>
       </DialogTitle>
@@ -225,7 +225,7 @@ export default function PrimaryFlowOnboardingDialog({
                 await createMainFlow();
               }}
               sx={{ mt: 3, mb: 1, borderRadius: 5 }}>
-              Initialize
+              Set up
             </LoadingButton>
           ) : (
             <LoadingConnectWalletButton isEmbeddedSigner={true} title="Connect Signer" />

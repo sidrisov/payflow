@@ -1,5 +1,5 @@
 import { Chip, ChipProps } from '@mui/material';
-import { lightGreen, orange } from '@mui/material/colors';
+import { grey, lightGreen, orange } from '@mui/material/colors';
 import { IdentityType } from '../../types/ProfleType';
 
 export function PayflowChip(props: ChipProps) {
@@ -9,7 +9,7 @@ export function PayflowChip(props: ChipProps) {
       size="small"
       variant="filled"
       label="payflow"
-      sx={{ background: lightGreen.A700 }}
+      sx={{ fontWeight: 'bold', color: grey[800], background: lightGreen.A700 }}
     />
   );
 }

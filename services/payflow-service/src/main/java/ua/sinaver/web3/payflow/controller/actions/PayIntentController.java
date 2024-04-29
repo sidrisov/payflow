@@ -3,6 +3,8 @@ package ua.sinaver.web3.payflow.controller.actions;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,17 +43,16 @@ public class PayIntentController {
 
 	@GetMapping("/intent")
 	public CastActionMeta metadata(
-			@RequestParam(name = "amount", required = false,
-					defaultValue = "1.0") Double amount,
-			@RequestParam(name = "token", required = false,
-					defaultValue = "degen") String token,
-			@RequestParam(name = "chain", required = false,
-					defaultValue = "base") String chain) {
+			@RequestParam(name = "amount", required = false, defaultValue = "1.0") Double amount,
+			@RequestParam(name = "token", required = false, defaultValue = "degen") String token,
+			@RequestParam(name = "chain", required = false, defaultValue = "base") String chain) {
 		log.debug("Received metadata request for cast action: pay intent with params: " +
 				"amount = {}, token = {}, chain = {}", amount, token, chain);
 		// TODO: skip chain/token/amount validation
 		val castActionMeta = new CastActionMeta(
-				String.format("$%s %s via Payflow (%s)", amount, token, chain), "heart",
+				String.format("$%s Intent %s (%s)", amount,
+						StringUtils.capitalize(token), StringUtils.capitalize(chain)),
+				"heart",
 				"Use this action to submit payment intent for farcaster users in " +
 						"Payflow app",
 				"https://payflow.me",
@@ -63,13 +64,9 @@ public class PayIntentController {
 
 	@PostMapping("/intent")
 	public ResponseEntity<FrameResponse.FrameError> invite(@RequestBody FrameMessage castActionMessage,
-	                                                       @RequestParam(name = "amount",
-			                                                       required = false,
-			                                                       defaultValue = "1.0") Double amount,
-	                                                       @RequestParam(name = "token", required = false,
-			                                                       defaultValue = "degen") String token,
-	                                                       @RequestParam(name = "chain", required = false,
-			                                                       defaultValue = "base") String chain) {
+			@RequestParam(name = "amount", required = false, defaultValue = "1.0") Double amount,
+			@RequestParam(name = "token", required = false, defaultValue = "degen") String token,
+			@RequestParam(name = "chain", required = false, defaultValue = "base") String chain) {
 		log.debug("Received cast action: pay intent {}", castActionMessage);
 		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
 				castActionMessage.trustedData().messageBytes());

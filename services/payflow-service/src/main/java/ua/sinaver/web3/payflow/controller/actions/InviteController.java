@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 public class InviteController {
 
 	private final static CastActionMeta INVITE_CAST_ACTION_META = new CastActionMeta(
-			"Invite to Payflow", "person-add",
+			"Invite To Payflow", "person-add",
 			"Use this action to invite farcaster users to Payflow",
 			"https://payflow.me",
 			new CastActionMeta.Action("post"));
