@@ -4,17 +4,19 @@ import { ProfileContext } from '../contexts/UserContext';
 import {
   Avatar,
   Box,
+  Button,
   Container,
   InputAdornment,
   Stack,
   TextField,
+  Tooltip,
   Typography,
   useMediaQuery,
   useTheme
 } from '@mui/material';
 import { ProfileSection } from '../components/ProfileSection';
 import LoadingButton from '@mui/lab/LoadingButton';
-import { Check, Error } from '@mui/icons-material';
+import { Check, Error, Sync } from '@mui/icons-material';
 import axios from 'axios';
 import { API_URL } from '../utils/urlConstants';
 import { ProfileType } from '../types/ProfleType';
@@ -23,6 +25,10 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { isAlphanumericPlusFewSpecialChars } from '../utils/regex';
 import { green } from '@mui/material/colors';
+import { QUERY_SOCIALS } from '../utils/airstackQueries';
+import { useQuery } from '@airstack/airstack-react';
+import { convertSocialResults } from '../services/socials';
+import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';
 
 export default function Profile() {
   const theme = useTheme();
@@ -40,6 +46,15 @@ export default function Profile() {
   const [loadingUpdateProfile, setLoadingUpdateProfile] = useState<boolean>(false);
 
   const navigate = useNavigate();
+
+  // TODO: fetch only on sync click event
+  const { data: socialInfo, loading: loadingSocials } = useQuery(
+    QUERY_SOCIALS,
+    { identity: profile?.identity },
+    {
+      cache: true
+    }
+  );
 
   useMemo(async () => {
     if (username) {
@@ -68,6 +83,42 @@ export default function Profile() {
       setUsernameAvailable(undefined);
     }
   }, [username]);
+
+  async function sync() {
+    if (!loadingSocials && profile) {
+      const identity = convertSocialResults(socialInfo.Wallet);
+
+      console.log('Identity', identity);
+
+      if (identity) {
+        if (identity.meta?.socials && identity.meta?.socials.length > 0) {
+          const socialInfo =
+            identity.meta?.socials.find((s) => s.dappName === FARCASTER_DAPP) ??
+            identity.meta?.socials.find((s) => s.dappName === LENS_DAPP) ??
+            identity.meta?.socials[0];
+
+          setDisplayName(socialInfo.profileDisplayName);
+
+          setUsername(
+            socialInfo.dappName === LENS_DAPP
+              ? socialInfo.profileName.replace('lens/@', '')
+              : socialInfo.profileName
+          );
+
+          if (
+            socialInfo.dappName === FARCASTER_DAPP ||
+            !socialInfo.profileImage.includes('ipfs://')
+          ) {
+            setProfileImage(socialInfo.profileImage);
+          }
+        } else {
+          if (identity.meta?.ensAvatar) {
+            setProfileImage(identity.meta?.ensAvatar);
+          }
+        }
+      }
+    }
+  }
 
   async function save() {
     const updatedProfile = {
@@ -107,7 +158,21 @@ export default function Profile() {
             justifyContent={isMobile ? 'space-between' : 'flex-start'}
             sx={{ p: 3 }}>
             <Stack mb={3} direction="column" spacing={3}>
-              <ProfileSection profile={profile} avatarSize={48} maxWidth={200} />
+              <Box
+                display="flex"
+                flexDirection="row"
+                alignItems="center"
+                justifyContent="space-between">
+                <ProfileSection profile={profile} avatarSize={48} maxWidth={200} />
+                <Tooltip title="Metadata is synced from social graph">
+                  <Button
+                    startIcon={<Sync />}
+                    sx={{ borderRadius: 5, color: 'inherit', textTransform: 'capitalize' }}
+                    onClick={sync}>
+                    Sync Metadata
+                  </Button>
+                </Tooltip>
+              </Box>
               <TextField
                 fullWidth
                 value={displayName}
