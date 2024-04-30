@@ -101,12 +101,11 @@ export function FarcasterAccountsCard({
         display: 'flex',
         flexDirection: 'column'
       }}>
-
       <Stack mt={1} alignSelf="center" alignItems="center" spacing={1}>
         <Avatar src="/farcaster.svg" variant="rounded" />
         <Stack alignItems="center">
           <Typography variant="h6" textAlign="center">
-            Select profile identity
+            Select Profile
           </Typography>
           <Typography variant="caption" textAlign="center" color={grey[400]}>
             verified addresses linked to <b>@{siwfResponse.username}</b>

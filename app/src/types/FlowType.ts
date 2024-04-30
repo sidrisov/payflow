@@ -4,6 +4,8 @@ import { ProfileType } from './ProfleType';
 export interface FlowType {
   signer: Address;
   signerProvider?: string;
+  signerType?: string;
+  signerCredential?: string;
   title: string;
   type: 'JAR' | 'REGULAR' | undefined;
   uuid: string;

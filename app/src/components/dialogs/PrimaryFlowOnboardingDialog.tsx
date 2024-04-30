@@ -9,8 +9,9 @@ import {
   CircularProgress,
   useTheme,
   useMediaQuery,
-  FormControlLabel,
-  Switch
+  Avatar,
+  AvatarGroup,
+  Tooltip
 } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 
@@ -26,8 +27,12 @@ import { DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS as PRIMARY_FLOW_PRE_CREATE_WALLET
 import { updateProfile } from '../../services/user';
 import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
 import { useAccount } from 'wagmi';
-import { green } from '@mui/material/colors';
+import { grey } from '@mui/material/colors';
 import { shortenWalletAddressLabel } from '../../utils/address';
+import NetworkAvatar from '../avatars/NetworkAvatar';
+import { HistoryToggleOff, Info } from '@mui/icons-material';
+import ProfileAvatar from '../avatars/ProfileAvatar';
+import { usePrivy } from '@privy-io/react-auth';
 
 export type PrimaryFlowOnboardingDialogProps = DialogProps &
   CloseCallbackType & {
@@ -49,9 +54,11 @@ export default function PrimaryFlowOnboardingDialog({
   const { loading: loadingWallets, error, wallets, create, reset } = usePreCreateSafeWallets();
   const [loadingUpdateProfile, setLoadingUpdateProfile] = useState<boolean>(false);
 
-  const [extraSigner, setExtraSigner] = useState<boolean>(true);
+  const [extraSigner] = useState<boolean>(true);
 
   const { address, connector } = useAccount();
+
+  const { user } = usePrivy();
 
   const navigate = useNavigate();
 
@@ -82,7 +89,12 @@ export default function PrimaryFlowOnboardingDialog({
     } else if (wallets && wallets.length === PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS.length) {
       const primaryFlow = {
         // TODO: choose different one
-        ...(extraSigner && { signer: address, signerProvider: 'privy' }),
+        ...(extraSigner && {
+          signer: address,
+          signerProvider: 'privy',
+          signerType: 'email',
+          signerCredential: user?.email?.address
+        }),
         title: 'Primary flow',
         walletProvider: 'safe',
         saltNonce: SALT_NONCE,
@@ -127,7 +139,7 @@ export default function PrimaryFlowOnboardingDialog({
       <DialogTitle>
         <Box display="flex" justifyContent="center">
           <Typography variant="h6" sx={{ overflow: 'auto' }}>
-            Set up payment flow
+            Set Up Payment Flow
           </Typography>
         </Box>
       </DialogTitle>
@@ -140,66 +152,150 @@ export default function PrimaryFlowOnboardingDialog({
           flexDirection="column"
           justifyContent="space-between"
           p={1}>
-          <Stack spacing={2} alignItems="flex-start">
-            <Typography variant="caption" fontSize={isMobile ? 14 : 16}>
-              <b>
-                <u>Primary flow</u>
-              </b>
-              {': '}
-              abstracted set of multi-chain wallets, primary flow receives funds sent to your
-              profile
+          <Stack spacing={1} alignItems="flex-start">
+            <Typography fontWeight="bold" color={grey[400]}>
+              Smart Wallets
             </Typography>
-            <Typography variant="caption" fontSize={isMobile ? 14 : 16}>
-              <b>
-                <u>Flow signer</u>
-              </b>
-              {': '}
-              address used to sign all flow related transactions, by default your identity wallet is
-              added as flow signer
+            <Box
+              display="flex"
+              flexDirection="row"
+              alignItems="center"
+              justifyContent="space-between"
+              p={2}
+              sx={{
+                height: 75,
+                width: '100%',
+                color: 'inherit',
+                border: 1.5,
+                borderRadius: 5,
+                borderColor: 'divider'
+              }}>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Avatar src="/safe.png" />
+                <Stack spacing={0.1} alignItems="flex-start">
+                  <Typography fontSize={18} color={grey[400]}>
+                    Provider
+                  </Typography>
+                  <Typography fontSize={16} fontWeight="bold">
+                    Safe Smart Wallet
+                  </Typography>
+                </Stack>
+              </Stack>
+              <AvatarGroup
+                max={4}
+                color="inherit"
+                total={PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS.length}
+                sx={{
+                  '& .MuiAvatar-root': {
+                    borderStyle: 'none',
+                    width: 25,
+                    height: 25
+                  }
+                }}>
+                {[...Array(Math.min(4, PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS.length))].map(
+                  (_item, i) => (
+                    <NetworkAvatar
+                      key={`onboarding_wallet_list_${PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS[i].id}`}
+                      chainId={PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS[i].id}
+                    />
+                  )
+                )}
+              </AvatarGroup>
+            </Box>
+
+            <Typography fontWeight="bold" color={grey[400]}>
+              Signers
             </Typography>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={extraSigner}
-                  color="success"
-                  onChange={(event) => {
-                    setExtraSigner(event.target.checked);
-                  }}
-                  sx={{ accentColor: green.A700 }}
-                />
-              }
-              label="Enable signless flow payments"
-            />
-            {/* {extraSigner && address === profile.identity && (
-              <Typography
-                variant="subtitle2"
-                color={red.A700}
-                fontSize={isMobile ? 15 : 16}
-                sx={{ pl: 1 }}>
-                Additional flow signer should be different from identity address:{' '}
-                <u>
-                  <b>{shortenWalletAddressLabel(profile.identity)}</b>
-                </u>
-              </Typography>
-            )} */}
-            {extraSigner && address && connector?.id === 'io.privy.wallet' && (
+            <Stack spacing={1} width="100%">
               <Box
-                width="100%"
                 display="flex"
                 flexDirection="row"
                 alignItems="center"
-                justifyContent="space-between">
-                <Typography variant="subtitle2" fontSize={isMobile ? 15 : 16} sx={{ pl: 1 }}>
-                  Connected signer:{' '}
-                  <u>
-                    <b>{shortenWalletAddressLabel(address)}</b>
-                  </u>
-                </Typography>
-                {/* <IconButton onClick={async () => await disconnectAsync()} sx={{ color: red.A700 }}>
-                  <Logout />
-                </IconButton> */}
+                justifyContent="space-between"
+                p={2}
+                sx={{
+                  height: 65,
+                  width: '100%',
+                  color: 'inherit',
+                  border: 1.5,
+                  borderRadius: 5,
+                  borderColor: 'divider'
+                }}>
+                <Stack direction="row" width="100%" spacing={1} alignItems="center">
+                  <ProfileAvatar profile={profile} />
+                  <Stack spacing={0.1} alignItems="flex-start">
+                    <Typography fontSize={18} color={grey[400]}>
+                      Identity
+                    </Typography>
+                    <Typography fontSize={15} fontWeight="bold">
+                      {shortenWalletAddressLabel(profile.identity)}
+                    </Typography>
+                  </Stack>
+                </Stack>
+                <Tooltip title="Identity wallet is used as back up signer in Safe Web Wallet! We will never ask you to sign with it in the app!">
+                  <Info fontSize="small" />
+                </Tooltip>
               </Box>
-            )}
+              <Box
+                display="flex"
+                flexDirection="row"
+                alignItems="center"
+                justifyContent="space-between"
+                p={2}
+                sx={{
+                  height: 65,
+                  width: '100%',
+                  color: 'inherit',
+                  border: 1.5,
+                  borderRadius: 5,
+                  borderColor: 'divider'
+                }}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Avatar src="/privy.png" sx={{ width: 40, height: 40 }} />
+                  <Stack spacing={0.1} alignItems="flex-start">
+                    <Typography fontSize={18} color={grey[400]}>
+                      Social Signer
+                    </Typography>
+                    <Typography fontSize={15} fontWeight="bold">
+                      {extraSigner && address && connector?.id === 'io.privy.wallet'
+                        ? user?.email?.address
+                        : 'waiting for sign in'}
+                    </Typography>
+                  </Stack>
+                </Stack>
+
+                <Tooltip title="Embedded wallet is default signer in the app! It allows to have signless transactions experience on web and mobile!">
+                  <Info fontSize="small" />
+                </Tooltip>
+              </Box>
+              <Box
+                display="flex"
+                flexDirection="row"
+                alignItems="center"
+                justifyContent="space-between"
+                p={2}
+                sx={{
+                  height: 65,
+                  width: '100%',
+                  color: 'inherit',
+                  border: 2,
+                  borderRadius: 5,
+                  borderColor: 'divider',
+                  borderStyle: 'dashed'
+                }}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <HistoryToggleOff sx={{ width: 40, height: 40 }} />
+                  <Stack spacing={0.1} alignItems="flex-start">
+                    <Typography fontSize={18} color={grey[400]}>
+                      Passkey Signer
+                    </Typography>
+                    <Typography fontSize={15} fontWeight="bold">
+                      Coming Soon
+                    </Typography>
+                  </Stack>
+                </Stack>
+              </Box>
+            </Stack>
           </Stack>
           {!extraSigner || (address && connector?.id === 'io.privy.wallet') ? (
             <LoadingButton
@@ -212,11 +308,7 @@ export default function PrimaryFlowOnboardingDialog({
                 <Stack direction="row" spacing={1} alignItems="center">
                   <CircularProgress color="inherit" size={16} />
                   <Typography variant="button">
-                    {loadingWallets
-                      ? 'preparing flow'
-                      : loadingUpdateProfile
-                      ? 'updating profile'
-                      : ''}
+                    {loadingWallets ? 'setting up' : loadingUpdateProfile ? 'updating' : ''}
                   </Typography>
                 </Stack>
               }
@@ -225,10 +317,10 @@ export default function PrimaryFlowOnboardingDialog({
                 await createMainFlow();
               }}
               sx={{ mt: 3, mb: 1, borderRadius: 5 }}>
-              Set up
+              Complete
             </LoadingButton>
           ) : (
-            <LoadingConnectWalletButton isEmbeddedSigner={true} title="Connect Signer" />
+            <LoadingConnectWalletButton isEmbeddedSigner={true} title="Next" />
           )}
         </Box>
       </DialogContent>
