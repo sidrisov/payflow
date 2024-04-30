@@ -61,6 +61,11 @@ public class SecurityConfig {
 						// farcaster actions
 						.requestMatchers(HttpMethod.POST, "/farcaster/actions/**").permitAll()
 						.requestMatchers(HttpMethod.GET, "/farcaster/actions/**").permitAll()
+
+						// Farcaster webhooks
++						.requestMatchers(HttpMethod.GET, "/farcaster/webhooks/**").permitAll()
++						.requestMatchers(HttpMethod.POST, "/farcaster/webhooks/**").permitAll()
+
 						.anyRequest().authenticated())
 				.sessionManagement(session -> session
 						.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
