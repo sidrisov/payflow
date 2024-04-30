@@ -13,11 +13,11 @@ export function LoadingConnectWalletButton({
   isEmbeddedSigner?: boolean;
   title?: string;
 }) {
-  const { connectWallet, login, isModalOpen } = usePrivy();
+  const { connectWallet, login, isModalOpen, user } = usePrivy();
   const { wallets } = useWallets();
   const { setActiveWallet } = useSetActiveWallet();
 
-  console.log(wallets);
+  console.log('Wallets', wallets, user);
 
   return (
     <LoadingButton
