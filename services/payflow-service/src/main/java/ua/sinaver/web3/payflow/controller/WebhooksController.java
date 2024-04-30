@@ -52,6 +52,7 @@ public class WebhooksController {
             boolean isValid = verifySignature(body, neynarSignature, configs.getSecret());
 
             if (!isValid) {
+                LOGGER.error("The provided signature is not valid");
                 return new ResponseEntity<>("Invalid webhook signature", HttpStatus.BAD_REQUEST);
             }
 
@@ -60,12 +61,14 @@ public class WebhooksController {
             try {
                 data = mapper.readValue(body, WebhookData.class);
             } catch (JsonProcessingException e) {
+                LOGGER.error("Failed to parse the JSON response", e);
                 return new ResponseEntity<>("Invalid JSON Data", HttpStatus.BAD_REQUEST);
             }
             LOGGER.info("Webhook data parsed: {}", data);
 
             return new ResponseEntity<>("Success", HttpStatus.OK);
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            LOGGER.error("Security exception", e);
             return new ResponseEntity<>("Invalid webhook signature", HttpStatus.BAD_REQUEST);
         }
     }
