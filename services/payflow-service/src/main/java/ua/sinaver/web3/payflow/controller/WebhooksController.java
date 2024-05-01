@@ -10,13 +10,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.config.WebhooksConfig;
+import ua.sinaver.web3.payflow.data.bot.PaymentBotJob;
 import ua.sinaver.web3.payflow.data.webhooks.WebhookData;
+import ua.sinaver.web3.payflow.message.CastMessage;
+import ua.sinaver.web3.payflow.message.CastMessageProducer;
+import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 
 @RestController
 @RequestMapping("/farcaster/webhooks")
@@ -27,6 +32,9 @@ public class WebhooksController {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebhooksController.class);
     @Autowired
     WebhooksConfig configs;
+
+    @Autowired
+    private PaymentBotJobRepository paymentBotJobRepository;
 
     @GetMapping("testGet")
     public String testGet() {
@@ -60,6 +68,13 @@ public class WebhooksController {
             WebhookData data;
             try {
                 data = mapper.readValue(body, WebhookData.class);
+                CastMessage message = CastMessageProducer.of(data);
+
+                PaymentBotJob job = new PaymentBotJob(data.getData().getHash(),
+                        data.getData().getAuthor().getFid(),
+                        new Date(data.getCreatedAt()),
+                        message);
+                paymentBotJobRepository.save(job);
             } catch (JsonProcessingException e) {
                 LOGGER.error("Failed to parse the JSON response", e);
                 return new ResponseEntity<>("Invalid JSON Data", HttpStatus.BAD_REQUEST);

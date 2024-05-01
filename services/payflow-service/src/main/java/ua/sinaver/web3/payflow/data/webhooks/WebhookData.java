@@ -8,6 +8,18 @@ public class WebhookData {
     @JsonProperty("created_at")
     private long createdAt;
 
+    public long getCreatedAt() {
+        return createdAt;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public Data getData() {
+        return data;
+    }
+
     @JsonProperty("type")
     private String type;
 
@@ -28,6 +40,62 @@ public class WebhookData {
     public static class Data {
         @JsonProperty("object")
         private String object;
+
+        public String getObject() {
+            return object;
+        }
+
+        public String getHash() {
+            return hash;
+        }
+
+        public String getThreadHash() {
+            return threadHash;
+        }
+
+        public String getParentHash() {
+            return parentHash;
+        }
+
+        public String getParentUrl() {
+            return parentUrl;
+        }
+
+        public String getRootParentUrl() {
+            return rootParentUrl;
+        }
+
+        public Author getParentAuthor() {
+            return parentAuthor;
+        }
+
+        public Author getAuthor() {
+            return author;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public String getTimestamp() {
+            return timestamp;
+        }
+
+        public List<Object> getEmbeds() {
+            return embeds;
+        }
+
+        public Reactions getReactions() {
+            return reactions;
+        }
+
+        public Replies getReplies() {
+            return replies;
+        }
+
+        public List<MentionedProfile> getMentionedProfiles() {
+            return mentionedProfiles;
+        }
 
         @JsonProperty("hash")
         private String hash;
@@ -94,6 +162,58 @@ public class WebhookData {
         @JsonProperty("object")
         private String object;
 
+        public String getObject() {
+            return object;
+        }
+
+        public int getFid() {
+            return fid;
+        }
+
+        public String getCustodyAddress() {
+            return custodyAddress;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public String getPfpUrl() {
+            return pfpUrl;
+        }
+
+        public Profile getProfile() {
+            return profile;
+        }
+
+        public int getFollowerCount() {
+            return followerCount;
+        }
+
+        public int getFollowingCount() {
+            return followingCount;
+        }
+
+        public List<String> getVerifications() {
+            return verifications;
+        }
+
+        public VerifiedAddresses getVerifiedAddresses() {
+            return verifiedAddresses;
+        }
+
+        public String getActiveStatus() {
+            return activeStatus;
+        }
+
+        public boolean isPowerBadge() {
+            return powerBadge;
+        }
+
         @JsonProperty("fid")
         private int fid;
 
@@ -156,7 +276,10 @@ public class WebhookData {
         @JsonProperty("bio")
         private Bio bio;
 
-        // Getters and setters
+        public Bio getBio() {
+            return bio;
+        }
+// Getters and setters
 
         @Override
         public String toString() {
@@ -167,6 +290,14 @@ public class WebhookData {
     }
 
     public static class Bio {
+        public String getText() {
+            return text;
+        }
+
+        public List<Object> getMentionedProfiles() {
+            return mentionedProfiles;
+        }
+
         @JsonProperty("text")
         private String text;
 
@@ -185,6 +316,14 @@ public class WebhookData {
     }
 
     public static class VerifiedAddresses {
+        public List<String> getEthAddresses() {
+            return ethAddresses;
+        }
+
+        public List<String> getSolAddresses() {
+            return solAddresses;
+        }
+
         @JsonProperty("eth_addresses")
         private List<String> ethAddresses;
 
@@ -203,6 +342,22 @@ public class WebhookData {
     }
 
     public static class Reactions {
+        public int getLikesCount() {
+            return likesCount;
+        }
+
+        public int getRecastsCount() {
+            return recastsCount;
+        }
+
+        public List<Object> getLikes() {
+            return likes;
+        }
+
+        public List<Object> getRecasts() {
+            return recasts;
+        }
+
         @JsonProperty("likes_count")
         private int likesCount;
 
@@ -233,6 +388,10 @@ public class WebhookData {
         private int count;
 
         // Getters and setters
+
+        public int getCount() {
+            return count;
+        }
 
         @Override
         public String toString() {
@@ -272,6 +431,58 @@ public class WebhookData {
 
         @JsonProperty("verifications")
         private List<String> verifications;
+
+        public String getObject() {
+            return object;
+        }
+
+        public int getFid() {
+            return fid;
+        }
+
+        public String getCustodyAddress() {
+            return custodyAddress;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public String getPfpUrl() {
+            return pfpUrl;
+        }
+
+        public Profile getProfile() {
+            return profile;
+        }
+
+        public int getFollowerCount() {
+            return followerCount;
+        }
+
+        public int getFollowingCount() {
+            return followingCount;
+        }
+
+        public List<String> getVerifications() {
+            return verifications;
+        }
+
+        public VerifiedAddresses getVerifiedAddresses() {
+            return verifiedAddresses;
+        }
+
+        public String getActiveStatus() {
+            return activeStatus;
+        }
+
+        public boolean isPowerBadge() {
+            return powerBadge;
+        }
 
         @JsonProperty("verified_addresses")
         private VerifiedAddresses verifiedAddresses;
