@@ -4,30 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
-public class WebhookData {
-    @JsonProperty("created_at")
-    private long createdAt;
-
-    public long getCreatedAt() {
-        return createdAt;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public Data getData() {
-        return data;
-    }
-
-    @JsonProperty("type")
-    private String type;
-
-    @JsonProperty("data")
-    private Data data;
-
-    // Getters and setters
-
+public record WebhookData(@JsonProperty("created_at") long createdAt,
+                          @JsonProperty("type") String type,
+                          @JsonProperty("data") Data data) {
     @Override
     public String toString() {
         return "WebhookData{" +
@@ -37,106 +16,22 @@ public class WebhookData {
                 '}';
     }
 
-    public static class Data {
-        @JsonProperty("object")
-        private String object;
-
-        public String getObject() {
-            return object;
-        }
-
-        public String getHash() {
-            return hash;
-        }
-
-        public String getThreadHash() {
-            return threadHash;
-        }
-
-        public String getParentHash() {
-            return parentHash;
-        }
-
-        public String getParentUrl() {
-            return parentUrl;
-        }
-
-        public String getRootParentUrl() {
-            return rootParentUrl;
-        }
-
-        public Author getParentAuthor() {
-            return parentAuthor;
-        }
-
-        public Author getAuthor() {
-            return author;
-        }
-
-        public String getText() {
-            return text;
-        }
-
-        public String getTimestamp() {
-            return timestamp;
-        }
-
-        public List<Object> getEmbeds() {
-            return embeds;
-        }
-
-        public Reactions getReactions() {
-            return reactions;
-        }
-
-        public Replies getReplies() {
-            return replies;
-        }
-
-        public List<MentionedProfile> getMentionedProfiles() {
-            return mentionedProfiles;
-        }
-
-        @JsonProperty("hash")
-        private String hash;
-
-        @JsonProperty("thread_hash")
-        private String threadHash;
-
-        @JsonProperty("parent_hash")
-        private String parentHash;
-
-        @JsonProperty("parent_url")
-        private String parentUrl;
-
-        @JsonProperty("root_parent_url")
-        private String rootParentUrl;
-
-        @JsonProperty("parent_author")
-        private Author parentAuthor;
-
-        @JsonProperty("author")
-        private Author author;
-
-        @JsonProperty("text")
-        private String text;
-
-        @JsonProperty("timestamp")
-        private String timestamp;
-
-        @JsonProperty("embeds")
-        private List<Object> embeds;
-
-        @JsonProperty("reactions")
-        private Reactions reactions;
-
-        @JsonProperty("replies")
-        private Replies replies;
-
-        @JsonProperty("mentioned_profiles")
-        private List<MentionedProfile> mentionedProfiles;
-        // Getters and setters
-
+    public record Data(
+            @JsonProperty("object") String object,
+            @JsonProperty("hash") String hash,
+            @JsonProperty("thread_hash") String threadHash,
+            @JsonProperty("parent_hash") String parentHash,
+            @JsonProperty("parent_url") String parentUrl,
+            @JsonProperty("root_parent_url") String rootParentUrl,
+            @JsonProperty("parent_author") Author parentAuthor,
+            @JsonProperty("author") Author author,
+            @JsonProperty("text") String text,
+            @JsonProperty("timestamp") String timestamp,
+            @JsonProperty("embeds") List<Object> embeds,
+            @JsonProperty("reactions") Reactions reactions,
+            @JsonProperty("replies") Replies replies,
+            @JsonProperty("mentioned_profiles") List<MentionedProfile> mentionedProfiles
+    ) {
         @Override
         public String toString() {
             return "Data{" +
@@ -158,100 +53,21 @@ public class WebhookData {
         }
     }
 
-    public static class Author {
-        @JsonProperty("object")
-        private String object;
-
-        public String getObject() {
-            return object;
-        }
-
-        public int getFid() {
-            return fid;
-        }
-
-        public String getCustodyAddress() {
-            return custodyAddress;
-        }
-
-        public String getUsername() {
-            return username;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public String getPfpUrl() {
-            return pfpUrl;
-        }
-
-        public Profile getProfile() {
-            return profile;
-        }
-
-        public int getFollowerCount() {
-            return followerCount;
-        }
-
-        public int getFollowingCount() {
-            return followingCount;
-        }
-
-        public List<String> getVerifications() {
-            return verifications;
-        }
-
-        public VerifiedAddresses getVerifiedAddresses() {
-            return verifiedAddresses;
-        }
-
-        public String getActiveStatus() {
-            return activeStatus;
-        }
-
-        public boolean isPowerBadge() {
-            return powerBadge;
-        }
-
-        @JsonProperty("fid")
-        private int fid;
-
-        @JsonProperty("custody_address")
-        private String custodyAddress;
-
-        @JsonProperty("username")
-        private String username;
-
-        @JsonProperty("display_name")
-        private String displayName;
-
-        @JsonProperty("pfp_url")
-        private String pfpUrl;
-
-        @JsonProperty("profile")
-        private Profile profile;
-
-        @JsonProperty("follower_count")
-        private int followerCount;
-
-        @JsonProperty("following_count")
-        private int followingCount;
-
-        @JsonProperty("verifications")
-        private List<String> verifications;
-
-        @JsonProperty("verified_addresses")
-        private VerifiedAddresses verifiedAddresses;
-
-        @JsonProperty("active_status")
-        private String activeStatus;
-
-        @JsonProperty("power_badge")
-        private boolean powerBadge;
-
-        // Getters and setters
-
+    public record Author(
+            @JsonProperty("object") String object,
+            @JsonProperty("fid") int fid,
+            @JsonProperty("custody_address") String custodyAddress,
+            @JsonProperty("username") String username,
+            @JsonProperty("display_name") String displayName,
+            @JsonProperty("pfp_url") String pfpUrl,
+            @JsonProperty("profile") Profile profile,
+            @JsonProperty("follower_count") int followerCount,
+            @JsonProperty("following_count") int followingCount,
+            @JsonProperty("verifications") List<String> verifications,
+            @JsonProperty("verified_addresses") VerifiedAddresses verifiedAddresses,
+            @JsonProperty("active_status") String activeStatus,
+            @JsonProperty("power_badge") boolean powerBadge
+    ) {
         @Override
         public String toString() {
             return "Author{" +
@@ -272,15 +88,7 @@ public class WebhookData {
         }
     }
 
-    public static class Profile {
-        @JsonProperty("bio")
-        private Bio bio;
-
-        public Bio getBio() {
-            return bio;
-        }
-// Getters and setters
-
+    public record Profile(@JsonProperty("bio") Bio bio) {
         @Override
         public String toString() {
             return "Profile{" +
@@ -289,23 +97,10 @@ public class WebhookData {
         }
     }
 
-    public static class Bio {
-        public String getText() {
-            return text;
-        }
-
-        public List<Object> getMentionedProfiles() {
-            return mentionedProfiles;
-        }
-
-        @JsonProperty("text")
-        private String text;
-
-        @JsonProperty("mentioned_profiles")
-        private List<Object> mentionedProfiles;
-
-        // Getters and setters
-
+    public record Bio(
+            @JsonProperty("text") String text,
+            @JsonProperty("mentioned_profiles") List<Object> mentionedProfiles
+    ) {
         @Override
         public String toString() {
             return "Bio{" +
@@ -315,23 +110,9 @@ public class WebhookData {
         }
     }
 
-    public static class VerifiedAddresses {
-        public List<String> getEthAddresses() {
-            return ethAddresses;
-        }
-
-        public List<String> getSolAddresses() {
-            return solAddresses;
-        }
-
-        @JsonProperty("eth_addresses")
-        private List<String> ethAddresses;
-
-        @JsonProperty("sol_addresses")
-        private List<String> solAddresses;
-
-        // Getters and setters
-
+    public record VerifiedAddresses(
+            @JsonProperty("eth_addresses") List<String> ethAddresses,
+            @JsonProperty("sol_addresses") List<String> solAddresses) {
         @Override
         public String toString() {
             return "VerifiedAddresses{" +
@@ -341,37 +122,12 @@ public class WebhookData {
         }
     }
 
-    public static class Reactions {
-        public int getLikesCount() {
-            return likesCount;
-        }
-
-        public int getRecastsCount() {
-            return recastsCount;
-        }
-
-        public List<Object> getLikes() {
-            return likes;
-        }
-
-        public List<Object> getRecasts() {
-            return recasts;
-        }
-
-        @JsonProperty("likes_count")
-        private int likesCount;
-
-        @JsonProperty("recasts_count")
-        private int recastsCount;
-
-        @JsonProperty("likes")
-        private List<Object> likes;
-
-        @JsonProperty("recasts")
-        private List<Object> recasts;
-
-        // Getters and setters
-
+    public record Reactions(
+            @JsonProperty("likes_count") int likesCount,
+            @JsonProperty("recasts_count") int recastsCount,
+            @JsonProperty("likes") List<Object> likes,
+            @JsonProperty("recasts") List<Object> recasts
+    ) {
         @Override
         public String toString() {
             return "Reactions{" +
@@ -383,16 +139,9 @@ public class WebhookData {
         }
     }
 
-    public static class Replies {
-        @JsonProperty("count")
-        private int count;
-
-        // Getters and setters
-
-        public int getCount() {
-            return count;
-        }
-
+    public record Replies(
+            @JsonProperty("count") int count
+    ) {
         @Override
         public String toString() {
             return "Replies{" +
@@ -401,100 +150,21 @@ public class WebhookData {
         }
     }
 
-    public static class MentionedProfile {
-        @JsonProperty("object")
-        private String object;
-
-        @JsonProperty("fid")
-        private int fid;
-
-        @JsonProperty("custody_address")
-        private String custodyAddress;
-
-        @JsonProperty("username")
-        private String username;
-
-        @JsonProperty("display_name")
-        private String displayName;
-
-        @JsonProperty("pfp_url")
-        private String pfpUrl;
-
-        @JsonProperty("profile")
-        private Profile profile;
-
-        @JsonProperty("follower_count")
-        private int followerCount;
-
-        @JsonProperty("following_count")
-        private int followingCount;
-
-        @JsonProperty("verifications")
-        private List<String> verifications;
-
-        public String getObject() {
-            return object;
-        }
-
-        public int getFid() {
-            return fid;
-        }
-
-        public String getCustodyAddress() {
-            return custodyAddress;
-        }
-
-        public String getUsername() {
-            return username;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public String getPfpUrl() {
-            return pfpUrl;
-        }
-
-        public Profile getProfile() {
-            return profile;
-        }
-
-        public int getFollowerCount() {
-            return followerCount;
-        }
-
-        public int getFollowingCount() {
-            return followingCount;
-        }
-
-        public List<String> getVerifications() {
-            return verifications;
-        }
-
-        public VerifiedAddresses getVerifiedAddresses() {
-            return verifiedAddresses;
-        }
-
-        public String getActiveStatus() {
-            return activeStatus;
-        }
-
-        public boolean isPowerBadge() {
-            return powerBadge;
-        }
-
-        @JsonProperty("verified_addresses")
-        private VerifiedAddresses verifiedAddresses;
-
-        @JsonProperty("active_status")
-        private String activeStatus;
-
-        @JsonProperty("power_badge")
-        private boolean powerBadge;
-
-        // Getters and setters
-
+    public record MentionedProfile(
+            @JsonProperty("object") String object,
+            @JsonProperty("fid") int fid,
+            @JsonProperty("custody_address") String custodyAddress,
+            @JsonProperty("username") String username,
+            @JsonProperty("display_name") String displayName,
+            @JsonProperty("pfp_url") String pfpUrl,
+            @JsonProperty("profile") Profile profile,
+            @JsonProperty("follower_count") int followerCount,
+            @JsonProperty("following_count") int followingCount,
+            @JsonProperty("verifications") List<String> verifications,
+            @JsonProperty("verified_addresses") VerifiedAddresses verifiedAddresses,
+            @JsonProperty("active_status") String activeStatus,
+            @JsonProperty("power_badge") boolean powerBadge
+    ) {
         @Override
         public String toString() {
             return "MentionedProfile{" +

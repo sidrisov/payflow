@@ -70,9 +70,9 @@ public class WebhooksController {
                 data = mapper.readValue(body, WebhookData.class);
                 CastMessage message = CastMessageProducer.of(data);
 
-                PaymentBotJob job = new PaymentBotJob(data.getData().getHash(),
-                        data.getData().getAuthor().getFid(),
-                        new Date(data.getCreatedAt()),
+                PaymentBotJob job = new PaymentBotJob(data.data().hash(),
+                        data.data().author().fid(),
+                        new Date(data.createdAt()),
                         message);
                 paymentBotJobRepository.save(job);
             } catch (JsonProcessingException e) {

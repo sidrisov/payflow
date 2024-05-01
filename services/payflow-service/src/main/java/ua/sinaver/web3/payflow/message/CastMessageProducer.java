@@ -7,29 +7,38 @@ import java.util.List;
 public class CastMessageProducer {
     public static CastMessage of(WebhookData webhookData) {
 
-        CastMessage.Profile profile = new CastMessage.Profile(webhookData.getData().getAuthor().getFid(),
-                webhookData.getData().getAuthor().getCustodyAddress(),
-                webhookData.getData().getAuthor().getUsername(),
-                webhookData.getData().getAuthor().getDisplayName(),
-                webhookData.getData().getAuthor().getPfpUrl(),
-                webhookData.getData().getAuthor().getVerifications());
+        WebhookData.Data data = webhookData.data();
 
-        CastMessage.ParentProfile parentProfile = new CastMessage.ParentProfile(webhookData.getData().getParentAuthor().getFid());
+        CastMessage.Profile profile = new CastMessage.Profile(data.author().fid(),
+                data.author().custodyAddress(),
+                data.author().username(),
+                data.author().displayName(),
+                data.author().pfpUrl(),
+                data.author().verifications());
 
-        List<CastEmbed> embedList = webhookData.getData().getEmbeds().stream().map(embed -> new CastEmbed(embed.toString())).toList();
+        CastMessage.ParentProfile parentProfile = new CastMessage.ParentProfile(data.parentAuthor().fid());
 
-        List<CastMessage.Profile> mentionedProfiles = webhookData.getData().getMentionedProfiles().stream().map(webhookProfile -> new CastMessage.Profile(webhookProfile.getFid(), webhookProfile.getCustodyAddress(), webhookProfile.getUsername(), webhookProfile.getDisplayName(), webhookProfile.getPfpUrl(), webhookProfile.getVerifications())).toList();
+        List<CastEmbed> embedList = data.embeds().stream().map(
+                embed -> new CastEmbed(embed.toString())).toList();
 
-        return new CastMessage(webhookData.getData().getHash(),
-                webhookData.getData().getThreadHash(),
-                webhookData.getData().getParentHash(),
-                webhookData.getData().getParentUrl(),
-                webhookData.getData().getRootParentUrl(),
+        List<CastMessage.Profile> mentionedProfiles = data.mentionedProfiles().stream().map(
+                webhookProfile -> new CastMessage.Profile(webhookProfile.fid(),
+                webhookProfile.custodyAddress(),
+                webhookProfile.username(),
+                webhookProfile.displayName(),
+                webhookProfile.pfpUrl(),
+                webhookProfile.verifications())).toList();
+
+        return new CastMessage(data.hash(),
+                data.threadHash(),
+                data.parentHash(),
+                data.parentUrl(),
+                data.rootParentUrl(),
                 parentProfile,
                 profile,
-                webhookData.getData().getText(),
+                data.text(),
                 embedList,
-                webhookData.getData().getTimestamp(),
+                data.timestamp(),
                 mentionedProfiles);
     }
 }
