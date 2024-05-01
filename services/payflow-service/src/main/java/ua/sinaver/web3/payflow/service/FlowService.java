@@ -41,8 +41,12 @@ public class FlowService implements IFlowService {
 		// use same signer as default flow
 		val signer = user.getDefaultFlow().getSigner();
 		val signerProvider = user.getDefaultFlow().getSignerProvider();
+		val signerType = user.getDefaultFlow().getSignerType();
+		val signerCredential = user.getDefaultFlow().getSignerCredential();
 
-		val flow = new Flow(user.getId(), title, signer, signerProvider, "safe", null);
+		val flow = new Flow(user.getId(), title, signer,
+				signerProvider, signerType, signerCredential,
+				"safe", null);
 		val uuid = flow.getUuid();
 		val saltNonce = "payflow-alpha-".concat(uuid);
 		flow.setType(Flow.FlowType.JAR);
