@@ -47,6 +47,12 @@ public class Flow {
 	@Column(name = "signer_provider")
 	private String signerProvider;
 
+	@Column(name = "signer_type")
+	private String signerType;
+
+	@Column(name = "signer_credential")
+	private String signerCredential;
+
 	@Column
 	private String saltNonce;
 
@@ -63,6 +69,7 @@ public class Flow {
 
 	public Flow(Integer userId, String title, String signer,
 	            String signerProvider,
+	            String signerType, String signerCredential,
 	            String walletProvider,
 	            String saltNonce) {
 		this.userId = userId;
@@ -71,6 +78,8 @@ public class Flow {
 
 		this.signer = signer;
 		this.signerProvider = signerProvider;
+		this.signerType = signerType;
+		this.signerCredential = signerCredential;
 		this.walletProvider = walletProvider;
 		if (StringUtils.isBlank(saltNonce)) {
 			this.saltNonce = this.uuid;

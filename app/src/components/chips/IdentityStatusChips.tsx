@@ -21,7 +21,7 @@ export function InvitedChip(props: ChipProps) {
       size="small"
       variant="filled"
       label="invited"
-      sx={{ background: lightGreen.A700 }}
+      sx={{ fontWeight: 'bold', color: grey[800], background: lightGreen.A700 }}
     />
   );
 }
@@ -36,7 +36,9 @@ export function InviteChip({ identity, ...props }: { identity: IdentityType } & 
       clickable
       sx={{
         bgcolor: orange.A700,
-        '&:hover': { bgcolor: lightGreen.A700 }
+        fontWeight: 'bold',
+        color: grey[800],
+        '&:hover': { background: lightGreen.A700 }
       }}
     />
   );

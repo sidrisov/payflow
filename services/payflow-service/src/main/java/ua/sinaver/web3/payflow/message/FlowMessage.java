@@ -6,7 +6,9 @@ import ua.sinaver.web3.payflow.data.User;
 
 import java.util.List;
 
-public record FlowMessage(String signer, String signerProvider, String title,
+public record FlowMessage(String signer, String signerProvider,
+                          String signerType, String signerCredential,
+                          String title,
                           String type,
                           String uuid,
                           String walletProvider,
@@ -41,8 +43,8 @@ public record FlowMessage(String signer, String signerProvider, String title,
 
 	public static String getFlowSigner(FlowMessage flow, User user) {
 		// return flow specific signer
-		if (flow.signer() != null) {
-			return flow.signer();
+		if (flow.signer != null) {
+			return flow.signer;
 		}
 
 		// if not specified fallback to default user's signer, otherwise return identity
@@ -54,8 +56,8 @@ public record FlowMessage(String signer, String signerProvider, String title,
 	}
 
 	public static String getFlowSignerProvider(FlowMessage flow) {
-		if (flow.signerProvider() != null) {
-			return flow.signerProvider();
+		if (flow.signerProvider != null) {
+			return flow.signerProvider;
 		}
 
 		return null;
@@ -65,10 +67,14 @@ public record FlowMessage(String signer, String signerProvider, String title,
 		// still try fetch, since old flows were without signer field
 		val flowSigner = user != null ? getFlowSigner(flow, user) : null;
 		val flowSignerProvider = user != null ? getFlowSignerProvider(flow, user) : null;
+		val flowSignerType = user != null ? flow.getSignerType() : null;
+		val flowSignerCredential = user != null ? flow.getSignerCredential() : null;
+
 
 		val wallets = flow.getWallets().stream().map(WalletMessage::convert)
 				.toList();
 		return new FlowMessage(flowSigner, flowSignerProvider,
+				flowSignerType, flowSignerCredential,
 				flow.getTitle(),
 				flow.getType() != null ? flow.getType().toString() : "",
 				flow.getUuid(),
@@ -80,8 +86,10 @@ public record FlowMessage(String signer, String signerProvider, String title,
 		val flowSignerProvider = getFlowSignerProvider(flowMessage);
 
 		val flow = new Flow(user.getId(), flowMessage.title(),
-				flowSigner, flowSignerProvider, flowMessage.walletProvider(),
-				flowMessage.saltNonce());
+				flowSigner, flowSignerProvider,
+				flowMessage.signerType, flowMessage.signerCredential,
+				flowMessage.walletProvider,
+				flowMessage.saltNonce);
 		val wallets = flowMessage.wallets().stream().map(w -> {
 			val wallet = WalletMessage.convert(w);
 			wallet.setFlow(flow);

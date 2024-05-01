@@ -1,5 +1,4 @@
-import {
-  ChangeCircleOutlined} from '@mui/icons-material';
+import { ChangeCircleOutlined } from '@mui/icons-material';
 import { Stack, Typography, IconButton } from '@mui/material';
 import { useAccount } from 'wagmi';
 import { FlowType } from '../../types/FlowType';
@@ -16,17 +15,19 @@ export function SwitchFlowSignerSection({ flow }: { flow: FlowType }) {
   console.log(wallets);
 
   return (
-    <Stack spacing={1} alignItems="center">
+    <Stack spacing={1} alignItems="flex-start">
       <Typography variant="subtitle2">
-        Please, connect following flow signer:{' '}
+        Please, connect signer:{' '}
         <u>
-          <b>{shortenWalletAddressLabel(flow.signer)}</b>
+          <b>
+            {flow.signerCredential ? flow.signerCredential : shortenWalletAddressLabel(flow.signer)}
+          </b>
         </u>
       </Typography>
 
       <Stack direction="row" spacing={1} alignItems="center">
         <Typography variant="subtitle2">
-          Currently connected signer:{' '}
+          Connected signer:{' '}
           <u>
             <b>{shortenWalletAddressLabel(address)}</b>
           </u>
