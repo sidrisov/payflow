@@ -11,9 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.config.WebhooksConfig;
 import ua.sinaver.web3.payflow.data.bot.PaymentBotJob;
-import ua.sinaver.web3.payflow.data.webhooks.WebhookData;
 import ua.sinaver.web3.payflow.message.CastMessage;
 import ua.sinaver.web3.payflow.message.CastMessageProducer;
+import ua.sinaver.web3.payflow.message.WebhookData;
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
 
 import javax.crypto.Mac;
