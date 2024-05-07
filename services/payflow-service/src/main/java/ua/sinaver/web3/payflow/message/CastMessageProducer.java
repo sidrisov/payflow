@@ -1,7 +1,5 @@
 package ua.sinaver.web3.payflow.message;
 
-import ua.sinaver.web3.payflow.data.webhooks.WebhookData;
-
 import java.util.List;
 
 public class CastMessageProducer {

@@ -1,12 +1,12 @@
-package ua.sinaver.web3.payflow.data.webhooks;
+package ua.sinaver.web3.payflow.message;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
 public record WebhookData(@JsonProperty("created_at") long createdAt,
-                          @JsonProperty("type") String type,
-                          @JsonProperty("data") Data data) {
+                          String type,
+                          Data data) {
     @Override
     public String toString() {
         return "WebhookData{" +
@@ -17,19 +17,19 @@ public record WebhookData(@JsonProperty("created_at") long createdAt,
     }
 
     public record Data(
-            @JsonProperty("object") String object,
-            @JsonProperty("hash") String hash,
+            String object,
+            String hash,
             @JsonProperty("thread_hash") String threadHash,
             @JsonProperty("parent_hash") String parentHash,
             @JsonProperty("parent_url") String parentUrl,
             @JsonProperty("root_parent_url") String rootParentUrl,
             @JsonProperty("parent_author") Author parentAuthor,
-            @JsonProperty("author") Author author,
-            @JsonProperty("text") String text,
-            @JsonProperty("timestamp") String timestamp,
-            @JsonProperty("embeds") List<Object> embeds,
-            @JsonProperty("reactions") Reactions reactions,
-            @JsonProperty("replies") Replies replies,
+            Author author,
+            String text,
+            String timestamp,
+            List<Object> embeds,
+            Reactions reactions,
+            Replies replies,
             @JsonProperty("mentioned_profiles") List<MentionedProfile> mentionedProfiles
     ) {
         @Override
@@ -54,16 +54,16 @@ public record WebhookData(@JsonProperty("created_at") long createdAt,
     }
 
     public record Author(
-            @JsonProperty("object") String object,
-            @JsonProperty("fid") int fid,
+            String object,
+            int fid,
             @JsonProperty("custody_address") String custodyAddress,
-            @JsonProperty("username") String username,
+            String username,
             @JsonProperty("display_name") String displayName,
             @JsonProperty("pfp_url") String pfpUrl,
-            @JsonProperty("profile") Profile profile,
+            Profile profile,
             @JsonProperty("follower_count") int followerCount,
             @JsonProperty("following_count") int followingCount,
-            @JsonProperty("verifications") List<String> verifications,
+            List<String> verifications,
             @JsonProperty("verified_addresses") VerifiedAddresses verifiedAddresses,
             @JsonProperty("active_status") String activeStatus,
             @JsonProperty("power_badge") boolean powerBadge
@@ -98,7 +98,7 @@ public record WebhookData(@JsonProperty("created_at") long createdAt,
     }
 
     public record Bio(
-            @JsonProperty("text") String text,
+            String text,
             @JsonProperty("mentioned_profiles") List<Object> mentionedProfiles
     ) {
         @Override
@@ -125,8 +125,8 @@ public record WebhookData(@JsonProperty("created_at") long createdAt,
     public record Reactions(
             @JsonProperty("likes_count") int likesCount,
             @JsonProperty("recasts_count") int recastsCount,
-            @JsonProperty("likes") List<Object> likes,
-            @JsonProperty("recasts") List<Object> recasts
+            List<Object> likes,
+            List<Object> recasts
     ) {
         @Override
         public String toString() {
@@ -140,7 +140,7 @@ public record WebhookData(@JsonProperty("created_at") long createdAt,
     }
 
     public record Replies(
-            @JsonProperty("count") int count
+            int count
     ) {
         @Override
         public String toString() {
@@ -151,16 +151,16 @@ public record WebhookData(@JsonProperty("created_at") long createdAt,
     }
 
     public record MentionedProfile(
-            @JsonProperty("object") String object,
-            @JsonProperty("fid") int fid,
+            String object,
+            int fid,
             @JsonProperty("custody_address") String custodyAddress,
-            @JsonProperty("username") String username,
+            String username,
             @JsonProperty("display_name") String displayName,
             @JsonProperty("pfp_url") String pfpUrl,
-            @JsonProperty("profile") Profile profile,
+            Profile profile,
             @JsonProperty("follower_count") int followerCount,
             @JsonProperty("following_count") int followingCount,
-            @JsonProperty("verifications") List<String> verifications,
+            List<String> verifications,
             @JsonProperty("verified_addresses") VerifiedAddresses verifiedAddresses,
             @JsonProperty("active_status") String activeStatus,
             @JsonProperty("power_badge") boolean powerBadge
