@@ -136,6 +136,8 @@ export function TokenAmountSection({
           wallets={compatibleWallets}
         />
         <TextField
+          autoFocus
+          focused
           fullWidth
           variant="standard"
           type="number"
