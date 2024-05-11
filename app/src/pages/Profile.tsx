@@ -27,7 +27,7 @@ import { isAlphanumericPlusFewSpecialChars } from '../utils/regex';
 import { green } from '@mui/material/colors';
 import { QUERY_SOCIALS } from '../utils/airstackQueries';
 import { useQuery } from '@airstack/airstack-react';
-import { convertSocialResults } from '../services/socials';
+import { convertSocialResults, normalizeUsername } from '../services/socials';
 import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';
 
 export default function Profile() {
@@ -97,13 +97,19 @@ export default function Profile() {
             identity.meta?.socials.find((s) => s.dappName === LENS_DAPP) ??
             identity.meta?.socials[0];
 
-          setDisplayName(socialInfo.profileDisplayName);
+          if (socialInfo.profileDisplayName) {
+            setDisplayName(socialInfo.profileDisplayName);
+          }
 
-          setUsername(
-            socialInfo.dappName === LENS_DAPP
+          const username = normalizeUsername(
+            (socialInfo.dappName === LENS_DAPP
               ? socialInfo.profileName.replace('lens/@', '')
-              : socialInfo.profileName
+              : socialInfo.profileName) ?? identity.meta?.ens
           );
+
+          if (username) {
+            setUsername(username);
+          }
 
           if (
             socialInfo.dappName === FARCASTER_DAPP ||
@@ -111,10 +117,8 @@ export default function Profile() {
           ) {
             setProfileImage(socialInfo.profileImage);
           }
-        } else {
-          if (identity.meta?.ensAvatar) {
-            setProfileImage(identity.meta?.ensAvatar);
-          }
+        } else if (identity.meta?.ensAvatar) {
+          setProfileImage(identity.meta?.ensAvatar);
         }
       }
     }
@@ -175,6 +179,8 @@ export default function Profile() {
               </Box>
               <TextField
                 fullWidth
+                focused
+                autoFocus
                 value={displayName}
                 label={'Display Name'}
                 InputProps={{

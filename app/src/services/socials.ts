@@ -317,3 +317,12 @@ export function convertSocialResults(wallet: Wallet): IdentityType {
 
   return { meta, address: wallet.addresses?.[0] ?? '0x' } as IdentityType;
 }
+
+export function normalizeUsername(username: string) {
+  return username
+    .replace('.eth', '')
+    .replace('.cb.id', '')
+    .replace('.xyz', '')
+    .replace('.base', '')
+    .replace('.degen', '');
+}
