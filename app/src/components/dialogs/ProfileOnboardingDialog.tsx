@@ -25,7 +25,7 @@ import { toast } from 'react-toastify';
 import { updateProfile } from '../../services/user';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../../utils/urlConstants';
-import { convertSocialResults } from '../../services/socials';
+import { convertSocialResults, normalizeUsername } from '../../services/socials';
 import { useQuery } from '@airstack/airstack-react';
 import CenteredCircularProgress from '../CenteredCircularProgress';
 import { isAlphanumericPlusFewSpecialChars as isAlphanumericWithSpecials } from '../../utils/regex';
@@ -99,9 +99,11 @@ export default function ProfileOnboardingDialog({
 
           if (!username || username === profile.identity) {
             setUsername(
-              socialInfo.dappName === LENS_DAPP
-                ? socialInfo.profileName.replace('lens/@', '')
-                : socialInfo.profileName
+              normalizeUsername(
+                socialInfo.dappName === LENS_DAPP
+                  ? socialInfo.profileName.replace('lens/@', '')
+                  : socialInfo.profileName
+              )
             );
           }
 
@@ -120,7 +122,7 @@ export default function ProfileOnboardingDialog({
           }
 
           if ((!username || username === profile.identity) && identity.meta?.ens) {
-            //setUsername(meta.ens);
+            setUsername(normalizeUsername(identity.meta.ens));
           }
 
           if (!profile.profileImage && identity.meta?.ensAvatar) {
