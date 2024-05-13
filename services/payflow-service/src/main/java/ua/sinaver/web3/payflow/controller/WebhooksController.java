@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.config.WebhooksConfig;
 import ua.sinaver.web3.payflow.data.bot.PaymentBotJob;
 import ua.sinaver.web3.payflow.message.CastMessage;
-import ua.sinaver.web3.payflow.message.CastMessageProducer;
-import ua.sinaver.web3.payflow.message.WebhookData;
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
 
 import javax.crypto.Mac;
@@ -21,6 +19,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
 import java.util.Date;
 
 @RestController
@@ -65,15 +64,15 @@ public class WebhooksController {
             }
 
             ObjectMapper mapper = new ObjectMapper();
-            WebhookData data;
+            CastMessage data;
             try {
-                data = mapper.readValue(body, WebhookData.class);
-                CastMessage message = CastMessageProducer.of(data);
+                data = mapper.readValue(body, CastMessage.class);
 
-                PaymentBotJob job = new PaymentBotJob(data.data().hash(),
-                        data.data().author().fid(),
-                        new Date(data.createdAt()),
-                        message);
+                PaymentBotJob job = new PaymentBotJob(data.hash(),
+                        data.author().fid(),
+                        Date.from(Instant.parse(data.timestamp())),
+                        data);
+
                 paymentBotJobRepository.save(job);
             } catch (JsonProcessingException e) {
                 LOGGER.error("Failed to parse the JSON response", e);
