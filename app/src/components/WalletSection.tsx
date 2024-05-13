@@ -17,7 +17,7 @@ export function WalletSection(props: { wallet: FlowWalletType; balance?: string 
       alignItems="center"
       minWidth={250}
       justifyContent="space-between"
-      sx={{ border: 1, borderRadius: 5, p: 1 }}>
+      sx={{ border: 1, borderRadius: 4, borderColor: 'divider', p: 1 }}>
       <Box display="flex" flexDirection="row" alignItems="center">
         <NetworkAvatar tooltip chainId={wallet.network} sx={{ width: 24, height: 24 }} />
         <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
