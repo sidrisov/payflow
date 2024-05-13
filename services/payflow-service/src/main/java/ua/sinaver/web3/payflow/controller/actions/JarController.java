@@ -44,7 +44,7 @@ public class JarController {
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameError("Cast action not verified!"));
+					new FrameResponse.FrameMessage("Cast action not verified!"));
 		}
 
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
@@ -57,14 +57,14 @@ public class JarController {
 			log.error("Only the author of the cast is allowed to create the contribution " +
 					"jar for it - clicked fid {} vs caster fid {} ", clickedFid, casterFid);
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameError("Use only for your casts!"));
+					new FrameResponse.FrameMessage("Use only for your casts!"));
 		}
 
 		val clickedProfile = frameService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
 			log.error("Clicked fid {} is not on payflow", clickedFid);
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameError("Sign up on Payflow first!"));
+					new FrameResponse.FrameMessage("Sign up on Payflow first!"));
 		}
 
 		// just responding with dummy frame

@@ -59,7 +59,6 @@ public class PaymentController {
 		return payments.stream()
 				.map(payment -> PaymentMessage.convert(payment, false, true))
 				.toList();
-
 	}
 
 	@GetMapping("/pending")
@@ -123,7 +122,9 @@ public class PaymentController {
 			payment.setCompletedDate(new Date());
 			log.debug("Payment was marked as complete: {}", payment);
 
-			if (!StringUtils.isBlank(payment.getSourceHash()) && !StringUtils.isBlank(payment.getHash())) {
+			// notify only for empty category as p2p payment
+			// handle with different messages for other kind of payments
+			if (!StringUtils.isBlank(payment.getSourceHash()) && !StringUtils.isBlank(payment.getHash()) && StringUtils.isBlank(payment.getCategory())) {
 				val senderFname = frameService.getIdentityFname(user.getIdentity());
 				val receiverFname = frameService.getIdentityFname(payment.getReceiver() != null ?
 						payment.getReceiver().getIdentity() : payment.getReceiverAddress());

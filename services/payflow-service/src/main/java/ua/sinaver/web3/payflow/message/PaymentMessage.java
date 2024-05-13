@@ -5,10 +5,12 @@ import ua.sinaver.web3.payflow.data.Payment;
 
 public record PaymentMessage(String referenceId,
                              Payment.PaymentType type,
+                             String category,
                              Payment.PaymentStatus status,
                              ProfileMetaMessage receiver,
                              FlowMessage receiverFlow,
                              String receiverAddress,
+                             Integer receiverFid,
                              ProfileMetaMessage sender,
                              int chainId,
                              String token,
@@ -22,6 +24,7 @@ public record PaymentMessage(String referenceId,
 		return new PaymentMessage(
 				includeRef ? payment.getReferenceId() : null,
 				payment.getType(),
+				payment.getCategory(),
 				payment.getStatus(),
 				payment.getReceiver() != null ?
 						ProfileMetaMessage.convert(payment.getReceiver(),
@@ -30,6 +33,7 @@ public record PaymentMessage(String referenceId,
 						FlowMessage.convert(payment.getReceiverFlow(), null)
 						: null,
 				payment.getReceiverAddress(),
+				payment.getReceiverFid(),
 				payment.getSender() != null ?
 						ProfileMetaMessage.convert(payment.getSender(), false) : null,
 				payment.getNetwork(),

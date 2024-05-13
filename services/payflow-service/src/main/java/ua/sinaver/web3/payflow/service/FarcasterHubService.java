@@ -67,28 +67,6 @@ public class FarcasterHubService implements IFarcasterHubService {
 	}
 
 	@Override
-	@Retryable
-	public NotificationResponse getFidNotifications(int fid, String cursor) {
-		log.debug("Calling Neynar Notifications API for fid {}",
-				fid);
-		try {
-			val response = neynarClient.get()
-					.uri(uriBuilder -> uriBuilder.path("/v2/farcaster/notifications")
-							.queryParam("fid", fid)
-							.queryParam("cursor", cursor)
-							.build())
-					.retrieve().bodyToMono(NotificationResponse.class).block();
-
-			log.trace("Response: {}", response);
-			return response;
-		} catch (Throwable t) {
-			log.debug("Exception calling Neynar Notifications API for fid {} - {}",
-					fid, t.getMessage());
-			throw t;
-		}
-	}
-
-	@Override
 	public CastMessage fetchCastByHash(String hash) {
 		log.debug("Calling Neynar Cast API to fetch by hash {}", hash);
 		try {

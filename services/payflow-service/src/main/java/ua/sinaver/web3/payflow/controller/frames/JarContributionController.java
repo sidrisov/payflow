@@ -105,7 +105,7 @@ public class JarContributionController {
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameError("Something went wrong!"));
+					new FrameResponse.FrameMessage("Something went wrong!"));
 		}
 
 		val clickedFid = validateMessage.action().interactor().fid();
@@ -117,27 +117,27 @@ public class JarContributionController {
 		if (clickedProfile == null) {
 			log.error("Clicked fid {} is not on payflow", clickedFid);
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameError("Sign up on Payflow first!"));
+					new FrameResponse.FrameMessage("Sign up on Payflow first!"));
 		}
 
 		if (clickedFid != casterFid) {
 			log.error("Only the author of the cast is allowed to create the contribution " +
 					"jar for it - clicked fid {} vs caster fid {} ", clickedFid, casterFid);
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameError("Can be used only on your casts!"));
+					new FrameResponse.FrameMessage("Can be used only on your casts!"));
 		}
 
 		if (StringUtils.isBlank(title)) {
 			log.error("Contribution jar title wasn't entered for profile {}",
 					clickedProfile.getUsername());
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameError("Enter title again!"));
+					new FrameResponse.FrameMessage("Enter title again!"));
 		}
 
 		val cast = farcasterHubService.fetchCastByHash(validateMessage.action().cast().hash());
 		if (cast == null) {
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameError("Something went wrong!"));
+					new FrameResponse.FrameMessage("Something went wrong!"));
 		}
 
 		val source = String.format("https://warpcast.com/%s/%s",
@@ -227,13 +227,13 @@ public class JarContributionController {
 		if (jar == null) {
 			log.error("Jar doesn't exist: {}", uuid);
 			return ResponseEntity.badRequest()
-					.body(new FrameResponse.FrameError("Jar doesn't exist!"));
+					.body(new FrameResponse.FrameMessage("Jar doesn't exist!"));
 		}
 
 		if (jar.flow().wallets().isEmpty()) {
 			log.error("Jar doesn't have any chains supported : {}", jar);
 			return ResponseEntity.internalServerError()
-					.body(new FrameResponse.FrameError("No chain options available"));
+					.body(new FrameResponse.FrameMessage("No chain options available"));
 		}
 
 		val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
@@ -298,19 +298,19 @@ public class JarContributionController {
 		if (jar == null) {
 			log.error("Jar doesn't exist: {}", uuid);
 			return ResponseEntity.badRequest()
-					.body(new FrameResponse.FrameError("Jar doesn't exist!"));
+					.body(new FrameResponse.FrameMessage("Jar doesn't exist!"));
 		}
 
 		if (jar.flow().wallets().isEmpty()) {
 			log.error("Jar doesn't have any chains supported : {}", jar);
 			return ResponseEntity.internalServerError()
-					.body(new FrameResponse.FrameError("No chain options available"));
+					.body(new FrameResponse.FrameMessage("No chain options available"));
 		}
 
 		if (buttonIndex > jar.flow().wallets().size()) {
 			log.error("Selected chain index not accepted: {} in {}", buttonIndex, jar);
 			return ResponseEntity.badRequest()
-					.body(new FrameResponse.FrameError("Selected chain not accepted!"));
+					.body(new FrameResponse.FrameMessage("Selected chain not accepted!"));
 		}
 
 		val receivingJarWallet = jar.flow().wallets().get(buttonIndex - 1);
@@ -319,7 +319,7 @@ public class JarContributionController {
 			log.error("Selected chain id not allowed for payments: {} in {}",
 					receivingJarWallet.network(), jar);
 			return ResponseEntity.badRequest()
-					.body(new FrameResponse.FrameError("Selected chain not supported!"));
+					.body(new FrameResponse.FrameMessage("Selected chain not supported!"));
 		}
 
 		val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
@@ -419,19 +419,19 @@ public class JarContributionController {
 		if (jar == null) {
 			log.error("Jar doesn't exist: {}", uuid);
 			return ResponseEntity.badRequest()
-					.body(new FrameResponse.FrameError("Jar doesn't exist!"));
+					.body(new FrameResponse.FrameMessage("Jar doesn't exist!"));
 		}
 
 		if (jar.flow().wallets().isEmpty()) {
 			log.error("Jar doesn't have any chains supported : {}", jar);
 			return ResponseEntity.internalServerError()
-					.body(new FrameResponse.FrameError("No chain options available"));
+					.body(new FrameResponse.FrameMessage("No chain options available"));
 		}
 
 		if (paymentState == null) {
 			log.error("Absent payment state for {}", jar);
 			return ResponseEntity.internalServerError()
-					.body(new FrameResponse.FrameError("Absent payment state"));
+					.body(new FrameResponse.FrameMessage("Absent payment state"));
 		}
 
 		log.debug("Previous payment state: {}", paymentState);
@@ -440,7 +440,7 @@ public class JarContributionController {
 			log.error("Selected chain id not allowed for payments: {} in {}",
 					paymentState.chainId(), jar);
 			return ResponseEntity.badRequest()
-					.body(new FrameResponse.FrameError("Selected chain not supported!"));
+					.body(new FrameResponse.FrameMessage("Selected chain not supported!"));
 		}
 
 		val tokens = PAYMENTS_CHAIN_TOKENS.get(paymentState.chainId());
@@ -448,7 +448,7 @@ public class JarContributionController {
 		if (buttonIndex > tokens.size()) {
 			log.error("Selected token index not accepted: {} in {}", buttonIndex, jar);
 			return ResponseEntity.badRequest()
-					.body(new FrameResponse.FrameError("Selected token not accepted!"));
+					.body(new FrameResponse.FrameMessage("Selected token not accepted!"));
 		}
 
 		Double usdAmount = null;
@@ -469,7 +469,7 @@ public class JarContributionController {
 		if (usdAmount == null) {
 			log.warn("Amount wasn't entered");
 			return ResponseEntity.badRequest()
-					.body(new FrameResponse.FrameError("Enter amount again!"));
+					.body(new FrameResponse.FrameMessage("Enter amount again!"));
 		}
 
 		val token = tokens.get(buttonIndex - 1);

@@ -42,14 +42,20 @@ public class Payment {
 	@JoinColumn(name = "receiver_flow_id", referencedColumnName = "id")
 	private Flow receiverFlow;
 
-	@Column(nullable = false)
-	private Integer network;
-
 	@Column(name = "sender_address")
 	private String senderAddress;
 
 	@Column(name = "receiver_address")
 	private String receiverAddress;
+
+	@Column(name = "receiver_fid")
+	private Integer receiverFid;
+
+	@Column
+	private String category;
+
+	@Column(nullable = false)
+	private Integer network;
 
 	@Column(nullable = false)
 	private String token;
