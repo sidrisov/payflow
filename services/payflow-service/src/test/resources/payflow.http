@@ -1,0 +1,93 @@
+### Send POST request with json body
+POST https://conversely-subtle-shad.ngrok-free.app/api/farcaster/webhooks/dummy
+Content-Type: application/json
+X-Neynar-Signature: testNeynarSignature
+
+{
+  "created_at": 1714063335,
+  "type": "cast.created",
+  "data": {
+    "object": "cast",
+    "hash": "0x7d97de95a4ba6431b62124fe0ab87bc717238203",
+    "thread_hash": "0x5bf8cc95b722f40e4d31a5830f86d6197808d4e2",
+    "parent_hash": "0x2228c93b597fdbd741fad9239230654c4afd97e7",
+    "parent_url": null,
+    "root_parent_url": "chain://eip155:1/erc721:0x2A9EA02E4c2dcd56Ba20628Fe1bd46bAe2C62746",
+    "parent_author": {
+      "fid": 19129
+    },
+    "author": {
+      "object": "user",
+      "fid": 19129,
+      "custody_address": "0x587bbc6cdc5bd7fca4fc6a56f354ace36915596e",
+      "username": "sinaver.eth",
+      "display_name": "Sinaver",
+      "pfp_url": "https://i.imgur.com/UCyKTNo.png",
+      "profile": {
+        "bio": {
+          "text": "Crimean building @payflow 🛡🌎🇺🇦 \n/payflow /ideas /crimea",
+          "mentioned_profiles": []
+        }
+      },
+      "follower_count": 2798,
+      "following_count": 353,
+      "verifications": [
+        "0x0dee77c83cb8b14fa95497825df93202abf6ad83"
+      ],
+      "verified_addresses": {
+        "eth_addresses": [
+          "0x0dee77c83cb8b14fa95497825df93202abf6ad83"
+        ],
+        "sol_addresses": []
+      },
+      "active_status": "active",
+      "power_badge": true
+    },
+    "text": "test @payflow",
+    "timestamp": "2024-04-25T16:42:12.000Z",
+    "embeds": [],
+    "reactions": {
+      "likes_count": 0,
+      "recasts_count": 0,
+      "likes": [],
+      "recasts": []
+    },
+    "replies": {
+      "count": 0
+    },
+    "mentioned_profiles": [
+      {
+        "object": "user",
+        "fid": 211734,
+        "custody_address": "0x0a35230d7f103a98f40a920a1655e7a9548fe23a",
+        "username": "payflow",
+        "display_name": "Payflow",
+        "pfp_url": "https://i.imgur.com/NSMcfrA.jpg",
+        "profile": {
+          "bio": {
+            "text": "Onchain Social Payments - join at payflow.me - built by @sinaver - feedback at payflowme.canny.io",
+            "mentioned_profiles": []
+          }
+        },
+        "follower_count": 486,
+        "following_count": 13,
+        "verifications": [
+          "0x5b7a11ba3f66bd2365b5f489b72dbb46d528da7a"
+        ],
+        "verified_addresses": {
+          "eth_addresses": [
+            "0x5b7a11ba3f66bd2365b5f489b72dbb46d528da7a"
+          ],
+          "sol_addresses": []
+        },
+        "active_status": "inactive",
+        "power_badge": false
+      }
+    ]
+  }
+}
+
+
+### Test Get for Webhooks
+GET https://conversely-subtle-shad.ngrok-free.app/api/farcaster/webhooks/testGet
+Accept: application/json
