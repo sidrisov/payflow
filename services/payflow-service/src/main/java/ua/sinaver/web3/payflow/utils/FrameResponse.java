@@ -113,7 +113,7 @@ public class FrameResponse {
 		}
 	}
 
-	public record FrameError(String message) {
+	public record FrameMessage(String message) {
 	}
 
 	public record ActionFrame(String type, String frameUrl) {

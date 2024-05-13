@@ -291,3 +291,24 @@ export const QUERY_SOCIALS_LIGHT = /* GraphQL */ `
     }
   }
 `;
+
+export const QUERY_FARCASTER_PROFILE = /* GraphQL */ `
+  query GetFarcasterProfile($fid: String) {
+    Socials(
+      input: {
+        filter: { dappName: { _eq: farcaster }, userId: { _eq: $fid } }
+        blockchain: ethereum
+      }
+    ) {
+      Social {
+        profileName
+        profileDisplayName
+        profileImageContentValue {
+          image {
+            extraSmall
+          }
+        }
+      }
+    }
+  }
+`;

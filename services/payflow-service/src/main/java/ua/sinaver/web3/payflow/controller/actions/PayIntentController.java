@@ -3,7 +3,6 @@ package ua.sinaver.web3.payflow.controller.actions;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -63,17 +62,17 @@ public class PayIntentController {
 	}
 
 	@PostMapping("/intent")
-	public ResponseEntity<FrameResponse.FrameError> invite(@RequestBody FrameMessage castActionMessage,
-			@RequestParam(name = "amount", required = false, defaultValue = "1.0") Double amount,
-			@RequestParam(name = "token", required = false, defaultValue = "degen") String token,
-			@RequestParam(name = "chain", required = false, defaultValue = "base") String chain) {
+	public ResponseEntity<FrameResponse.FrameMessage> invite(@RequestBody FrameMessage castActionMessage,
+	                                                         @RequestParam(name = "amount", required = false, defaultValue = "1.0") Double amount,
+	                                                         @RequestParam(name = "token", required = false, defaultValue = "degen") String token,
+	                                                         @RequestParam(name = "chain", required = false, defaultValue = "base") String chain) {
 		log.debug("Received cast action: pay intent {}", castActionMessage);
 		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
 				castActionMessage.trustedData().messageBytes());
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameError("Cast action not verified!"));
+					new FrameResponse.FrameMessage("Cast action not verified!"));
 		}
 
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
@@ -81,7 +80,7 @@ public class PayIntentController {
 
 		if (!SUPPORTED_FRAME_PAYMENTS_TOKENS.contains(token)) {
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameError("Token not supported!"));
+					new FrameResponse.FrameMessage("Token not supported!"));
 		}
 
 		val clickedFid = validateMessage.action().interactor().fid();
@@ -91,7 +90,7 @@ public class PayIntentController {
 		if (clickedProfile == null) {
 			log.error("Clicked fid {} is not on payflow", clickedFid);
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameError("Sign up on Payflow first!"));
+					new FrameResponse.FrameMessage("Sign up on Payflow first!"));
 		}
 
 		// check if profile exist
@@ -107,20 +106,20 @@ public class PayIntentController {
 				paymentAddress = paymentIdentity.address();
 			} else {
 				return ResponseEntity.badRequest().body(
-						new FrameResponse.FrameError("Recipient address not found!"));
+						new FrameResponse.FrameMessage("Recipient address not found!"));
 			}
 		}
 
 		if (amount.isNaN() && amount <= 0 && amount >= 10) {
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameError("Payment amount should be between $0-10"));
+					new FrameResponse.FrameMessage("Payment amount should be between $0-10"));
 		}
 
 		val chainId = PAYMENT_CHAIN_IDS.get(chain);
 
 		if (chainId == null) {
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameError("Chain not supported"));
+					new FrameResponse.FrameMessage("Chain not supported"));
 		}
 
 		// check if profile accepts payment on the chain
@@ -129,7 +128,7 @@ public class PayIntentController {
 					.anyMatch(w -> w.getNetwork().equals(chainId));
 			if (!isWalletPresent) {
 				return ResponseEntity.badRequest().body(
-						new FrameResponse.FrameError("Chain not accepted!"));
+						new FrameResponse.FrameMessage("Chain not accepted!"));
 			}
 		}
 
@@ -154,7 +153,7 @@ public class PayIntentController {
 		log.debug("Payment intent saved: {}", payment);
 
 		return ResponseEntity.ok().body(
-				new FrameResponse.FrameError(String.format("$%s payment intent submitted!",
+				new FrameResponse.FrameMessage(String.format("$%s payment intent submitted!",
 						amount)));
 	}
 }

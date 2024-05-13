@@ -179,8 +179,6 @@ export default function Profile() {
               </Box>
               <TextField
                 fullWidth
-                focused
-                autoFocus
                 value={displayName}
                 label={'Display Name'}
                 InputProps={{

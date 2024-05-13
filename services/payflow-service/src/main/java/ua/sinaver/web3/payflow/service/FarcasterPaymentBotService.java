@@ -12,7 +12,6 @@ import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.bot.PaymentBotJob;
 import ua.sinaver.web3.payflow.message.CastEmbed;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
-import ua.sinaver.web3.payflow.message.NotificationResponse;
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.api.IFlowService;
@@ -21,10 +20,7 @@ import ua.sinaver.web3.payflow.service.api.IIdentityService;
 
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import static ua.sinaver.web3.payflow.service.TransactionService.*;
@@ -33,8 +29,6 @@ import static ua.sinaver.web3.payflow.service.TransactionService.*;
 @Transactional
 @Slf4j
 public class FarcasterPaymentBotService {
-
-	private static final int PAYFLOW_FID = 211734;
 
 	@Autowired
 	private FarcasterHubService hubService;
@@ -47,9 +41,6 @@ public class FarcasterPaymentBotService {
 
 	@Autowired
 	private IFlowService flowService;
-
-	@Autowired
-	private WalletService walletService;
 
 	@Autowired
 	private PaymentRepository paymentRepository;
@@ -103,49 +94,6 @@ public class FarcasterPaymentBotService {
 		}
 
 		return false;
-	}
-
-	@Scheduled(fixedRate = 5 * 1000)
-	void fetchBotMentions() {
-		if (!isBotEnabled) {
-			return;
-		}
-
-		val latestPaymentJob = paymentBotJobRepository.findFirstByOrderByCastedDateDesc();
-		val previousMostRecentTimestamp = latestPaymentJob
-				.map(PaymentBotJob::getCastedDate)
-				.orElse(new Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)));
-
-		String nextCursor = null;
-		NotificationResponse response;
-		val continueFetching = new AtomicBoolean(true);
-		do {
-			response = hubService.getFidNotifications(PAYFLOW_FID, nextCursor);
-			nextCursor = response.next().cursor();
-			val mentions = response.notifications().stream().filter(n -> n.type().equals("mention"))
-					.toList();
-
-			log.debug("Fetched payflow mentions: {}", mentions);
-
-			if (!mentions.isEmpty()) {
-				val jobs = mentions.stream().filter(mention -> {
-							if (mention.mostRecentTimestamp().after(previousMostRecentTimestamp)) {
-								return true;
-							} else {
-								// ideally stop iterating once first occurred
-								continueFetching.set(false);
-								return false;
-							}
-						}
-				).map(mention ->
-						new PaymentBotJob(mention.cast().hash(),
-								mention.cast().author().fid(),
-								mention.mostRecentTimestamp(),
-								mention.cast())).toList();
-				log.debug("Storing mentions - count {}", jobs);
-				paymentBotJobRepository.saveAll(jobs);
-			}
-		} while (continueFetching.get() && nextCursor != null);
 	}
 
 	@Scheduled(fixedRate = 5 * 1000)

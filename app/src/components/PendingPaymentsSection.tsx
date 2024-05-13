@@ -11,28 +11,29 @@ import {
 } from '@mui/material';
 import { PaymentType } from '../types/PaymentType';
 import { ProfileSection } from './ProfileSection';
-import { useContext, useState } from 'react';
-import { ExpandLess, ExpandMore, More, MoreHoriz, Payments } from '@mui/icons-material';
+import { useState } from 'react';
+import { ExpandLess, ExpandMore, MoreHoriz, Payments } from '@mui/icons-material';
 import TokenAvatar from './avatars/TokenAvatar';
 import { getNetworkDisplayName } from '../utils/networks';
 import NetworkAvatar from './avatars/NetworkAvatar';
 import getTokenName from '../utils/erc20contracts';
 import { IdentityType, SelectedIdentityType } from '../types/ProfleType';
 import PaymentDialog from './dialogs/PaymentDialog';
-import { ProfileContext } from '../contexts/UserContext';
 import { AddressSection } from './AddressSection';
 import { PaymentMenu } from './menu/PaymentMenu';
+import GiftStorageDialog from './dialogs/GiftStorageDialog';
+import { FlowType } from '../types/FlowType';
+import { FarcasterProfileSection } from './FarcasterProfileSection';
 
 export function PendingPaymentsSection({
+  flow,
   payments,
   ...props
-}: { payments?: PaymentType[] } & StackProps) {
+}: { flow: FlowType; payments?: PaymentType[] } & StackProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [expand, setExpand] = useState<boolean>(false);
   const [payment, setPayment] = useState<PaymentType>();
-
-  const { profile } = useContext(ProfileContext);
 
   const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
   const [openPaymentMenu, setOpenPaymentMenu] = useState(false);
@@ -60,97 +61,159 @@ export function PendingPaymentsSection({
           </Box>
           {expand && (
             <Stack p={2} direction="row" spacing={3} overflow="auto">
-              {payments.map((payment) => (
-                <Box
-                  key={payment.referenceId}
-                  component={Button}
-                  variant="outlined"
-                  onClick={() => {
-                    setPayment(payment);
-                    setOpenPaymentDialog(true);
-                  }}
-                  sx={{
-                    p: 1.5,
-                    border: 1,
-                    borderRadius: 5,
-                    borderColor: 'divider',
-                    minWidth: isMobile ? 145 : 155,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'flex-start',
-                    gap: 1,
-                    textTransform: 'none',
-                    color: 'inherit'
-                  }}>
+              {payments
+                .filter(
+                  (payment) =>
+                    payment.category === 'fc_storage' && payment.receiverFid !== undefined
+                )
+                .map((payment) => (
                   <Box
-                    alignSelf="stretch"
-                    display="flex"
-                    flexDirection="row"
-                    alignItems="center"
-                    justifyContent="space-between">
-                    <Typography variant="subtitle2" fontWeight="bold" fontSize={14}>
-                      Intent to pay
-                    </Typography>
-                    <IconButton
-                      size="small"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        setPayment(payment);
-                        setOpenPaymentMenu(true);
-                        setPaymentMenuAnchorEl(event.currentTarget);
-                      }}>
-                      <MoreHoriz fontSize="small" />
-                    </IconButton>
-                  </Box>
+                    key={payment.referenceId}
+                    component={Button}
+                    variant="outlined"
+                    onClick={() => {
+                      setPayment(payment);
+                      setOpenPaymentDialog(true);
+                    }}
+                    sx={{
+                      p: 1.5,
+                      border: 1,
+                      borderRadius: 5,
+                      borderColor: 'divider',
+                      minWidth: isMobile ? 145 : 155,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'flex-start',
+                      alignItems: 'flex-start',
+                      gap: 1,
+                      textTransform: 'none',
+                      color: 'inherit'
+                    }}>
+                    <Box
+                      alignSelf="stretch"
+                      display="flex"
+                      flexDirection="row"
+                      alignItems="center"
+                      justifyContent="space-between">
+                      <Typography variant="subtitle2" fontWeight="bold" fontSize={14}>
+                        Gift Storage
+                      </Typography>
+                      <IconButton
+                        size="small"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setPayment(payment);
+                          setOpenPaymentMenu(true);
+                          setPaymentMenuAnchorEl(event.currentTarget);
+                        }}>
+                        <MoreHoriz fontSize="small" />
+                      </IconButton>
+                    </Box>
 
-                  {payment.receiver ? (
-                    <ProfileSection profile={payment.receiver} />
-                  ) : (
-                    <AddressSection identity={{ address: payment.receiverAddress }} />
-                  )}
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="flex-start"
-                    spacing={0.5}
-                    useFlexGap
-                    flexWrap="wrap">
-                    <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
-                      <b>${payment.usdAmount}</b> of
+                    {payment.receiverFid && <FarcasterProfileSection fid={payment.receiverFid} />}
+
+                    <Typography
+                      textAlign="start"
+                      variant="subtitle2"
+                      fontWeight="bold"
+                      fontSize={isMobile ? 12 : 13}>
+                      1 Unit of Storage
                     </Typography>
-                    <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
-                      <b>{getTokenName(payment.token)}</b>
-                    </Typography>
-                    <TokenAvatar
-                      tokenName={payment.token}
-                      sx={{
-                        width: 15,
-                        height: 15
-                      }}
-                    />
-                    <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
-                      on <b>{getNetworkDisplayName(payment.chainId)}</b>
-                    </Typography>
-                    <NetworkAvatar
-                      chainId={payment.chainId}
-                      sx={{
-                        width: 15,
-                        height: 15
-                      }}
-                    />
-                  </Stack>
-                </Box>
-              ))}
+                  </Box>
+                ))}
+              {payments
+                .filter((payment) => !payment.category)
+                .map((payment) => (
+                  <Box
+                    key={payment.referenceId}
+                    component={Button}
+                    variant="outlined"
+                    onClick={() => {
+                      setPayment(payment);
+                      setOpenPaymentDialog(true);
+                    }}
+                    sx={{
+                      p: 1.5,
+                      border: 1,
+                      borderRadius: 5,
+                      borderColor: 'divider',
+                      minWidth: isMobile ? 145 : 155,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'flex-start',
+                      alignItems: 'flex-start',
+                      gap: 1,
+                      textTransform: 'none',
+                      color: 'inherit'
+                    }}>
+                    <Box
+                      alignSelf="stretch"
+                      display="flex"
+                      flexDirection="row"
+                      alignItems="center"
+                      justifyContent="space-between">
+                      <Typography variant="subtitle2" fontWeight="bold" fontSize={14}>
+                        Intent to pay
+                      </Typography>
+                      <IconButton
+                        size="small"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setPayment(payment);
+                          setOpenPaymentMenu(true);
+                          setPaymentMenuAnchorEl(event.currentTarget);
+                        }}>
+                        <MoreHoriz fontSize="small" />
+                      </IconButton>
+                    </Box>
+
+                    {payment.receiver ? (
+                      <ProfileSection profile={payment.receiver} />
+                    ) : (
+                      <AddressSection identity={{ address: payment.receiverAddress }} />
+                    )}
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      justifyContent="flex-start"
+                      spacing={0.5}
+                      useFlexGap
+                      flexWrap="wrap">
+                      <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
+                        <b>${payment.usdAmount}</b> of
+                      </Typography>
+                      <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
+                        <b>{getTokenName(payment.token)}</b>
+                      </Typography>
+                      <TokenAvatar
+                        tokenName={payment.token}
+                        sx={{
+                          width: 15,
+                          height: 15
+                        }}
+                      />
+                      <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
+                        on <b>{getNetworkDisplayName(payment.chainId)}</b>
+                      </Typography>
+                      <NetworkAvatar
+                        chainId={payment.chainId}
+                        sx={{
+                          width: 15,
+                          height: 15
+                        }}
+                      />
+                    </Stack>
+                  </Box>
+                ))}
             </Stack>
           )}
         </Stack>
-        {openPaymentDialog && payment && profile?.defaultFlow && (
+        {openPaymentDialog && payment && !payment.category && flow && (
           <PaymentDialog
             open={openPaymentDialog}
             paymentType="payflow"
             payment={payment}
-            sender={profile.defaultFlow}
+            sender={flow}
             recipient={
               {
                 identity: {
@@ -168,6 +231,17 @@ export function PendingPaymentsSection({
                 type: payment.receiver ? 'profile' : 'address'
               } as SelectedIdentityType
             }
+            closeStateCallback={async () => {
+              setOpenPaymentDialog(false);
+              setPayment(undefined);
+            }}
+          />
+        )}
+
+        {openPaymentDialog && payment?.category === 'fc_storage' && (
+          <GiftStorageDialog
+            open={openPaymentDialog}
+            title="Gift Storage"
             closeStateCallback={async () => {
               setOpenPaymentDialog(false);
               setPayment(undefined);

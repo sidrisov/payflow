@@ -300,11 +300,11 @@ public class FramePaymentController {
 		if (payment == null) {
 			log.error("Payment was not found for refId {}", refId);
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameError("Payment not found!"));
+					new FrameResponse.FrameMessage("Payment not found!"));
 		} else if (!payment.getStatus().equals(Payment.PaymentStatus.PENDING)) {
 			log.warn("Payment was completed already {} - {}", refId, payment);
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameError("Payment was completed already!"));
+					new FrameResponse.FrameMessage("Payment was completed already!"));
 		}
 
 		val paymentIdentity = payment.getReceiver() != null ?

@@ -43,7 +43,7 @@ public class PayProfileController {
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameError("Cast action not verified!"));
+					new FrameResponse.FrameMessage("Cast action not verified!"));
 		}
 
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
@@ -54,7 +54,7 @@ public class PayProfileController {
 		if (clickedProfile == null) {
 			log.error("Caster fid {} is not on Payflow", casterFid);
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameError("User not on Payflow! Invite :)"));
+					new FrameResponse.FrameMessage("User not on Payflow! Invite :)"));
 		}
 
 		// just responding with dummy frame

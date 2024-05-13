@@ -3,7 +3,6 @@ import { Helmet } from 'react-helmet-async';
 import {
   Avatar,
   Box,
-  Button,
   Container,
   Stack,
   Typography,
@@ -11,6 +10,8 @@ import {
   useTheme
 } from '@mui/material';
 import PaymentCastActionDialog from '../components/dialogs/PaymentCastActionDialog';
+import { Favorite, Inventory, Person, PersonAdd, Storage } from '@mui/icons-material';
+import CastActionButton from '../components/buttons/CastActionButton';
 
 export default function Tools() {
   const theme = useTheme();
@@ -38,43 +39,38 @@ export default function Tools() {
             borderRadius={5}
             borderColor="divider">
             <Avatar src="/farcaster.svg" variant="rounded" />
-            <Typography variant="h6">Install Farcaster Actions</Typography>
+            <Typography variant="h6">Farcaster Actions</Typography>
             <Stack spacing={1} alignItems="center">
-              <Button
-                variant="outlined"
-                color="inherit"
-                fullWidth
-                sx={{ borderRadius: 5 }}
-                href="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Finvite"
-                target="_blank">
-                Invite Action
-              </Button>
-              <Button
-                variant="outlined"
-                color="inherit"
-                fullWidth
-                sx={{ borderRadius: 5 }}
-                href="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fprofile"
-                target="_blank">
-                Pay Profile Action
-              </Button>
-              <Button
-                variant="outlined"
-                color="inherit"
-                fullWidth
-                sx={{ borderRadius: 5 }}
-                onClick={() => setOpenPaymentActionDialog(true)}>
-                Payment Intent Action
-              </Button>
-              <Button
-                variant="outlined"
-                color="inherit"
-                fullWidth
-                sx={{ borderRadius: 5 }}
-                href="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fjar"
-                target="_blank">
-                Create Jar Action
-              </Button>
+              <CastActionButton
+                title="Invite"
+                description=""
+                installUrl="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Finvite"
+                startIcon={<PersonAdd />}
+              />
+              <CastActionButton
+                title="Pay Profile"
+                description=""
+                installUrl="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fprofile"
+                startIcon={<Person />}
+              />
+              <CastActionButton
+                title=" Payment Intent"
+                description=""
+                onClick={() => setOpenPaymentActionDialog(true)}
+                startIcon={<Favorite />}
+              />
+              <CastActionButton
+                title="Create Jar"
+                description=""
+                installUrl="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fjar"
+                startIcon={<Inventory />}
+              />
+              <CastActionButton
+                title="Gift Storage"
+                description=""
+                installUrl="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fproducts%2Fstorage"
+                startIcon={<Storage />}
+              />
             </Stack>
           </Stack>
         </Box>
