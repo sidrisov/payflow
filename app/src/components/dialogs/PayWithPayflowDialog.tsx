@@ -1,4 +1,3 @@
-import { Stack } from '@mui/material';
 
 import { useContext, useMemo, useRef, useState } from 'react';
 import { useAccount, useClient, useWalletClient } from 'wagmi';
@@ -19,16 +18,11 @@ import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';
 import { PaymentDialogProps } from './PaymentDialog';
 import { Token } from '../../utils/erc20contracts';
 import { TokenAmountSection } from './TokenAmountSection';
-import { GasFeeSection } from './GasFeeSection';
 import { SwitchFlowSignerSection } from './SwitchFlowSignerSection';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
 import { completePayment } from '../../services/payments';
 
-export default function PayWithPayflowDialog({
-  payment,
-  sender,
-  recipient
-}: PaymentDialogProps) {
+export default function PayWithPayflowDialog({ payment, sender, recipient }: PaymentDialogProps) {
   const flow = sender.identity.profile?.defaultFlow as FlowType;
 
   const { profile } = useContext(ProfileContext);
@@ -51,9 +45,6 @@ export default function PayWithPayflowDialog({
 
   const [sendAmountUSD, setSendAmountUSD] = useState<number | undefined>(payment?.usdAmount);
   const sendToastId = useRef<Id>();
-
-  // force to display sponsored
-  const [gasFee] = useState<bigint>(BigInt(0));
 
   const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
 
@@ -199,21 +190,18 @@ export default function PayWithPayflowDialog({
         (address.toLowerCase() === flow.signer.toLowerCase() ? (
           selectedWallet && (
             <>
-              <Stack width="100%" spacing={2} alignItems="flex-start">
-                <TokenAmountSection
-                  payment={payment}
-                  selectedWallet={selectedWallet}
-                  setSelectedWallet={setSelectedWallet}
-                  compatibleWallets={compatibleWallets}
-                  selectedToken={selectedToken}
-                  setSelectedToken={setSelectedToken}
-                  sendAmount={sendAmount}
-                  setSendAmount={setSendAmount}
-                  sendAmountUSD={sendAmountUSD}
-                  setSendAmountUSD={setSendAmountUSD}
-                />
-                <GasFeeSection selectedToken={selectedToken} gasFee={gasFee} />
-              </Stack>
+              <TokenAmountSection
+                payment={payment}
+                selectedWallet={selectedWallet}
+                setSelectedWallet={setSelectedWallet}
+                compatibleWallets={compatibleWallets}
+                selectedToken={selectedToken}
+                setSelectedToken={setSelectedToken}
+                sendAmount={sendAmount}
+                setSendAmount={setSendAmount}
+                sendAmountUSD={sendAmountUSD}
+                setSendAmountUSD={setSendAmountUSD}
+              />
               {chain?.id === selectedWallet.network ? (
                 <LoadingPaymentButton
                   title="Pay"

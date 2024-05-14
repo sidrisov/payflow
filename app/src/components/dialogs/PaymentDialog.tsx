@@ -59,7 +59,7 @@ export default function PaymentDialog({
             ...(!isMobile && {
               width: 375,
               borderRadius: 5,
-              height: 475
+              height: 600
             })
           }
         }}
