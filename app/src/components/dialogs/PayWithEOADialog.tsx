@@ -7,26 +7,29 @@ import { Id, toast } from 'react-toastify';
 import { Address, erc20Abi } from 'viem';
 
 import { FlowWalletType } from '../../types/FlowType';
-import { IdentityType } from '../../types/ProfleType';
 import { TransferToastContent } from '../toasts/TransferToastContent';
 import { LoadingSwitchNetworkButton } from '../buttons/LoadingSwitchNetworkButton';
 import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
 import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';
 import { PaymentDialogProps } from './PaymentDialog';
 import { DEGEN_TOKEN, ETH_TOKEN, Token } from '../../utils/erc20contracts';
-import { RecipientField } from '../RecipientField';
 import { TokenAmountSection } from './TokenAmountSection';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
 import { completePayment } from '../../services/payments';
 import { degen } from 'viem/chains';
 
 export default function PayWithEOADialog({ sender, recipient, payment }: PaymentDialogProps) {
+  const senderAddress = sender.identity.address as Address;
+
   const { chain } = useAccount();
 
   const [paymentPending, setPaymentPending] = useState<boolean>(false);
   const [paymentEnabled, setPaymentEnabled] = useState<boolean>(false);
 
-  const compatibleWallets = useCompatibleWallets({ sender, recipient });
+  const compatibleWallets = useCompatibleWallets({
+    sender: senderAddress,
+    recipient
+  });
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
   const [selectedToken, setSelectedToken] = useState<Token>();
 
@@ -58,11 +61,7 @@ export default function PayWithEOADialog({ sender, recipient, payment }: Payment
     if (loading && !sendToastId.current) {
       toast.dismiss();
       sendToastId.current = toast.loading(
-        <TransferToastContent
-          from={{ type: 'address', identity: { address: sender as Address } as IdentityType }}
-          to={recipient}
-          usdAmount={sendAmountUSD ?? 0}
-        />
+        <TransferToastContent from={sender} to={recipient} usdAmount={sendAmountUSD ?? 0} />
       );
     }
 
@@ -73,11 +72,7 @@ export default function PayWithEOADialog({ sender, recipient, payment }: Payment
     if (confirmed) {
       toast.update(sendToastId.current, {
         render: (
-          <TransferToastContent
-            from={{ type: 'address', identity: { address: sender as Address } as IdentityType }}
-            to={recipient}
-            usdAmount={sendAmountUSD ?? 0}
-          />
+          <TransferToastContent from={sender} to={recipient} usdAmount={sendAmountUSD ?? 0} />
         ),
         type: 'success',
         isLoading: false,
@@ -95,7 +90,7 @@ export default function PayWithEOADialog({ sender, recipient, payment }: Payment
       toast.update(sendToastId.current, {
         render: (
           <TransferToastContent
-            from={{ type: 'address', identity: { address: sender as Address } as IdentityType }}
+            from={sender}
             to={recipient}
             usdAmount={sendAmountUSD ?? 0}
             status="error"
@@ -142,7 +137,6 @@ export default function PayWithEOADialog({ sender, recipient, payment }: Payment
     selectedWallet && (
       <>
         <Stack width="100%" spacing={2} alignItems="center">
-          <RecipientField recipient={recipient} />
           <TokenAmountSection
             payment={payment}
             selectedWallet={selectedWallet}

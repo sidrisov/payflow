@@ -20,9 +20,10 @@ export function RecipientField({
       alignItems="center"
       justifyContent="space-between"
       color="inherit"
-      {...(setOpenSearchIdentity
-        ? { component: Button, onClick: async () => setOpenSearchIdentity(true) }
-        : {})}
+      {...(setOpenSearchIdentity && {
+        component: Button,
+        onClick: async () => setOpenSearchIdentity(true)
+      })}
       sx={{
         height: 56,
         border: 1,
@@ -45,10 +46,7 @@ export function RecipientField({
         </Typography>
       )}
 
-      <Stack direction="row">
-        {recipient && recipient.type === 'profile' && <PayflowChip />}
-        <ExpandMore />
-      </Stack>
+      {recipient && recipient.type === 'profile' && <PayflowChip />}
     </Box>
   );
 }

@@ -238,13 +238,19 @@ export function AccountCard({
             </IconButton>
           </Tooltip>
         </Stack>
-        {recipient && (
+        {recipient && selectedFlow && (
           <PaymentDialog
             open={recipient != null}
             paymentType={paymentType}
-            sender={
-              paymentType === 'wallet' ? (address as Address) : selectedFlow ?? (address as Address)
-            }
+            sender={{
+              type: paymentType === 'payflow' ? 'profile' : 'address',
+              identity: {
+                address: paymentType === 'payflow' ? profile.identity : (address as Address),
+                ...(paymentType === 'payflow' && {
+                  profile: { ...profile, defaultFlow: selectedFlow }
+                })
+              }
+            }}
             recipient={recipient}
             setOpenSearchIdentity={setOpenSearchIdentity}
             closeStateCallback={async () => {

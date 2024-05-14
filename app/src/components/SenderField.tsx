@@ -1,17 +1,16 @@
-import { ExpandMore } from '@mui/icons-material';
 import { Box, Button, Typography, Stack } from '@mui/material';
 import { SelectedIdentityType } from '../types/ProfleType';
 import { AddressSection } from './AddressSection';
 import { ProfileSection } from './ProfileSection';
 import { PayflowChip } from './chips/IdentityStatusChips';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { useSetActiveWallet } from '@privy-io/wagmi';
 
-export function SenderField({
-  sender,
-  setOpenSearchIdentity
-}: {
-  sender?: SelectedIdentityType;
-  setOpenSearchIdentity?: React.Dispatch<React.SetStateAction<boolean>>;
-}) {
+export function SenderField({ sender }: { sender: SelectedIdentityType }) {
+  const { connectWallet } = usePrivy();
+  const { wallets } = useWallets();
+  const { setActiveWallet } = useSetActiveWallet();
+
   return (
     <Box
       display="flex"
@@ -20,9 +19,18 @@ export function SenderField({
       alignItems="center"
       justifyContent="space-between"
       color="inherit"
-      {...(setOpenSearchIdentity
-        ? { component: Button, onClick: async () => setOpenSearchIdentity(true) }
-        : {})}
+      {...(sender.type === 'address' && {
+        component: Button,
+        onClick: async () => {
+          connectWallet();
+          // filter out embedded wallets
+          const wallet = wallets.filter((w) => w.walletClientType !== 'privy')[0];
+          if (wallet) {
+            console.debug('Setting active wallet: ', wallet);
+            setActiveWallet(wallet);
+          }
+        }
+      })}
       sx={{
         height: 56,
         border: 1,
@@ -30,7 +38,7 @@ export function SenderField({
         p: 1.5,
         textTransform: 'none'
       }}>
-      {sender &&
+      {sender.identity.address &&
         (sender.type === 'profile' ? (
           sender.identity.profile && (
             <ProfileSection maxWidth={200} profile={sender.identity.profile} />
@@ -39,16 +47,20 @@ export function SenderField({
           <AddressSection maxWidth={200} identity={sender.identity} />
         ))}
 
-      {!sender && (
+      {!sender.identity.address && (
         <Typography alignSelf="center" flexGrow={1}>
-          Choose Recipient
+          <b>Choose Sender</b>
         </Typography>
       )}
 
-      <Stack direction="row">
-        {sender && sender.type === 'profile' && <PayflowChip />}
-        <ExpandMore />
-      </Stack>
+      {sender.identity.address && sender.type === 'profile' && (
+        <Stack alignItems="flex-end">
+          <PayflowChip />
+          <Typography variant="caption" maxWidth={150} noWrap>
+            {sender.identity.profile?.defaultFlow?.title}
+          </Typography>
+        </Stack>
+      )}
     </Box>
   );
 }

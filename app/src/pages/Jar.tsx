@@ -19,7 +19,7 @@ import { Address, zeroAddress } from 'viem';
 import { AssetType } from '../types/AssetType';
 import { useAssetBalances } from '../utils/queries/balances';
 import { lightGreen } from '@mui/material/colors';
-import { Add, ArrowOutward, LinkOutlined, Public } from '@mui/icons-material';
+import { Add, ArrowOutward } from '@mui/icons-material';
 import PaymentDialog, { PaymentSenderType } from '../components/dialogs/PaymentDialog';
 import { useAccount } from 'wagmi';
 import { ProfileContext } from '../contexts/UserContext';
@@ -181,13 +181,16 @@ export default function Jar() {
             <PaymentDialog
               open={openPayDialog && (!loggedProfile || paymentType !== 'none')}
               paymentType={paymentType}
-              sender={
-                paymentType === 'wallet'
-                  ? (address as Address)
-                  : loggedProfile && loggedProfile.defaultFlow
-                  ? loggedProfile.defaultFlow
-                  : (address as Address)
-              }
+              sender={{
+                type: paymentType === 'payflow' ? 'profile' : 'address',
+                identity: {
+                  address:
+                    paymentType === 'payflow'
+                      ? (loggedProfile?.identity as Address)
+                      : (address as Address),
+                  ...(paymentType === 'payflow' && { profile: loggedProfile })
+                }
+              }}
               recipient={{
                 type: 'profile',
                 identity: { profile: { ...jar.profile, defaultFlow: jar.flow } } as IdentityType

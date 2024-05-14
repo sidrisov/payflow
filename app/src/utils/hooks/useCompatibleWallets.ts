@@ -16,33 +16,36 @@ export function useCompatibleWallets({
   payment?: PaymentType;
 }) {
   return useMemo(() => {
-    let compatibleSenderWallets;
+    let compatibleSenderWallets: FlowWalletType[] = [];
 
-    if (isAddress(sender as Address)) {
-      compatibleSenderWallets =
-        recipient.type === 'address'
-          ? SUPPORTED_CHAINS.map(
-              (c) => ({ address: sender as Address, network: c.id } as FlowWalletType)
-            )
-          : recipient.identity.profile?.defaultFlow?.wallets.map(
-              (wallet) =>
-                ({ address: sender as Address, network: wallet.network } as FlowWalletType)
-            ) ?? [];
-    } else {
-      // in case a new wallet chain added, not all users maybe be compatible, limit by chains recipient supports
-      compatibleSenderWallets =
-        recipient.type === 'profile'
-          ? (sender as FlowType).wallets.filter((w) =>
-              recipient.identity.profile?.defaultFlow?.wallets.find(
-                (rw) => rw.network === w.network
+    if (sender) {
+      if (isAddress(sender as Address)) {
+        compatibleSenderWallets =
+          recipient.type === 'address'
+            ? SUPPORTED_CHAINS.map(
+                (c) => ({ address: sender as Address, network: c.id } as FlowWalletType)
               )
-            )
-          : (sender as FlowType).wallets;
+            : recipient.identity.profile?.defaultFlow?.wallets.map(
+                (wallet) =>
+                  ({ address: sender as Address, network: wallet.network } as FlowWalletType)
+              ) ?? [];
+      } else {
+        // in case a new wallet chain added, not all users maybe be compatible, limit by chains recipient supports
+        compatibleSenderWallets =
+          recipient.type === 'profile'
+            ? (sender as FlowType).wallets.filter((w) =>
+                recipient.identity.profile?.defaultFlow?.wallets.find(
+                  (rw) => rw.network === w.network
+                )
+              )
+            : (sender as FlowType).wallets;
 
-      if (compatibleSenderWallets.length === 0) {
-        toast.error('No compatible wallets available!');
+        if (compatibleSenderWallets.length === 0) {
+          toast.error('No compatible wallets available!');
+        }
       }
     }
+
     // filter by passed chainId if available
     return compatibleSenderWallets.filter((w) =>
       payment?.chainId ? w.network === payment.chainId : true

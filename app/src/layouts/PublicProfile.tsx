@@ -80,11 +80,16 @@ export default function PublicProfile() {
         <PaymentDialog
           paymentType={loggedProfile ? 'payflow' : 'wallet'}
           open={selectedRecipient !== undefined}
-          sender={
-            loggedProfile && loggedProfile.defaultFlow
-              ? loggedProfile.defaultFlow
-              : (address as Address)
-          }
+          sender={{
+            type: loggedProfile ? 'profile' : 'address',
+            identity: {
+              address:
+                loggedProfile && loggedProfile.defaultFlow
+                  ? (loggedProfile?.identity as Address)
+                  : (address as Address),
+              ...(loggedProfile && loggedProfile.defaultFlow && { profile: loggedProfile })
+            }
+          }}
           recipient={selectedRecipient}
           closeStateCallback={async () => {
             setSelectedRecipient(undefined);
