@@ -167,10 +167,10 @@ export function TokenAmountSection({
             <SwapVert fontSize="small" />
           </IconButton>
         )}
-        <Stack ml={3} alignItems="center">
+        <Stack ml={2} alignItems="center">
           <TextField
-            autoFocus
-            focused
+            // don't auto focus if it's pending payment
+            {...(!payment?.token && { autoFocus: true, focused: true })}
             variant="standard"
             type="number"
             value={sendAmountUSD}
