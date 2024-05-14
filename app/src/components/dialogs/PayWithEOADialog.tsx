@@ -1,4 +1,3 @@
-import { Stack } from '@mui/material';
 
 import { useMemo, useRef, useState } from 'react';
 import { useAccount } from 'wagmi';
@@ -136,20 +135,18 @@ export default function PayWithEOADialog({ sender, recipient, payment }: Payment
   return (
     selectedWallet && (
       <>
-        <Stack width="100%" spacing={2} alignItems="center">
-          <TokenAmountSection
-            payment={payment}
-            selectedWallet={selectedWallet}
-            setSelectedWallet={setSelectedWallet}
-            compatibleWallets={compatibleWallets}
-            selectedToken={selectedToken}
-            setSelectedToken={setSelectedToken}
-            sendAmount={sendAmount}
-            setSendAmount={setSendAmount}
-            sendAmountUSD={sendAmountUSD}
-            setSendAmountUSD={setSendAmountUSD}
-          />
-        </Stack>
+        <TokenAmountSection
+          payment={payment}
+          selectedWallet={selectedWallet}
+          setSelectedWallet={setSelectedWallet}
+          compatibleWallets={compatibleWallets}
+          selectedToken={selectedToken}
+          setSelectedToken={setSelectedToken}
+          sendAmount={sendAmount}
+          setSendAmount={setSendAmount}
+          sendAmountUSD={sendAmountUSD}
+          setSendAmountUSD={setSendAmountUSD}
+        />
         {chain?.id === selectedWallet.network ? (
           <LoadingPaymentButton
             title="Pay"
