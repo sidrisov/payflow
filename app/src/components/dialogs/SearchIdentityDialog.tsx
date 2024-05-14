@@ -24,8 +24,6 @@ import { searchIdentity, sortBySocialScore } from '../../services/socials';
 
 import { useDebounce } from 'use-debounce';
 import { WalletMenu } from '../menu/WalletMenu';
-import axios from 'axios';
-import { API_URL } from '../../utils/urlConstants';
 import { SearchResultView } from '../SearchResultView';
 import { FARCASTER_DAPP, LENS_DAPP } from '../../utils/dapps';
 import { ProfileContext } from '../../contexts/UserContext';

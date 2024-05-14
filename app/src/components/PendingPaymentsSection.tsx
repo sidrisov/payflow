@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import { PaymentType } from '../types/PaymentType';
 import { ProfileSection } from './ProfileSection';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { ExpandLess, ExpandMore, MoreHoriz, Payments } from '@mui/icons-material';
 import TokenAvatar from './avatars/TokenAvatar';
 import { getNetworkDisplayName } from '../utils/networks';
@@ -24,6 +24,7 @@ import { PaymentMenu } from './menu/PaymentMenu';
 import GiftStorageDialog from './dialogs/GiftStorageDialog';
 import { FlowType } from '../types/FlowType';
 import { FarcasterProfileSection } from './FarcasterProfileSection';
+import { ProfileContext } from '../contexts/UserContext';
 
 export function PendingPaymentsSection({
   flow,
@@ -38,6 +39,8 @@ export function PendingPaymentsSection({
   const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
   const [openPaymentMenu, setOpenPaymentMenu] = useState(false);
   const [paymentMenuAnchorEl, setPaymentMenuAnchorEl] = useState<null | HTMLElement>(null);
+
+  const { profile } = useContext(ProfileContext);
 
   return (
     payments && (
@@ -208,12 +211,15 @@ export function PendingPaymentsSection({
             </Stack>
           )}
         </Stack>
-        {openPaymentDialog && payment && !payment.category && flow && (
+        {openPaymentDialog && payment && !payment.category && profile && flow && (
           <PaymentDialog
             open={openPaymentDialog}
             paymentType="payflow"
             payment={payment}
-            sender={flow}
+            sender={{
+              identity: { profile: { ...profile, defaultFlow: flow }, address: profile.identity },
+              type: 'profile'
+            }}
             recipient={
               {
                 identity: {

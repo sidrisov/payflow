@@ -104,7 +104,11 @@ export function PublicProfileDetails({
                   )}
                   {socialInfo.insights.sentTxs && (
                     <Stack spacing={1} direction="row" alignItems="center">
-                      <Avatar variant="rounded" src="/ethereum.png" sx={{ width: 15, height: 15 }} />
+                      <Avatar
+                        variant="rounded"
+                        src="/ethereum.png"
+                        sx={{ width: 15, height: 15 }}
+                      />
                       <Typography variant="caption" fontWeight="bold" color={green.A700}>
                         {`Transacted ${
                           socialInfo.insights.sentTxs === 1
@@ -143,13 +147,16 @@ export function PublicProfileDetails({
           <PaymentDialog
             open={openPayDialog && (!loggedProfile || paymentType !== 'none')}
             paymentType={paymentType}
-            sender={
-              paymentType === 'wallet'
-                ? (address as Address)
-                : loggedProfile && loggedProfile.defaultFlow
-                ? loggedProfile.defaultFlow
-                : (address as Address)
-            }
+            sender={{
+              type: paymentType === 'payflow' ? 'profile' : 'address',
+              identity: {
+                address:
+                  paymentType === 'payflow'
+                    ? (loggedProfile?.identity as Address)
+                    : (address as Address),
+                ...(paymentType === 'payflow' && { profile: loggedProfile })
+              }
+            }}
             recipient={{
               type: 'profile',
               identity: { profile } as IdentityType

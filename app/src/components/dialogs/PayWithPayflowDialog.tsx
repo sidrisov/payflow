@@ -7,7 +7,7 @@ import { Id, toast } from 'react-toastify';
 import { Account, Address, Chain, Client, Transport, WalletClient } from 'viem';
 
 import { FlowType, FlowWalletType } from '../../types/FlowType';
-import { IdentityType, ProfileType } from '../../types/ProfleType';
+import { ProfileType } from '../../types/ProfleType';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { ProfileContext } from '../../contexts/UserContext';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
@@ -18,7 +18,6 @@ import { LoadingSwitchNetworkButton } from '../buttons/LoadingSwitchNetworkButto
 import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';
 import { PaymentDialogProps } from './PaymentDialog';
 import { Token } from '../../utils/erc20contracts';
-import { RecipientField } from '../RecipientField';
 import { TokenAmountSection } from './TokenAmountSection';
 import { GasFeeSection } from './GasFeeSection';
 import { SwitchFlowSignerSection } from './SwitchFlowSignerSection';
@@ -26,11 +25,12 @@ import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompati
 import { completePayment } from '../../services/payments';
 
 export default function PayWithPayflowDialog({
-  setOpenSearchIdentity,
   payment,
   sender,
   recipient
 }: PaymentDialogProps) {
+  const flow = sender.identity.profile?.defaultFlow as FlowType;
+
   const { profile } = useContext(ProfileContext);
 
   const { data: signer } = useWalletClient();
@@ -41,7 +41,7 @@ export default function PayWithPayflowDialog({
   const [paymentPending, setPaymentPending] = useState<boolean>(false);
   const [paymentEnabled, setPaymentEnabled] = useState<boolean>(false);
 
-  const compatibleWallets = useCompatibleWallets({ sender, recipient, payment });
+  const compatibleWallets = useCompatibleWallets({ sender: flow, recipient, payment });
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
   const [selectedToken, setSelectedToken] = useState<Token>();
 
@@ -67,25 +67,6 @@ export default function PayWithPayflowDialog({
     );
   }, [compatibleWallets, chain]);
 
-  /* useMemo(async () => {
-    setGasFee(undefined);
-
-    if (
-      selectedWallet &&
-      ethersProvider &&
-      selectedWallet.network === Number((await ethersProvider.getNetwork()).chainId)
-    ) {
-      const sponsored = await isSafeSponsored(ethersProvider, selectedWallet.address);
-      setGasFee(
-        BigInt(
-          sponsored
-            ? 0
-            : await estimateSafeTransferFee(selectedWallet.deployed, selectedWallet.network)
-        )
-      );
-    }
-  }, [selectedWallet, ethersProvider]); */
-
   useMemo(async () => {
     if (!sendAmountUSD || !selectedWallet) {
       return;
@@ -94,11 +75,7 @@ export default function PayWithPayflowDialog({
     if (loading && !sendToastId.current) {
       toast.dismiss();
       sendToastId.current = toast.loading(
-        <TransferToastContent
-          from={{ type: 'profile', identity: { profile: profile } as IdentityType }}
-          to={recipient}
-          usdAmount={sendAmountUSD ?? 0}
-        />
+        <TransferToastContent from={sender} to={recipient} usdAmount={sendAmountUSD ?? 0} />
       );
     }
 
@@ -109,11 +86,7 @@ export default function PayWithPayflowDialog({
     if (confirmed) {
       toast.update(sendToastId.current, {
         render: (
-          <TransferToastContent
-            from={{ type: 'profile', identity: { profile: profile } as IdentityType }}
-            to={recipient}
-            usdAmount={sendAmountUSD ?? 0}
-          />
+          <TransferToastContent from={sender} to={recipient} usdAmount={sendAmountUSD ?? 0} />
         ),
         type: 'success',
         isLoading: false,
@@ -129,13 +102,13 @@ export default function PayWithPayflowDialog({
       // if tx was successfull, mark wallet as deployed if it wasn't
       if (!selectedWallet.deployed) {
         selectedWallet.deployed = true;
-        updateWallet((sender as FlowType).uuid, selectedWallet);
+        updateWallet(flow.uuid, selectedWallet);
       }
     } else if (error) {
       toast.update(sendToastId.current, {
         render: (
           <TransferToastContent
-            from={{ type: 'profile', identity: { profile: profile } as IdentityType }}
+            from={sender}
             to={recipient}
             usdAmount={sendAmountUSD ?? 0}
             status="error"
@@ -166,7 +139,7 @@ export default function PayWithPayflowDialog({
         client,
         signer,
         profile,
-        sender as FlowType,
+        flow,
         selectedWallet,
         toAddress,
         sendAmount
@@ -223,14 +196,10 @@ export default function PayWithPayflowDialog({
   return (
     <>
       {address &&
-        (address.toLowerCase() === (sender as FlowType).signer.toLowerCase() ? (
+        (address.toLowerCase() === flow.signer.toLowerCase() ? (
           selectedWallet && (
             <>
               <Stack width="100%" spacing={2} alignItems="flex-start">
-                <RecipientField
-                  recipient={recipient}
-                  setOpenSearchIdentity={setOpenSearchIdentity}
-                />
                 <TokenAmountSection
                   payment={payment}
                   selectedWallet={selectedWallet}
@@ -247,7 +216,7 @@ export default function PayWithPayflowDialog({
               </Stack>
               {chain?.id === selectedWallet.network ? (
                 <LoadingPaymentButton
-                  title="Send"
+                  title="Pay"
                   loading={paymentPending}
                   disabled={!paymentEnabled}
                   status={status}
@@ -259,7 +228,7 @@ export default function PayWithPayflowDialog({
             </>
           )
         ) : (
-          <SwitchFlowSignerSection flow={sender as FlowType} />
+          <SwitchFlowSignerSection flow={flow} />
         ))}
     </>
   );

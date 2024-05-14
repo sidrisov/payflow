@@ -1,14 +1,23 @@
-import { Box, Dialog, DialogContent, DialogProps, useMediaQuery, useTheme } from '@mui/material';
-import { Address, isAddress } from 'viem';
+import {
+  Box,
+  Dialog,
+  DialogContent,
+  DialogProps,
+  Stack,
+  useMediaQuery,
+  useTheme
+} from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { FlowType } from '../../types/FlowType';
 import { SelectedIdentityType } from '../../types/ProfleType';
 import PayWithPayflowDialog from './PayWithPayflowDialog';
 import PayWithEOADialog from './PayWithEOADialog';
 import { useAccount } from 'wagmi';
 import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
-import { PaymentDialogTitle } from './PaymentDialogTitle';
+import { BackDialogTitle } from './PaymentDialogTitle';
 import { PaymentType } from '../../types/PaymentType';
+import { SenderField } from '../SenderField';
+import { KeyboardDoubleArrowDown } from '@mui/icons-material';
+import { RecipientField } from '../RecipientField';
 
 export type PaymentSenderType = 'payflow' | 'wallet' | 'none';
 
@@ -16,7 +25,7 @@ export type PaymentDialogProps = DialogProps &
   CloseCallbackType & {
     paymentType?: PaymentSenderType;
     payment?: PaymentType;
-    sender: FlowType | Address;
+    sender: SelectedIdentityType;
     recipient: SelectedIdentityType;
   } & { setOpenSearchIdentity?: React.Dispatch<React.SetStateAction<boolean>> };
 
@@ -34,18 +43,7 @@ export default function PaymentDialog({
 
   const { isConnected, address } = useAccount();
 
-  const dialogJustifyContent =
-    sender &&
-    (isAddress(sender as any) ||
-      (address && address.toLowerCase() === (sender as FlowType).signer.toLowerCase()))
-      ? 'space-between'
-      : 'flex-end';
   const isConnectWalletRequired = !(paymentType === 'wallet' ? sender : address);
-  const dialogHeight = sender &&
-    (isAddress(sender as any) ||
-      (address && address.toLowerCase() === (sender as FlowType).signer.toLowerCase())) && {
-      height: 375
-    };
 
   console.log('Payment Dialog', isConnected, address);
 
@@ -61,19 +59,14 @@ export default function PaymentDialog({
             ...(!isMobile && {
               width: 375,
               borderRadius: 5,
-              ...dialogHeight
+              height: 475
             })
           }
         }}
         sx={{
           backdropFilter: 'blur(5px)'
         }}>
-        <PaymentDialogTitle
-          paymentType={paymentType}
-          sender={sender}
-          closeStateCallback={closeStateCallback}
-        />
-
+        <BackDialogTitle title="Pay" closeStateCallback={closeStateCallback} />
         <DialogContent
           sx={{
             p: 2
@@ -83,12 +76,23 @@ export default function PaymentDialog({
             display="flex"
             flexDirection="column"
             alignItems="center"
-            justifyContent={dialogJustifyContent}>
+            justifyContent="space-between">
+            {sender && (
+              <Stack spacing={1} alignItems="center" width="100%">
+                <SenderField sender={sender} />
+                <KeyboardDoubleArrowDown />
+                <RecipientField
+                  recipient={recipient}
+                  setOpenSearchIdentity={setOpenSearchIdentity}
+                />
+              </Stack>
+            )}
+
             {isConnectWalletRequired ? (
               <LoadingConnectWalletButton
                 isEmbeddedSigner={
                   paymentType === 'payflow'
-                    ? (sender as FlowType).signerProvider === 'privy'
+                    ? sender.identity.profile?.defaultFlow?.signerProvider === 'privy'
                     : false
                 }
                 paymentType={paymentType}
