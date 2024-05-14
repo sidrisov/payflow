@@ -169,6 +169,8 @@ export function TokenAmountSection({
         )}
         <Stack ml={3} alignItems="center">
           <TextField
+            autoFocus
+            focused
             variant="standard"
             type="number"
             value={sendAmountUSD}
