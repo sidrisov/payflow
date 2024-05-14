@@ -11,6 +11,9 @@ import {
 } from 'viem/chains';
 
 const ENABLED_CHAINS = JSON.parse(import.meta.env.VITE_ENABLED_CHAINS) as string[];
+const DEFAULT_FLOW_ENABLED_CHAINS = JSON.parse(
+  import.meta.env.VITE_DEFAULT_FLOW_CHAINS
+) as string[];
 
 export const SUPPORTED_CHAINS = [
   base,
@@ -24,7 +27,9 @@ export const SUPPORTED_CHAINS = [
   baseSepolia
 ].filter((c) => ENABLED_CHAINS.includes(c.name));
 
-export const DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS = [base, optimism, degen];
+export const DEFAULT_FLOW_WALLET_CHAINS = SUPPORTED_CHAINS.filter((c) =>
+  DEFAULT_FLOW_ENABLED_CHAINS.includes(c.name)
+);
 
 export function getNetworkShortName(chainId: number): string {
   let shortName;

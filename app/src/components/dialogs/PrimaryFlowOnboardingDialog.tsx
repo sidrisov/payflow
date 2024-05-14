@@ -23,7 +23,7 @@ import { useCreateSafeWallets as usePreCreateSafeWallets } from '../../utils/hoo
 
 import { FlowType } from '../../types/FlowType';
 import { useNavigate } from 'react-router-dom';
-import { DEFAULT_FLOW_PRE_CREATE_WALLET_CHAINS as PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS } from '../../utils/networks';
+import {  DEFAULT_FLOW_WALLET_CHAINS } from '../../utils/networks';
 import { updateProfile } from '../../services/user';
 import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
 import { useAccount } from 'wagmi';
@@ -67,7 +67,7 @@ export default function PrimaryFlowOnboardingDialog({
   }
 
   async function createMainFlow() {
-    console.debug(profile.identity, SALT_NONCE, PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS);
+    console.debug(profile.identity, SALT_NONCE, DEFAULT_FLOW_WALLET_CHAINS);
 
     let owners = [profile.identity];
     if (extraSigner) {
@@ -79,14 +79,14 @@ export default function PrimaryFlowOnboardingDialog({
       }
     }
 
-    create(owners, SALT_NONCE, PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS);
+    create(owners, SALT_NONCE, DEFAULT_FLOW_WALLET_CHAINS);
   }
 
   useMemo(async () => {
     if (error) {
       toast.error('Failed to prepare flow, try again!');
       await reset();
-    } else if (wallets && wallets.length === PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS.length) {
+    } else if (wallets && wallets.length === DEFAULT_FLOW_WALLET_CHAINS.length) {
       const primaryFlow = {
         // TODO: choose different one
         ...(extraSigner && {
@@ -184,7 +184,7 @@ export default function PrimaryFlowOnboardingDialog({
               <AvatarGroup
                 max={4}
                 color="inherit"
-                total={PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS.length}
+                total={DEFAULT_FLOW_WALLET_CHAINS.length}
                 sx={{
                   '& .MuiAvatar-root': {
                     borderStyle: 'none',
@@ -192,14 +192,12 @@ export default function PrimaryFlowOnboardingDialog({
                     height: 25
                   }
                 }}>
-                {[...Array(Math.min(4, PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS.length))].map(
-                  (_item, i) => (
-                    <NetworkAvatar
-                      key={`onboarding_wallet_list_${PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS[i].id}`}
-                      chainId={PRIMARY_FLOW_PRE_CREATE_WALLET_CHAINS[i].id}
-                    />
-                  )
-                )}
+                {[...Array(Math.min(4, DEFAULT_FLOW_WALLET_CHAINS.length))].map((_item, i) => (
+                  <NetworkAvatar
+                    key={`onboarding_wallet_list_${DEFAULT_FLOW_WALLET_CHAINS[i].id}`}
+                    chainId={DEFAULT_FLOW_WALLET_CHAINS[i].id}
+                  />
+                ))}
               </AvatarGroup>
             </Box>
 

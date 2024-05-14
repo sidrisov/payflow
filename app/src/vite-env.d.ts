@@ -14,6 +14,7 @@ interface ImportMetaEnv {
   readonly VITE_GELATO_MAINNET_API_KEY: string;
   readonly VITE_AIRSTACK_API_KEY: string;
   readonly VITE_ENABLED_CHAINS: string;
+  readonly VITE_DEFAULT_FLOW_CHAINS: string;
   readonly VITE_GELATO_SPONSORED_ENABLED: string;
   readonly VITE_FARCASTER_CONNECT_ENABLED: string;
   readonly VITE_PIMLICO_API_KEY: string;
