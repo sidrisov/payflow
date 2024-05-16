@@ -20,6 +20,7 @@ import { TokenAmountSection } from './TokenAmountSection';
 import { SwitchFlowSignerSection } from './SwitchFlowSignerSection';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
 import { completePayment } from '../../services/payments';
+import { NetworkTokenSelector } from '../NetworkTokenSelector';
 
 export default function PayWithPayflowDialog({ payment, sender, recipient }: PaymentDialogProps) {
   const flow = sender.identity.profile?.defaultFlow as FlowType;
@@ -45,6 +46,9 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
   const sendToastId = useRef<Id>();
 
   const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
+
+  // force to display sponsored
+  const [gasFee] = useState<bigint>(BigInt(0));
 
   // TODO: use pre-configured tokens to fetch decimals, etc
   const { isSuccess, data: balance } = useBalance({
@@ -202,14 +206,20 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
               <TokenAmountSection
                 payment={payment}
                 selectedWallet={selectedWallet}
-                setSelectedWallet={setSelectedWallet}
-                compatibleWallets={compatibleWallets}
                 selectedToken={selectedToken}
-                setSelectedToken={setSelectedToken}
                 sendAmount={sendAmount}
                 setSendAmount={setSendAmount}
                 sendAmountUSD={sendAmountUSD}
                 setSendAmountUSD={setSendAmountUSD}
+              />
+              <NetworkTokenSelector
+                payment={payment}
+                selectedWallet={selectedWallet}
+                setSelectedWallet={setSelectedWallet}
+                selectedToken={selectedToken}
+                setSelectedToken={setSelectedToken}
+                compatibleWallets={compatibleWallets}
+                gasFee={gasFee}
               />
               {chain?.id === selectedWallet.network ? (
                 <LoadingPaymentButton

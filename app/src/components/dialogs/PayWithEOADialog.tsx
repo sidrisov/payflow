@@ -15,6 +15,7 @@ import { TokenAmountSection } from './TokenAmountSection';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
 import { completePayment } from '../../services/payments';
 import { degen } from 'viem/chains';
+import { NetworkTokenSelector } from '../NetworkTokenSelector';
 
 export default function PayWithEOADialog({ sender, recipient, payment }: PaymentDialogProps) {
   const senderAddress = sender.identity.address as Address;
@@ -35,6 +36,9 @@ export default function PayWithEOADialog({ sender, recipient, payment }: Payment
 
   const [sendAmount, setSendAmount] = useState<number>();
   const [sendAmountUSD, setSendAmountUSD] = useState<number | undefined>(payment?.usdAmount);
+
+  // force to display sponsored
+  const [gasFee] = useState<bigint>(BigInt(0));
 
   // TODO: use pre-configured tokens to fetch decimals, etc
   const { isSuccess, data: balance } = useBalance({
@@ -151,14 +155,20 @@ export default function PayWithEOADialog({ sender, recipient, payment }: Payment
         <TokenAmountSection
           payment={payment}
           selectedWallet={selectedWallet}
-          setSelectedWallet={setSelectedWallet}
-          compatibleWallets={compatibleWallets}
           selectedToken={selectedToken}
-          setSelectedToken={setSelectedToken}
           sendAmount={sendAmount}
           setSendAmount={setSendAmount}
           sendAmountUSD={sendAmountUSD}
           setSendAmountUSD={setSendAmountUSD}
+        />
+        <NetworkTokenSelector
+          payment={payment}
+          selectedWallet={selectedWallet}
+          setSelectedWallet={setSelectedWallet}
+          selectedToken={selectedToken}
+          setSelectedToken={setSelectedToken}
+          compatibleWallets={compatibleWallets}
+          gasFee={gasFee}
         />
         {chain?.id === selectedWallet.network ? (
           <LoadingPaymentButton
