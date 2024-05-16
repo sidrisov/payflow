@@ -1,9 +1,8 @@
-
 import { useMemo, useRef, useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useBalance } from 'wagmi';
 import { Id, toast } from 'react-toastify';
 
-import { Address, erc20Abi } from 'viem';
+import { Address, erc20Abi, parseUnits } from 'viem';
 
 import { FlowWalletType } from '../../types/FlowType';
 import { TransferToastContent } from '../toasts/TransferToastContent';
@@ -11,7 +10,7 @@ import { LoadingSwitchNetworkButton } from '../buttons/LoadingSwitchNetworkButto
 import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
 import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';
 import { PaymentDialogProps } from './PaymentDialog';
-import { DEGEN_TOKEN, ETH_TOKEN, Token } from '../../utils/erc20contracts';
+import { DEGEN_TOKEN, ETH, ETH_TOKEN, Token } from '../../utils/erc20contracts';
 import { TokenAmountSection } from './TokenAmountSection';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
 import { completePayment } from '../../services/payments';
@@ -34,8 +33,19 @@ export default function PayWithEOADialog({ sender, recipient, payment }: Payment
 
   const toAddress = useToAddress({ recipient, selectedWallet });
 
-  const [sendAmount, setSendAmount] = useState<bigint>();
+  const [sendAmount, setSendAmount] = useState<number>();
   const [sendAmountUSD, setSendAmountUSD] = useState<number | undefined>(payment?.usdAmount);
+
+  // TODO: use pre-configured tokens to fetch decimals, etc
+  const { isSuccess, data: balance } = useBalance({
+    address: selectedWallet?.address,
+    chainId: chain?.id,
+    token: selectedToken !== ETH ? selectedToken?.address : undefined,
+    query: {
+      enabled: selectedWallet !== undefined && selectedToken !== undefined,
+      gcTime: 5000
+    }
+  });
 
   const sendToastId = useRef<Id>();
 
@@ -105,7 +115,7 @@ export default function PayWithEOADialog({ sender, recipient, payment }: Payment
   }, [loading, confirmed, error, txHash, sendAmountUSD]);
 
   async function submitTransaction() {
-    if (!toAddress || !sendAmount || !selectedToken) {
+    if (!toAddress || !sendAmount || !selectedToken || !balance) {
       return;
     }
 
@@ -113,13 +123,16 @@ export default function PayWithEOADialog({ sender, recipient, payment }: Payment
       selectedToken.name === ETH_TOKEN ||
       (chain?.id === degen.id && selectedToken.name === DEGEN_TOKEN)
     ) {
-      sendTransaction?.({ to: toAddress, value: sendAmount });
+      sendTransaction?.({
+        to: toAddress,
+        value: parseUnits(sendAmount.toString(), balance.decimals)
+      });
     } else {
       writeContract?.({
         abi: erc20Abi,
         address: selectedToken.address,
         functionName: 'transfer',
-        args: [toAddress, sendAmount]
+        args: [toAddress, parseUnits(sendAmount.toString(), balance.decimals)]
       });
     }
   }

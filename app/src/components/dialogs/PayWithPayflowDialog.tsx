@@ -1,9 +1,8 @@
-
 import { useContext, useMemo, useRef, useState } from 'react';
-import { useAccount, useClient, useWalletClient } from 'wagmi';
+import { useAccount, useBalance, useClient, useWalletClient } from 'wagmi';
 import { Id, toast } from 'react-toastify';
 
-import { Account, Address, Chain, Client, Transport, WalletClient } from 'viem';
+import { Account, Address, Chain, Client, Transport, WalletClient, parseUnits } from 'viem';
 
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { ProfileType } from '../../types/ProfleType';
@@ -16,7 +15,7 @@ import { TransferToastContent } from '../toasts/TransferToastContent';
 import { LoadingSwitchNetworkButton } from '../buttons/LoadingSwitchNetworkButton';
 import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';
 import { PaymentDialogProps } from './PaymentDialog';
-import { Token } from '../../utils/erc20contracts';
+import { ETH, Token } from '../../utils/erc20contracts';
 import { TokenAmountSection } from './TokenAmountSection';
 import { SwitchFlowSignerSection } from './SwitchFlowSignerSection';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
@@ -41,12 +40,22 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
 
   const toAddress = useToAddress({ recipient, selectedWallet });
 
-  const [sendAmount, setSendAmount] = useState<bigint>();
-
+  const [sendAmount, setSendAmount] = useState<number>();
   const [sendAmountUSD, setSendAmountUSD] = useState<number | undefined>(payment?.usdAmount);
   const sendToastId = useRef<Id>();
 
   const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
+
+  // TODO: use pre-configured tokens to fetch decimals, etc
+  const { isSuccess, data: balance } = useBalance({
+    address: selectedWallet?.address,
+    chainId: chain?.id,
+    token: selectedToken !== ETH ? selectedToken?.address : undefined,
+    query: {
+      enabled: selectedWallet !== undefined && selectedToken !== undefined,
+      gcTime: 5000
+    }
+  });
 
   useMemo(async () => {
     if (compatibleWallets.length === 0) {
@@ -125,7 +134,7 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
   }, [loading, confirmed, error, status, txHash, sendAmountUSD]);
 
   async function submitTransaction() {
-    if (selectedWallet && toAddress && sendAmount && client && signer && profile) {
+    if (selectedWallet && toAddress && sendAmount && balance && client && signer && profile) {
       await sendSafeTransaction(
         client,
         signer,
@@ -133,7 +142,7 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
         flow,
         selectedWallet,
         toAddress,
-        sendAmount
+        parseUnits(sendAmount.toString(), balance.decimals)
       );
     } else {
       toast.error("Can't send to this profile");

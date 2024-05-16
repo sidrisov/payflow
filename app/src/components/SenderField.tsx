@@ -35,6 +35,7 @@ export function SenderField({ sender }: { sender: SelectedIdentityType }) {
         height: 56,
         border: 1,
         borderRadius: 5,
+        borderColor: 'divider',
         p: 1.5,
         textTransform: 'none'
       }}>

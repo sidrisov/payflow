@@ -28,7 +28,6 @@ import { useTokenPrices } from '../../utils/queries/prices';
 import { PaymentType } from '../../types/PaymentType';
 import { getNetworkDisplayName } from '../../utils/networks';
 import { GasFeeSection } from './GasFeeSection';
-import { comingSoonToast } from '../Toasts';
 
 export function TokenAmountSection({
   payment,
@@ -48,8 +47,8 @@ export function TokenAmountSection({
   compatibleWallets: FlowWalletType[];
   selectedToken?: Token;
   setSelectedToken: React.Dispatch<React.SetStateAction<Token | undefined>>;
-  sendAmount?: bigint;
-  setSendAmount: React.Dispatch<React.SetStateAction<bigint | undefined>>;
+  sendAmount?: number;
+  setSendAmount: React.Dispatch<React.SetStateAction<number | undefined>>;
   sendAmountUSD?: number;
   setSendAmountUSD: React.Dispatch<React.SetStateAction<number | undefined>>;
 }) {
@@ -58,7 +57,6 @@ export function TokenAmountSection({
   const { data: tokenPrices } = useTokenPrices();
 
   const [balanceEnough, setBalanceEnough] = useState<boolean>();
-  const [minAmountSatisfied, setMinAmountSatisfied] = useState<boolean>();
 
   const [maxBalance, setMaxBalance] = useState<string>('0.0');
   const [maxBalanceUsd, setMaxBalanceUsd] = useState<string>('0.0');
@@ -66,6 +64,8 @@ export function TokenAmountSection({
 
   const [compatibleTokens, setCompatibleTokens] = useState<Token[]>([]);
   const [expand, setExpand] = useState<boolean>(false);
+
+  const [usdAmountMode, setUsdAmountMode] = useState<boolean>(true);
 
   // force to display sponsored
   const [gasFee] = useState<bigint>(BigInt(0));
@@ -122,26 +122,57 @@ export function TokenAmountSection({
   }, [isSuccess, balance, selectedTokenPrice]);
 
   useEffect(() => {
-    if (sendAmountUSD !== undefined && selectedToken && balance && tokenPrices) {
-      const tokenPrice = tokenPrices[selectedToken.name] ?? 0;
-      const amount = parseUnits((sendAmountUSD / tokenPrice).toString(), balance.decimals);
+    console.log('here!!!');
+    console.log(selectedToken, balance, selectedTokenPrice);
+    if (selectedToken && balance && selectedTokenPrice) {
+      console.log('here2!!!', sendAmount, sendAmountUSD);
 
-      const balanceEnough = balance && amount <= balance?.value;
-      const minAmount = sendAmountUSD >= 0.1;
+      if (usdAmountMode === true && sendAmountUSD !== undefined) {
+        console.log('here3!!!');
 
-      setBalanceEnough(balanceEnough);
-      setMinAmountSatisfied(minAmount);
+        const amount = parseUnits(
+          (sendAmountUSD / selectedTokenPrice).toString(),
+          balance.decimals
+        );
+        const balanceEnough = amount <= balance.value;
 
-      if (minAmount && balanceEnough) {
-        setSendAmount(amount);
-      } else {
-        setSendAmount(undefined);
+        console.log(balance);
+
+        setBalanceEnough(balanceEnough);
+        if (balanceEnough) {
+          setSendAmount(parseFloat(formatUnits(amount, balance.decimals)));
+        } else {
+          setSendAmount(undefined);
+        }
       }
-    } else {
-      setBalanceEnough(undefined);
-      setMinAmountSatisfied(undefined);
+
+      if (usdAmountMode === false && sendAmount !== undefined) {
+        console.log('here4!!!');
+
+        const usdAmount = sendAmount * selectedTokenPrice;
+        const balanceEnough = parseUnits(sendAmount.toString(), balance.decimals) <= balance.value;
+
+        setBalanceEnough(balanceEnough);
+        if (balanceEnough) {
+          setSendAmountUSD(parseFloat(normalizeNumberPrecision(usdAmount)));
+        } else {
+          setSendAmountUSD(undefined);
+        }
+      }
+
+      return;
     }
-  }, [sendAmountUSD, chain?.id, balance, tokenPrices]);
+
+    setBalanceEnough(undefined);
+  }, [
+    usdAmountMode,
+    sendAmountUSD,
+    sendAmount,
+    chain?.id,
+    selectedToken,
+    balance,
+    selectedTokenPrice
+  ]);
 
   return (
     <Box
@@ -150,51 +181,63 @@ export function TokenAmountSection({
       flexDirection="column"
       justifyContent="space-between"
       height="100%">
-      <Box
-        m={1}
-        mt={3}
-        display="flex"
-        flexDirection="row"
-        justifyContent="space-evenly"
-        alignItems="center">
-        {!payment?.token && (
-          <IconButton
-            size="small"
-            sx={{ color: grey[400] }}
-            onClick={() => {
-              comingSoonToast();
-            }}>
-            <SwapVert fontSize="small" />
-          </IconButton>
-        )}
-        <Stack ml={2} alignItems="center">
+      <Stack mx={1} alignItems="center">
+        <Box
+          m={1}
+          mt={3}
+          display="flex"
+          flexDirection="row"
+          justifyContent="space-evenly"
+          alignItems="center">
+          {!payment?.token && (
+            <IconButton
+              size="small"
+              sx={{ color: grey[400] }}
+              onClick={async () => {
+                setUsdAmountMode(!usdAmountMode);
+              }}>
+              <SwapVert fontSize="small" />
+            </IconButton>
+          )}
           <TextField
             // don't auto focus if it's pending payment
             {...(!payment?.token && { autoFocus: true, focused: true })}
             variant="standard"
             type="number"
-            value={sendAmountUSD}
+            value={usdAmountMode ? sendAmountUSD : sendAmount}
             error={
-              sendAmountUSD !== undefined &&
-              (minAmountSatisfied === false || balanceEnough === false)
+              (usdAmountMode ? sendAmountUSD !== undefined : sendAmount !== undefined) &&
+              balanceEnough === false
             }
             inputProps={{
               style: {
-                minWidth: 55,
-                maxWidth: 85,
-                textAlign: 'center',
+                maxWidth: 150,
                 fontWeight: 'bold',
-                fontSize: 30
+                fontSize: 30,
+                alignSelf: 'center',
+                textAlign: 'center'
               }
             }}
             InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Typography fontSize={25} fontWeight="bold">
-                    $
-                  </Typography>
-                </InputAdornment>
-              ),
+              ...(usdAmountMode
+                ? {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Typography fontSize={20} fontWeight="bold">
+                          $
+                        </Typography>
+                      </InputAdornment>
+                    )
+                  }
+                : {
+                    endAdornment: (
+                      <InputAdornment position="start">
+                        <Typography fontSize={20} fontWeight="bold">
+                          {selectedToken?.name}
+                        </Typography>
+                      </InputAdornment>
+                    )
+                  }),
               inputMode: 'decimal',
               disableUnderline: true
             }}
@@ -205,53 +248,69 @@ export function TokenAmountSection({
               }
 
               if (event.target.value) {
-                const amountUSD = parseFloat(event.target.value);
-                setSendAmountUSD(amountUSD);
+                const amount = parseFloat(event.target.value);
+                if (usdAmountMode) {
+                  setSendAmountUSD(amount);
+                } else {
+                  setSendAmount(amount);
+                }
               } else {
                 setSendAmountUSD(undefined);
+                setSendAmount(undefined);
               }
             }}
+            sx={{ border: 1, borderRadius: 10, borderColor: 'divider', px: 2, ml: 2, mr: 1 }}
           />
+
+          {!payment?.token && (
+            <Button
+              variant="text"
+              size="small"
+              onClick={async () => {
+                if (balance && selectedTokenPrice) {
+                  const maxAmount = parseFloat(formatUnits(balance.value, balance.decimals));
+                  if (usdAmountMode) {
+                    setSendAmountUSD(
+                      parseFloat(normalizeNumberPrecision(maxAmount * selectedTokenPrice))
+                    );
+                  } else {
+                    setSendAmount(parseFloat(normalizeNumberPrecision(maxAmount)));
+                  }
+                } else {
+                  setSendAmount(undefined);
+                }
+              }}
+              sx={{
+                borderRadius: 5,
+                fontWeight: 'bold',
+                textTransform: 'none',
+                color: grey[400]
+              }}>
+              max
+            </Button>
+          )}
+        </Box>
+
+        {(usdAmountMode ? sendAmountUSD : sendAmount) && balanceEnough === false ? (
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            <PriorityHigh fontSize="small" sx={{ color: red.A400 }} />
+            <Typography fontSize={14} fontWeight="bold" color={red.A400}>
+              balance not enough
+            </Typography>
+          </Stack>
+        ) : (
           <Typography
-            mx={0.5}
             fontSize={14}
             fontWeight="bold"
             textOverflow="ellipsis"
             overflow="auto"
             textAlign="center">
-            {`${normalizeNumberPrecision(
-              sendAmount && balance ? parseFloat(formatUnits(sendAmount, balance.decimals)) : 0
-            )}
-                        ${selectedToken?.name}`}
+            {usdAmountMode
+              ? `${normalizeNumberPrecision(sendAmount ?? 0)} ${selectedToken?.name}`
+              : `$ ${normalizeNumberPrecision(sendAmountUSD ?? 0)}`}
           </Typography>
-          {sendAmountUSD !== undefined &&
-            (minAmountSatisfied === false || balanceEnough === false) && (
-              <Stack direction="row" spacing={0.5} alignItems="center">
-                <PriorityHigh fontSize="small" sx={{ color: red.A400 }} />
-                <Typography ml={1} variant="caption" color={red.A400}>
-                  {sendAmountUSD !== undefined &&
-                    ((minAmountSatisfied === false && 'min: $0.1') ||
-                      (balanceEnough === false && 'balance: not enough'))}
-                </Typography>
-              </Stack>
-            )}
-        </Stack>
-
-        {!payment?.token && (
-          <Button
-            variant="text"
-            size="small"
-            onClick={async () => setSendAmountUSD(Number.parseInt(maxBalanceUsd))}
-            sx={{
-              borderRadius: 5,
-              fontWeight: 'bold',
-              textTransform: 'none',
-              color: grey[400]
-            }}>
-            max
-          </Button>
         )}
-      </Box>
+      </Stack>
 
       <Stack>
         <Box
