@@ -1,4 +1,4 @@
-import { Box, Button, Typography, Stack } from '@mui/material';
+import { Box, Button, Typography, Stack, useTheme, useMediaQuery } from '@mui/material';
 import { SelectedIdentityType } from '../types/ProfleType';
 import { AddressSection } from './AddressSection';
 import { ProfileSection } from './ProfileSection';
@@ -10,6 +10,9 @@ export function SenderField({ sender }: { sender: SelectedIdentityType }) {
   const { connectWallet } = usePrivy();
   const { wallets } = useWallets();
   const { setActiveWallet } = useSetActiveWallet();
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
     <Box
@@ -32,11 +35,10 @@ export function SenderField({ sender }: { sender: SelectedIdentityType }) {
         }
       })}
       sx={{
-        height: 56,
         border: 1,
         borderRadius: 5,
         borderColor: 'divider',
-        p: 1.5,
+        p: isMobile ? 1.5 : 1,
         textTransform: 'none'
       }}>
       {sender.identity.address &&

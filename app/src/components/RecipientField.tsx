@@ -1,5 +1,5 @@
 import { ExpandMore } from '@mui/icons-material';
-import { Box, Button, Typography, Stack } from '@mui/material';
+import { Box, Button, Typography, Stack, useTheme, useMediaQuery } from '@mui/material';
 import { SelectedIdentityType } from '../types/ProfleType';
 import { AddressSection } from './AddressSection';
 import { ProfileSection } from './ProfileSection';
@@ -12,6 +12,9 @@ export function RecipientField({
   recipient?: SelectedIdentityType;
   setOpenSearchIdentity?: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
     <Box
       display="flex"
@@ -25,11 +28,10 @@ export function RecipientField({
         onClick: async () => setOpenSearchIdentity(true)
       })}
       sx={{
-        height: 56,
         border: 1,
         borderRadius: 5,
-        borderColor: "divider",
-        p: 1.5,
+        borderColor: 'divider',
+        p: isMobile ? 1.5 : 1,
         textTransform: 'none'
       }}>
       {recipient &&

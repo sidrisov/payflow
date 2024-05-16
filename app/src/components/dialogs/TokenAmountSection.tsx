@@ -122,21 +122,13 @@ export function TokenAmountSection({
   }, [isSuccess, balance, selectedTokenPrice]);
 
   useEffect(() => {
-    console.log('here!!!');
-    console.log(selectedToken, balance, selectedTokenPrice);
     if (selectedToken && balance && selectedTokenPrice) {
-      console.log('here2!!!', sendAmount, sendAmountUSD);
-
       if (usdAmountMode === true && sendAmountUSD !== undefined) {
-        console.log('here3!!!');
-
         const amount = parseUnits(
           (sendAmountUSD / selectedTokenPrice).toString(),
           balance.decimals
         );
         const balanceEnough = amount <= balance.value;
-
-        console.log(balance);
 
         setBalanceEnough(balanceEnough);
         if (balanceEnough) {
@@ -147,8 +139,6 @@ export function TokenAmountSection({
       }
 
       if (usdAmountMode === false && sendAmount !== undefined) {
-        console.log('here4!!!');
-
         const usdAmount = sendAmount * selectedTokenPrice;
         const balanceEnough = parseUnits(sendAmount.toString(), balance.decimals) <= balance.value;
 
