@@ -2,7 +2,7 @@ import { ExpandLess, ExpandMore, Token as NetworkToken } from '@mui/icons-materi
 import { Stack, Box, Chip, Typography, IconButton } from '@mui/material';
 import { useState, useMemo, useEffect } from 'react';
 import { formatUnits } from 'viem';
-import { useAccount, useBalance } from 'wagmi';
+import { useBalance, useChainId } from 'wagmi';
 import { FlowWalletType } from '../types/FlowType';
 import { Token, ETH, getSupportedTokens } from '../utils/erc20contracts';
 import { getNetworkDisplayName } from '../utils/networks';
@@ -30,7 +30,7 @@ export function NetworkTokenSelector({
   setSelectedToken: React.Dispatch<React.SetStateAction<Token | undefined>>;
   gasFee?: bigint;
 }) {
-  const { chain } = useAccount();
+  const chainId = useChainId();
 
   const [expand, setExpand] = useState<boolean>(false);
   const [compatibleTokens, setCompatibleTokens] = useState<Token[]>([]);
@@ -42,7 +42,7 @@ export function NetworkTokenSelector({
 
   const { isSuccess, data: balance } = useBalance({
     address: selectedWallet?.address,
-    chainId: chain?.id,
+    chainId,
     token: selectedToken !== ETH ? selectedToken?.address : undefined,
     query: {
       enabled: selectedWallet !== undefined && selectedToken !== undefined,
@@ -73,12 +73,12 @@ export function NetworkTokenSelector({
     }
 
     setSelectedToken(compatibleTokens[0]);
-  }, [selectedToken, compatibleTokens, chain]);
+  }, [selectedToken, compatibleTokens, chainId]);
 
   useMemo(() => {
     // filter by passed token if available
     const tokens = getSupportedTokens(selectedWallet.network).filter((t) =>
-      payment?.token ? t.name.toLowerCase() === payment.token : true
+      !payment?.receiverFid && payment?.token ? t.name.toLowerCase() === payment?.token : true
     );
     setCompatibleTokens(tokens);
   }, [selectedWallet]);

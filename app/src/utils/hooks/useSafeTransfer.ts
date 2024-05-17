@@ -5,10 +5,9 @@ import {
   Chain,
   Client,
   Hash,
+  Hex,
   Transport,
   WalletClient,
-  encodeFunctionData,
-  erc20Abi,
   keccak256,
   toBytes
 } from 'viem';
@@ -17,7 +16,6 @@ import { transferWithGelato } from '../safeTransactions';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { useWaitForTransactionReceipt } from 'wagmi';
-import { DEGEN_TOKEN, ETH, Token } from '../erc20contracts';
 import { clientToSigner } from './useEthersSigner';
 import {
   walletClientToSmartAccountSigner,
@@ -35,7 +33,13 @@ import {
 import { signerToSafeSmartAccount } from '../signerToSafeSmartAccount';
 import { PimlicoSponsorUserOperationParameters } from 'permissionless/actions/pimlico';
 import { ENTRYPOINT_ADDRESS_V06_TYPE } from 'permissionless/types';
-import { degen } from 'viem/chains';
+
+export type ViemTransaction = {
+  from: Address;
+  to: Address;
+  data?: Hex;
+  value?: bigint;
+};
 
 export type SafeWallet = {
   chain: Chain;
@@ -51,7 +55,7 @@ export const useSafeTransfer = (): {
   transfer: (
     client: Client<Transport, Chain>,
     signer: WalletClient<Transport, Chain, Account>,
-    tx: { from: Address; to: Address; amount: bigint },
+    tx: ViemTransaction,
     safeAccountConfig: SafeAccountConfig,
     safeVersion: SafeVersion,
     saltNonce: string
@@ -96,7 +100,7 @@ export const useSafeTransfer = (): {
   const transfer = useCallback(async function (
     client: Client<Transport, Chain>,
     signer: WalletClient<Transport, Chain, Account>,
-    tx: { from: Address; to: Address; amount: bigint; token?: Token },
+    tx: ViemTransaction,
     safeAccountConfig: SafeAccountConfig,
     safeVersion: SafeVersion,
     saltNonce: string
@@ -177,21 +181,11 @@ export const useSafeTransfer = (): {
 
         statusCallback?.('processing');
 
-        const txHash = await smartAccountClient.sendTransaction(
-          tx.token && tx.token !== ETH && (chain.id !== degen.id || tx.token.name !== DEGEN_TOKEN)
-            ? {
-                to: tx.token.address,
-                data: encodeFunctionData({
-                  abi: erc20Abi,
-                  functionName: 'transfer',
-                  args: [tx.to, tx.amount]
-                })
-              }
-            : {
-                to: tx.to,
-                value: tx.amount
-              }
-        );
+        const txHash = await smartAccountClient.sendTransaction({
+          to: tx.to,
+          data: tx.data,
+          value: tx.value
+        });
 
         console.log('Tx hash: ', txHash, chain.name);
 

@@ -13,7 +13,6 @@ export function FarcasterProfileSection({
   fontSize?: number;
   maxWidth?: number;
 }) {
-  console.log('FId:', fid);
   const { data: social, loading: loadingSocials } = useQuery(
     QUERY_FARCASTER_PROFILE,
     { fid: fid.toString() },
@@ -26,7 +25,6 @@ export function FarcasterProfileSection({
     }
   );
 
-  console.log(social);
   return (
     !loadingSocials &&
     social && (

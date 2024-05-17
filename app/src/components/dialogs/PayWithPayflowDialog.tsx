@@ -1,8 +1,18 @@
 import { useContext, useMemo, useRef, useState } from 'react';
-import { useAccount, useBalance, useClient, useWalletClient } from 'wagmi';
+import { useAccount, useBalance, useChainId, useClient, useWalletClient } from 'wagmi';
 import { Id, toast } from 'react-toastify';
 
-import { Account, Address, Chain, Client, Transport, WalletClient, parseUnits } from 'viem';
+import {
+  Account,
+  Address,
+  Chain,
+  Client,
+  Transport,
+  WalletClient,
+  encodeFunctionData,
+  erc20Abi,
+  parseUnits
+} from 'viem';
 
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { ProfileType } from '../../types/ProfleType';
@@ -15,12 +25,13 @@ import { TransferToastContent } from '../toasts/TransferToastContent';
 import { LoadingSwitchNetworkButton } from '../buttons/LoadingSwitchNetworkButton';
 import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';
 import { PaymentDialogProps } from './PaymentDialog';
-import { ETH, Token } from '../../utils/erc20contracts';
+import { DEGEN_TOKEN, ETH, Token } from '../../utils/erc20contracts';
 import { TokenAmountSection } from './TokenAmountSection';
 import { SwitchFlowSignerSection } from './SwitchFlowSignerSection';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
 import { completePayment } from '../../services/payments';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
+import { degen } from 'viem/chains';
 
 export default function PayWithPayflowDialog({ payment, sender, recipient }: PaymentDialogProps) {
   const flow = sender.identity.profile?.defaultFlow as FlowType;
@@ -30,7 +41,8 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
   const { data: signer } = useWalletClient();
   const client = useClient();
 
-  const { address, chain } = useAccount();
+  const { address } = useAccount();
+  const chainId = useChainId();
 
   const [paymentPending, setPaymentPending] = useState<boolean>(false);
   const [paymentEnabled, setPaymentEnabled] = useState<boolean>(false);
@@ -53,7 +65,7 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
   // TODO: use pre-configured tokens to fetch decimals, etc
   const { isSuccess, data: balance } = useBalance({
     address: selectedWallet?.address,
-    chainId: chain?.id,
+    chainId,
     token: selectedToken !== ETH ? selectedToken?.address : undefined,
     query: {
       enabled: selectedWallet !== undefined && selectedToken !== undefined,
@@ -66,10 +78,8 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
       setSelectedWallet(undefined);
       return;
     }
-    setSelectedWallet(
-      (chain && compatibleWallets.find((w) => w.network === chain.id)) ?? compatibleWallets[0]
-    );
-  }, [compatibleWallets, chain]);
+    setSelectedWallet(compatibleWallets.find((w) => w.network === chainId) ?? compatibleWallets[0]);
+  }, [compatibleWallets, chainId]);
 
   useMemo(async () => {
     if (!sendAmountUSD || !selectedWallet) {
@@ -164,12 +174,24 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
   ) {
     reset();
 
-    const txData = {
-      from: from.address,
-      to,
-      token: selectedToken,
-      amount
-    };
+    const txData =
+      selectedToken &&
+      selectedToken !== ETH &&
+      (chainId !== degen.id || selectedToken.name !== DEGEN_TOKEN)
+        ? {
+            from: from.address,
+            to: selectedToken.address,
+            data: encodeFunctionData({
+              abi: erc20Abi,
+              functionName: 'transfer',
+              args: [to, amount]
+            })
+          }
+        : {
+            from: from.address,
+            to,
+            value: amount
+          };
 
     // TODO: hard to figure out if there 2 signers or one, for now consider if signerProvider not specified - 1, otherwise - 2
     const owners = [];
@@ -221,7 +243,7 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
                 compatibleWallets={compatibleWallets}
                 gasFee={gasFee}
               />
-              {chain?.id === selectedWallet.network ? (
+              {chainId === selectedWallet.network ? (
                 <LoadingPaymentButton
                   title="Pay"
                   loading={paymentPending}

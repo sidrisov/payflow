@@ -21,16 +21,16 @@ import {
   SafeVersion
 } from '@safe-global/safe-core-sdk-types';
 
-import { Hash, Address, keccak256, toBytes, erc20Abi, encodeFunctionData } from 'viem';
+import { Hash, Address, keccak256, toBytes, erc20Abi, encodeFunctionData, toHex } from 'viem';
 import { getRelayKitForChainId, getSponsoredCount, waitForRelayTaskToComplete } from './relayer';
 import { getGasPrice } from 'wagmi/actions';
 import { SUPPORTED_CHAINS } from './networks';
 import { privyWagmiConfig } from './wagmiConfig';
-import { ETH, Token } from './erc20contracts';
+import { ViemTransaction } from './hooks/useSafeTransfer';
 
 export async function transferWithGelato(
   ethersSigner: JsonRpcSigner,
-  tx: { from: Address; to: Address; amount: bigint; token?: Token },
+  tx: ViemTransaction,
   isSafeDeployed: boolean,
   safeAccountConfig: SafeAccountConfig,
   safeVersion: SafeVersion,
@@ -87,23 +87,12 @@ export async function transferWithGelato(
   );
 
   const safeTransactions: MetaTransactionData[] = [
-    tx.token && tx.token !== ETH
-      ? {
-          to: tx.token.address,
-          value: '0',
-          data: encodeFunctionData({
-            abi: erc20Abi,
-            functionName: 'transfer',
-            args: [tx.to, tx.amount]
-          }),
-          operation: OperationType.Call
-        }
-      : {
-          to: tx.to,
-          value: tx.amount.toString(),
-          data: '0x',
-          operation: OperationType.Call
-        }
+    {
+      to: tx.to,
+      value: tx.value ? toHex(tx.value) : '0',
+      data: tx.data ?? '0x',
+      operation: OperationType.Call
+    }
   ];
 
   console.debug('Safe txs', JSON.stringify(safeTransactions, null, 2));

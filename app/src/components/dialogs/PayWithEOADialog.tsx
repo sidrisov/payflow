@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { useAccount, useBalance } from 'wagmi';
+import { useBalance, useChainId } from 'wagmi';
 import { Id, toast } from 'react-toastify';
 
 import { Address, erc20Abi, parseUnits } from 'viem';
@@ -20,7 +20,7 @@ import { NetworkTokenSelector } from '../NetworkTokenSelector';
 export default function PayWithEOADialog({ sender, recipient, payment }: PaymentDialogProps) {
   const senderAddress = sender.identity.address as Address;
 
-  const { chain } = useAccount();
+  const chainId = useChainId();
 
   const [paymentPending, setPaymentPending] = useState<boolean>(false);
   const [paymentEnabled, setPaymentEnabled] = useState<boolean>(false);
@@ -43,7 +43,7 @@ export default function PayWithEOADialog({ sender, recipient, payment }: Payment
   // TODO: use pre-configured tokens to fetch decimals, etc
   const { isSuccess, data: balance } = useBalance({
     address: selectedWallet?.address,
-    chainId: chain?.id,
+    chainId,
     token: selectedToken !== ETH ? selectedToken?.address : undefined,
     query: {
       enabled: selectedWallet !== undefined && selectedToken !== undefined,
@@ -61,10 +61,8 @@ export default function PayWithEOADialog({ sender, recipient, payment }: Payment
       setSelectedWallet(undefined);
       return;
     }
-    setSelectedWallet(
-      (chain && compatibleWallets.find((w) => w.network === chain.id)) ?? compatibleWallets[0]
-    );
-  }, [compatibleWallets, chain]);
+    setSelectedWallet(compatibleWallets.find((w) => w.network === chainId) ?? compatibleWallets[0]);
+  }, [compatibleWallets, chainId]);
 
   useMemo(async () => {
     if (!sendAmountUSD || !selectedWallet) {
@@ -125,7 +123,7 @@ export default function PayWithEOADialog({ sender, recipient, payment }: Payment
 
     if (
       selectedToken.name === ETH_TOKEN ||
-      (chain?.id === degen.id && selectedToken.name === DEGEN_TOKEN)
+      (chainId === degen.id && selectedToken.name === DEGEN_TOKEN)
     ) {
       sendTransaction?.({
         to: toAddress,
@@ -170,7 +168,7 @@ export default function PayWithEOADialog({ sender, recipient, payment }: Payment
           compatibleWallets={compatibleWallets}
           gasFee={gasFee}
         />
-        {chain?.id === selectedWallet.network ? (
+        {chainId === selectedWallet.network ? (
           <LoadingPaymentButton
             title="Pay"
             loading={paymentPending}

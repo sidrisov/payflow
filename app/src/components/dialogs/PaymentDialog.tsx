@@ -41,11 +41,9 @@ export default function PaymentDialog({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { isConnected, address } = useAccount();
+  const { address } = useAccount();
 
   const isConnectWalletRequired = !(paymentType === 'wallet' ? sender : address);
-
-  console.log('Payment Dialog', isConnected, address);
 
   return (
     recipient && (

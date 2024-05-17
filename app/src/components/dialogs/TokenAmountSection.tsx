@@ -110,10 +110,10 @@ export function TokenAmountSection({
   return (
     <Box
       width="100%"
+      height="100%"
       display="flex"
       flexDirection="column"
-      justifyContent="space-between"
-      height="100%">
+      justifyContent="space-between">
       <Stack mx={1} alignItems="center">
         <Box
           m={1}

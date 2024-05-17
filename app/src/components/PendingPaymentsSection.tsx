@@ -244,10 +244,14 @@ export function PendingPaymentsSection({
           />
         )}
 
-        {openPaymentDialog && payment?.category === 'fc_storage' && (
+        {openPaymentDialog && profile && payment?.category === 'fc_storage' && (
           <GiftStorageDialog
             open={openPaymentDialog}
-            title="Gift Storage"
+            sender={{
+              identity: { profile: { ...profile, defaultFlow: flow }, address: profile.identity },
+              type: 'profile'
+            }}
+            payment={payment}
             closeStateCallback={async () => {
               setOpenPaymentDialog(false);
               setPayment(undefined);
