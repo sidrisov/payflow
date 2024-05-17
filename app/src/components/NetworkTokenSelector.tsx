@@ -23,7 +23,7 @@ export function NetworkTokenSelector({
   gasFee
 }: {
   payment?: PaymentType;
-  selectedWallet: FlowWalletType;
+  selectedWallet: FlowWalletType | undefined;
   setSelectedWallet: React.Dispatch<React.SetStateAction<FlowWalletType | undefined>>;
   compatibleWallets: FlowWalletType[];
   selectedToken?: Token;
@@ -76,6 +76,9 @@ export function NetworkTokenSelector({
   }, [selectedToken, compatibleTokens, chainId]);
 
   useMemo(() => {
+    if (!selectedWallet) {
+      return;
+    }
     // filter by passed token if available
     const tokens = getSupportedTokens(selectedWallet.network).filter((t) =>
       !payment?.receiverFid && payment?.token ? t.name.toLowerCase() === payment?.token : true
@@ -97,17 +100,21 @@ export function NetworkTokenSelector({
           variant="outlined"
           sx={{ border: 0, fontSize: 14, fontWeight: 'bold' }}
         />
-        <Stack direction="row" spacing={0.5} alignItems="center">
-          <Typography variant="subtitle2">
-            {getNetworkDisplayName(selectedWallet.network)} / {selectedToken?.name}
-          </Typography>
-          <IconButton size="small" onClick={() => setExpand(!expand)}>
-            {expand ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
-          </IconButton>
-        </Stack>
+        {selectedWallet ? (
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            <Typography variant="subtitle2">
+              {getNetworkDisplayName(selectedWallet.network)} / {selectedToken?.name}
+            </Typography>
+            <IconButton size="small" onClick={() => setExpand(!expand)}>
+              {expand ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
+            </IconButton>
+          </Stack>
+        ) : (
+          <Typography variant="subtitle2">...</Typography>
+        )}
       </Box>
 
-      {expand && (
+      {expand && selectedWallet && compatibleTokens && (
         <>
           <Box
             py={1}

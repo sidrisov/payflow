@@ -312,30 +312,28 @@ export default function GiftStorageDialog({
             <>
               {address &&
                 (address.toLowerCase() === flow.signer.toLowerCase() ? (
-                  selectedWallet && (
-                    <Stack width="100%">
-                      <NetworkTokenSelector
-                        payment={payment}
-                        selectedWallet={selectedWallet}
-                        setSelectedWallet={setSelectedWallet}
-                        selectedToken={selectedToken}
-                        setSelectedToken={setSelectedToken}
-                        compatibleWallets={compatibleWallets}
-                        gasFee={BigInt(0)}
+                  <Stack width="100%">
+                    <NetworkTokenSelector
+                      payment={payment}
+                      selectedWallet={selectedWallet}
+                      setSelectedWallet={setSelectedWallet}
+                      selectedToken={selectedToken}
+                      setSelectedToken={setSelectedToken}
+                      compatibleWallets={compatibleWallets}
+                      gasFee={BigInt(0)}
+                    />
+                    {!selectedWallet || chainId === selectedWallet.network ? (
+                      <LoadingPaymentButton
+                        title="Gift"
+                        loading={paymentPending}
+                        disabled={!paymentOption}
+                        status={status}
+                        onClick={submitGlideTransaction}
                       />
-                      {chainId === selectedWallet.network ? (
-                        <LoadingPaymentButton
-                          title="Gift"
-                          loading={paymentPending}
-                          disabled={!paymentOption}
-                          status={status}
-                          onClick={submitGlideTransaction}
-                        />
-                      ) : (
-                        <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
-                      )}
-                    </Stack>
-                  )
+                    ) : (
+                      <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
+                    )}
+                  </Stack>
                 ) : (
                   <SwitchFlowSignerSection flow={flow} />
                 ))}
