@@ -49,14 +49,14 @@ import { normalizeNumberPrecision } from '../../utils/normalizeNumberPrecision';
 import { useGlideEstimatePayment, useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
 import { ProfileContext } from '../../contexts/UserContext';
 import { useSafeTransfer } from '../../utils/hooks/useSafeTransfer';
-import { SafeVersion } from '@safe-global/safe-core-sdk-types';
-import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { toast } from 'react-toastify';
+import { Social } from '../../generated/graphql/types';
 
 export type GiftStorageDialog = DialogProps &
   CloseCallbackType & {
     sender: SelectedIdentityType;
     payment: PaymentType;
+    social: Social;
   };
 
 export type PaymentOption = {
@@ -72,6 +72,7 @@ export type PaymentOption = {
 export default function GiftStorageDialog({
   sender,
   payment,
+  social,
   closeStateCallback,
   ...props
 }: GiftStorageDialog) {
@@ -146,11 +147,11 @@ export default function GiftStorageDialog({
   console.log('Payment Options: ', paymentOptions);
 
   useMemo(async () => {
-    if (paymentOptions) {
+    if (!isPaymentOptionsLoading && paymentOptions) {
       setCompatibleWallets(
-        flow.wallets /* .filter((w) =>
-          paymentOptions.find((o) => o.paymentCurrency === `eip155:${w.network}`)
-        ) */
+        flow.wallets.filter((w) =>
+          paymentOptions.find((o) => o.paymentCurrency.startsWith(`eip155:${w.network}`))
+        )
       );
     }
   }, [isPaymentOptionsLoading, paymentOptions]);
@@ -277,7 +278,7 @@ export default function GiftStorageDialog({
             <Stack spacing={1} alignItems="center" width="100%">
               <SenderField sender={sender} />
               <KeyboardDoubleArrowDown />
-              <FarcasterRecipientField fid={payment.receiverFid} />
+              <FarcasterRecipientField social={social} />
 
               {isPaymentOptionLoading || !paymentOption ? (
                 <Skeleton

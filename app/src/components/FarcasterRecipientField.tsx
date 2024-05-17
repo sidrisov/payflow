@@ -1,11 +1,12 @@
 import { Box, Button, Typography, useTheme, useMediaQuery } from '@mui/material';
 import { FarcasterProfileSection } from './FarcasterProfileSection';
+import { Social } from '../generated/graphql/types';
 
 export function FarcasterRecipientField({
-  fid,
+  social,
   setOpenSearchIdentity
 }: {
-  fid?: number;
+  social: Social;
   setOpenSearchIdentity?: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const theme = useTheme();
@@ -30,9 +31,9 @@ export function FarcasterRecipientField({
         p: isMobile ? 1.5 : 1,
         textTransform: 'none'
       }}>
-      {fid && <FarcasterProfileSection maxWidth={200} fid={fid} />}
+      <FarcasterProfileSection maxWidth={200} social={social} />
 
-      {!fid && (
+      {!social && (
         <Typography alignSelf="center" flexGrow={1}>
           Choose Farcaster Recipient
         </Typography>

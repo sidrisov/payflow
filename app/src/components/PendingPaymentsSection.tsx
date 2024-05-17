@@ -1,8 +1,10 @@
 import {
   Box,
   Button,
+  ButtonProps,
   Chip,
   IconButton,
+  Skeleton,
   Stack,
   StackProps,
   Typography,
@@ -25,6 +27,9 @@ import GiftStorageDialog from './dialogs/GiftStorageDialog';
 import { FlowType } from '../types/FlowType';
 import { FarcasterProfileSection } from './FarcasterProfileSection';
 import { ProfileContext } from '../contexts/UserContext';
+import { QUERY_FARCASTER_PROFILE } from '../utils/airstackQueries';
+import { useQuery } from '@airstack/airstack-react';
+import { Social } from '../generated/graphql/types';
 
 export function PendingPaymentsSection({
   flow,
@@ -35,6 +40,7 @@ export function PendingPaymentsSection({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [expand, setExpand] = useState<boolean>(false);
   const [payment, setPayment] = useState<PaymentType>();
+  const [fidSocial, setFidSocial] = useState<Social>();
 
   const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
   const [openPaymentMenu, setOpenPaymentMenu] = useState(false);
@@ -64,150 +70,13 @@ export function PendingPaymentsSection({
           </Box>
           {expand && (
             <Stack p={2} direction="row" spacing={3} overflow="auto">
-              {payments
-                .filter(
-                  (payment) =>
-                    payment.category === 'fc_storage' && payment.receiverFid !== undefined
+              {payments.map((payment) =>
+                payment.category === 'fc_storage' && payment.receiverFid !== undefined ? (
+                  <GiftStoragePayment payment={payment} />
+                ) : (
+                  <IntentPayment payment={payment} />
                 )
-                .map((payment) => (
-                  <Box
-                    key={payment.referenceId}
-                    component={Button}
-                    variant="outlined"
-                    onClick={() => {
-                      setPayment(payment);
-                      setOpenPaymentDialog(true);
-                    }}
-                    sx={{
-                      p: 1.5,
-                      border: 1,
-                      borderRadius: 5,
-                      borderColor: 'divider',
-                      minWidth: isMobile ? 145 : 155,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'flex-start',
-                      alignItems: 'flex-start',
-                      gap: 1,
-                      textTransform: 'none',
-                      color: 'inherit'
-                    }}>
-                    <Box
-                      alignSelf="stretch"
-                      display="flex"
-                      flexDirection="row"
-                      alignItems="center"
-                      justifyContent="space-between">
-                      <Typography variant="subtitle2" fontWeight="bold" fontSize={14}>
-                        Gift Storage
-                      </Typography>
-                      <IconButton
-                        size="small"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          setPayment(payment);
-                          setOpenPaymentMenu(true);
-                          setPaymentMenuAnchorEl(event.currentTarget);
-                        }}>
-                        <MoreHoriz fontSize="small" />
-                      </IconButton>
-                    </Box>
-
-                    {payment.receiverFid && <FarcasterProfileSection fid={payment.receiverFid} />}
-
-                    <Typography
-                      textAlign="start"
-                      variant="subtitle2"
-                      fontWeight="bold"
-                      fontSize={isMobile ? 12 : 13}>
-                      1 Unit of Storage
-                    </Typography>
-                  </Box>
-                ))}
-              {payments
-                .filter((payment) => !payment.category)
-                .map((payment) => (
-                  <Box
-                    key={payment.referenceId}
-                    component={Button}
-                    variant="outlined"
-                    onClick={() => {
-                      setPayment(payment);
-                      setOpenPaymentDialog(true);
-                    }}
-                    sx={{
-                      p: 1.5,
-                      border: 1,
-                      borderRadius: 5,
-                      borderColor: 'divider',
-                      minWidth: isMobile ? 145 : 155,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'flex-start',
-                      alignItems: 'flex-start',
-                      gap: 1,
-                      textTransform: 'none',
-                      color: 'inherit'
-                    }}>
-                    <Box
-                      alignSelf="stretch"
-                      display="flex"
-                      flexDirection="row"
-                      alignItems="center"
-                      justifyContent="space-between">
-                      <Typography variant="subtitle2" fontWeight="bold" fontSize={14}>
-                        Intent to pay
-                      </Typography>
-                      <IconButton
-                        size="small"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          setPayment(payment);
-                          setOpenPaymentMenu(true);
-                          setPaymentMenuAnchorEl(event.currentTarget);
-                        }}>
-                        <MoreHoriz fontSize="small" />
-                      </IconButton>
-                    </Box>
-
-                    {payment.receiver ? (
-                      <ProfileSection profile={payment.receiver} />
-                    ) : (
-                      <AddressSection identity={{ address: payment.receiverAddress }} />
-                    )}
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      justifyContent="flex-start"
-                      spacing={0.5}
-                      useFlexGap
-                      flexWrap="wrap">
-                      <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
-                        <b>${payment.usdAmount}</b> of
-                      </Typography>
-                      <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
-                        <b>{getTokenName(payment.token)}</b>
-                      </Typography>
-                      <TokenAvatar
-                        tokenName={payment.token}
-                        sx={{
-                          width: 15,
-                          height: 15
-                        }}
-                      />
-                      <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
-                        on <b>{getNetworkDisplayName(payment.chainId)}</b>
-                      </Typography>
-                      <NetworkAvatar
-                        chainId={payment.chainId}
-                        sx={{
-                          width: 15,
-                          height: 15
-                        }}
-                      />
-                    </Stack>
-                  </Box>
-                ))}
+              )}
             </Stack>
           )}
         </Stack>
@@ -244,7 +113,7 @@ export function PendingPaymentsSection({
           />
         )}
 
-        {openPaymentDialog && profile && payment?.category === 'fc_storage' && (
+        {openPaymentDialog && profile && payment?.category === 'fc_storage' && fidSocial && (
           <GiftStorageDialog
             open={openPaymentDialog}
             sender={{
@@ -252,9 +121,11 @@ export function PendingPaymentsSection({
               type: 'profile'
             }}
             payment={payment}
+            social={fidSocial}
             closeStateCallback={async () => {
               setOpenPaymentDialog(false);
               setPayment(undefined);
+              setFidSocial(undefined);
             }}
           />
         )}
@@ -277,4 +148,169 @@ export function PendingPaymentsSection({
       </>
     )
   );
+
+  function GiftStoragePayment({ payment, ...props }: ButtonProps & { payment: PaymentType }) {
+    const { data: social, loading: loadingSocials } = useQuery<Social>(
+      QUERY_FARCASTER_PROFILE,
+      { fid: payment.receiverFid?.toString() },
+      {
+        cache: true,
+        dataFormatter(data) {
+          return data.Socials.Social[0];
+        }
+      }
+    );
+
+    return (
+      <Box
+        key={payment.referenceId}
+        component={Button}
+        variant="outlined"
+        onClick={() => {
+          if (social) {
+            setPayment(payment);
+            setOpenPaymentDialog(true);
+            setFidSocial(social);
+          }
+        }}
+        sx={{
+          p: 1.5,
+          border: 1,
+          borderRadius: 5,
+          borderColor: 'divider',
+          minWidth: isMobile ? 145 : 155,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-start',
+          alignItems: 'flex-start',
+          gap: 1,
+          textTransform: 'none',
+          color: 'inherit'
+        }}
+        {...props}>
+        {loadingSocials || !social ? (
+          <Skeleton variant="rounded" sx={{ width: '100%', height: '100%' }} />
+        ) : (
+          <>
+            <Box
+              alignSelf="stretch"
+              display="flex"
+              flexDirection="row"
+              alignItems="center"
+              justifyContent="space-between">
+              <Typography variant="subtitle2" fontWeight="bold" fontSize={14}>
+                Gift Storage
+              </Typography>
+              <IconButton
+                size="small"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setPayment(payment);
+                  setOpenPaymentMenu(true);
+                  setPaymentMenuAnchorEl(event.currentTarget);
+                }}>
+                <MoreHoriz fontSize="small" />
+              </IconButton>
+            </Box>
+
+            <FarcasterProfileSection social={social} />
+
+            <Typography
+              textAlign="start"
+              variant="subtitle2"
+              fontWeight="bold"
+              fontSize={isMobile ? 12 : 13}>
+              1 Unit of Storage
+            </Typography>
+          </>
+        )}
+      </Box>
+    );
+  }
+
+  function IntentPayment({ payment, ...props }: ButtonProps & { payment: PaymentType }) {
+    return (
+      <Box
+        key={payment.referenceId}
+        component={Button}
+        variant="outlined"
+        onClick={() => {
+          setPayment(payment);
+          setOpenPaymentDialog(true);
+        }}
+        sx={{
+          p: 1.5,
+          border: 1,
+          borderRadius: 5,
+          borderColor: 'divider',
+          minWidth: isMobile ? 145 : 155,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-start',
+          alignItems: 'flex-start',
+          gap: 1,
+          textTransform: 'none',
+          color: 'inherit'
+        }}
+        {...props}>
+        <Box
+          alignSelf="stretch"
+          display="flex"
+          flexDirection="row"
+          alignItems="center"
+          justifyContent="space-between">
+          <Typography variant="subtitle2" fontWeight="bold" fontSize={14}>
+            Intent to pay
+          </Typography>
+          <IconButton
+            size="small"
+            onClick={(event) => {
+              event.stopPropagation();
+              setPayment(payment);
+              setOpenPaymentMenu(true);
+              setPaymentMenuAnchorEl(event.currentTarget);
+            }}>
+            <MoreHoriz fontSize="small" />
+          </IconButton>
+        </Box>
+
+        {payment.receiver ? (
+          <ProfileSection profile={payment.receiver} />
+        ) : (
+          <AddressSection identity={{ address: payment.receiverAddress }} />
+        )}
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="flex-start"
+          spacing={0.5}
+          useFlexGap
+          flexWrap="wrap">
+          <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
+            <b>${payment.usdAmount}</b> of
+          </Typography>
+          <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
+            <b>{getTokenName(payment.token)}</b>
+          </Typography>
+          <TokenAvatar
+            tokenName={payment.token}
+            sx={{
+              width: 15,
+              height: 15
+            }}
+          />
+          <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
+            on <b>{getNetworkDisplayName(payment.chainId)}</b>
+          </Typography>
+          <NetworkAvatar
+            chainId={payment.chainId}
+            sx={{
+              width: 15,
+              height: 15
+            }}
+          />
+        </Stack>
+      </Box>
+    );
+  }
 }

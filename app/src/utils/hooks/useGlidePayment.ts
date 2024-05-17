@@ -52,7 +52,6 @@ export const useGlidePaymentOptions = (
   payerWalletAddress: Address,
   transaction: EVMTransaction
 ) => {
-  console.debug(payerWalletAddress, transaction);
   return useQuery({
     enabled: enabled,
     queryKey: ['listPaymentOptions', { payerWalletAddress, transaction }],
