@@ -187,7 +187,7 @@ export default function GiftStorageDialog({
         reset();
 
         const glideTxHash = await glideClient.writeContract({
-          account: profile?.identity as Address,
+          account: selectedWallet.address,
           paymentCurrency: paymentOption.paymentCurrency,
           currentChainId: chainId,
           ...(tx as any),
