@@ -37,7 +37,7 @@ export const useGlideEstimatePayment = (
     enabled: enabled,
     queryKey: ['estimateGlidePayment', { paymentCurrency, transaction }],
     staleTime: Infinity,
-    refetchInterval: 15_000,
+    refetchInterval: 30_000,
     queryFn: async () => {
       return await glideClient.estimatePaymentAmount({
         paymentCurrency,
@@ -56,7 +56,7 @@ export const useGlidePaymentOptions = (
     enabled: enabled,
     queryKey: ['listPaymentOptions', { payerWalletAddress, transaction }],
     staleTime: Infinity,
-    refetchInterval: 15_000,
+    refetchInterval: 30_000,
     queryFn: async () => {
       return await glideClient.listPaymentOptions({
         payerWalletAddress,

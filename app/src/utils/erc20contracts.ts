@@ -9,8 +9,8 @@ export const JAAD_TOKEN = 'JAAD';
 
 export const ERC20_CONTRACTS = {
   [base.id]: [
-    { name: USDC_TOKEN, address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' },
-    { name: DEGEN_TOKEN, address: '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed' }
+    { name: USDC_TOKEN, address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913' },
+    { name: DEGEN_TOKEN, address: '0x4ed4e862860bed51a9570b96d89af5e1b0efefed' }
   ],
   [optimism.id]: [{ name: USDC_TOKEN, address: '0x0b2c639c533813f4aa9d7837caf62653d097ff85' }],
   [degen.id]: [

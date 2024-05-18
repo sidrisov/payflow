@@ -59,7 +59,7 @@ export const useSafeTransfer = (): {
     safeAccountConfig: SafeAccountConfig,
     safeVersion: SafeVersion,
     saltNonce: string
-  ) => Promise<void>;
+  ) => Promise<Hash | undefined>;
   reset: () => void;
 } => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -104,7 +104,7 @@ export const useSafeTransfer = (): {
     safeAccountConfig: SafeAccountConfig,
     safeVersion: SafeVersion,
     saltNonce: string
-  ) {
+  ): Promise<Hash | undefined> {
     setLoading(true);
 
     const isSafeDeployed = await isSmartAccountDeployed(client, tx.from);
@@ -190,6 +190,7 @@ export const useSafeTransfer = (): {
         console.log('Tx hash: ', txHash, chain.name);
 
         setTxHash(txHash);
+        return txHash;
       } else {
         // handle with gelato relayer and safe sdk
         const txHash = await transferWithGelato(
@@ -202,6 +203,7 @@ export const useSafeTransfer = (): {
           statusCallback
         );
         setTxHash(txHash);
+        return txHash;
       }
     } catch (error) {
       const message = (error as Error).message;

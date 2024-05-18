@@ -14,7 +14,6 @@ import { optimism } from 'viem/chains';
 import { glideClient } from '../../utils/glide';
 import {
   useSwitchChain,
-  useSendTransaction,
   useChainId,
   useAccount,
   useReadContract,
@@ -51,6 +50,9 @@ import { ProfileContext } from '../../contexts/UserContext';
 import { useSafeTransfer } from '../../utils/hooks/useSafeTransfer';
 import { toast } from 'react-toastify';
 import { Social } from '../../generated/graphql/types';
+import { SafeAccountConfig } from '@safe-global/protocol-kit';
+import { SafeVersion } from '@safe-global/safe-core-sdk-types';
+import { completePayment } from '../../services/payments';
 
 export type GiftStorageDialog = DialogProps &
   CloseCallbackType & {
@@ -83,7 +85,6 @@ export default function GiftStorageDialog({
 
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
-  const { sendTransactionAsync } = useSendTransaction();
 
   const { isConnected, address } = useAccount();
 
@@ -182,22 +183,19 @@ export default function GiftStorageDialog({
         value?: bigint;
       };
 
-      if (profile && client && signer && selectedWallet) {
+      if (profile && client && signer && selectedWallet && paymentOption) {
         reset();
-        setPaymentPending(true);
 
-        const txHash = await glideClient.writeContract({
+        const glideTxHash = await glideClient.writeContract({
           account: profile?.identity as Address,
-          paymentCurrency: paymentOption?.paymentCurrency,
+          paymentCurrency: paymentOption.paymentCurrency,
           currentChainId: chainId,
           ...(tx as any),
           switchChainAsync,
           sendTransactionAsync: async (tx) => {
             console.log('Glide tnxs: ', tx);
 
-            toast.success('This is just a test! No tx executed');
-
-            /* // TODO: hard to figure out if there 2 signers or one, for now consider if signerProvider not specified - 1, otherwise - 2
+            // TODO: hard to figure out if there 2 signers or one, for now consider if signerProvider not specified - 1, otherwise - 2
             const owners = [];
             if (
               flow.signerProvider &&
@@ -215,7 +213,7 @@ export default function GiftStorageDialog({
             const saltNonce = flow.saltNonce as string;
             const safeVersion = selectedWallet.version as SafeVersion;
 
-            transfer(
+            const txHash = transfer(
               client,
               signer,
               {
@@ -227,17 +225,25 @@ export default function GiftStorageDialog({
               safeAccountConfig,
               safeVersion,
               saltNonce
-            );*/
-            setPaymentPending(false);
+            );
+
+            return txHash;
           }
         });
 
-        console.log(txHash);
+        console.log('Glide txHash:', glideTxHash);
+
+        if (glideTxHash && payment.referenceId) {
+          payment.hash = glideTxHash;
+          completePayment(payment);
+          toast.success(`Gifted storage to @${social.profileName}`);
+        } else {
+          toast.error(`Failed to gift storage!`);
+        }
       }
     } catch (error) {
-      console.log('Error', error);
-    } finally {
-      setPaymentPending(false);
+      toast.error(`Failed to gift storage!`);
+      console.error('Failed to gift storage with error', error);
     }
   };
 
@@ -320,6 +326,7 @@ export default function GiftStorageDialog({
                       selectedToken={selectedToken}
                       setSelectedToken={setSelectedToken}
                       compatibleWallets={compatibleWallets}
+                      enabledChainCurrencies={paymentOptions?.map((c) => c.paymentCurrency) ?? []}
                       gasFee={BigInt(0)}
                     />
                     {!selectedWallet || chainId === selectedWallet.network ? (

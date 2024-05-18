@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { formatUnits } from 'viem';
 import { useBalance, useChainId } from 'wagmi';
 import { FlowWalletType } from '../types/FlowType';
-import { Token, ETH, getSupportedTokens } from '../utils/erc20contracts';
+import { Token, ETH, getSupportedTokens, ETH_TOKEN } from '../utils/erc20contracts';
 import { getNetworkDisplayName } from '../utils/networks';
 import { normalizeNumberPrecision } from '../utils/normalizeNumberPrecision';
 import { useTokenPrices } from '../utils/queries/prices';
@@ -20,6 +20,7 @@ export function NetworkTokenSelector({
   compatibleWallets,
   selectedToken,
   setSelectedToken,
+  enabledChainCurrencies,
   gasFee
 }: {
   payment?: PaymentType;
@@ -28,6 +29,7 @@ export function NetworkTokenSelector({
   compatibleWallets: FlowWalletType[];
   selectedToken?: Token;
   setSelectedToken: React.Dispatch<React.SetStateAction<Token | undefined>>;
+  enabledChainCurrencies?: string[];
   gasFee?: bigint;
 }) {
   const chainId = useChainId();
@@ -83,7 +85,20 @@ export function NetworkTokenSelector({
     const tokens = getSupportedTokens(selectedWallet.network).filter((t) =>
       !payment?.receiverFid && payment?.token ? t.name.toLowerCase() === payment?.token : true
     );
-    setCompatibleTokens(tokens);
+
+    setCompatibleTokens(
+      enabledChainCurrencies
+        ? tokens.filter((t) =>
+            enabledChainCurrencies.find(
+              (c) =>
+                c ===
+                `eip155:${selectedWallet.network}/${
+                  t.name !== ETH_TOKEN ? `erc20:${t.address}` : `slip44:60`
+                }`
+            )
+          )
+        : tokens
+    );
   }, [selectedWallet]);
 
   return (
