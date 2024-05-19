@@ -24,6 +24,7 @@ query GetSocialMetadataAndInsightsByIdentity($identity: Identity!, $me: Identity
                     small
                 }
             }
+            userId
             followerCount
         }
         xmtp {

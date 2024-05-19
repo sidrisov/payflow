@@ -12,7 +12,9 @@ import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.message.CastEmbed;
 import ua.sinaver.web3.payflow.message.PaymentHashMessage;
 import ua.sinaver.web3.payflow.message.PaymentMessage;
+import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
+import ua.sinaver.web3.payflow.service.FarcasterMessagingService;
 import ua.sinaver.web3.payflow.service.FarcasterPaymentBotService;
 import ua.sinaver.web3.payflow.service.FrameService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
@@ -21,6 +23,7 @@ import java.security.Principal;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/payment")
@@ -36,6 +39,9 @@ public class PaymentController {
 
 	@Autowired
 	private FarcasterPaymentBotService farcasterPaymentBotService;
+
+	@Autowired
+	private FarcasterMessagingService farcasterMessagingService;
 
 	@Autowired
 	private FrameService frameService;
@@ -128,20 +134,47 @@ public class PaymentController {
 				val senderFname = frameService.getIdentityFname(user.getIdentity());
 				val receiverFname = frameService.getIdentityFname(payment.getReceiver() != null ?
 						payment.getReceiver().getIdentity() : payment.getReceiverAddress());
+
 				val castText = String.format("""
 								@%s, you've been paid $%s %s by @%s via @payflow payment action 🎉""",
 						receiverFname,
 						payment.getUsdAmount(),
 						payment.getToken(),
 						senderFname);
-				val embeds = Collections.singletonList(new CastEmbed(String.format(
-						"https://onceupon.gg/%s", payment.getHash())));
+
+				val txUrl = String.format(
+						"https://onceupon.gg/%s", payment.getHash());
+				val embeds = Collections.singletonList(new CastEmbed(txUrl));
 
 				val processed = farcasterPaymentBotService.reply(castText,
 						payment.getSourceHash(),
 						embeds);
+
 				if (!processed) {
 					log.error("Failed to reply with {} for payment intent completion", castText);
+				}
+
+				if (receiverFname.startsWith("sinaver")) {
+					val receiverFid = frameService.getIdentityFid(payment.getReceiver() != null ?
+							payment.getReceiver().getIdentity() : payment.getReceiverAddress(), true);
+
+					if (StringUtils.isBlank(receiverFid)) {
+						return;
+					}
+
+					try {
+						val response = farcasterMessagingService.message(
+								new DirectCastMessage(receiverFid,
+										castText.concat(String.format("\nReceipt: %s", txUrl)),
+										UUID.randomUUID()));
+
+						if (!response.result().success()) {
+							log.error("Failed to direct cast with {} for payment intent completion",
+									castText);
+						}
+					} catch (Throwable t) {
+						log.error("Failed to direct cast with exception: ", t);
+					}
 				}
 			}
 		}

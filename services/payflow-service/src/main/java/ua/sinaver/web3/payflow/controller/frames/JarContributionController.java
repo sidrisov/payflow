@@ -79,7 +79,7 @@ public class JarContributionController {
 	@Autowired
 	private XmtpValidationService xmtpValidationService;
 
-	@Value("${payflow.farcaster.bot.signer}")
+	@Value("${payflow.farcaster.bot.cast.signer}")
 	private String botSignerUuid;
 
 	private static String roundTokenAmount(double amount) {

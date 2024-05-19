@@ -165,4 +165,18 @@ public class FrameService implements IFrameService {
 		log.debug("Username for {}: {}", identity, username);
 		return username;
 	}
+
+	@Override
+	public String getIdentityFid(String identity, boolean cleanCache) {
+		if (cleanCache) {
+			socialGraphService.cleanCache(identity, null);
+		}
+
+		val wallet = socialGraphService.getSocialMetadata(identity, null);
+		val fid = wallet.getSocials().stream()
+				.filter(social -> social.getDappName().equals(SocialDappName.farcaster))
+				.findFirst().map(Social::getUserId).orElse(null);
+		log.debug("Fid for {}: {}", identity, fid);
+		return fid;
+	}
 }

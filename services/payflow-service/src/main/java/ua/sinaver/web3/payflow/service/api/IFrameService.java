@@ -25,4 +25,6 @@ public interface IFrameService {
 	String getFidFname(int fid);
 
 	String getIdentityFname(String identity);
+
+	String getIdentityFid(String identity, boolean cleanCache);
 }

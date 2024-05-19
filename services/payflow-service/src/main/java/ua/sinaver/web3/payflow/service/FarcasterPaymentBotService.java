@@ -45,7 +45,7 @@ public class FarcasterPaymentBotService {
 	@Autowired
 	private PaymentRepository paymentRepository;
 
-	@Value("${payflow.farcaster.bot.signer}")
+	@Value("${payflow.farcaster.bot.cast.signer}")
 	private String botSignerUuid;
 
 	@Value("${payflow.farcaster.bot.enabled:false}")

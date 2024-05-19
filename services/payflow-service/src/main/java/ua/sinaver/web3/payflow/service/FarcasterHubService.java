@@ -19,8 +19,7 @@ public class FarcasterHubService implements IFarcasterHubService {
 
 	private final WebClient neynarClient;
 
-	public FarcasterHubService(@Value("${payflow.hub.api.url}") String hubApiUrl,
-	                           @Value("${payflow.hub.api.key}") String hubApiKey) {
+	public FarcasterHubService(@Value("${payflow.hub.api.key}") String hubApiKey) {
 
 		neynarClient = WebClient.builder()
 				.baseUrl("https://api.neynar.com")
