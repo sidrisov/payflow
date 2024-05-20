@@ -86,16 +86,7 @@ export default function PaymentDialog({
               </Stack>
             )}
 
-            {isConnectWalletRequired ? (
-              <LoadingConnectWalletButton
-                isEmbeddedSigner={
-                  paymentType === 'payflow'
-                    ? sender.identity.profile?.defaultFlow?.signerProvider === 'privy'
-                    : false
-                }
-                paymentType={paymentType}
-              />
-            ) : paymentType === 'payflow' ? (
+            {paymentType === 'payflow' ? (
               <PayWithPayflowDialog
                 {...{
                   paymentType,

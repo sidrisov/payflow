@@ -42,6 +42,8 @@ import {
   ContractFunctionArgs,
   ContractFunctionName,
   encodeFunctionData,
+  erc20Abi,
+  parseUnits,
   toHex
 } from 'viem';
 import { normalizeNumberPrecision } from '../../utils/normalizeNumberPrecision';
@@ -169,6 +171,10 @@ export default function GiftStorageDialog({
     try {
       const tx = {
         chainId: optimism.id,
+        /*         address: '0x0b2c639c533813f4aa9d7837caf62653d097ff85',
+        abi: erc20Abi,
+        functionName: 'transfer',
+        args: ['0x0dEe77c83cB8b14fA95497825dF93202AbF6ad83', parseUnits('0.1', 6)] */
         address: OP_FARCASTER_STORAGE_CONTRACT_ADDR,
         abi: rentStorageAbi,
         functionName: 'rent',
@@ -309,42 +315,32 @@ export default function GiftStorageDialog({
             </Stack>
           )}
 
-          {!isConnected ? (
-            <LoadingConnectWalletButton
-              isEmbeddedSigner={sender.identity.profile?.defaultFlow?.signerProvider === 'privy'}
-              paymentType="payflow"
-            />
+          {address?.toLowerCase() === flow.signer.toLowerCase() ? (
+            <Stack width="100%">
+              <NetworkTokenSelector
+                payment={payment}
+                selectedWallet={selectedWallet}
+                setSelectedWallet={setSelectedWallet}
+                selectedToken={selectedToken}
+                setSelectedToken={setSelectedToken}
+                compatibleWallets={compatibleWallets}
+                enabledChainCurrencies={paymentOptions?.map((c) => c.paymentCurrency) ?? []}
+                gasFee={BigInt(0)}
+              />
+              {!selectedWallet || chainId === selectedWallet.network ? (
+                <LoadingPaymentButton
+                  title="Gift"
+                  loading={paymentPending}
+                  disabled={!paymentOption}
+                  status={status}
+                  onClick={submitGlideTransaction}
+                />
+              ) : (
+                <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
+              )}
+            </Stack>
           ) : (
-            <>
-              {address &&
-                (address.toLowerCase() === flow.signer.toLowerCase() ? (
-                  <Stack width="100%">
-                    <NetworkTokenSelector
-                      payment={payment}
-                      selectedWallet={selectedWallet}
-                      setSelectedWallet={setSelectedWallet}
-                      selectedToken={selectedToken}
-                      setSelectedToken={setSelectedToken}
-                      compatibleWallets={compatibleWallets}
-                      enabledChainCurrencies={paymentOptions?.map((c) => c.paymentCurrency) ?? []}
-                      gasFee={BigInt(0)}
-                    />
-                    {!selectedWallet || chainId === selectedWallet.network ? (
-                      <LoadingPaymentButton
-                        title="Gift"
-                        loading={paymentPending}
-                        disabled={!paymentOption}
-                        status={status}
-                        onClick={submitGlideTransaction}
-                      />
-                    ) : (
-                      <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
-                    )}
-                  </Stack>
-                ) : (
-                  <SwitchFlowSignerSection flow={flow} />
-                ))}
-            </>
+            <SwitchFlowSignerSection flow={flow} />
           )}
         </Box>
       </DialogContent>

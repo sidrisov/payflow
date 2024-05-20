@@ -51,8 +51,8 @@ export function SenderField({ sender }: { sender: SelectedIdentityType }) {
         ))}
 
       {!sender.identity.address && (
-        <Typography alignSelf="center" flexGrow={1}>
-          <b>Choose Sender</b>
+        <Typography width="100%" fontSize={18}>
+          Choose Sender
         </Typography>
       )}
 

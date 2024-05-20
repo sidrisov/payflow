@@ -221,44 +221,43 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
 
   return (
     <>
-      {address &&
-        (address.toLowerCase() === flow.signer.toLowerCase() ? (
-          selectedWallet && (
-            <>
-              <TokenAmountSection
-                payment={payment}
-                selectedWallet={selectedWallet}
-                selectedToken={selectedToken}
-                sendAmount={sendAmount}
-                setSendAmount={setSendAmount}
-                sendAmountUSD={sendAmountUSD}
-                setSendAmountUSD={setSendAmountUSD}
+      {address?.toLowerCase() === flow.signer.toLowerCase() ? (
+        selectedWallet && (
+          <>
+            <TokenAmountSection
+              payment={payment}
+              selectedWallet={selectedWallet}
+              selectedToken={selectedToken}
+              sendAmount={sendAmount}
+              setSendAmount={setSendAmount}
+              sendAmountUSD={sendAmountUSD}
+              setSendAmountUSD={setSendAmountUSD}
+            />
+            <NetworkTokenSelector
+              payment={payment}
+              selectedWallet={selectedWallet}
+              setSelectedWallet={setSelectedWallet}
+              selectedToken={selectedToken}
+              setSelectedToken={setSelectedToken}
+              compatibleWallets={compatibleWallets}
+              gasFee={gasFee}
+            />
+            {chainId === selectedWallet.network ? (
+              <LoadingPaymentButton
+                title="Pay"
+                loading={paymentPending}
+                disabled={!paymentEnabled}
+                status={status}
+                onClick={submitTransaction}
               />
-              <NetworkTokenSelector
-                payment={payment}
-                selectedWallet={selectedWallet}
-                setSelectedWallet={setSelectedWallet}
-                selectedToken={selectedToken}
-                setSelectedToken={setSelectedToken}
-                compatibleWallets={compatibleWallets}
-                gasFee={gasFee}
-              />
-              {chainId === selectedWallet.network ? (
-                <LoadingPaymentButton
-                  title="Pay"
-                  loading={paymentPending}
-                  disabled={!paymentEnabled}
-                  status={status}
-                  onClick={submitTransaction}
-                />
-              ) : (
-                <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
-              )}
-            </>
-          )
-        ) : (
-          <SwitchFlowSignerSection flow={flow} />
-        ))}
+            ) : (
+              <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
+            )}
+          </>
+        )
+      ) : (
+        <SwitchFlowSignerSection flow={flow} />
+      )}
     </>
   );
 }
