@@ -153,7 +153,7 @@ public class PayIntentController {
 		log.debug("Payment intent saved: {}", payment);
 
 		return ResponseEntity.ok().body(
-				new FrameResponse.FrameMessage(String.format("$%s payment intent submitted!",
-						amount)));
+				new FrameResponse.FrameMessage(String.format("Payment intent for @%s submitted. Pay in the app!",
+						casterFcName)));
 	}
 }

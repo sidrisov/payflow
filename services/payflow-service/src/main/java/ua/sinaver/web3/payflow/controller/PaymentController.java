@@ -130,50 +130,111 @@ public class PaymentController {
 
 			// notify only for empty category as p2p payment
 			// handle with different messages for other kind of payments
-			if (!StringUtils.isBlank(payment.getSourceHash()) && !StringUtils.isBlank(payment.getHash()) && StringUtils.isBlank(payment.getCategory())) {
+			if (!StringUtils.isBlank(payment.getSourceHash()) && !StringUtils.isBlank(payment.getHash())) {
 				val senderFname = frameService.getIdentityFname(user.getIdentity());
 				val receiverFname = frameService.getIdentityFname(payment.getReceiver() != null ?
 						payment.getReceiver().getIdentity() : payment.getReceiverAddress());
-
-				val castText = String.format("""
-								@%s, you've been paid $%s %s by @%s via @payflow payment action 🎉""",
-						receiverFname,
-						payment.getUsdAmount(),
-						payment.getToken(),
-						senderFname);
-
 				val txUrl = String.format(
 						"https://onceupon.gg/%s", payment.getHash());
 				val embeds = Collections.singletonList(new CastEmbed(txUrl));
+				val sourceRef = String.format("https://warpcast.com/%s/%s",
+						receiverFname, payment.getSourceHash().substring(0, 10));
 
-				val processed = farcasterPaymentBotService.reply(castText,
-						payment.getSourceHash(),
-						embeds);
+				if (StringUtils.isBlank(payment.getCategory())) {
+					if (payment.getReceiver() == null) {
+						val castText = String.format("""
+										@%s, you've been paid $%s %s by @%s 🎉
+																				
+										Join /payflow community!""",
+								receiverFname,
+								payment.getUsdAmount(),
+								payment.getToken(),
+								senderFname);
 
-				if (!processed) {
-					log.error("Failed to reply with {} for payment intent completion", castText);
-				}
+						val processed = farcasterPaymentBotService.reply(castText,
+								payment.getSourceHash(),
+								embeds);
 
-				if (receiverFname.startsWith("sinaver")) {
-					val receiverFid = frameService.getIdentityFid(payment.getReceiver() != null ?
-							payment.getReceiver().getIdentity() : payment.getReceiverAddress(), true);
-
-					if (StringUtils.isBlank(receiverFid)) {
-						return;
-					}
-
-					try {
-						val response = farcasterMessagingService.message(
-								new DirectCastMessage(receiverFid,
-										castText.concat(String.format("\nReceipt: %s", txUrl)),
-										UUID.randomUUID()));
-
-						if (!response.result().success()) {
-							log.error("Failed to direct cast with {} for payment intent completion",
-									castText);
+						if (!processed) {
+							log.error("Failed to reply with {} for payment intent completion", castText);
 						}
-					} catch (Throwable t) {
-						log.error("Failed to direct cast with exception: ", t);
+					} else {
+						val receiverFid = frameService.getIdentityFid(payment.getReceiver().getIdentity(), true);
+						if (StringUtils.isBlank(receiverFid)) {
+							return;
+						}
+
+						try {
+							val messageText = String.format("""
+											 @%s, you've been paid $%s %s by @%s 🎉
+																					
+											Source (cast): %s
+																					
+											Receipt (tx): %s
+
+											Join /payflow community!""",
+									receiverFname,
+									payment.getUsdAmount(),
+									payment.getToken(),
+									senderFname,
+									sourceRef,
+									txUrl);
+							val response = farcasterMessagingService.message(
+									new DirectCastMessage(receiverFid, messageText, UUID.randomUUID()));
+
+							if (!response.result().success()) {
+								log.error("Failed to send direct cast with {} for payment intent " +
+										"completion", messageText);
+							}
+						} catch (Throwable t) {
+							log.error("Failed to send direct cast with exception: ", t);
+						}
+					}
+				} else if (payment.getCategory().equals("fc_storage")) {
+					if (payment.getReceiver() == null) {
+						val castText = String.format("""
+										@%s, you've been gifted 1 unit of storage by @%s 🎉
+																				
+										Join /payflow community!""",
+								receiverFname,
+								senderFname);
+
+						val processed = farcasterPaymentBotService.reply(castText,
+								payment.getSourceHash(),
+								embeds);
+
+						if (!processed) {
+							log.error("Failed to reply with {} for payment intent completion", castText);
+						}
+					} else {
+						val receiverFid = frameService.getIdentityFid(payment.getReceiver().getIdentity(), true);
+						if (StringUtils.isBlank(receiverFid)) {
+							return;
+						}
+
+						try {
+							val messageText = String.format("""
+											 @%s, you've been gifted 1 unit of storage by @%s 🎉
+																					
+											Source (cast): %s
+																					
+											Receipt (tx): %s
+
+											Join /payflow community!""",
+									receiverFname,
+									senderFname,
+									sourceRef,
+									txUrl);
+							val response = farcasterMessagingService.message(
+									new DirectCastMessage(receiverFid, messageText, UUID.randomUUID()));
+
+							if (!response.result().success()) {
+								log.error("Failed to send direct cast with {} for gift storage intent " +
+										"completion", messageText);
+							}
+						} catch (Throwable t) {
+							log.error("Failed to send direct cast with exception: ", t);
+						}
 					}
 				}
 			}
