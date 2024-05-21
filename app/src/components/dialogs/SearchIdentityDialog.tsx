@@ -175,7 +175,6 @@ export default function SearchIdentityDialog({
     }
   }, [debouncedSearchString, address]);
 
-
   const updateIdentityCallback = ({
     identity,
     view,

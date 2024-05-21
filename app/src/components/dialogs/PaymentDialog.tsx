@@ -12,7 +12,6 @@ import { SelectedIdentityType } from '../../types/ProfleType';
 import PayWithPayflowDialog from './PayWithPayflowDialog';
 import PayWithEOADialog from './PayWithEOADialog';
 import { useAccount } from 'wagmi';
-import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
 import { BackDialogTitle } from './PaymentDialogTitle';
 import { PaymentType } from '../../types/PaymentType';
 import { SenderField } from '../SenderField';

@@ -26,7 +26,6 @@ import { BackDialogTitle } from './PaymentDialogTitle';
 import { SenderField } from '../SenderField';
 import { KeyboardDoubleArrowDown } from '@mui/icons-material';
 import { SelectedIdentityType } from '../../types/ProfleType';
-import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
 import { FarcasterRecipientField } from '../FarcasterRecipientField';
 import { SwitchFlowSignerSection } from './SwitchFlowSignerSection';
 import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';

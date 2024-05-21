@@ -1,19 +1,11 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import {
-  Avatar,
-  Box,
-  Container,
-  Stack,
-  Typography,
-  useMediaQuery,
-  useTheme
-} from '@mui/material';
+import { Avatar, Box, Container, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import PaymentCastActionDialog from '../components/dialogs/PaymentCastActionDialog';
 import { Favorite, Inventory, Person, PersonAdd, Storage } from '@mui/icons-material';
 import CastActionButton from '../components/buttons/CastActionButton';
 
-export default function Tools() {
+export default function Actions() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -22,7 +14,7 @@ export default function Tools() {
   return (
     <>
       <Helmet>
-        <title> Payflow | Tools </title>
+        <title> Payflow | Actions </title>
       </Helmet>
       <Container maxWidth="xs" sx={{ height: '100%' }}>
         <Box

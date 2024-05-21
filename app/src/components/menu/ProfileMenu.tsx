@@ -2,15 +2,15 @@ import { Divider, ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material'
 import { ProfileType } from '../../types/ProfleType';
 import { useNavigate } from 'react-router-dom';
 import {
-  AutoFixHigh,
   DarkModeOutlined,
+  GridView,
+  Groups,
   LeaderboardRounded,
   LightModeOutlined,
   Logout,
   Person,
   PersonAdd,
-  Settings
-} from '@mui/icons-material';
+  Settings} from '@mui/icons-material';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ProfileSection } from '../ProfileSection';
@@ -72,12 +72,12 @@ export function ProfileMenu({
       <MenuItem
         onClick={async () => {
           closeStateCallback();
-          navigate('/tools');
+          navigate('/actions');
         }}>
         <ListItemIcon>
-          <AutoFixHigh fontSize="small" />
+          <GridView fontSize="small" />
         </ListItemIcon>
-        Tools
+        Actions
       </MenuItem>
       <MenuItem
         onClick={async () => {
@@ -99,6 +99,12 @@ export function ProfileMenu({
           <LeaderboardRounded fontSize="small" />
         </ListItemIcon>
         Board
+      </MenuItem>
+      <MenuItem component="a" href="https://warpcast.com/~/channel/payflow" target="_blank">
+        <ListItemIcon>
+          <Groups fontSize="small" />
+        </ListItemIcon>
+        Channel
       </MenuItem>
       <Divider />
       <MenuItem onClick={() => setAppSettings({ ...appSettings, darkMode: !appSettings.darkMode })}>

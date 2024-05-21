@@ -70,7 +70,7 @@
     "eslint-plugin-react-refresh": "^0.4.3",
     "typescript": "^5.1.6",
     "vite": "^5.2.11",
-    "vite-plugin-node-polyfills": "^0.21.0",
+    "vite-plugin-node-polyfills": "^0.22.0",
     "vite-plugin-pwa": "^0.20.0"
   },
   "overrides": {
