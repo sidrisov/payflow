@@ -5,11 +5,11 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
     application
-    id("org.springframework.boot") version "3.2.3"
+    id("org.springframework.boot") version "3.2.5"
     id("io.spring.dependency-management") version "1.1.4"
     id("com.google.cloud.artifactregistry.gradle-plugin") version "2.2.1"
     id("io.freefair.lombok") version "8.4"
-    id("com.netflix.dgs.codegen") version "6.1.2"
+    id("com.netflix.dgs.codegen") version "6.2.1"
 }
 
 application {
@@ -26,11 +26,11 @@ repositories {
 }
 
 if (project.hasProperty("gcp")) {
-    extra["springCloudGcpVersion"] = "5.0.1"
-    extra["springCloudVersion"] = "2023.0.0"
+    extra["springCloudGcpVersion"] = "5.3.0"
+    extra["springCloudVersion"] = "2023.0.1"
 }
 
-extra["flywayVersion"] = "10.4.1"
+extra["flywayVersion"] = "10.13.0"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -43,7 +43,7 @@ dependencies {
     implementation("org.springframework.session:spring-session-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-aop")
 
-    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.7.3")
+    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.7.5")
 
     /**
      * TODO: disable for now due the following, generating types with gradle plugin is enough for now
@@ -72,7 +72,7 @@ dependencies {
     } else {
         // local
         //runtimeOnly ("com.h2database:h2")
-        runtimeOnly("com.mysql:mysql-connector-j")
+        runtimeOnly("com.mysql:mysql-connector-j:8.4.0")
     }
 
     // caching
@@ -89,24 +89,24 @@ dependencies {
     implementation("org.flywaydb:flyway-mysql:${property("flywayVersion")}")
 
     // utils
-    implementation("org.apache.commons:commons-lang3:3.12.0")
-    implementation("com.google.guava:guava:33.0.0-jre")
-    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("org.apache.commons:commons-lang3:3.14.0")
+    implementation("com.google.guava:guava:33.2.0-jre")
+    implementation("com.google.code.gson:gson:2.11.0")
 
     // java.lang.NoSuchMethodError: 'reactor.core.publisher.Mono reactor.core.publisher.Mono.onErrorComplete()'
-    implementation("io.projectreactor:reactor-core:3.6.2")
+    implementation("io.projectreactor:reactor-core:3.6.6")
 
-    runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.105.Final:osx-aarch_64")
+    runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.110.Final:osx-aarch_64")
 
     // crypto
-    implementation("org.bouncycastle:bcprov-jdk18on:1.77")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
     implementation("org.web3j:core:4.10.3")
     implementation("org.web3j:contracts:4.10.3")
     //siwe
     implementation("com.moonstoneid:siwe-java:1.0.2")
 
     //lombok
-    compileOnly("org.projectlombok:lombok")
+    compileOnly("org.projectlombok:lombok:1.18.32")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 }
