@@ -19,7 +19,7 @@ export function LoadingPaymentButton({
           <Typography variant="button">{status}</Typography>
         </Stack>
       }
-      sx={{ mt: 3, mb: 1, borderRadius: 5 }}>
+      sx={{ mt: 2, mb: 1, borderRadius: 5 }}>
       {title}
     </LoadingButton>
   );

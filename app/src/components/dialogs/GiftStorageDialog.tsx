@@ -41,8 +41,6 @@ import {
   ContractFunctionArgs,
   ContractFunctionName,
   encodeFunctionData,
-  erc20Abi,
-  parseUnits,
   toHex
 } from 'viem';
 import { normalizeNumberPrecision } from '../../utils/normalizeNumberPrecision';
@@ -54,6 +52,7 @@ import { Social } from '../../generated/graphql/types';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { completePayment } from '../../services/payments';
+import { grey } from '@mui/material/colors';
 
 export type GiftStorageDialog = DialogProps &
   CloseCallbackType & {
@@ -337,6 +336,14 @@ export default function GiftStorageDialog({
               ) : (
                 <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
               )}
+              <Typography variant="caption" textAlign="center" color={grey[400]}>
+                Cross-chain payments facilitated by{' '}
+                <b>
+                  <a href="https://paywithglide.xyz" target="_blank" style={{ color: 'inherit' }}>
+                    Glide
+                  </a>
+                </b>
+              </Typography>
             </Stack>
           ) : (
             <SwitchFlowSignerSection flow={flow} />
