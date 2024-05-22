@@ -78,11 +78,14 @@ const BASE_SEPOLIA_POLICIES = JSON.parse(
 export const paymasterSponsorshipPolicyIds = (chainId: number) => {
   switch (chainId) {
     case base.id:
-      return BASE_POLICIES;
+    case arbitrum.id:
     case optimism.id:
+    case degen.id:
+      return BASE_POLICIES;
+    /* case optimism.id:
       return OP_POLICIES;
     case degen.id:
-      return DEGEN_POLICIES;
+      return DEGEN_POLICIES; */
     case baseSepolia.id:
       return BASE_SEPOLIA_POLICIES;
     default:
