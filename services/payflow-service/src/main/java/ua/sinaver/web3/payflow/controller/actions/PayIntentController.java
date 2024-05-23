@@ -14,7 +14,6 @@ import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.IdentityService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
-import ua.sinaver.web3.payflow.service.api.IFrameService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.util.Comparator;
@@ -30,9 +29,6 @@ public class PayIntentController {
 
 	@Autowired
 	private IFarcasterHubService farcasterHubService;
-
-	@Autowired
-	private IFrameService frameService;
 
 	@Autowired
 	private IdentityService identityService;
@@ -86,7 +82,7 @@ public class PayIntentController {
 		val clickedFid = validateMessage.action().interactor().fid();
 		val casterFid = validateMessage.action().cast().fid();
 
-		val clickedProfile = frameService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
+		val clickedProfile = identityService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
 			log.error("Clicked fid {} is not on payflow", clickedFid);
 			return ResponseEntity.badRequest().body(
@@ -94,10 +90,10 @@ public class PayIntentController {
 		}
 
 		// check if profile exist
-		val paymentProfile = frameService.getFidProfiles(casterFid).stream().findFirst().orElse(null);
+		val paymentProfile = identityService.getFidProfiles(casterFid).stream().findFirst().orElse(null);
 		String paymentAddress = null;
 		if (paymentProfile == null) {
-			val paymentAddresses = frameService.getFidAddresses(casterFid);
+			val paymentAddresses = identityService.getFidAddresses(casterFid);
 			// pay first with higher social score now invite first
 			val paymentIdentity = identityService.getIdentitiesInfo(paymentAddresses)
 					.stream().max(Comparator.comparingInt(IdentityMessage::score))
@@ -133,7 +129,7 @@ public class PayIntentController {
 		}
 
 		val sourceApp = validateMessage.action().signer().client().displayName();
-		val casterFcName = frameService.getFidFname(casterFid);
+		val casterFcName = identityService.getFidFname(casterFid);
 		val castHash = validateMessage.action().cast().hash();
 		// maybe would make sense to reference top cast instead (if it's a bot cast)
 		val sourceRef = String.format("https://warpcast.com/%s/%s",

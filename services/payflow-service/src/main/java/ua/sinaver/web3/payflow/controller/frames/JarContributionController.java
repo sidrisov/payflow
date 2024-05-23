@@ -19,7 +19,7 @@ import ua.sinaver.web3.payflow.service.FlowService;
 import ua.sinaver.web3.payflow.service.TransactionService;
 import ua.sinaver.web3.payflow.service.XmtpValidationService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
-import ua.sinaver.web3.payflow.service.api.IFrameService;
+import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
@@ -62,7 +62,7 @@ public class JarContributionController {
 	private String framesServiceUrl;
 
 	@Autowired
-	private IFrameService frameService;
+	private IIdentityService identityService;
 
 	@Autowired
 	private TransactionService transactionService;
@@ -113,7 +113,7 @@ public class JarContributionController {
 		val title = validateMessage.action().input() != null ?
 				validateMessage.action().input().text() : null;
 
-		val clickedProfile = frameService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
+		val clickedProfile = identityService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
 			log.error("Clicked fid {} is not on payflow", clickedFid);
 			return ResponseEntity.badRequest().body(
@@ -391,7 +391,7 @@ public class JarContributionController {
 				return DEFAULT_HTML_RESPONSE;
 			}
 
-			clickedProfileAddresses = frameService.getFidAddresses(
+			clickedProfileAddresses = identityService.getFidAddresses(
 					validatedFarcasterMessage.action().interactor().fid());
 			buttonIndex = validatedFarcasterMessage.action().tappedButton().index();
 			inputText = validatedFarcasterMessage.action().input() != null ?
@@ -399,7 +399,7 @@ public class JarContributionController {
 
 			sourceApp = validatedFarcasterMessage.action().signer().client().displayName();
 			val casterFid = validatedFarcasterMessage.action().cast().fid();
-			val casterFcName = frameService.getFidFname(casterFid);
+			val casterFcName = identityService.getFidFname(casterFid);
 			// maybe would make sense to reference top cast instead (if it's a bot cast)
 			sourceRef = String.format("https://warpcast.com/%s/%s",
 					casterFcName, validatedFarcasterMessage.action().cast().hash().substring(0,
@@ -411,7 +411,7 @@ public class JarContributionController {
 				new String(Base64.getDecoder().decode(state)),
 				FramePaymentMessage.class);
 
-		val profiles = frameService.getFidProfiles(clickedProfileAddresses);
+		val profiles = identityService.getFidProfiles(clickedProfileAddresses);
 
 		val jar = flowService.findJarByUUID(uuid);
 
@@ -555,7 +555,7 @@ public class JarContributionController {
 				return DEFAULT_HTML_RESPONSE;
 			}
 
-			clickedProfileAddresses = frameService.getFidAddresses(
+			clickedProfileAddresses = identityService.getFidAddresses(
 					validatedFarcasterMessage.action().interactor().fid());
 			buttonIndex = validatedFarcasterMessage.action().tappedButton().index();
 			state = validatedFarcasterMessage.action().state().serialized();
@@ -566,7 +566,7 @@ public class JarContributionController {
 		paymentState = gson.fromJson(
 				new String(Base64.getDecoder().decode(state)),
 				FramePaymentMessage.class);
-		val profiles = frameService.getFidProfiles(clickedProfileAddresses);
+		val profiles = identityService.getFidProfiles(clickedProfileAddresses);
 		val jar = flowService.findJarByUUID(uuid);
 
 		if (jar != null && state != null) {

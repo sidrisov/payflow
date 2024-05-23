@@ -65,7 +65,6 @@ public class UserController {
 		val user = userService.findByIdentity(principal.getName());
 		if (user != null) {
 			try {
-
 				// TODO: merge before in service layer
 				val userContacts = contactBookService.getAllContacts(user);
 				val ethDenverParticipants = contactBookService.getEthDenverParticipants(user);
@@ -112,6 +111,26 @@ public class UserController {
 			val metadata = socialGraphService.getSocialMetadata(identity, user.getIdentity());
 			log.trace("Social Metadata for {}: {}", identity, metadata);
 			return metadata;
+		} else {
+			throw new Error("User doesn't exist");
+		}
+	}
+
+	@GetMapping("/me/contactsByTag")
+	public List<IdentityMessage> contactsByTag(@RequestParam(name = "tag") String tag,
+	                                           Principal principal) {
+		log.trace("{} fetching contact list by tag {}", principal.getName(), tag);
+		val user = userService.findByIdentity(principal.getName());
+		if (user != null) {
+			if (tag.equals("alfafrens")) {
+				val contacts = contactBookService.fetchAlfaFrensSubscribers(user.getIdentity());
+				log.trace("Fetched contacts: {} for: {} by list tag: {}", contacts,
+						user.getIdentity(),
+						tag);
+				return contacts;
+			}
+
+			return Collections.emptyList();
 		} else {
 			throw new Error("User doesn't exist");
 		}

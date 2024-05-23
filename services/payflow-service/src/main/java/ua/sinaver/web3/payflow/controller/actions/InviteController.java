@@ -16,7 +16,6 @@ import ua.sinaver.web3.payflow.service.FarcasterPaymentBotService;
 import ua.sinaver.web3.payflow.service.IdentityService;
 import ua.sinaver.web3.payflow.service.api.IContactBookService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
-import ua.sinaver.web3.payflow.service.api.IFrameService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.util.Collections;
@@ -37,8 +36,6 @@ public class InviteController {
 			new CastActionMeta.Action("post"));
 	@Autowired
 	private IFarcasterHubService farcasterHubService;
-	@Autowired
-	private IFrameService frameService;
 	@Autowired
 	private IContactBookService contactBookService;
 	@Autowired
@@ -72,7 +69,7 @@ public class InviteController {
 		val clickedFid = validateMessage.action().interactor().fid();
 		val casterFid = validateMessage.action().cast().fid();
 
-		val clickedProfile = frameService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
+		val clickedProfile = identityService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
 			log.error("Clicked fid {} is not on payflow", clickedFid);
 			return ResponseEntity.badRequest().body(
@@ -80,13 +77,13 @@ public class InviteController {
 		}
 
 		// check if profile exist
-		val inviteProfiles = frameService.getFidProfiles(casterFid);
+		val inviteProfiles = identityService.getFidProfiles(casterFid);
 		if (!inviteProfiles.isEmpty()) {
 			return ResponseEntity.ok().body(
 					new FrameResponse.FrameMessage("Already signed up on Payflow!"));
 		} else {
 			// check if invited
-			val inviteAddresses = frameService.getFidAddresses(casterFid);
+			val inviteAddresses = identityService.getFidAddresses(casterFid);
 			val invitations = contactBookService.filterByInvited(inviteAddresses);
 			if (!invitations.isEmpty()) {
 				return ResponseEntity.ok().body(
@@ -105,7 +102,7 @@ public class InviteController {
 					invitationRepository.save(invitation);
 
 					// TODO: fetch fname from validated message
-					val casterUsername = frameService.getFidFname(casterFid);
+					val casterUsername = identityService.getFidFname(casterFid);
 					val castText = String.format("""
 									Congratulations @%s 🎉 You've been invited to @payflow by @%s
 																	\t

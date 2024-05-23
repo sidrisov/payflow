@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.message.CastActionMeta;
 import ua.sinaver.web3.payflow.message.FrameMessage;
 import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
-import ua.sinaver.web3.payflow.service.api.IFrameService;
+import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 @RestController
@@ -28,7 +28,7 @@ public class JarController {
 	@Autowired
 	private IFarcasterHubService farcasterHubService;
 	@Autowired
-	private IFrameService frameService;
+	private IIdentityService identityService;
 
 	@GetMapping
 	public CastActionMeta metadata() {
@@ -60,7 +60,7 @@ public class JarController {
 					new FrameResponse.FrameMessage("Use only for your casts!"));
 		}
 
-		val clickedProfile = frameService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
+		val clickedProfile = identityService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
 			log.error("Clicked fid {} is not on payflow", clickedFid);
 			return ResponseEntity.badRequest().body(

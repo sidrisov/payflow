@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.message.CastActionMeta;
 import ua.sinaver.web3.payflow.message.FrameMessage;
 import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
-import ua.sinaver.web3.payflow.service.api.IFrameService;
+import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 @RestController
@@ -27,7 +27,7 @@ public class PayProfileController {
 	@Autowired
 	private IFarcasterHubService farcasterHubService;
 	@Autowired
-	private IFrameService frameService;
+	private IIdentityService identityService;
 
 	@GetMapping
 	public CastActionMeta metadata() {
@@ -50,7 +50,7 @@ public class PayProfileController {
 				validateMessage.action().url());
 
 		val casterFid = validateMessage.action().cast().fid();
-		val clickedProfile = frameService.getFidProfiles(casterFid).stream().findFirst().orElse(null);
+		val clickedProfile = identityService.getFidProfiles(casterFid).stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
 			log.error("Caster fid {} is not on Payflow", casterFid);
 			return ResponseEntity.badRequest().body(

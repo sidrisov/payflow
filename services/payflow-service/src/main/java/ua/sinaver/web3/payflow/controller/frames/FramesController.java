@@ -95,13 +95,13 @@ public class FramesController {
 		// clear cache only on connect
 		socialGraphService.cleanCache("fc_fid:".concat(String.valueOf(clickedFid)), null);
 
-		val addresses = frameService.getFidAddresses(clickedFid);
-		val profiles = frameService.getFidProfiles(addresses);
+		val addresses = identityService.getFidAddresses(clickedFid);
+		val profiles = identityService.getFidProfiles(addresses);
 
 		User casterProfile;
 		if (clickedFid != casterFid) {
 			casterProfile =
-					frameService.getFidProfile(casterFid, null);
+					identityService.getFidProfile(casterFid, null);
 		} else {
 			casterProfile = profiles.stream().findFirst().orElse(null);
 		}
@@ -158,7 +158,7 @@ public class FramesController {
 		val clickedFid = validateMessage.action().interactor().fid();
 
 		val buttonIndex = validateMessage.action().tappedButton().index();
-		val profiles = frameService.getFidProfiles(clickedFid);
+		val profiles = identityService.getFidProfiles(clickedFid);
 
 		if (!profiles.isEmpty()) {
 			if (buttonIndex > 0 && buttonIndex <= profiles.size()) {
@@ -205,7 +205,7 @@ public class FramesController {
 
 		val clickedFid = validateMessage.action().interactor().fid();
 		val buttonIndex = validateMessage.action().tappedButton().index();
-		val clickedProfile = frameService.getFidProfile(clickedFid, identity);
+		val clickedProfile = identityService.getFidProfile(clickedFid, identity);
 
 		if (clickedProfile != null && buttonIndex > 0 && buttonIndex <= 3) {
 			val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
@@ -293,7 +293,7 @@ public class FramesController {
 
 		val clickedFid = validateMessage.action().interactor().fid();
 		val buttonIndex = validateMessage.action().tappedButton().index();
-		val clickedProfile = frameService.getFidProfile(clickedFid, identity);
+		val clickedProfile = identityService.getFidProfile(clickedFid, identity);
 		if (clickedProfile != null) {
 			if (buttonIndex == 1) {
 				val postUrl = apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS,
@@ -349,7 +349,7 @@ public class FramesController {
 
 		val buttonIndex = validateMessage.action().tappedButton().index();
 		val clickedFid = validateMessage.action().interactor().fid();
-		val clickedProfile = frameService.getFidProfile(clickedFid, identity);
+		val clickedProfile = identityService.getFidProfile(clickedFid, identity);
 		if (clickedProfile != null) {
 
 			if (buttonIndex == 1) {
@@ -449,7 +449,7 @@ public class FramesController {
 
 		val buttonIndex = validateMessage.action().tappedButton().index();
 		val clickedFid = validateMessage.action().interactor().fid();
-		val clickedProfile = frameService.getFidProfile(clickedFid, identity);
+		val clickedProfile = identityService.getFidProfile(clickedFid, identity);
 		if (clickedProfile != null) {
 			if (buttonIndex == 1) {
 
@@ -490,7 +490,7 @@ public class FramesController {
 		val buttonIndex = validateMessage.action().tappedButton().index();
 		val input = validateMessage.action().input();
 		val inputText = input != null ? input.text() : null;
-		val clickedProfile = frameService.getFidProfile(clickedFid, identity);
+		val clickedProfile = identityService.getFidProfile(clickedFid, identity);
 
 		if (clickedProfile != null) {
 			val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
@@ -516,14 +516,14 @@ public class FramesController {
 			} else if (buttonIndex == 2) {
 				if (!StringUtils.isBlank(inputText)) {
 					// check if profile exist
-					val inviteProfile = frameService.getFidProfile(inputText, identity);
+					val inviteProfile = identityService.getFidProfile(inputText, identity);
 					if (inviteProfile != null) {
 						return FrameResponse.builder().imageUrl(profileImage)
 								.button(new FrameButton(String.format("✅ %s already signed up",
 										inputText), FrameButton.ActionType.POST, null)).build().toHtmlResponse();
 					} else {
 						// check if invited
-						val inviteAddresses = frameService.getFnameAddresses(inputText);
+						val inviteAddresses = identityService.getFnameAddresses(inputText);
 						val invitations = contactBookService.filterByInvited(inviteAddresses);
 						if (!invitations.isEmpty()) {
 							return FrameResponse.builder().imageUrl(profileImage)

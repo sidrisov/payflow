@@ -16,7 +16,7 @@ import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.FarcasterMessagingService;
 import ua.sinaver.web3.payflow.service.FarcasterPaymentBotService;
-import ua.sinaver.web3.payflow.service.FrameService;
+import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
 
 import java.security.Principal;
@@ -44,7 +44,7 @@ public class PaymentController {
 	private FarcasterMessagingService farcasterMessagingService;
 
 	@Autowired
-	private FrameService frameService;
+	private IIdentityService identityService;
 
 	@GetMapping
 	public List<PaymentMessage> payments(@RequestParam(value = "hashes") List<String> hashes,
@@ -131,8 +131,8 @@ public class PaymentController {
 			// notify only for empty category as p2p payment
 			// handle with different messages for other kind of payments
 			if (!StringUtils.isBlank(payment.getSourceHash()) && !StringUtils.isBlank(payment.getHash())) {
-				val senderFname = frameService.getIdentityFname(user.getIdentity());
-				val receiverFname = frameService.getIdentityFname(payment.getReceiver() != null ?
+				val senderFname = identityService.getIdentityFname(user.getIdentity());
+				val receiverFname = identityService.getIdentityFname(payment.getReceiver() != null ?
 						payment.getReceiver().getIdentity() :
 						payment.getReceiverAddress() != null ? payment.getReceiverAddress() :
 								"fc_fid:" + payment.getReceiverFid());
@@ -161,7 +161,7 @@ public class PaymentController {
 							log.error("Failed to reply with {} for payment intent completion", castText);
 						}
 					} else {
-						val receiverFid = frameService.getIdentityFid(payment.getReceiver().getIdentity(), true);
+						val receiverFid = identityService.getIdentityFid(payment.getReceiver().getIdentity(), true);
 						if (StringUtils.isBlank(receiverFid)) {
 							return;
 						}

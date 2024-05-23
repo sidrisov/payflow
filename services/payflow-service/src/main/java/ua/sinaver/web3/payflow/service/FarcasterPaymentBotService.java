@@ -15,7 +15,6 @@ import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.api.IFlowService;
-import ua.sinaver.web3.payflow.service.api.IFrameService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 
 import java.util.Collections;
@@ -37,7 +36,7 @@ public class FarcasterPaymentBotService {
 	private PaymentBotJobRepository paymentBotJobRepository;
 
 	@Autowired
-	private IFrameService frameService;
+	private IIdentityService identityService;
 
 	@Autowired
 	private IFlowService flowService;
@@ -56,10 +55,6 @@ public class FarcasterPaymentBotService {
 
 	@Value("${payflow.farcaster.bot.test.enabled:false}")
 	private boolean isTestBotEnabled;
-
-	@Autowired
-	private IIdentityService identityService;
-
 
 	public static String parseToken(String text) {
 		val pattern = Pattern.compile("\\b(?<token>eth|degen|usdc)\\b");
@@ -123,7 +118,7 @@ public class FarcasterPaymentBotService {
 				val casterAddresses = cast.author().verifications();
 				casterAddresses.add(cast.author().custodyAddress());
 
-				val casterProfile = frameService.getFidProfiles(casterAddresses)
+				val casterProfile = identityService.getFidProfiles(casterAddresses)
 						.stream().findFirst().orElse(null);
 
 				switch (command) {
@@ -216,14 +211,14 @@ public class FarcasterPaymentBotService {
 
 						// if a reply, fetch through airstack
 						if (StringUtils.isBlank(receiver) && cast.parentAuthor().fid() != null) {
-							receiver = frameService.getFidFname(cast.parentAuthor().fid());
-							receiverAddresses = frameService.getFidAddresses(cast.parentAuthor().fid());
+							receiver = identityService.getFidFname(cast.parentAuthor().fid());
+							receiverAddresses = identityService.getFidAddresses(cast.parentAuthor().fid());
 						}
 
 						log.debug("Receiver: {} - addresses: {}", receiver, receiverAddresses);
 
 						if (receiver != null) {
-							val receiverProfile = frameService.getFidProfiles(receiverAddresses)
+							val receiverProfile = identityService.getFidProfiles(receiverAddresses)
 									.stream().findFirst().orElse(null);
 
 							log.debug("Found receiver profile for receiver {} - {}",
@@ -310,7 +305,7 @@ public class FarcasterPaymentBotService {
 									val addresses = cast.author().verifications();
 									addresses.add(cast.author().custodyAddress());
 
-									val profile = frameService.getFidProfiles(addresses)
+									val profile = identityService.getFidProfiles(addresses)
 											.stream().findFirst().orElse(null);
 									if (profile == null) {
 										log.error("Caster doesn't have payflow profile, " +

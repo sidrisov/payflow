@@ -19,7 +19,7 @@ import ua.sinaver.web3.payflow.message.FramePaymentMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.TransactionService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
-import ua.sinaver.web3.payflow.service.api.IFrameService;
+import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
@@ -63,7 +63,7 @@ public class FramePaymentController {
 	private String framesServiceUrl;
 
 	@Autowired
-	private IFrameService frameService;
+	private IIdentityService identityService;
 
 	@Autowired
 	private TransactionService transactionService;
@@ -179,11 +179,11 @@ public class FramePaymentController {
 		val inputText = validateMessage.action().input() != null ?
 				validateMessage.action().input().text() : null;
 
-		val addresses = frameService.getFidAddresses(clickedFid);
-		val profiles = frameService.getFidProfiles(addresses);
+		val addresses = identityService.getFidAddresses(clickedFid);
+		val profiles = identityService.getFidProfiles(addresses);
 
 		val sourceApp = validateMessage.action().signer().client().displayName();
-		val casterFcName = frameService.getFidFname(casterFid);
+		val casterFcName = identityService.getFidFname(casterFid);
 		// maybe would make sense to reference top cast instead (if it's a bot cast)
 		val sourceRef = String.format("https://warpcast.com/%s/%s",
 				casterFcName, validateMessage.action().cast().hash().substring(0,
@@ -293,8 +293,8 @@ public class FramePaymentController {
 				? validateMessage.action().transaction().hash()
 				: null;
 
-		val addresses = frameService.getFidAddresses(clickedFid);
-		val profiles = frameService.getFidProfiles(addresses);
+		val addresses = identityService.getFidAddresses(clickedFid);
+		val profiles = identityService.getFidProfiles(addresses);
 
 		val payment = paymentRepository.findByReferenceId(refId);
 		if (payment == null) {

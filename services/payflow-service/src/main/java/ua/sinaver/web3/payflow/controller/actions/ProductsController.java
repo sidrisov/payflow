@@ -11,7 +11,7 @@ import ua.sinaver.web3.payflow.message.CastActionMeta;
 import ua.sinaver.web3.payflow.message.FrameMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
-import ua.sinaver.web3.payflow.service.api.IFrameService;
+import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import static ua.sinaver.web3.payflow.service.TransactionService.ETH_TOKEN;
@@ -32,7 +32,7 @@ public class ProductsController {
 	private IFarcasterHubService farcasterHubService;
 
 	@Autowired
-	private IFrameService frameService;
+	private IIdentityService identityService;
 
 	@Autowired
 	private PaymentRepository paymentRepository;
@@ -60,7 +60,7 @@ public class ProductsController {
 		val casterFid = validateMessage.action().cast().fid();
 		val clickedFid = validateMessage.action().interactor().fid();
 
-		val clickedProfile = frameService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
+		val clickedProfile = identityService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
 			log.error("Clicked fid {} is not on payflow", clickedFid);
 			return ResponseEntity.badRequest().body(
@@ -69,7 +69,7 @@ public class ProductsController {
 
 
 		val sourceApp = validateMessage.action().signer().client().displayName();
-		val casterFcName = frameService.getFidFname(casterFid);
+		val casterFcName = identityService.getFidFname(casterFid);
 		val castHash = validateMessage.action().cast().hash();
 		// maybe would make sense to reference top cast instead (if it's a bot cast)
 		val sourceRef = String.format("https://warpcast.com/%s/%s",

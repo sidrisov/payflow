@@ -16,6 +16,7 @@ import ua.sinaver.web3.payflow.data.Contact;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 import ua.sinaver.web3.payflow.message.ContactMessage;
+import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.repository.ContactRepository;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
@@ -56,6 +57,12 @@ public class ContactBookService implements IContactBookService {
 	private UserRepository userRepository;
 	@Autowired
 	private ISocialGraphService socialGraphService;
+
+	@Autowired
+	private IdentityService identityService;
+
+	@Autowired
+	private AlfaFrensService alfaFrensService;
 
 	@Value("${payflow.airstack.contacts.limit:10}")
 	private int contactsLimit;
@@ -179,6 +186,17 @@ public class ContactBookService implements IContactBookService {
 			log.error("Failed to fetch contacts", t);
 			return Collections.emptyList();
 		}
+	}
+
+	@Override
+	public List<IdentityMessage> fetchAlfaFrensSubscribers(String identity) {
+		val subscribers = alfaFrensService.fetchSubscribers(identity);
+		if (!subscribers.isEmpty()) {
+			val identities = identityService.getIdentitiesInfo(subscribers);
+			log.debug("Fetched subscribers social details: {} for identity: {} ", identities, identity);
+			return identities;
+		}
+		return Collections.emptyList();
 	}
 
 	@Scheduled(fixedRate = 60 * 1000)
