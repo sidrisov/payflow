@@ -134,13 +134,15 @@ export async function searchIdentity(searchValue: string, me?: string): Promise<
 
         dataInBatch.Socials.Social.forEach((social: any) => {
           console.log(social);
-
-          social.userAssociatedAddressDetails.forEach((s: any) => {
-            const identity = convertSocialResults(s);
-            if (identity) {
-              userAssociatedIdentities.push(identity);
-            }
-          });
+          social.userAssociatedAddressDetails
+            // remove solana addresses
+            .filter((userAssociatedAddress: any) => isAddress(userAssociatedAddress.addresses[0]))
+            .forEach((userAssociatedAddress: any) => {
+              const identity = convertSocialResults(userAssociatedAddress);
+              if (identity) {
+                userAssociatedIdentities.push(identity);
+              }
+            });
         });
 
         console.log('userAssociatedIdentities', userAssociatedIdentities);

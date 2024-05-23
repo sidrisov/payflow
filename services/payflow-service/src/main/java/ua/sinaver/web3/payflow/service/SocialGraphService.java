@@ -163,6 +163,8 @@ public class SocialGraphService implements ISocialGraphService {
 					.toEntityList(SocialFollowing.class).stream()
 					.map(f -> f.getFollowingAddress().getAddresses())
 					.flatMap(List::stream)
+					// remove Solana addresses
+					.filter(address -> address.startsWith("0x"))
 					.distinct().limit(addressesLimitAdjusted)
 					.collect(Collectors.toList());
 		} else {
@@ -185,7 +187,10 @@ public class SocialGraphService implements ISocialGraphService {
 				.toEntityList(Social.class).stream()
 				.limit(1).findFirst()
 				.map(s -> new ConnectedAddresses(s.getUserAddress(),
-						s.getUserAssociatedAddresses())).orElse(null);
+						s.getUserAssociatedAddresses().stream()
+								.filter(address -> address.startsWith("0x"))
+								.toList())
+				).orElse(null);
 		log.debug("Found connected addresses for {} - {}", connectedAddresses, identity);
 		return connectedAddresses;
 	}

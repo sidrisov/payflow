@@ -133,7 +133,9 @@ public class PaymentController {
 			if (!StringUtils.isBlank(payment.getSourceHash()) && !StringUtils.isBlank(payment.getHash())) {
 				val senderFname = frameService.getIdentityFname(user.getIdentity());
 				val receiverFname = frameService.getIdentityFname(payment.getReceiver() != null ?
-						payment.getReceiver().getIdentity() : payment.getReceiverAddress());
+						payment.getReceiver().getIdentity() :
+						payment.getReceiverAddress() != null ? payment.getReceiverAddress() :
+								"fc_fid:" + payment.getReceiverFid());
 				val txUrl = String.format(
 						"https://onceupon.gg/%s", payment.getHash());
 				val embeds = Collections.singletonList(new CastEmbed(txUrl));
@@ -207,11 +209,6 @@ public class PaymentController {
 							log.error("Failed to reply with {} for payment intent completion", castText);
 						}
 					} else {
-						val receiverFid = frameService.getIdentityFid(payment.getReceiver().getIdentity(), true);
-						if (StringUtils.isBlank(receiverFid)) {
-							return;
-						}
-
 						try {
 							val messageText = String.format("""
 											 @%s, you've been gifted 1 unit of storage by @%s 🎉
@@ -226,7 +223,8 @@ public class PaymentController {
 									sourceRef,
 									txUrl);
 							val response = farcasterMessagingService.message(
-									new DirectCastMessage(receiverFid, messageText, UUID.randomUUID()));
+									new DirectCastMessage(payment.getReceiverFid().toString(), messageText,
+											UUID.randomUUID()));
 
 							if (!response.result().success()) {
 								log.error("Failed to send direct cast with {} for gift storage intent " +

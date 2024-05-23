@@ -103,7 +103,10 @@ public class FrameService implements IFrameService {
 		socialGraphService.cleanCache("fc_fid:".concat(String.valueOf(fid)), null);
 		val wallet = socialGraphService.getSocialMetadata(
 				"fc_fid:".concat(String.valueOf(fid)), null);
-		val addresses = wallet.getAddresses();
+		val addresses =
+				wallet.getAddresses()
+						.stream()
+						.filter(address -> address.startsWith("0x")).toList();
 		log.debug("Addresses for {}: {}", fid, addresses);
 
 		return getFidProfiles(addresses);
@@ -113,7 +116,10 @@ public class FrameService implements IFrameService {
 	public List<User> getFidProfiles(String fname) {
 		val wallet = socialGraphService.getSocialMetadata(
 				"fc_fname:".concat(String.valueOf(fname)), null);
-		val addresses = wallet.getAddresses();
+		val addresses =
+				wallet.getAddresses()
+						.stream()
+						.filter(address -> address.startsWith("0x")).toList();
 		log.debug("Addresses for {}: {}", fname, addresses);
 
 		return getFidProfiles(addresses);
@@ -123,7 +129,10 @@ public class FrameService implements IFrameService {
 	public List<String> getFidAddresses(int fid) {
 		val wallet = socialGraphService.getSocialMetadata(
 				"fc_fid:".concat(String.valueOf(fid)), null);
-		val addresses = wallet.getAddresses();
+		val addresses =
+				wallet.getAddresses()
+						.stream()
+						.filter(address -> address.startsWith("0x")).toList();
 		log.debug("Addresses for {}: {}", fid, addresses);
 
 		return addresses;
@@ -133,7 +142,10 @@ public class FrameService implements IFrameService {
 	public List<String> getFnameAddresses(String fname) {
 		val wallet = socialGraphService.getSocialMetadata(
 				"fc_fname:".concat(String.valueOf(fname)), null);
-		val addresses = wallet.getAddresses();
+		val addresses =
+				wallet.getAddresses()
+						.stream()
+						.filter(address -> address.startsWith("0x")).toList();
 		log.debug("Addresses for {}: {}", fname, addresses);
 
 		return addresses;
