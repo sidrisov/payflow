@@ -7,7 +7,8 @@ import {
   zkSync,
   mainnet,
   baseSepolia,
-  sepolia
+  sepolia,
+  mode
 } from 'viem/chains';
 
 const ENABLED_CHAINS = JSON.parse(import.meta.env.VITE_ENABLED_CHAINS) as string[];
@@ -19,6 +20,7 @@ export const SUPPORTED_CHAINS = [
   base,
   optimism,
   degen,
+  mode,
   arbitrum,
   zora,
   zkSync,
@@ -59,6 +61,9 @@ export function getNetworkShortName(chainId: number): string {
     case zora.id:
       shortName = 'zora';
       break;
+    case mode.id:
+      shortName = 'mode';
+      break;
     case degen.id:
       shortName = 'degen';
       break;
@@ -94,6 +99,9 @@ export default function getNetworkImageSrc(chainId: number): string {
       break;
     case zora.id:
       fileName = 'zora';
+      break;
+    case mode.id:
+      fileName = 'mode';
       break;
     case degen.id:
       fileName = 'degen';

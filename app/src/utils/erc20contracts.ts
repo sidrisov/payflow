@@ -1,5 +1,5 @@
 import { Address, zeroAddress } from 'viem';
-import { base, optimism, degen } from 'viem/chains';
+import { base, optimism, degen, arbitrum, mode } from 'viem/chains';
 
 export const USDC_TOKEN = 'USDC';
 export const DEGEN_TOKEN = 'DEGEN';
@@ -17,7 +17,10 @@ export const ERC20_CONTRACTS = {
     { name: DEGEN_TOKEN } as Token,
     { name: ATH_TOKEN, address: '0xeb1c32ea4e392346795aed3607f37646e2a9c13f' },
     { name: JAAD_TOKEN, address: '0x373e256c754bf82f09071141b92beafb83c38c68' }
-  ]
+  ],
+  [arbitrum.id]: [{ name: USDC_TOKEN, address: '0xaf88d065e77c8cc2239327c5edb3a432268e5831' }],
+  // bridged
+  [mode.id]: [{ name: USDC_TOKEN, address: '0xd988097fb8612cc24eec14542bc03424c656005f' }]
 } as {
   [id: number]: Token[];
 };

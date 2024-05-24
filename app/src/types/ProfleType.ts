@@ -43,6 +43,7 @@ export interface SocialInfoType {
   profileDisplayName: string;
   profileImage: string;
   followerCount: number;
+  isFarcasterPowerUser?: boolean;
 }
 
 export interface SelectedIdentityType {

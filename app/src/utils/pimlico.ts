@@ -4,7 +4,7 @@ import {
   createPimlicoPaymasterClient
 } from 'permissionless/clients/pimlico';
 import { http } from 'viem';
-import { arbitrum, base, baseSepolia, degen, optimism, zkSync, zora } from 'viem/chains';
+import { arbitrum, base, baseSepolia, degen, mode, optimism, zkSync, zora } from 'viem/chains';
 
 export const PIMLICO_SPONSORED_ENABLED = import.meta.env.VITE_PIMLICO_SPONSORED_ENABLED === 'true';
 
@@ -62,6 +62,9 @@ const pimlicoRpcNetworkName = (chainId: number) => {
     case degen.id:
       network = 'degen';
       break;
+    case mode.id:
+      network = 'mode';
+      break;
   }
   return network;
 };
@@ -81,6 +84,7 @@ export const paymasterSponsorshipPolicyIds = (chainId: number) => {
     case arbitrum.id:
     case optimism.id:
     case degen.id:
+    case mode.id:
       return BASE_POLICIES;
     /* case optimism.id:
       return OP_POLICIES;

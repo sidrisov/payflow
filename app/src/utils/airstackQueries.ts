@@ -26,6 +26,7 @@ export const QUERY_SOCIALS_INSIGHTS = /* GraphQL */ `
           }
         }
         followerCount
+        isFarcasterPowerUser
       }
       xmtp {
         isXMTPEnabled
@@ -86,6 +87,7 @@ export const QUERY_SOCIALS = /* GraphQL */ `
           }
         }
         followerCount
+        isFarcasterPowerUser
       }
       xmtp {
         isXMTPEnabled
@@ -140,6 +142,7 @@ export const QUERY_SOCIALS_INSIGHTS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE
               }
             }
             followerCount
+            isFarcasterPowerUser
           }
           xmtp {
             isXMTPEnabled
@@ -216,6 +219,7 @@ export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = /
               }
             }
             followerCount
+            isFarcasterPowerUser
           }
           xmtp {
             isXMTPEnabled
@@ -239,6 +243,7 @@ export const QUERY_SOCIALS_INSIGHTS_LIGHT = /* GraphQL */ `
         dappName
         profileName
         followerCount
+        isFarcasterPowerUser
       }
       xmtp {
         isXMTPEnabled
@@ -284,6 +289,7 @@ export const QUERY_SOCIALS_LIGHT = /* GraphQL */ `
         dappName
         profileName
         followerCount
+        isFarcasterPowerUser
       }
       xmtp {
         isXMTPEnabled

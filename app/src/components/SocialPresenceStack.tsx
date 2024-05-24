@@ -21,6 +21,7 @@ export function SocialPresenceStack({ meta, ...props }: { meta: MetaType & Stack
                   dappName={s.dappName as dAppType}
                   profileName={s.profileName}
                   followerCount={s.followerCount}
+                  isPowerUser={s.isFarcasterPowerUser}
                 />
               ))}
 

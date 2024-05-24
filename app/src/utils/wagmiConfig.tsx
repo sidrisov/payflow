@@ -9,7 +9,8 @@ import {
   zora,
   sepolia,
   arbitrum,
-  zkSync
+  zkSync,
+  mode
 } from 'viem/chains';
 
 import { createConfig } from '@privy-io/wagmi';
@@ -43,6 +44,7 @@ const commonWagmiConfig = {
     ),
     [degen.id]: http(),
     [arbitrum.id]: http(),
+    [mode.id]: http(),
     [zkSync.id]: http()
   },
   syncConnectedChain: true
