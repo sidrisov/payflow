@@ -211,11 +211,14 @@ export function ConnectCard() {
             }
             sx={{
               borderRadius: 3,
-              width: 135,
-              height: 50,
+              width: 133,
+              height: 47,
               textTransform: 'none',
               fontWeight: 'bold',
-              fontSize: 18
+              fontSize: 18,
+              ...(signer && {
+                background: green.A700
+              })
             }}
             onClick={async () => {
               if (!signer) {
