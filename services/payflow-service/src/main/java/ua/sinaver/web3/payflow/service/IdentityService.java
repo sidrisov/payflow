@@ -26,7 +26,7 @@ import java.util.*;
 @Service
 @Transactional
 public class IdentityService implements IIdentityService {
-	
+
 	@Autowired
 	private InvitationRepository invitationRepository;
 
@@ -61,9 +61,9 @@ public class IdentityService implements IIdentityService {
 	@Override
 	public List<User> getFidProfiles(int fid) {
 		// TODO: temp solution to invalidate cache
-		socialGraphService.cleanCache("fc_fid:".concat(String.valueOf(fid)), null);
+		socialGraphService.cleanCache("fc_fid:".concat(String.valueOf(fid)));
 		val wallet = socialGraphService.getSocialMetadata(
-				"fc_fid:".concat(String.valueOf(fid)), null);
+				"fc_fid:".concat(String.valueOf(fid)));
 		val addresses =
 				wallet.getAddresses()
 						.stream()
@@ -76,7 +76,7 @@ public class IdentityService implements IIdentityService {
 	@Override
 	public List<User> getFidProfiles(String fname) {
 		val wallet = socialGraphService.getSocialMetadata(
-				"fc_fname:".concat(String.valueOf(fname)), null);
+				"fc_fname:".concat(String.valueOf(fname)));
 		val addresses =
 				wallet.getAddresses()
 						.stream()
@@ -89,7 +89,7 @@ public class IdentityService implements IIdentityService {
 	@Override
 	public List<String> getFidAddresses(int fid) {
 		val wallet = socialGraphService.getSocialMetadata(
-				"fc_fid:".concat(String.valueOf(fid)), null);
+				"fc_fid:".concat(String.valueOf(fid)));
 		val addresses =
 				wallet.getAddresses()
 						.stream()
@@ -102,7 +102,7 @@ public class IdentityService implements IIdentityService {
 	@Override
 	public List<String> getFnameAddresses(String fname) {
 		val wallet = socialGraphService.getSocialMetadata(
-				"fc_fname:".concat(String.valueOf(fname)), null);
+				"fc_fname:".concat(String.valueOf(fname)));
 		val addresses =
 				wallet.getAddresses()
 						.stream()
@@ -121,7 +121,7 @@ public class IdentityService implements IIdentityService {
 	@Override
 	public String getFidFname(int fid) {
 		val wallet = socialGraphService.getSocialMetadata(
-				"fc_fid:".concat(String.valueOf(fid)), null);
+				"fc_fid:".concat(String.valueOf(fid)));
 		val username = wallet.getSocials().stream()
 				.filter(social -> social.getDappName().equals(SocialDappName.farcaster))
 				.findFirst().map(Social::getProfileName).orElse(null);
@@ -131,7 +131,7 @@ public class IdentityService implements IIdentityService {
 
 	@Override
 	public String getIdentityFname(String identity) {
-		val wallet = socialGraphService.getSocialMetadata(identity, null);
+		val wallet = socialGraphService.getSocialMetadata(identity);
 		val username = wallet.getSocials().stream()
 				.filter(social -> social.getDappName().equals(SocialDappName.farcaster))
 				.findFirst().map(Social::getProfileName).orElse(null);
@@ -141,11 +141,13 @@ public class IdentityService implements IIdentityService {
 
 	@Override
 	public String getIdentityFid(String identity, boolean cleanCache) {
+		log.debug("Fetching fid for: {}", identity);
+
 		if (cleanCache) {
-			socialGraphService.cleanCache(identity, null);
+			socialGraphService.cleanCache(identity);
 		}
 
-		val wallet = socialGraphService.getSocialMetadata(identity, null);
+		val wallet = socialGraphService.getSocialMetadata(identity);
 		val fid = wallet.getSocials().stream()
 				.filter(social -> social.getDappName().equals(SocialDappName.farcaster))
 				.findFirst().map(Social::getUserId).orElse(null);
@@ -170,7 +172,7 @@ public class IdentityService implements IIdentityService {
 														return Mono.empty();
 													}),
 											Mono.fromCallable(
-															() -> socialGraphService.getSocialMetadata(identity, null))
+															() -> socialGraphService.getSocialMetadata(identity))
 													.subscribeOn(Schedulers.boundedElastic())
 													.onErrorResume(exception -> {
 														log.error("Error fetching social graph for {} - " +
@@ -192,6 +194,7 @@ public class IdentityService implements IIdentityService {
 									.map(tuple -> IdentityMessage.convert(
 											identity,
 											tuple.getT2().orElse(null),
+											tuple.getT3(),
 											tuple.getT3(),
 											tuple.getT4()))
 							// TODO: fail fast, seems doesn't to work properly with threads

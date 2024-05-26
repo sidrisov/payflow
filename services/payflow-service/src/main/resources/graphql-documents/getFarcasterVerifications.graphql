@@ -12,6 +12,7 @@ query GetFarcasterVerifications($identity: Identity!) {
         Social {
             userAddress
             userAssociatedAddresses
+            isDefault
         }
     }
 }

@@ -1,1 +1,1 @@
-export type AddressBookType = 'favourites' | 'friends' | 'ethdenver';
+export type AddressBookType = 'favourites' | 'friends' | 'ethdenver' | 'alfafrens';

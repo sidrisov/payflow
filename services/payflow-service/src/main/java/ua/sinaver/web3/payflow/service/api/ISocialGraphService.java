@@ -6,16 +6,15 @@ import ua.sinaver.web3.payflow.message.ConnectedAddresses;
 import java.util.List;
 
 public interface ISocialGraphService {
-
-	List<Wallet> getEthDenverParticipantsStaked();
-
-	List<Wallet> getEthDenverParticipantsPoap();
+	List<String> getAllTokenOwners(String blockchain, String address);
 
 	List<String> getSocialFollowings(String identity);
 
-	ConnectedAddresses getIdentityConnectedAddresses(String identity);
+	ConnectedAddresses getIdentityVerifiedAddresses(String identity);
 
-	void cleanCache(String identity, String me);
+	void cleanCache(String identity);
 
-	Wallet getSocialMetadata(String identity, String me);
+	Wallet getSocialMetadata(String identity);
+
+	Wallet getSocialInsights(String identity, String me);
 }

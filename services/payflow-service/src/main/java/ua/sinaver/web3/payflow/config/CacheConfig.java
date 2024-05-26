@@ -20,20 +20,21 @@ import java.util.HashMap;
 
 @Configuration
 public class CacheConfig {
-
-	public static final String CONTACTS_CACHE_NAME = "contacts";
-	public static final String SOCIALS_CACHE_NAME = "socials";
-	public static final String ETH_DENVER_PARTICIPANTS_CACHE_NAME = "eth-denver-contacts";
-	public static final String ETH_DENVER_PARTICIPANTS_POAP_CACHE_NAME = "eth-denver-poap-contacts";
-
-	public static final String USERS_CACHE_NAME = "users";
-	public static final String INVITATIONS_CACHE_NAME = "invitations";
-
-	@Value("${spring.cache.contacts.expireAfterWrite:10m}")
-	private Duration contactsExpireAfterWriteDuration;
+	public static final String CACHE_PREFIX = "v0:";
+	public static final String CONTACTS_CACHE_NAME = CACHE_PREFIX + "contacts";
+	public static final String CONTACT_LIST_CACHE_NAME = CACHE_PREFIX + "contact-list";
+	public static final String SOCIALS_CACHE_NAME = CACHE_PREFIX + "socials";
+	public static final String SOCIALS_INSIGHTS_CACHE_NAME = CACHE_PREFIX + "insights";
+	public static final String FARCASTER_VERIFICATIONS_CACHE_NAME = CACHE_PREFIX + "verifications";
+	public static final String TOKEN_OWNERS_CACHE_NAME = CACHE_PREFIX + "token-owners";
+	public static final String POAP_OWNERS_CACHE_NAME = CACHE_PREFIX + "poap-owners";
+	public static final String USERS_CACHE_NAME = CACHE_PREFIX + "users";
+	public static final String INVITATIONS_CACHE_NAME = CACHE_PREFIX + "invitations";
 
 	@Value("${spring.cache.contacts.eth-denver.expireAfterWrite:10m}")
-	private Duration ethDenverContactsExpireAfterWriteDuration;
+	private Duration poapAndTokenOwnersExpireAfterWriteDuration;
+	@Value("${spring.cache.contacts.expireAfterWrite:10m}")
+	private Duration contactsExpireAfterWriteDuration;
 	@Value("${spring.cache.socials.expireAfterWrite:24h}")
 	private Duration socialsExpireAfterWriteDuration;
 	@Value("${spring.cache.socials.maxSize:1000}")
@@ -67,7 +68,7 @@ public class CacheConfig {
 		val ethDenverContactsCacheConfigs =
 				RedisCacheConfiguration.defaultCacheConfig()
 						.disableCachingNullValues()
-						.entryTtl(ethDenverContactsExpireAfterWriteDuration)
+						.entryTtl(poapAndTokenOwnersExpireAfterWriteDuration)
 						.serializeValuesWith(RedisSerializationContext
 								.SerializationPair
 								.fromSerializer(new GenericJackson2JsonRedisSerializer()));
@@ -82,9 +83,12 @@ public class CacheConfig {
 
 		val cacheConfigurations = new HashMap<String, RedisCacheConfiguration>();
 		cacheConfigurations.put(CONTACTS_CACHE_NAME, contactsCacheConfigs);
-		cacheConfigurations.put(ETH_DENVER_PARTICIPANTS_CACHE_NAME, ethDenverContactsCacheConfigs);
-		cacheConfigurations.put(ETH_DENVER_PARTICIPANTS_POAP_CACHE_NAME, ethDenverContactsCacheConfigs);
+		cacheConfigurations.put(CONTACT_LIST_CACHE_NAME, contactsCacheConfigs);
+		cacheConfigurations.put(TOKEN_OWNERS_CACHE_NAME, ethDenverContactsCacheConfigs);
+		cacheConfigurations.put(POAP_OWNERS_CACHE_NAME, ethDenverContactsCacheConfigs);
 		cacheConfigurations.put(SOCIALS_CACHE_NAME, socialsCacheConfig);
+		cacheConfigurations.put(SOCIALS_INSIGHTS_CACHE_NAME, socialsCacheConfig);
+		cacheConfigurations.put(FARCASTER_VERIFICATIONS_CACHE_NAME, socialsCacheConfig);
 		cacheConfigurations.put(USERS_CACHE_NAME, configuration);
 		cacheConfigurations.put(INVITATIONS_CACHE_NAME, configuration);
 
@@ -104,13 +108,22 @@ public class CacheConfig {
 		cacheManager.registerCustomCache(CONTACTS_CACHE_NAME,
 				buildCache(contactsExpireAfterWriteDuration));
 
-		cacheManager.registerCustomCache(ETH_DENVER_PARTICIPANTS_CACHE_NAME,
-				buildCache(ethDenverContactsExpireAfterWriteDuration));
+		cacheManager.registerCustomCache(CONTACT_LIST_CACHE_NAME,
+				buildCache(contactsExpireAfterWriteDuration));
 
-		cacheManager.registerCustomCache(ETH_DENVER_PARTICIPANTS_POAP_CACHE_NAME,
-				buildCache(ethDenverContactsExpireAfterWriteDuration));
+		cacheManager.registerCustomCache(TOKEN_OWNERS_CACHE_NAME,
+				buildCache(poapAndTokenOwnersExpireAfterWriteDuration));
+
+		cacheManager.registerCustomCache(POAP_OWNERS_CACHE_NAME,
+				buildCache(poapAndTokenOwnersExpireAfterWriteDuration));
 
 		cacheManager.registerCustomCache(SOCIALS_CACHE_NAME,
+				buildCache(socialsExpireAfterWriteDuration, socialsMaxSize));
+
+		cacheManager.registerCustomCache(SOCIALS_INSIGHTS_CACHE_NAME,
+				buildCache(socialsExpireAfterWriteDuration, socialsMaxSize));
+
+		cacheManager.registerCustomCache(FARCASTER_VERIFICATIONS_CACHE_NAME,
 				buildCache(socialsExpireAfterWriteDuration, socialsMaxSize));
 
 		cacheManager.registerCustomCache(USERS_CACHE_NAME,

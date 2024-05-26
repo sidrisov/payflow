@@ -1,6 +1,7 @@
 package ua.sinaver.web3.payflow.message;
 
 import lombok.val;
+import org.apache.commons.lang3.BooleanUtils;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
 import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
@@ -20,11 +21,9 @@ public record IdentityMessage(
 	private static final int LENS_SCORE = 4;
 	private static final int XMTP_SCORE = 2;
 
-	public static IdentityMessage convert(String identity, User profile, Wallet wallet,
-	                                      Boolean invited) {
-		ProfileMessage profileMessage = null;
-		if (profile != null) {
-			profileMessage = new ProfileMessage(profile.getDisplayName(),
+	public static ProfileMessage convert(User profile) {
+		if (profile != null && profile.isAllowed()) {
+			return new ProfileMessage(profile.getDisplayName(),
 					profile.getUsername(),
 					profile.getProfileImage(),
 					profile.getIdentity(),
@@ -33,7 +32,15 @@ public record IdentityMessage(
 							FlowMessage.convert(profile.getDefaultFlow(), profile) : null,
 					null,
 					-1);
+		} else {
+			return null;
 		}
+	}
+
+	public static IdentityMessage convert(String identity, User profile, Wallet walletSocials,
+	                                      Wallet walletInsights,
+	                                      Boolean invited) {
+		val profileMessage = convert(profile);
 
 		var xmtp = false;
 		String ens = null;
@@ -41,25 +48,24 @@ public record IdentityMessage(
 		List<SocialInfo> socials = new ArrayList<>();
 		SocialInsights insights = null;
 
-		if (wallet != null) {
-			xmtp = wallet.getXmtp() != null && !wallet.getXmtp().isEmpty() && wallet.getXmtp().getFirst().getIsXMTPEnabled();
+		if (walletSocials != null) {
+			xmtp = walletSocials.getXmtp() != null && !walletSocials.getXmtp().isEmpty() && walletSocials.getXmtp().getFirst().getIsXMTPEnabled();
 
-			if (wallet.getPrimaryDomain() != null) {
-				ens = wallet.getPrimaryDomain().getName();
-				if (wallet.getPrimaryDomain().getTokenNft() != null) {
-
-					if (wallet.getPrimaryDomain().getTokenNft().getContentValue() != null
-							&& wallet.getPrimaryDomain().getTokenNft().getContentValue().getImage() != null)
+			if (walletSocials.getPrimaryDomain() != null) {
+				ens = walletSocials.getPrimaryDomain().getName();
+				if (walletSocials.getPrimaryDomain().getTokenNft() != null) {
+					if (walletSocials.getPrimaryDomain().getTokenNft().getContentValue() != null
+							&& walletSocials.getPrimaryDomain().getTokenNft().getContentValue().getImage() != null)
 						ensAvatar =
-								wallet.getPrimaryDomain().getTokenNft().getContentValue().getImage().getSmall();
+								walletSocials.getPrimaryDomain().getTokenNft().getContentValue().getImage().getSmall();
 				}
-			} else if (wallet.getDomains() != null && !wallet.getDomains().isEmpty()) {
-				ens = wallet.getDomains().getFirst().getName();
+			} else if (walletSocials.getDomains() != null && !walletSocials.getDomains().isEmpty()) {
+				ens = walletSocials.getDomains().getFirst().getName();
 			}
 
 
-			socials = getSocials(wallet);
-			insights = getWalletInsights(wallet);
+			socials = getSocials(walletSocials);
+			insights = getWalletInsights(walletInsights);
 
 			if (ensAvatar == null && socials != null && !socials.isEmpty()) {
 				ensAvatar = socials.getFirst().profileImage();
@@ -125,7 +131,8 @@ public record IdentityMessage(
 						}
 
 						return new SocialInfo(s.getDappName().name(), s.getProfileName(),
-								s.getProfileDisplayName(), profileImage, s.getFollowerCount());
+								s.getProfileDisplayName(), profileImage, s.getFollowerCount(),
+								BooleanUtils.isTrue(s.getIsFarcasterPowerUser()));
 					}).collect(Collectors.toList());
 		} else {
 			return Collections.emptyList();

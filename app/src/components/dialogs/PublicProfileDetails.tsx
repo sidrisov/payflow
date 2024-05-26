@@ -41,7 +41,7 @@ export function PublicProfileDetails({
     {
       cache: true,
       dataFormatter(data) {
-        return convertSocialResults(data.Wallet).meta;
+        return convertSocialResults(data.Wallet).data.meta;
       }
     }
   );

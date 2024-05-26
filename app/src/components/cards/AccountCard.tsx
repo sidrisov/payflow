@@ -69,7 +69,7 @@ export function AccountCard({
 
   const { chain, address } = useAccount();
 
-  const navigator = useNavigate();
+  const navigate = useNavigate();
 
   useMemo(async () => {
     if (isFetched && balances && balances.length > 0) {
@@ -142,7 +142,7 @@ export function AccountCard({
               variant="outlined"
               {...(selectedFlow.type === 'JAR' && {
                 clickable: true,
-                onClick: () => navigator(`/jar/${selectedFlow.uuid}`),
+                onClick: () => navigate(`/jar/${selectedFlow.uuid}`),
                 avatar: <ArrowOutward fontSize="small" />
               })}
               sx={{ fontWeight: 'bold', maxWidth: 200, border: 0 }}

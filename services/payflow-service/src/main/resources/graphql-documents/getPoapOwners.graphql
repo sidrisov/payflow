@@ -1,0 +1,15 @@
+query GetPoapOwners($eventId: String, $cursor: String) {
+  Poaps(
+    input: { filter: { eventId: { _eq: $eventId } }, cursor: $cursor, blockchain: ALL, limit: 200 }
+  ) {
+    Poap {
+      owner {
+        identity
+      }
+    }
+    pageInfo {
+      hasNextPage
+      nextCursor
+    }
+  }
+}

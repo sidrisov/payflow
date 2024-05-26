@@ -3,6 +3,7 @@ package ua.sinaver.web3.payflow.controller;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.User;
@@ -11,10 +12,11 @@ import ua.sinaver.web3.payflow.message.*;
 import ua.sinaver.web3.payflow.service.api.*;
 
 import java.security.Principal;
-import java.util.*;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/user")
@@ -60,44 +62,27 @@ public class UserController {
 	}
 
 	@GetMapping("/me/contacts")
-	public List<ContactMessage> contacts(Principal principal) {
+	public List<ContactMessage> contacts(Principal principal,
+	                                     @RequestHeader(value = "Cache-Control", required = false)
+	                                     String cacheControl) {
 		log.debug("{} fetching contacts", principal.getName());
 		val user = userService.findByIdentity(principal.getName());
 		if (user != null) {
 			try {
-				// TODO: merge before in service layer
-				val userContacts = contactBookService.getAllContacts(user);
-				val ethDenverParticipants = contactBookService.getEthDenverParticipants(user);
-				val contactsIdentities =
-						userContacts.stream().collect(Collectors.toMap(ContactMessage::address,
-								Function.identity()));
-
-				val ethDenverIdentities =
-						ethDenverParticipants.stream().collect(Collectors.toMap(ContactMessage::address,
-								Function.identity()));
-
-				val mergedContacts = new HashMap<>(ethDenverIdentities);
-
-				contactsIdentities.forEach((key, value) ->
-						mergedContacts.merge(key, value,
-								(v1, v2) -> new ContactMessage(v2.address(), v2.favouriteProfile(),
-										v2.favouriteAddress(), v2.invited(), v2.profile(),
-										v2.meta(),
-										Stream.concat(v1.tags().stream(), v2.tags().stream()).toList())));
-
-				val allContacts = mergedContacts.values().stream().toList();
+				if (StringUtils.equals(cacheControl, "no-cache")) {
+					contactBookService.cleanContactsCache(user);
+				}
+				val allContacts = contactBookService.getAllContacts(user);
 				if (log.isTraceEnabled()) {
 					log.trace("All contacts for {}: {}", principal.getName(), allContacts);
 				} else {
 					log.debug("All contacts for {}: {}", principal.getName(),
 							allContacts.size());
 				}
-
 				return allContacts;
 			} catch (Throwable t) {
 				log.debug("Error fetching contacts for {}", user.getUsername(), t);
 			}
-
 		}
 
 		return Collections.emptyList();
@@ -108,29 +93,9 @@ public class UserController {
 		log.trace("{} fetching contact identity {}", principal.getName(), identity);
 		val user = userService.findByIdentity(principal.getName());
 		if (user != null) {
-			val metadata = socialGraphService.getSocialMetadata(identity, user.getIdentity());
+			val metadata = socialGraphService.getSocialMetadata(identity);
 			log.trace("Social Metadata for {}: {}", identity, metadata);
 			return metadata;
-		} else {
-			throw new Error("User doesn't exist");
-		}
-	}
-
-	@GetMapping("/me/contactsByTag")
-	public List<IdentityMessage> contactsByTag(@RequestParam(name = "tag") String tag,
-	                                           Principal principal) {
-		log.trace("{} fetching contact list by tag {}", principal.getName(), tag);
-		val user = userService.findByIdentity(principal.getName());
-		if (user != null) {
-			if (tag.equals("alfafrens")) {
-				val contacts = contactBookService.fetchAlfaFrensSubscribers(user.getIdentity());
-				log.trace("Fetched contacts: {} for: {} by list tag: {}", contacts,
-						user.getIdentity(),
-						tag);
-				return contacts;
-			}
-
-			return Collections.emptyList();
 		} else {
 			throw new Error("User doesn't exist");
 		}
@@ -194,7 +159,6 @@ public class UserController {
 		});
 
 		log.debug("User: {} for {}", users, usernames);
-		// TODO: for now filter by whitelisted
 		return users.stream().filter(user -> user.isAllowed() && user.getDefaultFlow() != null)
 				.map(user -> new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
 						user.getIdentity(),

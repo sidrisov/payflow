@@ -2,7 +2,6 @@ package ua.sinaver.web3.payflow.service;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -49,37 +48,33 @@ public class SocialGraphService implements ISocialGraphService {
 	}
 
 	@Override
-	@Cacheable(value = ETH_DENVER_PARTICIPANTS_CACHE_NAME, unless = "#result.isEmpty()")
-	public List<Wallet> getEthDenverParticipantsStaked() {
+	@Cacheable(value = TOKEN_OWNERS_CACHE_NAME, unless = "#result.isEmpty()")
+	public List<String> getAllTokenOwners(String blockchain, String address) {
 		var hasNextPage = false;
 		var nextCursor = "";
-		val participants = new ArrayList<Wallet>();
+		val participants = new ArrayList<String>();
 
 		do {
 			try {
-				val ethDenverParticipantsResponse = graphQlClient.documentName(
-								"getFarConParticipants")
+				val owners = graphQlClient.documentName(
+								"getTokenOwners")
+						.variable("blockchain", blockchain)
+						.variable("tokenAddress", address)
 						.variable("cursor", nextCursor)
 						.execute().block();
 
-				if (ethDenverParticipantsResponse != null) {
-					val pageInfo = ethDenverParticipantsResponse
-							.field("base.pageInfo")
+				if (owners != null) {
+					val pageInfo = owners
+							.field("TokenBalances.pageInfo")
 							.toEntity(PageInfo.class);
 					hasNextPage = pageInfo != null && pageInfo.getHasNextPage();
 					nextCursor = pageInfo != null ? pageInfo.getNextCursor() : "";
 
-					val rawParticipants = ethDenverParticipantsResponse
-							.field("base.TokenBalance")
+					val rawParticipants = owners
+							.field("TokenBalances.TokenBalance")
 							.toEntityList(TokenBalance.class);
 
-					participants.addAll(rawParticipants.stream()
-							.filter(tb ->
-									tb.getOwner().getPrimaryDomain() != null || (tb.getOwner().getDomains() != null && !tb.getOwner().getDomains().isEmpty()) ||
-											(tb.getOwner().getSocials() != null && !tb.getOwner().getSocials().isEmpty())
-							)
-							.map(TokenBalance::getOwner)
-							.toList());
+					participants.addAll(rawParticipants.stream().map(o -> o.getOwner().getIdentity()).toList());
 
 					log.debug("Fetched {} participants ", participants.size());
 
@@ -89,54 +84,6 @@ public class SocialGraphService implements ISocialGraphService {
 			} catch (Exception e) {
 				log.error("Error fetching FarCon participants (spork based): {}",
 						e.getMessage());
-				hasNextPage = false;
-			}
-
-		} while (hasNextPage);
-
-		return participants;
-	}
-
-	@Override
-	@Cacheable(value = ETH_DENVER_PARTICIPANTS_POAP_CACHE_NAME, unless = "#result.isEmpty()")
-	public List<Wallet> getEthDenverParticipantsPoap() {
-		var hasNextPage = false;
-		var nextCursor = "";
-		val participants = new ArrayList<Wallet>();
-
-		do {
-			try {
-				val ethDenverParticipantsResponse = graphQlClient.documentName(
-								"getEthDenverParticipantsPoap")
-						.variable("cursor", nextCursor)
-						.execute().block();
-
-				if (ethDenverParticipantsResponse != null) {
-					val pageInfo = ethDenverParticipantsResponse
-							.field("Poaps.pageInfo")
-							.toEntity(PageInfo.class);
-					hasNextPage = pageInfo != null && pageInfo.getHasNextPage();
-					nextCursor = pageInfo != null ? pageInfo.getNextCursor() : "";
-
-					val rawParticipants = ethDenverParticipantsResponse
-							.field("Poaps.Poap")
-							.toEntityList(TokenBalance.class);
-
-					participants.addAll(rawParticipants.stream()
-							.filter(tb ->
-									tb.getOwner().getPrimaryDomain() != null || (tb.getOwner().getDomains() != null && !tb.getOwner().getDomains().isEmpty()) ||
-											(tb.getOwner().getSocials() != null && !tb.getOwner().getSocials().isEmpty())
-							)
-							.map(TokenBalance::getOwner)
-							.toList());
-
-					log.debug("Fetched {} participants (poap based)", participants.size());
-
-				} else {
-					hasNextPage = false;
-				}
-			} catch (Exception e) {
-				log.error("Error fetching EthDenver participants (poap based): {}", e.getMessage());
 				hasNextPage = false;
 			}
 
@@ -173,17 +120,18 @@ public class SocialGraphService implements ISocialGraphService {
 	}
 
 	@Override
-	public ConnectedAddresses getIdentityConnectedAddresses(String identity) {
-		val connectedAddressesResponse = graphQlClient.documentName("getIdentityConnectedAddresses")
+	@Cacheable(value = FARCASTER_VERIFICATIONS_CACHE_NAME, unless = "#result==null")
+	public ConnectedAddresses getIdentityVerifiedAddresses(String identity) {
+		val verifiedAddressesResponse = graphQlClient.documentName("getFarcasterVerifications")
 				.variable("identity", identity)
 				.execute().block();
 
-		if (connectedAddressesResponse == null) {
+		if (verifiedAddressesResponse == null) {
 			log.error("No connected addresses for {}", identity);
 			return null;
 		}
 
-		val connectedAddresses = connectedAddressesResponse.field("Socials.Social")
+		val verifiedAddresses = verifiedAddressesResponse.field("Socials.Social")
 				.toEntityList(Social.class).stream()
 				.limit(1).findFirst()
 				.map(s -> new ConnectedAddresses(s.getUserAddress(),
@@ -191,24 +139,55 @@ public class SocialGraphService implements ISocialGraphService {
 								.filter(address -> address.startsWith("0x"))
 								.toList())
 				).orElse(null);
-		log.debug("Found connected addresses for {} - {}", connectedAddresses, identity);
-		return connectedAddresses;
+		log.debug("Found verified addresses for {} - {}", verifiedAddresses, identity);
+		return verifiedAddresses;
 	}
 
 	@Override
 	@CacheEvict(cacheNames = SOCIALS_CACHE_NAME)
-	public void cleanCache(String identity, String me) {
-		log.debug("Evicting socials cache for {}_{} key", identity, me);
+	public void cleanCache(String identity) {
+		log.debug("Evicting socials cache for {} key", identity);
 	}
 
 	@Override
 	@Cacheable(cacheNames = SOCIALS_CACHE_NAME, unless = "#result==null")
-	public Wallet getSocialMetadata(String identity, String me) {
+	public Wallet getSocialMetadata(String identity) {
 		try {
-			val documentName = StringUtils.isBlank(me) ? "getSocialMetadata" :
-					"getSocialMetadataAndInsights";
 			ClientGraphQlResponse socialMetadataResponse = graphQlClient.documentName(
-							documentName)
+							"getSocialMetadata")
+					.variable("identity", identity)
+					.execute()
+					.onErrorResume(exception -> {
+						log.error("Error fetching {} - {}", identity, exception.getMessage());
+						return Mono.empty();
+					})
+					.block();
+
+			if (socialMetadataResponse != null) {
+				if (log.isTraceEnabled()) {
+					log.trace("Fetched socialMetadata for {}: {}", identity, socialMetadataResponse);
+				} else {
+					log.debug("Fetched socialMetadata for {}", identity);
+				}
+				return socialMetadataResponse.field("Wallet").toEntity(Wallet.class);
+			}
+		} catch (Throwable t) {
+			if (log.isTraceEnabled()) {
+				log.error("Full Error:", t);
+			} else {
+				log.error("Error: {}", t.getMessage());
+			}
+		}
+		return null;
+	}
+
+
+	@Override
+	@Cacheable(cacheNames = SOCIALS_INSIGHTS_CACHE_NAME, unless = "#result==null")
+	public Wallet getSocialInsights(String identity, String me) {
+		try {
+			val socialMetadataResponse = graphQlClient.documentName(
+							"getSocialInsights")
 					.variable("identity", identity)
 					.variable("me", me)
 					.execute()
@@ -225,7 +204,6 @@ public class SocialGraphService implements ISocialGraphService {
 					log.debug("Fetched socialMetadata for {}", identity);
 				}
 
-				// TODO: some issue with projections, set manually
 				val wallet = socialMetadataResponse.field("Wallet").toEntity(Wallet.class);
 
 				if (wallet != null) {

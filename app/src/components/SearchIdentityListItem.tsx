@@ -8,7 +8,7 @@ import {
   Tooltip,
   Typography
 } from '@mui/material';
-import { IdentityType } from '../types/ProfleType';
+import { ContactType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
 import { comingSoonToast } from './Toasts';
@@ -25,18 +25,43 @@ import { UpdateIdentityCallbackType } from './dialogs/SearchIdentityDialog';
 import { SocialPresenceStack } from './SocialPresenceStack';
 import { HowToReg, Star, StarBorder } from '@mui/icons-material';
 
+function addToFavourites(tags: string[], view: 'address' | 'profile'): string[] {
+  const updatedTags = tags ?? [];
+  if (view === 'address') {
+    updatedTags.push('favourite_addresses');
+  } else {
+    updatedTags.push('favourite_profiles');
+  }
+  return updatedTags;
+}
+
+function removeFromFavourites(tags: string[], view: 'address' | 'profile'): string[] {
+  const index = tags.indexOf(view === 'address' ? 'favourite_addresses' : 'favourite_profiles');
+  if (index !== -1) {
+    tags.splice(index, 1);
+  }
+  return tags;
+}
+
 export function SearchIdentityListItem(
   props: BoxProps &
     UpdateIdentityCallbackType & {
-      identity: IdentityType;
+      contact: ContactType;
       view: 'address' | 'profile';
-      insightsEnabled: boolean;
     }
 ) {
   const { profile, isAuthenticated } = useContext(ProfileContext);
-  const { identity, view, updateIdentityCallback, insightsEnabled } = props;
+  const { contact, view, updateIdentityCallback } = props;
 
-  const favourite = view === 'address' ? identity.favouriteAddress : identity.favouriteProfile;
+  const identity = contact.data;
+  const tags = contact.tags;
+
+  console.log('Identity:', contact);
+
+  const favourite =
+    view === 'address'
+      ? tags?.includes('favourite_addresses')
+      : tags?.includes('favourite_profiles');
 
   const { address } = useAccount();
 
@@ -105,9 +130,7 @@ export function SearchIdentityListItem(
                     );
 
                     updateIdentityCallback?.({
-                      identity: identity,
-                      view,
-                      invited: true
+                      contact: { ...contact, data: { ...contact.data, invited: true } }
                     });
                   } catch (error) {
                     toast.error('Invitation failed!');
@@ -204,22 +227,22 @@ export function SearchIdentityListItem(
             <IconButton
               size="small"
               onClick={async () => {
+                console.log('Hello', contact);
                 try {
-                  await axios.post(
-                    `${API_URL}/api/user/me/favourites`,
-                    {
-                      address: identity.address,
-                      favouriteAddress: view === 'address' ? !favourite : undefined,
-                      favouriteProfile: view === 'profile' ? !favourite : undefined
-                    } as IdentityType,
-                    { withCredentials: true }
-                  );
+                  const updatedContact = {
+                    ...contact,
+                    tags: !favourite
+                      ? addToFavourites(contact.tags as string[], view)
+                      : removeFromFavourites(contact.tags as string[], view)
+                  } as ContactType;
 
-                  updateIdentityCallback?.({
-                    identity: identity,
-                    view,
-                    favourite: !favourite
+                  console.log('Before vs after: ', contact, updatedContact);
+
+                  await axios.post(`${API_URL}/api/user/me/favourites`, updatedContact, {
+                    withCredentials: true
                   });
+
+                  updateIdentityCallback?.({ contact: updatedContact });
                 } catch (error) {
                   toast.error('Favourite failed!');
                 }

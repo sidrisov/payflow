@@ -15,7 +15,10 @@ import {
   Container
 } from '@mui/material';
 
-import { Home, HomeOutlined } from '@mui/icons-material';
+import {
+  Home,
+  HomeOutlined
+} from '@mui/icons-material';
 
 import { ProfileContext } from '../contexts/UserContext';
 import HideOnScroll from '../components/HideOnScroll';
@@ -100,34 +103,27 @@ export default function AppLayout({
                     <HomeLogo />
                   </Stack>
                   {location.pathname !== '/search' && (
-                    <Stack direction="row" alignItems="center">
-                      {/*                   <IconButton
-                    color={location.pathname === '/flows' ? 'inherit' : undefined}
-                    onClick={() => comingSoonToast()}>
-                    <AppsOutlined />
-                  </IconButton> */}
-                      <Box
-                        ml={1}
-                        display="flex"
-                        flexDirection="row"
-                        alignItems="center"
-                        component={Button}
-                        color="inherit"
-                        sx={{
-                          width: 120,
-                          borderRadius: 5,
-                          border: 1,
-                          borderColor: 'inherit',
-                          textTransform: 'none',
-                          justifyContent: 'space-evenly'
-                        }}
-                        onClick={async () => {
-                          setOpenSearchIdentity(true);
-                        }}>
-                        <Avatar src="/payflow.png" sx={{ width: 24, height: 24 }} />
-                        <Typography variant="subtitle2">Search ... </Typography>
-                      </Box>
-                    </Stack>
+                    <Box
+                      ml={1}
+                      display="flex"
+                      flexDirection="row"
+                      alignItems="center"
+                      component={Button}
+                      color="inherit"
+                      sx={{
+                        width: 120,
+                        borderRadius: 5,
+                        border: 1,
+                        borderColor: 'inherit',
+                        textTransform: 'none',
+                        justifyContent: 'space-evenly'
+                      }}
+                      onClick={async () => {
+                        setOpenSearchIdentity(true);
+                      }}>
+                      <Avatar src="/payflow.png" sx={{ width: 24, height: 24 }} />
+                      <Typography variant="subtitle2">Search ... </Typography>
+                    </Box>
                   )}
                   <Stack direction="row" spacing={0.5} alignItems="center">
                     {profile ? (

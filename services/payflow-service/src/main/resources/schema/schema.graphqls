@@ -1,6 +1,6 @@
 directive @binding(constraint: String!, errorCode: String!) on INPUT_FIELD_DEFINITION | ARGUMENT_DEFINITION
 
-directive @db(collectionFieldName: String!, startPrefix: String, endPrefix: String, isStartExclusive: String, isEndExclusive: String) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
+directive @db(collectionFieldName: String, sqlTableName: String, startPrefix: String, endPrefix: String, isStartExclusive: String, isEndExclusive: String, isHexField: String) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 
 """
 The @specifiedBy built-in directive is used within the type system definition
@@ -11,1539 +11,2201 @@ directive @specifiedBy(url: String!) on SCALAR
 
 """Represents on-chain smart contract account"""
 type Account {
-    """Airstack unique identifier for the account"""
-    id: ID!
+  """Airstack unique identifier for the account"""
+  id: ID!
 
-    """Standard of account-  ERC6551, Safe etc"""
-    standard: AccountStandard!
+  """Standard of account-  ERC6551, Safe etc"""
+  standard: AccountStandard!
 
-    """Blockchain where account is created"""
-    blockchain: TokenBlockchain
+  """Blockchain where account is created"""
+  blockchain: TokenBlockchain
 
-    """ERC6551 standard: Address of ERC721 token"""
-    tokenAddress: Address
+  """ERC6551 standard: Address of ERC721 token"""
+  tokenAddress: Address
 
-    """ERC6551 standard: tokenId of ERC721 token"""
-    tokenId: String
+  """ERC6551 standard: tokenId of ERC721 token"""
+  tokenId: String
 
-    """
-    Nested query - on-chain wallet related information, including address,
-    domains, social profile, other token balances, and transfer history
-    """
-    address: Wallet!
+  """
+  Nested query - on-chain wallet related information, including address,
+  domains, social profile, other token balances, and transfer history
+  """
+  address: Wallet!
 
-    """ERC6551 standard : Registry used to deploy smart contract wallet"""
-    registry: Address
+  """ERC6551 standard : Registry used to deploy smart contract wallet"""
+  registry: Address
 
-    """
-    ERC6551 standard : Implementation address of on chain smart contract account
-    """
-    implementation: String
+  """
+  ERC6551 standard : Implementation address of on chain smart contract account
+  """
+  implementation: String
 
-    """ERC6551 standard salt for account creation"""
-    salt: String
+  """ERC6551 standard salt for account creation"""
+  salt: String
 
-    """Block number of the account creation transaction"""
-    createdAtBlockNumber: Int
+  """Block number of the account creation transaction"""
+  createdAtBlockNumber: Int
 
-    """Block timestamp of the account creation transaction"""
-    createdAtBlockTimestamp: Time
+  """Block timestamp of the account creation transaction"""
+  createdAtBlockTimestamp: Time
 
-    """Transaction Hash of the account creation transaction"""
-    creationTransactionHash: String
+  """Transaction Hash of the account creation transaction"""
+  creationTransactionHash: String
 
-    """Address of deployer"""
-    deployer: String
+  """Address of deployer"""
+  deployer: String
 
-    """Token NFT associated with erc-6551"""
-    nft: TokenNft
+  """Token NFT associated with erc-6551"""
+  nft: TokenNft
 
-    """Block number of the account updation transaction"""
-    updatedAtBlockNumber: Int
+  """Block number of the account updation transaction"""
+  updatedAtBlockNumber: Int
 
-    """Block timestamp of the account updation transaction"""
-    updatedAtBlockTimestamp: Time
+  """Block timestamp of the account updation transaction"""
+  updatedAtBlockTimestamp: Time
 }
 
 input AccountFilter {
-    _and: [AccountFilter!]
-    _or: [AccountFilter!]
-    _nor: [AccountFilter!]
-    standard: AccountStandard_Comparator_Exp
-    tokenAddress: Address_Comparator_Exp
-    tokenId: String_Comparator_Exp
-    address: Identity_Comparator_Exp
-    registry: Address_Comparator_Exp
-    createdAtBlockTimestamp: Time_Comparator_Exp
+  standard: AccountStandard_Comparator_Exp
+  tokenAddress: Address_Comparator_Exp
+  tokenId: String_Comparator_Exp
+  address: Identity_Comparator_Exp
+  registry: Address_Comparator_Exp
+  implementation: Address_Comparator_Exp
+  salt: String_Eq_Comparator_Exp
+  createdAtBlockTimestamp: Time_Comparator_Exp
 }
 
 input AccountOrderBy {
-    createdAtBlockTimestamp: OrderBy
+  createdAtBlockTimestamp: OrderBy
 }
 
 input AccountsInput {
-    order: [AccountOrderBy!]
-    filter: AccountFilter
-    blockchain: TokenBlockchain!
-    limit: Int
-    cursor: String
+  order: [AccountOrderBy!]
+  filter: AccountFilter
+  blockchain: TokenBlockchain!
+  limit: Int
+  cursor: String
 }
 
 input AccountsNestedInput {
-    order: [AccountOrderBy]
-    filter: AccountFilter
-    blockchain: Blockchain
-    limit: Int
+  order: [AccountOrderBy]
+  filter: AccountFilter
+  blockchain: TokenBlockchain
+  showOptimisticAddress: Boolean
+  limit: Int
 }
 
 type AccountsOutput {
-    Account: [Account!]
-    pageInfo: PageInfo
+  Account: [Account!]
+  pageInfo: PageInfo
 }
 
 enum AccountStandard {
-    ERC6551
+  ERC6551
 }
 
 input AccountStandard_Comparator_Exp {
-    _eq: AccountStandard
-    _in: [AccountStandard!]
+  _eq: AccountStandard
+  _in: [AccountStandard!]
 }
 
 scalar Address
 
 input Address_Comparator_Exp {
-    _eq: Address
-    _ne: Address
-    _in: [Address!]
-    _nin: [Address!]
+  _eq: Address
+  _ne: Address
+  _in: [Address!]
+  _nin: [Address!]
 }
 
 type AnimationUrlVariants {
-    original: String
+  original: String
+}
+
+scalar Any
+
+enum Audience {
+  farcaster
+  all
 }
 
 type AudioVariants {
-    original: String
+  original: String
 }
 
 enum Blockchain {
-    ethereum
+  ethereum
 }
 
 input Boolean_Comparator_Exp {
-    _eq: Boolean
+  _eq: Boolean
+}
+
+type ConnectedAddress {
+  address: Address
+  chainId: String
+  blockchain: String
+  timestamp: Time
 }
 
 type ContractMetadata {
-    """Name of the token, mirrored from the smart contract"""
-    name: String
+  """Name of the token, mirrored from the smart contract"""
+  name: String
 
-    """Description of the token, mirrored from the smart contract"""
-    description: String
-    image: String
-    externalLink: String
-    sellerFeeBasisPoints: Int
+  """Description of the token, mirrored from the smart contract"""
+  description: String
+  image: String
+  externalLink: String
+  sellerFeeBasisPoints: Int
 
-    """Royalties recipient address, mirrored from the smart contract"""
-    feeRecipient: String
+  """Royalties recipient address, mirrored from the smart contract"""
+  feeRecipient: String
 }
 
 input Date_Range_Comparator_Exp {
-    _eq: String
+  _eq: String
 }
 
 scalar DateRange
 
 type Domain {
-    """Airstack unique identifier for the data point"""
-    id: ID
+  """Airstack unique identifier for the data point"""
+  id: ID
 
-    """Parent domain name, if the entity is a subdomain"""
-    parent: String
+  """Parent domain name, if the entity is a subdomain"""
+  parent: String
 
-    """
-    Nested query - domain owner related information, including address, domains,
-    social profile, other token balances, and transfer history
-    """
-    owner: Address!
+  """Owner of token associated with the domain"""
+  owner: Address!
 
-    """
-    Nested query - on-chain owner wallet related information, including address,
-    domains, social profile, other token balances, and transfer history
-    """
-    ownerDetails: Wallet
+  """
+  Owner wallet related information, including address, domains, social profile, other token balances, and transfer history
+  """
+  ownerDetails: Wallet
 
-    """
-    Nested query - on-chain resolvedAddress wallet related information, including
-    address, domains, social profile, other token balances, and transfer history
-    """
-    resolvedAddressDetails: Wallet
+  """
+  Nested query - on-chain resolvedAddress wallet related information, including
+  address, domains, social profile, other token balances, and transfer history
+  """
+  resolvedAddressDetails: Wallet
 
-    """Blockchain address to which the domain is resolved"""
-    resolvedAddress: Address
+  """Blockchain address to which the domain is resolved"""
+  resolvedAddress: Address
 
-    """Resolver address associated with Domain"""
-    resolverAddress: Address
+  """Resolver address associated with Domain"""
+  resolverAddress: Address
 
-    """Timestamp when the domain registration expires"""
-    expiryTimestamp: Time
+  """Timestamp when the domain registration expires"""
+  expiryTimestamp: Time
 
-    """Indicates if the domain is set to be primary - true or false"""
-    isPrimary: Boolean
+  """Indicates if the domain is set to be primary - true or false"""
+  isPrimary: Boolean
 
-    """
-    Domain name without the domain ending, e.g. vitalik instead of vitalik.eth
-    """
-    labelName: String
+  """
+  Domain name without the domain ending, e.g. vitalik instead of vitalik.eth
+  """
+  labelName: String
 
-    """Airstack unique domain hash"""
-    labelHash: String
+  """Airstack unique domain hash"""
+  labelHash: String
 
-    """Full domain name, e.g. vitalik.eth"""
-    name: String
+  """Full domain name, e.g. vitalik.eth"""
+  name: String
 
-    """Nested query - can retrieve payment token data (name, symbol, etc.)"""
-    paymentToken: Token
+  """Nested query - can retrieve payment token data (name, symbol, etc.)"""
+  paymentToken: Token
 
-    """payment amount in blockchain native token for the domain"""
-    paymentTokenCostInNativeToken: Float
+  """payment amount in blockchain native token for the domain"""
+  paymentTokenCostInNativeToken: Float
 
-    """payment amount in USDC for the domain"""
-    paymentTokenCostInUSDC: Float
+  """payment amount in USDC for the domain"""
+  paymentTokenCostInUSDC: Float
 
-    """Domain registration cost"""
-    registrationCost: String
+  """Domain registration cost"""
+  registrationCost: String
 
-    """Domain registration cost in blockchain native token"""
-    registrationCostInNativeToken: String
+  """Domain registration cost in blockchain native token"""
+  registrationCostInNativeToken: String
 
-    """Domain registration cost in USDC"""
-    registrationCostInUSDC: String
+  """Domain registration cost in USDC"""
+  registrationCostInUSDC: String
 
-    """Domain registration cost in decimals"""
-    formattedRegistrationCost: Float
+  """Domain registration cost in decimals"""
+  formattedRegistrationCost: Float
 
-    """Domain registration cost in native blockchain token in decimals"""
-    formattedRegistrationCostInNativeToken: Float
+  """Domain registration cost in native blockchain token in decimals"""
+  formattedRegistrationCostInNativeToken: Float
 
-    """Domain registration cost in USDC in decimals"""
-    formattedRegistrationCostInUSDC: Float
+  """Domain registration cost in USDC in decimals"""
+  formattedRegistrationCostInUSDC: Float
 
-    """
-    Nested query allowing to retrieve subdomain information associated with the domain
-    """
-    subDomains(input: DomainsNestedInput): [Domain]
+  """
+  Nested query allowing to retrieve subdomain information associated with the domain
+  """
+  subDomains(input: DomainsNestedInput): [Domain]
 
-    """Count of subdomains linked to the domain"""
-    subDomainCount: Int
+  """Count of subdomains linked to the domain"""
+  subDomainCount: Int
 
-    """Domain Token ID associated with the domain, if applicable"""
-    tokenId: String
+  """Domain Token ID associated with the domain, if applicable"""
+  tokenId: String
 
-    """Time-to-live value for the domain"""
-    ttl: String
+  """Time-to-live value for the domain"""
+  ttl: String
 
-    """Unique identifier for the blockchain"""
-    chainId: String
+  """Unique identifier for the blockchain"""
+  chainId: String
 
-    """Blockchain where the NFT sale took place"""
-    blockchain: Blockchain!
+  """Blockchain where the NFT sale took place"""
+  blockchain: Blockchain!
 
-    """DApp name associated with the domain (e.g. ENS)"""
-    dappName: DomainDappName
+  """DApp name associated with the domain (e.g. ENS)"""
+  dappName: DomainDappName
 
-    """DApp slug (contract version) associated with the domain"""
-    dappSlug: DomainDappSlug
+  """DApp slug (contract version) associated with the domain"""
+  dappSlug: DomainDappSlug
 
-    """Block number when the domain was created"""
-    createdAtBlockNumber: Int
+  """Block number when the domain was created"""
+  createdAtBlockNumber: Int
 
-    """Timestamp when the domain was created"""
-    createdAtBlockTimestamp: Time
+  """Timestamp when the domain was created"""
+  createdAtBlockTimestamp: Time
 
-    """Block number when the domain was last updated"""
-    lastUpdatedBlockNumber: Int
+  """Block number when the domain was last updated"""
+  lastUpdatedBlockNumber: Int
 
-    """Timestamp when the domain was last updated"""
-    lastUpdatedBlockTimestamp: Time
-    tokenAddress: Address!
+  """Timestamp when the domain was last updated"""
+  lastUpdatedBlockTimestamp: Time
 
-    """Token nft associated with the domain, if applicable"""
-    tokenNft: TokenNft
+  """Token Address associated with the domain, if applicable"""
+  tokenAddress: Address!
+
+  """Token nft associated with the domain, if applicable"""
+  tokenNft: TokenNft
+
+  """Manager of Domain"""
+  manager: Address!
+
+  """
+  Manager wallet related information, including address, domains, social profile, other token balances, and transfer history
+  """
+  managerDetails: Wallet
+
+  """Avatar of the domain"""
+  avatar: String
+
+  """Texts associated with the domain"""
+  texts: [DomainTexts!]
+
+  """Domain is name wrapped or not"""
+  isNameWrapped: Boolean
+
+  """Multichain associated with the domain"""
+  multiChainAddresses: [DomainMultiChainAddress!]
 }
 
 enum DomainDappName {
-    ens
+  ens
 }
 
 input DomainDappName_Comparator_Exp {
-    _eq: DomainDappName
-    _in: [DomainDappName!]
+  _eq: DomainDappName
+  _in: [DomainDappName!]
 }
 
 enum DomainDappSlug {
-    ens_v1
+  ens_v1
 }
 
 input DomainDappSlug_Comparator_Exp {
-    _eq: DomainDappSlug
-    _in: [DomainDappSlug!]
+  _eq: DomainDappSlug
+  _in: [DomainDappSlug!]
 }
 
 input DomainFilter {
-    _and: [DomainFilter!]
-    _or: [DomainFilter!]
-    _nor: [DomainFilter!]
-    parent: String_Comparator_Exp
-    owner: Identity_Comparator_Exp
-    resolvedAddress: Address_Comparator_Exp
-    isPrimary: Boolean_Comparator_Exp
-    name: String_Comparator_Exp
+  owner: Identity_Comparator_Exp
+  resolvedAddress: Address_Comparator_Exp
+  isPrimary: Boolean_Comparator_Exp
+  name: String_Comparator_Exp
+  lastUpdatedBlockTimestamp: Time_Comparator_Exp
 }
 
-input DomainInput {
-    resolvedAddress: Address
-    name: String
-    blockchain: Blockchain!
+type DomainMultiChainAddress {
+  """symbol according to SLIP-0044"""
+  symbol: String
+
+  """address"""
+  address: String
 }
 
 input DomainOrderBy {
-    expiryTimestamp: OrderBy
-    createdAtBlockTimestamp: OrderBy
-    lastUpdatedBlockTimestamp: OrderBy
+  expiryTimestamp: OrderBy
+  createdAtBlockTimestamp: OrderBy
+  lastUpdatedBlockTimestamp: OrderBy
 }
 
 input DomainsInput {
-    order: [DomainOrderBy!]
-    filter: DomainFilter!
-    blockchain: Blockchain!
-    limit: Int
-    cursor: String
+  order: [DomainOrderBy!]
+  filter: DomainFilter!
+  blockchain: Blockchain!
+  limit: Int
+  cursor: String
 }
 
 input DomainsNestedInput {
-    order: [DomainOrderBy]
-    filter: DomainFilter
-    blockchain: Blockchain
-    limit: Int
+  order: [DomainOrderBy]
+  filter: DomainFilter
+  blockchain: Blockchain
+  limit: Int
 }
 
 type DomainsOutput {
-    Domain: [Domain!]
-    pageInfo: PageInfo
+  Domain: [Domain!]
+  pageInfo: PageInfo
+}
+
+type DomainTexts {
+  """key of the text"""
+  key: String
+
+  """value of the text"""
+  value: String
 }
 
 enum EveryBlockchain {
-    ALL
+  ALL
+}
+
+type FarcasterCast {
+  id: String
+  fid: String
+  text: String
+  rawText: String
+  parentFid: String
+  hash: String
+  rootParentUrl: String
+  parentHash: String
+  url: String
+  embeds: [Map]
+  mentions: [Mentions!]
+  castedAtTimestamp: Time
+  frame: FarcasterFrame
+  parentCast: FarcasterCast
+  quotedCast: [FarcasterCast]
+  channel: FarcasterChannel
+  castedBy: Social
+  numberOfLikes: Int
+  numberOfRecasts: Int
+  numberOfReplies: Int
+  socialCapitalValue: SocialCapitalValue
+}
+
+input FarcasterCastFilter {
+  frameUrl: String_Eq_In_Comparator_Exp
+  castedBy: Identity_Comparator_Exp
+  hash: String_Eq_In_Comparator_Exp
+  url: String_Eq_In_Comparator_Exp
+  hasFrames: Boolean_Comparator_Exp
+  hasEmbeds: Boolean_Comparator_Exp
+  hasMentions: Boolean_Comparator_Exp
+  castedAtTimestamp: Time_Comparator_Exp
+  rootParentUrl: String_Eq_In_Comparator_Exp
+}
+
+input FarcasterCastInput {
+  filter: FarcasterCastFilter!
+  blockchain: EveryBlockchain!
+  limit: Int
+  cursor: String
+}
+
+type FarcasterCastOutput {
+  Cast: [FarcasterCast!]
+  pageInfo: PageInfo
+}
+
+type FarcasterChannel {
+  """Airstack unique identifier for the data point"""
+  id: ID!
+  dappName: String!
+  dappSlug: String!
+  channelId: String!
+  name: String!
+  url: String!
+  description: String!
+  imageUrl: String!
+  leadIds: [String!]
+  leadProfiles(input: SocialsNestedInput): [Social!]
+  moderatorIds: [String!]
+  moderatorProfiles(input: SocialsNestedInput): [Social!]
+  isModerationEnabled: Boolean
+  createdAtTimestamp: Time!
+  followerCount: Int
+  participants(input: FarcasterChannelParticipantNestedInput): [FarcasterChannelParticipant!]
+}
+
+enum FarcasterChannelActionType {
+  cast
+  reply
+  follow
+}
+
+input FarcasterChannelActionType_Comparator_Exp {
+  _eq: FarcasterChannelActionType
+  _in: [FarcasterChannelActionType!]
+}
+
+input FarcasterChannelFilter {
+  channelId: String_Comparator_Exp
+  name: Regex_String_Comparator_Exp
+  leadId: String_Comparator_Exp
+  leadIdentity: Identity_Comparator_Exp
+  moderatorId: String_Comparator_Exp
+  moderatorIdentity: Identity_Comparator_Exp
+  createdAtTimestamp: Time_Comparator_Exp
+}
+
+input FarcasterChannelNestedInput {
+  blockchain: EveryBlockchain
+  filter: FarcasterChannelFilter
+  order: [FarcasterChannelOrderBy]
+  limit: Int
+}
+
+input FarcasterChannelOrderBy {
+  createdAtTimestamp: OrderBy
+  followerCount: OrderBy
+}
+
+type FarcasterChannelParticipant {
+  """Airstack unique identifier for the data point"""
+  id: ID
+  dappName: String!
+  dappSlug: String!
+  channelId: String!
+  channelName: String!
+  participantId: String!
+  participant(input: SocialsNestedInput): Social
+  channel(input: FarcasterChannelNestedInput): FarcasterChannel
+  lastActionTimestamp: Time!
+  lastRepliedTimestamp: Time
+  lastCastedTimestamp: Time
+  lastFollowedTimestamp: Time
+  channelActions: [FarcasterChannelActionType!]
+}
+
+input FarcasterChannelParticipantFilter {
+  participant: Identity_Comparator_Exp
+  channelId: String_Comparator_Exp
+  channelName: Regex_String_Comparator_Exp
+  channelActions: FarcasterChannelActionType_Comparator_Exp
+  lastActionTimestamp: Time_Comparator_Exp
+}
+
+input FarcasterChannelParticipantNestedInput {
+  blockchain: EveryBlockchain
+  filter: FarcasterChannelParticipantFilter
+  order: [FarcasterChannelParticipantOrderBy]
+  limit: Int
+}
+
+input FarcasterChannelParticipantOrderBy {
+  lastActionTimestamp: OrderBy
+}
+
+input FarcasterChannelParticipantsInput {
+  filter: FarcasterChannelParticipantFilter!
+  order: [FarcasterChannelParticipantOrderBy!]
+  blockchain: EveryBlockchain!
+  limit: Int
+  cursor: String
+}
+
+type FarcasterChannelParticipantsOutput {
+  pageInfo: PageInfo
+  FarcasterChannelParticipant: [FarcasterChannelParticipant!]
+}
+
+input FarcasterChannelsInput {
+  filter: FarcasterChannelFilter
+  order: [FarcasterChannelOrderBy!]
+  blockchain: EveryBlockchain!
+  limit: Int
+  cursor: String
+}
+
+type FarcasterChannelsOutput {
+  pageInfo: PageInfo
+  FarcasterChannel: [FarcasterChannel!]
+}
+
+type FarcasterFrame {
+  frameHash: String
+  frameUrl: String
+  postUrl: String
+  inputText: String
+  imageAspectRatio: String
+  imageUrl: String
+  state: String
+  buttons: [FrameButton!]
+  castedAtTimestamp: Time
+}
+
+input FarcasterFrameMessageInput {
+  filter: FarcasterFrameMessageInputFilter!
+}
+
+input FarcasterFrameMessageInputFilter {
+  messageBytes: String
+}
+
+type FarcasterFrameMessageOutput {
+  isValid: Boolean
+  messageByte: String
+  messageRaw: Map
+  message: FrameMessage
+  castedByFid: Int
+  castedBy: Social
+  interactedByFid: Int
+  interactedBy: Social
+}
+
+input FarcasterQuotedRecastsFilter {
+  recastedBy: Identity_Comparator_Exp
+  parentCastedBy: Identity_Comparator_Exp
+  parentHash: String_Eq_In_Comparator_Exp
+  parentUrl: String_Eq_In_Comparator_Exp
+}
+
+input FarcasterQuotedRecastsInput {
+  filter: FarcasterQuotedRecastsFilter!
+  blockchain: EveryBlockchain!
+  limit: Int
+  cursor: String
+}
+
+type FarcasterQuotedRecastsOutput {
+  QuotedRecast: [FarcasterCast!]
+  pageInfo: PageInfo
+}
+
+type FarcasterReaction {
+  cast: FarcasterCast
+  castHash: String
+  reactedBy: Social
+}
+
+enum FarcasterReactionCriteria {
+  liked
+  replied
+  recasted
+}
+
+input FarcasterReactionsFilter {
+  criteria: FarcasterReactionCriteria!
+  castHash: String_Eq_In_Comparator_Exp
+  castUrl: String_Eq_In_Comparator_Exp
+  frameUrl: String_Eq_In_Comparator_Exp
+  reactedBy: Identity_Comparator_Exp
+  channelId: String_Comparator_Exp
+}
+
+input FarcasterReactionsInput {
+  filter: FarcasterReactionsFilter!
+  blockchain: EveryBlockchain!
+  limit: Int
+  cursor: String
+}
+
+type FarcasterReactionsOutput {
+  Criteria: FarcasterReactionCriteria
+  Reaction: [FarcasterReaction!]
+  pageInfo: PageInfo
+}
+
+input FarcasterRepliesFilter {
+  repliedBy: Identity_Comparator_Exp
+  parentCastedBy: Identity_Comparator_Exp
+  parentHash: String_Eq_In_Comparator_Exp
+  parentUrl: String_Eq_In_Comparator_Exp
+  hash: String_Eq_In_Comparator_Exp
+}
+
+input FarcasterRepliesInput {
+  filter: FarcasterRepliesFilter!
+  blockchain: EveryBlockchain!
+  limit: Int
+  cursor: String
+}
+
+type FarcasterRepliesOutput {
+  Reply: [FarcasterCast!]
+  pageInfo: PageInfo
 }
 
 input Float_Comparator_Exp {
-    _eq: Float
-    _gt: Float
-    _gte: Float
-    _lt: Float
-    _lte: Float
-    _ne: Float
-    _in: [Float!]
-    _nin: [Float!]
+  _eq: Float
+  _gt: Float
+  _gte: Float
+  _lt: Float
+  _lte: Float
+  _ne: Float
+  _in: [Float!]
+  _nin: [Float!]
+}
+
+type FrameButton {
+  id: String
+  index: Int
+  label: String
+  action: String
+  target: String
+}
+
+type FrameMessage {
+  data: FrameMessageData
+  hash: String
+  hashScheme: String
+  signature: String
+  signatureScheme: String
+  signer: String
+}
+
+type FrameMessageActionBody {
+  url: String
+  urlDecoded: String
+  buttonIndex: Int
+  castId: FrameMessageCastId
+  inputText: String
+  inputTextDecoded: String
+  state: String
+  stateDecoded: Any
+  transactionId: String
+  transactionHash: String
+  address: String
+}
+
+type FrameMessageCastId {
+  fid: Int
+  hash: String
+}
+
+type FrameMessageData {
+  type: String
+  fid: Int
+  time: Time
+  network: String
+  frameActionBody: FrameMessageActionBody
 }
 
 scalar Identity
 
 input Identity_Comparator_Exp {
-    _eq: Identity
-    _in: [Identity!]
+  _eq: Identity
+  _in: [Identity!]
 }
 
 type ImageSizes {
-    extraSmall: String
-    small: String
-    medium: String
-    large: String
-    original: String
+  extraSmall: String
+  small: String
+  medium: String
+  large: String
+  original: String
 }
 
 input Int_Comparator_Exp {
-    _eq: Int
-    _gt: Int
-    _gte: Int
-    _lt: Int
-    _lte: Int
-    _ne: Int
-    _in: [Int!]
-    _nin: [Int!]
+  _eq: Int
+  _gt: Int
+  _gte: Int
+  _lt: Int
+  _lte: Int
+  _ne: Int
+  _in: [Int!]
+  _nin: [Int!]
 }
 
 input Int_String_Comparator_Exp {
-    _eq: String
-    _gt: String
-    _gte: String
-    _lt: String
-    _lte: String
-    _ne: String
-    _in: [String!]
-    _nin: [String!]
+  _eq: String
+  _gt: String
+  _gte: String
+  _lt: String
+  _lte: String
+  _ne: String
+  _in: [String!]
+  _nin: [String!]
 }
 
 scalar IntString
 
 type LogoSizes {
-    small: String
-    medium: String
-    large: String
-    original: String
-    external: String
+  small: String
+  medium: String
+  large: String
+  original: String
+  external: String
 }
 
 scalar Map
 
 type Media {
-    image: ImageSizes
-    video: VideoVariants
-    audio: AudioVariants
-    json: String
-    animation_url: AnimationUrlVariants
+  image: ImageSizes
+  video: VideoVariants
+  audio: AudioVariants
+  json: String
+  animation_url: AnimationUrlVariants
+}
+
+type Mentions {
+  fid: String
+  position: Int
+  profile: Social
+}
+
+type NativeBalance {
+  """Airstack unique identifier for the data point"""
+  id: ID!
+
+  """Unique identifier for the blockchain"""
+  chainId: String!
+
+  """Blockchain where the token smart contract is deployed"""
+  blockchain: NativeBalanceBlockchain
+
+  """
+  Nested Query allowing to retrieve address, domain names, social profiles of the owner
+  """
+  owner: Wallet!
+
+  """Token amount the address currently holds"""
+  amount: String!
+
+  """Formatted token balance in decimals"""
+  formattedAmount: Float
+
+  """Block number of the latest token balance change happened"""
+  lastUpdatedBlock: Int!
+
+  """Timestamp of the latest token balance change happened"""
+  lastUpdatedTimestamp: Time
+}
+
+enum NativeBalanceBlockchain {
+  degen
+}
+
+input NativeBalanceFilter {
+  owner: Identity_Comparator_Exp
+  formattedAmount: Float_Comparator_Exp
+  lastUpdatedTimestamp: Time_Comparator_Exp
+}
+
+input NativeBalanceOrderBy {
+  lastUpdatedTimestamp: OrderBy
+}
+
+input NativeBalancesInput {
+  order: [NativeBalanceOrderBy!]
+  filter: NativeBalanceFilter!
+  blockchain: NativeBalanceBlockchain!
+  limit: Int
+  cursor: String
+}
+
+type NativeBalancesOutput {
+  NativeBalance: [NativeBalance!]
+  pageInfo: PageInfo
 }
 
 type NftAttribute {
-    """NFT attribute type as defined in the smart contract, e.g. background"""
-    trait_type: String
+  """NFT attribute type as defined in the smart contract, e.g. background"""
+  trait_type: String
 
-    """NFT attribute value as defined in the smart contract, e.g. blue"""
-    value: String
-    displayType: String
-    maxValue: String
+  """NFT attribute value as defined in the smart contract, e.g. blue"""
+  value: String
+  displayType: String
+  maxValue: String
 }
 
 input NftAttributeFilter {
-    _and: [NftAttributeFilter!]
-    _or: [NftAttributeFilter!]
-    _nor: [NftAttributeFilter!]
-    trait_type: String_Comparator_Exp
-    value: String_Comparator_Exp
+  trait_type: String_Comparator_Exp
+  value: String_Comparator_Exp
 }
 
 input NftAttributesInput {
-    filter: NftAttributeFilter!
-    limit: Int
-    cursor: String
+  filter: NftAttributeFilter!
+  limit: Int
+  cursor: String
 }
 
 type NftAttributesOutput {
-    NftAttribute: [NftAttribute!]
-    pageInfo: PageInfo
+  NftAttribute: [NftAttribute!]
+  pageInfo: PageInfo
 }
 
 type NftMetadata {
-    """Name of the token, mirrored from the smart contract"""
-    name: String
+  """Name of the token, mirrored from the smart contract"""
+  name: String
 
-    """Description of the token, mirrored from the smart contract"""
-    description: String
+  """Description of the token, mirrored from the smart contract"""
+  description: String
 
-    """Link to the token image, mirrored from the smart contract"""
-    image: String
-    attributes: [NftAttribute!]
-    imageData: String
-    backgroundColor: String
-    youtubeUrl: String
-    externalUrl: String
-    animationUrl: String
+  """Link to the token image, mirrored from the smart contract"""
+  image: String
+  attributes: [NftAttribute!]
+  imageData: String
+  backgroundColor: String
+  youtubeUrl: String
+  externalUrl: String
+  animationUrl: String
 }
 
 input NftMetadataFilter {
-    _and: [NftMetadataFilter!]
-    _or: [NftMetadataFilter!]
-    _nor: [NftMetadataFilter!]
-    name: String_Comparator_Exp
-    attributes: NftAttributeFilter
+  name: String_Comparator_Exp
+  attributes: NftAttributeFilter
 }
 
 input NftMetadataOrderBy {
-    attributes: OrderBy
+  attributes: OrderBy
 }
 
 input NftMetadatasInput {
-    order: [NftMetadataOrderBy!]
-    filter: NftMetadataFilter!
-    limit: Int
-    cursor: String
+  order: [NftMetadataOrderBy!]
+  filter: NftMetadataFilter!
+  limit: Int
+  cursor: String
 }
 
 type NftMetadatasOutput {
-    NftMetadata: [NftMetadata!]
-    pageInfo: PageInfo
+  NftMetadata: [NftMetadata!]
+  pageInfo: PageInfo
 }
 
 enum OrderBy {
-    ASC
-    DESC
+  ASC
+  DESC
 }
 
 enum OrderByAsIntString {
-    ASC
-    DESC
+  ASC
+  DESC
 }
 
 type PageInfo {
-    prevCursor: String!
-    nextCursor: String!
-    hasPrevPage: Boolean!
-    hasNextPage: Boolean!
+  prevCursor: String!
+  nextCursor: String!
+  hasPrevPage: Boolean!
+  hasNextPage: Boolean!
 }
 
 type Poap {
-    """Airstack unique identifier for the data point"""
-    id: ID
+  """Airstack unique identifier for the data point"""
+  id: ID
 
-    """Unique identifier for the blockchain"""
-    chainId: String
+  """Unique identifier for the blockchain"""
+  chainId: String
 
-    """Blockchain associated with the Poap"""
-    blockchain: EveryBlockchain
+  """Blockchain associated with the Poap"""
+  blockchain: EveryBlockchain
 
-    """Poap DApp name"""
-    dappName: PoapDappName
+  """Poap DApp name"""
+  dappName: PoapDappName
 
-    """Poap DApp slug (contract version)"""
-    dappSlug: PoapDappSlug
+  """Poap DApp slug (contract version)"""
+  dappSlug: PoapDappSlug
 
-    """Airstack unique dapp version number"""
-    dappVersion: String
+  """Airstack unique dapp version number"""
+  dappVersion: String
 
-    """Poap event id"""
-    eventId: String
-    owner: Wallet!
+  """Poap event id"""
+  eventId: String
+  owner: Wallet!
 
-    """Time when POAP was created"""
-    createdAtBlockTimestamp: Time
+  """Time when POAP was created"""
+  createdAtBlockTimestamp: Time
 
-    """Block Number when POAP was created"""
-    createdAtBlockNumber: Int
-    tokenId: String
-    tokenUri: String
+  """Block Number when POAP was created"""
+  createdAtBlockNumber: Int
+  tokenId: String
+  tokenUri: String
 
-    """POAP Contract Address"""
-    tokenAddress: String
-    transferCount: Int
-    mintOrder: Int
-    mintHash: String
-    poapEvent: PoapEvent
-    attendee: PoapAttendee
+  """POAP Contract Address"""
+  tokenAddress: String
+  transferCount: Int
+  mintOrder: Int
+  mintHash: String
+  poapEvent: PoapEvent
+  attendee: PoapAttendee
 }
 
 type PoapAttendee {
-    totalPoapOwned: Int
-    owner: Wallet!
+  totalPoapOwned: Int
+  owner: Wallet!
 }
 
 type PoapAttendeesOutput {
-    PoapAttendee: [PoapAttendee!]
-    pageInfo: PageInfo
+  PoapAttendee: [PoapAttendee!]
+  pageInfo: PageInfo
 }
 
 enum PoapDappName {
-    poap
+  poap
 }
 
 input PoapDappName_Comparator_Exp {
-    _eq: PoapDappName
-    _in: [PoapDappName!]
+  _eq: PoapDappName
+  _in: [PoapDappName!]
 }
 
 enum PoapDappSlug {
-    poap_mainnet
-    poap_gnosis
+  poap_mainnet
+  poap_gnosis
 }
 
 input PoapDappSlug_Comparator_Exp {
-    _eq: PoapDappSlug
-    _in: [PoapDappSlug!]
+  _eq: PoapDappSlug
+  _in: [PoapDappSlug!]
 }
 
 type PoapEvent {
-    """Airstack unique identifier for the data point"""
-    id: ID!
+  """Airstack unique identifier for the data point"""
+  id: ID!
 
-    """Unique identifier for the blockchain"""
-    chainId: String
+  """Unique identifier for the blockchain"""
+  chainId: String
 
-    """Blockchain where the marketplace data is calculated from"""
-    blockchain: EveryBlockchain
-    dappName: PoapDappName
-    dappSlug: PoapDappSlug!
-    dappVersion: String
-    eventId: String
-    tokenMints: Int
-    metadata: Map
-    contentType: String
-    contentValue: Media
-    eventName: String
-    description: String
-    country: String
-    city: String
-    startDate: Time
-    endDate: Time
+  """Blockchain where the marketplace data is calculated from"""
+  blockchain: EveryBlockchain
+  dappName: PoapDappName
+  dappSlug: PoapDappSlug!
+  dappVersion: String
+  eventId: String
+  tokenMints: Int
+  metadata: Map
+  contentType: String
+  contentValue: Media
+  eventName: String
+  description: String
+  country: String
+  city: String
+  startDate: Time
+  endDate: Time
 
-    """If Event is Virtual or not"""
-    isVirtualEvent: Boolean
+  """If Event is Virtual or not"""
+  isVirtualEvent: Boolean
 
-    """The Event URL"""
-    eventURL: String
-    poaps(input: PoapsNestedInput): [Poap!]
+  """The Event URL"""
+  eventURL: String
+  poaps(input: PoapsNestedInput): [Poap!]
 }
 
 input PoapEventFilter {
-    _and: [PoapEventFilter!]
-    _or: [PoapEventFilter!]
-    _nor: [PoapEventFilter!]
-    dappName: PoapDappName_Comparator_Exp
-    dappSlug: PoapDappSlug_Comparator_Exp
-    eventId: String_Comparator_Exp
-    tokenMints: Int_Comparator_Exp
-    eventName: Regex_String_Comparator_Exp
-    country: String_Comparator_Exp
-    city: String_Comparator_Exp
-    startDate: String_Comparator_Exp
-    endDate: String_Comparator_Exp
-    isVirtualEvent: Boolean_Comparator_Exp
+  dappName: PoapDappName_Comparator_Exp
+  dappSlug: PoapDappSlug_Comparator_Exp
+  eventId: String_Comparator_Exp
+  tokenMints: Int_Comparator_Exp
+  eventName: Regex_String_Comparator_Exp
+  country: String_Comparator_Exp
+  city: String_Comparator_Exp
+  startDate: String_Comparator_Exp
+  endDate: String_Comparator_Exp
+  isVirtualEvent: Boolean_Comparator_Exp
 }
 
 input PoapEventOrderBy {
-    tokenMints: OrderBy
-    startDate: OrderBy
-    endDate: OrderBy
+  tokenMints: OrderBy
+  startDate: OrderBy
+  endDate: OrderBy
 }
 
 input PoapEventsInput {
-    order: [PoapEventOrderBy!]
-    filter: PoapEventFilter!
-    blockchain: EveryBlockchain!
-    limit: Int
-    cursor: String
+  order: [PoapEventOrderBy!]
+  filter: PoapEventFilter!
+  blockchain: EveryBlockchain!
+  limit: Int
+  cursor: String
 }
 
 type PoapEventsOutput {
-    PoapEvent: [PoapEvent!]
-    pageInfo: PageInfo
+  PoapEvent: [PoapEvent!]
+  pageInfo: PageInfo
 }
 
 input PoapFilter {
-    _and: [PoapFilter!]
-    _or: [PoapFilter!]
-    _nor: [PoapFilter!]
-    dappName: PoapDappName_Comparator_Exp
-    dappSlug: PoapDappSlug_Comparator_Exp
-    eventId: String_Comparator_Exp
-    owner: Identity_Comparator_Exp
-    createdAtBlockNumber: Int_Comparator_Exp
-    tokenId: String_Comparator_Exp
+  dappName: PoapDappName_Comparator_Exp
+  dappSlug: PoapDappSlug_Comparator_Exp
+  eventId: String_Comparator_Exp
+  owner: Identity_Comparator_Exp
+  createdAtBlockNumber: Int_Comparator_Exp
+  tokenId: String_Comparator_Exp
 }
 
 input PoapOrderBy {
-    createdAtBlockNumber: OrderBy
+  createdAtBlockNumber: OrderBy
 }
 
 input PoapsInput {
-    order: [PoapOrderBy!]
-    filter: PoapFilter!
-    blockchain: EveryBlockchain!
-    limit: Int
-    cursor: String
+  order: [PoapOrderBy!]
+  filter: PoapFilter!
+  blockchain: EveryBlockchain!
+  limit: Int
+  cursor: String
 }
 
 input PoapsNestedInput {
-    order: [PoapOrderBy]
-    filter: PoapFilter
-    blockchain: EveryBlockchain
-    limit: Int
+  order: [PoapOrderBy]
+  filter: PoapFilter
+  blockchain: EveryBlockchain
+  limit: Int
 }
 
 type PoapsOutput {
-    Poap: [Poap!]
-    pageInfo: PageInfo
+  Poap: [Poap!]
+  pageInfo: PageInfo
+}
+
+type PopularDapp {
+  name: String
+  description: String
+  website: String
+  blockchain: String
+  chainId: String
+  address: String
+  criteriaCount: Int
+  criteria: String
+  userbase: String
+  timeFrom: Time
+  timeTo: Time
+  lastTransactionHash: String
+  lastTransactionTimestamp: Time
+  lastTransactionBlockNumber: Int
+}
+
+enum PopularDappsCriteria {
+  UNIQUE_USERS
+  TOTAL_TRANSACTIONS
+  GAS_SPENT
+}
+
+input PopularDappsInput {
+  timeFrame: TimeFrame!
+  userbase: Audience!
+  blockchain: TrendingBlockchain!
+  criteria: PopularDappsCriteria!
+  filter: TrendingFilter
+  limit: Int
+  cursor: String
+}
+
+type PopularDappsOutput {
+  PopularDapps: [PopularDapp!]
+  pageInfo: PageInfo
 }
 
 type ProjectDetails {
-    collectionName: String
-    description: String
-    externalUrl: String
-    twitterUrl: String
-    discordUrl: String
-    imageUrl: String
+  collectionName: String
+  description: String
+  externalUrl: String
+  twitterUrl: String
+  discordUrl: String
+  imageUrl: String
 }
 
 type Query {
-    Token(input: TokenInput!): Token
-    Tokens(input: TokensInput!): TokensOutput
-    TokenNft(input: TokenNftInput!): TokenNft
-    TokenNfts(input: TokenNftsInput!): TokenNftsOutput
-    TokenBalances(input: TokenBalancesInput!): TokenBalancesOutput
-    TokenTransfer(input: TokenTransferInput!): TokenTransfer
-    TokenTransfers(input: TokenTransfersInput!): TokenTransfersOutput
-    Domain(input: DomainInput!): Domain
-    Domains(input: DomainsInput!): DomainsOutput
-    Wallet(input: WalletInput!): Wallet
-    Socials(input: SocialsInput!): SocialsOutput
-    PoapEvents(input: PoapEventsInput!): PoapEventsOutput
-    Poaps(input: PoapsInput!): PoapsOutput
-    Accounts(input: AccountsInput!): AccountsOutput
-    XMTPs(input: XMTPsInput!): XMTPsOutput
-    SocialFollowings(input: SocialFollowingInput!): SocialFollowingOutput
-    SocialFollowers(input: SocialFollowerInput!): SocialFollowerOutput
-    Snapshots(input: SnapshotsInput!): SnapshotsOutput
+  Tokens(input: TokensInput!): TokensOutput
+  TokenNfts(input: TokenNftsInput!): TokenNftsOutput
+  TokenBalances(input: TokenBalancesInput!): TokenBalancesOutput
+  TokenTransfers(input: TokenTransfersInput!): TokenTransfersOutput
+  Domains(input: DomainsInput!): DomainsOutput
+  Wallet(input: WalletInput!): Wallet
+  Socials(input: SocialsInput!): SocialsOutput
+  PoapEvents(input: PoapEventsInput!): PoapEventsOutput
+  Poaps(input: PoapsInput!): PoapsOutput
+  Accounts(input: AccountsInput!): AccountsOutput
+  XMTPs(input: XMTPsInput!): XMTPsOutput
+  SocialFollowings(input: SocialFollowingInput!): SocialFollowingOutput
+  SocialFollowers(input: SocialFollowerInput!): SocialFollowerOutput
+  Snapshots(input: SnapshotsInput!): SnapshotsOutput
+  TrendingMints(input: TrendingMintsInput!): TrendingMintsOutput
+  TrendingTokens(input: TrendingTokensInput!): TrendingTokensOutput
+  FarcasterChannels(input: FarcasterChannelsInput!): FarcasterChannelsOutput
+  FarcasterChannelParticipants(input: FarcasterChannelParticipantsInput!): FarcasterChannelParticipantsOutput
+  FarcasterValidateFrameMessage(input: FarcasterFrameMessageInput!): FarcasterFrameMessageOutput
+  TrendingSwaps(input: TrendingSwapsInput!): TrendingSwapsOutput
+  FarcasterCasts(input: FarcasterCastInput!): FarcasterCastOutput
+  TrendingCasts(input: TrendingCastsInput!): TrendingCastsOutput
+  FarcasterReplies(input: FarcasterRepliesInput!): FarcasterRepliesOutput
+  FarcasterQuotedRecasts(input: FarcasterQuotedRecastsInput!): FarcasterQuotedRecastsOutput
+  FarcasterReactions(input: FarcasterReactionsInput!): FarcasterReactionsOutput
 }
 
 scalar Range
 
 input Range_Comparator_Exp {
-    _eq: Int
+  _eq: Int
 }
 
 input Regex_String_Comparator_Exp {
-    _eq: String
-    _gt: String
-    _gte: String
-    _lt: String
-    _lte: String
-    _ne: String
-    _regex: String
-    _regex_in: [String!]
-    _in: [String!]
-    _nin: [String!]
+  _eq: String
+  _gt: String
+  _gte: String
+  _lt: String
+  _lte: String
+  _ne: String
+  _regex: String
+  _regex_in: [String!]
+  _in: [String!]
+  _nin: [String!]
+}
+
+input Simple_String_Comparator_Exp {
+  _eq: String
+  _ne: String
+  _in: [String!]
+  _nin: [String!]
 }
 
 type Snapshot {
-    """Airstack unique identifier for the data point"""
-    id: ID!
-    owner: Wallet!
-    tokenAddress: Address!
-    amount: String
-    formattedAmount: Float
-    tokenType: TokenType
-    blockchain: TokenBlockchain
-    startBlockTimestamp: Time
-    endBlockTimestamp: Time
-    startBlockNumber: Int
-    endBlockNumber: Int
-    tokenNft: TokenNft
-    token: Token
-    chainId: String
-    tokenId: String
+  """Airstack unique identifier for the data point"""
+  id: ID!
+  owner: Wallet!
+  tokenAddress: Address!
+  amount: String
+  formattedAmount: Float
+  tokenType: TokenType
+  blockchain: TokenBlockchain
+  startBlockTimestamp: Time
+  endBlockTimestamp: Time
+  startBlockNumber: Int
+  endBlockNumber: Int
+  tokenNft: TokenNft
+  token: Token
+  chainId: String
+  tokenId: String
 }
 
 enum SnapshotBlockchain {
-    ethereum
-    base
+  ethereum
+  base
+  zora
+  gold
 }
 
 input SnapshotFilter {
-    _and: [SnapshotFilter!]
-    _or: [SnapshotFilter!]
-    _nor: [SnapshotFilter!]
-    owner: Identity_Comparator_Exp
-    tokenId: String_Comparator_Exp
-    tokenAddress: Address_Comparator_Exp
-    tokenType: TokenType_Comparator_Exp
-    date: Date_Range_Comparator_Exp
-    timestamp: Time_Range_Comparator_Exp
-    blockNumber: Range_Comparator_Exp
+  owner: Identity_Comparator_Exp
+  tokenId: String_Comparator_Exp
+  tokenAddress: Address_Comparator_Exp
+  tokenType: TokenType_Comparator_Exp
+  date: Date_Range_Comparator_Exp
+  timestamp: Time_Range_Comparator_Exp
+  blockNumber: Range_Comparator_Exp
 }
 
 input SnapshotsInput {
-    filter: SnapshotFilter!
-    blockchain: SnapshotBlockchain!
-    limit: Int
-    cursor: String
+  filter: SnapshotFilter!
+  blockchain: SnapshotBlockchain!
+  limit: Int
+  cursor: String
 }
 
 type SnapshotsOutput {
-    Snapshot: [Snapshot!]
-    pageInfo: PageInfo
+  Snapshot: [Snapshot!]
+  pageInfo: PageInfo
 }
 
 type Social {
-    """Airstack unique identifier for the data point"""
-    id: ID
+  """Airstack unique identifier for the data point"""
+  id: ID
 
-    """Unique identifier for the blockchain"""
-    chainId: String
+  """Unique identifier for the blockchain"""
+  chainId: String
 
-    """Blockchain associated with the social identity"""
-    blockchain: Blockchain
+  """Blockchain associated with the social identity"""
+  blockchain: Blockchain
 
-    """Social DApp name"""
-    dappName: SocialDappName
+  """Social DApp name"""
+  dappName: SocialDappName
 
-    """Social DApp slug (contract version)"""
-    dappSlug: SocialDappSlug
+  """Social DApp slug (contract version)"""
+  dappSlug: SocialDappSlug
 
-    """Airstack unique dapp version number"""
-    dappVersion: String
-    userId: String
-    userAddress: Address
-    userAddressDetails: Wallet
-    userAssociatedAddressDetails: [Wallet!]
-    tokenNft: TokenNft
-    userCreatedAtBlockTimestamp: Time
-    userCreatedAtBlockNumber: Int
-    userLastUpdatedAtBlockTimestamp: Time
-    userLastUpdatedAtBlockNumber: Int
-    userHomeURL: String
-    userRecoveryAddress: Address
+  """Airstack unique dapp version number"""
+  dappVersion: String
+  userId: String
+  userAddress: Address
+  userAddressDetails: Wallet
+  userAssociatedAddressDetails: [Wallet!]
+  connectedAddresses: [ConnectedAddress!]
+  userCreatedAtBlockTimestamp: Time
+  userCreatedAtBlockNumber: Int
+  userLastUpdatedAtBlockTimestamp: Time
+  userLastUpdatedAtBlockNumber: Int
+  userHomeURL: String
+  userRecoveryAddress: Address
 
-    """blockchain addresses associated with the social profile"""
-    userAssociatedAddresses: [Address!]
-    profileName: String
-    profileTokenId: String
-    profileTokenIdHex: String
-    profileTokenAddress: String
-    profileCreatedAtBlockTimestamp: Time
-    profileCreatedAtBlockNumber: Int
-    profileLastUpdatedAtBlockTimestamp: Time
-    profileLastUpdatedAtBlockNumber: Int
-    profileTokenUri: String
-    isDefault: Boolean
+  """blockchain addresses associated with the social profile"""
+  userAssociatedAddresses: [Address!]
+  profileName: String
+  profileTokenId: String
+  profileTokenIdHex: String
+  profileTokenAddress: String
+  profileCreatedAtBlockTimestamp: Time
+  profileCreatedAtBlockNumber: Int
+  profileLastUpdatedAtBlockTimestamp: Time
+  profileLastUpdatedAtBlockNumber: Int
+  profileTokenUri: String
+  isDefault: Boolean
 
-    """
-    Blockchain address, ENS domain name, social identity such as Farcaster (for
-    Farcaster use 'fc_fid:' prefix followed by the Farcaster user ID like
-    fc_fid:5650, or use 'fc_fname:' prefix followed by the Farcaster user ID like
-    'fc_fname:vbuterin') or Lens (e.g. 'stani.lens)
-    """
-    identity: Identity
-    followerTokenAddress: Address
-    followingCount: Int
-    followerCount: Int
-    followings(input: SocialFollowingNestedInput): SocialFollowingOutput
-    followers(input: SocialFollowerNestedInput): SocialFollowerOutput
-    profileBio: String
-    profileDisplayName: String
-    profileImage: String
-    profileUrl: String
-    fnames: [String]
-    handleTokenAddress: Address
-    handleTokenId: String
-    metadataURI: String
-    profileMetadata: Map
-    coverImageURI: String
-    twitterUserName: String
-    website: String
-    location: String
-    profileImageContentValue: Media
-    coverImageContentValue: Media
-    profileHandle: String
-    profileHandleNft: TokenNft
+  """
+  Blockchain address, ENS domain name, social identity such as Farcaster (for
+  Farcaster use 'fc_fid:' prefix followed by the Farcaster user ID like
+  fc_fid:5650, or use 'fc_fname:' prefix followed by the Farcaster user ID like
+  'fc_fname:vbuterin') or Lens (e.g. 'stani.lens)
+  """
+  identity: Identity
+  isFarcasterPowerUser: Boolean
+  followerTokenAddress: Address
+  followingCount: Int
+  followerCount: Int
+  followings(input: SocialFollowingNestedInput): SocialFollowingOutput
+  followers(input: SocialFollowerNestedInput): SocialFollowerOutput
+  profileBio: String
+  profileDisplayName: String
+  profileImage: String
+  profileUrl: String
+  fnames: [String]
+  handleTokenAddress: Address
+  handleTokenId: String
+  metadataURI: String
+  profileMetadata: Map
+  coverImageURI: String
+  twitterUserName: String
+  website: String
+  location: String
+  profileImageContentValue: Media
+  coverImageContentValue: Media
+  profileHandle: String
+  updatedAt: Time
+  socialCapital: SocialCapital
+}
+
+type SocialCapital {
+  socialCapitalScoreRaw: String
+  socialCapitalScore: Float
+  socialCapitalRank: Int
+}
+
+type SocialCapitalValue {
+  hash: String
+  rawValue: String
+  formattedValue: Float
 }
 
 enum SocialDappName {
-    farcaster
-    lens
+  farcaster
+  lens
 }
 
 input SocialDappName_Comparator_Exp {
-    _eq: SocialDappName
-    _in: [SocialDappName!]
+  _eq: SocialDappName
+  _in: [SocialDappName!]
 }
 
 enum SocialDappSlug {
-    farcaster_optimism
-    farcaster_goerli
-    lens_polygon
-    farcaster_v2_optimism
-    lens_v2_polygon
+  farcaster_optimism
+  farcaster_goerli
+  lens_polygon
+  farcaster_v2_optimism
+  farcaster_v3_optimism
+  lens_v2_polygon
 }
 
 input SocialDappSlug_Comparator_Exp {
-    _eq: SocialDappSlug
-    _in: [SocialDappSlug!]
+  _eq: SocialDappSlug
+  _in: [SocialDappSlug!]
 }
 
 input SocialFilter {
-    _and: [SocialFilter!]
-    _or: [SocialFilter!]
-    _nor: [SocialFilter!]
-    dappName: SocialDappName_Comparator_Exp
-    dappSlug: SocialDappSlug_Comparator_Exp
-    userId: String_Comparator_Exp
-    userAssociatedAddresses: Address_Comparator_Exp
-    profileName: Regex_String_Comparator_Exp
-    profileCreatedAtBlockTimestamp: Time_Comparator_Exp
-    isDefault: Boolean_Comparator_Exp
-    identity: Identity_Comparator_Exp
-    followerCount: Int_Comparator_Exp
-    followingCount: Int_Comparator_Exp
+  dappName: SocialDappName_Comparator_Exp
+  dappSlug: SocialDappSlug_Comparator_Exp
+  userId: String_Comparator_Exp
+  userAssociatedAddresses: Address_Comparator_Exp
+  profileName: Regex_String_Comparator_Exp
+  profileCreatedAtBlockTimestamp: Time_Comparator_Exp
+  isDefault: Boolean_Comparator_Exp
+  identity: Identity_Comparator_Exp
+  followerCount: Int_Comparator_Exp
+  followingCount: Int_Comparator_Exp
+  updatedAt: Time_Comparator_Exp
+  socialCapitalScore: Float_Comparator_Exp
+  socialCapitalRank: Int_Comparator_Exp
 }
 
 type SocialFollower {
-    id: ID
-    blockchain: EveryBlockchain
-    dappName: String
-    dappSlug: String
-    followingProfileId: String
-    followingAddress: Wallet
-    followerProfileId: String
-    followerAddress: Wallet
-    followerTokenId: String
-    blockNumber: Int
-    followerSince: Time
+  id: ID
+  blockchain: EveryBlockchain
+  dappName: String
+  dappSlug: String
+  followingProfileId: String
+  followingAddress: Wallet
+  followerProfileId: String
+  followerAddress: Wallet
+  followerTokenId: String
+  blockNumber: Int
+  followerSince: Time
 }
 
 input SocialFollowerFilter {
-    _and: [SocialFollowerFilter!]
-    _or: [SocialFollowerFilter!]
-    _nor: [SocialFollowerFilter!]
-    dappName: SocialDappName_Comparator_Exp
-    dappSlug: SocialDappSlug_Comparator_Exp
-    identity: Identity_Comparator_Exp
-    followerSince: Time_Comparator_Exp
-    blockNumber: Int_Comparator_Exp
-    followerProfileId: String_Comparator_Exp
-    followingProfileId: String_Comparator_Exp
+  dappName: SocialDappName_Comparator_Exp
+  dappSlug: SocialDappSlug_Comparator_Exp
+  identity: Identity_Comparator_Exp
+  followerSince: Time_Comparator_Exp
+  blockNumber: Int_Comparator_Exp
+  followerProfileId: String_Comparator_Exp
+  followingProfileId: String_Comparator_Exp
 }
 
 input SocialFollowerInput {
-    order: [SocialFollowerOrderBy!]
-    filter: SocialFollowerFilter!
-    blockchain: EveryBlockchain!
-    limit: Int
-    cursor: String
+  order: [SocialFollowerOrderBy!]
+  filter: SocialFollowerFilter!
+  blockchain: EveryBlockchain!
+  limit: Int
+  cursor: String
 }
 
 input SocialFollowerNestedInput {
-    order: [SocialFollowerOrderBy]
-    filter: SocialFollowerFilter
-    blockchain: EveryBlockchain
-    limit: Int
+  order: [SocialFollowerOrderBy]
+  filter: SocialFollowerFilter
+  blockchain: EveryBlockchain
+  limit: Int
 }
 
 input SocialFollowerOrderBy {
-    blockNumber: OrderBy
-    followerSince: OrderBy
+  blockNumber: OrderBy
+  followerSince: OrderBy
 }
 
 type SocialFollowerOutput {
-    pageInfo: PageInfo
-    Follower: [SocialFollower!]
+  pageInfo: PageInfo
+  Follower: [SocialFollower!]
 }
 
 type SocialFollowing {
-    id: ID
-    blockchain: EveryBlockchain
-    dappName: String
-    dappSlug: String
-    followingProfileId: String
-    followingAddress: Wallet
-    followerProfileId: String
-    followerAddress: Wallet
-    followerTokenId: String
-    blockNumber: Int
-    followingSince: Time
+  id: ID
+  blockchain: EveryBlockchain
+  dappName: String
+  dappSlug: String
+  followingProfileId: String
+  followingAddress: Wallet
+  followerProfileId: String
+  followerAddress: Wallet
+  followerTokenId: String
+  blockNumber: Int
+  followingSince: Time
 }
 
 input SocialFollowingFilter {
-    _and: [SocialFollowingFilter!]
-    _or: [SocialFollowingFilter!]
-    _nor: [SocialFollowingFilter!]
-    dappName: SocialDappName_Comparator_Exp
-    dappSlug: SocialDappSlug_Comparator_Exp
-    identity: Identity_Comparator_Exp
-    followingSince: Time_Comparator_Exp
-    blockNumber: Int_Comparator_Exp
-    followingProfileId: String_Comparator_Exp
-    followerProfileId: String_Comparator_Exp
+  dappName: SocialDappName_Comparator_Exp
+  dappSlug: SocialDappSlug_Comparator_Exp
+  identity: Identity_Comparator_Exp
+  followingSince: Time_Comparator_Exp
+  blockNumber: Int_Comparator_Exp
+  followingProfileId: String_Comparator_Exp
+  followerProfileId: String_Comparator_Exp
 }
 
 input SocialFollowingInput {
-    order: [SocialFollowingOrderBy!]
-    filter: SocialFollowingFilter!
-    blockchain: EveryBlockchain!
-    limit: Int
-    cursor: String
+  order: [SocialFollowingOrderBy!]
+  filter: SocialFollowingFilter!
+  blockchain: EveryBlockchain!
+  limit: Int
+  cursor: String
 }
 
 input SocialFollowingNestedInput {
-    order: [SocialFollowingOrderBy]
-    filter: SocialFollowingFilter
-    blockchain: EveryBlockchain
-    limit: Int
+  order: [SocialFollowingOrderBy]
+  filter: SocialFollowingFilter
+  blockchain: EveryBlockchain
+  limit: Int
 }
 
 input SocialFollowingOrderBy {
-    blockNumber: OrderBy
-    followingSince: OrderBy
+  blockNumber: OrderBy
+  followingSince: OrderBy
 }
 
 type SocialFollowingOutput {
-    pageInfo: PageInfo
-    Following: [SocialFollowing!]
+  pageInfo: PageInfo
+  Following: [SocialFollowing!]
 }
 
 input SocialOrderBy {
-    profileCreatedAtBlockTimestamp: OrderBy
-    followerCount: OrderBy
-    followingCount: OrderBy
+  profileCreatedAtBlockTimestamp: OrderBy
+  followerCount: OrderBy
+  followingCount: OrderBy
+  updatedAt: OrderBy
+  socialCapitalScore: OrderBy
+  socialCapitalRank: OrderBy
 }
 
 input SocialsInput {
-    order: [SocialOrderBy!]
-    filter: SocialFilter!
-    blockchain: Blockchain!
-    limit: Int
-    cursor: String
+  order: [SocialOrderBy!]
+  filter: SocialFilter!
+  blockchain: Blockchain!
+  limit: Int
+  cursor: String
 }
 
 input SocialsNestedInput {
-    filter: SocialFilter
-    blockchain: Blockchain
-    limit: Int
+  filter: SocialFilter
+  blockchain: Blockchain
+  limit: Int
 }
 
 type SocialsOutput {
-    Social: [Social!]
-    pageInfo: PageInfo
+  Social: [Social!]
+  pageInfo: PageInfo
 }
 
 input String_Comparator_Exp {
-    _eq: String
-    _gt: String
-    _gte: String
-    _lt: String
-    _lte: String
-    _ne: String
-    _in: [String!]
-    _nin: [String!]
+  _eq: String
+  _gt: String
+  _gte: String
+  _lt: String
+  _lte: String
+  _ne: String
+  _in: [String!]
+  _nin: [String!]
+}
+
+input String_Eq_Comparator_Exp {
+  _eq: String
+}
+
+input String_Eq_In_Comparator_Exp {
+  _eq: String
+  _in: [String!]
 }
 
 scalar Time
 
 input Time_Comparator_Exp {
-    _eq: Time
-    _gt: Time
-    _gte: Time
-    _lt: Time
-    _lte: Time
-    _ne: Time
-    _in: [Time!]
-    _nin: [Time!]
+  _eq: Time
+  _gt: Time
+  _gte: Time
+  _lt: Time
+  _lte: Time
+  _ne: Time
+  _in: [Time!]
+  _nin: [Time!]
 }
 
 input Time_Range_Comparator_Exp {
-    _eq: Int
+  _eq: Int
+}
+
+enum TimeFrame {
+  one_hour
+  two_hours
+  eight_hours
+  one_day
+  two_days
+  seven_days
 }
 
 scalar TimeRange
 
 type Token {
-    """Airstack unique identifier for the contract"""
-    id: ID
+  """Airstack unique identifier for the contract"""
+  id: ID
 
-    """Smart contract address of the token"""
-    address: Address!
+  """Smart contract address of the token"""
+  address: Address!
 
-    """Unique identifier for the blockchain"""
-    chainId: String
+  """Unique identifier for the blockchain"""
+  chainId: String
 
-    """Blockchain where the token smart contract is deployed"""
-    blockchain: TokenBlockchain
+  """Blockchain where the token smart contract is deployed"""
+  blockchain: TokenBlockchain
 
-    """Name of the token, mirrored from the smart contract"""
-    name: String
+  """Name of the token, mirrored from the smart contract"""
+  name: String
 
-    """Symbol of the token, mirrored from the smart contract"""
-    symbol: String
+  """Symbol of the token, mirrored from the smart contract"""
+  symbol: String
 
-    """The owner of the token contract"""
-    owner: Wallet
+  """The owner of the token contract"""
+  owner: Wallet
 
-    """Token type: ERC20, ERC721, or ERC1155"""
-    type: TokenType
+  """Token type: ERC20, ERC721, or ERC1155"""
+  type: TokenType
 
-    """Amount of tokens in the protocol"""
-    totalSupply: String
+  """Amount of tokens in the protocol"""
+  totalSupply: String
 
-    """The number of decimal places this token uses, default to 18"""
-    decimals: Int
+  """The number of decimal places this token uses, default to 18"""
+  decimals: Int
 
-    """Logo image for the contract in various sizes (if available)"""
-    logo: LogoSizes
+  """Logo image for the contract in various sizes (if available)"""
+  logo: LogoSizes
 
-    """URI for the token's contract metadata"""
-    contractMetaDataURI: String
+  """URI for the token's contract metadata"""
+  contractMetaDataURI: String
 
-    """Token contract metadata object"""
-    contractMetaData: ContractMetadata
+  """Token contract metadata object"""
+  contractMetaData: ContractMetadata
 
-    """Token contract metadata as it appears inside the contract"""
-    rawContractMetaData: Map
+  """Token contract metadata as it appears inside the contract"""
+  rawContractMetaData: Map
 
-    """Base URI of the token contract"""
-    baseURI: String
+  """Base URI of the token contract"""
+  baseURI: String
 
-    """Timestamp of the token's most recent transfer"""
-    lastTransferTimestamp: Time
+  """Timestamp of the token's most recent transfer"""
+  lastTransferTimestamp: Time
 
-    """Block number of the token's most recent transfer"""
-    lastTransferBlock: Int
+  """Block number of the token's most recent transfer"""
+  lastTransferBlock: Int
 
-    """Transaction hash of the token's most recent transfer"""
-    lastTransferHash: String
+  """Transaction hash of the token's most recent transfer"""
+  lastTransferHash: String
 
-    """
-    Returns count of all NFT token attribute types and values for the given smart contract
-    """
-    tokenTraits: Map
+  """
+  Returns count of all NFT token attribute types and values for the given smart contract
+  """
+  tokenTraits: Map
 
-    """Nested Query - allows querying the tokenBalance information"""
-    tokenBalances(input: TokenBalancesNestedInput): [TokenBalance!]
+  """Nested Query - allows querying the tokenBalance information"""
+  tokenBalances(input: TokenBalancesNestedInput): [TokenBalance!]
 
-    """Nested Query - allows querying the tokenNFTs information"""
-    tokenNfts(input: TokenNftsNestedInput): [TokenNft!]
+  """Nested Query - allows querying the tokenNFTs information"""
+  tokenNfts(input: TokenNftsNestedInput): [TokenNft!]
 
-    """off-chain data for the token project"""
-    projectDetails: ProjectDetails
+  """off-chain data for the token project"""
+  projectDetails: ProjectDetails
 
-    """Indicates if the token is set to be spam - true or false"""
-    isSpam: Boolean
+  """Indicates if the token is set to be spam - true or false"""
+  isSpam: Boolean
 }
 
 type TokenBalance {
-    """Airstack unique identifier for the data point"""
-    id: ID!
+  """Airstack unique identifier for the data point"""
+  id: ID!
 
-    """Unique identifier for the blockchain"""
-    chainId: String!
+  """Unique identifier for the blockchain"""
+  chainId: String!
 
-    """Blockchain where the token smart contract is deployed"""
-    blockchain: TokenBlockchain
+  """Blockchain where the token smart contract is deployed"""
+  blockchain: TokenBlockchain
 
-    """Smart contract address of the token"""
-    tokenAddress: Address!
+  """Smart contract address of the token"""
+  tokenAddress: Address!
 
-    """Unique NFT token ID"""
-    tokenId: String
+  """Unique NFT token ID"""
+  tokenId: String
 
-    """
-    Nested Query allowing to retrieve address, domain names, social profiles of the owner
-    """
-    owner: Wallet!
+  """
+  Nested Query allowing to retrieve address, domain names, social profiles of the owner
+  """
+  owner: Wallet!
 
-    """Token amount the address currently holds"""
-    amount: String!
+  """Token amount the address currently holds"""
+  amount: String!
 
-    """Formatted token balance in decimals"""
-    formattedAmount: Float
+  """Formatted token balance in decimals"""
+  formattedAmount: Float
 
-    """Block number of the latest token balance change happened"""
-    lastUpdatedBlock: Int!
+  """Block number of the latest token balance change happened"""
+  lastUpdatedBlock: Int!
 
-    """Timestamp of the latest token balance change happened"""
-    lastUpdatedTimestamp: Time
+  """Timestamp of the latest token balance change happened"""
+  lastUpdatedTimestamp: Time
 
-    """Token type: ERC20, ERC721, or ERC1155"""
-    tokenType: TokenType
+  """Token type: ERC20, ERC721, or ERC1155"""
+  tokenType: TokenType
 
-    """Nested Query - allows retrieving token contract level data"""
-    token: Token
+  """Nested Query - allows retrieving token contract level data"""
+  token: Token
 
-    """
-    Nested Query - allows retrieving token NFT contract level data, such as images, traits, and so on
-    """
-    tokenNfts: TokenNft
+  """
+  Nested Query - allows retrieving token NFT contract level data, such as images, traits, and so on
+  """
+  tokenNfts: TokenNft
 
-    """Nested Query - allows retrieving token transfer history"""
-    tokenTransfers(input: TokenTransfersNestedInput): [TokenTransfer!]
+  """Nested Query - allows retrieving token transfer history"""
+  tokenTransfers(input: TokenTransfersNestedInput): [TokenTransfer!]
 }
 
 input TokenBalanceFilter {
-    _and: [TokenBalanceFilter!]
-    _or: [TokenBalanceFilter!]
-    _nor: [TokenBalanceFilter!]
-    tokenAddress: Address_Comparator_Exp
-    tokenId: String_Comparator_Exp
-    owner: Identity_Comparator_Exp
-    formattedAmount: Float_Comparator_Exp
-    lastUpdatedTimestamp: Time_Comparator_Exp
-    tokenType: TokenType_Comparator_Exp
+  tokenAddress: Address_Comparator_Exp
+  tokenId: String_Comparator_Exp
+  owner: Identity_Comparator_Exp
+  formattedAmount: Float_Comparator_Exp
+  lastUpdatedTimestamp: Time_Comparator_Exp
+  tokenType: TokenType_Comparator_Exp
 }
 
 input TokenBalanceOrderBy {
-    lastUpdatedTimestamp: OrderBy
+  lastUpdatedTimestamp: OrderBy
 }
 
 input TokenBalancesInput {
-    order: [TokenBalanceOrderBy!]
-    filter: TokenBalanceFilter!
-    blockchain: TokenBlockchain!
-    limit: Int
-    cursor: String
+  order: [TokenBalanceOrderBy!]
+  filter: TokenBalanceFilter!
+  blockchain: TokenBlockchain!
+  limit: Int
+  cursor: String
 }
 
 input TokenBalancesNestedInput {
-    order: [TokenBalanceOrderBy]
-    filter: TokenBalanceFilter
-    blockchain: TokenBlockchain
-    limit: Int
+  order: [TokenBalanceOrderBy]
+  filter: TokenBalanceFilter
+  blockchain: TokenBlockchain
+  limit: Int
 }
 
 type TokenBalancesOutput {
-    TokenBalance: [TokenBalance!]
-    pageInfo: PageInfo
+  TokenBalance: [TokenBalance!]
+  pageInfo: PageInfo
 }
 
 enum TokenBlockchain {
-    ethereum
-    polygon
-    base
+  ethereum
+  base
+  zora
+  gold
+  degen
 }
 
 input TokenFilter {
-    _and: [TokenFilter!]
-    _or: [TokenFilter!]
-    _nor: [TokenFilter!]
-    address: Address_Comparator_Exp
-    name: String_Comparator_Exp
-    symbol: String_Comparator_Exp
-    owner: Identity_Comparator_Exp
-    type: TokenType_Comparator_Exp
-    isSpam: Boolean_Comparator_Exp
-}
-
-input TokenInput {
-    address: Address!
-    blockchain: TokenBlockchain!
+  address: Address_Comparator_Exp
+  name: String_Comparator_Exp
+  symbol: String_Comparator_Exp
+  owner: Identity_Comparator_Exp
+  type: TokenType_Comparator_Exp
+  isSpam: Boolean_Comparator_Exp
 }
 
 type TokenNft {
-    """Airstack unique identifier for the NFT token"""
-    id: ID!
+  """Airstack unique identifier for the NFT token"""
+  id: ID!
 
-    """Smart contract address of the token"""
-    address: Address!
+  """Smart contract address of the token"""
+  address: Address!
 
-    """Unique NFT token ID"""
-    tokenId: String!
+  """Unique NFT token ID"""
+  tokenId: String!
 
-    """Blockchain where the token smart contract is deployed"""
-    blockchain: TokenBlockchain
+  """Blockchain where the token smart contract is deployed"""
+  blockchain: TokenBlockchain
 
-    """Unique identifier for the blockchain"""
-    chainId: String!
+  """Unique identifier for the blockchain"""
+  chainId: String!
 
-    """NFT Token type: ERC721, or ERC1155"""
-    type: TokenType
+  """NFT Token type: ERC721, or ERC1155"""
+  type: TokenType
 
-    """Amount of NFT tokens in the protocol"""
-    totalSupply: String
+  """Amount of NFT tokens in the protocol"""
+  totalSupply: String
 
-    """NFT token URI"""
-    tokenURI: String
+  """NFT token URI"""
+  tokenURI: String
 
-    """Content type of the NFT token (image, video, audio, etc.)"""
-    contentType: String
+  """Content type of the NFT token (image, video, audio, etc.)"""
+  contentType: String
 
-    """NFT Media - resized images, animation, videos, etc."""
-    contentValue: Media
+  """NFT Media - resized images, animation, videos, etc."""
+  contentValue: Media
 
-    """NFT token metadata and attributes"""
-    metaData: NftMetadata
+  """NFT token metadata and attributes"""
+  metaData: NftMetadata
 
-    """NFT token metadata, mirrored from the smart contract"""
-    rawMetaData: Map
+  """NFT token metadata, mirrored from the smart contract"""
+  rawMetaData: Map
 
-    """Transaction hash of the NFT token most recent transfer"""
-    lastTransferHash: String
+  """Transaction hash of the NFT token most recent transfer"""
+  lastTransferHash: String
 
-    """Block number of the NFT token most recent transfer"""
-    lastTransferBlock: Int
+  """Block number of the NFT token most recent transfer"""
+  lastTransferBlock: Int
 
-    """Timestamp of the NFT token most recent transfer"""
-    lastTransferTimestamp: Time
+  """Timestamp of the NFT token most recent transfer"""
+  lastTransferTimestamp: Time
 
-    """Nested Query - allows retrieving token contract level data"""
-    token: Token
+  """Nested Query - allows retrieving token contract level data"""
+  token: Token
 
-    """Nested Query - allows querying the tokenBalance information"""
-    tokenBalances(input: TokenBalancesNestedInput): [TokenBalance!]
+  """Nested Query - allows querying the tokenBalance information"""
+  tokenBalances(input: TokenBalancesNestedInput): [TokenBalance!]
 
-    """Nested Query - allows querying the tokenTransfer information"""
-    tokenTransfers(input: TokenTransfersNestedInput): [TokenTransfer!]
+  """Nested Query - allows querying the tokenTransfer information"""
+  tokenTransfers(input: TokenTransfersNestedInput): [TokenTransfer!]
 
-    """Nested Query - allows querying the erc6551 account"""
-    erc6551Accounts(input: AccountsNestedInput): [Account!]
+  """Nested Query - allows querying the erc6551 account"""
+  erc6551Accounts(input: AccountsNestedInput): [Account!]
 }
 
 input TokenNftFilter {
-    _and: [TokenNftFilter!]
-    _or: [TokenNftFilter!]
-    _nor: [TokenNftFilter!]
-    address: Address_Comparator_Exp
-    tokenId: String_Comparator_Exp
-    metaData: NftMetadataFilter
-}
-
-input TokenNftInput {
-    address: Address!
-    tokenId: String!
-    blockchain: TokenBlockchain!
+  address: Address_Comparator_Exp
+  tokenId: String_Comparator_Exp
+  metaData: NftMetadataFilter
 }
 
 input TokenNftOrderBy {
-    tokenId: OrderBy
+  tokenId: OrderBy
 }
 
 input TokenNftsInput {
-    order: [TokenNftOrderBy!]
-    filter: TokenNftFilter!
-    blockchain: TokenBlockchain!
-    limit: Int
-    cursor: String
+  order: [TokenNftOrderBy!]
+  filter: TokenNftFilter!
+  blockchain: TokenBlockchain!
+  limit: Int
+  cursor: String
 }
 
 input TokenNftsNestedInput {
-    order: [TokenNftOrderBy]
-    filter: TokenNftFilter
-    blockchain: TokenBlockchain
-    limit: Int
+  order: [TokenNftOrderBy]
+  filter: TokenNftFilter
+  blockchain: TokenBlockchain
+  limit: Int
 }
 
 type TokenNftsOutput {
-    TokenNft: [TokenNft!]
-    pageInfo: PageInfo
-}
-
-input TokenOrderBy {
-    name: OrderBy
-    symbol: OrderBy
-    type: OrderBy
+  TokenNft: [TokenNft!]
+  pageInfo: PageInfo
 }
 
 input TokensInput {
-    order: [TokenOrderBy!]
-    filter: TokenFilter!
-    blockchain: TokenBlockchain!
-    limit: Int
-    cursor: String
+  filter: TokenFilter!
+  blockchain: TokenBlockchain!
+  limit: Int
+  cursor: String
 }
 
 type TokensOutput {
-    Token: [Token!]
-    pageInfo: PageInfo
+  Token: [Token!]
+  pageInfo: PageInfo
 }
 
 type TokenTransfer {
-    """Airstack unique identifier for the data point"""
-    id: ID
+  """Airstack unique identifier for the data point"""
+  id: ID
 
-    """Unique identifier for the blockchain"""
-    chainId: String
+  """Unique identifier for the blockchain"""
+  chainId: String
 
-    """Blockchain where the token transfer took place"""
-    blockchain: TokenBlockchain
+  """Blockchain where the token transfer took place"""
+  blockchain: TokenBlockchain
 
-    """
-    Nested query - sender wallet related information, including address, domains,
-    social profile, other token balances, and transfer history
-    """
-    from: Wallet
+  """
+  Nested query - sender wallet related information, including address, domains,
+  social profile, other token balances, and transfer history
+  """
+  from: Wallet
 
-    """
-    Nested query - recipient wallet related information, including address,
-    domains, social profile, other token balances, and transfer history
-    """
-    to: Wallet
+  """
+  Nested query - recipient wallet related information, including address,
+  domains, social profile, other token balances, and transfer history
+  """
+  to: Wallet
 
-    """Type of the token transfer"""
-    type: String
+  """Type of the token transfer"""
+  type: TokenTransferType
 
-    """Transferred token smart contract address"""
-    tokenAddress: Address
+  """Transferred token smart contract address"""
+  tokenAddress: Address
 
-    """
-    Nested query - operator wallet (if the transaction was facilitated via smart
-    contract) related information, including address, domains, social profile,
-    other token balances, and transfer history
-    """
-    operator: Wallet
+  """
+  Nested query - operator wallet (if the transaction was facilitated via smart
+  contract) related information, including address, domains, social profile,
+  other token balances, and transfer history
+  """
+  operator: Wallet
 
-    """Token amount in the transfer"""
-    amount: String
+  """Token amount in the transfer"""
+  amount: String
 
-    """Formatted transfer amount in decimals"""
-    formattedAmount: Float
+  """Formatted transfer amount in decimals"""
+  formattedAmount: Float
 
-    """Unique NFT token ID"""
-    tokenId: String
+  """Unique NFT token ID"""
+  tokenId: String
 
-    """
-    Token amounts in the transfer, if applicable. This mostly occurs in ERC1155 batch transfers
-    """
-    amounts: [String!]
+  """
+  Token amounts in the transfer, if applicable. This mostly occurs in ERC1155 batch transfers
+  """
+  amounts: [String!]
 
-    """Unique NFT token IDs if multiple NFTs were a part of the transfer"""
-    tokenIds: [String!]
+  """Unique NFT token IDs if multiple NFTs were a part of the transfer"""
+  tokenIds: [String!]
 
-    """Token type: ERC20, ERC721, or ERC1155"""
-    tokenType: TokenType
+  """Token type: ERC20, ERC721, or ERC1155"""
+  tokenType: TokenType
 
-    """Token transfer transction hash"""
-    transactionHash: String!
+  """Token transfer transction hash"""
+  transactionHash: String!
 
-    """Block timestamp of the token transfer"""
-    blockTimestamp: Time
+  """Block timestamp of the token transfer"""
+  blockTimestamp: Time
 
-    """Block number of the token transfer"""
-    blockNumber: Int
+  """Block number of the token transfer"""
+  blockNumber: Int
 
-    """
-    Nested Query - allows retrieving token Token NFT level data, such as images,
-    traits, and so on for each unique NFT in the transfer
-    """
-    tokenNft: TokenNft
+  """
+  Nested Query - allows retrieving token Token NFT level data, such as images,
+  traits, and so on for each unique NFT in the transfer
+  """
+  tokenNft: TokenNft
 
-    """Nested Query - allows retrieving token contract level data"""
-    token: Token
+  """Nested Query - allows retrieving token contract level data"""
+  token: Token
 }
 
 input TokenTransferFilter {
-    _and: [TokenTransferFilter!]
-    _or: [TokenTransferFilter!]
-    _nor: [TokenTransferFilter!]
-    from: Identity_Comparator_Exp
-    to: Identity_Comparator_Exp
-    tokenAddress: Address_Comparator_Exp
-    operator: Identity_Comparator_Exp
-    formattedAmount: Float_Comparator_Exp
-    tokenId: String_Comparator_Exp
-    tokenType: TokenType_Comparator_Exp
-    transactionHash: String_Comparator_Exp
-    blockTimestamp: Time_Comparator_Exp
-}
-
-input TokenTransferInput {
-    blockchain: TokenBlockchain!
-    transactionHash: String!
+  from: Identity_Comparator_Exp
+  to: Identity_Comparator_Exp
+  type: TokenTransferType_Comparator_Exp
+  tokenAddress: Address_Comparator_Exp
+  operator: Identity_Comparator_Exp
+  formattedAmount: Float_Comparator_Exp
+  tokenId: String_Comparator_Exp
+  tokenType: TokenType_Comparator_Exp
+  transactionHash: String_Comparator_Exp
+  blockTimestamp: Time_Comparator_Exp
 }
 
 input TokenTransferOrderBy {
-    blockTimestamp: OrderBy
+  blockTimestamp: OrderBy
 }
 
 input TokenTransfersInput {
-    order: [TokenTransferOrderBy!]
-    filter: TokenTransferFilter!
-    blockchain: TokenBlockchain!
-    limit: Int
-    cursor: String
+  order: [TokenTransferOrderBy!]
+  filter: TokenTransferFilter!
+  blockchain: TokenBlockchain!
+  limit: Int
+  cursor: String
 }
 
 input TokenTransfersNestedInput {
-    order: [TokenTransferOrderBy]
-    filter: TokenTransferFilter
-    blockchain: TokenBlockchain
-    limit: Int
+  order: [TokenTransferOrderBy]
+  filter: TokenTransferFilter
+  blockchain: TokenBlockchain
+  limit: Int
 }
 
 type TokenTransfersOutput {
-    TokenTransfer: [TokenTransfer!]
-    pageInfo: PageInfo
+  TokenTransfer: [TokenTransfer!]
+  pageInfo: PageInfo
+}
+
+enum TokenTransferType {
+  MINT
+  BURN
+  TRANSFER
+}
+
+input TokenTransferType_Comparator_Exp {
+  _eq: TokenTransferType
+  _in: [TokenTransferType!]
 }
 
 enum TokenType {
-    ERC1155
-    ERC721
-    ERC20
+  ERC1155
+  ERC721
+  ERC20
 }
 
 input TokenType_Comparator_Exp {
-    _eq: TokenType
-    _in: [TokenType!]
+  _eq: TokenType
+  _in: [TokenType!]
+}
+
+input Trending_Comparator_Exp {
+  _eq: Address
+  _in: [Address!]
+}
+
+enum TrendingBlockchain {
+  base
+  degen
+}
+
+type TrendingCast {
+  id: String
+  hash: String
+  fid: Int
+  rootParentUrl: String
+  criteriaCount: Float
+  socialCapitalValueFormatted: Float
+  socialCapitalValueRaw: String
+  cast: FarcasterCast
+  criteria: String
+  timeFrom: Time
+  timeTo: Time
+  channel: FarcasterChannel
+}
+
+input TrendingCast_Int_Comparator_Exp {
+  _eq: Int
+}
+
+input TrendingCastFilter {
+  fid: TrendingCast_Int_Comparator_Exp
+  rootParentUrl: String_Eq_Comparator_Exp
+}
+
+enum TrendingCastsCriteria {
+  social_capital_value
+  likes
+  recasts
+  replies
+  likes_recasts_replies
+}
+
+input TrendingCastsInput {
+  filter: TrendingCastFilter
+  timeFrame: TrendingCastTimeFrame!
+  blockchain: EveryBlockchain!
+  criteria: TrendingCastsCriteria!
+  limit: Int
+  cursor: String
+}
+
+type TrendingCastsOutput {
+  TrendingCast: [TrendingCast!]
+  pageInfo: PageInfo
+}
+
+enum TrendingCastTimeFrame {
+  one_hour
+  two_hours
+  four_hours
+  eight_hours
+  twelve_hours
+  one_day
+  two_days
+  seven_days
+}
+
+input TrendingFilter {
+  address: Trending_Comparator_Exp
+}
+
+type TrendingMint {
+  id: String
+  blockchain: String
+  chainId: String
+  address: String
+  criteriaCount: Int
+  token: Token
+  criteria: String
+  audience: String
+  timeFrom: Time
+  timeTo: Time
+  erc1155TokenID: String
+}
+
+enum TrendingMintsCriteria {
+  unique_wallets
+  total_mints
+}
+
+input TrendingMintsInput {
+  timeFrame: TimeFrame!
+  audience: Audience!
+  blockchain: TrendingBlockchain!
+  filter: TrendingFilter
+  criteria: TrendingMintsCriteria!
+  limit: Int
+  cursor: String
+}
+
+type TrendingMintsOutput {
+  TrendingMint: [TrendingMint!]
+  pageInfo: PageInfo
+}
+
+type TrendingSwap {
+  id: String
+  blockchain: String
+  chainId: String
+  address: String
+  token: Token
+  criteria: String
+  timeFrom: Time
+  timeTo: Time
+  buyTransactionCount: Int
+  sellTransactionCount: Int
+  totalTransactionCount: Int
+  buyVolume: Float
+  sellVolume: Float
+  totalVolume: Float
+  uniqueBuyWallets: Int
+  uniqueSellWallets: Int
+  totalUniqueWallets: Int
+}
+
+enum TrendingSwapsBlockchain {
+  base
+  ethereum
+}
+
+enum TrendingSwapsCriteria {
+  buy_transaction_count
+  sell_transaction_count
+  total_transaction_count
+  buy_volume
+  sell_volume
+  total_volume
+  unique_buy_wallets
+  unique_sell_wallets
+  total_unique_wallets
+}
+
+input TrendingSwapsFilter {
+  address: Trending_Comparator_Exp
+}
+
+input TrendingSwapsInput {
+  timeFrame: TimeFrame!
+  blockchain: TrendingSwapsBlockchain!
+  filter: TrendingSwapsFilter
+  criteria: TrendingSwapsCriteria!
+  limit: Int
+  cursor: String
+}
+
+type TrendingSwapsOutput {
+  TrendingSwap: [TrendingSwap!]
+  pageInfo: PageInfo
+}
+
+type TrendingToken {
+  id: String
+  blockchain: String
+  chainId: String
+  address: String
+  criteriaCount: Int
+  token: Token
+  criteria: String
+  audience: String
+  timeFrom: Time
+  timeTo: Time
+  uniqueHolders: Int
+}
+
+enum TrendingTokensCriteria {
+  unique_wallets
+  total_transfers
+  unique_holders
+}
+
+input TrendingTokensFilter {
+  address: Trending_Comparator_Exp
+}
+
+input TrendingTokensInput {
+  swappable: Boolean_Comparator_Exp
+  transferType: TrendingTokensTransferType!
+  timeFrame: TimeFrame!
+  audience: Audience!
+  blockchain: TrendingBlockchain!
+  filter: TrendingTokensFilter
+  criteria: TrendingTokensCriteria!
+  limit: Int
+  cursor: String
+}
+
+type TrendingTokensOutput {
+  TrendingToken: [TrendingToken!]
+  pageInfo: PageInfo
+}
+
+enum TrendingTokensTransferType {
+  all
+  self_initiated
 }
 
 type VideoVariants {
-    original: String
+  original: String
 }
 
 type Wallet {
-    """
-    Blockchain address, ENS domain name, social identity such as Farcaster (for
-    Farcaster use 'fc_fid:' prefix followed by the Farcaster user ID like
-    fc_fid:5650, or use 'fc_fname:' prefix followed by the Farcaster user ID like
-    'fc_fname:vbuterin') or Lens (e.g. 'stani.lens)
-    """
-    identity: Identity!
+  """
+  Blockchain address, ENS domain name, social identity such as Farcaster (for
+  Farcaster use 'fc_fid:' prefix followed by the Farcaster user ID like
+  fc_fid:5650, or use 'fc_fname:' prefix followed by the Farcaster user ID like
+  'fc_fname:vbuterin') or Lens (e.g. 'stani.lens)
+  """
+  identity: Identity!
 
-    """Blockchain associated with the provided identity"""
-    blockchain: TokenBlockchain
+  """Blockchain associated with the provided identity"""
+  blockchain: TokenBlockchain
 
-    """Returns addresses associated with the identity input"""
-    addresses: [Address!]
+  """Returns addresses associated with the identity input"""
+  addresses: [Address!]
 
-    """Nested query - allows returning primary domains, if applicable"""
-    primaryDomain: Domain
+  """Nested query - allows returning primary domains, if applicable"""
+  primaryDomain: Domain
 
-    """Nested query - allows querying domains owned by the address"""
-    domains(input: DomainsNestedInput): [Domain!]
+  """Nested query - allows querying domains owned by the address"""
+  domains(input: DomainsNestedInput): [Domain!]
 
-    """Returns social profile information related to the address"""
-    socials(input: SocialsNestedInput): [Social!]
+  """Returns social profile information related to the address"""
+  socials(input: SocialsNestedInput): [Social!]
 
-    """
-    Nested query - allows returning token transfers and related information
-    """
-    tokenTransfers(input: TokenTransfersNestedInput): [TokenTransfer!]
+  """
+  Nested query - allows returning token transfers and related information
+  """
+  tokenTransfers(input: TokenTransfersNestedInput): [TokenTransfer!]
 
-    """Nested query - allows returning token balances"""
-    tokenBalances(input: TokenBalancesNestedInput): [TokenBalance!]
+  """Nested query - allows returning token balances"""
+  tokenBalances(input: TokenBalancesNestedInput): [TokenBalance!]
 
-    """Returns Poaps owned by the address"""
-    poaps(input: PoapsNestedInput): [Poap!]
+  """Returns Poaps owned by the address"""
+  poaps(input: PoapsNestedInput): [Poap!]
 
-    """Nested query - allows querying the XMTP enabled addresses"""
-    xmtp(input: XMTPsNestedInput): [XMTP!]
+  """Nested query - allows querying the XMTP enabled addresses"""
+  xmtp(input: XMTPsNestedInput): [XMTP!]
 
-    """Represent On-chain smart-contract accounts"""
-    accounts(input: AccountsNestedInput): [Account!]
-    socialFollowings(input: SocialFollowingNestedInput): SocialFollowingOutput
-    socialFollowers(input: SocialFollowerNestedInput): SocialFollowerOutput
+  """Represent On-chain smart-contract accounts"""
+  accounts(input: AccountsNestedInput): [Account!]
+  socialFollowings(input: SocialFollowingNestedInput): SocialFollowingOutput
+  socialFollowers(input: SocialFollowerNestedInput): SocialFollowerOutput
 }
 
 input WalletInput {
-    identity: Identity!
-    blockchain: TokenBlockchain!
+  identity: Identity!
+  blockchain: TokenBlockchain!
 }
 
 type XMTP {
-    """Airstack unique identifier for the data point"""
-    id: ID
-    blockchain: EveryBlockchain
-    owner: Wallet
-    isXMTPEnabled: Boolean
+  """Airstack unique identifier for the data point"""
+  id: ID
+  blockchain: EveryBlockchain
+  owner: Wallet
+  isXMTPEnabled: Boolean
 }
 
 input XMTPFilter {
-    _and: [XMTPFilter!]
-    _or: [XMTPFilter!]
-    _nor: [XMTPFilter!]
-    owner: Identity_Comparator_Exp
+  owner: Identity_Comparator_Exp
 }
 
 input XMTPsInput {
-    blockchain: EveryBlockchain!
-    filter: XMTPFilter!
-    limit: Int
-    cursor: String
+  blockchain: EveryBlockchain!
+  filter: XMTPFilter!
+  limit: Int
+  cursor: String
 }
 
 input XMTPsNestedInput {
-    blockchain: EveryBlockchain
-    filter: XMTPFilter
-    limit: Int
+  blockchain: EveryBlockchain
+  filter: XMTPFilter
+  limit: Int
 }
 
 type XMTPsOutput {
-    XMTP: [XMTP!]
-    pageInfo: PageInfo
+  XMTP: [XMTP!]
+  pageInfo: PageInfo
 }
 

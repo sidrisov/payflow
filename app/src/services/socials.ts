@@ -1,4 +1,4 @@
-import { MetaType, IdentityType, SocialInfoType, InsightsType } from '../types/ProfleType';
+import { MetaType, ContactType, SocialInfoType, InsightsType } from '../types/ProfleType';
 import { fetchQuery } from '@airstack/airstack-react';
 import { Address, isAddress } from 'viem';
 import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';
@@ -32,22 +32,22 @@ const FARCASTER_SCORE = 4;
 const LENS_SCORE = 4;
 const XMTP_SCORE = 2;
 
-export function sortBySocialScore(identities: IdentityType[]): IdentityType[] {
+export function sortBySocialScore(identities: ContactType[]): ContactType[] {
   return identities.sort((left, right) => calculateScore(right) - calculateScore(left));
 }
 
-function calculateScore(identity: IdentityType): number {
+function calculateScore(identity: ContactType): number {
   let score = 0;
-  if (identity.meta) {
-    if (identity.meta.ens) {
+  if (identity.data.meta) {
+    if (identity.data.meta.ens) {
       score += ENS_SCORE;
     }
 
-    if (identity.meta.xmtp) {
+    if (identity.data.meta.xmtp) {
       score += XMTP_SCORE;
     }
 
-    identity.meta.socials?.forEach((s) => {
+    identity.data.meta.socials?.forEach((s) => {
       if (s.dappName === 'farcaster') {
         score += FARCASTER_SCORE;
       }
@@ -57,33 +57,33 @@ function calculateScore(identity: IdentityType): number {
       }
     });
 
-    if (identity.meta.insights) {
-      if (identity.meta.insights.farcasterFollow === 'following') {
+    if (identity.data.meta.insights) {
+      if (identity.data.meta.insights.farcasterFollow === 'following') {
         score += FOLLOWING;
       }
 
-      if (identity.meta.insights.farcasterFollow === 'mutual') {
+      if (identity.data.meta.insights.farcasterFollow === 'mutual') {
         score += FOLLOWING + FOLLOWER;
       }
 
-      if (identity.meta.insights.lensFollow === 'following') {
+      if (identity.data.meta.insights.lensFollow === 'following') {
         score += FOLLOWING;
       }
 
-      if (identity.meta.insights.lensFollow === 'mutual') {
+      if (identity.data.meta.insights.lensFollow === 'mutual') {
         score += FOLLOWING + FOLLOWER;
       }
 
-      if (identity.meta.insights.sentTxs > 0) {
-        score += TRANSACTED_BASE + identity.meta.insights.sentTxs * PER_TRANSACTION;
+      if (identity.data.meta.insights.sentTxs > 0) {
+        score += TRANSACTED_BASE + identity.data.meta.insights.sentTxs * PER_TRANSACTION;
       }
     }
   }
   return score;
 }
 
-export async function searchIdentity(searchValue: string, me?: string): Promise<IdentityType[]> {
-  let foundProfiles: IdentityType[] = [];
+export async function searchIdentity(searchValue: string, me?: string): Promise<ContactType[]> {
+  let foundProfiles: ContactType[] = [];
 
   if (!searchValue.includes(':') && !searchValue.includes('.') && !isAddress(searchValue)) {
     const profiles = await searchByListOfAddressesOrUsernames([searchValue]);
@@ -130,7 +130,7 @@ export async function searchIdentity(searchValue: string, me?: string): Promise<
         dataInBatch.Socials.Social &&
         dataInBatch.Socials.Social.length > 0
       ) {
-        let userAssociatedIdentities: IdentityType[] = [];
+        let userAssociatedIdentities: ContactType[] = [];
 
         dataInBatch.Socials.Social.forEach((social: any) => {
           console.log(social);
@@ -147,15 +147,15 @@ export async function searchIdentity(searchValue: string, me?: string): Promise<
 
         console.log('userAssociatedIdentities', userAssociatedIdentities);
 
-        const addresses = userAssociatedIdentities.map((identity) => identity.address);
+        const addresses = userAssociatedIdentities.map((identity) => identity.data.address);
 
         // TODO, make meta not nullable
         const profiles = await searchByListOfAddressesOrUsernames(addresses as string[]);
         userAssociatedIdentities.forEach((identity) => {
           const profile = profiles.find(
-            (p) => p.identity.toLowerCase() === identity.address.toLowerCase()
+            (p) => p.identity.toLowerCase() === identity.data.address.toLowerCase()
           );
-          identity.profile = profile;
+          identity.data.profile = profile;
           foundProfiles.push(identity);
         });
       }
@@ -226,8 +226,8 @@ export async function searchIdentity(searchValue: string, me?: string): Promise<
       const identity = convertSocialResults(data.Wallet as unknown as Wallet);
 
       if (identity) {
-        const profile = await getProfileByAddressOrName(identity.address);
-        identity.profile = profile;
+        const profile = await getProfileByAddressOrName(identity.data.address);
+        identity.data.profile = profile;
         foundProfiles.push(identity);
       }
     }
@@ -238,7 +238,7 @@ export async function searchIdentity(searchValue: string, me?: string): Promise<
   return foundProfiles;
 }
 
-export function convertSocialResults(wallet: Wallet): IdentityType {
+export function convertSocialResults(wallet: Wallet): ContactType {
   console.debug('Converting wallet info: ', wallet);
 
   let meta: MetaType = {} as MetaType;
@@ -318,7 +318,7 @@ export function convertSocialResults(wallet: Wallet): IdentityType {
     meta.insights.sentTxs = (meta.insights.sentTxs ?? 0) + wallet.baseTransfers.length;
   }
 
-  return { meta, address: wallet.addresses?.[0] ?? '0x' } as IdentityType;
+  return { data: { meta, address: wallet.addresses?.[0] ?? '0x' } } as ContactType;
 }
 
 export function normalizeUsername(username: string) {

@@ -93,7 +93,7 @@ public class FramesController {
 		val casterFid = validateMessage.action().cast().fid();
 
 		// clear cache only on connect
-		socialGraphService.cleanCache("fc_fid:".concat(String.valueOf(clickedFid)), null);
+		socialGraphService.cleanCache("fc_fid:".concat(String.valueOf(clickedFid)));
 
 		val addresses = identityService.getFidAddresses(clickedFid);
 		val profiles = identityService.getFidProfiles(addresses);
@@ -361,7 +361,7 @@ public class FramesController {
 					val giftedContact = frameService.giftSpin(clickedProfile);
 					giftImage = framesServiceUrl.concat(String.format("/images/profile/%s/gift" +
 									"/%s/image.png",
-							clickedProfile.getIdentity(), giftedContact.address()));
+							clickedProfile.getIdentity(), giftedContact.data().address()));
 					val giftPostUrl =
 							apiServiceUrl.concat(String.format(CONNECT_IDENTITY_ACTIONS_GIFT,
 									clickedProfile.getIdentity()));

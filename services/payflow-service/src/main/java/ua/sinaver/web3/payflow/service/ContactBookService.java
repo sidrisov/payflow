@@ -14,9 +14,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import ua.sinaver.web3.payflow.data.Contact;
 import ua.sinaver.web3.payflow.data.User;
-import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 import ua.sinaver.web3.payflow.message.ContactMessage;
-import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.repository.ContactRepository;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
@@ -27,7 +25,6 @@ import java.time.Duration;
 import java.time.Period;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,8 +42,8 @@ public class ContactBookService implements IContactBookService {
 	@Value("${payflow.favourites.limit:0}")
 	private int defaultFavouriteContactLimit;
 
-	@Value("${payflow.contacts.eth-denver.enabled:false}")
-	private boolean ethDenverContactsEnabled;
+	@Value("${payflow.contacts.farcon.enabled:false}")
+	private boolean farConContactsEnabled;
 	@Autowired
 	private ContactRepository contactRepository;
 
@@ -74,59 +71,32 @@ public class ContactBookService implements IContactBookService {
 	@Value("${payflow.invitation.whitelisted.default.users}")
 	private Set<String> whitelistedUsers;
 
-	private Map<String, Wallet> ethDenverParticipants = new HashMap<>();
+	private List<String> farConParticipants = new ArrayList<>();
 
 	@Override
 	@CacheEvict(value = CONTACTS_CACHE_NAME, key = "#user.identity")
 	public void update(ContactMessage contactMessage, User user) {
-		var contact = contactRepository.findByUserAndIdentity(user, contactMessage.address());
+		var contact = contactRepository.findByUserAndIdentity(user,
+				contactMessage.data().address());
 		if (contact == null) {
-			contact = new Contact(user, contactMessage.address());
+			contact = new Contact(user, contactMessage.data().address());
 		}
 
-		var availableFavouriteLimit = user.getUserAllowance().getFavouriteContactLimit();
+		contact.setAddressChecked(contactMessage.tags().contains("favourite_addresses"));
+		contact.setProfileChecked(contactMessage.tags().contains("favourite_profiles"));
 
-		if (availableFavouriteLimit == null) {
-			availableFavouriteLimit = defaultFavouriteContactLimit;
-		}
-
-		// update only fields passed
-		if (contactMessage.favouriteAddress() != null
-				&& contact.isAddressChecked() != contactMessage.favouriteAddress()) {
-			if (contactMessage.favouriteAddress()) {
-				if (availableFavouriteLimit == 0) {
-					log.error("Favourite limit reached for user {}: {}", user.getUsername(), availableFavouriteLimit);
-					throw new Error("Favourite limit reached");
-				}
-				contact.setAddressChecked(true);
-				availableFavouriteLimit--;
-			} else {
-				contact.setAddressChecked(false);
-				availableFavouriteLimit++;
-			}
-		}
-
-		if (contactMessage.favouriteProfile() != null
-				&& contact.isProfileChecked() != contactMessage.favouriteProfile()) {
-			if (contactMessage.favouriteProfile()) {
-				if (availableFavouriteLimit == 0) {
-					log.error("Favourite limit reached for user {}: {}", user.getUsername(), availableFavouriteLimit);
-					throw new Error("Favourite limit reached");
-				}
-				contact.setProfileChecked(true);
-				availableFavouriteLimit--;
-			} else {
-				contact.setProfileChecked(false);
-				availableFavouriteLimit++;
-			}
-		}
-
-		user.getUserAllowance().setFavouriteContactLimit(availableFavouriteLimit);
 		contactRepository.save(contact);
 	}
 
 	@Override
-	@Cacheable(value = CONTACTS_CACHE_NAME, key = "#user.identity", unless = "#result.isEmpty()")
+	@CacheEvict(cacheNames = CONTACTS_CACHE_NAME, key = "#user.identity")
+	public void cleanContactsCache(User user) {
+		log.debug("Evicting socials cache for {} key", user.getIdentity());
+	}
+
+	@Override
+	@Cacheable(value = CONTACTS_CACHE_NAME, key = "#user.identity", unless =
+			"#result.isEmpty()")
 	public List<ContactMessage> getAllContacts(User user) {
 		log.debug("VIRTUAL {} {} {} {}", Schedulers.DEFAULT_BOUNDED_ELASTIC_ON_VIRTUAL_THREADS,
 				Schedulers.DEFAULT_POOL_SIZE, Schedulers.DEFAULT_BOUNDED_ELASTIC_SIZE,
@@ -137,38 +107,72 @@ public class ContactBookService implements IContactBookService {
 
 		val contacts = contactRepository.findAllByUser(user)
 				.stream().limit(contactsLimitAdjusted).toList();
+		val alfaFrensContacts = alfaFrensService.fetchSubscribers(user.getIdentity());
+		log.debug("Fetched subs: {}", alfaFrensContacts);
 
-		val invited = filterByInvited(contacts.stream().map(Contact::getIdentity).toList());
+		val allContacts = Stream.of(
+						contacts.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(), "user-contacts")),
+						alfaFrensContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "alfafrens")),
+						contacts.stream().filter(Contact::isAddressChecked)
+								.map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(),
+										"favourite_addresses")),
+						contacts.stream().filter(Contact::isProfileChecked)
+								.map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(),
+										"favourite_profiles")),
+						farConParticipants.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity,
+								"eth-denver-contacts"))
+				).flatMap(stream -> stream)
+				.collect(Collectors.groupingBy(
+						Map.Entry::getKey,
+						Collectors.mapping(Map.Entry::getValue, Collectors.toList())
+				));
+
+		log.debug("All contacts[{}]: {}", allContacts.size(), allContacts);
+
+		val invited = filterByInvited(allContacts.keySet().stream().toList());
 
 		try {
 			val contactMessages = Flux
-					.fromIterable(contacts)
+					.fromIterable(allContacts.keySet())
 					.flatMap(contact -> Mono.zip(
 											Mono.just(contact),
+											Mono.justOrEmpty(userRepository.findByIdentity(contact)).singleOptional(),
 											Mono.fromCallable(
-															() -> socialGraphService.getSocialMetadata(contact.getIdentity(),
-																	user.getIdentity()))
+															() -> socialGraphService.getSocialMetadata(contact))
 													.subscribeOn(Schedulers.boundedElastic())
 													.onErrorResume(exception -> {
-														log.error("Error fetching social graph for {} - " +
-																		"{}",
-																contact.getIdentity(),
+														log.error("Error fetching social graph for {} - {}",
+																contact,
 																exception.getMessage());
 														return Mono.empty();
 													}),
 											Mono.fromCallable(
-															() -> invited.contains(contact.getIdentity()))
+															() -> socialGraphService.getSocialInsights(contact,
+																	user.getIdentity()))
+													.subscribeOn(Schedulers.boundedElastic())
+													.onErrorResume(exception -> {
+														log.error("Error fetching social insights" +
+																		" for {} - {}",
+																contact,
+																exception.getMessage());
+														return Mono.empty();
+													}),
+											Mono.fromCallable(
+															() -> invited.contains(contact))
 													.onErrorResume(exception -> {
 														log.error("Error checking invitation status for user {} - {}",
-																contact.getIdentity(),
+																contact,
 																exception.getMessage());
 														return Mono.empty();
 													}))
-									.map(tuple -> ContactMessage.convert(
-											tuple.getT1(),
-											tuple.getT2(),
-											tuple.getT3(),
-											Collections.singletonList("user-contacts")))
+									.map(tuple ->
+											ContactMessage.convert(
+													tuple.getT1(),
+													tuple.getT2().orElse(null),
+													tuple.getT3(),
+													tuple.getT4(),
+													tuple.getT5(),
+													allContacts.get(contact)))
 							// TODO: fail fast, seems doesn't to work properly with threads
 					)
 					.timeout(contactsFetchTimeout, Mono.empty())
@@ -177,7 +181,7 @@ public class ContactBookService implements IContactBookService {
 
 			if (log.isTraceEnabled()) {
 				log.trace("Fetched {} contacts for {}: {}", contactMessages.size(), user.getUsername(),
-						contactMessages.stream().map(ContactMessage::address).toList());
+						contactMessages.stream().map(c -> c.data().address()).toList());
 			} else {
 				log.debug("Fetched {} contacts for {}", contactMessages.size(), user.getUsername());
 			}
@@ -186,17 +190,6 @@ public class ContactBookService implements IContactBookService {
 			log.error("Failed to fetch contacts", t);
 			return Collections.emptyList();
 		}
-	}
-
-	@Override
-	public List<IdentityMessage> fetchAlfaFrensSubscribers(String identity) {
-		val subscribers = alfaFrensService.fetchSubscribers(identity);
-		if (!subscribers.isEmpty()) {
-			val identities = identityService.getIdentitiesInfo(subscribers);
-			log.debug("Fetched subscribers social details: {} for identity: {} ", identities, identity);
-			return identities;
-		}
-		return Collections.emptyList();
 	}
 
 	@Scheduled(fixedRate = 60 * 1000)
@@ -239,31 +232,11 @@ public class ContactBookService implements IContactBookService {
 	}
 
 	@Override
-	public List<ContactMessage> getEthDenverParticipants(User user) {
-		if (!ethDenverContactsEnabled) {
-			return Collections.emptyList();
-		}
-
-		val profiles = userRepository.findByIdentityAsMapIn(ethDenverParticipants.keySet().stream().toList());
-		val invited = this.filterByInvited(
-				ethDenverParticipants.keySet().stream().toList());
-
-		return ethDenverParticipants.values().stream().map(wallet -> {
-			val identity = wallet.getIdentity();
-			val profile = profiles.get(identity);
-
-			return ContactMessage.convert(new Contact(profile, identity),
-					wallet, invited.contains(identity),
-					Collections.singletonList("eth-denver-contacts"));
-		}).collect(Collectors.toList());
-	}
-
-	@Override
 	public List<String> filterByInvited(List<String> addresses) {
 		log.debug("Whitelisted {}", whitelistedUsers);
 		var whitelistedAddresses = addresses.stream()
 				.filter(address -> whitelistedUsers.contains(address.toLowerCase())
-						|| ethDenverParticipants.containsKey(address.toLowerCase()))
+						|| farConParticipants.contains(address.toLowerCase()))
 				.toList();
 		log.debug("Whitelisted addresses {} {}", addresses, whitelistedUsers);
 
@@ -282,34 +255,26 @@ public class ContactBookService implements IContactBookService {
 	// ETH_DENVER_PARTICIPANTS_POAP_CACHE_NAME},
 	// beforeInvocation = true,
 	// allEntries = true)
-	public void preFetchEthDenverParticipants() {
-		if (!ethDenverContactsEnabled) {
+	public void preFetchFarConParticipants() {
+		if (!farConContactsEnabled) {
 			return;
 		}
 
 		if (log.isDebugEnabled()) {
-			log.debug("Fetching EthDenver participants list");
+			log.debug("Fetching FarCon participants list");
 		}
 
 		try {
-			// instead use single cache, where key is the contact list name, e.g.:
-			// {identity}-contacts, eth-denver-poap, eth-denver-stacked, etc
-			val ethDenverParticipantsStaked = socialGraphService.getEthDenverParticipantsStaked();
-			List<Wallet> ethDenverParticipantsPoap = Collections.emptyList();//socialGraphService
-			// .getEthDenverParticipantsPoap();
-			val ethDenverParticipants = Stream
-					.concat(ethDenverParticipantsStaked.stream(), ethDenverParticipantsPoap.stream())
-					.collect(Collectors.toMap(Wallet::getIdentity, Function.identity(),
-							(existing, replacement) -> existing));
+			val farConParticipants = socialGraphService.getAllTokenOwners("base", "0x43ad2d5bd48de6d20530a48b5c357e26459afb3c");
 
 			if (log.isDebugEnabled()) {
-				log.debug("Fetched EthDenver participants: {}",
-						log.isTraceEnabled() ? ethDenverParticipants : ethDenverParticipants.size());
+				log.debug("Fetched FarCon participants: {}",
+						log.isTraceEnabled() ? farConParticipants : farConParticipants.size());
 			}
 
-			this.ethDenverParticipants = ethDenverParticipants;
+			this.farConParticipants = farConParticipants;
 		} catch (Throwable t) {
-			log.error("Couldn't fetch EthDenver participants {}, {}", t.getMessage(),
+			log.error("Couldn't fetch FarCon participants {}, {}", t.getMessage(),
 					log.isTraceEnabled() ? t : null);
 		}
 	}

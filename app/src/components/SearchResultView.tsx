@@ -1,6 +1,6 @@
 import { Button, Stack, Typography } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
-import { IdentityType } from '../types/ProfleType';
+import { ContactType } from '../types/ProfleType';
 import { useNavigate } from 'react-router-dom';
 import { SearchIdentityListItem } from './SearchIdentityListItem';
 import {
@@ -21,17 +21,13 @@ function calculateMaxPages(totalNumber: number, pageSize: number) {
 
 export function SearchResultView({
   profileRedirect,
-  filterByFafourites = false,
-  insightsEnabled = true,
   closeStateCallback,
   selectIdentityCallback,
   updateIdentityCallback,
   identities
 }: {
-  filterByFafourites?: boolean;
   profileRedirect?: boolean;
-  insightsEnabled?: boolean;
-  identities: IdentityType[];
+  identities: ContactType[];
 } & CloseCallbackType &
   SelectIdentityCallbackType &
   UpdateIdentityCallbackType) {
@@ -40,29 +36,27 @@ export function SearchResultView({
   function SearchResultProfileListView({
     view,
     identities,
-    insightsEnabled
   }: {
     view: 'address' | 'profile';
-    identities: IdentityType[];
-    insightsEnabled: boolean;
+    identities: ContactType[];
   }) {
     const maxPages = calculateMaxPages(identities.length, pageSize);
     const [page, setPage] = useState<number>(1);
 
     const onIdentityClick =
       selectIdentityCallback || view === 'profile'
-        ? (identity: IdentityType) => {
+        ? (contact: ContactType) => {
             if (view === 'profile') {
-              if (identity.profile) {
+              if (contact.data.profile) {
                 if (profileRedirect) {
-                  navigate(`/${identity.profile.username}`);
+                  navigate(`/${contact.data.profile.username}`);
                 } else if (selectIdentityCallback) {
-                  selectIdentityCallback({ type: 'profile', identity: identity });
+                  selectIdentityCallback({ type: 'profile', identity: contact.data });
                 }
                 closeStateCallback();
               }
             } else if (selectIdentityCallback) {
-              selectIdentityCallback({ type: 'address', identity: identity });
+              selectIdentityCallback({ type: 'address', identity: contact.data });
               closeStateCallback();
             }
           }
@@ -80,10 +74,9 @@ export function SearchResultView({
             <Stack m={1} spacing={1} alignItems="center">
               {identities.slice(0, page * pageSize).map((identity) => (
                 <SearchIdentityListItem
-                  key={view === 'profile' ? identity.profile?.username : identity.address}
+                  key={view === 'profile' ? identity.data.profile?.username : identity.data.address}
                   view={view}
-                  insightsEnabled={insightsEnabled}
-                  identity={identity}
+                  contact={identity}
                   updateIdentityCallback={updateIdentityCallback}
                   {...(onIdentityClick ? { onClick: () => onIdentityClick?.(identity) } : {})}
                 />
@@ -116,17 +109,11 @@ export function SearchResultView({
     <>
       <SearchResultProfileListView
         view="profile"
-        insightsEnabled={insightsEnabled}
-        identities={identities.filter((identity) =>
-          filterByFafourites ? identity.favouriteProfile : true && identity.profile
-        )}
+        identities={identities.filter((identity) => identity.data.profile)}
       />
       <SearchResultProfileListView
         view="address"
-        insightsEnabled={insightsEnabled}
-        identities={identities.filter((identity) =>
-          filterByFafourites ? identity.favouriteAddress : true && identity.meta
-        )}
+        identities={identities.filter((identity) => identity.data.meta)}
       />
     </>
   );

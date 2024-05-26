@@ -41,7 +41,7 @@ export function FarcasterAccountsCard({
             indexes: null
           }
         });
-        setIdentities(sortBySocialScore(response.data));
+        setIdentities(sortBySocialScore(response.data).map((contact) => contact.data));
       } catch (error) {
         console.error(error);
       } finally {

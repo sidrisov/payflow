@@ -14,7 +14,7 @@ import {
 import { lightGreen, red } from '@mui/material/colors';
 import { formatUnits } from 'viem';
 import { IdentityType } from '../types/ProfleType';
-import { TxInfo, TxToken } from '../types/ActivityFetchResultType';
+import { TxInfo } from '../types/ActivityFetchResultType';
 import NetworkAvatar from './avatars/NetworkAvatar';
 import ProfileSectionButton from './buttons/ProfileSectionButton';
 import AddressSectionButton from './menu/AddressSectionButton';

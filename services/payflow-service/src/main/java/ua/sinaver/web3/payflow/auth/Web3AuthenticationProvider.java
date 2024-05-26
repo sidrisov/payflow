@@ -58,7 +58,7 @@ public class Web3AuthenticationProvider implements AuthenticationProvider {
 					siweMessage.address());
 			// find connected addresses for the siwf signer
 			ConnectedAddresses connectedAddresses =
-					socialGraphService.getIdentityConnectedAddresses(siweMessage.address());
+					socialGraphService.getIdentityVerifiedAddresses(siweMessage.address());
 
 			if (connectedAddresses == null) {
 				log.error("Failed to fetch verifications for {}",

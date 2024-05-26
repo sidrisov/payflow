@@ -17,7 +17,7 @@ import {
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { ArrowBack, Clear, Menu } from '@mui/icons-material';
 import { useContext, useEffect, useMemo, useState } from 'react';
-import { IdentityType, SelectedIdentityType } from '../../types/ProfleType';
+import { ContactType, SelectedIdentityType } from '../../types/ProfleType';
 
 import { Address } from 'viem';
 import { searchIdentity, sortBySocialScore } from '../../services/socials';
@@ -37,17 +37,7 @@ export type SelectIdentityCallbackType = {
 };
 
 export type UpdateIdentityCallbackType = {
-  updateIdentityCallback?: ({
-    identity,
-    view,
-    favourite,
-    invited
-  }: {
-    identity: IdentityType;
-    view: 'address' | 'profile';
-    favourite?: boolean;
-    invited?: boolean;
-  }) => void;
+  updateIdentityCallback?: ({ contact }: { contact: ContactType }) => void;
 };
 
 export type SearchIdentityDialogProps = DialogProps &
@@ -81,7 +71,7 @@ export default function SearchIdentityDialog({
     maxWait: 5000
   });
 
-  const [foundIdentities, setFoundIdentities] = useState<IdentityType[]>([]);
+  const [foundIdentities, setFoundIdentities] = useState<ContactType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
   const [walletMenuAnchorEl, setWalletMenuAnchorEl] = useState<null | HTMLElement>(null);
@@ -91,7 +81,7 @@ export default function SearchIdentityDialog({
 
   const { isFetching: isFetchingContacts, data } = useContacts(isAuthenticated);
 
-  const [contacts, setContacts] = useState<IdentityType[]>([]);
+  const [contacts, setContacts] = useState<ContactType[]>([]);
 
   const [shrink, setShrink] = useState(false);
 
@@ -111,16 +101,16 @@ export default function SearchIdentityDialog({
       try {
         setLoading(true);
         // search among contacts
-        let foundAmongContacts: IdentityType[] = [];
+        let foundAmongContacts: ContactType[] = [];
         if (contacts?.length > 0) {
           // support different search criterias, e.g. if with fc search only among fc name, if lens, if eth...,
           // also if search by ens and result is found, skip online search
           foundAmongContacts = contacts.filter(
             (c) =>
-              c.profile?.username?.includes(debouncedSearchString) ||
-              c.profile?.displayName?.toLowerCase().includes(debouncedSearchString) ||
-              c.meta?.ens?.includes(debouncedSearchString) ||
-              c.meta?.socials?.find((s) => {
+              c.data.profile?.username?.includes(debouncedSearchString) ||
+              c.data.profile?.displayName?.toLowerCase().includes(debouncedSearchString) ||
+              c.data.meta?.ens?.includes(debouncedSearchString) ||
+              c.data.meta?.socials?.find((s) => {
                 let socialSearchStr = debouncedSearchString;
 
                 if (
@@ -141,25 +131,23 @@ export default function SearchIdentityDialog({
           console.debug('Found among contacts: ', foundAmongContacts);
         }
 
-        // todo fetch invited list
-
         // skip search if we have 5 results
         if (foundAmongContacts.length <= 5) {
-          const addresses = foundAmongContacts.map((p) => p.address);
+          const addresses = foundAmongContacts.map((p) => p.data.address);
 
           // general search
           const identities = (await searchIdentity(debouncedSearchString, address)).filter(
-            (fi) => !addresses.includes(fi.address)
+            (fi) => !addresses.includes(fi.data.address)
           );
 
           if (identities.length > 0 && isAuthenticated) {
             const inviteStatuses = await identitiesInvited(
-              identities.map((identity) => identity.address)
+              identities.map((identity) => identity.data.address)
             );
 
             // Update identities in a single pass:
             identities.forEach((identity) => {
-              identity.invited = inviteStatuses[identity.address];
+              identity.data.invited = inviteStatuses[identity.data.address];
             });
           }
 
@@ -175,42 +163,22 @@ export default function SearchIdentityDialog({
     }
   }, [debouncedSearchString, address]);
 
-  const updateIdentityCallback = ({
-    identity,
-    view,
-    favourite,
-    invited
-  }: {
-    identity: IdentityType;
-    view: 'address' | 'profile';
-    favourite?: boolean | undefined;
-    invited?: boolean | undefined;
-  }) => {
-    updateIdentity(identity, view, favourite, invited);
+  const updateIdentityCallback = ({ contact }: { contact: ContactType }) => {
+    updateIdentity(contact);
   };
 
-  function updateIdentity(
-    identity: IdentityType,
-    view: 'address' | 'profile',
-    favourite?: boolean,
-    invited?: boolean
-  ) {
-    const contact = contacts.find((c) => c.address === identity.address);
+  function updateIdentity(identity: ContactType) {
+    const contact = contacts.find((c) => c.data.address === identity.data.address);
     let updatedContacts;
 
-    console.log('Updating identity', identity.address, view, favourite, invited, identity);
+    console.log('Updating identity', identity.data.address, identity);
 
     if (contact) {
       // updating identity from address book
       updatedContacts = contacts.map((c) => {
-        if (c.address === identity.address) {
+        if (c.data.address === identity.data.address) {
           return {
-            ...c,
-            ...(favourite !== undefined &&
-              (view === 'profile'
-                ? { favouriteProfile: favourite }
-                : { favouriteAddress: favourite })),
-            ...(invited !== undefined && { invited: true })
+            ...identity
           };
         } else {
           return c;
@@ -222,12 +190,7 @@ export default function SearchIdentityDialog({
       updatedContacts = [
         ...contacts,
         {
-          ...identity,
-          ...(favourite !== undefined &&
-            (view === 'profile'
-              ? { favouriteProfile: favourite }
-              : { favouriteAddress: favourite })),
-          ...(invited !== undefined && { invited: true })
+          ...identity
         }
       ];
     }
@@ -235,14 +198,9 @@ export default function SearchIdentityDialog({
     setContacts(updatedContacts);
 
     const identities = foundIdentities.map((fi) => {
-      if (fi.address === identity.address) {
+      if (fi.data.address === identity.data.address) {
         return {
-          ...fi,
-          ...(favourite !== undefined &&
-            (view === 'profile'
-              ? { favouriteProfile: favourite }
-              : { favouriteAddress: favourite })),
-          ...(invited !== undefined && { invited: true })
+          ...identity
         };
       } else {
         return fi;
@@ -342,39 +300,21 @@ export default function SearchIdentityDialog({
       </DialogTitle>
       <DialogContent sx={{ mb: 0.5 }}>
         <Box display="flex" flexDirection="column" alignContent="center">
-          {isAuthenticated &&
-            !searchString &&
-            contacts.length > 0 &&
-            (addressBookView === 'favourites' ? (
-              <SearchResultView
-                key={'search_identity_favourites_view'}
-                profileRedirect={profileRedirect}
-                closeStateCallback={closeStateCallback}
-                selectIdentityCallback={selectIdentityCallback}
-                updateIdentityCallback={updateIdentityCallback}
-                filterByFafourites={true}
-                identities={contacts.filter((c) => c.tags?.includes('user-contacts'))}
-              />
-            ) : addressBookView === 'friends' ? (
-              <SearchResultView
-                key={'search_identity_friends_view'}
-                profileRedirect={profileRedirect}
-                closeStateCallback={closeStateCallback}
-                selectIdentityCallback={selectIdentityCallback}
-                updateIdentityCallback={updateIdentityCallback}
-                identities={contacts.filter((c) => c.tags?.includes('user-contacts'))}
-              />
-            ) : (
-              <SearchResultView
-                key={'search_identity_eth_denver_view'}
-                insightsEnabled={false}
-                profileRedirect={profileRedirect}
-                closeStateCallback={closeStateCallback}
-                selectIdentityCallback={selectIdentityCallback}
-                updateIdentityCallback={updateIdentityCallback}
-                identities={contacts.filter((c) => c.tags?.includes('eth-denver-contacts'))}
-              />
-            ))}
+          {isAuthenticated && !searchString && contacts.length > 0 && (
+            <SearchResultView
+              key={'search_identity_contacts'}
+              profileRedirect={profileRedirect}
+              closeStateCallback={closeStateCallback}
+              selectIdentityCallback={selectIdentityCallback}
+              updateIdentityCallback={updateIdentityCallback}
+              identities={contacts.filter((c) =>
+                addressBookView === 'favourites'
+                  ? c.tags?.includes('favourite_profiles') ||
+                    c.tags?.includes('favourite_addresses')
+                  : c.tags?.includes(getTag(addressBookView))
+              )}
+            />
+          )}
 
           <SearchResultView
             key={'search_identity_results_view'}
@@ -417,4 +357,17 @@ export default function SearchIdentityDialog({
       )}
     </Dialog>
   );
+
+  function getTag(addressBookView: AddressBookType) {
+    switch (addressBookView) {
+      case 'favourites':
+        return 'favourites';
+      case 'friends':
+        return 'user-contacts';
+      case 'ethdenver':
+        return 'eth-denver-contacts';
+      case 'alfafrens':
+        return 'alfafrens';
+    }
+  }
 }

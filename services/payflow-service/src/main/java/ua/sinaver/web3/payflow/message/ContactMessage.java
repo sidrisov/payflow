@@ -3,19 +3,12 @@ package ua.sinaver.web3.payflow.message;
 import lombok.val;
 import ua.sinaver.web3.payflow.data.Contact;
 import ua.sinaver.web3.payflow.data.User;
-import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
 import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public record ContactMessage(
-		String address, Boolean favouriteProfile, Boolean favouriteAddress, Boolean invited,
-		ProfileMessage profile,
-		SocialMetadata meta,
+		IdentityMessage data,
 		List<String> tags) {
 
 	public static ProfileMessage convert(User profile) {
@@ -34,109 +27,18 @@ public record ContactMessage(
 		}
 	}
 
-	public static ContactMessage convert(Contact contact, Wallet wallet,
+	public static ContactMessage convert(Contact contact, Wallet socials, Wallet insights,
 	                                     Boolean invited, List<String> tags) {
-
-		var xmtp = false;
-		String ens = null;
-		String ensAvatar = null;
-		List<SocialInfo> socials = new ArrayList<>();
-		SocialInsights insights = null;
-
-		val profileMessage = convert(contact.getProfile());
-		
-		if (wallet != null) {
-			xmtp = wallet.getXmtp() != null && !wallet.getXmtp().isEmpty() && wallet.getXmtp().getFirst().getIsXMTPEnabled();
-
-			if (wallet.getPrimaryDomain() != null) {
-				ens = wallet.getPrimaryDomain().getName();
-				if (wallet.getPrimaryDomain().getTokenNft() != null) {
-
-					if (wallet.getPrimaryDomain().getTokenNft().getContentValue() != null
-							&& wallet.getPrimaryDomain().getTokenNft().getContentValue().getImage() != null)
-						ensAvatar =
-								wallet.getPrimaryDomain().getTokenNft().getContentValue().getImage().getSmall();
-				}
-			} else if (wallet.getDomains() != null && !wallet.getDomains().isEmpty()) {
-				ens = wallet.getDomains().getFirst().getName();
-			}
-
-
-			socials = getSocials(wallet);
-			insights = getWalletInsights(wallet);
-
-			if (ensAvatar == null && socials != null && !socials.isEmpty()) {
-				ensAvatar = socials.getFirst().profileImage();
-			}
-		}
-
-		val meta = new SocialMetadata(xmtp, ens, ensAvatar, socials, insights);
-
-		return new ContactMessage(contact.getIdentity(), contact.isProfileChecked(),
-				contact.isAddressChecked(), invited, profileMessage, meta, tags);
+		val data = IdentityMessage.convert(contact.getIdentity(), contact.getProfile(), socials,
+				insights, invited);
+		return new ContactMessage(data, tags);
 	}
 
-
-	public static SocialInsights getWalletInsights(Wallet wallet) {
-		var sentTxs = 0;
-		String farcasterFollow = null;
-		String lensFollow = null;
-
-		if (wallet.getTokenTransfers() != null && !wallet.getTokenTransfers().isEmpty()) {
-			sentTxs = wallet.getTokenTransfers().size();
-		}
-
-		val socialFollowers = wallet.getSocialFollowers();
-		val socialFollowings = wallet.getSocialFollowings();
-		if (socialFollowers != null && socialFollowings != null
-				&& socialFollowings.getFollowing() != null) {
-
-			if (socialFollowings.getFollowing().stream()
-					.anyMatch(f -> f.getDappName().equals(SocialDappName.farcaster.toString()))) {
-
-				if (socialFollowers.getFollower() != null && socialFollowers.getFollower().stream()
-						.anyMatch(f -> f.getDappName().equals(SocialDappName.farcaster.toString()))) {
-					farcasterFollow = "mutual";
-				} else {
-					farcasterFollow = "following";
-				}
-			}
-
-			if (socialFollowings.getFollowing().stream()
-					.anyMatch(f -> f.getDappName().equals(SocialDappName.lens.toString()))) {
-
-				if (socialFollowers.getFollower() != null && socialFollowers.getFollower().stream()
-						.anyMatch(f -> f.getDappName().equals(SocialDappName.lens.toString()))) {
-					lensFollow = "mutual";
-				} else {
-					lensFollow = "following";
-				}
-			}
-		}
-
-		return new SocialInsights(farcasterFollow, lensFollow, sentTxs);
-	}
-
-	private static List<SocialInfo> getSocials(Wallet wallet) {
-		if (wallet.getSocials() != null) {
-			return wallet.getSocials().stream()
-					.filter(s -> s.getDappName() != null && s.getProfileName() != null)
-					.map(s -> {
-
-						String profileImage;
-						if (s.getProfileImageContentValue() != null && s.getProfileImageContentValue().getImage() != null && s.getProfileImageContentValue().getImage().getSmall() != null) {
-							profileImage = s.getProfileImageContentValue().getImage().getSmall();
-						} else {
-							profileImage = s.getProfileImage();
-						}
-
-						return new SocialInfo(s.getDappName().name(), s.getProfileName(),
-								s.getProfileDisplayName(), profileImage, s.getFollowerCount());
-					})
-					.sorted(Comparator.comparingInt(SocialInfo::followerCount).reversed())
-					.collect(Collectors.toList());
-		} else {
-			return Collections.emptyList();
-		}
+	public static ContactMessage convert(String identity, User profile, Wallet socials,
+	                                     Wallet insights,
+	                                     Boolean invited, List<String> tags) {
+		val data = IdentityMessage.convert(identity, profile, socials,
+				insights, invited);
+		return new ContactMessage(data, tags);
 	}
 }

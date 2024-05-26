@@ -52,8 +52,8 @@ public class FrameService implements IFrameService {
 		}
 
 		val contacts = contactBookService.getAllContacts(gifter)
-				.stream().filter(c -> c.profile() != null)
-				.filter(c -> !existingUserGifts.contains(c.profile().identity()))
+				.stream().filter(c -> c.data().profile() != null)
+				.filter(c -> !existingUserGifts.contains(c.data().profile().identity()))
 				.toList();
 
 		if (contacts.isEmpty()) {
@@ -68,7 +68,7 @@ public class FrameService implements IFrameService {
 
 		val randomTokenIndex = random.nextInt(TOKENS.size());
 		val randomToken = TOKENS.get(randomTokenIndex);
-		val gifted = userRepository.findByIdentity(giftedContact.profile().identity());
+		val gifted = userRepository.findByIdentity(giftedContact.data().profile().identity());
 		giftRepository.save(new Gift(gifter, gifted, randomToken));
 		return giftedContact;
 	}

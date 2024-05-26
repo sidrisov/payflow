@@ -136,6 +136,8 @@ tasks.withType<GenerateJavaTask> {
     typeMapping["Identity"] = "java.lang.String"
     typeMapping["Map"] = "java.util.Map"
     typeMapping["Time"] = "java.time.LocalTime"
+    typeMapping["Any"] = "java.lang.String"
+
 }
 
 tasks.withType<BootRun> {
