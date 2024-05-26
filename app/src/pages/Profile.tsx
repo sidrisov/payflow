@@ -91,11 +91,11 @@ export default function Profile() {
       console.log('Identity', identity);
 
       if (identity) {
-        if (identity.meta?.socials && identity.meta?.socials.length > 0) {
+        if (identity.data.meta?.socials && identity.data.meta?.socials.length > 0) {
           const socialInfo =
-            identity.meta?.socials.find((s) => s.dappName === FARCASTER_DAPP) ??
-            identity.meta?.socials.find((s) => s.dappName === LENS_DAPP) ??
-            identity.meta?.socials[0];
+            identity.data.meta?.socials.find((s) => s.dappName === FARCASTER_DAPP) ??
+            identity.data.meta?.socials.find((s) => s.dappName === LENS_DAPP) ??
+            identity.data.meta?.socials[0];
 
           if (socialInfo.profileDisplayName) {
             setDisplayName(socialInfo.profileDisplayName);
@@ -104,7 +104,7 @@ export default function Profile() {
           const username = normalizeUsername(
             (socialInfo.dappName === LENS_DAPP
               ? socialInfo.profileName.replace('lens/@', '')
-              : socialInfo.profileName) ?? identity.meta?.ens
+              : socialInfo.profileName) ?? identity.data.meta?.ens
           );
 
           if (username) {
@@ -117,8 +117,8 @@ export default function Profile() {
           ) {
             setProfileImage(socialInfo.profileImage);
           }
-        } else if (identity.meta?.ensAvatar) {
-          setProfileImage(identity.meta?.ensAvatar);
+        } else if (identity.data.meta?.ensAvatar) {
+          setProfileImage(identity.data.meta?.ensAvatar);
         }
       }
     }
