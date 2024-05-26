@@ -125,14 +125,12 @@ export function AddressBookToolBar({
           setAddressBookView={setAddressBookView}
         />
 
-        {import.meta.env.VITE_ETH_DENVER_CONTACTS_ENABLED === 'true' && (
-          <AddressBookChip
-            key="alfafrens"
-            type="alfafrens"
-            addressBookView={addressBookView}
-            setAddressBookView={setAddressBookView}
-          />
-        )}
+        <AddressBookChip
+          key="alfafrens"
+          type="alfafrens"
+          addressBookView={addressBookView}
+          setAddressBookView={setAddressBookView}
+        />
 
         {import.meta.env.VITE_ETH_DENVER_CONTACTS_ENABLED === 'true' && (
           <AddressBookChip
@@ -143,14 +141,14 @@ export function AddressBookToolBar({
           />
         )}
       </Box>
-      <IconButton
+      {/*       <IconButton
         size="small"
         onClick={(event) => {
           setSettingsAchorEl(event.currentTarget);
           setOpenSettings(true);
         }}>
         <Settings fontSize="small" />
-      </IconButton>
+      </IconButton> */}
 
       {/* <ContactSearchSettings
         open={openSettings}
