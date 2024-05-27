@@ -6,15 +6,11 @@ import { TxInfo } from '../../types/ActivityFetchResultType';
 import { PaymentType } from '../../types/PaymentType';
 import axios from 'axios';
 import { baseSepolia, base, optimism, zora, degen, mode } from 'viem/chains';
-import { useContext } from 'react';
-import { ProfileContext } from '../../contexts/UserContext';
 
 export const useTransactions = (wallets: FlowWalletType[]) => {
-  const { profile } = useContext(ProfileContext);
-
   return useQuery({
     enabled: wallets.length > 0,
-    queryKey: ['balances', { wallets }],
+    queryKey: ['transactions', { wallets }],
     staleTime: Infinity,
     // optimize refetch, to only fetch latest txs
     refetchInterval: 120_000,
@@ -94,6 +90,9 @@ export const useTransactions = (wallets: FlowWalletType[]) => {
 
             return tx;
           });
+
+          console.log('Fetched all txs: ', wallets, txs);
+
           return txs;
         }
       })

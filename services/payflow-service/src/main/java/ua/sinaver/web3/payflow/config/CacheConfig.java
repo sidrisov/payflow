@@ -33,8 +33,10 @@ public class CacheConfig {
 
 	@Value("${spring.cache.contacts.eth-denver.expireAfterWrite:10m}")
 	private Duration poapAndTokenOwnersExpireAfterWriteDuration;
-	@Value("${spring.cache.contacts.expireAfterWrite:10m}")
+	@Value("${spring.cache.contacts.all.expireAfterWrite:10m}")
 	private Duration contactsExpireAfterWriteDuration;
+	@Value("${spring.cache.contacts.list.expireAfterWrite:10m}")
+	private Duration contactsListExpireAfterWriteDuration;
 	@Value("${spring.cache.socials.expireAfterWrite:24h}")
 	private Duration socialsExpireAfterWriteDuration;
 	@Value("${spring.cache.socials.maxSize:1000}")
@@ -58,12 +60,21 @@ public class CacheConfig {
 	CacheManager redisCacheManager(RedisConnectionFactory connectionFactory,
 	                               RedisCacheConfiguration configuration) {
 
+		val serializer = new GenericJackson2JsonRedisSerializer();
+
 		val contactsCacheConfigs = RedisCacheConfiguration.defaultCacheConfig()
 				.disableCachingNullValues()
 				.entryTtl(contactsExpireAfterWriteDuration)
 				.serializeValuesWith(RedisSerializationContext
 						.SerializationPair
-						.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+						.fromSerializer(serializer));
+
+		val contactsListCacheConfigs = RedisCacheConfiguration.defaultCacheConfig()
+				.disableCachingNullValues()
+				.entryTtl(contactsListExpireAfterWriteDuration)
+				.serializeValuesWith(RedisSerializationContext
+						.SerializationPair
+						.fromSerializer(serializer));
 
 		val ethDenverContactsCacheConfigs =
 				RedisCacheConfiguration.defaultCacheConfig()
@@ -71,7 +82,7 @@ public class CacheConfig {
 						.entryTtl(poapAndTokenOwnersExpireAfterWriteDuration)
 						.serializeValuesWith(RedisSerializationContext
 								.SerializationPair
-								.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+								.fromSerializer(serializer));
 		;
 
 		val socialsCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
@@ -79,11 +90,11 @@ public class CacheConfig {
 				.entryTtl(socialsExpireAfterWriteDuration)
 				.serializeValuesWith(RedisSerializationContext
 						.SerializationPair
-						.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+						.fromSerializer(serializer));
 
 		val cacheConfigurations = new HashMap<String, RedisCacheConfiguration>();
 		cacheConfigurations.put(CONTACTS_CACHE_NAME, contactsCacheConfigs);
-		cacheConfigurations.put(CONTACT_LIST_CACHE_NAME, contactsCacheConfigs);
+		cacheConfigurations.put(CONTACT_LIST_CACHE_NAME, contactsListCacheConfigs);
 		cacheConfigurations.put(TOKEN_OWNERS_CACHE_NAME, ethDenverContactsCacheConfigs);
 		cacheConfigurations.put(POAP_OWNERS_CACHE_NAME, ethDenverContactsCacheConfigs);
 		cacheConfigurations.put(SOCIALS_CACHE_NAME, socialsCacheConfig);
@@ -109,7 +120,7 @@ public class CacheConfig {
 				buildCache(contactsExpireAfterWriteDuration));
 
 		cacheManager.registerCustomCache(CONTACT_LIST_CACHE_NAME,
-				buildCache(contactsExpireAfterWriteDuration));
+				buildCache(contactsListExpireAfterWriteDuration));
 
 		cacheManager.registerCustomCache(TOKEN_OWNERS_CACHE_NAME,
 				buildCache(poapAndTokenOwnersExpireAfterWriteDuration));

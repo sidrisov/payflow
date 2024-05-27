@@ -11,6 +11,8 @@ public record ProfileMetaMessage(String identity, String displayName, String use
 				user.getUsername(),
 				user.getProfileImage(), user.getCreatedDate().toString(), includeFlow ?
 				// don't include signer flow info
-				FlowMessage.convert(user.getDefaultFlow(), null) : null);
+				(user.getDefaultFlow() != null ?
+						FlowMessage.convert(user.getDefaultFlow(), null) : null) :
+				null);
 	}
 }
