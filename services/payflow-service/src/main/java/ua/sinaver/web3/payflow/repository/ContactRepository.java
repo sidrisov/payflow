@@ -9,10 +9,9 @@ import java.util.List;
 
 public interface ContactRepository extends CrudRepository<Contact, Integer> {
 
-	@Query("SELECT c FROM Contact c WHERE c.user = :user " +
-			"ORDER BY (CASE WHEN c.profileChecked THEN 1 WHEN c.addressChecked " +
-			"THEN 2 WHEN c.profile IS NOT NULL THEN 3 ELSE 4 END)")
 	List<Contact> findAllByUser(User user);
+
+	List<Contact> findByUserAndProfileCheckedTrue(User user);
 
 	@Query("SELECT c.identity FROM Contact c WHERE c.user = :user")
 	List<String> findAllIdentitiesByUser(User user);

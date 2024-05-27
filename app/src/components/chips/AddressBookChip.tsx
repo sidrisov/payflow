@@ -3,7 +3,6 @@ import { Avatar, Box, Chip, IconButton, Typography } from '@mui/material';
 import { yellow, green, grey, deepPurple, blue } from '@mui/material/colors';
 import { AddressBookType } from '../../types/ContactType';
 import { useState } from 'react';
-import { ContactSearchSettings } from '../menu/ContactSearchSettings';
 
 const contactTypeLabel = (type: AddressBookType) => {
   switch (type) {
@@ -11,7 +10,7 @@ const contactTypeLabel = (type: AddressBookType) => {
       return 'Favourites';
     case 'friends':
       return 'Friends';
-    case 'ethdenver':
+    case 'farcon':
       return 'FarCon';
     case 'alfafrens':
       return 'AlfaFrens';
@@ -24,7 +23,7 @@ const contactTypeColor = (type: AddressBookType) => {
       return yellow.A700;
     case 'friends':
       return green.A700;
-    case 'ethdenver':
+    case 'farcon':
       return deepPurple.A100;
     case 'alfafrens':
       return blue[400];
@@ -37,7 +36,7 @@ const contactTypeIcon = (type: AddressBookType) => {
       return <Star fontSize="medium" />;
     case 'friends':
       return <People fontSize="medium" />;
-    case 'ethdenver':
+    case 'farcon':
       return <Avatar variant="circular" src="/farcon.png" sx={{ width: 24, height: 24 }} />;
     case 'alfafrens':
       return <Avatar variant="circular" src="/alfafrens.png" sx={{ width: 24, height: 24 }} />;
@@ -83,9 +82,11 @@ export function AddressBookChip({
 }
 
 export function AddressBookToolBar({
+  tags,
   addressBookView,
   setAddressBookView
 }: {
+  tags: string[];
   addressBookView: AddressBookType;
   setAddressBookView: (value: React.SetStateAction<AddressBookType>) => void;
 }) {
@@ -112,12 +113,14 @@ export function AddressBookToolBar({
           borderRadius: 20
         }}
         gap={0.5}>
-        <AddressBookChip
-          key="favourites"
-          type="favourites"
-          addressBookView={addressBookView}
-          setAddressBookView={setAddressBookView}
-        />
+        {tags.includes('favourites') && (
+          <AddressBookChip
+            key="favourites"
+            type="favourites"
+            addressBookView={addressBookView}
+            setAddressBookView={setAddressBookView}
+          />
+        )}
         <AddressBookChip
           key="friends"
           type="friends"
@@ -125,17 +128,19 @@ export function AddressBookToolBar({
           setAddressBookView={setAddressBookView}
         />
 
-        <AddressBookChip
-          key="alfafrens"
-          type="alfafrens"
-          addressBookView={addressBookView}
-          setAddressBookView={setAddressBookView}
-        />
-
-        {import.meta.env.VITE_ETH_DENVER_CONTACTS_ENABLED === 'true' && (
+        {tags.includes('alfafrens') && (
           <AddressBookChip
-            key="ethdenver"
-            type="ethdenver"
+            key="alfafrens"
+            type="alfafrens"
+            addressBookView={addressBookView}
+            setAddressBookView={setAddressBookView}
+          />
+        )}
+
+        {tags.includes('farcon') && (
+          <AddressBookChip
+            key="farcon"
+            type="farcon"
             addressBookView={addressBookView}
             setAddressBookView={setAddressBookView}
           />

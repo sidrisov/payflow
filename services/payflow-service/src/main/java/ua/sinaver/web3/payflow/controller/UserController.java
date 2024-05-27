@@ -62,9 +62,9 @@ public class UserController {
 	}
 
 	@GetMapping("/me/contacts")
-	public List<ContactMessage> contacts(Principal principal,
-	                                     @RequestHeader(value = "Cache-Control", required = false)
-	                                     String cacheControl) {
+	public ContactsResponseMessage contacts(Principal principal,
+	                                        @RequestHeader(value = "Cache-Control", required = false)
+	                                        String cacheControl) {
 		log.debug("{} fetching contacts", principal.getName());
 		val user = userService.findByIdentity(principal.getName());
 		if (user != null) {
@@ -72,20 +72,20 @@ public class UserController {
 				if (StringUtils.equals(cacheControl, "no-cache")) {
 					contactBookService.cleanContactsCache(user);
 				}
-				val allContacts = contactBookService.getAllContacts(user);
+				val response = contactBookService.getAllContacts(user);
 				if (log.isTraceEnabled()) {
-					log.trace("All contacts for {}: {}", principal.getName(), allContacts);
+					log.trace("All contacts for {}: {}", principal.getName(), response.contacts());
 				} else {
 					log.debug("All contacts for {}: {}", principal.getName(),
-							allContacts.size());
+							response.contacts().size());
 				}
-				return allContacts;
+				return response;
 			} catch (Throwable t) {
 				log.debug("Error fetching contacts for {}", user.getUsername(), t);
 			}
 		}
 
-		return Collections.emptyList();
+		return new ContactsResponseMessage(Collections.emptyList(), Collections.emptyList());
 	}
 
 	@GetMapping("/me/contacts/{identity}")

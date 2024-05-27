@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { API_URL } from '../urlConstants';
-import { ContactType } from '../../types/ProfleType';
+import { ContactsResponseType } from '../../types/ProfleType';
 import { sortBySocialScore } from '../../services/socials';
 
 export const useContacts = (enabled: boolean, bypassCache: boolean = false) => {
@@ -16,9 +16,13 @@ export const useContacts = (enabled: boolean, bypassCache: boolean = false) => {
           withCredentials: true
         })
         .then((res) => {
-          const contacts = sortBySocialScore(res.data as ContactType[]);
-          console.log('Fetched contacts: ', contacts);
-          return contacts;
+          const response = res.data;
+          console.log('Fetched contacts:', response);
+
+          return {
+            tags: response.tags as string[],
+            contacts: sortBySocialScore(response.contacts)
+          } as ContactsResponseType;
         })
   });
 };

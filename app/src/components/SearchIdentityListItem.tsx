@@ -25,18 +25,14 @@ import { UpdateIdentityCallbackType } from './dialogs/SearchIdentityDialog';
 import { SocialPresenceStack } from './SocialPresenceStack';
 import { HowToReg, Star, StarBorder } from '@mui/icons-material';
 
-function addToFavourites(tags: string[], view: 'address' | 'profile'): string[] {
+function addToFavourites(tags: string[]): string[] {
   const updatedTags = tags ?? [];
-  if (view === 'address') {
-    updatedTags.push('favourite_addresses');
-  } else {
-    updatedTags.push('favourite_profiles');
-  }
+  updatedTags.push('favourites');
   return updatedTags;
 }
 
-function removeFromFavourites(tags: string[], view: 'address' | 'profile'): string[] {
-  const index = tags.indexOf(view === 'address' ? 'favourite_addresses' : 'favourite_profiles');
+function removeFromFavourites(tags: string[]): string[] {
+  const index = tags.indexOf('favourites');
   if (index !== -1) {
     tags.splice(index, 1);
   }
@@ -58,11 +54,7 @@ export function SearchIdentityListItem(
 
   console.log('Identity:', contact);
 
-  const favourite =
-    view === 'address'
-      ? tags?.includes('favourite_addresses')
-      : tags?.includes('favourite_profiles');
-
+  const favourite = tags?.includes('favourites');
   const { address } = useAccount();
 
   return (
@@ -232,8 +224,8 @@ export function SearchIdentityListItem(
                   const updatedContact = {
                     ...contact,
                     tags: !favourite
-                      ? addToFavourites(contact.tags as string[], view)
-                      : removeFromFavourites(contact.tags as string[], view)
+                      ? addToFavourites(contact.tags as string[])
+                      : removeFromFavourites(contact.tags as string[])
                   } as ContactType;
 
                   console.log('Before vs after: ', contact, updatedContact);

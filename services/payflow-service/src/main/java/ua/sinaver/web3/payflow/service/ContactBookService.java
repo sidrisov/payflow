@@ -15,6 +15,7 @@ import reactor.core.scheduler.Schedulers;
 import ua.sinaver.web3.payflow.data.Contact;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.message.ContactMessage;
+import ua.sinaver.web3.payflow.message.ContactsResponseMessage;
 import ua.sinaver.web3.payflow.repository.ContactRepository;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
@@ -81,10 +82,7 @@ public class ContactBookService implements IContactBookService {
 		if (contact == null) {
 			contact = new Contact(user, contactMessage.data().address());
 		}
-
-		contact.setAddressChecked(contactMessage.tags().contains("favourite_addresses"));
-		contact.setProfileChecked(contactMessage.tags().contains("favourite_profiles"));
-
+		contact.setProfileChecked(contactMessage.tags().contains("favourites"));
 		contactRepository.save(contact);
 	}
 
@@ -95,9 +93,8 @@ public class ContactBookService implements IContactBookService {
 	}
 
 	@Override
-	@Cacheable(value = CONTACTS_CACHE_NAME, key = "#user.identity", unless =
-			"#result.isEmpty()")
-	public List<ContactMessage> getAllContacts(User user) {
+	@Cacheable(value = CONTACTS_CACHE_NAME, key = "#user.identity", unless = "#result==null")
+	public ContactsResponseMessage getAllContacts(User user) {
 		log.debug("VIRTUAL {} {} {} {}", Schedulers.DEFAULT_BOUNDED_ELASTIC_ON_VIRTUAL_THREADS,
 				Schedulers.DEFAULT_POOL_SIZE, Schedulers.DEFAULT_BOUNDED_ELASTIC_SIZE,
 				Schedulers.DEFAULT_BOUNDED_ELASTIC_QUEUESIZE);
@@ -110,17 +107,28 @@ public class ContactBookService implements IContactBookService {
 		val alfaFrensContacts = alfaFrensService.fetchSubscribers(user.getIdentity());
 		log.debug("Fetched subs: {}", alfaFrensContacts);
 
+		val favourites = contactRepository.findByUserAndProfileCheckedTrue(user);
+
+		val tags = new ArrayList<>(List.of("friends"));
+		if (!alfaFrensContacts.isEmpty()) {
+			tags.add("alfafrens");
+		}
+
+		if (!favourites.isEmpty()) {
+			tags.add("favourites");
+		}
+
+		if (!farConParticipants.isEmpty()) {
+			tags.add("farcon");
+		}
+
 		val allContacts = Stream.of(
-						contacts.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(), "user-contacts")),
+						favourites.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(),
+								"favourites")),
+						contacts.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(), "friends")),
 						alfaFrensContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "alfafrens")),
-						contacts.stream().filter(Contact::isAddressChecked)
-								.map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(),
-										"favourite_addresses")),
-						contacts.stream().filter(Contact::isProfileChecked)
-								.map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(),
-										"favourite_profiles")),
 						farConParticipants.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity,
-								"eth-denver-contacts"))
+								"farcon"))
 				).flatMap(stream -> stream)
 				.collect(Collectors.groupingBy(
 						Map.Entry::getKey,
@@ -185,10 +193,10 @@ public class ContactBookService implements IContactBookService {
 			} else {
 				log.debug("Fetched {} contacts for {}", contactMessages.size(), user.getUsername());
 			}
-			return contactMessages;
+			return new ContactsResponseMessage(tags, contactMessages);
 		} catch (Throwable t) {
 			log.error("Failed to fetch contacts", t);
-			return Collections.emptyList();
+			return null;
 		}
 	}
 

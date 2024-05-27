@@ -20,6 +20,11 @@ export interface IdentityType {
   meta?: MetaType;
 }
 
+export interface ContactsResponseType {
+  tags: string[];
+  contacts: ContactType[];
+}
+
 export interface ContactType {
   data: IdentityType;
   tags?: string[];

@@ -82,6 +82,7 @@ export default function SearchIdentityDialog({
   const { isFetching: isFetchingContacts, data } = useContacts(isAuthenticated);
 
   const [contacts, setContacts] = useState<ContactType[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
 
   const [shrink, setShrink] = useState(false);
 
@@ -92,7 +93,8 @@ export default function SearchIdentityDialog({
   useEffect(() => {
     console.log('Is fetching contacts', isFetchingContacts);
     if (!isFetchingContacts && data) {
-      setContacts(data);
+      setTags(data.tags);
+      setContacts(data.contacts);
     }
   }, [data, isFetchingContacts]);
 
@@ -292,6 +294,7 @@ export default function SearchIdentityDialog({
           />
           {isAuthenticated && !searchString && (
             <AddressBookToolBar
+              tags={tags}
               addressBookView={addressBookView}
               setAddressBookView={setAddressBookView}
             />
@@ -307,12 +310,7 @@ export default function SearchIdentityDialog({
               closeStateCallback={closeStateCallback}
               selectIdentityCallback={selectIdentityCallback}
               updateIdentityCallback={updateIdentityCallback}
-              identities={contacts.filter((c) =>
-                addressBookView === 'favourites'
-                  ? c.tags?.includes('favourite_profiles') ||
-                    c.tags?.includes('favourite_addresses')
-                  : c.tags?.includes(getTag(addressBookView))
-              )}
+              identities={contacts.filter((c) => c.tags?.includes(addressBookView))}
             />
           )}
 
@@ -357,17 +355,4 @@ export default function SearchIdentityDialog({
       )}
     </Dialog>
   );
-
-  function getTag(addressBookView: AddressBookType) {
-    switch (addressBookView) {
-      case 'favourites':
-        return 'favourites';
-      case 'friends':
-        return 'user-contacts';
-      case 'ethdenver':
-        return 'eth-denver-contacts';
-      case 'alfafrens':
-        return 'alfafrens';
-    }
-  }
 }

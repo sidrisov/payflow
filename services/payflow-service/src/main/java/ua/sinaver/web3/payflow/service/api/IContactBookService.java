@@ -2,6 +2,7 @@ package ua.sinaver.web3.payflow.service.api;
 
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.message.ContactMessage;
+import ua.sinaver.web3.payflow.message.ContactsResponseMessage;
 
 import java.util.List;
 
@@ -10,7 +11,7 @@ public interface IContactBookService {
 
 	void cleanContactsCache(User user);
 
-	List<ContactMessage> getAllContacts(User user);
-	
+	ContactsResponseMessage getAllContacts(User user);
+
 	List<String> filterByInvited(List<String> addresses);
 }

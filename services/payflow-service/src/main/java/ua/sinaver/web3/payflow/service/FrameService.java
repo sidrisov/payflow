@@ -51,7 +51,7 @@ public class FrameService implements IFrameService {
 			throw new Exception("GIFT_SPIN_LIMIT_REACHED");
 		}
 
-		val contacts = contactBookService.getAllContacts(gifter)
+		val contacts = contactBookService.getAllContacts(gifter).contacts()
 				.stream().filter(c -> c.data().profile() != null)
 				.filter(c -> !existingUserGifts.contains(c.data().profile().identity()))
 				.toList();
