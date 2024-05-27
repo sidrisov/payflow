@@ -24,6 +24,8 @@ export const useTransactions = (wallets: FlowWalletType[]) => {
             .filter((tx) => tx) as TxInfo[]
         ).sort((left, right) => right.timestamp.localeCompare(left.timestamp));
 
+        console.log('Fetched all txs: ', txs);
+
         let wallets: any = [];
         txs.forEach((tx) => {
           wallets.push({
@@ -95,7 +97,7 @@ export const useTransactions = (wallets: FlowWalletType[]) => {
             return tx;
           });
         }
-        console.log('Fetched all txs: ', wallets, txs);
+        console.log('Fetched all txs with profiles/payments metadata: ', txs);
         return txs;
       })
   });
