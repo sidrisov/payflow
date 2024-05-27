@@ -300,16 +300,30 @@ public class TransactionService {
 
 	public static final String DEGEN_CHAIN_NAME = "degen";
 	public static final Integer DEGEN_CHAIN_ID = 666666666;
+
+	public static final String ARB_CHAIN_NAME = "arbitrum";
+	public static final Integer ARB_CHAIN_ID = 42161;
+
+	public static final String MODE_CHAIN_NAME = "mode";
+	public static final Integer MODE_CHAIN_ID = 34443;
+
 	public static final Integer DEFAULT_FRAME_PAYMENTS_CHAIN_ID = BASE_CHAIN_ID;
 	public static final List<Integer> SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS =
 			Arrays.asList(BASE_CHAIN_ID, OP_CHAIN_ID, DEGEN_CHAIN_ID);
 
-	public static final Map<String, Integer> PAYMENT_CHAIN_IDS = Map.of(BASE_CHAIN_NAME,
-			BASE_CHAIN_ID,
-			OP_CHAIN_NAME, OP_CHAIN_ID, DEGEN_CHAIN_NAME, DEGEN_CHAIN_ID);
+	public static final Map<String, Integer> PAYMENT_CHAIN_IDS = Map.of(
+			BASE_CHAIN_NAME, BASE_CHAIN_ID,
+			OP_CHAIN_NAME, OP_CHAIN_ID,
+			DEGEN_CHAIN_NAME, DEGEN_CHAIN_ID,
+			ARB_CHAIN_NAME, ARB_CHAIN_ID,
+			MODE_CHAIN_NAME, MODE_CHAIN_ID);
 
-	public static final Map<Integer, String> PAYMENT_CHAIN_NAMES = Map.of(BASE_CHAIN_ID,
-			BASE_CHAIN_NAME, OP_CHAIN_ID, OP_CHAIN_NAME, DEGEN_CHAIN_ID, DEGEN_CHAIN_NAME);
+	public static final Map<Integer, String> PAYMENT_CHAIN_NAMES = Map.of(
+			BASE_CHAIN_ID, BASE_CHAIN_NAME,
+			OP_CHAIN_ID, OP_CHAIN_NAME,
+			DEGEN_CHAIN_ID, DEGEN_CHAIN_NAME,
+			ARB_CHAIN_ID, ARB_CHAIN_NAME,
+			MODE_CHAIN_ID, MODE_CHAIN_NAME);
 	public static final String ETH_TOKEN = "eth";
 	public static final String USDC_TOKEN = "usdc";
 	public static final String DEGEN_TOKEN = "degen";
@@ -327,6 +341,12 @@ public class TransactionService {
 
 	public static final Map<String, String> OPTIMISM_ERC20_TOKEN_ADDRESSES = Map.of(USDC_TOKEN,
 			"0x0b2c639c533813f4aa9d7837caf62653d097ff85");
+
+	public static final Map<String, String> ARB_ERC20_TOKEN_ADDRESSES = Map.of(USDC_TOKEN,
+			"0xaf88d065e77c8cc2239327c5edb3a432268e5831");
+
+	public static final Map<String, String> MODE_ERC20_TOKEN_ADDRESSES = Map.of(USDC_TOKEN,
+			"0xd988097fb8612cc24eec14542bc03424c656005f");
 
 
 	public static final List<String> SUPPORTED_FRAME_PAYMENTS_TOKENS = Arrays.asList(ETH_TOKEN, USDC_TOKEN,

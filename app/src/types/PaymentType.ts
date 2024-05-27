@@ -14,6 +14,7 @@ export interface PaymentType {
   chainId: number;
   token: 'eth' | 'usdc' | 'degen';
   usdAmount: number;
+  tokenAmount: number;
   hash?: Hash;
   source?: { app: string; ref?: string };
   comment?: string;

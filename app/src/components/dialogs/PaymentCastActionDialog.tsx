@@ -16,7 +16,7 @@ import {
 import { useMemo, useState } from 'react';
 import NetworkAvatar from '../avatars/NetworkAvatar';
 import { Chain } from 'viem';
-import { base, degen, optimism } from 'viem/chains';
+import { arbitrum, base, degen, mode, optimism } from 'viem/chains';
 import { ChooseChainMenu } from '../menu/ChooseChainMenu';
 import { TokenSelectorButton } from '../buttons/TokenSelectorButton';
 import { DEGEN_TOKEN, Token, getSupportedTokens } from '../../utils/erc20contracts';
@@ -159,7 +159,7 @@ export default function PaymentCastActionDialog({
         closeStateCallback={() => {
           setOpenSelectChain(false);
         }}
-        chains={[base, optimism, degen]}
+        chains={[base, optimism, mode, degen, arbitrum]}
         selectedChain={chain}
         setSelectedChain={setChain}
       />

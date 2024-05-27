@@ -39,13 +39,16 @@ public class PayIntentController {
 	@GetMapping("/intent")
 	public CastActionMeta metadata(
 			@RequestParam(name = "amount", required = false, defaultValue = "1.0") Double amount,
+			@RequestParam(name = "tokenAmount", required = false) Double tokenAmount,
 			@RequestParam(name = "token", required = false, defaultValue = "degen") String token,
 			@RequestParam(name = "chain", required = false, defaultValue = "base") String chain) {
 		log.debug("Received metadata request for cast action: pay intent with params: " +
-				"amount = {}, token = {}, chain = {}", amount, token, chain);
+						"amount = {},  tokenAmount = {}, token = {}, chain = {}", amount,
+				tokenAmount, token, chain);
 		// TODO: skip chain/token/amount validation
 		val castActionMeta = new CastActionMeta(
-				String.format("$%s Intent %s (%s)", amount,
+				String.format("%s %s Intent (%s)", tokenAmount != null ? tokenAmount :
+								String.format("$%s", amount),
 						StringUtils.capitalize(token), StringUtils.capitalize(chain)),
 				"heart",
 				"Use this action to submit payment intent for farcaster users in " +
@@ -58,8 +61,9 @@ public class PayIntentController {
 	}
 
 	@PostMapping("/intent")
-	public ResponseEntity<FrameResponse.FrameMessage> invite(@RequestBody FrameMessage castActionMessage,
+	public ResponseEntity<FrameResponse.FrameMessage> intent(@RequestBody FrameMessage castActionMessage,
 	                                                         @RequestParam(name = "amount", required = false, defaultValue = "1.0") Double amount,
+	                                                         @RequestParam(name = "tokenAmount", required = false) Double tokenAmount,
 	                                                         @RequestParam(name = "token", required = false, defaultValue = "degen") String token,
 	                                                         @RequestParam(name = "chain", required = false, defaultValue = "base") String chain) {
 		log.debug("Received cast action: pay intent {}", castActionMessage);
@@ -106,10 +110,16 @@ public class PayIntentController {
 			}
 		}
 
-		if (amount.isNaN() && amount <= 0 && amount >= 10) {
+		if (tokenAmount != null) {
+			if (tokenAmount <= 0) {
+				return ResponseEntity.badRequest().body(
+						new FrameResponse.FrameMessage("Payment token amount should be more than 0"));
+			}
+		} else if (amount.isNaN() && amount <= 0 && amount >= 10) {
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Payment amount should be between $0-10"));
 		}
+
 
 		val chainId = PAYMENT_CHAIN_IDS.get(chain);
 
@@ -140,7 +150,11 @@ public class PayIntentController {
 				paymentProfile, chainId, token);
 		payment.setReceiverAddress(paymentAddress);
 		payment.setSender(clickedProfile);
-		payment.setUsdAmount(amount.toString());
+		if (tokenAmount != null) {
+			payment.setTokenAmount(tokenAmount.toString());
+		} else {
+			payment.setUsdAmount(amount.toString());
+		}
 		payment.setSourceApp(sourceApp);
 		payment.setSourceRef(sourceRef);
 		payment.setSourceHash(castHash);

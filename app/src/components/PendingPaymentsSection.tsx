@@ -287,7 +287,7 @@ export function PendingPaymentsSection({
           useFlexGap
           flexWrap="wrap">
           <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
-            <b>${payment.usdAmount}</b> of
+            <b>{payment.tokenAmount ?? `$${payment.usdAmount}`}</b> of
           </Typography>
           <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
             <b>{getTokenName(payment.token)}</b>
