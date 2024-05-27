@@ -41,6 +41,8 @@ export const useTransactions = (wallets: FlowWalletType[]) => {
           wallets
         );
 
+        console.log('Fetched walletProfiles: ', walletProfiles);
+
         const hashes = txs.map((tx) => tx.hash);
 
         let payments: PaymentType[] = [];
@@ -57,6 +59,8 @@ export const useTransactions = (wallets: FlowWalletType[]) => {
             payments = data;
           }
         }
+
+        console.log('Fetched payments: ', payments);
 
         if ((walletProfiles && walletProfiles.length > 0) || (payments && payments.length > 0)) {
           txs.forEach((tx) => {
@@ -90,11 +94,9 @@ export const useTransactions = (wallets: FlowWalletType[]) => {
 
             return tx;
           });
-
-          console.log('Fetched all txs: ', wallets, txs);
-
-          return txs;
         }
+        console.log('Fetched all txs: ', wallets, txs);
+        return txs;
       })
   });
 };
