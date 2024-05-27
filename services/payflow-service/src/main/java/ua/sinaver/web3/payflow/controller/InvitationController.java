@@ -13,9 +13,12 @@ import ua.sinaver.web3.payflow.data.Invitation;
 import ua.sinaver.web3.payflow.message.InvitationMessage;
 import ua.sinaver.web3.payflow.message.ProfileMetaMessage;
 import ua.sinaver.web3.payflow.message.SubmitInvitationMessage;
+import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.service.UserService;
 import ua.sinaver.web3.payflow.service.api.IContactBookService;
+import ua.sinaver.web3.payflow.service.api.IFarcasterMessagingService;
+import ua.sinaver.web3.payflow.service.api.IIdentityService;
 
 import java.security.Principal;
 import java.time.Period;
@@ -45,6 +48,13 @@ public class InvitationController {
 
 	@Autowired
 	private IContactBookService contactBookService;
+
+	@Autowired
+	private IIdentityService identityService;
+
+	@Autowired
+	private IFarcasterMessagingService farcasterMessagingService;
+
 
 	@GetMapping
 	public List<InvitationMessage> getAll(Principal principal) {
@@ -105,16 +115,37 @@ public class InvitationController {
 		}
 
 		val allowance = user.getUserAllowance();
-
 		if (!StringUtils.isBlank(invitationMessage.identityBased())) {
-			if (allowance != null && allowance.getIdentityInviteLimit() > 0) {
-				allowance.setIdentityInviteLimit(allowance.getIdentityInviteLimit() - 1);
-				val invitation = new Invitation(invitationMessage.identityBased(), null);
-				invitation.setInvitedBy(user);
-				invitation.setExpiryDate(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(invitationExpiryPeriod.getDays())));
-				invitationRepository.save(invitation);
-			} else {
-				throw new Error("User reached his invitation limit");
+			val invitation = new Invitation(invitationMessage.identityBased(), null);
+			invitation.setInvitedBy(user);
+			invitation.setExpiryDate(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(invitationExpiryPeriod.getDays())));
+			invitationRepository.save(invitation);
+
+			val inviterUsername = identityService.getIdentityFname(user.getIdentity());
+			val receiverUsername = identityService.getIdentityFname(invitation.getIdentity());
+			val receiverFid = identityService.getIdentityFid(invitation.getIdentity(), false);
+
+			try {
+				val messageText = String.format("""
+								Congratulations @%s 🎉 You've been invited to @payflow by @%s
+																\t
+								Proceed to app.payflow.me/connect for sign up!
+																\t
+								`Sign In With Farcaster` is recommended for better experience 🙌🏻
+																\t
+								p.s. join /payflow channel for updates 👀""",
+						receiverUsername,
+						inviterUsername);
+
+				val response = farcasterMessagingService.message(
+						new DirectCastMessage(receiverFid, messageText, UUID.randomUUID()));
+
+				if (!response.result().success()) {
+					log.error("Failed to send direct cast with {} for invitation " +
+							"completion", messageText);
+				}
+			} catch (Throwable t) {
+				log.error("Failed to send direct cast with exception: ", t);
 			}
 		} else {
 			val numberOfCodes = invitationMessage.codeBased().number() == null ? 1

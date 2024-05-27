@@ -147,7 +147,7 @@ public class PaymentController {
 						val castText = String.format("""
 										@%s, you've been paid $%s %s by @%s 🎉
 																				
-										Join /payflow community!""",
+										p.s. join /payflow channel for updates 👀""",
 								receiverFname,
 								payment.getUsdAmount(),
 								payment.getToken(),
@@ -161,7 +161,8 @@ public class PaymentController {
 							log.error("Failed to reply with {} for payment intent completion", castText);
 						}
 					} else {
-						val receiverFid = identityService.getIdentityFid(payment.getReceiver().getIdentity(), true);
+						val receiverFid =
+								identityService.getIdentityFid(payment.getReceiver().getIdentity(), false);
 						if (StringUtils.isBlank(receiverFid)) {
 							return;
 						}
@@ -174,7 +175,7 @@ public class PaymentController {
 																					
 											Receipt (tx): %s
 
-											Join /payflow community!""",
+											p.s. join /payflow channel for updates 👀""",
 									receiverFname,
 									payment.getUsdAmount(),
 									payment.getToken(),
@@ -197,7 +198,7 @@ public class PaymentController {
 						val castText = String.format("""
 										@%s, you've been gifted 1 unit of storage by @%s 🎉
 																				
-										Join /payflow community!""",
+										p.s. join /payflow channel for updates 👀""",
 								receiverFname,
 								senderFname);
 
@@ -217,7 +218,7 @@ public class PaymentController {
 																					
 											Receipt (tx): %s
 
-											Join /payflow community!""",
+											p.s. join /payflow channel for updates 👀""",
 									receiverFname,
 									senderFname,
 									sourceRef,
