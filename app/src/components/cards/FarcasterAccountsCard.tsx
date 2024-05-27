@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Address } from 'viem';
 import { sortBySocialScore } from '../../services/socials';
-import { IdentityType } from '../../types/ProfleType';
+import { ContactType, IdentityType } from '../../types/ProfleType';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { LoadingFarcasterAccountsSkeleton } from '../skeletons/LoadingFarcasterAccountsSkeleton';
 import { FarcasterIdentitySelectOption } from '../FarcasterIdentitySelectOption';
@@ -41,7 +41,11 @@ export function FarcasterAccountsCard({
             indexes: null
           }
         });
-        setIdentities(sortBySocialScore(response.data).map((contact) => contact.data));
+        setIdentities(
+          sortBySocialScore(
+            (response.data as IdentityType[]).map((i) => ({ data: i } as ContactType))
+          ).map((contact) => contact.data)
+        );
       } catch (error) {
         console.error(error);
       } finally {
