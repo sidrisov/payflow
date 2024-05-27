@@ -43,9 +43,9 @@ export function TokenAmountSection({
 
   const [selectedTokenPrice, setSelectedTokenPrice] = useState<number>();
 
-  const [usdAmountMode, setUsdAmountMode] = useState<boolean>(true);
+  const [usdAmountMode, setUsdAmountMode] = useState<boolean>(!Boolean(payment?.tokenAmount));
 
-  const { isSuccess, data: balance } = useBalance({
+  const { data: balance } = useBalance({
     address: selectedWallet?.address,
     chainId: chain?.id,
     token: selectedToken !== ETH ? selectedToken?.address : undefined,
@@ -176,7 +176,7 @@ export function TokenAmountSection({
             }}
             onChange={async (event) => {
               // don't allow changing amount if passed
-              if (payment?.usdAmount) {
+              if (payment?.usdAmount || payment?.tokenAmount) {
                 return;
               }
 
