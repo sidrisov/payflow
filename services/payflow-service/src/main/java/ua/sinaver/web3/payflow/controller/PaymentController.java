@@ -145,12 +145,14 @@ public class PaymentController {
 				if (StringUtils.isBlank(payment.getCategory())) {
 					if (payment.getReceiver() == null) {
 						val castText = String.format("""
-										@%s, you've been paid $%s %s by @%s 🎉
+										@%s, you've been paid %s %s by @%s 🎉
 																				
 										p.s. join /payflow channel for updates 👀""",
 								receiverFname,
-								payment.getUsdAmount(),
-								payment.getToken(),
+								StringUtils.isNotBlank(payment.getTokenAmount()) ?
+										payment.getTokenAmount() :
+										String.format("$%s", payment.getUsdAmount()),
+								payment.getToken().toUpperCase(),
 								senderFname);
 
 						val processed = farcasterPaymentBotService.reply(castText,
@@ -169,7 +171,7 @@ public class PaymentController {
 
 						try {
 							val messageText = String.format("""
-											 @%s, you've been paid $%s %s by @%s 🎉
+											 @%s, you've been paid %s %s by @%s 🎉
 																					
 											Source (cast): %s
 																					
@@ -177,8 +179,10 @@ public class PaymentController {
 
 											p.s. join /payflow channel for updates 👀""",
 									receiverFname,
-									payment.getUsdAmount(),
-									payment.getToken(),
+									StringUtils.isNotBlank(payment.getTokenAmount()) ?
+											payment.getTokenAmount() :
+											String.format("$%s", payment.getUsdAmount()),
+									payment.getToken().toUpperCase(),
 									senderFname,
 									sourceRef,
 									txUrl);

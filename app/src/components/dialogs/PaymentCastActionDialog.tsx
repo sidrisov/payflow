@@ -21,8 +21,9 @@ import { ChooseChainMenu } from '../menu/ChooseChainMenu';
 import { TokenSelectorButton } from '../buttons/TokenSelectorButton';
 import { DEGEN_TOKEN, Token, getSupportedTokens } from '../../utils/erc20contracts';
 import { getNetworkShortName } from '../../utils/networks';
-import { ArrowBack } from '@mui/icons-material';
+import { ArrowBack, SwapVert } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
+import { grey } from '@mui/material/colors';
 
 export default function PaymentCastActionDialog({
   closeStateCallback,
@@ -34,10 +35,13 @@ export default function PaymentCastActionDialog({
   const [openSelectChain, setOpenSelectChain] = useState<boolean>(false);
   const [chainAnchorEl, setChainAnchorEl] = useState<null | HTMLElement>(null);
 
-  const [amount, setAmount] = useState<number | undefined>(0.99);
+  const [usdAmount, setUsdAmount] = useState<number | undefined>(0.99);
+  const [tokenAmount, setTokenAmount] = useState<number | undefined>(1);
   const [token, setToken] = useState<Token | undefined>({ name: DEGEN_TOKEN } as Token);
   const [tokens, setTokens] = useState<Token[]>([]);
   const [chain, setChain] = useState<Chain>(base);
+
+  const [usdAmountMode, setUsdAmountMode] = useState<boolean>(true);
 
   useMemo(async () => {
     const supportedTokens = getSupportedTokens(chain.id);
@@ -103,41 +107,64 @@ export default function PaymentCastActionDialog({
             </Typography>
           </Stack>
           <Stack direction="row" alignItems="center" spacing={1}>
-            <Typography fontSize={16} fontWeight="bold">
-              Amount:
-            </Typography>
             <TextField
               variant="standard"
               type="number"
-              value={amount}
+              value={usdAmountMode ? usdAmount : tokenAmount}
               inputProps={{
                 style: {
-                  maxWidth: 100,
-                  textAlign: 'start',
                   fontWeight: 'bold',
-                  fontSize: 18
+                  fontSize: 25,
+                  alignSelf: 'center',
+                  textAlign: 'center'
                 }
               }}
               InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Typography ml={1.5} fontSize={18} fontWeight="bold">
-                      $
-                    </Typography>
-                  </InputAdornment>
-                ),
+                ...(usdAmountMode
+                  ? {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Typography fontSize={18} fontWeight="bold">
+                            $
+                          </Typography>
+                        </InputAdornment>
+                      )
+                    }
+                  : {
+                      endAdornment: (
+                        <InputAdornment position="start">
+                          <Typography fontSize={18} fontWeight="bold">
+                            {token?.name}
+                          </Typography>
+                        </InputAdornment>
+                      )
+                    }),
                 inputMode: 'decimal',
                 disableUnderline: true
               }}
               onChange={async (event) => {
                 if (event.target.value) {
-                  const amountUSD = parseFloat(event.target.value);
-                  setAmount(amountUSD);
+                  const amount = parseFloat(event.target.value);
+                  if (usdAmountMode) {
+                    setUsdAmount(amount);
+                  } else {
+                    setTokenAmount(amount);
+                  }
                 } else {
-                  setAmount(undefined);
+                  setUsdAmount(undefined);
+                  setTokenAmount(undefined);
                 }
               }}
+              sx={{ width: 200, border: 1, borderRadius: 10, borderColor: 'divider', px: 2 }}
             />
+            <IconButton
+              size="small"
+              sx={{ color: grey[400] }}
+              onClick={async () => {
+                setUsdAmountMode(!usdAmountMode);
+              }}>
+              <SwapVert fontSize="small" />
+            </IconButton>
           </Stack>
         </Stack>
         <Button
@@ -146,7 +173,11 @@ export default function PaymentCastActionDialog({
           fullWidth
           size="large"
           sx={{ borderRadius: 5 }}
-          href={`https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fpay%2Fintent%3Famount%3D${amount}%26token%3D${token?.name.toLocaleLowerCase()}%26chain%3D${getNetworkShortName(
+          href={`https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fpay%2Fintent%3Famount%3D${
+            usdAmount ?? ''
+          }%26tokenAmount%3D${
+            tokenAmount ?? ''
+          }%26token%3D${token?.name.toLocaleLowerCase()}%26chain%3D${getNetworkShortName(
             chain.id
           )}`}
           target="_blank">

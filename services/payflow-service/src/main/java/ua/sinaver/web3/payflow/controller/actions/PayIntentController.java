@@ -49,7 +49,7 @@ public class PayIntentController {
 		val castActionMeta = new CastActionMeta(
 				String.format("%s %s Intent (%s)", tokenAmount != null ? tokenAmount :
 								String.format("$%s", amount),
-						StringUtils.capitalize(token), StringUtils.capitalize(chain)),
+						StringUtils.upperCase(token), StringUtils.capitalize(chain)),
 				"heart",
 				"Use this action to submit payment intent for farcaster users in " +
 						"Payflow app",
