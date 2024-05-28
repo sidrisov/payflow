@@ -175,11 +175,9 @@ export default function PaymentCastActionDialog({
           sx={{ borderRadius: 5 }}
           href={`https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fpay%2Fintent%3Famount%3D${
             usdAmount ?? ''
-          }%26tokenAmount%3D${
-            tokenAmount ?? ''
-          }%26token%3D${token?.name.toLocaleLowerCase()}%26chain%3D${getNetworkShortName(
-            chain.id
-          )}`}
+          }%26tokenAmount%3D${tokenAmount ?? ''}%26token%3D${
+            token?.id
+          }%26chain%3D${getNetworkShortName(chain.id)}`}
           target="_blank">
           Install Action
         </Button>
