@@ -19,12 +19,12 @@ export const useTokenPrices = () => {
         params: { ids: tokens.join(','), vs_currencies: 'usd' }
       });
 
+      // TODO: some hardcoding, fetch separately
       const tokenPrices: TokenPrices = {};
       for (const [_, value] of Object.entries(response.data)) {
         tokenPrices['eth'] = (value as any).usd;
+        //tokenPrices['przWETH'] = (value as any).usd;
       }
-
-      ('/degenchain/token_price');
 
       for (const chain of SUPPORTED_CHAINS) {
         const chainId = chain.id;
@@ -61,6 +61,10 @@ export const useTokenPrices = () => {
             tokenPrices[token.id] = tokenPricesData[token.tokenAddress];
           }
         });
+
+        // TODO: some hardcoding, fetch separately
+        tokenPrices['przUSDC'] = tokenPrices['usdc'];
+        //tokenPrices['przPOOL'] = tokenPrices['pool'];
       }
 
       return tokenPrices;

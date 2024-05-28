@@ -36,8 +36,8 @@ export function ChooseTokenMenu({
       {tokens &&
         tokens.map((token) => (
           <MenuItem
-            key={token.name}
-            selected={token.name === selectedToken?.name}
+            key={token.id}
+            selected={token.id === selectedToken?.id}
             onClick={async () => {
               setSelectedToken(token);
               closeStateCallback();

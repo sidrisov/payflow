@@ -83,7 +83,7 @@ export function NetworkTokenSelector({
     }
     // filter by passed token if available
     const tokens = getSupportedTokens(selectedWallet.network).filter((t) =>
-      !payment?.receiverFid && payment?.token ? t.name.toLowerCase() === payment?.token : true
+      !payment?.receiverFid && payment?.token ? t.id === payment?.token : true
     );
 
     setCompatibleTokens(

@@ -128,7 +128,47 @@ export const ERC20_CONTRACTS = [
     chainId: degen.id,
     tokenAddress: '0xeb1c32ea4e392346795aed3607f37646e2a9c13f',
     imageURL: 'https://i.imgur.com/oQO5lv9.gif'
+  },
+  // pooltogether
+  /*   {
+    id: 'pool',
+    name: 'POOL',
+    description: 'PoolTogether Token',
+    chain: 'optimism',
+    chainId: optimism.id,
+    tokenAddress: '0x395ae52bb17aef68c2888d941736a71dc6d4e125',
+    imageURL: 'https://app.cabana.fi/icons/przPOOL.svg'
+  }, */
+  {
+    id: 'przUSDC',
+    name: 'Prize USDC',
+    description:
+      'Prize USDC is USDC deposited into Aave via the PoolTogether Protocol. Hold Prize USDC and win ETH prizes',
+    chain: 'optimism',
+    chainId: optimism.id,
+    tokenAddress: '0x03d3ce84279cb6f54f5e6074ff0f8319d830dafe',
+    imageURL: 'https://app.cabana.fi/icons/przUSDC.svg'
   }
+  /* {
+    id: 'przWETH',
+    name: 'Prize WETH',
+    description:
+      'Prize WETH is WETH deposited into Aave via the PoolTogether Protocol. Hold Prize WETH and win ETH prizes',
+    chain: 'optimism',
+    chainId: optimism.id,
+    tokenAddress: '0x2998c1685e308661123f64b333767266035f5020',
+    imageURL: 'https://app.cabana.fi/icons/przWETH.svg'
+  },
+  {
+    id: 'przPOOL',
+    name: 'Prize POOL',
+    description:
+      'Prize POOL is staked POOL. The przPOOL vault wins prizes based on 3-10% of the total yield from the Prize Pool each day. Hold Prize POOL and win ETH prizes',
+    chain: 'optimism',
+    chainId: optimism.id,
+    tokenAddress: '0xa52e38a9147f5ea9e0c5547376c21c9e3f3e5e1f',
+    imageURL: 'https://app.cabana.fi/icons/przPOOL.svg'
+  } */
 ] as Token[];
 
 export interface Token {
