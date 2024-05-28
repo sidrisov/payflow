@@ -9,13 +9,16 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.message.alfafrens.ChannelSubscribersAndStakesResponseMessage;
 import ua.sinaver.web3.payflow.message.alfafrens.UserByFidResponseMessage;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static ua.sinaver.web3.payflow.config.CacheConfig.CONTACT_LIST_CACHE_NAME;
@@ -40,7 +43,7 @@ public class AlfaFrensService {
 				.build();
 	}
 
-	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'alfafrens:' + #identity", unless =
+	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'alfafrens-list:' + #identity", unless =
 			"#result.isEmpty()")
 	public List<String> fetchSubscribers(String identity) {
 		log.debug("Fetching alfa frens subscribers for identity: {}", identity);
@@ -89,8 +92,11 @@ public class AlfaFrensService {
 			log.debug("Fetched alfa frens subscribers: {} for identity: {}", subscribers, identity);
 
 			val subscribersVerifiedAddresses = subscribers.stream()
-					.map(s -> socialGraphService.getIdentityVerifiedAddresses(s).connectedAddresses())
-					.flatMap(List::stream)
+					.map(s -> identityService.getIdentitiesInfo(socialGraphService.getIdentityVerifiedAddresses(s).connectedAddresses())
+							.stream().max(Comparator.comparingInt(IdentityMessage::score))
+							.map(IdentityMessage::address)
+							.orElse(null))
+					.filter(Objects::nonNull)
 					.collect(Collectors.toList());
 
 			log.debug("Fetched alfa frens subscribers subscribersVerifiedAddresses: {} for identity: {}", subscribersVerifiedAddresses,

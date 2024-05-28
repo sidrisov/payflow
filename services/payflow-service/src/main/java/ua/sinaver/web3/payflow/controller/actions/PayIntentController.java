@@ -96,7 +96,7 @@ public class PayIntentController {
 		// check if profile exist
 		val paymentProfile = identityService.getFidProfiles(casterFid).stream().findFirst().orElse(null);
 		String paymentAddress = null;
-		if (paymentProfile == null) {
+		if (paymentProfile == null || paymentProfile.getDefaultFlow() == null) {
 			val paymentAddresses = identityService.getFidAddresses(casterFid);
 			// pay first with higher social score now invite first
 			val paymentIdentity = identityService.getIdentitiesInfo(paymentAddresses)
@@ -129,7 +129,7 @@ public class PayIntentController {
 		}
 
 		// check if profile accepts payment on the chain
-		if (paymentProfile != null) {
+		if (paymentProfile != null && paymentProfile.getDefaultFlow() != null) {
 			val isWalletPresent = paymentProfile.getDefaultFlow().getWallets().stream()
 					.anyMatch(w -> w.getNetwork().equals(chainId));
 			if (!isWalletPresent) {
@@ -147,7 +147,9 @@ public class PayIntentController {
 						10));
 
 		val payment = new Payment(Payment.PaymentType.INTENT,
-				paymentProfile, chainId, token);
+				(paymentProfile != null && paymentProfile.getDefaultFlow() != null) ?
+						paymentProfile : null,
+				chainId, token);
 		payment.setReceiverAddress(paymentAddress);
 		payment.setSender(clickedProfile);
 		if (tokenAmount != null) {

@@ -16,6 +16,7 @@ public record IdentityMessage(
 		ProfileMessage profile,
 		SocialMetadata meta) {
 
+	private static final int PAYFLOW_SCORE = 10;
 	private static final int ENS_SCORE = 5;
 	private static final int FARCASTER_SCORE = 4;
 	private static final int LENS_SCORE = 4;
@@ -141,6 +142,10 @@ public record IdentityMessage(
 
 	public int score() {
 		var score = 0;
+		if (this.profile != null) {
+			score += PAYFLOW_SCORE;
+		}
+
 		val meta = this.meta();
 		if (meta != null) {
 			if (meta.ens() != null) {
