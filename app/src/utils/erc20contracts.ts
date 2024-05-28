@@ -26,6 +26,48 @@ export const ERC20_CONTRACTS = [
     tokenAddress: '0x4ed4e862860bed51a9570b96d89af5e1b0efefed',
     imageURL: 'https://pbs.twimg.com/profile_images/1751028059325501440/9jrvP_yG_400x400.jpg'
   },
+  {
+    id: 'higher',
+    name: 'Higher',
+    description: 'A community of optimists on Base.',
+    chain: 'base',
+    chainId: base.id,
+    tokenAddress: '0x0578d8a44db98b23bf096a382e016e29a5ce0ffe',
+    imageURL: 'https://i.imgur.com/bdQcnVI.png'
+  },
+
+  {
+    id: 'onchain',
+    name: 'Onchain',
+    description:
+      '$ONCHAIN is introducing the Slowdrop mechanism, where tokens will be distributed through a competition, based on a careful continuous approach, powered by Farcaster and Guild.',
+    chain: 'base',
+    chainId: base.id,
+    tokenAddress: '0xfef2d7b013b88fec2bfe4d2fee0aeb719af73481',
+    imageURL: 'https://i.imgur.com/o4c3DQt.jpeg'
+  },
+  {
+    id: 'tn100x',
+    name: 'TN100x',
+    description:
+      '$TN100x aka "The Next 100x Memecoin on Base". This is the coin that powers the HAM ecosystem. It\'s more than a memecoin, it\'s a social token, and a driving force behind everything Ham.',
+    chain: 'base',
+    chainId: base.id,
+    tokenAddress: '0x5b5dee44552546ecea05edea01dcd7be7aa6144a',
+    imageURL:
+      'https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/e6f48016-65e4-4f9e-8157-9e4f9b233700/original'
+  },
+  {
+    id: 'build',
+    name: 'Build',
+    description:
+      'BUILD is a token of appreciation on Base and a social game to reward onchain builders.',
+    chain: 'base',
+    chainId: base.id,
+    tokenAddress: '0x3c281a39944a2319aa653d81cfd93ca10983d234',
+    imageURL:
+      'https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/9f99fea6-2aa9-4dc8-72a6-2fe6ee114400/original'
+  },
   // optimism
   {
     id: 'eth',
