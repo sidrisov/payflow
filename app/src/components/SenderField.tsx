@@ -57,12 +57,9 @@ export function SenderField({ sender }: { sender: SelectedIdentityType }) {
       )}
 
       {sender.identity.address && sender.type === 'profile' && (
-        <Stack alignItems="flex-end">
-          <PayflowChip />
-          <Typography variant="caption" maxWidth={150} noWrap>
-            {sender.identity.profile?.defaultFlow?.title}
-          </Typography>
-        </Stack>
+        <Typography mr={1} variant="caption" fontWeight="bold" maxWidth={150} noWrap>
+          {sender.identity.profile?.defaultFlow?.title}
+        </Typography>
       )}
     </Box>
   );

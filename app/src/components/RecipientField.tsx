@@ -48,8 +48,6 @@ export function RecipientField({
           Choose Recipient
         </Typography>
       )}
-
-      {recipient && recipient.type === 'profile' && <PayflowChip />}
     </Box>
   );
 }

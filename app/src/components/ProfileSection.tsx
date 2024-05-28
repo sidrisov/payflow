@@ -1,4 +1,4 @@
-import { Stack, Typography } from '@mui/material';
+import { Avatar, Badge, Stack, Typography } from '@mui/material';
 import { ProfileType } from '../types/ProfleType';
 import ProfileAvatar from './avatars/ProfileAvatar';
 
@@ -15,7 +15,15 @@ export function ProfileSection({
 }) {
   return (
     <Stack maxWidth={maxWidth ?? 130} direction="row" spacing={0.5} alignItems="center">
-      <ProfileAvatar profile={profile} sx={{ width: avatarSize, height: avatarSize }} />
+      <Badge
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right'
+        }}
+        overlap="circular"
+        badgeContent={<Avatar src="/payflow.png" sx={{ width: 16, height: 16 }} />}>
+        <ProfileAvatar profile={profile} sx={{ width: avatarSize, height: avatarSize }} />
+      </Badge>
       <Stack
         minWidth={75}
         spacing={0.1}
