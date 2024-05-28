@@ -9,16 +9,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import ua.sinaver.web3.payflow.message.ConnectedAddresses;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.message.alfafrens.ChannelSubscribersAndStakesResponseMessage;
 import ua.sinaver.web3.payflow.message.alfafrens.UserByFidResponseMessage;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static ua.sinaver.web3.payflow.config.CacheConfig.CONTACT_LIST_CACHE_NAME;
@@ -92,10 +90,16 @@ public class AlfaFrensService {
 			log.debug("Fetched alfa frens subscribers: {} for identity: {}", subscribers, identity);
 
 			val subscribersVerifiedAddresses = subscribers.stream()
-					.map(s -> identityService.getIdentitiesInfo(socialGraphService.getIdentityVerifiedAddresses(s).connectedAddresses())
-							.stream().max(Comparator.comparingInt(IdentityMessage::score))
-							.map(IdentityMessage::address)
-							.orElse(null))
+					.map(s ->
+							identityService.getIdentitiesInfo(
+											verificationsWithoutCustodial(
+													socialGraphService.getIdentityVerifiedAddresses(s)
+											)
+									).stream()
+									.max(Comparator.comparingInt(IdentityMessage::score))
+									.map(IdentityMessage::address)
+									.orElse(null)
+					)
 					.filter(Objects::nonNull)
 					.collect(Collectors.toList());
 
@@ -108,6 +112,17 @@ public class AlfaFrensService {
 					identity, t.getMessage());
 
 			throw t;
+		}
+	}
+
+	private List<String> verificationsWithoutCustodial(ConnectedAddresses verifications) {
+		val addresses = verifications.connectedAddresses();
+		if (addresses.size() > 1) {
+			val updatedAddresses = new ArrayList<>(addresses);
+			updatedAddresses.remove(verifications.userAddress());
+			return updatedAddresses;
+		} else {
+			return addresses;
 		}
 	}
 }

@@ -13,6 +13,7 @@ import reactor.core.scheduler.Schedulers;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.Social;
 import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
+import ua.sinaver.web3.payflow.message.ConnectedAddresses;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
@@ -39,11 +40,9 @@ public class IdentityService implements IIdentityService {
 	@Value("${payflow.invitation.whitelisted.default.users}")
 	private Set<String> whitelistedUsers;
 
-
 	@Override
 	public User getFidProfile(int fid, String identity) {
 		val profiles = getFidProfiles(fid);
-
 		return profiles.stream()
 				.filter(p -> StringUtils.isBlank(identity) || p.getIdentity().equals(identity))
 				.findFirst().orElse(null);
@@ -52,7 +51,6 @@ public class IdentityService implements IIdentityService {
 	@Override
 	public User getFidProfile(String fname, String identity) {
 		val profiles = getFidProfiles(fname);
-
 		return profiles.stream()
 				.filter(p -> StringUtils.isBlank(identity) || p.getIdentity().equals(identity))
 				.findFirst().orElse(null);
@@ -60,53 +58,28 @@ public class IdentityService implements IIdentityService {
 
 	@Override
 	public List<User> getFidProfiles(int fid) {
-		// TODO: temp solution to invalidate cache
-		socialGraphService.cleanCache("fc_fid:".concat(String.valueOf(fid)));
-		val wallet = socialGraphService.getSocialMetadata(
-				"fc_fid:".concat(String.valueOf(fid)));
-		val addresses =
-				wallet.getAddresses()
-						.stream()
-						.filter(address -> address.startsWith("0x")).toList();
-		log.debug("Addresses for {}: {}", fid, addresses);
-
-		return getFidProfiles(addresses);
+		return getFidProfiles(getFidAddresses(fid));
 	}
 
 	@Override
 	public List<User> getFidProfiles(String fname) {
-		val wallet = socialGraphService.getSocialMetadata(
-				"fc_fname:".concat(String.valueOf(fname)));
-		val addresses =
-				wallet.getAddresses()
-						.stream()
-						.filter(address -> address.startsWith("0x")).toList();
-		log.debug("Addresses for {}: {}", fname, addresses);
-
-		return getFidProfiles(addresses);
+		return getFidProfiles(getFnameAddresses(fname));
 	}
 
 	@Override
 	public List<String> getFidAddresses(int fid) {
-		val wallet = socialGraphService.getSocialMetadata(
+		val verifications = socialGraphService.getIdentityVerifiedAddresses(
 				"fc_fid:".concat(String.valueOf(fid)));
-		val addresses =
-				wallet.getAddresses()
-						.stream()
-						.filter(address -> address.startsWith("0x")).toList();
+		val addresses = verificationsWithoutCustodial(verifications);
 		log.debug("Addresses for {}: {}", fid, addresses);
-
 		return addresses;
 	}
 
 	@Override
 	public List<String> getFnameAddresses(String fname) {
-		val wallet = socialGraphService.getSocialMetadata(
-				"fc_fname:".concat(String.valueOf(fname)));
-		val addresses =
-				wallet.getAddresses()
-						.stream()
-						.filter(address -> address.startsWith("0x")).toList();
+		val verifications = socialGraphService.getIdentityVerifiedAddresses(
+				"fc_fname:".concat(fname));
+		val addresses = verificationsWithoutCustodial(verifications);
 		log.debug("Addresses for {}: {}", fname, addresses);
 
 		return addresses;
@@ -210,6 +183,17 @@ public class IdentityService implements IIdentityService {
 		} catch (Throwable t) {
 			log.error("Failed to fetch contacts", t);
 			return Collections.emptyList();
+		}
+	}
+
+	private List<String> verificationsWithoutCustodial(ConnectedAddresses verifications) {
+		val addresses = verifications.connectedAddresses();
+		if (addresses.size() > 1) {
+			val updatedAddresses = new ArrayList<>(addresses);
+			updatedAddresses.remove(verifications.userAddress());
+			return updatedAddresses;
+		} else {
+			return addresses;
 		}
 	}
 }

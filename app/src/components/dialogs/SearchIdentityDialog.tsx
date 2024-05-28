@@ -292,7 +292,7 @@ export default function SearchIdentityDialog({
               setSearchString(event.target.value);
             }}
           />
-          {isAuthenticated && !searchString && (
+          {isAuthenticated && !searchString && contacts.length > 0 && (
             <AddressBookToolBar
               tags={tags}
               addressBookView={addressBookView}

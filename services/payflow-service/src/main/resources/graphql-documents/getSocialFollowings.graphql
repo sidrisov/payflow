@@ -1,6 +1,8 @@
 query GetSocialFollowings($identity: Identity!, $limit: Int) {
+    # remove lens for now: farcaster, lens -> farcaster
     SocialFollowings(
-        input: {limit: $limit, filter: {dappName: {_in: [farcaster, lens]}, identity: {_eq: $identity}}, blockchain: ALL}
+        input: {limit: $limit, filter: {dappName: {_eq: farcaster}, identity: {_eq: $identity}},
+            blockchain: ALL}
     ) {
         Following {
             followingAddress {

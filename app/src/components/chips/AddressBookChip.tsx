@@ -93,8 +93,16 @@ export function AddressBookToolBar({
   const [openSettings, setOpenSettings] = useState<boolean>(false);
   const [settingsAchorEl, setSettingsAchorEl] = useState<null | HTMLElement>(null);
 
+  console.log('tags, ', tags);
+
   return (
-    <Box my={1} display="flex" flexDirection="row" alignItems="center" gap={0.5}>
+    <Box
+      my={1}
+      display="flex"
+      flexDirection="row"
+      alignItems="center"
+      justifyContent="center"
+      gap={0.5}>
       <Box
         mx={0.5}
         display="flex"
