@@ -6,6 +6,7 @@ import { TxInfo } from '../../types/ActivityFetchResultType';
 import { PaymentType } from '../../types/PaymentType';
 import axios from 'axios';
 import { baseSepolia, base, optimism, zora, degen, mode } from 'viem/chains';
+import { ERC20_CONTRACTS } from '../erc20contracts';
 
 export const useTransactions = (wallets: FlowWalletType[]) => {
   return useQuery({
@@ -228,7 +229,11 @@ function parseTxHistoryResponse(
         tx.to !== '0x3AC05161b76a35c1c28dC99Aa01BEd7B24cEA3bf' &&
         tx.value > 0 &&
         tx.success &&
-        (tx.token ? ['USDC', 'DEGEN', 'JAAD', 'ATH'].includes(tx.token.symbol) : true)
+        (tx.token
+          ? ERC20_CONTRACTS.find(
+              (t) => t.chainId === tx.chainId && t.tokenAddress === tx.token?.address.toLowerCase()
+            )
+          : true)
     );
 }
 

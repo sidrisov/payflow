@@ -1,19 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import {
-  DEGEN_TOKEN,
-  ERC20_CONTRACTS,
-  ETH_TOKEN,
-  TokenPrices,
-  USDC_TOKEN
-} from '../erc20contracts';
+import { ERC20_CONTRACTS, TokenPrices } from '../erc20contracts';
 import { degen } from 'viem/chains';
+import { SUPPORTED_CHAINS } from '../networks';
 
 const PRICE_API = 'https://api.coingecko.com/api/v3/simple/price';
-const tokens = ['ethereum', 'usd-coin', 'degen-base'];
+const tokens = ['ethereum'];
 
-const DEGEN_PRICE_API =
-  'https://api.geckoterminal.com/api/v2/simple/networks/degenchain/token_price';
+const TOKEN_PRICE_API = 'https://api.geckoterminal.com/api/v2/simple/networks';
 
 export const useTokenPrices = () => {
   return useQuery<TokenPrices>({
@@ -26,41 +20,48 @@ export const useTokenPrices = () => {
       });
 
       const tokenPrices: TokenPrices = {};
-      for (const [key, value] of Object.entries(response.data)) {
-        let token;
-        switch (key) {
-          case 'ethereum':
-            token = ETH_TOKEN;
-            break;
-          case 'usd-coin':
-            token = USDC_TOKEN;
-            break;
-          case 'degen-base':
-            token = DEGEN_TOKEN;
-            break;
-        }
-
-        if (token) {
-          tokenPrices[token] = (value as any).usd;
-        }
+      for (const [_, value] of Object.entries(response.data)) {
+        tokenPrices['eth'] = (value as any).usd;
       }
 
-      const degenResponse = await axios.get(
-        DEGEN_PRICE_API.concat(
-          '/' +
-            ERC20_CONTRACTS[degen.id]
-              .filter((t) => t.address)
-              .map((t) => t.address)
-              .join(',')
-        )
-      );
+      ('/degenchain/token_price');
 
-      const degenTokenPrices = degenResponse.data.data.attributes.token_prices;
-      ERC20_CONTRACTS[degen.id].forEach((token) => {
-        if (token.address && degenTokenPrices.hasOwnProperty(token.address)) {
-          tokenPrices[token.name] = degenTokenPrices[token.address];
+      for (const chain of SUPPORTED_CHAINS) {
+        const chainId = chain.id;
+
+        // Filter tokens for the current chain
+        const tokensForChain = ERC20_CONTRACTS.filter(
+          (token) => token.chainId === chainId && token.tokenAddress
+        );
+
+        // Filter tokens that are not already present in tokenPrices
+        const tokensToFetch = tokensForChain.filter(
+          (token) => !tokenPrices.hasOwnProperty(token.id)
+        );
+
+        if (tokensToFetch.length === 0) {
+          // All tokens for this chain are already fetched, no need to make API call
+          continue;
         }
-      });
+
+        const chainName = tokensToFetch[0].chain;
+
+        // Fetch token prices for the tokens to fetch
+        const response = await axios.get(
+          `${TOKEN_PRICE_API}/${
+            chainId == degen.id ? 'degenchain' : chainName
+          }/token_price/${tokensToFetch.map((token) => token.tokenAddress).join(',')}`
+        );
+
+        const tokenPricesData = response.data.data.attributes.token_prices;
+
+        // Update tokenPrices object with token prices for the current chain
+        tokensForChain.forEach((token) => {
+          if (token.tokenAddress && tokenPricesData.hasOwnProperty(token.tokenAddress)) {
+            tokenPrices[token.id] = tokenPricesData[token.tokenAddress];
+          }
+        });
+      }
 
       return tokenPrices;
     }

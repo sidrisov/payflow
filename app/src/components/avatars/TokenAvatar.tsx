@@ -1,17 +1,18 @@
 import { Avatar, AvatarProps } from '@mui/material';
+import { Token } from '../../utils/erc20contracts';
 
 export default function TokenAvatar({
-  tokenName,
+  token,
   ...props
 }: AvatarProps & {
-  tokenName: string;
+  token: Token;
 }) {
   const { sx: sxProps, ...restProps } = props;
 
   return (
     <Avatar
       {...restProps}
-      src={`/coins/${tokenName.toLowerCase()}.png`}
+      src={token?.imageURL ?? `/coins/${token?.id}.png`}
       sx={{
         ...sxProps
       }}

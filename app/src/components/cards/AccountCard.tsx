@@ -147,9 +147,6 @@ export function AccountCard({
               })}
               sx={{ fontWeight: 'bold', maxWidth: 200, border: 0 }}
             />
-            {/*  <Typography maxWidth={200} p={1} variant="subtitle2" fontWeight="bold" noWrap>
-              {selectedFlow.title}
-            </Typography> */}
             <Stack
               spacing={1}
               direction="row"

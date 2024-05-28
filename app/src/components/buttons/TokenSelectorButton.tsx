@@ -27,7 +27,7 @@ export function TokenSelectorButton({
             setWalletAnchorEl(event.currentTarget);
             setOpenSelectToken(true);
           }}>
-          <TokenAvatar tokenName={selectedToken.name} sx={{ width: 28, height: 28 }} />
+          <TokenAvatar token={selectedToken} sx={{ width: 28, height: 28 }} />
         </IconButton>
         <ChooseTokenMenu
           anchorEl={tokenAnchorEl}

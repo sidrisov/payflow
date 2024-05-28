@@ -18,7 +18,7 @@ import { ExpandLess, ExpandMore, MoreHoriz, Payments } from '@mui/icons-material
 import TokenAvatar from './avatars/TokenAvatar';
 import { getNetworkDisplayName } from '../utils/networks';
 import NetworkAvatar from './avatars/NetworkAvatar';
-import getTokenName from '../utils/erc20contracts';
+import getTokenName, { ERC20_CONTRACTS, Token } from '../utils/erc20contracts';
 import { IdentityType, SelectedIdentityType } from '../types/ProfleType';
 import PaymentDialog from './dialogs/PaymentDialog';
 import { AddressSection } from './AddressSection';
@@ -229,6 +229,9 @@ export function PendingPaymentsSection({
   }
 
   function IntentPayment({ payment, ...props }: ButtonProps & { payment: PaymentType }) {
+    const token = ERC20_CONTRACTS.find(
+      (t) => t.chainId === payment.chainId && t.id === payment.token
+    );
     return (
       <Box
         key={payment.referenceId}
@@ -293,7 +296,7 @@ export function PendingPaymentsSection({
             <b>{getTokenName(payment.token)}</b>
           </Typography>
           <TokenAvatar
-            tokenName={payment.token}
+            token={token as Token}
             sx={{
               width: 15,
               height: 15

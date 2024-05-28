@@ -19,7 +19,7 @@ import { Chain } from 'viem';
 import { arbitrum, base, degen, mode, optimism } from 'viem/chains';
 import { ChooseChainMenu } from '../menu/ChooseChainMenu';
 import { TokenSelectorButton } from '../buttons/TokenSelectorButton';
-import { DEGEN_TOKEN, Token, getSupportedTokens } from '../../utils/erc20contracts';
+import { Token, getSupportedTokens } from '../../utils/erc20contracts';
 import { getNetworkShortName } from '../../utils/networks';
 import { ArrowBack, SwapVert } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
@@ -37,7 +37,7 @@ export default function PaymentCastActionDialog({
 
   const [usdAmount, setUsdAmount] = useState<number | undefined>(0.99);
   const [tokenAmount, setTokenAmount] = useState<number | undefined>(1);
-  const [token, setToken] = useState<Token | undefined>({ name: DEGEN_TOKEN } as Token);
+  const [token, setToken] = useState<Token | undefined>();
   const [tokens, setTokens] = useState<Token[]>([]);
   const [chain, setChain] = useState<Chain>(base);
 

@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import { formatUnits } from 'viem';
 import { useState } from 'react';
-import { TxInfo, TxToken } from '../types/ActivityFetchResultType';
+import { TxInfo } from '../types/ActivityFetchResultType';
 import NetworkAvatar from './avatars/NetworkAvatar';
 import { getNetworkDefaultBlockExplorerUrl, getNetworkDisplayName } from '../utils/networks';
 
@@ -24,11 +24,10 @@ import { AddressOrEnsWithLink } from './AddressOrEnsWithLink';
 import { ProfileDisplayNameWithLink } from './ProfileDisplayNameWithLink';
 import { PublicProfileDetailsPopover } from './menu/PublicProfileDetailsPopover';
 import { ProfileType } from '../types/ProfleType';
-import { DEGEN_TOKEN, ETH_TOKEN } from '../utils/erc20contracts';
+import { ERC20_CONTRACTS, Token } from '../utils/erc20contracts';
 import { normalizeNumberPrecision } from '../utils/normalizeNumberPrecision';
 import TokenAvatar from './avatars/TokenAvatar';
 import { useTokenPrices } from '../utils/queries/prices';
-import { degen } from 'viem/chains';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
 function getActivityLabel(activity: string) {
@@ -84,14 +83,12 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
     }
   });
 
-  const token =
-    txInfo.token ??
-    (txInfo.chainId === degen.id
-      ? { name: 'Degen', decimals: 18, symbol: DEGEN_TOKEN }
-      : { name: 'Ether', decimals: 18, symbol: ETH_TOKEN });
+  const token = ERC20_CONTRACTS.find(
+    (t) => t.chainId === txInfo.chainId && t.tokenAddress === txInfo.token?.address.toLowerCase()
+  ) as Token;
 
-  const value = parseFloat(formatUnits(BigInt(txInfo.value ?? 0), token.decimals));
-  const price = tokenPrices ? tokenPrices[token.symbol] : 0;
+  const value = parseFloat(formatUnits(BigInt(txInfo.value ?? 0), txInfo.token?.decimals ?? 18));
+  const price = tokenPrices ? tokenPrices[token.id] : 0;
 
   return (
     <>
@@ -203,7 +200,7 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
                 {normalizeNumberPrecision(value) + ' ' + token.name}
               </Typography>
               <TokenAvatar
-                tokenName={token.symbol}
+                token={token}
                 sx={{
                   width: 15,
                   height: 15

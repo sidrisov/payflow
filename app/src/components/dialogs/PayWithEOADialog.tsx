@@ -10,11 +10,10 @@ import { LoadingSwitchNetworkButton } from '../buttons/LoadingSwitchNetworkButto
 import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
 import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';
 import { PaymentDialogProps } from './PaymentDialog';
-import { DEGEN_TOKEN, ETH, ETH_TOKEN, Token } from '../../utils/erc20contracts';
+import { Token } from '../../utils/erc20contracts';
 import { TokenAmountSection } from './TokenAmountSection';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
 import { completePayment } from '../../services/payments';
-import { degen } from 'viem/chains';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 
 export default function PayWithEOADialog({ sender, recipient, payment }: PaymentDialogProps) {
@@ -44,7 +43,7 @@ export default function PayWithEOADialog({ sender, recipient, payment }: Payment
   const { isSuccess, data: balance } = useBalance({
     address: selectedWallet?.address,
     chainId,
-    token: selectedToken !== ETH ? selectedToken?.address : undefined,
+    token: selectedToken?.tokenAddress,
     query: {
       enabled: selectedWallet !== undefined && selectedToken !== undefined,
       gcTime: 5000
@@ -121,20 +120,17 @@ export default function PayWithEOADialog({ sender, recipient, payment }: Payment
       return;
     }
 
-    if (
-      selectedToken.name === ETH_TOKEN ||
-      (chainId === degen.id && selectedToken.name === DEGEN_TOKEN)
-    ) {
+    if (selectedToken.tokenAddress) {
+      writeContract?.({
+        abi: erc20Abi,
+        address: selectedToken.tokenAddress,
+        functionName: 'transfer',
+        args: [toAddress, parseUnits(sendAmount.toString(), balance.decimals)]
+      });
+    } else {
       sendTransaction?.({
         to: toAddress,
         value: parseUnits(sendAmount.toString(), balance.decimals)
-      });
-    } else {
-      writeContract?.({
-        abi: erc20Abi,
-        address: selectedToken.address,
-        functionName: 'transfer',
-        args: [toAddress, parseUnits(sendAmount.toString(), balance.decimals)]
       });
     }
   }

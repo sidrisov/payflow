@@ -1,4 +1,4 @@
-import { Box, Container, Skeleton, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Container, useMediaQuery, useTheme } from '@mui/material';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { AccountCard } from '../components/cards/AccountCard';
@@ -6,7 +6,7 @@ import { ProfileContext } from '../contexts/UserContext';
 import Assets from '../components/Assets';
 import { AssetType } from '../types/AssetType';
 import Activity from '../components/Activity';
-import { Chain, zeroAddress } from 'viem';
+import { Chain } from 'viem';
 import { getSupportedTokens } from '../utils/erc20contracts';
 import { FlowType } from '../types/FlowType';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
@@ -57,7 +57,7 @@ export default function Accounts() {
             assets.push({
               address: wallet.address,
               chainId,
-              token: token.address !== zeroAddress ? token.address : undefined
+              token
             });
           });
         }

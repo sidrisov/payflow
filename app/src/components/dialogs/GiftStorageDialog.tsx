@@ -34,7 +34,7 @@ import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { PaymentType } from '../../types/PaymentType';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { useContext, useMemo, useState } from 'react';
-import { ETH_TOKEN, Token } from '../../utils/erc20contracts';
+import { Token } from '../../utils/erc20contracts';
 import {
   Abi,
   Address,
@@ -96,7 +96,6 @@ export default function GiftStorageDialog({
   const [selectedToken, setSelectedToken] = useState<Token>();
 
   const [paymentPending, setPaymentPending] = useState<boolean>(false);
-  const [paymentEnabled, setPaymentEnabled] = useState<boolean>(false);
 
   const [compatibleWallets, setCompatibleWallets] = useState<FlowWalletType[]>([]);
 
@@ -116,7 +115,7 @@ export default function GiftStorageDialog({
   const { isLoading: isPaymentOptionLoading, data: paymentOption } = useGlideEstimatePayment(
     isUnitPriceFetched && Boolean(rentUnitPrice) && Boolean(payment.receiverFid),
     `eip155:${selectedWallet?.network}/${
-      selectedToken?.name !== ETH_TOKEN ? `erc20:${selectedToken?.address}` : `slip44:60`
+      selectedToken?.tokenAddress ? `erc20:${selectedToken.tokenAddress}` : `slip44:60`
     }`,
     {
       chainId: `eip155:${optimism.id}`,

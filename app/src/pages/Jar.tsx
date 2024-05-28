@@ -15,7 +15,7 @@ import { useJar } from '../utils/queries/jars';
 import JarActivityFeed from '../components/JarActivityFeed';
 import { useContext, useMemo, useState } from 'react';
 import { getSupportedTokens } from '../utils/erc20contracts';
-import { Address, zeroAddress } from 'viem';
+import { Address } from 'viem';
 import { AssetType } from '../types/AssetType';
 import { useAssetBalances } from '../utils/queries/balances';
 import { lightGreen } from '@mui/material/colors';
@@ -65,7 +65,7 @@ export default function Jar() {
             assets.push({
               address: wallet.address,
               chainId,
-              token: token.address !== zeroAddress ? token.address : undefined
+              token
             });
           });
         }

@@ -21,19 +21,16 @@ export default function Assets({
           .filter((assetBalance) => {
             return (
               assetBalance.balance &&
-              (selectedNetwork
-                ? assetBalance.asset.chainId === selectedNetwork.id
-                : true) /* && assetBalance.balance?.value !== BigInt(0) */
+              (selectedNetwork ? assetBalance.asset.chainId === selectedNetwork.id : true) &&
+              assetBalance.balance?.value !== BigInt(0)
             );
           })
           .map((assetBalance) => {
-            console.debug(assetBalance);
-
             return (
               <NetworkAssetBalanceSection
-                key={`network_asset_balance_${assetBalance.asset.chainId}_${assetBalance.asset.address}_${assetBalance.asset.token}`}
+                key={`network_asset_balance_${assetBalance.asset.chainId}_${assetBalance.asset.address}_${assetBalance.asset.token.tokenAddress}`}
                 chainId={assetBalance.asset.chainId}
-                asset={assetBalance.balance?.symbol ?? ''}
+                asset={assetBalance.asset}
                 balance={formatUnits(
                   assetBalance.balance?.value ?? BigInt(0),
                   assetBalance.balance?.decimals ?? 0

@@ -1,7 +1,7 @@
 import { Typography, Tooltip, Box } from '@mui/material';
 import { green } from '@mui/material/colors';
 import { getGasFeeText } from '../../types/gas';
-import { ETH_TOKEN, Token } from '../../utils/erc20contracts';
+import { Token } from '../../utils/erc20contracts';
 import { useTokenPrices } from '../../utils/queries/prices';
 
 export function GasFeeSection({
@@ -21,7 +21,7 @@ export function GasFeeSection({
       <Box display="flex" flexDirection="row" justifyContent="space-between" alignItems="center">
         <Typography variant="caption">Gas Fee</Typography>
         <Typography variant="caption" color={gasFee === BigInt(0) ? green.A700 : 'inherit'}>
-          {getGasFeeText(gasFee, tokenPrices?.[ETH_TOKEN])}
+          {getGasFeeText(gasFee, tokenPrices?.[selectedToken?.id as string])}
         </Typography>
       </Box>
     </Tooltip>

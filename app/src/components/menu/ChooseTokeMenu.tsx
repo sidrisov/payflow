@@ -49,7 +49,7 @@ export function ChooseTokenMenu({
               alignItems="center"
               justifyContent="space-between">
               <Box display="flex" flexDirection="row" alignItems="center">
-                <TokenAvatar tokenName={token.name} sx={{ width: 24, height: 24 }} />
+                <TokenAvatar token={token} sx={{ width: 24, height: 24 }} />
                 <Typography ml={1}>{token.name}</Typography>
               </Box>
               {token === selectedToken && <Check sx={{ color: green.A700 }} />}

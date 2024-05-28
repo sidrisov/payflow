@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { formatUnits } from 'viem';
 import { useBalance, useChainId } from 'wagmi';
 import { FlowWalletType } from '../types/FlowType';
-import { Token, ETH, getSupportedTokens, ETH_TOKEN } from '../utils/erc20contracts';
+import { Token, getSupportedTokens } from '../utils/erc20contracts';
 import { getNetworkDisplayName } from '../utils/networks';
 import { normalizeNumberPrecision } from '../utils/normalizeNumberPrecision';
 import { useTokenPrices } from '../utils/queries/prices';
@@ -45,7 +45,7 @@ export function NetworkTokenSelector({
   const { isSuccess, data: balance } = useBalance({
     address: selectedWallet?.address,
     chainId,
-    token: selectedToken !== ETH ? selectedToken?.address : undefined,
+    token: selectedToken?.tokenAddress,
     query: {
       enabled: selectedWallet !== undefined && selectedToken !== undefined,
       gcTime: 5000
@@ -93,7 +93,7 @@ export function NetworkTokenSelector({
               (c) =>
                 c ===
                 `eip155:${selectedWallet.network}/${
-                  t.name !== ETH_TOKEN ? `erc20:${t.address}` : `slip44:60`
+                  t.tokenAddress ? `erc20:${t.tokenAddress}` : `slip44:60`
                 }`
             )
           )

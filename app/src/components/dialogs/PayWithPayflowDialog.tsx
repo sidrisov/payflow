@@ -25,13 +25,12 @@ import { TransferToastContent } from '../toasts/TransferToastContent';
 import { LoadingSwitchNetworkButton } from '../buttons/LoadingSwitchNetworkButton';
 import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';
 import { PaymentDialogProps } from './PaymentDialog';
-import { DEGEN_TOKEN, ETH, Token } from '../../utils/erc20contracts';
+import { Token } from '../../utils/erc20contracts';
 import { TokenAmountSection } from './TokenAmountSection';
 import { SwitchFlowSignerSection } from './SwitchFlowSignerSection';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
 import { completePayment } from '../../services/payments';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
-import { degen } from 'viem/chains';
 
 export default function PayWithPayflowDialog({ payment, sender, recipient }: PaymentDialogProps) {
   const flow = sender.identity.profile?.defaultFlow as FlowType;
@@ -66,7 +65,7 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
   const { isSuccess, data: balance } = useBalance({
     address: selectedWallet?.address,
     chainId,
-    token: selectedToken !== ETH ? selectedToken?.address : undefined,
+    token: selectedToken?.tokenAddress,
     query: {
       enabled: selectedWallet !== undefined && selectedToken !== undefined,
       gcTime: 5000
@@ -175,12 +174,10 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
     reset();
 
     const txData =
-      selectedToken &&
-      selectedToken !== ETH &&
-      (chainId !== degen.id || selectedToken.name !== DEGEN_TOKEN)
+      selectedToken && selectedToken.tokenAddress
         ? {
             from: from.address,
-            to: selectedToken.address,
+            to: selectedToken.tokenAddress,
             data: encodeFunctionData({
               abi: erc20Abi,
               functionName: 'transfer',

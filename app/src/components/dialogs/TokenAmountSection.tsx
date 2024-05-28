@@ -13,7 +13,7 @@ import { PriorityHigh, SwapVert } from '@mui/icons-material';
 import { formatUnits, parseUnits } from 'viem';
 import { FlowWalletType } from '../../types/FlowType';
 import { grey, red } from '@mui/material/colors';
-import { ETH, Token } from '../../utils/erc20contracts';
+import { Token } from '../../utils/erc20contracts';
 import { normalizeNumberPrecision } from '../../utils/normalizeNumberPrecision';
 import { useTokenPrices } from '../../utils/queries/prices';
 import { PaymentType } from '../../types/PaymentType';
@@ -48,7 +48,7 @@ export function TokenAmountSection({
   const { data: balance } = useBalance({
     address: selectedWallet?.address,
     chainId: chain?.id,
-    token: selectedToken !== ETH ? selectedToken?.address : undefined,
+    token: selectedToken?.tokenAddress,
     query: {
       enabled: selectedWallet !== undefined && selectedToken !== undefined,
       gcTime: 5000
