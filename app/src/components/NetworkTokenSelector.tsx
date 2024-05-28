@@ -53,7 +53,7 @@ export function NetworkTokenSelector({
   });
 
   useMemo(async () => {
-    const selectedTokenPrice = selectedToken && tokenPrices?.[selectedToken.name];
+    const selectedTokenPrice = selectedToken && tokenPrices?.[selectedToken.id];
     if (selectedTokenPrice) {
       const maxBalance =
         isSuccess && balance ? parseFloat(formatUnits(balance.value, balance.decimals)) : 0;

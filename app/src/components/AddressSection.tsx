@@ -1,4 +1,4 @@
-import { Avatar, Stack, Typography } from '@mui/material';
+import { Avatar, Badge, Stack, Typography } from '@mui/material';
 import { IdentityType } from '../types/ProfleType';
 import AddressAvatar from './avatars/AddressAvatar';
 import { shortenWalletAddressLabel } from '../utils/address';
@@ -14,11 +14,13 @@ export function AddressSection(props: {
 }) {
   const { identity, fontSize, maxWidth, copy = true } = props;
 
+  const social = identity.meta?.socials.sort((a, b) => b.followerCount - a.followerCount)[0];
+
   const { data: ensName, isFetched } = useEnsName({
     address: identity.address,
     chainId: 1,
     query: {
-      enabled: !identity.meta?.ens,
+      enabled: !social && !identity.meta?.ens,
       staleTime: 300_000
     }
   });
@@ -33,24 +35,50 @@ export function AddressSection(props: {
     (isFetched && !ensName) || (isBaseNameFetched && !baseName)
   );
 
-  const avatar = useEnsAvatar({
+  const ensAvatar = useEnsAvatar({
     name: identity.meta?.ens ?? (ensName as string),
     chainId: 1,
     query: {
       enabled:
-        !identity.meta?.ensAvatar && (identity.meta?.ens !== undefined || ensName !== undefined),
+        !social &&
+        !identity.meta?.ensAvatar &&
+        (identity.meta?.ens !== undefined || ensName !== undefined),
       staleTime: 300_000
     }
   });
 
-  const ens = identity.meta?.ens || ensName || baseName || degenName;
+  const username =
+    identity.meta?.socials[0]?.profileName.replace('lens/@', '') ||
+    identity.meta?.ens ||
+    ensName ||
+    baseName ||
+    degenName;
 
   return (
     <Stack maxWidth={maxWidth ?? 130} direction="row" spacing={0.5} alignItems="center">
-      {identity.meta?.ensAvatar || (avatar.isSuccess && avatar.data) ? (
-        <Avatar
-          src={identity.meta?.ensAvatar ?? (avatar.isSuccess && avatar.data ? avatar.data : '')}
-        />
+      {identity.meta?.ensAvatar || (ensAvatar.isSuccess && ensAvatar.data) ? (
+        <Badge
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right'
+          }}
+          overlap="circular"
+          badgeContent={
+            social && (
+              <Avatar
+                src={social.dappName === 'farcaster' ? '/farcaster.svg' : '/lens.svg'}
+                sx={{ width: 15, height: 15 }}
+              />
+            )
+          }>
+          <Avatar
+            src={
+              social?.profileImage ??
+              identity.meta?.ensAvatar ??
+              (ensAvatar.isSuccess && ensAvatar.data ? ensAvatar.data : '')
+            }
+          />
+        </Badge>
       ) : (
         <AddressAvatar address={identity.address} />
       )}
@@ -68,14 +96,17 @@ export function AddressSection(props: {
             display: 'none' // Hide the scrollbar for IE
           }
         }}>
-        {ens && (
+        {username && (
           <Typography noWrap variant="subtitle2" fontSize={fontSize}>
-            {ens}
+            {username}
           </Typography>
         )}
 
         <Stack direction="row" spacing={0.1} alignItems="center">
-          <Typography noWrap variant={ens ? 'caption' : 'subtitle2'} {...(!ens && { fontSize })}>
+          <Typography
+            noWrap
+            variant={username ? 'caption' : 'subtitle2'}
+            {...(!username && { fontSize })}>
             {shortenWalletAddressLabel(identity.address)}
           </Typography>
           {copy && <CopyToClipboardIconButton tooltip="Copy address" value={identity.address} />}

@@ -57,7 +57,7 @@ export function TokenAmountSection({
 
   useMemo(async () => {
     if (selectedToken && tokenPrices) {
-      const price = tokenPrices[selectedToken.name];
+      const price = tokenPrices[selectedToken.id];
       setSelectedTokenPrice(price);
     } else {
       setSelectedTokenPrice(undefined);
