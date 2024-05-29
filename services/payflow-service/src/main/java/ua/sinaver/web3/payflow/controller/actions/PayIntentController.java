@@ -59,12 +59,12 @@ public class PayIntentController {
 		CastActionMeta castActionMeta;
 		if (type != null && type.equals(Payment.PaymentType.INTENT_TOP_REPLY)) {
 			castActionMeta = new CastActionMeta(
-					String.format("%s %s (%s) Top Replier", tokenAmount != null ?
+					String.format("%s %s (%s) Top Comment", tokenAmount != null ?
 									formatDouble(tokenAmount) :
 									String.format("$%s", formatDouble(amount)),
 							StringUtils.upperCase(token), StringUtils.capitalize(chain)),
 					"flame",
-					"Use this action to submit payment intent to Payflow for cast's top replier " +
+					"Use this action to submit payment intent to Payflow for cast's top comment " +
 							"based on Airstack's Social Capital Value score",
 					"https://payflow.me/actions",
 					new CastActionMeta.Action("post"));

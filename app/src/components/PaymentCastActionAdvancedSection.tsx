@@ -1,7 +1,4 @@
-import {
-  AutoAwesome,
-  ExpandLess,
-  ExpandMore} from '@mui/icons-material';
+import { AutoAwesome, ExpandLess, ExpandMore } from '@mui/icons-material';
 import { Stack, Box, Chip, Typography, IconButton, NativeSelect } from '@mui/material';
 import { useState } from 'react';
 import { type } from '../types/PaymentType';
@@ -60,7 +57,7 @@ export function PaymentCastActionAdvancedSection({
                 sx={{ fontSize: 13, fontWeight: 'bold' }}>
                 <option value="INTENT">Regular</option>
                 <option value="INTENT_TOP_REPLY">
-                  <Typography>Top Replier</Typography>
+                  <Typography>Top Comment</Typography>
                 </option>
               </NativeSelect>
             </Box>
@@ -71,8 +68,8 @@ export function PaymentCastActionAdvancedSection({
               textAlign="center"
               sx={{ p: 2, borderColor: 'divider', color: grey[400] }}>
               {type === 'INTENT'
-                ? 'Payment intent will be submitted for the owner of applied cast'
-                : 'Payment intent will be submitted for the top replier of the applied cast, based on their Social Capital Value (Airstack)."'}
+                ? "Payment intent will be submitted for cast's owner"
+                : "Payment intent will be submitted for the cast's top comment, based on Social Capital Value (Airstack)"}
             </Typography>
           </Box>
         </>
