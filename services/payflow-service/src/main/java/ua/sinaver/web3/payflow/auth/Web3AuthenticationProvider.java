@@ -55,7 +55,7 @@ public class Web3AuthenticationProvider implements AuthenticationProvider {
 		if (!StringUtils.equalsIgnoreCase(authentication.getPrincipal().toString(),
 				siweMessage.address())) {
 			log.debug("Checking if {} in {} verifications", authentication.getPrincipal(),
-					siweMessage.address());
+					siweMessage.address().toLowerCase());
 			// find connected addresses for the siwf signer
 			ConnectedAddresses connectedAddresses =
 					socialGraphService.getIdentityVerifiedAddresses(siweMessage.address());

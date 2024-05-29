@@ -22,7 +22,7 @@ public class JarController {
 			"Create Jar", "beaker",
 			"Use this action to turn any existing cast into contribution jar " +
 					"to fundraise for any purpose via Payflow",
-			"https://payflow.me",
+			"https://app.payflow.me/actions",
 			new CastActionMeta.Action("post"));
 
 	@Autowired

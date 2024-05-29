@@ -112,6 +112,7 @@ public class Payment {
 
 	public enum PaymentType {
 		INTENT,
-		FRAME
+		FRAME,
+		INTENT_TOP_REPLY
 	}
 }

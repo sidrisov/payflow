@@ -13,9 +13,11 @@ import ua.sinaver.web3.payflow.message.FrameMessage;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.IdentityService;
+import ua.sinaver.web3.payflow.service.SocialGraphService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
+import java.text.DecimalFormat;
 import java.util.Comparator;
 
 import static ua.sinaver.web3.payflow.service.TransactionService.PAYMENT_CHAIN_IDS;
@@ -36,25 +38,47 @@ public class PayIntentController {
 	@Autowired
 	private PaymentRepository paymentRepository;
 
+	@Autowired
+	private SocialGraphService socialGraphService;
+
+	public static String formatDouble(Double value) {
+		val df = new DecimalFormat("#.#####");
+		return df.format(value);
+	}
+
 	@GetMapping("/intent")
 	public CastActionMeta metadata(
+			@RequestParam(name = "type", required = false) Payment.PaymentType type,
 			@RequestParam(name = "amount", required = false, defaultValue = "1.0") Double amount,
 			@RequestParam(name = "tokenAmount", required = false) Double tokenAmount,
 			@RequestParam(name = "token", required = false, defaultValue = "degen") String token,
 			@RequestParam(name = "chain", required = false, defaultValue = "base") String chain) {
 		log.debug("Received metadata request for cast action: pay intent with params: " +
-						"amount = {},  tokenAmount = {}, token = {}, chain = {}", amount,
-				tokenAmount, token, chain);
-		// TODO: skip chain/token/amount validation
-		val castActionMeta = new CastActionMeta(
-				String.format("%s %s Intent (%s)", tokenAmount != null ? tokenAmount :
-								String.format("$%s", amount),
-						StringUtils.upperCase(token), StringUtils.capitalize(chain)),
-				"heart",
-				"Use this action to submit payment intent for farcaster users in " +
-						"Payflow app",
-				"https://payflow.me",
-				new CastActionMeta.Action("post"));
+						"type = {},  amount = {},  tokenAmount = {}, token = {}, chain = {}",
+				type, amount, tokenAmount, token, chain);
+		CastActionMeta castActionMeta;
+		if (type != null && type.equals(Payment.PaymentType.INTENT_TOP_REPLY)) {
+			castActionMeta = new CastActionMeta(
+					String.format("%s %s (%s) Top Replier", tokenAmount != null ?
+									formatDouble(tokenAmount) :
+									String.format("$%s", formatDouble(amount)),
+							StringUtils.upperCase(token), StringUtils.capitalize(chain)),
+					"flame",
+					"Use this action to submit payment intent to Payflow for cast's top replier " +
+							"based on Airstack's Social Capital Value score",
+					"https://payflow.me/actions",
+					new CastActionMeta.Action("post"));
+		} else {
+			castActionMeta = new CastActionMeta(
+					String.format("%s %s (%s) Intent", tokenAmount != null ? formatDouble(tokenAmount) :
+									String.format("$%s", formatDouble(amount)),
+							StringUtils.upperCase(token), StringUtils.capitalize(chain)),
+					"heart",
+					"Use this action to submit payment intent for farcaster users in " +
+							"Payflow app",
+					"https://app.payflow.me/actions",
+					new CastActionMeta.Action("post"));
+		}
 
 		log.debug("Returning payment intent cast action meta: {}", castActionMeta);
 		return castActionMeta;
@@ -62,6 +86,7 @@ public class PayIntentController {
 
 	@PostMapping("/intent")
 	public ResponseEntity<FrameResponse.FrameMessage> intent(@RequestBody FrameMessage castActionMessage,
+	                                                         @RequestParam(name = "type", required = false) Payment.PaymentType type,
 	                                                         @RequestParam(name = "amount", required = false, defaultValue = "1.0") Double amount,
 	                                                         @RequestParam(name = "tokenAmount", required = false) Double tokenAmount,
 	                                                         @RequestParam(name = "token", required = false, defaultValue = "degen") String token,
@@ -84,7 +109,24 @@ public class PayIntentController {
 		}
 
 		val clickedFid = validateMessage.action().interactor().fid();
-		val casterFid = validateMessage.action().cast().fid();
+
+		int casterFid;
+		String castHash;
+
+		if (type != null && type.equals(Payment.PaymentType.INTENT_TOP_REPLY)) {
+			val parentHash = validateMessage.action().cast().hash();
+			val topReply = socialGraphService.getTopCastReply(parentHash);
+			if (topReply == null) {
+				log.error("Failed to fetch top cast reply for: {}", parentHash);
+				return ResponseEntity.badRequest().body(
+						new FrameResponse.FrameMessage("Failed to fetch top cast reply!"));
+			}
+			casterFid = Integer.parseInt(topReply.getFid());
+			castHash = topReply.getHash();
+		} else {
+			casterFid = validateMessage.action().cast().fid();
+			castHash = validateMessage.action().cast().hash();
+		}
 
 		val clickedProfile = identityService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
@@ -140,13 +182,12 @@ public class PayIntentController {
 
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val casterFcName = identityService.getFidFname(casterFid);
-		val castHash = validateMessage.action().cast().hash();
 		// maybe would make sense to reference top cast instead (if it's a bot cast)
 		val sourceRef = String.format("https://warpcast.com/%s/%s",
 				casterFcName, castHash.substring(0,
 						10));
 
-		val payment = new Payment(Payment.PaymentType.INTENT,
+		val payment = new Payment(type != null ? type : Payment.PaymentType.INTENT,
 				(paymentProfile != null && paymentProfile.getDefaultFlow() != null) ?
 						paymentProfile : null,
 				chainId, token);

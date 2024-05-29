@@ -2,9 +2,10 @@ import { Address, Hash } from 'viem';
 import { ProfileType } from './ProfleType';
 import { FlowType } from './FlowType';
 
+export type type = 'FRAME' | 'INTENT' | 'INTENT_TOP_REPLY' | 'BATCH';
 export interface PaymentType {
   referenceId?: string;
-  type: 'FRAME' | 'INTENT';
+  type: type;
   category?: string;
   status: 'PENDING' | 'COMPLETED';
   receiver: ProfileType;

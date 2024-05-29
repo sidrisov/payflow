@@ -1,0 +1,14 @@
+query GetCastRepliesSocialCapitalValue($parentHash: String!) {
+    FarcasterReplies(
+        input: {filter: {parentHash: {_eq: $parentHash}}, blockchain: ALL, limit: 200}
+    ) {
+        Reply {
+            fid
+            text
+            hash
+            socialCapitalValue {
+                formattedValue
+            }
+        }
+    }
+}

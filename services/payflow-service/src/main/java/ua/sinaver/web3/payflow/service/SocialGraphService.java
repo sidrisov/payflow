@@ -16,10 +16,7 @@ import ua.sinaver.web3.payflow.graphql.generated.types.*;
 import ua.sinaver.web3.payflow.message.ConnectedAddresses;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static ua.sinaver.web3.payflow.config.CacheConfig.*;
@@ -117,6 +114,33 @@ public class SocialGraphService implements ISocialGraphService {
 		} else {
 			return Collections.emptyList();
 		}
+	}
+
+	@Override
+	public FarcasterCast getTopCastReply(String parentHash) {
+		try {
+			val replies = graphQlClient.documentName("getCastRepliesSocialCapitalValue")
+					.variable("parentHash", parentHash)
+					.execute().block();
+			if (replies != null) {
+				val topReply = replies.field("FarcasterReplies.Reply")
+						.toEntityList(FarcasterCast.class).stream()
+						.filter(reply -> reply.getSocialCapitalValue() != null)
+						.max(Comparator.comparingDouble(reply -> reply.getSocialCapitalValue().getFormattedValue()))
+						.orElse(null);
+				log.debug("Top cast reply: {} for hash: {}", topReply, parentHash);
+				return topReply;
+			}
+		} catch (Throwable t) {
+			log.error("Error during fetching top cast reply for hash: {}, error: {} - {}",
+					parentHash,
+					t.getMessage(),
+					log.isTraceEnabled() ? t : null);
+		}
+
+		log.error("Failed to fetch top cast reply for hash: {} ", parentHash);
+		return null;
+
 	}
 
 	@Override

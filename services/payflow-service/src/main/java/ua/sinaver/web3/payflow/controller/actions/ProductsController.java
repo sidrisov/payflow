@@ -25,7 +25,7 @@ public class ProductsController {
 	private final static CastActionMeta GIFT_STORAGE_CAST_ACTION_META = new CastActionMeta(
 			"Gift Storage", "database",
 			"Use this action to gift a storage to farcaster user via Payflow",
-			"https://payflow.me",
+			"https://app.payflow.me/actions",
 			new CastActionMeta.Action("post"));
 
 	@Autowired

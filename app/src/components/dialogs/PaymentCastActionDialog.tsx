@@ -24,6 +24,8 @@ import { getNetworkShortName } from '../../utils/networks';
 import { ArrowBack, SwapVert } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { grey } from '@mui/material/colors';
+import { PaymentCastActionAdvancedSection } from '../PaymentCastActionAdvancedSection';
+import { type } from '../../types/PaymentType';
 
 export default function PaymentCastActionDialog({
   closeStateCallback,
@@ -40,6 +42,7 @@ export default function PaymentCastActionDialog({
   const [token, setToken] = useState<Token | undefined>();
   const [tokens, setTokens] = useState<Token[]>([]);
   const [chain, setChain] = useState<Chain>(base);
+  const [type, setType] = useState<type>('INTENT');
 
   const [usdAmountMode, setUsdAmountMode] = useState<boolean>(true);
 
@@ -57,7 +60,8 @@ export default function PaymentCastActionDialog({
         sx: {
           ...(!isMobile && {
             borderRadius: 5
-          })
+          }),
+          minWidth: 350
         }
       }}
       sx={{
@@ -83,29 +87,6 @@ export default function PaymentCastActionDialog({
           justifyContent: isMobile ? 'space-between' : 'flex-start'
         }}>
         <Stack my={3} p={1} direction="column" spacing={3} width="100%">
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <IconButton
-              sx={{ width: 40, height: 40, border: 1, borderStyle: 'dashed' }}
-              onClick={(event) => {
-                setChainAnchorEl(event.currentTarget);
-                setOpenSelectChain(true);
-              }}>
-              <NetworkAvatar tooltip chainId={chain.id} sx={{ width: 28, height: 28 }} />
-            </IconButton>
-            <Typography fontSize={16} fontWeight="bold">
-              {chain.name} Chain
-            </Typography>
-          </Stack>
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <TokenSelectorButton
-              selectedToken={token}
-              setSelectedToken={setToken}
-              tokens={tokens}
-            />
-            <Typography fontSize={16} fontWeight="bold">
-              {token?.name} Token
-            </Typography>
-          </Stack>
           <Stack direction="row" alignItems="center" spacing={1}>
             <TextField
               variant="standard"
@@ -166,6 +147,30 @@ export default function PaymentCastActionDialog({
               <SwapVert fontSize="small" />
             </IconButton>
           </Stack>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <IconButton
+              sx={{ width: 40, height: 40, border: 1, borderStyle: 'dashed' }}
+              onClick={(event) => {
+                setChainAnchorEl(event.currentTarget);
+                setOpenSelectChain(true);
+              }}>
+              <NetworkAvatar tooltip chainId={chain.id} sx={{ width: 28, height: 28 }} />
+            </IconButton>
+            <Typography fontSize={16} fontWeight="bold">
+              {chain.name} Chain
+            </Typography>
+          </Stack>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <TokenSelectorButton
+              selectedToken={token}
+              setSelectedToken={setToken}
+              tokens={tokens}
+            />
+            <Typography fontSize={16} fontWeight="bold">
+              {token?.name} Token
+            </Typography>
+          </Stack>
+          <PaymentCastActionAdvancedSection type={type} setType={setType} />
         </Stack>
         <Button
           variant="outlined"
@@ -177,7 +182,7 @@ export default function PaymentCastActionDialog({
             usdAmount ?? ''
           }%26tokenAmount%3D${tokenAmount ?? ''}%26token%3D${
             token?.id
-          }%26chain%3D${getNetworkShortName(chain.id)}`}
+          }%26chain%3D${getNetworkShortName(chain.id)}%26type%3D${type ?? 'INTENT'}`}
           target="_blank">
           Install Action
         </Button>

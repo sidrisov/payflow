@@ -41,7 +41,7 @@ public class AlfaFrensService {
 				.build();
 	}
 
-	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'alfafrens-list:' + #identity", unless =
+	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'alfafrens-list-2:' + #identity", unless =
 			"#result.isEmpty()")
 	public List<String> fetchSubscribers(String identity) {
 		log.debug("Fetching alfa frens subscribers for identity: {}", identity);
@@ -63,8 +63,9 @@ public class AlfaFrensService {
 
 			log.debug("{}", userResponse);
 
-			if (userResponse == null) {
-				log.error("No alfa frens user found for fid: {}", fid);
+			if (userResponse == null || StringUtils.isBlank(userResponse.channelAddress())) {
+				log.error("No alfa frens user found for fid or not channel: {}, response: {}",
+						fid, userResponse);
 				return Collections.emptyList();
 			}
 
@@ -85,8 +86,10 @@ public class AlfaFrensService {
 			log.debug("Fetched alfa frens channel response: {} for channel address: {}",
 					channelResponse, channelAddress);
 
-			val subscribers = channelResponse.members().stream().map(s -> String.format(
-					"fc_fid:%s", s.fid())).toList();
+			val subscribers = channelResponse.members()
+					.stream().filter(s -> s.isSubscribed() || s.isStaked())
+					.map(s -> String.format(
+							"fc_fid:%s", s.fid())).toList();
 			log.debug("Fetched alfa frens subscribers: {} for identity: {}", subscribers, identity);
 
 			val subscribersVerifiedAddresses = subscribers.stream()

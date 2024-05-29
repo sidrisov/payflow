@@ -21,7 +21,7 @@ public class PayProfileController {
 	private final static CastActionMeta PAY_PROFILE_CAST_ACTION_META = new CastActionMeta(
 			"Pay Profile", "person",
 			"Use this action to pay payflow profile of the cast author",
-			"https://payflow.me",
+			"https://app.payflow.me/actions",
 			new CastActionMeta.Action("post"));
 
 	@Autowired

@@ -32,7 +32,7 @@ public class InviteController {
 	private final static CastActionMeta INVITE_CAST_ACTION_META = new CastActionMeta(
 			"Invite To Payflow", "person-add",
 			"Use this action to invite farcaster users to Payflow",
-			"https://payflow.me",
+			"https://app.payflow.me/actions",
 			new CastActionMeta.Action("post"));
 	@Autowired
 	private IFarcasterHubService farcasterHubService;

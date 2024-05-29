@@ -350,7 +350,7 @@ public class TransactionService {
 
 
 	public static final List<String> SUPPORTED_FRAME_PAYMENTS_TOKENS = Arrays.asList(ETH_TOKEN, USDC_TOKEN,
-			DEGEN_TOKEN);
+			DEGEN_TOKEN, "higher", "build", "onchain", "tn100x", "przUSDC");
 	private final Web3j web3j;
 	private final WebClient webClient;
 	private Map<String, CryptoPrice> prices = new HashMap<>();
