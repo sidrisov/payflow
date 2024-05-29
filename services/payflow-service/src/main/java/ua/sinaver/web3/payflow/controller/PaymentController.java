@@ -144,9 +144,9 @@ public class PaymentController {
 						receiverFname, payment.getSourceHash().substring(0, 10));
 
 				if (StringUtils.isBlank(payment.getCategory())) {
-					if (payment.getReceiver() == null) {
+					if (payment.getType().equals(Payment.PaymentType.INTENT_TOP_REPLY)) {
 						val castText = String.format("""
-										@%s, you've been paid %s %s by @%s 🎉
+										@%s, you've been paid %s %s by @%s for your top comment 🎉
 																				
 										p.s. join /payflow channel for updates 👀""",
 								receiverFname,
@@ -164,38 +164,59 @@ public class PaymentController {
 							log.error("Failed to reply with {} for payment intent completion", castText);
 						}
 					} else {
-						val receiverFid =
-								identityService.getIdentityFid(payment.getReceiver().getIdentity(), false);
-						if (StringUtils.isBlank(receiverFid)) {
-							return;
-						}
-
-						try {
-							val messageText = String.format("""
-											 @%s, you've been paid %s %s by @%s 🎉
+						if (payment.getReceiver() == null) {
+							val castText = String.format("""
+											@%s, you've been paid %s %s by @%s 🎉
 																					
-											Source (cast): %s
-																					
-											Receipt (tx): %s
-
 											p.s. join /payflow channel for updates 👀""",
 									receiverFname,
 									StringUtils.isNotBlank(payment.getTokenAmount()) ?
 											payment.getTokenAmount() :
 											String.format("$%s", payment.getUsdAmount()),
 									payment.getToken().toUpperCase(),
-									senderFname,
-									sourceRef,
-									txUrl);
-							val response = farcasterMessagingService.message(
-									new DirectCastMessage(receiverFid, messageText, UUID.randomUUID()));
+									senderFname);
 
-							if (!response.result().success()) {
-								log.error("Failed to send direct cast with {} for payment intent " +
-										"completion", messageText);
+							val processed = farcasterPaymentBotService.reply(castText,
+									payment.getSourceHash(),
+									embeds);
+
+							if (!processed) {
+								log.error("Failed to reply with {} for payment intent completion", castText);
 							}
-						} catch (Throwable t) {
-							log.error("Failed to send direct cast with exception: ", t);
+						} else {
+							val receiverFid =
+									identityService.getIdentityFid(payment.getReceiver().getIdentity(), false);
+							if (StringUtils.isBlank(receiverFid)) {
+								return;
+							}
+
+							try {
+								val messageText = String.format("""
+												 @%s, you've been paid %s %s by @%s 🎉
+																						
+												Source (cast): %s
+																						
+												Receipt (tx): %s
+
+												p.s. join /payflow channel for updates 👀""",
+										receiverFname,
+										StringUtils.isNotBlank(payment.getTokenAmount()) ?
+												payment.getTokenAmount() :
+												String.format("$%s", payment.getUsdAmount()),
+										payment.getToken().toUpperCase(),
+										senderFname,
+										sourceRef,
+										txUrl);
+								val response = farcasterMessagingService.message(
+										new DirectCastMessage(receiverFid, messageText, UUID.randomUUID()));
+
+								if (!response.result().success()) {
+									log.error("Failed to send direct cast with {} for payment intent " +
+											"completion", messageText);
+								}
+							} catch (Throwable t) {
+								log.error("Failed to send direct cast with exception: ", t);
+							}
 						}
 					}
 				} else if (payment.getCategory().equals("fc_storage")) {

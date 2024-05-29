@@ -19,6 +19,7 @@ import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.text.DecimalFormat;
 import java.util.Comparator;
+import java.util.List;
 
 import static ua.sinaver.web3.payflow.service.TransactionService.PAYMENT_CHAIN_IDS;
 import static ua.sinaver.web3.payflow.service.TransactionService.SUPPORTED_FRAME_PAYMENTS_TOKENS;
@@ -115,11 +116,13 @@ public class PayIntentController {
 
 		if (type != null && type.equals(Payment.PaymentType.INTENT_TOP_REPLY)) {
 			val parentHash = validateMessage.action().cast().hash();
-			val topReply = socialGraphService.getTopCastReply(parentHash);
+			val topReply = socialGraphService.getTopCastReply(parentHash,
+					List.of(String.valueOf(validateMessage.action().cast().fid()),
+							String.valueOf(clickedFid)));
 			if (topReply == null) {
-				log.error("Failed to fetch top cast reply for: {}", parentHash);
+				log.error("Failed to fetch top comment for: {}", parentHash);
 				return ResponseEntity.badRequest().body(
-						new FrameResponse.FrameMessage("Failed to fetch top cast reply!"));
+						new FrameResponse.FrameMessage("Failed to identify top comment!"));
 			}
 			casterFid = Integer.parseInt(topReply.getFid());
 			castHash = topReply.getHash();
@@ -205,8 +208,12 @@ public class PayIntentController {
 
 		log.debug("Payment intent saved: {}", payment);
 
+		val message = type != null && type.equals(Payment.PaymentType.INTENT_TOP_REPLY) ?
+				String.format("Submitted payment intent for top comment from @%s. " +
+						"Pay in the app!", casterFcName) :
+				String.format("Submitted payment intent for @%s. Pay in the app!", casterFcName);
+
 		return ResponseEntity.ok().body(
-				new FrameResponse.FrameMessage(String.format("Payment intent for @%s submitted. Pay in the app!",
-						casterFcName)));
+				new FrameResponse.FrameMessage(message));
 	}
 }

@@ -11,7 +11,7 @@ public interface ISocialGraphService {
 
 	List<String> getSocialFollowings(String identity);
 
-	FarcasterCast getTopCastReply(String parentHash);
+	FarcasterCast getTopCastReply(String parentHash, List<String> ignoredFids);
 
 	ConnectedAddresses getIdentityVerifiedAddresses(String identity);
 

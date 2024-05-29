@@ -117,7 +117,7 @@ public class SocialGraphService implements ISocialGraphService {
 	}
 
 	@Override
-	public FarcasterCast getTopCastReply(String parentHash) {
+	public FarcasterCast getTopCastReply(String parentHash, List<String> ignoredFids) {
 		try {
 			val replies = graphQlClient.documentName("getCastRepliesSocialCapitalValue")
 					.variable("parentHash", parentHash)
@@ -125,7 +125,7 @@ public class SocialGraphService implements ISocialGraphService {
 			if (replies != null) {
 				val topReply = replies.field("FarcasterReplies.Reply")
 						.toEntityList(FarcasterCast.class).stream()
-						.filter(reply -> reply.getSocialCapitalValue() != null)
+						.filter(reply -> reply.getSocialCapitalValue() != null && !ignoredFids.contains(reply.getFid()))
 						.max(Comparator.comparingDouble(reply -> reply.getSocialCapitalValue().getFormattedValue()))
 						.orElse(null);
 				log.debug("Top cast reply: {} for hash: {}", topReply, parentHash);
