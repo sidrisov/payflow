@@ -63,18 +63,17 @@ public class InvitationController {
 		val user = userService.findByIdentity(principal.getName());
 		if (user != null) {
 			val invitedBy = ProfileMetaMessage.convert(user, false);
-			val invitations = invitationRepository.findByInvitedBy(user);
-			return invitations.stream()
+			return invitationRepository.findByInvitedBy(user)
+					.stream()
+					.sorted(this::compareInvitations)
 					.map(invite -> new InvitationMessage(
 							invitedBy,
-							invite.getInvitee() != null
-									? ProfileMetaMessage.convert(invite.getInvitee(), false)
-									: null,
+							(invite.getInvitee() != null) ? ProfileMetaMessage.convert(invite.getInvitee(), false) : null,
 							invite.getIdentity(), invite.getCode(), invite.getCreatedDate(), invite.getExpiryDate()))
 					.toList();
+
 		}
 		return null;
-
 	}
 
 	@GetMapping("/identity/{identity}")
@@ -169,6 +168,18 @@ public class InvitationController {
 			} else {
 				throw new Error("User reached his invitation limit");
 			}
+		}
+	}
+
+	private int compareInvitations(Invitation i1, Invitation i2) {
+		if (i1.getInvitee() != null && i2.getInvitee() != null) {
+			return i2.getInvitee().getCreatedDate().compareTo(i1.getInvitee().getCreatedDate());
+		} else if (i1.getInvitee() != null) {
+			return -1; // accepted invitations come before pending ones
+		} else if (i2.getInvitee() != null) {
+			return 1; // pending invitations come after accepted ones
+		} else {
+			return 0; // both are pending or accepted, keep their order unchanged
 		}
 	}
 }

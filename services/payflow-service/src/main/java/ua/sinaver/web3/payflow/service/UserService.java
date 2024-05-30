@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.WalletUtils;
-import ua.sinaver.web3.payflow.data.Invitation;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.data.UserAllowance;
 import ua.sinaver.web3.payflow.message.FlowMessage;
@@ -74,7 +73,8 @@ public class UserService implements IUserService {
 		// TODO: add roles later on instead
 		if (!user.isAllowed()) {
 			log.debug("Checking invitation for {} code {}", user, invitationCode);
-			val whitelisted = !contactBookService.filterByInvited(
+			// TODO: remove whitelist logic as it prevents updating invitee field
+			/*val whitelisted = !contactBookService.filterByInvited(
 					Collections.singletonList(user.getIdentity().toLowerCase())).isEmpty();
 			if (whitelisted) {
 				user.setAllowed(true);
@@ -83,24 +83,24 @@ public class UserService implements IUserService {
 						defaultInvitationAllowance, defaultFavouriteContactLimit);
 				defaultAllowance.setUser(user);
 				user.setUserAllowance(defaultAllowance);
-			} else {
-				Invitation invitation = invitationRepository.findFirstValidByIdentityOrCode(identity, invitationCode);
+			} else {*/
+			val invitation = invitationRepository.findFirstValidByIdentityOrCode(identity,
+					invitationCode);
 
-				log.debug("Invitation: {} {} {}", invitation, identity, invitationCode);
-				if (invitation != null) {
-					user.setAllowed(true);
-					user.setCreatedDate(new Date());
-					invitation.setInvitee(user);
-					invitation.setExpiryDate(null);
-					if (invitationAllowanceEnabled) {
-						val defaultUserAllowance = new UserAllowance(defaultInvitationAllowance,
-								defaultInvitationAllowance, defaultFavouriteContactLimit);
-						defaultUserAllowance.setUser(user);
-						user.setUserAllowance(defaultUserAllowance);
-					}
-				} else {
-					throw new Error("Access not allowed");
+			log.debug("Invitation: {} {} {}", invitation, identity, invitationCode);
+			if (invitation != null) {
+				user.setAllowed(true);
+				user.setCreatedDate(new Date());
+				invitation.setInvitee(user);
+				invitation.setExpiryDate(null);
+				if (invitationAllowanceEnabled) {
+					val defaultUserAllowance = new UserAllowance(defaultInvitationAllowance,
+							defaultInvitationAllowance, defaultFavouriteContactLimit);
+					defaultUserAllowance.setUser(user);
+					user.setUserAllowance(defaultUserAllowance);
 				}
+			} else {
+				throw new Error("Access not allowed");
 			}
 		}
 
