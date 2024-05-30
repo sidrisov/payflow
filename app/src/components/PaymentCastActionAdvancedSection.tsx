@@ -67,9 +67,21 @@ export function PaymentCastActionAdvancedSection({
               maxWidth={300}
               textAlign="center"
               sx={{ p: 2, borderColor: 'divider', color: grey[400] }}>
-              {type === 'INTENT'
-                ? "Payment intent will be submitted for cast's owner"
-                : "Payment intent will be submitted for the cast's top comment, based on Social Capital Value (Airstack)"}
+              {type === 'INTENT' ? (
+                "Payment intent will be submitted for cast's owner"
+              ) : (
+                <>
+                  Payment intent will be submitted for the cast's top comment, based on{' '}
+                  <b>
+                    <a
+                      href="https://docs.airstack.xyz/airstack-docs-and-faqs/abstractions/trending-casts/social-capital-value-and-social-capital-scores"
+                      target="_blank"
+                      style={{ color: 'inherit' }}>
+                      Airstack's Social Capital Value
+                    </a>
+                  </b>
+                </>
+              )}
             </Typography>
           </Box>
         </>
