@@ -56,7 +56,7 @@ export function AddressSection(props: {
 
   return (
     <Stack maxWidth={maxWidth ?? 130} direction="row" spacing={0.5} alignItems="center">
-      {identity.meta?.ensAvatar || (ensAvatar.isSuccess && ensAvatar.data) ? (
+      {social || identity.meta?.ensAvatar || (ensAvatar.isSuccess && ensAvatar.data) ? (
         <Badge
           anchorOrigin={{
             vertical: 'bottom',
