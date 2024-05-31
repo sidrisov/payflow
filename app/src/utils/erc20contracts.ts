@@ -92,6 +92,16 @@ export const ERC20_CONTRACTS = [
     chainId: optimism.id,
     tokenAddress: '0x0b2c639c533813f4aa9d7837caf62653d097ff85'
   },
+  {
+    id: 'przUSDC',
+    name: 'Prize USDC',
+    description:
+      'Prize USDC is USDC deposited into Aave via the PoolTogether Protocol. Hold Prize USDC and win ETH prizes',
+    chain: 'optimism',
+    chainId: optimism.id,
+    tokenAddress: '0x03d3ce84279cb6f54f5e6074ff0f8319d830dafe',
+    imageURL: 'https://app.cabana.fi/icons/przUSDC.svg'
+  },
   // arbitrum
   {
     id: 'eth',
@@ -102,9 +112,19 @@ export const ERC20_CONTRACTS = [
   {
     id: 'usdc',
     name: 'USD Coin',
-    chain: 'optimism',
+    chain: 'arbitrum',
     chainId: arbitrum.id,
     tokenAddress: '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
+  },
+  {
+    id: 'przUSDC',
+    name: 'Prize USDC',
+    description:
+      'Prize USDC is USDC deposited into Aave via the PoolTogether Protocol. Hold Prize USDC and win ETH prizes',
+    chain: 'arbitrum',
+    chainId: arbitrum.id,
+    tokenAddress: '0x3c72a2a78c29d1f6454caa1bcb17a7792a180a2e',
+    imageURL: 'https://app.cabana.fi/icons/przUSDC.svg'
   },
   // mode
   {
@@ -138,28 +158,8 @@ export const ERC20_CONTRACTS = [
     chainId: degen.id,
     tokenAddress: '0xeb1c32ea4e392346795aed3607f37646e2a9c13f',
     imageURL: 'https://i.imgur.com/oQO5lv9.gif'
-  },
-  // pooltogether
-  {
-    id: 'przUSDC',
-    name: 'Prize USDC',
-    description:
-      'Prize USDC is USDC deposited into Aave via the PoolTogether Protocol. Hold Prize USDC and win ETH prizes',
-    chain: 'optimism',
-    chainId: optimism.id,
-    tokenAddress: '0x03d3ce84279cb6f54f5e6074ff0f8319d830dafe',
-    imageURL: 'https://app.cabana.fi/icons/przUSDC.svg'
   }
-  /* {
-    id: 'przWETH',
-    name: 'Prize WETH',
-    description:
-      'Prize WETH is WETH deposited into Aave via the PoolTogether Protocol. Hold Prize WETH and win ETH prizes',
-    chain: 'optimism',
-    chainId: optimism.id,
-    tokenAddress: '0x2998c1685e308661123f64b333767266035f5020',
-    imageURL: 'https://app.cabana.fi/icons/przWETH.svg'
-  } */
+  // TODO: add unerlying asset structure
 ] as Token[];
 
 export interface Token {
