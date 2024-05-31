@@ -147,7 +147,7 @@ export default function PrimaryFlowOnboardingDialog({
             await axios.get(`${API_URL}/api/auth/logout`, {
               withCredentials: true
             });
-            navigate(0);
+            navigate('/connect');
           } catch (error) {
             toast.error('Failed to logout!');
           }
