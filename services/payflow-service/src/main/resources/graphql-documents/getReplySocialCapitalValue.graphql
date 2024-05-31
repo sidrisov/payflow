@@ -1,0 +1,17 @@
+query GetReplySocialCapitalValue($hash: String) {
+    FarcasterReplies(
+        input: {
+            filter: {
+                hash: {_eq: $hash}
+            },
+            blockchain: ALL
+        }
+    ) {
+        Reply {
+            socialCapitalValue {
+                formattedValue
+            }
+        }
+    }
+}
+

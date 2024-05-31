@@ -13,6 +13,8 @@ public interface ISocialGraphService {
 
 	FarcasterCast getTopCastReply(String parentHash, List<String> ignoredFids);
 
+	FarcasterCast getReplySocialCapitalValue(String hash);
+
 	ConnectedAddresses getIdentityVerifiedAddresses(String identity);
 
 	void cleanCache(String identity);

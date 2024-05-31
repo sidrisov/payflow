@@ -14,12 +14,15 @@ import ua.sinaver.web3.payflow.message.PaymentHashMessage;
 import ua.sinaver.web3.payflow.message.PaymentMessage;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
+import ua.sinaver.web3.payflow.service.FarcasterHubService;
 import ua.sinaver.web3.payflow.service.FarcasterMessagingService;
 import ua.sinaver.web3.payflow.service.FarcasterPaymentBotService;
+import ua.sinaver.web3.payflow.service.SocialGraphService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
 
 import java.security.Principal;
+import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -45,6 +48,14 @@ public class PaymentController {
 
 	@Autowired
 	private IIdentityService identityService;
+
+	@Autowired
+	private SocialGraphService socialGraphService;
+
+	public static String formatDouble(Double value) {
+		val df = new DecimalFormat("#.#####");
+		return df.format(value);
+	}
 
 	@GetMapping
 	public List<PaymentMessage> payments(@RequestParam(value = "hashes") List<String> hashes,
@@ -145,8 +156,17 @@ public class PaymentController {
 
 				if (StringUtils.isBlank(payment.getCategory())) {
 					if (payment.getType().equals(Payment.PaymentType.INTENT_TOP_REPLY)) {
+						var scvText = "";
+
+						val cast = socialGraphService.getReplySocialCapitalValue(payment.getSourceHash());
+						if (cast != null) {
+							scvText = String.format("with SCV score: %s ",
+									formatDouble(cast.getSocialCapitalValue().getFormattedValue()));
+						}
+
+
 						val castText = String.format("""
-										@%s, you've been paid %s %s by @%s for your top comment 🎉
+										@%s, you've been paid %s %s by @%s for your top comment %s🎉								
 																				
 										p.s. join /payflow channel for updates 👀""",
 								receiverFname,
@@ -154,7 +174,8 @@ public class PaymentController {
 										payment.getTokenAmount() :
 										String.format("$%s", payment.getUsdAmount()),
 								payment.getToken().toUpperCase(),
-								senderFname);
+								senderFname,
+								scvText);
 
 						val processed = farcasterPaymentBotService.reply(castText,
 								payment.getSourceHash(),

@@ -144,6 +144,36 @@ public class SocialGraphService implements ISocialGraphService {
 	}
 
 	@Override
+	public FarcasterCast getReplySocialCapitalValue(String hash) {
+		try {
+			val replies = graphQlClient.documentName("getReplySocialCapitalValue")
+					.variable("hash", hash)
+					.execute().block();
+			if (replies != null) {
+				val reply = replies.field("FarcasterReplies.Reply")
+						.toEntityList(FarcasterCast.class).stream()
+						.findFirst().orElse(null);
+
+				if (reply != null && reply.getSocialCapitalValue() != null) {
+					log.debug("Reply SCV: {} for url: {}",
+							reply.getSocialCapitalValue().getFormattedValue(), hash);
+					return reply;
+				}
+
+			}
+		} catch (Throwable t) {
+			log.error("Error during fetching reply SCV for hash: {}, error: {} - {}",
+					hash,
+					t.getMessage(),
+					log.isTraceEnabled() ? t : null);
+		}
+
+		log.error("Failed to fetch reply SCV for hash: {} ", hash);
+		return null;
+
+	}
+
+	@Override
 	@Cacheable(value = FARCASTER_VERIFICATIONS_CACHE_NAME, unless = "#result==null")
 	public ConnectedAddresses getIdentityVerifiedAddresses(String identity) {
 		val verifiedAddressesResponse = graphQlClient.documentName("getFarcasterVerifications")
