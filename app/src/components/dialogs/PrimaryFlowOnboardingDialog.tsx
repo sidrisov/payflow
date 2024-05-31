@@ -23,7 +23,7 @@ import { useCreateSafeWallets as usePreCreateSafeWallets } from '../../utils/hoo
 
 import { FlowType } from '../../types/FlowType';
 import { useNavigate } from 'react-router-dom';
-import {  DEFAULT_FLOW_WALLET_CHAINS } from '../../utils/networks';
+import { DEFAULT_FLOW_WALLET_CHAINS } from '../../utils/networks';
 import { updateProfile } from '../../services/user';
 import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
 import { useAccount } from 'wagmi';
@@ -33,6 +33,9 @@ import NetworkAvatar from '../avatars/NetworkAvatar';
 import { HistoryToggleOff, Info } from '@mui/icons-material';
 import ProfileAvatar from '../avatars/ProfileAvatar';
 import { usePrivy } from '@privy-io/react-auth';
+import { BackDialogTitle } from './BackDialogTitle';
+import axios from 'axios';
+import { API_URL } from '../../utils/urlConstants';
 
 export type PrimaryFlowOnboardingDialogProps = DialogProps &
   CloseCallbackType & {
@@ -136,13 +139,21 @@ export default function PrimaryFlowOnboardingDialog({
       sx={{
         backdropFilter: 'blur(5px)'
       }}>
-      <DialogTitle>
-        <Box display="flex" justifyContent="center">
-          <Typography variant="h6" sx={{ overflow: 'auto' }}>
-            Set Up Payment Flow
-          </Typography>
-        </Box>
-      </DialogTitle>
+      <BackDialogTitle
+        showAlways
+        title="Set Up Payment Flow"
+        closeStateCallback={async () => {
+          try {
+            await axios.get(`${API_URL}/api/auth/logout`, {
+              withCredentials: true
+            });
+            navigate('/connect');
+          } catch (error) {
+            toast.error('Failed to logout!');
+          }
+        }}
+      />
+
       <DialogContent>
         <Box
           maxWidth={350}

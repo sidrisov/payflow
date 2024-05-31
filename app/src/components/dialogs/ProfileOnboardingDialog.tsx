@@ -32,6 +32,7 @@ import { isAlphanumericPlusFewSpecialChars as isAlphanumericWithSpecials } from 
 import { green, lightGreen, red } from '@mui/material/colors';
 import { FARCASTER_DAPP, LENS_DAPP } from '../../utils/dapps';
 import { QUERY_SOCIALS } from '../../utils/airstackQueries';
+import { BackDialogTitle } from './BackDialogTitle';
 
 export type ProfileOnboardingDialogProps = DialogProps &
   CloseCallbackType & {
@@ -230,13 +231,20 @@ export default function ProfileOnboardingDialog({
       sx={{
         backdropFilter: 'blur(5px)'
       }}>
-      <DialogTitle>
-        <Box display="flex" justifyContent="center">
-          <Typography variant="h6" sx={{ overflow: 'auto' }}>
-            Complete your profile
-          </Typography>
-        </Box>
-      </DialogTitle>
+      <BackDialogTitle
+        showAlways
+        title="Complete your profile"
+        closeStateCallback={async () => {
+          try {
+            await axios.get(`${API_URL}/api/auth/logout`, {
+              withCredentials: true
+            });
+            navigate('/connect');
+          } catch (error) {
+            toast.error('Failed to logout!');
+          }
+        }}
+      />
       <DialogContent>
         <Box
           height="100%"

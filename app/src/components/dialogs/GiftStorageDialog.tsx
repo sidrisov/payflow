@@ -22,7 +22,7 @@ import {
 } from 'wagmi';
 import { rentStorageAbi } from '../../utils/abi/rentFcStorageAbi';
 import { OP_FARCASTER_STORAGE_CONTRACT_ADDR } from '../../utils/contracts';
-import { BackDialogTitle } from './PaymentDialogTitle';
+import { BackDialogTitle } from './BackDialogTitle';
 import { SenderField } from '../SenderField';
 import { KeyboardDoubleArrowDown } from '@mui/icons-material';
 import { SelectedIdentityType } from '../../types/ProfleType';

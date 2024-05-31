@@ -12,7 +12,7 @@ import { SelectedIdentityType } from '../../types/ProfleType';
 import PayWithPayflowDialog from './PayWithPayflowDialog';
 import PayWithEOADialog from './PayWithEOADialog';
 import { useAccount } from 'wagmi';
-import { BackDialogTitle } from './PaymentDialogTitle';
+import { BackDialogTitle } from './BackDialogTitle';
 import { PaymentType } from '../../types/PaymentType';
 import { SenderField } from '../SenderField';
 import { KeyboardDoubleArrowDown } from '@mui/icons-material';

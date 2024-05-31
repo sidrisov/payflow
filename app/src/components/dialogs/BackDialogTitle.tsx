@@ -12,14 +12,18 @@ import { ArrowBack } from '@mui/icons-material';
 
 export function BackDialogTitle({
   title,
+  showAlways = false,
   closeStateCallback,
   ...props
 }: {
   title: string;
+  showAlways?: boolean;
 } & CloseCallbackType &
   DialogTitleProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const showBackButton = showAlways || isMobile;
 
   return (
     <DialogTitle {...props}>
@@ -27,13 +31,13 @@ export function BackDialogTitle({
         display="flex"
         flexDirection="row"
         alignItems="center"
-        justifyContent={isMobile ? 'flex-start' : 'center'}>
-        {isMobile && (
+        justifyContent={showBackButton ? 'flex-start' : 'center'}>
+        {showBackButton && (
           <IconButton onClick={closeStateCallback}>
             <ArrowBack />
           </IconButton>
         )}
-        <Typography ml={isMobile ? 2 : 0} variant="h6">
+        <Typography ml={showBackButton ? 2 : 0} variant="h6">
           {title}
         </Typography>
       </Box>
