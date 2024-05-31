@@ -80,6 +80,11 @@ const privyConfig = (darkMode: boolean): PrivyClientConfig => {
       theme: darkMode ? 'dark' : 'light',
       walletList: ['detected_wallets', 'metamask', 'rainbow', 'coinbase_wallet', 'wallet_connect']
     },
+    externalWallets: {
+      coinbaseWallet: {
+        connectionOptions: 'all'
+      }
+    },
     walletConnectCloudProjectId: WALLET_CONNECT_PROJECT_ID,
     supportedChains: SUPPORTED_CHAINS
   };
