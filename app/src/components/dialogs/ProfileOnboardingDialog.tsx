@@ -239,7 +239,7 @@ export default function ProfileOnboardingDialog({
             await axios.get(`${API_URL}/api/auth/logout`, {
               withCredentials: true
             });
-            navigate('/connect');
+            navigate(0);
           } catch (error) {
             toast.error('Failed to logout!');
           }
