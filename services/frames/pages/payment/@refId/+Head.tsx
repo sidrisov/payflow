@@ -13,9 +13,9 @@ export function Head() {
   const imageUrl =
     status === 'PENDING'
       ? type === 'INTENT'
-        ? `${FRAMES_URL}/images/profile/${identity}/payment.png?step=execute&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount}`
-        : `${FRAMES_URL}/images/profile/${identity}/payment.png?step=confirm&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount}`
-      : `${FRAMES_URL}/images/profile/${identity}/payment.png?step=execute&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount}&status=success`;
+        ? `${FRAMES_URL}/images/profile/${identity}/payment.png?step=execute&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount ?? ''}&tokenAmount=${payment.tokenAmount ?? ''}`
+        : `${FRAMES_URL}/images/profile/${identity}/payment.png?step=confirm&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount ?? ''}&tokenAmount=${payment.tokenAmount ?? ''}`
+      : `${FRAMES_URL}/images/profile/${identity}/payment.png?step=execute&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount ?? ''}&tokenAmount=${payment.tokenAmount ?? ''}&status=success`;
   return (
     <>
       <head>
@@ -76,7 +76,7 @@ export function Head() {
                 property="fc:frame:button:1:target"
                 content={`${API_URL}/api/farcaster/frames/pay/${refId}/frame/confirm`}
               />
-              <meta property="fc:frame:button:2" content="📱 Later" />
+              <meta property="fc:frame:button:2" content="📱 Intent" />
               <meta property="fc:frame:button:2:action" content="post" />
               <meta
                 property="fc:frame:button:2:target"
@@ -86,11 +86,11 @@ export function Head() {
           )
         ) : (
           <>
-            <meta property="fc:frame:button:1" content="🔎 Check tx details" />
+            <meta property="fc:frame:button:1" content="🔎 Receipt" />
             <meta property="fc:frame:button:1:action" content="link" />
             <meta
               property="fc:frame:button:1:target"
-              content={`https://basescan.org/tx/${payment.hash}`}
+              content={`https://onceupon.gg/${payment.hash}`}
             />
           </>
         )}

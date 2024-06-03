@@ -8,7 +8,8 @@ export default function Page() {
   return (
     <>
       <h1 style={{ fontWeight: 'bold' }}>
-        Amount: ${payment.usdAmount} {payment.token} {payment.chainId}
+        Amount: {payment.tokenAmount ? payment.tokenAmount : `$${payment.usdAmount}`}{' '}
+        {payment.token} {payment.chainId}
       </h1>
       <br />
       Type: {payment.type}

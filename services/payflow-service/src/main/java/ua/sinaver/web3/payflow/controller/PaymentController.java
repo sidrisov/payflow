@@ -14,7 +14,6 @@ import ua.sinaver.web3.payflow.message.PaymentHashMessage;
 import ua.sinaver.web3.payflow.message.PaymentMessage;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
-import ua.sinaver.web3.payflow.service.FarcasterHubService;
 import ua.sinaver.web3.payflow.service.FarcasterMessagingService;
 import ua.sinaver.web3.payflow.service.FarcasterPaymentBotService;
 import ua.sinaver.web3.payflow.service.SocialGraphService;
@@ -206,7 +205,7 @@ public class PaymentController {
 							}
 						} else {
 							val receiverFid =
-									identityService.getIdentityFid(payment.getReceiver().getIdentity(), false);
+									identityService.getIdentityFid(payment.getReceiver().getIdentity());
 							if (StringUtils.isBlank(receiverFid)) {
 								return;
 							}
@@ -215,10 +214,9 @@ public class PaymentController {
 								val messageText = String.format("""
 												 @%s, you've been paid %s %s by @%s 🎉
 																						
-												Source (cast): %s
+												🔗 Source: %s									
+												🧾Receipt: %s
 																						
-												Receipt (tx): %s
-
 												p.s. join /payflow channel for updates 👀""",
 										receiverFname,
 										StringUtils.isNotBlank(payment.getTokenAmount()) ?
@@ -226,7 +224,8 @@ public class PaymentController {
 												String.format("$%s", payment.getUsdAmount()),
 										payment.getToken().toUpperCase(),
 										senderFname,
-										sourceRef,
+										payment.getSourceRef() != null ? String.format("🔗 Source: %s",
+												payment.getSourceRef()) : "",
 										txUrl);
 								val response = farcasterMessagingService.message(
 										new DirectCastMessage(receiverFid, messageText, UUID.randomUUID()));

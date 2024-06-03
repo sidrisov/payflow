@@ -5,6 +5,7 @@ import { shortenWalletAddressLabel } from '../utils/address';
 import { assetImageSrc } from '../utils/image';
 import { base } from 'viem/chains';
 import getNetworkImageSrc, { getNetworkDisplayName } from '../utils/networks';
+import { ERC20_CONTRACTS } from '../utils/erc20contracts';
 
 export const payProfileHtml = (
   profile: ProfileType,
@@ -19,7 +20,7 @@ const paymentStepTitle = (step: 'start' | 'amount' | 'confirm' | 'execute') => {
     case 'amount':
       return 'Choose payment amount?';
     case 'confirm':
-      return 'Pay now or later (app)?';
+      return 'Pay now or submit intent?';
     case 'execute':
       return 'Payment details';
   }
@@ -35,6 +36,11 @@ function PayProfile({
   payment: PaymentType;
 }) {
   const title = paymentStepTitle(step);
+  const tokenImgSrc =
+    payment.token &&
+    (ERC20_CONTRACTS.find((t) => t.chainId === payment.chainId && t.id === payment.token)
+      ?.imageURL ??
+      assetImageSrc(`/assets/coins/${payment.token}.png`));
 
   console.log('comparing: ', payment.chainId, base.id, payment.chainId === base.id);
 
@@ -86,12 +92,13 @@ function PayProfile({
           <div
             style={{
               margin: 10,
-              width: 400,
+              minWidth: 250,
+              maxWidth: 300,
               height: 230,
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'flex-start',
-              alignItems: 'stretch',
+              alignItems: 'flex-start',
               padding: 16,
               fontSize: 36,
               backgroundColor: '#e0e0e0',
@@ -103,27 +110,15 @@ function PayProfile({
                 style={{
                   display: 'flex',
                   flexDirection: 'row',
-                  justifyContent: 'space-between',
+                  justifyContent: 'center',
                   alignItems: 'center',
-                  whiteSpace: 'nowrap'
+                  gap: 10
                 }}>
-                <span>Chain</span>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: 10
-                  }}>
-                  <img
-                    src={assetImageSrc(getNetworkImageSrc(payment.chainId))}
-                    style={{ width: 36, height: 36, borderRadius: '50%' }}
-                  />
-                  <span style={{ fontWeight: 'bold' }}>
-                    {getNetworkDisplayName(payment.chainId)}
-                  </span>
-                </div>
+                <img
+                  src={assetImageSrc(getNetworkImageSrc(payment.chainId as number))}
+                  style={{ width: 36, height: 36, borderRadius: '50%' }}
+                />
+                <span style={{ fontWeight: 'bold' }}>{getNetworkDisplayName(payment.chainId)}</span>
               </div>
             )}
             {payment.token && (
@@ -131,75 +126,41 @@ function PayProfile({
                 style={{
                   display: 'flex',
                   flexDirection: 'row',
-                  justifyContent: 'space-between',
+                  justifyContent: 'center',
                   alignItems: 'center',
-                  whiteSpace: 'nowrap'
+                  gap: 10
                 }}>
-                <span>Token</span>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: 10
-                  }}>
-                  <img
-                    src={assetImageSrc(`/assets/coins/${payment.token}.png`)}
-                    style={{ width: 36, height: 36, borderRadius: '50%' }}
-                  />
-                  <span style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>
-                    <b>{payment.token}</b>
-                  </span>
-                </div>
+                <img src={tokenImgSrc} style={{ width: 36, height: 36, borderRadius: '50%' }} />
+                <span style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>
+                  <b>{payment.token}</b>
+                </span>
               </div>
             )}
-            {payment.usdAmount && payment.amount && (
+            {payment.usdAmount && payment.tokenAmount && (
               <div
                 style={{
                   display: 'flex',
                   flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  whiteSpace: 'nowrap',
-                  gap: 5
+                  justifyContent: 'center',
+                  alignItems: 'center'
                 }}>
-                <span>Amount</span>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    alignItems: 'center'
-                  }}>
-                  <span>
-                    <b>${payment.usdAmount} ≈ </b>
-                  </span>
-                  <span>
-                    <b>{payment.amount}</b>
-                  </span>
-                </div>
+                <span>
+                  <b>${payment.usdAmount} ≈ </b>
+                </span>
+                <span>
+                  <b>{payment.tokenAmount}</b>
+                </span>
               </div>
             )}
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                whiteSpace: 'nowrap'
-              }}>
-              <span>Tx status</span>
-              <span>
-                <b>
-                  {payment.status
-                    ? payment.status === 'success'
-                      ? '✅ Success'
-                      : '❌ Failed'
-                    : '⏳ Pending'}
-                </b>
-              </span>
-            </div>
+            <span>
+              <b>
+                {payment.status
+                  ? payment.status === 'success'
+                    ? '✅ Success'
+                    : '❌ Failed'
+                  : '⏳ Pending'}
+              </b>
+            </span>
           </div>
         )}
       </div>

@@ -47,7 +47,7 @@ public class AlfaFrensService {
 		log.debug("Fetching alfa frens subscribers for identity: {}", identity);
 
 		try {
-			val fid = identityService.getIdentityFid(identity, false);
+			val fid = identityService.getIdentityFid(identity);
 
 			log.debug("Fetched fid: {} for identity: {}", fid, identity);
 			if (StringUtils.isBlank(fid)) {

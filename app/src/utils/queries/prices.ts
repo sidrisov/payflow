@@ -23,7 +23,6 @@ export const useTokenPrices = () => {
       const tokenPrices: TokenPrices = {};
       for (const [_, value] of Object.entries(response.data)) {
         tokenPrices['eth'] = (value as any).usd;
-        //tokenPrices['przWETH'] = (value as any).usd;
       }
 
       for (const chain of SUPPORTED_CHAINS) {
@@ -49,22 +48,21 @@ export const useTokenPrices = () => {
         // Fetch token prices for the tokens to fetch
         const response = await axios.get(
           `${TOKEN_PRICE_API}/${
-            chainId == degen.id ? 'degenchain' : chainName
-          }/token_price/${tokensToFetch.map((token) => token.tokenAddress).join(',')}`
+            chainId === degen.id ? 'degenchain' : chainName
+          }/token_price/${tokensToFetch
+            .map((token) => token.underlyingToken?.tokenAddress ?? token.tokenAddress)
+            .join(',')}`
         );
 
         const tokenPricesData = response.data.data.attributes.token_prices;
 
         // Update tokenPrices object with token prices for the current chain
-        tokensForChain.forEach((token) => {
-          if (token.tokenAddress && tokenPricesData.hasOwnProperty(token.tokenAddress)) {
-            tokenPrices[token.id] = tokenPricesData[token.tokenAddress];
+        tokensToFetch.forEach((token) => {
+          const tokenAddress = token.underlyingToken?.tokenAddress ?? token.tokenAddress;
+          if (tokenAddress && tokenPricesData.hasOwnProperty(tokenAddress)) {
+            tokenPrices[token.id] = tokenPricesData[tokenAddress];
           }
         });
-
-        // TODO: some hardcoding, fetch separately
-        tokenPrices['przUSDC'] = tokenPrices['usdc'];
-        //tokenPrices['przPOOL'] = tokenPrices['pool'];
       }
 
       return tokenPrices;

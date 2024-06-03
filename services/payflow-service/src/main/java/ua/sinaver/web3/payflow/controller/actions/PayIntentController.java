@@ -21,8 +21,8 @@ import java.text.DecimalFormat;
 import java.util.Comparator;
 import java.util.List;
 
-import static ua.sinaver.web3.payflow.service.TransactionService.PAYMENT_CHAIN_IDS;
-import static ua.sinaver.web3.payflow.service.TransactionService.SUPPORTED_FRAME_PAYMENTS_TOKENS;
+import static ua.sinaver.web3.payflow.service.TokenService.PAYMENT_CHAIN_IDS;
+import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYMENTS_TOKENS;
 
 @RestController
 @RequestMapping("/farcaster/actions/pay")

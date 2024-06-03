@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/alt-text */
 import { JarType } from '../types/FlowType';
 import { PaymentType } from '../types/PaymentType';
+import { ERC20_CONTRACTS } from '../utils/erc20contracts';
 import { assetImageSrc } from '../utils/image';
 import getNetworkImageSrc, { getNetworkDisplayName } from '../utils/networks';
 
@@ -10,8 +11,8 @@ export const jarHtml = (
   jar: JarType,
   balance: string,
   step?: 'start' | 'chain' | 'amount' | 'confirm' | 'execute',
-  state?: PaymentType
-) => <Jar jar={jar} balance={balance} step={step} state={state} />;
+  payment?: PaymentType
+) => <Jar jar={jar} balance={balance} step={step} payment={payment} />;
 
 const contributionStepTitle = (step: 'start' | 'chain' | 'amount' | 'confirm' | 'execute') => {
   switch (step) {
@@ -32,17 +33,22 @@ function Jar({
   jar,
   balance,
   step,
-  state
+  payment
 }: {
   jar: JarType;
   balance: string;
   step?: 'start' | 'chain' | 'amount' | 'confirm' | 'execute';
-  state?: PaymentType;
+  payment?: PaymentType;
 }) {
   const profile = jar.profile;
   const flow = jar.flow;
 
   const title = step && contributionStepTitle(step);
+  const tokenImgSrc =
+    payment?.token &&
+    (ERC20_CONTRACTS.find((t) => t.chainId === payment.chainId && t.id === payment.token)
+      ?.imageURL ??
+      assetImageSrc(`/assets/coins/${payment.token}.png`));
 
   return (
     <Card>
@@ -110,7 +116,7 @@ function Jar({
         </span>
       </div>
 
-      {step && state ? (
+      {step && payment ? (
         <div
           style={{
             display: 'flex',
@@ -136,7 +142,7 @@ function Jar({
                 borderRadius: 25,
                 gap: 10
               }}>
-              {state.chainId && (
+              {payment.chainId && (
                 <div
                   style={{
                     display: 'flex',
@@ -155,16 +161,16 @@ function Jar({
                       gap: 10
                     }}>
                     <img
-                      src={assetImageSrc(getNetworkImageSrc(state.chainId))}
+                      src={assetImageSrc(getNetworkImageSrc(payment.chainId))}
                       style={{ width: 36, height: 36, borderRadius: '50%' }}
                     />
                     <span style={{ fontWeight: 'bold' }}>
-                      {getNetworkDisplayName(state.chainId)}
+                      {getNetworkDisplayName(payment.chainId)}
                     </span>
                   </div>
                 </div>
               )}
-              {state.token && (
+              {payment.token && (
                 <div
                   style={{
                     display: 'flex',
@@ -182,17 +188,14 @@ function Jar({
                       alignItems: 'center',
                       gap: 10
                     }}>
-                    <img
-                      src={assetImageSrc(`/assets/coins/${state.token}.png`)}
-                      style={{ width: 36, height: 36, borderRadius: '50%' }}
-                    />
+                    <img src={tokenImgSrc} style={{ width: 36, height: 36, borderRadius: '50%' }} />
                     <span style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>
-                      <b>{state.token}</b>
+                      <b>{payment.token}</b>
                     </span>
                   </div>
                 </div>
               )}
-              {state.usdAmount && state.amount && (
+              {payment.usdAmount && payment.tokenAmount && (
                 <div
                   style={{
                     display: 'flex',
@@ -211,15 +214,15 @@ function Jar({
                       alignItems: 'center'
                     }}>
                     <span>
-                      <b>${state.usdAmount} ≈ </b>
+                      <b>${payment.usdAmount} ≈ </b>
                     </span>
                     <span>
-                      <b>{state.amount}</b>
+                      <b>{payment.tokenAmount}</b>
                     </span>
                   </div>
                 </div>
               )}
-              {state.status && (
+              {payment.status && (
                 <div
                   style={{
                     display: 'flex',
@@ -230,7 +233,7 @@ function Jar({
                   }}>
                   <span>Tx status</span>
                   <span>
-                    <b>{state.status === 'success' ? '✅ Success' : '❌ Failed'}</b>
+                    <b>{payment.status === 'success' ? '✅ Success' : '❌ Failed'}</b>
                   </span>
                 </div>
               )}

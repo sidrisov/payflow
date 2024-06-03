@@ -8,9 +8,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.message.CastActionMeta;
 import ua.sinaver.web3.payflow.message.FrameMessage;
+import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
+
+import java.util.Comparator;
 
 @RestController
 @RequestMapping("/farcaster/actions/profile")
@@ -19,8 +22,8 @@ import ua.sinaver.web3.payflow.utils.FrameResponse;
 public class PayProfileController {
 
 	private final static CastActionMeta PAY_PROFILE_CAST_ACTION_META = new CastActionMeta(
-			"Pay Profile", "person",
-			"Use this action to pay payflow profile of the cast author",
+			"Pay Profile", "zap",
+			"Use this action to pay farcaster users with in-frame txs",
 			"https://app.payflow.me/actions",
 			new CastActionMeta.Action("post"));
 
@@ -50,16 +53,35 @@ public class PayProfileController {
 				validateMessage.action().url());
 
 		val casterFid = validateMessage.action().cast().fid();
-		val clickedProfile = identityService.getFidProfiles(casterFid).stream().findFirst().orElse(null);
-		if (clickedProfile == null) {
-			log.error("Caster fid {} is not on Payflow", casterFid);
-			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameMessage("User not on Payflow! Invite :)"));
+
+		// pay first with higher social score now invite first
+		val paymentAddresses = identityService.getIdentitiesInfo(casterFid)
+				.stream().max(Comparator.comparingInt(IdentityMessage::score))
+				.map(IdentityMessage::address).stream().toList();
+
+		// check if profile exist
+		val paymentProfile = identityService.getFidProfiles(paymentAddresses).stream().findFirst().orElse(null);
+		if (paymentProfile == null) {
+			log.warn("Caster fid {} is not on Payflow", casterFid);
+		}
+
+		String paymentAddress;
+		if (paymentProfile == null || paymentProfile.getDefaultFlow() == null) {
+			if (!paymentAddresses.isEmpty()) {
+				// return first associated address
+				paymentAddress = paymentAddresses.getFirst();
+			} else {
+				return ResponseEntity.badRequest().body(
+						new FrameResponse.FrameMessage("Recipient address not found!"));
+			}
+		} else {
+			// return profile identity
+			paymentAddress = paymentProfile.getIdentity();
 		}
 
 		// just responding with dummy frame
 		return ResponseEntity.ok().body(
 				new FrameResponse.ActionFrame("frame", String.format("https://frames.payflow" +
-						".me/%s", clickedProfile.getUsername())));
+						".me/%s", paymentAddress)));
 	}
 }

@@ -21,8 +21,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import static ua.sinaver.web3.payflow.service.TransactionService.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -44,6 +43,9 @@ public class FarcasterPaymentBotService {
 	@Autowired
 	private PaymentRepository paymentRepository;
 
+	@Autowired
+	private TokenService tokenService;
+
 	@Value("${payflow.farcaster.bot.cast.signer}")
 	private String botSignerUuid;
 
@@ -56,23 +58,35 @@ public class FarcasterPaymentBotService {
 	@Value("${payflow.farcaster.bot.test.enabled:false}")
 	private boolean isTestBotEnabled;
 
-	public static String parseToken(String text) {
-		val pattern = Pattern.compile("\\b(?<token>eth|degen|usdc)\\b");
+	public String parseToken(String text) {
+
+		val patternStr = String.format("\\b(?<token>%s)\\b",
+				tokenService.getTokens().stream()
+						.map(t -> Pattern.quote(t.id()))
+						.distinct()
+						.collect(Collectors.joining("|")));
+		val pattern = Pattern.compile(patternStr);
 		val matcher = pattern.matcher(text);
 		return matcher.find() ? matcher.group("token") : "usdc";
 	}
 
-	public static String parseChain(String text) {
-		val pattern = Pattern.compile("\\b(?<chain>base|optimism|degen-l3)\\b");
+	public String parseChain(String text) {
+		val patternStr = String.format("\\b(?<chain>%s)\\b",
+				tokenService.getTokens().stream()
+						.map(t -> Pattern.quote(t.chain()))
+						.distinct()
+						.collect(Collectors.joining("|")));
+
+		val pattern = Pattern.compile(patternStr);
 		val matcher = pattern.matcher(text);
 		if (matcher.find()) {
 			var matched = matcher.group("chain");
 			if (matched.equals("degen-l3")) {
-				matched = DEGEN_CHAIN_NAME;
+				matched = TokenService.DEGEN_CHAIN_NAME;
 			}
 			return matched;
 		}
-		return BASE_CHAIN_NAME;
+		return TokenService.BASE_CHAIN_NAME;
 	}
 
 	public boolean reply(String text, String parentHash, List<CastEmbed> embeds) {
@@ -176,7 +190,7 @@ public class FarcasterPaymentBotService {
 						if (!StringUtils.isBlank(remainingText)) {
 							log.debug("Processing {} bot command arguments {}", command, remainingText);
 
-							val sendPattern = "(?:@(?<receiver>[a-zA-Z0-9_.-]+)\\s*)?\\s*(?:\\$(?<amount>[0-9]+(?:\\.[0-9]+)?))?\\s*(?<rest>.*)";
+							val sendPattern = "(?:@(?<receiver>[a-zA-Z0-9_.-]+)\\s*)?\\s*(?<amount>\\$?[0-9]+(?:\\.[0-9]+)?)?\\s*(?<rest>.*)";
 							matcher = Pattern.compile(sendPattern, Pattern.CASE_INSENSITIVE).matcher(remainingText);
 							if (matcher.find()) {
 								receiver = matcher.group("receiver");
@@ -186,7 +200,7 @@ public class FarcasterPaymentBotService {
 								token = parseToken(restText);
 								chain = parseChain(restText);
 
-								log.debug("Receiver: {}, amount: ${}, token: {}, chain: {}",
+								log.debug("Receiver: {}, amount: {}, token: {}, chain: {}",
 										receiver, amount, token, chain);
 
 								// if receiver passed fetch meta from mentions
@@ -244,10 +258,14 @@ public class FarcasterPaymentBotService {
 								val payment = new Payment(command.equals("send") ?
 										Payment.PaymentType.FRAME : Payment.PaymentType.INTENT,
 										receiverProfile,
-										PAYMENT_CHAIN_IDS.get(chain), token);
+										TokenService.PAYMENT_CHAIN_IDS.get(chain), token);
 								payment.setReceiverAddress(receiverAddress);
 								payment.setSender(casterProfile);
-								payment.setUsdAmount(amount);
+								if (amount.startsWith("$")) {
+									payment.setUsdAmount(amount.replace("$", ""));
+								} else {
+									payment.setTokenAmount(amount);
+								}
 								payment.setSourceApp(sourceApp);
 								payment.setSourceRef(sourceRef);
 								paymentRepository.save(payment);

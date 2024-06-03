@@ -14,8 +14,8 @@ import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
-import static ua.sinaver.web3.payflow.service.TransactionService.ETH_TOKEN;
-import static ua.sinaver.web3.payflow.service.TransactionService.OP_CHAIN_ID;
+import static ua.sinaver.web3.payflow.service.TokenService.ETH_TOKEN;
+import static ua.sinaver.web3.payflow.service.TokenService.OP_CHAIN_ID;
 
 @RestController
 @RequestMapping("/farcaster/actions/products")

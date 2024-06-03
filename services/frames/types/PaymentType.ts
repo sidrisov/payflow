@@ -1,7 +1,7 @@
 export interface PaymentType {
   chainId?: number;
   token?: string;
-  amount?: string;
+  tokenAmount?: string;
   usdAmount?: string;
   status?: 'success' | 'failed';
 }

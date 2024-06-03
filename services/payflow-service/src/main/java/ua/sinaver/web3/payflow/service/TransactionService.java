@@ -3,9 +3,8 @@ package ua.sinaver.web3.payflow.service;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.web3j.abi.FunctionEncoder;
@@ -16,23 +15,18 @@ import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.contracts.eip20.generated.ERC20;
 import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.http.HttpService;
-import org.web3j.tx.ClientTransactionManager;
 import org.web3j.tx.TransactionManager;
 import org.web3j.tx.gas.DefaultGasProvider;
 import org.web3j.utils.Convert;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.Wallet;
-import ua.sinaver.web3.payflow.message.CryptoPrice;
 import ua.sinaver.web3.payflow.message.FramePaymentMessage;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -69,329 +63,53 @@ public class TransactionService {
 			]
 			""";
 
-	public static final String ERC20_ABI_JSON = """
-			[
-			    {
-			        "constant": true,
-			        "inputs": [],
-			        "name": "name",
-			        "outputs": [
-			            {
-			                "name": "",
-			                "type": "string"
-			            }
-			        ],
-			        "payable": false,
-			        "stateMutability": "view",
-			        "type": "function"
-			    },
-			    {
-			        "constant": false,
-			        "inputs": [
-			            {
-			                "name": "_spender",
-			                "type": "address"
-			            },
-			            {
-			                "name": "_value",
-			                "type": "uint256"
-			            }
-			        ],
-			        "name": "approve",
-			        "outputs": [
-			            {
-			                "name": "",
-			                "type": "bool"
-			            }
-			        ],
-			        "payable": false,
-			        "stateMutability": "nonpayable",
-			        "type": "function"
-			    },
-			    {
-			        "constant": true,
-			        "inputs": [],
-			        "name": "totalSupply",
-			        "outputs": [
-			            {
-			                "name": "",
-			                "type": "uint256"
-			            }
-			        ],
-			        "payable": false,
-			        "stateMutability": "view",
-			        "type": "function"
-			    },
-			    {
-			        "constant": false,
-			        "inputs": [
-			            {
-			                "name": "_from",
-			                "type": "address"
-			            },
-			            {
-			                "name": "_to",
-			                "type": "address"
-			            },
-			            {
-			                "name": "_value",
-			                "type": "uint256"
-			            }
-			        ],
-			        "name": "transferFrom",
-			        "outputs": [
-			            {
-			                "name": "",
-			                "type": "bool"
-			            }
-			        ],
-			        "payable": false,
-			        "stateMutability": "nonpayable",
-			        "type": "function"
-			    },
-			    {
-			        "constant": true,
-			        "inputs": [],
-			        "name": "decimals",
-			        "outputs": [
-			            {
-			                "name": "",
-			                "type": "uint8"
-			            }
-			        ],
-			        "payable": false,
-			        "stateMutability": "view",
-			        "type": "function"
-			    },
-			    {
-			        "constant": true,
-			        "inputs": [
-			            {
-			                "name": "_owner",
-			                "type": "address"
-			            }
-			        ],
-			        "name": "balanceOf",
-			        "outputs": [
-			            {
-			                "name": "balance",
-			                "type": "uint256"
-			            }
-			        ],
-			        "payable": false,
-			        "stateMutability": "view",
-			        "type": "function"
-			    },
-			    {
-			        "constant": true,
-			        "inputs": [],
-			        "name": "symbol",
-			        "outputs": [
-			            {
-			                "name": "",
-			                "type": "string"
-			            }
-			        ],
-			        "payable": false,
-			        "stateMutability": "view",
-			        "type": "function"
-			    },
-			    {
-			        "constant": false,
-			        "inputs": [
-			            {
-			                "name": "_to",
-			                "type": "address"
-			            },
-			            {
-			                "name": "_value",
-			                "type": "uint256"
-			            }
-			        ],
-			        "name": "transfer",
-			        "outputs": [
-			            {
-			                "name": "",
-			                "type": "bool"
-			            }
-			        ],
-			        "payable": false,
-			        "stateMutability": "nonpayable",
-			        "type": "function"
-			    },
-			    {
-			        "constant": true,
-			        "inputs": [
-			            {
-			                "name": "_owner",
-			                "type": "address"
-			            },
-			            {
-			                "name": "_spender",
-			                "type": "address"
-			            }
-			        ],
-			        "name": "allowance",
-			        "outputs": [
-			            {
-			                "name": "",
-			                "type": "uint256"
-			            }
-			        ],
-			        "payable": false,
-			        "stateMutability": "view",
-			        "type": "function"
-			    },
-			    {
-			        "payable": true,
-			        "stateMutability": "payable",
-			        "type": "fallback"
-			    },
-			    {
-			        "anonymous": false,
-			        "inputs": [
-			            {
-			                "indexed": true,
-			                "name": "owner",
-			                "type": "address"
-			            },
-			            {
-			                "indexed": true,
-			                "name": "spender",
-			                "type": "address"
-			            },
-			            {
-			                "indexed": false,
-			                "name": "value",
-			                "type": "uint256"
-			            }
-			        ],
-			        "name": "Approval",
-			        "type": "event"
-			    },
-			    {
-			        "anonymous": false,
-			        "inputs": [
-			            {
-			                "indexed": true,
-			                "name": "from",
-			                "type": "address"
-			            },
-			            {
-			                "indexed": true,
-			                "name": "to",
-			                "type": "address"
-			            },
-			            {
-			                "indexed": false,
-			                "name": "value",
-			                "type": "uint256"
-			            }
-			        ],
-			        "name": "Transfer",
-			        "type": "event"
-			    }
-			]
-			""";
-	public static final String BASE_CHAIN_NAME = "base";
-	public static final Integer BASE_CHAIN_ID = 8453;
-	public static final String OP_CHAIN_NAME = "optimism";
-	public static final Integer OP_CHAIN_ID = 10;
-
-	public static final String DEGEN_CHAIN_NAME = "degen";
-	public static final Integer DEGEN_CHAIN_ID = 666666666;
-
-	public static final String ARB_CHAIN_NAME = "arbitrum";
-	public static final Integer ARB_CHAIN_ID = 42161;
-
-	public static final String MODE_CHAIN_NAME = "mode";
-	public static final Integer MODE_CHAIN_ID = 34443;
-
-	public static final Integer DEFAULT_FRAME_PAYMENTS_CHAIN_ID = BASE_CHAIN_ID;
-	public static final List<Integer> SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS =
-			Arrays.asList(BASE_CHAIN_ID, OP_CHAIN_ID, DEGEN_CHAIN_ID);
-
-	public static final Map<String, Integer> PAYMENT_CHAIN_IDS = Map.of(
-			BASE_CHAIN_NAME, BASE_CHAIN_ID,
-			OP_CHAIN_NAME, OP_CHAIN_ID,
-			DEGEN_CHAIN_NAME, DEGEN_CHAIN_ID,
-			ARB_CHAIN_NAME, ARB_CHAIN_ID,
-			MODE_CHAIN_NAME, MODE_CHAIN_ID);
-
-	public static final Map<Integer, String> PAYMENT_CHAIN_NAMES = Map.of(
-			BASE_CHAIN_ID, BASE_CHAIN_NAME,
-			OP_CHAIN_ID, OP_CHAIN_NAME,
-			DEGEN_CHAIN_ID, DEGEN_CHAIN_NAME,
-			ARB_CHAIN_ID, ARB_CHAIN_NAME,
-			MODE_CHAIN_ID, MODE_CHAIN_NAME);
-	public static final String ETH_TOKEN = "eth";
-	public static final String USDC_TOKEN = "usdc";
-	public static final String DEGEN_TOKEN = "degen";
-
-	public static final List<String> PAYMENTS_BASE_TOKENS = Arrays.asList(ETH_TOKEN, USDC_TOKEN, DEGEN_TOKEN);
-
-	public static final List<String> PAYMENTS_OP_TOKENS = Arrays.asList(ETH_TOKEN, USDC_TOKEN);
-	public static final List<String> PAYMENTS_DEGEN_TOKENS = List.of(DEGEN_TOKEN);
-	public static final Map<Integer, List<String>> PAYMENTS_CHAIN_TOKENS = Map.of(BASE_CHAIN_ID,
-			PAYMENTS_BASE_TOKENS, OP_CHAIN_ID, PAYMENTS_OP_TOKENS, DEGEN_CHAIN_ID,
-			PAYMENTS_DEGEN_TOKENS);
-	public static final Map<String, String> BASE_ERC20_TOKEN_ADDRESSES = Map.of(USDC_TOKEN,
-			"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-			DEGEN_TOKEN, "0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed");
-
-	public static final Map<String, String> OPTIMISM_ERC20_TOKEN_ADDRESSES = Map.of(USDC_TOKEN,
-			"0x0b2c639c533813f4aa9d7837caf62653d097ff85");
-
-	public static final Map<String, String> ARB_ERC20_TOKEN_ADDRESSES = Map.of(USDC_TOKEN,
-			"0xaf88d065e77c8cc2239327c5edb3a432268e5831");
-
-	public static final Map<String, String> MODE_ERC20_TOKEN_ADDRESSES = Map.of(USDC_TOKEN,
-			"0xd988097fb8612cc24eec14542bc03424c656005f");
-
-
-	public static final List<String> SUPPORTED_FRAME_PAYMENTS_TOKENS = Arrays.asList(ETH_TOKEN, USDC_TOKEN,
-			DEGEN_TOKEN, "higher", "build", "onchain", "tn100x", "przUSDC");
 	private final Web3j web3j;
-	private final WebClient webClient;
-	private Map<String, CryptoPrice> prices = new HashMap<>();
+
+	@Autowired
+	private TokenService tokenService;
+
+	@Autowired
+	private TokenPriceService tokenPriceService;
 
 	public TransactionService(@Value("${payflow.crypto.base.rpc:https://mainnet.base.org}") String baseRpc,
 	                          WebClient.Builder webClientBuilder) {
 		web3j = Web3j.build(new HttpService(baseRpc));
-		webClient = webClientBuilder.baseUrl("https://api.coingecko.com/api/v3").build();
 	}
 
 	public static boolean isFramePaymentMessageComplete(FramePaymentMessage paymentMessage) {
 		return !StringUtils.isBlank(paymentMessage.address())
-				&& SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS.contains(paymentMessage.chainId())
-				&& SUPPORTED_FRAME_PAYMENTS_TOKENS.contains(paymentMessage.token())
+				&& TokenService.SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS.contains(paymentMessage.chainId())
+				&& TokenService.SUPPORTED_FRAME_PAYMENTS_TOKENS.contains(paymentMessage.token())
 				&& paymentMessage.usdAmount() >= 1 && !StringUtils.isBlank(paymentMessage.refId());
 	}
 
 	public String generateTxCallData(FramePaymentMessage paymentMessage) {
-		// for now consider only that degen doesn't support any erc20
-		boolean isERC20Transfer =
-				!paymentMessage.token().equals(ETH_TOKEN)
-						&& paymentMessage.chainId() != DEGEN_CHAIN_ID;
+		val token = tokenService.getTokens().stream()
+				.filter(t -> t.chainId().equals(paymentMessage.chainId()) && t.id().equals(paymentMessage.token()))
+				.findFirst().orElse(null);
 
-		var amount = paymentMessage.usdAmount() / getPrice(paymentMessage.token());
+		if (token == null) {
+			log.error("Token not found for {}", paymentMessage);
+			return null;
+		}
+
+		val isERC20Transfer = token.tokenAddress() != null;
+
+		var amount = paymentMessage.tokenAmount() != null ? paymentMessage.tokenAmount() :
+				paymentMessage.usdAmount() / tokenPriceService.getPrices().get(paymentMessage.token());
 
 		if (isERC20Transfer) {
-			val to = paymentMessage.chainId() == BASE_CHAIN_ID ?
-					BASE_ERC20_TOKEN_ADDRESSES.get(paymentMessage.token()) :
-					OPTIMISM_ERC20_TOKEN_ADDRESSES.get(paymentMessage.token());
-
 			var value = BigInteger.valueOf(0);
-			if (paymentMessage.token().equals(USDC_TOKEN)) {
+			if (token.decimals().equals(6)) {
 				value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.MWEI)
 						.toBigInteger();
-			} else if (paymentMessage.token().equals(DEGEN_TOKEN)) {
+			} else if (token.decimals().equals(18)) {
 				value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.ETHER)
 						.toBigInteger();
 			}
 
 			log.debug("Token amount {} value {} price {} for {}", amount, value,
-					getPrice(paymentMessage.token()), paymentMessage);
+					tokenPriceService.getPrices().get(paymentMessage.token()), paymentMessage);
 
 			val function = new Function(
 					"transfer",
@@ -400,15 +118,16 @@ public class TransactionService {
 					}));
 			val encodedFunction = FunctionEncoder.encode(function);
 			return String.format("""
-					{
-					  "chainId": "eip155:%s",
-					  "method": "eth_sendTransaction",
-					  "params": {
-					    "abi": %s,
-					    "to": "%s",
-					    "data": "%s"
-					  }
-					}""", paymentMessage.chainId(), ERC20_ABI_TRANSFER_JSON, to, encodedFunction);
+							{
+							  "chainId": "eip155:%s",
+							  "method": "eth_sendTransaction",
+							  "params": {
+							    "abi": %s,
+							    "to": "%s",
+							    "data": "%s"
+							  }
+							}""", paymentMessage.chainId(), ERC20_ABI_TRANSFER_JSON, token.tokenAddress(),
+					encodedFunction);
 		} else {
 			val value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.ETHER)
 					.toBigInteger();
@@ -429,34 +148,41 @@ public class TransactionService {
 	}
 
 	public String generateTxCallData(Payment payment) {
-		// for now consider only that degen doesn't support any erc20
-		boolean isERC20Transfer =
-				!payment.getToken().equals(ETH_TOKEN)
-						&& !payment.getNetwork().equals(DEGEN_CHAIN_ID);
+
+		val token = tokenService.getTokens().stream()
+				.filter(t -> t.chainId().equals(payment.getNetwork()) && t.id().equals(payment.getToken()))
+				.findFirst().orElse(null);
+
+		if (token == null) {
+			log.error("Token not found for {}", payment);
+			return null;
+		}
+
+		val isERC20Transfer = token.tokenAddress() != null;
+
 		val address =
 				payment.getReceiver() != null ?
 						payment.getReceiver().getDefaultFlow().getWallets().stream()
 								.filter(wallet -> wallet.getNetwork().equals(payment.getNetwork()))
 								.map(Wallet::getAddress).findFirst().orElse(null) : payment.getReceiverAddress();
 
-		var amount = Double.parseDouble(payment.getUsdAmount()) / getPrice(payment.getToken());
+		var amount = StringUtils.isNotBlank(payment.getTokenAmount()) ?
+				Double.parseDouble(payment.getTokenAmount()) :
+				Double.parseDouble(payment.getUsdAmount()) / tokenPriceService.getPrices().get(payment.getToken());
 
 		if (isERC20Transfer) {
-			val to = payment.getNetwork().equals(BASE_CHAIN_ID) ?
-					BASE_ERC20_TOKEN_ADDRESSES.get(payment.getToken()) :
-					OPTIMISM_ERC20_TOKEN_ADDRESSES.get(payment.getToken());
-
 			var value = BigInteger.valueOf(0);
-			if (payment.getToken().equals(USDC_TOKEN)) {
+
+			if (token.decimals().equals(6)) {
 				value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.MWEI)
 						.toBigInteger();
-			} else if (payment.getToken().equals(DEGEN_TOKEN)) {
+			} else if (token.decimals().equals(18)) {
 				value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.ETHER)
 						.toBigInteger();
 			}
 
 			log.debug("Token amount {} value {} price {} for {}", amount, value,
-					getPrice(payment.getToken()), payment);
+					tokenPriceService.getPrices().get(payment.getToken()), payment);
 
 			val function = new Function(
 					"transfer",
@@ -473,7 +199,7 @@ public class TransactionService {
 					    "to": "%s",
 					    "data": "%s"
 					  }
-					}""", payment.getNetwork(), ERC20_ABI_TRANSFER_JSON, to, encodedFunction);
+					}""", payment.getNetwork(), ERC20_ABI_TRANSFER_JSON, token.tokenAddress(), encodedFunction);
 		} else {
 			val value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.ETHER)
 					.toBigInteger();
@@ -493,36 +219,9 @@ public class TransactionService {
 		}
 	}
 
-	@Scheduled(initialDelay = 0, fixedRate = 60 * 1000)
-	public void fetchPrices() {
-		val prices = webClient.get()
-				.uri("/simple/price?ids=ethereum,usd-coin,degen-base&vs_currencies=usd")
-				.retrieve()
-				.bodyToMono(new ParameterizedTypeReference<Map<String, CryptoPrice>>() {
-				})
-				.block();
-
-		log.debug("Prices: {}", prices);
-		this.prices = prices;
-	}
-
-	public double getPrice(String token) {
-		var price = -1d;
-		try {
-			price = switch (token) {
-				case ETH_TOKEN -> prices.get("ethereum").usd();
-				case USDC_TOKEN -> prices.get("usd-coin").usd();
-				case DEGEN_TOKEN -> prices.get("degen-base").usd();
-				default -> -1;
-			};
-		} catch (Throwable t) {
-			log.debug("Failed to fetch price for token {}, error: {}", token, t.getMessage());
-		}
-		return price;
-	}
 
 	public Map<String, String> getWalletBalance(String address) {
-		val transactionManager = new ClientTransactionManager(web3j, address);
+		/*val transactionManager = new ClientTransactionManager(web3j, address);
 		val balanceMap = new HashMap<String, String>();
 		try {
 			// fetch ether
@@ -546,9 +245,9 @@ public class TransactionService {
 
 		} catch (IOException e) {
 			System.err.println("Error fetching balance: " + e.getMessage());
-		}
+		}*/
 
-		return balanceMap;
+		return Map.of();
 	}
 
 	private String erc20Balance(String contractAddress, String walletAddress,

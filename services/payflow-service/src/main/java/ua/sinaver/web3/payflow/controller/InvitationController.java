@@ -122,7 +122,7 @@ public class InvitationController {
 
 			val inviterUsername = identityService.getIdentityFname(user.getIdentity());
 			val receiverUsername = identityService.getIdentityFname(invitation.getIdentity());
-			val receiverFid = identityService.getIdentityFid(invitation.getIdentity(), false);
+			val receiverFid = identityService.getIdentityFid(invitation.getIdentity());
 
 			try {
 				val messageText = String.format("""

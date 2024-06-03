@@ -1,6 +1,6 @@
-import { base, optimism, zora, baseSepolia, degen } from 'viem/chains';
+import { base, optimism, zora, baseSepolia, degen, arbitrum, mode } from 'viem/chains';
 
-export const SUPPORTED_CHAINS = [base, optimism, degen, zora, baseSepolia];
+export const SUPPORTED_CHAINS = [base, optimism, degen, arbitrum, mode, zora, baseSepolia];
 
 export default function getNetworkImageSrc(chainId: number): string {
   let fileName;
@@ -14,6 +14,12 @@ export default function getNetworkImageSrc(chainId: number): string {
       break;
     case degen.id:
       fileName = 'degen';
+      break;
+    case arbitrum.id:
+      fileName = 'arbitrum';
+      break;
+    case mode.id:
+      fileName = 'mode';
       break;
   }
 

@@ -24,7 +24,9 @@ public interface IIdentityService {
 
 	String getIdentityFname(String identity);
 
-	String getIdentityFid(String identity, boolean cleanCache);
+	String getIdentityFid(String identity);
+
+	List<IdentityMessage> getIdentitiesInfo(int fid);
 
 	List<IdentityMessage> getIdentitiesInfo(List<String> identities);
 }

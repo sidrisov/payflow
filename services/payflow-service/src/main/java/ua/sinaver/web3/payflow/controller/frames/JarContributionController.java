@@ -15,9 +15,7 @@ import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.message.*;
 import ua.sinaver.web3.payflow.repository.FlowRepository;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
-import ua.sinaver.web3.payflow.service.FlowService;
-import ua.sinaver.web3.payflow.service.TransactionService;
-import ua.sinaver.web3.payflow.service.XmtpValidationService;
+import ua.sinaver.web3.payflow.service.*;
 import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
@@ -31,7 +29,7 @@ import java.util.Date;
 import java.util.List;
 
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.DEFAULT_HTML_RESPONSE;
-import static ua.sinaver.web3.payflow.service.TransactionService.*;
+import static ua.sinaver.web3.payflow.service.TransactionService.isFramePaymentMessageComplete;
 
 @RestController
 @RequestMapping("/farcaster/frames/jar")
@@ -66,6 +64,9 @@ public class JarContributionController {
 
 	@Autowired
 	private TransactionService transactionService;
+
+	@Autowired
+	private TokenPriceService tokenPriceService;
 
 	@Autowired
 	private PaymentRepository paymentRepository;
@@ -244,8 +245,8 @@ public class JarContributionController {
 				.postUrl(apiServiceUrl.concat(String.format(CHOOSE_CHAIN_PATH, uuid)));
 		jar.flow().wallets().forEach(wallet -> {
 			val chainId = wallet.network();
-			if (PAYMENT_CHAIN_NAMES.containsKey(chainId))
-				frameResponseBuilder.button(new FrameButton(PAYMENT_CHAIN_NAMES.get(chainId).toUpperCase(),
+			if (TokenService.PAYMENT_CHAIN_NAMES.containsKey(chainId))
+				frameResponseBuilder.button(new FrameButton(TokenService.PAYMENT_CHAIN_NAMES.get(chainId).toUpperCase(),
 						FrameButton.ActionType.POST,
 						null));
 		});
@@ -315,7 +316,7 @@ public class JarContributionController {
 
 		val receivingJarWallet = jar.flow().wallets().get(buttonIndex - 1);
 
-		if (!PAYMENT_CHAIN_NAMES.containsKey(receivingJarWallet.network())) {
+		if (!TokenService.PAYMENT_CHAIN_NAMES.containsKey(receivingJarWallet.network())) {
 			log.error("Selected chain id not allowed for payments: {} in {}",
 					receivingJarWallet.network(), jar);
 			return ResponseEntity.badRequest()
@@ -327,7 +328,7 @@ public class JarContributionController {
 
 		val state = gson.toJson(new FramePaymentMessage(receivingJarWallet.address(),
 				receivingJarWallet.network(), null,
-				null, null));
+				null, null, null));
 
 		val frameResponseBuilder = FrameResponse.builder()
 				.imageUrl(jarImage)
@@ -335,7 +336,7 @@ public class JarContributionController {
 				.postUrl(apiServiceUrl.concat(String.format(CHOOSE_AMOUNT_PATH, uuid)))
 				.state(Base64.getEncoder().encodeToString(state.getBytes()));
 
-		val tokens = PAYMENTS_CHAIN_TOKENS.get(receivingJarWallet.network());
+		val tokens = TokenService.PAYMENTS_CHAIN_TOKENS.get(receivingJarWallet.network());
 		tokens.forEach(token -> {
 			frameResponseBuilder.button(new FrameButton(token.toUpperCase(), FrameButton.ActionType.POST, null));
 		});
@@ -436,14 +437,14 @@ public class JarContributionController {
 
 		log.debug("Previous payment state: {}", paymentState);
 
-		if (!PAYMENT_CHAIN_NAMES.containsKey(paymentState.chainId())) {
+		if (!TokenService.PAYMENT_CHAIN_NAMES.containsKey(paymentState.chainId())) {
 			log.error("Selected chain id not allowed for payments: {} in {}",
 					paymentState.chainId(), jar);
 			return ResponseEntity.badRequest()
 					.body(new FrameResponse.FrameMessage("Selected chain not supported!"));
 		}
 
-		val tokens = PAYMENTS_CHAIN_TOKENS.get(paymentState.chainId());
+		val tokens = TokenService.PAYMENTS_CHAIN_TOKENS.get(paymentState.chainId());
 
 		if (buttonIndex > tokens.size()) {
 			log.error("Selected token index not accepted: {} in {}", buttonIndex, jar);
@@ -473,8 +474,7 @@ public class JarContributionController {
 		}
 
 		val token = tokens.get(buttonIndex - 1);
-		val tokenAmount = roundTokenAmount(
-				usdAmount / transactionService.getPrice(token));
+		val tokenAmount = usdAmount / tokenPriceService.getPrices().get(token);
 
 		val profile = userService.findByIdentity(jar.profile().identity());
 		val payment = new Payment(Payment.PaymentType.FRAME, profile,
@@ -492,10 +492,10 @@ public class JarContributionController {
 
 		val refId = payment.getReferenceId();
 		val updatedState = gson.toJson(new FramePaymentMessage(paymentState.address(),
-				paymentState.chainId(), token, usdAmount, refId));
+				paymentState.chainId(), token, usdAmount, tokenAmount, refId));
 		val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
-						"/image.png?step=confirm&chainId=%s&token=%s&usdAmount=%s&amount=%s",
-				uuid, paymentState.chainId(), token, usdAmount, tokenAmount));
+						"/image.png?step=confirm&chainId=%s&token=%s&usdAmount=%s&tokenAmount=%s",
+				uuid, paymentState.chainId(), token, usdAmount, roundTokenAmount(tokenAmount)));
 		val frameResponseBuilder = FrameResponse.builder()
 				.postUrl(apiServiceUrl.concat(String.format(CONFIRM_PATH, uuid)))
 				.button(new FrameButton("\uD83D\uDC9C Contribute",
@@ -603,10 +603,10 @@ public class JarContributionController {
 					log.debug("Updated payment for ref: {} - {}", refId, payment);
 
 					val tokenAmount = roundTokenAmount(
-							paymentState.usdAmount() / transactionService.getPrice(paymentState.token()));
+							paymentState.usdAmount() / tokenPriceService.getPrices().get(paymentState.token()));
 					val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
 									"/image.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
-									"&amount=%s&status=%s", uuid, paymentState.chainId(), paymentState.token(),
+									"&tokenAmount=%s&status=%s", uuid, paymentState.chainId(), paymentState.token(),
 							paymentState.usdAmount(), tokenAmount, "success"));
 					return FrameResponse.builder()
 							.imageUrl(jarImage)
@@ -614,9 +614,9 @@ public class JarContributionController {
 							.button(new FrameButton("\uD83D\uDCAC Add comment",
 									FrameButton.ActionType.POST,
 									apiServiceUrl.concat(String.format(COMMENT_PATH, uuid))))
-							.button(new FrameButton("\uD83D\uDD0E Check tx details",
+							.button(new FrameButton("\uD83D\uDD0E Receipt",
 									FrameButton.ActionType.LINK,
-									"https://basescan.org/tx/" + transactionId))
+									"https://onceupon.gg/" + transactionId))
 							.state(state)
 							.build().toHtmlResponse();
 				} else if (buttonIndex == 1) {
@@ -633,10 +633,10 @@ public class JarContributionController {
 					payment.setSender(profiles.getFirst());
 					payment.setType(Payment.PaymentType.INTENT);
 					val tokenAmount = roundTokenAmount(
-							paymentState.usdAmount() / transactionService.getPrice(paymentState.token()));
+							paymentState.usdAmount() / tokenPriceService.getPrices().get(paymentState.token()));
 					val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
 									"/image.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
-									"&amount=%s",
+									"&tokenAmount=%s",
 							uuid, paymentState.chainId(), paymentState.token(),
 							paymentState.usdAmount(), tokenAmount));
 					return FrameResponse.builder()
@@ -690,18 +690,18 @@ public class JarContributionController {
 					log.debug("Handling add comment for payment: {}", payment);
 					// TODO: optimize
 					val tokenAmount = roundTokenAmount(
-							state.usdAmount() / transactionService.getPrice(state.token()));
+							state.usdAmount() / tokenPriceService.getPrices().get(state.token()));
 					val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
 									"/image.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
-									"&amount=%s&status=%s",
+									"&tokenAmount=%s&status=%s",
 							uuid, state.chainId(), state.token(),
 							state.usdAmount(), tokenAmount, "success"));
 
 					val frameResponseBuilder = FrameResponse.builder()
 							.imageUrl(jarImage)
-							.button(new FrameButton("\uD83D\uDD0E Check tx details",
+							.button(new FrameButton("\uD83D\uDD0E Receipt",
 									FrameButton.ActionType.LINK,
-									"https://basescan.org/tx/" + payment.getHash()))
+									"https://onceupon.gg/" + payment.getHash()))
 							.state(validateMessage.action().state().serialized());
 
 					val input = validateMessage.action().input();

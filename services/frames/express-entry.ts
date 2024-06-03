@@ -20,7 +20,7 @@ import { BalanceType } from './types/BalanceType';
 import { PaymentType } from './types/PaymentType';
 import { payProfileHtml } from './components/PayProfile';
 import { Address, createPublicClient, http, keccak256, toBytes } from 'viem';
-import { base, degen, optimism } from 'viem/chains';
+import { arbitrum, base, degen, mode, optimism } from 'viem/chains';
 import { signerToSafeSmartAccount } from './utils/signerToSafeSmartAccount';
 import { ENTRYPOINT_ADDRESS_V06, isSmartAccountDeployed } from 'permissionless';
 import { SmartAccountSigner } from 'permissionless/accounts';
@@ -74,7 +74,7 @@ async function startServer() {
     try {
       const owners = Array.isArray(req.query.owners) ? req.query.owners : [req.query.owners];
       const saltNonce = req.query.saltNonce as string;
-      const chains = [base, optimism, degen];
+      const chains = [base, optimism, degen, arbitrum, mode];
       const safeVersion = '1.4.1';
 
       const wallets: FlowWalletType[] = [];
@@ -165,14 +165,20 @@ async function startServer() {
     const payment = {
       chainId: Number(req.query.chainId),
       token: req.query.token,
-      amount: req.query.amount,
       usdAmount: req.query.usdAmount,
+      tokenAmount: req.query.tokenAmount,
       status: req.query.status
     } as PaymentType;
 
-    if (!payment.amount && payment.usdAmount && payment.token) {
-      payment.amount = normalizeNumberPrecision(
-        Number.parseFloat(payment.usdAmount) / TOKEN_PRICES[payment.token.toUpperCase()]
+    if (!payment.tokenAmount && payment.usdAmount && payment.token) {
+      payment.tokenAmount = normalizeNumberPrecision(
+        Number.parseFloat(payment.usdAmount) / TOKEN_PRICES[payment.token]
+      ).toString();
+    }
+
+    if (!payment.usdAmount && payment.tokenAmount && payment.token) {
+      payment.usdAmount = normalizeNumberPrecision(
+        Number.parseFloat(payment.tokenAmount) * TOKEN_PRICES[payment.token]
       ).toString();
     }
 
@@ -274,13 +280,25 @@ async function startServer() {
   app.get('/images/jar/:uuid/image.png', async (req, res) => {
     const uuid = req.params.uuid;
     const step = req.query.step;
-    const state = {
+    const payment = {
       chainId: req.query.chainId ? parseInt(req.query.chainId as string) : undefined,
       token: req.query.token,
-      amount: req.query.amount,
       usdAmount: req.query.usdAmount,
+      tokenAmount: req.query.tokenAmount,
       status: req.query.status
     } as PaymentType;
+
+    if (!payment.tokenAmount && payment.usdAmount && payment.token) {
+      payment.tokenAmount = normalizeNumberPrecision(
+        Number.parseFloat(payment.usdAmount) / TOKEN_PRICES[payment.token]
+      ).toString();
+    }
+
+    if (!payment.usdAmount && payment.tokenAmount && payment.token) {
+      payment.usdAmount = normalizeNumberPrecision(
+        Number.parseFloat(payment.tokenAmount) * TOKEN_PRICES[payment.token]
+      ).toString();
+    }
 
     try {
       const jar = (await axios.get(`${API_URL}/api/flows/jar/${uuid}`)).data as JarType;
@@ -291,7 +309,10 @@ async function startServer() {
 
       console.log(totalBalance);
 
-      const image = await htmlToImage(jarHtml(jar, totalBalance, step as any, state), 'landscape');
+      const image = await htmlToImage(
+        jarHtml(jar, totalBalance, step as any, payment),
+        'landscape'
+      );
       res.setHeader('Cache-Control', 'max-age=60').type('png').send(image);
     } catch (error) {
       console.error(error);

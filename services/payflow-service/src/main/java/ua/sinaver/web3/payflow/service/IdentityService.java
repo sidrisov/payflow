@@ -113,12 +113,8 @@ public class IdentityService implements IIdentityService {
 	}
 
 	@Override
-	public String getIdentityFid(String identity, boolean cleanCache) {
+	public String getIdentityFid(String identity) {
 		log.debug("Fetching fid for: {}", identity);
-
-		if (cleanCache) {
-			socialGraphService.cleanCache(identity);
-		}
 
 		val wallet = socialGraphService.getSocialMetadata(identity);
 		val fid = wallet.getSocials().stream()
@@ -126,6 +122,16 @@ public class IdentityService implements IIdentityService {
 				.findFirst().map(Social::getUserId).orElse(null);
 		log.debug("Fid for {}: {}", identity, fid);
 		return fid;
+	}
+
+	@Override
+	public List<IdentityMessage> getIdentitiesInfo(int fid) {
+		List<String> addresses = getFidAddresses(fid);
+		if (addresses == null || addresses.isEmpty()) {
+			return Collections.emptyList();
+		} else {
+			return getIdentitiesInfo(addresses);
+		}
 	}
 
 	@Override
