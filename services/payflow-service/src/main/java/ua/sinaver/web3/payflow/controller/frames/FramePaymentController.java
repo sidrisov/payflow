@@ -50,7 +50,7 @@ public class FramePaymentController {
 			"/pay/%s/frame/confirm";
 	private static final String PAY_IN_FRAME_COMMENT = BASE_PATH +
 			"/pay/%s/frame/comment";
-	
+
 	private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 	@Autowired
@@ -239,6 +239,7 @@ public class FramePaymentController {
 		val payment = new Payment(Payment.PaymentType.FRAME, paymentProfile,
 				chainId, token);
 
+		payment.setReceiverAddress(paymentAddress);
 		if (tokenAmount != null) {
 			payment.setTokenAmount(tokenAmount.toString());
 		} else {
@@ -255,10 +256,6 @@ public class FramePaymentController {
 							10));
 			payment.setSourceHash(sourceHash);
 			payment.setSourceRef(sourceRef);
-		}
-
-		if (paymentProfile == null) {
-			payment.setReceiverAddress(paymentAddress);
 		}
 
 		paymentRepository.save(payment);
