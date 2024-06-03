@@ -2,7 +2,13 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Avatar, Box, Container, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import PaymentCastActionDialog from '../components/dialogs/PaymentCastActionDialog';
-import { Favorite, Inventory, Person, PersonAdd, Storage } from '@mui/icons-material';
+import {
+  ElectricBolt,
+  Interests,
+  Inventory,
+  PersonAdd,
+  Storage
+} from '@mui/icons-material';
 import CastActionButton from '../components/buttons/CastActionButton';
 
 export default function Actions() {
@@ -43,13 +49,13 @@ export default function Actions() {
                 title="Pay Profile"
                 description=""
                 installUrl="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fprofile"
-                startIcon={<Person />}
+                startIcon={<ElectricBolt />}
               />
               <CastActionButton
-                title=" Payment Intent"
+                title="Pay Intents"
                 description=""
                 onClick={() => setOpenPaymentActionDialog(true)}
-                startIcon={<Favorite />}
+                startIcon={<Interests />}
               />
               <CastActionButton
                 title="Create Jar"
