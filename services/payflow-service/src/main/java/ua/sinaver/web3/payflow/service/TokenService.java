@@ -58,6 +58,7 @@ public class TokenService {
 	public static final Map<Integer, List<String>> PAYMENTS_CHAIN_TOKENS = Map.of(BASE_CHAIN_ID,
 			PAYMENTS_BASE_TOKENS, OP_CHAIN_ID, PAYMENTS_OP_TOKENS, DEGEN_CHAIN_ID,
 			PAYMENTS_DEGEN_TOKENS);
+	public static final String ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 	@Autowired
 	private ResourceLoader resourceLoader;

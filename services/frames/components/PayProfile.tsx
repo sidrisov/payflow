@@ -7,18 +7,20 @@ import { base } from 'viem/chains';
 import getNetworkImageSrc, { getNetworkDisplayName } from '../utils/networks';
 import { ERC20_CONTRACTS } from '../utils/erc20contracts';
 
+type PaymentStep = 'start' | 'command' | 'confirm' | 'execute';
+
 export const payProfileHtml = (
   profile: ProfileType,
-  step: 'start' | 'amount' | 'confirm' | 'execute',
+  step: 'start' | 'command' | 'confirm' | 'execute',
   payment: PaymentType
 ) => <PayProfile profile={profile} step={step} payment={payment} />;
 
-const paymentStepTitle = (step: 'start' | 'amount' | 'confirm' | 'execute') => {
+const paymentStepTitle = (step: PaymentStep) => {
   switch (step) {
     case 'start':
       return 'How you wanna pay?';
-    case 'amount':
-      return 'Choose payment amount?';
+    case 'command':
+      return 'Enter payment token details';
     case 'confirm':
       return 'Pay now or submit intent?';
     case 'execute':
@@ -32,7 +34,7 @@ function PayProfile({
   payment
 }: {
   profile: ProfileType;
-  step: 'start' | 'amount' | 'confirm' | 'execute';
+  step: PaymentStep;
   payment: PaymentType;
 }) {
   const title = paymentStepTitle(step);
@@ -88,7 +90,7 @@ function PayProfile({
             </span>
           </div>
         )}
-        {step !== 'start' && (
+        {step !== 'start' && step !== 'command' && (
           <div
             style={{
               margin: 10,

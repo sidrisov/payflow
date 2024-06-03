@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -44,7 +43,7 @@ public class FarcasterPaymentBotService {
 	private PaymentRepository paymentRepository;
 
 	@Autowired
-	private TokenService tokenService;
+	private PaymentService paymentService;
 
 	@Value("${payflow.farcaster.bot.cast.signer}")
 	private String botSignerUuid;
@@ -57,37 +56,6 @@ public class FarcasterPaymentBotService {
 
 	@Value("${payflow.farcaster.bot.test.enabled:false}")
 	private boolean isTestBotEnabled;
-
-	public String parseToken(String text) {
-
-		val patternStr = String.format("\\b(?<token>%s)\\b",
-				tokenService.getTokens().stream()
-						.map(t -> Pattern.quote(t.id()))
-						.distinct()
-						.collect(Collectors.joining("|")));
-		val pattern = Pattern.compile(patternStr);
-		val matcher = pattern.matcher(text);
-		return matcher.find() ? matcher.group("token") : "usdc";
-	}
-
-	public String parseChain(String text) {
-		val patternStr = String.format("\\b(?<chain>%s)\\b",
-				tokenService.getTokens().stream()
-						.map(t -> Pattern.quote(t.chain()))
-						.distinct()
-						.collect(Collectors.joining("|")));
-
-		val pattern = Pattern.compile(patternStr);
-		val matcher = pattern.matcher(text);
-		if (matcher.find()) {
-			var matched = matcher.group("chain");
-			if (matched.equals("degen-l3")) {
-				matched = TokenService.DEGEN_CHAIN_NAME;
-			}
-			return matched;
-		}
-		return TokenService.BASE_CHAIN_NAME;
-	}
 
 	public boolean reply(String text, String parentHash, List<CastEmbed> embeds) {
 		if (isBotReplyEnabled) {
@@ -195,10 +163,10 @@ public class FarcasterPaymentBotService {
 							if (matcher.find()) {
 								receiver = matcher.group("receiver");
 								amount = matcher.group("amount");
-								restText = matcher.group("rest").toLowerCase();
+								restText = matcher.group("rest");
 
-								token = parseToken(restText);
-								chain = parseChain(restText);
+								token = paymentService.parseCommandToken(restText);
+								chain = paymentService.parseCommandChain(restText);
 
 								log.debug("Receiver: {}, amount: {}, token: {}, chain: {}",
 										receiver, amount, token, chain);
