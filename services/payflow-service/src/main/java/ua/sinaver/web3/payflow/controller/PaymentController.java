@@ -108,7 +108,8 @@ public class PaymentController {
 			return ResponseEntity.notFound().build();
 		}
 
-		if (!(payment.getType().equals(Payment.PaymentType.FRAME) || payment.getType().equals(Payment.PaymentType.INTENT)
+		if (!(payment.getType().equals(Payment.PaymentType.FRAME)
+				|| payment.getType().equals(Payment.PaymentType.INTENT)
 				|| payment.getType().equals(Payment.PaymentType.INTENT_TOP_REPLY))
 				&& (user == null || !payment.getSender().getIdentity().equals(user.getIdentity()))) {
 			log.error("{} is not allowed to fetch payment: {}", principal, payment);
@@ -143,13 +144,13 @@ public class PaymentController {
 			// handle with different messages for other kind of payments
 			if (!StringUtils.isBlank(payment.getSourceHash()) && !StringUtils.isBlank(payment.getHash())) {
 				val senderFname = identityService.getIdentityFname(user.getIdentity());
-				val receiverFname = identityService.getIdentityFname(payment.getReceiver() != null ?
-						payment.getReceiver().getIdentity() :
-						payment.getReceiverAddress() != null ? payment.getReceiverAddress() :
-								"fc_fid:" + payment.getReceiverFid());
-				val txUrl = String.format(
+				val receiverFname = identityService
+						.getIdentityFname(payment.getReceiver() != null ? payment.getReceiver().getIdentity()
+								: payment.getReceiverAddress() != null ? payment.getReceiverAddress()
+								: "fc_fid:" + payment.getReceiverFid());
+				val receiptUrl = String.format(
 						"https://onceupon.gg/%s", payment.getHash());
-				val embeds = Collections.singletonList(new CastEmbed(txUrl));
+				val embeds = Collections.singletonList(new CastEmbed(receiptUrl));
 				val sourceRef = String.format("https://warpcast.com/%s/%s",
 						receiverFname, payment.getSourceHash().substring(0, 10));
 
@@ -163,18 +164,21 @@ public class PaymentController {
 									formatDouble(cast.getSocialCapitalValue().getFormattedValue()));
 						}
 
-
 						val castText = String.format("""
-										@%s, you've been paid %s %s by @%s for your top comment %s🎉								
-																				
+										@%s, you've been paid %s %s by @%s for your top comment %s🎉
+
+										🧾 Receipt: %s
+
+										Install `🔥 Top Comment Intent` at app.payflow.me/actions
+
 										p.s. join /payflow channel for updates 👀""",
 								receiverFname,
-								StringUtils.isNotBlank(payment.getTokenAmount()) ?
-										payment.getTokenAmount() :
-										String.format("$%s", payment.getUsdAmount()),
+								StringUtils.isNotBlank(payment.getTokenAmount()) ? payment.getTokenAmount()
+										: String.format("$%s", payment.getUsdAmount()),
 								payment.getToken().toUpperCase(),
 								senderFname,
-								scvText);
+								scvText,
+								receiptUrl);
 
 						val processed = farcasterPaymentBotService.reply(castText,
 								payment.getSourceHash(),
@@ -187,14 +191,18 @@ public class PaymentController {
 						if (payment.getReceiver() == null) {
 							val castText = String.format("""
 											@%s, you've been paid %s %s by @%s 🎉
-																					
+
+											🧾 Receipt: %s
+
+											Install `💜 Pay Intent` at app.payflow.me/actions
+
 											p.s. join /payflow channel for updates 👀""",
 									receiverFname,
-									StringUtils.isNotBlank(payment.getTokenAmount()) ?
-											payment.getTokenAmount() :
-											String.format("$%s", payment.getUsdAmount()),
+									StringUtils.isNotBlank(payment.getTokenAmount()) ? payment.getTokenAmount()
+											: String.format("$%s", payment.getUsdAmount()),
 									payment.getToken().toUpperCase(),
-									senderFname);
+									senderFname,
+									receiptUrl);
 
 							val processed = farcasterPaymentBotService.reply(castText,
 									payment.getSourceHash(),
@@ -204,8 +212,7 @@ public class PaymentController {
 								log.error("Failed to reply with {} for payment intent completion", castText);
 							}
 						} else {
-							val receiverFid =
-									identityService.getIdentityFid(payment.getReceiver().getIdentity());
+							val receiverFid = identityService.getIdentityFid(payment.getReceiver().getIdentity());
 							if (StringUtils.isBlank(receiverFid)) {
 								return;
 							}
@@ -213,20 +220,21 @@ public class PaymentController {
 							try {
 								val messageText = String.format("""
 												 @%s, you've been paid %s %s by @%s 🎉
-																						
-												🔗 Source: %s									
-												🧾Receipt: %s
-																						
+
+												%s
+												🧾 Receipt: %s
+
+												Install `💜️ Pay Intent` at app.payflow.me/actions
+
 												p.s. join /payflow channel for updates 👀""",
 										receiverFname,
-										StringUtils.isNotBlank(payment.getTokenAmount()) ?
-												payment.getTokenAmount() :
-												String.format("$%s", payment.getUsdAmount()),
+										StringUtils.isNotBlank(payment.getTokenAmount()) ? payment.getTokenAmount()
+												: String.format("$%s", payment.getUsdAmount()),
 										payment.getToken().toUpperCase(),
 										senderFname,
 										payment.getSourceRef() != null ? String.format("🔗 Source: %s",
 												payment.getSourceRef()) : "",
-										txUrl);
+										receiptUrl);
 								val response = farcasterMessagingService.message(
 										new DirectCastMessage(receiverFid, messageText, UUID.randomUUID()));
 
@@ -243,10 +251,16 @@ public class PaymentController {
 					if (payment.getReceiver() == null) {
 						val castText = String.format("""
 										@%s, you've been gifted 1 unit of storage by @%s 🎉
-																				
+
+										🧾 Receipt: %s
+
+										Install `🗄 Gift Storage` at app.payflow.me/actions
+
+
 										p.s. join /payflow channel for updates 👀""",
 								receiverFname,
-								senderFname);
+								senderFname,
+								receiptUrl);
 
 						val processed = farcasterPaymentBotService.reply(castText,
 								payment.getSourceHash(),
@@ -259,16 +273,17 @@ public class PaymentController {
 						try {
 							val messageText = String.format("""
 											 @%s, you've been gifted 1 unit of storage by @%s 🎉
-																					
-											Source (cast): %s
-																					
-											Receipt (tx): %s
+
+											🔗 Source: %s
+											🧾 Receipt: %s
+
+											Install `🗄 Gift Storage` at app.payflow.me/actions
 
 											p.s. join /payflow channel for updates 👀""",
 									receiverFname,
 									senderFname,
 									sourceRef,
-									txUrl);
+									receiptUrl);
 							val response = farcasterMessagingService.message(
 									new DirectCastMessage(payment.getReceiverFid().toString(), messageText,
 											UUID.randomUUID()));

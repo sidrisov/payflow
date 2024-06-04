@@ -164,8 +164,7 @@ public class FramePaymentController {
 				validateMessage.action().url());
 
 		val senderFid = validateMessage.action().interactor().fid();
-		val inputText = validateMessage.action().input() != null ?
-				validateMessage.action().input().text() : null;
+		val inputText = validateMessage.action().input() != null ? validateMessage.action().input().text() : null;
 
 		if (StringUtils.isBlank(inputText)) {
 			log.warn("Nothing entered for payment amount by {}", senderFid);
@@ -317,11 +316,11 @@ public class FramePaymentController {
 					new FrameResponse.FrameMessage("Payment was completed already!"));
 		}
 
-		val paymentIdentity = payment.getReceiver() != null ?
-				payment.getReceiver().getIdentity() : payment.getReceiverAddress();
-		val tokenAmount = StringUtils.isNotBlank(payment.getTokenAmount()) ?
-				Double.parseDouble(payment.getTokenAmount()) :
-				Double.parseDouble(payment.getUsdAmount()) / tokenPriceService.getPrices().get(payment.getToken());
+		val paymentIdentity = payment.getReceiver() != null ? payment.getReceiver().getIdentity()
+				: payment.getReceiverAddress();
+		val tokenAmount = StringUtils.isNotBlank(payment.getTokenAmount())
+				? Double.parseDouble(payment.getTokenAmount())
+				: Double.parseDouble(payment.getUsdAmount()) / tokenPriceService.getPrices().get(payment.getToken());
 		if (paymentIdentity != null) {
 			// handle transaction execution result
 			if (!StringUtils.isBlank(transactionId)) {
@@ -336,8 +335,8 @@ public class FramePaymentController {
 								"/payment.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
 								"&tokenAmount=%s&status=%s",
 						paymentIdentity, payment.getNetwork(), payment.getToken(),
-						StringUtils.isNotBlank(payment.getUsdAmount()) ? payment.getUsdAmount() :
-								"", roundTokenAmount(tokenAmount), "success"));
+						StringUtils.isNotBlank(payment.getUsdAmount()) ? payment.getUsdAmount() : "",
+						roundTokenAmount(tokenAmount), "success"));
 				return FrameResponse.builder()
 						.imageUrl(profileImage)
 						.textInput("Enter your comment")
@@ -367,8 +366,8 @@ public class FramePaymentController {
 								"/payment.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
 								"&tokenAmount=%s",
 						paymentIdentity, payment.getNetwork(), payment.getToken(),
-						StringUtils.isNotBlank(payment.getUsdAmount()) ? payment.getUsdAmount() :
-								"", roundTokenAmount(tokenAmount)));
+						StringUtils.isNotBlank(payment.getUsdAmount()) ? payment.getUsdAmount() : "",
+						roundTokenAmount(tokenAmount)));
 				return FrameResponse.builder()
 						.imageUrl(profileImage)
 						.button(new FrameButton("\uD83D\uDCF1 Payflow",
@@ -411,15 +410,12 @@ public class FramePaymentController {
 			return DEFAULT_HTML_RESPONSE;
 		}
 
-		val paymentIdentity = payment.getReceiver() != null ?
-				payment.getReceiver().getIdentity() : payment.getReceiverAddress();
+		val paymentIdentity = payment.getReceiver() != null ? payment.getReceiver().getIdentity()
+				: payment.getReceiverAddress();
 		val tokenAmount = roundTokenAmount(
-				payment.getTokenAmount() != null ?
-						Double.parseDouble(payment.getTokenAmount()) :
-						Double.parseDouble(
-								payment.getUsdAmount()) / tokenPriceService.getPrices().get(payment.getToken()
-						)
-		);
+				payment.getTokenAmount() != null ? Double.parseDouble(payment.getTokenAmount())
+						: Double.parseDouble(
+						payment.getUsdAmount()) / tokenPriceService.getPrices().get(payment.getToken()));
 		if (paymentIdentity != null) {
 			if (buttonIndex == 1) {
 				log.debug("Handling add comment for payment: {}", payment);
@@ -429,8 +425,8 @@ public class FramePaymentController {
 								"/payment.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
 								"&tokenAmount=%s&status=%s",
 						paymentIdentity, payment.getNetwork(), payment.getToken(),
-						StringUtils.isNotBlank(payment.getUsdAmount()) ? payment.getUsdAmount() :
-								"", tokenAmount, "success"));
+						StringUtils.isNotBlank(payment.getUsdAmount()) ? payment.getUsdAmount() : "", tokenAmount,
+						"success"));
 
 				val frameResponseBuilder = FrameResponse.builder()
 						.imageUrl(profileImage)
@@ -447,30 +443,32 @@ public class FramePaymentController {
 
 					// send direct message with comment
 					try {
-
 						// fetch by identity, hence it will work for both dcs and feed frames
 						val receiverFid = identityService.getIdentityFid(paymentIdentity);
 						val receiverFname = identityService.getIdentityFname(paymentIdentity);
 						val senderFname = identityService.getFidFname(senderFid);
 
+						val receiptUrl = String.format("https://onceupon.gg/%s", payment.getHash());
 						val messageText = String.format("""
 										 @%s, you've been paid %s %s by @%s 🎉
-										💬 Comment: %s   
-																				
-										%s								
+										💬 Comment: %s
+
+										%s
 										🧾 Receipt: %s
 
+										Install `⚡ Pay Profile` at app.payflow.me/actions
+
 										p.s. join /payflow channel for updates 👀""",
+
 								receiverFname,
-								StringUtils.isNotBlank(payment.getTokenAmount()) ?
-										payment.getTokenAmount() :
-										String.format("$%s", payment.getUsdAmount()),
+								StringUtils.isNotBlank(payment.getTokenAmount()) ? payment.getTokenAmount()
+										: String.format("$%s", payment.getUsdAmount()),
 								payment.getToken().toUpperCase(),
 								senderFname,
 								payment.getComment(),
 								payment.getSourceRef() != null ? String.format("🔗 Source: %s",
 										payment.getSourceRef()) : "",
-								String.format("https://onceupon.gg/%s", payment.getHash()));
+								receiptUrl);
 						val response = farcasterMessagingService.message(
 								new DirectCastMessage(String.valueOf(receiverFid), messageText,
 										UUID.randomUUID()));
