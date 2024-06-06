@@ -1,6 +1,14 @@
 package ua.sinaver.web3.payflow.repository;
 
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
+import org.hibernate.cfg.AvailableSettings;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import ua.sinaver.web3.payflow.data.User;
@@ -43,9 +51,22 @@ public interface UserRepository extends CrudRepository<User, Integer> {
 	List<User> findByAllowedTrueOrderByLastSeenDesc();
 
 	// TODO: index: allowed, lastSeen, lastUpdatedContacts
-	@Query("SELECT u FROM User u WHERE u.allowed = true AND u.lastSeen > :lastSeenDate AND " +
+	// JPA: UPGRADE_SKIPLOCKED - PESSIMISTIC_WRITE with a
+	// javax.persistence.lock.timeout setting of -2
+	// https://docs.jboss.org/hibernate/orm/5.0/userguide/html_single/chapters/locking/Locking.html
+	@QueryHints(@QueryHint(name = AvailableSettings.JAKARTA_LOCK_TIMEOUT, value = "-2"))
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query(value = "SELECT u FROM User u WHERE u.allowed = true AND u.lastSeen > :lastSeenDate AND " +
 			"(u.lastUpdatedContacts < :updateDate" +
 			" OR u.lastUpdatedContacts IS NULL)")
-	List<User> findByAllowedTrueAndLastUpdatedContactsBeforeAndLastSeenAfter(Date updateDate,
-	                                                                         Date lastSeenDate);
+	Page<User> findByAllowedTrueAndLastUpdatedContactsBeforeAndLastSeenAfter(Date updateDate,
+	                                                                         Date lastSeenDate,
+	                                                                         Pageable pageable);
+
+	default List<User> findTop5ByAllowedTrueAndLastUpdatedContactsBeforeAndLastSeenAfter(Date updateDate,
+	                                                                                     Date lastSeenDate) {
+		return this.findByAllowedTrueAndLastUpdatedContactsBeforeAndLastSeenAfter(updateDate,
+				lastSeenDate, PageRequest.of(0, 5)).getContent();
+	}
+
 }

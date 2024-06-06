@@ -207,7 +207,7 @@ public class ContactBookService implements IContactBookService {
 				System.currentTimeMillis() - TimeUnit.DAYS.toMillis(contactsUpdateLastSeenPeriod.getDays()));
 		// find all allowed users which were active after some date
 		// and contacts weren't updated since another date
-		val users = userRepository.findByAllowedTrueAndLastUpdatedContactsBeforeAndLastSeenAfter(lastUpdateDate,
+		val users = userRepository.findTop5ByAllowedTrueAndLastUpdatedContactsBeforeAndLastSeenAfter(lastUpdateDate,
 				lastSeenDate);
 
 		if (log.isDebugEnabled()) {
@@ -224,7 +224,6 @@ public class ContactBookService implements IContactBookService {
 						.filter(address -> !existingContactIdentities.contains(address))
 						.map(address -> new Contact(user, address)).toList();
 				contactRepository.saveAll(followContacts);
-				user.setLastUpdatedContacts(new Date());
 
 				if (log.isDebugEnabled()) {
 					log.debug("Updated {} contacts for profile: {}",
@@ -232,10 +231,19 @@ public class ContactBookService implements IContactBookService {
 				}
 
 			} catch (Throwable t) {
-				log.error("Couldn't fetch following contacts for {}, error: {} - {}",
-						user.getUsername(),
-						t.getMessage(), log.isTraceEnabled() ? t : null);
+				if (log.isTraceEnabled()) {
+					log.error("Couldn't fetch following contacts for {}, error: {}",
+							user.getUsername(),
+							t.getMessage(), t);
+				} else {
+					log.error("Couldn't fetch following contacts for {}, error: {}",
+							user.getUsername(),
+							t.getMessage());
+				}
 			}
+
+			// TODO: temp hack to stop fetching, add fetch status
+			user.setLastUpdatedContacts(new Date());
 		}
 	}
 

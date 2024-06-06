@@ -17,7 +17,6 @@ import ua.sinaver.web3.payflow.message.ConnectedAddresses;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static ua.sinaver.web3.payflow.config.CacheConfig.*;
 
@@ -105,12 +104,13 @@ public class SocialGraphService implements ISocialGraphService {
 		if (topFollowingsResponse != null) {
 			return topFollowingsResponse.field("SocialFollowings.Following")
 					.toEntityList(SocialFollowing.class).stream()
+					// remove Solana addresses
+					.filter(f -> f.getFollowingAddress() != null && f.getFollowingAddress().getAddresses() != null)
 					.map(f -> f.getFollowingAddress().getAddresses())
 					.flatMap(List::stream)
-					// remove Solana addresses
 					.filter(address -> address.startsWith("0x"))
 					.distinct().limit(addressesLimitAdjusted)
-					.collect(Collectors.toList());
+					.toList();
 		} else {
 			return Collections.emptyList();
 		}
