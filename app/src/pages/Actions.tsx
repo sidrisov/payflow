@@ -34,22 +34,22 @@ export default function Actions() {
             <Typography variant="h6">Farcaster Actions</Typography>
             <Stack spacing={1} alignItems="center">
               <CastActionButton
-                title="Invite"
-                description="Use this action to invite farcaster users to Payflow"
-                installUrl="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Finvite"
-                startIcon={<PersonAdd />}
-              />
-              <CastActionButton
-                title="Pay Profile"
-                description="Use this action to pay farcaster users with in-frame txs"
+                title="Pay"
+                description="Use this action to pay any farcaster user whether they're on Payflow or not with in-frame txs or submit payment intent to Payflow app"
                 installUrl="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fprofile"
                 startIcon={<ElectricBolt />}
               />
               <CastActionButton
-                title="Pay Intents"
-                description="Use this action to submit different types of payment intents: Regular, Top Comment, etc for farcaster users in Payflow app"
+                title="Intents"
+                description="Use this action to submit different payment intents tailored for your use case: Regular, Top Comment to pay any farcaster user in Payflow app"
                 onClick={() => setOpenPaymentActionDialog(true)}
                 startIcon={<Interests />}
+              />
+              <CastActionButton
+                title="Invite"
+                description="Use this action to invite any farcaster user to Payflow"
+                installUrl="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Finvite"
+                startIcon={<PersonAdd />}
               />
               <CastActionButton
                 title="Create Jar"
@@ -59,7 +59,7 @@ export default function Actions() {
               />
               <CastActionButton
                 title="Gift Storage"
-                description="Use this action to gift a storage to farcaster user via Payflow"
+                description="Use this action to gift a storage to a farcaster user via Payflow"
                 installUrl="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fproducts%2Fstorage"
                 startIcon={<Storage />}
               />

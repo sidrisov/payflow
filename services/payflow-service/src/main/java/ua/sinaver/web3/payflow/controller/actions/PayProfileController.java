@@ -22,8 +22,8 @@ import java.util.Comparator;
 public class PayProfileController {
 
 	private final static CastActionMeta PAY_PROFILE_CAST_ACTION_META = new CastActionMeta(
-			"Pay Profile", "zap",
-			"Use this action to pay farcaster users with in-frame txs",
+			"Pay", "zap",
+			"Use this action to pay any farcaster user whether they're on Payflow or not with in-frame txs or submit payment intent to Payflow app",
 			"https://app.payflow.me/actions",
 			new CastActionMeta.Action("post"));
 

@@ -71,12 +71,12 @@ public class PayIntentController {
 					new CastActionMeta.Action("post"));
 		} else {
 			castActionMeta = new CastActionMeta(
-					String.format("%s %s (%s) Intent", tokenAmount != null ? formatDouble(tokenAmount) :
+					String.format("%s %s (%s)", tokenAmount != null ? formatDouble(tokenAmount) :
 									String.format("$%s", formatDouble(amount)),
 							StringUtils.upperCase(token), StringUtils.capitalize(chain)),
-					"heart",
-					"Use this action to submit payment intent for farcaster users in " +
-							"Payflow app",
+					"plus",
+					"Use this action to submit payment intent to Payflow with pre-configured " +
+							" amount of a token on specific chain",
 					"https://app.payflow.me/actions",
 					new CastActionMeta.Action("post"));
 		}
