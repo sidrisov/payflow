@@ -7,7 +7,7 @@ import { test } from './components/test';
 import { htmlToImage } from './utils/image';
 import axios from 'axios';
 import { profileHtml } from './components/Profile';
-import { ProfileType } from './types/ProfleType';
+import { IdentityType, ProfileType } from './types/ProfleType';
 
 import dotenv from 'dotenv';
 import { welcomeProfileHtml } from './components/WelcomeProfile';
@@ -185,10 +185,10 @@ async function startServer() {
     console.debug('Payment: ', payment);
 
     try {
-      const response = await axios.get(`${API_URL}/api/user/${identity}`);
-      let profileData = (response.data !== '' ? response.data : { identity }) as ProfileType;
+      const response = await axios.get(`${API_URL}/api/user/identities/${identity}`);
+      let identityData = (response.data !== '' ? response.data : { identity }) as IdentityType;
       const image = await htmlToImage(
-        payProfileHtml(profileData, step as any, payment),
+        payProfileHtml(identityData, step as any, payment),
         'landscape'
       );
       res.type('png').send(image);

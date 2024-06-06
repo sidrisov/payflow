@@ -1,19 +1,18 @@
 /* eslint-disable jsx-a11y/alt-text */
 import { PaymentType } from '../types/PaymentType';
-import { ProfileType } from '../types/ProfleType';
+import { IdentityType } from '../types/ProfleType';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { assetImageSrc } from '../utils/image';
-import { base } from 'viem/chains';
 import getNetworkImageSrc, { getNetworkDisplayName } from '../utils/networks';
 import { ERC20_CONTRACTS } from '../utils/erc20contracts';
 
 type PaymentStep = 'start' | 'command' | 'confirm' | 'execute';
 
 export const payProfileHtml = (
-  profile: ProfileType,
+  identity: IdentityType,
   step: 'start' | 'command' | 'confirm' | 'execute',
   payment: PaymentType
-) => <PayProfile profile={profile} step={step} payment={payment} />;
+) => <PayProfile identity={identity} step={step} payment={payment} />;
 
 const paymentStepTitle = (step: PaymentStep) => {
   switch (step) {
@@ -29,11 +28,11 @@ const paymentStepTitle = (step: PaymentStep) => {
 };
 
 function PayProfile({
-  profile,
+  identity,
   step,
   payment
 }: {
-  profile: ProfileType;
+  identity: IdentityType;
   step: PaymentStep;
   payment: PaymentType;
 }) {
@@ -44,7 +43,10 @@ function PayProfile({
       ?.imageURL ??
       assetImageSrc(`/assets/coins/${payment.token}.png`));
 
-  console.log('comparing: ', payment.chainId, base.id, payment.chainId === base.id);
+  const farcasterSocial = identity?.meta?.socials?.find((s) => s.dappName === 'farcaster');
+  const profileDisplayName = identity?.profile?.displayName ?? farcasterSocial?.profileDisplayName;
+  const profileUsername = identity?.profile?.username ?? farcasterSocial?.profileName;
+  const profileImage = identity?.profile?.profileImage ?? farcasterSocial?.profileImage;
 
   return (
     <div
@@ -69,24 +71,24 @@ function PayProfile({
           alignItems: 'center',
           justifyContent: 'flex-start'
         }}>
-        {profile.profileImage && (
+        {profileImage && (
           <img
-            src={profile.profileImage}
+            src={profileImage}
             alt="profile"
             style={{ height: 250, width: 250, margin: 10, borderRadius: 25 }}
           />
         )}
-        {profile.username ? (
+        {profileUsername && profileDisplayName ? (
           <div style={{ margin: 10, display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: 64, fontWeight: 'bold' }}>{profile.displayName}</span>
+            <span style={{ fontSize: 64, fontWeight: 'bold' }}>{profileDisplayName}</span>
             <span style={{ marginTop: 10, fontSize: 64, fontWeight: 'normal' }}>
-              @{profile.username}
+              @{profileUsername}
             </span>
           </div>
         ) : (
           <div style={{ margin: 10, display: 'flex', flexDirection: 'column' }}>
             <span style={{ marginTop: 10, fontSize: 64, fontWeight: 'normal' }}>
-              {shortenWalletAddressLabel(profile.identity)}
+              {shortenWalletAddressLabel(identity?.address)}
             </span>
           </div>
         )}

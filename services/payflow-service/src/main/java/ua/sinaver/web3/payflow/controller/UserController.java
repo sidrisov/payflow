@@ -51,7 +51,8 @@ public class UserController {
 			return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
 					user.getIdentity(),
 					user.getSigner(),
-					user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(), user)
+					user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(),
+							user, true)
 							: null,
 					flowService.getAllFlows(user),
 					user.getUserAllowance() != null ? user.getUserAllowance().getIdentityInviteLimit()
@@ -149,6 +150,16 @@ public class UserController {
 		return Collections.emptyList();
 	}
 
+	@GetMapping("/identities/{identity}")
+	public IdentityMessage getIdentities(@PathVariable(value = "identity") String identity) {
+		try {
+			return identityService.getIdentitiesInfo(List.of(identity)).stream().findFirst().orElse(null);
+		} catch (Throwable t) {
+			log.error("Error fetching identity: {}", identity, t);
+		}
+		return null;
+	}
+
 	@GetMapping
 	public List<ProfileMessage> searchProfile(@RequestParam(value = "search") List<String> usernames) {
 		val users = new ArrayList<User>();
@@ -163,7 +174,7 @@ public class UserController {
 				.map(user -> new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
 						user.getIdentity(),
 						null,
-						FlowMessage.convert(user.getDefaultFlow(), user),
+						FlowMessage.convert(user.getDefaultFlow(), user, false),
 						null,
 						-1)).toList();
 	}
@@ -178,7 +189,7 @@ public class UserController {
 			return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
 					user.getIdentity(),
 					null,
-					FlowMessage.convert(user.getDefaultFlow(), user),
+					FlowMessage.convert(user.getDefaultFlow(), user, false),
 					null,
 					-1);
 		} else {

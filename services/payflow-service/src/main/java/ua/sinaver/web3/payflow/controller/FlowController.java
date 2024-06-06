@@ -55,16 +55,6 @@ class FlowController {
 		return flowService.getAllFlows(user);
 	}
 
-	@GetMapping("/public/{username}")
-	public List<FlowMessage> getAllPublicFlows(@PathVariable String username) throws Exception {
-		val user = userService.findByUsername(username);
-		if (user == null) {
-			throw new Exception("User doesn't exist: " + username);
-		}
-
-		return flowService.getAllFlows(user);
-	}
-
 	@GetMapping("/jar/{uuid}")
 	public JarMessage getJarByUUID(@PathVariable String uuid) {
 		val jarMessage = flowService.findJarByUUID(uuid);

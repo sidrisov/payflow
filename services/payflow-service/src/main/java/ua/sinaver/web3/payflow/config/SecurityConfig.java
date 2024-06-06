@@ -41,7 +41,6 @@ public class SecurityConfig {
 						// flow payment
 						.requestMatchers(HttpMethod.GET, "/flows/{uuid}").permitAll()
 						.requestMatchers(HttpMethod.GET, "/flows/jar/{uuid}").permitAll()
-						.requestMatchers(HttpMethod.GET, "/flows/public/{username}").permitAll()
 						.requestMatchers(HttpMethod.GET, "/flows/wallets").permitAll()
 						// payments
 						.requestMatchers(HttpMethod.GET, "/payment").permitAll()
@@ -54,6 +53,7 @@ public class SecurityConfig {
 						// e.g. /user/all will get whitelisted too, a bit dangerous behaviour
 						.requestMatchers(HttpMethod.GET, "/user").permitAll()
 						.requestMatchers(HttpMethod.GET, "/user/{identities}").permitAll()
+						.requestMatchers(HttpMethod.GET, "/user/identities/{identity}").permitAll()
 						.requestMatchers(HttpMethod.GET, "/user/{username}").permitAll()
 						.requestMatchers(HttpMethod.POST, "/user/search/wallets").permitAll()
 						// farcaster frames

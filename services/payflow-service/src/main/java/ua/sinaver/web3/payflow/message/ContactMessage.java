@@ -19,7 +19,7 @@ public record ContactMessage(
 					profile.getIdentity(),
 					null,
 					profile.getDefaultFlow() != null ?
-							FlowMessage.convert(profile.getDefaultFlow(), profile) : null,
+							FlowMessage.convert(profile.getDefaultFlow(), profile, false) : null,
 					null,
 					-1);
 		} else {

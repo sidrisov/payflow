@@ -31,7 +31,7 @@ public record PaymentMessage(String referenceId,
 						ProfileMetaMessage.convert(payment.getReceiver(),
 								true) : null,
 				payment.getReceiverFlow() != null ?
-						FlowMessage.convert(payment.getReceiverFlow(), null)
+						FlowMessage.convert(payment.getReceiverFlow(), null, false)
 						: null,
 				payment.getReceiverAddress(),
 				payment.getReceiverFid(),

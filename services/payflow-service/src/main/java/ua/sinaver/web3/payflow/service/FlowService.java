@@ -84,7 +84,7 @@ public class FlowService implements IFlowService {
 	public List<FlowMessage> getAllFlows(User user) {
 		if (user.getFlows() != null) {
 			return user.getFlows().stream()
-					.map(f -> FlowMessage.convert(f, user))
+					.map(f -> FlowMessage.convert(f, user, true))
 					.toList();
 		} else {
 			return Collections.emptyList();
@@ -98,7 +98,7 @@ public class FlowService implements IFlowService {
 		if (flow != null) {
 			Optional<User> user = userRepository.findById(flow.getUserId());
 			if (user.isPresent()) {
-				return FlowMessage.convert(flow, user.get());
+				return FlowMessage.convert(flow, user.get(), false);
 			}
 		}
 		return null;
