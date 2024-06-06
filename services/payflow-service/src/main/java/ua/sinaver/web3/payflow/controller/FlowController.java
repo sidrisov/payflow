@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.message.FlowMessage;
 import ua.sinaver.web3.payflow.message.JarMessage;
 import ua.sinaver.web3.payflow.message.WalletMessage;
+import ua.sinaver.web3.payflow.repository.FlowRepository;
+import ua.sinaver.web3.payflow.repository.WalletRepository;
 import ua.sinaver.web3.payflow.service.api.IFlowService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
 
@@ -22,6 +24,10 @@ import java.util.List;
 @Transactional
 @Slf4j
 class FlowController {
+	@Autowired
+	private FlowRepository flowRepository;
+	@Autowired
+	private WalletRepository walletRepository;
 	@Autowired
 	private IUserService userService;
 
@@ -108,5 +114,10 @@ class FlowController {
 		}
 
 		flowService.deleteFlowWallet(uuid, wallet, user);
+	}
+
+	@GetMapping("/wallets")
+	public List<WalletMessage> getAllWallets() {
+		return walletRepository.findAll().stream().map(WalletMessage::convert).toList();
 	}
 }
