@@ -13,27 +13,29 @@ import { Address } from 'viem';
 import PaymentDialog from '../components/dialogs/PaymentDialog';
 import { PublicSearchPay } from './PublicSearchPay';
 import { ProfileContext } from '../contexts/UserContext';
-import { useProfile } from '../utils/queries/profiles';
+import { useIdentity } from '../utils/queries/profiles';
 
 export default function PublicProfile() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { username } = useParams();
-  const { isLoading: isProfileLoading, data: profile } = useProfile(username);
+  const { username, fid } = useParams();
+  const { isLoading: isProfileLoading, data: identity } = useIdentity(username, fid);
   const { profile: loggedProfile } = useContext(ProfileContext);
 
   const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(false);
   const { address } = useAccount();
   const [selectedRecipient, setSelectedRecipient] = useState<SelectedIdentityType>();
 
+  const displayName = identity?.profile?.displayName;
+
   return (
     <>
       <Helmet>
-        <title> Payflow {profile ? '| ' + profile.displayName : ''} </title>
+        <title> Payflow {identity ? '| ' + displayName : ''} </title>
       </Helmet>
       <Box width="100%">
-        {username && !isProfileLoading && !profile && (
+        {username && !isProfileLoading && !identity && (
           <Stack mt={10}>
             <Typography
               variant="h6"
@@ -58,8 +60,8 @@ export default function PublicProfile() {
 
         {isProfileLoading === true ? (
           <CenteredCircularProgress />
-        ) : profile ? (
-          <PublicProfileCard profile={profile} />
+        ) : identity ? (
+          <PublicProfileCard identity={identity} />
         ) : (
           <PublicSearchPay setOpenSearchIdentity={setOpenSearchIdentity} />
         )}

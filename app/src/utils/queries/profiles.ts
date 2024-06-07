@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { API_URL } from '../urlConstants';
-import { ProfileType } from '../../types/ProfleType';
+import { IdentityType, ProfileType } from '../../types/ProfleType';
 import { sortAndFilterFlowWallets } from '../sortAndFilterFlows';
 
 export const useProfile = (addressOrName: string | undefined) => {
@@ -10,17 +10,44 @@ export const useProfile = (addressOrName: string | undefined) => {
     queryKey: ['profile', { addressOrName }],
     staleTime: Infinity,
     queryFn: () =>
+      axios.get(`${API_URL}/api/user/${addressOrName}`).then((res) => {
+        const profile = res.data as ProfileType;
+        const defaultFlow = profile.defaultFlow
+          ? sortAndFilterFlowWallets(profile.defaultFlow)
+          : undefined;
+        return {
+          ...profile,
+          defaultFlow
+        };
+      })
+  });
+};
+
+export const useIdentity = (addressOrName?: string, fid?: string) => {
+  const identity = addressOrName ?? fid;
+  return useQuery({
+    enabled: Boolean(identity),
+    queryKey: ['identity', { identity }],
+    staleTime: Infinity,
+    queryFn: () =>
       axios
-        .get(`${API_URL}/api/user/${addressOrName}`)
+        .get(`${API_URL}/api/user/identities/${fid ? 'fid/' : ''}${identity}`, {
+          withCredentials: true
+        })
         .then((res) => {
-          const profile = res.data as ProfileType;
-          const defaultFlow = profile.defaultFlow
-            ? sortAndFilterFlowWallets(profile.defaultFlow)
+          const identity = res.data as IdentityType;
+          const defaultFlow = identity?.profile?.defaultFlow
+            ? sortAndFilterFlowWallets(identity.profile.defaultFlow)
             : undefined;
           return {
-            ...profile,
-            defaultFlow
-          };
+            ...identity,
+            ...(identity.profile && {
+              profile: {
+                ...identity.profile,
+                defaultFlow
+              }
+            })
+          } as IdentityType;
         })
   });
 };

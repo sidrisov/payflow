@@ -1,25 +1,23 @@
-import { Avatar, Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
+import { Avatar, Box, Button, Stack, Typography } from '@mui/material';
 import { useContext, useState } from 'react';
-import { IdentityType, ProfileType } from '../../types/ProfleType';
+import { IdentityType } from '../../types/ProfleType';
 import { useAccount } from 'wagmi';
 import { Send } from '@mui/icons-material';
-import { useQuery } from '@airstack/airstack-react';
 import { ProfileSection } from '../ProfileSection';
 import SocialPresenceChipWithLink from '../chips/SocialPresenceChipWithLink';
-import { convertSocialResults } from '../../services/socials';
 import { green } from '@mui/material/colors';
 import { Address } from 'viem';
 import PaymentDialog, { PaymentSenderType } from './PaymentDialog';
 import { ProfileContext } from '../../contexts/UserContext';
-import { QUERY_SOCIALS_INSIGHTS_LIGHT, QUERY_SOCIALS_LIGHT } from '../../utils/airstackQueries';
 import ChoosePaymentOptionDialog from './ChoosePaymentOptionDialog';
+import { AddressSection } from '../AddressSection';
 
 export function PublicProfileDetails({
   openPayDialogParam = false,
-  profile
+  identity
 }: {
   openPayDialogParam?: boolean;
-  profile: ProfileType;
+  identity: IdentityType;
 }) {
   const [openPayDialog, setOpenPayDialog] = useState(openPayDialogParam);
 
@@ -31,34 +29,24 @@ export function PublicProfileDetails({
     !loggedProfile ? 'wallet' : 'none'
   );
 
-  const { data: socialInfo, loading: loadingSocials } = useQuery(
-    (address ?? loggedProfile?.identity) &&
-      profile.identity !== loggedProfile?.identity &&
-      profile.identity !== address
-      ? QUERY_SOCIALS_INSIGHTS_LIGHT
-      : QUERY_SOCIALS_LIGHT,
-    { identity: profile.identity, me: address ?? loggedProfile?.identity },
-    {
-      cache: true,
-      dataFormatter(data) {
-        return convertSocialResults(data.Wallet).data.meta;
-      }
-    }
-  );
+  const socialInfo = identity?.meta;
 
   return (
     <>
       <Stack spacing={1} direction="column" alignItems="center">
         <Stack direction="row" alignItems="center" spacing={1}>
-          <ProfileSection profile={profile} avatarSize={48} maxWidth={300} />
+          {identity?.profile ? (
+            <ProfileSection profile={identity.profile} maxWidth={300} />
+          ) : (
+            identity?.meta && <AddressSection maxWidth={300} identity={identity} />
+          )}
         </Stack>
-        {loadingSocials && <CircularProgress color="inherit" size={20} />}
         {socialInfo && (
           <Stack>
             <Box flexWrap="wrap" display="flex" justifyContent="center" alignItems="center">
               <SocialPresenceChipWithLink
                 type={socialInfo.ens ? 'ens' : 'address'}
-                name={socialInfo.ens ?? profile.identity}
+                name={socialInfo.ens ?? identity.address}
               />
 
               {socialInfo.socials &&
@@ -76,7 +64,7 @@ export function PublicProfileDetails({
             {socialInfo.insights &&
               (socialInfo.insights.farcasterFollow ||
                 socialInfo.insights.lensFollow ||
-                socialInfo.insights.sentTxs) && (
+                socialInfo.insights.sentTxs > 0) && (
                 <Stack my={1} spacing={1} alignSelf="center" alignItems="flex-start">
                   {socialInfo.insights.farcasterFollow && (
                     <Stack spacing={1} direction="row" alignItems="center">
@@ -102,7 +90,7 @@ export function PublicProfileDetails({
                       </Typography>
                     </Stack>
                   )}
-                  {socialInfo.insights.sentTxs && (
+                  {socialInfo.insights.sentTxs > 0 && (
                     <Stack spacing={1} direction="row" alignItems="center">
                       <Avatar
                         variant="rounded"
@@ -137,7 +125,7 @@ export function PublicProfileDetails({
             Pay
           </Button>
           {socialInfo?.xmtp && (
-            <SocialPresenceChipWithLink type="xmtp" name={socialInfo.ens ?? profile.identity} />
+            <SocialPresenceChipWithLink type="xmtp" name={socialInfo.ens ?? identity.address} />
           )}
         </Stack>
       </Stack>
@@ -158,8 +146,8 @@ export function PublicProfileDetails({
               }
             }}
             recipient={{
-              type: 'profile',
-              identity: { profile } as IdentityType
+              type: identity.profile ? 'profile' : 'address',
+              identity
             }}
             closeStateCallback={async () => {
               setOpenPayDialog(false);

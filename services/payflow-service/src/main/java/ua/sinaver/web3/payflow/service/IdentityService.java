@@ -76,6 +76,20 @@ public class IdentityService implements IIdentityService {
 	}
 
 	@Override
+	public String getENSAddress(String ens) {
+		val wallet =
+				socialGraphService.getSocialMetadata(ens);
+
+		String ensAddress = null;
+		if (wallet != null && wallet.getAddresses() != null) {
+			ensAddress = wallet.getAddresses().stream().findFirst().orElse(null);
+		}
+
+		log.debug("Addresses for {}: {}", ens, ensAddress);
+		return ensAddress;
+	}
+
+	@Override
 	public List<String> getFnameAddresses(String fname) {
 		val verifications = socialGraphService.getIdentityVerifiedAddresses(
 				"fc_fname:".concat(fname));
@@ -136,6 +150,11 @@ public class IdentityService implements IIdentityService {
 
 	@Override
 	public List<IdentityMessage> getIdentitiesInfo(List<String> identities) {
+		return getIdentitiesInfo(identities, null);
+	}
+
+	@Override
+	public List<IdentityMessage> getIdentitiesInfo(List<String> identities, String me) {
 		log.debug("Fetching {} identities", identities);
 		try {
 			val identityMessages = Flux
@@ -160,6 +179,17 @@ public class IdentityService implements IIdentityService {
 																exception.getMessage());
 														return Mono.empty();
 													}),
+											Mono.fromCallable(
+															() -> Optional.ofNullable(StringUtils.isNotBlank(me) ?
+																	socialGraphService.getSocialInsights(identity, me) : null))
+													.subscribeOn(Schedulers.boundedElastic())
+													.onErrorResume(exception -> {
+														log.error("Error fetching social insights" +
+																		" for {} - {}",
+																identity,
+																exception.getMessage());
+														return Mono.empty();
+													}),
 											// TODO: fetch only if social graph fetched
 											Mono.fromCallable(
 															() -> whitelistedUsers.contains(identity)
@@ -174,8 +204,8 @@ public class IdentityService implements IIdentityService {
 											identity,
 											tuple.getT2().orElse(null),
 											tuple.getT3(),
-											tuple.getT3(),
-											tuple.getT4()))
+											tuple.getT4().orElse(null),
+											tuple.getT5()))
 							// TODO: fail fast, seems doesn't to work properly with threads
 					)
 					.timeout(Duration.ofSeconds(10), Mono.empty())

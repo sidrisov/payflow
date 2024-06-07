@@ -66,7 +66,7 @@ public record IdentityMessage(
 
 
 			socials = getSocials(walletSocials);
-			insights = getWalletInsights(walletInsights);
+			insights = walletInsights != null ? getWalletInsights(walletInsights) : null;
 
 			if (ensAvatar == null && socials != null && !socials.isEmpty()) {
 				ensAvatar = socials.getFirst().profileImage();

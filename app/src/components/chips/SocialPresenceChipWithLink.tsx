@@ -44,17 +44,6 @@ export default function SocialPresenceChipWithLink(props: SocialPresenceChipWith
           <Chat fontSize="small" />
         </IconButton>
       </Tooltip>
-      {/* <Chip
-        variant="outlined"
-        avatar={<Avatar src={avatarSrc} />}
-        label=""
-        clickable
-        onClick={(event) => {
-          setXmtpMenuAnchorEl(event.currentTarget);
-          setOpenXmtpMenu(true);
-        }}
-        sx={{ borderColor: 'inherit', m: 0.5 }}
-      /> */}
       <XmtpActionMenu
         addressOrEns={name ?? ''}
         anchorEl={xmtpMenuAnchorEl}

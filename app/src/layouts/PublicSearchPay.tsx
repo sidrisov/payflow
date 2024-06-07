@@ -69,7 +69,7 @@ export function PublicSearchPay({
         <Chip
           size="medium"
           clickable
-          icon={<Avatar src="payflow.png" sx={{ width: 32, height: 32 }} />}
+          icon={<Avatar src="/payflow.png" sx={{ width: 32, height: 32 }} />}
           variant="outlined"
           label="search & pay"
           onClick={() => {

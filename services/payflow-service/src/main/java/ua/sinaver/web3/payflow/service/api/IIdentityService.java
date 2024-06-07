@@ -16,6 +16,8 @@ public interface IIdentityService {
 
 	List<String> getFidAddresses(int fid);
 
+	String getENSAddress(String ens);
+
 	List<String> getFnameAddresses(String fname);
 
 	List<User> getFidProfiles(List<String> addresses);
@@ -29,4 +31,6 @@ public interface IIdentityService {
 	List<IdentityMessage> getIdentitiesInfo(int fid);
 
 	List<IdentityMessage> getIdentitiesInfo(List<String> identities);
+
+	List<IdentityMessage> getIdentitiesInfo(List<String> identities, String me);
 }

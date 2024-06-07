@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
@@ -12,10 +13,7 @@ import ua.sinaver.web3.payflow.message.*;
 import ua.sinaver.web3.payflow.service.api.*;
 
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -150,14 +148,56 @@ public class UserController {
 		return Collections.emptyList();
 	}
 
-	@GetMapping("/identities/{identity}")
-	public IdentityMessage getIdentities(@PathVariable(value = "identity") String identity) {
-		try {
-			return identityService.getIdentitiesInfo(List.of(identity)).stream().findFirst().orElse(null);
-		} catch (Throwable t) {
-			log.error("Error fetching identity: {}", identity, t);
+	@GetMapping({"/identities/{usernameOrAddress}", "/identities/fid/{fid}"})
+	public ResponseEntity<IdentityMessage> getIdentity(Principal principal, @PathVariable(value = "usernameOrAddress",
+			required = false) String usernameOrAddress, @PathVariable(value = "fid", required = false) Integer fid) {
+		log.debug("Fetching identity info: {} or {}", usernameOrAddress, fid);
+
+		if (StringUtils.isBlank(usernameOrAddress) && fid == null) {
+			return ResponseEntity.badRequest().build();
 		}
-		return null;
+
+		try {
+			List<String> identities = new ArrayList<>();
+
+			if (StringUtils.isNotBlank(usernameOrAddress)) {
+				val user = userService.findByUsernameOrIdentity(usernameOrAddress);
+				if (user != null) {
+					identities.add(user.getIdentity());
+				} else if (usernameOrAddress.endsWith(".eth") || usernameOrAddress.endsWith(".cb.id")) {
+					val ensAddress = identityService.getENSAddress(usernameOrAddress);
+					if (ensAddress != null) {
+						identities.add(ensAddress);
+					} else {
+						return ResponseEntity.notFound().build();
+					}
+				} else if (usernameOrAddress.startsWith("0x")) {
+					identities.add(usernameOrAddress);
+				} else {
+					return ResponseEntity.notFound().build();
+				}
+			} else {
+				identities.addAll(identityService.getFidAddresses(fid));
+			}
+
+			String loggedIdentity = null;
+			if (principal != null) {
+				val user = userService.findByIdentity(principal.getName());
+				if (user != null) {
+					loggedIdentity = user.getIdentity();
+				}
+			}
+			
+			val identityInfo = identityService.getIdentitiesInfo(identities, loggedIdentity)
+					.stream()
+					.max(Comparator.comparingInt(IdentityMessage::score))
+					.orElse(null);
+			log.debug("Fetched identity info: {} for {}", identityInfo, identities);
+			return ResponseEntity.ok(identityInfo);
+		} catch (Throwable t) {
+			log.error("Error fetching identity: {}", usernameOrAddress, t);
+			return ResponseEntity.internalServerError().build();
+		}
 	}
 
 	@GetMapping

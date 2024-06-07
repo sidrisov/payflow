@@ -1,10 +1,10 @@
 import { Box, Card, CardProps } from '@mui/material';
-import { ProfileType } from '../../types/ProfleType';
+import { IdentityType } from '../../types/ProfleType';
 import PublicProfileActivityFeed from '../PublicProfileActivityFeed';
 import { PublicProfileDetails } from '../dialogs/PublicProfileDetails';
 import { useSearchParams } from 'react-router-dom';
 
-export function PublicProfileCard({ profile, ...props }: { profile: ProfileType } & CardProps) {
+export function PublicProfileCard({ identity, ...props }: { identity: IdentityType } & CardProps) {
   const [searchParams] = useSearchParams();
   const pay = searchParams.get('pay');
 
@@ -20,12 +20,14 @@ export function PublicProfileCard({ profile, ...props }: { profile: ProfileType 
           borderColor: 'divider',
           borderRadius: 5
         }}>
-        <PublicProfileDetails openPayDialogParam={pay !== null} profile={profile} />
+        <PublicProfileDetails openPayDialogParam={pay !== null} identity={identity} />
       </Card>
 
-      <Box mx={1}>
-        <PublicProfileActivityFeed flow={profile.defaultFlow} />
-      </Box>
+      {identity?.profile?.defaultFlow && (
+        <Box mx={1}>
+          <PublicProfileActivityFeed flow={identity?.profile?.defaultFlow} />
+        </Box>
+      )}
     </>
   );
 }

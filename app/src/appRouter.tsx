@@ -54,6 +54,11 @@ export const appRouter = createBrowserRouter([
         errorElement: <Page404 />
       },
       {
+        path: '/fid/:fid',
+        element: <PublicProfile />,
+        errorElement: <Page404 />
+      },
+      {
         path: '/jar/:uuid',
         element: <Jar />,
         errorElement: <Page404 />

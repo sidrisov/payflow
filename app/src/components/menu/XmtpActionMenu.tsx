@@ -38,7 +38,7 @@ export function XmtpActionMenu({
       anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
       <MenuItem component="a" href={getXmtpAppDmLink('converse', addressOrEns)} target="_blank">
         <ListItemIcon>
-          <Avatar src="xmtp_converse.png" variant="rounded" sx={{ width: 24, height: 24 }} />
+          <Avatar src="/xmtp_converse.png" variant="rounded" sx={{ width: 24, height: 24 }} />
         </ListItemIcon>
         converse
       </MenuItem>
@@ -50,13 +50,13 @@ export function XmtpActionMenu({
         )}
         target="_blank">
         <ListItemIcon>
-          <Avatar src="xmtp_coinbase.png" variant="rounded" sx={{ width: 24, height: 24 }} />
+          <Avatar src="/xmtp_coinbase.png" variant="rounded" sx={{ width: 24, height: 24 }} />
         </ListItemIcon>
         coinbase
       </MenuItem>
       <MenuItem component="a" href={getXmtpAppDmLink('inbox', addressOrEns)} target="_blank">
         <ListItemIcon>
-          <Avatar src="xmtp_inbox.png" variant="rounded" sx={{ width: 24, height: 24 }} />
+          <Avatar src="/xmtp_inbox.png" variant="rounded" sx={{ width: 24, height: 24 }} />
         </ListItemIcon>
         inbox
       </MenuItem>
