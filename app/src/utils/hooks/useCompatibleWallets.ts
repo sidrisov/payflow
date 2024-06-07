@@ -21,7 +21,7 @@ export function useCompatibleWallets({
     if (sender) {
       if (isAddress(sender as Address)) {
         compatibleSenderWallets =
-          recipient.type === 'address'
+          recipient.type === 'address' || !recipient.identity.profile?.defaultFlow
             ? SUPPORTED_CHAINS.map(
                 (c) => ({ address: sender as Address, network: c.id } as FlowWalletType)
               )
@@ -31,8 +31,9 @@ export function useCompatibleWallets({
               ) ?? [];
       } else {
         // in case a new wallet chain added, not all users maybe be compatible, limit by chains recipient supports
+        // if default flow available otherwise fallback to identity
         compatibleSenderWallets =
-          recipient.type === 'profile'
+          recipient.type === 'profile' && recipient.identity.profile?.defaultFlow
             ? (sender as FlowType).wallets.filter((w) =>
                 recipient.identity.profile?.defaultFlow?.wallets.find(
                   (rw) => rw.network === w.network
@@ -65,7 +66,7 @@ export function useToAddress({
       return;
     }
 
-    if (recipient.type === 'address') {
+    if (recipient.type === 'address' || !recipient.identity.profile?.defaultFlow) {
       return recipient.identity.address;
     } else {
       return recipient.identity.profile?.defaultFlow?.wallets.find(

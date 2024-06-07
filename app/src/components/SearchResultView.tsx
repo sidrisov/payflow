@@ -35,7 +35,7 @@ export function SearchResultView({
 
   function SearchResultProfileListView({
     view,
-    identities,
+    identities
   }: {
     view: 'address' | 'profile';
     identities: ContactType[];
@@ -43,24 +43,17 @@ export function SearchResultView({
     const maxPages = calculateMaxPages(identities.length, pageSize);
     const [page, setPage] = useState<number>(1);
 
-    const onIdentityClick =
-      selectIdentityCallback || view === 'profile'
-        ? (contact: ContactType) => {
-            if (view === 'profile') {
-              if (contact.data.profile) {
-                if (profileRedirect) {
-                  navigate(`/${contact.data.profile.username}`);
-                } else if (selectIdentityCallback) {
-                  selectIdentityCallback({ type: 'profile', identity: contact.data });
-                }
-                closeStateCallback();
-              }
-            } else if (selectIdentityCallback) {
-              selectIdentityCallback({ type: 'address', identity: contact.data });
-              closeStateCallback();
-            }
-          }
-        : undefined;
+    const onIdentityClick = (contact: ContactType) => {
+      if (profileRedirect) {
+        navigate(`/${contact.data.profile?.username ?? contact.data.address}`);
+      } else if (selectIdentityCallback) {
+        selectIdentityCallback({
+          type: view,
+          identity: contact.data
+        });
+      }
+      closeStateCallback();
+    };
 
     return (
       <>
