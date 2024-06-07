@@ -26,15 +26,7 @@ export function PublicProfileDetailsPopover({
       }}
       transformOrigin={{ horizontal: 'left', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
-      {/* <IconButton
-        color="inherit"
-        size="small"
-        href={socialLink('payflow', profile.username) ?? ''}
-        target="_blank"
-        sx={{ alignSelf: 'flex-end' }}>
-        <ArrowOutward fontSize="small" />
-      </IconButton> */}
-      <PublicProfileDetails profile={profile} />
+      <PublicProfileDetails identity={{ address: profile.identity, profile: profile }} />
     </Popover>
   );
 }
