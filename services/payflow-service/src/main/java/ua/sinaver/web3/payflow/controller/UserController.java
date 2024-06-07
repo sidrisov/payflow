@@ -159,12 +159,8 @@ public class UserController {
 
 		try {
 			List<String> identities = new ArrayList<>();
-
 			if (StringUtils.isNotBlank(usernameOrAddress)) {
-				val user = userService.findByUsernameOrIdentity(usernameOrAddress);
-				if (user != null) {
-					identities.add(user.getIdentity());
-				} else if (usernameOrAddress.endsWith(".eth") || usernameOrAddress.endsWith(".cb.id")) {
+				if (usernameOrAddress.endsWith(".eth") || usernameOrAddress.endsWith(".cb.id")) {
 					val ensAddress = identityService.getENSAddress(usernameOrAddress);
 					if (ensAddress != null) {
 						identities.add(ensAddress);
@@ -174,10 +170,25 @@ public class UserController {
 				} else if (usernameOrAddress.startsWith("0x")) {
 					identities.add(usernameOrAddress);
 				} else {
-					return ResponseEntity.notFound().build();
+					val user = userService.findByUsernameOrIdentity(usernameOrAddress);
+					if (user != null) {
+						identities.add(user.getIdentity());
+					} else {
+						val fnameAddresses = identityService.getFnameAddresses(usernameOrAddress);
+						if (fnameAddresses != null && !fnameAddresses.isEmpty()) {
+							identities.addAll(fnameAddresses);
+						} else {
+							return ResponseEntity.notFound().build();
+						}
+					}
 				}
 			} else {
-				identities.addAll(identityService.getFidAddresses(fid));
+				val fidAddresses = identityService.getFidAddresses(fid);
+				if (fidAddresses != null && !fidAddresses.isEmpty()) {
+					identities.addAll(fidAddresses);
+				} else {
+					return ResponseEntity.notFound().build();
+				}
 			}
 
 			String loggedIdentity = null;
@@ -187,7 +198,7 @@ public class UserController {
 					loggedIdentity = user.getIdentity();
 				}
 			}
-			
+
 			val identityInfo = identityService.getIdentitiesInfo(identities, loggedIdentity)
 					.stream()
 					.max(Comparator.comparingInt(IdentityMessage::score))

@@ -95,7 +95,6 @@ public class IdentityService implements IIdentityService {
 				"fc_fname:".concat(fname));
 		val addresses = verificationsWithoutCustodial(verifications);
 		log.debug("Addresses for {}: {}", fname, addresses);
-
 		return addresses;
 	}
 
