@@ -1,8 +1,8 @@
-import { Avatar, Box, Button, Stack, Typography } from '@mui/material';
+import { Avatar, Box, Button, IconButton, Stack, Tooltip, Typography } from '@mui/material';
 import { useContext, useState } from 'react';
 import { IdentityType } from '../../types/ProfleType';
 import { useAccount } from 'wagmi';
-import { Send } from '@mui/icons-material';
+import { CropSquare, Send } from '@mui/icons-material';
 import { ProfileSection } from '../ProfileSection';
 import SocialPresenceChipWithLink from '../chips/SocialPresenceChipWithLink';
 import { green } from '@mui/material/colors';
@@ -11,6 +11,9 @@ import PaymentDialog, { PaymentSenderType } from './PaymentDialog';
 import { ProfileContext } from '../../contexts/UserContext';
 import ChoosePaymentOptionDialog from './ChoosePaymentOptionDialog';
 import { AddressSection } from '../AddressSection';
+import { copyToClipboard } from '../../utils/copyToClipboard';
+import { FRAMES_URL } from '../../utils/urlConstants';
+import { toast } from 'react-toastify';
 
 export function PublicProfileDetails({
   openPayDialogParam = false,
@@ -127,6 +130,17 @@ export function PublicProfileDetails({
           {socialInfo?.xmtp && (
             <SocialPresenceChipWithLink type="xmtp" name={socialInfo.ens ?? identity.address} />
           )}
+          <Tooltip title="Copy payment frame link">
+            <IconButton
+              color="inherit"
+              onClick={() => {
+                copyToClipboard(`${FRAMES_URL}/${identity.address}`);
+                toast.success('Payment frame link copied!');
+              }}
+              sx={{ border: 1, width: 36, height: 36 }}>
+              <CropSquare fontSize="medium" />
+            </IconButton>
+          </Tooltip>
         </Stack>
       </Stack>
 
