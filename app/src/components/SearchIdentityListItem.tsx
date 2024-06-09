@@ -185,7 +185,7 @@ export function SearchIdentityListItem(
                     )}
                     {tags?.includes('hypersub') && (
                       <Stack spacing={1} direction="row" alignItems="center">
-                        <Avatar src="/hypersub.png" sx={{ width: 15, height: 15 }} />
+                        <Avatar src="/fabric.png" sx={{ width: 15, height: 15 }} />
                         <Typography variant="caption" fontWeight="bold">
                           Hyper Subscriber
                         </Typography>
@@ -193,7 +193,7 @@ export function SearchIdentityListItem(
                     )}
                     {tags?.includes('alfafrens') && (
                       <Stack spacing={1} direction="row" alignItems="center">
-                        <Avatar src="/hypersub.png" sx={{ width: 15, height: 15 }} />
+                        <Avatar src="/alfafrens.png" sx={{ width: 15, height: 15 }} />
                         <Typography variant="caption" fontWeight="bold">
                           Alfa Frens subscriber
                         </Typography>
