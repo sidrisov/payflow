@@ -121,7 +121,7 @@ public class IdentitySubscriptionsService {
 		}
 	}
 
-	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'fabric-list:' + #identity", unless =
+	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'fabric-list-2:' + #identity", unless =
 			"#result.isEmpty()")
 	public List<String> fetchFabricSubscribers(String identity) {
 		log.debug("Fetching fabric subscribers for identity: {}", identity);
@@ -156,7 +156,7 @@ public class IdentitySubscriptionsService {
 			log.debug("Total fabric subscribers: {} for fid: {}", subscribers.size(), fid);
 
 			val subscribersScoredAddresses = subscribers.stream()
-					.limit(5)
+					.limit(100)
 					.map(user -> identityService.getIdentitiesInfo(user.verifications())
 							.stream()
 							.max(Comparator.comparingInt(IdentityMessage::score))

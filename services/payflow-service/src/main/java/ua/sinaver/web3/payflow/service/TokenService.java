@@ -5,9 +5,8 @@ import com.google.gson.reflect.TypeToken;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import ua.sinaver.web3.payflow.message.Token;
 
@@ -60,20 +59,18 @@ public class TokenService {
 			PAYMENTS_DEGEN_TOKENS);
 	public static final String ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-	@Autowired
-	private ResourceLoader resourceLoader;
+	@Value("classpath:tokens.json")
+	private Resource tokensResource;
 
 	@Getter
 	private List<Token> tokens;
 
 	@PostConstruct
 	public void init() throws IOException {
-		Gson gson = new Gson();
-		Resource resource = resourceLoader.getResource("classpath:tokens.json");
-		try (InputStreamReader reader = new InputStreamReader(resource.getInputStream())) {
+		try (InputStreamReader reader = new InputStreamReader(tokensResource.getInputStream())) {
 			Type tokenListType = new TypeToken<List<Token>>() {
 			}.getType();
-			tokens = gson.fromJson(reader, tokenListType);
+			tokens = new Gson().fromJson(reader, tokenListType);
 			log.debug("Supported Tokens: {}", tokens);
 		}
 	}

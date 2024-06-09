@@ -10,16 +10,14 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
-import ua.sinaver.web3.payflow.message.ConnectedAddresses;
 import ua.sinaver.web3.payflow.message.SiweMessage;
-import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
+import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 
 @Slf4j
 @Component
 public class Web3AuthenticationProvider implements AuthenticationProvider {
-
 	@Autowired
-	private ISocialGraphService socialGraphService;
+	private IFarcasterNeynarService neynarService;
 
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -57,23 +55,21 @@ public class Web3AuthenticationProvider implements AuthenticationProvider {
 			log.debug("Checking if {} in {} verifications", authentication.getPrincipal(),
 					siweMessage.address().toLowerCase());
 			// find connected addresses for the siwf signer
-			ConnectedAddresses connectedAddresses =
-					socialGraphService.getIdentityVerifiedAddresses(siweMessage.address());
+			val farcasterUser = neynarService.fetchFarcasterUser(siweMessage.address());
 
-			if (connectedAddresses == null) {
-				log.error("Failed to fetch verifications for {}",
+			if (farcasterUser == null) {
+				log.error("Failed to fetch farcaster verifications for {}",
 						siweMessage.address());
 				authentication.setAuthenticated(false);
 				// check if userAddress is the same that signed SIWF (custodial wallet)
-			} else if (!StringUtils.equalsIgnoreCase(connectedAddresses.userAddress(),
+			} else if (!StringUtils.equalsIgnoreCase(farcasterUser.custodyAddress(),
 					siweMessage.address())) {
 				log.error("Found user address {} is different from the address which signed siwf {}",
-						connectedAddresses.userAddress(), siweMessage.address());
+						farcasterUser.custodyAddress(), siweMessage.address());
 				authentication.setAuthenticated(false);
 			} else {
-				val identityInConnectedAddresses =
-						connectedAddresses.connectedAddresses().contains(authentication.getPrincipal().toString());
-
+				val identityInConnectedAddresses = farcasterUser.verifications()
+						.contains(authentication.getPrincipal().toString());
 				if (!identityInConnectedAddresses) {
 					log.debug("Identity {} is not in {} connected addresses",
 							authentication.getPrincipal(), siweMessage.address());

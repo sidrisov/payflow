@@ -5,6 +5,7 @@ import ua.sinaver.web3.payflow.message.CastEmbed;
 import ua.sinaver.web3.payflow.message.CastMessage;
 import ua.sinaver.web3.payflow.message.CastResponseMessage;
 import ua.sinaver.web3.payflow.message.ValidatedFarcasterFrameMessage;
+import ua.sinaver.web3.payflow.message.farcaster.FarcasterUserResponseMessage;
 import ua.sinaver.web3.payflow.message.subscription.SubscribersMessage;
 import ua.sinaver.web3.payflow.message.subscription.SubscriptionsCreatedMessage;
 
@@ -19,6 +20,8 @@ public interface IFarcasterNeynarService {
 	                         List<CastEmbed> embeds);
 
 	CastMessage fetchCastByHash(String hash);
+
+	FarcasterUserResponseMessage.FarcasterUser fetchFarcasterUser(String custodyAddress);
 
 	List<SubscriptionsCreatedMessage.Subscription> subscriptionsCreated(int fid);
 

@@ -12,6 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import ua.sinaver.web3.payflow.message.*;
+import ua.sinaver.web3.payflow.message.farcaster.FarcasterUserResponseMessage;
 import ua.sinaver.web3.payflow.message.subscription.SubscribersMessage;
 import ua.sinaver.web3.payflow.message.subscription.SubscriptionsCreatedMessage;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
@@ -84,6 +85,23 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 		} catch (Throwable t) {
 			log.debug("Exception calling Neynar Cast API to fetch by hash {} - {}",
 					hash, t.getMessage());
+			throw t;
+		}
+	}
+
+	@Override
+	public FarcasterUserResponseMessage.FarcasterUser fetchFarcasterUser(String custodyAddress) {
+		log.debug("Calling Neynar User API to fetch by custodyAddress {}", custodyAddress);
+		try {
+			val response = neynarClient.get()
+					.uri(uriBuilder -> uriBuilder.path("/user/custody-address")
+							.queryParam("custody_address", custodyAddress.toLowerCase())
+							.build())
+					.retrieve().bodyToMono(FarcasterUserResponseMessage.class).block();
+			return response != null ? response.user() : null;
+		} catch (Throwable t) {
+			log.debug("Exception calling Neynar User API to fetch by custodyAddress {} - {}",
+					custodyAddress, t.getMessage());
 			throw t;
 		}
 	}
