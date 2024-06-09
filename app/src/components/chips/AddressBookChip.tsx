@@ -15,7 +15,7 @@ const contactTypeLabel = (type: AddressBookType) => {
     case 'alfafrens':
       return 'AlfaFrens';
     case 'hypersub':
-      return 'Hypersubs';
+      return 'HyperSubs';
   }
 };
 

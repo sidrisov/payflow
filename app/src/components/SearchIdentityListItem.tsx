@@ -227,7 +227,7 @@ export function SearchIdentityListItem(
                       <Stack spacing={1} direction="row" alignItems="center">
                         <Avatar src="/fabric.png" sx={{ width: 15, height: 15 }} />
                         <Typography variant="caption" fontWeight="bold">
-                          Hyper Subscriber
+                          HyperSub
                         </Typography>
                       </Stack>
                     )}
@@ -235,7 +235,7 @@ export function SearchIdentityListItem(
                       <Stack spacing={1} direction="row" alignItems="center">
                         <Avatar src="/alfafrens.png" sx={{ width: 15, height: 15 }} />
                         <Typography variant="caption" fontWeight="bold">
-                          Alfa Frens subscriber
+                          AlfaFren
                         </Typography>
                       </Stack>
                     )}
