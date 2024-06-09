@@ -47,14 +47,25 @@ export function Head() {
           property="fc:frame:image"
           content={`${FRAMES_URL}/images/profile/${username}/payment.png?step=start`}
         />
-        <meta property="fc:frame:button:1" content="🖼️ via Frame" />
+        <meta property="fc:frame:button:1" content="🖼️ in Frame" />
         <meta
           property="fc:frame:button:1:target"
           content={`${API_URL}/api/farcaster/frames/pay/${username}/frame`}
         />
-        <meta property="fc:frame:button:2" content="📱 via App" />
+        <meta property="fc:frame:button:2" content="📱 in App" />
         <meta property="fc:frame:button:2:action" content="link" />
         <meta property="fc:frame:button:2:target" content={`${DAPP_URL}/${username}?pay`} />
+
+        <meta property="fc:frame:button:3" content="➕ Action" />
+        <meta property="fc:frame:button:3:action" content="link" />
+        <meta
+          property="fc:frame:button:3:target"
+          content={`https://warpcast.com/~/add-cast-action?url=${API_URL}/api/farcaster/actions/profile`}
+        />
+
+        <meta property="fc:frame:button:4" content="📝 Share" />
+        <meta property="fc:frame:button:4:action" content="post_redirect" />
+        <meta property="fc:frame:button:4:target" content={`${API_URL}/api/farcaster/frames/pay/share`} />
       </head>
     </>
   );

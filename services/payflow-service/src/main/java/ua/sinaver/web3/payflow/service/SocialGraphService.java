@@ -32,9 +32,10 @@ public class SocialGraphService implements ISocialGraphService {
 	@Value("${payflow.invitation.whitelisted.default.users}")
 	private Set<String> whitelistedUsers;
 
-	public SocialGraphService(@Value("${payflow.airstack.api.url}") String airstackUrl,
+	public SocialGraphService(WebClient.Builder builder,
+	                          @Value("${payflow.airstack.api.url}") String airstackUrl,
 	                          @Value("${payflow.airstack.api.key}") String airstackApiKey) {
-		WebClient client = WebClient.builder()
+		WebClient client = builder
 				.baseUrl(airstackUrl)
 				.build();
 

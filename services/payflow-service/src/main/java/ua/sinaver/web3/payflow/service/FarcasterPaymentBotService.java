@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 public class FarcasterPaymentBotService {
 
 	@Autowired
-	private FarcasterHubService hubService;
+	private FarcasterNeynarService hubService;
 
 	@Autowired
 	private PaymentBotJobRepository paymentBotJobRepository;

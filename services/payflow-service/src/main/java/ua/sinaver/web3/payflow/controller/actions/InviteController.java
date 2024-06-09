@@ -15,7 +15,7 @@ import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.service.FarcasterPaymentBotService;
 import ua.sinaver.web3.payflow.service.IdentityService;
 import ua.sinaver.web3.payflow.service.api.IContactBookService;
-import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
+import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.util.Collections;
@@ -35,7 +35,7 @@ public class InviteController {
 			"https://app.payflow.me/actions",
 			new CastActionMeta.Action("post"));
 	@Autowired
-	private IFarcasterHubService farcasterHubService;
+	private IFarcasterNeynarService farcasterHubService;
 	@Autowired
 	private IContactBookService contactBookService;
 	@Autowired

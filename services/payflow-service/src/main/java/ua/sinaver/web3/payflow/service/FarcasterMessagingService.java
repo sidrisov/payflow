@@ -17,9 +17,9 @@ public class FarcasterMessagingService implements IFarcasterMessagingService {
 
 	private final WebClient webClient;
 
-	public FarcasterMessagingService(@Value("${payflow.farcaster.bot.messaging.secret}") String messagingBotSecret) {
-		webClient = WebClient.builder()
-				.baseUrl("https://api.warpcast.com")
+	public FarcasterMessagingService(WebClient.Builder builder, @Value("${payflow.farcaster.bot" +
+			".messaging.secret}") String messagingBotSecret) {
+		webClient = builder.baseUrl("https://api.warpcast.com")
 				.defaultHeader("Authorization", "Bearer " + messagingBotSecret)
 				.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
 				.defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)

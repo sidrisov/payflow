@@ -14,7 +14,7 @@ import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.IdentityService;
 import ua.sinaver.web3.payflow.service.SocialGraphService;
-import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
+import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.text.DecimalFormat;
@@ -31,7 +31,7 @@ import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYME
 public class PayIntentController {
 
 	@Autowired
-	private IFarcasterHubService farcasterHubService;
+	private IFarcasterNeynarService farcasterHubService;
 
 	@Autowired
 	private IdentityService identityService;

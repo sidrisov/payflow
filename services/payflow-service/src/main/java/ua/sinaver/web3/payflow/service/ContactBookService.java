@@ -60,7 +60,7 @@ public class ContactBookService implements IContactBookService {
 	private IdentityService identityService;
 
 	@Autowired
-	private AlfaFrensService alfaFrensService;
+	private IdentitySubscriptionsService identitySubscriptionsService;
 
 	@Value("${payflow.airstack.contacts.limit:10}")
 	private int contactsLimit;
@@ -104,14 +104,21 @@ public class ContactBookService implements IContactBookService {
 
 		val contacts = contactRepository.findAllByUser(user)
 				.stream().limit(contactsLimitAdjusted).toList();
-		val alfaFrensContacts = alfaFrensService.fetchSubscribers(user.getIdentity());
-		log.debug("Fetched subs: {}", alfaFrensContacts);
+		val alfaFrensContacts = identitySubscriptionsService.fetchAlfaFrensSubscribers(user.getIdentity());
+		log.debug("Fetched alfafrens subs: {}", alfaFrensContacts);
+
+		val fabricContacts = identitySubscriptionsService.fetchFabricSubscribers(user.getIdentity());
+		log.debug("Fetched fabric subs: {}", fabricContacts);
 
 		val favourites = contactRepository.findByUserAndProfileCheckedTrue(user);
 
 		val tags = new ArrayList<>(List.of("friends"));
 		if (!alfaFrensContacts.isEmpty()) {
 			tags.add("alfafrens");
+		}
+
+		if (!fabricContacts.isEmpty()) {
+			tags.add("hypersub");
 		}
 
 		if (!favourites.isEmpty()) {
@@ -123,12 +130,12 @@ public class ContactBookService implements IContactBookService {
 		}
 
 		val allContacts = Stream.of(
-						favourites.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(),
-								"favourites")),
+						favourites.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(), "favourites")),
 						contacts.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(), "friends")),
-						alfaFrensContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "alfafrens")),
-						farConParticipants.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity,
-								"farcon"))
+						fabricContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "hypersub")),
+						alfaFrensContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "alfafrens"))
+						//farConParticipants.stream().map(identity -> new AbstractMap
+						// .SimpleEntry<>(identity, "farcon"))
 				).flatMap(stream -> stream)
 				.collect(Collectors.groupingBy(
 						Map.Entry::getKey,

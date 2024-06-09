@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.message.CastActionMeta;
 import ua.sinaver.web3.payflow.message.FrameMessage;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
-import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
+import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
@@ -28,7 +28,7 @@ public class PayProfileController {
 			new CastActionMeta.Action("post"));
 
 	@Autowired
-	private IFarcasterHubService farcasterHubService;
+	private IFarcasterNeynarService farcasterHubService;
 	@Autowired
 	private IIdentityService identityService;
 

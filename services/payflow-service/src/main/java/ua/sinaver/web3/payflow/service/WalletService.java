@@ -17,10 +17,9 @@ public class WalletService {
 
 	private final WebClient webClient;
 
-	public WalletService(@Value("${payflow.frames.url}") String walletApiUrl) {
-
-		webClient = WebClient.builder()
-				.baseUrl(walletApiUrl)
+	public WalletService(WebClient.Builder builder,
+	                     @Value("${payflow.frames.url}") String walletApiUrl) {
+		webClient = builder.baseUrl(walletApiUrl)
 				.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
 				.defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
 				.build();

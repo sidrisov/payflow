@@ -16,10 +16,9 @@ public class XmtpValidationService {
 
 	private final WebClient webClient;
 
-	public XmtpValidationService(@Value("${payflow.frames.url}") String xmtpApiUrl) {
-
-		webClient = WebClient.builder()
-				.baseUrl(xmtpApiUrl)
+	public XmtpValidationService(WebClient.Builder builder,
+	                             @Value("${payflow.frames.url}") String xmtpApiUrl) {
+		webClient = builder.baseUrl(xmtpApiUrl)
 				.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
 				.defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
 				.build();

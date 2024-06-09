@@ -1,6 +1,6 @@
 import { People, Settings, Star } from '@mui/icons-material';
 import { Avatar, Box, Chip, IconButton, Typography } from '@mui/material';
-import { yellow, green, grey, deepPurple, blue } from '@mui/material/colors';
+import { yellow, green, grey, deepPurple, blue, pink } from '@mui/material/colors';
 import { AddressBookType } from '../../types/ContactType';
 import { useState } from 'react';
 
@@ -14,6 +14,8 @@ const contactTypeLabel = (type: AddressBookType) => {
       return 'FarCon';
     case 'alfafrens':
       return 'AlfaFrens';
+    case 'hypersub':
+      return 'Hypersubs';
   }
 };
 
@@ -27,6 +29,8 @@ const contactTypeColor = (type: AddressBookType) => {
       return deepPurple.A100;
     case 'alfafrens':
       return blue[400];
+    case 'hypersub':
+      return pink[400];
   }
 };
 
@@ -38,8 +42,8 @@ const contactTypeIcon = (type: AddressBookType) => {
       return <People fontSize="medium" />;
     case 'farcon':
       return <Avatar variant="circular" src="/farcon.png" sx={{ width: 24, height: 24 }} />;
-    case 'alfafrens':
-      return <Avatar variant="circular" src="/alfafrens.png" sx={{ width: 24, height: 24 }} />;
+    case 'hypersub':
+      return <Avatar variant="circular" src="/fabric.png" sx={{ width: 24, height: 24 }} />;
   }
 };
 
@@ -136,6 +140,15 @@ export function AddressBookToolBar({
           setAddressBookView={setAddressBookView}
         />
 
+        {tags.includes('hypersub') && (
+          <AddressBookChip
+            key="hypersub"
+            type="hypersub"
+            addressBookView={addressBookView}
+            setAddressBookView={setAddressBookView}
+          />
+        )}
+
         {tags.includes('alfafrens') && (
           <AddressBookChip
             key="alfafrens"
@@ -145,14 +158,14 @@ export function AddressBookToolBar({
           />
         )}
 
-        {tags.includes('farcon') && (
+        {/* {tags.includes('farcon') && (
           <AddressBookChip
             key="farcon"
             type="farcon"
             addressBookView={addressBookView}
             setAddressBookView={setAddressBookView}
           />
-        )}
+        )} */}
       </Box>
       {/*       <IconButton
         size="small"

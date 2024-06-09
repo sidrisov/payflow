@@ -13,6 +13,8 @@ import ua.sinaver.web3.payflow.message.ConnectedAddresses;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.message.alfafrens.ChannelSubscribersAndStakesResponseMessage;
 import ua.sinaver.web3.payflow.message.alfafrens.UserByFidResponseMessage;
+import ua.sinaver.web3.payflow.message.subscription.SubscribersMessage;
+import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
@@ -23,7 +25,7 @@ import static ua.sinaver.web3.payflow.config.CacheConfig.CONTACT_LIST_CACHE_NAME
 
 @Slf4j
 @Service
-public class AlfaFrensService {
+public class IdentitySubscriptionsService {
 
 	private final WebClient webClient;
 
@@ -33,17 +35,20 @@ public class AlfaFrensService {
 	@Autowired
 	private ISocialGraphService socialGraphService;
 
-	public AlfaFrensService() {
-		webClient = WebClient.builder()
+	@Autowired
+	private IFarcasterNeynarService neynarService;
+
+	public IdentitySubscriptionsService(WebClient.Builder builder) {
+		webClient = builder
 				.baseUrl("https://www.alfafrens.com/api/v0")
 				.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
 				.defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
 				.build();
 	}
 
-	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'alfafrens-list-2:' + #identity", unless =
+	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'alfafrens-list:' + #identity", unless =
 			"#result.isEmpty()")
-	public List<String> fetchSubscribers(String identity) {
+	public List<String> fetchAlfaFrensSubscribers(String identity) {
 		log.debug("Fetching alfa frens subscribers for identity: {}", identity);
 
 		try {
@@ -60,8 +65,6 @@ public class AlfaFrensService {
 							.queryParam("fid", fid)
 							.build())
 					.retrieve().bodyToMono(UserByFidResponseMessage.class).block();
-
-			log.debug("{}", userResponse);
 
 			if (userResponse == null || StringUtils.isBlank(userResponse.channelAddress())) {
 				log.error("No alfa frens user found for fid or not channel: {}, response: {}",
@@ -114,6 +117,61 @@ public class AlfaFrensService {
 			log.error("Exception fetching alfa frens subscribers for identity: {}, error: {}",
 					identity, t.getMessage());
 
+			throw t;
+		}
+	}
+
+	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'fabric-list:' + #identity", unless =
+			"#result.isEmpty()")
+	public List<String> fetchFabricSubscribers(String identity) {
+		log.debug("Fetching fabric subscribers for identity: {}", identity);
+
+		try {
+			val fid = identityService.getIdentityFid(identity);
+
+			log.debug("Fetched fid: {} for identity: {}", fid, identity);
+			if (StringUtils.isBlank(fid)) {
+				log.error("No fid found for identity: {}", identity);
+				return Collections.emptyList();
+			}
+
+			val subscriptions = neynarService.subscriptionsCreated(Integer.parseInt(fid));
+			if (subscriptions.isEmpty()) {
+				log.error("No fabric subscriptions created by fid: {}", fid);
+				return Collections.emptyList();
+			}
+			log.debug("Fetched fabric subscriptions created: {} for fid: {}", subscriptions, fid);
+
+			val subscribers = neynarService.subscribers(Integer.parseInt(fid))
+					.stream()
+					.map(SubscribersMessage.Subscriber::creator)
+					.distinct()
+					.toList();
+
+			if (subscribers.isEmpty()) {
+				log.error("No fabric subscribers for fid: {}", fid);
+				return Collections.emptyList();
+			}
+
+			log.debug("Total fabric subscribers: {} for fid: {}", subscribers.size(), fid);
+
+			val subscribersScoredAddresses = subscribers.stream()
+					.limit(5)
+					.map(user -> identityService.getIdentitiesInfo(user.verifications())
+							.stream()
+							.max(Comparator.comparingInt(IdentityMessage::score))
+							.map(IdentityMessage::address)
+							.orElse(null))
+					.filter(Objects::nonNull)
+					.collect(Collectors.toList());
+			log.debug("Fetched fabric subscribers scored address: {} for fid: {} ({})",
+					subscriptions,
+					fid,
+					identity);
+			return subscribersScoredAddresses;
+		} catch (Throwable t) {
+			log.error("Exception fetching fabric subscribers for identity: {}, error: {}",
+					identity, t.getMessage());
 			throw t;
 		}
 	}

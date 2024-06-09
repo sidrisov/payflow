@@ -8,6 +8,7 @@ import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,17 +17,20 @@ import ua.sinaver.web3.payflow.data.Wallet;
 import ua.sinaver.web3.payflow.message.FrameButton;
 import ua.sinaver.web3.payflow.message.FrameMessage;
 import ua.sinaver.web3.payflow.message.FramePaymentMessage;
+import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.*;
-import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
+import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URI;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -42,6 +46,8 @@ public class FramePaymentController {
 
 	public static final String PAY = BASE_PATH +
 			"/pay/%s";
+	private static final String PAY_SHARE = BASE_PATH +
+			"/pay/share";
 	private static final String PAY_IN_FRAME = BASE_PATH +
 			"/pay/%s/frame";
 	private static final String PAY_IN_FRAME_COMMAND = BASE_PATH +
@@ -54,7 +60,7 @@ public class FramePaymentController {
 	private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 	@Autowired
-	private IFarcasterHubService farcasterHubService;
+	private IFarcasterNeynarService farcasterHubService;
 	@Autowired
 	private IUserService userService;
 	@Value("${payflow.dapp.url}")
@@ -89,6 +95,59 @@ public class FramePaymentController {
 		return roundedAmount;
 	}
 
+	@PostMapping("/share")
+	public ResponseEntity<?> sharePaymentFrame(@RequestBody FrameMessage frameMessage) {
+		log.debug("Received share payment frame message request: {}", frameMessage);
+		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
+				frameMessage.trustedData().messageBytes());
+
+		if (!validateMessage.valid()) {
+			log.error("Frame message failed validation {}", validateMessage);
+			return DEFAULT_HTML_RESPONSE;
+		}
+		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
+				validateMessage.action().url());
+
+		val interactorFid = validateMessage.action().interactor().fid();
+
+		// pay first with higher social score now invite first
+		val paymentAddresses = identityService.getIdentitiesInfo(interactorFid)
+				.stream().max(Comparator.comparingInt(IdentityMessage::score))
+				.map(IdentityMessage::address).stream().toList();
+
+		// check if profile exist
+		val paymentProfile = identityService.getFidProfiles(paymentAddresses).stream().findFirst().orElse(null);
+		if (paymentProfile == null) {
+			log.warn("Interactor fid {} is not on Payflow", interactorFid);
+		}
+
+		String paymentAddress;
+		if (paymentProfile == null || paymentProfile.getDefaultFlow() == null) {
+			if (!paymentAddresses.isEmpty()) {
+				// return first associated address
+				paymentAddress = paymentAddresses.getFirst();
+			} else {
+				return ResponseEntity.badRequest().body(
+						new FrameResponse.FrameMessage("Recipient address not found!"));
+			}
+		} else {
+			// return profile identity
+			paymentAddress = paymentProfile.getIdentity();
+		}
+
+		try {
+			val castShareDeepLink = "https://warpcast.com/~/compose?text=Support%20me%20here&embeds[]=https://frames.payflow.me/"
+					+ paymentAddress;
+			val redirectURI = new URI(castShareDeepLink);
+			log.debug("Redirecting to {}", redirectURI);
+			return ResponseEntity.status(HttpStatus.FOUND).location(redirectURI).build();
+		} catch (Throwable t) {
+			log.debug("Failed to redirect:", t);
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameMessage("Failed to redirect!"));
+		}
+	}
+
 	@PostMapping("/{identity}")
 	public ResponseEntity<String> paymentOptions(@PathVariable String identity,
 	                                             @RequestBody FrameMessage frameMessage) {
@@ -111,13 +170,21 @@ public class FramePaymentController {
 					paymentProfile.getIdentity()));
 			val paymentLink = dAppServiceUrl.concat(String.format("/%s?pay",
 					paymentProfile.getUsername()));
+			val installCastActionLink = String.format(
+					"https://warpcast.com/~/add-cast-action?url=%s/api/farcaster/actions/profile",
+					apiServiceUrl);
+
 			return FrameResponse.builder()
 					.imageUrl(profileImage)
-					.button(new FrameButton("\uD83D\uDDBC\uFE0F via Frame",
+					.button(new FrameButton("\uD83D\uDDBC\uFE0F Frame",
 							FrameButton.ActionType.POST,
 							apiServiceUrl.concat(String.format(PAY_IN_FRAME, paymentProfile.getIdentity()))))
-					.button(new FrameButton("\uD83D\uDCF1 via App", FrameButton.ActionType.LINK,
+					.button(new FrameButton("\uD83D\uDCF1 App", FrameButton.ActionType.LINK,
 							paymentLink))
+					.button(new FrameButton("➕ Action", FrameButton.ActionType.LINK,
+							installCastActionLink))
+					.button(new FrameButton("\uD83D\uDCDD Share", FrameButton.ActionType.POST_REDIRECT,
+							apiServiceUrl.concat(PAY_SHARE)))
 					.build().toHtmlResponse();
 		}
 		return DEFAULT_HTML_RESPONSE;

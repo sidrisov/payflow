@@ -10,7 +10,7 @@ import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.message.CastActionMeta;
 import ua.sinaver.web3.payflow.message.FrameMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
-import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
+import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
@@ -29,7 +29,7 @@ public class ProductsController {
 			new CastActionMeta.Action("post"));
 
 	@Autowired
-	private IFarcasterHubService farcasterHubService;
+	private IFarcasterNeynarService farcasterHubService;
 
 	@Autowired
 	private IIdentityService identityService;

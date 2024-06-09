@@ -18,7 +18,7 @@ import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.service.IdentityService;
 import ua.sinaver.web3.payflow.service.TransactionService;
 import ua.sinaver.web3.payflow.service.api.IContactBookService;
-import ua.sinaver.web3.payflow.service.api.IFarcasterHubService;
+import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.api.IFrameService;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
@@ -61,7 +61,7 @@ public class FramesController {
 	@Value("${payflow.frames.url}")
 	private String framesServiceUrl;
 	@Autowired
-	private IFarcasterHubService farcasterHubService;
+	private IFarcasterNeynarService farcasterHubService;
 	@Autowired
 	private InvitationRepository invitationRepository;
 	@Autowired
