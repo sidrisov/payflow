@@ -126,7 +126,8 @@ export default function SearchIdentityDialog({
                   s.profileDisplayName.toLowerCase().includes(socialSearchStr) ||
                   s.profileName.includes(socialSearchStr)
                 );
-              })
+              }) ||
+              c.tags?.find((tag) => tag.includes(debouncedSearchString))
           );
 
           setFoundIdentities(foundAmongContacts);
