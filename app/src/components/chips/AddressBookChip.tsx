@@ -42,6 +42,8 @@ const contactTypeIcon = (type: AddressBookType) => {
       return <People fontSize="medium" />;
     case 'farcon':
       return <Avatar variant="circular" src="/farcon.png" sx={{ width: 24, height: 24 }} />;
+    case 'alfafrens':
+      return <Avatar variant="circular" src="/alfafrens.png" sx={{ width: 24, height: 24 }} />;
     case 'hypersub':
       return <Avatar variant="circular" src="/fabric.png" sx={{ width: 24, height: 24 }} />;
   }
