@@ -10,6 +10,10 @@ export function SocialPresenceStack({ meta, ...props }: { meta: MetaType & Stack
 
   return (
     <Tooltip
+      arrow
+      disableFocusListener
+      enterDelay={50}
+      enterTouchDelay={300}
       title={
         <>
           {meta.ens && <SocialPresenceAvatarWithMeta dappName="ens" profileName={meta.ens} />}

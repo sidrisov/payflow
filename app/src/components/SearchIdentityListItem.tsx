@@ -6,8 +6,7 @@ import {
   Avatar,
   IconButton,
   Tooltip,
-  Typography
-} from '@mui/material';
+  Typography} from '@mui/material';
 import { ContactType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
@@ -18,12 +17,16 @@ import axios from 'axios';
 import { API_URL } from '../utils/urlConstants';
 import { toast } from 'react-toastify';
 import { shortenWalletAddressLabel } from '../utils/address';
-import { PayflowChip, InvitedChip, InviteChip } from './chips/IdentityStatusChips';
+import { InvitedChip, InviteChip } from './chips/IdentityStatusChips';
 import { green, grey, yellow } from '@mui/material/colors';
 import { useAccount } from 'wagmi';
 import { UpdateIdentityCallbackType } from './dialogs/SearchIdentityDialog';
 import { SocialPresenceStack } from './SocialPresenceStack';
-import { HowToReg, Star, StarBorder } from '@mui/icons-material';
+import {
+  Star,
+  StarBorder,
+  TipsAndUpdatesTwoTone
+} from '@mui/icons-material';
 
 function addToFavourites(tags: string[]): string[] {
   const updatedTags = tags ?? [];
@@ -66,6 +69,37 @@ export function SearchIdentityListItem(
         justifyContent="space-between"
         alignItems="center"
         height={60}>
+        {isAuthenticated && (
+          <IconButton
+            size="small"
+            onClick={async () => {
+              console.log('Hello', contact);
+              try {
+                const updatedContact = {
+                  ...contact,
+                  tags: !favourite
+                    ? addToFavourites(contact.tags as string[])
+                    : removeFromFavourites(contact.tags as string[])
+                } as ContactType;
+
+                console.log('Before vs after: ', contact, updatedContact);
+
+                await axios.post(`${API_URL}/api/user/me/favourites`, updatedContact, {
+                  withCredentials: true
+                });
+
+                updateIdentityCallback?.({ contact: updatedContact });
+              } catch (error) {
+                toast.error('Favourite failed!');
+              }
+            }}>
+            {favourite ? (
+              <Star fontSize="small" sx={{ color: yellow.A700 }} />
+            ) : (
+              <StarBorder fontSize="small" />
+            )}
+          </IconButton>
+        )}
         <Box
           justifyContent="flex-start"
           width={150}
@@ -139,6 +173,10 @@ export function SearchIdentityListItem(
         </Stack>
         <Stack spacing={1} direction="row" alignItems="center">
           <Tooltip
+            arrow
+            disableFocusListener
+            enterDelay={50}
+            enterTouchDelay={300}
             title={
               profile?.identity || address ? (
                 (profile?.identity ?? address) === identity.profile?.identity ? (
@@ -147,9 +185,11 @@ export function SearchIdentityListItem(
                   </Typography>
                 ) : identity?.meta?.insights?.farcasterFollow ||
                   identity?.meta?.insights?.lensFollow ||
-                  identity?.meta?.insights?.sentTxs ? (
+                  identity?.meta?.insights?.sentTxs ||
+                  tags?.includes('hypersub') ||
+                  tags?.includes('alfafrens') ? (
                   <>
-                    {identity.meta.insights.farcasterFollow && (
+                    {identity.meta?.insights?.farcasterFollow && (
                       <Stack spacing={1} direction="row" alignItems="center">
                         <Avatar src="/farcaster.svg" sx={{ width: 15, height: 15 }} />
                         <Typography variant="caption" fontWeight="bold">
@@ -159,7 +199,7 @@ export function SearchIdentityListItem(
                         </Typography>
                       </Stack>
                     )}
-                    {identity.meta.insights.lensFollow && (
+                    {identity.meta?.insights?.lensFollow && (
                       <Stack spacing={1} direction="row" alignItems="center">
                         <Avatar src="/lens.svg" sx={{ width: 15, height: 15 }} />
                         <Typography variant="caption" fontWeight="bold">
@@ -169,7 +209,7 @@ export function SearchIdentityListItem(
                         </Typography>
                       </Stack>
                     )}
-                    {identity.meta.insights.sentTxs > 0 && (
+                    {identity.meta?.insights && identity.meta.insights.sentTxs > 0 && (
                       <Stack spacing={1} direction="row" alignItems="center">
                         <Avatar src="/ethereum.png" sx={{ width: 15, height: 15 }} />
                         <Typography variant="caption" fontWeight="bold">
@@ -202,64 +242,32 @@ export function SearchIdentityListItem(
                   </>
                 ) : (
                   <Typography variant="caption" fontWeight="bold">
-                    No connection insights
+                    No insights
                   </Typography>
                 )
               ) : (
                 <Typography variant="caption" fontWeight="bold">
-                  For connection insights connect wallet
+                  For insights connect wallet
                 </Typography>
               )
             }>
-            <HowToReg
+            <TipsAndUpdatesTwoTone
               sx={{
                 color:
                   identity?.meta?.insights?.farcasterFollow ||
                   identity?.meta?.insights?.lensFollow ||
                   identity?.meta?.insights?.sentTxs ||
+                  tags?.includes('hypersub') ||
+                  tags?.includes('alfafrens') ||
                   ((profile?.identity || address) &&
                     (profile?.identity ?? address) === identity.profile?.identity)
                     ? green.A700
                     : grey.A700,
-                border: 1,
-                borderRadius: 5,
-                p: 0.05,
-                width: 16,
-                height: 16
+                width: 20,
+                height: 20
               }}
             />
           </Tooltip>
-          {isAuthenticated && (
-            <IconButton
-              size="small"
-              onClick={async () => {
-                console.log('Hello', contact);
-                try {
-                  const updatedContact = {
-                    ...contact,
-                    tags: !favourite
-                      ? addToFavourites(contact.tags as string[])
-                      : removeFromFavourites(contact.tags as string[])
-                  } as ContactType;
-
-                  console.log('Before vs after: ', contact, updatedContact);
-
-                  await axios.post(`${API_URL}/api/user/me/favourites`, updatedContact, {
-                    withCredentials: true
-                  });
-
-                  updateIdentityCallback?.({ contact: updatedContact });
-                } catch (error) {
-                  toast.error('Favourite failed!');
-                }
-              }}>
-              {favourite ? (
-                <Star fontSize="small" sx={{ color: yellow.A700 }} />
-              ) : (
-                <StarBorder fontSize="small" />
-              )}
-            </IconButton>
-          )}
         </Stack>
       </Box>
     )
