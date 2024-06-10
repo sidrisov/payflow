@@ -72,12 +72,12 @@ export default function SearchIdentityDialog({
   });
 
   const [foundIdentities, setFoundIdentities] = useState<ContactType[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [isSearchingContacts, setSearchingContacts] = useState<boolean>(false);
 
   const [walletMenuAnchorEl, setWalletMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [openWalletMenu, setOpenWalletMenu] = useState(false);
 
-  const [addressBookView, setAddressBookView] = useState<AddressBookType>('favourites');
+  const [addressBookView, setAddressBookView] = useState<AddressBookType>('all');
 
   const { isFetching: isFetchingContacts, data } = useContacts(isAuthenticated);
 
@@ -101,7 +101,7 @@ export default function SearchIdentityDialog({
   useMemo(async () => {
     if (debouncedSearchString && debouncedSearchString?.length > 1) {
       try {
-        setLoading(true);
+        setSearchingContacts(true);
         // search among contacts
         let foundAmongContacts: ContactType[] = [];
         if (contacts?.length > 0) {
@@ -109,33 +109,34 @@ export default function SearchIdentityDialog({
           // also if search by ens and result is found, skip online search
           foundAmongContacts = contacts.filter(
             (c) =>
-              c.data.profile?.username?.includes(debouncedSearchString) ||
-              c.data.profile?.displayName?.toLowerCase().includes(debouncedSearchString) ||
-              c.data.meta?.ens?.includes(debouncedSearchString) ||
-              c.data.meta?.socials?.find((s) => {
-                let socialSearchStr = debouncedSearchString;
+              (addressBookView !== 'all' ? c.tags?.includes(addressBookView) : true) &&
+              (c.data.profile?.username?.includes(debouncedSearchString) ||
+                c.data.profile?.displayName?.toLowerCase().includes(debouncedSearchString) ||
+                c.data.meta?.ens?.includes(debouncedSearchString) ||
+                c.data.meta?.socials?.find((s) => {
+                  let socialSearchStr = debouncedSearchString;
 
-                if (
-                  (s.dappName === FARCASTER_DAPP && debouncedSearchString.startsWith('fc:')) ||
-                  (s.dappName === LENS_DAPP && debouncedSearchString.startsWith('lens:'))
-                ) {
-                  socialSearchStr = socialSearchStr.substring(socialSearchStr.indexOf(':') + 1);
-                }
+                  if (
+                    (s.dappName === FARCASTER_DAPP && debouncedSearchString.startsWith('fc:')) ||
+                    (s.dappName === LENS_DAPP && debouncedSearchString.startsWith('lens:'))
+                  ) {
+                    socialSearchStr = socialSearchStr.substring(socialSearchStr.indexOf(':') + 1);
+                  }
 
-                return (
-                  s.profileDisplayName.toLowerCase().includes(socialSearchStr) ||
-                  s.profileName.includes(socialSearchStr)
-                );
-              }) ||
-              c.tags?.find((tag) => tag.includes(debouncedSearchString))
+                  return (
+                    s.profileDisplayName.toLowerCase().includes(socialSearchStr) ||
+                    s.profileName.includes(socialSearchStr)
+                  );
+                }) ||
+                c.tags?.find((tag) => tag.includes(debouncedSearchString)))
           );
 
           setFoundIdentities(foundAmongContacts);
           console.debug('Found among contacts: ', foundAmongContacts);
         }
 
-        // skip search if we have 5 results
-        if (foundAmongContacts.length <= 5) {
+        // skip search if we have 5 results and its all tab
+        if (foundAmongContacts.length <= 5 && addressBookView === 'all') {
           const addresses = foundAmongContacts.map((p) => p.data.address);
 
           // general search
@@ -159,7 +160,7 @@ export default function SearchIdentityDialog({
           setFoundIdentities(allFoundProfiles);
         }
       } finally {
-        setLoading(false);
+        setSearchingContacts(false);
       }
     } else {
       setFoundIdentities([]);
@@ -293,7 +294,7 @@ export default function SearchIdentityDialog({
               setSearchString(event.target.value);
             }}
           />
-          {isAuthenticated && !searchString && contacts.length > 0 && (
+          {isAuthenticated && contacts.length > 0 && (
             <AddressBookToolBar
               tags={tags}
               addressBookView={addressBookView}
@@ -311,7 +312,11 @@ export default function SearchIdentityDialog({
               closeStateCallback={closeStateCallback}
               selectIdentityCallback={selectIdentityCallback}
               updateIdentityCallback={updateIdentityCallback}
-              identities={contacts.filter((c) => c.tags?.includes(addressBookView))}
+              identities={
+                addressBookView === 'all'
+                  ? contacts
+                  : contacts.filter((c) => c.tags?.includes(addressBookView))
+              }
             />
           )}
 
@@ -324,22 +329,17 @@ export default function SearchIdentityDialog({
             updateIdentityCallback={updateIdentityCallback}
           />
 
-          {debouncedSearchString &&
-            debouncedSearchString.length > 1 &&
-            foundIdentities.length === 0 &&
-            !loading && (
-              <Typography alignSelf="center" variant="subtitle2">
-                No results found.
-              </Typography>
-            )}
+          {(isAuthenticated && contacts.length === 0 && !isFetchingContacts) ||
+            (debouncedSearchString &&
+              debouncedSearchString.length > 1 &&
+              foundIdentities.length === 0 &&
+              !isSearchingContacts && (
+                <Typography alignSelf="center" variant="subtitle2">
+                  No results found.
+                </Typography>
+              ))}
 
-          {isAuthenticated && contacts.length === 0 && !isFetchingContacts && (
-            <Typography alignSelf="center" variant="subtitle2">
-              No results found.
-            </Typography>
-          )}
-
-          {(loading || isFetchingContacts) && (
+          {(isSearchingContacts || isFetchingContacts) && (
             <Box m={1} alignSelf="center">
               <CircularProgress color="inherit" size={20} />
             </Box>

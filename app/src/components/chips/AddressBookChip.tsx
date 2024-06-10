@@ -1,11 +1,13 @@
-import { People, Settings, Star } from '@mui/icons-material';
-import { Avatar, Box, Chip, IconButton, Typography } from '@mui/material';
+import { BlurOn, People, Star } from '@mui/icons-material';
+import { Avatar, Box, Chip, Typography } from '@mui/material';
 import { yellow, green, grey, deepPurple, blue, pink } from '@mui/material/colors';
 import { AddressBookType } from '../../types/ContactType';
 import { useState } from 'react';
 
 const contactTypeLabel = (type: AddressBookType) => {
   switch (type) {
+    case 'all':
+      return 'All';
     case 'favourites':
       return 'Favourites';
     case 'friends':
@@ -15,7 +17,7 @@ const contactTypeLabel = (type: AddressBookType) => {
     case 'alfafrens':
       return 'AlfaFrens';
     case 'hypersub':
-      return 'HyperSubs';
+      return 'Hypersubs';
   }
 };
 
@@ -34,18 +36,22 @@ const contactTypeColor = (type: AddressBookType) => {
   }
 };
 
-const contactTypeIcon = (type: AddressBookType) => {
+const contactTypeIcon = (type: AddressBookType, selectedType: AddressBookType) => {
+  const fontSize = selectedType === type ? 'medium' : 'small';
+  const avatarSize = selectedType === type ? { width: 24, height: 24 } : { width: 20, height: 20 };
   switch (type) {
+    case 'all':
+      return <BlurOn fontSize={fontSize} />;
     case 'favourites':
-      return <Star fontSize="medium" />;
+      return <Star fontSize={fontSize} />;
     case 'friends':
-      return <People fontSize="medium" />;
+      return <People fontSize={fontSize} />;
     case 'farcon':
-      return <Avatar variant="circular" src="/farcon.png" sx={{ width: 24, height: 24 }} />;
+      return <Avatar variant="circular" src="/farcon.png" sx={avatarSize} />;
     case 'alfafrens':
-      return <Avatar variant="circular" src="/alfafrens.png" sx={{ width: 24, height: 24 }} />;
+      return <Avatar variant="circular" src="/alfafrens.png" sx={avatarSize} />;
     case 'hypersub':
-      return <Avatar variant="circular" src="/fabric.png" sx={{ width: 24, height: 24 }} />;
+      return <Avatar variant="circular" src="/fabric.png" sx={avatarSize} />;
   }
 };
 
@@ -66,9 +72,11 @@ export function AddressBookChip({
   return (
     <Chip
       clickable
-      icon={contactTypeIcon(type)}
+      icon={contactTypeIcon(type, addressBookView)}
       label={
-        <Typography variant="caption" fontWeight="bold">
+        <Typography
+          fontSize={addressBookView === type ? 13 : 12}
+          fontWeight={addressBookView === type ? 'bold' : 'medium'}>
           {contactTypeLabel(type)}
         </Typography>
       }
@@ -127,6 +135,13 @@ export function AddressBookToolBar({
           borderRadius: 20
         }}
         gap={0.5}>
+        <AddressBookChip
+          key="all"
+          type="all"
+          addressBookView={addressBookView}
+          setAddressBookView={setAddressBookView}
+        />
+
         {tags.includes('favourites') && (
           <AddressBookChip
             key="favourites"
@@ -141,7 +156,6 @@ export function AddressBookToolBar({
           addressBookView={addressBookView}
           setAddressBookView={setAddressBookView}
         />
-
         {tags.includes('hypersub') && (
           <AddressBookChip
             key="hypersub"
@@ -150,7 +164,6 @@ export function AddressBookToolBar({
             setAddressBookView={setAddressBookView}
           />
         )}
-
         {tags.includes('alfafrens') && (
           <AddressBookChip
             key="alfafrens"
@@ -159,7 +172,6 @@ export function AddressBookToolBar({
             setAddressBookView={setAddressBookView}
           />
         )}
-
         {/* {tags.includes('farcon') && (
           <AddressBookChip
             key="farcon"

@@ -6,7 +6,8 @@ import {
   Avatar,
   IconButton,
   Tooltip,
-  Typography} from '@mui/material';
+  Typography
+} from '@mui/material';
 import { ContactType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
@@ -22,11 +23,7 @@ import { green, grey, yellow } from '@mui/material/colors';
 import { useAccount } from 'wagmi';
 import { UpdateIdentityCallbackType } from './dialogs/SearchIdentityDialog';
 import { SocialPresenceStack } from './SocialPresenceStack';
-import {
-  Star,
-  StarBorder,
-  TipsAndUpdatesTwoTone
-} from '@mui/icons-material';
+import { Star, StarBorder, TipsAndUpdatesTwoTone } from '@mui/icons-material';
 
 function addToFavourites(tags: string[]): string[] {
   const updatedTags = tags ?? [];
@@ -227,7 +224,7 @@ export function SearchIdentityListItem(
                       <Stack spacing={1} direction="row" alignItems="center">
                         <Avatar src="/fabric.png" sx={{ width: 15, height: 15 }} />
                         <Typography variant="caption" fontWeight="bold">
-                          HyperSub
+                          Subscribed to NFT
                         </Typography>
                       </Stack>
                     )}
@@ -235,7 +232,7 @@ export function SearchIdentityListItem(
                       <Stack spacing={1} direction="row" alignItems="center">
                         <Avatar src="/alfafrens.png" sx={{ width: 15, height: 15 }} />
                         <Typography variant="caption" fontWeight="bold">
-                          AlfaFren
+                          Subscribed to channel
                         </Typography>
                       </Stack>
                     )}
