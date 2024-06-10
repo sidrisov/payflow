@@ -9,9 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.Payment;
-import ua.sinaver.web3.payflow.message.CastEmbed;
 import ua.sinaver.web3.payflow.message.PaymentHashMessage;
 import ua.sinaver.web3.payflow.message.PaymentMessage;
+import ua.sinaver.web3.payflow.message.farcaster.Cast;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.FarcasterMessagingService;
@@ -150,7 +150,7 @@ public class PaymentController {
 								: "fc_fid:" + payment.getReceiverFid());
 				val receiptUrl = String.format(
 						"https://onceupon.gg/%s", payment.getHash());
-				val embeds = Collections.singletonList(new CastEmbed(receiptUrl));
+				val embeds = Collections.singletonList(new Cast.Embed(receiptUrl));
 				val sourceRef = String.format("https://warpcast.com/%s/%s",
 						receiverFname, payment.getSourceHash().substring(0, 10));
 

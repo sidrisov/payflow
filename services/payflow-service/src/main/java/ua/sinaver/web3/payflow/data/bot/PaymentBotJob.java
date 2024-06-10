@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.Type;
-import ua.sinaver.web3.payflow.message.CastMessage;
+import ua.sinaver.web3.payflow.message.farcaster.Cast;
 
 import java.util.Date;
 
@@ -39,7 +39,7 @@ public class PaymentBotJob {
 
 	@Type(value = JsonType.class)
 	@Column(columnDefinition = "json")
-	private CastMessage cast;
+	private Cast cast;
 
 	@Column(name = "casted_date", nullable = false)
 	@Temporal(TemporalType.TIMESTAMP)
@@ -50,7 +50,7 @@ public class PaymentBotJob {
 	private Status status = Status.PENDING;
 
 	public PaymentBotJob(String castHash, Integer casterFid, Date castedDate,
-	                     CastMessage cast) {
+	                     Cast cast) {
 		this.castHash = castHash;
 		this.casterFid = casterFid;
 		this.castedDate = castedDate;

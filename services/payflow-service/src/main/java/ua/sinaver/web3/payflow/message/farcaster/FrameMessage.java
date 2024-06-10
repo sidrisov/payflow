@@ -1,4 +1,4 @@
-package ua.sinaver.web3.payflow.message;
+package ua.sinaver.web3.payflow.message.farcaster;
 
 import java.util.List;
 

@@ -10,8 +10,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.bot.PaymentBotJob;
-import ua.sinaver.web3.payflow.message.CastEmbed;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
+import ua.sinaver.web3.payflow.message.farcaster.Cast;
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.api.IFlowService;
@@ -57,7 +57,7 @@ public class FarcasterPaymentBotService {
 	@Value("${payflow.farcaster.bot.test.enabled:false}")
 	private boolean isTestBotEnabled;
 
-	public boolean reply(String text, String parentHash, List<CastEmbed> embeds) {
+	public boolean reply(String text, String parentHash, List<Cast.Embed> embeds) {
 		if (isBotReplyEnabled) {
 			val response = hubService.cast(botSignerUuid, text, parentHash, embeds);
 			if (response.success()) {
@@ -100,7 +100,7 @@ public class FarcasterPaymentBotService {
 				val casterAddresses = cast.author().verifications();
 				casterAddresses.add(cast.author().custodyAddress());
 
-				val casterProfile = identityService.getFidProfiles(casterAddresses)
+				val casterProfile = identityService.getProfiles(casterAddresses)
 						.stream().findFirst().orElse(null);
 
 				switch (command) {
@@ -136,7 +136,7 @@ public class FarcasterPaymentBotService {
 						val castText = String.format("@%s receive funds with the frame",
 								cast.author().username());
 						val embeds = Collections.singletonList(
-								new CastEmbed(
+								new Cast.Embed(
 										String.format("https://frames.payflow.me/%s",
 												casterProfile.getUsername())));
 
@@ -200,7 +200,7 @@ public class FarcasterPaymentBotService {
 						log.debug("Receiver: {} - addresses: {}", receiver, receiverAddresses);
 
 						if (receiver != null) {
-							val receiverProfile = identityService.getFidProfiles(receiverAddresses)
+							val receiverProfile = identityService.getProfiles(receiverAddresses)
 									.stream().findFirst().orElse(null);
 
 							log.debug("Found receiver profile for receiver {} - {}",
@@ -258,7 +258,7 @@ public class FarcasterPaymentBotService {
 									String.format("https://frames.payflow.me/payment/%s", refId);
 
 							val embeds = Collections.singletonList(
-									new CastEmbed(frameUrl));
+									new Cast.Embed(frameUrl));
 
 							val processed = reply(castText, cast.hash(), embeds);
 							if (processed) {
@@ -278,7 +278,7 @@ public class FarcasterPaymentBotService {
 								val image = cast.embeds() != null ? cast.embeds().stream()
 										.filter(embed -> embed != null && embed.url() != null && (embed.url().endsWith(
 												".png") || embed.url().endsWith(".jpg")))
-										.findFirst().map(CastEmbed::url).orElse(null) : null;
+										.findFirst().map(Cast.Embed::url).orElse(null) : null;
 								if (!StringUtils.isBlank(title)) {
 									val source = String.format("https://warpcast.com/%s/%s",
 											cast.author().username(),
@@ -291,7 +291,7 @@ public class FarcasterPaymentBotService {
 									val addresses = cast.author().verifications();
 									addresses.add(cast.author().custodyAddress());
 
-									val profile = identityService.getFidProfiles(addresses)
+									val profile = identityService.getProfiles(addresses)
 											.stream().findFirst().orElse(null);
 									if (profile == null) {
 										log.error("Caster doesn't have payflow profile, " +
@@ -307,7 +307,8 @@ public class FarcasterPaymentBotService {
 									val castText = String.format("@%s receive jar contributions with the frame",
 											cast.author().username());
 									val embeds = Collections.singletonList(
-											new CastEmbed(String.format("https://frames.payflow.me/jar/%s",
+											new Cast.Embed(String.format("https://frames.payflow" +
+															".me/jar/%s",
 													jar.getFlow().getUuid())));
 									val processed = reply(castText, cast.hash(), embeds);
 									if (processed) {

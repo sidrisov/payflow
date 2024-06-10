@@ -8,9 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.Payment;
-import ua.sinaver.web3.payflow.message.CastActionMeta;
-import ua.sinaver.web3.payflow.message.FrameMessage;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
+import ua.sinaver.web3.payflow.message.farcaster.CastActionMeta;
+import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.IdentityService;
 import ua.sinaver.web3.payflow.service.SocialGraphService;
@@ -28,10 +28,10 @@ import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYME
 @RequestMapping("/farcaster/actions/pay")
 @Transactional
 @Slf4j
-public class PayIntentController {
+public class IntentsController {
 
 	@Autowired
-	private IFarcasterNeynarService farcasterHubService;
+	private IFarcasterNeynarService neynarService;
 
 	@Autowired
 	private IdentityService identityService;
@@ -93,7 +93,7 @@ public class PayIntentController {
 	                                                         @RequestParam(name = "token", required = false, defaultValue = "degen") String token,
 	                                                         @RequestParam(name = "chain", required = false, defaultValue = "base") String chain) {
 		log.debug("Received cast action: pay intent {}", castActionMessage);
-		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				castActionMessage.trustedData().messageBytes());
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
@@ -117,7 +117,7 @@ public class PayIntentController {
 		if (type != null && type.equals(Payment.PaymentType.INTENT_TOP_REPLY)) {
 			val parentHash = validateMessage.action().cast().hash();
 			val topReply = socialGraphService.getTopCastReply(parentHash,
-					List.of(String.valueOf(validateMessage.action().cast().fid()),
+					List.of(String.valueOf(validateMessage.action().cast().author().fid()),
 							String.valueOf(clickedFid)));
 			if (topReply == null) {
 				log.error("Failed to fetch top comment for: {}", parentHash);
@@ -127,11 +127,11 @@ public class PayIntentController {
 			casterFid = Integer.parseInt(topReply.getFid());
 			castHash = topReply.getHash();
 		} else {
-			casterFid = validateMessage.action().cast().fid();
+			casterFid = validateMessage.action().cast().author().fid();
 			castHash = validateMessage.action().cast().hash();
 		}
 
-		val clickedProfile = identityService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
+		val clickedProfile = identityService.getProfiles(clickedFid).stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
 			log.error("Clicked fid {} is not on payflow", clickedFid);
 			return ResponseEntity.badRequest().body(
@@ -139,7 +139,7 @@ public class PayIntentController {
 		}
 
 		// check if profile exist
-		val paymentProfile = identityService.getFidProfiles(casterFid).stream().findFirst().orElse(null);
+		val paymentProfile = identityService.getProfiles(casterFid).stream().findFirst().orElse(null);
 		String paymentAddress = null;
 		if (paymentProfile == null || paymentProfile.getDefaultFlow() == null) {
 			val paymentAddresses = identityService.getFidAddresses(casterFid);

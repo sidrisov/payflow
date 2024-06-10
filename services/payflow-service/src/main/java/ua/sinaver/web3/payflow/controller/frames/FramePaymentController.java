@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.Wallet;
 import ua.sinaver.web3.payflow.message.FrameButton;
-import ua.sinaver.web3.payflow.message.FrameMessage;
 import ua.sinaver.web3.payflow.message.FramePaymentMessage;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
+import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.*;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
@@ -60,7 +60,7 @@ public class FramePaymentController {
 	private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 	@Autowired
-	private IFarcasterNeynarService farcasterHubService;
+	private IFarcasterNeynarService neynarService;
 	@Autowired
 	private IUserService userService;
 	@Value("${payflow.dapp.url}")
@@ -98,7 +98,7 @@ public class FramePaymentController {
 	@PostMapping("/share")
 	public ResponseEntity<?> sharePaymentFrame(@RequestBody FrameMessage frameMessage) {
 		log.debug("Received share payment frame message request: {}", frameMessage);
-		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
 
 		if (!validateMessage.valid()) {
@@ -108,17 +108,17 @@ public class FramePaymentController {
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
 				validateMessage.action().url());
 
-		val interactorFid = validateMessage.action().interactor().fid();
+		val castInteractor = validateMessage.action().interactor();
 
 		// pay first with higher social score now invite first
-		val paymentAddresses = identityService.getIdentitiesInfo(interactorFid)
+		val paymentAddresses = identityService.getIdentitiesInfo(castInteractor.addressesWithoutCustodialIfAvailable())
 				.stream().max(Comparator.comparingInt(IdentityMessage::score))
 				.map(IdentityMessage::address).stream().toList();
 
 		// check if profile exist
-		val paymentProfile = identityService.getFidProfiles(paymentAddresses).stream().findFirst().orElse(null);
+		val paymentProfile = identityService.getProfiles(paymentAddresses).stream().findFirst().orElse(null);
 		if (paymentProfile == null) {
-			log.warn("Interactor fid {} is not on Payflow", interactorFid);
+			log.warn("Interactor fid {} is not on Payflow", castInteractor);
 		}
 
 		String paymentAddress;
@@ -153,7 +153,7 @@ public class FramePaymentController {
 	                                             @RequestBody FrameMessage frameMessage) {
 		log.debug("Received pay profile {} options frame message request: {}",
 				identity, frameMessage);
-		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
 
 		if (!validateMessage.valid()) {
@@ -195,7 +195,7 @@ public class FramePaymentController {
 	                                  @RequestBody FrameMessage frameMessage) {
 		log.debug("Received pay profile {} in frame message request: {}",
 				identity, frameMessage);
-		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
 
 		if (!validateMessage.valid()) {
@@ -220,7 +220,7 @@ public class FramePaymentController {
 	public ResponseEntity<?> command(@PathVariable String identity,
 	                                 @RequestBody FrameMessage frameMessage) {
 		log.debug("Received enter payment amount message request: {}", frameMessage);
-		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
 
 		if (!validateMessage.valid()) {
@@ -230,17 +230,17 @@ public class FramePaymentController {
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
 				validateMessage.action().url());
 
-		val senderFid = validateMessage.action().interactor().fid();
+		val senderFarcasterUser = validateMessage.action().interactor();
 		val inputText = validateMessage.action().input() != null ? validateMessage.action().input().text() : null;
 
 		if (StringUtils.isBlank(inputText)) {
-			log.warn("Nothing entered for payment amount by {}", senderFid);
+			log.warn("Nothing entered for payment amount by {}", senderFarcasterUser);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Nothing entered, try again!"));
 		}
 
-		val receiverFid = validateMessage.action().cast().fid();
-		val profiles = identityService.getFidProfiles(senderFid);
+		val receiverFarcasterUser = validateMessage.action().cast().author();
+		val profiles = identityService.getProfiles(senderFarcasterUser.addresses());
 
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val sourceHash = validateMessage.action().cast().hash();
@@ -249,7 +249,7 @@ public class FramePaymentController {
 		val matcher = Pattern.compile(paymentPatter, Pattern.CASE_INSENSITIVE).matcher(inputText);
 
 		if (!matcher.find()) {
-			log.warn("Enter command not recognized: {} by fid: {}", inputText, senderFid);
+			log.warn("Enter command not recognized: {} by fid: {}", inputText, senderFarcasterUser);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Enter command not recognized!"));
 		}
@@ -316,10 +316,8 @@ public class FramePaymentController {
 
 		// handle frame in direct cast messaging
 		if (StringUtils.isNotBlank(sourceHash) && !sourceHash.equals(TokenService.ZERO_ADDRESS)) {
-			val casterFcName = identityService.getFidFname(receiverFid);
 			val sourceRef = String.format("https://warpcast.com/%s/%s",
-					casterFcName, sourceHash.substring(0,
-							10));
+					receiverFarcasterUser.username(), sourceHash.substring(0, 10));
 			payment.setSourceHash(sourceHash);
 			payment.setSourceRef(sourceRef);
 		}
@@ -354,7 +352,7 @@ public class FramePaymentController {
 	public ResponseEntity<?> confirm(@PathVariable String refId,
 	                                 @RequestBody FrameMessage frameMessage) {
 		log.debug("Received payment confirm message request: {}", frameMessage);
-		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
 
 		if (!validateMessage.valid()) {
@@ -364,13 +362,13 @@ public class FramePaymentController {
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
 				validateMessage.action().url());
 
-		val clickedFid = validateMessage.action().interactor().fid();
+		val castInteractor = validateMessage.action().interactor();
 		val buttonIndex = validateMessage.action().tappedButton().index();
 		val transactionId = validateMessage.action().transaction() != null
 				? validateMessage.action().transaction().hash()
 				: null;
 
-		val profiles = identityService.getFidProfiles(clickedFid);
+		val profiles = identityService.getProfiles(castInteractor.addresses());
 
 		val payment = paymentRepository.findByReferenceId(refId);
 		if (payment == null) {
@@ -452,7 +450,7 @@ public class FramePaymentController {
 	public ResponseEntity<?> comment(@PathVariable String refId,
 	                                 @RequestBody FrameMessage frameMessage) {
 		log.debug("Received payment comment message request: {}", frameMessage);
-		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
 
 		if (!validateMessage.valid()) {
@@ -463,7 +461,7 @@ public class FramePaymentController {
 				validateMessage.action().url());
 
 		val buttonIndex = validateMessage.action().tappedButton().index();
-		val senderFid = validateMessage.action().interactor().fid();
+		val senderFarcasterUser = validateMessage.action().interactor();
 
 		val payment = paymentRepository.findByReferenceId(refId);
 		if (payment == null) {
@@ -513,7 +511,7 @@ public class FramePaymentController {
 						// fetch by identity, hence it will work for both dcs and feed frames
 						val receiverFid = identityService.getIdentityFid(paymentIdentity);
 						val receiverFname = identityService.getIdentityFname(paymentIdentity);
-						val senderFname = identityService.getFidFname(senderFid);
+						val senderFname = senderFarcasterUser.username();
 
 						val receiptUrl = String.format("https://onceupon.gg/%s", payment.getHash());
 						val messageText = String.format("""

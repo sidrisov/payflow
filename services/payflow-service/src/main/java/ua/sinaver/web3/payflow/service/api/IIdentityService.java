@@ -10,9 +10,9 @@ public interface IIdentityService {
 
 	User getFidProfile(String fname, String identity);
 
-	List<User> getFidProfiles(int fid);
+	List<User> getProfiles(int fid);
 
-	List<User> getFidProfiles(String fname);
+	List<User> getProfiles(String fname);
 
 	List<String> getFidAddresses(int fid);
 
@@ -20,15 +20,13 @@ public interface IIdentityService {
 
 	List<String> getFnameAddresses(String fname);
 
-	List<User> getFidProfiles(List<String> addresses);
+	List<User> getProfiles(List<String> addresses);
 
 	String getFidFname(int fid);
 
 	String getIdentityFname(String identity);
 
 	String getIdentityFid(String identity);
-
-	List<IdentityMessage> getIdentitiesInfo(int fid);
 
 	List<IdentityMessage> getIdentitiesInfo(List<String> identities);
 

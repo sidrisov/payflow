@@ -12,7 +12,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 import ua.sinaver.web3.payflow.data.Gift;
 import ua.sinaver.web3.payflow.data.Invitation;
 import ua.sinaver.web3.payflow.data.User;
-import ua.sinaver.web3.payflow.message.*;
+import ua.sinaver.web3.payflow.message.FrameButton;
+import ua.sinaver.web3.payflow.message.GiftProfileMessage;
+import ua.sinaver.web3.payflow.message.IdentityMessage;
+import ua.sinaver.web3.payflow.message.ProfileMessage;
+import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.repository.GiftRepository;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.service.IdentityService;
@@ -61,7 +65,7 @@ public class FramesController {
 	@Value("${payflow.frames.url}")
 	private String framesServiceUrl;
 	@Autowired
-	private IFarcasterNeynarService farcasterHubService;
+	private IFarcasterNeynarService neynarService;
 	@Autowired
 	private InvitationRepository invitationRepository;
 	@Autowired
@@ -79,7 +83,7 @@ public class FramesController {
 	public ResponseEntity<String> connect(@RequestBody FrameMessage frameMessage) {
 		log.debug("Received connect frame message request: {}", frameMessage);
 		val validateMessage =
-				farcasterHubService.validateFrameMessageWithNeynar(
+				neynarService.validateFrameMessageWithNeynar(
 						frameMessage.trustedData().messageBytes());
 
 		if (!validateMessage.valid()) {
@@ -89,19 +93,18 @@ public class FramesController {
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
 				validateMessage.action().url());
 
-		val clickedFid = validateMessage.action().interactor().fid();
-		val casterFid = validateMessage.action().cast().fid();
+		val castInteractor = validateMessage.action().interactor();
+		val castAuthor = validateMessage.action().cast().author();
 
 		// clear cache only on connect
-		socialGraphService.cleanCache("fc_fid:".concat(String.valueOf(clickedFid)));
+		socialGraphService.cleanCache("fc_fid:".concat(String.valueOf(castInteractor)));
 
-		val addresses = identityService.getFidAddresses(clickedFid);
-		val profiles = identityService.getFidProfiles(addresses);
+		val profiles = identityService.getProfiles(castInteractor.addresses());
 
 		User casterProfile;
-		if (clickedFid != casterFid) {
-			casterProfile =
-					identityService.getFidProfile(casterFid, null);
+		if (castInteractor.fid() != castAuthor.fid()) {
+			casterProfile = identityService.getProfiles(castAuthor.addresses())
+					.stream().findFirst().orElse(null);
 		} else {
 			casterProfile = profiles.stream().findFirst().orElse(null);
 		}
@@ -109,7 +112,7 @@ public class FramesController {
 		val postUrl = apiServiceUrl.concat(CONNECT_ACTIONS);
 		val frameResponseBuilder = FrameResponse.builder().postUrl(postUrl);
 		if (!profiles.isEmpty()) {
-			log.debug("Found profiles for {}: {}", clickedFid, profiles);
+			log.debug("Found profiles for {}: {}", castInteractor, profiles);
 			for (val profile : profiles) {
 				frameResponseBuilder.button(new FrameButton(String.format("✅ %s @%s",
 						profile.getDisplayName(), profile.getUsername()),
@@ -119,8 +122,8 @@ public class FramesController {
 					validateMessage.action().interactor().username()));
 			frameResponseBuilder.imageUrl(image);
 		} else {
-			val invitations = contactBookService.filterByInvited(addresses);
-			log.debug("Invitations for addresses {} {}", addresses, invitations);
+			val invitations = contactBookService.filterByInvited(castInteractor.addresses());
+			log.debug("Invitations for addresses {} {}", castInteractor.addresses(), invitations);
 
 			if (!invitations.isEmpty()) {
 				val image = framesServiceUrl.concat("/images/profile/invited.png");
@@ -146,7 +149,7 @@ public class FramesController {
 	public ResponseEntity<String> actions(@RequestBody FrameMessage frameMessage) {
 		log.debug("Received actions frame: {}", frameMessage);
 
-		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
@@ -158,7 +161,7 @@ public class FramesController {
 		val clickedFid = validateMessage.action().interactor().fid();
 
 		val buttonIndex = validateMessage.action().tappedButton().index();
-		val profiles = identityService.getFidProfiles(clickedFid);
+		val profiles = identityService.getProfiles(clickedFid);
 
 		if (!profiles.isEmpty()) {
 			if (buttonIndex > 0 && buttonIndex <= profiles.size()) {
@@ -194,7 +197,7 @@ public class FramesController {
 	                                             @RequestBody FrameMessage frameMessage) {
 		log.debug("Received actions frame: {}", frameMessage);
 
-		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
@@ -282,7 +285,7 @@ public class FramesController {
 	                                                      @RequestBody FrameMessage frameMessage) {
 		log.debug("Received actions back frame: {}", frameMessage);
 
-		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
@@ -338,7 +341,7 @@ public class FramesController {
 	                                               @RequestBody FrameMessage frameMessage) {
 		log.debug("Received actions gift frame: {}", frameMessage);
 
-		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
@@ -438,7 +441,7 @@ public class FramesController {
 	                                                   @RequestBody FrameMessage frameMessage) {
 		log.debug("Received actions gift back frame: {}", frameMessage);
 
-		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
@@ -477,7 +480,7 @@ public class FramesController {
 	public ResponseEntity<String> identityActionInvite(@PathVariable String identity,
 	                                                   @RequestBody FrameMessage frameMessage) {
 		log.debug("Received actions invite frame: {}", frameMessage);
-		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);

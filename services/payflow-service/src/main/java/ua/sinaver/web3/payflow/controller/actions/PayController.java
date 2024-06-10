@@ -6,9 +6,9 @@ import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ua.sinaver.web3.payflow.message.CastActionMeta;
-import ua.sinaver.web3.payflow.message.FrameMessage;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
+import ua.sinaver.web3.payflow.message.farcaster.CastActionMeta;
+import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
@@ -19,7 +19,7 @@ import java.util.Comparator;
 @RequestMapping("/farcaster/actions/profile")
 @Transactional
 @Slf4j
-public class PayProfileController {
+public class PayController {
 
 	private final static CastActionMeta PAY_PROFILE_CAST_ACTION_META = new CastActionMeta(
 			"Pay", "zap",
@@ -28,7 +28,7 @@ public class PayProfileController {
 			new CastActionMeta.Action("post"));
 
 	@Autowired
-	private IFarcasterNeynarService farcasterHubService;
+	private IFarcasterNeynarService neynarService;
 	@Autowired
 	private IIdentityService identityService;
 
@@ -41,7 +41,7 @@ public class PayProfileController {
 	@PostMapping
 	public ResponseEntity<?> create(@RequestBody FrameMessage castActionMessage) {
 		log.debug("Received cast action: pay profile {}", castActionMessage);
-		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				castActionMessage.trustedData().messageBytes());
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
@@ -52,17 +52,17 @@ public class PayProfileController {
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
 				validateMessage.action().url());
 
-		val casterFid = validateMessage.action().cast().fid();
+		val castAuthor = validateMessage.action().cast().author();
 
 		// pay first with higher social score now invite first
-		val paymentAddresses = identityService.getIdentitiesInfo(casterFid)
+		val paymentAddresses = identityService.getIdentitiesInfo(castAuthor.addressesWithoutCustodialIfAvailable())
 				.stream().max(Comparator.comparingInt(IdentityMessage::score))
 				.map(IdentityMessage::address).stream().toList();
 
 		// check if profile exist
-		val paymentProfile = identityService.getFidProfiles(paymentAddresses).stream().findFirst().orElse(null);
+		val paymentProfile = identityService.getProfiles(paymentAddresses).stream().findFirst().orElse(null);
 		if (paymentProfile == null) {
-			log.warn("Caster fid {} is not on Payflow", casterFid);
+			log.warn("Caster fid {} is not on Payflow", castAuthor);
 		}
 
 		String paymentAddress;

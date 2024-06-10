@@ -7,8 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.Payment;
-import ua.sinaver.web3.payflow.message.CastActionMeta;
-import ua.sinaver.web3.payflow.message.FrameMessage;
+import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.message.farcaster.CastActionMeta;
+import ua.sinaver.web3.payflow.message.farcaster.FarcasterUser;
+import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
+import ua.sinaver.web3.payflow.message.farcaster.ValidatedFrameResponseMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
@@ -29,13 +32,33 @@ public class ProductsController {
 			new CastActionMeta.Action("post"));
 
 	@Autowired
-	private IFarcasterNeynarService farcasterHubService;
+	private IFarcasterNeynarService neynarService;
 
 	@Autowired
 	private IIdentityService identityService;
 
 	@Autowired
 	private PaymentRepository paymentRepository;
+
+	private static Payment getPayment(ValidatedFrameResponseMessage validateMessage,
+	                                  FarcasterUser castAuthor, User clickedProfile) {
+		val sourceApp = validateMessage.action().signer().client().displayName();
+		val castHash = validateMessage.action().cast().hash();
+		// maybe would make sense to reference top cast instead (if it's a bot cast)
+		val sourceRef = String.format("https://warpcast.com/%s/%s",
+				castAuthor.username(), castHash.substring(0,
+						10));
+
+		val payment = new Payment(Payment.PaymentType.INTENT,
+				null, OP_CHAIN_ID, ETH_TOKEN);
+		payment.setCategory("fc_storage");
+		payment.setReceiverFid(castAuthor.fid());
+		payment.setSender(clickedProfile);
+		payment.setSourceApp(sourceApp);
+		payment.setSourceRef(sourceRef);
+		payment.setSourceHash(castHash);
+		return payment;
+	}
 
 	@GetMapping("/storage")
 	public CastActionMeta storageActionMetadata() {
@@ -46,7 +69,7 @@ public class ProductsController {
 	@PostMapping("/storage")
 	public ResponseEntity<FrameResponse.FrameMessage> invite(@RequestBody FrameMessage castActionMessage) {
 		log.debug("Received cast action: gift storage {}", castActionMessage);
-		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				castActionMessage.trustedData().messageBytes());
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
@@ -57,33 +80,18 @@ public class ProductsController {
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
 				validateMessage.action().url());
 
-		val casterFid = validateMessage.action().cast().fid();
-		val clickedFid = validateMessage.action().interactor().fid();
+		val castAuthor = validateMessage.action().cast().author();
+		val castInteractor = validateMessage.action().interactor();
 
-		val clickedProfile = identityService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
+		val clickedProfile =
+				identityService.getProfiles(castInteractor.addresses()).stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
-			log.error("Clicked fid {} is not on payflow", clickedFid);
+			log.error("Clicked fid {} is not on payflow", castInteractor);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Sign up on Payflow first!"));
 		}
 
-
-		val sourceApp = validateMessage.action().signer().client().displayName();
-		val casterFcName = identityService.getFidFname(casterFid);
-		val castHash = validateMessage.action().cast().hash();
-		// maybe would make sense to reference top cast instead (if it's a bot cast)
-		val sourceRef = String.format("https://warpcast.com/%s/%s",
-				casterFcName, castHash.substring(0,
-						10));
-
-		val payment = new Payment(Payment.PaymentType.INTENT,
-				null, OP_CHAIN_ID, ETH_TOKEN);
-		payment.setCategory("fc_storage");
-		payment.setReceiverFid(casterFid);
-		payment.setSender(clickedProfile);
-		payment.setSourceApp(sourceApp);
-		payment.setSourceRef(sourceRef);
-		payment.setSourceHash(castHash);
+		val payment = getPayment(validateMessage, castAuthor, clickedProfile);
 		paymentRepository.save(payment);
 
 		log.debug("Gift storage payment intent saved: {}", payment);
@@ -91,7 +99,7 @@ public class ProductsController {
 		return ResponseEntity.ok().body(
 				new FrameResponse.FrameMessage(
 						String.format("Gift storage intent for @%s submitted. Pay in the app!",
-								casterFcName))
+								castAuthor.username()))
 		);
 	}
 }

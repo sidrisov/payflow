@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.bot.PaymentBotJob;
-import ua.sinaver.web3.payflow.message.CastCreatedMessage;
+import ua.sinaver.web3.payflow.message.farcaster.CastCreatedMessage;
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
 
 import javax.crypto.Mac;

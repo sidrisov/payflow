@@ -30,6 +30,8 @@ public class CacheConfig {
 	public static final String POAP_OWNERS_CACHE_NAME = CACHE_PREFIX + "poap-owners";
 	public static final String USERS_CACHE_NAME = CACHE_PREFIX + "users";
 	public static final String INVITATIONS_CACHE_NAME = CACHE_PREFIX + "invitations";
+	public static final String NEYNAR_FARCASTER_USER_CACHE = CACHE_PREFIX + "farcaster-users";
+
 
 	@Value("${spring.cache.contacts.eth-denver.expireAfterWrite:10m}")
 	private Duration poapAndTokenOwnersExpireAfterWriteDuration;
@@ -83,7 +85,6 @@ public class CacheConfig {
 						.serializeValuesWith(RedisSerializationContext
 								.SerializationPair
 								.fromSerializer(serializer));
-		;
 
 		val socialsCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
 				.disableCachingNullValues()
@@ -99,6 +100,7 @@ public class CacheConfig {
 		cacheConfigurations.put(POAP_OWNERS_CACHE_NAME, ethDenverContactsCacheConfigs);
 		cacheConfigurations.put(SOCIALS_CACHE_NAME, socialsCacheConfig);
 		cacheConfigurations.put(SOCIALS_INSIGHTS_CACHE_NAME, socialsCacheConfig);
+		cacheConfigurations.put(NEYNAR_FARCASTER_USER_CACHE, socialsCacheConfig);
 		cacheConfigurations.put(FARCASTER_VERIFICATIONS_CACHE_NAME, socialsCacheConfig);
 		cacheConfigurations.put(USERS_CACHE_NAME, configuration);
 		cacheConfigurations.put(INVITATIONS_CACHE_NAME, configuration);
@@ -135,6 +137,9 @@ public class CacheConfig {
 				buildCache(socialsExpireAfterWriteDuration, socialsMaxSize));
 
 		cacheManager.registerCustomCache(FARCASTER_VERIFICATIONS_CACHE_NAME,
+				buildCache(socialsExpireAfterWriteDuration, socialsMaxSize));
+
+		cacheManager.registerCustomCache(NEYNAR_FARCASTER_USER_CACHE,
 				buildCache(socialsExpireAfterWriteDuration, socialsMaxSize));
 
 		cacheManager.registerCustomCache(USERS_CACHE_NAME,

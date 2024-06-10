@@ -7,8 +7,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import ua.sinaver.web3.payflow.message.FrameMessage;
 import ua.sinaver.web3.payflow.message.ValidatedXmtpFrameMessage;
+import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 
 @Service
 @Slf4j

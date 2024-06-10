@@ -3,6 +3,7 @@ package ua.sinaver.web3.payflow.service;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -11,14 +12,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
-import ua.sinaver.web3.payflow.message.*;
-import ua.sinaver.web3.payflow.message.farcaster.FarcasterUserResponseMessage;
+import ua.sinaver.web3.payflow.message.farcaster.*;
 import ua.sinaver.web3.payflow.message.subscription.SubscribersMessage;
 import ua.sinaver.web3.payflow.message.subscription.SubscriptionsCreatedMessage;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 
 import java.util.Collections;
 import java.util.List;
+
+import static ua.sinaver.web3.payflow.config.CacheConfig.NEYNAR_FARCASTER_USER_CACHE;
 
 @Slf4j
 @Service
@@ -37,14 +39,14 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 
 	@Override
 	@Retryable
-	public ValidatedFarcasterFrameMessage validateFrameMessageWithNeynar(String frameMessageInHex) {
+	public ValidatedFrameResponseMessage validateFrameMessageWithNeynar(String frameMessageInHex) {
 		log.debug("Calling Neynar Frame Validate API for message {}",
 				frameMessageInHex);
 		try {
 			return neynarClient.post()
 					.uri("/frame/validate")
-					.bodyValue(new ValidateMessageRequest(false, false, true, frameMessageInHex))
-					.retrieve().bodyToMono(ValidatedFarcasterFrameMessage.class).block();
+					.bodyValue(new ValidateMessageRequest(true, false, true, frameMessageInHex))
+					.retrieve().bodyToMono(ValidatedFrameResponseMessage.class).block();
 		} catch (Throwable t) {
 			log.debug("Exception calling Neynar Frame Validate API: {}", t.getMessage());
 			throw t;
@@ -53,7 +55,7 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 
 	@Override
 	public CastResponseMessage cast(String signer, String message, String parentHash,
-	                                List<CastEmbed> embeds) {
+	                                List<Cast.Embed> embeds) {
 		log.debug("Calling Neynar Cast API with message {}",
 				message);
 		try {
@@ -72,7 +74,7 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 	}
 
 	@Override
-	public CastMessage fetchCastByHash(String hash) {
+	public Cast fetchCastByHash(String hash) {
 		log.debug("Calling Neynar Cast API to fetch by hash {}", hash);
 		try {
 			val response = neynarClient.get()
@@ -90,20 +92,37 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 	}
 
 	@Override
-	public FarcasterUserResponseMessage.FarcasterUser fetchFarcasterUser(String custodyAddress) {
+	@Cacheable(value = NEYNAR_FARCASTER_USER_CACHE, unless = "#result==null")
+	public FarcasterUser fetchFarcasterUser(String custodyAddress) {
 		log.debug("Calling Neynar User API to fetch by custodyAddress {}", custodyAddress);
-		try {
-			val response = neynarClient.get()
-					.uri(uriBuilder -> uriBuilder.path("/user/custody-address")
-							.queryParam("custody_address", custodyAddress.toLowerCase())
-							.build())
-					.retrieve().bodyToMono(FarcasterUserResponseMessage.class).block();
-			return response != null ? response.user() : null;
-		} catch (Throwable t) {
-			log.debug("Exception calling Neynar User API to fetch by custodyAddress {} - {}",
-					custodyAddress, t.getMessage());
-			throw t;
-		}
+		return neynarClient.get()
+				.uri(uriBuilder -> uriBuilder.path("/user/custody-address")
+						.queryParam("custody_address", custodyAddress.toLowerCase())
+						.build())
+				.retrieve()
+				.onStatus(HttpStatus.NOT_FOUND::equals, clientResponse -> {
+					log.error("404 error when calling Neynar User API by custodyAddress {}", custodyAddress);
+					return Mono.empty();
+				})
+				.bodyToMono(FarcasterUserResponseMessage.class)
+				.onErrorResume(WebClientResponseException.class, e -> {
+					if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+						log.error("404 error calling Neynar User API by custodyAddress {} - {}",
+								custodyAddress, e);
+						return Mono.empty();
+					}
+					log.error("Exception calling Neynar User API by custodyAddress {} - {}",
+							custodyAddress, e);
+					return Mono.error(e);
+				})
+				.onErrorResume(Throwable.class, e -> {
+					log.error("Exception calling Neynar User API by custodyAddress {} - {}",
+							custodyAddress, e);
+					return Mono.empty();
+				})
+				.blockOptional()
+				.map(FarcasterUserResponseMessage::user)
+				.orElse(null);
 	}
 
 	@Override

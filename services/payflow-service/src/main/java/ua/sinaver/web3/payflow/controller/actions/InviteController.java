@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.Invitation;
-import ua.sinaver.web3.payflow.message.CastActionMeta;
-import ua.sinaver.web3.payflow.message.CastEmbed;
-import ua.sinaver.web3.payflow.message.FrameMessage;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
+import ua.sinaver.web3.payflow.message.farcaster.Cast;
+import ua.sinaver.web3.payflow.message.farcaster.CastActionMeta;
+import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.service.FarcasterPaymentBotService;
 import ua.sinaver.web3.payflow.service.IdentityService;
@@ -35,7 +35,7 @@ public class InviteController {
 			"https://app.payflow.me/actions",
 			new CastActionMeta.Action("post"));
 	@Autowired
-	private IFarcasterNeynarService farcasterHubService;
+	private IFarcasterNeynarService neynarService;
 	@Autowired
 	private IContactBookService contactBookService;
 	@Autowired
@@ -55,7 +55,7 @@ public class InviteController {
 	@PostMapping
 	public ResponseEntity<FrameResponse.FrameMessage> invite(@RequestBody FrameMessage castActionMessage) {
 		log.debug("Received cast action: invite {}", castActionMessage);
-		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				castActionMessage.trustedData().messageBytes());
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
@@ -66,24 +66,25 @@ public class InviteController {
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
 				validateMessage.action().url());
 
-		val clickedFid = validateMessage.action().interactor().fid();
-		val casterFid = validateMessage.action().cast().fid();
+		val castInteractor = validateMessage.action().interactor();
+		val castAuthor = validateMessage.action().cast().author();
 
-		val clickedProfile = identityService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
+		val clickedProfile =
+				identityService.getProfiles(castInteractor.addresses()).stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
-			log.error("Clicked fid {} is not on payflow", clickedFid);
+			log.error("Clicked fid {} is not on payflow", castInteractor);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Sign up on Payflow first!"));
 		}
 
 		// check if profile exist
-		val inviteProfiles = identityService.getFidProfiles(casterFid);
+		val inviteProfiles = identityService.getProfiles(castAuthor.addresses());
 		if (!inviteProfiles.isEmpty()) {
 			return ResponseEntity.ok().body(
 					new FrameResponse.FrameMessage("Already signed up on Payflow!"));
 		} else {
 			// check if invited
-			val inviteAddresses = identityService.getFidAddresses(casterFid);
+			val inviteAddresses = castAuthor.addresses();
 			val invitations = contactBookService.filterByInvited(inviteAddresses);
 			if (!invitations.isEmpty()) {
 				return ResponseEntity.ok().body(
@@ -102,7 +103,7 @@ public class InviteController {
 					invitationRepository.save(invitation);
 
 					// TODO: fetch fname from validated message
-					val casterUsername = identityService.getFidFname(casterFid);
+					val casterUsername = castAuthor.username();
 					val castText = String.format("""
 									Congratulations @%s 🎉 You've been invited to @payflow by @%s
 																	\t
@@ -111,7 +112,8 @@ public class InviteController {
 									p.s. `Sign In With Farcaster` is recommended for better experience 🙌🏻""",
 							casterUsername,
 							validateMessage.action().interactor().username());
-					val embeds = Collections.singletonList(new CastEmbed("https://app.payflow.me/connect"));
+					val embeds = Collections.singletonList(new Cast.Embed("https://app.payflow" +
+							".me/connect"));
 
 					val processed = farcasterPaymentBotService.reply(castText,
 							validateMessage.action().cast().hash(),

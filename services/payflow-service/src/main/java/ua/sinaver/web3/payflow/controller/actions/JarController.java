@@ -6,8 +6,8 @@ import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ua.sinaver.web3.payflow.message.CastActionMeta;
-import ua.sinaver.web3.payflow.message.FrameMessage;
+import ua.sinaver.web3.payflow.message.farcaster.CastActionMeta;
+import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
@@ -26,7 +26,7 @@ public class JarController {
 			new CastActionMeta.Action("post"));
 
 	@Autowired
-	private IFarcasterNeynarService farcasterHubService;
+	private IFarcasterNeynarService neynarService;
 	@Autowired
 	private IIdentityService identityService;
 
@@ -39,7 +39,7 @@ public class JarController {
 	@PostMapping
 	public ResponseEntity<?> create(@RequestBody FrameMessage castActionMessage) {
 		log.debug("Received cast action: jar {}", castActionMessage);
-		val validateMessage = farcasterHubService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				castActionMessage.trustedData().messageBytes());
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
@@ -50,19 +50,20 @@ public class JarController {
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
 				validateMessage.action().url());
 
-		val clickedFid = validateMessage.action().interactor().fid();
-		val casterFid = validateMessage.action().cast().fid();
+		val castInteractor = validateMessage.action().interactor();
+		val casterFid = validateMessage.action().cast().author();
 
-		if (clickedFid != casterFid) {
+		if (castInteractor != casterFid) {
 			log.error("Only the author of the cast is allowed to create the contribution " +
-					"jar for it - clicked fid {} vs caster fid {} ", clickedFid, casterFid);
+					"jar for it - clicked fid {} vs caster fid {} ", castInteractor, casterFid);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Use only for your casts!"));
 		}
 
-		val clickedProfile = identityService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
+		val clickedProfile =
+				identityService.getProfiles(castInteractor.addresses()).stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
-			log.error("Clicked fid {} is not on payflow", clickedFid);
+			log.error("Clicked fid {} is not on payflow", castInteractor);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Sign up on Payflow first!"));
 		}

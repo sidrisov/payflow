@@ -42,7 +42,7 @@ public class IdentityService implements IIdentityService {
 
 	@Override
 	public User getFidProfile(int fid, String identity) {
-		val profiles = getFidProfiles(fid);
+		val profiles = getProfiles(fid);
 		return profiles.stream()
 				.filter(p -> StringUtils.isBlank(identity) || p.getIdentity().equals(identity))
 				.findFirst().orElse(null);
@@ -50,20 +50,20 @@ public class IdentityService implements IIdentityService {
 
 	@Override
 	public User getFidProfile(String fname, String identity) {
-		val profiles = getFidProfiles(fname);
+		val profiles = getProfiles(fname);
 		return profiles.stream()
 				.filter(p -> StringUtils.isBlank(identity) || p.getIdentity().equals(identity))
 				.findFirst().orElse(null);
 	}
 
 	@Override
-	public List<User> getFidProfiles(int fid) {
-		return getFidProfiles(getFidAddresses(fid));
+	public List<User> getProfiles(int fid) {
+		return getProfiles(getFidAddresses(fid));
 	}
 
 	@Override
-	public List<User> getFidProfiles(String fname) {
-		return getFidProfiles(getFnameAddresses(fname));
+	public List<User> getProfiles(String fname) {
+		return getProfiles(getFnameAddresses(fname));
 	}
 
 	@Override
@@ -99,7 +99,7 @@ public class IdentityService implements IIdentityService {
 	}
 
 	@Override
-	public List<User> getFidProfiles(List<String> addresses) {
+	public List<User> getProfiles(List<String> addresses) {
 		return addresses.stream().map(address -> userRepository.findByIdentityAndAllowedTrue(address))
 				.filter(Objects::nonNull).limit(3).toList();
 	}
@@ -135,16 +135,6 @@ public class IdentityService implements IIdentityService {
 				.findFirst().map(Social::getUserId).orElse(null);
 		log.debug("Fid for {}: {}", identity, fid);
 		return fid;
-	}
-
-	@Override
-	public List<IdentityMessage> getIdentitiesInfo(int fid) {
-		List<String> addresses = getFidAddresses(fid);
-		if (addresses == null || addresses.isEmpty()) {
-			return Collections.emptyList();
-		} else {
-			return getIdentitiesInfo(addresses);
-		}
 	}
 
 	@Override

@@ -12,7 +12,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.Payment;
-import ua.sinaver.web3.payflow.message.*;
+import ua.sinaver.web3.payflow.message.FrameButton;
+import ua.sinaver.web3.payflow.message.FramePaymentMessage;
+import ua.sinaver.web3.payflow.message.ValidatedXmtpFrameMessage;
+import ua.sinaver.web3.payflow.message.WalletMessage;
+import ua.sinaver.web3.payflow.message.farcaster.Cast;
+import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
+import ua.sinaver.web3.payflow.message.farcaster.ValidatedFrameResponseMessage;
 import ua.sinaver.web3.payflow.repository.FlowRepository;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.*;
@@ -49,7 +55,7 @@ public class JarContributionController {
 			"/comment";
 	private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	@Autowired
-	private IFarcasterNeynarService farcasterHubService;
+	private IFarcasterNeynarService neynarService;
 	@Autowired
 	private IUserService userService;
 	@Value("${payflow.dapp.url}")
@@ -96,7 +102,7 @@ public class JarContributionController {
 		log.debug("Received create contribute jar in frame message request: {}", frameMessage);
 
 		val validateMessage =
-				farcasterHubService.validateFrameMessageWithNeynar(
+				neynarService.validateFrameMessageWithNeynar(
 						frameMessage.trustedData().messageBytes());
 
 		log.debug("Validation farcaster frame message response {} received on url: {}  ",
@@ -109,21 +115,21 @@ public class JarContributionController {
 					new FrameResponse.FrameMessage("Something went wrong!"));
 		}
 
-		val clickedFid = validateMessage.action().interactor().fid();
-		val casterFid = validateMessage.action().cast().fid();
+		val castInteractor = validateMessage.action().interactor();
+		val castAuthor = validateMessage.action().cast().author();
 		val title = validateMessage.action().input() != null ?
 				validateMessage.action().input().text() : null;
 
-		val clickedProfile = identityService.getFidProfiles(clickedFid).stream().findFirst().orElse(null);
+		val clickedProfile = identityService.getProfiles(castInteractor.addresses()).stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
-			log.error("Clicked fid {} is not on payflow", clickedFid);
+			log.error("Clicked fid {} is not on payflow", castInteractor);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Sign up on Payflow first!"));
 		}
 
-		if (clickedFid != casterFid) {
+		if (castInteractor.fid() != castAuthor.fid()) {
 			log.error("Only the author of the cast is allowed to create the contribution " +
-					"jar for it - clicked fid {} vs caster fid {} ", clickedFid, casterFid);
+					"jar for it - clicked fid {} vs caster fid {} ", castInteractor, castAuthor);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Can be used only on your casts!"));
 		}
@@ -135,7 +141,7 @@ public class JarContributionController {
 					new FrameResponse.FrameMessage("Enter title again!"));
 		}
 
-		val cast = farcasterHubService.fetchCastByHash(validateMessage.action().cast().hash());
+		val cast = neynarService.fetchCastByHash(validateMessage.action().cast().hash());
 		if (cast == null) {
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Something went wrong!"));
@@ -149,7 +155,7 @@ public class JarContributionController {
 				.filter(embed -> embed != null && embed.url() != null && (embed.url().endsWith(
 						".png") || embed.url().endsWith(".jpg") || embed.url().contains(
 						"imagedelivery.net")))
-				.findFirst().map(CastEmbed::url).orElse(null) : null;
+				.findFirst().map(Cast.Embed::url).orElse(null) : null;
 
 		log.debug("Executing jar creation with title `{}`, desc `{}` embeds {}, source {}",
 				title, description, cast.embeds(), source);
@@ -164,9 +170,9 @@ public class JarContributionController {
 
 		val frameUrl = String.format("https://frames.payflow.me/jar/%s", uuid);
 		val embeds = Collections.singletonList(
-				new CastEmbed(frameUrl));
+				new Cast.Embed(frameUrl));
 
-		val response = farcasterHubService.cast(botSignerUuid, castText, cast.hash(), embeds);
+		val response = neynarService.cast(botSignerUuid, castText, cast.hash(), embeds);
 
 		if (response.success()) {
 			log.debug("Successfully casted contribution jar frame reply : {}", response.cast());
@@ -195,7 +201,7 @@ public class JarContributionController {
 		log.debug("Received contribute jar {} in frame message request: {}",
 				uuid, frameMessage);
 
-		ValidatedFarcasterFrameMessage validatedFarcasterMessage = null;
+		ValidatedFrameResponseMessage validatedFarcasterMessage = null;
 		ValidatedXmtpFrameMessage validatedXmtpFrameMessage = null;
 
 		if (frameMessage.clientProtocol() != null &&
@@ -211,7 +217,7 @@ public class JarContributionController {
 				return DEFAULT_HTML_RESPONSE;
 			}
 		} else {
-			validatedFarcasterMessage = farcasterHubService.validateFrameMessageWithNeynar(
+			validatedFarcasterMessage = neynarService.validateFrameMessageWithNeynar(
 					frameMessage.trustedData().messageBytes());
 
 			log.debug("Validation farcaster frame message response {} received on url: {}  ",
@@ -260,7 +266,7 @@ public class JarContributionController {
 		log.debug("Received contribute jar {} in frame message request: {}",
 				uuid, frameMessage);
 
-		ValidatedFarcasterFrameMessage validatedFarcasterMessage;
+		ValidatedFrameResponseMessage validatedFarcasterMessage;
 		ValidatedXmtpFrameMessage validatedXmtpFrameMessage;
 
 		int buttonIndex;
@@ -280,7 +286,7 @@ public class JarContributionController {
 
 			buttonIndex = validatedXmtpFrameMessage.actionBody().buttonIndex();
 		} else {
-			validatedFarcasterMessage = farcasterHubService.validateFrameMessageWithNeynar(
+			validatedFarcasterMessage = neynarService.validateFrameMessageWithNeynar(
 					frameMessage.trustedData().messageBytes());
 
 			log.debug("Validation farcaster frame message response {} received on url: {}  ",
@@ -358,7 +364,7 @@ public class JarContributionController {
 		String sourceApp;
 		String sourceRef;
 
-		ValidatedFarcasterFrameMessage validatedFarcasterMessage;
+		ValidatedFrameResponseMessage validatedFarcasterMessage;
 		ValidatedXmtpFrameMessage validatedXmtpFrameMessage;
 
 		if (frameMessage.clientProtocol() != null &&
@@ -380,7 +386,7 @@ public class JarContributionController {
 			sourceRef = null; // maybe link the chat of the user who paid? or conversation?
 			state = validatedXmtpFrameMessage.actionBody().state();
 		} else {
-			validatedFarcasterMessage = farcasterHubService.validateFrameMessageWithNeynar(
+			validatedFarcasterMessage = neynarService.validateFrameMessageWithNeynar(
 					frameMessage.trustedData().messageBytes());
 
 			log.debug("Validation farcaster frame message response {} received on url: {}  ",
@@ -392,15 +398,13 @@ public class JarContributionController {
 				return DEFAULT_HTML_RESPONSE;
 			}
 
-			clickedProfileAddresses = identityService.getFidAddresses(
-					validatedFarcasterMessage.action().interactor().fid());
+			clickedProfileAddresses = validatedFarcasterMessage.action().interactor().addresses();
 			buttonIndex = validatedFarcasterMessage.action().tappedButton().index();
 			inputText = validatedFarcasterMessage.action().input() != null ?
 					validatedFarcasterMessage.action().input().text() : null;
 
 			sourceApp = validatedFarcasterMessage.action().signer().client().displayName();
-			val casterFid = validatedFarcasterMessage.action().cast().fid();
-			val casterFcName = identityService.getFidFname(casterFid);
+			val casterFcName = validatedFarcasterMessage.action().cast().author().username();
 			// maybe would make sense to reference top cast instead (if it's a bot cast)
 			sourceRef = String.format("https://warpcast.com/%s/%s",
 					casterFcName, validatedFarcasterMessage.action().cast().hash().substring(0,
@@ -412,7 +416,7 @@ public class JarContributionController {
 				new String(Base64.getDecoder().decode(state)),
 				FramePaymentMessage.class);
 
-		val profiles = identityService.getFidProfiles(clickedProfileAddresses);
+		val profiles = identityService.getProfiles(clickedProfileAddresses);
 
 		val jar = flowService.findJarByUUID(uuid);
 
@@ -524,7 +528,7 @@ public class JarContributionController {
 		String transactionId = null;
 		String state;
 
-		ValidatedFarcasterFrameMessage validatedFarcasterMessage;
+		ValidatedFrameResponseMessage validatedFarcasterMessage;
 		ValidatedXmtpFrameMessage validatedXmtpFrameMessage;
 
 		if (frameMessage.clientProtocol() != null &&
@@ -543,7 +547,7 @@ public class JarContributionController {
 			buttonIndex = validatedXmtpFrameMessage.actionBody().buttonIndex();
 			state = validatedXmtpFrameMessage.actionBody().state();
 		} else {
-			validatedFarcasterMessage = farcasterHubService.validateFrameMessageWithNeynar(
+			validatedFarcasterMessage = neynarService.validateFrameMessageWithNeynar(
 					frameMessage.trustedData().messageBytes());
 
 			log.debug("Validation farcaster frame message response {} received on url: {}  ",
@@ -555,8 +559,7 @@ public class JarContributionController {
 				return DEFAULT_HTML_RESPONSE;
 			}
 
-			clickedProfileAddresses = identityService.getFidAddresses(
-					validatedFarcasterMessage.action().interactor().fid());
+			clickedProfileAddresses = validatedFarcasterMessage.action().interactor().addresses();
 			buttonIndex = validatedFarcasterMessage.action().tappedButton().index();
 			state = validatedFarcasterMessage.action().state().serialized();
 			transactionId = validatedFarcasterMessage.action().transaction() != null ?
@@ -566,7 +569,7 @@ public class JarContributionController {
 		paymentState = gson.fromJson(
 				new String(Base64.getDecoder().decode(state)),
 				FramePaymentMessage.class);
-		val profiles = identityService.getFidProfiles(clickedProfileAddresses);
+		val profiles = identityService.getProfiles(clickedProfileAddresses);
 		val jar = flowService.findJarByUUID(uuid);
 
 		if (jar != null && state != null) {
@@ -658,7 +661,7 @@ public class JarContributionController {
 	                                      @RequestBody FrameMessage frameMessage) {
 		log.debug("Received contribution comment message request: {}", frameMessage);
 		val validateMessage =
-				farcasterHubService.validateFrameMessageWithNeynar(
+				neynarService.validateFrameMessageWithNeynar(
 						frameMessage.trustedData().messageBytes());
 
 		if (!validateMessage.valid()) {
