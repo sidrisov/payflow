@@ -54,7 +54,7 @@ public class PayController {
 
 		val castAuthor = validateMessage.action().cast().author();
 
-		// pay first with higher social score now invite first
+		// pay first with higher social score
 		val paymentAddresses = identityService.getIdentitiesInfo(castAuthor.addressesWithoutCustodialIfAvailable())
 				.stream().max(Comparator.comparingInt(IdentityMessage::score))
 				.map(IdentityMessage::address).stream().toList();
@@ -68,8 +68,13 @@ public class PayController {
 		String paymentAddress;
 		if (paymentProfile == null || paymentProfile.getDefaultFlow() == null) {
 			if (!paymentAddresses.isEmpty()) {
-				// return first associated address
-				paymentAddress = paymentAddresses.getFirst();
+				// return first associated address without custodial
+				paymentAddress = paymentAddresses.size() > 1 ?
+						paymentAddresses.stream()
+								.filter(e -> !e.equals(castAuthor.custodyAddress()))
+								.findFirst()
+								.orElse(null) :
+						paymentAddresses.getFirst();
 			} else {
 				return ResponseEntity.badRequest().body(
 						new FrameResponse.FrameMessage("Recipient address not found!"));

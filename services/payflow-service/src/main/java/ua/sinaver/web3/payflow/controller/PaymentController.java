@@ -194,7 +194,7 @@ public class PaymentController {
 
 											🧾 Receipt: %s
 
-											Install `💜 Pay Intent` at app.payflow.me/actions
+											Install `💜️Intent` at app.payflow.me/actions
 
 											p.s. join /payflow channel for updates 👀""",
 									receiverFname,
@@ -224,7 +224,7 @@ public class PaymentController {
 												%s
 												🧾 Receipt: %s
 
-												Install `💜️ Pay Intent` at app.payflow.me/actions
+												Install `💜️Intent` at app.payflow.me/actions
 
 												p.s. join /payflow channel for updates 👀""",
 										receiverFname,

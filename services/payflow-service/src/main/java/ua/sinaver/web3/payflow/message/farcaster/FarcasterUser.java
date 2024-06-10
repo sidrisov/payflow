@@ -29,10 +29,10 @@ public record FarcasterUser(
 	}
 
 	public List<String> addressesWithoutCustodialIfAvailable() {
-		if (verifications.size() > 1) {
-			return verifications;
-		} else {
+		if (verifications.isEmpty()) {
 			return Collections.singletonList(custodyAddress);
+		} else {
+			return verifications;
 		}
 	}
 

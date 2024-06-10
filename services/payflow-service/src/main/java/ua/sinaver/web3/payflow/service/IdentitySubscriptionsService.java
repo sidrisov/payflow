@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -37,6 +38,9 @@ public class IdentitySubscriptionsService {
 
 	@Autowired
 	private IFarcasterNeynarService neynarService;
+
+	@Value("${payflow.hypersub.contacts.limit:10}")
+	private int hypersubContactsLimit;
 
 	public IdentitySubscriptionsService(WebClient.Builder builder) {
 		webClient = builder
@@ -121,7 +125,7 @@ public class IdentitySubscriptionsService {
 		}
 	}
 
-	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'fabric-list-2:' + #identity", unless =
+	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'fabric-list:' + #identity", unless =
 			"#result.isEmpty()")
 	public List<String> fetchFabricSubscribers(String identity) {
 		log.debug("Fetching fabric subscribers for identity: {}", identity);
@@ -156,7 +160,7 @@ public class IdentitySubscriptionsService {
 			log.debug("Total fabric subscribers: {} for fid: {}", subscribers.size(), fid);
 
 			val subscribersScoredAddresses = subscribers.stream()
-					.limit(100)
+					.limit(hypersubContactsLimit)
 					.map(user -> identityService.getIdentitiesInfo(user.verifications())
 							.stream()
 							.max(Comparator.comparingInt(IdentityMessage::score))

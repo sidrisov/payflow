@@ -521,7 +521,7 @@ public class FramePaymentController {
 										%s
 										🧾 Receipt: %s
 
-										Install `⚡ Pay Profile` at app.payflow.me/actions
+										Install `⚡ Pay` at app.payflow.me/actions
 
 										p.s. join /payflow channel for updates 👀""",
 

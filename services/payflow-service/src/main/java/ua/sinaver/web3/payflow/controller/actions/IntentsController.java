@@ -138,6 +138,8 @@ public class IntentsController {
 					new FrameResponse.FrameMessage("Sign up on Payflow first!"));
 		}
 
+		// TODO: refactor in similar way it's done in PayController, so there's no need to extra
+		//  addresses fetch, and used existing verifications returned in FarcasterUser data
 		// check if profile exist
 		val paymentProfile = identityService.getProfiles(casterFid).stream().findFirst().orElse(null);
 		String paymentAddress = null;
