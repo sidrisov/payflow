@@ -20,7 +20,7 @@ public class PaymentService {
 						.collect(Collectors.joining("|")));
 		val pattern = Pattern.compile(patternStr, Pattern.CASE_INSENSITIVE);
 		val matcher = pattern.matcher(text);
-		return matcher.find() ? matcher.group("token") : "usdc";
+		return matcher.find() ? matcher.group("token").toLowerCase() : "usdc";
 	}
 
 	public String parseCommandChain(String text) {
@@ -35,11 +35,11 @@ public class PaymentService {
 		val pattern = Pattern.compile(patternStr, Pattern.CASE_INSENSITIVE);
 		val matcher = pattern.matcher(text);
 		if (matcher.find()) {
-			var matched = matcher.group("chain");
+			var matched = matcher.group("chain").toLowerCase();
 			if (matched.equals("degen-l3")) {
 				matched = TokenService.DEGEN_CHAIN_NAME;
 			}
-			return matched;
+			return matched.toLowerCase();
 		}
 		return TokenService.BASE_CHAIN_NAME;
 	}

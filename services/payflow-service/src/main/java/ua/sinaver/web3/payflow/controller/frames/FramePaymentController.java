@@ -29,6 +29,8 @@ import ua.sinaver.web3.payflow.utils.FrameResponse;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Comparator;
 import java.util.Date;
@@ -46,8 +48,10 @@ public class FramePaymentController {
 
 	public static final String PAY = BASE_PATH +
 			"/pay/%s";
+	public static final String PAY_CREATE = BASE_PATH +
+			"/pay/create";
 	private static final String PAY_SHARE = BASE_PATH +
-			"/pay/share";
+			"/pay/%s/share";
 	private static final String PAY_IN_FRAME = BASE_PATH +
 			"/pay/%s/frame";
 	private static final String PAY_IN_FRAME_COMMAND = BASE_PATH +
@@ -95,9 +99,9 @@ public class FramePaymentController {
 		return roundedAmount;
 	}
 
-	@PostMapping("/share")
-	public ResponseEntity<?> sharePaymentFrame(@RequestBody FrameMessage frameMessage) {
-		log.debug("Received share payment frame message request: {}", frameMessage);
+	@PostMapping("/create")
+	public ResponseEntity<?> create(@RequestBody FrameMessage frameMessage) {
+		log.debug("Received create payment frame message request: {}", frameMessage);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
 
@@ -135,9 +139,45 @@ public class FramePaymentController {
 			paymentAddress = paymentProfile.getIdentity();
 		}
 
+		val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
+				"/payment.png?step=create", paymentAddress));
+
+		return FrameResponse.builder()
+				.imageUrl(profileImage)
+				.textInput("Enter payment frame title")
+				.button(new FrameButton("\uD83D\uDCDD Cast", FrameButton.ActionType.POST_REDIRECT,
+						apiServiceUrl.concat(String.format(PAY_SHARE, paymentAddress))))
+				.build().toHtmlResponse();
+	}
+
+	@PostMapping("/{identity}/share")
+	public ResponseEntity<?> share(@PathVariable String identity,
+	                               @RequestBody FrameMessage frameMessage) {
+		log.debug("Received share payment frame message request: {}", frameMessage);
+		val validateMessage = neynarService.validateFrameMessageWithNeynar(
+				frameMessage.trustedData().messageBytes());
+
+		if (!validateMessage.valid()) {
+			log.error("Frame message failed validation {}", validateMessage);
+			return DEFAULT_HTML_RESPONSE;
+		}
+		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
+				validateMessage.action().url());
+
+		val entryTitle = validateMessage.action().input() != null ?
+				Base64.getUrlEncoder().withoutPadding().encodeToString(
+						validateMessage.action().input().text().getBytes(StandardCharsets.UTF_8)
+				) : null;
+
 		try {
-			val castShareDeepLink = "https://warpcast.com/~/compose?text=Support%20me%20here&embeds[]=https://frames.payflow.me/"
-					+ paymentAddress;
+			val baseUrl = "https://warpcast.com/~/compose";
+			val castText = URLEncoder.encode("Hey hey you can pay me here", StandardCharsets.UTF_8);
+			val embedUrl = String.format("https://frames.payflow" +
+					".me/%s?entryTitle=%s", identity, entryTitle);
+
+			val castShareDeepLink = String.format("%s?text=%s&embeds[]=%s", baseUrl, castText,
+					embedUrl);
+
 			val redirectURI = new URI(castShareDeepLink);
 			log.debug("Redirecting to {}", redirectURI);
 			return ResponseEntity.status(HttpStatus.FOUND).location(redirectURI).build();
@@ -176,15 +216,15 @@ public class FramePaymentController {
 
 			return FrameResponse.builder()
 					.imageUrl(profileImage)
-					.button(new FrameButton("\uD83D\uDDBC\uFE0F Frame",
+					.button(new FrameButton("⚡\uFE0F Pay",
 							FrameButton.ActionType.POST,
 							apiServiceUrl.concat(String.format(PAY_IN_FRAME, paymentProfile.getIdentity()))))
 					.button(new FrameButton("\uD83D\uDCF1 App", FrameButton.ActionType.LINK,
 							paymentLink))
 					.button(new FrameButton("➕ Action", FrameButton.ActionType.LINK,
 							installCastActionLink))
-					.button(new FrameButton("\uD83D\uDCDD Share", FrameButton.ActionType.POST_REDIRECT,
-							apiServiceUrl.concat(PAY_SHARE)))
+					.button(new FrameButton("\uD83E\uDE84 Create", FrameButton.ActionType.POST,
+							apiServiceUrl.concat(PAY_CREATE)))
 					.build().toHtmlResponse();
 		}
 		return DEFAULT_HTML_RESPONSE;
@@ -208,11 +248,14 @@ public class FramePaymentController {
 		val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
 				"/payment.png?step=command", identity));
 
+		val tokensSupported = "https://payflowlabs.notion" +
+				".site/Payflow-support-tokens-chains-e36f2c1e9f7e4bfd834baf604ce9a375";
 		return FrameResponse.builder()
 				.imageUrl(profileImage)
 				.textInput("e.g.: $1 degen | 1 usdc optimism")
 				.postUrl(apiServiceUrl.concat(String.format(PAY_IN_FRAME_COMMAND, identity)))
 				.button(new FrameButton("Confirm", FrameButton.ActionType.POST, null))
+				.button(new FrameButton("Tokens", FrameButton.ActionType.LINK, tokensSupported))
 				.build().toHtmlResponse();
 	}
 

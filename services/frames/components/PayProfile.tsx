@@ -6,18 +6,21 @@ import { assetImageSrc } from '../utils/image';
 import getNetworkImageSrc, { getNetworkDisplayName } from '../utils/networks';
 import { ERC20_CONTRACTS } from '../utils/erc20contracts';
 
-type PaymentStep = 'start' | 'command' | 'confirm' | 'execute';
+type PaymentStep = 'create' | 'start' | 'command' | 'confirm' | 'execute';
 
 export const payProfileHtml = (
   identity: IdentityType,
-  step: 'start' | 'command' | 'confirm' | 'execute',
-  payment: PaymentType
-) => <PayProfile identity={identity} step={step} payment={payment} />;
+  step: PaymentStep,
+  payment: PaymentType,
+  entryTitle?: string
+) => <PayProfile identity={identity} step={step} payment={payment} entryTitle={entryTitle} />;
 
-const paymentStepTitle = (step: PaymentStep) => {
+const paymentStepTitle = (step: PaymentStep, entryTitle?: string) => {
   switch (step) {
+    case 'create':
+      return '`Your payment title`';
     case 'start':
-      return 'How you wanna pay?';
+      return entryTitle ?? '👋🏻 Pay Me';
     case 'command':
       return 'Enter payment token details';
     case 'confirm':
@@ -30,13 +33,15 @@ const paymentStepTitle = (step: PaymentStep) => {
 function PayProfile({
   identity,
   step,
-  payment
+  payment,
+  entryTitle
 }: {
   identity: IdentityType;
   step: PaymentStep;
   payment: PaymentType;
+  entryTitle?: string;
 }) {
-  const title = paymentStepTitle(step);
+  const title = paymentStepTitle(step, entryTitle);
   const tokenImgSrc =
     payment.token &&
     (ERC20_CONTRACTS.find((t) => t.chainId === payment.chainId && t.id === payment.token)
@@ -92,7 +97,7 @@ function PayProfile({
             </span>
           </div>
         )}
-        {step !== 'start' && step !== 'command' && (
+        {step !== 'create' && step !== 'start' && step !== 'command' && (
           <div
             style={{
               margin: 10,

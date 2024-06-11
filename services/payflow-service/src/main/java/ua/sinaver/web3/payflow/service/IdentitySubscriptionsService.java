@@ -181,6 +181,10 @@ public class IdentitySubscriptionsService {
 	}
 
 	private List<String> verificationsWithoutCustodial(ConnectedAddresses verifications) {
+		if (verifications == null) {
+			return Collections.emptyList();
+		}
+		
 		val addresses = verifications.connectedAddresses();
 		if (addresses.size() > 1) {
 			val updatedAddresses = new ArrayList<>(addresses);

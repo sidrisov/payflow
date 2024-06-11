@@ -2,8 +2,12 @@ import { usePageContext } from 'vike-react/usePageContext';
 import { DAPP_URL, FRAMES_URL, API_URL } from '../../utils/constants';
 
 export function Head() {
-  const { routeParams } = usePageContext();
+  const { routeParams, urlParsed } = usePageContext();
   const username = routeParams?.username;
+
+  const entryTitle = urlParsed.search.entryTitle;
+
+  const imageUrl = `${FRAMES_URL}/images/profile/${username}/payment.png?step=start${entryTitle ? `&entryTitle=${entryTitle}` : ''}`;
   return (
     <>
       <head>
@@ -43,16 +47,13 @@ export function Head() {
 
         <meta property="fc:frame" content="vNext" />
 
-        <meta
-          property="fc:frame:image"
-          content={`${FRAMES_URL}/images/profile/${username}/payment.png?step=start`}
-        />
-        <meta property="fc:frame:button:1" content="🖼️ in Frame" />
+        <meta property="fc:frame:image" content={`${imageUrl}`} />
+        <meta property="fc:frame:button:1" content="⚡️ Pay" />
         <meta
           property="fc:frame:button:1:target"
           content={`${API_URL}/api/farcaster/frames/pay/${username}/frame`}
         />
-        <meta property="fc:frame:button:2" content="📱 in App" />
+        <meta property="fc:frame:button:2" content="📱 App" />
         <meta property="fc:frame:button:2:action" content="link" />
         <meta property="fc:frame:button:2:target" content={`${DAPP_URL}/${username}?pay`} />
 
@@ -63,9 +64,12 @@ export function Head() {
           content={`https://warpcast.com/~/add-cast-action?url=${API_URL}/api/farcaster/actions/profile`}
         />
 
-        <meta property="fc:frame:button:4" content="📝 Share" />
-        <meta property="fc:frame:button:4:action" content="post_redirect" />
-        <meta property="fc:frame:button:4:target" content={`${API_URL}/api/farcaster/frames/pay/share`} />
+        <meta property="fc:frame:button:4" content="🪄 Create" />
+        <meta property="fc:frame:button:4:action" content="post" />
+        <meta
+          property="fc:frame:button:4:target"
+          content={`${API_URL}/api/farcaster/frames/pay/create`}
+        />
       </head>
     </>
   );

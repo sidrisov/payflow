@@ -38,6 +38,7 @@ public class FrameResponse {
 
 		if ((frameButton.action().equals(FrameButton.ActionType.LINK)
 				|| frameButton.action().equals(FrameButton.ActionType.POST)
+				|| frameButton.action().equals(FrameButton.ActionType.POST_REDIRECT)
 				|| frameButton.action().equals(FrameButton.ActionType.TX))
 				&& frameButton.target() != null) {
 			frameButtonMeta = frameButtonMeta.concat(String.format(

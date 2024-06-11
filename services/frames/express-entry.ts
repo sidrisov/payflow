@@ -170,6 +170,15 @@ async function startServer() {
       status: req.query.status
     } as PaymentType;
 
+    const entryTitleBase64 = req.query.entryTitle;
+
+    const entryTitle =
+      entryTitleBase64 &&
+      (entryTitleBase64 as string).length > 0 &&
+      Buffer.from(entryTitleBase64 as string, 'base64').toString('utf-8');
+
+    console.log('entryTitle: ', entryTitle);
+
     if (!payment.tokenAmount && payment.usdAmount && payment.token) {
       payment.tokenAmount = normalizeNumberPrecision(
         Number.parseFloat(payment.usdAmount) / TOKEN_PRICES[payment.token]
@@ -188,7 +197,7 @@ async function startServer() {
       const response = await axios.get(`${API_URL}/api/user/identities/${identity}`);
       let identityData = (response.data !== '' ? response.data : { identity }) as IdentityType;
       const image = await htmlToImage(
-        payProfileHtml(identityData, step as any, payment),
+        payProfileHtml(identityData, step as any, payment, entryTitle as any),
         'landscape'
       );
       res.type('png').send(image);
