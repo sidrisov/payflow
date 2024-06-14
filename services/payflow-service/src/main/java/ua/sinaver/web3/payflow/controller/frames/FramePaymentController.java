@@ -91,6 +91,9 @@ public class FramePaymentController {
 	@Autowired
 	private PaymentService paymentService;
 
+	@Autowired
+	private NotificationService notificationService;
+
 	private static String roundTokenAmount(double amount) {
 		val scale = amount < 1.0 ? 5 : 1;
 		val amountInDecimals = BigDecimal.valueOf(amount);
@@ -347,16 +350,14 @@ public class FramePaymentController {
 
 		val payment = new Payment(Payment.PaymentType.FRAME, paymentProfile,
 				chainId, token);
-
+		payment.setSenderAddress(senderFarcasterUser.addressesWithoutCustodialIfAvailable().stream().findFirst().orElse(null));
 		payment.setReceiverAddress(paymentAddress);
 		if (tokenAmount != null) {
 			payment.setTokenAmount(tokenAmount.toString());
 		} else {
 			payment.setUsdAmount(usdAmount.toString());
 		}
-
 		payment.setSourceApp(sourceApp);
-
 		// handle frame in direct cast messaging
 		if (StringUtils.isNotBlank(sourceHash) && !sourceHash.equals(TokenService.ZERO_ADDRESS)) {
 			val sourceRef = String.format("https://warpcast.com/%s/%s",
@@ -364,7 +365,6 @@ public class FramePaymentController {
 			payment.setSourceHash(sourceHash);
 			payment.setSourceRef(sourceRef);
 		}
-
 		paymentRepository.save(payment);
 
 		val refId = payment.getReferenceId();
@@ -439,6 +439,14 @@ public class FramePaymentController {
 				payment.setCompletedDate(new Date());
 
 				log.debug("Updated payment for ref: {} - {}", refId, payment);
+
+				try {
+					notificationService.paymentReply(payment);
+				} catch (Throwable t) {
+					log.error("Failed to notify user with payment completion details: {}",
+							payment, t);
+				}
+
 				val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
 								"/payment.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
 								"&tokenAmount=%s&status=%s",

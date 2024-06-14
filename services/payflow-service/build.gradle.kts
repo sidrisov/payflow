@@ -5,7 +5,7 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
     application
-    id("org.springframework.boot") version "3.2.5"
+    id("org.springframework.boot") version "3.3.0"
     id("io.spring.dependency-management") version "1.1.4"
     id("com.google.cloud.artifactregistry.gradle-plugin") version "2.2.1"
     id("io.freefair.lombok") version "8.4"
@@ -30,7 +30,7 @@ if (project.hasProperty("gcp")) {
     extra["springCloudVersion"] = "2023.0.1"
 }
 
-extra["flywayVersion"] = "10.13.0"
+extra["flywayVersion"] = "10.15.0"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -43,7 +43,7 @@ dependencies {
     implementation("org.springframework.session:spring-session-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-aop")
 
-    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.7.5")
+    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.7.6")
 
     /**
      * TODO: disable for now due the following, generating types with gradle plugin is enough for now
@@ -94,9 +94,9 @@ dependencies {
     implementation("com.google.code.gson:gson:2.11.0")
 
     // java.lang.NoSuchMethodError: 'reactor.core.publisher.Mono reactor.core.publisher.Mono.onErrorComplete()'
-    implementation("io.projectreactor:reactor-core:3.6.6")
+    implementation("io.projectreactor:reactor-core:3.6.7")
 
-    runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.110.Final:osx-aarch_64")
+    runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.111.Final:osx-aarch_64")
 
     // crypto
     implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
