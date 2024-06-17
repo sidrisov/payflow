@@ -149,7 +149,7 @@ public class FarcasterPaymentBotService {
 					case "intent":
 					case "send": {
 						String receiver = null;
-						String amount = null;
+						String amountStr = null;
 						String restText;
 						String token = null;
 						String chain = null;
@@ -158,18 +158,18 @@ public class FarcasterPaymentBotService {
 						if (!StringUtils.isBlank(remainingText)) {
 							log.debug("Processing {} bot command arguments {}", command, remainingText);
 
-							val sendPattern = "(?:@(?<receiver>[a-zA-Z0-9_.-]+)\\s*)?\\s*(?<amount>\\$?[0-9]+(?:\\.[0-9]+)?)?\\s*(?<rest>.*)";
+							val sendPattern = "(?:@(?<receiver>[a-zA-Z0-9_.-]+)\\s*)?\\s*(?<amount>\\$?[0-9]+(?:\\.[0-9]+)?[km]?)?\\s*(?<rest>.*)";
 							matcher = Pattern.compile(sendPattern, Pattern.CASE_INSENSITIVE).matcher(remainingText);
 							if (matcher.find()) {
 								receiver = matcher.group("receiver");
-								amount = matcher.group("amount");
+								amountStr = matcher.group("amount");
 								restText = matcher.group("rest");
 
 								token = paymentService.parseCommandToken(restText);
 								chain = paymentService.parseCommandChain(restText);
 
 								log.debug("Receiver: {}, amount: {}, token: {}, chain: {}",
-										receiver, amount, token, chain);
+										receiver, amountStr, token, chain);
 
 								// if receiver passed fetch meta from mentions
 								if (!StringUtils.isBlank(receiver)) {
@@ -185,16 +185,24 @@ public class FarcasterPaymentBotService {
 										return;
 									}
 
-									receiverAddresses = fcProfile.verifications();
-									receiverAddresses.add(fcProfile.custodyAddress());
+									receiverAddresses = fcProfile.addresses();
 								}
 							}
 						}
 
 						// if a reply, fetch through airstack
-						if (StringUtils.isBlank(receiver) && cast.parentAuthor().fid() != null) {
-							receiver = identityService.getFidFname(cast.parentAuthor().fid());
-							receiverAddresses = identityService.getFidAddresses(cast.parentAuthor().fid());
+						if (StringUtils.isBlank(receiver)) {
+							if (cast.parentAuthor().fid() != null) {
+								receiver = identityService.getFidFname(cast.parentAuthor().fid());
+								receiverAddresses = identityService.getFidAddresses(cast.parentAuthor().fid());
+							} else {
+								val mentionedReceiver = cast.mentionedProfiles().stream()
+										.filter(u -> !u.username().equals("payflow")).findFirst().orElse(null);
+								if (mentionedReceiver != null) {
+									receiver = mentionedReceiver.username();
+									receiverAddresses = mentionedReceiver.addresses();
+								}
+							}
 						}
 
 						log.debug("Receiver: {} - addresses: {}", receiver, receiverAddresses);
@@ -216,7 +224,7 @@ public class FarcasterPaymentBotService {
 							}
 
 							String refId = null;
-							if (amount != null) {
+							if (amountStr != null) {
 								// TODO: hardcode for now, ask Neynar
 								val sourceApp = "Warpcast";
 								val sourceRef = String.format("https://warpcast.com/%s/%s",
@@ -229,10 +237,11 @@ public class FarcasterPaymentBotService {
 										TokenService.PAYMENT_CHAIN_IDS.get(chain), token);
 								payment.setReceiverAddress(receiverAddress);
 								payment.setSender(casterProfile);
-								if (amount.startsWith("$")) {
-									payment.setUsdAmount(amount.replace("$", ""));
+								if (amountStr.startsWith("$")) {
+									payment.setUsdAmount(amountStr.replace("$", ""));
 								} else {
-									payment.setTokenAmount(amount);
+									val tokenAmount = paymentService.parseTokenAmount(amountStr.toLowerCase());
+									payment.setTokenAmount(tokenAmount.toString());
 								}
 								payment.setSourceApp(sourceApp);
 								payment.setSourceRef(sourceRef);
@@ -267,6 +276,89 @@ public class FarcasterPaymentBotService {
 							}
 						} else {
 							log.error("Receiver should be specifier or it's optional if reply");
+						}
+					}
+					case "batch": {
+						if (!StringUtils.isBlank(remainingText)) {
+							log.debug("Processing {} bot command arguments {}", command, remainingText);
+
+							val batchPattern = "\\s*(?<amount>\\$?[0-9]+(?:\\.[0-9]+)?[km]?)?\\s*(?<rest>.*)";
+							matcher = Pattern.compile(batchPattern, Pattern.CASE_INSENSITIVE).matcher(remainingText);
+							if (matcher.find()) {
+								final String amountStr = matcher.group("amount");
+								String restText = matcher.group("rest");
+
+								String token = paymentService.parseCommandToken(restText);
+								String chain = paymentService.parseCommandChain(restText);
+
+								val mentions = cast.mentionedProfiles().stream()
+										.filter(u -> !u.username().equals("payflow")).distinct().toList();
+
+								log.debug("Receivers: {}, amount: {}, token: {}, chain: {}",
+										mentions, amountStr, token, chain);
+
+								if (mentions.isEmpty()) {
+									log.error("At least one mention should be specifier in batch " +
+											"command: {}", job);
+									return;
+								}
+
+								for (val mention : mentions) {
+									try {
+										val receiver = mention.username();
+										val receiverAddresses = mention.addresses();
+
+										val receiverProfile = identityService.getProfiles(receiverAddresses)
+												.stream().findFirst().orElse(null);
+
+										log.debug("Found receiver profile for receiver {} - {}", receiver, receiverProfile);
+
+										String receiverAddress = null;
+										if (receiverProfile == null) {
+											val identity = identityService.getIdentitiesInfo(receiverAddresses)
+													.stream().max(Comparator.comparingInt(IdentityMessage::score)).orElse(null);
+											if (identity != null) {
+												receiverAddress = identity.address();
+											}
+										}
+
+										// TODO: hardcode for now, ask Neynar
+										val sourceApp = "Warpcast";
+										val sourceRef = String.format("https://warpcast.com/%s/%s",
+												cast.author().username(),
+												cast.hash().substring(0, 10));
+										// TODO: check if token available for chain
+										val payment = new Payment(Payment.PaymentType.FRAME,
+												receiverProfile,
+												TokenService.PAYMENT_CHAIN_IDS.get(chain), token);
+										payment.setReceiverAddress(receiverAddress);
+										payment.setSender(casterProfile);
+										if (amountStr.startsWith("$")) {
+											payment.setUsdAmount(amountStr.replace("$", ""));
+										} else {
+											val tokenAmount = paymentService.parseTokenAmount(amountStr.toLowerCase());
+											payment.setTokenAmount(tokenAmount.toString());
+										}
+										payment.setSourceApp(sourceApp);
+										payment.setSourceRef(sourceRef);
+										paymentRepository.save(payment);
+
+										val castText = String.format("@%s send funds to @%s with the frame",
+												cast.author().username(),
+												receiver);
+										val frameUrl = String.format("https://frames.payflow.me/payment/%s", payment.getReferenceId());
+										val embeds = Collections.singletonList(
+												new Cast.Embed(frameUrl));
+										val processed = reply(castText, cast.hash(), embeds);
+										if (processed) {
+											log.debug("Payment batch reply sent for {}", receiver);
+										}
+									} catch (Throwable t) {
+										log.error("Error in batch command processing: {}", job, t);
+									}
+								}
+								job.setStatus(PaymentBotJob.Status.PROCESSED);
+							}
 						}
 					}
 					case "jar": {

@@ -157,7 +157,7 @@ function PayProfile({
                   <b>${payment.usdAmount} ≈ </b>
                 </span>
                 <span>
-                  <b>{payment.tokenAmount}</b>
+                  <b>{formatAmountWithSuffix(payment.tokenAmount)}</b>
                 </span>
               </div>
             )}
@@ -175,4 +175,16 @@ function PayProfile({
       </div>
     </div>
   );
+
+  function formatAmountWithSuffix(amountStr: string): string {
+    const amount = parseFloat(amountStr);
+
+    if (amount >= 1000000) {
+      return `${(amount / 1000000).toFixed(1)}m`;
+    } else if (amount >= 1000) {
+      return `${(amount / 1000).toFixed(1)}k`;
+    } else {
+      return amount.toString();
+    }
+  }
 }

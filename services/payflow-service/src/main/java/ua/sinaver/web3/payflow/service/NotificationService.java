@@ -48,7 +48,7 @@ public class NotificationService {
 
 						p.s. join /payflow channel for updates 👀""",
 				receiverFname,
-				StringUtils.isNotBlank(payment.getTokenAmount()) ? payment.getTokenAmount()
+				StringUtils.isNotBlank(payment.getTokenAmount()) ? PaymentService.formatAmountWithSuffix(payment.getTokenAmount())
 						: String.format("$%s", payment.getUsdAmount()),
 				payment.getToken().toUpperCase(),
 				senderFname,

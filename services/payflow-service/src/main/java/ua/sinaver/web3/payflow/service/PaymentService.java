@@ -12,6 +12,17 @@ public class PaymentService {
 	@Autowired
 	private TokenService tokenService;
 
+	public static String formatAmountWithSuffix(String amountStr) {
+		double number = Double.parseDouble(amountStr);
+		if (number >= 1_000_000) {
+			return String.format("%.1fm", number / 1_000_000);
+		} else if (number >= 1_000) {
+			return String.format("%.1fk", number / 1_000);
+		} else {
+			return String.format("%.0f", number);
+		}
+	}
+
 	public String parseCommandToken(String text) {
 		val patternStr = String.format("\\b(?<token>%s)\\b",
 				tokenService.getTokens().stream()
@@ -21,6 +32,19 @@ public class PaymentService {
 		val pattern = Pattern.compile(patternStr, Pattern.CASE_INSENSITIVE);
 		val matcher = pattern.matcher(text);
 		return matcher.find() ? matcher.group("token").toLowerCase() : "usdc";
+	}
+
+	public Double parseTokenAmount(String amountStr) {
+		var multiplier = 1;
+		if (amountStr.endsWith("k")) {
+			multiplier = 1000;
+		} else if (amountStr.endsWith("m")) {
+			multiplier = 1000000;
+		}
+
+		return Double.parseDouble(
+				amountStr.replace("k", "").replace("m", "")
+		) * multiplier;
 	}
 
 	public String parseCommandChain(String text) {

@@ -148,7 +148,7 @@ public class IdentitySubscriptionsService {
 
 			val subscribers = neynarService.subscribers(Integer.parseInt(fid))
 					.stream()
-					.map(SubscribersMessage.Subscriber::creator)
+					.map(SubscribersMessage.Subscriber::user)
 					.distinct()
 					.toList();
 
@@ -184,7 +184,7 @@ public class IdentitySubscriptionsService {
 		if (verifications == null) {
 			return Collections.emptyList();
 		}
-		
+
 		val addresses = verifications.connectedAddresses();
 		if (addresses.size() > 1) {
 			val updatedAddresses = new ArrayList<>(addresses);

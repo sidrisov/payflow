@@ -21,7 +21,8 @@ public record FarcasterUser(
 		List<String> verifications,
 		VerifiedAddresses verifiedAddresses,
 		String activeStatus,
-		boolean powerBadge
+		boolean powerBadge,
+		ViewerContext viewerContext
 ) {
 	public List<String> addresses() {
 		return Stream.concat(verifications.stream(), Stream.of(custodyAddress))
@@ -52,6 +53,11 @@ public record FarcasterUser(
 	public record VerifiedAddresses(
 			List<String> ethAddresses,
 			List<String> solAddresses
+	) {
+	}
+
+	@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+	public record ViewerContext(boolean following, boolean followedBy
 	) {
 	}
 }

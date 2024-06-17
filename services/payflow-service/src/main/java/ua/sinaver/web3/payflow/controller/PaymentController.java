@@ -16,6 +16,7 @@ import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.FarcasterMessagingService;
 import ua.sinaver.web3.payflow.service.FarcasterPaymentBotService;
+import ua.sinaver.web3.payflow.service.PaymentService;
 import ua.sinaver.web3.payflow.service.SocialGraphService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
@@ -173,7 +174,8 @@ public class PaymentController {
 
 										p.s. join /payflow channel for updates 👀""",
 								receiverFname,
-								StringUtils.isNotBlank(payment.getTokenAmount()) ? payment.getTokenAmount()
+								StringUtils.isNotBlank(payment.getTokenAmount()) ?
+										PaymentService.formatAmountWithSuffix(payment.getTokenAmount())
 										: String.format("$%s", payment.getUsdAmount()),
 								payment.getToken().toUpperCase(),
 								senderFname,
@@ -198,7 +200,7 @@ public class PaymentController {
 
 											p.s. join /payflow channel for updates 👀""",
 									receiverFname,
-									StringUtils.isNotBlank(payment.getTokenAmount()) ? payment.getTokenAmount()
+									StringUtils.isNotBlank(payment.getTokenAmount()) ? PaymentService.formatAmountWithSuffix(payment.getTokenAmount())
 											: String.format("$%s", payment.getUsdAmount()),
 									payment.getToken().toUpperCase(),
 									senderFname,
@@ -228,7 +230,7 @@ public class PaymentController {
 
 												p.s. join /payflow channel for updates 👀""",
 										receiverFname,
-										StringUtils.isNotBlank(payment.getTokenAmount()) ? payment.getTokenAmount()
+										StringUtils.isNotBlank(payment.getTokenAmount()) ? PaymentService.formatAmountWithSuffix(payment.getTokenAmount())
 												: String.format("$%s", payment.getUsdAmount()),
 										payment.getToken().toUpperCase(),
 										senderFname,

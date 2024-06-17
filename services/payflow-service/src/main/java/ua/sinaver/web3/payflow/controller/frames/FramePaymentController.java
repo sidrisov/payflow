@@ -170,7 +170,7 @@ public class FramePaymentController {
 		val entryTitle = validateMessage.action().input() != null ?
 				Base64.getUrlEncoder().withoutPadding().encodeToString(
 						validateMessage.action().input().text().getBytes(StandardCharsets.UTF_8)
-				) : null;
+				) : "";
 
 		try {
 			val baseUrl = "https://warpcast.com/~/compose";
@@ -277,7 +277,8 @@ public class FramePaymentController {
 				validateMessage.action().url());
 
 		val senderFarcasterUser = validateMessage.action().interactor();
-		val inputText = validateMessage.action().input() != null ? validateMessage.action().input().text() : null;
+		val inputText = validateMessage.action().input() != null ?
+				validateMessage.action().input().text().toLowerCase() : null;
 
 		if (StringUtils.isBlank(inputText)) {
 			log.warn("Nothing entered for payment amount by {}", senderFarcasterUser);
@@ -291,8 +292,8 @@ public class FramePaymentController {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val sourceHash = validateMessage.action().cast().hash();
 
-		val paymentPatter = "\\s*(?<amount>\\$?[0-9]+(?:\\.[0-9]+)?)?\\s*(?<rest>.*)";
-		val matcher = Pattern.compile(paymentPatter, Pattern.CASE_INSENSITIVE).matcher(inputText);
+		val paymentPattern = "\\s*(?<amount>\\$?[0-9]+(?:\\.[0-9]+)?[km]?)?\\s*(?<rest>.*)";
+		val matcher = Pattern.compile(paymentPattern, Pattern.CASE_INSENSITIVE).matcher(inputText);
 
 		if (!matcher.find()) {
 			log.warn("Enter command not recognized: {} by fid: {}", inputText, senderFarcasterUser);
@@ -300,12 +301,12 @@ public class FramePaymentController {
 					new FrameResponse.FrameMessage("Enter command not recognized!"));
 		}
 
-		val amount = matcher.group("amount");
+		val amountStr = matcher.group("amount");
 
 		Double usdAmount = null;
 		Double tokenAmount = null;
-		if (amount.startsWith("$")) {
-			usdAmount = Double.parseDouble(amount.replace("$", ""));
+		if (amountStr.startsWith("$")) {
+			usdAmount = Double.parseDouble(amountStr.replace("$", ""));
 			if (usdAmount == 0) {
 				val zeroUsdAmountError = "$ amount shouldn't be ZERO!";
 				log.warn(zeroUsdAmountError);
@@ -313,7 +314,7 @@ public class FramePaymentController {
 						new FrameResponse.FrameMessage(zeroUsdAmountError));
 			}
 		} else {
-			tokenAmount = Double.parseDouble(amount);
+			tokenAmount = paymentService.parseTokenAmount(amountStr);
 			if (tokenAmount == 0) {
 				val zeroTokenAmountError = "Token amount shouldn't be ZERO!";
 				log.warn(zeroTokenAmountError);
@@ -346,7 +347,7 @@ public class FramePaymentController {
 			paymentAddress = identity;
 		}
 
-		log.debug("Receiver: {}, amount: {}, token: {}, chain: {}", paymentAddress, amount, token, chain);
+		log.debug("Receiver: {}, amount: {}, token: {}, chain: {}", paymentAddress, amountStr, token, chain);
 
 		val payment = new Payment(Payment.PaymentType.FRAME, paymentProfile,
 				chainId, token);
@@ -577,7 +578,7 @@ public class FramePaymentController {
 										p.s. join /payflow channel for updates 👀""",
 
 								receiverFname,
-								StringUtils.isNotBlank(payment.getTokenAmount()) ? payment.getTokenAmount()
+								StringUtils.isNotBlank(payment.getTokenAmount()) ? PaymentService.formatAmountWithSuffix(payment.getTokenAmount())
 										: String.format("$%s", payment.getUsdAmount()),
 								payment.getToken().toUpperCase(),
 								senderFname,
