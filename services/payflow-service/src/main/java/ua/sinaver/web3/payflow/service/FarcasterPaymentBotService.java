@@ -230,6 +230,7 @@ public class FarcasterPaymentBotService {
 								val sourceRef = String.format("https://warpcast.com/%s/%s",
 										cast.author().username(),
 										cast.hash().substring(0, 10));
+								val sourceHash = cast.hash();
 								// TODO: check if token available for chain
 								val payment = new Payment(command.equals("send") ?
 										Payment.PaymentType.FRAME : Payment.PaymentType.INTENT,
@@ -245,6 +246,7 @@ public class FarcasterPaymentBotService {
 								}
 								payment.setSourceApp(sourceApp);
 								payment.setSourceRef(sourceRef);
+								payment.setSourceHash(sourceHash);
 								paymentRepository.save(payment);
 								refId = payment.getReferenceId();
 							}
@@ -278,7 +280,8 @@ public class FarcasterPaymentBotService {
 							log.error("Receiver should be specifier or it's optional if reply");
 						}
 					}
-					case "batch": {
+					case "batch":
+					case "intents": {
 						if (!StringUtils.isBlank(remainingText)) {
 							log.debug("Processing {} bot command arguments {}", command, remainingText);
 
@@ -292,7 +295,10 @@ public class FarcasterPaymentBotService {
 								String chain = paymentService.parseCommandChain(restText);
 
 								val mentions = cast.mentionedProfiles().stream()
-										.filter(u -> !u.username().equals("payflow")).distinct().toList();
+										.filter(u ->
+												!u.username().equals("payflow")
+														&& !u.username().equals("bountybot")
+										).distinct().toList();
 
 								log.debug("Receivers: {}, amount: {}, token: {}, chain: {}",
 										mentions, amountStr, token, chain);
@@ -327,8 +333,10 @@ public class FarcasterPaymentBotService {
 										val sourceRef = String.format("https://warpcast.com/%s/%s",
 												cast.author().username(),
 												cast.hash().substring(0, 10));
+										val sourceHash = cast.hash();
 										// TODO: check if token available for chain
-										val payment = new Payment(Payment.PaymentType.FRAME,
+										val payment = new Payment(command.equals("batch") ?
+												Payment.PaymentType.FRAME : Payment.PaymentType.INTENT,
 												receiverProfile,
 												TokenService.PAYMENT_CHAIN_IDS.get(chain), token);
 										payment.setReceiverAddress(receiverAddress);
@@ -341,11 +349,20 @@ public class FarcasterPaymentBotService {
 										}
 										payment.setSourceApp(sourceApp);
 										payment.setSourceRef(sourceRef);
+										payment.setSourceHash(sourceHash);
 										paymentRepository.save(payment);
+										
+										String castText;
+										if (command.equals("batch")) {
+											castText = String.format("@%s send funds to @%s with the frame",
+													cast.author().username(),
+													receiver);
+										} else {
+											castText = String.format("@%s send funds to @%s in the app",
+													cast.author().username(),
+													receiver);
+										}
 
-										val castText = String.format("@%s send funds to @%s with the frame",
-												cast.author().username(),
-												receiver);
 										val frameUrl = String.format("https://frames.payflow.me/payment/%s", payment.getReferenceId());
 										val embeds = Collections.singletonList(
 												new Cast.Embed(frameUrl));

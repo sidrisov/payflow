@@ -389,6 +389,10 @@ public class FramePaymentController {
 					apiServiceUrl.concat(String.format(PAY_IN_FRAME_CONFIRM, refId))));
 		}
 
+		frameResponseBuilder.button(new FrameButton("\uD83D\uDE4B\uD83C\uDFFB FAQ",
+				FrameButton.ActionType.LINK,
+				"https://payflowlabs.notion.site/FAQs-20593cf7734e4d78ad0dc91c8e8982e5"));
+
 		return frameResponseBuilder.build().toHtmlResponse();
 	}
 

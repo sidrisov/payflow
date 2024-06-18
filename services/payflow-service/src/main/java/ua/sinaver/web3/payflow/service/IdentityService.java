@@ -77,15 +77,15 @@ public class IdentityService implements IIdentityService {
 
 	@Override
 	public String getENSAddress(String ens) {
-		val wallet =
-				socialGraphService.getSocialMetadata(ens);
+		val wallet = socialGraphService.getSocialMetadata(ens);
 
-		String ensAddress = null;
-		if (wallet != null && wallet.getAddresses() != null) {
-			ensAddress = wallet.getAddresses().stream().findFirst().orElse(null);
+		if (wallet == null || wallet.getAddresses() == null) {
+			log.warn("ENS Address for {} was not found!", ens);
+			return null;
 		}
 
-		log.debug("Addresses for {}: {}", ens, ensAddress);
+		String ensAddress = wallet.getAddresses().stream().findFirst().orElse(null);
+		log.debug("ENS Address for {}: {}", ens, ensAddress);
 		return ensAddress;
 	}
 
@@ -108,6 +108,12 @@ public class IdentityService implements IIdentityService {
 	public String getFidFname(int fid) {
 		val wallet = socialGraphService.getSocialMetadata(
 				"fc_fid:".concat(String.valueOf(fid)));
+
+		if (wallet == null) {
+			log.warn("Username for {} was not found!", fid);
+			return null;
+		}
+
 		val username = wallet.getSocials().stream()
 				.filter(social -> social.getDappName().equals(SocialDappName.farcaster))
 				.findFirst().map(Social::getProfileName).orElse(null);
@@ -118,6 +124,12 @@ public class IdentityService implements IIdentityService {
 	@Override
 	public String getIdentityFname(String identity) {
 		val wallet = socialGraphService.getSocialMetadata(identity);
+
+		if (wallet == null) {
+			log.warn("Username for {} was not found!", identity);
+			return null;
+		}
+
 		val username = wallet.getSocials().stream()
 				.filter(social -> social.getDappName().equals(SocialDappName.farcaster))
 				.findFirst().map(Social::getProfileName).orElse(null);
@@ -130,6 +142,12 @@ public class IdentityService implements IIdentityService {
 		log.debug("Fetching fid for: {}", identity);
 
 		val wallet = socialGraphService.getSocialMetadata(identity);
+
+		if (wallet == null) {
+			log.warn("Fid for {} was not found!", identity);
+			return null;
+		}
+
 		val fid = wallet.getSocials().stream()
 				.filter(social -> social.getDappName().equals(SocialDappName.farcaster))
 				.findFirst().map(Social::getUserId).orElse(null);
