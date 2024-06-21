@@ -320,7 +320,7 @@ public class FarcasterPaymentBotService {
 										log.debug("Found receiver profile for receiver {} - {}", receiver, receiverProfile);
 
 										String receiverAddress = null;
-										if (receiverProfile == null) {
+										if (receiverProfile == null || receiverProfile.getDefaultFlow() == null) {
 											val identity = identityService.getIdentitiesInfo(receiverAddresses)
 													.stream().max(Comparator.comparingInt(IdentityMessage::score)).orElse(null);
 											if (identity != null) {
@@ -337,7 +337,8 @@ public class FarcasterPaymentBotService {
 										// TODO: check if token available for chain
 										val payment = new Payment(command.equals("batch") ?
 												Payment.PaymentType.FRAME : Payment.PaymentType.INTENT,
-												receiverProfile,
+												(receiverProfile != null && receiverProfile.getDefaultFlow() != null) ?
+														receiverProfile : null,
 												TokenService.PAYMENT_CHAIN_IDS.get(chain), token);
 										payment.setReceiverAddress(receiverAddress);
 										payment.setSender(casterProfile);
@@ -351,7 +352,7 @@ public class FarcasterPaymentBotService {
 										payment.setSourceRef(sourceRef);
 										payment.setSourceHash(sourceHash);
 										paymentRepository.save(payment);
-										
+
 										String castText;
 										if (command.equals("batch")) {
 											castText = String.format("@%s send funds to @%s with the frame",
