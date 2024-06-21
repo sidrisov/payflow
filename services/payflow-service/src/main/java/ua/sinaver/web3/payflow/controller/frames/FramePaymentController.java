@@ -344,7 +344,12 @@ public class FramePaymentController {
 					.map(Wallet::getAddress).findFirst().orElse(null);
 		}
 		if (StringUtils.isBlank(paymentAddress)) {
-			paymentAddress = identity;
+			// TODO: add a proper fix to support recipients based on ens, fc name, fid
+			if (identity.endsWith(".eth") || identity.endsWith(".cb.id")) {
+				paymentAddress = identityService.getENSAddress(identity);
+			} else {
+				paymentAddress = identity;
+			}
 		}
 
 		log.debug("Receiver: {}, amount: {}, token: {}, chain: {}", paymentAddress, amountStr, token, chain);
