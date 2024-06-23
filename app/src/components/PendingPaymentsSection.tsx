@@ -292,7 +292,9 @@ export function PendingPaymentsSection({
           flexWrap="wrap">
           <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
             <b>
-              {formatAmountWithSuffix(payment.tokenAmount.toString()) ?? `$${payment.usdAmount}`}
+              {payment.tokenAmount
+                ? formatAmountWithSuffix(payment.tokenAmount.toString())
+                : `$${payment.usdAmount}`}
             </b>{' '}
             of
           </Typography>
