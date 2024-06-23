@@ -25,7 +25,7 @@ import { ProfileDisplayNameWithLink } from './ProfileDisplayNameWithLink';
 import { PublicProfileDetailsPopover } from './menu/PublicProfileDetailsPopover';
 import { ProfileType } from '../types/ProfleType';
 import { ERC20_CONTRACTS, Token } from '../utils/erc20contracts';
-import { normalizeNumberPrecision } from '../utils/normalizeNumberPrecision';
+import { formatAmountWithSuffix, normalizeNumberPrecision } from '../utils/formats';
 import TokenAvatar from './avatars/TokenAvatar';
 import { useTokenPrices } from '../utils/queries/prices';
 
@@ -197,7 +197,7 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
             textOverflow="ellipsis">
             <Stack direction="row" spacing={0.5} alignItems="center">
               <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
-                {normalizeNumberPrecision(value) + ' ' + token.name}
+                {formatAmountWithSuffix(normalizeNumberPrecision(value)) + ' ' + token.name}
               </Typography>
               <TokenAvatar
                 token={token}

@@ -1,0 +1,5 @@
+ALTER TABLE wallet
+ADD COLUMN disabled BOOLEAN;
+
+ALTER TABLE flow
+ADD COLUMN archived BOOLEAN;

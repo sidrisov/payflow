@@ -60,6 +60,9 @@ public class Flow {
 			true)
 	private List<Wallet> wallets;
 
+	@Column(columnDefinition = "boolean")
+	private boolean archived = false;
+
 	@Column
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createdDate = new Date();

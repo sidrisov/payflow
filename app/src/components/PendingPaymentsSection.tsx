@@ -30,6 +30,7 @@ import { ProfileContext } from '../contexts/UserContext';
 import { QUERY_FARCASTER_PROFILE } from '../utils/airstackQueries';
 import { useQuery } from '@airstack/airstack-react';
 import { Social } from '../generated/graphql/types';
+import { formatAmountWithSuffix } from '../utils/formats';
 
 export function PendingPaymentsSection({
   flow,
@@ -290,7 +291,10 @@ export function PendingPaymentsSection({
           useFlexGap
           flexWrap="wrap">
           <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
-            <b>{payment.tokenAmount ?? `$${payment.usdAmount}`}</b> of
+            <b>
+              {formatAmountWithSuffix(payment.tokenAmount.toString()) ?? `$${payment.usdAmount}`}
+            </b>{' '}
+            of
           </Typography>
           <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
             <b>{getTokenName(payment.token)}</b>

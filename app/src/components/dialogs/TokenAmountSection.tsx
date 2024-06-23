@@ -14,7 +14,7 @@ import { formatUnits, parseUnits } from 'viem';
 import { FlowWalletType } from '../../types/FlowType';
 import { grey, red } from '@mui/material/colors';
 import { Token } from '../../utils/erc20contracts';
-import { normalizeNumberPrecision } from '../../utils/normalizeNumberPrecision';
+import { normalizeNumberPrecision } from '../../utils/formats';
 import { useTokenPrices } from '../../utils/queries/prices';
 import { PaymentType } from '../../types/PaymentType';
 

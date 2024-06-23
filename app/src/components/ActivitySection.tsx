@@ -21,7 +21,7 @@ import AddressSectionButton from './menu/AddressSectionButton';
 import { getNetworkDefaultBlockExplorerUrl } from '../utils/networks';
 import { timeAgo } from '../utils/time';
 import { ERC20_CONTRACTS, Token } from '../utils/erc20contracts';
-import { normalizeNumberPrecision } from '../utils/normalizeNumberPrecision';
+import { normalizeNumberPrecision } from '../utils/formats';
 import { useTokenPrices } from '../utils/queries/prices';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)

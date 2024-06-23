@@ -6,7 +6,7 @@ import { useBalance, useChainId } from 'wagmi';
 import { FlowWalletType } from '../types/FlowType';
 import { Token, getSupportedTokens } from '../utils/erc20contracts';
 import { getNetworkDisplayName } from '../utils/networks';
-import { normalizeNumberPrecision } from '../utils/normalizeNumberPrecision';
+import { normalizeNumberPrecision } from '../utils/formats';
 import { useTokenPrices } from '../utils/queries/prices';
 import { NetworkSelectorButton } from './buttons/NetworkSelectorButton';
 import { TokenSelectorButton } from './buttons/TokenSelectorButton';

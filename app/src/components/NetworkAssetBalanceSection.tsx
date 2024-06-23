@@ -1,6 +1,6 @@
 import { Badge, Box, Stack, Typography } from '@mui/material';
 import NetworkAvatar from './avatars/NetworkAvatar';
-import { normalizeNumberPrecision } from '../utils/normalizeNumberPrecision';
+import { normalizeNumberPrecision } from '../utils/formats';
 import TokenAvatar from './avatars/TokenAvatar';
 import { AssetType } from '../types/AssetType';
 

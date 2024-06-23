@@ -71,7 +71,9 @@ public record FlowMessage(String signer, String signerProvider,
 		val flowSignerCredential = signerInfo && user != null ? flow.getSignerCredential() : null;
 
 
-		val wallets = flow.getWallets().stream().map(WalletMessage::convert)
+		val wallets = flow.getWallets().stream()
+				.filter(w -> !w.isDisabled())
+				.map(WalletMessage::convert)
 				.toList();
 		return new FlowMessage(flowSigner, flowSignerProvider,
 				flowSignerType, flowSignerCredential,

@@ -1,10 +1,10 @@
 import { Box, Menu, MenuItem, MenuProps, Tooltip, Typography } from '@mui/material';
 import { FlowType } from '../../types/FlowType';
-import { Check, Star } from '@mui/icons-material';
+import { Check, Star, Warning } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { useContext } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
-import { green } from '@mui/material/colors';
+import { green, red } from '@mui/material/colors';
 
 export type ChooseFlowMenuProps = MenuProps &
   CloseCallbackType & {
@@ -27,7 +27,7 @@ export function ChooseFlowMenu({
       <Menu
         {...props}
         onClose={closeStateCallback}
-        sx={{ mt: 1, '.MuiMenu-paper': { borderRadius: 5 } }}
+        sx={{ mt: 1, maxWidth: 300, '.MuiMenu-paper': { borderRadius: 5 } }}
         anchorOrigin={{
           vertical: 'bottom',
           horizontal: 'left'
@@ -56,6 +56,19 @@ export function ChooseFlowMenu({
                 {option.type === 'JAR' && (
                   <Tooltip title="Jar">
                     <Box src="/jar.png" component="img" sx={{ width: 20, height: 20 }} />
+                  </Tooltip>
+                )}
+
+                {option.wallets.length > 0 && option.wallets.find((w) => w.version === '1.3.0') && (
+                  <Tooltip
+                    arrow
+                    title={
+                      <Typography variant="subtitle2" color={red[400]} width="300">
+                        Legacy flows will be decomissioned soon! <br />
+                        Please, move your funds to other flows.
+                      </Typography>
+                    }>
+                    <Warning fontSize="small" sx={{ color: red[400] }} />
                   </Tooltip>
                 )}
               </Box>

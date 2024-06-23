@@ -84,6 +84,7 @@ public class FarcasterPaymentBotService {
 
 		jobs.forEach(job -> {
 			val cast = job.getCast();
+			// TODO: process specific commands patter @payflow intent|send|...
 			val botCommandPattern = String.format("\\s*(?<beforeText>.*?)?@payflow%s\\s+(?<command>\\w+)" +
 							"(?:\\s+(?<remaining>.+))?",
 					isTestBotEnabled ? "\\s+test" : "");

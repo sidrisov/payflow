@@ -9,11 +9,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
+import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.farcaster.CastActionMeta;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.IdentityService;
 import ua.sinaver.web3.payflow.service.SocialGraphService;
+import ua.sinaver.web3.payflow.service.TokenService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
@@ -22,7 +24,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import static ua.sinaver.web3.payflow.service.TokenService.PAYMENT_CHAIN_IDS;
-import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYMENTS_TOKENS;
 
 @RestController
 @RequestMapping("/farcaster/actions/pay")
@@ -41,6 +42,9 @@ public class IntentsController {
 
 	@Autowired
 	private SocialGraphService socialGraphService;
+
+	@Autowired
+	private TokenService tokenService;
 
 	public static String formatDouble(Double value) {
 		val df = new DecimalFormat("#.#####");
@@ -104,7 +108,10 @@ public class IntentsController {
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
 				validateMessage.action().url());
 
-		if (!SUPPORTED_FRAME_PAYMENTS_TOKENS.contains(token)) {
+		val supportedTokens = tokenService.getTokens().stream()
+				.map(Token::id).toList();
+
+		if (!supportedTokens.contains(token)) {
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Token not supported!"));
 		}

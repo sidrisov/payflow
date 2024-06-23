@@ -43,7 +43,7 @@ import {
   encodeFunctionData,
   toHex
 } from 'viem';
-import { normalizeNumberPrecision } from '../../utils/normalizeNumberPrecision';
+import { normalizeNumberPrecision } from '../../utils/formats';
 import { useGlideEstimatePayment, useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
 import { ProfileContext } from '../../contexts/UserContext';
 import { useSafeTransfer } from '../../utils/hooks/useSafeTransfer';

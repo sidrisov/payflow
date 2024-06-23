@@ -37,6 +37,9 @@ public class Wallet {
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createdDate = new Date();
 
+	@Column(columnDefinition = "boolean")
+	private boolean disabled = false;
+
 	@Version
 	private Long version;
 

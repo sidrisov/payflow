@@ -108,6 +108,9 @@ class FlowController {
 
 	@GetMapping("/wallets")
 	public List<WalletMessage> getAllWallets() {
-		return walletRepository.findAll().stream().map(WalletMessage::convert).toList();
+		return walletRepository.findAll().stream()
+				.filter(w -> !w.isDisabled())
+				.map(WalletMessage::convert)
+				.toList();
 	}
 }
