@@ -6,19 +6,15 @@ import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ua.sinaver.web3.payflow.data.Payment;
-import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.message.farcaster.CastActionMeta;
-import ua.sinaver.web3.payflow.message.farcaster.FarcasterUser;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
-import ua.sinaver.web3.payflow.message.farcaster.ValidatedFrameResponseMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
-import static ua.sinaver.web3.payflow.service.TokenService.ETH_TOKEN;
-import static ua.sinaver.web3.payflow.service.TokenService.OP_CHAIN_ID;
+import java.util.Comparator;
 
 @RestController
 @RequestMapping("/farcaster/actions/products")
@@ -40,34 +36,14 @@ public class ProductsController {
 	@Autowired
 	private PaymentRepository paymentRepository;
 
-	private static Payment getPayment(ValidatedFrameResponseMessage validateMessage,
-	                                  FarcasterUser castAuthor, User clickedProfile) {
-		val sourceApp = validateMessage.action().signer().client().displayName();
-		val castHash = validateMessage.action().cast().hash();
-		// maybe would make sense to reference top cast instead (if it's a bot cast)
-		val sourceRef = String.format("https://warpcast.com/%s/%s",
-				castAuthor.username(), castHash.substring(0,
-						10));
-
-		val payment = new Payment(Payment.PaymentType.INTENT,
-				null, OP_CHAIN_ID, ETH_TOKEN);
-		payment.setCategory("fc_storage");
-		payment.setReceiverFid(castAuthor.fid());
-		payment.setSender(clickedProfile);
-		payment.setSourceApp(sourceApp);
-		payment.setSourceRef(sourceRef);
-		payment.setSourceHash(castHash);
-		return payment;
-	}
-
 	@GetMapping("/storage")
-	public CastActionMeta storageActionMetadata() {
+	public CastActionMeta storageMetadata() {
 		log.debug("Received metadata request for cast action: gift storage");
 		return GIFT_STORAGE_CAST_ACTION_META;
 	}
 
 	@PostMapping("/storage")
-	public ResponseEntity<FrameResponse.FrameMessage> invite(@RequestBody FrameMessage castActionMessage) {
+	public ResponseEntity<?> storage(@RequestBody FrameMessage castActionMessage) {
 		log.debug("Received cast action: gift storage {}", castActionMessage);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				castActionMessage.trustedData().messageBytes());
@@ -83,23 +59,46 @@ public class ProductsController {
 		val castAuthor = validateMessage.action().cast().author();
 		val castInteractor = validateMessage.action().interactor();
 
-		val clickedProfile =
-				identityService.getProfiles(castInteractor.addresses()).stream().findFirst().orElse(null);
+		val clickedProfile = identityService.getProfiles(castInteractor.addresses())
+				.stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
 			log.error("Clicked fid {} is not on payflow", castInteractor);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Sign up on Payflow first!"));
 		}
 
-		val payment = getPayment(validateMessage, castAuthor, clickedProfile);
-		paymentRepository.save(payment);
+		// pay first with higher social score
+		val paymentAddresses = identityService.getIdentitiesInfo(castAuthor.addressesWithoutCustodialIfAvailable())
+				.stream().max(Comparator.comparingInt(IdentityMessage::score))
+				.map(IdentityMessage::address).stream().toList();
 
-		log.debug("Gift storage payment intent saved: {}", payment);
+		// check if profile exist
+		val paymentProfile = identityService.getProfiles(paymentAddresses).stream().findFirst().orElse(null);
+		if (paymentProfile == null) {
+			log.warn("Caster fid {} is not on Payflow", castAuthor);
+		}
+
+		String paymentAddress;
+		if (paymentProfile == null || paymentProfile.getDefaultFlow() == null) {
+			if (!paymentAddresses.isEmpty()) {
+				// return first associated address without custodial
+				paymentAddress = paymentAddresses.size() > 1 ?
+						paymentAddresses.stream()
+								.filter(e -> !e.equals(castAuthor.custodyAddress()))
+								.findFirst()
+								.orElse(null) :
+						paymentAddresses.getFirst();
+			} else {
+				return ResponseEntity.badRequest().body(
+						new FrameResponse.FrameMessage("Recipient address not found!"));
+			}
+		} else {
+			// return profile identity
+			paymentAddress = paymentProfile.getIdentity();
+		}
 
 		return ResponseEntity.ok().body(
-				new FrameResponse.FrameMessage(
-						String.format("Gift storage intent for @%s submitted. Pay in the app!",
-								castAuthor.username()))
-		);
+				new FrameResponse.ActionFrame("frame", String.format("https://frames.payflow" +
+						".me/%s/storage", paymentAddress)));
 	}
 }

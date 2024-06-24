@@ -162,6 +162,8 @@ export function PendingPaymentsSection({
       }
     );
 
+    const numberOfUnits = payment.tokenAmount ?? 1;
+
     return (
       <Box
         key={payment.referenceId}
@@ -221,7 +223,7 @@ export function PendingPaymentsSection({
               variant="subtitle2"
               fontWeight="bold"
               fontSize={isMobile ? 12 : 13}>
-              1 Unit of Storage
+              {numberOfUnits} Unit{numberOfUnits > 1 ? 's' : ''} of Storage
             </Typography>
           </>
         )}

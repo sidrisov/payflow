@@ -32,6 +32,7 @@ import { getAssetBalances, getFlowAssets, getTotalBalance } from './utils/balanc
 import { XmtpOpenFramesRequest, validateFramesPost } from '@xmtp/frames-validator';
 import { normalizeNumberPrecision } from './utils/normalizeNumberPrecision';
 import { createJarHtml } from './components/CreateJar';
+import { giftStorageHtml } from './components/GiftStorage';
 
 dotenv.config();
 
@@ -200,6 +201,20 @@ async function startServer() {
         payProfileHtml(identityData, step as any, payment, entryTitle as any),
         'landscape'
       );
+      res.type('png').send(image);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error retrieving profile data');
+    }
+  });
+
+  app.get('/images/profile/:identity/storage.png', async (req, res) => {
+    const identity = req.params.identity as Address;
+
+    try {
+      const response = await axios.get(`${API_URL}/api/user/identities/${identity}`);
+      let identityData = (response.data !== '' ? response.data : { identity }) as IdentityType;
+      const image = await htmlToImage(giftStorageHtml(identityData), 'landscape');
       res.type('png').send(image);
     } catch (error) {
       console.error(error);

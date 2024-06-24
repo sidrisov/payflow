@@ -84,7 +84,6 @@ public class PayController {
 			paymentAddress = paymentProfile.getIdentity();
 		}
 
-		// just responding with dummy frame
 		return ResponseEntity.ok().body(
 				new FrameResponse.ActionFrame("frame", String.format("https://frames.payflow" +
 						".me/%s", paymentAddress)));

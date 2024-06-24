@@ -102,6 +102,8 @@ export default function GiftStorageDialog({
   const { data: signer } = useWalletClient();
   const client = useClient();
 
+  const numberOfUnits = payment.tokenAmount ?? 1;
+
   const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
 
   const { isFetched: isUnitPriceFetched, data: rentUnitPrice } = useReadContract({
@@ -109,7 +111,7 @@ export default function GiftStorageDialog({
     address: OP_FARCASTER_STORAGE_CONTRACT_ADDR,
     abi: rentStorageAbi,
     functionName: 'price',
-    args: [1n]
+    args: [BigInt(numberOfUnits)]
   });
 
   const { isLoading: isPaymentOptionLoading, data: paymentOption } = useGlideEstimatePayment(
@@ -124,7 +126,7 @@ export default function GiftStorageDialog({
       input: encodeFunctionData({
         abi: rentStorageAbi,
         functionName: 'rent',
-        args: [BigInt(payment.receiverFid ?? 0), 1n]
+        args: [BigInt(payment.receiverFid ?? 0), BigInt(numberOfUnits)]
       })
     }
   );
@@ -307,7 +309,7 @@ export default function GiftStorageDialog({
                 </Typography>
               )}
               <Typography fontSize={18} fontWeight="bold">
-                1 Unit of Storage
+                {numberOfUnits} Unit{numberOfUnits > 1 ? "s" : ""} of Storage
               </Typography>
             </Stack>
           )}
