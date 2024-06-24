@@ -52,7 +52,7 @@ import { Social } from '../../generated/graphql/types';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { completePayment } from '../../services/payments';
-import { grey } from '@mui/material/colors';
+import { grey, red } from '@mui/material/colors';
 
 export type GiftStorageDialog = DialogProps &
   CloseCallbackType & {
@@ -141,7 +141,7 @@ export default function GiftStorageDialog({
       input: encodeFunctionData({
         abi: rentStorageAbi,
         functionName: 'rent',
-        args: [BigInt(payment.receiverFid ?? 0), 1n]
+        args: [BigInt(payment.receiverFid ?? 0), BigInt(numberOfUnits)]
       })
     }
   );
@@ -170,10 +170,6 @@ export default function GiftStorageDialog({
     try {
       const tx = {
         chainId: optimism.id,
-        /*         address: '0x0b2c639c533813f4aa9d7837caf62653d097ff85',
-        abi: erc20Abi,
-        functionName: 'transfer',
-        args: ['0x0dEe77c83cB8b14fA95497825dF93202AbF6ad83', parseUnits('0.1', 6)] */
         address: OP_FARCASTER_STORAGE_CONTRACT_ADDR,
         abi: rentStorageAbi,
         functionName: 'rent',
@@ -199,7 +195,6 @@ export default function GiftStorageDialog({
           switchChainAsync,
           sendTransactionAsync: async (tx) => {
             console.log('Glide tnxs: ', tx);
-
             // TODO: hard to figure out if there 2 signers or one, for now consider if signerProvider not specified - 1, otherwise - 2
             const owners = [];
             if (
@@ -291,13 +286,13 @@ export default function GiftStorageDialog({
               <KeyboardDoubleArrowDown />
               <FarcasterRecipientField social={social} />
 
-              {isPaymentOptionLoading || !paymentOption ? (
+              {isPaymentOptionLoading ? (
                 <Skeleton
                   title="fetching price"
                   variant="rectangular"
                   sx={{ borderRadius: 3, height: 45, width: 100 }}
                 />
-              ) : (
+              ) : paymentOption ? (
                 <Typography
                   fontSize={30}
                   fontWeight="bold"
@@ -307,9 +302,13 @@ export default function GiftStorageDialog({
                   {normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))}{' '}
                   {paymentOption.currencySymbol}
                 </Typography>
+              ) : (
+                <Typography fontSize={14} fontWeight="bold" color={red.A400}>
+                  You don't have any balance to cover storage cost
+                </Typography>
               )}
               <Typography fontSize={18} fontWeight="bold">
-                {numberOfUnits} Unit{numberOfUnits > 1 ? "s" : ""} of Storage
+                {numberOfUnits} Unit{numberOfUnits > 1 ? 's' : ''} of Storage
               </Typography>
             </Stack>
           )}

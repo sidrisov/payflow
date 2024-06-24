@@ -43,7 +43,7 @@ export function getFlowAssets(flow: FlowType) {
         assets.push({
           address: wallet.address,
           chainId,
-          token: token.address !== zeroAddress ? token.address : undefined
+          token: token.tokenAddress !== zeroAddress ? token.tokenAddress : undefined
         });
       });
     }

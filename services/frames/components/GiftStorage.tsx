@@ -1,10 +1,14 @@
 /* eslint-disable jsx-a11y/alt-text */
 import { IdentityType } from '../types/ProfleType';
+import { StorageUsage } from '../types/StorageUsageType';
 import { shortenWalletAddressLabel } from '../utils/address';
+import { formatNumberWithSuffix } from '../utils/format';
 
-export const giftStorageHtml = (identity: IdentityType) => <GiftStorage identity={identity} />;
+export const giftStorageHtml = (identity: IdentityType, storage: StorageUsage) => (
+  <GiftStorage identity={identity} storage={storage} />
+);
 
-function GiftStorage({ identity }: { identity: IdentityType }) {
+function GiftStorage({ identity, storage }: { identity: IdentityType; storage: StorageUsage }) {
   const title = '🎁 Gift Storage';
 
   const farcasterSocial = identity?.meta?.socials?.find((s) => s.dappName === 'farcaster');
@@ -56,81 +60,87 @@ function GiftStorage({ identity }: { identity: IdentityType }) {
             </span>
           </div>
         )}
-        {/* {step !== 'create' && step !== 'start' && step !== 'command' && (
+
+        <div
+          style={{
+            margin: 10,
+            minWidth: 250,
+            maxWidth: 300,
+            height: 230,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-start',
+            alignItems: 'flex-start',
+            padding: 16,
+            fontSize: 36,
+            backgroundColor: '#e0e0e0',
+            borderRadius: 25,
+            gap: 10
+          }}>
           <div
             style={{
-              margin: 10,
-              minWidth: 250,
-              maxWidth: 300,
-              height: 230,
               display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'flex-start',
-              alignItems: 'flex-start',
-              padding: 16,
-              fontSize: 36,
-              backgroundColor: '#e0e0e0',
-              borderRadius: 25,
-              gap: 10
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center'
             }}>
-            {payment.chainId && (
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  gap: 10
-                }}>
-                <img
-                  src={assetImageSrc(getNetworkImageSrc(payment.chainId as number))}
-                  style={{ width: 36, height: 36, borderRadius: '50%' }}
-                />
-                <span style={{ fontWeight: 'bold' }}>{getNetworkDisplayName(payment.chainId)}</span>
-              </div>
-            )}
-            {payment.token && (
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  gap: 10
-                }}>
-                <img src={tokenImgSrc} style={{ width: 36, height: 36, borderRadius: '50%' }} />
-                <span style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>
-                  <b>{payment.token}</b>
-                </span>
-              </div>
-            )}
-            {payment.usdAmount && payment.tokenAmount && (
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}>
-                <span>
-                  <b>${payment.usdAmount} ≈ </b>
-                </span>
-                <span>
-                  <b>{formatAmountWithSuffix(payment.tokenAmount)}</b>
-                </span>
-              </div>
-            )}
+            <span>
+              <b>Has {storage.total_active_units} Units</b>
+            </span>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
             <span>
               <b>
-                {payment.status
-                  ? payment.status === 'success'
-                    ? '✅ Success'
-                    : '❌ Failed'
-                  : '⏳ Pending'}
+                📝 {formatNumberWithSuffix(storage.casts.used.toString())}/
+                {formatNumberWithSuffix(storage.casts.capacity.toString())}
               </b>
             </span>
           </div>
-        )} */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+            <span>
+              <b>
+                👍 {formatNumberWithSuffix(storage.reactions.used.toString())}/
+                {formatNumberWithSuffix(storage.reactions.capacity.toString())}
+              </b>
+            </span>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+            <span>
+              <b>
+                👥 {formatNumberWithSuffix(storage.links.used.toString())}/
+                {formatNumberWithSuffix(storage.links.capacity.toString())}
+              </b>
+            </span>
+          </div>
+
+          {/* <span>
+            <b>
+              {payment.status
+                ? payment.status === 'success'
+                  ? '✅ Success'
+                  : '❌ Failed'
+                : '⏳ Pending'}
+            </b>
+          </span> */}
+        </div>
       </div>
     </div>
   );

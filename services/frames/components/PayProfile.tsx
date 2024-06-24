@@ -5,6 +5,7 @@ import { shortenWalletAddressLabel } from '../utils/address';
 import { assetImageSrc } from '../utils/image';
 import getNetworkImageSrc, { getNetworkDisplayName } from '../utils/networks';
 import { ERC20_CONTRACTS } from '../utils/erc20contracts';
+import { formatNumberWithSuffix } from '../utils/format';
 
 type PaymentStep = 'create' | 'start' | 'command' | 'confirm' | 'execute';
 
@@ -157,7 +158,7 @@ function PayProfile({
                   <b>${payment.usdAmount} ≈ </b>
                 </span>
                 <span>
-                  <b>{formatAmountWithSuffix(payment.tokenAmount)}</b>
+                  <b>{formatNumberWithSuffix(payment.tokenAmount)}</b>
                 </span>
               </div>
             )}
@@ -175,16 +176,4 @@ function PayProfile({
       </div>
     </div>
   );
-
-  function formatAmountWithSuffix(amountStr: string): string {
-    const amount = parseFloat(amountStr);
-
-    if (amount >= 1000000) {
-      return `${(amount / 1000000).toFixed(1)}m`;
-    } else if (amount >= 1000) {
-      return `${(amount / 1000).toFixed(1)}k`;
-    } else {
-      return amount.toString();
-    }
-  }
 }

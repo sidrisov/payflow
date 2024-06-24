@@ -18,6 +18,7 @@ import ua.sinaver.web3.payflow.service.FarcasterMessagingService;
 import ua.sinaver.web3.payflow.service.FarcasterPaymentBotService;
 import ua.sinaver.web3.payflow.service.PaymentService;
 import ua.sinaver.web3.payflow.service.SocialGraphService;
+import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
 
@@ -51,6 +52,9 @@ public class PaymentController {
 
 	@Autowired
 	private SocialGraphService socialGraphService;
+
+	@Autowired
+	private IFarcasterNeynarService neynarService;
 
 	public static String formatDouble(Double value) {
 		val df = new DecimalFormat("#.#####");
@@ -171,11 +175,10 @@ public class PaymentController {
 										🧾 Receipt: %s
 
 										Install `🔥 Top Comment Intent` at app.payflow.me/actions
-
 										p.s. join /payflow channel for updates 👀""",
 								receiverFname,
 								StringUtils.isNotBlank(payment.getTokenAmount()) ?
-										PaymentService.formatAmountWithSuffix(payment.getTokenAmount())
+										PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 										: String.format("$%s", payment.getUsdAmount()),
 								payment.getToken().toUpperCase(),
 								senderFname,
@@ -197,10 +200,9 @@ public class PaymentController {
 											🧾 Receipt: %s
 
 											Install `💜️Intent` at app.payflow.me/actions
-
 											p.s. join /payflow channel for updates 👀""",
 									receiverFname,
-									StringUtils.isNotBlank(payment.getTokenAmount()) ? PaymentService.formatAmountWithSuffix(payment.getTokenAmount())
+									StringUtils.isNotBlank(payment.getTokenAmount()) ? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 											: String.format("$%s", payment.getUsdAmount()),
 									payment.getToken().toUpperCase(),
 									senderFname,
@@ -227,10 +229,9 @@ public class PaymentController {
 												🧾 Receipt: %s
 
 												Install `💜️Intent` at app.payflow.me/actions
-
 												p.s. join /payflow channel for updates 👀""",
 										receiverFname,
-										StringUtils.isNotBlank(payment.getTokenAmount()) ? PaymentService.formatAmountWithSuffix(payment.getTokenAmount())
+										StringUtils.isNotBlank(payment.getTokenAmount()) ? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 												: String.format("$%s", payment.getUsdAmount()),
 										payment.getToken().toUpperCase(),
 										senderFname,
@@ -250,18 +251,36 @@ public class PaymentController {
 						}
 					}
 				} else if (payment.getCategory().equals("fc_storage")) {
+					val storageUsage = neynarService.fetchStorageUsage(payment.getReceiverFid());
+					val storageUsageText = storageUsage == null ? "" : String.format("""
+											Total Active Units: %s
+											📝 Casts: %s/%s
+											👍 Reactions: %s/%s
+											👥 Follows: %s/%s
+									""",
+							storageUsage.totalActiveUnits(),
+							PaymentService.formatNumberWithSuffix(storageUsage.casts().used()),
+							PaymentService.formatNumberWithSuffix(storageUsage.casts().capacity()),
+							PaymentService.formatNumberWithSuffix(storageUsage.reactions().used()),
+							PaymentService.formatNumberWithSuffix(storageUsage.reactions().capacity()),
+							PaymentService.formatNumberWithSuffix(storageUsage.links().used()),
+							PaymentService.formatNumberWithSuffix(storageUsage.links().capacity())
+					);
+
 					if (payment.getReceiver() == null) {
 						val castText = String.format("""
-										@%s, you've been gifted 1 unit of storage by @%s 🎉
+										@%s, you've been gifted %s units of storage by @%s 🎉
+																				
+										%s
 
 										🧾 Receipt: %s
 
 										Install `🗄 Gift Storage` at app.payflow.me/actions
-
-
 										p.s. join /payflow channel for updates 👀""",
 								receiverFname,
+								payment.getTokenAmount(),
 								senderFname,
+								storageUsageText,
 								receiptUrl);
 
 						val processed = farcasterPaymentBotService.reply(castText,
@@ -274,16 +293,19 @@ public class PaymentController {
 					} else {
 						try {
 							val messageText = String.format("""
-											 @%s, you've been gifted 1 unit of storage by @%s 🎉
+											 @%s, you've been gifted %s units of storage by @%s 🎉
+																						
+											 %s
 
 											🔗 Source: %s
 											🧾 Receipt: %s
 
 											Install `🗄 Gift Storage` at app.payflow.me/actions
-
 											p.s. join /payflow channel for updates 👀""",
 									receiverFname,
+									payment.getTokenAmount(),
 									senderFname,
+									storageUsageText,
 									sourceRef,
 									receiptUrl);
 							val response = farcasterMessagingService.message(

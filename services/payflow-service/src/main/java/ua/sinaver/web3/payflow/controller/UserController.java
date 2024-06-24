@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 import ua.sinaver.web3.payflow.message.*;
+import ua.sinaver.web3.payflow.message.farcaster.StorageUsage;
 import ua.sinaver.web3.payflow.service.api.*;
 
 import java.security.Principal;
@@ -37,6 +38,9 @@ public class UserController {
 
 	@Autowired
 	private IIdentityService identityService;
+
+	@Autowired
+	private IFarcasterNeynarService neynarService;
 
 	@GetMapping("/me")
 	public ProfileMessage user(Principal principal) {
@@ -207,6 +211,29 @@ public class UserController {
 			return ResponseEntity.ok(identityInfo);
 		} catch (Throwable t) {
 			log.error("Error fetching identity: {}", usernameOrAddress, t);
+			return ResponseEntity.internalServerError().build();
+		}
+	}
+
+	@GetMapping("/storage/fid/{fid}")
+	public ResponseEntity<StorageUsage> getStorageUsage(@PathVariable(value = "fid") Integer fid) {
+		log.debug("Fetching storage usage for {}", fid);
+
+		if (fid == null) {
+			return ResponseEntity.badRequest().build();
+		}
+
+		try {
+			val storageUsage = neynarService.fetchStorageUsage(fid);
+			if (storageUsage != null) {
+				log.debug("Fetched storage usage for {}: {}", fid, storageUsage);
+				return ResponseEntity.ok(storageUsage);
+			} else {
+				log.error("Storage usage not found for {}", fid);
+				return ResponseEntity.notFound().build();
+			}
+		} catch (Throwable t) {
+			log.error("Error fetching storage usage for {}", fid, t);
 			return ResponseEntity.internalServerError().build();
 		}
 	}

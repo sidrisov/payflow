@@ -583,11 +583,10 @@ public class FramePaymentController {
 										🧾 Receipt: %s
 
 										Install `⚡ Pay` at app.payflow.me/actions
-
 										p.s. join /payflow channel for updates 👀""",
 
 								receiverFname,
-								StringUtils.isNotBlank(payment.getTokenAmount()) ? PaymentService.formatAmountWithSuffix(payment.getTokenAmount())
+								StringUtils.isNotBlank(payment.getTokenAmount()) ? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 										: String.format("$%s", payment.getUsdAmount()),
 								payment.getToken().toUpperCase(),
 								senderFname,

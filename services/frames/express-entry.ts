@@ -30,9 +30,10 @@ import { fetchTokenPrices } from './utils/prices';
 import { TokenPrices } from './utils/erc20contracts';
 import { getAssetBalances, getFlowAssets, getTotalBalance } from './utils/balances';
 import { XmtpOpenFramesRequest, validateFramesPost } from '@xmtp/frames-validator';
-import { normalizeNumberPrecision } from './utils/normalizeNumberPrecision';
+import { normalizeNumberPrecision } from './utils/format';
 import { createJarHtml } from './components/CreateJar';
 import { giftStorageHtml } from './components/GiftStorage';
+import { StorageUsage } from './types/StorageUsageType';
 
 dotenv.config();
 
@@ -208,13 +209,18 @@ async function startServer() {
     }
   });
 
-  app.get('/images/profile/:identity/storage.png', async (req, res) => {
-    const identity = req.params.identity as Address;
+  app.get('/images/profile/fid/:fid/storage.png', async (req, res) => {
+    const fid = req.params.fid as Address;
 
     try {
-      const response = await axios.get(`${API_URL}/api/user/identities/${identity}`);
-      let identityData = (response.data !== '' ? response.data : { identity }) as IdentityType;
-      const image = await htmlToImage(giftStorageHtml(identityData), 'landscape');
+      const identityResponse = await axios.get(`${API_URL}/api/user/identities/fid/${fid}`);
+      const identityData = (
+        identityResponse.data !== '' ? identityResponse.data : { identity: `fid/${fid}` }
+      ) as IdentityType;
+
+      const storageResponse = await axios.get(`${API_URL}/api/user/storage/fid/${fid}`);
+      const storageData = storageResponse.data as StorageUsage;
+      const image = await htmlToImage(giftStorageHtml(identityData, storageData), 'landscape');
       res.type('png').send(image);
     } catch (error) {
       console.error(error);

@@ -1,11 +1,17 @@
 import { usePageContext } from 'vike-react/usePageContext';
-import { DAPP_URL, FRAMES_URL, API_URL } from '../../../utils/constants';
+import { DAPP_URL, FRAMES_URL, API_URL } from '../../../../utils/constants';
+
+function addTimestampToUrl(url: string): string {
+  const timestamp = Math.floor(new Date().getTime() / (60 * 1000)) * (60 * 1000); // Round down to the nearest minute
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}t=${timestamp}`;
+}
 
 export function Head() {
   const { routeParams } = usePageContext();
-  const username = routeParams?.username;
+  const fid = routeParams?.fid;
 
-  const imageUrl = `${FRAMES_URL}/images/profile/${username}/storage.png`;
+  const imageUrl = addTimestampToUrl(`${FRAMES_URL}/images/profile/fid/${fid}/storage.png`);
   return (
     <>
       <head>

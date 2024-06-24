@@ -1,6 +1,6 @@
 import { Badge, Box, Stack, Typography } from '@mui/material';
 import NetworkAvatar from './avatars/NetworkAvatar';
-import { normalizeNumberPrecision } from '../utils/formats';
+import { formatAmountWithSuffix, normalizeNumberPrecision } from '../utils/formats';
 import TokenAvatar from './avatars/TokenAvatar';
 import { AssetType } from '../types/AssetType';
 
@@ -37,7 +37,7 @@ export function NetworkAssetBalanceSection(props: {
         <Stack ml={1} direction="column" spacing={0.2}>
           <Typography variant="subtitle2">{props.asset.token.name}</Typography>
           <Typography variant="caption">
-            {normalizeNumberPrecision(parseFloat(props.balance))}
+            {formatAmountWithSuffix(normalizeNumberPrecision(parseFloat(props.balance)))}
           </Typography>
         </Stack>
       </Box>

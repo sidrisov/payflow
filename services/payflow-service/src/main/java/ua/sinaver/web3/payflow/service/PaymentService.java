@@ -12,8 +12,18 @@ public class PaymentService {
 	@Autowired
 	private TokenService tokenService;
 
-	public static String formatAmountWithSuffix(String amountStr) {
-		double number = Double.parseDouble(amountStr);
+	public static String formatNumberWithSuffix(String numberStr) {
+		double number = Double.parseDouble(numberStr);
+		if (number >= 1_000_000) {
+			return String.format("%.1fm", number / 1_000_000);
+		} else if (number >= 1_000) {
+			return String.format("%.1fk", number / 1_000);
+		} else {
+			return String.format("%.0f", number);
+		}
+	}
+
+	public static String formatNumberWithSuffix(double number) {
 		if (number >= 1_000_000) {
 			return String.format("%.1fm", number / 1_000_000);
 		} else if (number >= 1_000) {
