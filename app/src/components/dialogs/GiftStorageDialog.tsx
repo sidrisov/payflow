@@ -114,7 +114,11 @@ export default function GiftStorageDialog({
     args: [BigInt(numberOfUnits)]
   });
 
-  const { isLoading: isPaymentOptionLoading, data: paymentOption } = useGlideEstimatePayment(
+  const {
+    isLoading: isPaymentOptionLoading,
+    isFetched: isPaymentOptionFetched,
+    data: paymentOption
+  } = useGlideEstimatePayment(
     isUnitPriceFetched && Boolean(rentUnitPrice) && Boolean(payment.receiverFid),
     `eip155:${selectedWallet?.network}/${
       selectedToken?.tokenAddress ? `erc20:${selectedToken.tokenAddress}` : `slip44:60`
@@ -173,7 +177,7 @@ export default function GiftStorageDialog({
         address: OP_FARCASTER_STORAGE_CONTRACT_ADDR,
         abi: rentStorageAbi,
         functionName: 'rent',
-        args: [BigInt(payment.receiverFid ?? 0), 1n],
+        args: [BigInt(payment.receiverFid ?? 0), BigInt(numberOfUnits)],
         value: rentUnitPrice
       } as {
         chainId: number;
@@ -286,7 +290,7 @@ export default function GiftStorageDialog({
               <KeyboardDoubleArrowDown />
               <FarcasterRecipientField social={social} />
 
-              {isPaymentOptionLoading ? (
+              {isPaymentOptionLoading || !isPaymentOptionFetched ? (
                 <Skeleton
                   title="fetching price"
                   variant="rectangular"
