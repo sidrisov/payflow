@@ -87,19 +87,38 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 	                                List<Cast.Embed> embeds) {
 		log.debug("Calling Neynar Cast API with message {}",
 				message);
-		try {
-			val response = neynarClient.post()
-					.uri("/cast")
-					.bodyValue(new CastRequestMessage(signer, message, parentHash,
-							embeds))
-					.retrieve().bodyToMono(CastResponseMessage.class).block();
-			log.debug("Cast response: {}", response);
-			return response;
-		} catch (Throwable t) {
-			log.debug("Exception calling Neynar Cast API with message {} - {}",
-					message, t.getMessage());
-			throw t;
-		}
+
+		val response = neynarClient.post()
+				.uri("/cast")
+				.bodyValue(new CastRequestMessage(signer, message, parentHash,
+						embeds))
+				.retrieve()
+				.onStatus(HttpStatus.NOT_FOUND::equals, clientResponse -> {
+					log.error("404 error when calling Neynar Cast API with message {}",
+							message);
+					return Mono.empty();
+				})
+				.bodyToMono(CastResponseMessage.class)
+				.onErrorResume(WebClientResponseException.class, e -> {
+					if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+						log.error("404 error calling Neynar Cast API with message - {}",
+								message, e);
+						return Mono.empty();
+					}
+					log.error("Exception calling Neynar Cast API with message - {}",
+							message, e);
+					return Mono.error(e);
+				})
+				.onErrorResume(Throwable.class, e -> {
+					log.error("Exception calling Neynar Cast API with message - {}",
+							message, e);
+					return Mono.empty();
+				})
+				.blockOptional()
+				.orElse(null);
+
+		log.debug("Cast response: {}", response);
+		return response;
 	}
 
 	@Override
@@ -118,6 +137,42 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 					hash, t.getMessage());
 			throw t;
 		}
+	}
+
+	@Override
+	@Cacheable(value = NEYNAR_FARCASTER_USER_CACHE, unless = "#result==null")
+	public FarcasterUser fetchFarcasterUser(int fid) {
+		log.debug("Calling Neynar User API to fetch by fid {}", fid);
+		return neynarClient.get()
+				.uri(uriBuilder -> uriBuilder.path("/user/bulk")
+						.queryParam("fids", fid)
+						.build())
+				.retrieve()
+				.onStatus(HttpStatus.NOT_FOUND::equals, clientResponse -> {
+					log.error("404 error when calling Neynar User API by fid {}", fid);
+					return Mono.empty();
+				})
+				.bodyToMono(FarcasterUsersResponseMessage.class)
+				.onErrorResume(WebClientResponseException.class, e -> {
+					if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+						log.error("404 error calling Neynar User API by fid {} - {}",
+								fid, e);
+						return Mono.empty();
+					}
+					log.error("Exception calling Neynar User API by fid {} - {}",
+							fid, e);
+					return Mono.error(e);
+				})
+				.onErrorResume(Throwable.class, e -> {
+					log.error("Exception calling Neynar User API by fid {} - {}",
+							fid, e);
+					return Mono.empty();
+				})
+				.blockOptional()
+				.map(FarcasterUsersResponseMessage::users)
+				.filter(users -> !users.isEmpty())
+				.map(List::getFirst)  // Get only the first user
+				.orElse(null);
 	}
 
 	@Override

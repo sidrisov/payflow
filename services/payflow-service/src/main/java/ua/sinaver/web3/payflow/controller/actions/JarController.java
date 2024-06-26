@@ -51,11 +51,13 @@ public class JarController {
 				validateMessage.action().url());
 
 		val castInteractor = validateMessage.action().interactor();
-		val casterFid = validateMessage.action().cast().author();
+		val castAuthor = validateMessage.action().cast().author() != null ?
+				validateMessage.action().cast().author() :
+				neynarService.fetchFarcasterUser(validateMessage.action().cast().fid());
 
-		if (castInteractor != casterFid) {
+		if (castInteractor.fid() != castAuthor.fid()) {
 			log.error("Only the author of the cast is allowed to create the contribution " +
-					"jar for it - clicked fid {} vs caster fid {} ", castInteractor, casterFid);
+					"jar for it - clicked fid {} vs caster fid {} ", castInteractor, castAuthor);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Use only for your casts!"));
 		}

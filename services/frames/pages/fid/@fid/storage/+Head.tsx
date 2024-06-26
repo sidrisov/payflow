@@ -63,7 +63,7 @@ export function Head() {
         <meta property="fc:frame:button:2:action" content="link" />
         <meta
           property="fc:frame:button:2:target"
-          content="https://payflowlabs.notion.site/FAQs-20593cf7734e4d78ad0dc91c8e8982e5"
+          content="https://payflowlabs.notion.site/Payflow-FAQs-20593cf7734e4d78ad0dc91c8e8982e5#6862f9bffddc4fbe818a6ceb9ab968e7"
         />
       </head>
     </>

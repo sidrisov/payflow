@@ -52,7 +52,11 @@ public class PayController {
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
 				validateMessage.action().url());
 
-		val castAuthor = validateMessage.action().cast().author();
+		// todo: temp hack
+		val castAuthor = validateMessage.action().cast().author() != null ?
+				validateMessage.action().cast().author() :
+				neynarService.fetchFarcasterUser(validateMessage.action().cast().fid());
+
 
 		// pay first with higher social score
 		val paymentAddresses = identityService.getIdentitiesInfo(castAuthor.addressesWithoutCustodialIfAvailable())

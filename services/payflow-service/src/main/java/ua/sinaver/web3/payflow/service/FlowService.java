@@ -84,6 +84,7 @@ public class FlowService implements IFlowService {
 	public List<FlowMessage> getAllFlows(User user) {
 		if (user.getFlows() != null) {
 			return user.getFlows().stream()
+					.filter(f -> !f.isDisabled())
 					.map(f -> FlowMessage.convert(f, user, true))
 					.toList();
 		} else {

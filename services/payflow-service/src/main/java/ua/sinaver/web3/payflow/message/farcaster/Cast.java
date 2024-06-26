@@ -9,6 +9,7 @@ import java.util.List;
 public record Cast(
 		String object,
 		String hash,
+		int fid,
 		String threadHash,
 		String parentHash,
 		String parentUrl,

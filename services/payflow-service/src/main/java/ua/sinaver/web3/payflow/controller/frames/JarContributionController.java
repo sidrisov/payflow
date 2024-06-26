@@ -116,7 +116,10 @@ public class JarContributionController {
 		}
 
 		val castInteractor = validateMessage.action().interactor();
-		val castAuthor = validateMessage.action().cast().author();
+		val castAuthor = validateMessage.action().cast().author() != null ?
+				validateMessage.action().cast().author() :
+				neynarService.fetchFarcasterUser(validateMessage.action().cast().fid());
+
 		val title = validateMessage.action().input() != null ?
 				validateMessage.action().input().text() : null;
 

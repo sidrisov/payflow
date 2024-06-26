@@ -63,6 +63,9 @@ public class Flow {
 	@Column(columnDefinition = "boolean")
 	private boolean archived = false;
 
+	@Column(columnDefinition = "boolean")
+	private boolean disabled = false;
+
 	@Column
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createdDate = new Date();

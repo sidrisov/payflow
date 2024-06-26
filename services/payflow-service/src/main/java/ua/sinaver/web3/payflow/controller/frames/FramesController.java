@@ -94,7 +94,9 @@ public class FramesController {
 				validateMessage.action().url());
 
 		val castInteractor = validateMessage.action().interactor();
-		val castAuthor = validateMessage.action().cast().author();
+		val castAuthor = validateMessage.action().cast().author() != null ?
+				validateMessage.action().cast().author() :
+				neynarService.fetchFarcasterUser(validateMessage.action().cast().fid());
 
 		// clear cache only on connect
 		socialGraphService.cleanCache("fc_fid:".concat(String.valueOf(castInteractor)));

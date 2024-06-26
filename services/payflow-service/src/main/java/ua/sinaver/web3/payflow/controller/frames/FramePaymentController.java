@@ -286,7 +286,10 @@ public class FramePaymentController {
 					new FrameResponse.FrameMessage("Nothing entered, try again!"));
 		}
 
-		val receiverFarcasterUser = validateMessage.action().cast().author();
+		val receiverFarcasterUser = validateMessage.action().cast().author() != null ?
+				validateMessage.action().cast().author() :
+				neynarService.fetchFarcasterUser(validateMessage.action().cast().fid());
+
 		val profiles = identityService.getProfiles(senderFarcasterUser.addresses());
 
 		val sourceApp = validateMessage.action().signer().client().displayName();
@@ -450,12 +453,7 @@ public class FramePaymentController {
 
 				log.debug("Updated payment for ref: {} - {}", refId, payment);
 
-				try {
-					notificationService.paymentReply(payment);
-				} catch (Throwable t) {
-					log.error("Failed to notify user with payment completion details: {}",
-							payment, t);
-				}
+				notificationService.paymentReply(payment);
 
 				val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
 								"/payment.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +

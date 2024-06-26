@@ -134,7 +134,10 @@ public class IntentsController {
 			casterFid = Integer.parseInt(topReply.getFid());
 			castHash = topReply.getHash();
 		} else {
-			casterFid = validateMessage.action().cast().author().fid();
+			casterFid =
+					validateMessage.action().cast().author() != null ?
+							validateMessage.action().cast().author().fid() :
+							validateMessage.action().cast().fid();
 			castHash = validateMessage.action().cast().hash();
 		}
 

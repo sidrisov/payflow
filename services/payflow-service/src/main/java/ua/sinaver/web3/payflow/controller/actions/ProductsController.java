@@ -49,7 +49,9 @@ public class ProductsController {
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
 				validateMessage.action().url());
 
-		val castAuthor = validateMessage.action().cast().author();
+		val castAuthor = validateMessage.action().cast().author() != null ?
+				validateMessage.action().cast().author() :
+				neynarService.fetchFarcasterUser(validateMessage.action().cast().fid());
 		val castInteractor = validateMessage.action().interactor();
 
 		val clickedProfile = identityService.getProfiles(castInteractor.addresses())

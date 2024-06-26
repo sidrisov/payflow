@@ -53,7 +53,7 @@ public class NotificationService {
 				senderFname,
 				receiptUrl);
 
-		val processed = paymentBotService.reply(castText,
+		var processed = paymentBotService.reply(castText,
 				payment.getSourceHash(),
 				embeds);
 

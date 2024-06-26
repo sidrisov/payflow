@@ -59,11 +59,18 @@ public class FarcasterPaymentBotService {
 
 	public boolean reply(String text, String parentHash, List<Cast.Embed> embeds) {
 		if (isBotReplyEnabled) {
-			val response = hubService.cast(botSignerUuid, text, parentHash, embeds);
-			if (response.success()) {
+			var response = hubService.cast(botSignerUuid, text, parentHash, embeds);
+			if (response != null && response.success()) {
 				log.debug("Successfully processed bot cast with reply: {}",
 						response.cast());
 				return true;
+			} else {
+				response = hubService.cast(botSignerUuid, text, null, embeds);
+				if (response != null && response.success()) {
+					log.debug("Successfully processed bot cast without reply: {}",
+							response.cast());
+					return true;
+				}
 			}
 		} else {
 			log.debug("Bot reply disabled, skipping casting the reply");
