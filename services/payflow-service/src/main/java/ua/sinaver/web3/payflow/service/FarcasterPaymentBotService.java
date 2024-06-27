@@ -21,39 +21,33 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 @Slf4j
 public class FarcasterPaymentBotService {
 
+	private static final List<String> SUPPORTED_COMMANDS = List.of("send", "intent",
+			"batch", "intents", "jar", "receive");
 	@Autowired
 	private FarcasterNeynarService hubService;
-
 	@Autowired
 	private PaymentBotJobRepository paymentBotJobRepository;
-
 	@Autowired
 	private IIdentityService identityService;
-
 	@Autowired
 	private IFlowService flowService;
-
 	@Autowired
 	private PaymentRepository paymentRepository;
-
 	@Autowired
 	private PaymentService paymentService;
-
 	@Value("${payflow.farcaster.bot.cast.signer}")
 	private String botSignerUuid;
-
 	@Value("${payflow.farcaster.bot.enabled:false}")
 	private boolean isBotEnabled;
-
 	@Value("${payflow.farcaster.bot.reply.enabled:true}")
 	private boolean isBotReplyEnabled;
-
 	@Value("${payflow.farcaster.bot.test.enabled:false}")
 	private boolean isTestBotEnabled;
 
@@ -91,10 +85,14 @@ public class FarcasterPaymentBotService {
 
 		jobs.forEach(job -> {
 			val cast = job.getCast();
-			// TODO: process specific commands patter @payflow intent|send|...
-			val botCommandPattern = String.format("\\s*(?<beforeText>.*?)?@payflow%s\\s+(?<command>\\w+)" +
+			val supportedCommands = SUPPORTED_COMMANDS.stream()
+					.map(Pattern::quote)
+					.collect(Collectors.joining("|"));
+			val botCommandPattern = String.format("\\s*(?<beforeText>.*?)?@payflow%s\\s+" +
+							"(?<command>%s)" +
 							"(?:\\s+(?<remaining>.+))?",
-					isTestBotEnabled ? "\\s+test" : "");
+					isTestBotEnabled ? "\\s+test" : "",
+					supportedCommands);
 
 			var matcher = Pattern.compile(botCommandPattern, Pattern.DOTALL)
 					.matcher(cast.text());
