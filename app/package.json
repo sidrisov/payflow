@@ -1,7 +1,7 @@
 {
   "name": "payflow-app",
   "private": true,
-  "version": "0.0.9-alpha",
+  "version": "0.0.10-alpha",
   "type": "module",
   "scripts": {
     "generate": "npx graphql-codegen",

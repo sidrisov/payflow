@@ -9,7 +9,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.4"
     id("com.google.cloud.artifactregistry.gradle-plugin") version "2.2.1"
     id("io.freefair.lombok") version "8.4"
-    id("com.netflix.dgs.codegen") version "6.2.1"
+    id("com.netflix.dgs.codegen") version "6.2.2"
 }
 
 application {
@@ -17,7 +17,7 @@ application {
 }
 
 group = "ua.sinaver.web3.payflow"
-version = "0.0.9-alpha"
+version = "0.0.10-alpha"
 
 java.sourceCompatibility = JavaVersion.VERSION_21
 
@@ -43,7 +43,7 @@ dependencies {
     implementation("org.springframework.session:spring-session-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-aop")
 
-    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.7.6")
+    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.0")
 
     /**
      * TODO: disable for now due the following, generating types with gradle plugin is enough for now
@@ -106,7 +106,7 @@ dependencies {
     implementation("com.moonstoneid:siwe-java:1.0.2")
 
     //lombok
-    compileOnly("org.projectlombok:lombok:1.18.32")
+    compileOnly("org.projectlombok:lombok:1.18.34")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 }
