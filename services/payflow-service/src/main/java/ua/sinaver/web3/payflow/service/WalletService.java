@@ -25,6 +25,13 @@ public class WalletService {
 				.build();
 	}
 
+	public static String shortenWalletAddressLabel(String walletAddress) {
+		if (walletAddress != null && !walletAddress.isEmpty()) {
+			return walletAddress.substring(0, 5) + "..." + walletAddress.substring(walletAddress.length() - 3);
+		} else {
+			return "";
+		}
+	}
 
 	public List<WalletMessage> calculateWallets(List<String> owners, String saltNonce) {
 		val wallets = webClient.get()

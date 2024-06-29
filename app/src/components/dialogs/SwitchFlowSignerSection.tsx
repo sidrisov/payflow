@@ -38,7 +38,7 @@ export function SwitchFlowSignerSection({ flow }: { flow: FlowType }) {
             }
           }
         } else {
-          connectWallet();
+          connectWallet({ suggestedAddress: flow.signer });
         }
       }}
       sx={{ borderRadius: 5, textTransform: 'none', height: 56, justifyContent: 'flex-start' }}>

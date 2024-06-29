@@ -184,7 +184,9 @@ export function NetworkTokenSelector({
                 {`${maxBalance} ${selectedToken?.name} ≈ $${maxBalanceUsd}`}
               </Typography>
             </Box>
-            <GasFeeSection selectedToken={selectedToken} gasFee={gasFee} />
+            {gasFee !== undefined && (
+              <GasFeeSection selectedToken={selectedToken} gasFee={gasFee} />
+            )}
           </Box>
         </>
       )}

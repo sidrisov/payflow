@@ -36,8 +36,7 @@ export default function PayWithEOADialog({ sender, recipient, payment }: Payment
   const [sendAmount, setSendAmount] = useState<number>();
   const [sendAmountUSD, setSendAmountUSD] = useState<number | undefined>(payment?.usdAmount);
 
-  // force to display sponsored
-  const [gasFee] = useState<bigint>(BigInt(0));
+  const [gasFee] = useState<bigint | undefined>();
 
   // TODO: use pre-configured tokens to fetch decimals, etc
   const { isSuccess, data: balance } = useBalance({

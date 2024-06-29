@@ -101,7 +101,8 @@ export function AccountCard({
           justifyContent: 'space-between'
         }}>
         <Box display="flex" flexDirection="row" justifyContent="space-between" alignItems="center">
-          <Tooltip title="Smart Wallets">
+          <Tooltip
+            title={selectedFlow.type === 'FARCASTER_VERIFICATION' ? 'Wallets' : 'Smart Wallets'}>
             <AvatarGroup
               max={4}
               color="inherit"

@@ -7,7 +7,7 @@ export interface FlowType {
   signerType?: string;
   signerCredential?: string;
   title: string;
-  type: 'JAR' | 'REGULAR' | undefined;
+  type: 'JAR' | 'REGULAR' | 'FARCASTER_VERIFICATION' | undefined;
   uuid: string;
   walletProvider: string;
   saltNonce: string;

@@ -76,6 +76,14 @@ public class IdentityService implements IIdentityService {
 	}
 
 	@Override
+	public List<String> getIdentityAddresses(String identity) {
+		val verifications = socialGraphService.getIdentityVerifiedAddresses(identity);
+		val addresses = verificationsWithoutCustodial(verifications);
+		log.debug("Addresses for {}: {}", identity, addresses);
+		return addresses;
+	}
+
+	@Override
 	public String getENSAddress(String ens) {
 		val wallet = socialGraphService.getSocialMetadata(ens);
 

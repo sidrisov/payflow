@@ -8,6 +8,10 @@ export default function sortAndFilterFlows(defaultFlow: FlowType, flows: FlowTyp
         return -1;
       }
 
+      if (a.type === 'FARCASTER_VERIFICATION') {
+        return 1;
+      }
+
       let fa = a.title.toLowerCase(),
         fb = b.title.toLowerCase();
 

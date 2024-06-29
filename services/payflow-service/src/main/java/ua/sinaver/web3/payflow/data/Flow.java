@@ -96,6 +96,7 @@ public class Flow {
 
 	public enum FlowType {
 		REGULAR,
+		FARCASTER_VERIFICATION,
 		JAR
 	}
 }

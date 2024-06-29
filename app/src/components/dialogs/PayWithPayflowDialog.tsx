@@ -31,6 +31,7 @@ import { SwitchFlowSignerSection } from './SwitchFlowSignerSection';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
 import { completePayment } from '../../services/payments';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
+import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
 
 export default function PayWithPayflowDialog({ payment, sender, recipient }: PaymentDialogProps) {
   const flow = sender.identity.profile?.defaultFlow as FlowType;
@@ -58,8 +59,21 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
 
   const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
 
+  const {
+    loading: loadingRegular,
+    confirmed: confirmedRegular,
+    error: errorRegular,
+    status: statusRegular,
+    txHash: txHashRegular,
+    sendTransaction,
+    writeContract,
+    reset: resetRegular
+  } = useRegularTransfer();
+
   // force to display sponsored
-  const [gasFee] = useState<bigint>(BigInt(0));
+  const [gasFee] = useState<bigint | undefined>(
+    flow.type !== 'FARCASTER_VERIFICATION' ? BigInt(0) : undefined
+  );
 
   // TODO: use pre-configured tokens to fetch decimals, etc
   const { isSuccess, data: balance } = useBalance({
@@ -85,7 +99,13 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
       return;
     }
 
-    if (loading && !sendToastId.current) {
+    const loadingCombined = flow.type !== 'FARCASTER_VERIFICATION' ? loading : loadingRegular;
+    const confirmedCombined = flow.type !== 'FARCASTER_VERIFICATION' ? confirmed : confirmedRegular;
+    const errorCombined = flow.type !== 'FARCASTER_VERIFICATION' ? error : errorRegular;
+    const statusCombined = flow.type !== 'FARCASTER_VERIFICATION' ? status : statusRegular;
+    const txHashCombined = flow.type !== 'FARCASTER_VERIFICATION' ? txHash : txHashRegular;
+
+    if (loadingCombined && !sendToastId.current) {
       toast.dismiss();
       sendToastId.current = toast.loading(
         <TransferToastContent from={sender} to={recipient} usdAmount={sendAmountUSD ?? 0} />
@@ -96,7 +116,7 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
       return;
     }
 
-    if (confirmed) {
+    if (confirmedCombined) {
       toast.update(sendToastId.current, {
         render: (
           <TransferToastContent from={sender} to={recipient} usdAmount={sendAmountUSD ?? 0} />
@@ -108,16 +128,16 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
       sendToastId.current = undefined;
 
       if (payment?.referenceId) {
-        payment.hash = txHash;
+        payment.hash = txHashCombined;
         completePayment(payment);
       }
 
       // if tx was successfull, mark wallet as deployed if it wasn't
-      if (!selectedWallet.deployed) {
+      if (flow.type !== 'FARCASTER_VERIFICATION' && !selectedWallet.deployed) {
         selectedWallet.deployed = true;
         updateWallet(flow.uuid, selectedWallet);
       }
-    } else if (error) {
+    } else if (errorCombined) {
       toast.update(sendToastId.current, {
         render: (
           <TransferToastContent
@@ -133,30 +153,67 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
       });
       sendToastId.current = undefined;
 
-      if (status === 'insufficient_fees') {
+      if (statusCombined === 'insufficient_fees') {
         toast.error('Insufficient gas fees', { closeButton: false, autoClose: 5000 });
       }
 
-      if (status?.includes('gas_sponsorship_failure')) {
-        toast.error(`Failed to sponsor tx: ${status.split(':')[1]}`, {
+      if (statusCombined?.includes('gas_sponsorship_failure')) {
+        toast.error(`Failed to sponsor tx: ${statusCombined.split(':')[1]}`, {
           closeButton: false,
           autoClose: 5000
         });
       }
     }
-  }, [loading, confirmed, error, status, txHash, sendAmountUSD]);
+  }, [
+    loading,
+    confirmed,
+    error,
+    status,
+    txHash,
+    loadingRegular,
+    confirmedRegular,
+    errorRegular,
+    statusRegular,
+    txHashRegular,
+    sendAmountUSD
+  ]);
 
   async function submitTransaction() {
-    if (selectedWallet && toAddress && sendAmount && balance && client && signer && profile) {
-      await sendSafeTransaction(
-        client,
-        signer,
-        profile,
-        flow,
-        selectedWallet,
-        toAddress,
-        parseUnits(sendAmount.toString(), balance.decimals)
-      );
+    if (
+      selectedWallet &&
+      toAddress &&
+      sendAmount &&
+      selectedToken &&
+      balance &&
+      client &&
+      signer &&
+      profile
+    ) {
+      if (flow.type !== 'FARCASTER_VERIFICATION') {
+        await sendSafeTransaction(
+          client,
+          signer,
+          profile,
+          flow,
+          selectedWallet,
+          toAddress,
+          parseUnits(sendAmount.toString(), balance.decimals)
+        );
+      } else {
+        if (selectedToken.tokenAddress) {
+          writeContract?.({
+            abi: erc20Abi,
+            address: selectedToken.tokenAddress,
+            functionName: 'transfer',
+            args: [toAddress, parseUnits(sendAmount.toString(), balance.decimals)]
+          });
+        } else {
+          sendTransaction?.({
+            to: toAddress,
+            value: parseUnits(sendAmount.toString(), balance.decimals)
+          });
+        }
+      }
     } else {
       toast.error("Can't send to this profile");
     }
@@ -209,8 +266,23 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
   }
 
   useMemo(async () => {
-    setPaymentPending(Boolean(loading || (txHash && !confirmed && !error)));
-  }, [loading, txHash, confirmed, error]);
+    if (flow.type !== 'FARCASTER_VERIFICATION') {
+      setPaymentPending(Boolean(loading || (txHash && !confirmed && !error)));
+    } else {
+      setPaymentPending(
+        Boolean(loadingRegular || (txHashRegular && !confirmedRegular && !errorRegular))
+      );
+    }
+  }, [
+    loading,
+    txHash,
+    confirmed,
+    error,
+    loadingRegular,
+    txHashRegular,
+    confirmedRegular,
+    errorRegular
+  ]);
 
   useMemo(async () => {
     setPaymentEnabled(Boolean(toAddress && sendAmount));
@@ -244,7 +316,7 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
                 title="Pay"
                 loading={paymentPending}
                 disabled={!paymentEnabled}
-                status={status}
+                status={flow.type !== 'FARCASTER_VERIFICATION' ? status : statusRegular}
                 onClick={submitTransaction}
               />
             ) : (

@@ -6,6 +6,9 @@ import ua.sinaver.web3.payflow.data.User;
 
 import java.util.List;
 
+import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS;
+import static ua.sinaver.web3.payflow.service.WalletService.shortenWalletAddressLabel;
+
 public record FlowMessage(String signer, String signerProvider,
                           String signerType, String signerCredential,
                           String title,
@@ -81,6 +84,18 @@ public record FlowMessage(String signer, String signerProvider,
 				flow.getType() != null ? flow.getType().toString() : "",
 				flow.getUuid(),
 				flow.getWalletProvider(), flow.getSaltNonce(), wallets);
+	}
+
+	public static FlowMessage convertFarcasterVerification(String verificationAddress, User user) {
+		val wallets = SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS.stream()
+				.map(chainId -> new WalletMessage(verificationAddress, chainId, null, true))
+				.toList();
+		return new FlowMessage(verificationAddress, null,
+				null, null,
+				"Verification: " + shortenWalletAddressLabel(verificationAddress),
+				Flow.FlowType.FARCASTER_VERIFICATION.toString(),
+				null,
+				null, null, wallets);
 	}
 
 	public static Flow convert(FlowMessage flowMessage, User user) {

@@ -17,7 +17,6 @@ import ua.sinaver.web3.payflow.repository.UserRepository;
 import ua.sinaver.web3.payflow.service.api.IFlowService;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +34,9 @@ public class FlowService implements IFlowService {
 
 	@Autowired
 	private WalletService walletService;
+
+	@Autowired
+	private IdentityService identityService;
 
 	@Override
 	public Jar createJar(String title, String description, String image, String source, User user) {
@@ -82,14 +84,27 @@ public class FlowService implements IFlowService {
 
 	@Override
 	public List<FlowMessage> getAllFlows(User user) {
+
+		val flows = new ArrayList<FlowMessage>();
+
+
 		if (user.getFlows() != null) {
-			return user.getFlows().stream()
+			val nativeFlows = user.getFlows().stream()
 					.filter(f -> !f.isDisabled())
 					.map(f -> FlowMessage.convert(f, user, true))
 					.toList();
-		} else {
-			return Collections.emptyList();
+			flows.addAll(nativeFlows);
 		}
+
+		val verifications = identityService.getIdentityAddresses(user.getIdentity());
+		if (verifications != null && !verifications.isEmpty()) {
+			val verificationFlows = verifications.stream()
+					.map(v -> FlowMessage.convertFarcasterVerification(v, user))
+					.toList();
+			flows.addAll(verificationFlows);
+		}
+
+		return flows;
 
 	}
 

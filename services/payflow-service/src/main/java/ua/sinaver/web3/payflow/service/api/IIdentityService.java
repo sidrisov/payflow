@@ -16,6 +16,8 @@ public interface IIdentityService {
 
 	List<String> getFidAddresses(int fid);
 
+	List<String> getIdentityAddresses(String identity);
+
 	String getENSAddress(String ens);
 
 	List<String> getFnameAddresses(String fname);

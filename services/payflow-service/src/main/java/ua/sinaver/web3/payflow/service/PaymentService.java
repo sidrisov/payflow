@@ -18,8 +18,12 @@ public class PaymentService {
 			return String.format("%.1fm", number / 1_000_000);
 		} else if (number >= 1_000) {
 			return String.format("%.1fk", number / 1_000);
-		} else {
+		} else if (number >= 1) {
 			return String.format("%.0f", number);
+		} else if (number > 0) {
+			return String.format("%.4f", number);
+		} else {
+			return "0.0";
 		}
 	}
 
@@ -28,8 +32,12 @@ public class PaymentService {
 			return String.format("%.1fm", number / 1_000_000);
 		} else if (number >= 1_000) {
 			return String.format("%.1fk", number / 1_000);
-		} else {
+		} else if (number >= 1) {
 			return String.format("%.0f", number);
+		} else if (number > 0) {
+			return String.format("%.4f", number);
+		} else {
+			return "0.0";
 		}
 	}
 
