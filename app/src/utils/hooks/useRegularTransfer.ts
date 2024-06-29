@@ -46,7 +46,7 @@ export const useRegularTransfer = (): {
     isSuccess: isTxConfirmed,
     isError: isTxConfirmationError
   } = useWaitForTransactionReceipt({
-    hash: sendTxHash ? sendTxHash : sendErc20TxHash
+    hash: sendTxHash ?? sendErc20TxHash
   });
 
   useMemo(async () => {
@@ -91,7 +91,7 @@ export const useRegularTransfer = (): {
     confirmed: isTxConfirmed,
     error: isSendTxError || isTxConfirmationError,
     status: status,
-    txHash: sendTxHash,
+    txHash: sendTxHash ?? sendErc20TxHash,
     sendTransaction,
     writeContract,
     reset: resetTransfer

@@ -116,7 +116,9 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
       return;
     }
 
-    if (confirmedCombined) {
+    if (confirmedCombined && txHashCombined) {
+      console.debug('Confirmed with txHas: ', txHashCombined);
+
       toast.update(sendToastId.current, {
         render: (
           <TransferToastContent from={sender} to={recipient} usdAmount={sendAmountUSD ?? 0} />
