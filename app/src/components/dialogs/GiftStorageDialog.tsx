@@ -53,6 +53,7 @@ import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { completePayment } from '../../services/payments';
 import { grey, red } from '@mui/material/colors';
+import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
 
 export type GiftStorageDialog = DialogProps &
   CloseCallbackType & {
@@ -105,6 +106,16 @@ export default function GiftStorageDialog({
   const numberOfUnits = payment.tokenAmount ?? 1;
 
   const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
+  const {
+    loading: loadingRegular,
+    confirmed: confirmedRegular,
+    error: errorRegular,
+    status: statusRegular,
+    txHash: txHashRegular,
+    sendTransaction,
+    writeContract,
+    reset: resetRegular
+  } = useRegularTransfer();
 
   const { isFetched: isUnitPriceFetched, data: rentUnitPrice } = useReadContract({
     chainId: optimism.id,
@@ -199,39 +210,44 @@ export default function GiftStorageDialog({
           switchChainAsync,
           sendTransactionAsync: async (tx) => {
             console.log('Glide tnxs: ', tx);
-            // TODO: hard to figure out if there 2 signers or one, for now consider if signerProvider not specified - 1, otherwise - 2
-            const owners = [];
-            if (
-              flow.signerProvider &&
-              flow.signer.toLowerCase() !== profile.identity.toLowerCase()
-            ) {
-              owners.push(profile.identity);
+
+            if (flow.type !== 'FARCASTER_VERIFICATION' && flow.type !== 'LINKED') {
+              // TODO: hard to figure out if there 2 signers or one, for now consider if signerProvider not specified - 1, otherwise - 2
+              const owners = [];
+              if (
+                flow.signerProvider &&
+                flow.signer.toLowerCase() !== profile.identity.toLowerCase()
+              ) {
+                owners.push(profile.identity);
+              }
+              owners.push(flow.signer);
+
+              const safeAccountConfig: SafeAccountConfig = {
+                owners,
+                threshold: 1
+              };
+
+              const saltNonce = flow.saltNonce as string;
+              const safeVersion = selectedWallet.version as SafeVersion;
+
+              const txHash = transfer(
+                client,
+                signer,
+                {
+                  from: selectedWallet.address,
+                  to: tx.to,
+                  data: tx.data && tx.data.length ? tx.data : undefined,
+                  value: tx.value
+                },
+                safeAccountConfig,
+                safeVersion,
+                saltNonce
+              );
+
+              return txHash;
+            } else {
+              toast.error('Not yet supported for this type of payment flow!');
             }
-            owners.push(flow.signer);
-
-            const safeAccountConfig: SafeAccountConfig = {
-              owners,
-              threshold: 1
-            };
-
-            const saltNonce = flow.saltNonce as string;
-            const safeVersion = selectedWallet.version as SafeVersion;
-
-            const txHash = transfer(
-              client,
-              signer,
-              {
-                from: selectedWallet.address,
-                to: tx.to,
-                data: tx.data && tx.data.length ? tx.data : undefined,
-                value: tx.value
-              },
-              safeAccountConfig,
-              safeVersion,
-              saltNonce
-            );
-
-            return txHash;
           }
         });
 
@@ -252,8 +268,23 @@ export default function GiftStorageDialog({
   };
 
   useMemo(async () => {
-    setPaymentPending(Boolean(loading || (txHash && !confirmed && !error)));
-  }, [loading, txHash, confirmed, error]);
+    if (flow.type !== 'FARCASTER_VERIFICATION' && flow.type !== 'LINKED') {
+      setPaymentPending(Boolean(loading || (txHash && !confirmed && !error)));
+    } else {
+      setPaymentPending(
+        Boolean(loadingRegular || (txHashRegular && !confirmedRegular && !errorRegular))
+      );
+    }
+  }, [
+    loading,
+    txHash,
+    confirmed,
+    error,
+    loadingRegular,
+    txHashRegular,
+    confirmedRegular,
+    errorRegular
+  ]);
 
   return (
     <Dialog

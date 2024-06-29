@@ -1,6 +1,13 @@
 import { Badge, Box, Divider, Menu, MenuItem, MenuProps, Tooltip, Typography } from '@mui/material';
 import { FlowType } from '../../types/FlowType';
-import { Add, Check, Star, Verified, Warning } from '@mui/icons-material';
+import {
+  Add,
+  Check,
+  Link,
+  Star,
+  Verified,
+  Warning
+} from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { useContext, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
@@ -62,12 +69,27 @@ export function ChooseFlowMenu({
                   )}
 
                   {option.type === 'FARCASTER_VERIFICATION' && (
-                    <Tooltip title="Farcaster Verified Address">
+                    <Tooltip title="Farcaster Verification">
                       <Badge
                         overlap="circular"
                         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                         badgeContent={<Verified sx={{ width: 15, height: 15 }} />}>
                         <Box src="/farcaster.svg" component="img" sx={{ width: 20, height: 20 }} />
+                      </Badge>
+                    </Tooltip>
+                  )}
+
+                  {option.type === 'LINKED' && (
+                    <Tooltip title="Linked Wallet">
+                      <Badge
+                        overlap="circular"
+                        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                        badgeContent={<Link sx={{ width: 15, height: 15 }} />}>
+                        <Box
+                          src="/coinbase_smart_wallet.svg"
+                          component="img"
+                          sx={{ width: 20, height: 20 }}
+                        />
                       </Badge>
                     </Tooltip>
                   )}

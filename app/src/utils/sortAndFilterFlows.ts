@@ -12,6 +12,10 @@ export default function sortAndFilterFlows(defaultFlow: FlowType, flows: FlowTyp
         return 1;
       }
 
+      if (a.type === 'LINKED') {
+        return 1;
+      }
+
       let fa = a.title.toLowerCase(),
         fb = b.title.toLowerCase();
 

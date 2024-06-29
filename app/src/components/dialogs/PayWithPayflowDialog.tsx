@@ -57,6 +57,8 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
   const [sendAmountUSD, setSendAmountUSD] = useState<number | undefined>(payment?.usdAmount);
   const sendToastId = useRef<Id>();
 
+  const isNativeFlow = flow.type !== 'FARCASTER_VERIFICATION' && flow.type !== 'LINKED';
+
   const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
 
   const {
@@ -71,9 +73,7 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
   } = useRegularTransfer();
 
   // force to display sponsored
-  const [gasFee] = useState<bigint | undefined>(
-    flow.type !== 'FARCASTER_VERIFICATION' ? BigInt(0) : undefined
-  );
+  const [gasFee] = useState<bigint | undefined>(isNativeFlow ? BigInt(0) : undefined);
 
   // TODO: use pre-configured tokens to fetch decimals, etc
   const { isSuccess, data: balance } = useBalance({
@@ -99,11 +99,11 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
       return;
     }
 
-    const loadingCombined = flow.type !== 'FARCASTER_VERIFICATION' ? loading : loadingRegular;
-    const confirmedCombined = flow.type !== 'FARCASTER_VERIFICATION' ? confirmed : confirmedRegular;
-    const errorCombined = flow.type !== 'FARCASTER_VERIFICATION' ? error : errorRegular;
-    const statusCombined = flow.type !== 'FARCASTER_VERIFICATION' ? status : statusRegular;
-    const txHashCombined = flow.type !== 'FARCASTER_VERIFICATION' ? txHash : txHashRegular;
+    const loadingCombined = isNativeFlow ? loading : loadingRegular;
+    const confirmedCombined = isNativeFlow ? confirmed : confirmedRegular;
+    const errorCombined = isNativeFlow ? error : errorRegular;
+    const statusCombined = isNativeFlow ? status : statusRegular;
+    const txHashCombined = isNativeFlow ? txHash : txHashRegular;
 
     if (loadingCombined && !sendToastId.current) {
       toast.dismiss();
@@ -117,7 +117,7 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
     }
 
     if (confirmedCombined && txHashCombined) {
-      console.debug('Confirmed with txHas: ', txHashCombined);
+      console.debug('Confirmed with txHash: ', txHashCombined);
 
       toast.update(sendToastId.current, {
         render: (
@@ -135,7 +135,7 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
       }
 
       // if tx was successfull, mark wallet as deployed if it wasn't
-      if (flow.type !== 'FARCASTER_VERIFICATION' && !selectedWallet.deployed) {
+      if (isNativeFlow && !selectedWallet.deployed) {
         selectedWallet.deployed = true;
         updateWallet(flow.uuid, selectedWallet);
       }
@@ -191,7 +191,7 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
       signer &&
       profile
     ) {
-      if (flow.type !== 'FARCASTER_VERIFICATION') {
+      if (isNativeFlow) {
         await sendSafeTransaction(
           client,
           signer,
@@ -202,6 +202,7 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
           parseUnits(sendAmount.toString(), balance.decimals)
         );
       } else {
+        resetRegular();
         if (selectedToken.tokenAddress) {
           writeContract?.({
             abi: erc20Abi,
@@ -268,7 +269,7 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
   }
 
   useMemo(async () => {
-    if (flow.type !== 'FARCASTER_VERIFICATION') {
+    if (isNativeFlow) {
       setPaymentPending(Boolean(loading || (txHash && !confirmed && !error)));
     } else {
       setPaymentPending(
@@ -318,7 +319,7 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
                 title="Pay"
                 loading={paymentPending}
                 disabled={!paymentEnabled}
-                status={flow.type !== 'FARCASTER_VERIFICATION' ? status : statusRegular}
+                status={isNativeFlow ? status : statusRegular}
                 onClick={submitTransaction}
               />
             ) : (
