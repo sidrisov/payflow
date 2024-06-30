@@ -1,67 +1,64 @@
-import { glideClient } from '../glide';
+import { glideConfig } from '../glide';
 import { Address, Hex } from 'viem';
 import { useQuery } from '@tanstack/react-query';
+import {
+  CAIP19,
+  Currency,
+  estimatePaymentAmount,
+  listPaymentOptions
+} from '@paywithglide/glide-js';
 
-export type EIP155Address = `eip155:${string}`;
-
-export type PaymentOption = {
-  paymentCurrency: EIP155Address;
-  paymentAmount: string;
-  balance: string;
-  balanceUSD: string;
-  currencyName: string;
-  currencySymbol: string;
-  currencyLogoURL: string;
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unreachable code error
+BigInt.prototype.toJSON = function (): string {
+  return this.toString();
 };
 
-export type EVMTransaction = {
-  chainId: EIP155Address;
-  to: Hex;
-  value: Hex;
-  input: Hex;
-};
-
-export type ViemTransaction<ChainId extends number> = {
-  chainId: ChainId;
-  to: Address;
-  data?: Hex;
+export type ListPaymentOptionsArgs = {
+  chainId: number;
+  account: Hex;
+  abi: unknown;
+  address: Hex;
+  functionName: string;
+  args?: unknown[];
   value?: bigint;
+  paymentCurrencies?: (CAIP19 | Currency)[];
+  paymentChainIds?: number[];
+  commissionUSD?: number;
 };
 
-export const useGlideEstimatePayment = (
-  enabled: boolean,
-  paymentCurrency: string,
-  transaction: EVMTransaction
-) => {
+export type EstimatePaymentArgs = {
+  chainId: number;
+  account: Hex;
+  paymentCurrency: CAIP19;
+  abi: unknown;
+  address: Hex;
+  functionName: string;
+  args?: unknown[];
+  value?: bigint;
+  commissionUSD?: number;
+};
+
+export const useGlideEstimatePayment = (enabled: boolean, args: EstimatePaymentArgs) => {
   return useQuery({
     enabled: enabled,
-    queryKey: ['estimateGlidePayment', { paymentCurrency, transaction }],
+    queryKey: ['estimateGlidePayment', args],
     staleTime: Infinity,
     refetchInterval: 30_000,
     queryFn: async () => {
-      return await glideClient.estimatePaymentAmount({
-        paymentCurrency,
-        transaction
-      });
+      return await estimatePaymentAmount(glideConfig, args as any);
     }
   });
 };
 
-export const useGlidePaymentOptions = (
-  enabled: boolean,
-  payerWalletAddress: Address,
-  transaction: EVMTransaction
-) => {
+export const useGlidePaymentOptions = (enabled: boolean, args: ListPaymentOptionsArgs) => {
   return useQuery({
     enabled: enabled,
-    queryKey: ['listPaymentOptions', { payerWalletAddress, transaction }],
+    queryKey: ['listPaymentOptions', args],
     staleTime: Infinity,
     refetchInterval: 30_000,
     queryFn: async () => {
-      return await glideClient.listPaymentOptions({
-        payerWalletAddress,
-        transaction
-      });
+      return await listPaymentOptions(glideConfig, args as any);
     }
   });
 };

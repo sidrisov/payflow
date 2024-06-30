@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { optimism } from 'viem/chains';
-import { glideClient } from '../../utils/glide';
+import { glideConfig } from '../../utils/glide';
 import {
   useSwitchChain,
   useChainId,
@@ -54,6 +54,7 @@ import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { completePayment } from '../../services/payments';
 import { grey, red } from '@mui/material/colors';
 import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
+import { CAIP19, payWithGlide } from '@paywithglide/glide-js';
 
 export type GiftStorageDialog = DialogProps &
   CloseCallbackType & {
@@ -131,34 +132,34 @@ export default function GiftStorageDialog({
     isFetched: isPaymentOptionFetched,
     data: paymentOption
   } = useGlideEstimatePayment(
-    isUnitPriceFetched && Boolean(rentUnitPrice) && Boolean(payment.receiverFid),
-    `eip155:${selectedWallet?.network}/${
-      selectedToken?.tokenAddress ? `erc20:${selectedToken.tokenAddress}` : `slip44:60`
-    }`,
+    isUnitPriceFetched &&
+      Boolean(selectedWallet) &&
+      Boolean(rentUnitPrice) &&
+      Boolean(payment.receiverFid),
     {
-      chainId: `eip155:${optimism.id}`,
-      to: OP_FARCASTER_STORAGE_CONTRACT_ADDR,
-      value: toHex(rentUnitPrice ?? 0),
-      input: encodeFunctionData({
-        abi: rentStorageAbi,
-        functionName: 'rent',
-        args: [BigInt(payment.receiverFid ?? 0), BigInt(numberOfUnits)]
-      })
+      account: flow.wallets[0].address,
+      paymentCurrency: `eip155:${selectedWallet?.network}/${
+        selectedToken?.tokenAddress ? `erc20:${selectedToken.tokenAddress}` : `slip44:60`
+      }` as CAIP19,
+      chainId: optimism.id,
+      address: OP_FARCASTER_STORAGE_CONTRACT_ADDR,
+      abi: rentStorageAbi,
+      functionName: 'rent',
+      args: [BigInt(payment.receiverFid ?? 0), BigInt(numberOfUnits)],
+      value: rentUnitPrice ?? 0n
     }
   );
 
   const { isLoading: isPaymentOptionsLoading, data: paymentOptions } = useGlidePaymentOptions(
     isUnitPriceFetched && Boolean(rentUnitPrice) && Boolean(payment.receiverFid),
-    flow.wallets[0].address,
     {
-      chainId: `eip155:${optimism.id}`,
-      to: OP_FARCASTER_STORAGE_CONTRACT_ADDR,
-      value: toHex(rentUnitPrice ?? 0),
-      input: encodeFunctionData({
-        abi: rentStorageAbi,
-        functionName: 'rent',
-        args: [BigInt(payment.receiverFid ?? 0), BigInt(numberOfUnits)]
-      })
+      account: flow.wallets[0].address,
+      chainId: optimism.id,
+      address: OP_FARCASTER_STORAGE_CONTRACT_ADDR,
+      abi: rentStorageAbi,
+      functionName: 'rent',
+      args: [BigInt(payment.receiverFid ?? 0), BigInt(numberOfUnits)],
+      value: rentUnitPrice ?? 0n
     }
   );
 
@@ -207,7 +208,7 @@ export default function GiftStorageDialog({
           resetRegular();
         }
 
-        const glideTxHash = await glideClient.writeContract({
+        const glideTxHash = await payWithGlide(glideConfig, {
           account: selectedWallet.address,
           paymentCurrency: paymentOption.paymentCurrency,
           currentChainId: chainId,

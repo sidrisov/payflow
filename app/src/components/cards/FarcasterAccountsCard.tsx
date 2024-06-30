@@ -7,7 +7,7 @@ import { ParsedMessage } from '@spruceid/siwe-parser';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Address } from 'viem';
+import { Address, isAddress } from 'viem';
 import { sortBySocialScore } from '../../services/socials';
 import { ContactType, IdentityType } from '../../types/ProfleType';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -22,7 +22,7 @@ export function FarcasterAccountsCard({
   siwfResponse: StatusAPIResponse;
 } & CardProps) {
   let verifications: Address[] = [
-    ...((siwfResponse.verifications as Address[]) ?? []),
+    ...((siwfResponse.verifications as Address[]).filter((v) => isAddress(v)) ?? []),
     siwfResponse.custody as Address
   ];
 

@@ -12,12 +12,12 @@ import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { ProfileType } from '../../types/ProfleType';
 import { BackDialogTitle } from './BackDialogTitle';
 import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
-import { useAccount, useClient, usePublicClient, useWalletClient } from 'wagmi';
+import { useAccount, usePublicClient, useWalletClient } from 'wagmi';
 import { base } from 'viem/chains';
 
 import { createSiweMessage, generateSiweNonce } from 'viem/siwe';
 import { Address } from 'viem';
-import { useConnectWallet, usePrivy } from '@privy-io/react-auth';
+import { usePrivy } from '@privy-io/react-auth';
 import { toast } from 'react-toastify';
 export type NewFlowDialogProps = DialogProps &
   CloseCallbackType & {

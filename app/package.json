@@ -21,7 +21,7 @@
     "@mui/icons-material": "^5.15.18",
     "@mui/lab": "^5.0.0-alpha.151",
     "@mui/material": "^5.15.18",
-    "@paywithglide/glide-js": "^0.8.0",
+    "@paywithglide/glide-js": "^0.9.4",
     "@privy-io/react-auth": "^1.64.1",
     "@privy-io/wagmi": "^0.2.6",
     "@safe-global/api-kit": "^2.0.0",
