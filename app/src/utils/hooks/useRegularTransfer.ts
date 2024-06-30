@@ -1,8 +1,8 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Address, Chain, Hash } from 'viem';
 
-import { Config, useSendTransaction, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
-import { SendTransactionMutate, WriteContractMutate } from 'wagmi/query';
+import { Config, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
+import { SendTransactionMutateAsync } from 'wagmi/query';
 
 export type SafeWallet = {
   chain: Chain;
@@ -15,38 +15,27 @@ export const useRegularTransfer = (): {
   error: boolean;
   status: string | undefined;
   txHash: Hash | undefined;
-  sendTransaction: SendTransactionMutate<Config, unknown>;
-  writeContract: WriteContractMutate<Config, unknown>;
+  sendTransactionAsync: SendTransactionMutateAsync<Config, unknown>;
   reset: () => void;
 } => {
   const [status, setStatus] = useState<string>();
 
   const {
-    isPending: isSendTxLoading,
-    isSuccess: isSendTxSuccess,
-    isError: isSendTxError,
-    error: sendError,
-    data: sendTxHash,
-    sendTransaction,
+    isPending: isTxLoading,
+    isSuccess: isTxSuccess,
+    isError: isTxError,
+    error: txError,
+    data: txHash,
+    sendTransactionAsync,
     reset
   } = useSendTransaction();
-
-  const {
-    isPending: isSendErc20TxLoading,
-    isSuccess: isSendErc20TxSuccess,
-    isError: isSendErc20TxError,
-    error: sendErc20Error,
-    data: sendErc20TxHash,
-    writeContract,
-    reset: erc20Reset
-  } = useWriteContract();
 
   const {
     isLoading: isTxConfirmationLoading,
     isSuccess: isTxConfirmed,
     isError: isTxConfirmationError
   } = useWaitForTransactionReceipt({
-    hash: sendTxHash ?? sendErc20TxHash
+    hash: txHash
   });
 
   useMemo(async () => {
@@ -55,45 +44,29 @@ export const useRegularTransfer = (): {
       return;
     }
 
-    if (isSendTxError || isSendErc20TxError) {
-      if (sendError?.message.includes('rejected') || sendErc20Error?.message.includes('rejected')) {
+    if (isTxError) {
+      if (txError?.message.includes('rejected')) {
         setStatus('rejected');
         return;
       }
     }
 
-    if (isSendTxLoading || isSendErc20TxLoading) {
+    if (isTxLoading) {
       setStatus('signing');
-    } else if (isSendTxSuccess || isSendErc20TxSuccess) {
+    } else if (isTxSuccess) {
       setStatus('submitted');
     } else {
       setStatus(undefined);
     }
-  }, [
-    isSendTxLoading,
-    isSendErc20TxLoading,
-    isSendTxSuccess,
-    isSendErc20TxSuccess,
-    isSendTxError,
-    isSendErc20TxError,
-    isTxConfirmationLoading,
-    sendError,
-    sendErc20Error
-  ]);
-
-  const resetTransfer = useCallback(async function () {
-    reset();
-    erc20Reset();
-  }, []);
+  }, [isTxLoading, isTxSuccess, isTxError, isTxConfirmationLoading, txError]);
 
   return {
-    loading: isSendTxLoading || isSendErc20TxLoading || isTxConfirmationLoading,
+    loading: isTxLoading || isTxConfirmationLoading,
     confirmed: isTxConfirmed,
-    error: isSendTxError || isTxConfirmationError,
+    error: isTxError || isTxConfirmationError,
     status: status,
-    txHash: sendTxHash ?? sendErc20TxHash,
-    sendTransaction,
-    writeContract,
-    reset: resetTransfer
+    txHash: txHash,
+    sendTransactionAsync,
+    reset
   };
 };

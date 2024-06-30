@@ -67,8 +67,7 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
     error: errorRegular,
     status: statusRegular,
     txHash: txHashRegular,
-    sendTransaction,
-    writeContract,
+    sendTransactionAsync,
     reset: resetRegular
   } = useRegularTransfer();
 
@@ -204,14 +203,16 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
       } else {
         resetRegular();
         if (selectedToken.tokenAddress) {
-          writeContract?.({
-            abi: erc20Abi,
-            address: selectedToken.tokenAddress,
-            functionName: 'transfer',
-            args: [toAddress, parseUnits(sendAmount.toString(), balance.decimals)]
+          await sendTransactionAsync?.({
+            to: selectedToken.tokenAddress,
+            data: encodeFunctionData({
+              abi: erc20Abi,
+              functionName: 'transfer',
+              args: [toAddress, parseUnits(sendAmount.toString(), balance.decimals)]
+            })
           });
         } else {
-          sendTransaction?.({
+          await sendTransactionAsync?.({
             to: toAddress,
             value: parseUnits(sendAmount.toString(), balance.decimals)
           });

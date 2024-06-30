@@ -84,6 +84,8 @@ export default function GiftStorageDialog({
 
   const flow = sender.identity.profile?.defaultFlow as FlowType;
 
+  const isNativeFlow = flow.type !== 'FARCASTER_VERIFICATION' && flow.type !== 'LINKED';
+
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
 
@@ -112,8 +114,7 @@ export default function GiftStorageDialog({
     error: errorRegular,
     status: statusRegular,
     txHash: txHashRegular,
-    sendTransaction,
-    writeContract,
+    sendTransactionAsync,
     reset: resetRegular
   } = useRegularTransfer();
 
@@ -200,7 +201,11 @@ export default function GiftStorageDialog({
       };
 
       if (profile && client && signer && selectedWallet && paymentOption) {
-        reset();
+        if (isNativeFlow) {
+          reset();
+        } else {
+          resetRegular();
+        }
 
         const glideTxHash = await glideClient.writeContract({
           account: selectedWallet.address,
@@ -211,7 +216,7 @@ export default function GiftStorageDialog({
           sendTransactionAsync: async (tx) => {
             console.log('Glide tnxs: ', tx);
 
-            if (flow.type !== 'FARCASTER_VERIFICATION' && flow.type !== 'LINKED') {
+            if (isNativeFlow) {
               // TODO: hard to figure out if there 2 signers or one, for now consider if signerProvider not specified - 1, otherwise - 2
               const owners = [];
               if (
@@ -246,7 +251,7 @@ export default function GiftStorageDialog({
 
               return txHash;
             } else {
-              toast.error('Not yet supported for this type of payment flow!');
+              return sendTransactionAsync(tx);
             }
           }
         });
@@ -365,7 +370,7 @@ export default function GiftStorageDialog({
                   title="Gift"
                   loading={paymentPending}
                   disabled={!paymentOption}
-                  status={status}
+                  status={isNativeFlow ? status : statusRegular}
                   onClick={submitGlideTransaction}
                 />
               ) : (

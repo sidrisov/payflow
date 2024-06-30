@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { useBalance, useChainId } from 'wagmi';
 import { Id, toast } from 'react-toastify';
 
-import { Address, erc20Abi, parseUnits } from 'viem';
+import { Address, encodeFunctionData, erc20Abi, parseUnits } from 'viem';
 
 import { FlowWalletType } from '../../types/FlowType';
 import { TransferToastContent } from '../toasts/TransferToastContent';
@@ -51,7 +51,7 @@ export default function PayWithEOADialog({ sender, recipient, payment }: Payment
 
   const sendToastId = useRef<Id>();
 
-  const { loading, confirmed, error, status, txHash, sendTransaction, writeContract, reset } =
+  const { loading, confirmed, error, status, txHash, sendTransactionAsync, reset } =
     useRegularTransfer();
 
   useMemo(async () => {
@@ -120,14 +120,16 @@ export default function PayWithEOADialog({ sender, recipient, payment }: Payment
     }
 
     if (selectedToken.tokenAddress) {
-      writeContract?.({
-        abi: erc20Abi,
-        address: selectedToken.tokenAddress,
-        functionName: 'transfer',
-        args: [toAddress, parseUnits(sendAmount.toString(), balance.decimals)]
+      await sendTransactionAsync?.({
+        to: selectedToken.tokenAddress,
+        data: encodeFunctionData({
+          abi: erc20Abi,
+          functionName: 'transfer',
+          args: [toAddress, parseUnits(sendAmount.toString(), balance.decimals)]
+        })
       });
     } else {
-      sendTransaction?.({
+      await sendTransactionAsync?.({
         to: toAddress,
         value: parseUnits(sendAmount.toString(), balance.decimals)
       });
