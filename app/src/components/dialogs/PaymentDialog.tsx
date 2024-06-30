@@ -11,7 +11,6 @@ import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { SelectedIdentityType } from '../../types/ProfleType';
 import PayWithPayflowDialog from './PayWithPayflowDialog';
 import PayWithEOADialog from './PayWithEOADialog';
-import { useAccount } from 'wagmi';
 import { BackDialogTitle } from './BackDialogTitle';
 import { PaymentType } from '../../types/PaymentType';
 import { SenderField } from '../SenderField';
@@ -39,10 +38,6 @@ export default function PaymentDialog({
 }: PaymentDialogProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-  const { address } = useAccount();
-
-  const isConnectWalletRequired = !(paymentType === 'wallet' ? sender : address);
 
   return (
     recipient && (

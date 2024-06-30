@@ -48,10 +48,13 @@ export function ConnectCard() {
 
   useEffect(() => {
     if (ready && wallets.length !== 0) {
+      console.log('Trying to set a wallet: ', wallets);
       // filter out embedded wallets
-      const wallet = wallets.filter((w) => w.walletClientType !== 'privy')[0] ?? wallets[0];
-      console.debug('Setting active wallet: ', wallet);
-      setActiveWallet(wallet);
+      const wallet = wallets.find((w) => w.walletClientType !== 'privy');
+      if (wallet) {
+        console.debug('Setting active wallet: ', wallet);
+        setActiveWallet(wallet);
+      }
     }
   }, [wallets, ready]);
 

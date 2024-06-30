@@ -1,19 +1,27 @@
 import { Stack, Typography, Button, Avatar } from '@mui/material';
-import { useAccount } from 'wagmi';
 import { FlowType } from '../../types/FlowType';
 import { shortenWalletAddressLabel } from '../../utils/address';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useSetActiveWallet } from '@privy-io/wagmi';
 import { grey } from '@mui/material/colors';
 import AddressAvatar from '../avatars/AddressAvatar';
+import { useEffect } from 'react';
 
 export function SwitchFlowSignerSection({ flow }: { flow: FlowType }) {
-  const { address } = useAccount();
-  const { connectWallet, login, authenticated, logout } = usePrivy();
+  const { authenticated, ready, connectWallet, login, logout } = usePrivy();
   const { wallets } = useWallets();
   const { setActiveWallet } = useSetActiveWallet();
 
-  console.log(wallets);
+  useEffect(() => {
+    if (ready && wallets.length !== 0) {
+      console.log('Trying to set a wallet: ', wallets, flow.signer);
+      const wallet = wallets.find((w) => w.address.toLowerCase() === flow.signer.toLowerCase());
+      if (wallet) {
+        console.debug('Setting active wallet: ', wallet);
+        setActiveWallet(wallet);
+      }
+    }
+  }, [flow, wallets, ready]);
 
   return (
     <Button
@@ -26,11 +34,11 @@ export function SwitchFlowSignerSection({ flow }: { flow: FlowType }) {
             login();
           } else {
             const embeddedWallet = wallets.find(
-              (w) => w.walletClientType === 'privy' && w.address === flow.signer
+              (w) =>
+                w.walletClientType === 'privy' &&
+                w.address.toLowerCase() === flow.signer.toLowerCase()
             );
-            if (embeddedWallet) {
-              setActiveWallet(embeddedWallet);
-            } else {
+            if (!embeddedWallet) {
               // logout previously connected social wallet
               await logout();
               // login again

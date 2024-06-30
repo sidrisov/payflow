@@ -243,7 +243,10 @@ export function AccountCard({
             sender={{
               type: paymentType === 'payflow' ? 'profile' : 'address',
               identity: {
-                address: paymentType === 'payflow' ? profile.identity : (address as Address),
+                address:
+                  paymentType === 'payflow'
+                    ? profile.identity
+                    : (address?.toLowerCase() as Address),
                 ...(paymentType === 'payflow' && {
                   profile: { ...profile, defaultFlow: selectedFlow }
                 })

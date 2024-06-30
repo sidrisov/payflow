@@ -88,7 +88,7 @@ export default function PublicProfile() {
               address:
                 loggedProfile && loggedProfile.defaultFlow
                   ? (loggedProfile?.identity as Address)
-                  : (address as Address),
+                  : (address?.toLowerCase() as Address),
               ...(loggedProfile && loggedProfile.defaultFlow && { profile: loggedProfile })
             }
           }}

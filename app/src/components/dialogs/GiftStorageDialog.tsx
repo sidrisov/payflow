@@ -63,16 +63,6 @@ export type GiftStorageDialog = DialogProps &
     social: Social;
   };
 
-export type PaymentOption = {
-  balance: string;
-  balanceUSD: string;
-  currencyLogoURL: string;
-  currencyName: string;
-  currencySymbol: string;
-  paymentAmount: string;
-  paymentCurrency: string;
-};
-
 export default function GiftStorageDialog({
   sender,
   payment,
@@ -130,6 +120,7 @@ export default function GiftStorageDialog({
   const {
     isLoading: isPaymentOptionLoading,
     isFetched: isPaymentOptionFetched,
+    isPending: isPaymentOptionPending,
     data: paymentOption
   } = useGlideEstimatePayment(
     isUnitPriceFetched &&
@@ -148,6 +139,13 @@ export default function GiftStorageDialog({
       args: [BigInt(payment.receiverFid ?? 0), BigInt(numberOfUnits)],
       value: rentUnitPrice ?? 0n
     }
+  );
+
+  console.log(
+    'Fetching status:',
+    isPaymentOptionLoading,
+    isPaymentOptionPending,
+    isPaymentOptionFetched
   );
 
   const { isLoading: isPaymentOptionsLoading, data: paymentOptions } = useGlidePaymentOptions(
@@ -327,7 +325,7 @@ export default function GiftStorageDialog({
               <KeyboardDoubleArrowDown />
               <FarcasterRecipientField social={social} />
 
-              {isPaymentOptionLoading || !isPaymentOptionFetched ? (
+              {isPaymentOptionLoading || isPaymentOptionsLoading ? (
                 <Skeleton
                   title="fetching price"
                   variant="rectangular"

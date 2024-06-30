@@ -1,18 +1,29 @@
-import { Box, Button, Typography, Stack, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Button, Typography, useTheme, useMediaQuery } from '@mui/material';
 import { SelectedIdentityType } from '../types/ProfleType';
 import { AddressSection } from './AddressSection';
 import { ProfileSection } from './ProfileSection';
-import { PayflowChip } from './chips/IdentityStatusChips';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useSetActiveWallet } from '@privy-io/wagmi';
+import { useEffect } from 'react';
 
 export function SenderField({ sender }: { sender: SelectedIdentityType }) {
-  const { connectWallet } = usePrivy();
+  const { ready, connectWallet } = usePrivy();
   const { wallets } = useWallets();
   const { setActiveWallet } = useSetActiveWallet();
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  useEffect(() => {
+    if (ready && wallets.length !== 0 && sender.type === 'address') {
+      console.log('Trying to set a wallet: ', wallets);
+      const wallet = wallets.find((w) => w.walletClientType !== 'privy');
+      if (wallet) {
+        console.debug('Setting active wallet: ', wallet);
+        setActiveWallet(wallet);
+      }
+    }
+  }, [sender, wallets, ready]);
 
   return (
     <Box
@@ -26,12 +37,6 @@ export function SenderField({ sender }: { sender: SelectedIdentityType }) {
         component: Button,
         onClick: async () => {
           connectWallet();
-          // filter out embedded wallets
-          const wallet = wallets.filter((w) => w.walletClientType !== 'privy')[0];
-          if (wallet) {
-            console.debug('Setting active wallet: ', wallet);
-            setActiveWallet(wallet);
-          }
         }
       })}
       sx={{

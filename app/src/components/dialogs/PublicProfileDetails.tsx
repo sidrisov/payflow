@@ -155,7 +155,7 @@ export function PublicProfileDetails({
                 address:
                   paymentType === 'payflow'
                     ? (loggedProfile?.identity as Address)
-                    : (address as Address),
+                    : (address?.toLowerCase() as Address),
                 ...(paymentType === 'payflow' && { profile: loggedProfile })
               }
             }}

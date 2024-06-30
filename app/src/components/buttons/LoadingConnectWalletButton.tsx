@@ -2,6 +2,7 @@ import LoadingButton, { LoadingButtonProps } from '@mui/lab/LoadingButton';
 import { PaymentSenderType } from '../dialogs/PaymentDialog';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useSetActiveWallet } from '@privy-io/wagmi';
+import { useEffect } from 'react';
 
 export function LoadingConnectWalletButton({
   paymentType = 'payflow',
@@ -13,12 +14,23 @@ export function LoadingConnectWalletButton({
   isEmbeddedSigner?: boolean;
   title?: string;
 }) {
-  const { connectWallet, login, isModalOpen, user } = usePrivy();
+  const { ready, connectWallet, login, isModalOpen, user } = usePrivy();
   const { wallets } = useWallets();
   const { setActiveWallet } = useSetActiveWallet();
 
-  console.log('Wallets', wallets, user);
-
+  useEffect(() => {
+    if (ready && wallets.length !== 0) {
+      console.log('Trying to set a wallet: ', wallets, user);
+      // filter out embedded wallets
+      const wallet = wallets.find((w) =>
+        isEmbeddedSigner ? w.walletClientType === 'privy' : w.walletClientType !== 'privy'
+      );
+      if (wallet) {
+        console.debug('Setting active wallet: ', wallet);
+        setActiveWallet(wallet);
+      }
+    }
+  }, [isEmbeddedSigner, wallets, ready]);
   return (
     <LoadingButton
       {...props}
@@ -30,9 +42,7 @@ export function LoadingConnectWalletButton({
       onClick={async () => {
         if (isEmbeddedSigner) {
           const embeddedWallet = wallets.find((w) => w.walletClientType === 'privy');
-          if (embeddedWallet) {
-            setActiveWallet(embeddedWallet);
-          } else {
+          if (!embeddedWallet) {
             login();
           }
         } else {
