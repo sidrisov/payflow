@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.bot.PaymentBotJob;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
+import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
@@ -157,8 +158,7 @@ public class FarcasterPaymentBotService {
 						String receiver = null;
 						String amountStr = null;
 						String restText;
-						String token = null;
-						String chain = null;
+						Token token = null;
 
 						List<String> receiverAddresses = null;
 						if (!StringUtils.isBlank(remainingText)) {
@@ -171,11 +171,16 @@ public class FarcasterPaymentBotService {
 								amountStr = matcher.group("amount");
 								restText = matcher.group("rest");
 
-								token = paymentService.parseCommandToken(restText);
-								chain = paymentService.parseCommandChain(restText);
+								val tokens = paymentService.parseCommandTokens(restText);
+								if (tokens.size() == 1) {
+									token = tokens.getFirst();
+								} else {
+									val chain = paymentService.parseCommandChain(restText);
+									token = tokens.stream().filter(t -> t.chain().equals(chain)).findFirst().get();
+								}
 
-								log.debug("Receiver: {}, amount: {}, token: {}, chain: {}",
-										receiver, amountStr, token, chain);
+								log.debug("Receiver: {}, amount: {}, token: {}",
+										receiver, amountStr, token);
 
 								// if receiver passed fetch meta from mentions
 								if (!StringUtils.isBlank(receiver)) {
@@ -237,11 +242,10 @@ public class FarcasterPaymentBotService {
 										cast.author().username(),
 										cast.hash().substring(0, 10));
 								val sourceHash = cast.hash();
-								// TODO: check if token available for chain
 								val payment = new Payment(command.equals("send") ?
 										Payment.PaymentType.FRAME : Payment.PaymentType.INTENT,
 										receiverProfile,
-										TokenService.PAYMENT_CHAIN_IDS.get(chain), token);
+										token.chainId(), token.id());
 								payment.setReceiverAddress(receiverAddress);
 								payment.setSender(casterProfile);
 								if (amountStr.startsWith("$")) {
@@ -297,8 +301,15 @@ public class FarcasterPaymentBotService {
 								final String amountStr = matcher.group("amount");
 								String restText = matcher.group("rest");
 
-								String token = paymentService.parseCommandToken(restText);
-								String chain = paymentService.parseCommandChain(restText);
+								Token token = null;
+								val tokens = paymentService.parseCommandTokens(restText);
+								if (tokens.size() == 1) {
+									token = tokens.getFirst();
+								} else {
+									val chain = paymentService.parseCommandChain(restText);
+									token = tokens.stream().filter(t -> t.chain().equals(chain)).findFirst().get();
+								}
+
 
 								val mentions = cast.mentionedProfiles().stream()
 										.filter(u ->
@@ -306,8 +317,8 @@ public class FarcasterPaymentBotService {
 														&& !u.username().equals("bountybot")
 										).distinct().toList();
 
-								log.debug("Receivers: {}, amount: {}, token: {}, chain: {}",
-										mentions, amountStr, token, chain);
+								log.debug("Receivers: {}, amount: {}, token: {}",
+										mentions, amountStr, token);
 
 								if (mentions.isEmpty()) {
 									log.error("At least one mention should be specifier in batch " +
@@ -345,7 +356,7 @@ public class FarcasterPaymentBotService {
 												Payment.PaymentType.FRAME : Payment.PaymentType.INTENT,
 												(receiverProfile != null && receiverProfile.getDefaultFlow() != null) ?
 														receiverProfile : null,
-												TokenService.PAYMENT_CHAIN_IDS.get(chain), token);
+												token.chainId(), token.id());
 										payment.setReceiverAddress(receiverAddress);
 										payment.setSender(casterProfile);
 										if (amountStr.startsWith("$")) {

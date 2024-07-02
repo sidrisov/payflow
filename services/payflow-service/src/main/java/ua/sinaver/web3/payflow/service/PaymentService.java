@@ -3,7 +3,9 @@ package ua.sinaver.web3.payflow.service;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ua.sinaver.web3.payflow.message.Token;
 
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -41,15 +43,17 @@ public class PaymentService {
 		}
 	}
 
-	public String parseCommandToken(String text) {
+	public List<Token> parseCommandTokens(String text) {
+		val tokens = tokenService.getTokens();
 		val patternStr = String.format("\\b(?<token>%s)\\b",
-				tokenService.getTokens().stream()
+				tokens.stream()
 						.map(t -> Pattern.quote(t.id().toLowerCase()))
 						.distinct()
 						.collect(Collectors.joining("|")));
 		val pattern = Pattern.compile(patternStr, Pattern.CASE_INSENSITIVE);
 		val matcher = pattern.matcher(text);
-		return matcher.find() ? matcher.group("token").toLowerCase() : "usdc";
+		val matchedToken = matcher.find() ? matcher.group("token").toLowerCase() :"usdc";
+		return tokens.stream().filter(t -> t.id().equals(matchedToken)).toList();
 	}
 
 	public Double parseTokenAmount(String amountStr) {
@@ -61,8 +65,7 @@ public class PaymentService {
 		}
 
 		return Double.parseDouble(
-				amountStr.replace("k", "").replace("m", "")
-		) * multiplier;
+				amountStr.replace("k", "").replace("m", "")) * multiplier;
 	}
 
 	public String parseCommandChain(String text) {

@@ -17,6 +17,7 @@ import ua.sinaver.web3.payflow.data.Wallet;
 import ua.sinaver.web3.payflow.message.FrameButton;
 import ua.sinaver.web3.payflow.message.FramePaymentMessage;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
+import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
@@ -328,13 +329,17 @@ public class FramePaymentController {
 
 		val restText = matcher.group("rest");
 
-		// TODO: check if chain & token supported
-		val token = paymentService.parseCommandToken(restText);
-		val chain = paymentService.parseCommandChain(restText);
-		val chainId = TokenService.PAYMENT_CHAIN_IDS.get(chain);
+		Token token;
+		val tokens = paymentService.parseCommandTokens(restText);
+		if (tokens.size() == 1) {
+			token = tokens.getFirst();
+		} else {
+			val chain = paymentService.parseCommandChain(restText);
+			token = tokens.stream().filter(t -> t.chain().equals(chain)).findFirst().orElse(null);
+		}
 
-		if (chainId == null) {
-			val chainNotSupportedError = String.format("Chain not supported: %s!", chain);
+		if (token == null) {
+			val chainNotSupportedError = String.format("Token not supported: %s!", restText);
 			log.warn(chainNotSupportedError);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage(chainNotSupportedError));
@@ -355,10 +360,10 @@ public class FramePaymentController {
 			}
 		}
 
-		log.debug("Receiver: {}, amount: {}, token: {}, chain: {}", paymentAddress, amountStr, token, chain);
+		log.debug("Receiver: {}, amount: {}, token: {}", paymentAddress, amountStr, token);
 
 		val payment = new Payment(Payment.PaymentType.FRAME, paymentProfile,
-				chainId, token);
+				token.chainId(), token.id());
 		payment.setSenderAddress(senderFarcasterUser.addressesWithoutCustodialIfAvailable().stream().findFirst().orElse(null));
 		payment.setReceiverAddress(paymentAddress);
 		if (tokenAmount != null) {
@@ -378,10 +383,10 @@ public class FramePaymentController {
 
 		val refId = payment.getReferenceId();
 		val updatedState = gson.toJson(new FramePaymentMessage(paymentAddress,
-				chainId, token, usdAmount, tokenAmount, refId));
+				token.chainId(), token.id(), usdAmount, tokenAmount, refId));
 		val profileImage = framesServiceUrl.concat(String.format(
 				"/images/profile/%s/payment.png?step=confirm&chainId=%s&token=%s&usdAmount=%s&tokenAmount=%s",
-				identity, chainId, token, usdAmount != null ? usdAmount : "",
+				identity, token.chainId(), token.id(), usdAmount != null ? usdAmount : "",
 				tokenAmount != null ? tokenAmount : ""));
 		val frameResponseBuilder = FrameResponse.builder()
 				.postUrl(apiServiceUrl.concat(String.format(PAY_IN_FRAME_CONFIRM, refId)))
