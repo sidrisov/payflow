@@ -193,29 +193,30 @@ public class PaymentController {
 							log.error("Failed to reply with {} for payment intent completion", castText);
 						}
 					} else {
-						if (payment.getReceiver() == null) {
-							val castText = String.format("""
-											@%s, you've been paid %s %s by @%s 🎉
+						// send both reply + intent for recipient who's on payflow
+						val castText = String.format("""
+										@%s, you've been paid %s %s by @%s 🎉
 
-											🧾 Receipt: %s
+										🧾 Receipt: %s
 
-											Install `💜️Intent` at app.payflow.me/actions
-											p.s. join /payflow channel for updates 👀""",
-									receiverFname,
-									StringUtils.isNotBlank(payment.getTokenAmount()) ? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
-											: String.format("$%s", payment.getUsdAmount()),
-									payment.getToken().toUpperCase(),
-									senderFname,
-									receiptUrl);
+										Install `💜️Intent` at app.payflow.me/actions
+										p.s. join /payflow channel for updates 👀""",
+								receiverFname,
+								StringUtils.isNotBlank(payment.getTokenAmount()) ? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
+										: String.format("$%s", payment.getUsdAmount()),
+								payment.getToken().toUpperCase(),
+								senderFname,
+								receiptUrl);
 
-							val processed = farcasterPaymentBotService.reply(castText,
-									payment.getSourceHash(),
-									embeds);
+						val processed = farcasterPaymentBotService.reply(castText,
+								payment.getSourceHash(),
+								embeds);
 
-							if (!processed) {
-								log.error("Failed to reply with {} for payment intent completion", castText);
-							}
-						} else {
+						if (!processed) {
+							log.error("Failed to reply with {} for payment intent completion", castText);
+						}
+
+						if (payment.getReceiver() != null) {
 							val receiverFid = identityService.getIdentityFid(payment.getReceiver().getIdentity());
 							if (StringUtils.isBlank(receiverFid)) {
 								return;
@@ -267,30 +268,30 @@ public class PaymentController {
 							PaymentService.formatNumberWithSuffix(storageUsage.links().capacity())
 					);
 
-					if (payment.getReceiver() == null) {
-						val castText = String.format("""
-										@%s, you've been gifted %s units of storage by @%s 🎉
-																				
-										%s
+					val castText = String.format("""
+									@%s, you've been gifted %s units of storage by @%s 🎉
+																			
+									%s
 
-										🧾 Receipt: %s
+									🧾 Receipt: %s
 
-										Install `🗄 Gift Storage` at app.payflow.me/actions
-										p.s. join /payflow channel for updates 👀""",
-								receiverFname,
-								payment.getTokenAmount(),
-								senderFname,
-								storageUsageText,
-								receiptUrl);
+									Install `🗄 Gift Storage` at app.payflow.me/actions
+									p.s. join /payflow channel for updates 👀""",
+							receiverFname,
+							payment.getTokenAmount(),
+							senderFname,
+							storageUsageText,
+							receiptUrl);
 
-						val processed = farcasterPaymentBotService.reply(castText,
-								payment.getSourceHash(),
-								embeds);
+					val processed = farcasterPaymentBotService.reply(castText,
+							payment.getSourceHash(),
+							embeds);
 
-						if (!processed) {
-							log.error("Failed to reply with {} for payment intent completion", castText);
-						}
-					} else {
+					if (!processed) {
+						log.error("Failed to reply with {} for payment intent completion", castText);
+					}
+					
+					if (payment.getReceiver() != null) {
 						try {
 							val messageText = String.format("""
 											 @%s, you've been gifted %s units of storage by @%s 🎉
