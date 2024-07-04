@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ua.sinaver.web3.payflow.data.Payment;
+import ua.sinaver.web3.payflow.data.Wallet;
 import ua.sinaver.web3.payflow.data.bot.PaymentBotJob;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.message.Token;
@@ -179,8 +180,7 @@ public class FarcasterPaymentBotService {
 									token = tokens.stream().filter(t -> t.chain().equals(chain)).findFirst().get();
 								}
 
-								log.debug("Receiver: {}, amount: {}, token: {}",
-										receiver, amountStr, token);
+								log.debug("Receiver: {}, amount: {}, token: {}", receiver, amountStr, token);
 
 								// if receiver passed fetch meta from mentions
 								if (!StringUtils.isBlank(receiver)) {
@@ -226,7 +226,17 @@ public class FarcasterPaymentBotService {
 									receiver, receiverProfile);
 
 							String receiverAddress = null;
-							if (receiverProfile == null) {
+
+
+							if (receiverProfile != null && receiverProfile.getDefaultFlow() != null) {
+								val chainId = token.chainId();
+								receiverAddress = receiverProfile.getDefaultFlow().getWallets().stream()
+										.filter(w -> w.getNetwork().equals(chainId))
+										.findFirst()
+										.map(Wallet::getAddress).orElse(null);
+							}
+
+							if (receiverAddress == null) {
 								val identity = identityService.getIdentitiesInfo(receiverAddresses)
 										.stream().max(Comparator.comparingInt(IdentityMessage::score)).orElse(null);
 								if (identity != null) {
@@ -301,7 +311,7 @@ public class FarcasterPaymentBotService {
 								final String amountStr = matcher.group("amount");
 								String restText = matcher.group("rest");
 
-								Token token = null;
+								Token token;
 								val tokens = paymentService.parseCommandTokens(restText);
 								if (tokens.size() == 1) {
 									token = tokens.getFirst();
@@ -309,7 +319,6 @@ public class FarcasterPaymentBotService {
 									val chain = paymentService.parseCommandChain(restText);
 									token = tokens.stream().filter(t -> t.chain().equals(chain)).findFirst().get();
 								}
-
 
 								val mentions = cast.mentionedProfiles().stream()
 										.filter(u ->
@@ -337,7 +346,15 @@ public class FarcasterPaymentBotService {
 										log.debug("Found receiver profile for receiver {} - {}", receiver, receiverProfile);
 
 										String receiverAddress = null;
-										if (receiverProfile == null || receiverProfile.getDefaultFlow() == null) {
+										if (receiverProfile != null && receiverProfile.getDefaultFlow() != null) {
+											val chainId = token.chainId();
+											receiverAddress = receiverProfile.getDefaultFlow().getWallets().stream()
+													.filter(w -> w.getNetwork().equals(chainId))
+													.findFirst()
+													.map(Wallet::getAddress).orElse(null);
+										}
+
+										if (receiverAddress == null) {
 											val identity = identityService.getIdentitiesInfo(receiverAddresses)
 													.stream().max(Comparator.comparingInt(IdentityMessage::score)).orElse(null);
 											if (identity != null) {
@@ -354,8 +371,7 @@ public class FarcasterPaymentBotService {
 										// TODO: check if token available for chain
 										val payment = new Payment(command.equals("batch") ?
 												Payment.PaymentType.FRAME : Payment.PaymentType.INTENT,
-												(receiverProfile != null && receiverProfile.getDefaultFlow() != null) ?
-														receiverProfile : null,
+												receiverProfile,
 												token.chainId(), token.id());
 										payment.setReceiverAddress(receiverAddress);
 										payment.setSender(casterProfile);

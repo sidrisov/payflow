@@ -39,10 +39,7 @@ import {
   Abi,
   Address,
   ContractFunctionArgs,
-  ContractFunctionName,
-  encodeFunctionData,
-  toHex
-} from 'viem';
+  ContractFunctionName} from 'viem';
 import { normalizeNumberPrecision } from '../../utils/formats';
 import { useGlideEstimatePayment, useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
 import { ProfileContext } from '../../contexts/UserContext';

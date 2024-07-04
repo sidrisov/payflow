@@ -158,11 +158,14 @@ public class TransactionService {
 
 		val isERC20Transfer = token.tokenAddress() != null;
 
+		// TODO: align receiver logic everywhere:
+		// 1. if chain supported by profile + default flow + wallet
+		// otherwise fallback to verified address
 		val address =
 				payment.getReceiver() != null && payment.getReceiver().getDefaultFlow() != null ?
 						payment.getReceiver().getDefaultFlow().getWallets().stream()
 								.filter(wallet -> wallet.getNetwork().equals(payment.getNetwork()))
-								.map(Wallet::getAddress).findFirst().orElse(null) : payment.getReceiverAddress();
+								.map(Wallet::getAddress).findFirst().orElse(payment.getReceiverAddress()) : payment.getReceiverAddress();
 
 		var amount = StringUtils.isNotBlank(payment.getTokenAmount()) ?
 				Double.parseDouble(payment.getTokenAmount()) :

@@ -349,7 +349,9 @@ public class FramePaymentController {
 		val paymentProfile = userService.findByUsernameOrIdentity(identity);
 		if (paymentProfile != null && paymentProfile.getDefaultFlow() != null) {
 			paymentAddress = paymentProfile.getDefaultFlow().getWallets().stream()
-					.map(Wallet::getAddress).findFirst().orElse(null);
+					.filter(w -> w.getNetwork().equals(token.chainId()))
+					.findFirst()
+					.map(Wallet::getAddress).orElse(null);
 		}
 		if (StringUtils.isBlank(paymentAddress)) {
 			// TODO: add a proper fix to support recipients based on ens, fc name, fid
