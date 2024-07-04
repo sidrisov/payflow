@@ -12,6 +12,9 @@ export default function getNetworkImageSrc(chainId: number): string {
     case optimism.id:
       fileName = 'optimism';
       break;
+    case zora.id:
+      fileName = 'zora';
+      break;
     case degen.id:
       fileName = 'degen';
       break;

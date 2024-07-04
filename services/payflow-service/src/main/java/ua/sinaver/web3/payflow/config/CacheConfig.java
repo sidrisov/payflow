@@ -20,17 +20,18 @@ import java.util.HashMap;
 
 @Configuration
 public class CacheConfig {
-	public static final String CACHE_PREFIX = "v0:";
-	public static final String CONTACTS_CACHE_NAME = CACHE_PREFIX + "contacts";
-	public static final String CONTACT_LIST_CACHE_NAME = CACHE_PREFIX + "contact-list";
-	public static final String SOCIALS_CACHE_NAME = CACHE_PREFIX + "socials";
-	public static final String SOCIALS_INSIGHTS_CACHE_NAME = CACHE_PREFIX + "insights";
-	public static final String FARCASTER_VERIFICATIONS_CACHE_NAME = CACHE_PREFIX + "verifications";
-	public static final String TOKEN_OWNERS_CACHE_NAME = CACHE_PREFIX + "token-owners";
-	public static final String POAP_OWNERS_CACHE_NAME = CACHE_PREFIX + "poap-owners";
-	public static final String USERS_CACHE_NAME = CACHE_PREFIX + "users";
-	public static final String INVITATIONS_CACHE_NAME = CACHE_PREFIX + "invitations";
-	public static final String NEYNAR_FARCASTER_USER_CACHE = CACHE_PREFIX + "farcaster-users";
+	public static final String CACHE_PREFIX_V0 = "v0:";
+	public static final String CACHE_PREFIX_V1 = "v1:";
+	public static final String CONTACTS_CACHE_NAME = CACHE_PREFIX_V0 + "contacts";
+	public static final String CONTACT_LIST_CACHE_NAME = CACHE_PREFIX_V0 + "contact-list";
+	public static final String SOCIALS_CACHE_NAME = CACHE_PREFIX_V0 + "socials";
+	public static final String SOCIALS_INSIGHTS_CACHE_NAME = CACHE_PREFIX_V0 + "insights";
+	public static final String FARCASTER_VERIFICATIONS_CACHE_NAME = CACHE_PREFIX_V1 + "verifications";
+	public static final String NEYNAR_FARCASTER_USER_CACHE = CACHE_PREFIX_V1 + "farcaster-users";
+	public static final String TOKEN_OWNERS_CACHE_NAME = CACHE_PREFIX_V0 + "token-owners";
+	public static final String POAP_OWNERS_CACHE_NAME = CACHE_PREFIX_V0 + "poap-owners";
+	public static final String USERS_CACHE_NAME = CACHE_PREFIX_V0 + "users";
+	public static final String INVITATIONS_CACHE_NAME = CACHE_PREFIX_V0 + "invitations";
 
 
 	@Value("${spring.cache.contacts.eth-denver.expireAfterWrite:10m}")
@@ -41,6 +42,8 @@ public class CacheConfig {
 	private Duration contactsListExpireAfterWriteDuration;
 	@Value("${spring.cache.socials.expireAfterWrite:24h}")
 	private Duration socialsExpireAfterWriteDuration;
+	@Value("${spring.cache.verifications.expireAfterWrite:24h}")
+	private Duration verificationsExpireAfterWriteDuration;
 	@Value("${spring.cache.socials.maxSize:1000}")
 	private int socialsMaxSize;
 
@@ -93,6 +96,13 @@ public class CacheConfig {
 						.SerializationPair
 						.fromSerializer(serializer));
 
+		val verificationsCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
+				.disableCachingNullValues()
+				.entryTtl(verificationsExpireAfterWriteDuration)
+				.serializeValuesWith(RedisSerializationContext
+						.SerializationPair
+						.fromSerializer(serializer));
+
 		val cacheConfigurations = new HashMap<String, RedisCacheConfiguration>();
 		cacheConfigurations.put(CONTACTS_CACHE_NAME, contactsCacheConfigs);
 		cacheConfigurations.put(CONTACT_LIST_CACHE_NAME, contactsListCacheConfigs);
@@ -100,8 +110,8 @@ public class CacheConfig {
 		cacheConfigurations.put(POAP_OWNERS_CACHE_NAME, ethDenverContactsCacheConfigs);
 		cacheConfigurations.put(SOCIALS_CACHE_NAME, socialsCacheConfig);
 		cacheConfigurations.put(SOCIALS_INSIGHTS_CACHE_NAME, socialsCacheConfig);
-		cacheConfigurations.put(NEYNAR_FARCASTER_USER_CACHE, socialsCacheConfig);
-		cacheConfigurations.put(FARCASTER_VERIFICATIONS_CACHE_NAME, socialsCacheConfig);
+		cacheConfigurations.put(NEYNAR_FARCASTER_USER_CACHE, verificationsCacheConfig);
+		cacheConfigurations.put(FARCASTER_VERIFICATIONS_CACHE_NAME, verificationsCacheConfig);
 		cacheConfigurations.put(USERS_CACHE_NAME, configuration);
 		cacheConfigurations.put(INVITATIONS_CACHE_NAME, configuration);
 
@@ -137,10 +147,10 @@ public class CacheConfig {
 				buildCache(socialsExpireAfterWriteDuration, socialsMaxSize));
 
 		cacheManager.registerCustomCache(FARCASTER_VERIFICATIONS_CACHE_NAME,
-				buildCache(socialsExpireAfterWriteDuration, socialsMaxSize));
+				buildCache(verificationsExpireAfterWriteDuration, socialsMaxSize));
 
 		cacheManager.registerCustomCache(NEYNAR_FARCASTER_USER_CACHE,
-				buildCache(socialsExpireAfterWriteDuration, socialsMaxSize));
+				buildCache(verificationsExpireAfterWriteDuration, socialsMaxSize));
 
 		cacheManager.registerCustomCache(USERS_CACHE_NAME,
 				buildCache(Duration.ofHours(24)));

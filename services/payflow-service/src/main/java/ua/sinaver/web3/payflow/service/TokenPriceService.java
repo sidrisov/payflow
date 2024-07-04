@@ -20,6 +20,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class TokenPriceService {
 
+	private static final Map<Integer, String> PRICE_CHAIN_NAMES = new HashMap<>();
+
+	static {
+		PRICE_CHAIN_NAMES.put(TokenService.DEGEN_CHAIN_ID, "degenchain");
+		PRICE_CHAIN_NAMES.put(TokenService.ZORA_CHAIN_ID, "zora-network");
+	}
+
 	private final WebClient coinGeckoWebClient;
 	private final WebClient geckoTerminalWebClient;
 	@Getter
@@ -31,6 +38,10 @@ public class TokenPriceService {
 		coinGeckoWebClient = webClientBuilder.baseUrl("https://api.coingecko.com/api/v3").build();
 		geckoTerminalWebClient = webClientBuilder.baseUrl("https://api.geckoterminal.com/api/v2").build();
 
+	}
+
+	public static String getPriceChainName(Integer chainId, String chainName) {
+		return PRICE_CHAIN_NAMES.getOrDefault(chainId, chainName);
 	}
 
 	@Scheduled(initialDelay = 0, fixedRate = 60 * 1000)
@@ -70,9 +81,9 @@ public class TokenPriceService {
 					continue;
 				}
 
-				val chainName = tokensToFetch.getFirst().chain();
+				val chainName = getPriceChainName(chainId, tokensToFetch.getFirst().chain());
 				val apiUrl = String.format("/simple/networks/%s/token_price/%s",
-						chainId.equals(TokenService.DEGEN_CHAIN_ID) ? "degenchain" : chainName,
+						chainName,
 						tokensToFetch.stream()
 								.map(token -> token.underlyingToken() != null ?
 										token.underlyingToken().tokenAddress() :

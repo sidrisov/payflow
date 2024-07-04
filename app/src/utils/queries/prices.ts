@@ -1,13 +1,22 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { ERC20_CONTRACTS, TokenPrices } from '../erc20contracts';
-import { degen } from 'viem/chains';
+import { degen, zora } from 'viem/chains';
 import { SUPPORTED_CHAINS } from '../networks';
 
 const PRICE_API = 'https://api.coingecko.com/api/v3/simple/price';
 const tokens = ['ethereum'];
 
 const TOKEN_PRICE_API = 'https://api.geckoterminal.com/api/v2/simple/networks';
+
+const chainNameMap: { [key: number]: string } = {
+  [degen.id]: 'degenchain',
+  [zora.id]: 'zora-network'
+};
+
+function getPriceChainName(chainId: number, chainName: string): string {
+  return chainNameMap[chainId] || chainName;
+}
 
 export const useTokenPrices = () => {
   return useQuery<TokenPrices>({
@@ -43,13 +52,11 @@ export const useTokenPrices = () => {
           continue;
         }
 
-        const chainName = tokensToFetch[0].chain;
+        const chainName = getPriceChainName(chainId, tokensToFetch[0].chain);
 
         // Fetch token prices for the tokens to fetch
         const response = await axios.get(
-          `${TOKEN_PRICE_API}/${
-            chainId === degen.id ? 'degenchain' : chainName
-          }/token_price/${tokensToFetch
+          `${TOKEN_PRICE_API}/${chainName}/token_price/${tokensToFetch
             .map((token) => token.underlyingToken?.tokenAddress ?? token.tokenAddress)
             .join(',')}`
         );
