@@ -118,7 +118,7 @@ export function NetworkTokenSelector({
         {selectedWallet ? (
           <Stack direction="row" spacing={0.5} alignItems="center">
             <Typography variant="subtitle2">
-              {getNetworkDisplayName(selectedWallet.network)} / {selectedToken?.name}
+              {getNetworkDisplayName(selectedWallet.network)} / {selectedToken?.id.toUpperCase()}
             </Typography>
             <IconButton size="small" onClick={() => setExpand(!expand)}>
               {expand ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}

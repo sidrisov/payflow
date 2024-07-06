@@ -23,7 +23,7 @@ export function ChooseTokenMenu({
     <Menu
       {...props}
       onClose={closeStateCallback}
-      sx={{ mt: 1.5, '.MuiMenu-paper': { borderRadius: 5, minWidth: 150 } }}
+      sx={{ mt: 1.5, '.MuiMenu-paper': { borderRadius: 5, minWidth: 180 } }}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'left'

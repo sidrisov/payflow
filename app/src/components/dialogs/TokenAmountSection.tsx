@@ -166,7 +166,7 @@ export function TokenAmountSection({
                     endAdornment: (
                       <InputAdornment position="start">
                         <Typography fontSize={20} fontWeight="bold">
-                          {selectedToken?.name}
+                          {selectedToken?.id.toUpperCase()}
                         </Typography>
                       </InputAdornment>
                     )
@@ -239,7 +239,7 @@ export function TokenAmountSection({
             overflow="auto"
             textAlign="center">
             {usdAmountMode
-              ? `${normalizeNumberPrecision(sendAmount ?? 0)} ${selectedToken?.name}`
+              ? `${normalizeNumberPrecision(sendAmount ?? 0)} ${selectedToken?.id.toUpperCase()}`
               : `$ ${normalizeNumberPrecision(sendAmountUSD ?? 0)}`}
           </Typography>
         )}
