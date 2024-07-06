@@ -18,8 +18,13 @@ export type dAppType =
 export const XMTP_INBOX = 'inbox';
 export const XMTP_CONVERSE = 'converse';
 export const XMTP_COINBASE = 'coinbase';
+export const DC_WARPCAST = 'warpcast';
 
-export type XmtpAppType = typeof XMTP_INBOX | typeof XMTP_CONVERSE | typeof XMTP_COINBASE;
+export type ChatAppType =
+  | typeof XMTP_INBOX
+  | typeof XMTP_CONVERSE
+  | typeof XMTP_COINBASE
+  | typeof DC_WARPCAST;
 
 export function socialLink(dappName: dAppType, profileName?: string) {
   switch (dappName) {

@@ -4,7 +4,9 @@ import { IdentityType } from '../../types/ProfleType';
 import { useAccount } from 'wagmi';
 import { CropSquare, Send } from '@mui/icons-material';
 import { ProfileSection } from '../ProfileSection';
-import SocialPresenceChipWithLink from '../chips/SocialPresenceChipWithLink';
+import SocialPresenceChipWithLink, {
+  SocialDirectMessageButton
+} from '../chips/SocialPresenceChipWithLink';
 import { green } from '@mui/material/colors';
 import { Address } from 'viem';
 import PaymentDialog, { PaymentSenderType } from './PaymentDialog';
@@ -14,6 +16,7 @@ import { AddressSection } from '../AddressSection';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { FRAMES_URL } from '../../utils/urlConstants';
 import { toast } from 'react-toastify';
+import { FARCASTER_DAPP } from '../../utils/dapps';
 
 export function PublicProfileDetails({
   openPayDialogParam = false,
@@ -127,8 +130,9 @@ export function PublicProfileDetails({
             }}>
             Pay
           </Button>
-          {socialInfo?.xmtp && (
-            <SocialPresenceChipWithLink type="xmtp" name={socialInfo.ens ?? identity.address} />
+          {(socialInfo?.xmtp ||
+            socialInfo?.socials.find((s) => s.dappName === FARCASTER_DAPP && s.profileId)) && (
+            <SocialDirectMessageButton identity={identity} />
           )}
           <Tooltip title="Copy payment frame link">
             <IconButton

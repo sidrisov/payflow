@@ -48,6 +48,7 @@ export interface SocialInfoType {
   dappName: string;
   profileName: string;
   profileDisplayName: string;
+  profileId: string;
   profileImage: string;
   followerCount: number;
   isFarcasterPowerUser?: boolean;
