@@ -177,8 +177,15 @@ public class FarcasterPaymentBotService {
 									token = tokens.getFirst();
 								} else {
 									val chain = paymentService.parseCommandChain(restText);
-									token = tokens.stream().filter(t -> t.chain().equals(chain)).findFirst().get();
+									token = tokens.stream().filter(t -> t.chain().equals(chain)).findFirst().orElse(null);
 								}
+
+								if (token == null) {
+									log.error("Token not supported {}", restText);
+									job.setStatus(PaymentBotJob.Status.REJECTED);
+									return;
+								}
+
 
 								log.debug("Receiver: {}, amount: {}, token: {}", receiver, amountStr, token);
 

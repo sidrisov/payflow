@@ -52,8 +52,8 @@ public class PaymentService {
 						.collect(Collectors.joining("|")));
 		val pattern = Pattern.compile(patternStr, Pattern.CASE_INSENSITIVE);
 		val matcher = pattern.matcher(text);
-		val matchedToken = matcher.find() ? matcher.group("token").toLowerCase() :"usdc";
-		return tokens.stream().filter(t -> t.id().equals(matchedToken)).toList();
+		val matchedToken = matcher.find() ? matcher.group("token").toLowerCase() : "usdc";
+		return tokens.stream().filter(t -> t.id().toLowerCase().equals(matchedToken)).toList();
 	}
 
 	public Double parseTokenAmount(String amountStr) {
