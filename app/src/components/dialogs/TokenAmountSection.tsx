@@ -43,7 +43,7 @@ export function TokenAmountSection({
 
   const [selectedTokenPrice, setSelectedTokenPrice] = useState<number>();
 
-  const [usdAmountMode, setUsdAmountMode] = useState<boolean>(!Boolean(payment?.tokenAmount));
+  const [usdAmountMode, setUsdAmountMode] = useState<boolean>(Boolean(payment?.usdAmount));
 
   const { data: balance } = useBalance({
     address: selectedWallet?.address,

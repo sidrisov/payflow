@@ -7,7 +7,7 @@ import { IdentityType } from '../../types/ProfleType';
 function getChatAppDmLink(chatApp: ChatAppType, userId: string) {
   switch (chatApp) {
     case 'warpcast':
-      return `https://warpcast.com/~/inbox/create/${userId}?text=`;
+      return `https://warpcast.com/~/inbox/create/${userId}`;
     case 'converse':
       return `https://converse.xyz/dm/${userId}`;
     case 'inbox':

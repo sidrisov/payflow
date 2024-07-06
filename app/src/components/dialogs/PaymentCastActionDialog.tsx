@@ -37,14 +37,14 @@ export default function PaymentCastActionDialog({
   const [openSelectChain, setOpenSelectChain] = useState<boolean>(false);
   const [chainAnchorEl, setChainAnchorEl] = useState<null | HTMLElement>(null);
 
-  const [usdAmount, setUsdAmount] = useState<number | undefined>(0.99);
+  const [usdAmount, setUsdAmount] = useState<number | undefined>(1);
   const [tokenAmount, setTokenAmount] = useState<number | undefined>(1);
   const [token, setToken] = useState<Token | undefined>();
   const [tokens, setTokens] = useState<Token[]>([]);
   const [chain, setChain] = useState<Chain>(base);
   const [type, setType] = useState<type>('INTENT');
 
-  const [usdAmountMode, setUsdAmountMode] = useState<boolean>(true);
+  const [usdAmountMode, setUsdAmountMode] = useState<boolean>(false);
 
   useMemo(async () => {
     const supportedTokens = getSupportedTokens(chain.id);
