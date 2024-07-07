@@ -4,6 +4,7 @@ import {
   Add,
   Check,
   Link,
+  PlayForWork,
   Star,
   Verified,
   Warning
@@ -57,8 +58,8 @@ export function ChooseFlowMenu({
                 }}>
                 <Box display="flex" alignItems="center" justifyContent="center" width={30}>
                   {option.uuid === profile.defaultFlow?.uuid && (
-                    <Tooltip title="Primary">
-                      <Star />
+                    <Tooltip title="Default receiving payment flow">
+                      <PlayForWork />
                     </Tooltip>
                   )}
 
