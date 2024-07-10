@@ -33,6 +33,9 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
       {payment.source && <Divider />}
       {payment.status === 'COMPLETED' ? (
         <MenuItem
+          component="a"
+          href={`https://www.onceupon.xyz/${payment.hash}`}
+          target="_blank"
           sx={{ color: green.A700 }}>
           <ListItemIcon sx={{ color: green.A700 }}>
             <Receipt fontSize="small" />
