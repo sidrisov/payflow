@@ -1,11 +1,21 @@
-import { Badge, Box, Divider, Menu, MenuItem, MenuProps, Tooltip, Typography } from '@mui/material';
+import {
+  Badge,
+  Box,
+  Divider,
+  IconButton,
+  Menu,
+  MenuItem,
+  MenuProps,
+  Tooltip,
+  Typography
+} from '@mui/material';
 import { FlowType } from '../../types/FlowType';
 import {
   Add,
   Check,
   Link,
+  MoreHoriz,
   PlayForWork,
-  Star,
   Verified,
   Warning
 } from '@mui/icons-material';
@@ -13,6 +23,7 @@ import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { useContext, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { green, red } from '@mui/material/colors';
+import { comingSoonToast } from '../Toasts';
 
 export type ChooseFlowMenuProps = MenuProps &
   CloseCallbackType & {
@@ -37,7 +48,7 @@ export function ChooseFlowMenu({
         <Menu
           {...props}
           onClose={closeStateCallback}
-          sx={{ mt: 1, maxWidth: 300, '.MuiMenu-paper': { borderRadius: 5 } }}
+          sx={{ mt: 1, maxWidth: 350, '.MuiMenu-paper': { borderRadius: 5 } }}
           anchorOrigin={{
             vertical: 'bottom',
             horizontal: 'left'
@@ -52,73 +63,103 @@ export function ChooseFlowMenu({
               <MenuItem
                 key={option.uuid}
                 selected={option === selectedFlow}
+                sx={{ alignContent: 'center' }}
                 onClick={async () => {
                   setSelectedFlow(option);
                   closeStateCallback();
                 }}>
-                <Box display="flex" alignItems="center" justifyContent="center" width={30}>
-                  {option.uuid === profile.defaultFlow?.uuid && (
-                    <Tooltip title="Default receiving payment flow">
-                      <PlayForWork />
-                    </Tooltip>
-                  )}
-
-                  {option.type === 'JAR' && (
-                    <Tooltip title="Jar">
-                      <Box src="/jar.png" component="img" sx={{ width: 20, height: 20 }} />
-                    </Tooltip>
-                  )}
-
-                  {option.type === 'FARCASTER_VERIFICATION' && (
-                    <Tooltip title="Farcaster Verification">
-                      <Badge
-                        overlap="circular"
-                        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                        badgeContent={<Verified sx={{ width: 15, height: 15 }} />}>
-                        <Box src="/farcaster.svg" component="img" sx={{ width: 20, height: 20 }} />
-                      </Badge>
-                    </Tooltip>
-                  )}
-
-                  {option.type === 'LINKED' && (
-                    <Tooltip title="Linked Wallet">
-                      <Badge
-                        overlap="circular"
-                        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                        badgeContent={<Link sx={{ width: 15, height: 15 }} />}>
-                        <Box
-                          src="/coinbase_smart_wallet.svg"
-                          component="img"
-                          sx={{ width: 20, height: 20 }}
-                        />
-                      </Badge>
-                    </Tooltip>
-                  )}
-
-                  {option.wallets.length > 0 &&
-                    option.wallets.find((w) => w.version === '1.3.0') && (
-                      <Tooltip
-                        arrow
-                        title={
-                          <Typography variant="subtitle2" color={red[400]} width="300">
-                            Legacy flows will be decomissioned soon! <br />
-                            Please, move your funds to other flows.
-                          </Typography>
-                        }>
-                        <Warning fontSize="small" sx={{ color: red[400] }} />
-                      </Tooltip>
-                    )}
-                </Box>
                 <Box
-                  width={200}
                   display="flex"
                   flexDirection="row"
                   alignItems="center"
-                  justifyContent="space-between">
-                  <Typography variant="subtitle2" overflow="clip">
-                    {option.title}
-                  </Typography>
-                  {option === selectedFlow && <Check sx={{ mx: 1, color: green.A700 }} />}
+                  justifyContent="space-between"
+                  width="100%">
+                  <Box
+                    display="flex"
+                    flexDirection="row"
+                    alignItems="center"
+                    justifyContent="flex-start">
+                    <Box
+                      display="flex"
+                      flexDirection="row"
+                      alignItems="center"
+                      justifyContent="flex-start"
+                      width={60}>
+                      <Box width={30}>
+                        {option === selectedFlow && <Check sx={{ color: green.A700 }} />}
+                      </Box>
+                      {option.uuid === profile.defaultFlow?.uuid && (
+                        <Tooltip title="Default receiving payment flow">
+                          <PlayForWork />
+                        </Tooltip>
+                      )}
+
+                      {option.type === 'JAR' && (
+                        <Tooltip title="Jar">
+                          <Box src="/jar.png" component="img" sx={{ width: 20, height: 20 }} />
+                        </Tooltip>
+                      )}
+
+                      {option.type === 'FARCASTER_VERIFICATION' && (
+                        <Tooltip title="Farcaster Verification">
+                          <Badge
+                            overlap="circular"
+                            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                            badgeContent={<Verified sx={{ width: 15, height: 15 }} />}>
+                            <Box
+                              src="/farcaster.svg"
+                              component="img"
+                              sx={{ width: 20, height: 20 }}
+                            />
+                          </Badge>
+                        </Tooltip>
+                      )}
+
+                      {option.type === 'LINKED' && (
+                        <Tooltip title="Linked Wallet">
+                          <Badge
+                            overlap="circular"
+                            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                            badgeContent={<Link sx={{ width: 15, height: 15 }} />}>
+                            <Box
+                              src="/coinbase_smart_wallet.svg"
+                              component="img"
+                              sx={{ width: 20, height: 20 }}
+                            />
+                          </Badge>
+                        </Tooltip>
+                      )}
+
+                      {option.wallets.length > 0 &&
+                        option.wallets.find((w) => w.version === '1.3.0') && (
+                          <Tooltip
+                            arrow
+                            title={
+                              <Typography variant="subtitle2" color={red[400]} width="300">
+                                Legacy flows will be decomissioned soon! <br />
+                                Please, move your funds to other flows.
+                              </Typography>
+                            }>
+                            <Warning fontSize="small" sx={{ color: red[400] }} />
+                          </Tooltip>
+                        )}
+                    </Box>
+                    <Typography variant="subtitle2" noWrap maxWidth={180}>
+                      {option.title}
+                    </Typography>
+                  </Box>
+
+                  {option === selectedFlow && (
+                    <IconButton
+                      size="small"
+                      onClick={async (event) => {
+                        event.stopPropagation();
+                        comingSoonToast();
+                      }}
+                      sx={{ mx: 1 }}>
+                      <MoreHoriz fontSize="small" />
+                    </IconButton>
+                  )}
                 </Box>
               </MenuItem>
             ))}
