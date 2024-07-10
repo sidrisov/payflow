@@ -91,11 +91,14 @@ public class PaymentController {
 		if (user == null) {
 			return Collections.emptyList();
 		}
+		val verifications = identityService.getIdentityAddresses(user.getIdentity()).stream()
+				.map(String::toLowerCase).toList();
 
-		return paymentRepository.findBySenderAndStatusInAndTypeInOrderByCreatedDateDesc(
-						user, List.of(Payment.PaymentStatus.PENDING,
+		return paymentRepository.findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedDateDesc(
+						user, verifications, List.of(Payment.PaymentStatus.PENDING,
 								Payment.PaymentStatus.COMPLETED),
-						List.of(Payment.PaymentType.INTENT, Payment.PaymentType.INTENT_TOP_REPLY, Payment.PaymentType.INTENT_TOP_REPLY))
+						List.of(Payment.PaymentType.INTENT, Payment.PaymentType.INTENT_TOP_REPLY,
+								Payment.PaymentType.FRAME))
 				.stream()
 				.map(payment -> PaymentMessage.convert(payment, true, true))
 				.toList();

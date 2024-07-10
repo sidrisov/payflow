@@ -2,6 +2,7 @@ package ua.sinaver.web3.payflow.repository;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.User;
 
@@ -15,9 +16,13 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 			"OR (rf IS NOT NULL AND rf.type = 'JAR'))")
 	List<Payment> findByHashIn(List<String> hashes, User senderOrReceiver);
 
-	List<Payment> findBySenderAndStatusInAndTypeInOrderByCreatedDateDesc(User sender,
-	                                                                     List<Payment.PaymentStatus> statuses,
-	                                                                     List<Payment.PaymentType> types);
+	@Query("SELECT p FROM Payment p WHERE (p.sender = :sender OR LOWER(p.senderAddress) IN :addresses) " +
+			"AND p.status IN :statuses AND p.type IN :types ORDER BY p.createdDate DESC")
+	List<Payment> findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedDateDesc(
+			@Param("sender") User sender,
+			@Param("addresses") List<String> addresses,
+			@Param("statuses") List<Payment.PaymentStatus> statuses,
+			@Param("types") List<Payment.PaymentType> types);
 
 	Payment findByReferenceId(String referenceId);
 

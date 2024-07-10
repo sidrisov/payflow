@@ -9,7 +9,8 @@ import {
   useMediaQuery,
   useTheme,
   Avatar,
-  Badge
+  Badge,
+  IconButton
 } from '@mui/material';
 
 import CustomThemeProvider from '../theme/CustomThemeProvider';
@@ -17,9 +18,9 @@ import HideOnScroll from '../components/HideOnScroll';
 import Logo from '../components/Logo';
 import { green, grey } from '@mui/material/colors';
 import { useState } from 'react';
+import { Help, Twitter, X } from '@mui/icons-material';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
-const DOCS_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DOCS_URL;
 
 export default function Home() {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
@@ -41,25 +42,34 @@ export default function Home() {
             }}>
             <Logo />
             <Box>
-              {/* <IconButton size="small" href="https://x.com/payflowme">
-                <Twitter fontSize="small" />
-              </IconButton> */}
+              <IconButton
+                size="small"
+                href="https://warpcast.com/~/channel/payflow"
+                target="_blank">
+                <Avatar variant="rounded" src="farcaster.svg" sx={{ width: 20, height: 20 }} />
+              </IconButton>
+              <IconButton size="small" href="https://x.com/payflowme" target="_blank">
+                <X fontSize="small" />
+              </IconButton>
+              <Button
+                endIcon={<Help />}
+                variant="text"
+                color="inherit"
+                size="small"
+                href="https://payflowlabs.notion.site/Payflow-FAQs-20593cf7734e4d78ad0dc91c8e8982e5"
+                target="_blank"
+                sx={{ borderRadius: 5, fontSize: 15, fontWeight: 'bold' }}>
+                FAQ
+              </Button>
               <Button
                 variant="outlined"
                 color="inherit"
                 size="small"
                 href={`${DAPP_URL}/connect`}
-                sx={{ borderRadius: 5, fontWeight: 'bold' }}>
+                target="_blank"
+                sx={{ mx: 1, borderRadius: 5, fontSize: 15, fontWeight: 'bold' }}>
                 Sign In
               </Button>
-              {/*  <Button
-                variant="outlined"
-                color="inherit"
-                size="small"
-                href={DOCS_URL}
-                sx={{ borderRadius: 5 }}>
-                Docs
-              </Button> */}
             </Box>
           </Toolbar>
         </AppBar>

@@ -7,10 +7,12 @@ import {
   Groups,
   LeaderboardRounded,
   LightModeOutlined,
+  LiveHelp,
   Logout,
   Person,
   PersonAdd,
-  Settings} from '@mui/icons-material';
+  Settings
+} from '@mui/icons-material';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ProfileSection } from '../ProfileSection';
@@ -105,6 +107,15 @@ export function ProfileMenu({
           <Groups fontSize="small" />
         </ListItemIcon>
         Channel
+      </MenuItem>
+      <MenuItem
+        component="a"
+        href="https://payflowlabs.notion.site/Payflow-FAQs-20593cf7734e4d78ad0dc91c8e8982e5"
+        target="_blank">
+        <ListItemIcon>
+          <LiveHelp fontSize="small" />
+        </ListItemIcon>
+        FAQ
       </MenuItem>
       <Divider />
       <MenuItem onClick={() => setAppSettings({ ...appSettings, darkMode: !appSettings.darkMode })}>
