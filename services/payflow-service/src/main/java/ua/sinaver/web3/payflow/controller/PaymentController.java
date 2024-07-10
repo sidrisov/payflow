@@ -92,9 +92,10 @@ public class PaymentController {
 			return Collections.emptyList();
 		}
 
-		return paymentRepository.findBySenderAndStatusAndTypeInOrderByCreatedDateDesc(
-						user, Payment.PaymentStatus.PENDING,
-						List.of(Payment.PaymentType.INTENT, Payment.PaymentType.INTENT_TOP_REPLY))
+		return paymentRepository.findBySenderAndStatusInAndTypeInOrderByCreatedDateDesc(
+						user, List.of(Payment.PaymentStatus.PENDING,
+								Payment.PaymentStatus.COMPLETED),
+						List.of(Payment.PaymentType.INTENT, Payment.PaymentType.INTENT_TOP_REPLY, Payment.PaymentType.INTENT_TOP_REPLY))
 				.stream()
 				.map(payment -> PaymentMessage.convert(payment, true, true))
 				.toList();
@@ -290,7 +291,7 @@ public class PaymentController {
 					if (!processed) {
 						log.error("Failed to reply with {} for payment intent completion", castText);
 					}
-					
+
 					if (payment.getReceiver() != null) {
 						try {
 							val messageText = String.format("""

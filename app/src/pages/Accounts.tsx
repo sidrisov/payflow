@@ -15,7 +15,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAssetBalances } from '../utils/queries/balances';
 import { useTransactions } from '../utils/queries/transactions';
 import { usePendingPayments } from '../utils/queries/payments';
-import { PendingPaymentsSection } from '../components/PendingPaymentsSection';
+import { PaymentIntentsSection } from '../components/PaymentIntentsSection';
+import { ReceiptsSection } from '../components/ReceiptsSection';
 
 export default function Accounts() {
   const theme = useTheme();
@@ -110,7 +111,17 @@ export default function Accounts() {
               flexDirection="column"
               alignItems="center">
               {isPaymentFetched && (
-                <PendingPaymentsSection flow={selectedFlow} payments={payments} width="100%" />
+                <>
+                  <PaymentIntentsSection
+                    flow={selectedFlow}
+                    payments={payments?.filter((p) => p.status === 'PENDING')}
+                    width="100%"
+                  />
+                  <ReceiptsSection
+                    payments={payments?.filter((p) => p.status === 'COMPLETED')}
+                    width="100%"
+                  />
+                </>
               )}
               <NetworkSelectorSection
                 width="100%"

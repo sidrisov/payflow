@@ -1,8 +1,9 @@
 import { Avatar, Divider, ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material';
-import { ArrowOutward, Cancel, OpenInNew } from '@mui/icons-material';
+import { Cancel, OpenInNew, Receipt } from '@mui/icons-material';
 import { cancelPayment } from '../../services/payments';
 import { PaymentType } from '../../types/PaymentType';
 import { toast } from 'react-toastify';
+import { green } from '@mui/material/colors';
 
 export function PaymentMenu({ payment, ...props }: MenuProps & { payment: PaymentType }) {
   return (
@@ -30,21 +31,32 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
         </MenuItem>
       )}
       {payment.source && <Divider />}
-      <MenuItem
-        onClick={async () => {
-          const success = await cancelPayment(payment);
-          if (success) {
-            toast.success('Payment cancelled!');
-          } else {
-            toast.error('Payment cancellation failed!');
-          }
-        }}
-        sx={{ color: 'red' }}>
-        <ListItemIcon sx={{ color: 'red' }}>
-          <Cancel fontSize="small" />
-        </ListItemIcon>
-        Cancel
-      </MenuItem>
+      {payment.status === 'COMPLETED' ? (
+        <MenuItem
+          sx={{ color: green.A700 }}>
+          <ListItemIcon sx={{ color: green.A700 }}>
+            <Receipt fontSize="small" />
+          </ListItemIcon>
+          Receipt
+          <OpenInNew fontSize="small" sx={{ margin: 1 }} />
+        </MenuItem>
+      ) : (
+        <MenuItem
+          onClick={async () => {
+            const success = await cancelPayment(payment);
+            if (success) {
+              toast.success('Payment cancelled!');
+            } else {
+              toast.error('Payment cancellation failed!');
+            }
+          }}
+          sx={{ color: 'red' }}>
+          <ListItemIcon sx={{ color: 'red' }}>
+            <Cancel fontSize="small" />
+          </ListItemIcon>
+          Cancel
+        </MenuItem>
+      )}
     </Menu>
   );
 }

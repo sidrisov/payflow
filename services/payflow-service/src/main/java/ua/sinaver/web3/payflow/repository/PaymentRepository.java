@@ -15,9 +15,9 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 			"OR (rf IS NOT NULL AND rf.type = 'JAR'))")
 	List<Payment> findByHashIn(List<String> hashes, User senderOrReceiver);
 
-	List<Payment> findBySenderAndStatusAndTypeInOrderByCreatedDateDesc(User sender,
-	                                                                   Payment.PaymentStatus status,
-	                                                                   List<Payment.PaymentType> types);
+	List<Payment> findBySenderAndStatusInAndTypeInOrderByCreatedDateDesc(User sender,
+	                                                                     List<Payment.PaymentStatus> statuses,
+	                                                                     List<Payment.PaymentType> types);
 
 	Payment findByReferenceId(String referenceId);
 
