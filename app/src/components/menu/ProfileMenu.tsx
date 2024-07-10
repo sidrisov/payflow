@@ -2,12 +2,10 @@ import { Divider, ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material'
 import { ProfileType } from '../../types/ProfleType';
 import { useNavigate } from 'react-router-dom';
 import {
-  DarkModeOutlined,
   GridView,
   Groups,
+  Help,
   LeaderboardRounded,
-  LightModeOutlined,
-  LiveHelp,
   Logout,
   Person,
   PersonAdd,
@@ -113,12 +111,12 @@ export function ProfileMenu({
         href="https://payflowlabs.notion.site/Payflow-FAQs-20593cf7734e4d78ad0dc91c8e8982e5"
         target="_blank">
         <ListItemIcon>
-          <LiveHelp fontSize="small" />
+          <Help fontSize="small" />
         </ListItemIcon>
         FAQ
       </MenuItem>
       <Divider />
-      <MenuItem onClick={() => setAppSettings({ ...appSettings, darkMode: !appSettings.darkMode })}>
+      {/* <MenuItem onClick={() => setAppSettings({ ...appSettings, darkMode: !appSettings.darkMode })}>
         <ListItemIcon>
           {appSettings.darkMode ? (
             <DarkModeOutlined fontSize="small" />
@@ -128,7 +126,7 @@ export function ProfileMenu({
         </ListItemIcon>
         {appSettings.darkMode ? 'Dark' : 'Light'}
       </MenuItem>
-      <Divider />
+      <Divider /> */}
       <MenuItem
         sx={{ color: 'red' }}
         onClick={async () => {

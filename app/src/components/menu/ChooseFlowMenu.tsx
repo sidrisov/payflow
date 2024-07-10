@@ -10,20 +10,12 @@ import {
   Typography
 } from '@mui/material';
 import { FlowType } from '../../types/FlowType';
-import {
-  Add,
-  Check,
-  Link,
-  MoreHoriz,
-  PlayForWork,
-  Verified,
-  Warning
-} from '@mui/icons-material';
+import { Add, Check, Link, MoreHoriz, PlayForWork, Verified, Warning } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { useContext, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { green, red } from '@mui/material/colors';
-import { comingSoonToast } from '../Toasts';
+import { FlowSettingsMenu } from './FlowSettingsMenu';
 
 export type ChooseFlowMenuProps = MenuProps &
   CloseCallbackType & {
@@ -41,6 +33,8 @@ export function ChooseFlowMenu({
 }: ChooseFlowMenuProps) {
   const { profile } = useContext(ProfileContext);
   const [openNewFlowDialig, setOpenNewFlowDialig] = useState<boolean>(false);
+  const [openFlowSettingsMenu, setOpenFlowSettingsMenu] = useState<boolean>(false);
+  const [flowAnchorEl, setFlowAnchorEl] = useState<null | HTMLElement>(null);
 
   return (
     profile && (
@@ -48,7 +42,7 @@ export function ChooseFlowMenu({
         <Menu
           {...props}
           onClose={closeStateCallback}
-          sx={{ mt: 1, maxWidth: 350, '.MuiMenu-paper': { borderRadius: 5 } }}
+          sx={{ mt: 1, maxWidth: 365, '.MuiMenu-paper': { borderRadius: 5 } }}
           anchorOrigin={{
             vertical: 'bottom',
             horizontal: 'left'
@@ -84,15 +78,17 @@ export function ChooseFlowMenu({
                       flexDirection="row"
                       alignItems="center"
                       justifyContent="flex-start"
-                      width={60}>
-                      <Box width={30}>
+                      width={90}>
+                      <Box display="inherit" width={30}>
                         {option === selectedFlow && <Check sx={{ color: green.A700 }} />}
                       </Box>
-                      {option.uuid === profile.defaultFlow?.uuid && (
-                        <Tooltip title="Default receiving payment flow">
-                          <PlayForWork />
-                        </Tooltip>
-                      )}
+                      <Box display="inherit" width={30}>
+                        {option.uuid === profile.defaultFlow?.uuid && (
+                          <Tooltip title="Default receiving payment flow">
+                            <PlayForWork />
+                          </Tooltip>
+                        )}
+                      </Box>
 
                       {option.type === 'JAR' && (
                         <Tooltip title="Jar">
@@ -149,17 +145,20 @@ export function ChooseFlowMenu({
                     </Typography>
                   </Box>
 
-                  {option === selectedFlow && (
-                    <IconButton
-                      size="small"
-                      onClick={async (event) => {
-                        event.stopPropagation();
-                        comingSoonToast();
-                      }}
-                      sx={{ mx: 1 }}>
-                      <MoreHoriz fontSize="small" />
-                    </IconButton>
-                  )}
+                  {option === selectedFlow &&
+                    option.type !== 'FARCASTER_VERIFICATION' &&
+                    option.uuid !== profile.defaultFlow?.uuid && (
+                      <IconButton
+                        size="small"
+                        onClick={async (event) => {
+                          event.stopPropagation();
+                          setFlowAnchorEl(event.currentTarget);
+                          setOpenFlowSettingsMenu(true);
+                        }}
+                        sx={{ mx: 1 }}>
+                        <MoreHoriz fontSize="small" />
+                      </IconButton>
+                    )}
                 </Box>
               </MenuItem>
             ))}
@@ -185,6 +184,14 @@ export function ChooseFlowMenu({
             }}
           />
         )} */}
+        {openFlowSettingsMenu && (
+          <FlowSettingsMenu
+            open={openFlowSettingsMenu}
+            anchorEl={flowAnchorEl}
+            onClose={async () => setOpenFlowSettingsMenu(false)}
+            flow={selectedFlow}
+          />
+        )}
       </>
     )
   );

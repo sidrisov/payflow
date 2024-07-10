@@ -5,7 +5,6 @@ import { AccountCard } from '../components/cards/AccountCard';
 import { ProfileContext } from '../contexts/UserContext';
 import Assets from '../components/Assets';
 import { AssetType } from '../types/AssetType';
-import Activity from '../components/Activity';
 import { Chain } from 'viem';
 import { getSupportedTokens } from '../utils/erc20contracts';
 import { FlowType } from '../types/FlowType';
@@ -13,7 +12,6 @@ import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import NetworkSelectorSection from '../components/NetworkSelectorSection';
 import { useNavigate } from 'react-router-dom';
 import { useAssetBalances } from '../utils/queries/balances';
-import { useTransactions } from '../utils/queries/transactions';
 import { usePendingPayments } from '../utils/queries/payments';
 import { PaymentIntentsSection } from '../components/PaymentIntentsSection';
 import { ReceiptsSection } from '../components/ReceiptsSection';
@@ -28,8 +26,8 @@ export default function Accounts() {
 
   const { flows } = profile ?? { flows: [] };
 
-  const [assetsOrActivityView, setAssetsOrActivityView] = useState<'assets' | 'activity'>('assets');
-
+  /*   const [assetsOrActivityView, setAssetsOrActivityView] = useState<'assets' | 'activity'>('assets');
+   */
   const [selectedFlow, setSelectedFlow] = useState<FlowType>();
 
   useEffect(() => {
@@ -71,11 +69,11 @@ export default function Accounts() {
   }, [selectedFlow]);
 
   const { isLoading, isFetched, data: balances } = useAssetBalances(assets);
-  const {
+  /*   const {
     isLoading: isLoadingActivity,
     isFetched: isFetchedActivity,
     data: transactions
-  } = useTransactions(selectedFlow?.wallets ?? []);
+  } = useTransactions(selectedFlow?.wallets ?? []); */
 
   const [selectedNetwork, setSelectedNetwork] = useState<Chain>();
 
@@ -101,8 +99,8 @@ export default function Accounts() {
               selectedFlow={selectedFlow}
               setSelectedFlow={setSelectedFlow}
               assetBalancesResult={{ isLoading, isFetched, balances }}
-              assetsOrActivityView={assetsOrActivityView}
-              setAssetsOrActivityView={setAssetsOrActivityView}
+              /* assetsOrActivityView={assetsOrActivityView}
+              setAssetsOrActivityView={setAssetsOrActivityView} */
             />
 
             <Box
@@ -129,7 +127,11 @@ export default function Accounts() {
                 selectedNetwork={selectedNetwork}
                 setSelectedNetwork={setSelectedNetwork}
               />
-              {assetsOrActivityView === 'assets' ? (
+              <Assets
+                selectedNetwork={selectedNetwork}
+                assetBalancesResult={{ isLoading, isFetched, balances }}
+              />
+              {/* {assetsOrActivityView === 'assets' ? (
                 <Assets
                   selectedNetwork={selectedNetwork}
                   assetBalancesResult={{ isLoading, isFetched, balances }}
@@ -143,7 +145,7 @@ export default function Accounts() {
                     transactions
                   }}
                 />
-              )}
+              )} */}
             </Box>
           </Box>
         ) : (

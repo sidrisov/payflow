@@ -1,11 +1,26 @@
 import axios from 'axios';
 import { API_URL } from '../utils/urlConstants';
-import { FlowWalletType } from '../types/FlowType';
+import { FlowType, FlowWalletType } from '../types/FlowType';
 
 export default async function saveFlow(flow: {}): Promise<boolean | undefined> {
   try {
     const response = await axios.post(`${API_URL}/api/flows`, flow, { withCredentials: true });
     return response.status === 201;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export async function setReceivingFlow(uuid: String): Promise<boolean | undefined> {
+  try {
+    const response = await axios.put(
+      `${API_URL}/api/flows/receiving/${uuid}`,
+      {},
+      {
+        withCredentials: true
+      }
+    );
+    return response.status === 200;
   } catch (error) {
     console.error(error);
   }

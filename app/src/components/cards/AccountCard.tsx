@@ -12,7 +12,7 @@ import {
   Tooltip,
   Typography
 } from '@mui/material';
-import { Receipt, Send, AccountBalance, Toll, ArrowOutward, Add, Share } from '@mui/icons-material';
+import { Send, Toll, ArrowOutward, Add, Share } from '@mui/icons-material';
 import { useContext, useMemo, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
@@ -35,16 +35,16 @@ export type AccountNewDialogProps = CardProps & {
   selectedFlow: FlowType;
   setSelectedFlow: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
   assetBalancesResult: BalanceFetchResultType;
-  assetsOrActivityView: 'assets' | 'activity';
-  setAssetsOrActivityView: React.Dispatch<React.SetStateAction<'assets' | 'activity'>>;
+  /* assetsOrActivityView: 'assets' | 'activity';
+  setAssetsOrActivityView: React.Dispatch<React.SetStateAction<'assets' | 'activity'>>; */
 };
 
 export function AccountCard({
   flows,
   selectedFlow,
   setSelectedFlow,
-  assetsOrActivityView,
-  setAssetsOrActivityView,
+  /*  assetsOrActivityView,
+  setAssetsOrActivityView, */
   assetBalancesResult: { isLoading, isFetched, balances }
 }: AccountNewDialogProps) {
   const { profile } = useContext(ProfileContext);
@@ -214,7 +214,7 @@ export function AccountCard({
               <Send />
             </IconButton>
           </Tooltip>
-          <Tooltip title={assetsOrActivityView === 'assets' ? ' Activity' : 'Assets'}>
+          {/* <Tooltip title={assetsOrActivityView === 'assets' ? ' Activity' : 'Assets'}>
             <IconButton
               color="inherit"
               onClick={() => {
@@ -223,7 +223,7 @@ export function AccountCard({
               sx={{ border: 1, borderStyle: 'dashed' }}>
               {assetsOrActivityView === 'assets' ? <Receipt /> : <AccountBalance />}
             </IconButton>
-          </Tooltip>
+          </Tooltip> */}
           <Tooltip title="Share">
             <IconButton
               color="inherit"
