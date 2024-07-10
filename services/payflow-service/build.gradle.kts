@@ -26,11 +26,11 @@ repositories {
 }
 
 if (project.hasProperty("gcp")) {
-    extra["springCloudGcpVersion"] = "5.3.0"
-    extra["springCloudVersion"] = "2023.0.1"
+    extra["springCloudGcpVersion"] = "5.4.3"
+    extra["springCloudVersion"] = "2023.0.2"
 }
 
-extra["flywayVersion"] = "10.15.0"
+extra["flywayVersion"] = "10.15.2"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -43,7 +43,7 @@ dependencies {
     implementation("org.springframework.session:spring-session-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-aop")
 
-    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.0")
+    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.1")
 
     /**
      * TODO: disable for now due the following, generating types with gradle plugin is enough for now
@@ -72,7 +72,7 @@ dependencies {
     } else {
         // local
         //runtimeOnly ("com.h2database:h2")
-        runtimeOnly("com.mysql:mysql-connector-j:8.4.0")
+        runtimeOnly("com.mysql:mysql-connector-j:9.0.0")
     }
 
     // caching

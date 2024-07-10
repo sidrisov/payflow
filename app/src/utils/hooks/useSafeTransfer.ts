@@ -30,7 +30,7 @@ import {
   PIMLICO_SPONSORED_ENABLED,
   paymasterSponsorshipPolicyIds
 } from '../pimlico';
-import { signerToSafeSmartAccount } from '../signerToSafeSmartAccount';
+import { signerToSafeSmartAccount } from '../permissionless_forked/signerToSafeSmartAccount';
 import { PimlicoSponsorUserOperationParameters } from 'permissionless/actions/pimlico';
 import { ENTRYPOINT_ADDRESS_V06_TYPE } from 'permissionless/types';
 
@@ -120,11 +120,10 @@ export const useSafeTransfer = (): {
       if (safeVersion === '1.4.1') {
         const chain = signer.chain;
 
-        const safeAccount = await signerToSafeSmartAccount(client, {
+        const safeAccount = await signerToSafeSmartAccount(client as any, {
           entryPoint: ENTRYPOINT_ADDRESS_V06,
           signer: walletClientToSmartAccountSigner(signer),
           owners: safeAccountConfig.owners as Address[],
-          threshold: safeAccountConfig.threshold,
           safeVersion: '1.4.1',
           saltNonce: BigInt(keccak256(toBytes(saltNonce))),
           address: tx.from

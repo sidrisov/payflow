@@ -21,7 +21,7 @@ import {
   SafeVersion
 } from '@safe-global/safe-core-sdk-types';
 
-import { Hash, Address, keccak256, toBytes, erc20Abi, encodeFunctionData, toHex } from 'viem';
+import { Hash, Address, keccak256, toBytes, toHex } from 'viem';
 import { getRelayKitForChainId, getSponsoredCount, waitForRelayTaskToComplete } from './relayer';
 import { getGasPrice } from 'wagmi/actions';
 import { SUPPORTED_CHAINS } from './networks';

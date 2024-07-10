@@ -21,7 +21,7 @@ import { PaymentType } from './types/PaymentType';
 import { payProfileHtml } from './components/PayProfile';
 import { Address, createPublicClient, http, keccak256, toBytes } from 'viem';
 import { arbitrum, base, degen, mode, optimism } from 'viem/chains';
-import { signerToSafeSmartAccount } from './utils/signerToSafeSmartAccount';
+import { signerToSafeSmartAccount } from './utils/permissionless_forked/signerToSafeSmartAccount';
 import { ENTRYPOINT_ADDRESS_V06, isSmartAccountDeployed } from 'permissionless';
 import { SmartAccountSigner } from 'permissionless/accounts';
 import { FlowWalletType, JarType } from './types/FlowType';
@@ -70,7 +70,7 @@ async function startServer() {
 
   app.use(bodyParser.json());
 
-  // TODO: for now re-use frame service, move to separate wallet-service,
+  // TODO: for now re-use frame service, move to separate onchain-service,
   // once there are enough APIs to handle
   app.get('/wallets', async (req, res) => {
     try {
@@ -88,11 +88,10 @@ async function startServer() {
         });
 
         if (client) {
-          const safeAccount = await signerToSafeSmartAccount(client, {
+          const safeAccount = await signerToSafeSmartAccount(client as any, {
             entryPoint: ENTRYPOINT_ADDRESS_V06,
             signer: {} as SmartAccountSigner,
             owners: owners as Address[],
-            threshold: 1,
             safeVersion,
             saltNonce: BigInt(keccak256(toBytes(saltNonce)))
           });
