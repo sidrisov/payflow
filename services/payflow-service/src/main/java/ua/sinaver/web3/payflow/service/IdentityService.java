@@ -123,7 +123,8 @@ public class IdentityService implements IIdentityService {
 		}
 
 		val username = wallet.getSocials().stream()
-				.filter(social -> social.getDappName().equals(SocialDappName.farcaster))
+				.filter(social -> social.getDappName().equals(SocialDappName.farcaster)
+						&& social.getUserId().equals(String.valueOf(fid)))
 				.findFirst().map(Social::getProfileName).orElse(null);
 		log.debug("Username for {}: {}", fid, username);
 		return username;
@@ -139,6 +140,8 @@ public class IdentityService implements IIdentityService {
 		}
 
 		val username = wallet.getSocials().stream()
+				.sorted(Comparator.comparing(Social::getIsFarcasterPowerUser).reversed()
+						.thenComparing(Comparator.comparingInt(Social::getFollowerCount).reversed()))
 				.filter(social -> social.getDappName().equals(SocialDappName.farcaster))
 				.findFirst().map(Social::getProfileName).orElse(null);
 		log.debug("Username for {}: {}", identity, username);
@@ -157,7 +160,8 @@ public class IdentityService implements IIdentityService {
 		}
 
 		val fid = wallet.getSocials().stream()
-				.filter(social -> social.getDappName().equals(SocialDappName.farcaster))
+				.sorted(Comparator.comparing(Social::getIsFarcasterPowerUser).reversed()
+						.thenComparing(Comparator.comparingInt(Social::getFollowerCount).reversed())).filter(social -> social.getDappName().equals(SocialDappName.farcaster))
 				.findFirst().map(Social::getUserId).orElse(null);
 		log.debug("Fid for {}: {}", identity, fid);
 		return fid;

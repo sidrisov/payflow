@@ -132,7 +132,7 @@ public record IdentityMessage(
 						}
 
 						return new SocialInfo(s.getDappName().name(), s.getProfileName(),
-								s.getProfileDisplayName(), s.getProfileTokenId(),
+								s.getProfileDisplayName(), s.getUserId(),
 								profileImage, s.getFollowerCount(),
 								BooleanUtils.isTrue(s.getIsFarcasterPowerUser()));
 					}).collect(Collectors.toList());
