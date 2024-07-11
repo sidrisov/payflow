@@ -76,12 +76,9 @@ export function Head() {
                 property="fc:frame:button:1:target"
                 content={`${API_URL}/api/farcaster/frames/pay/${refId}/frame/confirm`}
               />
-              <meta property="fc:frame:button:2" content="📱 Intent" />
-              <meta property="fc:frame:button:2:action" content="post" />
-              <meta
-                property="fc:frame:button:2:target"
-                content={`${API_URL}/api/farcaster/frames/pay/${refId}/frame/confirm`}
-              />
+              <meta property="fc:frame:button:2" content="📱 App" />
+              <meta property="fc:frame:button:2:action" content="link" />
+              <meta property="fc:frame:button:2:target" content={DAPP_URL} />
 
               <meta property="fc:frame:button:3" content="🙋🏻 FAQ" />
               <meta property="fc:frame:button:3:action" content="link" />

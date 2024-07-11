@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class FarcasterPaymentBotService {
 
-	private static final List<String> SUPPORTED_COMMANDS = List.of("send", "intent",
+	private static final List<String> SUPPORTED_COMMANDS = List.of("pay", "send", "intent",
 			"batch", "intents", "jar", "receive");
 	@Autowired
 	private FarcasterNeynarService hubService;
@@ -154,6 +154,7 @@ public class FarcasterPaymentBotService {
 							return;
 						}
 					}
+					case "pay":
 					case "intent":
 					case "send": {
 						String receiver = null;
@@ -259,10 +260,11 @@ public class FarcasterPaymentBotService {
 										cast.author().username(),
 										cast.hash().substring(0, 10));
 								val sourceHash = cast.hash();
-								val payment = new Payment(command.equals("send") ?
-										Payment.PaymentType.FRAME : Payment.PaymentType.INTENT,
-										receiverProfile,
-										token.chainId(), token.id());
+								val payment =
+										new Payment((command.equals("send") || command.equals(
+												"pay")) ? Payment.PaymentType.FRAME : Payment.PaymentType.INTENT,
+												receiverProfile,
+												token.chainId(), token.id());
 								payment.setReceiverAddress(receiverAddress);
 								payment.setSender(casterProfile);
 								if (amountStr.startsWith("$")) {
@@ -279,12 +281,12 @@ public class FarcasterPaymentBotService {
 							}
 
 							String castText;
-							if (command.equals("send")) {
-								castText = String.format("@%s send funds to @%s with the frame",
+							if (command.equals("send") || command.equals("pay")) {
+								castText = String.format("@%s pay @%s with the frame",
 										cast.author().username(),
 										receiver);
 							} else {
-								castText = String.format("@%s send funds to @%s in the app",
+								castText = String.format("@%s pay @%s in the app",
 										cast.author().username(),
 										receiver);
 							}
@@ -395,11 +397,11 @@ public class FarcasterPaymentBotService {
 
 										String castText;
 										if (command.equals("batch")) {
-											castText = String.format("@%s send funds to @%s with the frame",
+											castText = String.format("@%s pay @%s with the frame",
 													cast.author().username(),
 													receiver);
 										} else {
-											castText = String.format("@%s send funds to @%s in the app",
+											castText = String.format("@%s pay @%s in the app",
 													cast.author().username(),
 													receiver);
 										}

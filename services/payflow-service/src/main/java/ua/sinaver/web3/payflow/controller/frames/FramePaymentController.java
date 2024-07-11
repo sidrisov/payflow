@@ -399,9 +399,8 @@ public class FramePaymentController {
 
 		// for now just check if profile exists
 		if (!profiles.isEmpty()) {
-			frameResponseBuilder.button(new FrameButton("\uD83D\uDCF1 Intent",
-					FrameButton.ActionType.POST,
-					apiServiceUrl.concat(String.format(PAY_IN_FRAME_CONFIRM, refId))));
+			frameResponseBuilder.button(new FrameButton("\uD83D\uDCF1 App",
+					FrameButton.ActionType.LINK, dAppServiceUrl));
 		}
 
 		frameResponseBuilder.button(new FrameButton("\uD83D\uDE4B\uD83C\uDFFB FAQ",
