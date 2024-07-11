@@ -8,16 +8,9 @@ import {
   UpdateIdentityCallbackType
 } from './dialogs/SearchIdentityDialog';
 import { useState } from 'react';
+import calculateMaxPages from '../utils/pagination';
 
 const pageSize = 20;
-
-function calculateMaxPages(totalNumber: number, pageSize: number) {
-  if (totalNumber <= 0 || pageSize <= 0) {
-    return 0;
-  }
-
-  return Math.ceil(totalNumber / pageSize);
-}
 
 export function SearchResultView({
   profileRedirect,

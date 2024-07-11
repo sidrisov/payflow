@@ -1,6 +1,7 @@
 import {
   Box,
   BoxProps,
+  Button,
   Chip,
   IconButton,
   Skeleton,
@@ -25,11 +26,17 @@ import { QUERY_FARCASTER_PROFILE } from '../utils/airstackQueries';
 import { useQuery } from '@airstack/airstack-react';
 import { Social } from '../generated/graphql/types';
 import { formatAmountWithSuffix } from '../utils/formats';
+import calculateMaxPages from '../utils/pagination';
+
+const pageSize = 10;
 
 export function ReceiptsSection({ payments, ...props }: { payments?: PaymentType[] } & StackProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [expand, setExpand] = useState<boolean>(false);
+
+  const maxPages = calculateMaxPages(payments?.length ?? 0, pageSize);
+  const [page, setPage] = useState<number>(1);
 
   return (
     payments && (
@@ -43,7 +50,7 @@ export function ReceiptsSection({ payments, ...props }: { payments?: PaymentType
             alignItems="center">
             <Chip
               icon={<Receipt fontSize="small" />}
-              label="Receipts"
+              label={`Receipts (${payments.length})`}
               variant="outlined"
               sx={{ border: 0, fontSize: 14, fontWeight: 'bold' }}
             />
@@ -53,12 +60,30 @@ export function ReceiptsSection({ payments, ...props }: { payments?: PaymentType
           </Box>
           {expand && (
             <Stack p={2} direction="row" spacing={3} overflow="auto">
-              {payments.map((payment, index) =>
-                payment.category === 'fc_storage' && payment.receiverFid !== undefined ? (
-                  <GiftStoragePayment key={`completed_payment_${index}`} payment={payment} />
-                ) : (
-                  <IntentPayment key={`completed_payment_${index}`} payment={payment} />
-                )
+              {payments
+                .slice(0, page * pageSize)
+                .map((payment, index) =>
+                  payment.category === 'fc_storage' && payment.receiverFid !== undefined ? (
+                    <GiftStoragePayment key={`completed_payment_${index}`} payment={payment} />
+                  ) : (
+                    <IntentPayment key={`completed_payment_${index}`} payment={payment} />
+                  )
+                )}
+              {page < maxPages && (
+                <Button
+                  color="inherit"
+                  size="small"
+                  onClick={() => {
+                    setPage(page + 1);
+                  }}
+                  sx={{
+                    p: 3,
+                    minWidth: isMobile ? 145 : 155,
+                    textTransform: 'none',
+                    borderRadius: 5
+                  }}>
+                  <Typography variant="subtitle2">More receipts</Typography>
+                </Button>
               )}
             </Stack>
           )}

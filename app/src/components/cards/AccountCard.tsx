@@ -12,7 +12,7 @@ import {
   Tooltip,
   Typography
 } from '@mui/material';
-import { Send, Toll, ArrowOutward, Add, Share } from '@mui/icons-material';
+import { Send, Toll, ArrowOutward, Share, CallReceived } from '@mui/icons-material';
 import { useContext, useMemo, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
@@ -193,7 +193,7 @@ export function AccountCard({
           </Box>
         </Divider>
         <Stack spacing={1} direction="row" alignSelf="center">
-          <Tooltip title="Add funds">
+          <Tooltip title="Receive funds">
             <IconButton
               color="inherit"
               onClick={(event) => {
@@ -201,7 +201,7 @@ export function AccountCard({
                 setOpenTopUpMenu(true);
               }}
               sx={{ border: 1, borderStyle: 'dashed' }}>
-              <Add />
+              <CallReceived />
             </IconButton>
           </Tooltip>
           <Tooltip title="Send">
