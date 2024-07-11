@@ -29,11 +29,16 @@ import { Token } from '../../utils/erc20contracts';
 import { TokenAmountSection } from './TokenAmountSection';
 import { SwitchFlowSignerSection } from './SwitchFlowSignerSection';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
-import { completePayment } from '../../services/payments';
+import { completePayment, submitPayment } from '../../services/payments';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
+import { PaymentType } from '../../types/PaymentType';
+import { useNavigate } from 'react-router-dom';
+import { delay } from '../../utils/delay';
 
 export default function PayWithPayflowDialog({ payment, sender, recipient }: PaymentDialogProps) {
+  const navigate = useNavigate();
+
   const flow = sender.identity.profile?.defaultFlow as FlowType;
 
   const { profile } = useContext(ProfileContext);
@@ -130,14 +135,31 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
 
       if (payment?.referenceId) {
         payment.hash = txHashCombined;
-        completePayment(payment);
+        await completePayment(payment);
+      } else {
+        const newPayment = {
+          type: 'APP',
+          status: 'COMPLETED',
+          receiver: recipient.identity.profile,
+          receiverAddress: toAddress,
+          chainId: chainId,
+          token: selectedToken?.id,
+          tokenAmount: sendAmount,
+          hash: txHashCombined
+        } as PaymentType;
+
+        console.log('Submitting payment: ', newPayment);
+        await submitPayment(newPayment);
       }
 
       // if tx was successfull, mark wallet as deployed if it wasn't
       if (isNativeFlow && !selectedWallet.deployed) {
         selectedWallet.deployed = true;
-        updateWallet(flow.uuid, selectedWallet);
+        await updateWallet(flow.uuid, selectedWallet);
       }
+
+      await delay(2000);
+      navigate(0);
     } else if (errorCombined) {
       toast.update(sendToastId.current, {
         render: (

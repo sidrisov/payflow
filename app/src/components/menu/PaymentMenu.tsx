@@ -13,7 +13,7 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
       style={{ borderRadius: '50px' }}
       transformOrigin={{ horizontal: 'left', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
-      {payment.source && (
+      {payment.source && payment.source.app && (
         <MenuItem
           {...(payment.source.ref && {
             component: 'a',
@@ -30,7 +30,6 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
           <OpenInNew fontSize="small" sx={{ margin: 1 }} />
         </MenuItem>
       )}
-      {payment.source && <Divider />}
       {payment.status === 'COMPLETED' ? (
         <MenuItem
           component="a"
@@ -44,21 +43,24 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
           <OpenInNew fontSize="small" sx={{ margin: 1 }} />
         </MenuItem>
       ) : (
-        <MenuItem
-          onClick={async () => {
-            const success = await cancelPayment(payment);
-            if (success) {
-              toast.success('Payment cancelled!');
-            } else {
-              toast.error('Payment cancellation failed!');
-            }
-          }}
-          sx={{ color: 'red' }}>
-          <ListItemIcon sx={{ color: 'red' }}>
-            <Cancel fontSize="small" />
-          </ListItemIcon>
-          Cancel
-        </MenuItem>
+        <>
+          {payment.source && payment.source.app && <Divider />}
+          <MenuItem
+            onClick={async () => {
+              const success = await cancelPayment(payment);
+              if (success) {
+                toast.success('Payment cancelled!');
+              } else {
+                toast.error('Payment cancellation failed!');
+              }
+            }}
+            sx={{ color: 'red' }}>
+            <ListItemIcon sx={{ color: 'red' }}>
+              <Cancel fontSize="small" />
+            </ListItemIcon>
+            Cancel
+          </MenuItem>
+        </>
       )}
     </Menu>
   );

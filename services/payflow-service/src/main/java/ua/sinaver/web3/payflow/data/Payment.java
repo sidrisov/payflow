@@ -69,6 +69,12 @@ public class Payment {
 	@Column
 	private String hash;
 
+/*	@Column(name = "fulfillment_hash")
+	private String fulfilmentHash;
+
+	@Column(name = "fulfillment_id")
+	private String fulfilmentId;*/
+
 	@Column(columnDefinition = "VARCHAR(256)", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private PaymentStatus status = PaymentStatus.PENDING;
@@ -108,10 +114,12 @@ public class Payment {
 		PENDING,
 		INPROGRESS,
 		COMPLETED,
+		REFUNDED,
 		CANCELLED
 	}
 
 	public enum PaymentType {
+		APP,
 		INTENT,
 		FRAME,
 		INTENT_TOP_REPLY

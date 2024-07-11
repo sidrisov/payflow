@@ -35,11 +35,7 @@ import { PaymentType } from '../../types/PaymentType';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { useContext, useMemo, useState } from 'react';
 import { Token } from '../../utils/erc20contracts';
-import {
-  Abi,
-  Address,
-  ContractFunctionArgs,
-  ContractFunctionName} from 'viem';
+import { Abi, Address, ContractFunctionArgs, ContractFunctionName } from 'viem';
 import { normalizeNumberPrecision } from '../../utils/formats';
 import { useGlideEstimatePayment, useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
 import { ProfileContext } from '../../contexts/UserContext';
@@ -52,6 +48,8 @@ import { completePayment } from '../../services/payments';
 import { grey, red } from '@mui/material/colors';
 import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
 import { CAIP19, payWithGlide } from '@paywithglide/glide-js';
+import { delay } from '../../utils/delay';
+import { useNavigate } from 'react-router-dom';
 
 export type GiftStorageDialog = DialogProps &
   CloseCallbackType & {
@@ -69,6 +67,7 @@ export default function GiftStorageDialog({
 }: GiftStorageDialog) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const navigate = useNavigate();
 
   const flow = sender.identity.profile?.defaultFlow as FlowType;
 
@@ -258,6 +257,9 @@ export default function GiftStorageDialog({
           payment.hash = glideTxHash;
           completePayment(payment);
           toast.success(`Gifted storage to @${social.profileName}`);
+
+          await delay(2000);
+          navigate(0);
         } else {
           toast.error(`Failed to gift storage!`);
         }

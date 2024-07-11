@@ -19,6 +19,19 @@ export async function completePayment(payment: PaymentType): Promise<boolean | u
   }
 }
 
+export async function submitPayment(payment: PaymentType): Promise<boolean | undefined> {
+  try {
+    const response = await axios.post(`${API_URL}/api/payment`, payment, {
+      withCredentials: true
+    });
+    console.debug(response.status);
+
+    return response.status === 200;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 export async function cancelPayment(payment: PaymentType): Promise<boolean | undefined> {
   try {
     const response = await axios.put(

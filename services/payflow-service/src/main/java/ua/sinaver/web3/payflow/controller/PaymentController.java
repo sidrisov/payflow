@@ -82,6 +82,39 @@ public class PaymentController {
 				.toList();
 	}
 
+	@PostMapping
+	public ResponseEntity<String> submitPayment(@RequestBody PaymentMessage paymentMessage,
+	                                            Principal principal) {
+		val username = principal != null ? principal.getName() : null;
+
+		log.debug("Saving completed payment {} for {}", paymentMessage, username);
+
+		if (StringUtils.isBlank(username)) {
+			log.error("User not authenticated!");
+			return ResponseEntity.badRequest().build();
+		}
+
+		val user = userService.findByUsername(username);
+		if (user == null) {
+			log.error("User not found!");
+			return ResponseEntity.badRequest().build();
+		}
+
+		val receiver = paymentMessage.receiver() != null ?
+				userService.findByIdentity(paymentMessage.receiver().identity()) : null;
+		val payment = new Payment(paymentMessage.type(), receiver,
+				paymentMessage.chainId(), paymentMessage.token());
+		payment.setReceiverAddress(paymentMessage.receiverAddress());
+		payment.setSender(user);
+		payment.setTokenAmount(paymentMessage.tokenAmount().toString());
+		payment.setSourceHash(paymentMessage.hash());
+		payment.setStatus(paymentMessage.status());
+		payment.setCompletedDate(new Date());
+		paymentRepository.save(payment);
+		log.debug("Saved payment: {}", payment);
+		return ResponseEntity.ok().build();
+	}
+
 	@GetMapping("/pending")
 	public List<PaymentMessage> pendingPayments(Principal principal) {
 		val username = principal != null ? principal.getName() : null;
@@ -97,7 +130,8 @@ public class PaymentController {
 		return paymentRepository.findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedDateDesc(
 						user, verifications, List.of(Payment.PaymentStatus.PENDING,
 								Payment.PaymentStatus.COMPLETED),
-						List.of(Payment.PaymentType.INTENT, Payment.PaymentType.INTENT_TOP_REPLY,
+						List.of(Payment.PaymentType.APP, Payment.PaymentType.INTENT,
+								Payment.PaymentType.INTENT_TOP_REPLY,
 								Payment.PaymentType.FRAME))
 				.stream()
 				.map(payment -> PaymentMessage.convert(payment, true, true))

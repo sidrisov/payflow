@@ -2,7 +2,7 @@ import { Address, Hash } from 'viem';
 import { ProfileType } from './ProfleType';
 import { FlowType } from './FlowType';
 
-export type type = 'FRAME' | 'INTENT' | 'INTENT_TOP_REPLY' | 'BATCH';
+export type type = 'FRAME' | 'INTENT' | 'APP' | 'INTENT_TOP_REPLY' | 'BATCH';
 export interface PaymentType {
   referenceId?: string;
   type: type;
