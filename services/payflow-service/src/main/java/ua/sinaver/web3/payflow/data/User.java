@@ -9,8 +9,7 @@ import lombok.ToString;
 import java.util.Date;
 import java.util.List;
 
-// TODO: add indexes (for query search)
-@ToString(exclude = "userAllowance")
+@ToString
 @Setter
 @Getter
 @NoArgsConstructor
@@ -55,14 +54,18 @@ public class User {
 	@JoinColumn(name = "flow_id", referencedColumnName = "id")
 	private Flow defaultFlow;
 
+	@Column(name = "default_receiving_address")
+	private String defaultReceivingAddress;
+
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name = "user_id", referencedColumnName = "id")
+	@ToString.Exclude
 	private List<Flow> flows;
 
 	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@ToString.Exclude
 	private UserAllowance userAllowance;
 
-	// TODO: replace legacy Date with proper Instant/LocalDateTime etc.
 	@Column
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createdDate = new Date();

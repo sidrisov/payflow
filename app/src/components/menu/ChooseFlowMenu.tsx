@@ -145,20 +145,18 @@ export function ChooseFlowMenu({
                     </Typography>
                   </Box>
 
-                  {option === selectedFlow &&
-                    option.type !== 'FARCASTER_VERIFICATION' &&
-                    option.uuid !== profile.defaultFlow?.uuid && (
-                      <IconButton
-                        size="small"
-                        onClick={async (event) => {
-                          event.stopPropagation();
-                          setFlowAnchorEl(event.currentTarget);
-                          setOpenFlowSettingsMenu(true);
-                        }}
-                        sx={{ mx: 1 }}>
-                        <MoreHoriz fontSize="small" />
-                      </IconButton>
-                    )}
+                  {option === selectedFlow && option.uuid !== profile.defaultFlow?.uuid && (
+                    <IconButton
+                      size="small"
+                      onClick={async (event) => {
+                        event.stopPropagation();
+                        setFlowAnchorEl(event.currentTarget);
+                        setOpenFlowSettingsMenu(true);
+                      }}
+                      sx={{ mx: 1 }}>
+                      <MoreHoriz fontSize="small" />
+                    </IconButton>
+                  )}
                 </Box>
               </MenuItem>
             ))}

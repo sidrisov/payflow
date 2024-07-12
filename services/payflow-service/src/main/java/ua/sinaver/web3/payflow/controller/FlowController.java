@@ -13,6 +13,7 @@ import ua.sinaver.web3.payflow.message.JarMessage;
 import ua.sinaver.web3.payflow.message.WalletMessage;
 import ua.sinaver.web3.payflow.repository.WalletRepository;
 import ua.sinaver.web3.payflow.service.api.IFlowService;
+import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
 
 import java.security.Principal;
@@ -32,6 +33,9 @@ class FlowController {
 
 	@Autowired
 	private IFlowService flowService;
+
+	@Autowired
+	private IIdentityService identityService;
 
 	/*@GetMapping("/{walletAddress}/nonce")
 	public String nonce(@PathVariable String walletAddress) {
@@ -65,7 +69,6 @@ class FlowController {
 		if (user == null) {
 			throw new Exception("User doesn't exist: " + principal.getName());
 		}
-
 		return flowService.getAllFlows(user);
 	}
 
@@ -94,17 +97,33 @@ class FlowController {
 			return ResponseEntity.badRequest().build();
 		}
 
-		val flow = user.getFlows().stream()
-				.filter(f -> StringUtils.equals(f.getUuid(), uuid))
-				.findFirst().orElse(null);
+		if (!uuid.startsWith("0x")) {
+			val flow = user.getFlows().stream()
+					.filter(f -> StringUtils.equals(f.getUuid(), uuid))
+					.findFirst().orElse(null);
 
-		if (flow == null) {
-			log.error("Flow not found: {} for {}", uuid, principal.getName());
-			return ResponseEntity.badRequest().build();
+			if (flow == null) {
+				log.error("Flow not found: {} for {}", uuid, principal.getName());
+				return ResponseEntity.badRequest().build();
+			}
+
+			log.debug("Setting flow as receiving flow: {} for {}", flow, principal.getName());
+			user.setDefaultFlow(flow);
+			user.setDefaultReceivingAddress(null);
+		} else {
+			val receivingAddress = identityService.getIdentityAddresses(user.getIdentity()).stream()
+					.filter(v -> v.equals(uuid)).findFirst().orElse(null);
+
+			if (receivingAddress == null) {
+				log.error("Receiving address: {} not in verifications of user: {}",
+						uuid, user.getUsername());
+				return ResponseEntity.badRequest().build();
+			}
+
+			log.debug("Setting address as receiving address: {} for {}", receivingAddress, user.getUsername());
+			user.setDefaultFlow(null);
+			user.setDefaultReceivingAddress(receivingAddress);
 		}
-
-		log.debug("Setting flow as receiving flow: {} for {}", flow, principal.getName());
-		user.setDefaultFlow(flow);
 		return ResponseEntity.ok().build();
 	}
 

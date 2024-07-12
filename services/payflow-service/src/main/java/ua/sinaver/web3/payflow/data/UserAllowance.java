@@ -19,6 +19,7 @@ public class UserAllowance {
 
 	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+	@ToString.Exclude
 	private User user;
 
 	@Column

@@ -102,9 +102,7 @@ public class FlowService implements IFlowService {
 					.toList();
 			flows.addAll(verificationFlows);
 		}
-
 		return flows;
-
 	}
 
 	@Override

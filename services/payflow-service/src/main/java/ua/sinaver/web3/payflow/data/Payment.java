@@ -32,14 +32,17 @@ public class Payment {
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "sender_user_id", referencedColumnName = "id")
+	@ToString.Exclude
 	private User sender;
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "receiver_user_id", referencedColumnName = "id")
+	@ToString.Exclude
 	private User receiver;
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "receiver_flow_id", referencedColumnName = "id")
+	@ToString.Exclude
 	private Flow receiverFlow;
 
 	@Column(name = "sender_address")

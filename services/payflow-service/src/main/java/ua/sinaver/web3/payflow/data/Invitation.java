@@ -8,7 +8,7 @@ import lombok.ToString;
 
 import java.util.Date;
 
-@ToString(exclude = "invitedBy")
+@ToString
 @Setter
 @Getter
 @NoArgsConstructor
@@ -24,6 +24,7 @@ public class Invitation {
 	// entity already fetched
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "invited_by_id", referencedColumnName = "id")
+	@ToString.Exclude
 	private User invitedBy;
 
 	@OneToOne(cascade = CascadeType.ALL)

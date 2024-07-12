@@ -46,19 +46,14 @@ public class UserController {
 	public ProfileMessage user(Principal principal) {
 		log.trace("{} fetching its profile info", principal.getName());
 		val user = userService.findByIdentity(principal.getName());
-
 		if (user != null) {
 			user.setLastSeen(new Date());
-
 			return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
 					user.getIdentity(),
 					user.getSigner(),
-					user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(),
-							user, true)
-							: null,
+					FlowMessage.convertDefaultFlow(user, true),
 					flowService.getAllFlows(user),
-					user.getUserAllowance() != null ? user.getUserAllowance().getIdentityInviteLimit()
-							: -1);
+					user.getUserAllowance() != null ? user.getUserAllowance().getIdentityInviteLimit() : -1);
 		} else {
 			return null;
 		}
@@ -252,7 +247,7 @@ public class UserController {
 				.map(user -> new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
 						user.getIdentity(),
 						null,
-						FlowMessage.convert(user.getDefaultFlow(), user, false),
+						FlowMessage.convertDefaultFlow(user, false),
 						null,
 						-1)).toList();
 	}
@@ -267,7 +262,7 @@ public class UserController {
 			return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
 					user.getIdentity(),
 					null,
-					FlowMessage.convert(user.getDefaultFlow(), user, false),
+					FlowMessage.convertDefaultFlow(user, false),
 					null,
 					-1);
 		} else {

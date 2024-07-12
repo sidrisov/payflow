@@ -94,9 +94,17 @@ public record FlowMessage(String signer, String signerProvider,
 				null, null,
 				"Verification: " + shortenWalletAddressLabel(verificationAddress),
 				Flow.FlowType.FARCASTER_VERIFICATION.toString(),
-				null,
+				verificationAddress,
 				null, null, wallets);
 	}
+
+	public static FlowMessage convertDefaultFlow(User user, boolean signerInfo) {
+		return user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(),
+				user, signerInfo)
+				: (user.getDefaultReceivingAddress() != null ?
+				FlowMessage.convertFarcasterVerification(user.getDefaultReceivingAddress(), user) : null);
+	}
+
 
 	public static Flow convert(FlowMessage flowMessage, User user) {
 		val flowSigner = getFlowSigner(flowMessage, user);

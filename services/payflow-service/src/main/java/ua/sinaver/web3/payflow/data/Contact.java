@@ -26,10 +26,12 @@ public class Contact {
 
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+	@ToString.Exclude
 	private User user;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "identity", referencedColumnName = "identity", insertable = false, updatable = false)
+	@ToString.Exclude
 	private User profile;
 
 	@Column(columnDefinition = "boolean")
