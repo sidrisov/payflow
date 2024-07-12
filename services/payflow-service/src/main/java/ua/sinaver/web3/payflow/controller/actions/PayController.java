@@ -70,7 +70,8 @@ public class PayController {
 		}
 
 		String paymentAddress;
-		if (paymentProfile == null || paymentProfile.getDefaultFlow() == null) {
+		if (paymentProfile == null || (paymentProfile.getDefaultFlow() == null
+				&& paymentProfile.getDefaultReceivingAddress() == null)) {
 			if (!paymentAddresses.isEmpty()) {
 				// return first associated address without custodial
 				paymentAddress = paymentAddresses.size() > 1 ?

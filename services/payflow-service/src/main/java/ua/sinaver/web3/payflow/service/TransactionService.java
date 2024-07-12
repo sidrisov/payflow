@@ -19,7 +19,6 @@ import org.web3j.tx.TransactionManager;
 import org.web3j.tx.gas.DefaultGasProvider;
 import org.web3j.utils.Convert;
 import ua.sinaver.web3.payflow.data.Payment;
-import ua.sinaver.web3.payflow.data.Wallet;
 import ua.sinaver.web3.payflow.message.FramePaymentMessage;
 
 import java.math.BigDecimal;
@@ -61,9 +60,9 @@ public class TransactionService {
 			    }
 			]
 			""";
-
 	private final Web3j web3j;
-
+	@Autowired
+	private PaymentService paymentService;
 	@Autowired
 	private TokenService tokenService;
 
@@ -161,12 +160,7 @@ public class TransactionService {
 		// TODO: align receiver logic everywhere:
 		// 1. if chain supported by profile + default flow + wallet
 		// otherwise fallback to verified address
-		val address =
-				payment.getReceiver() != null && payment.getReceiver().getDefaultFlow() != null ?
-						payment.getReceiver().getDefaultFlow().getWallets().stream()
-								.filter(wallet -> wallet.getNetwork().equals(payment.getNetwork()))
-								.map(Wallet::getAddress).findFirst().orElse(payment.getReceiverAddress()) : payment.getReceiverAddress();
-
+		val address = paymentService.getPaymentReceiverAddress(payment);
 		var amount = StringUtils.isNotBlank(payment.getTokenAmount()) ?
 				Double.parseDouble(payment.getTokenAmount()) :
 				Double.parseDouble(payment.getUsdAmount()) / tokenPriceService.getPrices().get(payment.getToken());

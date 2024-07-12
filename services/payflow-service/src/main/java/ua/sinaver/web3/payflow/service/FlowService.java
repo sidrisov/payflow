@@ -84,9 +84,7 @@ public class FlowService implements IFlowService {
 
 	@Override
 	public List<FlowMessage> getAllFlows(User user) {
-
 		val flows = new ArrayList<FlowMessage>();
-
 		if (user.getFlows() != null) {
 			val nativeFlows = user.getFlows().stream()
 					.filter(f -> !f.isDisabled())

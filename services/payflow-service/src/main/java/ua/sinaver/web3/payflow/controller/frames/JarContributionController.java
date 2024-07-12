@@ -490,7 +490,6 @@ public class JarContributionController {
 		// TODO: refactor to fetch jar data object instead of message
 		val flow = flowRepository.findByUuid(uuid);
 		payment.setReceiverFlow(flow);
-
 		payment.setUsdAmount(usdAmount.toString());
 		payment.setSourceApp(sourceApp);
 		payment.setSourceRef(sourceRef);

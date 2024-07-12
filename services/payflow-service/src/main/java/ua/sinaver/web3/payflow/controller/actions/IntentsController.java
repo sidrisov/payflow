@@ -8,19 +8,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.Payment;
-import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.farcaster.CastActionMeta;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.IdentityService;
+import ua.sinaver.web3.payflow.service.PaymentService;
 import ua.sinaver.web3.payflow.service.SocialGraphService;
 import ua.sinaver.web3.payflow.service.TokenService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.text.DecimalFormat;
-import java.util.Comparator;
 import java.util.List;
 
 import static ua.sinaver.web3.payflow.service.TokenService.PAYMENT_CHAIN_IDS;
@@ -42,6 +41,9 @@ public class IntentsController {
 
 	@Autowired
 	private SocialGraphService socialGraphService;
+
+	@Autowired
+	private PaymentService paymentService;
 
 	@Autowired
 	private TokenService tokenService;
@@ -153,15 +155,12 @@ public class IntentsController {
 		// check if profile exist
 		val paymentProfile = identityService.getProfiles(casterFid).stream().findFirst().orElse(null);
 		String paymentAddress = null;
-		if (paymentProfile == null || paymentProfile.getDefaultFlow() == null) {
+		if (paymentProfile == null || (paymentProfile.getDefaultFlow() == null
+				&& paymentProfile.getDefaultReceivingAddress() == null)) {
 			val paymentAddresses = identityService.getFidAddresses(casterFid);
 			// pay first with higher social score now invite first
-			val paymentIdentity = identityService.getIdentitiesInfo(paymentAddresses)
-					.stream().max(Comparator.comparingInt(IdentityMessage::score))
-					.orElse(null);
-			if (paymentIdentity != null) {
-				paymentAddress = paymentIdentity.address();
-			} else {
+			paymentAddress = identityService.getHighestScoredIdentity(paymentAddresses);
+			if (paymentAddress == null) {
 				return ResponseEntity.badRequest().body(
 						new FrameResponse.FrameMessage("Recipient address not found!"));
 			}
@@ -177,9 +176,7 @@ public class IntentsController {
 					new FrameResponse.FrameMessage("Payment amount should be between $0-10"));
 		}
 
-
 		val chainId = PAYMENT_CHAIN_IDS.get(chain);
-
 		if (chainId == null) {
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Chain not supported"));
@@ -187,8 +184,7 @@ public class IntentsController {
 
 		// check if profile accepts payment on the chain
 		if (paymentProfile != null && paymentProfile.getDefaultFlow() != null) {
-			val isWalletPresent = paymentProfile.getDefaultFlow().getWallets().stream()
-					.anyMatch(w -> w.getNetwork().equals(chainId));
+			val isWalletPresent = paymentService.getUserReceiverAddress(paymentProfile, chainId) != null;
 			if (!isWalletPresent) {
 				return ResponseEntity.badRequest().body(
 						new FrameResponse.FrameMessage("Chain not accepted!"));
@@ -203,8 +199,7 @@ public class IntentsController {
 						10));
 
 		val payment = new Payment(type != null ? type : Payment.PaymentType.INTENT,
-				(paymentProfile != null && paymentProfile.getDefaultFlow() != null) ?
-						paymentProfile : null,
+				paymentProfile,
 				chainId, token);
 		payment.setReceiverAddress(paymentAddress);
 		payment.setSender(clickedProfile);

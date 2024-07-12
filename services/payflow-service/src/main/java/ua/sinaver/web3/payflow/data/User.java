@@ -62,8 +62,7 @@ public class User {
 	@ToString.Exclude
 	private List<Flow> flows;
 
-	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	@ToString.Exclude
+	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
 	private UserAllowance userAllowance;
 
 	@Column

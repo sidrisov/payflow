@@ -243,7 +243,7 @@ public class UserController {
 		});
 
 		log.debug("User: {} for {}", users, usernames);
-		return users.stream().filter(user -> user.isAllowed() && user.getDefaultFlow() != null)
+		return users.stream().filter(user -> user.isAllowed() && (user.getDefaultFlow() != null || user.getDefaultReceivingAddress() != null))
 				.map(user -> new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
 						user.getIdentity(),
 						null,
@@ -258,7 +258,7 @@ public class UserController {
 		val user = userService.findByUsername(username);
 
 		log.debug("User: {} for {}", user, username);
-		if (user != null && user.isAllowed() && user.getDefaultFlow() != null) {
+		if (user != null && user.isAllowed() && (user.getDefaultFlow() != null || user.getDefaultReceivingAddress() != null)) {
 			return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
 					user.getIdentity(),
 					null,

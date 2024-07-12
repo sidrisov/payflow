@@ -13,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.Payment;
-import ua.sinaver.web3.payflow.data.Wallet;
 import ua.sinaver.web3.payflow.message.FrameButton;
 import ua.sinaver.web3.payflow.message.FramePaymentMessage;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
@@ -129,28 +128,29 @@ public class FramePaymentController {
 			log.warn("Interactor fid {} is not on Payflow", castInteractor);
 		}
 
-		String paymentAddress;
-		if (paymentProfile == null || paymentProfile.getDefaultFlow() == null) {
+		String paymentIdentity;
+		if (paymentProfile == null || (paymentProfile.getDefaultFlow() == null
+				&& paymentProfile.getDefaultReceivingAddress() == null)) {
 			if (!paymentAddresses.isEmpty()) {
 				// return first associated address
-				paymentAddress = paymentAddresses.getFirst();
+				paymentIdentity = paymentAddresses.getFirst();
 			} else {
 				return ResponseEntity.badRequest().body(
 						new FrameResponse.FrameMessage("Recipient address not found!"));
 			}
 		} else {
 			// return profile identity
-			paymentAddress = paymentProfile.getIdentity();
+			paymentIdentity = paymentProfile.getIdentity();
 		}
 
 		val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
-				"/payment.png?step=create", paymentAddress));
+				"/payment.png?step=create", paymentIdentity));
 
 		return FrameResponse.builder()
 				.imageUrl(profileImage)
 				.textInput("Enter payment frame title")
 				.button(new FrameButton("\uD83D\uDCDD Cast", FrameButton.ActionType.POST_REDIRECT,
-						apiServiceUrl.concat(String.format(PAY_SHARE, paymentAddress))))
+						apiServiceUrl.concat(String.format(PAY_SHARE, paymentIdentity))))
 				.build().toHtmlResponse();
 	}
 
@@ -347,11 +347,9 @@ public class FramePaymentController {
 
 		String paymentAddress = null;
 		val paymentProfile = userService.findByUsernameOrIdentity(identity);
-		if (paymentProfile != null && paymentProfile.getDefaultFlow() != null) {
-			paymentAddress = paymentProfile.getDefaultFlow().getWallets().stream()
-					.filter(w -> w.getNetwork().equals(token.chainId()))
-					.findFirst()
-					.map(Wallet::getAddress).orElse(null);
+
+		if (paymentProfile != null) {
+			paymentAddress = paymentService.getUserReceiverAddress(paymentProfile, token.chainId());
 		}
 		if (StringUtils.isBlank(paymentAddress)) {
 			// TODO: add a proper fix to support recipients based on ens, fc name, fid

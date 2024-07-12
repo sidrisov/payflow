@@ -174,6 +174,13 @@ public class IdentityService implements IIdentityService {
 	}
 
 	@Override
+	public String getHighestScoredIdentity(List<String> identities) {
+		return getIdentitiesInfo(identities)
+				.stream().max(Comparator.comparingInt(IdentityMessage::score))
+				.map(IdentityMessage::address).orElse(null);
+	}
+
+	@Override
 	public List<IdentityMessage> getIdentitiesInfo(List<String> identities, String me) {
 		log.debug("Fetching {} identities", identities);
 		try {

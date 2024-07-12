@@ -3,6 +3,9 @@ package ua.sinaver.web3.payflow.service;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ua.sinaver.web3.payflow.data.Payment;
+import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.data.Wallet;
 import ua.sinaver.web3.payflow.message.Token;
 
 import java.util.List;
@@ -66,6 +69,24 @@ public class PaymentService {
 
 		return Double.parseDouble(
 				amountStr.replace("k", "").replace("m", "")) * multiplier;
+	}
+
+	public String getPaymentReceiverAddress(Payment payment) {
+		if (payment.getReceiver() != null) {
+			String userReceiverAddress = getUserReceiverAddress(payment.getReceiver(), payment.getNetwork());
+			if (userReceiverAddress != null) {
+				return userReceiverAddress;
+			}
+		}
+		return payment.getReceiverAddress();
+	}
+
+	public String getUserReceiverAddress(User user, Integer chainId) {
+		return user.getDefaultFlow() != null ?
+				user.getDefaultFlow().getWallets().stream()
+						.filter(w -> w.getNetwork().equals(chainId))
+						.findFirst()
+						.map(Wallet::getAddress).orElse(null) : user.getDefaultReceivingAddress();
 	}
 
 	public String parseCommandChain(String text) {
