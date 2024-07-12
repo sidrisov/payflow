@@ -24,7 +24,7 @@ export default function Leaderboard() {
   return (
     <>
       <Helmet>
-        <title> Payflow | Leaderboard </title>
+        <title> Payflow | Users </title>
       </Helmet>
       <Container maxWidth="xs">
         <Card
@@ -43,7 +43,7 @@ export default function Leaderboard() {
             minHeight: 300
           }}>
           <Typography my={1} textAlign="center" variant="h6">
-            Leaderboard
+            Users
           </Typography>
 
           {loadingProfiles ? (

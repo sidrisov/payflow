@@ -9,6 +9,7 @@ import {
   Logout,
   Person,
   PersonAdd,
+  QuestionAnswer,
   Settings
 } from '@mui/icons-material';
 import axios from 'axios';
@@ -89,7 +90,6 @@ export function ProfileMenu({
         </ListItemIcon>
         Advanced
       </MenuItem>
-      <Divider />
       <MenuItem
         onClick={async () => {
           closeStateCallback();
@@ -98,7 +98,14 @@ export function ProfileMenu({
         <ListItemIcon>
           <LeaderboardRounded fontSize="small" />
         </ListItemIcon>
-        Board
+        Users
+      </MenuItem>
+      <Divider />
+      <MenuItem component="a" href="https://warpcast.com/~/inbox/create/19129" target="_blank">
+        <ListItemIcon>
+          <QuestionAnswer fontSize="small" />
+        </ListItemIcon>
+        Contact
       </MenuItem>
       <MenuItem component="a" href="https://warpcast.com/~/channel/payflow" target="_blank">
         <ListItemIcon>

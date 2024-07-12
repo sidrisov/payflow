@@ -27,12 +27,15 @@ export default function PublicProfile() {
   const { address } = useAccount();
   const [selectedRecipient, setSelectedRecipient] = useState<SelectedIdentityType>();
 
-  const displayName = identity?.profile?.displayName;
+  const displayName =
+    identity?.profile?.displayName ??
+    identity?.meta?.socials[0]?.profileDisplayName ??
+    identity?.meta?.ens;
 
   return (
     <>
       <Helmet>
-        <title> Payflow {identity ? '| ' + displayName : ''} </title>
+        <title> Payflow {displayName ? '| ' + displayName : ''} </title>
       </Helmet>
       <Box width="100%">
         {username && !isProfileLoading && !identity && (
