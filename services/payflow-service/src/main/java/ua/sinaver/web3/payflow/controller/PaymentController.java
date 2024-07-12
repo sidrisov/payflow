@@ -107,7 +107,7 @@ public class PaymentController {
 		payment.setReceiverAddress(paymentMessage.receiverAddress());
 		payment.setSender(user);
 		payment.setTokenAmount(paymentMessage.tokenAmount().toString());
-		payment.setSourceHash(paymentMessage.hash());
+		payment.setHash(paymentMessage.hash());
 		payment.setStatus(paymentMessage.status());
 		payment.setCompletedDate(new Date());
 		paymentRepository.save(payment);

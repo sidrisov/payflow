@@ -366,7 +366,8 @@ public class FramePaymentController {
 
 		val payment = new Payment(Payment.PaymentType.FRAME, paymentProfile,
 				token.chainId(), token.id());
-		payment.setSenderAddress(senderFarcasterUser.addressesWithoutCustodialIfAvailable().stream().findFirst().orElse(null));
+		payment.setSenderAddress(senderFarcasterUser.addressesWithoutCustodialIfAvailable().getFirst());
+		payment.setSender(profiles.getFirst());
 		payment.setReceiverAddress(paymentAddress);
 		if (tokenAmount != null) {
 			payment.setTokenAmount(tokenAmount.toString());
@@ -486,23 +487,6 @@ public class FramePaymentController {
 						.contentType(MediaType.APPLICATION_JSON)
 						.body(callData);
 
-			} else if (buttonIndex == 2) {
-				log.debug("Submitting payment for later in app execution: {}", payment);
-				// TODO: for now set the first
-				payment.setSender(profiles.getFirst());
-				payment.setType(Payment.PaymentType.INTENT);
-
-				val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
-								"/payment.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
-								"&tokenAmount=%s",
-						paymentIdentity, payment.getNetwork(), payment.getToken(),
-						StringUtils.isNotBlank(payment.getUsdAmount()) ? payment.getUsdAmount() : "",
-						roundTokenAmount(tokenAmount)));
-				return FrameResponse.builder()
-						.imageUrl(profileImage)
-						.button(new FrameButton("\uD83D\uDCF1 Payflow",
-								FrameButton.ActionType.LINK, dAppServiceUrl))
-						.build().toHtmlResponse();
 			}
 		} else {
 			log.error("Frame payment message is not complete or valid: {}", payment);
