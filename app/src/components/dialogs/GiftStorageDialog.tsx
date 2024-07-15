@@ -10,7 +10,7 @@ import {
   Skeleton
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { optimism } from 'viem/chains';
+import { degen, optimism } from 'viem/chains';
 import { glideConfig } from '../../utils/glide';
 import {
   useSwitchChain,
@@ -126,7 +126,11 @@ export default function GiftStorageDialog({
     {
       account: flow.wallets[0].address,
       paymentCurrency: `eip155:${selectedWallet?.network}/${
-        selectedToken?.tokenAddress ? `erc20:${selectedToken.tokenAddress}` : `slip44:60`
+        selectedToken?.tokenAddress
+          ? `erc20:${selectedToken.tokenAddress}`
+          : selectedWallet?.network === degen.id
+          ? 'slip44:33436'
+          : 'slip44:60'
       }` as CAIP19,
       chainId: optimism.id,
       address: OP_FARCASTER_STORAGE_CONTRACT_ADDR,

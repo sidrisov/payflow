@@ -12,6 +12,7 @@ import { NetworkSelectorButton } from './buttons/NetworkSelectorButton';
 import { TokenSelectorButton } from './buttons/TokenSelectorButton';
 import { GasFeeSection } from './dialogs/GasFeeSection';
 import { PaymentType } from '../types/PaymentType';
+import { degen } from 'viem/chains';
 
 export function NetworkTokenSelector({
   payment,
@@ -93,7 +94,11 @@ export function NetworkTokenSelector({
               (c) =>
                 c ===
                 `eip155:${selectedWallet.network}/${
-                  t.tokenAddress ? `erc20:${t.tokenAddress}` : `slip44:60`
+                  t.tokenAddress
+                    ? `erc20:${t.tokenAddress}`
+                    : selectedWallet.network === degen.id
+                    ? 'slip44:33436'
+                    : 'slip44:60'
                 }`
             )
           )
