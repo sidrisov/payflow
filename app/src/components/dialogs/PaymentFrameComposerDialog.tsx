@@ -80,15 +80,20 @@ export default function PaymentFrameComposerDialog({
           size="large"
           sx={{ borderRadius: 5 }}
           onClick={() => {
-            const entryTitle = Buffer.from(paymentFrameTitle, 'utf-8').toString('base64');
-            alert(entryTitle);
+            const entryTitle = Buffer.from(paymentFrameTitle).toString('base64');
             window.parent.postMessage(
               {
                 type: 'createCast',
                 data: {
                   cast: {
                     text: 'Created a custom payment frame to receive donations for `...`',
-                    embeds: [`https://frames.payflow.me/${identity}?entryTitle=${entryTitle}`]
+                    embeds: [
+                      encodeURI(
+                        `https://frames.payflow.me/${identity}?entryTitle=${encodeURIComponent(
+                          entryTitle
+                        )}`
+                      )
+                    ]
                   }
                 }
               },
