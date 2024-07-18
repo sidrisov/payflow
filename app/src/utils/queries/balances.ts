@@ -8,7 +8,7 @@ import { useTokenPrices as useTokenPrices } from './prices';
 
 function getAssetValue(assetBalance: GetBalanceData, price: number) {
   const value = formatUnits(assetBalance?.value ?? BigInt(0), assetBalance?.decimals ?? 0);
-  return parseFloat(value) * price;
+  return parseFloat(value) * (price ?? 0);
 }
 
 export const useAssetBalances = (assets: AssetType[]) => {

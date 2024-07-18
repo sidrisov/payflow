@@ -291,6 +291,13 @@ public class FramePaymentController {
 				validateMessage.action().cast().author() :
 				neynarService.fetchFarcasterUser(validateMessage.action().cast().fid());
 
+		if (receiverFarcasterUser == null) {
+			log.error("Cast author information missing for: {}", validateMessage);
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameMessage("Hubs are not in sync! Missing cast author " +
+							"information :("));
+		}
+
 		val profiles = identityService.getProfiles(senderFarcasterUser.addresses());
 
 		val sourceApp = validateMessage.action().signer().client().displayName();
@@ -364,6 +371,7 @@ public class FramePaymentController {
 
 		val payment = new Payment(Payment.PaymentType.FRAME, paymentProfile,
 				token.chainId(), token.id());
+		// TODO: calculate correct address
 		payment.setSenderAddress(senderFarcasterUser.addressesWithoutCustodialIfAvailable().getFirst());
 		payment.setSender(profiles.getFirst());
 		payment.setReceiverAddress(paymentAddress);

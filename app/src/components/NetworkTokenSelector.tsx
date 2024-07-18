@@ -55,18 +55,16 @@ export function NetworkTokenSelector({
 
   useMemo(async () => {
     const selectedTokenPrice = selectedToken && tokenPrices?.[selectedToken.id];
-    if (selectedTokenPrice) {
-      const maxBalance =
-        isSuccess && balance ? parseFloat(formatUnits(balance.value, balance.decimals)) : 0;
+    const maxBalance =
+      isSuccess && balance ? parseFloat(formatUnits(balance.value, balance.decimals)) : 0;
 
-      const maxBalanceUsd =
-        isSuccess && balance
-          ? parseFloat(formatUnits(balance.value, balance.decimals)) * selectedTokenPrice
-          : 0;
+    const maxBalanceUsd =
+      isSuccess && balance
+        ? parseFloat(formatUnits(balance.value, balance.decimals)) * (selectedTokenPrice ?? 0)
+        : 0;
 
-      setMaxBalance(normalizeNumberPrecision(maxBalance));
-      setMaxBalanceUsd(normalizeNumberPrecision(maxBalanceUsd));
-    }
+    setMaxBalance(normalizeNumberPrecision(maxBalance));
+    setMaxBalanceUsd(normalizeNumberPrecision(maxBalanceUsd));
   }, [isSuccess, balance, tokenPrices]);
 
   useEffect(() => {
