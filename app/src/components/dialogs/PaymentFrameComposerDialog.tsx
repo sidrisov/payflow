@@ -80,7 +80,6 @@ export default function PaymentFrameComposerDialog({
           size="large"
           sx={{ borderRadius: 5 }}
           onClick={() => {
-            const entryTitle = Buffer.from(paymentFrameTitle).toString('base64');
             window.parent.postMessage(
               {
                 type: 'createCast',
@@ -90,7 +89,7 @@ export default function PaymentFrameComposerDialog({
                     embeds: [
                       encodeURI(
                         `https://frames.payflow.me/${identity}?entryTitle=${encodeURIComponent(
-                          entryTitle
+                          paymentFrameTitle
                         )}`
                       )
                     ]
