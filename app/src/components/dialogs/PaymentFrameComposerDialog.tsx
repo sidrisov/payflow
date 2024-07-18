@@ -59,16 +59,19 @@ export default function PaymentFrameComposerDialog({
           fullWidth
           size="large"
           sx={{ borderRadius: 5 }}
-          onClick={async () => {
-            parent.postMessage({
-              type: 'createCast',
-              data: {
-                cast: {
-                  text: 'Accepting payments here',
-                  embeds: [`https://frames.payflow.me/${identity}`]
+          onClick={() => {
+            window.parent.postMessage(
+              {
+                type: 'createCast',
+                data: {
+                  cast: {
+                    text: 'Created a custom payment frame to receive donations for `...`',
+                    embeds: [`https://frames.payflow.me/${identity}`]
+                  }
                 }
-              }
-            });
+              },
+              '*'
+            );
           }}>
           Create
         </Button>
