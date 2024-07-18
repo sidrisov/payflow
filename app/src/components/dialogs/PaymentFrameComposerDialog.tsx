@@ -8,10 +8,12 @@ import {
   useMediaQuery,
   useTheme,
   Button,
-  Stack
+  Stack,
+  TextField
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { useSearchParams } from 'react-router-dom';
+import { useState } from 'react';
 
 export default function PaymentFrameComposerDialog({
   closeStateCallback,
@@ -22,6 +24,8 @@ export default function PaymentFrameComposerDialog({
 
   const [searchParams] = useSearchParams();
   const identity = searchParams.get('identity');
+
+  const [paymentFrameTitle, setPaymentFrameTitle] = useState<string>('👋🏻 Pay Me');
 
   return (
     <Dialog
@@ -52,7 +56,23 @@ export default function PaymentFrameComposerDialog({
           alignItems: 'center',
           justifyContent: isMobile ? 'space-between' : 'flex-start'
         }}>
-        <Stack my={3} p={1} direction="column" spacing={3} width="100%"></Stack>
+        <Stack my={3} direction="column" spacing={3} width="100%">
+          <TextField
+            fullWidth
+            value={paymentFrameTitle}
+            label="Payment Title"
+            InputLabelProps={{
+              sx: { fontSize: 16 }
+            }}
+            InputProps={{
+              inputProps: { maxLength: 24, inputMode: 'text' },
+              sx: { borderRadius: 5, fontSize: 16 }
+            }}
+            onChange={async (event) => {
+              setPaymentFrameTitle(event.target.value);
+            }}
+          />
+        </Stack>
         <Button
           variant="outlined"
           color="inherit"
@@ -60,13 +80,15 @@ export default function PaymentFrameComposerDialog({
           size="large"
           sx={{ borderRadius: 5 }}
           onClick={() => {
+            const entryTitle = Buffer.from(paymentFrameTitle, 'utf-8').toString('base64');
+            alert(entryTitle);
             window.parent.postMessage(
               {
                 type: 'createCast',
                 data: {
                   cast: {
                     text: 'Created a custom payment frame to receive donations for `...`',
-                    embeds: [`https://frames.payflow.me/${identity}`]
+                    embeds: [`https://frames.payflow.me/${identity}?entryTitle=${entryTitle}`]
                   }
                 }
               },
