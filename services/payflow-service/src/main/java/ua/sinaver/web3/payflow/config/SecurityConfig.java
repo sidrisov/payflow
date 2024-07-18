@@ -61,10 +61,12 @@ public class SecurityConfig {
 						// farcaster frames
 						.requestMatchers(HttpMethod.POST, "/farcaster/frames/**").permitAll()
 						.requestMatchers(HttpMethod.GET, "/farcaster/frames/**").permitAll()
-						// farcaster actions
+						// farcaster cast actions
 						.requestMatchers(HttpMethod.POST, "/farcaster/actions/**").permitAll()
 						.requestMatchers(HttpMethod.GET, "/farcaster/actions/**").permitAll()
-
+						// farcaster composer actions
+						.requestMatchers(HttpMethod.POST, "/farcaster/composer/**").permitAll()
+						.requestMatchers(HttpMethod.GET, "/farcaster/composer/**").permitAll()
 						// Farcaster webhooks
 						.requestMatchers(HttpMethod.GET, "/farcaster/webhooks/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/farcaster/webhooks/**").permitAll()

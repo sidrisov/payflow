@@ -119,4 +119,7 @@ public class FrameResponse {
 
 	public record ActionFrame(String type, String frameUrl) {
 	}
+
+	public record ComposerActionForm(String type, String title, String url) {
+	}
 }

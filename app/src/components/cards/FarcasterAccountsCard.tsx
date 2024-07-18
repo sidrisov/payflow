@@ -123,30 +123,60 @@ export function FarcasterAccountsCard({
         flexDirection="column"
         alignItems="center"
         justifyContent="space-between">
-        <Stack
-          spacing={2}
-          alignItems="center"
-          sx={{ my: 3, py: 1, overflowY: 'auto', height: 275, width: '100%' }}>
+        <Stack spacing={1} sx={{ my: 3, py: 1, overflowY: 'auto', height: 275, width: '100%' }}>
           {loading ? (
             <LoadingFarcasterAccountsSkeleton />
           ) : identities && identities.length > 0 ? (
-            identities.map((identity) => (
-              <Box
-                component={Button}
-                onClick={async () => setSignUpIdentity(identity.address)}
-                sx={{
-                  height: 75,
-                  width: '100%',
-                  textTransform: 'none',
-                  color: 'inherit',
-                  border: 1.5,
-                  borderRadius: 5,
-                  borderColor: identity.address === signUpIdentity ? 'inherit' : 'divider',
-                  borderStyle: identity.address === signUpIdentity ? 'dashed' : 'solid'
-                }}>
-                <FarcasterIdentitySelectOption identity={identity} />
-              </Box>
-            ))
+            <>
+              {identities.filter((identity) => identity.profile).length > 0 && (
+                <Typography pl={0.5} variant="caption" color={grey[400]}>
+                  Existing
+                </Typography>
+              )}
+              {identities
+                .filter((identity) => identity.profile)
+                .map((identity) => (
+                  <Box
+                    component={Button}
+                    onClick={async () => setSignUpIdentity(identity.address)}
+                    sx={{
+                      height: 75,
+                      width: '100%',
+                      textTransform: 'none',
+                      color: 'inherit',
+                      border: 1.5,
+                      borderRadius: 5,
+                      borderColor: identity.address === signUpIdentity ? 'inherit' : 'divider',
+                      borderStyle: identity.address === signUpIdentity ? 'dashed' : 'solid'
+                    }}>
+                    <FarcasterIdentitySelectOption identity={identity} />
+                  </Box>
+                ))}
+              {identities.filter((identity) => !identity.profile).length > 0 && (
+                <Typography pl={0.5} variant="caption" color={grey[400]}>
+                  Create new
+                </Typography>
+              )}
+              {identities
+                .filter((identity) => !identity.profile)
+                .map((identity) => (
+                  <Box
+                    component={Button}
+                    onClick={async () => setSignUpIdentity(identity.address)}
+                    sx={{
+                      height: 75,
+                      width: '100%',
+                      textTransform: 'none',
+                      color: 'inherit',
+                      border: 1.5,
+                      borderRadius: 5,
+                      borderColor: identity.address === signUpIdentity ? 'inherit' : 'divider',
+                      borderStyle: identity.address === signUpIdentity ? 'dashed' : 'solid'
+                    }}>
+                    <FarcasterIdentitySelectOption identity={identity} />
+                  </Box>
+                ))}
+            </>
           ) : (
             <Typography variant="caption" fontWeight="bold">
               No connected accounts found

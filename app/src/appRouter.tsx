@@ -11,6 +11,7 @@ import Advanced from './pages/Advanced';
 import PublicProfile from './layouts/PublicProfile';
 import Jar from './pages/Jar';
 import Actions from './pages/Actions';
+import Composer from './pages/Composer';
 
 export const appRoutes = ['/home', '/flows', '/requests', '/settings'];
 
@@ -43,6 +44,10 @@ export const appRouter = createBrowserRouter([
         element: <Actions />
       },
       {
+        path: 'composer',
+        element: <Composer />
+      },
+      {
         path: 'invite',
         element: <Invite />
       },
@@ -63,25 +68,8 @@ export const appRouter = createBrowserRouter([
         element: <Jar />,
         errorElement: <Page404 />
       },
-      /*
-      {
-        path: 'flows',
-        element: <Flows />
-      },
-             { path: 'requests', element: <Requests /> },
-      { path: 'settings', element: <Settings /> }, */
       { path: '404', element: <Page404 /> },
       { path: '*', element: <Navigate to="/404" replace /> }
     ]
   }
-  /*{
-    path: '/jar/:uuid',
-    element: <SendWithProviders />,
-    errorElement: <Page404 />
-  },
-  {
-    path: '/request/:uuid',
-    element: <PaymentRequestWithProviders />,
-    errorElement: <Page404 />
-  }, */
 ]);
