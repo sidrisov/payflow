@@ -10,17 +10,14 @@ import {
   Button,
   Stack,
   TextField,
-  Badge} from '@mui/material';
+  Badge
+} from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { useSearchParams } from 'react-router-dom';
 import { useState } from 'react';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
-import {
-  ArrowRight,
-  Check,
-  Verified
-} from '@mui/icons-material';
-import { green, grey } from '@mui/material/colors';
+import { ArrowRight, Check, Verified } from '@mui/icons-material';
+import { green, grey, red } from '@mui/material/colors';
 
 export default function PaymentFrameComposerDialog({
   closeStateCallback,
@@ -30,8 +27,7 @@ export default function PaymentFrameComposerDialog({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [searchParams] = useSearchParams();
-  const verificationsParam = searchParams.get('verifications');
-  const verifications = verificationsParam ? verificationsParam.split(',') : [];
+  const verifications = searchParams.getAll('verifications') ?? [];
 
   const [paymentFrameTitle, setPaymentFrameTitle] = useState<string>('👋🏻 Pay Me');
   const [selectedVerification, setSelectedVerification] = useState<string>(verifications?.[0]);
@@ -83,7 +79,23 @@ export default function PaymentFrameComposerDialog({
             }}
           />
 
-          {!openVerificationSelector && (
+          {verifications.length === 0 && (
+            <>
+              <Typography textAlign="center" color={red[400]} fontWeight="bold">
+                No verified address linked to your farcaster!
+                <br />
+                You need at least one to receive payments
+              </Typography>
+
+              <Typography textAlign="center" color={green[400]} fontWeight="bold">
+                Verify in Warpcast:
+                <br />
+                {'Settings -> Verified Addresses -> Verify an address'}
+              </Typography>
+            </>
+          )}
+
+          {verifications.length > 0 && !openVerificationSelector && (
             <Button
               color="inherit"
               sx={{
