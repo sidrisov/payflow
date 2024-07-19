@@ -9,11 +9,18 @@ import {
   useTheme,
   Button,
   Stack,
-  TextField
-} from '@mui/material';
+  TextField,
+  Badge} from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { useSearchParams } from 'react-router-dom';
 import { useState } from 'react';
+import { shortenWalletAddressLabel2 } from '../../utils/address';
+import {
+  ArrowRight,
+  Check,
+  Verified
+} from '@mui/icons-material';
+import { green, grey } from '@mui/material/colors';
 
 export default function PaymentFrameComposerDialog({
   closeStateCallback,
@@ -23,9 +30,12 @@ export default function PaymentFrameComposerDialog({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [searchParams] = useSearchParams();
-  const identity = searchParams.get('identity');
+  const verificationsParam = searchParams.get('verifications');
+  const verifications = verificationsParam ? verificationsParam.split(',') : [];
 
   const [paymentFrameTitle, setPaymentFrameTitle] = useState<string>('👋🏻 Pay Me');
+  const [selectedVerification, setSelectedVerification] = useState<string>(verifications?.[0]);
+  const [openVerificationSelector, setOpenVerificationSelector] = useState(false);
 
   return (
     <Dialog
@@ -72,9 +82,67 @@ export default function PaymentFrameComposerDialog({
               setPaymentFrameTitle(event.target.value);
             }}
           />
+
+          {!openVerificationSelector && (
+            <Button
+              color="inherit"
+              sx={{
+                height: 56,
+                textTransform: 'none',
+                borderRadius: 5,
+                border: 1,
+                px: 2,
+                justifyContent: 'space-between'
+              }}
+              onClick={async () => {
+                setOpenVerificationSelector(!openVerificationSelector);
+              }}>
+              <Stack direction="row" spacing={1}>
+                <Badge
+                  overlap="circular"
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                  badgeContent={<Verified sx={{ width: 15, height: 15 }} />}>
+                  <Box src="/farcaster.svg" component="img" sx={{ width: 20, height: 20 }} />
+                </Badge>
+                <Typography>
+                  {`Verification: ${shortenWalletAddressLabel2(selectedVerification)}`}
+                </Typography>
+              </Stack>
+              <ArrowRight fontSize="small" />
+            </Button>
+          )}
+          {openVerificationSelector && (
+            <Stack spacing={0.5} p={1} alignItems="flex-start" justifyContent="center">
+              <Typography fontSize={16} color={grey[400]}>
+                Receive payments on:
+              </Typography>
+              {verifications?.map((verification) => (
+                <Stack
+                  pl={1}
+                  pr={3}
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
+                  component={Button}
+                  textTransform="none"
+                  color="inherit"
+                  borderRadius={5}
+                  onClick={async () => {
+                    setSelectedVerification(verification);
+                    setOpenVerificationSelector(false);
+                  }}>
+                  <Box display="inline" width={30}>
+                    {verification === selectedVerification && <Check sx={{ color: green[400] }} />}
+                  </Box>
+                  <Typography>{shortenWalletAddressLabel2(verification)}</Typography>
+                </Stack>
+              ))}
+            </Stack>
+          )}
         </Stack>
         <Button
           variant="outlined"
+          disabled={!selectedVerification}
           color="inherit"
           fullWidth
           size="large"
@@ -88,7 +156,7 @@ export default function PaymentFrameComposerDialog({
                     text: 'Created a custom payment frame to receive donations for `...`',
                     embeds: [
                       encodeURI(
-                        `https://frames.payflow.me/${identity}?entryTitle=${encodeURIComponent(
+                        `https://frames.payflow.me/${selectedVerification}?entryTitle=${encodeURIComponent(
                           paymentFrameTitle
                         )}`
                       )
