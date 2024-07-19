@@ -165,7 +165,7 @@ export default function PaymentFrameComposerDialog({
                 type: 'createCast',
                 data: {
                   cast: {
-                    text: 'Created a custom payment frame to receive donations for `...`',
+                    text: `Created a custom payment frame for ${paymentFrameTitle} using @payflow composer action 💜💜💜`,
                     embeds: [
                       encodeURI(
                         `https://frames.payflow.me/${selectedVerification}?entryTitle=${encodeURIComponent(
