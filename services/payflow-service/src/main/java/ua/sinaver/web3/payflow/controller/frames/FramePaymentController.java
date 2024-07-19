@@ -169,9 +169,8 @@ public class FramePaymentController {
 				validateMessage.action().url());
 
 		val entryTitle = validateMessage.action().input() != null ?
-				Base64.getUrlEncoder().withoutPadding().encodeToString(
-						validateMessage.action().input().text().getBytes(StandardCharsets.UTF_8)
-				) : "";
+				URLEncoder.encode(validateMessage.action().input().text(), StandardCharsets.UTF_8)
+				: "";
 
 		try {
 			val baseUrl = "https://warpcast.com/~/compose";

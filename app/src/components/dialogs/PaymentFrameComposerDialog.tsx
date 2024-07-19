@@ -28,8 +28,8 @@ export default function PaymentFrameComposerDialog({
 
   const [searchParams] = useSearchParams();
   const verifications = searchParams.getAll('verifications') ?? [];
-
-  const [paymentFrameTitle, setPaymentFrameTitle] = useState<string>('👋🏻 Pay Me');
+  const title = searchParams.get('title') ?? '👋🏻 Pay Me';
+  const [paymentFrameTitle, setPaymentFrameTitle] = useState<string>(title);
   const [selectedVerification, setSelectedVerification] = useState<string>(verifications?.[0]);
   const [openVerificationSelector, setOpenVerificationSelector] = useState(false);
 

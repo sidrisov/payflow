@@ -176,9 +176,11 @@ async function startServer() {
     const entryTitle =
       entryTitleBase64 &&
       (entryTitleBase64 as string).length > 0 &&
-      Buffer.from(entryTitleBase64 as string, 'base64').toString('utf-8');
-
-    console.log('entryTitle: ', entryTitle);
+      decodeURIComponent(entryTitleBase64 as string);
+    /* Buffer.from(entryTitleBase64 as string, 'base64').toString('utf-8') */ console.log(
+      'entryTitle: ',
+      entryTitle
+    );
 
     if (!payment.tokenAmount && payment.usdAmount && payment.token) {
       payment.tokenAmount = normalizeNumberPrecision(

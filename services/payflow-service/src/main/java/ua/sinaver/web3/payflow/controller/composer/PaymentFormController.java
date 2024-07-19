@@ -1,5 +1,7 @@
 package ua.sinaver.web3.payflow.controller.composer;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -9,13 +11,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ua.sinaver.web3.payflow.message.IdentityMessage;
+import org.springframework.web.util.UriComponentsBuilder;
+import ua.sinaver.web3.payflow.message.farcaster.ComposerActionState;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
-import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
-import java.util.Comparator;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequestMapping("/farcaster/composer/payment")
@@ -23,10 +26,10 @@ import java.util.Comparator;
 @Slf4j
 public class PaymentFormController {
 
+	private static Gson GSON = new GsonBuilder().create();
+
 	@Autowired
 	private IFarcasterNeynarService neynarService;
-	@Autowired
-	private IIdentityService identityService;
 
 	@PostMapping
 	public ResponseEntity<?> form(@RequestBody FrameMessage composerActionMessage) {
@@ -43,41 +46,22 @@ public class PaymentFormController {
 				validateMessage.action().url());
 
 		val interactor = validateMessage.action().interactor();
+		val decodedState = URLDecoder.decode(
+				validateMessage.action().state().serialized(), StandardCharsets.UTF_8);
+		log.debug("Decoded form state: {}", decodedState);
+		
+		val state = GSON.fromJson(decodedState, ComposerActionState.class);
+		val paymentFormUrl = UriComponentsBuilder.newInstance()
+				.scheme("https").host("app.payflow.me").path("/composer")
+				.queryParam("action", "frame")
+				.queryParam("verifications", interactor.addressesWithoutCustodialIfAvailable())
+				.queryParam("title", state.cast().text())
+				.build()
+				.toUriString();
 
-		// pay first with higher social score
-		val paymentAddresses = identityService.getIdentitiesInfo(interactor.addressesWithoutCustodialIfAvailable())
-				.stream().max(Comparator.comparingInt(IdentityMessage::score))
-				.map(IdentityMessage::address).stream().toList();
-
-		// check if profile exist
-		val paymentProfile = identityService.getProfiles(paymentAddresses).stream().findFirst().orElse(null);
-		if (paymentProfile == null) {
-			log.warn("Caster fid {} is not on Payflow", interactor);
-		}
-
-		String paymentAddress;
-		if (paymentProfile == null || (paymentProfile.getDefaultFlow() == null
-				&& paymentProfile.getDefaultReceivingAddress() == null)) {
-			if (!paymentAddresses.isEmpty()) {
-				// return first associated address without custodial
-				paymentAddress = paymentAddresses.size() > 1 ?
-						paymentAddresses.stream()
-								.filter(e -> !e.equals(interactor.custodyAddress()))
-								.findFirst()
-								.orElse(null) :
-						paymentAddresses.getFirst();
-			} else {
-				return ResponseEntity.badRequest().body(
-						new FrameResponse.FrameMessage("Identity not found!"));
-			}
-		} else {
-			// return profile identity
-			paymentAddress = paymentProfile.getIdentity();
-		}
+		log.debug("Returning a composer payment form url for: {} - {}", interactor.username(), paymentFormUrl);
 
 		return ResponseEntity.ok().body(new FrameResponse.ComposerActionForm(
-				"form", "Payment Frame",
-				String.format("https://app.payflow.me/composer?identity=%s&action=frame",
-						paymentAddress)));
+				"form", "Payment Frame", paymentFormUrl));
 	}
 }
