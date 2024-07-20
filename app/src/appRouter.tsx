@@ -26,11 +26,7 @@ export const appRouter = createBrowserRouter([
     element: <AppWithProviders />,
     errorElement: <Page404 />,
     children: [
-      { element: <Navigate to="/home" />, index: true },
-      {
-        path: 'home',
-        element: <Accounts />
-      },
+      { element: <Accounts />, index: true },
       {
         path: 'profile',
         element: <Profile />

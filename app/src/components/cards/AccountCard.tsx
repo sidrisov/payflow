@@ -27,8 +27,10 @@ import SearchIdentityDialog from '../dialogs/SearchIdentityDialog';
 import { IdentityType, SelectedIdentityType } from '../../types/ProfleType';
 import PaymentDialog, { PaymentSenderType } from '../dialogs/PaymentDialog';
 import { Address } from 'viem';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ShareFlowMenu } from '../menu/ShareFlowMenu';
+import { PaymentType } from '../../types/PaymentType';
+import { fetchPayment } from '../../services/payments';
 
 export type AccountNewDialogProps = CardProps & {
   flows: FlowType[];
@@ -48,6 +50,11 @@ export function AccountCard({
   assetBalancesResult: { isLoading, isFetched, balances }
 }: AccountNewDialogProps) {
   const { profile } = useContext(ProfileContext);
+
+  const [searchParams] = useSearchParams();
+  const paymentRefId = searchParams.get('pay');
+
+  const [payment, setPayment] = useState<PaymentType>();
 
   const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(false);
   const [openWalletDetailsPopover, setOpenWalletDetailsPopover] = useState(false);
@@ -83,6 +90,13 @@ export function AccountCard({
       setTotalBalance(totalBalance);
     }
   }, [isFetched, balances]);
+
+  useMemo(async () => {
+    if (paymentRefId && !payment) {
+      const payment = await fetchPayment(paymentRefId);
+      setPayment(payment);
+    }
+  }, [paymentRefId]);
 
   return (
     profile && (
@@ -256,6 +270,41 @@ export function AccountCard({
             setOpenSearchIdentity={setOpenSearchIdentity}
             closeStateCallback={async () => {
               setRecipient(undefined);
+            }}
+          />
+        )}
+
+        {payment && !payment.category && profile && selectedFlow && (
+          <PaymentDialog
+            open={payment != null}
+            paymentType="payflow"
+            payment={payment}
+            sender={{
+              identity: {
+                profile: { ...profile, defaultFlow: selectedFlow },
+                address: profile.identity
+              },
+              type: 'profile'
+            }}
+            recipient={
+              {
+                identity: {
+                  ...(payment.receiver
+                    ? {
+                        profile: {
+                          ...payment.receiver,
+                          ...(payment.receiverFlow && { defaultFlow: payment.receiverFlow })
+                        }
+                      }
+                    : {
+                        address: payment.receiverAddress
+                      })
+                } as IdentityType,
+                type: payment.receiver ? 'profile' : 'address'
+              } as SelectedIdentityType
+            }
+            closeStateCallback={async () => {
+              setPayment(undefined);
             }}
           />
         )}

@@ -60,9 +60,12 @@ export function Head() {
         {status === 'PENDING' ? (
           type === 'INTENT' ? (
             <>
-              <meta property="fc:frame:button:1" content="📱 Payflow" />
+              <meta property="fc:frame:button:1" content="📱 App" />
               <meta property="fc:frame:button:1:action" content="link" />
-              <meta property="fc:frame:button:1:target" content={DAPP_URL} />
+              <meta
+                property="fc:frame:button:1:target"
+                content={DAPP_URL.concat(`?pay=${refId}`)}
+              />
             </>
           ) : (
             <>
@@ -78,7 +81,10 @@ export function Head() {
               />
               <meta property="fc:frame:button:2" content="📱 App" />
               <meta property="fc:frame:button:2:action" content="link" />
-              <meta property="fc:frame:button:2:target" content={DAPP_URL} />
+              <meta
+                property="fc:frame:button:2:target"
+                content={DAPP_URL.concat(`?pay=${refId}`)}
+              />
 
               <meta property="fc:frame:button:3" content="🙋🏻 FAQ" />
               <meta property="fc:frame:button:3:action" content="link" />

@@ -368,52 +368,62 @@ public class FramePaymentController {
 
 		log.debug("Receiver: {}, amount: {}, token: {}", paymentAddress, amountStr, token);
 
-		val payment = new Payment(Payment.PaymentType.FRAME, paymentProfile,
-				token.chainId(), token.id());
-		// TODO: calculate correct address
-		payment.setSenderAddress(senderFarcasterUser.addressesWithoutCustodialIfAvailable().getFirst());
-		payment.setSender(profiles.getFirst());
-		payment.setReceiverAddress(paymentAddress);
-		if (tokenAmount != null) {
-			payment.setTokenAmount(tokenAmount.toString());
-		} else {
-			payment.setUsdAmount(usdAmount.toString());
+		try {
+
+			val payment = new Payment(Payment.PaymentType.FRAME, paymentProfile,
+					token.chainId(), token.id());
+			// TODO: calculate correct address
+			payment.setSenderAddress(senderFarcasterUser.addressesWithoutCustodialIfAvailable().getFirst());
+			if (!profiles.isEmpty()) {
+				payment.setSender(profiles.getFirst());
+			}
+			payment.setReceiverAddress(paymentAddress);
+			if (tokenAmount != null) {
+				payment.setTokenAmount(tokenAmount.toString());
+			} else {
+				payment.setUsdAmount(usdAmount.toString());
+			}
+			payment.setSourceApp(sourceApp);
+			// handle frame in direct cast messaging
+			if (StringUtils.isNotBlank(sourceHash) && !sourceHash.equals(TokenService.ZERO_ADDRESS)) {
+				val sourceRef = String.format("https://warpcast.com/%s/%s",
+						receiverFarcasterUser.username(), sourceHash.substring(0, 10));
+				payment.setSourceHash(sourceHash);
+				payment.setSourceRef(sourceRef);
+			}
+			paymentRepository.save(payment);
+
+			val refId = payment.getReferenceId();
+			val updatedState = gson.toJson(new FramePaymentMessage(paymentAddress,
+					token.chainId(), token.id(), usdAmount, tokenAmount, refId));
+			val profileImage = framesServiceUrl.concat(String.format(
+					"/images/profile/%s/payment.png?step=confirm&chainId=%s&token=%s&usdAmount=%s&tokenAmount=%s",
+					identity, token.chainId(), token.id(), usdAmount != null ? usdAmount : "",
+					tokenAmount != null ? tokenAmount : ""));
+			val frameResponseBuilder = FrameResponse.builder()
+					.postUrl(apiServiceUrl.concat(String.format(PAY_IN_FRAME_CONFIRM, refId)))
+					.button(new FrameButton("\uD83D\uDC9C Pay", FrameButton.ActionType.TX,
+							apiServiceUrl.concat(String.format(PAY_IN_FRAME_CONFIRM, refId))))
+					.imageUrl(profileImage)
+					.state(Base64.getEncoder().encodeToString(updatedState.getBytes()));
+			
+			// for now just check if profile exists
+			if (!profiles.isEmpty()) {
+				frameResponseBuilder.button(new FrameButton("\uD83D\uDCF1 App",
+						FrameButton.ActionType.LINK,
+						dAppServiceUrl.concat(String.format("?pay=%s", payment.getReferenceId()))));
+			}
+
+			frameResponseBuilder.button(new FrameButton("\uD83D\uDE4B\uD83C\uDFFB FAQ",
+					FrameButton.ActionType.LINK,
+					"https://payflowlabs.notion.site/FAQs-20593cf7734e4d78ad0dc91c8e8982e5"));
+
+			return frameResponseBuilder.build().toHtmlResponse();
+		} catch (Throwable t) {
+			log.error("Something went wrong", t);
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameMessage("Something went wrong! Contact @sinaver.eth \uD83D\uDC4B\uD83C\uDFFB"));
 		}
-		payment.setSourceApp(sourceApp);
-		// handle frame in direct cast messaging
-		if (StringUtils.isNotBlank(sourceHash) && !sourceHash.equals(TokenService.ZERO_ADDRESS)) {
-			val sourceRef = String.format("https://warpcast.com/%s/%s",
-					receiverFarcasterUser.username(), sourceHash.substring(0, 10));
-			payment.setSourceHash(sourceHash);
-			payment.setSourceRef(sourceRef);
-		}
-		paymentRepository.save(payment);
-
-		val refId = payment.getReferenceId();
-		val updatedState = gson.toJson(new FramePaymentMessage(paymentAddress,
-				token.chainId(), token.id(), usdAmount, tokenAmount, refId));
-		val profileImage = framesServiceUrl.concat(String.format(
-				"/images/profile/%s/payment.png?step=confirm&chainId=%s&token=%s&usdAmount=%s&tokenAmount=%s",
-				identity, token.chainId(), token.id(), usdAmount != null ? usdAmount : "",
-				tokenAmount != null ? tokenAmount : ""));
-		val frameResponseBuilder = FrameResponse.builder()
-				.postUrl(apiServiceUrl.concat(String.format(PAY_IN_FRAME_CONFIRM, refId)))
-				.button(new FrameButton("\uD83D\uDC9C Pay", FrameButton.ActionType.TX,
-						apiServiceUrl.concat(String.format(PAY_IN_FRAME_CONFIRM, refId))))
-				.imageUrl(profileImage)
-				.state(Base64.getEncoder().encodeToString(updatedState.getBytes()));
-
-		// for now just check if profile exists
-		if (!profiles.isEmpty()) {
-			frameResponseBuilder.button(new FrameButton("\uD83D\uDCF1 App",
-					FrameButton.ActionType.LINK, dAppServiceUrl));
-		}
-
-		frameResponseBuilder.button(new FrameButton("\uD83D\uDE4B\uD83C\uDFFB FAQ",
-				FrameButton.ActionType.LINK,
-				"https://payflowlabs.notion.site/FAQs-20593cf7734e4d78ad0dc91c8e8982e5"));
-
-		return frameResponseBuilder.build().toHtmlResponse();
 	}
 
 	@PostMapping("/{refId}/frame/confirm")
