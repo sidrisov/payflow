@@ -1,6 +1,6 @@
-import { BlurOn, People, Star } from '@mui/icons-material';
+import { BlurOn, Payments, People, Sell, Star } from '@mui/icons-material';
 import { Avatar, Box, Chip, Typography } from '@mui/material';
-import { yellow, green, grey, deepPurple, blue, pink } from '@mui/material/colors';
+import { yellow, green, grey, deepPurple, blue, pink, purple } from '@mui/material/colors';
 import { AddressBookType } from '../../types/ContactType';
 import { useState } from 'react';
 
@@ -8,6 +8,8 @@ const contactTypeLabel = (type: AddressBookType) => {
   switch (type) {
     case 'all':
       return 'All';
+    case 'recent':
+      return 'Recent';
     case 'favourites':
       return 'Favourites';
     case 'friends':
@@ -42,6 +44,8 @@ const contactTypeIcon = (type: AddressBookType, selectedType: AddressBookType) =
   switch (type) {
     case 'all':
       return <BlurOn fontSize={fontSize} />;
+    case 'recent':
+      return <Payments fontSize={fontSize} />;
     case 'favourites':
       return <Star fontSize={fontSize} />;
     case 'friends':
@@ -141,7 +145,14 @@ export function AddressBookToolBar({
           addressBookView={addressBookView}
           setAddressBookView={setAddressBookView}
         />
-
+        {tags.includes('recent') && (
+          <AddressBookChip
+            key="recent"
+            type="recent"
+            addressBookView={addressBookView}
+            setAddressBookView={setAddressBookView}
+          />
+        )}
         {tags.includes('favourites') && (
           <AddressBookChip
             key="favourites"

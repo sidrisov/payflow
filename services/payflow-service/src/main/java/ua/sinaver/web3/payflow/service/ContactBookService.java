@@ -55,12 +55,11 @@ public class ContactBookService implements IContactBookService {
 	private UserRepository userRepository;
 	@Autowired
 	private ISocialGraphService socialGraphService;
-
-	@Autowired
-	private IdentityService identityService;
-
 	@Autowired
 	private IdentitySubscriptionsService identitySubscriptionsService;
+
+	@Autowired
+	private PaymentService paymentService;
 
 	@Value("${payflow.airstack.contacts.limit:10}")
 	private int contactsLimit;
@@ -104,6 +103,10 @@ public class ContactBookService implements IContactBookService {
 
 		val contacts = contactRepository.findAllByUser(user)
 				.stream().limit(contactsLimitAdjusted).toList();
+
+		val recentContacts = paymentService.getAllPaymentRecipients(user);
+		log.debug("Fetched recent contacts: {}", recentContacts);
+
 		val alfaFrensContacts = identitySubscriptionsService.fetchAlfaFrensSubscribers(user.getIdentity());
 		log.debug("Fetched alfafrens subs: {}", alfaFrensContacts);
 
@@ -113,6 +116,11 @@ public class ContactBookService implements IContactBookService {
 		val favourites = contactRepository.findByUserAndProfileCheckedTrue(user);
 
 		val tags = new ArrayList<>(List.of("friends"));
+
+		if (!recentContacts.isEmpty()) {
+			tags.add("recent");
+		}
+
 		if (!alfaFrensContacts.isEmpty()) {
 			tags.add("alfafrens");
 		}
@@ -130,6 +138,7 @@ public class ContactBookService implements IContactBookService {
 		}
 
 		val allContacts = Stream.of(
+						recentContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "recent")),
 						favourites.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(), "favourites")),
 						contacts.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(), "friends")),
 						fabricContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "hypersub")),

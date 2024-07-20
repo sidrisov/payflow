@@ -1,1 +1,8 @@
-export type AddressBookType = 'all' | 'favourites' | 'friends' | 'farcon' | 'alfafrens' | 'hypersub';
+export type AddressBookType =
+  | 'all'
+  | 'recent'
+  | 'favourites'
+  | 'friends'
+  | 'farcon'
+  | 'alfafrens'
+  | 'hypersub';

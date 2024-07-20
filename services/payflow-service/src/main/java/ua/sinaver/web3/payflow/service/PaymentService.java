@@ -7,8 +7,10 @@ import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.data.Wallet;
 import ua.sinaver.web3.payflow.message.Token;
+import ua.sinaver.web3.payflow.repository.PaymentRepository;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -16,6 +18,12 @@ import java.util.stream.Collectors;
 public class PaymentService {
 	@Autowired
 	private TokenService tokenService;
+
+	@Autowired
+	private PaymentRepository paymentRepository;
+
+	@Autowired
+	private IdentityService identityService;
 
 	public static String formatNumberWithSuffix(String numberStr) {
 		double number = Double.parseDouble(numberStr);
@@ -44,6 +52,23 @@ public class PaymentService {
 		} else {
 			return "0.0";
 		}
+	}
+
+	public List<String> getAllPaymentRecipients(User user) {
+		val verifications = identityService.getIdentityAddresses(user.getIdentity()).stream()
+				.map(String::toLowerCase).toList();
+
+		return paymentRepository.findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedDateDesc(
+						user, verifications, List.of(Payment.PaymentStatus.COMPLETED),
+						List.of(Payment.PaymentType.APP, Payment.PaymentType.INTENT,
+								Payment.PaymentType.INTENT_TOP_REPLY,
+								Payment.PaymentType.FRAME))
+				.stream()
+				.map(payment -> payment.getReceiver() != null ?
+						payment.getReceiver().getIdentity() : payment.getReceiverAddress())
+				.filter(Objects::nonNull)
+				.distinct()
+				.toList();
 	}
 
 	public List<Token> parseCommandTokens(String text) {
