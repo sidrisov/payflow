@@ -159,7 +159,7 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
       }
 
       await delay(2000);
-      navigate(0);
+      navigate('/');
     } else if (errorCombined) {
       toast.update(sendToastId.current, {
         render: (

@@ -274,40 +274,44 @@ export function AccountCard({
           />
         )}
 
-        {payment && !payment.category && profile && selectedFlow && (
-          <PaymentDialog
-            open={payment != null}
-            paymentType="payflow"
-            payment={payment}
-            sender={{
-              identity: {
-                profile: { ...profile, defaultFlow: selectedFlow },
-                address: profile.identity
-              },
-              type: 'profile'
-            }}
-            recipient={
-              {
+        {payment &&
+          payment.status === 'PENDING' &&
+          !payment.category &&
+          profile &&
+          selectedFlow && (
+            <PaymentDialog
+              open={payment != null}
+              paymentType="payflow"
+              payment={payment}
+              sender={{
                 identity: {
-                  ...(payment.receiver
-                    ? {
-                        profile: {
-                          ...payment.receiver,
-                          ...(payment.receiverFlow && { defaultFlow: payment.receiverFlow })
+                  profile: { ...profile, defaultFlow: selectedFlow },
+                  address: profile.identity
+                },
+                type: 'profile'
+              }}
+              recipient={
+                {
+                  identity: {
+                    ...(payment.receiver
+                      ? {
+                          profile: {
+                            ...payment.receiver,
+                            ...(payment.receiverFlow && { defaultFlow: payment.receiverFlow })
+                          }
                         }
-                      }
-                    : {
-                        address: payment.receiverAddress
-                      })
-                } as IdentityType,
-                type: payment.receiver ? 'profile' : 'address'
-              } as SelectedIdentityType
-            }
-            closeStateCallback={async () => {
-              setPayment(undefined);
-            }}
-          />
-        )}
+                      : {
+                          address: payment.receiverAddress
+                        })
+                  } as IdentityType,
+                  type: payment.receiver ? 'profile' : 'address'
+                } as SelectedIdentityType
+              }
+              closeStateCallback={async () => {
+                setPayment(undefined);
+              }}
+            />
+          )}
 
         {openSearchIdentity && (
           <SearchIdentityDialog
