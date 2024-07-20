@@ -1,4 +1,4 @@
-import { BlurOn, Payments, People, Sell, Star } from '@mui/icons-material';
+import { BlurOn, History, Payments, People, Sell, Star } from '@mui/icons-material';
 import { Avatar, Box, Chip, Typography } from '@mui/material';
 import { yellow, green, grey, deepPurple, blue, pink, purple } from '@mui/material/colors';
 import { AddressBookType } from '../../types/ContactType';
@@ -9,7 +9,7 @@ const contactTypeLabel = (type: AddressBookType) => {
     case 'all':
       return 'All';
     case 'recent':
-      return 'Recent';
+      return 'Recently';
     case 'favourites':
       return 'Favourites';
     case 'friends':
@@ -45,7 +45,7 @@ const contactTypeIcon = (type: AddressBookType, selectedType: AddressBookType) =
     case 'all':
       return <BlurOn fontSize={fontSize} />;
     case 'recent':
-      return <Payments fontSize={fontSize} />;
+      return <History fontSize={fontSize} />;
     case 'favourites':
       return <Star fontSize={fontSize} />;
     case 'friends':
