@@ -15,10 +15,7 @@ import {
   Container
 } from '@mui/material';
 
-import {
-  Home,
-  HomeOutlined
-} from '@mui/icons-material';
+import { Home, HomeOutlined } from '@mui/icons-material';
 
 import { ProfileContext } from '../contexts/UserContext';
 import HideOnScroll from '../components/HideOnScroll';
@@ -95,9 +92,9 @@ export default function AppLayout({
                   <Stack direction="row" alignItems="center">
                     {profile && (
                       <IconButton
-                        color={location.pathname === '/home' ? 'inherit' : undefined}
-                        onClick={() => navigate('/home')}>
-                        {location.pathname === '/home' ? <Home /> : <HomeOutlined />}
+                        color={location.pathname === '/' ? 'inherit' : undefined}
+                        onClick={() => navigate('/')}>
+                        {location.pathname === '/' ? <Home /> : <HomeOutlined />}
                       </IconButton>
                     )}
                     <HomeLogo />
@@ -158,35 +155,6 @@ export default function AppLayout({
           <Box display="flex" mt={3}>
             <Outlet />
           </Box>
-          {/* <Paper sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: grey[100] }}>
-            <BottomNavigation
-              onChange={(_, value) => {
-                switch (value) {
-                  case 0:
-                    navigate('/');
-                    break;
-                  case 1:
-                    setOpenSearchIdentity(true);
-                    break;
-                  case 2:
-                    navigate(`/${profile?.username}`);
-                }
-              }}>
-              <BottomNavigationAction
-                icon={location.pathname === '/home' ? <Home color="inherit" /> : <HomeOutlined />}
-              />
-              <BottomNavigationAction icon={<Search />} />
-              <BottomNavigationAction
-                icon={
-                  location.pathname === `/${profile?.username}` ? (
-                    <Person color="inherit" />
-                  ) : (
-                    <PersonOutline />
-                  )
-                }
-              />
-            </BottomNavigation>
-          </Paper> */}
         </Box>
       </Container>
 
