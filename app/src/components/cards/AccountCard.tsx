@@ -268,6 +268,9 @@ export function AccountCard({
             }}
             recipient={recipient}
             setOpenSearchIdentity={setOpenSearchIdentity}
+            flows={flows}
+            selectedFlow={selectedFlow}
+            setSelectedFlow={setSelectedFlow}
             closeStateCallback={async () => {
               setRecipient(undefined);
             }}
@@ -310,6 +313,9 @@ export function AccountCard({
               closeStateCallback={async () => {
                 setPayment(undefined);
               }}
+              flows={flows}
+              selectedFlow={selectedFlow}
+              setSelectedFlow={setSelectedFlow}
             />
           )}
 

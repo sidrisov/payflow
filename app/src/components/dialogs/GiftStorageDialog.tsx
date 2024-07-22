@@ -50,12 +50,17 @@ import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
 import { CAIP19, payWithGlide } from '@paywithglide/glide-js';
 import { delay } from '../../utils/delay';
 import { useNavigate } from 'react-router-dom';
+import { ChooseFlowMenu } from '../menu/ChooseFlowMenu';
 
 export type GiftStorageDialog = DialogProps &
   CloseCallbackType & {
     sender: SelectedIdentityType;
     payment: PaymentType;
     social: Social;
+  } & {
+    flows?: FlowType[];
+    selectedFlow?: FlowType;
+    setSelectedFlow?: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
   };
 
 export default function GiftStorageDialog({
@@ -63,11 +68,16 @@ export default function GiftStorageDialog({
   payment,
   social,
   closeStateCallback,
+  flows,
+  selectedFlow,
+  setSelectedFlow,
   ...props
 }: GiftStorageDialog) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
+
+  const [openSelectFlow, setOpenSelectFlow] = useState(false);
 
   const flow = sender.identity.profile?.defaultFlow as FlowType;
 
@@ -294,104 +304,123 @@ export default function GiftStorageDialog({
   ]);
 
   return (
-    <Dialog
-      disableEnforceFocus
-      fullScreen={isMobile}
-      onClose={closeStateCallback}
-      {...props}
-      PaperProps={{
-        sx: {
-          ...(!isMobile && {
-            width: 375,
-            borderRadius: 5,
-            height: 600
-          })
-        }
-      }}
-      sx={{
-        backdropFilter: 'blur(5px)'
-      }}>
-      <BackDialogTitle title="Gift Farcaster Storage" closeStateCallback={closeStateCallback} />
-      <DialogContent
+    <>
+      <Dialog
+        disableEnforceFocus
+        fullScreen={isMobile}
+        onClose={closeStateCallback}
+        {...props}
+        PaperProps={{
+          sx: {
+            ...(!isMobile && {
+              width: 375,
+              borderRadius: 5,
+              height: 600
+            })
+          }
+        }}
         sx={{
-          p: 2
+          backdropFilter: 'blur(5px)'
         }}>
-        <Box
-          height="100%"
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="space-between">
-          {sender && (
-            <Stack spacing={1} alignItems="center" width="100%">
-              <SenderField sender={sender} />
-              <KeyboardDoubleArrowDown />
-              <FarcasterRecipientField social={social} />
+        <BackDialogTitle title="Gift Farcaster Storage" closeStateCallback={closeStateCallback} />
+        <DialogContent
+          sx={{
+            p: 2
+          }}>
+          <Box
+            height="100%"
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="space-between">
+            {sender && (
+              <Stack spacing={1} alignItems="center" width="100%">
+                <SenderField sender={sender} {...(setSelectedFlow && { setOpenSelectFlow })} />
+                <KeyboardDoubleArrowDown />
+                <FarcasterRecipientField social={social} />
 
-              {isPaymentOptionLoading || isPaymentOptionsLoading ? (
-                <Skeleton
-                  title="fetching price"
-                  variant="rectangular"
-                  sx={{ borderRadius: 3, height: 45, width: 100 }}
-                />
-              ) : paymentOption ? (
-                <Typography
-                  fontSize={30}
-                  fontWeight="bold"
-                  textOverflow="ellipsis"
-                  overflow="auto"
-                  textAlign="center">
-                  {normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))}{' '}
-                  {paymentOption.currencySymbol}
+                {isPaymentOptionLoading || isPaymentOptionsLoading ? (
+                  <Skeleton
+                    title="fetching price"
+                    variant="rectangular"
+                    sx={{ borderRadius: 3, height: 45, width: 100 }}
+                  />
+                ) : paymentOption ? (
+                  <Typography
+                    fontSize={30}
+                    fontWeight="bold"
+                    textOverflow="ellipsis"
+                    overflow="auto"
+                    textAlign="center">
+                    {normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))}{' '}
+                    {paymentOption.currencySymbol}
+                  </Typography>
+                ) : (
+                  <Typography fontSize={14} fontWeight="bold" color={red.A400}>
+                    You don't have any balance to cover storage cost
+                  </Typography>
+                )}
+                <Typography fontSize={18} fontWeight="bold">
+                  {numberOfUnits} Unit{numberOfUnits > 1 ? 's' : ''} of Storage
                 </Typography>
-              ) : (
-                <Typography fontSize={14} fontWeight="bold" color={red.A400}>
-                  You don't have any balance to cover storage cost
-                </Typography>
-              )}
-              <Typography fontSize={18} fontWeight="bold">
-                {numberOfUnits} Unit{numberOfUnits > 1 ? 's' : ''} of Storage
-              </Typography>
-            </Stack>
-          )}
+              </Stack>
+            )}
 
-          {address?.toLowerCase() === flow.signer.toLowerCase() ? (
-            <Stack width="100%">
-              <NetworkTokenSelector
-                payment={payment}
-                selectedWallet={selectedWallet}
-                setSelectedWallet={setSelectedWallet}
-                selectedToken={selectedToken}
-                setSelectedToken={setSelectedToken}
-                compatibleWallets={compatibleWallets}
-                enabledChainCurrencies={paymentOptions?.map((c) => c.paymentCurrency) ?? []}
-                gasFee={BigInt(0)}
-              />
-              {!selectedWallet || chainId === selectedWallet.network ? (
-                <LoadingPaymentButton
-                  title="Gift"
-                  loading={paymentPending}
-                  disabled={!paymentOption}
-                  status={isNativeFlow ? status : statusRegular}
-                  onClick={submitGlideTransaction}
+            {address?.toLowerCase() === flow.signer.toLowerCase() ? (
+              <Stack width="100%">
+                <NetworkTokenSelector
+                  payment={payment}
+                  selectedWallet={selectedWallet}
+                  setSelectedWallet={setSelectedWallet}
+                  selectedToken={selectedToken}
+                  setSelectedToken={setSelectedToken}
+                  compatibleWallets={compatibleWallets}
+                  enabledChainCurrencies={paymentOptions?.map((c) => c.paymentCurrency) ?? []}
+                  gasFee={BigInt(0)}
                 />
-              ) : (
-                <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
-              )}
-              <Typography variant="caption" textAlign="center" color={grey[400]}>
-                Cross-chain payments facilitated by{' '}
-                <b>
-                  <a href="https://paywithglide.xyz" target="_blank" style={{ color: 'inherit' }}>
-                    Glide
-                  </a>
-                </b>
-              </Typography>
-            </Stack>
-          ) : (
-            <SwitchFlowSignerSection flow={flow} />
-          )}
-        </Box>
-      </DialogContent>
-    </Dialog>
+                {!selectedWallet || chainId === selectedWallet.network ? (
+                  <LoadingPaymentButton
+                    title="Gift"
+                    loading={paymentPending}
+                    disabled={!paymentOption}
+                    status={isNativeFlow ? status : statusRegular}
+                    onClick={submitGlideTransaction}
+                  />
+                ) : (
+                  <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
+                )}
+                <Typography variant="caption" textAlign="center" color={grey[400]}>
+                  Cross-chain payments facilitated by{' '}
+                  <b>
+                    <a href="https://paywithglide.xyz" target="_blank" style={{ color: 'inherit' }}>
+                      Glide
+                    </a>
+                  </b>
+                </Typography>
+              </Stack>
+            ) : (
+              <SwitchFlowSignerSection flow={flow} />
+            )}
+          </Box>
+        </DialogContent>
+      </Dialog>
+      {flows && selectedFlow && setSelectedFlow && (
+        <ChooseFlowMenu
+          open={openSelectFlow}
+          anchorOrigin={{
+            vertical: 'center',
+            horizontal: 'center'
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'left'
+          }}
+          closeStateCallback={async () => setOpenSelectFlow(false)}
+          flows={flows}
+          selectedFlow={selectedFlow}
+          setSelectedFlow={setSelectedFlow}
+        />
+      )}
+    </>
   );
 }

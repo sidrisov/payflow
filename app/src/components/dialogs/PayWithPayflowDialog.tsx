@@ -33,12 +33,9 @@ import { completePayment, submitPayment } from '../../services/payments';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
 import { PaymentType } from '../../types/PaymentType';
-import { useNavigate } from 'react-router-dom';
 import { delay } from '../../utils/delay';
 
 export default function PayWithPayflowDialog({ payment, sender, recipient }: PaymentDialogProps) {
-  const navigate = useNavigate();
-
   const flow = sender.identity.profile?.defaultFlow as FlowType;
 
   const { profile } = useContext(ProfileContext);
@@ -80,7 +77,7 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
   const [gasFee] = useState<bigint | undefined>(isNativeFlow ? BigInt(0) : undefined);
 
   // TODO: use pre-configured tokens to fetch decimals, etc
-  const { isSuccess, data: balance } = useBalance({
+  const { data: balance } = useBalance({
     address: selectedWallet?.address,
     chainId,
     token: selectedToken?.tokenAddress,

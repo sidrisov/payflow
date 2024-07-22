@@ -40,13 +40,13 @@ export function ChooseFlowMenu({
     profile && (
       <>
         <Menu
-          {...props}
           onClose={closeStateCallback}
           sx={{ mt: 1, maxWidth: 365, '.MuiMenu-paper': { borderRadius: 5 } }}
           anchorOrigin={{
             vertical: 'bottom',
             horizontal: 'left'
-          }}>
+          }}
+          {...props}>
           <MenuItem disabled key="payment_flow_title">
             <Typography fontWeight="bold" fontSize={16}>
               Payment Flows

@@ -42,7 +42,9 @@ export function useCompatibleWallets({
             : (sender as FlowType).wallets;
 
         if (compatibleSenderWallets.length === 0) {
-          toast.error('No compatible wallets available!');
+          toast.error(
+            'Current payment flow is not compatible with recipient, select a different flow!'
+          );
         }
       }
     }

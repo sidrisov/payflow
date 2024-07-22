@@ -36,10 +36,17 @@ import calculateMaxPages from '../utils/pagination';
 const pageSize = 5;
 
 export function PaymentIntentsSection({
-  flow,
+  flows,
+  selectedFlow,
+  setSelectedFlow,
   payments,
   ...props
-}: { flow: FlowType; payments?: PaymentType[] } & StackProps) {
+}: {
+  flows: FlowType[];
+  selectedFlow: FlowType;
+  setSelectedFlow: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
+  payments?: PaymentType[];
+} & {} & StackProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [expand, setExpand] = useState<boolean>(false);
@@ -103,13 +110,16 @@ export function PaymentIntentsSection({
             </Stack>
           )}
         </Stack>
-        {openPaymentDialog && payment && !payment.category && profile && flow && (
+        {openPaymentDialog && payment && !payment.category && profile && selectedFlow && (
           <PaymentDialog
             open={openPaymentDialog}
             paymentType="payflow"
             payment={payment}
             sender={{
-              identity: { profile: { ...profile, defaultFlow: flow }, address: profile.identity },
+              identity: {
+                profile: { ...profile, defaultFlow: selectedFlow },
+                address: profile.identity
+              },
               type: 'profile'
             }}
             recipient={
@@ -129,6 +139,9 @@ export function PaymentIntentsSection({
                 type: payment.receiver ? 'profile' : 'address'
               } as SelectedIdentityType
             }
+            flows={flows}
+            selectedFlow={selectedFlow}
+            setSelectedFlow={setSelectedFlow}
             closeStateCallback={async () => {
               setOpenPaymentDialog(false);
               setPayment(undefined);
@@ -140,11 +153,17 @@ export function PaymentIntentsSection({
           <GiftStorageDialog
             open={openPaymentDialog}
             sender={{
-              identity: { profile: { ...profile, defaultFlow: flow }, address: profile.identity },
+              identity: {
+                profile: { ...profile, defaultFlow: selectedFlow },
+                address: profile.identity
+              },
               type: 'profile'
             }}
             payment={payment}
             social={fidSocial}
+            flows={flows}
+            selectedFlow={selectedFlow}
+            setSelectedFlow={setSelectedFlow}
             closeStateCallback={async () => {
               setOpenPaymentDialog(false);
               setPayment(undefined);

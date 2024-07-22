@@ -16,6 +16,9 @@ import { PaymentType } from '../../types/PaymentType';
 import { SenderField } from '../SenderField';
 import { KeyboardDoubleArrowDown } from '@mui/icons-material';
 import { RecipientField } from '../RecipientField';
+import { ChooseFlowMenu } from '../menu/ChooseFlowMenu';
+import { FlowType } from '../../types/FlowType';
+import { useState } from 'react';
 
 export type PaymentSenderType = 'payflow' | 'wallet' | 'none';
 
@@ -25,7 +28,11 @@ export type PaymentDialogProps = DialogProps &
     payment?: PaymentType;
     sender: SelectedIdentityType;
     recipient: SelectedIdentityType;
-  } & { setOpenSearchIdentity?: React.Dispatch<React.SetStateAction<boolean>> };
+  } & { setOpenSearchIdentity?: React.Dispatch<React.SetStateAction<boolean>> } & {
+    flows?: FlowType[];
+    selectedFlow?: FlowType;
+    setSelectedFlow?: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
+  };
 
 export default function PaymentDialog({
   paymentType = 'payflow',
@@ -34,13 +41,18 @@ export default function PaymentDialog({
   sender,
   closeStateCallback,
   setOpenSearchIdentity,
+  flows,
+  selectedFlow,
+  setSelectedFlow,
   ...props
 }: PaymentDialogProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [openSelectFlow, setOpenSelectFlow] = useState(false);
 
   return (
-    recipient && (
+    <>
+      recipient && (
       <Dialog
         disableEnforceFocus
         fullScreen={isMobile}
@@ -71,7 +83,7 @@ export default function PaymentDialog({
             justifyContent="space-between">
             {sender && (
               <Stack spacing={1} alignItems="center" width="100%">
-                <SenderField sender={sender} />
+                <SenderField sender={sender} {...(setSelectedFlow && { setOpenSelectFlow })} />
                 <KeyboardDoubleArrowDown />
                 <RecipientField
                   recipient={recipient}
@@ -108,6 +120,24 @@ export default function PaymentDialog({
           </Box>
         </DialogContent>
       </Dialog>
-    )
+      )
+      {flows && selectedFlow && setSelectedFlow && (
+        <ChooseFlowMenu
+          open={openSelectFlow}
+          anchorOrigin={{
+            vertical: 'center',
+            horizontal: 'center'
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'left'
+          }}
+          closeStateCallback={async () => setOpenSelectFlow(false)}
+          flows={flows}
+          selectedFlow={selectedFlow}
+          setSelectedFlow={setSelectedFlow}
+        />
+      )}
+    </>
   );
 }

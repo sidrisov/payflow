@@ -111,7 +111,9 @@ export default function Accounts() {
               {isPaymentFetched && (
                 <>
                   <PaymentIntentsSection
-                    flow={selectedFlow}
+                    flows={flows}
+                    selectedFlow={selectedFlow}
+                    setSelectedFlow={setSelectedFlow}
                     payments={payments?.filter((p) => p.status === 'PENDING')}
                     width="100%"
                   />
