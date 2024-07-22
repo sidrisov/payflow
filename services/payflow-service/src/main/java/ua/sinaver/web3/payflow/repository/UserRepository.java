@@ -24,6 +24,8 @@ import java.util.stream.Stream;
 public interface UserRepository extends CrudRepository<User, Integer> {
 	User findByIdentity(String identity);
 
+	User findByAccessToken(String accessToken);
+
 	Stream<User> findByIdentityIn(List<String> identities);
 
 	default Map<String, User> findByIdentityAsMapIn(List<String> identities) {

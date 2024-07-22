@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 import ua.sinaver.web3.payflow.message.farcaster.ComposerActionState;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
+import ua.sinaver.web3.payflow.service.IdentityService;
+import ua.sinaver.web3.payflow.service.UserService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
@@ -25,11 +27,15 @@ import java.nio.charset.StandardCharsets;
 @Transactional
 @Slf4j
 public class PaymentFormController {
-
-	private static Gson GSON = new GsonBuilder().create();
-
+	private static final Gson GSON = new GsonBuilder().create();
 	@Autowired
 	private IFarcasterNeynarService neynarService;
+
+	@Autowired
+	private IdentityService identityService;
+
+	@Autowired
+	private UserService userService;
 
 	@PostMapping
 	public ResponseEntity<?> form(@RequestBody FrameMessage composerActionMessage) {
@@ -46,16 +52,23 @@ public class PaymentFormController {
 				validateMessage.action().url());
 
 		val interactor = validateMessage.action().interactor();
+		val profile = identityService.getProfiles(validateMessage.action().interactor().addressesWithoutCustodialIfAvailable()).stream().findFirst().orElse(null);
+		var accessToken = "";
+		if (profile != null) {
+			accessToken = userService.generateAccessToken(profile);
+		}
+
 		val decodedState = URLDecoder.decode(
 				validateMessage.action().state().serialized(), StandardCharsets.UTF_8);
 		log.debug("Decoded form state: {}", decodedState);
-		
+
 		val state = GSON.fromJson(decodedState, ComposerActionState.class);
 		val paymentFormUrl = UriComponentsBuilder.newInstance()
 				.scheme("https").host("app.payflow.me").path("/composer")
 				.queryParam("action", "frame")
 				.queryParam("verifications", interactor.addressesWithoutCustodialIfAvailable())
 				.queryParam("title", state.cast().text())
+				.queryParam("accessToken", accessToken)
 				.build()
 				.toUriString();
 

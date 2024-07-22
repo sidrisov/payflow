@@ -24,4 +24,10 @@ public interface IUserService {
 	List<User> findAll();
 
 	Map<WalletProfileRequestMessage, User> searchByOwnedWallets(List<WalletProfileRequestMessage> wallets);
+
+	User findByAccessToken(String accessToken);
+
+	void clearAccessToken(User user);
+
+	String generateAccessToken(User user);
 }

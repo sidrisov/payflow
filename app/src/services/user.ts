@@ -4,11 +4,14 @@ import { API_URL } from '../utils/urlConstants';
 import { Address } from 'viem';
 import { sortAndFilterFlowWallets } from '../utils/sortAndFilterFlows';
 
-export async function me(): Promise<ProfileType | undefined> {
+export async function me(accessToken?: string): Promise<ProfileType | undefined> {
   try {
-    const response = await axios.get(`${API_URL}/api/user/me`, {
-      withCredentials: true
-    });
+    const response = await axios.get(
+      `${API_URL}/api/user/me${accessToken ? '?access_token=' + accessToken : ''}`,
+      {
+        withCredentials: true
+      }
+    );
     if (response.status === 200) {
       return response.data as ProfileType;
     }

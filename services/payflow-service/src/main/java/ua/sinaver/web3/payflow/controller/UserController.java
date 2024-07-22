@@ -41,7 +41,7 @@ public class UserController {
 
 	@Autowired
 	private IFarcasterNeynarService neynarService;
-
+	
 	@GetMapping("/me")
 	public ProfileMessage user(Principal principal) {
 		log.trace("{} fetching its profile info", principal.getName());

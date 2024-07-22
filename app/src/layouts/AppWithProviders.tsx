@@ -10,6 +10,7 @@ import sortAndFilterFlows from '../utils/sortAndFilterFlows';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { usePrivy } from '@privy-io/react-auth';
+import { useSearchParams } from 'react-router-dom';
 
 const appSettingsStorageItem = localStorage.getItem('appSettings');
 const appSettingsStored = appSettingsStorageItem
@@ -32,6 +33,9 @@ export default function AppWithProviders() {
 
   const { ready } = usePrivy();
 
+  const [searchParams] = useSearchParams();
+  const accessToken = searchParams.get('access_token') ?? '';
+
   // Fetch user when:
   useEffect(() => {
     const fetchStatus = async () => {
@@ -41,7 +45,7 @@ export default function AppWithProviders() {
 
       fetchingStatusRef.current = true;
       try {
-        const profile = await me();
+        const profile = await me(accessToken);
         if (profile) {
           if (profile.defaultFlow && profile.flows) {
             profile.flows = sortAndFilterFlows(profile.defaultFlow, profile.flows);

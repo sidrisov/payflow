@@ -166,4 +166,22 @@ public class UserService implements IUserService {
 	public List<User> findAll() {
 		return userRepository.findByAllowedTrueOrderByLastSeenDesc();
 	}
+
+	@Override
+	public User findByAccessToken(String accessToken) {
+		return userRepository.findByAccessToken(accessToken);
+	}
+
+	@Override
+	public void clearAccessToken(User user) {
+		user.setAccessToken(null);
+		userRepository.save(user);
+	}
+
+	@Override
+	public String generateAccessToken(User user) {
+		String accessToken = UUID.randomUUID().toString();
+		user.setAccessToken(accessToken);
+		return accessToken;
+	}
 }

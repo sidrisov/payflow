@@ -77,6 +77,10 @@ public class User {
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date lastUpdatedContacts;
 
+	@ToString.Exclude
+	@Column(name = "access_token")
+	private String accessToken;
+
 	@Version
 	private Long version;
 

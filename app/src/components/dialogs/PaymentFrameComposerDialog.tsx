@@ -18,6 +18,7 @@ import { useState } from 'react';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
 import { ArrowRight, Check, Verified } from '@mui/icons-material';
 import { green, grey, red } from '@mui/material/colors';
+import { BackDialogTitle } from './BackDialogTitle';
 
 export default function PaymentFrameComposerDialog({
   closeStateCallback,
@@ -49,11 +50,12 @@ export default function PaymentFrameComposerDialog({
         backdropFilter: 'blur(5px)'
       }}>
       <DialogTitle>
-        <Box display="flex" justifyContent="center">
+        <BackDialogTitle title="Custom Payment Frame" closeStateCallback={closeStateCallback} />
+        {/*  <Box display="flex" justifyContent="center">
           <Typography variant="h6" sx={{ overflow: 'auto' }}>
             New Payment Frame
           </Typography>
-        </Box>
+        </Box> */}
       </DialogTitle>
       <DialogContent
         sx={{

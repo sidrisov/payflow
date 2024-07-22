@@ -13,6 +13,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import ua.sinaver.web3.payflow.auth.JwtAuthenticationFilter;
 import ua.sinaver.web3.payflow.auth.Web3AuthenticationEntryPoint;
 import ua.sinaver.web3.payflow.auth.Web3AuthenticationProvider;
 
@@ -24,6 +26,9 @@ public class SecurityConfig {
 
 	@Autowired
 	private Web3AuthenticationProvider web3AuthProvider;
+
+	@Autowired
+	private JwtAuthenticationFilter jwtAuthenticationFilter;
 
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager)
@@ -51,6 +56,7 @@ public class SecurityConfig {
 						// user
 						// TODO: {username} behaves like a wildcard for other APIs, as well,
 						// e.g. /user/all will get whitelisted too, a bit dangerous behaviour
+						.requestMatchers(HttpMethod.GET, "/user/me").authenticated()
 						.requestMatchers(HttpMethod.GET, "/user").permitAll()
 						.requestMatchers(HttpMethod.GET, "/user/{identities}").permitAll()
 						.requestMatchers(HttpMethod.GET, "/user/identities/{identity}").permitAll()
@@ -70,7 +76,7 @@ public class SecurityConfig {
 						// Farcaster webhooks
 						.requestMatchers(HttpMethod.GET, "/farcaster/webhooks/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/farcaster/webhooks/**").permitAll()
-
+						// other authenticated
 						.anyRequest().authenticated())
 				.sessionManagement(session -> session
 						.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
@@ -86,6 +92,7 @@ public class SecurityConfig {
 						                       authentication) -> {
 							httpServletResponse.setStatus(HttpServletResponse.SC_OK);
 						}))
+				.addFilterAfter(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 				.exceptionHandling(exception -> exception
 						.authenticationEntryPoint(web3EntryPoint))
 				.build();
@@ -108,5 +115,4 @@ public class SecurityConfig {
 	PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
-
 }

@@ -5,7 +5,7 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
     application
-    id("org.springframework.boot") version "3.3.1"
+    id("org.springframework.boot") version "3.3.2"
     id("io.spring.dependency-management") version "1.1.4"
     id("com.google.cloud.artifactregistry.gradle-plugin") version "2.2.1"
     id("io.freefair.lombok") version "8.4"
@@ -30,7 +30,7 @@ if (project.hasProperty("gcp")) {
     extra["springCloudVersion"] = "2023.0.2"
 }
 
-extra["flywayVersion"] = "10.15.2"
+extra["flywayVersion"] = "10.16.0"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -44,6 +44,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-aop")
 
     implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.1")
+    implementation("io.jsonwebtoken:jjwt:0.9.1")
 
     /**
      * TODO: disable for now due the following, generating types with gradle plugin is enough for now
@@ -89,14 +90,14 @@ dependencies {
     implementation("org.flywaydb:flyway-mysql:${property("flywayVersion")}")
 
     // utils
-    implementation("org.apache.commons:commons-lang3:3.14.0")
+    implementation("org.apache.commons:commons-lang3:3.15.0")
     implementation("com.google.guava:guava:33.2.0-jre")
     implementation("com.google.code.gson:gson:2.11.0")
 
     // java.lang.NoSuchMethodError: 'reactor.core.publisher.Mono reactor.core.publisher.Mono.onErrorComplete()'
-    implementation("io.projectreactor:reactor-core:3.6.7")
+    implementation("io.projectreactor:reactor-core:3.6.8")
 
-    runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.111.Final:osx-aarch_64")
+    runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.112.Final:osx-aarch_64")
 
     // crypto
     implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
