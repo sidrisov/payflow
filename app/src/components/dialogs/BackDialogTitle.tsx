@@ -12,18 +12,20 @@ import { ArrowBack } from '@mui/icons-material';
 
 export function BackDialogTitle({
   title,
-  showAlways = false,
+  hidden = false,
+  showOnDesktop = false,
   closeStateCallback,
   ...props
 }: {
   title: string;
-  showAlways?: boolean;
+  hidden?: boolean;
+  showOnDesktop?: boolean;
 } & CloseCallbackType &
   DialogTitleProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const showBackButton = showAlways || isMobile;
+  const showBackButton = !hidden && (showOnDesktop || isMobile);
 
   return (
     <DialogTitle {...props}>

@@ -1,7 +1,6 @@
 import { Box, Menu, MenuItem, MenuProps, Stack, Typography } from '@mui/material';
 import { FlowWalletType } from '../../types/FlowType';
 import { Check } from '@mui/icons-material';
-import { shortenWalletAddressLabel } from '../../utils/address';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import NetworkAvatar from '../avatars/NetworkAvatar';
 import { green } from '@mui/material/colors';

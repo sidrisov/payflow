@@ -231,7 +231,7 @@ export default function SearchIdentityDialog({
       }}
       PaperProps={{
         sx: {
-          ...(!isMobile && { width: 375, height: 600, borderRadius: 5 })
+          ...(!isMobile && { minWidth: 375, maxWidth: 475, height: 600, borderRadius: 5 })
         }
       }}
       {...props}>
@@ -302,12 +302,21 @@ export default function SearchIdentityDialog({
               setSearchString(event.target.value);
             }}
           />
+
           {isAuthenticated && contacts.length > 0 && (
             <AddressBookToolBar
               tags={tags}
               addressBookView={addressBookView}
               setAddressBookView={setAddressBookView}
             />
+          )}
+          {(isSearchingContacts || isFetchingContacts) && (
+            <Stack direction="row" m={1} alignSelf="center" alignItems="center" spacing={1}>
+              <CircularProgress color="inherit" size={20} />
+              <Typography>
+                {isSearchingContacts ? 'Fetching results' : 'Syncing Contacts'}
+              </Typography>
+            </Stack>
           )}
         </Stack>
       </DialogTitle>
@@ -346,12 +355,6 @@ export default function SearchIdentityDialog({
                   No results found.
                 </Typography>
               ))}
-
-          {(isSearchingContacts || isFetchingContacts) && (
-            <Box m={1} alignSelf="center">
-              <CircularProgress color="inherit" size={20} />
-            </Box>
-          )}
         </Box>
       </DialogContent>
       {walletMenuEnabled && (

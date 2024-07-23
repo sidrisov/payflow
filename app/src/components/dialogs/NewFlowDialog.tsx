@@ -60,7 +60,7 @@ export default function NewFlowDialog({
         backdropFilter: 'blur(5px)'
       }}>
       <BackDialogTitle
-        showAlways
+        showOnDesktop
         title="New Payment Flow"
         closeStateCallback={closeStateCallback}
       />

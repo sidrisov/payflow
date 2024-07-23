@@ -61,58 +61,63 @@ export function SearchIdentityListItem(
     (view === 'profile' ? identity.profile : identity.meta) && (
       <Box
         m={1}
+        pl={0.5}
         display="flex"
         flexDirection="row"
         justifyContent="space-between"
         alignItems="center"
+        width={'100%'}
         height={60}>
-        {isAuthenticated && (
-          <IconButton
-            size="small"
-            onClick={async () => {
-              console.log('Hello', contact);
-              try {
-                const updatedContact = {
-                  ...contact,
-                  tags: !favourite
-                    ? addToFavourites(contact.tags as string[])
-                    : removeFromFavourites(contact.tags as string[])
-                } as ContactType;
+        <Stack direction="row" spacing={1} alignItems="center">
+          {isAuthenticated && (
+            <IconButton
+              size="small"
+              onClick={async () => {
+                console.log('Hello', contact);
+                try {
+                  const updatedContact = {
+                    ...contact,
+                    tags: !favourite
+                      ? addToFavourites(contact.tags as string[])
+                      : removeFromFavourites(contact.tags as string[])
+                  } as ContactType;
 
-                console.log('Before vs after: ', contact, updatedContact);
+                  console.log('Before vs after: ', contact, updatedContact);
 
-                await axios.post(`${API_URL}/api/user/me/favourites`, updatedContact, {
-                  withCredentials: true
-                });
+                  await axios.post(`${API_URL}/api/user/me/favourites`, updatedContact, {
+                    withCredentials: true
+                  });
 
-                updateIdentityCallback?.({ contact: updatedContact });
-              } catch (error) {
-                toast.error('Favourite failed!');
-              }
-            }}>
-            {favourite ? (
-              <Star fontSize="small" sx={{ color: yellow.A700 }} />
-            ) : (
-              <StarBorder fontSize="small" />
+                  updateIdentityCallback?.({ contact: updatedContact });
+                } catch (error) {
+                  toast.error('Favourite failed!');
+                }
+              }}>
+              {favourite ? (
+                <Star fontSize="small" sx={{ color: yellow.A700 }} />
+              ) : (
+                <StarBorder fontSize="small" />
+              )}
+            </IconButton>
+          )}
+          <Box
+            justifyContent="flex-start"
+            minWidth={175}
+            maxWidth={200}
+            color="inherit"
+            {...(props.onClick
+              ? { component: Button, onClick: props.onClick, textTransform: 'none' }
+              : {})}
+            sx={{ borderRadius: 5 }}>
+            {view === 'profile' && identity.profile && (
+              <ProfileSection maxWidth={200} profile={identity.profile} />
             )}
-          </IconButton>
-        )}
-        <Box
-          justifyContent="flex-start"
-          width={150}
-          color="inherit"
-          {...(props.onClick
-            ? { component: Button, onClick: props.onClick, textTransform: 'none' }
-            : {})}
-          sx={{ borderRadius: 5 }}>
-          {view === 'profile' && identity.profile && (
-            <ProfileSection maxWidth={200} profile={identity.profile} />
-          )}
 
-          {view === 'address' && identity.meta && (
-            <AddressSection maxWidth={200} identity={identity} />
-          )}
-        </Box>
+            {view === 'address' && identity.meta && (
+              <AddressSection maxWidth={200} identity={identity} />
+            )}
+          </Box>
+        </Stack>
 
         <Stack direction="column" spacing={0.5} alignItems="center" sx={{ width: 100 }}>
           {identity.invited && !identity.profile ? (

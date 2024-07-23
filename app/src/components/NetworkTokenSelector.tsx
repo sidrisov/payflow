@@ -23,7 +23,8 @@ export function NetworkTokenSelector({
   setSelectedToken,
   enabledChainCurrencies,
   gasFee,
-  showBalance = true
+  showBalance = true,
+  expandSection = false
 }: {
   payment?: PaymentType;
   selectedWallet: FlowWalletType | undefined;
@@ -34,10 +35,11 @@ export function NetworkTokenSelector({
   enabledChainCurrencies?: string[];
   gasFee?: bigint;
   showBalance?: boolean;
+  expandSection?: boolean;
 }) {
   const chainId = useChainId();
 
-  const [expand, setExpand] = useState<boolean>(false);
+  const [expand, setExpand] = useState<boolean>(expandSection);
   const [compatibleTokens, setCompatibleTokens] = useState<Token[]>([]);
 
   const [maxBalance, setMaxBalance] = useState<string>('0.0');

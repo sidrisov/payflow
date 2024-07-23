@@ -104,7 +104,7 @@ export default function PayComposerActionDialog({
       sx={{
         backdropFilter: 'blur(5px)'
       }}>
-      <BackDialogTitle title="Pay" closeStateCallback={closeStateCallback} />
+      <BackDialogTitle title="Pay" closeStateCallback={closeStateCallback} hidden={true} />
       <DialogContent
         sx={{
           p: 2
@@ -141,6 +141,7 @@ export default function PayComposerActionDialog({
                 setSelectedToken={setSelectedToken}
                 compatibleWallets={compatibleWallets}
                 showBalance={false}
+                expandSection={true}
               />
               <LoadingPaymentButton
                 title="Create Payment"

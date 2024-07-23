@@ -1,6 +1,5 @@
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogProps,
   Stack,
@@ -140,7 +139,7 @@ export default function PrimaryFlowOnboardingDialog({
         backdropFilter: 'blur(5px)'
       }}>
       <BackDialogTitle
-        showAlways
+        showOnDesktop
         title="Set Up Payment Flow"
         closeStateCallback={async () => {
           try {

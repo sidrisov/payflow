@@ -1,6 +1,5 @@
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogProps,
   Stack,
@@ -232,7 +231,7 @@ export default function ProfileOnboardingDialog({
         backdropFilter: 'blur(5px)'
       }}>
       <BackDialogTitle
-        showAlways
+        showOnDesktop
         title="Complete your profile"
         closeStateCallback={async () => {
           try {
