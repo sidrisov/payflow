@@ -24,9 +24,10 @@ export default function Composer() {
   );
 
   const { profile } = useContext(ProfileContext);
-  const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(false);
+  const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(
+    openComposerAction === 'pay'
+  );
 
-  const [paymentType, setPaymentType] = useState<PaymentSenderType>();
   const [recipient, setRecipient] = useState<SelectedIdentityType>();
 
   return (
@@ -76,7 +77,7 @@ export default function Composer() {
           </Stack>
         </Box>
       </Container>
-      {action === 'frame' && (
+      {openComposerAction === 'frame' && (
         <PaymentFrameComposerDialog
           open={true}
           closeStateCallback={() => {
@@ -87,7 +88,7 @@ export default function Composer() {
           }}
         />
       )}
-      {recipient && profile && (
+      {openComposerAction === 'pay' && recipient && profile && (
         <PayComposerActionDialog
           open={recipient != null}
           sender={{
@@ -113,7 +114,6 @@ export default function Composer() {
             setOpenSearchIdentity(false);
           }}
           selectIdentityCallback={async (recipient) => {
-            setPaymentType('payflow');
             setRecipient(recipient);
           }}
         />

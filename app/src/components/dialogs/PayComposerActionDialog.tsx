@@ -26,6 +26,7 @@ import { SUPPORTED_CHAINS } from '@privy-io/react-auth';
 import { submitPayment } from '../../services/payments';
 import { toast } from 'react-toastify';
 import { FARCASTER_DAPP } from '../../utils/dapps';
+import { useSearchParams } from 'react-router-dom';
 
 export type PaymentSenderType = 'payflow' | 'wallet' | 'none';
 
@@ -47,6 +48,9 @@ export default function PayComposerActionDialog({
 }: PaymentDialogProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const [searchParams] = useSearchParams();
+  const accessToken = searchParams.get('access_token') ?? undefined;
 
   const compatibleWallets = useCompatibleWallets({
     sender:
@@ -154,7 +158,7 @@ export default function PayComposerActionDialog({
                   } as PaymentType;
 
                   console.log('Submitting payment: ', newPayment);
-                  const refId = await submitPayment(newPayment);
+                  const refId = await submitPayment(newPayment, accessToken);
 
                   if (!refId) {
                     toast.error('Failed to created payment frame, pls, contact @sinaver.eth 🙏🏻');
