@@ -124,7 +124,7 @@ export default function SearchIdentityDialog({
                   let socialSearchStr = debouncedSearchString;
 
                   if (
-                    (s.dappName === FARCASTER_DAPP && debouncedSearchString.startsWith('fc:')) ||
+                    (s.dappName === FARCASTER_DAPP && debouncedSearchString.startsWith('@fname')) ||
                     (s.dappName === LENS_DAPP && debouncedSearchString.startsWith('lens:'))
                   ) {
                     socialSearchStr = socialSearchStr.substring(socialSearchStr.indexOf(':') + 1);
@@ -270,7 +270,7 @@ export default function SearchIdentityDialog({
           <TextField
             fullWidth
             margin="normal"
-            label="search by name, fc:, lens:, .eth, or 0x"
+            label="search by name, @fname, lens:, .eth, or 0x"
             value={searchString ?? ''}
             InputProps={{
               startAdornment: shrink && (

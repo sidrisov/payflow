@@ -85,7 +85,7 @@ function calculateScore(identity: ContactType): number {
 export async function searchIdentity(searchValue: string, me?: string): Promise<ContactType[]> {
   let foundProfiles: ContactType[] = [];
 
-  if (!searchValue.includes(':') && !searchValue.includes('.') && !isAddress(searchValue)) {
+  if (!searchValue.includes('@') && !searchValue.includes('.') && !isAddress(searchValue)) {
     const profiles = await searchByListOfAddressesOrUsernames([searchValue]);
     if (profiles) {
       foundProfiles = foundProfiles.concat(
@@ -94,10 +94,10 @@ export async function searchIdentity(searchValue: string, me?: string): Promise<
         ))
       );
     }
-  } else if (searchValue.startsWith('fc:') || searchValue.startsWith('lens:')) {
-    const dappName = searchValue.startsWith('fc:') ? FARCASTER_DAPP : LENS_DAPP;
-    const profileName = searchValue.startsWith('fc:')
-      ? searchValue.substring(searchValue.indexOf(':') + 1)
+  } else if (searchValue.startsWith('@') || searchValue.startsWith('lens:')) {
+    const dappName = searchValue.startsWith('@') ? FARCASTER_DAPP : LENS_DAPP;
+    const profileName = searchValue.startsWith('@')
+      ? searchValue.substring(searchValue.indexOf('@') + 1)
       : 'lens/@'.concat(searchValue.substring(searchValue.indexOf(':') + 1));
 
     if (profileName.length > 0) {
