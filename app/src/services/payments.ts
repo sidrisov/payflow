@@ -32,14 +32,21 @@ export async function fetchPayment(paymentRefId: string): Promise<PaymentType | 
   }
 }
 
-export async function submitPayment(payment: PaymentType): Promise<boolean | undefined> {
+export async function submitPayment(
+  payment: PaymentType,
+  accessToken?: string
+): Promise<string | undefined> {
   try {
-    const response = await axios.post(`${API_URL}/api/payment`, payment, {
-      withCredentials: true
-    });
+    const response = await axios.post(
+      `${API_URL}/api/payment${accessToken ? '?access_token=' + accessToken : ''}`,
+      payment,
+      {
+        withCredentials: true
+      }
+    );
     console.debug(response.status);
 
-    return response.status === 200;
+    return response.data.referenceId;
   } catch (error) {
     console.error(error);
   }

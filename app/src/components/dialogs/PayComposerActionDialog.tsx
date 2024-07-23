@@ -23,6 +23,9 @@ import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { Token } from '../../utils/erc20contracts';
 import { useChainId } from 'wagmi';
 import { SUPPORTED_CHAINS } from '@privy-io/react-auth';
+import { submitPayment } from '../../services/payments';
+import { toast } from 'react-toastify';
+import { FARCASTER_DAPP } from '../../utils/dapps';
 
 export type PaymentSenderType = 'payflow' | 'wallet' | 'none';
 
@@ -140,15 +143,35 @@ export default function PayComposerActionDialog({
                 //loading={paymentPending}
                 disabled={!paymentEnabled}
                 onClick={async () => {
+                  const newPayment = {
+                    type: 'FRAME',
+                    status: 'PENDING',
+                    receiver: recipient.identity.profile,
+                    receiverAddress: toAddress,
+                    chainId: chainId,
+                    token: selectedToken?.id,
+                    tokenAmount: sendAmount
+                  } as PaymentType;
+
+                  console.log('Submitting payment: ', newPayment);
+                  const refId = await submitPayment(newPayment);
+
+                  if (!refId) {
+                    toast.error('Failed to created payment frame, pls, contact @sinaver.eth 🙏🏻');
+                    return;
+                  }
+
                   window.parent.postMessage(
                     {
                       type: 'createCast',
                       data: {
                         cast: {
-                          text: `Pay using the frame below`,
-                          embeds: [
-                            encodeURI(`https://frames.payflow.me/${recipient.identity.address}`)
-                          ]
+                          text: `Hey, @${
+                            recipient.identity.meta?.socials.find(
+                              (s) => s.dappName === FARCASTER_DAPP
+                            )?.profileName
+                          } paying you with the frame`,
+                          embeds: [encodeURI(`https://frames.payflow.me/payment/${refId}`)]
                         }
                       }
                     },
