@@ -152,7 +152,7 @@ export default function PayComposerActionDialog({
                     status: 'PENDING',
                     receiver: recipient.identity.profile,
                     receiverAddress: toAddress,
-                    chainId: chainId,
+                    chainId: selectedToken?.chainId,
                     token: selectedToken?.id,
                     tokenAmount: sendAmount
                   } as PaymentType;

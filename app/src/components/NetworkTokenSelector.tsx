@@ -78,7 +78,7 @@ export function NetworkTokenSelector({
     }
 
     setSelectedToken(compatibleTokens[0]);
-  }, [selectedToken, compatibleTokens, chainId]);
+  }, [selectedToken, compatibleTokens, selectedWallet?.network]);
 
   useMemo(() => {
     if (!selectedWallet) {
