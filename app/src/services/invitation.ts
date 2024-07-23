@@ -17,9 +17,9 @@ export async function getAllInvitations(): Promise<InvitationType[] | undefined>
   }
 }
 
-export async function identitiesInvited(identities: Address[]) {
+export async function identitiesInvited(identities: Address[], accessToken?: string) {
   const response = await axios.get(`${API_URL}/api/invitations/identity`, {
-    params: { identities: identities },
+    params: { identities: identities, accessToken },
     paramsSerializer: {
       indexes: null
     },

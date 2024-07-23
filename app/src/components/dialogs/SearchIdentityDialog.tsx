@@ -153,7 +153,8 @@ export default function SearchIdentityDialog({
 
           if (identities.length > 0 && isAuthenticated) {
             const inviteStatuses = await identitiesInvited(
-              identities.map((identity) => identity.data.address)
+              identities.map((identity) => identity.data.address),
+              accessToken
             );
 
             // Update identities in a single pass:
