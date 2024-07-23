@@ -4,17 +4,28 @@ import { API_URL } from '../urlConstants';
 import { ContactsResponseType } from '../../types/ProfleType';
 import { sortBySocialScore } from '../../services/socials';
 
-export const useContacts = (enabled: boolean, bypassCache: boolean = false) => {
+export const useContacts = ({
+  enabled,
+  bypassCache = false,
+  accessToken
+}: {
+  enabled: boolean;
+  bypassCache?: boolean;
+  accessToken?: string;
+}) => {
   return useQuery({
     enabled,
     queryKey: ['contacts'],
     staleTime: Infinity,
     queryFn: () =>
       axios
-        .get(`${API_URL}/api/user/me/contacts`, {
-          headers: { ...(bypassCache && { 'Cache-Control': 'no-cache' }) },
-          withCredentials: true
-        })
+        .get(
+          `${API_URL}/api/user/me/contacts${accessToken ? '?access_token=' + accessToken : ''}`,
+          {
+            headers: { ...(bypassCache && { 'Cache-Control': 'no-cache' }) },
+            withCredentials: true
+          }
+        )
         .then((res) => {
           const response = res.data;
           console.log('Fetched contacts:', response);

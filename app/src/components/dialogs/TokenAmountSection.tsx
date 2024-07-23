@@ -25,7 +25,8 @@ export function TokenAmountSection({
   sendAmount,
   setSendAmount,
   sendAmountUSD,
-  setSendAmountUSD
+  setSendAmountUSD,
+  balanceCheck = true
 }: {
   payment?: PaymentType;
   selectedWallet: FlowWalletType;
@@ -34,6 +35,7 @@ export function TokenAmountSection({
   setSendAmount: React.Dispatch<React.SetStateAction<number | undefined>>;
   sendAmountUSD?: number;
   setSendAmountUSD: React.Dispatch<React.SetStateAction<number | undefined>>;
+  balanceCheck?: boolean;
 }) {
   const { chain } = useAccount();
 
@@ -50,7 +52,7 @@ export function TokenAmountSection({
     chainId: chain?.id,
     token: selectedToken?.tokenAddress,
     query: {
-      enabled: selectedWallet !== undefined && selectedToken !== undefined,
+      enabled: balanceCheck && selectedWallet !== undefined && selectedToken !== undefined,
       gcTime: 5000
     }
   });
@@ -65,17 +67,17 @@ export function TokenAmountSection({
   }, [selectedToken, tokenPrices]);
 
   useEffect(() => {
-    if (selectedToken && balance && selectedTokenPrice) {
+    if (selectedToken && selectedTokenPrice && (!balanceCheck || balance)) {
       if (usdAmountMode === true && sendAmountUSD !== undefined) {
         const amount = parseUnits(
           (sendAmountUSD / selectedTokenPrice).toString(),
-          balance.decimals
+          selectedToken.decimals
         );
-        const balanceEnough = amount <= balance.value;
+        const balanceEnough = !balanceCheck ? true : amount <= (balance?.value ?? 0);
 
         setBalanceEnough(balanceEnough);
         if (balanceEnough) {
-          setSendAmount(parseFloat(formatUnits(amount, balance.decimals)));
+          setSendAmount(parseFloat(formatUnits(amount, selectedToken.decimals)));
         } else {
           setSendAmount(undefined);
         }
@@ -83,7 +85,9 @@ export function TokenAmountSection({
 
       if (usdAmountMode === false && sendAmount !== undefined) {
         const usdAmount = sendAmount * selectedTokenPrice;
-        const balanceEnough = parseUnits(sendAmount.toString(), balance.decimals) <= balance.value;
+        const balanceEnough = !balanceCheck
+          ? true
+          : parseUnits(sendAmount.toString(), selectedToken.decimals) <= (balance?.value ?? 0);
 
         setBalanceEnough(balanceEnough);
         if (balanceEnough) {
@@ -98,6 +102,7 @@ export function TokenAmountSection({
 
     setBalanceEnough(undefined);
   }, [
+    balanceCheck,
     usdAmountMode,
     sendAmountUSD,
     sendAmount,
@@ -195,13 +200,13 @@ export function TokenAmountSection({
             sx={{ border: 1, borderRadius: 10, borderColor: 'divider', px: 2, ml: 2, mr: 1 }}
           />
 
-          {!payment?.token && (
+          {!payment?.token && selectedToken && balanceCheck && (
             <Button
               variant="text"
               size="small"
               onClick={async () => {
                 if (balance && selectedTokenPrice) {
-                  const maxAmount = parseFloat(formatUnits(balance.value, balance.decimals));
+                  const maxAmount = parseFloat(formatUnits(balance.value, selectedToken.decimals));
                   if (usdAmountMode) {
                     setSendAmountUSD(
                       parseFloat(normalizeNumberPrecision(maxAmount * selectedTokenPrice))

@@ -11,7 +11,7 @@ export function useCompatibleWallets({
   recipient,
   payment
 }: {
-  sender: Address | FlowType;
+  sender?: Address | FlowType;
   recipient: SelectedIdentityType;
   payment?: PaymentType;
 }) {

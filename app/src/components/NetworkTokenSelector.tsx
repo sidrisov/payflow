@@ -22,7 +22,8 @@ export function NetworkTokenSelector({
   selectedToken,
   setSelectedToken,
   enabledChainCurrencies,
-  gasFee
+  gasFee,
+  showBalance = true
 }: {
   payment?: PaymentType;
   selectedWallet: FlowWalletType | undefined;
@@ -32,6 +33,7 @@ export function NetworkTokenSelector({
   setSelectedToken: React.Dispatch<React.SetStateAction<Token | undefined>>;
   enabledChainCurrencies?: string[];
   gasFee?: bigint;
+  showBalance?: boolean;
 }) {
   const chainId = useChainId();
 
@@ -48,23 +50,25 @@ export function NetworkTokenSelector({
     chainId,
     token: selectedToken?.tokenAddress,
     query: {
-      enabled: selectedWallet !== undefined && selectedToken !== undefined,
+      enabled: showBalance && selectedWallet !== undefined && selectedToken !== undefined,
       gcTime: 5000
     }
   });
 
   useMemo(async () => {
-    const selectedTokenPrice = selectedToken && tokenPrices?.[selectedToken.id];
-    const maxBalance =
-      isSuccess && balance ? parseFloat(formatUnits(balance.value, balance.decimals)) : 0;
+    if (showBalance) {
+      const selectedTokenPrice = selectedToken && tokenPrices?.[selectedToken.id];
+      const maxBalance =
+        isSuccess && balance ? parseFloat(formatUnits(balance.value, balance.decimals)) : 0;
 
-    const maxBalanceUsd =
-      isSuccess && balance
-        ? parseFloat(formatUnits(balance.value, balance.decimals)) * (selectedTokenPrice ?? 0)
-        : 0;
+      const maxBalanceUsd =
+        isSuccess && balance
+          ? parseFloat(formatUnits(balance.value, balance.decimals)) * (selectedTokenPrice ?? 0)
+          : 0;
 
-    setMaxBalance(normalizeNumberPrecision(maxBalance));
-    setMaxBalanceUsd(normalizeNumberPrecision(maxBalanceUsd));
+      setMaxBalance(normalizeNumberPrecision(maxBalance));
+      setMaxBalanceUsd(normalizeNumberPrecision(maxBalanceUsd));
+    }
   }, [isSuccess, balance, tokenPrices]);
 
   useEffect(() => {
@@ -177,16 +181,18 @@ export function NetworkTokenSelector({
               </Stack>
             </Box>
 
-            <Box
-              display="flex"
-              flexDirection="row"
-              justifyContent="space-between"
-              alignItems="center">
-              <Typography variant="caption">Available</Typography>
-              <Typography variant="caption">
-                {`${maxBalance} ${selectedToken?.name} ≈ $${maxBalanceUsd}`}
-              </Typography>
-            </Box>
+            {showBalance && (
+              <Box
+                display="flex"
+                flexDirection="row"
+                justifyContent="space-between"
+                alignItems="center">
+                <Typography variant="caption">Available</Typography>
+                <Typography variant="caption">
+                  {`${maxBalance} ${selectedToken?.name} ≈ $${maxBalanceUsd}`}
+                </Typography>
+              </Box>
+            )}
             {gasFee !== undefined && (
               <GasFeeSection selectedToken={selectedToken} gasFee={gasFee} />
             )}

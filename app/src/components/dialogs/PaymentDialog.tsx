@@ -52,7 +52,6 @@ export default function PaymentDialog({
 
   return (
     <>
-      recipient && (
       <Dialog
         disableEnforceFocus
         fullScreen={isMobile}
@@ -120,7 +119,7 @@ export default function PaymentDialog({
           </Box>
         </DialogContent>
       </Dialog>
-      )
+
       {flows && selectedFlow && setSelectedFlow && (
         <ChooseFlowMenu
           open={openSelectFlow}

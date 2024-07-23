@@ -1,10 +1,16 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Avatar, Box, Container, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { CropDin } from '@mui/icons-material';
+import { CropDin, Send } from '@mui/icons-material';
 import CastActionButton from '../components/buttons/CastActionButton';
 import { useSearchParams } from 'react-router-dom';
 import PaymentFrameComposerDialog from '../components/dialogs/PaymentFrameComposerDialog';
+import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
+import { ProfileContext } from '../contexts/UserContext';
+import PaymentDialog, { PaymentSenderType } from '../components/dialogs/PaymentDialog';
+import { SelectedIdentityType } from '../types/ProfleType';
+import { Address } from 'viem';
+import PayComposerActionDialog from '../components/dialogs/PayComposerActionDialog';
 
 export default function Composer() {
   const theme = useTheme();
@@ -13,9 +19,15 @@ export default function Composer() {
   const [searchParams] = useSearchParams();
   const action = searchParams.get('action');
 
-  const [openPaymentFrameComposerDialog, setOpenPaymentFrameComposerDialog] = useState<boolean>(
-    action === 'frame'
+  const [openComposerAction, setOpenComposerAction] = useState<string | undefined>(
+    action as string
   );
+
+  const { profile } = useContext(ProfileContext);
+  const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(false);
+
+  const [paymentType, setPaymentType] = useState<PaymentSenderType>();
+  const [recipient, setRecipient] = useState<SelectedIdentityType>();
 
   return (
     <>
@@ -42,24 +54,70 @@ export default function Composer() {
             </Typography>
             <Stack spacing={1} alignItems="center">
               <CastActionButton
-                title="Payment Frame"
-                description="Use this composer action to create a custom payment frame"
-                onClick={() => setOpenPaymentFrameComposerDialog(true)}
+                title="Pay"
+                description="Use this composer action to create a payment frame"
+                onClick={async () => {
+                  setOpenComposerAction('pay');
+                  setOpenSearchIdentity(true);
+                }}
+                startIcon={<Send />}
+              />
+            </Stack>
+            <Stack spacing={1} alignItems="center">
+              <CastActionButton
+                title="Receive Payment"
+                description="Use this composer action to create a custom payment frame to receive payments"
+                onClick={async () => {
+                  setOpenComposerAction('frame');
+                }}
                 startIcon={<CropDin />}
               />
             </Stack>
           </Stack>
         </Box>
       </Container>
-      <PaymentFrameComposerDialog
-        open={openPaymentFrameComposerDialog}
-        closeStateCallback={() => {
-          setOpenPaymentFrameComposerDialog(false);
-        }}
-        onClose={() => {
-          setOpenPaymentFrameComposerDialog(false);
-        }}
-      />
+      {action === 'frame' && (
+        <PaymentFrameComposerDialog
+          open={true}
+          closeStateCallback={() => {
+            setOpenComposerAction(undefined);
+          }}
+          onClose={() => {
+            setOpenComposerAction(undefined);
+          }}
+        />
+      )}
+      {recipient && profile && (
+        <PayComposerActionDialog
+          open={recipient != null}
+          sender={{
+            type: 'profile',
+            identity: {
+              address: profile.identity as Address,
+              profile: profile
+            }
+          }}
+          recipient={recipient}
+          setOpenSearchIdentity={setOpenSearchIdentity}
+          closeStateCallback={async () => {
+            setRecipient(undefined);
+          }}
+        />
+      )}
+
+      {openSearchIdentity && profile && (
+        <SearchIdentityDialog
+          address={profile.identity}
+          open={openSearchIdentity}
+          closeStateCallback={async () => {
+            setOpenSearchIdentity(false);
+          }}
+          selectIdentityCallback={async (recipient) => {
+            setPaymentType('payflow');
+            setRecipient(recipient);
+          }}
+        />
+      )}
     </>
   );
 }

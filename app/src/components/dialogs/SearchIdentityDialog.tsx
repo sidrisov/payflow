@@ -31,6 +31,7 @@ import { AddressBookType } from '../../types/ContactType';
 import { identitiesInvited } from '../../services/invitation';
 import { AddressBookToolBar } from '../chips/AddressBookChip';
 import { useContacts } from '../../utils/queries/contacts';
+import { useSearchParams } from 'react-router-dom';
 
 export type SelectIdentityCallbackType = {
   selectIdentityCallback?: (selectedIdentity: SelectedIdentityType) => void;
@@ -61,6 +62,9 @@ export default function SearchIdentityDialog({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+  const [searchParams] = useSearchParams();
+  const accessToken = searchParams.get('access_token') ?? undefined;
+
   const { isAuthenticated } = useContext(ProfileContext);
 
   const [searchString, setSearchString] = useState<string>();
@@ -79,7 +83,10 @@ export default function SearchIdentityDialog({
 
   const [addressBookView, setAddressBookView] = useState<AddressBookType>('all');
 
-  const { isFetching: isFetchingContacts, data } = useContacts(isAuthenticated);
+  const { isFetching: isFetchingContacts, data } = useContacts({
+    enabled: isAuthenticated,
+    accessToken: accessToken
+  });
 
   const [contacts, setContacts] = useState<ContactType[]>([]);
   const [tags, setTags] = useState<string[]>([]);

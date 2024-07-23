@@ -1,10 +1,11 @@
-import { Box, Menu, MenuItem, MenuProps, Typography } from '@mui/material';
+import { Box, Menu, MenuItem, MenuProps, Stack, Typography } from '@mui/material';
 import { FlowWalletType } from '../../types/FlowType';
 import { Check } from '@mui/icons-material';
 import { shortenWalletAddressLabel } from '../../utils/address';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import NetworkAvatar from '../avatars/NetworkAvatar';
 import { green } from '@mui/material/colors';
+import { getNetworkDisplayName } from '../../utils/networks';
 
 export type ChooseWalletMenuProps = MenuProps &
   CloseCallbackType & {
@@ -31,7 +32,7 @@ export function ChooseWalletMenu({
       }}>
       <MenuItem disabled key="choose_wallet_menu_title">
         <Typography fontWeight="bold" fontSize={15}>
-          Choose Wallet Chain
+          Choose Network
         </Typography>
       </MenuItem>
       {wallets &&
@@ -49,10 +50,10 @@ export function ChooseWalletMenu({
               flexDirection="row"
               alignItems="center"
               justifyContent="space-between">
-              <Box display="flex" flexDirection="row" alignItems="center">
+              <Stack direction="row" justifyContent="flex-start" alignItems="center" spacing={1}>
                 <NetworkAvatar tooltip chainId={wallet.network} sx={{ width: 24, height: 24 }} />
-                <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
-              </Box>
+                <Typography>{getNetworkDisplayName(wallet.network)}</Typography>
+              </Stack>
               {wallet === selectedWallet && <Check sx={{ color: green.A700 }} />}
             </Box>
           </MenuItem>

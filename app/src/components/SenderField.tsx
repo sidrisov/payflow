@@ -18,10 +18,11 @@ import { Toll } from '@mui/icons-material';
 
 export function SenderField({
   sender,
-  setOpenSelectFlow
+  setOpenSelectFlow,
+  displayFlow = true
 }: { sender: SelectedIdentityType } & {
   setOpenSelectFlow?: React.Dispatch<React.SetStateAction<boolean>>;
-}) {
+} & { displayFlow?: boolean }) {
   const { ready, connectWallet } = usePrivy();
   const { wallets } = useWallets();
   const { setActiveWallet } = useSetActiveWallet();
@@ -76,7 +77,7 @@ export function SenderField({
         </Typography>
       )}
 
-      {sender.identity.address && sender.type === 'profile' && (
+      {displayFlow && sender.identity.address && sender.type === 'profile' && (
         <Stack direction="row" spacing={1} alignItems="center">
           <Typography mr={1} variant="caption" fontWeight="bold" maxWidth={150} noWrap>
             {sender.identity.profile?.defaultFlow?.title}
