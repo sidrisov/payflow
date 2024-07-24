@@ -25,13 +25,7 @@ const farcasterAuthConfig = {
 
 export type WalletProviderType = 'privy' | 'rainbowkit';
 
-export default function AppProviders({
-  children,
-  darkMode
-}: {
-  children: React.ReactNode;
-  darkMode?: boolean;
-}) {
+export default function AppProviders({ children }: { children: React.ReactNode }) {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
   /* return WALLET_PROVIDER === 'privy' ? (
@@ -41,7 +35,7 @@ export default function AppProviders({
       {children}
     </RainbowKitAppProviders>
   ); */
-  return <PrivyAppProviders darkMode={darkMode ?? prefersDarkMode}>{children}</PrivyAppProviders>;
+  return <PrivyAppProviders darkMode={prefersDarkMode}>{children}</PrivyAppProviders>;
 }
 
 /* function RainbowKitAppProviders({
@@ -86,7 +80,7 @@ const privyConfig = (darkMode: boolean): PrivyClientConfig => {
       }
     },
     walletConnectCloudProjectId: WALLET_CONNECT_PROJECT_ID,
-    supportedChains: SUPPORTED_CHAINS,
+    supportedChains: SUPPORTED_CHAINS
   };
 };
 
@@ -98,12 +92,7 @@ function PrivyAppProviders({
   darkMode: boolean;
 }) {
   return (
-    <PrivyProvider
-      appId={PRIVY_API_KEY}
-      config={privyConfig(darkMode)}
-      onSuccess={(user, isNewUser) => {
-        console.log('Privy success: ', user, isNewUser);
-      }}>
+    <PrivyProvider appId={PRIVY_API_KEY} config={privyConfig(darkMode)}>
       <QueryClientProvider client={privyQueryClient}>
         <PrivyWagmiProvider config={privyWagmiConfig}>
           <CommonoProviders darkMode={darkMode}>{children}</CommonoProviders>

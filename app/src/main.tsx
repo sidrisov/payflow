@@ -14,18 +14,12 @@ import { HelmetProvider } from 'react-helmet-async';
 
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import AppProviders from './utils/providers';
-import { AppSettings } from './types/AppSettingsType';
 import React from 'react';
-
-const appSettingsStorageItem = localStorage.getItem('appSettings');
-const appSettingsStored = appSettingsStorageItem
-  ? (JSON.parse(appSettingsStorageItem) as AppSettings)
-  : null;
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <HelmetProvider>
-      <AppProviders {...(appSettingsStored?.darkMode && { darkMode: appSettingsStored?.darkMode })}>
+      <AppProviders>
         <RouterProvider router={appRouter} />
       </AppProviders>
     </HelmetProvider>

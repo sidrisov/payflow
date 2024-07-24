@@ -73,7 +73,6 @@ export function ReceiptsSection({ payments, ...props }: { payments?: PaymentType
                   display: 'none' // Hide the scrollbar for IE
                 },
                 '-webkit-overflow-scrolling': 'touch', // Improve scrolling on iOS
-                borderRadius: 20
               }}>
               {payments
                 .slice(0, page * pageSize)

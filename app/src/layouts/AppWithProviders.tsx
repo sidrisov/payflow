@@ -1,6 +1,5 @@
 import App from './App';
 
-import { useMediaQuery } from '@mui/material';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AppSettings } from '../types/AppSettingsType';
 import { me } from '../services/user';
@@ -18,13 +17,8 @@ const appSettingsStored = appSettingsStorageItem
   : null;
 
 export default function AppWithProviders() {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
   const [appSettings, setAppSettings] = useState<AppSettings>(
-    appSettingsStored
-      ? appSettingsStored
-      : {
-          darkMode: prefersDarkMode
-        }
+    appSettingsStored ? appSettingsStored : {}
   );
 
   const fetchingStatusRef = useRef(false);

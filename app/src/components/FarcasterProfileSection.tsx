@@ -41,7 +41,6 @@ export function FarcasterProfileSection({
             display: 'none' // Hide the scrollbar for IE
           },
           '-webkit-overflow-scrolling': 'touch', // Improve scrolling on iOS
-          borderRadius: 20
         }}>
         <Typography noWrap variant="subtitle2" fontSize={fontSize}>
           {social.profileDisplayName}

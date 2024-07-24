@@ -1,3 +1,1 @@
-export interface AppSettings {
-  darkMode: boolean;
-}
+export interface AppSettings {}

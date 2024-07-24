@@ -2,7 +2,7 @@ import { BlurOn, History, Payments, People, Sell, Star } from '@mui/icons-materi
 import { Avatar, Box, Chip, Typography, useMediaQuery } from '@mui/material';
 import { yellow, green, grey, deepPurple, blue, pink, purple } from '@mui/material/colors';
 import { AddressBookType } from '../../types/ContactType';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const contactTypeLabel = (type: AddressBookType) => {
   switch (type) {
@@ -113,10 +113,17 @@ export function AddressBookToolBar({
   const [openSettings, setOpenSettings] = useState<boolean>(false);
   const [settingsAchorEl, setSettingsAchorEl] = useState<null | HTMLElement>(null);
 
+  const boxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (boxRef.current) {
+      boxRef.current.scrollLeft = 0; // Start at the beginning
+    }
+  }, []);
+
   return (
     <Box
-      minWidth={350}
-      maxWidth={450}
+      ref={boxRef}
       my={1}
       mx={0.5}
       display="flex"

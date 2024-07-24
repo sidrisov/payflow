@@ -7,37 +7,16 @@ import { ProfileType } from '../types/ProfleType';
 import { me } from '../services/user';
 import { API_URL } from '../utils/urlConstants';
 import { toast } from 'react-toastify';
-import { AppSettings } from '../types/AppSettingsType';
-import { useMediaQuery } from '@mui/material';
 import { AuthenticationStatus } from '../components/cards/ConnectCard';
 import { usePrivy } from '@privy-io/react-auth';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
 
-const appSettingsStorageItem = localStorage.getItem('appSettings');
-const appSettingsStored = appSettingsStorageItem
-  ? (JSON.parse(appSettingsStorageItem) as AppSettings)
-  : null;
-
 export default function LoginWithProviders() {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const [appSettings] = useState<AppSettings>(
-    appSettingsStored
-      ? appSettingsStored
-      : {
-          darkMode: prefersDarkMode
-        }
-  );
-
   const fetchingStatusRef = useRef(false);
   const verifyingRef = useRef(false);
   const [authStatus, setAuthStatus] = useState<AuthenticationStatus>('loading');
   const [profile, setProfile] = useState<ProfileType>();
-
   const { ready } = usePrivy();
-
-  useMemo(() => {
-    localStorage.setItem('appSettings', JSON.stringify(appSettings));
-  }, [appSettings]);
 
   // Fetch user when:
   useEffect(() => {
@@ -89,6 +68,6 @@ export default function LoginWithProviders() {
   return !ready ? (
     <CenteredCircularProgress />
   ) : (
-    <Login authStatus={authStatus} profile={profile} settings={appSettings} />
+    <Login authStatus={authStatus} profile={profile} />
   );
 }

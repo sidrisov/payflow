@@ -7,17 +7,16 @@ import ProfileOnboardingDialog from '../components/dialogs/ProfileOnboardingDial
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { ProfileType } from '../types/ProfleType';
 import { ConnectCard } from '../components/cards/ConnectCard';
-import { AppSettings } from '../types/AppSettingsType';
 
 export default function Login({
   authStatus,
   profile,
-  settings
 }: {
   authStatus: string;
   profile: ProfileType | undefined;
-  settings: AppSettings;
 }) {
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+
   const [searchParams] = useSearchParams();
   const username = searchParams.get('username');
   const invitationCode = searchParams.get('code');
@@ -39,7 +38,7 @@ export default function Login({
   }, [authStatus, profile]);
 
   return (
-    <CustomThemeProvider darkMode={settings.darkMode}>
+    <CustomThemeProvider darkMode={prefersDarkMode}>
       <Helmet>
         <title> Payflow | Connect </title>
       </Helmet>

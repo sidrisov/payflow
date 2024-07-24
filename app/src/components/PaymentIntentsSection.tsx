@@ -94,8 +94,7 @@ export function PaymentIntentsSection({
                 '&-ms-overflow-style:': {
                   display: 'none' // Hide the scrollbar for IE
                 },
-                '-webkit-overflow-scrolling': 'touch', // Improve scrolling on iOS
-                borderRadius: 20
+                '-webkit-overflow-scrolling': 'touch' // Improve scrolling on iOS
               }}>
               {payments
                 .slice(0, page * pageSize)
