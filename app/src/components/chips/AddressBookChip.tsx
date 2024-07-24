@@ -1,6 +1,6 @@
-import { BlurOn, History, Payments, People, Sell, Star } from '@mui/icons-material';
+import { BlurOn, History, People, Star } from '@mui/icons-material';
 import { Avatar, Box, Chip, Typography, useMediaQuery } from '@mui/material';
-import { yellow, green, grey, deepPurple, blue, pink, purple } from '@mui/material/colors';
+import { grey } from '@mui/material/colors';
 import { AddressBookType } from '../../types/ContactType';
 import { useEffect, useRef, useState } from 'react';
 
@@ -20,21 +20,6 @@ const contactTypeLabel = (type: AddressBookType) => {
       return 'AlfaFrens';
     case 'hypersub':
       return 'Hypersubs';
-  }
-};
-
-const contactTypeColor = (type: AddressBookType) => {
-  switch (type) {
-    case 'favourites':
-      return yellow.A700;
-    case 'friends':
-      return green.A700;
-    case 'farcon':
-      return deepPurple.A100;
-    case 'alfafrens':
-      return blue[400];
-    case 'hypersub':
-      return pink[400];
   }
 };
 
@@ -71,10 +56,7 @@ export function AddressBookChip({
   setAddressBookView
 }: AddressBookChipProps) {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-
-  const color = contactTypeColor(type);
   const bgcolor = grey[prefersDarkMode ? 700 : 200];
-
   return (
     <Chip
       clickable
@@ -87,10 +69,6 @@ export function AddressBookChip({
         </Typography>
       }
       sx={{
-        color,
-        '& .MuiChip-icon': {
-          color
-        },
         bgcolor: addressBookView === type ? bgcolor : 'inherit',
         '&:hover': { bgcolor }
       }}

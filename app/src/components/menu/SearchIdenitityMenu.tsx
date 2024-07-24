@@ -3,7 +3,6 @@ import { People, PersonAdd, Star, StarBorder } from '@mui/icons-material';
 import { IdentityType } from '../../types/ProfleType';
 import { useContext } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
-import { yellow } from '@mui/material/colors';
 
 export function SearchIdentityMenu({
   identity,
@@ -41,11 +40,7 @@ export function SearchIdentityMenu({
           <>
             <MenuItem onClick={onFavouriteClick}>
               <ListItemIcon>
-                {favourite ? (
-                  <Star fontSize="small" sx={{ color: yellow.A700 }} />
-                ) : (
-                  <StarBorder fontSize="small" />
-                )}
+                {favourite ? <Star fontSize="small" /> : <StarBorder fontSize="small" />}
               </ListItemIcon>
               {favourite ? 'Remove from favourites' : 'Add to favourites'}
             </MenuItem>
