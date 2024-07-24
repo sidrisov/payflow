@@ -5,10 +5,8 @@ import {
   Box,
   Container,
   FormControl,
-  FormControlLabel,
   FormGroup,
-  FormLabel,
-  Switch} from '@mui/material';
+  FormLabel} from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 
 export default function Settings() {
@@ -33,22 +31,7 @@ export default function Settings() {
           }}>
           <FormControl sx={{ m: 1, p: 1 }}>
             <FormLabel>User Interface</FormLabel>
-            <FormGroup sx={{ m: 1 }}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={appSettings.darkMode}
-                    onChange={() => {
-                      setAppSettings({
-                        ...appSettings,
-                        darkMode: !appSettings.darkMode
-                      });
-                    }}
-                  />
-                }
-                label="Dark Theme"
-              />
-            </FormGroup>
+            <FormGroup sx={{ m: 1 }}></FormGroup>
           </FormControl>
         </Box>
       </Container>

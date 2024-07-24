@@ -2,20 +2,14 @@ import { Divider, ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material'
 import { IdentityType } from '../../types/ProfleType';
 import {
   AccountBalanceWallet,
-  DarkModeOutlined,
-  LightModeOutlined,
   Logout
 } from '@mui/icons-material';
-import { useContext } from 'react';
-import { ProfileContext } from '../../contexts/UserContext';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { AddressSection } from '../AddressSection';
 import { useAccount, useDisconnect } from 'wagmi';
 import { usePrivy } from '@privy-io/react-auth';
 
 export function WalletMenu({ closeStateCallback, ...props }: MenuProps & CloseCallbackType) {
-  const { appSettings, setAppSettings } = useContext(ProfileContext);
-
   const { disconnectAsync } = useDisconnect();
   const { address, isConnected } = useAccount();
   const { connectWallet } = usePrivy();
@@ -46,19 +40,6 @@ export function WalletMenu({ closeStateCallback, ...props }: MenuProps & CloseCa
         </MenuItem>
       )}
       <Divider />
-      <MenuItem
-        onClick={() => {
-          setAppSettings({ ...appSettings, darkMode: !appSettings.darkMode });
-        }}>
-        <ListItemIcon>
-          {appSettings.darkMode ? (
-            <DarkModeOutlined fontSize="small" />
-          ) : (
-            <LightModeOutlined fontSize="small" />
-          )}
-        </ListItemIcon>
-        {appSettings.darkMode ? 'Dark' : 'Light'}
-      </MenuItem>
       {isConnected && (
         <div>
           <Divider />

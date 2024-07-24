@@ -8,9 +8,7 @@ import {
   useMediaQuery,
   useTheme
 } from '@mui/material';
-import { useContext } from 'react';
 import { green, grey } from '@mui/material/colors';
-import { ProfileContext } from '../contexts/UserContext';
 
 export function PublicSearchPay({
   setOpenSearchIdentity
@@ -19,10 +17,7 @@ export function PublicSearchPay({
 }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-  const {
-    appSettings: { darkMode }
-  } = useContext(ProfileContext);
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
   return (
     <Box
@@ -77,7 +72,7 @@ export function PublicSearchPay({
           }}
           sx={{
             border: 2,
-            backgroundColor: darkMode ? grey[800] : grey[50],
+            backgroundColor: prefersDarkMode ? grey[800] : grey[50],
             borderStyle: 'dotted',
             borderColor: 'divider',
             borderRadius: 10,
