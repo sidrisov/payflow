@@ -127,7 +127,7 @@ export function TokenAmountSection({
           flexDirection="row"
           justifyContent="space-evenly"
           alignItems="center">
-          <Box width={65} />
+          {!payment?.token && <Box width={65} />}
           <TextField
             // don't auto focus if it's pending payment
             {...(!payment?.token && { autoFocus: true, focused: true })}
