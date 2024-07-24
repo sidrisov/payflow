@@ -10,7 +10,6 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
     <Menu
       {...props}
       sx={{ mt: 1, '.MuiMenu-paper': { borderRadius: 5 } }}
-      style={{ borderRadius: '50px' }}
       transformOrigin={{ horizontal: 'left', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
       {payment.source && payment.source.app && (

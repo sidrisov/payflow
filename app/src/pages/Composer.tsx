@@ -7,7 +7,6 @@ import { useSearchParams } from 'react-router-dom';
 import PaymentFrameComposerDialog from '../components/dialogs/PaymentFrameComposerDialog';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import { ProfileContext } from '../contexts/UserContext';
-import PaymentDialog, { PaymentSenderType } from '../components/dialogs/PaymentDialog';
 import { SelectedIdentityType } from '../types/ProfleType';
 import { Address } from 'viem';
 import PayComposerActionDialog from '../components/dialogs/PayComposerActionDialog';
@@ -35,6 +34,52 @@ export default function Composer() {
       <Helmet>
         <title> Payflow | Composer Actions </title>
       </Helmet>
+
+      {openComposerAction === 'frame' && (
+        <PaymentFrameComposerDialog
+          open={true}
+          closeStateCallback={() => {
+            setOpenComposerAction(undefined);
+          }}
+          onClose={() => {
+            setOpenComposerAction(undefined);
+          }}
+        />
+      )}
+
+      {openComposerAction === 'pay' && recipient && profile && (
+        <PayComposerActionDialog
+          open={recipient != null}
+          sender={{
+            type: 'profile',
+            identity: {
+              address: profile.identity as Address,
+              profile: profile
+            }
+          }}
+          recipient={recipient}
+          setOpenSearchIdentity={setOpenSearchIdentity}
+          closeStateCallback={async () => {
+            setRecipient(undefined);
+          }}
+        />
+      )}
+
+      {openSearchIdentity && profile && (
+        <SearchIdentityDialog
+          hideBackButton={!Boolean(recipient)}
+          title="Search Recipient"
+          address={profile.identity}
+          open={openSearchIdentity}
+          closeStateCallback={async () => {
+            setOpenSearchIdentity(false);
+          }}
+          selectIdentityCallback={async (recipient) => {
+            setRecipient(recipient);
+          }}
+        />
+      )}
+
       <Container maxWidth="xs" sx={{ height: '100%' }}>
         <Box
           height="100%"
@@ -77,47 +122,6 @@ export default function Composer() {
           </Stack>
         </Box>
       </Container>
-      {openComposerAction === 'frame' && (
-        <PaymentFrameComposerDialog
-          open={true}
-          closeStateCallback={() => {
-            setOpenComposerAction(undefined);
-          }}
-          onClose={() => {
-            setOpenComposerAction(undefined);
-          }}
-        />
-      )}
-      {openComposerAction === 'pay' && recipient && profile && (
-        <PayComposerActionDialog
-          open={recipient != null}
-          sender={{
-            type: 'profile',
-            identity: {
-              address: profile.identity as Address,
-              profile: profile
-            }
-          }}
-          recipient={recipient}
-          setOpenSearchIdentity={setOpenSearchIdentity}
-          closeStateCallback={async () => {
-            setRecipient(undefined);
-          }}
-        />
-      )}
-
-      {openSearchIdentity && profile && (
-        <SearchIdentityDialog
-          address={profile.identity}
-          open={openSearchIdentity}
-          closeStateCallback={async () => {
-            setOpenSearchIdentity(false);
-          }}
-          selectIdentityCallback={async (recipient) => {
-            setRecipient(recipient);
-          }}
-        />
-      )}
     </>
   );
 }

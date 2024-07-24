@@ -32,6 +32,7 @@ import { identitiesInvited } from '../../services/invitation';
 import { AddressBookToolBar } from '../chips/AddressBookChip';
 import { useContacts } from '../../utils/queries/contacts';
 import { useSearchParams } from 'react-router-dom';
+import { grey } from '@mui/material/colors';
 
 export type SelectIdentityCallbackType = {
   selectIdentityCallback?: (selectedIdentity: SelectedIdentityType) => void;
@@ -48,7 +49,7 @@ export type SearchIdentityDialogProps = DialogProps &
     address?: Address;
     profileRedirect?: boolean;
     walletMenuEnabled?: boolean;
-  };
+  } & { hideBackButton?: boolean };
 
 // TODO: back button + title alignment hack - check with someone knowledgeable on proper solution
 export default function SearchIdentityDialog({
@@ -57,6 +58,8 @@ export default function SearchIdentityDialog({
   walletMenuEnabled,
   closeStateCallback,
   selectIdentityCallback,
+  title,
+  hideBackButton = false,
   ...props
 }: SearchIdentityDialogProps) {
   const theme = useTheme();
@@ -242,16 +245,22 @@ export default function SearchIdentityDialog({
             flexDirection="row"
             alignItems="center"
             justifyContent={
-              walletMenuEnabled ? 'space-between' : isMobile ? 'flex-start' : 'center'
+              walletMenuEnabled
+                ? 'space-between'
+                : isMobile && !hideBackButton
+                ? 'flex-start'
+                : 'center'
             }>
             <Stack direction="row" alignItems="center">
-              {isMobile && (
+              {isMobile && !hideBackButton && (
                 <IconButton onClick={closeStateCallback}>
                   <ArrowBack />
                 </IconButton>
               )}
-              <Typography ml={isMobile ? 2 : walletMenuEnabled ? 1 : 0} variant="h6">
-                Search
+              <Typography
+                ml={isMobile && !hideBackButton ? 2 : walletMenuEnabled ? 1 : 0}
+                variant="h6">
+                {title ?? 'Search'}
               </Typography>
             </Stack>
 
@@ -313,9 +322,7 @@ export default function SearchIdentityDialog({
           {(isSearchingContacts || isFetchingContacts) && (
             <Stack direction="row" m={1} alignSelf="center" alignItems="center" spacing={1}>
               <CircularProgress color="inherit" size={20} />
-              <Typography>
-                {isSearchingContacts ? 'Fetching results' : 'Syncing Contacts'}
-              </Typography>
+              <Typography>{isSearchingContacts ? 'Searching' : 'Syncing Contacts'}</Typography>
             </Stack>
           )}
         </Stack>

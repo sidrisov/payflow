@@ -13,7 +13,6 @@ export function FlowTopUpMenu({
     <Menu
       {...props}
       sx={{ mt: 1, '.MuiMenu-paper': { borderRadius: 5 } }}
-      style={{ borderRadius: '50px' }}
       transformOrigin={{ horizontal: 'left', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
       <MenuItem onClick={depositClickCallback}>

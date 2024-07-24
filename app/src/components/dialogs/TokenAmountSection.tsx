@@ -127,16 +127,7 @@ export function TokenAmountSection({
           flexDirection="row"
           justifyContent="space-evenly"
           alignItems="center">
-          {!payment?.token && (
-            <IconButton
-              size="small"
-              sx={{ color: grey[400] }}
-              onClick={async () => {
-                setUsdAmountMode(!usdAmountMode);
-              }}>
-              <SwapVert fontSize="small" />
-            </IconButton>
-          )}
+          <Box width={65} />
           <TextField
             // don't auto focus if it's pending payment
             {...(!payment?.token && { autoFocus: true, focused: true })}
@@ -237,16 +228,28 @@ export function TokenAmountSection({
             </Typography>
           </Stack>
         ) : (
-          <Typography
-            fontSize={14}
-            fontWeight="bold"
-            textOverflow="ellipsis"
-            overflow="auto"
-            textAlign="center">
-            {usdAmountMode
-              ? `${normalizeNumberPrecision(sendAmount ?? 0)} ${selectedToken?.id.toUpperCase()}`
-              : `$ ${normalizeNumberPrecision(sendAmountUSD ?? 0)}`}
-          </Typography>
+          <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
+            <Typography
+              fontSize={14}
+              fontWeight="bold"
+              textOverflow="ellipsis"
+              overflow="auto"
+              textAlign="center">
+              {usdAmountMode
+                ? `${normalizeNumberPrecision(sendAmount ?? 0)} ${selectedToken?.id.toUpperCase()}`
+                : `$ ${normalizeNumberPrecision(sendAmountUSD ?? 0)}`}
+            </Typography>
+            {!payment?.token && (
+              <IconButton
+                size="small"
+                sx={{ color: grey[400] }}
+                onClick={async () => {
+                  setUsdAmountMode(!usdAmountMode);
+                }}>
+                <SwapVert fontSize="small" />
+              </IconButton>
+            )}
+          </Stack>
         )}
       </Stack>
     </Box>
