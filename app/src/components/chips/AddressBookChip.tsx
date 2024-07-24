@@ -117,12 +117,13 @@ export function AddressBookToolBar({
 
   useEffect(() => {
     if (boxRef.current) {
-      boxRef.current.scrollLeft = 0; // Start at the beginning
+      boxRef.current.scrollTo({ left: 0, behavior: 'smooth' });
     }
   }, []);
 
   return (
     <Box
+      width="100%"
       ref={boxRef}
       my={1}
       mx={0.5}
