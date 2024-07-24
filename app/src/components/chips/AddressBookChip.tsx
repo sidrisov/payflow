@@ -1,5 +1,5 @@
 import { BlurOn, History, Payments, People, Sell, Star } from '@mui/icons-material';
-import { Avatar, Box, Chip, Typography } from '@mui/material';
+import { Avatar, Box, Chip, Typography, useMediaQuery } from '@mui/material';
 import { yellow, green, grey, deepPurple, blue, pink, purple } from '@mui/material/colors';
 import { AddressBookType } from '../../types/ContactType';
 import { useState } from 'react';
@@ -70,8 +70,10 @@ export function AddressBookChip({
   addressBookView,
   setAddressBookView
 }: AddressBookChipProps) {
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+
   const color = contactTypeColor(type);
-  const bgcolor = grey[700];
+  const bgcolor = grey[prefersDarkMode ? 700 : 200];
 
   return (
     <Chip
