@@ -81,7 +81,20 @@ export function PaymentIntentsSection({
             </IconButton>
           </Box>
           {expand && (
-            <Stack p={2} direction="row" spacing={3} overflow="auto">
+            <Stack
+              p={2}
+              direction="row"
+              spacing={3}
+              sx={{
+                overflow: 'scroll',
+                scrollbarWidth: 'auto', // Hide the scrollbar for firefox
+                '&::-webkit-scrollbar': {
+                  display: 'none' // Hide the scrollbar for WebKit browsers (Chrome, Safari, Edge, etc.)
+                },
+                '&-ms-overflow-style:': {
+                  display: 'none' // Hide the scrollbar for IE
+                }
+              }}>
               {payments
                 .slice(0, page * pageSize)
                 .map((payment, index) =>

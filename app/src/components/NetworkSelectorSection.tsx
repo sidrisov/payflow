@@ -14,7 +14,21 @@ export default function NetworkSelectorSection({
   setSelectedNetwork: React.Dispatch<React.SetStateAction<Chain | undefined>>;
 }) {
   return (
-    <Stack p={1} direction="row" spacing={1} overflow="auto" {...props}>
+    <Stack
+      p={1}
+      direction="row"
+      spacing={1}
+      {...props}
+      sx={{
+        overflow: 'scroll',
+        scrollbarWidth: 'auto', // Hide the scrollbar for firefox
+        '&::-webkit-scrollbar': {
+          display: 'none' // Hide the scrollbar for WebKit browsers (Chrome, Safari, Edge, etc.)
+        },
+        '&-ms-overflow-style:': {
+          display: 'none' // Hide the scrollbar for IE
+        }
+      }}>
       <NetworkSelectorChip
         key={'network_selector_section_all'}
         selectedNetwork={selectedNetwork}
