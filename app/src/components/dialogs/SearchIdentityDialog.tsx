@@ -322,7 +322,7 @@ export default function SearchIdentityDialog({
           {(isSearchingContacts || isFetchingContacts) && (
             <Stack direction="row" m={1} alignSelf="center" alignItems="center" spacing={1}>
               <CircularProgress color="inherit" size={20} />
-              <Typography>{isSearchingContacts ? 'Searching' : 'Syncing Contacts'}</Typography>
+              <Typography>{isSearchingContacts ? 'Searching' : 'Syncing contacts'}</Typography>
             </Stack>
           )}
         </Stack>

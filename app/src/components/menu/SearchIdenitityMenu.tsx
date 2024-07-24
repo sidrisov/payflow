@@ -49,7 +49,7 @@ export function SearchIdentityMenu({
               </ListItemIcon>
               {favourite ? 'Remove from favourites' : 'Add to favourites'}
             </MenuItem>
-            {!identity.invited && !identity.profile && (
+            {onInviteClick && !identity.invited && !identity.profile && (
               <MenuItem onClick={onInviteClick} sx={{ fontSize: 14 }}>
                 <ListItemIcon>
                   <PersonAdd fontSize="small" />

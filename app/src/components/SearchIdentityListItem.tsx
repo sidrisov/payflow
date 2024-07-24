@@ -5,26 +5,24 @@ import {
   BoxProps,
   Avatar,
   IconButton,
-  Tooltip,
   Typography,
   Popover
 } from '@mui/material';
 import { ContactType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
-import { comingSoonToast } from './Toasts';
 import { useContext, useState } from 'react';
 import { ProfileContext } from '../contexts/UserContext';
 import axios from 'axios';
 import { API_URL } from '../utils/urlConstants';
 import { toast } from 'react-toastify';
 import { shortenWalletAddressLabel } from '../utils/address';
-import { green, grey, yellow } from '@mui/material/colors';
 import { useAccount } from 'wagmi';
 import { UpdateIdentityCallbackType } from './dialogs/SearchIdentityDialog';
 import { SocialPresenceStack } from './SocialPresenceStack';
-import { MoreHoriz, Star, StarBorder, TipsAndUpdatesTwoTone } from '@mui/icons-material';
+import { MoreHoriz } from '@mui/icons-material';
 import { SearchIdentityMenu } from './menu/SearchIdenitityMenu';
+import { useSearchParams } from 'react-router-dom';
 
 function addToFavourites(tags: string[]): string[] {
   const updatedTags = tags ?? [];
@@ -47,6 +45,9 @@ export function SearchIdentityListItem(
       view: 'address' | 'profile';
     }
 ) {
+  const [searchParams] = useSearchParams();
+  const accessToken = searchParams.get('access_token') ?? '';
+
   const { profile } = useContext(ProfileContext);
   const { contact, view, updateIdentityCallback } = props;
 
@@ -61,19 +62,14 @@ export function SearchIdentityListItem(
   const [identityMenuAnchorEl, setIdentityMenuAnchorEl] = useState<null | HTMLElement>(null);
 
   const inviteClickHandler = async () => {
-    if (profile?.identityInviteLimit === -1) {
-      comingSoonToast();
-      return;
-    }
-
-    if (profile?.identityInviteLimit === 0) {
+    if (profile?.identityInviteLimit === 0 || profile?.identityInviteLimit === 1) {
       toast.warn("You don't have any invites");
       return;
     }
 
     try {
       await axios.post(
-        `${API_URL}/api/invitations`,
+        `${API_URL}/api/invitations${accessToken ? '?access_token=' + accessToken : ''}`,
         {
           identityBased: identity.address
         },
@@ -105,9 +101,13 @@ export function SearchIdentityListItem(
 
       console.log('Before vs after: ', contact, updatedContact);
 
-      await axios.post(`${API_URL}/api/user/me/favourites`, updatedContact, {
-        withCredentials: true
-      });
+      await axios.post(
+        `${API_URL}/api/user/me/favourites${accessToken ? '?access_token=' + accessToken : ''}`,
+        updatedContact,
+        {
+          withCredentials: true
+        }
+      );
 
       updateIdentityCallback?.({ contact: updatedContact });
     } catch (error) {
@@ -175,7 +175,9 @@ export function SearchIdentityListItem(
         <SearchIdentityMenu
           open={true}
           identity={identity}
-          onInviteClick={inviteClickHandler}
+          {...((profile?.identityInviteLimit ?? 0 > 0) && {
+            onInviteClick: inviteClickHandler
+          })}
           onFavouriteClick={favouriteClickHandler}
           onSocilLinksClick={socialLinksClickHandler}
           favourite={favourite}
