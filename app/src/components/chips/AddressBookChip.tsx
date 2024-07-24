@@ -124,7 +124,7 @@ export function AddressBookToolBar({
       alignItems="center"
       justifyContent="space-evenly"
       sx={{
-        overflow: 'scroll',
+        overflowX: 'scroll',
         scrollbarWidth: 'auto', // Hide the scrollbar for firefox
         '&::-webkit-scrollbar': {
           display: 'none' // Hide the scrollbar for WebKit browsers (Chrome, Safari, Edge, etc.)
@@ -132,6 +132,7 @@ export function AddressBookToolBar({
         '&-ms-overflow-style:': {
           display: 'none' // Hide the scrollbar for IE
         },
+        '-webkit-overflow-scrolling': 'touch', // Improve scrolling on iOS
         borderRadius: 20
       }}
       gap={0.5}>

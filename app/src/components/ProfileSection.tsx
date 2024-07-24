@@ -28,15 +28,17 @@ export function ProfileSection({
         minWidth={75}
         spacing={0.1}
         alignItems="flex-start"
-        overflow="auto"
         sx={{
-          scrollbarWidth: 'none', // Hide the scrollbar for firefox
+          overflowX: 'scroll',
+          scrollbarWidth: 'auto', // Hide the scrollbar for firefox
           '&::-webkit-scrollbar': {
             display: 'none' // Hide the scrollbar for WebKit browsers (Chrome, Safari, Edge, etc.)
           },
           '&-ms-overflow-style:': {
             display: 'none' // Hide the scrollbar for IE
-          }
+          },
+          '-webkit-overflow-scrolling': 'touch', // Improve scrolling on iOS
+          borderRadius: 20
         }}>
         <Typography noWrap variant="subtitle2" fontSize={fontSize}>
           {profile?.displayName}

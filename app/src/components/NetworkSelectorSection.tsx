@@ -20,14 +20,16 @@ export default function NetworkSelectorSection({
       spacing={1}
       {...props}
       sx={{
-        overflow: 'scroll',
+        overflowX: 'scroll',
         scrollbarWidth: 'auto', // Hide the scrollbar for firefox
         '&::-webkit-scrollbar': {
           display: 'none' // Hide the scrollbar for WebKit browsers (Chrome, Safari, Edge, etc.)
         },
         '&-ms-overflow-style:': {
           display: 'none' // Hide the scrollbar for IE
-        }
+        },
+        '-webkit-overflow-scrolling': 'touch', // Improve scrolling on iOS
+        borderRadius: 20
       }}>
       <NetworkSelectorChip
         key={'network_selector_section_all'}
