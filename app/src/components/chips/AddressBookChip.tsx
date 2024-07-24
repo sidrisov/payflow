@@ -113,101 +113,86 @@ export function AddressBookToolBar({
   const [openSettings, setOpenSettings] = useState<boolean>(false);
   const [settingsAchorEl, setSettingsAchorEl] = useState<null | HTMLElement>(null);
 
-  console.log('tags, ', tags);
-
   return (
     <Box
+      minWidth={350}
+      maxWidth={450}
       my={1}
+      mx={0.5}
       display="flex"
       flexDirection="row"
       alignItems="center"
-      justifyContent="center"
+      justifyContent="space-evenly"
+      sx={{
+        overflow: 'scroll',
+        scrollbarWidth: 'auto', // Hide the scrollbar for firefox
+        '&::-webkit-scrollbar': {
+          display: 'none' // Hide the scrollbar for WebKit browsers (Chrome, Safari, Edge, etc.)
+        },
+        '&-ms-overflow-style:': {
+          display: 'none' // Hide the scrollbar for IE
+        },
+        borderRadius: 20
+      }}
       gap={0.5}>
-      <Box
-        mx={0.5}
-        display="flex"
-        flexDirection="row"
-        alignItems="center"
-        justifyContent="space-evenly"
-        sx={{
-          overflow: 'scroll',
-          scrollbarWidth: 'auto', // Hide the scrollbar for firefox
-          '&::-webkit-scrollbar': {
-            display: 'none' // Hide the scrollbar for WebKit browsers (Chrome, Safari, Edge, etc.)
-          },
-          '&-ms-overflow-style:': {
-            display: 'none' // Hide the scrollbar for IE
-          },
-          borderRadius: 20
-        }}
-        gap={0.5}>
+      <AddressBookChip
+        key="all"
+        type="all"
+        addressBookView={addressBookView}
+        setAddressBookView={setAddressBookView}
+      />
+      {tags.includes('recent') && (
         <AddressBookChip
-          key="all"
-          type="all"
+          key="recent"
+          type="recent"
           addressBookView={addressBookView}
           setAddressBookView={setAddressBookView}
         />
-        {tags.includes('recent') && (
-          <AddressBookChip
-            key="recent"
-            type="recent"
-            addressBookView={addressBookView}
-            setAddressBookView={setAddressBookView}
-          />
-        )}
-        {tags.includes('favourites') && (
-          <AddressBookChip
-            key="favourites"
-            type="favourites"
-            addressBookView={addressBookView}
-            setAddressBookView={setAddressBookView}
-          />
-        )}
+      )}
+      {tags.includes('favourites') && (
         <AddressBookChip
-          key="friends"
-          type="friends"
+          key="favourites"
+          type="favourites"
           addressBookView={addressBookView}
           setAddressBookView={setAddressBookView}
         />
-        {tags.includes('hypersub') && (
-          <AddressBookChip
-            key="hypersub"
-            type="hypersub"
-            addressBookView={addressBookView}
-            setAddressBookView={setAddressBookView}
-          />
-        )}
-        {tags.includes('alfafrens') && (
-          <AddressBookChip
-            key="alfafrens"
-            type="alfafrens"
-            addressBookView={addressBookView}
-            setAddressBookView={setAddressBookView}
-          />
-        )}
-        {/* {tags.includes('farcon') && (
-          <AddressBookChip
-            key="farcon"
-            type="farcon"
-            addressBookView={addressBookView}
-            setAddressBookView={setAddressBookView}
-          />
-        )} */}
-      </Box>
-      {/*       <IconButton
+      )}
+      <AddressBookChip
+        key="friends"
+        type="friends"
+        addressBookView={addressBookView}
+        setAddressBookView={setAddressBookView}
+      />
+      {tags.includes('hypersub') && (
+        <AddressBookChip
+          key="hypersub"
+          type="hypersub"
+          addressBookView={addressBookView}
+          setAddressBookView={setAddressBookView}
+        />
+      )}
+      {tags.includes('alfafrens') && (
+        <AddressBookChip
+          key="alfafrens"
+          type="alfafrens"
+          addressBookView={addressBookView}
+          setAddressBookView={setAddressBookView}
+        />
+      )}
+    </Box>
+    /*       <IconButton
         size="small"
         onClick={(event) => {
           setSettingsAchorEl(event.currentTarget);
           setOpenSettings(true);
         }}>
         <Settings fontSize="small" />
-      </IconButton> */}
+      </IconButton> */
 
-      {/* <ContactSearchSettings
+    /* <ContactSearchSettings
         open={openSettings}
         onClose={async () => setOpenSettings(false)}
         anchorEl={settingsAchorEl}
-      /> */}
-    </Box>
+      /> */
   );
 }
