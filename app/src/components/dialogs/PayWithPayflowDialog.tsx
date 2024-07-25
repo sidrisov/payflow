@@ -55,7 +55,7 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
 
   const toAddress = useToAddress({ recipient, selectedWallet });
 
-  const [sendAmount, setSendAmount] = useState<number | undefined>(payment?.tokenAmount);
+  const [sendAmount, setSendAmount] = useState<number | undefined>(payment?.tokenAmount ?? 0);
   const [sendAmountUSD, setSendAmountUSD] = useState<number | undefined>(payment?.usdAmount);
   const sendToastId = useRef<Id>();
 

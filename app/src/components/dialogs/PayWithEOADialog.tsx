@@ -33,7 +33,7 @@ export default function PayWithEOADialog({ sender, recipient, payment }: Payment
 
   const toAddress = useToAddress({ recipient, selectedWallet });
 
-  const [sendAmount, setSendAmount] = useState<number>();
+  const [sendAmount, setSendAmount] = useState<number | undefined>(0);
   const [sendAmountUSD, setSendAmountUSD] = useState<number | undefined>(payment?.usdAmount);
 
   const [gasFee] = useState<bigint | undefined>();
