@@ -26,6 +26,8 @@ const contactTypeLabel = (type: AddressBookType) => {
 };
 
 const contactTypeIcon = (type: AddressBookType, selectedType: AddressBookType) => {
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+
   const fontSize = selectedType === type ? 'medium' : 'small';
   const avatarSize = selectedType === type ? { width: 22, height: 22 } : { width: 18, height: 18 };
   switch (type) {
@@ -44,7 +46,13 @@ const contactTypeIcon = (type: AddressBookType, selectedType: AddressBookType) =
     case 'hypersub':
       return <Avatar variant="circular" src="/fabric.png" sx={{ ...avatarSize }} />;
     case 'paragraph':
-      return <Avatar variant="square" src="/paragraph.png" sx={{ ...avatarSize }} />;
+      return (
+        <Avatar
+          variant="square"
+          src="/paragraph.png"
+          sx={{ ...avatarSize, backgroundColor: prefersDarkMode ? 'inherit' : grey[700] }}
+        />
+      );
   }
 };
 

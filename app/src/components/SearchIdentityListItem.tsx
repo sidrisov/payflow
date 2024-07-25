@@ -6,7 +6,8 @@ import {
   Avatar,
   IconButton,
   Typography,
-  Popover
+  Popover,
+  useMediaQuery
 } from '@mui/material';
 import { ContactType } from '../types/ProfleType';
 import { ProfileSection } from './ProfileSection';
@@ -23,6 +24,7 @@ import { SocialPresenceStack } from './SocialPresenceStack';
 import { MoreHoriz } from '@mui/icons-material';
 import { SearchIdentityMenu } from './menu/SearchIdenitityMenu';
 import { useSearchParams } from 'react-router-dom';
+import { grey } from '@mui/material/colors';
 
 function addToFavourites(tags: string[]): string[] {
   const updatedTags = tags ?? [];
@@ -45,6 +47,8 @@ export function SearchIdentityListItem(
       view: 'address' | 'profile';
     }
 ) {
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+
   const [searchParams] = useSearchParams();
   const accessToken = searchParams.get('access_token') ?? '';
 
@@ -257,15 +261,23 @@ export function SearchIdentityListItem(
                   <Stack spacing={1} direction="row" alignItems="center">
                     <Avatar src="/fabric.png" sx={{ width: 15, height: 15 }} />
                     <Typography variant="caption" fontWeight="bold">
-                      Fabric Subscriber
+                      Fabric subscriber
                     </Typography>
                   </Stack>
                 )}
                 {tags?.includes('paragraph') && (
                   <Stack spacing={1} direction="row" alignItems="center">
-                    <Avatar variant='square' src="/paragraph.png" sx={{ width: 15, height: 15 }} />
+                    <Avatar
+                      variant="square"
+                      src="/paragraph.png"
+                      sx={{
+                        width: 15,
+                        height: 15,
+                        backgroundColor: prefersDarkMode ? 'inherit' : grey[700]
+                      }}
+                    />
                     <Typography variant="caption" fontWeight="bold">
-                      Paragraph Subscriber
+                      Paragraph subscriber
                     </Typography>
                   </Stack>
                 )}
