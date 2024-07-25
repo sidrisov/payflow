@@ -27,6 +27,7 @@ import { submitPayment } from '../../services/payments';
 import { toast } from 'react-toastify';
 import { FARCASTER_DAPP } from '../../utils/dapps';
 import { useSearchParams } from 'react-router-dom';
+import { normalizeNumberPrecision } from '../../utils/formats';
 
 export type PaymentSenderType = 'payflow' | 'wallet' | 'none';
 
@@ -155,7 +156,7 @@ export default function PayComposerActionDialog({
                     receiverAddress: toAddress,
                     chainId: selectedToken?.chainId,
                     token: selectedToken?.id,
-                    tokenAmount: sendAmount
+                    tokenAmount: parseFloat(normalizeNumberPrecision(sendAmount ?? 0))
                   } as PaymentType;
 
                   console.log('Submitting payment: ', newPayment);

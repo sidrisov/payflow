@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Avatar, Box, Container, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { CropDin, Send } from '@mui/icons-material';
@@ -10,6 +10,7 @@ import { ProfileContext } from '../contexts/UserContext';
 import { SelectedIdentityType } from '../types/ProfleType';
 import { Address } from 'viem';
 import PayComposerActionDialog from '../components/dialogs/PayComposerActionDialog';
+import { useIdentity } from '../utils/queries/profiles';
 
 export default function Composer() {
   const theme = useTheme();
@@ -17,6 +18,11 @@ export default function Composer() {
 
   const [searchParams] = useSearchParams();
   const action = searchParams.get('action');
+  const recipientIdentity = searchParams.get('recipient');
+
+  const { isLoading: isRecipientFetchingLoading, data: fetchedRecipientIdentity } = useIdentity(
+    recipientIdentity as string
+  );
 
   const [openComposerAction, setOpenComposerAction] = useState<string | undefined>(
     action as string
@@ -24,10 +30,19 @@ export default function Composer() {
 
   const { profile } = useContext(ProfileContext);
   const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(
-    openComposerAction === 'pay'
+    openComposerAction === 'pay' && !isRecipientFetchingLoading
   );
 
   const [recipient, setRecipient] = useState<SelectedIdentityType>();
+
+  useEffect(() => {
+    if (fetchedRecipientIdentity) {
+      setRecipient({
+        identity: fetchedRecipientIdentity,
+        type: fetchedRecipientIdentity.profile ? 'profile' : 'address'
+      });
+    }
+  }, [isRecipientFetchingLoading, fetchedRecipientIdentity]);
 
   return (
     <>
@@ -80,48 +95,50 @@ export default function Composer() {
         />
       )}
 
-      <Container maxWidth="xs" sx={{ height: '100%' }}>
-        <Box
-          height="100%"
-          display="flex"
-          flexDirection="column"
-          justifyContent={isMobile ? 'space-between' : 'flex-start'}
-          sx={{ p: 3 }}>
-          <Stack
-            p={3}
-            spacing={3}
-            alignItems="center"
-            border={1.5}
-            borderRadius={5}
-            borderColor="divider">
-            <Avatar src="/farcaster.svg" variant="rounded" />
-            <Typography variant="h6" align="center">
-              Farcaster Composer Actions
-            </Typography>
-            <Stack spacing={1} alignItems="center">
-              <CastActionButton
-                title="Pay"
-                description="Use this composer action to create a payment frame"
-                onClick={async () => {
-                  setOpenComposerAction('pay');
-                  setOpenSearchIdentity(true);
-                }}
-                startIcon={<Send />}
-              />
+      {!action && (
+        <Container maxWidth="xs" sx={{ height: '100%' }}>
+          <Box
+            height="100%"
+            display="flex"
+            flexDirection="column"
+            justifyContent={isMobile ? 'space-between' : 'flex-start'}
+            sx={{ p: 3 }}>
+            <Stack
+              p={3}
+              spacing={3}
+              alignItems="center"
+              border={1.5}
+              borderRadius={5}
+              borderColor="divider">
+              <Avatar src="/farcaster.svg" variant="rounded" />
+              <Typography variant="h6" align="center">
+                Farcaster Composer Actions
+              </Typography>
+              <Stack spacing={1} alignItems="center">
+                <CastActionButton
+                  title="Pay"
+                  description="Use this composer action to create a payment frame"
+                  onClick={async () => {
+                    setOpenComposerAction('pay');
+                    setOpenSearchIdentity(true);
+                  }}
+                  startIcon={<Send />}
+                />
+              </Stack>
+              <Stack spacing={1} alignItems="center">
+                <CastActionButton
+                  title="Receive Payment"
+                  description="Use this composer action to create a custom payment frame to receive payments"
+                  onClick={async () => {
+                    setOpenComposerAction('frame');
+                  }}
+                  startIcon={<CropDin />}
+                />
+              </Stack>
             </Stack>
-            <Stack spacing={1} alignItems="center">
-              <CastActionButton
-                title="Receive Payment"
-                description="Use this composer action to create a custom payment frame to receive payments"
-                onClick={async () => {
-                  setOpenComposerAction('frame');
-                }}
-                startIcon={<CropDin />}
-              />
-            </Stack>
-          </Stack>
-        </Box>
-      </Container>
+          </Box>
+        </Container>
+      )}
     </>
   );
 }

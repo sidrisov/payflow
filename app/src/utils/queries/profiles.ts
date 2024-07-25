@@ -30,24 +30,20 @@ export const useIdentity = (addressOrName?: string, fid?: string) => {
     queryKey: ['identity', { identity }],
     staleTime: Infinity,
     queryFn: () =>
-      axios
-        .get(`${API_URL}/api/user/identities/${fid ? 'fid/' : ''}${identity}`, {
-          withCredentials: true
-        })
-        .then((res) => {
-          const identity = res.data as IdentityType;
-          const defaultFlow = identity?.profile?.defaultFlow
-            ? sortAndFilterFlowWallets(identity.profile.defaultFlow)
-            : undefined;
-          return {
-            ...identity,
-            ...(identity.profile && {
-              profile: {
-                ...identity.profile,
-                defaultFlow
-              }
-            })
-          } as IdentityType;
-        })
+      axios.get(`${API_URL}/api/user/identities/${fid ? 'fid/' : ''}${identity}`).then((res) => {
+        const identity = res.data as IdentityType;
+        const defaultFlow = identity?.profile?.defaultFlow
+          ? sortAndFilterFlowWallets(identity.profile.defaultFlow)
+          : undefined;
+        return {
+          ...identity,
+          ...(identity.profile && {
+            profile: {
+              ...identity.profile,
+              defaultFlow
+            }
+          })
+        } as IdentityType;
+      })
   });
 };
