@@ -39,7 +39,7 @@
     "buffer": "^6.0.3",
     "javascript-time-ago": "^2.5.9",
     "lodash.merge": "^4.6.2",
-    "permissionless": "^0.1.31",
+    "permissionless": "^0.1.41",
     "react": "^18.3.1",
     "react-blockies": "^1.4.1",
     "react-dom": "^18.3.1",
@@ -51,7 +51,7 @@
     "siwe": "^2.1.4",
     "url": "^0.11.1",
     "use-debounce": "^10.0.0",
-    "viem": "^2.10.9",
+    "viem": "^2.17.11",
     "vite-plugin-svgr": "^4.0.0",
     "wagmi": "^2.9.0"
   },

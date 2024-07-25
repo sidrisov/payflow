@@ -216,6 +216,7 @@ export function SearchIdentityListItem(
               identity?.meta?.insights?.lensFollow ||
               identity?.meta?.insights?.sentTxs ||
               tags?.includes('hypersub') ||
+              tags?.includes('paragraph') ||
               tags?.includes('alfafrens') ? (
               <>
                 {identity.meta?.insights?.farcasterFollow && (
@@ -256,7 +257,15 @@ export function SearchIdentityListItem(
                   <Stack spacing={1} direction="row" alignItems="center">
                     <Avatar src="/fabric.png" sx={{ width: 15, height: 15 }} />
                     <Typography variant="caption" fontWeight="bold">
-                      Subscribed to NFT
+                      Fabric Subscriber
+                    </Typography>
+                  </Stack>
+                )}
+                {tags?.includes('paragraph') && (
+                  <Stack spacing={1} direction="row" alignItems="center">
+                    <Avatar variant='square' src="/paragraph.png" sx={{ width: 15, height: 15 }} />
+                    <Typography variant="caption" fontWeight="bold">
+                      Paragraph Subscriber
                     </Typography>
                   </Stack>
                 )}

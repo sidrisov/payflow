@@ -238,7 +238,7 @@ export async function searchIdentity(searchValue: string, me?: string): Promise<
   return foundProfiles;
 }
 
-export function convertSocialResults(wallet: Wallet): ContactType {
+export function convertSocialResults(wallet: Wallet): ContactType | undefined {
   console.debug('Converting wallet info: ', wallet);
 
   let meta: MetaType = {} as MetaType;
@@ -251,7 +251,12 @@ export function convertSocialResults(wallet: Wallet): ContactType {
 
   if (wallet.socials) {
     meta.socials = wallet.socials
-      .filter((s: any) => s.dappName && s.profileName)
+      .filter(
+        (s: any) =>
+          s.dappName &&
+          s.profileName &&
+          (s.dappName !== FARCASTER_DAPP || s.userAddress !== wallet.addresses?.[0])
+      )
       .map(
         (s: any) =>
           ({
@@ -264,6 +269,35 @@ export function convertSocialResults(wallet: Wallet): ContactType {
           } as SocialInfoType)
       )
       .sort((a, b) => b.followerCount - a.followerCount);
+
+    const result = wallet.socials.reduce(
+      (acc, s) => {
+        if (
+          !s.dappName ||
+          !s.profileName ||
+          (s.dappName === FARCASTER_DAPP && s.userAddress === wallet.addresses?.[0])
+        ) {
+          acc.valid = false;
+        } else {
+          acc.socials.push({
+            dappName: s.dappName,
+            profileName: s.profileName,
+            profileDisplayName: s.profileDisplayName,
+            profileImage: s.profileImageContentValue?.image?.small ?? s.profileImage,
+            followerCount: s.followerCount,
+            isFarcasterPowerUser: s.isFarcasterPowerUser
+          } as SocialInfoType);
+        }
+        return acc;
+      },
+      { socials: [] as SocialInfoType[], valid: true }
+    );
+
+    if (!result.valid) {
+      return;
+    }
+
+    meta.socials = result.socials.sort((a, b) => b.followerCount - a.followerCount);
   } else {
     meta.socials = [];
   }

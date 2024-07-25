@@ -20,12 +20,14 @@ const contactTypeLabel = (type: AddressBookType) => {
       return 'AlfaFrens';
     case 'hypersub':
       return 'Hypersubs';
+    case 'paragraph':
+      return 'Paragraph';
   }
 };
 
 const contactTypeIcon = (type: AddressBookType, selectedType: AddressBookType) => {
   const fontSize = selectedType === type ? 'medium' : 'small';
-  const avatarSize = selectedType === type ? { width: 24, height: 24 } : { width: 20, height: 20 };
+  const avatarSize = selectedType === type ? { width: 22, height: 22 } : { width: 18, height: 18 };
   switch (type) {
     case 'all':
       return <BlurOn fontSize={fontSize} />;
@@ -36,11 +38,13 @@ const contactTypeIcon = (type: AddressBookType, selectedType: AddressBookType) =
     case 'friends':
       return <People fontSize={fontSize} />;
     case 'farcon':
-      return <Avatar variant="circular" src="/farcon.png" sx={avatarSize} />;
+      return <Avatar variant="circular" src="/farcon.png" sx={{ ...avatarSize }} />;
     case 'alfafrens':
-      return <Avatar variant="circular" src="/alfafrens.png" sx={avatarSize} />;
+      return <Avatar variant="circular" src="/alfafrens.png" sx={{ ...avatarSize }} />;
     case 'hypersub':
-      return <Avatar variant="circular" src="/fabric.png" sx={avatarSize} />;
+      return <Avatar variant="circular" src="/fabric.png" sx={{ ...avatarSize }} />;
+    case 'paragraph':
+      return <Avatar variant="square" src="/paragraph.png" sx={{ ...avatarSize }} />;
   }
 };
 
@@ -154,6 +158,14 @@ export function AddressBookToolBar({
         <AddressBookChip
           key="hypersub"
           type="hypersub"
+          addressBookView={addressBookView}
+          setAddressBookView={setAddressBookView}
+        />
+      )}
+      {tags.includes('paragraph') && (
+        <AddressBookChip
+          key="paragraph"
+          type="paragraph"
           addressBookView={addressBookView}
           setAddressBookView={setAddressBookView}
         />

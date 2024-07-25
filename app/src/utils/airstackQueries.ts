@@ -131,7 +131,6 @@ export const QUERY_SOCIALS_INSIGHTS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE
             name
           }
           socials(input: { limit: 5, filter: { followerCount: { _gt: 5 } } }) {
-            userAssociatedAddresses
             dappName
             profileName
             profileDisplayName
@@ -143,6 +142,7 @@ export const QUERY_SOCIALS_INSIGHTS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE
             }
             followerCount
             isFarcasterPowerUser
+            userAddress
           }
           xmtp {
             isXMTPEnabled
@@ -208,7 +208,6 @@ export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = /
             name
           }
           socials(input: { limit: 5, filter: { followerCount: { _gt: 5 } } }) {
-            userAssociatedAddresses
             dappName
             profileName
             profileDisplayName
@@ -220,6 +219,7 @@ export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = /
             }
             followerCount
             isFarcasterPowerUser
+            userAddress
           }
           xmtp {
             isXMTPEnabled

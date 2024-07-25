@@ -21,10 +21,9 @@ export function FarcasterAccountsCard({
 }: {
   siwfResponse: StatusAPIResponse;
 } & CardProps) {
-  let verifications: Address[] = [
-    ...((siwfResponse.verifications as Address[]).filter((v) => isAddress(v)) ?? []),
-    siwfResponse.custody as Address
-  ];
+  const verifications: Address[] = (siwfResponse.verifications as Address[]).filter((v) =>
+    isAddress(v)
+  ) ?? [siwfResponse.custody as Address];
 
   const [loading, setLoading] = useState<boolean>();
   const [identities, setIdentities] = useState<IdentityType[]>();

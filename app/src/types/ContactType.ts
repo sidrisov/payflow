@@ -5,4 +5,5 @@ export type AddressBookType =
   | 'friends'
   | 'farcon'
   | 'alfafrens'
-  | 'hypersub';
+  | 'hypersub'
+  | 'paragraph';
