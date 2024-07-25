@@ -1,5 +1,5 @@
 import { BlurOn, History, People, Star } from '@mui/icons-material';
-import { Avatar, Box, Chip, Typography, useMediaQuery } from '@mui/material';
+import { Avatar, Chip, Stack, Typography, useMediaQuery } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { AddressBookType } from '../../types/ContactType';
 import { useEffect, useRef, useState } from 'react';
@@ -112,15 +112,14 @@ export function AddressBookToolBar({
   }, []);
 
   return (
-    <Box
-      width="100%"
+    <Stack
+      spacing={1}
       ref={boxRef}
       my={1}
       mx={0.5}
-      display="flex"
-      flexDirection="row"
+      direction="row"
       alignItems="center"
-      justifyContent="space-evenly"
+      justifyContent="flex-start"
       sx={{
         overflowX: 'scroll',
         scrollbarWidth: 'auto', // Hide the scrollbar for firefox
@@ -132,8 +131,7 @@ export function AddressBookToolBar({
         },
         '-webkit-overflow-scrolling': 'touch', // Improve scrolling on iOS
         borderRadius: 20
-      }}
-      gap={0.5}>
+      }}>
       <AddressBookChip
         key="all"
         type="all"
@@ -186,7 +184,7 @@ export function AddressBookToolBar({
           setAddressBookView={setAddressBookView}
         />
       )}
-    </Box>
+    </Stack>
     /*       <IconButton
         size="small"
         onClick={(event) => {
