@@ -2,6 +2,7 @@ package ua.sinaver.web3.payflow.config;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -29,6 +30,21 @@ public class SecurityConfig {
 
 	@Autowired
 	private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+	@Value("${payflow.dapp.url}")
+	private String payflowDappUrl;
+
+	/*@Bean
+	public WebMvcConfigurer corsConfigurer() {
+		return new WebMvcConfigurer() {
+			@Override
+			public void addCorsMappings(CorsRegistry registry) {
+				registry.addMapping("/**")
+						.allowedOrigins(payflowDappUrl, "https://warpcast.com")
+						.allowCredentials(true);
+			}
+		};
+	}*/
 
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager)

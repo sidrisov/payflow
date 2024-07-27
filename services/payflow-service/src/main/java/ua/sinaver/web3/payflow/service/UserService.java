@@ -58,6 +58,18 @@ public class UserService implements IUserService {
 	}
 
 	@Override
+	@CacheEvict(value = USERS_CACHE_NAME, key = "#user.identity")
+	public void saveUser(User user) {
+		userRepository.save(user);
+	}
+
+	@Override
+	public void updateLastSeen(User user) {
+		user.setLastSeen(new Date());
+		userRepository.save(user);
+	}
+
+	@Override
 	@CacheEvict(value = USERS_CACHE_NAME, key = "#identity")
 	public void updateProfile(String identity, ProfileMessage profile, String invitationCode) {
 		User user = userRepository.findByIdentity(identity);

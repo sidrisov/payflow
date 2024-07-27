@@ -22,6 +22,8 @@ public interface IFarcasterNeynarService {
 
 	Cast fetchCastByHash(String hash);
 
+	List<FarcasterUser> fetchTop100Followings(int fid);
+
 	@Cacheable(value = NEYNAR_FARCASTER_USER_CACHE, unless = "#result==null")
 	FarcasterUser fetchFarcasterUser(int fid);
 
@@ -29,5 +31,5 @@ public interface IFarcasterNeynarService {
 
 	List<SubscriptionsCreatedMessage.Subscription> subscriptionsCreated(int fid);
 
-	List<SubscribersMessage.Subscriber> subscribers(int fid);
+	List<SubscribersMessage.Subscriber> subscribers(int fid, boolean fabric);
 }

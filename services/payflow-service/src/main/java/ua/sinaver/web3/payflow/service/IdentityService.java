@@ -139,6 +139,11 @@ public class IdentityService implements IIdentityService {
 			return null;
 		}
 
+		if (wallet.getSocials() == null) {
+			log.warn("Username for {} was not found - no socials!", identity);
+			return null;
+		}
+
 		val username = wallet.getSocials().stream()
 				.filter(social -> social.getDappName().equals(SocialDappName.farcaster))
 				.min(Comparator.comparing(Social::getIsFarcasterPowerUser).reversed()
@@ -156,6 +161,11 @@ public class IdentityService implements IIdentityService {
 
 		if (wallet == null) {
 			log.warn("Fid for {} was not found!", identity);
+			return null;
+		}
+
+		if (wallet.getSocials() == null) {
+			log.warn("Fid for {} was not found - no socials!", identity);
 			return null;
 		}
 

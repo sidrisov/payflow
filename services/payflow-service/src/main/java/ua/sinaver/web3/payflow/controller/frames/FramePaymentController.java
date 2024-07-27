@@ -119,8 +119,8 @@ public class FramePaymentController {
 
 		// pay first with higher social score now invite first
 		val paymentAddresses = identityService.getIdentitiesInfo(castInteractor.addressesWithoutCustodialIfAvailable())
-				.stream().max(Comparator.comparingInt(IdentityMessage::score))
-				.map(IdentityMessage::address).stream().toList();
+				.stream().sorted(Comparator.comparingInt(IdentityMessage::score))
+				.map(IdentityMessage::address).toList();
 
 		// check if profile exist
 		val paymentProfile = identityService.getProfiles(paymentAddresses).stream().findFirst().orElse(null);
@@ -406,7 +406,7 @@ public class FramePaymentController {
 							apiServiceUrl.concat(String.format(PAY_IN_FRAME_CONFIRM, refId))))
 					.imageUrl(profileImage)
 					.state(Base64.getEncoder().encodeToString(updatedState.getBytes()));
-			
+
 			// for now just check if profile exists
 			if (!profiles.isEmpty()) {
 				frameResponseBuilder.button(new FrameButton("\uD83D\uDCF1 App",
@@ -440,13 +440,10 @@ public class FramePaymentController {
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
 				validateMessage.action().url());
 
-		val castInteractor = validateMessage.action().interactor();
 		val buttonIndex = validateMessage.action().tappedButton().index();
 		val transactionId = validateMessage.action().transaction() != null
 				? validateMessage.action().transaction().hash()
 				: null;
-
-		val profiles = identityService.getProfiles(castInteractor.addresses());
 
 		val payment = paymentRepository.findByReferenceId(refId);
 		if (payment == null) {
@@ -474,6 +471,24 @@ public class FramePaymentController {
 				payment.setCompletedDate(new Date());
 
 				log.debug("Updated payment for ref: {} - {}", refId, payment);
+
+				// in case it was triggered by compose cast action, and cast info wasn't passed!
+				// check if parent available, otherwise fallback to current payment frame cast
+				if (StringUtils.isBlank(payment.getSourceHash())) {
+					val sourceApp = validateMessage.action().signer().client().displayName();
+					val sourceHash = validateMessage.action().cast().parentHash() != null ?
+							validateMessage.action().cast().parentHash() :
+							validateMessage.action().cast().hash();
+					payment.setSourceApp(sourceApp);
+					if (StringUtils.isNotBlank(sourceHash) && !sourceHash.equals(TokenService.ZERO_ADDRESS)) {
+						val sourceRef = validateMessage.action().cast().parentUrl() != null ?
+								validateMessage.action().cast().parentUrl() :
+								String.format("https://warpcast.com/%s/%s",
+										validateMessage.action().cast().author().username(), sourceHash.substring(0, 10));
+						payment.setSourceHash(sourceHash);
+						payment.setSourceRef(sourceRef);
+					}
+				}
 
 				notificationService.paymentReply(payment);
 
@@ -585,7 +600,6 @@ public class FramePaymentController {
 										%s
 										🧾 Receipt: %s
 
-										Install `⚡ Pay` at app.payflow.me/actions
 										p.s. join /payflow channel for updates 👀""",
 
 								receiverFname,

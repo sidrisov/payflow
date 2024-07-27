@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets;
 @RequestMapping("/farcaster/composer/payment")
 @Transactional
 @Slf4j
-public class PaymentFormController {
+public class ReceivePaymentFormController {
 	private static final Gson GSON = new GsonBuilder().create();
 	@Autowired
 	private IFarcasterNeynarService neynarService;
@@ -65,10 +65,10 @@ public class PaymentFormController {
 		val state = GSON.fromJson(decodedState, ComposerActionState.class);
 		val paymentFormUrl = UriComponentsBuilder.newInstance()
 				.scheme("https").host("app.payflow.me").path("/composer")
+				.queryParam("access_token", accessToken)
 				.queryParam("action", "frame")
 				.queryParam("verifications", interactor.addressesWithoutCustodialIfAvailable())
 				.queryParam("title", state.cast().text())
-				.queryParam("accessToken", accessToken)
 				.build()
 				.toUriString();
 

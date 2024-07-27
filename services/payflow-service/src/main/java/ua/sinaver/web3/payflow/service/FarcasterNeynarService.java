@@ -140,6 +140,43 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 	}
 
 	@Override
+	public List<FarcasterUser> fetchTop100Followings(int fid) {
+		log.debug("Calling Neynar Fetch Followings API by fid {}", fid);
+		return neynarClient.get()
+				.uri(uriBuilder -> uriBuilder.path("/following")
+						.queryParam("fid", fid)
+						.queryParam("sort_type", "algorithmic")
+						.queryParam("limit", 100)
+						.build())
+				.retrieve()
+				.onStatus(HttpStatus.NOT_FOUND::equals, clientResponse -> {
+					log.error("404 error when calling Neynar Fetch Followings API by fid {}", fid);
+					return Mono.empty();
+				})
+				.bodyToMono(FarcasterFollowingsMessage.class)
+				.onErrorResume(WebClientResponseException.class, e -> {
+					if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+						log.error("404 error calling Neynar Fetch Followings API by fid {} - {}",
+								fid, e);
+						return Mono.empty();
+					}
+					log.error("Exception calling Neynar Fetch Followings API by fid {} - {}",
+							fid, e);
+					return Mono.error(e);
+				})
+				.onErrorResume(Throwable.class, e -> {
+					log.error("Exception calling Neynar Fetch Followings API by fid {} - {}",
+							fid, e);
+					return Mono.empty();
+				})
+				.blockOptional()
+				.map(followingsMessage -> followingsMessage.users().stream()
+						.map(FarcasterFollowingsMessage.FarcasterFollowing::user) // Assuming
+						.toList())
+				.orElse(Collections.emptyList());
+	}
+
+	@Override
 	@Cacheable(value = NEYNAR_FARCASTER_USER_CACHE, unless = "#result==null")
 	public FarcasterUser fetchFarcasterUser(int fid) {
 		log.debug("Calling Neynar User API to fetch by fid {}", fid);
@@ -241,12 +278,13 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 	}
 
 	@Override
-	public List<SubscribersMessage.Subscriber> subscribers(int fid) {
-		log.debug("Calling Neynar Subscribers API by fid {}", fid);
+	public List<SubscribersMessage.Subscriber> subscribers(int fid, boolean fabric) {
+		log.debug("Calling Neynar Subscribers[{}] API by fid {}", fabric ? "Hypersub" :
+				"Paragraph", fid);
 		return neynarClient.get()
 				.uri(uriBuilder -> uriBuilder.path("/user/subscribers")
-						.queryParam("fid", fid == 19129 ? 576 : fid)
-						.queryParam("subscription_provider", "fabric_stp")
+						.queryParam("fid", fabric && fid == 19129 ? 576 : fid)
+						.queryParam("subscription_provider", fabric ? "fabric_stp" : "paragraph")
 						.build())
 				.retrieve()
 				.onStatus(HttpStatus.NOT_FOUND::equals, clientResponse -> {

@@ -10,6 +10,10 @@ import java.util.Map;
 public interface IUserService {
 	void saveUser(String identity);
 
+	void saveUser(User user);
+
+	void updateLastSeen(User user);
+
 	void updateProfile(String identity, ProfileMessage profile, String invitationCode);
 
 	User findByIdentity(String identity);

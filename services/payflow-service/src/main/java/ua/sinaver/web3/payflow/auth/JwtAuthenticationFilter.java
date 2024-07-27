@@ -34,7 +34,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			return;
 		}
 
-		val accessToken = request.getParameter("access_token");
+		var accessToken = request.getParameter("access_token");
+		if (accessToken == null) {
+			accessToken = request.getParameter("accessToken");
+		}
 		if (StringUtils.isNotBlank(accessToken)) {
 			val user = userService.findByAccessToken(accessToken);
 			if (user != null) {
@@ -43,7 +46,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 						user.getIdentity(), null, null);
 				authentication.setAuthenticated(true);
 				SecurityContextHolder.getContext().setAuthentication(authentication);
-				userService.clearAccessToken(user);
+				userService.updateLastSeen(user);
+				//userService.clearAccessToken(user);
 			}
 		}
 		chain.doFilter(request, response);

@@ -42,6 +42,9 @@ public class IdentitySubscriptionsService {
 	@Value("${payflow.hypersub.contacts.limit:10}")
 	private int hypersubContactsLimit;
 
+	@Value("${payflow.paragraph.contacts.limit:10}")
+	private int paragraphContactsLimit;
+
 	public IdentitySubscriptionsService(WebClient.Builder builder) {
 		webClient = builder
 				.baseUrl("https://www.alfafrens.com/api/v0")
@@ -139,14 +142,14 @@ public class IdentitySubscriptionsService {
 				return Collections.emptyList();
 			}
 
-			val subscriptions = neynarService.subscriptionsCreated(Integer.parseInt(fid));
+	/*		val subscriptions = neynarService.subscriptionsCreated(Integer.parseInt(fid));
 			if (subscriptions.isEmpty()) {
 				log.error("No fabric subscriptions created by fid: {}", fid);
 				return Collections.emptyList();
 			}
-			log.debug("Fetched fabric subscriptions created: {} for fid: {}", subscriptions, fid);
+			log.debug("Fetched fabric subscriptions created: {} for fid: {}", subscriptions, fid);*/
 
-			val subscribers = neynarService.subscribers(Integer.parseInt(fid))
+			val subscribers = neynarService.subscribers(Integer.parseInt(fid), true)
 					.stream()
 					.map(SubscribersMessage.Subscriber::user)
 					.distinct()
@@ -161,7 +164,7 @@ public class IdentitySubscriptionsService {
 
 			val subscribersScoredAddresses = subscribers.stream()
 					.limit(hypersubContactsLimit)
-					.map(user -> identityService.getIdentitiesInfo(user.verifications())
+					.map(user -> identityService.getIdentitiesInfo(user.addressesWithoutCustodialIfAvailable())
 							.stream()
 							.max(Comparator.comparingInt(IdentityMessage::score))
 							.map(IdentityMessage::address)
@@ -169,12 +172,60 @@ public class IdentitySubscriptionsService {
 					.filter(Objects::nonNull)
 					.collect(Collectors.toList());
 			log.debug("Fetched fabric subscribers scored address: {} for fid: {} ({})",
-					subscriptions,
+					subscribers,
 					fid,
 					identity);
 			return subscribersScoredAddresses;
 		} catch (Throwable t) {
 			log.error("Exception fetching fabric subscribers for identity: {}, error: {}",
+					identity, t.getMessage());
+			throw t;
+		}
+	}
+
+	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'paragraph-list:' + #identity", unless =
+			"#result.isEmpty()")
+	public List<String> fetchParagraphSubscribers(String identity) {
+		log.debug("Fetching paragraph subscribers for identity: {}", identity);
+
+		try {
+			val fid = identityService.getIdentityFid(identity);
+
+			log.debug("Fetched fid: {} for identity: {}", fid, identity);
+			if (StringUtils.isBlank(fid)) {
+				log.error("No fid found for identity: {}", identity);
+				return Collections.emptyList();
+			}
+
+			val subscribers = neynarService.subscribers(Integer.parseInt(fid), false)
+					.stream()
+					.map(SubscribersMessage.Subscriber::user)
+					.distinct()
+					.toList();
+
+			if (subscribers.isEmpty()) {
+				log.error("No paragraph subscribers for fid: {}", fid);
+				return Collections.emptyList();
+			}
+
+			log.debug("Total paragraph subscribers: {} for fid: {}", subscribers.size(), fid);
+
+			val subscribersScoredAddresses = subscribers.stream()
+					.limit(paragraphContactsLimit)
+					.map(user -> identityService.getIdentitiesInfo(user.addressesWithoutCustodialIfAvailable())
+							.stream()
+							.max(Comparator.comparingInt(IdentityMessage::score))
+							.map(IdentityMessage::address)
+							.orElse(null))
+					.filter(Objects::nonNull)
+					.collect(Collectors.toList());
+			log.debug("Fetched paragraph subscribers scored address: {} for fid: {} ({})",
+					subscribers,
+					fid,
+					identity);
+			return subscribersScoredAddresses;
+		} catch (Throwable t) {
+			log.error("Exception paragraph fabric subscribers for identity: {}, error: {}",
 					identity, t.getMessage());
 			throw t;
 		}

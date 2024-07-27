@@ -59,6 +59,9 @@ public class ContactBookService implements IContactBookService {
 	private IdentitySubscriptionsService identitySubscriptionsService;
 
 	@Autowired
+	private IdentityFollowingsService identityFollowingsService;
+
+	@Autowired
 	private PaymentService paymentService;
 
 	@Value("${payflow.airstack.contacts.limit:10}")
@@ -98,11 +101,8 @@ public class ContactBookService implements IContactBookService {
 				Schedulers.DEFAULT_POOL_SIZE, Schedulers.DEFAULT_BOUNDED_ELASTIC_SIZE,
 				Schedulers.DEFAULT_BOUNDED_ELASTIC_QUEUESIZE);
 
-		val contactsLimitAdjusted =
-				contactsLimit * (whitelistedUsers.contains(user.getIdentity().toLowerCase()) ? 3 : 1);
-
-		val contacts = contactRepository.findAllByUser(user)
-				.stream().limit(contactsLimitAdjusted).toList();
+		val followings = identityFollowingsService.fetchFarcasterFollowings(user.getIdentity());
+		log.debug("Fetched followings: {}", followings);
 
 		val recentContacts = paymentService.getAllPaymentRecipients(user);
 		log.debug("Fetched recent contacts: {}", recentContacts);
@@ -113,10 +113,11 @@ public class ContactBookService implements IContactBookService {
 		val fabricContacts = identitySubscriptionsService.fetchFabricSubscribers(user.getIdentity());
 		log.debug("Fetched fabric subs: {}", fabricContacts);
 
+		val paragraphContacts = identitySubscriptionsService.fetchParagraphSubscribers(user.getIdentity());
+		log.debug("Fetched paragraph subs: {}", paragraphContacts);
+
 		val favourites = contactRepository.findByUserAndProfileCheckedTrue(user);
-
 		val tags = new ArrayList<>(List.of("friends"));
-
 		if (!recentContacts.isEmpty()) {
 			tags.add("recent");
 		}
@@ -127,6 +128,10 @@ public class ContactBookService implements IContactBookService {
 
 		if (!fabricContacts.isEmpty()) {
 			tags.add("hypersub");
+		}
+
+		if (!paragraphContacts.isEmpty()) {
+			tags.add("paragraph");
 		}
 
 		if (!favourites.isEmpty()) {
@@ -140,11 +145,10 @@ public class ContactBookService implements IContactBookService {
 		val allContacts = Stream.of(
 						recentContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "recent")),
 						favourites.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(), "favourites")),
-						contacts.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(), "friends")),
+						followings.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "friends")),
 						fabricContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "hypersub")),
+						paragraphContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "paragraph")),
 						alfaFrensContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "alfafrens"))
-						//farConParticipants.stream().map(identity -> new AbstractMap
-						// .SimpleEntry<>(identity, "farcon"))
 				).flatMap(stream -> stream)
 				.collect(Collectors.groupingBy(
 						Map.Entry::getKey,
@@ -216,7 +220,7 @@ public class ContactBookService implements IContactBookService {
 		}
 	}
 
-	@Scheduled(fixedRate = 60 * 1000)
+	//@Scheduled(fixedRate = 60 * 1000)
 	public void updateContactsAtFixedRate() {
 		val lastUpdateDate = new Date(System.currentTimeMillis() - contactsUpdateDuration.toMillis());
 		val lastSeenDate = new Date(

@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/user")
-@CrossOrigin(origins = "${payflow.dapp.url}", allowCredentials = "true")
+@CrossOrigin(origins = {"${payflow.dapp.url}"}, allowCredentials = "true")
 @Transactional
 @Slf4j
 public class UserController {
@@ -41,7 +41,7 @@ public class UserController {
 
 	@Autowired
 	private IFarcasterNeynarService neynarService;
-	
+
 	@GetMapping("/me")
 	public ProfileMessage user(Principal principal) {
 		log.trace("{} fetching its profile info", principal.getName());

@@ -23,7 +23,7 @@ public class NotificationService {
 
 	public void paymentReply(Payment payment) {
 		val senderIdentity = payment.getSender() != null ? payment.getSender().getIdentity()
-				: payment.getSenderAddress() != null ? payment.getSenderAddress() : null;
+				: payment.getSenderAddress();
 		val receiverIdentity = payment.getReceiver() != null ? payment.getReceiver().getIdentity()
 				: payment.getReceiverAddress() != null ? payment.getReceiverAddress()
 				: "fc_fid:" + payment.getReceiverFid();
@@ -44,7 +44,6 @@ public class NotificationService {
 
 						🧾 Receipt: %s
 
-						Install `⚡ Pay` at app.payflow.me/actions
 						p.s. join /payflow channel for updates 👀""",
 				receiverFname,
 				StringUtils.isNotBlank(payment.getTokenAmount()) ? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())

@@ -22,7 +22,7 @@ import static ua.sinaver.web3.payflow.config.CacheConfig.*;
 
 @Service
 @Slf4j
-public class SocialGraphService implements ISocialGraphService {
+public class AirstackSocialGraphService implements ISocialGraphService {
 
 	private final GraphQlClient graphQlClient;
 
@@ -32,9 +32,9 @@ public class SocialGraphService implements ISocialGraphService {
 	@Value("${payflow.invitation.whitelisted.default.users}")
 	private Set<String> whitelistedUsers;
 
-	public SocialGraphService(WebClient.Builder builder,
-	                          @Value("${payflow.airstack.api.url}") String airstackUrl,
-	                          @Value("${payflow.airstack.api.key}") String airstackApiKey) {
+	public AirstackSocialGraphService(WebClient.Builder builder,
+	                                  @Value("${payflow.airstack.api.url}") String airstackUrl,
+	                                  @Value("${payflow.airstack.api.key}") String airstackApiKey) {
 		WebClient client = builder
 				.baseUrl(airstackUrl)
 				.build();

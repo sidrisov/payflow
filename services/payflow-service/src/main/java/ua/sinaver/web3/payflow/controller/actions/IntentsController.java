@@ -12,9 +12,9 @@ import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.farcaster.CastActionMeta;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
+import ua.sinaver.web3.payflow.service.AirstackSocialGraphService;
 import ua.sinaver.web3.payflow.service.IdentityService;
 import ua.sinaver.web3.payflow.service.PaymentService;
-import ua.sinaver.web3.payflow.service.SocialGraphService;
 import ua.sinaver.web3.payflow.service.TokenService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
@@ -40,7 +40,7 @@ public class IntentsController {
 	private PaymentRepository paymentRepository;
 
 	@Autowired
-	private SocialGraphService socialGraphService;
+	private AirstackSocialGraphService socialGraphService;
 
 	@Autowired
 	private PaymentService paymentService;

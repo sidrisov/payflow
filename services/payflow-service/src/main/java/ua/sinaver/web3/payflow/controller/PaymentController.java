@@ -11,13 +11,14 @@ import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.message.PaymentHashMessage;
 import ua.sinaver.web3.payflow.message.PaymentMessage;
+import ua.sinaver.web3.payflow.message.PaymentReferenceMessage;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
+import ua.sinaver.web3.payflow.service.AirstackSocialGraphService;
 import ua.sinaver.web3.payflow.service.FarcasterMessagingService;
 import ua.sinaver.web3.payflow.service.FarcasterPaymentBotService;
 import ua.sinaver.web3.payflow.service.PaymentService;
-import ua.sinaver.web3.payflow.service.SocialGraphService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
@@ -51,7 +52,7 @@ public class PaymentController {
 	private IIdentityService identityService;
 
 	@Autowired
-	private SocialGraphService socialGraphService;
+	private AirstackSocialGraphService socialGraphService;
 
 	@Autowired
 	private IFarcasterNeynarService neynarService;
@@ -83,8 +84,8 @@ public class PaymentController {
 	}
 
 	@PostMapping
-	public ResponseEntity<String> submitPayment(@RequestBody PaymentMessage paymentMessage,
-	                                            Principal principal) {
+	public ResponseEntity<PaymentReferenceMessage> submitPayment(@RequestBody PaymentMessage paymentMessage,
+	                                                             Principal principal) {
 		val username = principal != null ? principal.getName() : null;
 
 		log.debug("Saving completed payment {} for {}", paymentMessage, username);
@@ -112,7 +113,7 @@ public class PaymentController {
 		payment.setCompletedDate(new Date());
 		paymentRepository.save(payment);
 		log.debug("Saved payment: {}", payment);
-		return ResponseEntity.ok().build();
+		return ResponseEntity.ok(new PaymentReferenceMessage(payment.getReferenceId()));
 	}
 
 	@GetMapping("/pending")
@@ -212,7 +213,6 @@ public class PaymentController {
 
 										🧾 Receipt: %s
 
-										Install `🔥 Top Comment Intent` at app.payflow.me/actions
 										p.s. join /payflow channel for updates 👀""",
 								receiverFname,
 								StringUtils.isNotBlank(payment.getTokenAmount()) ?
@@ -237,7 +237,6 @@ public class PaymentController {
 
 										🧾 Receipt: %s
 
-										Install `💜️Intent` at app.payflow.me/actions
 										p.s. join /payflow channel for updates 👀""",
 								receiverFname,
 								StringUtils.isNotBlank(payment.getTokenAmount()) ? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
@@ -267,7 +266,6 @@ public class PaymentController {
 												%s
 												🧾 Receipt: %s
 
-												Install `💜️Intent` at app.payflow.me/actions
 												p.s. join /payflow channel for updates 👀""",
 										receiverFname,
 										StringUtils.isNotBlank(payment.getTokenAmount()) ? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
@@ -313,7 +311,6 @@ public class PaymentController {
 
 									🧾 Receipt: %s
 
-									Install `🗄 Gift Storage` at app.payflow.me/actions
 									p.s. join /payflow channel for updates 👀""",
 							receiverFname,
 							payment.getTokenAmount(),
@@ -339,7 +336,6 @@ public class PaymentController {
 											🔗 Source: %s
 											🧾 Receipt: %s
 
-											Install `🗄 Gift Storage` at app.payflow.me/actions
 											p.s. join /payflow channel for updates 👀""",
 									receiverFname,
 									payment.getTokenAmount(),
