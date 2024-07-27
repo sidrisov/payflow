@@ -318,3 +318,40 @@ export const QUERY_FARCASTER_PROFILE = /* GraphQL */ `
     }
   }
 `;
+
+export const QUERY_CONTACTS_FAN_TOKENS = /* GraphQL */ `
+  query GetFanTokenAuctionsForContacts(
+    $status: FarcasterFanTokenAuctionStatusType
+    $entityNames: [String!]
+  ) {
+    FarcasterFanTokenAuctions(
+      input: {
+        filter: {
+          status: { _eq: $status }
+          entityName: { _in: $entityNames }
+          entityType: { _eq: USER }
+        }
+        blockchain: ALL
+        order: { estimatedEndTimestamp: ASC }
+        limit: 100
+      }
+    ) {
+      FarcasterFanTokenAuction {
+        auctionId
+        auctionSupply
+        decimals
+        entityId
+        entityName
+        entitySymbol
+        entityType
+        estimatedEndTimestamp
+        estimatedStartTimestamp
+        launchCastUrl
+        minBiddingAmount
+        minFundingAmount
+        minPriceInMoxie
+        subjectAddress
+      }
+    }
+  }
+`;

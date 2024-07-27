@@ -37,6 +37,7 @@
     "apg-js": "github:runic-inc/apg-js#8bb92ff0780819170fee7e756d26e0562e442983",
     "axios": "^1.4.0",
     "buffer": "^6.0.3",
+    "date-fns": "^3.6.0",
     "javascript-time-ago": "^2.5.9",
     "lodash.merge": "^4.6.2",
     "permissionless": "^0.1.41",
