@@ -39,22 +39,21 @@ export default function AppLayout({
   appSettings: AppSettings;
   setAppSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
 }) {
+  const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const navigate = useNavigate();
-
   const [authorized, setAuthorized] = useState<boolean>(false);
 
   const [profileMenuAnchorEl, setProfileMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [openProfileMenu, setOpenProfileMenu] = useState(false);
   const [openSearchIdentity, setOpenSearchIdentity] = useState(false);
 
-  const location = useLocation();
-
   const { isLoading, isFetched, data: prices } = useTokenPrices();
-
   console.log('prices: ', isLoading, isFetched, prices);
+
+  const showToolbar = location.pathname !== '/composer';
 
   useEffect(() => {
     if (profile) {
@@ -82,74 +81,76 @@ export default function AppLayout({
               color="transparent"
               elevation={0}
               sx={{ backdropFilter: 'blur(5px)' }}>
-              <Toolbar>
-                <Box
-                  display="flex"
-                  flexDirection="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  flexGrow={1}>
-                  <Stack direction="row" alignItems="center">
-                    {profile && (
-                      <IconButton
-                        color={location.pathname === '/' ? 'inherit' : undefined}
-                        onClick={() => navigate('/')}>
-                        {location.pathname === '/' ? <Home /> : <HomeOutlined />}
-                      </IconButton>
-                    )}
-                    <HomeLogo />
-                  </Stack>
-                  {location.pathname !== '/search' && (
-                    <Box
-                      ml={1}
-                      display="flex"
-                      flexDirection="row"
-                      alignItems="center"
-                      component={Button}
-                      color="inherit"
-                      sx={{
-                        width: 120,
-                        borderRadius: 5,
-                        border: 1,
-                        borderColor: 'inherit',
-                        textTransform: 'none',
-                        justifyContent: 'space-evenly'
-                      }}
-                      onClick={async () => {
-                        setOpenSearchIdentity(true);
-                      }}>
-                      <Avatar src="/payflow.png" sx={{ width: 24, height: 24 }} />
-                      <Typography variant="subtitle2">Search ... </Typography>
-                    </Box>
-                  )}
-                  <Stack direction="row" spacing={0.5} alignItems="center">
-                    {profile ? (
-                      <IconButton
-                        size="small"
-                        onClick={async (event) => {
-                          setProfileMenuAnchorEl(event.currentTarget);
-                          setOpenProfileMenu(true);
-                        }}>
-                        <ProfileAvatar profile={profile} sx={{ width: 36, height: 36 }} />
-                      </IconButton>
-                    ) : (
-                      <Button
-                        variant="text"
+              {showToolbar && (
+                <Toolbar>
+                  <Box
+                    display="flex"
+                    flexDirection="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    flexGrow={1}>
+                    <Stack direction="row" alignItems="center">
+                      {profile && (
+                        <IconButton
+                          color={location.pathname === '/' ? 'inherit' : undefined}
+                          onClick={() => navigate('/')}>
+                          {location.pathname === '/' ? <Home /> : <HomeOutlined />}
+                        </IconButton>
+                      )}
+                      <HomeLogo />
+                    </Stack>
+                    {location.pathname !== '/search' && (
+                      <Box
+                        ml={1}
+                        display="flex"
+                        flexDirection="row"
+                        alignItems="center"
+                        component={Button}
                         color="inherit"
-                        size="medium"
-                        href={`${DAPP_URL}/connect`}
                         sx={{
+                          width: 120,
                           borderRadius: 5,
-                          fontWeight: 'bold',
-                          fontSize: 18,
-                          textTransform: 'none'
+                          border: 1,
+                          borderColor: 'inherit',
+                          textTransform: 'none',
+                          justifyContent: 'space-evenly'
+                        }}
+                        onClick={async () => {
+                          setOpenSearchIdentity(true);
                         }}>
-                        sign in
-                      </Button>
+                        <Avatar src="/payflow.png" sx={{ width: 24, height: 24 }} />
+                        <Typography variant="subtitle2">Search ... </Typography>
+                      </Box>
                     )}
-                  </Stack>
-                </Box>
-              </Toolbar>
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      {profile ? (
+                        <IconButton
+                          size="small"
+                          onClick={async (event) => {
+                            setProfileMenuAnchorEl(event.currentTarget);
+                            setOpenProfileMenu(true);
+                          }}>
+                          <ProfileAvatar profile={profile} sx={{ width: 36, height: 36 }} />
+                        </IconButton>
+                      ) : (
+                        <Button
+                          variant="text"
+                          color="inherit"
+                          size="medium"
+                          href={`${DAPP_URL}/connect`}
+                          sx={{
+                            borderRadius: 5,
+                            fontWeight: 'bold',
+                            fontSize: 18,
+                            textTransform: 'none'
+                          }}>
+                          sign in
+                        </Button>
+                      )}
+                    </Stack>
+                  </Box>
+                </Toolbar>
+              )}
             </AppBar>
           </HideOnScroll>
           <Box display="flex" mt={3}>
