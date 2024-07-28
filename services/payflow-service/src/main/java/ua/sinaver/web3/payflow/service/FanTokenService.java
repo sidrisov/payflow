@@ -46,8 +46,12 @@ public class FanTokenService {
 							contact)
 					)
 					.filter(entry -> entry.getKey() != null)
-					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
+					.collect(Collectors.toMap(
+							Map.Entry::getKey,
+							Map.Entry::getValue,
+							(existing, replacement) -> existing
+					));
+			
 			val usernames = usernameToContactMap.keySet().stream().toList();
 			val auctions = socialGraphService.getFanTokenAuctions(usernames);
 

@@ -6,7 +6,7 @@ import { ContactWithFanTokenAuction } from '../../types/ProfleType';
 export const useFanTokens = ({ enabled }: { enabled: boolean }) => {
   return useQuery({
     enabled,
-    queryKey: ['contacts'],
+    queryKey: ['fan-tokens'],
     staleTime: Infinity,
     queryFn: () =>
       axios
