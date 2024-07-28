@@ -57,7 +57,7 @@ const FanTokenAuctionCard = () => {
       const { data: auctionsData } = await fetchQuery<GetFanTokenAuctionsForContactsQuery>(
         QUERY_CONTACTS_FAN_TOKENS,
         {
-          status: ['UPCOMING', 'ACTIVE'],
+          statuses: ['UPCOMING', 'ACTIVE'],
           entityNames
         },
         {
