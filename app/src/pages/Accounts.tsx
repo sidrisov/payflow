@@ -35,7 +35,7 @@ import {
 import { useContacts } from '../utils/queries/contacts';
 import { FARCASTER_DAPP } from '../utils/dapps';
 import { countdown } from '../utils/date';
-import { Notifications, People } from '@mui/icons-material';
+import { Circle } from '@mui/icons-material';
 import { ContactWithFanTokenAuction } from '../types/ProfleType';
 import { ProfileSection } from '../components/ProfileSection';
 import { AddressSection } from '../components/AddressSection';
@@ -57,7 +57,7 @@ const FanTokenAuctionCard = () => {
       const { data: auctionsData } = await fetchQuery<GetFanTokenAuctionsForContactsQuery>(
         QUERY_CONTACTS_FAN_TOKENS,
         {
-          status: 'UPCOMING',
+          status: ['UPCOMING', 'ACTIVE'],
           entityNames
         },
         {
@@ -96,9 +96,9 @@ const FanTokenAuctionCard = () => {
         padding: 1
       }}>
       <CardHeader
-        title="Contacts' Farcaster Fan Token Auctions"
+        title="Ⓜ️ Fan Token Auctions"
         titleTypographyProps={{ variant: 'subtitle2', fontWeight: 'bold' }}
-        sx={{ padding: 1, paddingBottom: 0 }}
+        sx={{ padding: 0.5, paddingBottom: 0 }}
       />
       <CardContent>
         <Box
@@ -122,7 +122,6 @@ const FanTokenAuctionCard = () => {
                 elevation={2}
                 key={`contact_auction_card:${contactWithAuction.contact.data.address}`}
                 sx={{
-                  p: 0,
                   border: 1,
                   borderColor: 'divider',
                   borderRadius: '15px',
@@ -141,7 +140,7 @@ const FanTokenAuctionCard = () => {
                       justifyContent="space-between"
                       alignItems="center">
                       <Typography variant="caption">
-                        Token Supply:{' '}
+                        Supply:{' '}
                         <b>
                           {parseFloat(
                             formatUnits(
@@ -152,11 +151,30 @@ const FanTokenAuctionCard = () => {
                         </b>
                       </Typography>
                       <Chip
-                        clickable
                         size="small"
-                        icon={<Notifications />}
-                        label={countdown(contactWithAuction.auction.estimatedStartTimestamp)}
-                        deleteIcon={<Notifications />}
+                        {...(contactWithAuction.auction.launchCastUrl
+                          ? {
+                              component: 'a',
+                              href: contactWithAuction.auction.launchCastUrl,
+                              target: '_blank',
+                              clickable: true,
+                              icon: <Circle color="success" sx={{ width: 10, height: 10 }} />,
+                              label: (
+                                <Typography variant="caption">
+                                  <b>live</b>
+                                </Typography>
+                              )
+                            }
+                          : {
+                              label: (
+                                <Typography variant="caption">
+                                  in{' '}
+                                  <b>
+                                    {countdown(contactWithAuction.auction.estimatedStartTimestamp)}
+                                  </b>
+                                </Typography>
+                              )
+                            })}
                       />
                     </Box>
                     {contactWithAuction.contact.data.profile ? (
@@ -187,8 +205,6 @@ export default function Accounts() {
 
   const { flows } = profile ?? { flows: [] };
 
-  /*   const [assetsOrActivityView, setAssetsOrActivityView] = useState<'assets' | 'activity'>('assets');
-   */
   const [selectedFlow, setSelectedFlow] = useState<FlowType>();
 
   useEffect(() => {
@@ -230,17 +246,10 @@ export default function Accounts() {
   }, [selectedFlow]);
 
   const { isLoading, isFetched, data: balances } = useAssetBalances(assets);
-  /*   const {
-    isLoading: isLoadingActivity,
-    isFetched: isFetchedActivity,
-    data: transactions
-  } = useTransactions(selectedFlow?.wallets ?? []); */
 
   const [selectedNetwork, setSelectedNetwork] = useState<Chain>();
 
   const { isFetched: isPaymentFetched, data: payments } = usePendingPayments(Boolean(profile));
-
-  const [infromationAvailable, setInfromationAvailable] = useState<boolean>(true);
 
   return (
     <>
@@ -256,8 +265,6 @@ export default function Accounts() {
               selectedFlow={selectedFlow}
               setSelectedFlow={setSelectedFlow}
               assetBalancesResult={{ isLoading, isFetched, balances }}
-              /* assetsOrActivityView={assetsOrActivityView}
-              setAssetsOrActivityView={setAssetsOrActivityView} */
             />
 
             <Stack width={smallScreen ? 350 : 375} spacing={1} alignItems="center">
@@ -276,7 +283,7 @@ export default function Accounts() {
                   />
                 </>
               )}
-              {infromationAvailable && profile?.username === 'sinaver' && <FanTokenAuctionCard />}
+              {profile?.username === 'sinaver' && <FanTokenAuctionCard />}
               <NetworkSelectorSection
                 width="100%"
                 wallets={selectedFlow.wallets}
@@ -287,21 +294,6 @@ export default function Accounts() {
                 selectedNetwork={selectedNetwork}
                 assetBalancesResult={{ isLoading, isFetched, balances }}
               />
-              {/* {assetsOrActivityView === 'assets' ? (
-                <Assets
-                  selectedNetwork={selectedNetwork}
-                  assetBalancesResult={{ isLoading, isFetched, balances }}
-                />
-              ) : (
-                <Activity
-                  selectedNetwork={selectedNetwork}
-                  activityFetchResult={{
-                    isLoading: isLoadingActivity,
-                    isFetched: isFetchedActivity,
-                    transactions
-                  }}
-                />
-              )} */}
             </Stack>
           </Box>
         ) : (

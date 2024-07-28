@@ -321,13 +321,13 @@ export const QUERY_FARCASTER_PROFILE = /* GraphQL */ `
 
 export const QUERY_CONTACTS_FAN_TOKENS = /* GraphQL */ `
   query GetFanTokenAuctionsForContacts(
-    $status: FarcasterFanTokenAuctionStatusType
+    $statuses: [FarcasterFanTokenAuctionStatusType!]
     $entityNames: [String!]
   ) {
     FarcasterFanTokenAuctions(
       input: {
         filter: {
-          status: { _eq: $status }
+          status: { _in: $statuses }
           entityName: { _in: $entityNames }
           entityType: { _eq: USER }
         }

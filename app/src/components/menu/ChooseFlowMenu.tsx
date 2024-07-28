@@ -6,7 +6,8 @@ import {
   MenuItem,
   MenuProps,
   Tooltip,
-  Typography} from '@mui/material';
+  Typography
+} from '@mui/material';
 import { FlowType } from '../../types/FlowType';
 import { Add, Check, MoreHoriz, PlayForWork, Warning } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
@@ -14,6 +15,7 @@ import { useContext, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { green, red } from '@mui/material/colors';
 import { FlowSettingsMenu } from './FlowSettingsMenu';
+import { PiTipJar } from 'react-icons/pi';
 
 export type ChooseFlowMenuProps = MenuProps &
   CloseCallbackType & {
@@ -90,7 +92,7 @@ export function ChooseFlowMenu({
 
                       {option.type === 'JAR' && (
                         <Tooltip title="Jar">
-                          <Box src="/jar.png" component="img" sx={{ width: 20, height: 20 }} />
+                          <PiTipJar size={20} />
                         </Tooltip>
                       )}
 

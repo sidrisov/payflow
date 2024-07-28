@@ -32,7 +32,6 @@ import { identitiesInvited } from '../../services/invitation';
 import { AddressBookToolBar } from '../chips/AddressBookChip';
 import { useContacts } from '../../utils/queries/contacts';
 import { useSearchParams } from 'react-router-dom';
-import { grey } from '@mui/material/colors';
 
 export type SelectIdentityCallbackType = {
   selectIdentityCallback?: (selectedIdentity: SelectedIdentityType) => void;
