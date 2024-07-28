@@ -1,6 +1,5 @@
 import { Address } from 'viem';
 import { FlowType } from './FlowType';
-import { FarcasterFanTokenAuction } from '../generated/graphql/types';
 
 export interface ProfileType {
   identity: Address;
@@ -33,7 +32,13 @@ export interface ContactType {
 
 export interface ContactWithFanTokenAuction {
   contact: ContactType;
-  auction: FarcasterFanTokenAuction;
+  auction: FanTokenAuction;
+}
+
+export interface FanTokenAuction {
+  estimatedStartTimestamp: Date;
+  auctionSupply: number;
+  launchCastUrl?: string;
 }
 
 export interface MetaType {

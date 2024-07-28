@@ -1,6 +1,7 @@
 package ua.sinaver.web3.payflow.service.api;
 
 import ua.sinaver.web3.payflow.graphql.generated.types.FarcasterCast;
+import ua.sinaver.web3.payflow.graphql.generated.types.FarcasterFanTokenAuction;
 import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 import ua.sinaver.web3.payflow.message.ConnectedAddresses;
 
@@ -12,6 +13,8 @@ public interface ISocialGraphService {
 	List<String> getSocialFollowings(String identity);
 
 	FarcasterCast getTopCastReply(String parentHash, List<String> ignoredFids);
+
+	List<FarcasterFanTokenAuction> getFanTokenAuctions(List<String> farcasterUsernames);
 
 	FarcasterCast getReplySocialCapitalValue(String hash);
 

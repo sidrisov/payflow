@@ -142,6 +142,12 @@ input Boolean_Comparator_Exp {
   _eq: Boolean
 }
 
+type CastValue {
+  hash: String
+  rawValue: String
+  formattedValue: Float
+}
+
 type ConnectedAddress {
   address: Address
   chainId: String
@@ -399,6 +405,7 @@ type FarcasterCast {
   numberOfRecasts: Int
   numberOfReplies: Int
   socialCapitalValue: SocialCapitalValue
+  castValue: CastValue
 }
 
 input FarcasterCastFilter {
@@ -464,6 +471,7 @@ input FarcasterChannelFilter {
   moderatorId: String_Comparator_Exp
   moderatorIdentity: Identity_Comparator_Exp
   createdAtTimestamp: Time_Comparator_Exp
+  url: String_Comparator_Exp
 }
 
 input FarcasterChannelNestedInput {
@@ -540,6 +548,73 @@ type FarcasterChannelsOutput {
   FarcasterChannel: [FarcasterChannel!]
 }
 
+type FarcasterFanTokenAuction {
+  auctionId: Int
+  entityId: String!
+  entityType: FarcasterFanTokenAuctionEntityType!
+  status: FarcasterFanTokenAuctionStatusType!
+  estimatedStartTimestamp: Time!
+  estimatedEndTimestamp: Time!
+  decimals: Int
+  auctionSupply: Float
+  minPriceInMoxie: Float
+  subjectAddress: String
+  minBiddingAmount: Float
+  minFundingAmount: Float
+  entityName: String
+  entitySymbol: String
+  launchCastUrl: String
+  channel: FarcasterChannel
+  socials(input: SocialsNestedInput): [Social]
+}
+
+enum FarcasterFanTokenAuctionEntityType {
+  CHANNEL
+  NETWORK
+  USER
+}
+
+input FarcasterFanTokenAuctionEntityType_Comparator_Exp {
+  _eq: FarcasterFanTokenAuctionEntityType
+  _in: [FarcasterFanTokenAuctionEntityType!]
+}
+
+input FarcasterFanTokenAuctionsFilter {
+  status: FarcasterFanTokenAuctionStatusType_Comparator_Exp
+  entityId: String_Eq_In_Comparator_Exp
+  entityName: String_Eq_In_Comparator_Exp
+  entityType: FarcasterFanTokenAuctionEntityType_Comparator_Exp!
+}
+
+input FarcasterFanTokenAuctionsInput {
+  filter: FarcasterFanTokenAuctionsFilter
+  blockchain: EveryBlockchain!
+  order: [FarcasterFanTokenAuctionsOrderBy!]
+  limit: Int
+  cursor: String
+}
+
+input FarcasterFanTokenAuctionsOrderBy {
+  estimatedStartTimestamp: OrderBy
+  estimatedEndTimestamp: OrderBy
+}
+
+type FarcasterFanTokenAuctionsOutput {
+  FarcasterFanTokenAuction: [FarcasterFanTokenAuction!]
+  pageInfo: PageInfo
+}
+
+enum FarcasterFanTokenAuctionStatusType {
+  UPCOMING
+  ACTIVE
+  COMPLETED
+}
+
+input FarcasterFanTokenAuctionStatusType_Comparator_Exp {
+  _eq: FarcasterFanTokenAuctionStatusType
+  _in: [FarcasterFanTokenAuctionStatusType!]
+}
+
 type FarcasterFrame {
   frameHash: String
   frameUrl: String
@@ -569,6 +644,66 @@ type FarcasterFrameMessageOutput {
   castedBy: Social
   interactedByFid: Int
   interactedBy: Social
+}
+
+type FarcasterNotaEarningStat {
+  entityId: String!
+  entityType: FarcasterFanTokenAuctionEntityType!
+  allEarningsAmount: Float
+  allEarningsAmountInWei: String
+  castEarningsAmount: Float
+  castEarningsAmountInWei: String
+  frameDevEarningsAmount: Float
+  frameDevEarningsAmountInWei: String
+  otherEarningsAmount: Float
+  otherEarningsAmountInWei: String
+  channel: FarcasterChannel
+  socials(input: SocialsNestedInput): [Social]
+  timeframe: FarcasterNotaEarningStatsTimeframe!
+  startTimestamp: Time!
+  endTimestamp: Time!
+}
+
+enum FarcasterNotaEarningStatsEntityType {
+  CHANNEL
+  USER
+}
+
+input FarcasterNotaEarningStatsEntityType_Comparator_Exp {
+  _eq: FarcasterNotaEarningStatsEntityType
+  _in: [FarcasterNotaEarningStatsEntityType!]
+}
+
+input FarcasterNotaEarningStatsFilter {
+  entityId: String_Eq_In_Comparator_Exp
+  entityType: FarcasterNotaEarningStatsEntityType_Comparator_Exp!
+}
+
+input FarcasterNotaEarningStatsInput {
+  filter: FarcasterNotaEarningStatsFilter
+  timeframe: FarcasterNotaEarningStatsTimeframe!
+  blockchain: EveryBlockchain!
+  order: [FarcasterNotaEarningStatsOrderBy!]
+  limit: Int
+  cursor: String
+}
+
+input FarcasterNotaEarningStatsOrderBy {
+  allEarnings: OrderBy
+  castEarnings: OrderBy
+  frameDevEarnings: OrderBy
+  otherEarnings: OrderBy
+}
+
+type FarcasterNotaEarningStatsOutput {
+  FarcasterNotaEarningStat: [FarcasterNotaEarningStat!]
+  pageInfo: PageInfo
+}
+
+enum FarcasterNotaEarningStatsTimeframe {
+  TODAY
+  WEEKLY
+  LIFETIME
 }
 
 input FarcasterQuotedRecastsFilter {
@@ -642,6 +777,12 @@ input FarcasterRepliesInput {
 type FarcasterRepliesOutput {
   Reply: [FarcasterCast!]
   pageInfo: PageInfo
+}
+
+type FarcasterScore {
+  farScoreRaw: String
+  farScore: Float
+  farRank: Int
 }
 
 input Float_Comparator_Exp {
@@ -1137,6 +1278,8 @@ type Query {
   FarcasterReplies(input: FarcasterRepliesInput!): FarcasterRepliesOutput
   FarcasterQuotedRecasts(input: FarcasterQuotedRecastsInput!): FarcasterQuotedRecastsOutput
   FarcasterReactions(input: FarcasterReactionsInput!): FarcasterReactionsOutput
+  FarcasterFanTokenAuctions(input: FarcasterFanTokenAuctionsInput!): FarcasterFanTokenAuctionsOutput
+  FarcasterNotaEarningStats(input: FarcasterNotaEarningStatsInput!): FarcasterNotaEarningStatsOutput
 }
 
 scalar Range
@@ -1287,6 +1430,7 @@ type Social {
   profileHandle: String
   updatedAt: Time
   socialCapital: SocialCapital
+  farcasterScore: FarcasterScore
 }
 
 type SocialCapital {
@@ -1339,6 +1483,8 @@ input SocialFilter {
   updatedAt: Time_Comparator_Exp
   socialCapitalScore: Float_Comparator_Exp
   socialCapitalRank: Int_Comparator_Exp
+  farScore: Float_Comparator_Exp
+  farRank: Int_Comparator_Exp
 }
 
 type SocialFollower {
@@ -1446,6 +1592,8 @@ input SocialOrderBy {
   updatedAt: OrderBy
   socialCapitalScore: OrderBy
   socialCapitalRank: OrderBy
+  farScore: OrderBy
+  farRank: OrderBy
 }
 
 input SocialsInput {
@@ -1675,6 +1823,8 @@ enum TokenBlockchain {
   zora
   gold
   degen
+  ham
+  stp
 }
 
 input TokenFilter {
@@ -1938,6 +2088,8 @@ type TrendingCast {
   criteriaCount: Float
   socialCapitalValueFormatted: Float
   socialCapitalValueRaw: String
+  castValueFormatted: Float
+  castValueRaw: String
   cast: FarcasterCast
   criteria: String
   timeFrom: Time

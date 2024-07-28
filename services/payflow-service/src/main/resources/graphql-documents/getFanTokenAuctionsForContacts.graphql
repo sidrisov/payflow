@@ -1,0 +1,25 @@
+query GetFanTokenAuctionsForContacts(
+    $statuses: [FarcasterFanTokenAuctionStatusType!]
+    $entityNames: [String!]
+) {
+    FarcasterFanTokenAuctions(
+        input: {
+            filter: {
+                status: { _in: $statuses }
+                entityName: { _in: $entityNames }
+                entityType: { _eq: USER }
+            }
+            blockchain: ALL
+            order: { estimatedEndTimestamp: ASC }
+            limit: 50
+        }
+    ) {
+        FarcasterFanTokenAuction {
+            auctionSupply
+            decimals
+            entityName
+            estimatedStartTimestamp
+            launchCastUrl
+        }
+    }
+}
