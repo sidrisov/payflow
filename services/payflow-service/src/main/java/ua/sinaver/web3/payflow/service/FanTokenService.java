@@ -58,7 +58,6 @@ public class FanTokenService {
 								return new ContactWithFanTokenAuction(usernameToContactMap.get(a.getEntityName()),
 										new ContactWithFanTokenAuction.FanTokenAuction(
 												a.getEntityName(),
-												a.getEntityId(),
 												supply,
 												a.getEstimatedStartTimestamp(),
 												a.getLaunchCastUrl()));
@@ -83,7 +82,6 @@ public class FanTokenService {
 					return new ContactWithFanTokenAuction(contactWithFanTokenAuction.contact(),
 							new ContactWithFanTokenAuction.FanTokenAuction(
 									updatedAuction.getEntityName(),
-									updatedAuction.getEntityId(),
 									supply,
 									updatedAuction.getEstimatedStartTimestamp(),
 									updatedAuction.getLaunchCastUrl()));

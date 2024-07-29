@@ -94,7 +94,7 @@ export function FanTokenAuctionCard() {
                               component: 'a',
                               href:
                                 contactWithAuction.auction.launchCastUrl ??
-                                `https://www.airstack.xyz/users/fc_fid:${contactWithAuction.auction.fid}`,
+                                `https://www.airstack.xyz/users/fc_fname:${contactWithAuction.auction.farcasterUsername}`,
                               target: '_blank',
                               icon: <Circle color="success" sx={{ width: 10, height: 10 }} />,
                               label: (
