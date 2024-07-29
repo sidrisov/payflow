@@ -1,0 +1,23 @@
+query GetActiveFanTokenAuction(
+    $entityName: String!
+) {
+    FarcasterFanTokenAuctions(
+        input: {
+            filter: {
+                status: { _eq: ACTIVE }
+                entityName: { _eq: $entityName }
+                entityType: { _eq: USER }
+            }
+            blockchain: ALL
+            limit: 1
+        }
+    ) {
+        FarcasterFanTokenAuction {
+            auctionSupply
+            decimals
+            entityName
+            estimatedStartTimestamp
+            launchCastUrl
+        }
+    }
+}

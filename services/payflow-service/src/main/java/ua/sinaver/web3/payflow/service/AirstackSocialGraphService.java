@@ -169,7 +169,33 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 
 		log.error("Failed to fetch fan tokens for farcaster usernames: {}", farcasterUsernames);
 		return Collections.emptyList();
+	}
 
+	@Override
+	@Cacheable(value = FAN_TOKENS_CACHE_NAME, unless = "#result==null")
+	public FarcasterFanTokenAuction getActiveFanTokenAuction(String farcasterUsername) {
+		try {
+			val auctionsResponse = graphQlClient.documentName(
+							"getActiveFanTokenAuction")
+					.variable("entityName", farcasterUsername)
+					.execute().block();
+			if (auctionsResponse != null) {
+				log.debug("Response: {}", auctionsResponse);
+				val auction = auctionsResponse.field("FarcasterFanTokenAuctions.FarcasterFanTokenAuction")
+						.toEntityList(FarcasterFanTokenAuction.class).stream().findFirst().orElse(null);
+				log.debug("Fetched fan token {} for farcaster username: {}", auction,
+						farcasterUsername);
+				return auction;
+			}
+		} catch (Throwable t) {
+			log.error("Error during fetching fan token for farcaster username: {}, error: {} - {}",
+					farcasterUsername,
+					t.getMessage(),
+					log.isTraceEnabled() ? t : null);
+		}
+
+		log.error("Failed to fetch fan token for farcaster username: {}", farcasterUsername);
+		return null;
 	}
 
 	@Override

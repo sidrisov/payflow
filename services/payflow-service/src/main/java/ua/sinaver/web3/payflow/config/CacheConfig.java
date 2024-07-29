@@ -25,6 +25,7 @@ public class CacheConfig {
 	public static final String CONTACTS_CACHE_NAME = CACHE_PREFIX_V0 + "contacts";
 	public static final String CONTACT_LIST_CACHE_NAME = CACHE_PREFIX_V0 + "contact-list";
 	public static final String FAN_TOKENS_CACHE_NAME = CACHE_PREFIX_V1 + "fan-tokens";
+	public static final String FAN_TOKEN_CACHE_NAME = CACHE_PREFIX_V0 + "fan-tokens";
 	public static final String SOCIALS_CACHE_NAME = CACHE_PREFIX_V0 + "socials";
 	public static final String SOCIALS_INSIGHTS_CACHE_NAME = CACHE_PREFIX_V0 + "insights";
 	public static final String FARCASTER_VERIFICATIONS_CACHE_NAME = CACHE_PREFIX_V1 + "verifications";
@@ -82,6 +83,13 @@ public class CacheConfig {
 						.SerializationPair
 						.fromSerializer(serializer));
 
+		val fanTokenCacheConfigs = RedisCacheConfiguration.defaultCacheConfig()
+				.disableCachingNullValues()
+				.entryTtl(Duration.ofMinutes(5))
+				.serializeValuesWith(RedisSerializationContext
+						.SerializationPair
+						.fromSerializer(serializer));
+
 		val ethDenverContactsCacheConfigs =
 				RedisCacheConfiguration.defaultCacheConfig()
 						.disableCachingNullValues()
@@ -108,6 +116,7 @@ public class CacheConfig {
 		cacheConfigurations.put(CONTACTS_CACHE_NAME, contactsCacheConfigs);
 		cacheConfigurations.put(CONTACT_LIST_CACHE_NAME, contactsListCacheConfigs);
 		cacheConfigurations.put(FAN_TOKENS_CACHE_NAME, contactsCacheConfigs);
+		cacheConfigurations.put(FAN_TOKEN_CACHE_NAME, fanTokenCacheConfigs);
 		cacheConfigurations.put(TOKEN_OWNERS_CACHE_NAME, ethDenverContactsCacheConfigs);
 		cacheConfigurations.put(POAP_OWNERS_CACHE_NAME, ethDenverContactsCacheConfigs);
 		cacheConfigurations.put(SOCIALS_CACHE_NAME, socialsCacheConfig);
@@ -138,6 +147,9 @@ public class CacheConfig {
 
 		cacheManager.registerCustomCache(FAN_TOKENS_CACHE_NAME,
 				buildCache(contactsListExpireAfterWriteDuration));
+
+		cacheManager.registerCustomCache(FAN_TOKEN_CACHE_NAME,
+				buildCache(Duration.ofMinutes(5)));
 
 		cacheManager.registerCustomCache(TOKEN_OWNERS_CACHE_NAME,
 				buildCache(poapAndTokenOwnersExpireAfterWriteDuration));
