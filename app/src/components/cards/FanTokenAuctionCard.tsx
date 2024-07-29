@@ -90,23 +90,16 @@ export function FanTokenAuctionCard() {
                         {...(new Date(contactWithAuction.auction.estimatedStartTimestamp) <=
                         currentTime
                           ? {
-                              clickable: Boolean(contactWithAuction.auction.launchCastUrl),
+                              clickable: true,
                               component: 'a',
-                              href: contactWithAuction.auction.launchCastUrl,
+                              href:
+                                contactWithAuction.auction.launchCastUrl ??
+                                `https://www.airstack.xyz/users/fc_fid:${contactWithAuction.auction.fid}`,
                               target: '_blank',
-                              icon: (
-                                <Circle
-                                  color={
-                                    contactWithAuction.auction.launchCastUrl ? 'success' : 'warning'
-                                  }
-                                  sx={{ width: 10, height: 10 }}
-                                />
-                              ),
+                              icon: <Circle color="success" sx={{ width: 10, height: 10 }} />,
                               label: (
                                 <Typography variant="caption">
-                                  <b>
-                                    {contactWithAuction.auction.launchCastUrl ? 'live' : 'awaiting'}
-                                  </b>
+                                  <b>live</b>
                                 </Typography>
                               )
                             }

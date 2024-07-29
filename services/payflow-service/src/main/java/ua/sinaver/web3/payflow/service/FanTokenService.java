@@ -58,6 +58,7 @@ public class FanTokenService {
 								return new ContactWithFanTokenAuction(usernameToContactMap.get(a.getEntityName()),
 										new ContactWithFanTokenAuction.FanTokenAuction(
 												a.getEntityName(),
+												a.getEntityId(),
 												supply,
 												a.getEstimatedStartTimestamp(),
 												a.getLaunchCastUrl()));
@@ -75,14 +76,19 @@ public class FanTokenService {
 				.map(contactWithFanTokenAuction -> {
 					val cachedAuction = contactWithFanTokenAuction.auction();
 					val updatedAuction = socialGraphService.getActiveFanTokenAuction(cachedAuction.farcasterUsername());
+					if (updatedAuction == null) {
+						return null;
+					}
 					val supply = (int) (updatedAuction.getAuctionSupply() / Math.pow(10, updatedAuction.getDecimals()));
 					return new ContactWithFanTokenAuction(contactWithFanTokenAuction.contact(),
 							new ContactWithFanTokenAuction.FanTokenAuction(
 									updatedAuction.getEntityName(),
+									updatedAuction.getEntityId(),
 									supply,
 									updatedAuction.getEstimatedStartTimestamp(),
 									updatedAuction.getLaunchCastUrl()));
 				})
+				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
 
 		// Add the remaining entries that were not processed

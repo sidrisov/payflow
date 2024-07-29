@@ -18,6 +18,7 @@ query GetActiveFanTokenAuction(
             entityName
             estimatedStartTimestamp
             launchCastUrl
+            entityId
         }
     }
 }

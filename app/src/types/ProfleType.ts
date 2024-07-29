@@ -36,6 +36,7 @@ export interface ContactWithFanTokenAuction {
 }
 
 export interface FanTokenAuction {
+  fid: String;
   estimatedStartTimestamp: Date;
   auctionSupply: number;
   launchCastUrl?: string;
