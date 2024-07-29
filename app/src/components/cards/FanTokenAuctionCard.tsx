@@ -19,6 +19,8 @@ export function FanTokenAuctionCard() {
     enabled: true
   });
 
+  const currentTime = new Date();
+
   return (
     <Card
       elevation={3}
@@ -38,7 +40,7 @@ export function FanTokenAuctionCard() {
       <CardContent sx={{ padding: 1 }}>
         {isFetchingAuctions ? (
           <Skeleton variant="rectangular" height={100} sx={{ borderRadius: '15px' }} />
-        ) : contactsWithAuction ? (
+        ) : contactsWithAuction && contactsWithAuction.length > 0 ? (
           <Box
             p={0.5}
             display="flex"
@@ -85,16 +87,26 @@ export function FanTokenAuctionCard() {
                       </Typography>
                       <Chip
                         size="small"
-                        {...(contactWithAuction.auction.launchCastUrl
+                        {...(new Date(contactWithAuction.auction.estimatedStartTimestamp) <=
+                        currentTime
                           ? {
+                              clickable: Boolean(contactWithAuction.auction.launchCastUrl),
                               component: 'a',
                               href: contactWithAuction.auction.launchCastUrl,
                               target: '_blank',
-                              clickable: true,
-                              icon: <Circle color="success" sx={{ width: 10, height: 10 }} />,
+                              icon: (
+                                <Circle
+                                  color={
+                                    contactWithAuction.auction.launchCastUrl ? 'success' : 'warning'
+                                  }
+                                  sx={{ width: 10, height: 10 }}
+                                />
+                              ),
                               label: (
                                 <Typography variant="caption">
-                                  <b>live</b>
+                                  <b>
+                                    {contactWithAuction.auction.launchCastUrl ? 'live' : 'awaiting'}
+                                  </b>
                                 </Typography>
                               )
                             }
@@ -124,9 +136,7 @@ export function FanTokenAuctionCard() {
             ))}
           </Box>
         ) : (
-          <Typography variant="caption">
-            No fan token auction available among your contacts
-          </Typography>
+          <Typography variant="caption">No auction available among your contacts</Typography>
         )}
       </CardContent>
     </Card>

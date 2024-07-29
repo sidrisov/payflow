@@ -4,7 +4,7 @@ import { intervalToDuration } from 'date-fns';
 export function countdown(eventTime: Date): string {
   const currentTime = new Date();
   if (eventTime <= currentTime) {
-    return 'The event has already occurred.';
+    return 'live';
   }
 
   const duration = intervalToDuration({
