@@ -255,7 +255,7 @@ public class FramePaymentController {
 				".site/Payflow-support-tokens-chains-e36f2c1e9f7e4bfd834baf604ce9a375";
 		return FrameResponse.builder()
 				.imageUrl(profileImage)
-				.textInput("e.g.: $1 degen | 1 usdc optimism")
+				.textInput("50 degen or 10 moxie or 1 usdc optimism")
 				.postUrl(apiServiceUrl.concat(String.format(PAY_IN_FRAME_COMMAND, identity)))
 				.button(new FrameButton("Confirm", FrameButton.ActionType.POST, null))
 				.button(new FrameButton("Tokens", FrameButton.ActionType.LINK, tokensSupported))
