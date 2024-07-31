@@ -32,7 +32,7 @@ export function AggregatedAssetBalanceSection({
                 {assets.map((asset, index) => (
                   <Fragment key={index}>
                     {getNetworkDisplayName(asset.token.chainId)}
-                    {', '}
+                    {index !== assets.length - 1 ? ', ' : ''}
                   </Fragment>
                 ))}
               </b>{' '}
