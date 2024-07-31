@@ -1,56 +1,71 @@
 import { Button, Stack, Typography } from '@mui/material';
 
-import { Chain, formatUnits } from 'viem';
-import { NetworkAssetBalanceSection } from './NetworkAssetBalanceSection';
+import { formatUnits } from 'viem';
+import { AggregatedAssetBalanceSection } from './AggregatedAssetBalanceSection';
 import { BalanceFetchResultType as AssetBalancesResultType } from '../types/BalanceFetchResultType';
 import { ActivitySkeletonSection } from './skeletons/ActivitySkeletonSection';
 import { useState } from 'react';
+import { AssetBalanceType } from '../types/AssetType';
+
+interface AggregatedAssetBalances {
+  tokenId: string;
+  assets: AssetBalanceType[];
+  totalBalance: bigint;
+  totalUSDBalance: number;
+}
+
+const aggregateAssets = (balances: AssetBalanceType[]): AggregatedAssetBalances[] => {
+  const aggregationMap: Record<string, AggregatedAssetBalances> = {};
+
+  balances.forEach((assetBalance) => {
+    const tokenId = assetBalance.asset.token.id;
+
+    if (!aggregationMap[tokenId]) {
+      aggregationMap[tokenId] = {
+        tokenId,
+        assets: [],
+        totalBalance: 0n,
+        totalUSDBalance: 0
+      };
+    }
+
+    aggregationMap[tokenId].assets.push(assetBalance);
+    aggregationMap[tokenId].totalBalance += assetBalance.balance?.value ?? BigInt(0);
+    aggregationMap[tokenId].totalUSDBalance += assetBalance.usdValue;
+  });
+
+  return Object.values(aggregationMap)
+    .filter((asset) => asset.totalBalance !== BigInt(0))
+    .sort((left, right) => right.totalUSDBalance - left.totalUSDBalance);
+};
 
 export default function Assets({
-  selectedNetwork,
   assetBalancesResult: { isLoading, isFetched, balances }
 }: {
-  selectedNetwork: Chain | undefined;
   assetBalancesResult: AssetBalancesResultType;
 }) {
   const [showAll, setShowAll] = useState<boolean>(false);
 
-  const nonZeroBalances = balances?.filter((assetBalance) => {
-    return (
-      assetBalance.balance &&
-      (selectedNetwork ? assetBalance.asset.chainId === selectedNetwork.id : true) &&
-      assetBalance.balance?.value !== BigInt(0)
-    );
-  });
+  const nonZeroBalances = balances && aggregateAssets(balances);
 
   return (
     <Stack pt={1} px={1} spacing={1} width="100%" maxHeight={360} overflow="auto">
       {isLoading || !isFetched ? (
         <ActivitySkeletonSection />
       ) : isFetched && nonZeroBalances ? (
-        nonZeroBalances
-          .filter((assetBalance) => {
-            return (
-              assetBalance.balance &&
-              (selectedNetwork ? assetBalance.asset.chainId === selectedNetwork.id : true) &&
-              assetBalance.balance?.value !== BigInt(0)
-            );
-          })
-          .slice(0, showAll ? nonZeroBalances.length : 3)
-          .map((assetBalance) => {
-            return (
-              <NetworkAssetBalanceSection
-                key={`network_asset_balance_${assetBalance.asset.chainId}_${assetBalance.asset.address}_${assetBalance.asset.token.tokenAddress}`}
-                chainId={assetBalance.asset.chainId}
-                asset={assetBalance.asset}
-                balance={formatUnits(
-                  assetBalance.balance?.value ?? BigInt(0),
-                  assetBalance.balance?.decimals ?? 0
-                )}
-                usdValue={assetBalance.usdValue}
-              />
-            );
-          })
+        nonZeroBalances.slice(0, showAll ? nonZeroBalances.length : 3).map((assetBalance) => {
+          return (
+            <AggregatedAssetBalanceSection
+              key={`network_asset_balance_${assetBalance.tokenId}`}
+              assets={assetBalance.assets.map((asset) => asset.asset)}
+              balance={formatUnits(
+                assetBalance.totalBalance,
+                assetBalance.assets[0]?.asset.token.decimals ?? 0
+              )}
+              usdValue={assetBalance.totalUSDBalance}
+            />
+          );
+        })
       ) : (
         <Typography variant="subtitle2" textAlign="center">
           Couldn't fetch. Try again!

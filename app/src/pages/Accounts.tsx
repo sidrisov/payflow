@@ -5,11 +5,9 @@ import { AccountCard } from '../components/cards/AccountCard';
 import { ProfileContext } from '../contexts/UserContext';
 import Assets from '../components/Assets';
 import { AssetType } from '../types/AssetType';
-import { Chain } from 'viem';
 import { getSupportedTokens } from '../utils/erc20contracts';
 import { FlowType } from '../types/FlowType';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
-import NetworkSelectorSection from '../components/NetworkSelectorSection';
 import { useNavigate } from 'react-router-dom';
 import { useAssetBalances } from '../utils/queries/balances';
 import { usePendingPayments } from '../utils/queries/payments';
@@ -69,8 +67,6 @@ export default function Accounts() {
 
   const { isLoading, isFetched, data: balances } = useAssetBalances(assets);
 
-  const [selectedNetwork, setSelectedNetwork] = useState<Chain>();
-
   const { isFetched: isPaymentFetched, data: payments } = usePendingPayments(Boolean(profile));
 
   return (
@@ -106,16 +102,7 @@ export default function Accounts() {
                 </>
               )}
               <FanTokenAuctionCard />
-              <NetworkSelectorSection
-                width="100%"
-                wallets={selectedFlow.wallets}
-                selectedNetwork={selectedNetwork}
-                setSelectedNetwork={setSelectedNetwork}
-              />
-              <Assets
-                selectedNetwork={selectedNetwork}
-                assetBalancesResult={{ isLoading, isFetched, balances }}
-              />
+              <Assets assetBalancesResult={{ isLoading, isFetched, balances }} />
             </Stack>
           </Box>
         ) : (

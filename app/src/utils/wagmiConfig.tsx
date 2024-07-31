@@ -54,7 +54,7 @@ const commonWagmiConfig = {
   ...commonWagmiConfig,
   appName: 'Payflow',
   projectId: WALLET_CONNECT_PROJECT_ID,
-  appDescription: 'On-chain Social Payments',
+  appDescription: 'Onchain Social Payments',
   appUrl: 'https://payflow.me',
   appIcon: 'https://payflow.me/favicon.ico',
   wallets: [

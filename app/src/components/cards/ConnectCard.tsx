@@ -175,7 +175,7 @@ export function ConnectCard() {
             fontWeight="bold"
             textAlign="center"
             color={grey[400]}>
-            On-chain identity like Farcaster, Lens, or ENS
+            Onchain identity like Farcaster, Lens, or ENS
           </Typography>
         </Card>
 

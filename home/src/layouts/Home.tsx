@@ -18,7 +18,9 @@ import HideOnScroll from '../components/HideOnScroll';
 import Logo from '../components/Logo';
 import { green, grey } from '@mui/material/colors';
 import { useState } from 'react';
-import { Help, Twitter, X } from '@mui/icons-material';
+import { Help } from '@mui/icons-material';
+import { SiFarcaster } from 'react-icons/si';
+import { FaXTwitter } from 'react-icons/fa6';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 
@@ -43,13 +45,18 @@ export default function Home() {
             <Logo />
             <Box>
               <IconButton
+                color="inherit"
                 size="small"
                 href="https://warpcast.com/~/channel/payflow"
                 target="_blank">
-                <Avatar variant="rounded" src="farcaster.svg" sx={{ width: 20, height: 20 }} />
+                <SiFarcaster size="20" />
               </IconButton>
-              <IconButton size="small" href="https://x.com/payflowme" target="_blank">
-                <X fontSize="small" />
+              <IconButton
+                color="inherit"
+                size="small"
+                href="https://x.com/payflowme"
+                target="_blank">
+                <FaXTwitter size={20} />
               </IconButton>
               <Button
                 endIcon={<Help />}
@@ -105,7 +112,7 @@ export default function Home() {
             fontWeight="bold"
             color={green.A700}
             textAlign="center">
-            abstracted | gasless | non-custodial
+            Connect | Discover | Pay
           </Typography>
 
           <Stack spacing={1} direction="row" alignItems="center">

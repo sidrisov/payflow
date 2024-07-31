@@ -17,7 +17,7 @@ export function GasFeeSection({
   return (
     <Tooltip
       title="Gas is paid by the sending flow wallet via Gelato SyncFee call method. 
-                    The fee includes Gelato on-chain call, safe tx fee + deployment fee on the first tx, and 10% Gelato's comission on top of all.">
+                    The fee includes Gelato onchain call, safe tx fee + deployment fee on the first tx, and 10% Gelato's comission on top of all.">
       <Box display="flex" flexDirection="row" justifyContent="space-between" alignItems="center">
         <Typography variant="caption">Gas Fee</Typography>
         <Typography variant="caption" color={gasFee === BigInt(0) ? green.A700 : 'inherit'}>
