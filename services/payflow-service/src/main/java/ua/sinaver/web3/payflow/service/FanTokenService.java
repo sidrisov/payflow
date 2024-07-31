@@ -11,6 +11,7 @@ import ua.sinaver.web3.payflow.message.ContactWithFanTokenAuction;
 import ua.sinaver.web3.payflow.message.SocialInfo;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -69,8 +70,14 @@ public class FanTokenService {
 
 	public List<ContactWithFanTokenAuction> refreshTokensMeta(List<ContactWithFanTokenAuction> cachedContactWithFanTokenAuctions) {
 		Date now = new Date();
+		return cachedContactWithFanTokenAuctions.stream()
+				.filter(record ->
+						record.auction().estimatedStartTimestamp().toInstant()
+								.plus(3, ChronoUnit.DAYS)
+								.isAfter(now.toInstant()))
+				.toList();
 
-		val updatedList = cachedContactWithFanTokenAuctions.stream()
+		/*val updatedList = cachedNotExpiredContactWithFanTokenAuctions.stream()
 				.takeWhile(contactWithFanTokenAuction -> contactWithFanTokenAuction.auction().estimatedStartTimestamp().before(now))
 				.map(contactWithFanTokenAuction -> {
 					val cachedAuction = contactWithFanTokenAuction.auction();
@@ -90,7 +97,7 @@ public class FanTokenService {
 				.collect(Collectors.toList());
 
 		// Add the remaining entries that were not processed
-		updatedList.addAll(cachedContactWithFanTokenAuctions.subList(updatedList.size(), cachedContactWithFanTokenAuctions.size()));
-		return updatedList;
+		updatedList.addAll(cachedNotExpiredContactWithFanTokenAuctions.subList(updatedList.size(), cachedNotExpiredContactWithFanTokenAuctions.size()));
+		return updatedList;*/
 	}
 }

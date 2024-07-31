@@ -87,15 +87,16 @@ export function FanTokenAuctionCard() {
                       </Typography>
                       <Chip
                         size="small"
+                        clickable
+                        component="a"
+                        href={
+                          contactWithAuction.auction.launchCastUrl ??
+                          `https://www.airstack.xyz/users/fc_fname:${contactWithAuction.auction.farcasterUsername}`
+                        }
+                        target="_blank"
                         {...(new Date(contactWithAuction.auction.estimatedStartTimestamp) <=
                         currentTime
                           ? {
-                              clickable: true,
-                              component: 'a',
-                              href:
-                                contactWithAuction.auction.launchCastUrl ??
-                                `https://www.airstack.xyz/users/fc_fname:${contactWithAuction.auction.farcasterUsername}`,
-                              target: '_blank',
                               icon: <Circle color="success" sx={{ width: 10, height: 10 }} />,
                               label: (
                                 <Typography variant="caption">
@@ -104,6 +105,7 @@ export function FanTokenAuctionCard() {
                               )
                             }
                           : {
+                              icon: <Circle color="warning" sx={{ width: 10, height: 10 }} />,
                               label: (
                                 <Typography variant="caption">
                                   in{' '}

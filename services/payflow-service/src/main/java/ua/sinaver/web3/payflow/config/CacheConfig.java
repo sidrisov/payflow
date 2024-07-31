@@ -24,8 +24,8 @@ public class CacheConfig {
 	public static final String CACHE_PREFIX_V1 = "v1:";
 	public static final String CONTACTS_CACHE_NAME = CACHE_PREFIX_V0 + "contacts";
 	public static final String CONTACT_LIST_CACHE_NAME = CACHE_PREFIX_V0 + "contact-list";
-	public static final String FAN_TOKENS_CACHE_NAME = CACHE_PREFIX_V1 + "fan-tokens";
-	public static final String FAN_TOKEN_CACHE_NAME = CACHE_PREFIX_V0 + "fan-tokens";
+	public static final String FAN_TOKENS_CACHE_NAME = CACHE_PREFIX_V0 + "moxie-fan-tokens";
+	public static final String FAN_TOKEN_CACHE_NAME = CACHE_PREFIX_V0 + "moxie-fan-token";
 	public static final String SOCIALS_CACHE_NAME = CACHE_PREFIX_V0 + "socials";
 	public static final String SOCIALS_INSIGHTS_CACHE_NAME = CACHE_PREFIX_V0 + "insights";
 	public static final String FARCASTER_VERIFICATIONS_CACHE_NAME = CACHE_PREFIX_V1 + "verifications";
@@ -66,9 +66,7 @@ public class CacheConfig {
 	@Profile("redis")
 	CacheManager redisCacheManager(RedisConnectionFactory connectionFactory,
 	                               RedisCacheConfiguration configuration) {
-
 		val serializer = new GenericJackson2JsonRedisSerializer();
-
 		val contactsCacheConfigs = RedisCacheConfiguration.defaultCacheConfig()
 				.disableCachingNullValues()
 				.entryTtl(contactsExpireAfterWriteDuration)

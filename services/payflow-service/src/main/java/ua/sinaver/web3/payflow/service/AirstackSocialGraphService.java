@@ -172,7 +172,7 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 	}
 
 	@Override
-	@Cacheable(value = FAN_TOKENS_CACHE_NAME, unless = "#result==null")
+	@Cacheable(value = FAN_TOKEN_CACHE_NAME, unless = "#result==null")
 	public FarcasterFanTokenAuction getActiveFanTokenAuction(String farcasterUsername) {
 		try {
 			val auctionsResponse = graphQlClient.documentName(
