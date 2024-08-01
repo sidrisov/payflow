@@ -15,7 +15,6 @@ import ua.sinaver.web3.payflow.message.ProfileMessage;
 import ua.sinaver.web3.payflow.message.WalletProfileRequestMessage;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
-import ua.sinaver.web3.payflow.service.api.IContactBookService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
 
 import java.util.*;
@@ -47,9 +46,6 @@ public class UserService implements IUserService {
 
 	@Autowired
 	private InvitationRepository invitationRepository;
-
-	@Autowired
-	private IContactBookService contactBookService;
 
 	@Override
 	@CacheEvict(value = USERS_CACHE_NAME)

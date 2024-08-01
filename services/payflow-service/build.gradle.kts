@@ -46,24 +46,6 @@ dependencies {
     implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.1")
     implementation("io.jsonwebtoken:jjwt:0.9.1")
 
-    /**
-     * TODO: disable for now due the following, generating types with gradle plugin is enough for now
-     * There are problems with the GraphQL Schema:
-     *          * There is no scalar implementation for the named  'Address' scalar type
-     *          * There is no scalar implementation for the named  'DateRange' scalar type
-     *          * There is no scalar implementation for the named  'Identity' scalar type
-     *          * There is no scalar implementation for the named  'IntString' scalar type
-     *          * There is no scalar implementation for the named  'Map' scalar type
-     *          * There is no scalar implementation for the named  'Range' scalar type
-     *          * There is no scalar implementation for the named  'TimeRange' scalar type
-     *
-     *
-     */
-    //implementation("com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter")
-    //implementation("com.netflix.graphql.dgs:graphql-dgs-extended-scalars")
-    //implementation("com.graphql-java:graphql-java-extended-scalars:21.0")
-
-
     if (project.hasProperty("gcp")) {
         project.logger.info("Including GCP dependencies")
         // gcp
@@ -129,16 +111,91 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-tasks.withType<GenerateJavaTask> {
-    packageName = "ua.sinaver.web3.payflow.graphql.generated"
-    generateClientv2 = true
+tasks.withType<GenerateJavaTask>().configureEach {
+    enabled = false
+}
 
+// Task for generating code from airstack.graphqls
+tasks.register<GenerateJavaTask>("generateAirstackJava") {
+    enabled = true
+    description = "Generates Java classes from airstack.graphqls"
+
+    // Specify the schema file for this task
+    schemaPaths[0] = "${projectDir}/src/main/resources/schema/airstack.graphqls"
+
+    // Specify the output package
+    packageName = "ua.sinaver.web3.payflow.graphql.generated"
+
+    generateClientv2 = true
+    generateCustomAnnotations = true
+
+    // Specify type mappings
     typeMapping["Address"] = "java.lang.String"
     typeMapping["Identity"] = "java.lang.String"
     typeMapping["Map"] = "java.util.Map"
     typeMapping["Time"] = "java.util.Date"
     typeMapping["Any"] = "java.lang.String"
+    typeMapping["Bytes"] = "com.google.common.primitives.Bytes"
+    typeMapping["BigInt"] = "java.math.BigInteger"
+    typeMapping["BigDecimal"] = "java.math.BigDecimal"
+}
 
+// Task for generating code from moxie.graphqls
+tasks.register<GenerateJavaTask>("generateMoxieStatsJava") {
+    enabled = true
+    description = "Generates Java classes from moxie.graphqls"
+
+    // Specify the schema file for this task
+    schemaPaths = mutableListOf(
+        "${projectDir}/src/main/resources/schema/moxie_protocol_stats.graphqls",
+    )
+
+    // Specify the output package
+    packageName = "ua.sinaver.web3.payflow.graphql.generated.moxie.stats"
+
+    generateClientv2 = true
+    snakeCaseConstantNames = false
+
+    // Specify type mappings
+    typeMapping["Address"] = "java.lang.String"
+    typeMapping["Identity"] = "java.lang.String"
+    typeMapping["Map"] = "java.util.Map"
+    typeMapping["Time"] = "java.util.Date"
+    typeMapping["Any"] = "java.lang.String"
+    typeMapping["Bytes"] = "com.google.common.primitives.Bytes"
+    typeMapping["BigInt"] = "java.math.BigInteger"
+    typeMapping["BigDecimal"] = "java.math.BigDecimal"
+}
+
+tasks.register<GenerateJavaTask>("generateMoxieVestingJava") {
+    enabled = true
+    description = "Generates Java classes from moxie.graphqls"
+
+    // Specify the schema file for this task
+    schemaPaths = mutableListOf(
+        "${projectDir}/src/main/resources/schema/moxie_vesting.graphqls",
+    )
+
+
+    // Specify the output package
+    packageName = "ua.sinaver.web3.payflow.graphql.generated.moxie.vesting"
+
+    generateClientv2 = true
+    snakeCaseConstantNames = false
+
+    // Specify type mappings
+    typeMapping["Address"] = "java.lang.String"
+    typeMapping["Identity"] = "java.lang.String"
+    typeMapping["Map"] = "java.util.Map"
+    typeMapping["Time"] = "java.util.Date"
+    typeMapping["Any"] = "java.lang.String"
+    typeMapping["Bytes"] = "com.google.common.primitives.Bytes"
+    typeMapping["BigInt"] = "java.math.BigInteger"
+    typeMapping["BigDecimal"] = "java.math.BigDecimal"
+}
+
+tasks.named("compileJava") {
+    dependsOn("generateAirstackJava", "generateMoxieStatsJava", "generateMoxieVestingJava")
 }
 
 tasks.withType<BootRun> {

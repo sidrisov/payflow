@@ -14,9 +14,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import ua.sinaver.web3.payflow.graphql.generated.types.*;
 import ua.sinaver.web3.payflow.message.ConnectedAddresses;
+import ua.sinaver.web3.payflow.message.moxie.FanTokenHolder;
+import ua.sinaver.web3.payflow.message.moxie.FanTokenLockWallet;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static ua.sinaver.web3.payflow.config.CacheConfig.*;
 
@@ -24,7 +27,10 @@ import static ua.sinaver.web3.payflow.config.CacheConfig.*;
 @Slf4j
 public class AirstackSocialGraphService implements ISocialGraphService {
 
-	private final GraphQlClient graphQlClient;
+	private final GraphQlClient airstackGraphQlClient;
+	private final GraphQlClient moxieStatsGraphQlClient;
+	private final GraphQlClient moxieVestingGraphQlClient;
+
 
 	@Value("${payflow.airstack.contacts.limit:10}")
 	private int contactsLimit;
@@ -34,13 +40,24 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 
 	public AirstackSocialGraphService(WebClient.Builder builder,
 	                                  @Value("${payflow.airstack.api.url}") String airstackUrl,
-	                                  @Value("${payflow.airstack.api.key}") String airstackApiKey) {
-		WebClient client = builder
+	                                  @Value("${payflow.airstack.api.key}") String airstackApiKey,
+	                                  @Value("${payflow.moxie.api.url}") String moxieUrl) {
+		val airstackWebClient = builder
 				.baseUrl(airstackUrl)
 				.build();
 
-		graphQlClient = HttpGraphQlClient.builder(client)
+		val moxieWebClient = builder.build();
+
+		airstackGraphQlClient = HttpGraphQlClient.builder(airstackWebClient)
 				.header(HttpHeaders.AUTHORIZATION, airstackApiKey)
+				.build();
+
+		moxieStatsGraphQlClient = HttpGraphQlClient.builder(moxieWebClient)
+				.url(moxieUrl.concat("/moxie_protocol_stats_mainnet/version/latest"))
+				.build();
+
+		moxieVestingGraphQlClient = HttpGraphQlClient.builder(moxieWebClient)
+				.url(moxieUrl.concat("/moxie_vesting_mainnet/version/latest"))
 				.build();
 	}
 
@@ -53,7 +70,7 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 
 		do {
 			try {
-				val owners = graphQlClient.documentName(
+				val owners = airstackGraphQlClient.documentName(
 								"getTokenOwners")
 						.variable("blockchain", blockchain)
 						.variable("tokenAddress", address)
@@ -97,7 +114,7 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 		val addressesLimitAdjusted = contactsLimit * (whitelistedUsers.contains(identity) ?
 				5 : 2);
 
-		val topFollowingsResponse = graphQlClient.documentName("getSocialFollowings")
+		val topFollowingsResponse = airstackGraphQlClient.documentName("getSocialFollowings")
 				.variable("identity", identity)
 				.variable("limit", identityLimitAdjusted)
 				.execute().block();
@@ -120,7 +137,7 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 	@Override
 	public FarcasterCast getTopCastReply(String parentHash, List<String> ignoredFids) {
 		try {
-			val replies = graphQlClient.documentName("getCastRepliesSocialCapitalValue")
+			val replies = airstackGraphQlClient.documentName("getCastRepliesSocialCapitalValue")
 					.variable("parentHash", parentHash)
 					.execute().block();
 			if (replies != null) {
@@ -147,7 +164,7 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 	@Override
 	public List<FarcasterFanTokenAuction> getFanTokenAuctions(List<String> farcasterUsernames) {
 		try {
-			val auctionsResponse = graphQlClient.documentName("getFanTokenAuctionsForContacts")
+			val auctionsResponse = airstackGraphQlClient.documentName("getFanTokenAuctionsForContacts")
 					.variable("statuses", List.of("UPCOMING", "ACTIVE"))
 					.variable("entityNames", farcasterUsernames)
 					.execute().block();
@@ -172,10 +189,56 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 	}
 
 	@Override
+	public List<String> getFanTokenHolders(String fanTokenName) {
+		try {
+			val holdersResponse = moxieStatsGraphQlClient.documentName("getFanTokenHolders")
+					.variable("fanTokenName", fanTokenName)
+					.execute().block();
+			if (holdersResponse != null) {
+				log.debug("Response: {}", holdersResponse);
+				val holders = holdersResponse.field("subjectTokens")
+						.toEntityList(FanTokenHolder.class).stream()
+						.flatMap(subjectToken -> subjectToken.portfolio().stream())
+						.map(portfolio -> portfolio.user().id())
+						.distinct()
+						.toList();
+				log.debug("Fetched fan token holders {} for token name: {}", holders,
+						fanTokenName);
+
+				val lockWalletsResponse = moxieVestingGraphQlClient.documentName(
+								"getFanTokenVestingContractBeneficiary")
+						.variable("addresses", holders)
+						.execute().block();
+
+				if (lockWalletsResponse != null) {
+					val lockWalletsMap = lockWalletsResponse.field("tokenLockWallets")
+							.toEntityList(FanTokenLockWallet.class)
+							.stream().collect(Collectors.toMap(
+									FanTokenLockWallet::address,
+									FanTokenLockWallet::beneficiary
+							));
+
+					return holders.stream().map(holder -> lockWalletsMap.getOrDefault(holder,
+							holder)).collect(Collectors.toList());
+				}
+			}
+		} catch (Throwable t) {
+			log.error("Error during fetching fan token holders for token name: {}, " +
+							"error: {} - {}",
+					fanTokenName,
+					t.getMessage(),
+					log.isTraceEnabled() ? t : null);
+		}
+
+		log.error("Failed to fetch fan token holders for token name: {}", fanTokenName);
+		return Collections.emptyList();
+	}
+
+	@Override
 	@Cacheable(value = FAN_TOKEN_CACHE_NAME, unless = "#result==null")
 	public FarcasterFanTokenAuction getActiveFanTokenAuction(String farcasterUsername) {
 		try {
-			val auctionsResponse = graphQlClient.documentName(
+			val auctionsResponse = airstackGraphQlClient.documentName(
 							"getActiveFanTokenAuction")
 					.variable("entityName", farcasterUsername)
 					.execute().block();
@@ -201,7 +264,7 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 	@Override
 	public FarcasterCast getReplySocialCapitalValue(String hash) {
 		try {
-			val replies = graphQlClient.documentName("getReplySocialCapitalValue")
+			val replies = airstackGraphQlClient.documentName("getReplySocialCapitalValue")
 					.variable("hash", hash)
 					.execute().block();
 			if (replies != null) {
@@ -231,7 +294,7 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 	@Override
 	@Cacheable(value = FARCASTER_VERIFICATIONS_CACHE_NAME, unless = "#result==null")
 	public ConnectedAddresses getIdentityVerifiedAddresses(String identity) {
-		val verifiedAddressesResponse = graphQlClient.documentName("getFarcasterVerifications")
+		val verifiedAddressesResponse = airstackGraphQlClient.documentName("getFarcasterVerifications")
 				.variable("identity", identity)
 				.execute().block();
 
@@ -262,7 +325,7 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 	@Cacheable(cacheNames = SOCIALS_CACHE_NAME, unless = "#result==null")
 	public Wallet getSocialMetadata(String identity) {
 		try {
-			ClientGraphQlResponse socialMetadataResponse = graphQlClient.documentName(
+			ClientGraphQlResponse socialMetadataResponse = airstackGraphQlClient.documentName(
 							"getSocialMetadata")
 					.variable("identity", identity)
 					.execute()
@@ -295,7 +358,7 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 	@Cacheable(cacheNames = SOCIALS_INSIGHTS_CACHE_NAME, unless = "#result==null")
 	public Wallet getSocialInsights(String identity, String me) {
 		try {
-			val socialMetadataResponse = graphQlClient.documentName(
+			val socialMetadataResponse = airstackGraphQlClient.documentName(
 							"getSocialInsights")
 					.variable("identity", identity)
 					.variable("me", me)

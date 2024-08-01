@@ -1,0 +1,1051 @@
+"""
+Marks the GraphQL type as indexable entity.  Each type that should be an entity
+is required to be annotated with this directive.
+"""
+directive @entity on OBJECT
+
+"""Defined a Subgraph ID for an object type"""
+directive @subgraphId(id: String!) on OBJECT
+
+"""
+creates a virtual field on the entity that may be queried but cannot be set manually through the mappings API.
+"""
+directive @derivedFrom(field: String!) on FIELD_DEFINITION
+
+type _Block_ {
+  """The hash of the block"""
+  hash: Bytes
+
+  """The block number"""
+  number: Int!
+
+  """Integer representation of the timestamp stored in blocks for the chain"""
+  timestamp: Int
+
+  """The hash of the parent block"""
+  parentHash: Bytes
+}
+
+"""The type for the top-level _meta field"""
+type _Meta_ {
+  """
+  Information about a specific subgraph block. The hash of the block
+  will be null if the _meta field has a block constraint that asks for
+  a block number. It will be filled if the _meta field has no block constraint
+  and therefore asks for the latest  block
+  
+  """
+  block: _Block_!
+
+  """The deployment ID"""
+  deployment: String!
+
+  """If `true`, the subgraph encountered indexing errors at some past block"""
+  hasIndexingErrors: Boolean!
+}
+
+enum _SubgraphErrorPolicy_ {
+  """Data will be returned even if the subgraph has indexing errors"""
+  allow
+
+  """
+  If the subgraph has indexing errors, data will be omitted. The default.
+  """
+  deny
+}
+
+enum Aggregation_interval {
+  hour
+  day
+}
+
+"""
+Authorized functions for the Manager
+
+"""
+type AuthorizedFunction {
+  """Primary key = function signature + manager address"""
+  id: ID!
+
+  """Function signature (string)"""
+  sig: String!
+
+  """
+  The contract address that is authorized to have this function called on itself
+  """
+  target: Bytes!
+
+  """Hash of the function signature"""
+  sigHash: Bytes!
+
+  """Token lock Manager"""
+  manager: TokenLockManager!
+}
+
+input AuthorizedFunction_filter {
+  id: ID
+  id_not: ID
+  id_gt: ID
+  id_lt: ID
+  id_gte: ID
+  id_lte: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  sig: String
+  sig_not: String
+  sig_gt: String
+  sig_lt: String
+  sig_gte: String
+  sig_lte: String
+  sig_in: [String!]
+  sig_not_in: [String!]
+  sig_contains: String
+  sig_contains_nocase: String
+  sig_not_contains: String
+  sig_not_contains_nocase: String
+  sig_starts_with: String
+  sig_starts_with_nocase: String
+  sig_not_starts_with: String
+  sig_not_starts_with_nocase: String
+  sig_ends_with: String
+  sig_ends_with_nocase: String
+  sig_not_ends_with: String
+  sig_not_ends_with_nocase: String
+  target: Bytes
+  target_not: Bytes
+  target_gt: Bytes
+  target_lt: Bytes
+  target_gte: Bytes
+  target_lte: Bytes
+  target_in: [Bytes!]
+  target_not_in: [Bytes!]
+  target_contains: Bytes
+  target_not_contains: Bytes
+  sigHash: Bytes
+  sigHash_not: Bytes
+  sigHash_gt: Bytes
+  sigHash_lt: Bytes
+  sigHash_gte: Bytes
+  sigHash_lte: Bytes
+  sigHash_in: [Bytes!]
+  sigHash_not_in: [Bytes!]
+  sigHash_contains: Bytes
+  sigHash_not_contains: Bytes
+  manager: String
+  manager_not: String
+  manager_gt: String
+  manager_lt: String
+  manager_gte: String
+  manager_lte: String
+  manager_in: [String!]
+  manager_not_in: [String!]
+  manager_contains: String
+  manager_contains_nocase: String
+  manager_not_contains: String
+  manager_not_contains_nocase: String
+  manager_starts_with: String
+  manager_starts_with_nocase: String
+  manager_not_starts_with: String
+  manager_not_starts_with_nocase: String
+  manager_ends_with: String
+  manager_ends_with_nocase: String
+  manager_not_ends_with: String
+  manager_not_ends_with_nocase: String
+  manager_: TokenLockManager_filter
+
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [AuthorizedFunction_filter]
+  or: [AuthorizedFunction_filter]
+}
+
+enum AuthorizedFunction_orderBy {
+  id
+  sig
+  target
+  sigHash
+  manager
+  manager__id
+  manager__masterCopy
+  manager__tokens
+  manager__tokenLockCount
+  manager__moxiePassToken
+  manager__tokenManager
+}
+
+scalar BigDecimal
+
+scalar BigInt
+
+input Block_height {
+  hash: Bytes
+  number: Int
+  number_gte: Int
+}
+
+input BlockChangedFilter {
+  number_gte: Int!
+}
+
+scalar Bytes
+
+"""
+8 bytes signed integer
+
+"""
+scalar Int8
+
+"""Defines the order direction, either ascending or descending"""
+enum OrderDirection {
+  asc
+  desc
+}
+
+type Query {
+  tokenLockManager(
+    id: ID!
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): TokenLockManager
+  tokenLockManagers(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: TokenLockManager_orderBy
+    orderDirection: OrderDirection
+    where: TokenLockManager_filter
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [TokenLockManager!]!
+  authorizedFunction(
+    id: ID!
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): AuthorizedFunction
+  authorizedFunctions(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: AuthorizedFunction_orderBy
+    orderDirection: OrderDirection
+    where: AuthorizedFunction_filter
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [AuthorizedFunction!]!
+  tokenLockWallet(
+    id: ID!
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): TokenLockWallet
+  tokenLockWallets(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: TokenLockWallet_orderBy
+    orderDirection: OrderDirection
+    where: TokenLockWallet_filter
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [TokenLockWallet!]!
+  subjectToken(
+    id: ID!
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): SubjectToken
+  subjectTokens(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: SubjectToken_orderBy
+    orderDirection: OrderDirection
+    where: SubjectToken_filter
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [SubjectToken!]!
+
+  """Access to subgraph metadata"""
+  _meta(block: Block_height): _Meta_
+}
+
+"""
+TokenLockWallet Revocability Enum
+
+"""
+enum Revocability {
+  NotSet
+  Enabled
+  Disabled
+}
+
+type SubjectToken {
+  """Vesting contractAddress - The address of the token"""
+  id: ID!
+
+  """Is this subject token approved"""
+  tokenDestinationsApproved: Boolean!
+
+  """The Lock Wallet address"""
+  vestingContractAddress: TokenLockWallet!
+
+  """subject token address"""
+  subjectToken: Bytes!
+
+  """last updated block number"""
+  blockNumberUpdated: BigInt!
+}
+
+input SubjectToken_filter {
+  id: ID
+  id_not: ID
+  id_gt: ID
+  id_lt: ID
+  id_gte: ID
+  id_lte: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  tokenDestinationsApproved: Boolean
+  tokenDestinationsApproved_not: Boolean
+  tokenDestinationsApproved_in: [Boolean!]
+  tokenDestinationsApproved_not_in: [Boolean!]
+  vestingContractAddress: String
+  vestingContractAddress_not: String
+  vestingContractAddress_gt: String
+  vestingContractAddress_lt: String
+  vestingContractAddress_gte: String
+  vestingContractAddress_lte: String
+  vestingContractAddress_in: [String!]
+  vestingContractAddress_not_in: [String!]
+  vestingContractAddress_contains: String
+  vestingContractAddress_contains_nocase: String
+  vestingContractAddress_not_contains: String
+  vestingContractAddress_not_contains_nocase: String
+  vestingContractAddress_starts_with: String
+  vestingContractAddress_starts_with_nocase: String
+  vestingContractAddress_not_starts_with: String
+  vestingContractAddress_not_starts_with_nocase: String
+  vestingContractAddress_ends_with: String
+  vestingContractAddress_ends_with_nocase: String
+  vestingContractAddress_not_ends_with: String
+  vestingContractAddress_not_ends_with_nocase: String
+  vestingContractAddress_: TokenLockWallet_filter
+  subjectToken: Bytes
+  subjectToken_not: Bytes
+  subjectToken_gt: Bytes
+  subjectToken_lt: Bytes
+  subjectToken_gte: Bytes
+  subjectToken_lte: Bytes
+  subjectToken_in: [Bytes!]
+  subjectToken_not_in: [Bytes!]
+  subjectToken_contains: Bytes
+  subjectToken_not_contains: Bytes
+  blockNumberUpdated: BigInt
+  blockNumberUpdated_not: BigInt
+  blockNumberUpdated_gt: BigInt
+  blockNumberUpdated_lt: BigInt
+  blockNumberUpdated_gte: BigInt
+  blockNumberUpdated_lte: BigInt
+  blockNumberUpdated_in: [BigInt!]
+  blockNumberUpdated_not_in: [BigInt!]
+
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [SubjectToken_filter]
+  or: [SubjectToken_filter]
+}
+
+enum SubjectToken_orderBy {
+  id
+  tokenDestinationsApproved
+  vestingContractAddress
+  vestingContractAddress__id
+  vestingContractAddress__initHash
+  vestingContractAddress__beneficiary
+  vestingContractAddress__token
+  vestingContractAddress__managedAmount
+  vestingContractAddress__balance
+  vestingContractAddress__startTime
+  vestingContractAddress__endTime
+  vestingContractAddress__periods
+  vestingContractAddress__releaseStartTime
+  vestingContractAddress__vestingCliffTime
+  vestingContractAddress__revocable
+  vestingContractAddress__tokenDestinationsApproved
+  vestingContractAddress__tokensReleased
+  vestingContractAddress__tokensWithdrawn
+  vestingContractAddress__tokensRevoked
+  vestingContractAddress__blockNumberCreated
+  vestingContractAddress__txHash
+  vestingContractAddress__lockAccepted
+  subjectToken
+  blockNumberUpdated
+}
+
+type Subscription {
+  tokenLockManager(
+    id: ID!
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): TokenLockManager
+  tokenLockManagers(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: TokenLockManager_orderBy
+    orderDirection: OrderDirection
+    where: TokenLockManager_filter
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [TokenLockManager!]!
+  authorizedFunction(
+    id: ID!
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): AuthorizedFunction
+  authorizedFunctions(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: AuthorizedFunction_orderBy
+    orderDirection: OrderDirection
+    where: AuthorizedFunction_filter
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [AuthorizedFunction!]!
+  tokenLockWallet(
+    id: ID!
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): TokenLockWallet
+  tokenLockWallets(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: TokenLockWallet_orderBy
+    orderDirection: OrderDirection
+    where: TokenLockWallet_filter
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [TokenLockWallet!]!
+  subjectToken(
+    id: ID!
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): SubjectToken
+  subjectTokens(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: SubjectToken_orderBy
+    orderDirection: OrderDirection
+    where: SubjectToken_filter
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [SubjectToken!]!
+
+  """Access to subgraph metadata"""
+  _meta(block: Block_height): _Meta_
+}
+
+"""
+A string representation of microseconds UNIX timestamp (16 digits)
+
+"""
+scalar Timestamp
+
+"""
+The Token manager data
+
+"""
+type TokenLockManager {
+  """Token manager address"""
+  id: ID!
+
+  """Master copy address"""
+  masterCopy: Bytes!
+
+  """Tokens stored in manger through deposit or withdraw"""
+  tokens: BigInt!
+
+  """List of addresses that are allowed to pull funds"""
+  tokenDestinations: [Bytes!]
+
+  """List of subject addresses that are allowed to pull funds"""
+  subjectTokenDestinations: [Bytes!]
+
+  """List of function call authorizations"""
+  authorizedFunctions(skip: Int = 0, first: Int = 100, orderBy: AuthorizedFunction_orderBy, orderDirection: OrderDirection, where: AuthorizedFunction_filter): [AuthorizedFunction!]
+
+  """Token lock count of contracts created"""
+  tokenLockCount: BigInt!
+
+  """moxie pass token"""
+  moxiePassToken: Bytes
+
+  """token manager address"""
+  tokenManager: Bytes
+}
+
+input TokenLockManager_filter {
+  id: ID
+  id_not: ID
+  id_gt: ID
+  id_lt: ID
+  id_gte: ID
+  id_lte: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  masterCopy: Bytes
+  masterCopy_not: Bytes
+  masterCopy_gt: Bytes
+  masterCopy_lt: Bytes
+  masterCopy_gte: Bytes
+  masterCopy_lte: Bytes
+  masterCopy_in: [Bytes!]
+  masterCopy_not_in: [Bytes!]
+  masterCopy_contains: Bytes
+  masterCopy_not_contains: Bytes
+  tokens: BigInt
+  tokens_not: BigInt
+  tokens_gt: BigInt
+  tokens_lt: BigInt
+  tokens_gte: BigInt
+  tokens_lte: BigInt
+  tokens_in: [BigInt!]
+  tokens_not_in: [BigInt!]
+  tokenDestinations: [Bytes!]
+  tokenDestinations_not: [Bytes!]
+  tokenDestinations_contains: [Bytes!]
+  tokenDestinations_contains_nocase: [Bytes!]
+  tokenDestinations_not_contains: [Bytes!]
+  tokenDestinations_not_contains_nocase: [Bytes!]
+  subjectTokenDestinations: [Bytes!]
+  subjectTokenDestinations_not: [Bytes!]
+  subjectTokenDestinations_contains: [Bytes!]
+  subjectTokenDestinations_contains_nocase: [Bytes!]
+  subjectTokenDestinations_not_contains: [Bytes!]
+  subjectTokenDestinations_not_contains_nocase: [Bytes!]
+  authorizedFunctions_: AuthorizedFunction_filter
+  tokenLockCount: BigInt
+  tokenLockCount_not: BigInt
+  tokenLockCount_gt: BigInt
+  tokenLockCount_lt: BigInt
+  tokenLockCount_gte: BigInt
+  tokenLockCount_lte: BigInt
+  tokenLockCount_in: [BigInt!]
+  tokenLockCount_not_in: [BigInt!]
+  moxiePassToken: Bytes
+  moxiePassToken_not: Bytes
+  moxiePassToken_gt: Bytes
+  moxiePassToken_lt: Bytes
+  moxiePassToken_gte: Bytes
+  moxiePassToken_lte: Bytes
+  moxiePassToken_in: [Bytes!]
+  moxiePassToken_not_in: [Bytes!]
+  moxiePassToken_contains: Bytes
+  moxiePassToken_not_contains: Bytes
+  tokenManager: Bytes
+  tokenManager_not: Bytes
+  tokenManager_gt: Bytes
+  tokenManager_lt: Bytes
+  tokenManager_gte: Bytes
+  tokenManager_lte: Bytes
+  tokenManager_in: [Bytes!]
+  tokenManager_not_in: [Bytes!]
+  tokenManager_contains: Bytes
+  tokenManager_not_contains: Bytes
+
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [TokenLockManager_filter]
+  or: [TokenLockManager_filter]
+}
+
+enum TokenLockManager_orderBy {
+  id
+  masterCopy
+  tokens
+  tokenDestinations
+  subjectTokenDestinations
+  authorizedFunctions
+  tokenLockCount
+  moxiePassToken
+  tokenManager
+}
+
+"""
+Token Lock Wallets which hold locked MOXIE
+
+"""
+type TokenLockWallet {
+  """The address of the token lock wallet"""
+  id: ID!
+
+  """The Manager address"""
+  manager: TokenLockManager!
+
+  """The hash of the initializer"""
+  initHash: Bytes!
+
+  """Address of the beneficiary of locked tokens"""
+  beneficiary: Bytes!
+
+  """The token being used (MOXIE)"""
+  token: Bytes
+
+  """Amount of tokens to be managed by the lock contract"""
+  managedAmount: BigInt!
+
+  """balance of the wallet (MOXIE)"""
+  balance: BigInt!
+
+  """Start time of the release schedule"""
+  startTime: BigInt!
+
+  """End time of the release schedule"""
+  endTime: BigInt!
+
+  """Number of periods between start time and end time"""
+  periods: BigInt!
+
+  """Time when the releases start"""
+  releaseStartTime: BigInt!
+
+  """Time the cliff vests, 0 if no cliff"""
+  vestingCliffTime: BigInt!
+
+  """Whether or not the contract is revocable"""
+  revocable: Revocability
+
+  """
+  True if the beneficiary has approved addresses that the manager has approved
+  """
+  tokenDestinationsApproved: Boolean!
+
+  """The amount of tokens that have been resleased"""
+  tokensReleased: BigInt!
+
+  """The amount of tokens that have been withdrawn"""
+  tokensWithdrawn: BigInt!
+
+  """The amount of tokens that have been revoked"""
+  tokensRevoked: BigInt!
+
+  """The block this wlalet was created"""
+  blockNumberCreated: BigInt!
+
+  """The creation tx hash of the wallet"""
+  txHash: Bytes!
+
+  """lock"""
+  lockAccepted: Boolean!
+  subjectTokens(skip: Int = 0, first: Int = 100, orderBy: SubjectToken_orderBy, orderDirection: OrderDirection, where: SubjectToken_filter): [SubjectToken!]!
+}
+
+input TokenLockWallet_filter {
+  id: ID
+  id_not: ID
+  id_gt: ID
+  id_lt: ID
+  id_gte: ID
+  id_lte: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  manager: String
+  manager_not: String
+  manager_gt: String
+  manager_lt: String
+  manager_gte: String
+  manager_lte: String
+  manager_in: [String!]
+  manager_not_in: [String!]
+  manager_contains: String
+  manager_contains_nocase: String
+  manager_not_contains: String
+  manager_not_contains_nocase: String
+  manager_starts_with: String
+  manager_starts_with_nocase: String
+  manager_not_starts_with: String
+  manager_not_starts_with_nocase: String
+  manager_ends_with: String
+  manager_ends_with_nocase: String
+  manager_not_ends_with: String
+  manager_not_ends_with_nocase: String
+  manager_: TokenLockManager_filter
+  initHash: Bytes
+  initHash_not: Bytes
+  initHash_gt: Bytes
+  initHash_lt: Bytes
+  initHash_gte: Bytes
+  initHash_lte: Bytes
+  initHash_in: [Bytes!]
+  initHash_not_in: [Bytes!]
+  initHash_contains: Bytes
+  initHash_not_contains: Bytes
+  beneficiary: Bytes
+  beneficiary_not: Bytes
+  beneficiary_gt: Bytes
+  beneficiary_lt: Bytes
+  beneficiary_gte: Bytes
+  beneficiary_lte: Bytes
+  beneficiary_in: [Bytes!]
+  beneficiary_not_in: [Bytes!]
+  beneficiary_contains: Bytes
+  beneficiary_not_contains: Bytes
+  token: Bytes
+  token_not: Bytes
+  token_gt: Bytes
+  token_lt: Bytes
+  token_gte: Bytes
+  token_lte: Bytes
+  token_in: [Bytes!]
+  token_not_in: [Bytes!]
+  token_contains: Bytes
+  token_not_contains: Bytes
+  managedAmount: BigInt
+  managedAmount_not: BigInt
+  managedAmount_gt: BigInt
+  managedAmount_lt: BigInt
+  managedAmount_gte: BigInt
+  managedAmount_lte: BigInt
+  managedAmount_in: [BigInt!]
+  managedAmount_not_in: [BigInt!]
+  balance: BigInt
+  balance_not: BigInt
+  balance_gt: BigInt
+  balance_lt: BigInt
+  balance_gte: BigInt
+  balance_lte: BigInt
+  balance_in: [BigInt!]
+  balance_not_in: [BigInt!]
+  startTime: BigInt
+  startTime_not: BigInt
+  startTime_gt: BigInt
+  startTime_lt: BigInt
+  startTime_gte: BigInt
+  startTime_lte: BigInt
+  startTime_in: [BigInt!]
+  startTime_not_in: [BigInt!]
+  endTime: BigInt
+  endTime_not: BigInt
+  endTime_gt: BigInt
+  endTime_lt: BigInt
+  endTime_gte: BigInt
+  endTime_lte: BigInt
+  endTime_in: [BigInt!]
+  endTime_not_in: [BigInt!]
+  periods: BigInt
+  periods_not: BigInt
+  periods_gt: BigInt
+  periods_lt: BigInt
+  periods_gte: BigInt
+  periods_lte: BigInt
+  periods_in: [BigInt!]
+  periods_not_in: [BigInt!]
+  releaseStartTime: BigInt
+  releaseStartTime_not: BigInt
+  releaseStartTime_gt: BigInt
+  releaseStartTime_lt: BigInt
+  releaseStartTime_gte: BigInt
+  releaseStartTime_lte: BigInt
+  releaseStartTime_in: [BigInt!]
+  releaseStartTime_not_in: [BigInt!]
+  vestingCliffTime: BigInt
+  vestingCliffTime_not: BigInt
+  vestingCliffTime_gt: BigInt
+  vestingCliffTime_lt: BigInt
+  vestingCliffTime_gte: BigInt
+  vestingCliffTime_lte: BigInt
+  vestingCliffTime_in: [BigInt!]
+  vestingCliffTime_not_in: [BigInt!]
+  revocable: Revocability
+  revocable_not: Revocability
+  revocable_in: [Revocability!]
+  revocable_not_in: [Revocability!]
+  tokenDestinationsApproved: Boolean
+  tokenDestinationsApproved_not: Boolean
+  tokenDestinationsApproved_in: [Boolean!]
+  tokenDestinationsApproved_not_in: [Boolean!]
+  tokensReleased: BigInt
+  tokensReleased_not: BigInt
+  tokensReleased_gt: BigInt
+  tokensReleased_lt: BigInt
+  tokensReleased_gte: BigInt
+  tokensReleased_lte: BigInt
+  tokensReleased_in: [BigInt!]
+  tokensReleased_not_in: [BigInt!]
+  tokensWithdrawn: BigInt
+  tokensWithdrawn_not: BigInt
+  tokensWithdrawn_gt: BigInt
+  tokensWithdrawn_lt: BigInt
+  tokensWithdrawn_gte: BigInt
+  tokensWithdrawn_lte: BigInt
+  tokensWithdrawn_in: [BigInt!]
+  tokensWithdrawn_not_in: [BigInt!]
+  tokensRevoked: BigInt
+  tokensRevoked_not: BigInt
+  tokensRevoked_gt: BigInt
+  tokensRevoked_lt: BigInt
+  tokensRevoked_gte: BigInt
+  tokensRevoked_lte: BigInt
+  tokensRevoked_in: [BigInt!]
+  tokensRevoked_not_in: [BigInt!]
+  blockNumberCreated: BigInt
+  blockNumberCreated_not: BigInt
+  blockNumberCreated_gt: BigInt
+  blockNumberCreated_lt: BigInt
+  blockNumberCreated_gte: BigInt
+  blockNumberCreated_lte: BigInt
+  blockNumberCreated_in: [BigInt!]
+  blockNumberCreated_not_in: [BigInt!]
+  txHash: Bytes
+  txHash_not: Bytes
+  txHash_gt: Bytes
+  txHash_lt: Bytes
+  txHash_gte: Bytes
+  txHash_lte: Bytes
+  txHash_in: [Bytes!]
+  txHash_not_in: [Bytes!]
+  txHash_contains: Bytes
+  txHash_not_contains: Bytes
+  lockAccepted: Boolean
+  lockAccepted_not: Boolean
+  lockAccepted_in: [Boolean!]
+  lockAccepted_not_in: [Boolean!]
+  subjectTokens_: SubjectToken_filter
+
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [TokenLockWallet_filter]
+  or: [TokenLockWallet_filter]
+}
+
+enum TokenLockWallet_orderBy {
+  id
+  manager
+  manager__id
+  manager__masterCopy
+  manager__tokens
+  manager__tokenLockCount
+  manager__moxiePassToken
+  manager__tokenManager
+  initHash
+  beneficiary
+  token
+  managedAmount
+  balance
+  startTime
+  endTime
+  periods
+  releaseStartTime
+  vestingCliffTime
+  revocable
+  tokenDestinationsApproved
+  tokensReleased
+  tokensWithdrawn
+  tokensRevoked
+  blockNumberCreated
+  txHash
+  lockAccepted
+  subjectTokens
+}
+

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ua.sinaver.web3.payflow.message.ContactWithFanTokenAuction;
-import ua.sinaver.web3.payflow.service.FanTokenService;
+import ua.sinaver.web3.payflow.service.FanTokenAuctionService;
 import ua.sinaver.web3.payflow.service.UserService;
 
 import java.security.Principal;
@@ -28,7 +28,7 @@ public class InfoController {
 	private UserService userService;
 
 	@Autowired
-	private FanTokenService fanTokenService;
+	private FanTokenAuctionService fanTokenAuctionService;
 
 	@GetMapping("/farcaster/moxie/auctions")
 	public List<ContactWithFanTokenAuction> getFanTokenAuctionAmongContacts(Principal principal) {
@@ -37,8 +37,8 @@ public class InfoController {
 			if (user != null) {
 				// TODO: a bit hacky, but is good enough for now! better to keep track each
 				//  record with cachedTimestamp
-				val cachedFanTokens = fanTokenService.getFanTokenAuctionsAmongContacts(user);
-				return fanTokenService.refreshTokensMeta(cachedFanTokens);
+				val cachedFanTokens = fanTokenAuctionService.getFanTokenAuctionsAmongContacts(user);
+				return fanTokenAuctionService.refreshTokensMeta(cachedFanTokens);
 			} else {
 				throw new UsernameNotFoundException("User not found!");
 			}

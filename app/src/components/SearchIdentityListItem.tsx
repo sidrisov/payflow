@@ -221,7 +221,8 @@ export function SearchIdentityListItem(
               identity?.meta?.insights?.sentTxs ||
               tags?.includes('hypersub') ||
               tags?.includes('paragraph') ||
-              tags?.includes('alfafrens') ? (
+              tags?.includes('alfafrens') ||
+              tags?.includes('moxie') ? (
               <>
                 {identity.meta?.insights?.farcasterFollow && (
                   <Stack spacing={1} direction="row" alignItems="center">
@@ -254,6 +255,14 @@ export function SearchIdentityListItem(
                               ? '5+'
                               : identity.meta.insights.sentTxs) + ' times'
                       }`}
+                    </Typography>
+                  </Stack>
+                )}
+                {tags?.includes('moxie') && (
+                  <Stack spacing={1} direction="row" alignItems="center">
+                    <Avatar variant="square" src="/moxie.png" sx={{ width: 15, height: 15 }} />
+                    <Typography variant="caption" fontWeight="bold">
+                      Fan token holder
                     </Typography>
                   </Stack>
                 )}

@@ -62,18 +62,16 @@ public class ContactBookService implements IContactBookService {
 	private IdentityFollowingsService identityFollowingsService;
 
 	@Autowired
+	private FanTokenService fanTokenService;
+	@Autowired
 	private PaymentService paymentService;
-
 	@Value("${payflow.airstack.contacts.limit:10}")
 	private int contactsLimit;
-
 	@Value("${payflow.airstack.contacts.fetch.timeout:30s}")
 	private Duration contactsFetchTimeout;
-
 	// reuse property to increase the contacts limit
 	@Value("${payflow.invitation.whitelisted.default.users}")
 	private Set<String> whitelistedUsers;
-
 	private List<String> farConParticipants = new ArrayList<>();
 
 	@Override
@@ -107,6 +105,9 @@ public class ContactBookService implements IContactBookService {
 		val recentContacts = paymentService.getAllPaymentRecipients(user);
 		log.debug("Fetched recent contacts: {}", recentContacts);
 
+		val fanTokenContacts = fanTokenService.fetchFanTokenHolders(user.getIdentity());
+		log.debug("Fetched fan token holders: {}", fanTokenContacts);
+
 		val alfaFrensContacts = identitySubscriptionsService.fetchAlfaFrensSubscribers(user.getIdentity());
 		log.debug("Fetched alfafrens subs: {}", alfaFrensContacts);
 
@@ -134,18 +135,19 @@ public class ContactBookService implements IContactBookService {
 			tags.add("paragraph");
 		}
 
-		if (!favourites.isEmpty()) {
-			tags.add("favourites");
+		if (!fanTokenContacts.isEmpty()) {
+			tags.add("moxie");
 		}
 
-		if (!farConParticipants.isEmpty()) {
-			tags.add("farcon");
+		if (!favourites.isEmpty()) {
+			tags.add("favourites");
 		}
 
 		val allContacts = Stream.of(
 						recentContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "recent")),
 						favourites.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(), "favourites")),
 						followings.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "friends")),
+						fanTokenContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "moxie")),
 						fabricContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "hypersub")),
 						paragraphContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "paragraph")),
 						alfaFrensContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "alfafrens"))
