@@ -40,7 +40,7 @@ public class FanTokenService {
 			}
 
 			var fanTokenHolders = socialGraphService.getFanTokenHolders(fname);
-			if (fanTokenHolders.isEmpty()) {
+			if (fanTokenHolders.isEmpty() && fname.equals("sinaver.eth")) {
 				log.debug("Defaulting to fetch fan token holders for {}", DEFAULT_FAN_TOKEN_NAME);
 				fanTokenHolders = socialGraphService.getFanTokenHolders(DEFAULT_FAN_TOKEN_NAME);
 			}

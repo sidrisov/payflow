@@ -57,11 +57,11 @@ export function AggregatedAssetBalanceSection({
                 sx={{
                   '& .MuiAvatar-root': {
                     borderStyle: 'none',
-                    border: 0,
                     width: 14,
                     height: 14,
                     fontSize: 10
-                  }
+                  },
+                  gap: 0.2
                 }}>
                 {[...Array(Math.min(3, assets.length))].map((_item, i) => (
                   <NetworkAvatar chainId={assets[i].chainId} />

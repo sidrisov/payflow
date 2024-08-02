@@ -17,22 +17,24 @@ interface AggregatedAssetBalances {
 const aggregateAssets = (balances: AssetBalanceType[]): AggregatedAssetBalances[] => {
   const aggregationMap: Record<string, AggregatedAssetBalances> = {};
 
-  balances.forEach((assetBalance) => {
-    const tokenId = assetBalance.asset.token.id;
+  balances
+    .filter((assetBalance) => assetBalance.balance?.value && assetBalance.balance.value > BigInt(0))
+    .forEach((assetBalance) => {
+      const tokenId = assetBalance.asset.token.id;
 
-    if (!aggregationMap[tokenId]) {
-      aggregationMap[tokenId] = {
-        tokenId,
-        assets: [],
-        totalBalance: 0n,
-        totalUSDBalance: 0
-      };
-    }
+      if (!aggregationMap[tokenId]) {
+        aggregationMap[tokenId] = {
+          tokenId,
+          assets: [],
+          totalBalance: 0n,
+          totalUSDBalance: 0
+        };
+      }
 
-    aggregationMap[tokenId].assets.push(assetBalance);
-    aggregationMap[tokenId].totalBalance += assetBalance.balance?.value ?? BigInt(0);
-    aggregationMap[tokenId].totalUSDBalance += assetBalance.usdValue;
-  });
+      aggregationMap[tokenId].assets.push(assetBalance);
+      aggregationMap[tokenId].totalBalance += assetBalance.balance?.value ?? BigInt(0);
+      aggregationMap[tokenId].totalUSDBalance += assetBalance.usdValue;
+    });
 
   return Object.values(aggregationMap)
     .filter((asset) => asset.totalBalance !== BigInt(0))
@@ -46,32 +48,34 @@ export default function Assets({
 }) {
   const [showAll, setShowAll] = useState<boolean>(false);
 
-  const nonZeroBalances = balances && aggregateAssets(balances);
+  const nonZeroAggregatedBalances = balances && aggregateAssets(balances);
 
   return (
     <Stack p={1} spacing={1} width="100%" maxHeight={265} overflow="auto">
       {isLoading || !isFetched ? (
         <ActivitySkeletonSection />
-      ) : isFetched && nonZeroBalances ? (
-        nonZeroBalances.slice(0, showAll ? nonZeroBalances.length : 3).map((assetBalance) => {
-          return (
-            <AggregatedAssetBalanceSection
-              key={`network_asset_balance_${assetBalance.tokenId}`}
-              assets={assetBalance.assets.map((asset) => asset.asset)}
-              balance={formatUnits(
-                assetBalance.totalBalance,
-                assetBalance.assets[0]?.asset.token.decimals ?? 0
-              )}
-              usdValue={assetBalance.totalUSDBalance}
-            />
-          );
-        })
+      ) : isFetched && nonZeroAggregatedBalances ? (
+        nonZeroAggregatedBalances
+          .slice(0, showAll ? nonZeroAggregatedBalances.length : 3)
+          .map((assetBalance) => {
+            return (
+              <AggregatedAssetBalanceSection
+                key={`network_asset_balance_${assetBalance.tokenId}`}
+                assets={assetBalance.assets.map((asset) => asset.asset)}
+                balance={formatUnits(
+                  assetBalance.totalBalance,
+                  assetBalance.assets[0]?.asset.token.decimals ?? 0
+                )}
+                usdValue={assetBalance.totalUSDBalance}
+              />
+            );
+          })
       ) : (
         <Typography variant="subtitle2" textAlign="center">
           Couldn't fetch. Try again!
         </Typography>
       )}
-      {nonZeroBalances && nonZeroBalances.length > 3 && (
+      {nonZeroAggregatedBalances && nonZeroAggregatedBalances.length > 3 && (
         <Button
           color="inherit"
           variant="text"
