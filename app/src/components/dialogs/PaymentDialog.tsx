@@ -9,8 +9,7 @@ import {
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { SelectedIdentityType } from '../../types/ProfleType';
-import PayWithPayflowDialog from './PayWithPayflowDialog';
-import PayWithEOADialog from './PayWithEOADialog';
+import PaymentDialogContent from './PaymentDialogContent';
 import { BackDialogTitle } from './BackDialogTitle';
 import { PaymentType } from '../../types/PaymentType';
 import { SenderField } from '../SenderField';
@@ -91,31 +90,17 @@ export default function PaymentDialog({
               </Stack>
             )}
 
-            {paymentType === 'payflow' ? (
-              <PayWithPayflowDialog
-                {...{
-                  paymentType,
-                  payment,
-                  sender,
-                  recipient,
-                  closeStateCallback,
-                  setOpenSearchIdentity,
-                  ...props
-                }}
-              />
-            ) : (
-              <PayWithEOADialog
-                {...{
-                  paymentType,
-                  payment,
-                  sender,
-                  recipient,
-                  closeStateCallback,
-                  setOpenSearchIdentity,
-                  ...props
-                }}
-              />
-            )}
+            <PaymentDialogContent
+              {...{
+                paymentType,
+                payment,
+                sender,
+                recipient,
+                closeStateCallback,
+                setOpenSearchIdentity,
+                ...props
+              }}
+            />
           </Box>
         </DialogContent>
       </Dialog>

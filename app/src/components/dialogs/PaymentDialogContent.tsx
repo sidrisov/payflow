@@ -35,8 +35,14 @@ import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
 import { PaymentType } from '../../types/PaymentType';
 import { delay } from '../../utils/delay';
 
-export default function PayWithPayflowDialog({ payment, sender, recipient }: PaymentDialogProps) {
-  const flow = sender.identity.profile?.defaultFlow as FlowType;
+export default function PaymentDialogContent({
+  paymentType,
+  payment,
+  sender,
+  recipient
+}: PaymentDialogProps) {
+  const senderAddress = sender.identity.address as Address;
+  const senderFlow = sender.identity.profile?.defaultFlow as FlowType;
 
   const { profile } = useContext(ProfileContext);
 
@@ -49,7 +55,12 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
   const [paymentPending, setPaymentPending] = useState<boolean>(false);
   const [paymentEnabled, setPaymentEnabled] = useState<boolean>(false);
 
-  const compatibleWallets = useCompatibleWallets({ sender: flow, recipient, payment });
+  // TODO: move everything to flows
+  const compatibleWallets = useCompatibleWallets({
+    sender: paymentType === 'payflow' ? senderFlow : senderAddress,
+    recipient,
+    payment
+  });
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
   const [selectedToken, setSelectedToken] = useState<Token>();
 
@@ -59,7 +70,10 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
   const [sendAmountUSD, setSendAmountUSD] = useState<number | undefined>(payment?.usdAmount);
   const sendToastId = useRef<Id>();
 
-  const isNativeFlow = flow.type !== 'FARCASTER_VERIFICATION' && flow.type !== 'LINKED';
+  const isNativeFlow =
+    paymentType === 'payflow' &&
+    senderFlow.type !== 'FARCASTER_VERIFICATION' &&
+    senderFlow.type !== 'LINKED';
 
   const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
 
@@ -130,29 +144,31 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
       });
       sendToastId.current = undefined;
 
-      if (payment?.referenceId) {
-        payment.hash = txHashCombined;
-        await completePayment(payment);
-      } else {
-        const newPayment = {
-          type: 'APP',
-          status: 'COMPLETED',
-          receiver: recipient.identity.profile,
-          receiverAddress: toAddress,
-          chainId: chainId,
-          token: selectedToken?.id,
-          tokenAmount: sendAmount,
-          hash: txHashCombined
-        } as PaymentType;
+      if (profile) {
+        if (payment?.referenceId) {
+          payment.hash = txHashCombined;
+          await completePayment(payment);
+        } else {
+          const newPayment = {
+            type: 'APP',
+            status: 'COMPLETED',
+            receiver: recipient.identity.profile,
+            receiverAddress: toAddress,
+            chainId: chainId,
+            token: selectedToken?.id,
+            tokenAmount: sendAmount,
+            hash: txHashCombined
+          } as PaymentType;
 
-        console.log('Submitting payment: ', newPayment);
-        await submitPayment(newPayment);
-      }
+          console.log('Submitting payment: ', newPayment);
+          await submitPayment(newPayment);
+        }
 
-      // if tx was successfull, mark wallet as deployed if it wasn't
-      if (isNativeFlow && !selectedWallet.deployed) {
-        selectedWallet.deployed = true;
-        await updateWallet(flow.uuid, selectedWallet);
+        // if tx was successfull, mark wallet as deployed if it wasn't
+        if (isNativeFlow && !selectedWallet.deployed) {
+          selectedWallet.deployed = true;
+          await updateWallet(senderFlow.uuid, selectedWallet);
+        }
       }
 
       await delay(2000);
@@ -214,7 +230,7 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
           client,
           signer,
           profile,
-          flow,
+          senderFlow,
           selectedWallet,
           toAddress,
           parseUnits(sendAmount.toString(), balance.decimals)
@@ -313,7 +329,7 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
 
   return (
     <>
-      {address?.toLowerCase() === flow.signer.toLowerCase() ? (
+      {paymentType === 'wallet' || address?.toLowerCase() === senderFlow.signer.toLowerCase() ? (
         selectedWallet && (
           <>
             <TokenAmountSection
@@ -348,7 +364,7 @@ export default function PayWithPayflowDialog({ payment, sender, recipient }: Pay
           </>
         )
       ) : (
-        <SwitchFlowSignerSection flow={flow} />
+        <SwitchFlowSignerSection flow={senderFlow} />
       )}
     </>
   );
