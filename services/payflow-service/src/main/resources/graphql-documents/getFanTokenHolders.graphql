@@ -1,6 +1,6 @@
 query GetFanTokenHolders($fanTokenName: String) {
     subjectTokens(where: {name: $fanTokenName}) {
-        portfolio {
+        portfolio(first: 200 , where: {balance_gt: "0"}) {
             balance
             user {
                 id

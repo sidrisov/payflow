@@ -54,6 +54,9 @@ function PayProfile({
   const profileUsername = identity?.profile?.username ?? farcasterSocial?.profileName;
   const profileImage = identity?.profile?.profileImage ?? farcasterSocial?.profileImage;
 
+  const isPaymentInitiated = step !== 'create' && step !== 'start' && step !== 'command';
+  const maxNameWidth = isPaymentInitiated ? 450 : 600;
+
   return (
     <div
       style={{
@@ -86,8 +89,27 @@ function PayProfile({
         )}
         {profileUsername && profileDisplayName ? (
           <div style={{ margin: 10, display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: 64, fontWeight: 'bold' }}>{profileDisplayName}</span>
-            <span style={{ marginTop: 10, fontSize: 64, fontWeight: 'normal' }}>
+            <span
+              style={{
+                fontSize: 64,
+                fontWeight: 'bold',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: maxNameWidth
+              }}>
+              {profileDisplayName}
+            </span>
+            <span
+              style={{
+                marginTop: 10,
+                fontSize: 64,
+                fontWeight: 'normal',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: maxNameWidth
+              }}>
               @{profileUsername}
             </span>
           </div>
@@ -98,7 +120,7 @@ function PayProfile({
             </span>
           </div>
         )}
-        {step !== 'create' && step !== 'start' && step !== 'command' && (
+        {isPaymentInitiated && (
           <div
             style={{
               margin: 10,

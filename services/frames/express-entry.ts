@@ -177,10 +177,6 @@ async function startServer() {
       entryTitleBase64 &&
       (entryTitleBase64 as string).length > 0 &&
       decodeURIComponent(entryTitleBase64 as string);
-    /* Buffer.from(entryTitleBase64 as string, 'base64').toString('utf-8') */ console.log(
-      'entryTitle: ',
-      entryTitle
-    );
 
     if (!payment.tokenAmount && payment.usdAmount && payment.token) {
       payment.tokenAmount = normalizeNumberPrecision(
@@ -203,7 +199,7 @@ async function startServer() {
         payProfileHtml(identityData, step as any, payment, entryTitle as any),
         'landscape'
       );
-      res.type('png').send(image);
+      res.setHeader('Cache-Control', 'max-age=60').type('png').send(image);
     } catch (error) {
       console.error(error);
       res.status(500).send('Error retrieving profile data');

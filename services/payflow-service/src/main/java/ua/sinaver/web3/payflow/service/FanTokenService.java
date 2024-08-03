@@ -19,7 +19,7 @@ import static ua.sinaver.web3.payflow.config.CacheConfig.CONTACT_LIST_CACHE_NAME
 @Transactional
 public class FanTokenService {
 
-	private static final String DEFAULT_FAN_TOKEN_NAME = "network:farcaster";
+	private static final String DEFAULT_FAN_TOKEN_NAME = "/airstack";
 
 	@Autowired
 	private ISocialGraphService socialGraphService;
@@ -27,7 +27,8 @@ public class FanTokenService {
 	@Autowired
 	private IdentityService identityService;
 
-	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'moxie-fan-token-list:' + #identity", unless = "#result.isEmpty()")
+	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'moxie-fan-token-holders-list:' + " +
+			"#identity", unless = "#result.isEmpty()")
 	public List<String> fetchFanTokenHolders(String identity) {
 		log.debug("Fetching fan token holders for identity: {}", identity);
 
