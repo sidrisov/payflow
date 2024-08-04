@@ -1,4 +1,4 @@
-import { Stack, Typography, Button, Avatar } from '@mui/material';
+import { Stack, Typography, Button, Avatar, useMediaQuery } from '@mui/material';
 import { FlowType } from '../../types/FlowType';
 import { shortenWalletAddressLabel } from '../../utils/address';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
@@ -8,6 +8,8 @@ import AddressAvatar from '../avatars/AddressAvatar';
 import { useEffect } from 'react';
 
 export function SwitchFlowSignerSection({ flow }: { flow: FlowType }) {
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+
   const { authenticated, ready, connectWallet, login, logout } = usePrivy();
   const { wallets } = useWallets();
   const { setActiveWallet } = useSetActiveWallet();
@@ -49,13 +51,13 @@ export function SwitchFlowSignerSection({ flow }: { flow: FlowType }) {
           connectWallet({ suggestedAddress: flow.signer });
         }
       }}
-      sx={{ borderRadius: 5, textTransform: 'none', height: 56, justifyContent: 'flex-start' }}>
+      sx={{ borderRadius: 5, textTransform: 'none', height: 50, justifyContent: 'flex-start' }}>
       {flow.signerCredential ? (
         <Stack direction="row" spacing={1} alignItems="center">
           <Avatar src="/privy.png" sx={{ width: 40, height: 40 }} />
           <Stack spacing={0.1} alignItems="flex-start">
-            <Typography fontSize={15} color={grey[400]}>
-              Connect Social Signer
+            <Typography fontSize={15} color={grey[prefersDarkMode ? 400 : 700]}>
+              Connect Social Signer (Privy)
             </Typography>
             <Typography fontSize={16} fontWeight="bold">
               {flow.signerCredential}
@@ -66,7 +68,7 @@ export function SwitchFlowSignerSection({ flow }: { flow: FlowType }) {
         <Stack direction="row" spacing={1} alignItems="center">
           <AddressAvatar address={flow.signer} />
           <Stack spacing={0.1} alignItems="flex-start">
-            <Typography fontSize={15} color={grey[400]}>
+            <Typography fontSize={15} color={grey[prefersDarkMode ? 400 : 700]}>
               Connect Wallet Signer
             </Typography>
             <Typography fontSize={16} fontWeight="bold">

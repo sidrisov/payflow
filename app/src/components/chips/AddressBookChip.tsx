@@ -23,7 +23,7 @@ const contactTypeLabel = (type: AddressBookType) => {
     case 'paragraph':
       return 'Paragraph';
     case 'moxie':
-      return 'Moxie';
+      return 'Fans';
   }
 };
 

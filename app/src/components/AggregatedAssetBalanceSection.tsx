@@ -51,6 +51,7 @@ export function AggregatedAssetBalanceSection({
             anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             badgeContent={
               <AvatarGroup
+                key={`asset_chains_avatar_group_${assets[0].token.id}`}
                 max={3}
                 color="inherit"
                 total={assets.length}
@@ -64,7 +65,10 @@ export function AggregatedAssetBalanceSection({
                   gap: 0.2
                 }}>
                 {[...Array(Math.min(3, assets.length))].map((_item, i) => (
-                  <NetworkAvatar chainId={assets[i].chainId} />
+                  <NetworkAvatar
+                    key={`asset_chains_avatar_group_${assets[0].token.id}_${assets[i].chainId}`}
+                    chainId={assets[i].chainId}
+                  />
                 ))}
               </AvatarGroup>
             }>

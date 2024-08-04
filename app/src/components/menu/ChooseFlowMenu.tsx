@@ -19,12 +19,14 @@ import { PiTipJar } from 'react-icons/pi';
 
 export type ChooseFlowMenuProps = MenuProps &
   CloseCallbackType & {
+    configurable?: boolean;
     flows: FlowType[];
     selectedFlow: FlowType;
     setSelectedFlow: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
   };
 
 export function ChooseFlowMenu({
+  configurable = true,
   flows,
   selectedFlow,
   setSelectedFlow,
@@ -56,7 +58,7 @@ export function ChooseFlowMenu({
             flows.map((option) => (
               <MenuItem
                 key={option.uuid}
-                selected={option === selectedFlow}
+                selected={option.uuid === selectedFlow.uuid}
                 sx={{ alignContent: 'center' }}
                 onClick={async () => {
                   setSelectedFlow(option);
@@ -80,7 +82,7 @@ export function ChooseFlowMenu({
                       justifyContent="flex-start"
                       width={90}>
                       <Box display="inherit" width={30}>
-                        {option === selectedFlow && <Check sx={{ color: green.A700 }} />}
+                        {option.uuid === selectedFlow.uuid && <Check sx={{ color: green.A700 }} />}
                       </Box>
                       <Box display="inherit" width={30}>
                         {option.uuid === profile.defaultFlow?.uuid && (
@@ -135,33 +137,39 @@ export function ChooseFlowMenu({
                     </Typography>
                   </Box>
 
-                  {option === selectedFlow && option.uuid !== profile.defaultFlow?.uuid && (
-                    <IconButton
-                      size="small"
-                      onClick={async (event) => {
-                        event.stopPropagation();
-                        setFlowAnchorEl(event.currentTarget);
-                        setOpenFlowSettingsMenu(true);
-                      }}
-                      sx={{ mx: 1 }}>
-                      <MoreHoriz fontSize="small" />
-                    </IconButton>
-                  )}
+                  {configurable &&
+                    option === selectedFlow &&
+                    option.uuid !== profile.defaultFlow?.uuid && (
+                      <IconButton
+                        size="small"
+                        onClick={async (event) => {
+                          event.stopPropagation();
+                          setFlowAnchorEl(event.currentTarget);
+                          setOpenFlowSettingsMenu(true);
+                        }}
+                        sx={{ mx: 1 }}>
+                        <MoreHoriz fontSize="small" />
+                      </IconButton>
+                    )}
                 </Box>
               </MenuItem>
             ))}
-          <Divider />
-          <MenuItem
-            disabled
-            key="add_payment_flow"
-            onClick={async () => {
-              setOpenNewFlowDialig(true);
-            }}>
-            <Add fontSize="small" sx={{ width: 30, color: green.A700 }} />
-            <Typography variant="subtitle2" color={green.A700}>
-              New Payment Flow
-            </Typography>
-          </MenuItem>
+          {configurable && (
+            <>
+              <Divider />
+              <MenuItem
+                disabled
+                key="add_payment_flow"
+                onClick={async () => {
+                  setOpenNewFlowDialig(true);
+                }}>
+                <Add fontSize="small" sx={{ width: 30, color: green.A700 }} />
+                <Typography variant="subtitle2" color={green.A700}>
+                  New Payment Flow
+                </Typography>
+              </MenuItem>
+            </>
+          )}
         </Menu>
         {/* {openNewFlowDialig && (
           <NewFlowDialog

@@ -51,6 +51,7 @@ import { CAIP19, payWithGlide } from '@paywithglide/glide-js';
 import { delay } from '../../utils/delay';
 import { useNavigate } from 'react-router-dom';
 import { ChooseFlowMenu } from '../menu/ChooseFlowMenu';
+import ResponsiveDialog from './ResponsiveDialog';
 
 export type GiftStorageDialog = DialogProps &
   CloseCallbackType & {
@@ -75,13 +76,16 @@ export default function GiftStorageDialog({
 }: GiftStorageDialog) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+
   const navigate = useNavigate();
 
   const [openSelectFlow, setOpenSelectFlow] = useState(false);
 
-  const flow = sender.identity.profile?.defaultFlow as FlowType;
+  const senderFlow = sender.identity.profile?.defaultFlow as FlowType;
 
-  const isNativeFlow = flow.type !== 'FARCASTER_VERIFICATION' && flow.type !== 'LINKED';
+  const isNativeFlow = senderFlow.type !== 'FARCASTER_VERIFICATION' && senderFlow.type !== 'LINKED';
 
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
@@ -134,7 +138,7 @@ export default function GiftStorageDialog({
       Boolean(rentUnitPrice) &&
       Boolean(payment.receiverFid),
     {
-      account: flow.wallets[0].address,
+      account: senderFlow.wallets[0].address,
       paymentCurrency: `eip155:${selectedWallet?.network}/${
         selectedToken?.tokenAddress
           ? `erc20:${selectedToken.tokenAddress}`
@@ -161,7 +165,7 @@ export default function GiftStorageDialog({
   const { isLoading: isPaymentOptionsLoading, data: paymentOptions } = useGlidePaymentOptions(
     isUnitPriceFetched && Boolean(rentUnitPrice) && Boolean(payment.receiverFid),
     {
-      account: flow.wallets[0].address,
+      account: senderFlow.wallets[0].address,
       chainId: optimism.id,
       address: OP_FARCASTER_STORAGE_CONTRACT_ADDR,
       abi: rentStorageAbi,
@@ -173,10 +177,12 @@ export default function GiftStorageDialog({
 
   console.log('Payment Options: ', paymentOptions);
 
+  const [openConnectSignerDrawer, setOpenConnectSignerDrawer] = useState<boolean>(false);
+
   useMemo(async () => {
     if (!isPaymentOptionsLoading && paymentOptions) {
       setCompatibleWallets(
-        flow.wallets.filter((w) =>
+        senderFlow.wallets.filter((w) =>
           paymentOptions.find((o) => o.paymentCurrency.startsWith(`eip155:${w.network}`))
         )
       );
@@ -192,6 +198,10 @@ export default function GiftStorageDialog({
   }, [compatibleWallets, chainId]);
 
   const submitGlideTransaction = async () => {
+    if (address?.toLowerCase() !== senderFlow.signer.toLowerCase()) {
+      setOpenConnectSignerDrawer(true);
+      return;
+    }
     try {
       const tx = {
         chainId: optimism.id,
@@ -229,19 +239,19 @@ export default function GiftStorageDialog({
               // TODO: hard to figure out if there 2 signers or one, for now consider if signerProvider not specified - 1, otherwise - 2
               const owners = [];
               if (
-                flow.signerProvider &&
-                flow.signer.toLowerCase() !== profile.identity.toLowerCase()
+                senderFlow.signerProvider &&
+                senderFlow.signer.toLowerCase() !== profile.identity.toLowerCase()
               ) {
                 owners.push(profile.identity);
               }
-              owners.push(flow.signer);
+              owners.push(senderFlow.signer);
 
               const safeAccountConfig: SafeAccountConfig = {
                 owners,
                 threshold: 1
               };
 
-              const saltNonce = flow.saltNonce as string;
+              const saltNonce = senderFlow.saltNonce as string;
               const safeVersion = selectedWallet.version as SafeVersion;
 
               const txHash = transfer(
@@ -285,7 +295,7 @@ export default function GiftStorageDialog({
   };
 
   useMemo(async () => {
-    if (flow.type !== 'FARCASTER_VERIFICATION' && flow.type !== 'LINKED') {
+    if (senderFlow.type !== 'FARCASTER_VERIFICATION' && senderFlow.type !== 'LINKED') {
       setPaymentPending(Boolean(loading || (txHash && !confirmed && !error)));
     } else {
       setPaymentPending(
@@ -366,46 +376,43 @@ export default function GiftStorageDialog({
               </Stack>
             )}
 
-            {address?.toLowerCase() === flow.signer.toLowerCase() ? (
-              <Stack width="100%">
-                <NetworkTokenSelector
-                  payment={payment}
-                  selectedWallet={selectedWallet}
-                  setSelectedWallet={setSelectedWallet}
-                  selectedToken={selectedToken}
-                  setSelectedToken={setSelectedToken}
-                  compatibleWallets={compatibleWallets}
-                  enabledChainCurrencies={paymentOptions?.map((c) => c.paymentCurrency) ?? []}
-                  gasFee={BigInt(0)}
+            <Stack width="100%">
+              <NetworkTokenSelector
+                payment={payment}
+                selectedWallet={selectedWallet}
+                setSelectedWallet={setSelectedWallet}
+                selectedToken={selectedToken}
+                setSelectedToken={setSelectedToken}
+                compatibleWallets={compatibleWallets}
+                enabledChainCurrencies={paymentOptions?.map((c) => c.paymentCurrency) ?? []}
+                gasFee={BigInt(0)}
+              />
+              {!selectedWallet || chainId === selectedWallet.network ? (
+                <LoadingPaymentButton
+                  title="Gift"
+                  loading={paymentPending}
+                  disabled={!paymentOption}
+                  status={isNativeFlow ? status : statusRegular}
+                  onClick={submitGlideTransaction}
                 />
-                {!selectedWallet || chainId === selectedWallet.network ? (
-                  <LoadingPaymentButton
-                    title="Gift"
-                    loading={paymentPending}
-                    disabled={!paymentOption}
-                    status={isNativeFlow ? status : statusRegular}
-                    onClick={submitGlideTransaction}
-                  />
-                ) : (
-                  <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
-                )}
-                <Typography variant="caption" textAlign="center" color={grey[400]}>
-                  Cross-chain payments facilitated by{' '}
-                  <b>
-                    <a href="https://paywithglide.xyz" target="_blank" style={{ color: 'inherit' }}>
-                      Glide
-                    </a>
-                  </b>
-                </Typography>
-              </Stack>
-            ) : (
-              <SwitchFlowSignerSection flow={flow} />
-            )}
+              ) : (
+                <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
+              )}
+              <Typography variant="caption" textAlign="center" color={grey[400]}>
+                Cross-chain payments facilitated by{' '}
+                <b>
+                  <a href="https://paywithglide.xyz" target="_blank" style={{ color: 'inherit' }}>
+                    Glide
+                  </a>
+                </b>
+              </Typography>
+            </Stack>
           </Box>
         </DialogContent>
       </Dialog>
       {flows && selectedFlow && setSelectedFlow && (
         <ChooseFlowMenu
+          configurable={false}
           open={openSelectFlow}
           anchorOrigin={{
             vertical: 'center',
@@ -420,6 +427,23 @@ export default function GiftStorageDialog({
           selectedFlow={selectedFlow}
           setSelectedFlow={setSelectedFlow}
         />
+      )}
+      {address?.toLowerCase() !== senderFlow.signer.toLowerCase() && (
+        <ResponsiveDialog
+          title="Connect Signer"
+          open={openConnectSignerDrawer}
+          onOpen={() => {
+            setOpenConnectSignerDrawer(true);
+          }}
+          onClose={() => setOpenConnectSignerDrawer(false)}>
+          <Stack alignItems="flex-start" spacing={2}>
+            <Typography variant="caption" color={grey[prefersDarkMode ? 400 : 700]}>
+              Selected payment flow `<b>{senderFlow.title}`</b> signer is not connected! Please, proceed
+              with connecting the wallet mentioned below.
+            </Typography>
+            <SwitchFlowSignerSection flow={senderFlow} />
+          </Stack>
+        </ResponsiveDialog>
       )}
     </>
   );

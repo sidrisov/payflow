@@ -1,10 +1,7 @@
 import {
   Avatar,
   Button,
-  Dialog,
-  DialogContent,
   DialogProps,
-  DialogTitle,
   Stack,
   Typography,
   useMediaQuery,
@@ -13,6 +10,7 @@ import {
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { AccountBalanceWallet } from '@mui/icons-material';
 import { PaymentSenderType } from './PaymentDialog';
+import ResponsiveDialog from './ResponsiveDialog';
 
 export type ChoosePaymentOptionDialogProps = DialogProps &
   CloseCallbackType & {
@@ -67,33 +65,16 @@ export default function ChoosePaymentOptionDialog({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
-    <Dialog
+    <ResponsiveDialog
+      open={props.open}
+      onOpen={() => {}}
       onClose={closeStateCallback}
-      {...props}
-      PaperProps={{
-        sx: {
-          borderRadius: 5,
-          ...(!isMobile && {
-            width: 375
-          })
-        }
-      }}
-      sx={{
-        backdropFilter: 'blur(5px)'
-      }}>
-      <DialogTitle variant="h6" textAlign="center">
-        Select payment method
-      </DialogTitle>
-      <DialogContent
-        sx={{
-          p: 3,
-          justifyContent: isMobile ? 'flex-end' : 'center'
-        }}>
-        <Stack alignItems="center" spacing={1}>
-          {paymentOptionButton('payflow', setPaymentType)}
-          {paymentOptionButton('wallet', setPaymentType)}
-        </Stack>
-      </DialogContent>
-    </Dialog>
+      title="Select payment method"
+      width={375}>
+      <Stack width="100%" alignItems="center" spacing={1} p={1}>
+        {paymentOptionButton('payflow', setPaymentType)}
+        {paymentOptionButton('wallet', setPaymentType)}
+      </Stack>
+    </ResponsiveDialog>
   );
 }

@@ -3,6 +3,7 @@ import {
   Dialog,
   DialogContent,
   DialogProps,
+  Slide,
   Stack,
   useMediaQuery,
   useTheme
@@ -18,6 +19,17 @@ import { RecipientField } from '../RecipientField';
 import { ChooseFlowMenu } from '../menu/ChooseFlowMenu';
 import { FlowType } from '../../types/FlowType';
 import { useState } from 'react';
+import React from 'react';
+import { TransitionProps } from '@mui/material/transitions';
+
+const Transition = React.forwardRef(function Transition(
+  props: TransitionProps & {
+    children: React.ReactElement;
+  },
+  ref: React.Ref<unknown>
+) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 
 export type PaymentSenderType = 'payflow' | 'wallet' | 'none';
 
@@ -49,6 +61,16 @@ export default function PaymentDialog({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [openSelectFlow, setOpenSelectFlow] = useState(false);
 
+  const recipientCompatibleFlows = flows?.filter(
+    (flow) =>
+      recipient.type === 'address' ||
+      flow.wallets.find((senderWallet) =>
+        recipient.identity.profile?.defaultFlow?.wallets.find(
+          (recipientWallet) => recipientWallet.network === senderWallet.network
+        )
+      )
+  );
+
   return (
     <>
       <Dialog
@@ -67,7 +89,8 @@ export default function PaymentDialog({
         }}
         sx={{
           backdropFilter: 'blur(5px)'
-        }}>
+        }}
+        {...(isMobile && { TransitionComponent: Transition })}>
         <BackDialogTitle title="Pay" closeStateCallback={closeStateCallback} />
         <DialogContent
           sx={{
@@ -105,8 +128,9 @@ export default function PaymentDialog({
         </DialogContent>
       </Dialog>
 
-      {flows && selectedFlow && setSelectedFlow && (
+      {recipientCompatibleFlows && selectedFlow && setSelectedFlow && (
         <ChooseFlowMenu
+          configurable={false}
           open={openSelectFlow}
           anchorOrigin={{
             vertical: 'center',
@@ -117,7 +141,7 @@ export default function PaymentDialog({
             horizontal: 'left'
           }}
           closeStateCallback={async () => setOpenSelectFlow(false)}
-          flows={flows}
+          flows={recipientCompatibleFlows}
           selectedFlow={selectedFlow}
           setSelectedFlow={setSelectedFlow}
         />

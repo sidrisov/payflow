@@ -34,6 +34,9 @@ import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
 import { PaymentType } from '../../types/PaymentType';
 import { delay } from '../../utils/delay';
+import { Stack, Typography, useMediaQuery } from '@mui/material';
+import ResponsiveDialog from './ResponsiveDialog';
+import { grey } from '@mui/material/colors';
 
 export default function PaymentDialogContent({
   paymentType,
@@ -41,6 +44,8 @@ export default function PaymentDialogContent({
   sender,
   recipient
 }: PaymentDialogProps) {
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+
   const senderAddress = sender.identity.address as Address;
   const senderFlow = sender.identity.profile?.defaultFlow as FlowType;
 
@@ -76,6 +81,8 @@ export default function PaymentDialogContent({
     senderFlow.type !== 'LINKED';
 
   const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
+
+  const [openConnectSignerDrawer, setOpenConnectSignerDrawer] = useState<boolean>(false);
 
   const {
     loading: loadingRegular,
@@ -215,6 +222,11 @@ export default function PaymentDialogContent({
   ]);
 
   async function submitTransaction() {
+    if (paymentType !== 'wallet' && address?.toLowerCase() !== senderFlow.signer.toLowerCase()) {
+      setOpenConnectSignerDrawer(true);
+      return;
+    }
+
     if (
       selectedWallet &&
       toAddress &&
@@ -324,47 +336,60 @@ export default function PaymentDialogContent({
   ]);
 
   useMemo(async () => {
-    setPaymentEnabled(Boolean(toAddress && sendAmount));
-  }, [toAddress, sendAmount]);
+    setPaymentEnabled(Boolean(toAddress && sendAmount && sendAmountUSD));
+  }, [toAddress, sendAmount, sendAmountUSD]);
 
   return (
     <>
-      {paymentType === 'wallet' || address?.toLowerCase() === senderFlow.signer.toLowerCase() ? (
-        selectedWallet && (
-          <>
-            <TokenAmountSection
-              payment={payment}
-              selectedWallet={selectedWallet}
-              selectedToken={selectedToken}
-              sendAmount={sendAmount}
-              setSendAmount={setSendAmount}
-              sendAmountUSD={sendAmountUSD}
-              setSendAmountUSD={setSendAmountUSD}
+      {selectedWallet && (
+        <>
+          <TokenAmountSection
+            payment={payment}
+            selectedWallet={selectedWallet}
+            selectedToken={selectedToken}
+            sendAmount={sendAmount}
+            setSendAmount={setSendAmount}
+            sendAmountUSD={sendAmountUSD}
+            setSendAmountUSD={setSendAmountUSD}
+          />
+          <NetworkTokenSelector
+            payment={payment}
+            selectedWallet={selectedWallet}
+            setSelectedWallet={setSelectedWallet}
+            selectedToken={selectedToken}
+            setSelectedToken={setSelectedToken}
+            compatibleWallets={compatibleWallets}
+            gasFee={gasFee}
+          />
+          {chainId === selectedWallet.network ? (
+            <LoadingPaymentButton
+              title="Pay"
+              loading={paymentPending}
+              disabled={!paymentEnabled}
+              status={isNativeFlow ? status : statusRegular}
+              onClick={submitTransaction}
             />
-            <NetworkTokenSelector
-              payment={payment}
-              selectedWallet={selectedWallet}
-              setSelectedWallet={setSelectedWallet}
-              selectedToken={selectedToken}
-              setSelectedToken={setSelectedToken}
-              compatibleWallets={compatibleWallets}
-              gasFee={gasFee}
-            />
-            {chainId === selectedWallet.network ? (
-              <LoadingPaymentButton
-                title="Pay"
-                loading={paymentPending}
-                disabled={!paymentEnabled}
-                status={isNativeFlow ? status : statusRegular}
-                onClick={submitTransaction}
-              />
-            ) : (
-              <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
-            )}
-          </>
-        )
-      ) : (
-        <SwitchFlowSignerSection flow={senderFlow} />
+          ) : (
+            <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
+          )}
+        </>
+      )}
+      {paymentType !== 'wallet' && address?.toLowerCase() !== senderFlow.signer.toLowerCase() && (
+        <ResponsiveDialog
+          title="Connect Signer"
+          open={openConnectSignerDrawer}
+          onOpen={() => {
+            setOpenConnectSignerDrawer(true);
+          }}
+          onClose={() => setOpenConnectSignerDrawer(false)}>
+          <Stack alignItems="flex-start" spacing={2}>
+            <Typography variant="caption" color={grey[prefersDarkMode ? 400 : 700]}>
+              Selected payment flow `<b>{senderFlow.title}`</b> signer is not connected! Please,
+              proceed with connecting the wallet mentioned below.
+            </Typography>
+            <SwitchFlowSignerSection flow={senderFlow} />
+          </Stack>
+        </ResponsiveDialog>
       )}
     </>
   );
