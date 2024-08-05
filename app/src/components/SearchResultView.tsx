@@ -98,21 +98,20 @@ export function SearchResultView({
   const verifications = showVerifications
     ? identities.filter((identity) => identity.tags?.includes('verifications'))
     : [];
-  const profiles = identities.filter(
-    (identity) =>
-      identity.data.profile &&
-      (showVerifications ? !identity.tags?.includes('verifications') : true)
-  );
+
+  const popular = showVerifications
+    ? identities.filter((identity) => identity.tags?.includes('popular'))
+    : [];
+  const profiles = identities.filter((identity) => identity.data.profile);
   const addresses = identities.filter((identity) => identity.data.meta);
 
   return (
     <>
       {showVerifications && (
-        <SearchResultProfileListView
-          title="My wallets"
-          view="address"
-          identities={verifications}
-        />
+        <SearchResultProfileListView title="My wallets" view="address" identities={verifications} />
+      )}
+      {showVerifications && (
+        <SearchResultProfileListView title="Popular" view="address" identities={popular} />
       )}
       <SearchResultProfileListView title="Profiles" view="profile" identities={profiles} />
       <SearchResultProfileListView title="Addresses" view="address" identities={addresses} />

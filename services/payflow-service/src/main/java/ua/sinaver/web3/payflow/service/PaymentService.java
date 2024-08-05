@@ -68,7 +68,6 @@ public class PaymentService {
 						payment.getReceiver().getIdentity() : payment.getReceiverAddress())
 				.filter(Objects::nonNull)
 				.map(String::toLowerCase)
-				.distinct()
 				.toList();
 	}
 

@@ -108,8 +108,22 @@ public class ContactBookService implements IContactBookService {
 		val followings = identityFollowingsService.fetchFarcasterFollowings(user.getIdentity());
 		log.debug("Fetched followings: {}", followings);
 
-		val recentContacts = paymentService.getAllPaymentRecipients(user);
-		log.debug("Fetched recent contacts: {}", recentContacts);
+		val allPaymentRecipients = paymentService.getAllPaymentRecipients(user);
+		val allPaymentUniqueRecipients = allPaymentRecipients.stream().distinct().toList();
+		log.debug("Fetched payment recipients: {}", allPaymentUniqueRecipients);
+
+
+		val popular = allPaymentRecipients.stream()
+				.collect(Collectors.groupingBy(identity -> identity,
+						Collectors.counting()))
+				.entrySet()
+				.stream()
+				.sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+				.limit(3)
+				.map(Map.Entry::getKey)
+				.toList();
+		log.debug("Fetched popular payment recipients: {}", popular);
+
 
 		val fanTokenContacts = fanTokenService.fetchFanTokenHolders(user.getIdentity());
 		log.debug("Fetched fan token holders: {}", fanTokenContacts);
@@ -130,7 +144,11 @@ public class ContactBookService implements IContactBookService {
 			tags.add("verifications");
 		}
 
-		if (!recentContacts.isEmpty()) {
+		if (!popular.isEmpty()) {
+			tags.add("popular");
+		}
+
+		if (!allPaymentUniqueRecipients.isEmpty()) {
 			tags.add("recent");
 		}
 
@@ -156,7 +174,8 @@ public class ContactBookService implements IContactBookService {
 
 		val allContacts = Stream.of(
 						verifications.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "verifications")),
-						recentContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "recent")),
+						popular.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "popular")),
+						allPaymentUniqueRecipients.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "recent")),
 						favourites.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(), "favourites")),
 						followings.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "friends")),
 						fanTokenContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "moxie")),
