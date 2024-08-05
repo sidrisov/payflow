@@ -215,7 +215,9 @@ public class PaymentController {
 								: payment.getReceiverAddress() != null ? payment.getReceiverAddress()
 								: "fc_fid:" + payment.getReceiverFid());
 				val receiptUrl = String.format(
-						"https://onceupon.gg/%s", payment.getHash());
+						"https://onceupon.gg/%s",
+						StringUtils.isNotBlank(payment.getFulfillmentHash()) ?
+								payment.getFulfillmentHash() : payment.getHash());
 				val embeds = Collections.singletonList(new Cast.Embed(receiptUrl));
 				val sourceRef = String.format("https://warpcast.com/%s/%s",
 						receiverFname, payment.getSourceHash().substring(0, 10));

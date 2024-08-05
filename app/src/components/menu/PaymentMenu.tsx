@@ -17,21 +17,24 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
       anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
       <MenuList dense disablePadding>
         {payment.source && payment.source.app && (
-          <MenuItem
-            {...(payment.source.ref && {
-              component: 'a',
-              href: payment.source.ref,
-              target: '_blank'
-            })}>
-            <ListItemIcon>
-              <Avatar
-                src={`/dapps/${payment.source.app.toLowerCase()}.png`}
-                sx={{ width: 20, height: 20 }}
-              />
-            </ListItemIcon>
-            {payment.source.app}
-            <OpenInNew fontSize="small" sx={{ margin: 1 }} />
-          </MenuItem>
+          <>
+            <MenuItem
+              {...(payment.source.ref && {
+                component: 'a',
+                href: payment.source.ref,
+                target: '_blank'
+              })}>
+              <ListItemIcon>
+                <Avatar
+                  src={`/dapps/${payment.source.app.toLowerCase()}.png`}
+                  sx={{ width: 20, height: 20 }}
+                />
+              </ListItemIcon>
+              {payment.source.app}
+              <OpenInNew fontSize="small" sx={{ margin: 1 }} />
+            </MenuItem>
+            <Divider />
+          </>
         )}
         {payment.status === 'COMPLETED' ? (
           <>
@@ -46,26 +49,22 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
               Receipt
               <OpenInNew fontSize="small" sx={{ ml: 1 }} />
             </MenuItem>
-            {payment.hash && (
-              <>
-                <Divider />
-                <MenuItem
-                  component="a"
-                  href={`https://www.onceupon.xyz/${payment.fulfillmentHash}`}
-                  target="_blank"
-                  sx={{ color: green.A700 }}>
-                  <ListItemIcon sx={{ color: green.A700 }}>
-                    <IoCheckmarkDoneCircle size={20} />
-                  </ListItemIcon>
-                  Fulfilled
-                  <OpenInNew fontSize="small" sx={{ ml: 1 }} />
-                </MenuItem>
-              </>
+            {payment.fulfillmentHash && (
+              <MenuItem
+                component="a"
+                href={`https://www.onceupon.xyz/${payment.fulfillmentHash}`}
+                target="_blank"
+                sx={{ color: green.A700 }}>
+                <ListItemIcon sx={{ color: green.A700 }}>
+                  <IoCheckmarkDoneCircle size={20} />
+                </ListItemIcon>
+                Fulfilled
+                <OpenInNew fontSize="small" sx={{ ml: 1 }} />
+              </MenuItem>
             )}
           </>
         ) : (
           <>
-            {payment.source && payment.source.app && <Divider />}
             {payment.status === 'INPROGRESS' && payment.fulfillmentId && (
               <MenuItem
                 component="a"
