@@ -109,7 +109,7 @@ export function SearchResultView({
     <>
       {showVerifications && (
         <SearchResultProfileListView
-          title="Your wallets"
+          title="My wallets"
           view="address"
           identities={verifications}
         />
