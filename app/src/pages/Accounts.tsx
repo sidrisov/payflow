@@ -92,11 +92,15 @@ export default function Accounts() {
                     flows={flows}
                     selectedFlow={selectedFlow}
                     setSelectedFlow={setSelectedFlow}
-                    payments={payments?.filter((p) => p.status === 'PENDING')}
+                    payments={payments?.filter(
+                      (p) => p.status === 'PENDING' || p.status === 'INPROGRESS'
+                    )}
                     width="100%"
                   />
                   <ReceiptsSection
-                    payments={payments?.filter((p) => p.status === 'COMPLETED')}
+                    payments={payments?.filter(
+                      (p) => p.status === 'COMPLETED' || p.status === 'REFUNDED'
+                    )}
                     width="100%"
                   />
                 </>

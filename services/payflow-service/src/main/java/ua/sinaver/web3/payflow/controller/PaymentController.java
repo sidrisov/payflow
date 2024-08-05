@@ -9,9 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.Payment;
-import ua.sinaver.web3.payflow.message.PaymentHashMessage;
 import ua.sinaver.web3.payflow.message.PaymentMessage;
 import ua.sinaver.web3.payflow.message.PaymentReferenceMessage;
+import ua.sinaver.web3.payflow.message.PaymentUpdateMessage;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
@@ -130,7 +130,8 @@ public class PaymentController {
 
 		return paymentRepository.findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedDateDesc(
 						user, verifications, List.of(Payment.PaymentStatus.PENDING,
-								Payment.PaymentStatus.COMPLETED),
+								Payment.PaymentStatus.INPROGRESS,
+								Payment.PaymentStatus.COMPLETED, Payment.PaymentStatus.REFUNDED),
 						List.of(Payment.PaymentType.APP, Payment.PaymentType.INTENT,
 								Payment.PaymentType.INTENT_TOP_REPLY,
 								Payment.PaymentType.FRAME))
@@ -165,10 +166,11 @@ public class PaymentController {
 
 	@PutMapping("/{referenceId}")
 	@ResponseStatus(HttpStatus.OK)
-	public void completePayment(@PathVariable String referenceId,
-	                            @RequestBody PaymentHashMessage hashMessage, Principal principal) {
-		log.debug("Marking pending payment {} as complete with hash {} by user {}", referenceId,
-				hashMessage,
+	public void updatePayment(@PathVariable String referenceId,
+	                          @RequestBody PaymentUpdateMessage paymentUpdateMessage, Principal principal) {
+		log.debug("Received update {} for payment {} by user {}",
+				paymentUpdateMessage,
+				referenceId,
 				principal.getName());
 
 		val user = userService.findByIdentity(principal.getName());
@@ -178,11 +180,31 @@ public class PaymentController {
 		}
 
 		val payment = paymentRepository.findByReferenceIdAndSender(referenceId, user);
-		if (payment != null) {
+		if (payment != null && !payment.getStatus().equals(Payment.PaymentStatus.COMPLETED) &&
+				!payment.getStatus().equals(Payment.PaymentStatus.CANCELLED) &&
+				!payment.getStatus().equals(Payment.PaymentStatus.REFUNDED)) {
+
+			if (payment.getStatus().equals(Payment.PaymentStatus.PENDING)
+					&& StringUtils.isNotBlank(paymentUpdateMessage.fulfillmentId())) {
+				payment.setFulfillmentId(paymentUpdateMessage.fulfillmentId());
+				if (StringUtils.isNotBlank(paymentUpdateMessage.hash())) {
+					payment.setHash(paymentUpdateMessage.hash());
+					payment.setStatus(Payment.PaymentStatus.INPROGRESS);
+				}
+				log.debug("Updated payment: {}", payment);
+				return;
+			}
+
+			// if it's fulfillment type of payment, save only fulfillment hash
+			// otherwise treat as regular payment
+			if (payment.getStatus().equals(Payment.PaymentStatus.INPROGRESS)) {
+				payment.setFulfillmentHash(paymentUpdateMessage.fulfillmentHash());
+			} else {
+				payment.setHash(paymentUpdateMessage.hash());
+			}
+
 			payment.setStatus(Payment.PaymentStatus.COMPLETED);
-			payment.setHash(hashMessage.hash());
 			payment.setCompletedDate(new Date());
-			log.debug("Payment was marked as complete: {}", payment);
 
 			// notify only for empty category as p2p payment
 			// handle with different messages for other kind of payments
@@ -357,6 +379,7 @@ public class PaymentController {
 					}
 				}
 			}
+			log.debug("Payment was updated: {}", payment);
 		}
 	}
 

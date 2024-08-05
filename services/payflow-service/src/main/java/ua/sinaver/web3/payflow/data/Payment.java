@@ -72,11 +72,11 @@ public class Payment {
 	@Column
 	private String hash;
 
-/*	@Column(name = "fulfillment_hash")
-	private String fulfilmentHash;
-
 	@Column(name = "fulfillment_id")
-	private String fulfilmentId;*/
+	private String fulfillmentId;
+
+	@Column(name = "fulfillment_hash")
+	private String fulfillmentHash;
 
 	@Column(columnDefinition = "VARCHAR(256)", nullable = false)
 	@Enumerated(EnumType.STRING)

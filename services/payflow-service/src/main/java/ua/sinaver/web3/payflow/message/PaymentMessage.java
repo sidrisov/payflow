@@ -17,6 +17,8 @@ public record PaymentMessage(String referenceId,
                              Double usdAmount,
                              Double tokenAmount,
                              String hash,
+                             String fulfillmentId,
+                             String fulfillmentHash,
                              PaymentSource source,
                              String comment) {
 
@@ -44,6 +46,8 @@ public record PaymentMessage(String referenceId,
 				StringUtils.isNotBlank(payment.getTokenAmount()) ?
 						Double.parseDouble(payment.getTokenAmount()) : null,
 				payment.getHash(),
+				payment.getFulfillmentId(),
+				payment.getFulfillmentHash(),
 				new PaymentMessage.PaymentSource(payment.getSourceApp(), payment.getSourceRef()),
 				includeComment ? payment.getComment() : null);
 	}

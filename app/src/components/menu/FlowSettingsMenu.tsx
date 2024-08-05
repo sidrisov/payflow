@@ -1,4 +1,4 @@
-import { ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material';
+import { ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/material';
 import { PlayForWork } from '@mui/icons-material';
 import { FlowType } from '../../types/FlowType';
 import { setReceivingFlow } from '../../services/flow';
@@ -15,21 +15,23 @@ export function FlowSettingsMenu({ flow, ...props }: MenuProps & { flow: FlowTyp
       sx={{ mt: 1, '.MuiMenu-paper': { borderRadius: 5 } }}
       transformOrigin={{ horizontal: 'left', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
-      <MenuItem
-        onClick={async () => {
-          if (await setReceivingFlow(flow.uuid)) {
-            toast.success('Saved! Reloading page ...', { isLoading: true });
-            await delay(1000);
-            navigate(0);
-          } else {
-            toast.error('Something went wrong!');
-          }
-        }}>
-        <ListItemIcon>
-          <PlayForWork />
-        </ListItemIcon>
-        Set as receiving flow
-      </MenuItem>
+      <MenuList dense disablePadding>
+        <MenuItem
+          onClick={async () => {
+            if (await setReceivingFlow(flow.uuid)) {
+              toast.success('Saved! Reloading page ...', { isLoading: true });
+              await delay(1000);
+              navigate(0);
+            } else {
+              toast.error('Something went wrong!');
+            }
+          }}>
+          <ListItemIcon>
+            <PlayForWork />
+          </ListItemIcon>
+          Set as receiving flow
+        </MenuItem>
+      </MenuList>
     </Menu>
   );
 }

@@ -7,7 +7,7 @@ export interface PaymentType {
   referenceId?: string;
   type: type;
   category?: string;
-  status: 'PENDING' | 'COMPLETED';
+  status: 'PENDING' | 'INPROGRESS' | 'REFUNDED' | 'COMPLETED';
   receiver: ProfileType;
   receiverFlow: FlowType;
   receiverAddress: Address;
@@ -17,6 +17,8 @@ export interface PaymentType {
   usdAmount: number;
   tokenAmount: number;
   hash?: Hash;
+  fulfillmentId?: string;
+  fulfillmentHash?: Hash;
   source?: { app: string; ref?: string };
   comment?: string;
 }

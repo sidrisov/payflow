@@ -1,4 +1,4 @@
-import { Divider, ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material';
+import { Divider, ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/material';
 import { IdentityType } from '../../types/ProfleType';
 import {
   AccountBalanceWallet,
@@ -20,6 +20,8 @@ export function WalletMenu({ closeStateCallback, ...props }: MenuProps & CloseCa
       sx={{ mt: 1, '.MuiMenu-paper': { borderRadius: 5 } }}
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}>
+              <MenuList dense disablePadding>
+
       {address ? (
         <MenuItem
           sx={{ minWidth: 150 }}
@@ -56,6 +58,7 @@ export function WalletMenu({ closeStateCallback, ...props }: MenuProps & CloseCa
           </MenuItem>
         </div>
       )}
+      </MenuList>
     </Menu>
   );
 }

@@ -35,7 +35,7 @@ import { PaymentType } from '../../types/PaymentType';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { useContext, useMemo, useState } from 'react';
 import { Token } from '../../utils/erc20contracts';
-import { Abi, Address, ContractFunctionArgs, ContractFunctionName } from 'viem';
+import { Abi, Address, ContractFunctionArgs, ContractFunctionName, Hash } from 'viem';
 import { normalizeNumberPrecision } from '../../utils/formats';
 import { useGlideEstimatePayment, useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
 import { ProfileContext } from '../../contexts/UserContext';
@@ -44,10 +44,10 @@ import { toast } from 'react-toastify';
 import { Social } from '../../generated/graphql/types';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
-import { completePayment } from '../../services/payments';
+import { completePayment as updatePayment } from '../../services/payments';
 import { grey, red } from '@mui/material/colors';
 import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
-import { CAIP19, payWithGlide } from '@paywithglide/glide-js';
+import { CAIP19, createSession, executeSession } from '@paywithglide/glide-js';
 import { delay } from '../../utils/delay';
 import { useNavigate } from 'react-router-dom';
 import { ChooseFlowMenu } from '../menu/ChooseFlowMenu';
@@ -127,6 +127,37 @@ export default function GiftStorageDialog({
     args: [BigInt(numberOfUnits)]
   });
 
+  const paymentTx = {
+    chainId: optimism.id,
+    address: OP_FARCASTER_STORAGE_CONTRACT_ADDR,
+    abi: rentStorageAbi,
+    functionName: 'rent',
+    args: [BigInt(payment.receiverFid ?? 0), BigInt(numberOfUnits)],
+    value: rentUnitPrice
+  } as {
+    chainId: number;
+    address: Address;
+    abi: Abi;
+    functionName: ContractFunctionName;
+    args?: ContractFunctionArgs;
+    value?: bigint;
+  };
+
+  /*  const paymentTx = {
+    chainId: base.id,
+    address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+    abi: erc20Abi,
+    functionName: 'transfer',
+    args: ['0x0dEe77c83cB8b14fA95497825dF93202AbF6ad83', parseUnits('1', 6)],
+  } as {
+    chainId: number;
+    address: Address;
+    abi: Abi;
+    functionName: ContractFunctionName;
+    args?: ContractFunctionArgs;
+    value?: bigint;
+  }; */
+
   const {
     isLoading: isPaymentOptionLoading,
     isFetched: isPaymentOptionFetched,
@@ -146,11 +177,7 @@ export default function GiftStorageDialog({
           ? 'slip44:33436'
           : 'slip44:60'
       }` as CAIP19,
-      chainId: optimism.id,
-      address: OP_FARCASTER_STORAGE_CONTRACT_ADDR,
-      abi: rentStorageAbi,
-      functionName: 'rent',
-      args: [BigInt(payment.receiverFid ?? 0), BigInt(numberOfUnits)],
+      ...(paymentTx as any),
       value: rentUnitPrice ?? 0n
     }
   );
@@ -166,11 +193,7 @@ export default function GiftStorageDialog({
     isUnitPriceFetched && Boolean(rentUnitPrice) && Boolean(payment.receiverFid),
     {
       account: senderFlow.wallets[0].address,
-      chainId: optimism.id,
-      address: OP_FARCASTER_STORAGE_CONTRACT_ADDR,
-      abi: rentStorageAbi,
-      functionName: 'rent',
-      args: [BigInt(payment.receiverFid ?? 0), BigInt(numberOfUnits)],
+      ...(paymentTx as any),
       value: rentUnitPrice ?? 0n
     }
   );
@@ -203,22 +226,6 @@ export default function GiftStorageDialog({
       return;
     }
     try {
-      const tx = {
-        chainId: optimism.id,
-        address: OP_FARCASTER_STORAGE_CONTRACT_ADDR,
-        abi: rentStorageAbi,
-        functionName: 'rent',
-        args: [BigInt(payment.receiverFid ?? 0), BigInt(numberOfUnits)],
-        value: rentUnitPrice
-      } as {
-        chainId: number;
-        abi: Abi;
-        address: Address;
-        functionName: ContractFunctionName;
-        args?: ContractFunctionArgs;
-        value?: bigint;
-      };
-
       if (profile && client && signer && selectedWallet && paymentOption) {
         if (isNativeFlow) {
           reset();
@@ -226,15 +233,22 @@ export default function GiftStorageDialog({
           resetRegular();
         }
 
-        const glideTxHash = await payWithGlide(glideConfig, {
+        const session = await createSession(glideConfig, {
           account: selectedWallet.address,
           paymentCurrency: paymentOption.paymentCurrency,
           currentChainId: chainId,
-          ...(tx as any),
+          ...(paymentTx as any),
+          value: rentUnitPrice
+        });
+
+        const { sponsoredTransactionHash: glideTxHash } = await executeSession(glideConfig, {
+          session,
+          currentChainId: chainId as any,
           switchChainAsync,
           sendTransactionAsync: async (tx) => {
             console.log('Glide tnxs: ', tx);
 
+            let txHash;
             if (isNativeFlow) {
               // TODO: hard to figure out if there 2 signers or one, for now consider if signerProvider not specified - 1, otherwise - 2
               const owners = [];
@@ -254,7 +268,7 @@ export default function GiftStorageDialog({
               const saltNonce = senderFlow.saltNonce as string;
               const safeVersion = selectedWallet.version as SafeVersion;
 
-              const txHash = transfer(
+              txHash = await transfer(
                 client,
                 signer,
                 {
@@ -267,19 +281,24 @@ export default function GiftStorageDialog({
                 safeVersion,
                 saltNonce
               );
-
-              return txHash;
             } else {
-              return sendTransactionAsync(tx);
+              txHash = await sendTransactionAsync(tx);
             }
+
+            if (txHash) {
+              payment.fulfillmentId = session.sessionId;
+              payment.hash = txHash;
+              updatePayment(payment);
+            }
+            return txHash as Hash;
           }
         });
 
         console.log('Glide txHash:', glideTxHash);
 
         if (glideTxHash && payment.referenceId) {
-          payment.hash = glideTxHash;
-          completePayment(payment);
+          payment.fulfillmentHash = glideTxHash;
+          updatePayment(payment);
           toast.success(`Gifted storage to @${social.profileName}`);
 
           await delay(2000);
@@ -438,8 +457,8 @@ export default function GiftStorageDialog({
           onClose={() => setOpenConnectSignerDrawer(false)}>
           <Stack alignItems="flex-start" spacing={2}>
             <Typography variant="caption" color={grey[prefersDarkMode ? 400 : 700]}>
-              Selected payment flow `<b>{senderFlow.title}`</b> signer is not connected! Please, proceed
-              with connecting the wallet mentioned below.
+              Selected payment flow `<b>{senderFlow.title}`</b> signer is not connected! Please,
+              proceed with connecting the wallet mentioned below.
             </Typography>
             <SwitchFlowSignerSection flow={senderFlow} />
           </Stack>

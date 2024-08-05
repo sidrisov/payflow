@@ -1,4 +1,4 @@
-import { ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material';
+import { ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/material';
 import { AddCircle, QrCode } from '@mui/icons-material';
 
 export function FlowTopUpMenu({
@@ -15,18 +15,20 @@ export function FlowTopUpMenu({
       sx={{ mt: 1, '.MuiMenu-paper': { borderRadius: 5 } }}
       transformOrigin={{ horizontal: 'left', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
-      <MenuItem onClick={depositClickCallback}>
-        <ListItemIcon>
-          <AddCircle fontSize="small" />
-        </ListItemIcon>
-        Top up
-      </MenuItem>
-      <MenuItem onClick={qrClickCallback}>
-        <ListItemIcon>
-          <QrCode fontSize="small" />
-        </ListItemIcon>
-        QR code
-      </MenuItem>
+      <MenuList dense disablePadding>
+        <MenuItem onClick={depositClickCallback}>
+          <ListItemIcon>
+            <AddCircle fontSize="small" />
+          </ListItemIcon>
+          Top up
+        </MenuItem>
+        <MenuItem onClick={qrClickCallback}>
+          <ListItemIcon>
+            <QrCode fontSize="small" />
+          </ListItemIcon>
+          QR code
+        </MenuItem>
+      </MenuList>
     </Menu>
   );
 }

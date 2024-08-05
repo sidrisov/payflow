@@ -1,12 +1,14 @@
 import {
   Box,
+  BoxProps,
   Button,
-  ButtonProps,
   Chip,
+  CircularProgress,
   IconButton,
   Skeleton,
   Stack,
   StackProps,
+  Tooltip,
   Typography,
   useMediaQuery,
   useTheme
@@ -14,7 +16,7 @@ import {
 import { PaymentType } from '../types/PaymentType';
 import { ProfileSection } from './ProfileSection';
 import { useContext, useState } from 'react';
-import { ExpandLess, ExpandMore, MoreHoriz, Payments, Schedule } from '@mui/icons-material';
+import { ExpandLess, ExpandMore, MoreHoriz, Schedule } from '@mui/icons-material';
 import TokenAvatar from './avatars/TokenAvatar';
 import { getNetworkDisplayName } from '../utils/networks';
 import NetworkAvatar from './avatars/NetworkAvatar';
@@ -30,7 +32,7 @@ import { ProfileContext } from '../contexts/UserContext';
 import { QUERY_FARCASTER_PROFILE } from '../utils/airstackQueries';
 import { useQuery } from '@airstack/airstack-react';
 import { Social } from '../generated/graphql/types';
-import { formatAmountWithSuffix } from '../utils/formats';
+import { formatAmountWithSuffix, normalizeNumberPrecision } from '../utils/formats';
 import calculateMaxPages from '../utils/pagination';
 
 const pageSize = 5;
@@ -189,7 +191,7 @@ export function PaymentIntentsSection({
     )
   );
 
-  function GiftStoragePayment({ payment, ...props }: ButtonProps & { payment: PaymentType }) {
+  function GiftStoragePayment({ payment, ...props }: BoxProps & { payment: PaymentType }) {
     const [openPaymentMenu, setOpenPaymentMenu] = useState(false);
     const [paymentMenuAnchorEl, setPaymentMenuAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -205,19 +207,21 @@ export function PaymentIntentsSection({
     );
 
     const numberOfUnits = payment.tokenAmount ?? 1;
-
     return (
       <>
         <Box
-          component={Button}
-          variant="text"
-          onClick={() => {
-            if (social) {
-              setPayment(payment);
-              setOpenPaymentDialog(true);
-              setFidSocial(social);
+          {...(payment.status === 'PENDING' && {
+            component: Button,
+            variant: 'text',
+            textTransform: 'none',
+            onClick: () => {
+              if (social) {
+                setPayment(payment);
+                setOpenPaymentDialog(true);
+                setFidSocial(social);
+              }
             }
-          }}
+          })}
           sx={{
             p: 1.5,
             border: 1,
@@ -229,7 +233,6 @@ export function PaymentIntentsSection({
             justifyContent: 'flex-start',
             alignItems: 'flex-start',
             gap: 1,
-            textTransform: 'none',
             color: 'inherit'
           }}
           {...props}>
@@ -243,6 +246,11 @@ export function PaymentIntentsSection({
                 flexDirection="row"
                 alignItems="center"
                 justifyContent="space-between">
+                {payment.status === 'INPROGRESS' && (
+                  <Tooltip title="Payment in-progress">
+                    <CircularProgress color="inherit" size={20} />
+                  </Tooltip>
+                )}
                 <Typography variant="subtitle2" fontWeight="bold" fontSize={14}>
                   Gift Storage
                 </Typography>
@@ -286,7 +294,7 @@ export function PaymentIntentsSection({
     );
   }
 
-  function IntentPayment({ payment, ...props }: ButtonProps & { payment: PaymentType }) {
+  function IntentPayment({ payment, ...props }: BoxProps & { payment: PaymentType }) {
     const [openPaymentMenu, setOpenPaymentMenu] = useState(false);
     const [paymentMenuAnchorEl, setPaymentMenuAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -296,12 +304,15 @@ export function PaymentIntentsSection({
     return (
       <>
         <Box
-          component={Button}
-          variant="text"
-          onClick={() => {
-            setPayment(payment);
-            setOpenPaymentDialog(true);
-          }}
+          {...(payment.status === 'PENDING' && {
+            component: Button,
+            variant: 'text',
+            textTransform: 'none',
+            onClick: () => {
+              setPayment(payment);
+              setOpenPaymentDialog(true);
+            }
+          })}
           sx={{
             p: 1.5,
             border: 1,
@@ -313,7 +324,6 @@ export function PaymentIntentsSection({
             justifyContent: 'flex-start',
             alignItems: 'flex-start',
             gap: 1,
-            textTransform: 'none',
             color: 'inherit'
           }}
           {...props}>
@@ -323,6 +333,11 @@ export function PaymentIntentsSection({
             flexDirection="row"
             alignItems="center"
             justifyContent="space-between">
+            {payment.status === 'INPROGRESS' && (
+              <Tooltip title="Payment in-progress">
+                <CircularProgress color="inherit" size={20} />
+              </Tooltip>
+            )}
             <Typography variant="subtitle2" fontWeight="bold" fontSize={14}>
               Payment
             </Typography>
@@ -352,7 +367,7 @@ export function PaymentIntentsSection({
             <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
               <b>
                 {payment.tokenAmount
-                  ? formatAmountWithSuffix(payment.tokenAmount.toString())
+                  ? formatAmountWithSuffix(normalizeNumberPrecision(payment.tokenAmount))
                   : `$${payment.usdAmount}`}
               </b>{' '}
               of

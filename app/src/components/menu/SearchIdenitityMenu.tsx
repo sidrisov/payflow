@@ -29,7 +29,7 @@ export function SearchIdentityMenu({
         horizontal: 'right'
       }}
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}>
-      <MenuList dense>
+      <MenuList dense disablePadding>
         <MenuItem onClick={onSocilLinksClick}>
           <ListItemIcon>
             <People fontSize="small" />
@@ -45,7 +45,7 @@ export function SearchIdentityMenu({
               {favourite ? 'Remove from favourites' : 'Add to favourites'}
             </MenuItem>
             {onInviteClick && !identity.invited && !identity.profile && (
-              <MenuItem onClick={onInviteClick} sx={{ fontSize: 14 }}>
+              <MenuItem onClick={onInviteClick}>
                 <ListItemIcon>
                   <PersonAdd fontSize="small" />
                 </ListItemIcon>

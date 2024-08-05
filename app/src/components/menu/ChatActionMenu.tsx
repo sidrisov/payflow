@@ -1,4 +1,4 @@
-import { Avatar, ListItemIcon, Menu, MenuItem, MenuProps } from '@mui/material';
+import { Avatar, ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/material';
 import { ChatAppType as ChatAppType, FARCASTER_DAPP } from '../../utils/dapps';
 import { useEnsAddress } from 'wagmi';
 import { isAddress } from 'viem';
@@ -45,42 +45,51 @@ export function ChatActionMenu({
       sx={{ mt: 1, '.MuiMenu-paper': { borderRadius: 5, border: 1, borderColor: 'divider' } }}
       transformOrigin={{ horizontal: 'left', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
-      {fid && (
-        <MenuItem component="a" href={getChatAppDmLink('warpcast', fid)} target="_blank">
-          <ListItemIcon>
-            <Avatar src="/dapps/warpcast.png" variant="rounded" sx={{ width: 24, height: 24 }} />
-          </ListItemIcon>
-          warpcast
-        </MenuItem>
-      )}
-      {identity.meta?.xmtp && (
-        <>
-          <MenuItem component="a" href={getChatAppDmLink('converse', addressOrEns)} target="_blank">
+      <MenuList dense disablePadding>
+        {fid && (
+          <MenuItem component="a" href={getChatAppDmLink('warpcast', fid)} target="_blank">
             <ListItemIcon>
-              <Avatar src="/xmtp_converse.png" variant="rounded" sx={{ width: 24, height: 24 }} />
+              <Avatar src="/dapps/warpcast.png" variant="rounded" sx={{ width: 24, height: 24 }} />
             </ListItemIcon>
-            converse
+            warpcast
           </MenuItem>
-          <MenuItem
-            component="a"
-            href={getChatAppDmLink(
-              'coinbase',
-              isAddress(addressOrEns) ? addressOrEns : isEnsSuccess && addressEns ? addressEns : ''
-            )}
-            target="_blank">
-            <ListItemIcon>
-              <Avatar src="/xmtp_coinbase.png" variant="rounded" sx={{ width: 24, height: 24 }} />
-            </ListItemIcon>
-            coinbase
-          </MenuItem>
-          <MenuItem component="a" href={getChatAppDmLink('inbox', addressOrEns)} target="_blank">
-            <ListItemIcon>
-              <Avatar src="/xmtp_inbox.png" variant="rounded" sx={{ width: 24, height: 24 }} />
-            </ListItemIcon>
-            inbox
-          </MenuItem>
-        </>
-      )}
+        )}
+        {identity.meta?.xmtp && (
+          <>
+            <MenuItem
+              component="a"
+              href={getChatAppDmLink('converse', addressOrEns)}
+              target="_blank">
+              <ListItemIcon>
+                <Avatar src="/xmtp_converse.png" variant="rounded" sx={{ width: 24, height: 24 }} />
+              </ListItemIcon>
+              converse
+            </MenuItem>
+            <MenuItem
+              component="a"
+              href={getChatAppDmLink(
+                'coinbase',
+                isAddress(addressOrEns)
+                  ? addressOrEns
+                  : isEnsSuccess && addressEns
+                  ? addressEns
+                  : ''
+              )}
+              target="_blank">
+              <ListItemIcon>
+                <Avatar src="/xmtp_coinbase.png" variant="rounded" sx={{ width: 24, height: 24 }} />
+              </ListItemIcon>
+              coinbase
+            </MenuItem>
+            <MenuItem component="a" href={getChatAppDmLink('inbox', addressOrEns)} target="_blank">
+              <ListItemIcon>
+                <Avatar src="/xmtp_inbox.png" variant="rounded" sx={{ width: 24, height: 24 }} />
+              </ListItemIcon>
+              inbox
+            </MenuItem>
+          </>
+        )}
+      </MenuList>
     </Menu>
   );
 }
