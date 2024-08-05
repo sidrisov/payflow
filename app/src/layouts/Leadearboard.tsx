@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { getAllActiveProfiles } from '../services/user';
 import { ProfileType } from '../types/ProfleType';
 import ProfileSectionButton from '../components/buttons/ProfileSectionButton';
+import calculateMaxPages, { PAGE_SIZE } from '../utils/pagination';
 
 export default function Leaderboard() {
   const [profiles, setProfiles] = useState<ProfileType[]>();
@@ -20,6 +21,16 @@ export default function Leaderboard() {
       setLoadingProfiles(false);
     }
   }, []);
+
+  const maxPages = calculateMaxPages(profiles?.length ?? 0, PAGE_SIZE);
+  const [page, setPage] = useState<number>(1);
+
+  const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
+    if (scrollTop + clientHeight >= scrollHeight - 10 && page < maxPages) {
+      setPage(page + 1);
+    }
+  };
 
   return (
     <>
@@ -49,8 +60,14 @@ export default function Leaderboard() {
           {loadingProfiles ? (
             <CircularProgress color="inherit" size={20} sx={{ m: 1 }} />
           ) : profiles && profiles.length ? (
-            <Stack p={1} maxHeight="65vh" overflow="auto" spacing={3} alignItems="flex-start">
-              {profiles.map((profile, index) => (
+            <Stack
+              p={1}
+              maxHeight="65vh"
+              overflow="auto"
+              spacing={3}
+              alignItems="center"
+              onScroll={handleScroll}>
+              {profiles.slice(0, page * PAGE_SIZE).map((profile, index) => (
                 <Stack direction="row" spacing={1} alignItems="center">
                   <Typography variant="subtitle2">{index + 1}</Typography>
                   <ProfileSectionButton ml={2} width={150} profile={profile} />

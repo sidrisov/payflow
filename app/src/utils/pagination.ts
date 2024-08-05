@@ -5,3 +5,5 @@ export default function calculateMaxPages(totalNumber: number, pageSize: number)
 
   return Math.ceil(totalNumber / pageSize);
 }
+
+export const PAGE_SIZE: number = 20;

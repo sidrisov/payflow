@@ -30,6 +30,7 @@ const paymentOptionButton = (
       setPaymentType(option);
     }}
     sx={{
+      p: 1,
       borderRadius: 5,
       border: 1.5,
       textTransform: 'none',
@@ -46,7 +47,7 @@ const paymentOptionButton = (
         <Typography variant="subtitle2" fontWeight="bold" fontSize={16}>
           {option === 'payflow' ? 'Payflow' : 'External Wallet'}
         </Typography>
-        <Typography variant="caption" fontWeight="bold" fontSize={12}>
+        <Typography variant="caption">
           {option === 'payflow'
             ? 'Pay with your Payflow account'
             : 'Pay with your self-custody wallet'}
