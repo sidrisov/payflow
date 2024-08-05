@@ -142,18 +142,18 @@ export function AddressBookToolBar({
         addressBookView={addressBookView}
         setAddressBookView={setAddressBookView}
       />
-      {tags.includes('recent') && (
-        <AddressBookChip
-          key="recent"
-          type="recent"
-          addressBookView={addressBookView}
-          setAddressBookView={setAddressBookView}
-        />
-      )}
       {tags.includes('favourites') && (
         <AddressBookChip
           key="favourites"
           type="favourites"
+          addressBookView={addressBookView}
+          setAddressBookView={setAddressBookView}
+        />
+      )}
+      {tags.includes('recent') && (
+        <AddressBookChip
+          key="recent"
+          type="recent"
           addressBookView={addressBookView}
           setAddressBookView={setAddressBookView}
         />
