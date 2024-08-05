@@ -335,6 +335,7 @@ export default function SearchIdentityDialog({
               closeStateCallback={closeStateCallback}
               selectIdentityCallback={selectIdentityCallback}
               updateIdentityCallback={updateIdentityCallback}
+              showVerifications={addressBookView === 'all'}
               identities={
                 addressBookView === 'all'
                   ? contacts

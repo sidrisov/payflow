@@ -14,12 +14,14 @@ const pageSize = 20;
 
 export function SearchResultView({
   profileRedirect,
+  showVerifications,
   closeStateCallback,
   selectIdentityCallback,
   updateIdentityCallback,
   identities
 }: {
   profileRedirect?: boolean;
+  showVerifications?: boolean;
   identities: ContactType[];
 } & CloseCallbackType &
   SelectIdentityCallbackType &
@@ -27,9 +29,11 @@ export function SearchResultView({
   const navigate = useNavigate();
 
   function SearchResultProfileListView({
+    title,
     view,
     identities
   }: {
+    title: string;
     view: 'address' | 'profile';
     identities: ContactType[];
   }) {
@@ -53,7 +57,7 @@ export function SearchResultView({
         {identities.length > 0 && (
           <>
             <Typography ml={1} variant="subtitle2">
-              {view === 'profile' ? 'Profiles' : 'Addresses'}
+              {title}
               {` (${identities.length})`}
             </Typography>
 
@@ -91,16 +95,27 @@ export function SearchResultView({
     );
   }
 
+  const verifications = showVerifications
+    ? identities.filter((identity) => identity.tags?.includes('verifications'))
+    : [];
+  const profiles = identities.filter(
+    (identity) =>
+      identity.data.profile &&
+      (showVerifications ? !identity.tags?.includes('verifications') : true)
+  );
+  const addresses = identities.filter((identity) => identity.data.meta);
+
   return (
     <>
-      <SearchResultProfileListView
-        view="profile"
-        identities={identities.filter((identity) => identity.data.profile)}
-      />
-      <SearchResultProfileListView
-        view="address"
-        identities={identities.filter((identity) => identity.data.meta)}
-      />
+      {showVerifications && (
+        <SearchResultProfileListView
+          title="Your wallets"
+          view="address"
+          identities={verifications}
+        />
+      )}
+      <SearchResultProfileListView title="Profiles" view="profile" identities={profiles} />
+      <SearchResultProfileListView title="Addresses" view="address" identities={addresses} />
     </>
   );
 }

@@ -62,6 +62,9 @@ public class ContactBookService implements IContactBookService {
 	private IdentityFollowingsService identityFollowingsService;
 
 	@Autowired
+	private IdentityService identityService;
+
+	@Autowired
 	private FanTokenService fanTokenService;
 	@Autowired
 	private PaymentService paymentService;
@@ -99,6 +102,9 @@ public class ContactBookService implements IContactBookService {
 				Schedulers.DEFAULT_POOL_SIZE, Schedulers.DEFAULT_BOUNDED_ELASTIC_SIZE,
 				Schedulers.DEFAULT_BOUNDED_ELASTIC_QUEUESIZE);
 
+		val verifications = identityService.getIdentityAddresses(user.getIdentity());
+		log.debug("Fetched verifications: {}", verifications);
+
 		val followings = identityFollowingsService.fetchFarcasterFollowings(user.getIdentity());
 		log.debug("Fetched followings: {}", followings);
 
@@ -119,6 +125,11 @@ public class ContactBookService implements IContactBookService {
 
 		val favourites = contactRepository.findByUserAndProfileCheckedTrue(user);
 		val tags = new ArrayList<>(List.of("friends"));
+
+		if (!verifications.isEmpty()) {
+			tags.add("verifications");
+		}
+
 		if (!recentContacts.isEmpty()) {
 			tags.add("recent");
 		}
@@ -144,6 +155,7 @@ public class ContactBookService implements IContactBookService {
 		}
 
 		val allContacts = Stream.of(
+						verifications.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "verifications")),
 						recentContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "recent")),
 						favourites.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(), "favourites")),
 						followings.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "friends")),

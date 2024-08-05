@@ -332,15 +332,12 @@ public class PaymentController {
 					val castText = String.format("""
 									@%s, you've been gifted %s units of storage by @%s 🎉
 																			
-									%s
-
 									🧾 Receipt: %s
 
 									p.s. join /payflow channel for updates 👀""",
 							receiverFname,
 							payment.getTokenAmount(),
 							senderFname,
-							storageUsageText,
 							receiptUrl);
 
 					val processed = farcasterPaymentBotService.reply(castText,
@@ -356,8 +353,6 @@ public class PaymentController {
 							val messageText = String.format("""
 											 @%s, you've been gifted %s units of storage by @%s 🎉
 																						
-											 %s
-
 											🔗 Source: %s
 											🧾 Receipt: %s
 
@@ -365,7 +360,6 @@ public class PaymentController {
 									receiverFname,
 									payment.getTokenAmount(),
 									senderFname,
-									storageUsageText,
 									sourceRef,
 									receiptUrl);
 							val response = farcasterMessagingService.message(
