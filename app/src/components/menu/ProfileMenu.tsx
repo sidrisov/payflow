@@ -41,7 +41,7 @@ export function ProfileMenu({
       sx={{ mt: 1, '.MuiMenu-paper': { borderRadius: 5 } }}
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}>
-      <MenuList dense disablePadding>
+      <MenuList disablePadding>
         <MenuItem
           sx={{ minWidth: 150 }}
           onClick={async () => {

@@ -312,8 +312,9 @@ public class PaymentController {
 						}
 					}
 				} else if (payment.getCategory().equals("fc_storage")) {
-					val storageUsage = neynarService.fetchStorageUsage(payment.getReceiverFid());
-					val storageUsageText = storageUsage == null ? "" : String.format("""
+					//val storageUsage = neynarService.fetchStorageUsage(payment.getReceiverFid());
+					val storageUsageText = "";
+					/*storageUsage == null ? "" : String.format("""
 											Total Active Units: %s
 											📝 Casts: %s/%s
 											👍 Reactions: %s/%s
@@ -326,7 +327,7 @@ public class PaymentController {
 							PaymentService.formatNumberWithSuffix(storageUsage.reactions().capacity()),
 							PaymentService.formatNumberWithSuffix(storageUsage.links().used()),
 							PaymentService.formatNumberWithSuffix(storageUsage.links().capacity())
-					);
+					);*/
 
 					val castText = String.format("""
 									@%s, you've been gifted %s units of storage by @%s 🎉
