@@ -9,7 +9,7 @@ export async function completePayment(payment: PaymentType): Promise<boolean | u
       {
         hash: payment.hash,
         fulfillmentId: payment.fulfillmentId,
-        fulfilementHash: payment.fulfillmentHash
+        fulfillmentHash: payment.fulfillmentHash
       },
       {
         withCredentials: true

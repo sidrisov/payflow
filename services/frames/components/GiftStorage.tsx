@@ -15,6 +15,7 @@ function GiftStorage({ identity, storage }: { identity: IdentityType; storage: S
   const profileDisplayName = identity?.profile?.displayName ?? farcasterSocial?.profileDisplayName;
   const profileUsername = identity?.profile?.username ?? farcasterSocial?.profileName;
   const profileImage = identity?.profile?.profileImage ?? farcasterSocial?.profileImage;
+  const maxNameWidth = 450;
 
   return (
     <div
@@ -48,8 +49,27 @@ function GiftStorage({ identity, storage }: { identity: IdentityType; storage: S
         )}
         {profileUsername && profileDisplayName ? (
           <div style={{ margin: 10, display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: 64, fontWeight: 'bold' }}>{profileDisplayName}</span>
-            <span style={{ marginTop: 10, fontSize: 64, fontWeight: 'normal' }}>
+            <span
+              style={{
+                fontSize: 64,
+                fontWeight: 'bold',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: maxNameWidth
+              }}>
+              {profileDisplayName}
+            </span>
+            <span
+              style={{
+                marginTop: 10,
+                fontSize: 64,
+                fontWeight: 'normal',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: maxNameWidth
+              }}>
               @{profileUsername}
             </span>
           </div>
