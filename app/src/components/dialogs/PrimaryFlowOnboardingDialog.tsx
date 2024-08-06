@@ -97,7 +97,7 @@ export default function PrimaryFlowOnboardingDialog({
           signerType: 'email',
           signerCredential: user?.email?.address
         }),
-        title: 'Primary flow',
+        title: 'Payflow Balance',
         walletProvider: 'safe',
         saltNonce: SALT_NONCE,
         wallets
@@ -140,7 +140,7 @@ export default function PrimaryFlowOnboardingDialog({
       }}>
       <BackDialogTitle
         showOnDesktop
-        title="Set Up Payment Flow"
+        title="Set Up Payflow Balance"
         closeStateCallback={async () => {
           try {
             await axios.get(`${API_URL}/api/auth/logout`, {
@@ -272,7 +272,7 @@ export default function PrimaryFlowOnboardingDialog({
                   </Stack>
                 </Stack>
 
-                <Tooltip title="Embedded wallet is default signer in the app! It allows to have signless transactions experience on web and mobile!">
+                <Tooltip title="Embedded wallet is default signer in the app! It allows to have 1-click gaslesss transactions experience on web and mobile!">
                   <Info fontSize="small" />
                 </Tooltip>
               </Box>

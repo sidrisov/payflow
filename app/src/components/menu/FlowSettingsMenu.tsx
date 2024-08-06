@@ -29,7 +29,7 @@ export function FlowSettingsMenu({ flow, ...props }: MenuProps & { flow: FlowTyp
           <ListItemIcon>
             <PlayForWork />
           </ListItemIcon>
-          Set as receiving flow
+          Make default for receiving
         </MenuItem>
       </MenuList>
     </Menu>

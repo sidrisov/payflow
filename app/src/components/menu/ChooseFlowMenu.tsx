@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Box,
   Divider,
   IconButton,
@@ -6,6 +7,7 @@ import {
   MenuItem,
   MenuList,
   MenuProps,
+  Stack,
   Tooltip,
   Typography
 } from '@mui/material';
@@ -51,122 +53,147 @@ export function ChooseFlowMenu({
           }}
           {...props}>
           <MenuList dense disablePadding>
-            <MenuItem disabled key="payment_flow_title">
+            <MenuItem disabled key="payment_flow_title" sx={{ justifyContent: 'center' }}>
               <Typography fontWeight="bold" fontSize={16}>
                 Payment Flows
               </Typography>
             </MenuItem>
-            {flows &&
-              flows.map((option) => (
-                <MenuItem
-                  key={option.uuid}
-                  selected={option.uuid === selectedFlow.uuid}
-                  sx={{ alignContent: 'center' }}
-                  onClick={async () => {
-                    setSelectedFlow(option);
-                    closeStateCallback();
-                  }}>
-                  <Box
-                    display="flex"
-                    flexDirection="row"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    width="100%">
+            <Divider variant="middle" />
+            <Stack
+              maxHeight={400}
+              my={1}
+              sx={{
+                overflowY: 'scroll',
+                '-webkit-overflow-scrolling': 'touch'
+              }}>
+              {flows && flows.length > 0 ? (
+                flows.map((option) => (
+                  <MenuItem
+                    key={option.uuid}
+                    selected={option.uuid === selectedFlow.uuid}
+                    sx={{ alignContent: 'center' }}
+                    onClick={async () => {
+                      setSelectedFlow(option);
+                      closeStateCallback();
+                    }}>
                     <Box
                       display="flex"
                       flexDirection="row"
                       alignItems="center"
-                      justifyContent="flex-start">
+                      justifyContent="space-between"
+                      width="100%">
                       <Box
                         display="flex"
                         flexDirection="row"
                         alignItems="center"
-                        justifyContent="flex-start"
-                        width={90}>
-                        <Box display="inherit" width={30}>
-                          {option.uuid === selectedFlow.uuid && (
-                            <Check sx={{ color: green.A700 }} />
-                          )}
-                        </Box>
-                        <Box display="inherit" width={30}>
-                          {option.uuid === profile.defaultFlow?.uuid && (
-                            <Tooltip title="Default receiving payment flow">
-                              <PlayForWork />
+                        justifyContent="flex-start">
+                        <Box
+                          display="flex"
+                          flexDirection="row"
+                          alignItems="center"
+                          justifyContent="flex-start"
+                          width={90}>
+                          <Box display="inherit" width={30}>
+                            {option.uuid === selectedFlow.uuid && (
+                              <Check sx={{ color: green.A700 }} />
+                            )}
+                          </Box>
+                          <Box display="inherit" width={30}>
+                            {option.uuid === profile.defaultFlow?.uuid && (
+                              <Tooltip title="Default for receiving payments">
+                                <PlayForWork />
+                              </Tooltip>
+                            )}
+                          </Box>
+
+                          {option.type === 'JAR' && (
+                            <Tooltip title="Jar">
+                              <PiTipJar size={20} />
                             </Tooltip>
                           )}
-                        </Box>
 
-                        {option.type === 'JAR' && (
-                          <Tooltip title="Jar">
-                            <PiTipJar size={20} />
-                          </Tooltip>
-                        )}
+                          {!option.type &&
+                            !(
+                              option.wallets.length > 0 &&
+                              option.wallets.find((w) => w.version === '1.3.0')
+                            ) && (
+                              <Tooltip title="Payment flow created in Payflow">
+                                <Avatar src="/payflow.png" sx={{ width: 20, height: 20 }} />
+                              </Tooltip>
+                            )}
 
-                        {option.type === 'FARCASTER_VERIFICATION' && (
-                          <Tooltip title="Farcaster Verification">
-                            <Box
-                              src="/farcaster.svg"
-                              component="img"
-                              sx={{ width: 20, height: 20 }}
-                            />
-                          </Tooltip>
-                        )}
-
-                        {option.type === 'LINKED' && (
-                          <Tooltip title="Linked Wallet">
-                            <Box
-                              src="/coinbase_smart_wallet.svg"
-                              component="img"
-                              sx={{ width: 20, height: 20 }}
-                            />
-                          </Tooltip>
-                        )}
-
-                        {option.wallets.length > 0 &&
-                          option.wallets.find((w) => w.version === '1.3.0') && (
-                            <Tooltip
-                              arrow
-                              title={
-                                <Typography variant="subtitle2" color={red[400]} width="300">
-                                  Legacy flows will be decomissioned soon! <br />
-                                  Please, move your funds to other flows.
-                                </Typography>
-                              }>
-                              <Warning fontSize="small" sx={{ color: red[400] }} />
+                          {option.type === 'FARCASTER_VERIFICATION' && (
+                            <Tooltip title="Farcaster Verification">
+                              <Avatar
+                                variant="rounded"
+                                src="/farcaster.svg"
+                                sx={{ width: 20, height: 20 }}
+                              />
                             </Tooltip>
                           )}
+
+                          {option.type === 'LINKED' && (
+                            <Tooltip title="Linked Wallet">
+                              <Box
+                                src="/coinbase_smart_wallet.svg"
+                                component="img"
+                                sx={{ width: 20, height: 20 }}
+                              />
+                            </Tooltip>
+                          )}
+
+                          {option.wallets.length > 0 &&
+                            option.wallets.find((w) => w.version === '1.3.0') && (
+                              <Tooltip
+                                arrow
+                                title={
+                                  <Typography variant="subtitle2" color={red[400]} width="300">
+                                    Legacy flows will be decomissioned soon! <br />
+                                    Please, move your funds to other flows.
+                                  </Typography>
+                                }>
+                                <Warning fontSize="small" sx={{ color: red[400] }} />
+                              </Tooltip>
+                            )}
+                        </Box>
+                        <Typography variant="subtitle2" noWrap maxWidth={180}>
+                          {option.title}
+                        </Typography>
                       </Box>
-                      <Typography variant="subtitle2" noWrap maxWidth={180}>
-                        {option.title}
-                      </Typography>
-                    </Box>
 
-                    {configurable &&
-                      option === selectedFlow &&
-                      option.uuid !== profile.defaultFlow?.uuid && (
-                        <IconButton
-                          size="small"
-                          onClick={async (event) => {
-                            event.stopPropagation();
-                            setFlowAnchorEl(event.currentTarget);
-                            setOpenFlowSettingsMenu(true);
-                          }}
-                          sx={{ mx: 1 }}>
-                          <MoreHoriz fontSize="small" />
-                        </IconButton>
-                      )}
-                  </Box>
+                      {configurable &&
+                        option === selectedFlow &&
+                        option.uuid !== profile.defaultFlow?.uuid && (
+                          <IconButton
+                            size="small"
+                            onClick={async (event) => {
+                              event.stopPropagation();
+                              setFlowAnchorEl(event.currentTarget);
+                              setOpenFlowSettingsMenu(true);
+                            }}
+                            sx={{ mx: 1 }}>
+                            <MoreHoriz fontSize="small" />
+                          </IconButton>
+                        )}
+                    </Box>
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem disabled key="payment_flow_not_available">
+                  <Typography>Not available.</Typography>
                 </MenuItem>
-              ))}
+              )}
+            </Stack>
             {configurable && (
               <>
-                <Divider />
+                <Divider variant="middle" />
                 <MenuItem
                   disabled
                   key="add_payment_flow"
                   onClick={async () => {
                     setOpenNewFlowDialig(true);
-                  }}>
+                  }}
+                  sx={{ justifyContent: 'center' }}>
                   <Add fontSize="small" sx={{ width: 30, color: green.A700 }} />
                   <Typography variant="subtitle2" color={green.A700}>
                     New Payment Flow
