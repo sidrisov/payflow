@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { toast } from 'react-toastify';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
-import { SelectedIdentityType } from '../../types/ProfleType';
+import { SelectedIdentityType } from '../../types/ProfileType';
 import { Address, isAddress } from 'viem';
 import { SUPPORTED_CHAINS } from '../networks';
 import { PaymentType } from '../../types/PaymentType';

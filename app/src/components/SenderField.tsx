@@ -8,7 +8,7 @@ import {
   Tooltip,
   IconButton
 } from '@mui/material';
-import { SelectedIdentityType } from '../types/ProfleType';
+import { SelectedIdentityType } from '../types/ProfileType';
 import { AddressSection } from './AddressSection';
 import { ProfileSection } from './ProfileSection';
 import { usePrivy, useWallets } from '@privy-io/react-auth';

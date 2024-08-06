@@ -9,7 +9,7 @@ import {
   useTheme
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { ProfileType } from '../../types/ProfleType';
+import { ProfileType } from '../../types/ProfileType';
 import { BackDialogTitle } from './BackDialogTitle';
 import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi';

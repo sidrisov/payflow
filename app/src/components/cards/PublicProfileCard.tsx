@@ -1,5 +1,5 @@
 import { Box, Card, CardProps } from '@mui/material';
-import { IdentityType } from '../../types/ProfleType';
+import { IdentityType } from '../../types/ProfileType';
 import PublicProfileActivityFeed from '../PublicProfileActivityFeed';
 import { PublicProfileDetails } from '../dialogs/PublicProfileDetails';
 import { useSearchParams } from 'react-router-dom';

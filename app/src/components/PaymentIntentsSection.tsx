@@ -21,7 +21,7 @@ import TokenAvatar from './avatars/TokenAvatar';
 import { getNetworkDisplayName } from '../utils/networks';
 import NetworkAvatar from './avatars/NetworkAvatar';
 import getTokenName, { ERC20_CONTRACTS, Token } from '../utils/erc20contracts';
-import { IdentityType, SelectedIdentityType } from '../types/ProfleType';
+import { IdentityType, SelectedIdentityType } from '../types/ProfileType';
 import PaymentDialog from './dialogs/PaymentDialog';
 import { AddressSection } from './AddressSection';
 import { PaymentMenu } from './menu/PaymentMenu';

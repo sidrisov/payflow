@@ -1,5 +1,5 @@
 import { Avatar, Badge, Stack, Typography } from '@mui/material';
-import { ProfileType } from '../types/ProfleType';
+import { ProfileType } from '../types/ProfileType';
 import ProfileAvatar from './avatars/ProfileAvatar';
 
 export function ProfileSection({
@@ -37,7 +37,7 @@ export function ProfileSection({
           '&-ms-overflow-style:': {
             display: 'none' // Hide the scrollbar for IE
           },
-          '-webkit-overflow-scrolling': 'touch', // Improve scrolling on iOS
+          '-webkit-overflow-scrolling': 'touch' // Improve scrolling on iOS
         }}>
         <Typography noWrap variant="subtitle2" fontSize={fontSize}>
           {profile?.displayName}

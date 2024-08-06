@@ -1,4 +1,4 @@
-import { MetaType, ContactType, SocialInfoType, InsightsType } from '../types/ProfleType';
+import { MetaType, ContactType, SocialInfoType, InsightsType } from '../types/ProfileType';
 import { fetchQuery } from '@airstack/airstack-react';
 import { Address, isAddress } from 'viem';
 import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';

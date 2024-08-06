@@ -4,7 +4,7 @@ import { shortenWalletAddressLabel } from '../../utils/address';
 import { ChatActionMenu } from '../menu/ChatActionMenu';
 import { useState } from 'react';
 import { Chat } from '@mui/icons-material';
-import { IdentityType } from '../../types/ProfleType';
+import { IdentityType } from '../../types/ProfileType';
 
 export type SocialPresenceChipWithLinkProps = ChipProps & {
   type: dAppType;

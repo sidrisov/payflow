@@ -17,7 +17,7 @@ import {
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { ArrowBack, Clear, Menu } from '@mui/icons-material';
 import { useContext, useEffect, useMemo, useState } from 'react';
-import { ContactType, SelectedIdentityType } from '../../types/ProfleType';
+import { ContactType, SelectedIdentityType } from '../../types/ProfileType';
 
 import { Address } from 'viem';
 import { searchIdentity, sortBySocialScore } from '../../services/socials';
@@ -335,7 +335,7 @@ export default function SearchIdentityDialog({
               closeStateCallback={closeStateCallback}
               selectIdentityCallback={selectIdentityCallback}
               updateIdentityCallback={updateIdentityCallback}
-              showVerifications={addressBookView === 'all'}
+              showExtra={addressBookView === 'all'}
               identities={
                 addressBookView === 'all'
                   ? contacts

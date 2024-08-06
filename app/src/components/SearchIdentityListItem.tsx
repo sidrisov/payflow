@@ -9,7 +9,7 @@ import {
   Popover,
   useMediaQuery
 } from '@mui/material';
-import { ContactType } from '../types/ProfleType';
+import { ContactType } from '../types/ProfileType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
 import { useContext, useState } from 'react';

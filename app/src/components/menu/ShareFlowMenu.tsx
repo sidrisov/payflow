@@ -1,5 +1,5 @@
 import { Avatar, ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/material';
-import { ProfileType } from '../../types/ProfleType';
+import { ProfileType } from '../../types/ProfileType';
 import { FilterFrames, Person } from '@mui/icons-material';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { DAPP_URL, FRAMES_URL } from '../../utils/urlConstants';

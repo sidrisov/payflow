@@ -1,5 +1,5 @@
 import { Address } from 'viem';
-import { ProfileType } from './ProfleType';
+import { ProfileType } from './ProfileType';
 
 export interface InvitationType {
   invitedBy: ProfileType;

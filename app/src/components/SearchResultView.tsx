@@ -1,6 +1,6 @@
-import { Button, Stack, Typography } from '@mui/material';
+import { Button, Divider, Stack, Typography } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
-import { ContactType } from '../types/ProfleType';
+import { ContactType } from '../types/ProfileType';
 import { useNavigate } from 'react-router-dom';
 import { SearchIdentityListItem } from './SearchIdentityListItem';
 import {
@@ -10,37 +10,58 @@ import {
 import { useState } from 'react';
 import calculateMaxPages from '../utils/pagination';
 
-const pageSize = 20;
+const pageSize = 30;
+
+interface SearchResultViewProps
+  extends CloseCallbackType,
+    SelectIdentityCallbackType,
+    UpdateIdentityCallbackType {
+  profileRedirect?: boolean;
+  showExtra?: boolean;
+  identities: ContactType[];
+}
+
+interface SearchResultProfileListViewProps {
+  title: string;
+  identities: ContactType[];
+  profileRedirect?: boolean;
+  selectIdentityCallback?: SelectIdentityCallbackType['selectIdentityCallback'];
+  updateIdentityCallback?: UpdateIdentityCallbackType['updateIdentityCallback'];
+  closeStateCallback: CloseCallbackType['closeStateCallback'];
+}
 
 export function SearchResultView({
   profileRedirect,
-  showVerifications,
+  showExtra,
   closeStateCallback,
   selectIdentityCallback,
   updateIdentityCallback,
   identities
-}: {
-  profileRedirect?: boolean;
-  showVerifications?: boolean;
-  identities: ContactType[];
-} & CloseCallbackType &
-  SelectIdentityCallbackType &
-  UpdateIdentityCallbackType) {
+}: SearchResultViewProps) {
   const navigate = useNavigate();
 
   function SearchResultProfileListView({
     title,
-    view,
-    identities
-  }: {
-    title: string;
-    view: 'address' | 'profile';
-    identities: ContactType[];
-  }) {
-    const maxPages = calculateMaxPages(identities.length, pageSize);
+    identities,
+    profileRedirect,
+    selectIdentityCallback,
+    updateIdentityCallback,
+    closeStateCallback
+  }: SearchResultProfileListViewProps) {
+    // Merge profiles and addresses inside this function
+    const mergedIdentities = [
+      ...identities
+        .filter((identity) => identity.data.profile)
+        .map((identity) => ({ identity, view: 'profile' })),
+      ...identities
+        .filter((identity) => identity.data.meta)
+        .map((identity) => ({ identity, view: 'address' }))
+    ] as { identity: ContactType; view: 'address' | 'profile' }[];
+
+    const maxPages = calculateMaxPages(mergedIdentities.length, pageSize);
     const [page, setPage] = useState<number>(1);
 
-    const onIdentityClick = (contact: ContactType) => {
+    const onIdentityClick = (contact: ContactType, view: 'address' | 'profile') => {
       if (profileRedirect) {
         navigate(`/${contact.data.profile?.username ?? contact.data.address}`);
       } else if (selectIdentityCallback) {
@@ -54,21 +75,21 @@ export function SearchResultView({
 
     return (
       <>
-        {identities.length > 0 && (
+        {mergedIdentities.length > 0 && (
           <>
             <Typography ml={1} variant="subtitle2">
               {title}
-              {` (${identities.length})`}
+              {` (${mergedIdentities.length})`}
             </Typography>
 
             <Stack m={1} spacing={1} alignItems="center">
-              {identities.slice(0, page * pageSize).map((identity) => (
+              {mergedIdentities.slice(0, page * pageSize).map(({ identity, view }) => (
                 <SearchIdentityListItem
                   key={view === 'profile' ? identity.data.profile?.username : identity.data.address}
                   view={view}
                   contact={identity}
                   updateIdentityCallback={updateIdentityCallback}
-                  {...(onIdentityClick ? { onClick: () => onIdentityClick?.(identity) } : {})}
+                  onClick={() => onIdentityClick(identity, view)}
                 />
               ))}
               {page < maxPages && (
@@ -83,9 +104,7 @@ export function SearchResultView({
                     textTransform: 'none',
                     borderRadius: 5
                   }}>
-                  <Typography variant="subtitle2">
-                    {view === 'profile' ? 'Load more profiles' : 'Load more addresses'}
-                  </Typography>
+                  <Typography variant="subtitle2">Load more contacts</Typography>
                 </Button>
               )}
             </Stack>
@@ -95,26 +114,48 @@ export function SearchResultView({
     );
   }
 
-  const verifications = showVerifications
+  const verifications = showExtra
     ? identities.filter((identity) => identity.tags?.includes('verifications'))
     : [];
 
-  const popular = showVerifications
+  const popular = showExtra
     ? identities.filter((identity) => identity.tags?.includes('popular'))
     : [];
-  const profiles = identities.filter((identity) => identity.data.profile);
-  const addresses = identities.filter((identity) => identity.data.meta);
 
   return (
     <>
-      {showVerifications && (
-        <SearchResultProfileListView title="My wallets" view="address" identities={verifications} />
+      {showExtra && (
+        <>
+          <SearchResultProfileListView
+            title="My wallets"
+            identities={verifications}
+            profileRedirect={profileRedirect}
+            selectIdentityCallback={selectIdentityCallback}
+            updateIdentityCallback={updateIdentityCallback}
+            closeStateCallback={closeStateCallback}
+          />
+          <SearchResultProfileListView
+            title="Popular"
+            identities={popular}
+            profileRedirect={profileRedirect}
+            selectIdentityCallback={selectIdentityCallback}
+            updateIdentityCallback={updateIdentityCallback}
+            closeStateCallback={closeStateCallback}
+          />
+          {(verifications.length > 0 || popular.length > 0) && (
+            <Divider flexItem variant="middle" sx={{ mb: 1.5 }} />
+          )}
+        </>
       )}
-      {showVerifications && (
-        <SearchResultProfileListView title="Popular" view="address" identities={popular} />
-      )}
-      <SearchResultProfileListView title="Profiles" view="profile" identities={profiles} />
-      <SearchResultProfileListView title="Addresses" view="address" identities={addresses} />
+
+      <SearchResultProfileListView
+        title="Contacts"
+        identities={identities}
+        profileRedirect={profileRedirect}
+        selectIdentityCallback={selectIdentityCallback}
+        updateIdentityCallback={updateIdentityCallback}
+        closeStateCallback={closeStateCallback}
+      />
     </>
   );
 }

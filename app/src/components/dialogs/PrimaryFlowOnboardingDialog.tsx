@@ -16,7 +16,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { useMemo, useState } from 'react';
-import { ProfileType } from '../../types/ProfleType';
+import { ProfileType } from '../../types/ProfileType';
 import { toast } from 'react-toastify';
 import { useCreateSafeWallets as usePreCreateSafeWallets } from '../../utils/hooks/useCreateSafeWallets';
 

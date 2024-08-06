@@ -15,7 +15,7 @@ import {
 } from 'viem';
 
 import { FlowType, FlowWalletType } from '../../types/FlowType';
-import { ProfileType } from '../../types/ProfleType';
+import { ProfileType } from '../../types/ProfileType';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { ProfileContext } from '../../contexts/UserContext';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';

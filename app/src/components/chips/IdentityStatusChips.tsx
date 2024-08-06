@@ -1,6 +1,6 @@
 import { Chip, ChipProps } from '@mui/material';
 import { grey, lightGreen, orange } from '@mui/material/colors';
-import { IdentityType } from '../../types/ProfleType';
+import { IdentityType } from '../../types/ProfileType';
 
 export function PayflowChip(props: ChipProps) {
   return (

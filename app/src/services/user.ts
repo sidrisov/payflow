@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ProfileType } from '../types/ProfleType';
+import { ProfileType } from '../types/ProfileType';
 import { API_URL } from '../utils/urlConstants';
 import { Address } from 'viem';
 import { sortAndFilterFlowWallets } from '../utils/sortAndFilterFlows';

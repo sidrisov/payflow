@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { API_URL } from '../urlConstants';
-import { IdentityType, ProfileType } from '../../types/ProfleType';
+import { IdentityType, ProfileType } from '../../types/ProfileType';
 import { sortAndFilterFlowWallets } from '../sortAndFilterFlows';
 
 export const useProfile = (addressOrName: string | undefined) => {

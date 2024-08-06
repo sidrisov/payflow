@@ -20,7 +20,7 @@ import { Home, HomeOutlined } from '@mui/icons-material';
 import { ProfileContext } from '../contexts/UserContext';
 import HideOnScroll from '../components/HideOnScroll';
 
-import { ProfileType } from '../types/ProfleType';
+import { ProfileType } from '../types/ProfileType';
 import { AppSettings } from '../types/AppSettingsType';
 import { ProfileMenu } from '../components/menu/ProfileMenu';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';

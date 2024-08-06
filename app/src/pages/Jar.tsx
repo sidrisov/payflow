@@ -24,7 +24,7 @@ import PaymentDialog, { PaymentSenderType } from '../components/dialogs/PaymentD
 import { useAccount } from 'wagmi';
 import { ProfileContext } from '../contexts/UserContext';
 import ChoosePaymentOptionDialog from '../components/dialogs/ChoosePaymentOptionDialog';
-import { IdentityType, ProfileType } from '../types/ProfleType';
+import { IdentityType, ProfileType } from '../types/ProfileType';
 import ProfileAvatar from '../components/avatars/ProfileAvatar';
 import { ProfileDisplayNameWithLink } from '../components/ProfileDisplayNameWithLink';
 import { PublicProfileDetailsPopover } from '../components/menu/PublicProfileDetailsPopover';

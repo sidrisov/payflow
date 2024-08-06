@@ -18,7 +18,7 @@ import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { Check, Error } from '@mui/icons-material';
 import { useMemo, useState } from 'react';
 import axios from 'axios';
-import { ProfileType } from '../../types/ProfleType';
+import { ProfileType } from '../../types/ProfileType';
 import { toast } from 'react-toastify';
 
 import { updateProfile } from '../../services/user';

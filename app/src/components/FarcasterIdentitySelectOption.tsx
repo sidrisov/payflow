@@ -1,5 +1,5 @@
 import { Box, Stack } from '@mui/material';
-import { IdentityType } from '../types/ProfleType';
+import { IdentityType } from '../types/ProfileType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
 import { PayflowChip, InvitedChip } from './chips/IdentityStatusChips';

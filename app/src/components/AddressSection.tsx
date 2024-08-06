@@ -1,5 +1,5 @@
 import { Avatar, Badge, Stack, Typography } from '@mui/material';
-import { IdentityType } from '../types/ProfleType';
+import { IdentityType } from '../types/ProfileType';
 import AddressAvatar from './avatars/AddressAvatar';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { useEnsAvatar, useEnsName } from 'wagmi';
@@ -95,7 +95,7 @@ export function AddressSection(props: {
           '&-ms-overflow-style:': {
             display: 'none' // Hide the scrollbar for IE
           },
-          '-webkit-overflow-scrolling': 'touch', // Improve scrolling on iOS
+          '-webkit-overflow-scrolling': 'touch' // Improve scrolling on iOS
         }}>
         {username && (
           <Typography noWrap variant="subtitle2" fontSize={fontSize}>

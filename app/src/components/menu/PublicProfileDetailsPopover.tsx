@@ -1,5 +1,5 @@
 import { Popover, PopoverProps } from '@mui/material';
-import { ProfileType } from '../../types/ProfleType';
+import { ProfileType } from '../../types/ProfileType';
 import { PublicProfileDetails } from '../dialogs/PublicProfileDetails';
 
 export function PublicProfileDetailsPopover({

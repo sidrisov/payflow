@@ -1,5 +1,5 @@
 import { Box, Button, ButtonProps, useMediaQuery, useTheme } from '@mui/material';
-import { IdentityType } from '../../types/ProfleType';
+import { IdentityType } from '../../types/ProfileType';
 import { AddressSection } from '../AddressSection';
 
 export default function AddressSectionButton({

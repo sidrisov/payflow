@@ -2,7 +2,7 @@ import { Avatar, ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/
 import { ChatAppType as ChatAppType, FARCASTER_DAPP } from '../../utils/dapps';
 import { useEnsAddress } from 'wagmi';
 import { isAddress } from 'viem';
-import { IdentityType } from '../../types/ProfleType';
+import { IdentityType } from '../../types/ProfileType';
 
 function getChatAppDmLink(chatApp: ChatAppType, userId: string) {
   switch (chatApp) {

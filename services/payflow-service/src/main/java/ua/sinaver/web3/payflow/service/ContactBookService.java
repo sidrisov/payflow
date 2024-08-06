@@ -111,9 +111,9 @@ public class ContactBookService implements IContactBookService {
 		val allPaymentRecipients = paymentService.getAllPaymentRecipients(user);
 		val allPaymentUniqueRecipients = allPaymentRecipients.stream().distinct().toList();
 		log.debug("Fetched payment recipients: {}", allPaymentUniqueRecipients);
-
-
+		
 		val popular = allPaymentRecipients.stream()
+				.filter(identity -> !verifications.contains(identity))
 				.collect(Collectors.groupingBy(identity -> identity,
 						Collectors.counting()))
 				.entrySet()

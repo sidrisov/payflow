@@ -1,5 +1,5 @@
 import { Box, BoxProps, Button, ButtonProps, useMediaQuery, useTheme } from '@mui/material';
-import { ProfileType } from '../../types/ProfleType';
+import { ProfileType } from '../../types/ProfileType';
 import { ProfileSection } from '../ProfileSection';
 import { useNavigate } from 'react-router-dom';
 

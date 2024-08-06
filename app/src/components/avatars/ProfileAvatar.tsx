@@ -1,5 +1,5 @@
 import { Avatar, AvatarProps } from '@mui/material';
-import { ProfileType } from '../../types/ProfleType';
+import { ProfileType } from '../../types/ProfileType';
 import AddressAvatar from './AddressAvatar';
 
 export default function ProfileAvatar({

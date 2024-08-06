@@ -1,5 +1,5 @@
 import { Divider, ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/material';
-import { ProfileType } from '../../types/ProfleType';
+import { ProfileType } from '../../types/ProfileType';
 import { useNavigate } from 'react-router-dom';
 import {
   GridView,

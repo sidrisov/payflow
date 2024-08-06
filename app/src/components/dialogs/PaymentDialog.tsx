@@ -9,7 +9,7 @@ import {
   useTheme
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { SelectedIdentityType } from '../../types/ProfleType';
+import { SelectedIdentityType } from '../../types/ProfileType';
 import PaymentDialogContent from './PaymentDialogContent';
 import { BackDialogTitle } from './BackDialogTitle';
 import { PaymentType } from '../../types/PaymentType';

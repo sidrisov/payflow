@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Address, isAddress } from 'viem';
 import { sortBySocialScore } from '../../services/socials';
-import { ContactType, IdentityType } from '../../types/ProfleType';
+import { ContactType, IdentityType } from '../../types/ProfileType';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { LoadingFarcasterAccountsSkeleton } from '../skeletons/LoadingFarcasterAccountsSkeleton';
 import { FarcasterIdentitySelectOption } from '../FarcasterIdentitySelectOption';

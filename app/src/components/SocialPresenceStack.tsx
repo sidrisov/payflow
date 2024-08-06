@@ -8,7 +8,7 @@ import {
   useMediaQuery,
   Button
 } from '@mui/material';
-import { MetaType } from '../types/ProfleType';
+import { MetaType } from '../types/ProfileType';
 import SocialPresenceAvatar from './avatars/SocialPresenceAvatar';
 import { FARCASTER_DAPP, LENS_DAPP, dAppType } from '../utils/dapps';
 import SocialPresenceAvatarWithMeta from './avatars/SocialPresenceAvatarWithMeta';

@@ -2,7 +2,7 @@ import { Card, CircularProgress, Container, Stack, Typography } from '@mui/mater
 import { Helmet } from 'react-helmet-async';
 import { useMemo, useState } from 'react';
 import { getAllActiveProfiles } from '../services/user';
-import { ProfileType } from '../types/ProfleType';
+import { ProfileType } from '../types/ProfileType';
 import ProfileSectionButton from '../components/buttons/ProfileSectionButton';
 import calculateMaxPages, { PAGE_SIZE } from '../utils/pagination';
 

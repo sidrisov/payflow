@@ -5,12 +5,12 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import ProfileOnboardingDialog from '../components/dialogs/ProfileOnboardingDialog';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
-import { ProfileType } from '../types/ProfleType';
+import { ProfileType } from '../types/ProfileType';
 import { ConnectCard } from '../components/cards/ConnectCard';
 
 export default function Login({
   authStatus,
-  profile,
+  profile
 }: {
   authStatus: string;
   profile: ProfileType | undefined;

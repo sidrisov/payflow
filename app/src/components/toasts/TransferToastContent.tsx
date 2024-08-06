@@ -1,7 +1,7 @@
 import { Typography, Stack, Box } from '@mui/material';
 import { ArrowForward, Close } from '@mui/icons-material';
 import { TypeOptions } from 'react-toastify';
-import { SelectedIdentityType } from '../../types/ProfleType';
+import { SelectedIdentityType } from '../../types/ProfileType';
 import { ProfileSection } from '../ProfileSection';
 import { AddressSection } from '../AddressSection';
 import { normalizeNumberPrecision } from '../../utils/formats';

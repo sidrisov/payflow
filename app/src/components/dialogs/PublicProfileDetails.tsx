@@ -1,6 +1,6 @@
 import { Avatar, Box, Button, IconButton, Stack, Tooltip, Typography } from '@mui/material';
 import { useContext, useState } from 'react';
-import { IdentityType } from '../../types/ProfleType';
+import { IdentityType } from '../../types/ProfileType';
 import { useAccount } from 'wagmi';
 import { CropSquare, Send } from '@mui/icons-material';
 import { ProfileSection } from '../ProfileSection';

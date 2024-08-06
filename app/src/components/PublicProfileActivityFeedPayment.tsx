@@ -23,7 +23,7 @@ import ProfileAvatar from './avatars/ProfileAvatar';
 import { AddressOrEnsWithLink } from './AddressOrEnsWithLink';
 import { ProfileDisplayNameWithLink } from './ProfileDisplayNameWithLink';
 import { PublicProfileDetailsPopover } from './menu/PublicProfileDetailsPopover';
-import { ProfileType } from '../types/ProfleType';
+import { ProfileType } from '../types/ProfileType';
 import { ERC20_CONTRACTS, Token } from '../utils/erc20contracts';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../utils/formats';
 import TokenAvatar from './avatars/TokenAvatar';

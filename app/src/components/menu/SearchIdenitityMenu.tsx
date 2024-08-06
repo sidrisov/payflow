@@ -1,6 +1,6 @@
 import { ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/material';
 import { People, PersonAdd, Star, StarBorder } from '@mui/icons-material';
-import { IdentityType } from '../../types/ProfleType';
+import { IdentityType } from '../../types/ProfileType';
 import { useContext } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 

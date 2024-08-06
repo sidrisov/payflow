@@ -7,7 +7,7 @@ import { useSearchParams } from 'react-router-dom';
 import PaymentFrameComposerDialog from '../components/dialogs/PaymentFrameComposerDialog';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import { ProfileContext } from '../contexts/UserContext';
-import { SelectedIdentityType } from '../types/ProfleType';
+import { SelectedIdentityType } from '../types/ProfileType';
 import { Address } from 'viem';
 import PayComposerActionDialog from '../components/dialogs/PayComposerActionDialog';
 import { useIdentity } from '../utils/queries/profiles';

@@ -1,5 +1,5 @@
 import { Link, LinkProps, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { ProfileType } from '../types/ProfleType';
+import { ProfileType } from '../types/ProfileType';
 
 export function ProfileDisplayNameWithLink({
   profile,

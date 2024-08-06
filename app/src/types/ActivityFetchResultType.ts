@@ -1,6 +1,6 @@
 import { Address, Hash } from 'viem';
 import { FlowWalletType } from './FlowType';
-import { ProfileType } from './ProfleType';
+import { ProfileType } from './ProfileType';
 import { PaymentType } from './PaymentType';
 
 export type ActivityFetchResultType = {

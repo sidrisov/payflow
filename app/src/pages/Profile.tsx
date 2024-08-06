@@ -19,7 +19,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import { Check, Error, Sync } from '@mui/icons-material';
 import axios from 'axios';
 import { API_URL } from '../utils/urlConstants';
-import { ProfileType } from '../types/ProfleType';
+import { ProfileType } from '../types/ProfileType';
 import { updateProfile } from '../services/user';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';

@@ -1,5 +1,5 @@
 import { AppSettings } from './AppSettingsType';
-import { ProfileType } from './ProfleType';
+import { ProfileType } from './ProfileType';
 
 export interface ProfileContextType {
   isAuthenticated: boolean;

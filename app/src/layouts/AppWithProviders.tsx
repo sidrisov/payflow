@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { AppSettings } from '../types/AppSettingsType';
 import { me } from '../services/user';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
-import { ProfileType } from '../types/ProfleType';
+import { ProfileType } from '../types/ProfileType';
 import sortAndFilterFlows from '../utils/sortAndFilterFlows';
 import { toast } from 'react-toastify';
 import axios from 'axios';

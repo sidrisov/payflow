@@ -1,5 +1,5 @@
 import { Address, Hash } from 'viem';
-import { ProfileType } from './ProfleType';
+import { ProfileType } from './ProfileType';
 import { FlowType } from './FlowType';
 
 export type type = 'FRAME' | 'INTENT' | 'APP' | 'INTENT_TOP_REPLY' | 'BATCH';

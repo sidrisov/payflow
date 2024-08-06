@@ -24,7 +24,7 @@ import WalletQRCodeShareDialog from '../dialogs/WalletQRCodeShareDialog';
 import NetworkAvatar from '../avatars/NetworkAvatar';
 import { useAccount } from 'wagmi';
 import SearchIdentityDialog from '../dialogs/SearchIdentityDialog';
-import { IdentityType, SelectedIdentityType } from '../../types/ProfleType';
+import { IdentityType, SelectedIdentityType } from '../../types/ProfileType';
 import PaymentDialog, { PaymentSenderType } from '../dialogs/PaymentDialog';
 import { Address } from 'viem';
 import { useNavigate, useSearchParams } from 'react-router-dom';

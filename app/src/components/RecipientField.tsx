@@ -1,6 +1,6 @@
 import { ExpandMore } from '@mui/icons-material';
 import { Box, Button, Typography, Stack, useTheme, useMediaQuery } from '@mui/material';
-import { SelectedIdentityType } from '../types/ProfleType';
+import { SelectedIdentityType } from '../types/ProfileType';
 import { AddressSection } from './AddressSection';
 import { ProfileSection } from './ProfileSection';
 import { PayflowChip } from './chips/IdentityStatusChips';

@@ -2,7 +2,7 @@ import { Box, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useContext, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
-import { SelectedIdentityType } from '../types/ProfleType';
+import { SelectedIdentityType } from '../types/ProfileType';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import { orange } from '@mui/material/colors';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
