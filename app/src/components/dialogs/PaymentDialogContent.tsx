@@ -71,7 +71,7 @@ export default function PaymentDialogContent({
 
   const toAddress = useToAddress({ recipient, selectedWallet });
 
-  const [sendAmount, setSendAmount] = useState<number | undefined>(payment?.tokenAmount ?? 0);
+  const [sendAmount, setSendAmount] = useState<number | undefined>(payment?.tokenAmount);
   const [sendAmountUSD, setSendAmountUSD] = useState<number | undefined>(payment?.usdAmount);
   const sendToastId = useRef<Id>();
 

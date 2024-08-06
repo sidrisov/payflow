@@ -68,7 +68,7 @@ export default function PayComposerActionDialog({
 
   const chainId = useChainId();
 
-  const [sendAmount, setSendAmount] = useState<number | undefined>(payment?.tokenAmount ?? 0);
+  const [sendAmount, setSendAmount] = useState<number | undefined>(payment?.tokenAmount);
   const [sendAmountUSD, setSendAmountUSD] = useState<number | undefined>(payment?.usdAmount);
 
   const [paymentEnabled, setPaymentEnabled] = useState<boolean>(false);

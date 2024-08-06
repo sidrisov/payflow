@@ -403,7 +403,7 @@ export default function GiftStorageDialog({
                 selectedToken={selectedToken}
                 setSelectedToken={setSelectedToken}
                 compatibleWallets={compatibleWallets}
-                enabledChainCurrencies={paymentOptions?.map((c) => c.paymentCurrency) ?? []}
+                enabledChainCurrencies={paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []}
                 gasFee={BigInt(0)}
               />
               {!selectedWallet || chainId === selectedWallet.network ? (

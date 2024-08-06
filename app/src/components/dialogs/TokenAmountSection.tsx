@@ -5,7 +5,8 @@ import {
   TextField,
   Button,
   InputAdornment,
-  IconButton
+  IconButton,
+  styled
 } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { useAccount, useBalance } from 'wagmi';
@@ -17,6 +18,12 @@ import { Token } from '../../utils/erc20contracts';
 import { normalizeNumberPrecision } from '../../utils/formats';
 import { useTokenPrices } from '../../utils/queries/prices';
 import { PaymentType } from '../../types/PaymentType';
+
+const TokenAmountTextField = styled(TextField)(() => ({
+  '& .MuiInputBase-input::placeholder': {
+    paddingLeft: '15px'
+  }
+}));
 
 export function TokenAmountSection({
   payment,
@@ -128,11 +135,12 @@ export function TokenAmountSection({
           justifyContent="space-evenly"
           alignItems="center">
           {!payment?.token && balanceCheck && <Box width={65} />}
-          <TextField
+          <TokenAmountTextField
             // don't auto focus if it's pending payment
             {...(!payment?.token && { autoFocus: true, focused: true })}
             variant="standard"
             type="number"
+            placeholder="0"
             value={usdAmountMode ? sendAmountUSD : sendAmount}
             error={
               (usdAmountMode ? sendAmountUSD !== undefined : sendAmount !== undefined) &&
