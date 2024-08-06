@@ -175,7 +175,7 @@ export default function SearchIdentityDialog({
     } else {
       setFoundIdentities([]);
     }
-  }, [debouncedSearchString, address]);
+  }, [debouncedSearchString, address, addressBookView]);
 
   const updateIdentityCallback = ({ contact }: { contact: ContactType }) => {
     updateIdentity(contact);
