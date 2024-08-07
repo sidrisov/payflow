@@ -218,7 +218,7 @@ async function startServer() {
       const storageResponse = await axios.get(`${API_URL}/api/user/storage/fid/${fid}`);
       const storageData = storageResponse.data as StorageUsage;
       const image = await htmlToImage(giftStorageHtml(identityData, storageData), 'landscape');
-      res.type('png').send(image);
+      res.setHeader('Cache-Control', 'max-age=60').type('png').send(image);
     } catch (error) {
       console.error(error);
       res.status(500).send('Error retrieving profile data');

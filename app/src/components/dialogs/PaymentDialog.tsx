@@ -3,7 +3,6 @@ import {
   Dialog,
   DialogContent,
   DialogProps,
-  Slide,
   Stack,
   useMediaQuery,
   useTheme
@@ -20,16 +19,7 @@ import { ChooseFlowMenu } from '../menu/ChooseFlowMenu';
 import { FlowType } from '../../types/FlowType';
 import { useState } from 'react';
 import React from 'react';
-import { TransitionProps } from '@mui/material/transitions';
-
-const Transition = React.forwardRef(function Transition(
-  props: TransitionProps & {
-    children: React.ReactElement;
-  },
-  ref: React.Ref<unknown>
-) {
-  return <Slide direction="up" ref={ref} {...props} />;
-});
+import { UpSlideTransition } from './TransitionDownUpSlide';
 
 export type PaymentSenderType = 'payflow' | 'wallet' | 'none';
 
@@ -90,7 +80,7 @@ export default function PaymentDialog({
         sx={{
           backdropFilter: 'blur(5px)'
         }}
-        {...(isMobile && { TransitionComponent: Transition })}>
+        {...(isMobile && { TransitionComponent: UpSlideTransition })}>
         <BackDialogTitle title="Pay" closeStateCallback={closeStateCallback} />
         <DialogContent
           sx={{

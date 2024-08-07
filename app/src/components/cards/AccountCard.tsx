@@ -13,7 +13,7 @@ import {
   Typography
 } from '@mui/material';
 import { Send, Toll, ArrowOutward, Share, CallReceived } from '@mui/icons-material';
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
 import { WalletsInfoPopover } from '../menu/WalletsInfoPopover';
@@ -31,6 +31,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ShareFlowMenu } from '../menu/ShareFlowMenu';
 import { PaymentType } from '../../types/PaymentType';
 import { fetchPayment } from '../../services/payments';
+import GiftStorageDialog from '../dialogs/GiftStorageDialog';
+import { GetFarcasterProfileQuery, Social } from '../../generated/graphql/types';
+import { QUERY_FARCASTER_PROFILE } from '../../utils/airstackQueries';
+import { fetchQuery } from '@airstack/airstack-react';
 
 export type AccountNewDialogProps = CardProps & {
   flows: FlowType[];
@@ -55,6 +59,8 @@ export function AccountCard({
   const paymentRefId = searchParams.get('pay');
 
   const [payment, setPayment] = useState<PaymentType>();
+  // TODO: hack, return in payments from back-end instead
+  const [paymentSocial, setPaymentSocial] = useState<Social>();
 
   const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(false);
   const [openWalletDetailsPopover, setOpenWalletDetailsPopover] = useState(false);
@@ -91,12 +97,38 @@ export function AccountCard({
     }
   }, [isFetched, balances]);
 
-  useMemo(async () => {
-    if (paymentRefId && !payment) {
-      const payment = await fetchPayment(paymentRefId);
-      setPayment(payment);
-    }
-  }, [paymentRefId]);
+  useEffect(() => {
+    const fetchData = async () => {
+      if (paymentRefId && !payment) {
+        try {
+          // Fetch payment data
+          const paymentData = await fetchPayment(paymentRefId);
+          if (paymentData) {
+            if (paymentData.receiverFid) {
+              // Fetch Farcaster profile data
+              const { data } = await fetchQuery<GetFarcasterProfileQuery>(
+                QUERY_FARCASTER_PROFILE,
+                { fid: paymentData.receiverFid.toString() },
+                { cache: true }
+              );
+
+              // Update social information if available
+              const social = data?.Socials?.Social?.[0];
+              if (social) {
+                setPaymentSocial(social as Social);
+              }
+            }
+            // Update payment state
+            setPayment(paymentData);
+          }
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      }
+    };
+
+    fetchData();
+  }, [paymentRefId, payment]);
 
   return (
     profile && (
@@ -277,11 +309,11 @@ export function AccountCard({
           />
         )}
 
-        {payment &&
+        {profile &&
+          selectedFlow &&
+          payment &&
           payment.status === 'PENDING' &&
-          !payment.category &&
-          profile &&
-          selectedFlow && (
+          (!payment.category ? (
             <PaymentDialog
               open={payment != null}
               paymentType="payflow"
@@ -317,7 +349,30 @@ export function AccountCard({
               selectedFlow={selectedFlow}
               setSelectedFlow={setSelectedFlow}
             />
-          )}
+          ) : (
+            payment.category === 'fc_storage' &&
+            paymentSocial && (
+              <GiftStorageDialog
+                open={payment != null}
+                payment={payment}
+                sender={{
+                  identity: {
+                    profile: { ...profile, defaultFlow: selectedFlow },
+                    address: profile.identity
+                  },
+                  type: 'profile'
+                }}
+                social={paymentSocial}
+                closeStateCallback={async () => {
+                  setPayment(undefined);
+                  setPaymentSocial(undefined);
+                }}
+                flows={flows}
+                selectedFlow={selectedFlow}
+                setSelectedFlow={setSelectedFlow}
+              />
+            )
+          ))}
 
         {openSearchIdentity && (
           <SearchIdentityDialog

@@ -52,6 +52,7 @@ import { delay } from '../../utils/delay';
 import { useNavigate } from 'react-router-dom';
 import { ChooseFlowMenu } from '../menu/ChooseFlowMenu';
 import ResponsiveDialog from './ResponsiveDialog';
+import { UpSlideTransition } from './TransitionDownUpSlide';
 
 export type GiftStorageDialog = DialogProps &
   CloseCallbackType & {
@@ -350,7 +351,8 @@ export default function GiftStorageDialog({
         }}
         sx={{
           backdropFilter: 'blur(5px)'
-        }}>
+        }}
+        {...(isMobile && { TransitionComponent: UpSlideTransition })}>
         <BackDialogTitle title="Gift Farcaster Storage" closeStateCallback={closeStateCallback} />
         <DialogContent
           sx={{
@@ -368,7 +370,7 @@ export default function GiftStorageDialog({
                 <KeyboardDoubleArrowDown />
                 <FarcasterRecipientField social={social} />
 
-                {isPaymentOptionLoading || isPaymentOptionsLoading ? (
+                {!rentUnitPrice || isPaymentOptionLoading || isPaymentOptionsLoading ? (
                   <Skeleton
                     title="fetching price"
                     variant="rectangular"
@@ -403,7 +405,9 @@ export default function GiftStorageDialog({
                 selectedToken={selectedToken}
                 setSelectedToken={setSelectedToken}
                 compatibleWallets={compatibleWallets}
-                enabledChainCurrencies={paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []}
+                enabledChainCurrencies={
+                  paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
+                }
                 gasFee={BigInt(0)}
               />
               {!selectedWallet || chainId === selectedWallet.network ? (

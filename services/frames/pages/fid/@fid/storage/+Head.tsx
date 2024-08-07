@@ -51,18 +51,24 @@ export function Head() {
 
         <meta property="fc:frame" content="vNext" />
 
-        <meta property="fc:frame:image" content={`${imageUrl}`} />
+        <meta property="fc:frame:image" content={imageUrl} />
         <meta property="fc:frame:input:text" content="Enter storage units, default: 1" />
-        <meta property="fc:frame:button:1" content="🎁 Submit Gift" />
+        <meta property="fc:frame:button:1" content="Submit gift" />
         <meta
           property="fc:frame:button:1:target"
-          content={`${API_URL}/api/farcaster/frames/storage/submit`}
+          content={`${API_URL}/api/farcaster/frames/storage/${fid}/submit`}
         />
 
-        <meta property="fc:frame:button:2" content="🙋🏻 FAQ" />
-        <meta property="fc:frame:button:2:action" content="link" />
+        <meta property="fc:frame:button:2" content="Check storage" />
         <meta
           property="fc:frame:button:2:target"
+          content={`${API_URL}/api/farcaster/frames/storage/check`}
+        />
+
+        <meta property="fc:frame:button:3" content="FAQ" />
+        <meta property="fc:frame:button:3:action" content="link" />
+        <meta
+          property="fc:frame:button:3:target"
           content="https://payflowlabs.notion.site/Payflow-FAQs-20593cf7734e4d78ad0dc91c8e8982e5#6862f9bffddc4fbe818a6ceb9ab968e7"
         />
       </head>
