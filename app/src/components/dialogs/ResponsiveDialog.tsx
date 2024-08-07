@@ -41,6 +41,7 @@ const ResponsiveDialog: React.FC<ResponsiveDialogProps> = ({
 
   return isMobile ? (
     <SwipeableDrawer
+      disableEnforceFocus
       anchor="bottom"
       open={open}
       onClose={onClose}
@@ -73,6 +74,7 @@ const ResponsiveDialog: React.FC<ResponsiveDialogProps> = ({
     </SwipeableDrawer>
   ) : (
     <Dialog
+      disableEnforceFocus
       open={open}
       onClose={onClose}
       PaperProps={{
