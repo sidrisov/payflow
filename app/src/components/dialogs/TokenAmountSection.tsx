@@ -137,7 +137,7 @@ export function TokenAmountSection({
           {!payment?.token && balanceCheck && <Box width={65} />}
           <TokenAmountTextField
             // don't auto focus if it's pending payment
-            {...(!payment?.token && { autoFocus: true, focused: true })}
+            {...(!payment?.token && !sendAmount && { autoFocus: true, focused: true })}
             variant="standard"
             type="number"
             placeholder="0"
