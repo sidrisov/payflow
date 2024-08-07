@@ -42,15 +42,12 @@ public class NotificationService {
 		val castText = String.format("""
 						@%s, you've been paid %s %s by @%s 🎉
 
-						🧾 Receipt: %s
-
 						p.s. join /payflow channel for updates 👀""",
 				receiverFname,
 				StringUtils.isNotBlank(payment.getTokenAmount()) ? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 						: String.format("$%s", payment.getUsdAmount()),
 				payment.getToken().toUpperCase(),
-				senderFname,
-				receiptUrl);
+				senderFname);
 
 		var processed = paymentBotService.reply(castText,
 				payment.getSourceHash(),

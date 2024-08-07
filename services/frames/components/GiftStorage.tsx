@@ -86,7 +86,8 @@ function GiftStorage({ identity, storage }: { identity: IdentityType; storage: S
             margin: 10,
             minWidth: 250,
             maxWidth: 300,
-            height: 230,
+            minHeight: 230,
+            maxHeight: 300,
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'flex-start',
@@ -105,9 +106,22 @@ function GiftStorage({ identity, storage }: { identity: IdentityType; storage: S
               alignItems: 'center'
             }}>
             <span>
-              <b>Has {storage.total_active_units} Units</b>
+              <b>{storage.total_active_units} Active Units</b>
             </span>
           </div>
+          {storage.soon_expire_units !== 0 && (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
+              <span style={{ color: 'red' }}>
+                <b>{storage.soon_expire_units} Expiring Units</b>
+              </span>
+            </div>
+          )}
           <div
             style={{
               display: 'flex',
@@ -117,8 +131,15 @@ function GiftStorage({ identity, storage }: { identity: IdentityType; storage: S
             }}>
             <span>
               <b>
-                📝 {formatNumberWithSuffix(storage.casts.used.toString())}/
-                {formatNumberWithSuffix(storage.casts.capacity.toString())}
+                📝
+                <span
+                  style={{
+                    color: storage.casts.used > storage.casts.capacity ? 'red' : 'inherit',
+                    paddingLeft: '4px'
+                  }}>
+                  {formatNumberWithSuffix(storage.casts.used.toString())}
+                </span>
+                /{formatNumberWithSuffix(storage.casts.capacity.toString())}
               </b>
             </span>
           </div>
@@ -131,8 +152,15 @@ function GiftStorage({ identity, storage }: { identity: IdentityType; storage: S
             }}>
             <span>
               <b>
-                👍 {formatNumberWithSuffix(storage.reactions.used.toString())}/
-                {formatNumberWithSuffix(storage.reactions.capacity.toString())}
+                👍{' '}
+                <span
+                  style={{
+                    color: storage.reactions.used > storage.reactions.capacity ? 'red' : 'inherit',
+                    paddingLeft: '4px'
+                  }}>
+                  {formatNumberWithSuffix(storage.reactions.used.toString())}
+                </span>
+                /{formatNumberWithSuffix(storage.reactions.capacity.toString())}
               </b>
             </span>
           </div>
@@ -145,8 +173,15 @@ function GiftStorage({ identity, storage }: { identity: IdentityType; storage: S
             }}>
             <span>
               <b>
-                👥 {formatNumberWithSuffix(storage.links.used.toString())}/
-                {formatNumberWithSuffix(storage.links.capacity.toString())}
+                👥{' '}
+                <span
+                  style={{
+                    color: storage.links.used > storage.links.capacity ? 'red' : 'inherit',
+                    paddingLeft: '4px'
+                  }}>
+                  {formatNumberWithSuffix(storage.links.used.toString())}
+                </span>
+                /{formatNumberWithSuffix(storage.links.capacity.toString())}
               </b>
             </span>
           </div>

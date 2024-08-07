@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.message.PaymentMessage;
 import ua.sinaver.web3.payflow.message.PaymentReferenceMessage;
@@ -56,6 +58,9 @@ public class PaymentController {
 
 	@Autowired
 	private IFarcasterNeynarService neynarService;
+
+	@Value("${payflow.frames.url}")
+	private String framesServiceUrl;
 
 	public static String formatDouble(Double value) {
 		val df = new DecimalFormat("#.#####");
@@ -218,7 +223,7 @@ public class PaymentController {
 						"https://onceupon.gg/%s",
 						StringUtils.isNotBlank(payment.getFulfillmentHash()) ?
 								payment.getFulfillmentHash() : payment.getHash());
-				val embeds = Collections.singletonList(new Cast.Embed(receiptUrl));
+				var embeds = Collections.singletonList(new Cast.Embed(receiptUrl));
 				val sourceRef = String.format("https://warpcast.com/%s/%s",
 						receiverFname, payment.getSourceHash().substring(0, 10));
 
@@ -235,8 +240,6 @@ public class PaymentController {
 						val castText = String.format("""
 										@%s, you've been paid %s %s by @%s for your top comment %s🎉
 
-										🧾 Receipt: %s
-
 										p.s. join /payflow channel for updates 👀""",
 								receiverFname,
 								StringUtils.isNotBlank(payment.getTokenAmount()) ?
@@ -244,8 +247,7 @@ public class PaymentController {
 										: String.format("$%s", payment.getUsdAmount()),
 								payment.getToken().toUpperCase(),
 								senderFname,
-								scvText,
-								receiptUrl);
+								scvText);
 
 						val processed = farcasterPaymentBotService.reply(castText,
 								payment.getSourceHash(),
@@ -259,15 +261,12 @@ public class PaymentController {
 						val castText = String.format("""
 										@%s, you've been paid %s %s by @%s 🎉
 
-										🧾 Receipt: %s
-
 										p.s. join /payflow channel for updates 👀""",
 								receiverFname,
 								StringUtils.isNotBlank(payment.getTokenAmount()) ? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 										: String.format("$%s", payment.getUsdAmount()),
 								payment.getToken().toUpperCase(),
-								senderFname,
-								receiptUrl);
+								senderFname);
 
 						val processed = farcasterPaymentBotService.reply(castText,
 								payment.getSourceHash(),
@@ -312,34 +311,21 @@ public class PaymentController {
 						}
 					}
 				} else if (payment.getCategory().equals("fc_storage")) {
-					//val storageUsage = neynarService.fetchStorageUsage(payment.getReceiverFid());
-					val storageUsageText = "";
-					/*storageUsage == null ? "" : String.format("""
-											Total Active Units: %s
-											📝 Casts: %s/%s
-											👍 Reactions: %s/%s
-											👥 Follows: %s/%s
-									""",
-							storageUsage.totalActiveUnits(),
-							PaymentService.formatNumberWithSuffix(storageUsage.casts().used()),
-							PaymentService.formatNumberWithSuffix(storageUsage.casts().capacity()),
-							PaymentService.formatNumberWithSuffix(storageUsage.reactions().used()),
-							PaymentService.formatNumberWithSuffix(storageUsage.reactions().capacity()),
-							PaymentService.formatNumberWithSuffix(storageUsage.links().used()),
-							PaymentService.formatNumberWithSuffix(storageUsage.links().capacity())
-					);*/
+					val storageFrameUrl = UriComponentsBuilder.fromHttpUrl(framesServiceUrl)
+							.path("/fid/{fid}/storage") // add your path variables
+							.buildAndExpand(payment.getReceiverFid())
+							.toUriString();
 
 					val castText = String.format("""
-									@%s, you've been gifted %s units of storage by @%s 🎉
-																			
-									🧾 Receipt: %s
-
+									@%s, you've been gifted %s unit(s) of storage by @%s 🎉
+																								
 									p.s. join /payflow channel for updates 👀""",
 							receiverFname,
 							payment.getTokenAmount(),
-							senderFname,
-							receiptUrl);
+							senderFname);
 
+					// update embeds to include storage frame as well!
+					embeds = List.of(new Cast.Embed(receiptUrl), new Cast.Embed(storageFrameUrl));
 					val processed = farcasterPaymentBotService.reply(castText,
 							payment.getSourceHash(),
 							embeds);
@@ -355,13 +341,15 @@ public class PaymentController {
 																						
 											🔗 Source: %s
 											🧾 Receipt: %s
+											📊 Your storage usage now: %s
 
 											p.s. join /payflow channel for updates 👀""",
 									receiverFname,
 									payment.getTokenAmount(),
 									senderFname,
 									sourceRef,
-									receiptUrl);
+									receiptUrl,
+									storageFrameUrl);
 							val response = farcasterMessagingService.message(
 									new DirectCastMessage(payment.getReceiverFid().toString(), messageText,
 											UUID.randomUUID()));

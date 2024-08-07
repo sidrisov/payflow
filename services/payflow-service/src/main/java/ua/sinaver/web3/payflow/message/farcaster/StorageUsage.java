@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record StorageUsage(
 		int totalActiveUnits,
+		int soonExpireUnits,
 		Storage casts,
 		Storage reactions,
 		Storage links,
@@ -13,6 +14,23 @@ public record StorageUsage(
 		Capacity usernameProofs,
 		Capacity signers
 ) {
+
+	public StorageUsage withSoonExpireUnits(
+			StorageAllocationsResponse storageAllocations
+	) {
+		int soonExpireUnits = storageAllocations.calculateUnitsExpiringInOneMonth();
+		return new StorageUsage(
+				totalActiveUnits,
+				soonExpireUnits,
+				casts,
+				reactions,
+				links,
+				verifications,
+				usernameProofs,
+				signers
+		);
+	}
+
 	public record User(
 			String object,
 			int fid

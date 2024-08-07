@@ -1,5 +1,6 @@
 export interface StorageUsage {
   total_active_units: number;
+  soon_expire_units: number;
   casts: Storage;
   reactions: Storage;
   links: Storage;

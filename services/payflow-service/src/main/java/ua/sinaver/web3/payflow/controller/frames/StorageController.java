@@ -161,7 +161,9 @@ public class StorageController {
 				.path("/check")
 				.toUriString();
 
-		val faqLink = "https://payflowlabs.notion" +
+		val addActionUrl = "https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fproducts%2Fstorage";
+
+		val faqUrl = "https://payflowlabs.notion" +
 				".site/Payflow-FAQs-20593cf7734e4d78ad0dc91c8e8982e5#6862f9bffddc4fbe818a6ceb9ab968e7";
 
 		return FrameResponse.builder().imageUrl(storageImage)
@@ -172,14 +174,19 @@ public class StorageController {
 						submitUrl)
 				)
 				.button(new FrameButton(
-						"Check storage",
+						"My usage",
 						FrameButton.ActionType.POST,
 						checkUrl)
 				)
 				.button(new FrameButton(
+						"Add action",
+						FrameButton.ActionType.LINK,
+						addActionUrl)
+				)
+				.button(new FrameButton(
 						"FAQ",
 						FrameButton.ActionType.LINK,
-						faqLink)
+						faqUrl)
 				)
 				.build().toHtmlResponse();
 	}

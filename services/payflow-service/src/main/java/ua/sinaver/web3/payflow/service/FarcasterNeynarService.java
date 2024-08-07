@@ -67,6 +67,35 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 	}
 
 	@Override
+	public StorageAllocationsResponse fetchStorageAllocations(int fid) {
+		log.debug("Calling Neynar Storage Allocations API by fid {}", fid);
+		return neynarClient.get()
+				.uri(uriBuilder -> uriBuilder.path("/storage/allocations")
+						.queryParam("fid", fid)
+						.build())
+				.retrieve()
+				.onStatus(HttpStatus.NOT_FOUND::equals, clientResponse -> {
+					log.error("404 error when calling Neynar Storage Allocations API by fid {}", fid);
+					return Mono.empty();
+				})
+				.bodyToMono(StorageAllocationsResponse.class)
+				.onErrorResume(WebClientResponseException.class, e -> {
+					if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+						log.debug("404 error calling Neynar Storage Allocations API by fid {} - {}", fid, e.getMessage());
+						return Mono.empty();
+					}
+					log.debug("Exception calling Neynar Storage Allocations API by fid {} - {}", fid, e.getMessage());
+					return Mono.error(e);
+				})
+				.onErrorResume(Throwable.class, e -> {
+					log.debug("Exception calling Neynar Storage Allocations API by fid {} - {}", fid, e.getMessage());
+					return Mono.empty();
+				})
+				.blockOptional()
+				.orElse(null);
+	}
+
+	@Override
 	@Retryable
 	public ValidatedFrameResponseMessage validateFrameMessageWithNeynar(String frameMessageInHex) {
 		log.debug("Calling Neynar Frame Validate API for message {}",

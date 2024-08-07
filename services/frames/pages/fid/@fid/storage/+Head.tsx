@@ -1,17 +1,11 @@
 import { usePageContext } from 'vike-react/usePageContext';
 import { DAPP_URL, FRAMES_URL, API_URL } from '../../../../utils/constants';
 
-function addTimestampToUrl(url: string): string {
-  const timestamp = Math.floor(new Date().getTime() / (60 * 1000)) * (60 * 1000); // Round down to the nearest minute
-  const separator = url.includes('?') ? '&' : '?';
-  return `${url}${separator}t=${timestamp}`;
-}
-
 export function Head() {
   const { routeParams } = usePageContext();
   const fid = routeParams?.fid;
 
-  const imageUrl = addTimestampToUrl(`${FRAMES_URL}/images/profile/fid/${fid}/storage.png`);
+  const imageUrl = `${FRAMES_URL}/images/profile/fid/${fid}/storage.png`;
   return (
     <>
       <head>
@@ -59,16 +53,23 @@ export function Head() {
           content={`${API_URL}/api/farcaster/frames/storage/${fid}/submit`}
         />
 
-        <meta property="fc:frame:button:2" content="Check storage" />
+        <meta property="fc:frame:button:2" content="My usage" />
         <meta
           property="fc:frame:button:2:target"
           content={`${API_URL}/api/farcaster/frames/storage/check`}
         />
 
-        <meta property="fc:frame:button:3" content="FAQ" />
+        <meta property="fc:frame:button:3" content="Add action" />
         <meta property="fc:frame:button:3:action" content="link" />
         <meta
           property="fc:frame:button:3:target"
+          content="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fproducts%2Fstorage"
+        />
+
+        <meta property="fc:frame:button:4" content="FAQ" />
+        <meta property="fc:frame:button:4:action" content="link" />
+        <meta
+          property="fc:frame:button:4:target"
           content="https://payflowlabs.notion.site/Payflow-FAQs-20593cf7734e4d78ad0dc91c8e8982e5#6862f9bffddc4fbe818a6ceb9ab968e7"
         />
       </head>

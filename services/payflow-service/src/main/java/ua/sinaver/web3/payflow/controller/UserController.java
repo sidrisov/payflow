@@ -220,9 +220,11 @@ public class UserController {
 
 		try {
 			val storageUsage = neynarService.fetchStorageUsage(fid);
-			if (storageUsage != null) {
-				log.debug("Fetched storage usage for {}: {}", fid, storageUsage);
-				return ResponseEntity.ok(storageUsage);
+			val storageAllocations = neynarService.fetchStorageAllocations(fid);
+			if (storageUsage != null && storageAllocations != null) {
+				val storageUsageWithSoonExpireUnits = storageUsage.withSoonExpireUnits(storageAllocations);
+				log.debug("Fetched storage usage & allocations for {}: {}", fid, storageUsageWithSoonExpireUnits);
+				return ResponseEntity.ok(storageUsage.withSoonExpireUnits(storageAllocations));
 			} else {
 				log.error("Storage usage not found for {}", fid);
 				return ResponseEntity.notFound().build();
