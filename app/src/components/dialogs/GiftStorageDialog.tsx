@@ -300,17 +300,17 @@ export default function GiftStorageDialog({
         if (glideTxHash && payment.referenceId) {
           payment.fulfillmentHash = glideTxHash;
           updatePayment(payment);
-          toast.success(`Bought storage for @${social.profileName}`);
+          toast.success(`Storage paid for @${social.profileName}`);
 
           await delay(2000);
           navigate(0);
         } else {
-          toast.error(`Failed to buy storage!`);
+          toast.error(`Failed to pay for storage!`);
         }
       }
     } catch (error) {
-      toast.error(`Failed to buy storage!`);
-      console.error('Failed to buy storage with error', error);
+      toast.error(`Failed to pay for storage!`);
+      console.error('Failed to pay for storage with error', error);
     }
   };
 
