@@ -353,7 +353,7 @@ export default function GiftStorageDialog({
           backdropFilter: 'blur(5px)'
         }}
         {...(isMobile && { TransitionComponent: UpSlideTransition })}>
-        <BackDialogTitle title="Buy Farcaster Storage" closeStateCallback={closeStateCallback} />
+        <BackDialogTitle title="Farcaster Storage" closeStateCallback={closeStateCallback} />
         <DialogContent
           sx={{
             p: 2
@@ -412,7 +412,7 @@ export default function GiftStorageDialog({
               />
               {!selectedWallet || chainId === selectedWallet.network ? (
                 <LoadingPaymentButton
-                  title="Buy"
+                  title="Pay"
                   loading={paymentPending}
                   disabled={!paymentOption}
                   status={isNativeFlow ? status : statusRegular}
