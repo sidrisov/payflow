@@ -1,11 +1,9 @@
 package ua.sinaver.web3.payflow.repository;
 
-import lombok.val;
 import org.springframework.data.repository.CrudRepository;
 import ua.sinaver.web3.payflow.data.Invitation;
 import ua.sinaver.web3.payflow.data.User;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -14,10 +12,9 @@ import java.util.stream.Stream;
 
 public interface InvitationRepository extends CrudRepository<Invitation, Integer> {
 
-	boolean existsByIdentityAndExpiryDateAfterAndInviteeNull(String identity, Date before);
+	boolean existsByIdentityAndInviteeNull(String identity);
 
-	Stream<Invitation> findByIdentityInAndExpiryDateAfterAndInviteeNull(List<String> identities,
-	                                                                    Date before);
+	Stream<Invitation> findByIdentityInAndInviteeNull(List<String> identities);
 
 	boolean existsByCodeAndInviteeNull(String code);
 
@@ -28,14 +25,11 @@ public interface InvitationRepository extends CrudRepository<Invitation, Integer
 			String code);
 
 	default boolean existsByIdentityAndValid(String identity) {
-		val now = new Date();
-		return existsByIdentityAndExpiryDateAfterAndInviteeNull(identity, now);
+		return existsByIdentityAndInviteeNull(identity);
 	}
 
 	default Map<String, Invitation> existsByIdentityInAndValid(List<String> identities) {
-
-		val now = new Date();
-		return findByIdentityInAndExpiryDateAfterAndInviteeNull(identities, now)
+		return findByIdentityInAndInviteeNull(identities)
 				.collect(Collectors.toMap(Invitation::getIdentity, Function.identity()));
 	}
 

@@ -101,11 +101,11 @@ public class FramesController {
 		// clear cache only on connect
 		socialGraphService.cleanCache("fc_fid:".concat(String.valueOf(castInteractor)));
 
-		val profiles = identityService.getProfiles(castInteractor.addresses());
+		val profiles = identityService.getProfiles(castInteractor.addressesWithoutCustodialIfAvailable());
 
 		User casterProfile;
 		if (castInteractor.fid() != castAuthor.fid()) {
-			casterProfile = identityService.getProfiles(castAuthor.addresses())
+			casterProfile = identityService.getProfiles(castAuthor.addressesWithoutCustodialIfAvailable())
 					.stream().findFirst().orElse(null);
 		} else {
 			casterProfile = profiles.stream().findFirst().orElse(null);
@@ -124,8 +124,8 @@ public class FramesController {
 					validateMessage.action().interactor().username()));
 			frameResponseBuilder.imageUrl(image);
 		} else {
-			val invitations = contactBookService.filterByInvited(castInteractor.addresses());
-			log.debug("Invitations for addresses {} {}", castInteractor.addresses(), invitations);
+			val invitations = contactBookService.filterByInvited(castInteractor.addressesWithoutCustodialIfAvailable());
+			log.debug("Invitations for addresses {} {}", castInteractor.addressesWithoutCustodialIfAvailable(), invitations);
 
 			if (!invitations.isEmpty()) {
 				val image = framesServiceUrl.concat("/images/profile/invited.png");

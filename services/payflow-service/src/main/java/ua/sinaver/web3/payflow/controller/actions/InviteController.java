@@ -72,7 +72,7 @@ public class InviteController {
 				neynarService.fetchFarcasterUser(validateMessage.action().cast().fid());
 
 		val clickedProfile =
-				identityService.getProfiles(castInteractor.addresses()).stream().findFirst().orElse(null);
+				identityService.getProfiles(castInteractor.addressesWithoutCustodialIfAvailable()).stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
 			log.error("Clicked fid {} is not on payflow", castInteractor);
 			return ResponseEntity.badRequest().body(
@@ -80,13 +80,13 @@ public class InviteController {
 		}
 
 		// check if profile exist
-		val inviteProfiles = identityService.getProfiles(castAuthor.addresses());
+		val inviteProfiles = identityService.getProfiles(castAuthor.addressesWithoutCustodialIfAvailable());
 		if (!inviteProfiles.isEmpty()) {
 			return ResponseEntity.ok().body(
 					new FrameResponse.FrameMessage("Already signed up on Payflow!"));
 		} else {
 			// check if invited
-			val inviteAddresses = castAuthor.addresses();
+			val inviteAddresses = castAuthor.addressesWithoutCustodialIfAvailable();
 			val invitations = contactBookService.filterByInvited(inviteAddresses);
 			if (!invitations.isEmpty()) {
 				return ResponseEntity.ok().body(

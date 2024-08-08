@@ -203,7 +203,7 @@ public class FarcasterPaymentBotService {
 								job.setStatus(PaymentBotJob.Status.REJECTED);
 								return;
 							}
-							receiverAddresses = fcProfile.addresses();
+							receiverAddresses = fcProfile.addressesWithoutCustodialIfAvailable();
 						}
 
 						// if a reply, fetch through airstack
@@ -216,7 +216,7 @@ public class FarcasterPaymentBotService {
 										.filter(u -> !u.username().equals("payflow")).findFirst().orElse(null);
 								if (mentionedReceiver != null) {
 									receiverName = mentionedReceiver.username();
-									receiverAddresses = mentionedReceiver.addresses();
+									receiverAddresses = mentionedReceiver.addressesWithoutCustodialIfAvailable();
 								}
 							}
 						}
@@ -339,7 +339,7 @@ public class FarcasterPaymentBotService {
 						for (val mention : mentions) {
 							try {
 								val receiver = mention.username();
-								val receiverAddresses = mention.addresses();
+								val receiverAddresses = mention.addressesWithoutCustodialIfAvailable();
 
 								val receiverProfile = identityService.getProfiles(receiverAddresses)
 										.stream().findFirst().orElse(null);

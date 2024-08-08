@@ -123,7 +123,7 @@ public class JarContributionController {
 		val title = validateMessage.action().input() != null ?
 				validateMessage.action().input().text() : null;
 
-		val clickedProfile = identityService.getProfiles(castInteractor.addresses()).stream().findFirst().orElse(null);
+		val clickedProfile = identityService.getProfiles(castInteractor.addressesWithoutCustodialIfAvailable()).stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
 			log.error("Clicked fid {} is not on payflow", castInteractor);
 			return ResponseEntity.badRequest().body(
@@ -401,7 +401,7 @@ public class JarContributionController {
 				return DEFAULT_HTML_RESPONSE;
 			}
 
-			clickedProfileAddresses = validatedFarcasterMessage.action().interactor().addresses();
+			clickedProfileAddresses = validatedFarcasterMessage.action().interactor().addressesWithoutCustodialIfAvailable();
 			buttonIndex = validatedFarcasterMessage.action().tappedButton().index();
 			inputText = validatedFarcasterMessage.action().input() != null ?
 					validatedFarcasterMessage.action().input().text() : null;
@@ -561,7 +561,7 @@ public class JarContributionController {
 				return DEFAULT_HTML_RESPONSE;
 			}
 
-			clickedProfileAddresses = validatedFarcasterMessage.action().interactor().addresses();
+			clickedProfileAddresses = validatedFarcasterMessage.action().interactor().addressesWithoutCustodialIfAvailable();
 			buttonIndex = validatedFarcasterMessage.action().tappedButton().index();
 			state = validatedFarcasterMessage.action().state().serialized();
 			transactionId = validatedFarcasterMessage.action().transaction() != null ?

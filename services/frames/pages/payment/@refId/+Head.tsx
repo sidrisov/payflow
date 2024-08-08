@@ -60,7 +60,7 @@ export function Head() {
         {status === 'PENDING' ? (
           type === 'INTENT' ? (
             <>
-              <meta property="fc:frame:button:1" content="📱 App" />
+              <meta property="fc:frame:button:1" content="App" />
               <meta property="fc:frame:button:1:action" content="link" />
               <meta
                 property="fc:frame:button:1:target"
@@ -79,17 +79,24 @@ export function Head() {
                 property="fc:frame:button:1:target"
                 content={`${API_URL}/api/farcaster/frames/pay/${refId}/frame/confirm`}
               />
-              <meta property="fc:frame:button:2" content="📱 App" />
+              <meta property="fc:frame:button:2" content="App" />
               <meta property="fc:frame:button:2:action" content="link" />
               <meta
                 property="fc:frame:button:2:target"
                 content={DAPP_URL.concat(`?pay=${refId}`)}
               />
 
-              <meta property="fc:frame:button:3" content="🙋🏻 FAQ" />
+              <meta property="fc:frame:button:3" content="Add action" />
               <meta property="fc:frame:button:3:action" content="link" />
               <meta
                 property="fc:frame:button:3:target"
+                content={`https://warpcast.com/~/add-cast-action?url=${API_URL}/api/farcaster/actions/profile`}
+              />
+
+              <meta property="fc:frame:button:4" content="FAQ" />
+              <meta property="fc:frame:button:4:action" content="link" />
+              <meta
+                property="fc:frame:button:4:target"
                 content="https://payflowlabs.notion.site/FAQs-20593cf7734e4d78ad0dc91c8e8982e5"
               />
             </>

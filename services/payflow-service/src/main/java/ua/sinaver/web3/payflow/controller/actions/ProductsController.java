@@ -54,7 +54,7 @@ public class ProductsController {
 				neynarService.fetchFarcasterUser(validateMessage.action().cast().fid());
 		val castInteractor = validateMessage.action().interactor();
 
-		val clickedProfile = identityService.getProfiles(castInteractor.addresses())
+		val clickedProfile = identityService.getProfiles(castInteractor.addressesWithoutCustodialIfAvailable())
 				.stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
 			log.error("Clicked fid {} is not on payflow", castInteractor);

@@ -318,14 +318,16 @@ public class PaymentController {
 
 					val castText = String.format("""
 									@%s, you've been gifted %s unit(s) of storage by @%s 🎉
-																								
+																		
+									📊Check your storage usage in the frame below 👇🏻
+																							
 									p.s. join /payflow channel for updates 👀""",
 							receiverFname,
 							payment.getTokenAmount(),
 							senderFname);
 
 					// update embeds to include storage frame as well!
-					embeds = List.of(new Cast.Embed(receiptUrl), new Cast.Embed(storageFrameUrl));
+					embeds = List.of(new Cast.Embed(storageFrameUrl), new Cast.Embed(receiptUrl));
 					val processed = farcasterPaymentBotService.reply(castText,
 							payment.getSourceHash(),
 							embeds);

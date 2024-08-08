@@ -297,7 +297,7 @@ public class FramePaymentController {
 							"information :("));
 		}
 
-		val profiles = identityService.getProfiles(senderFarcasterUser.addresses());
+		val profiles = identityService.getProfiles(senderFarcasterUser.addressesWithoutCustodialIfAvailable());
 
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val sourceHash = validateMessage.action().cast().hash();
@@ -409,12 +409,12 @@ public class FramePaymentController {
 
 			// for now just check if profile exists
 			if (!profiles.isEmpty()) {
-				frameResponseBuilder.button(new FrameButton("\uD83D\uDCF1 App",
+				frameResponseBuilder.button(new FrameButton("App",
 						FrameButton.ActionType.LINK,
 						dAppServiceUrl.concat(String.format("?pay=%s", payment.getReferenceId()))));
 			}
 
-			frameResponseBuilder.button(new FrameButton("\uD83D\uDE4B\uD83C\uDFFB FAQ",
+			frameResponseBuilder.button(new FrameButton("FAQ",
 					FrameButton.ActionType.LINK,
 					"https://payflowlabs.notion.site/FAQs-20593cf7734e4d78ad0dc91c8e8982e5"));
 

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import ua.sinaver.web3.payflow.config.PayflowConfig;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.message.farcaster.ComposerActionState;
@@ -24,13 +25,12 @@ import ua.sinaver.web3.payflow.utils.FrameResponse;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
-import java.util.Date;
 
 @RestController
 @RequestMapping("/farcaster/composer/pay")
 @Transactional
 @Slf4j
-public class PayFormController {
+public class PaymentComposerController {
 	private static final Gson GSON = new GsonBuilder().create();
 	private final static ComposerCastActionMeta PAY_COMPOSER_CAST_ACTION_META = new ComposerCastActionMeta(
 			"composer",
@@ -40,12 +40,16 @@ public class PayFormController {
 			"https://payflow.me",
 			"https://payflow.me/apple-touch-icon.png",
 			new ComposerCastActionMeta.Action("post"));
+
 	@Autowired
 	private IFarcasterNeynarService neynarService;
 	@Autowired
 	private IdentityService identityService;
 	@Autowired
 	private UserService userService;
+
+	@Autowired
+	private PayflowConfig payflowConfig;
 
 	@GetMapping
 	public ComposerCastActionMeta metadata() {
@@ -69,35 +73,15 @@ public class PayFormController {
 				validateMessage.action().url());
 
 		val interactor = validateMessage.action().interactor();
-		User profile =
-				identityService.getProfiles(validateMessage.action().interactor().addressesWithoutCustodialIfAvailable()).stream().findFirst().orElse(null);
-		var accessToken = "";
-		if (profile == null) {
-
-			// for now invite first
-			val identityToCreateProfile = identityService.getIdentitiesInfo(validateMessage.action().interactor().addressesWithoutCustodialIfAvailable())
-					.stream().max(Comparator.comparingInt(IdentityMessage::score))
-					.orElse(null);
-			if (identityToCreateProfile == null) {
-				return ResponseEntity.badRequest().body(
-						new FrameResponse.FrameMessage("Something went wrong! Please, contact " +
-								"@sinaver.eth on Warpcast \uD83D\uDE4F\uD83C\uDFFB"));
-			}
-
-			log.debug("Identity to create profile for interactor: {} : {}",
-					interactor,
-					identityToCreateProfile);
-
-			profile = new User(identityToCreateProfile.address());
-			profile.setAllowed(true);
-			profile.setUsername(interactor.username().replace(".eth", ""));
-			profile.setDisplayName(interactor.displayName());
-			profile.setProfileImage(interactor.pfpUrl());
-			profile.setDefaultReceivingAddress(identityToCreateProfile.address());
-			profile.setLastSeen(new Date());
-			userService.saveUser(profile);
+		User profile;
+		try {
+			profile = userService.getOrCreateUserFromFarcasterProfile(interactor);
+		} catch (IllegalArgumentException exception) {
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameMessage("Missing verified identity! Contact @sinaver.eth"));
 		}
-		accessToken = userService.generateAccessToken(profile);
+
+		val accessToken = userService.generateAccessToken(profile);
 		val decodedState = URLDecoder.decode(
 				validateMessage.action().state().serialized(), StandardCharsets.UTF_8);
 		log.debug("URL decoded form state: {}", decodedState);
@@ -115,8 +99,8 @@ public class PayFormController {
 		}
 
 
-		val paymentFormUrl = UriComponentsBuilder.newInstance()
-				.scheme("https").host("app.payflow.me").path("/composer")
+		val paymentFormUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
+				.path("/composer")
 				.queryParam("access_token", accessToken)
 				.queryParam("action", "pay")
 				.queryParam("recipient", recipient)

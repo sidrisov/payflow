@@ -63,7 +63,7 @@ public class JarController {
 		}
 
 		val clickedProfile =
-				identityService.getProfiles(castInteractor.addresses()).stream().findFirst().orElse(null);
+				identityService.getProfiles(castInteractor.addressesWithoutCustodialIfAvailable()).stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
 			log.error("Clicked fid {} is not on payflow", castInteractor);
 			return ResponseEntity.badRequest().body(

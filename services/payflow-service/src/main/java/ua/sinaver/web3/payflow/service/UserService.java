@@ -11,8 +11,10 @@ import org.web3j.crypto.WalletUtils;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.data.UserAllowance;
 import ua.sinaver.web3.payflow.message.FlowMessage;
+import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.message.ProfileMessage;
 import ua.sinaver.web3.payflow.message.WalletProfileRequestMessage;
+import ua.sinaver.web3.payflow.message.farcaster.FarcasterUser;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
 import ua.sinaver.web3.payflow.service.api.IUserService;
@@ -47,6 +49,9 @@ public class UserService implements IUserService {
 	@Autowired
 	private InvitationRepository invitationRepository;
 
+	@Autowired
+	private IdentityService identityService;
+
 	@Override
 	@CacheEvict(value = USERS_CACHE_NAME)
 	public void saveUser(String identity) {
@@ -57,6 +62,38 @@ public class UserService implements IUserService {
 	@CacheEvict(value = USERS_CACHE_NAME, key = "#user.identity")
 	public void saveUser(User user) {
 		userRepository.save(user);
+	}
+
+	@Override
+	public User getOrCreateUserFromFarcasterProfile(FarcasterUser farcasterUser) {
+		val verifications = farcasterUser.addressesWithoutCustodialIfAvailable();
+		var profile = identityService.getProfiles(verifications)
+				.stream().findFirst().orElse(null);
+		if (profile == null) {
+			val identityToCreateProfile = identityService.getIdentitiesInfo(verifications)
+					.stream().max(Comparator.comparingInt(IdentityMessage::score))
+					.orElse(null);
+			if (identityToCreateProfile == null) {
+				throw new IllegalStateException(String.format(
+						"Can't create profile for: %s - identity is missing",
+						farcasterUser.username())
+				);
+			}
+
+			log.debug("Identity to create profile for interactor: {} : {}",
+					farcasterUser,
+					identityToCreateProfile);
+
+			profile = new User(identityToCreateProfile.address());
+			profile.setAllowed(true);
+			profile.setUsername(farcasterUser.username().replace(".eth", ""));
+			profile.setDisplayName(farcasterUser.displayName());
+			profile.setProfileImage(farcasterUser.pfpUrl());
+			profile.setDefaultReceivingAddress(identityToCreateProfile.address());
+			profile.setLastSeen(new Date());
+			saveUser(profile);
+		}
+		return profile;
 	}
 
 	@Override
