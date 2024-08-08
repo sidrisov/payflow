@@ -18,8 +18,8 @@ import ua.sinaver.web3.payflow.utils.FrameResponse;
 @Slf4j
 public class ProductsController {
 	private final static CastActionMeta GIFT_STORAGE_CAST_ACTION_META = new CastActionMeta(
-			"Gift Storage", "database",
-			"Use this action to gift a storage to farcaster user via Payflow",
+			"Buy Storage", "database",
+			"Use this action to buy storage to any farcaster user via Payflow",
 			"https://app.payflow.me/actions",
 			new CastActionMeta.Action("post"));
 

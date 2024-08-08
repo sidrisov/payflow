@@ -5,7 +5,7 @@ export default function Page() {
   const fid = routeParams?.fid;
   return (
     <>
-      <span>Gift storage to {fid}</span>
+      <span>Buy storage for {fid}</span>
     </>
   );
 }

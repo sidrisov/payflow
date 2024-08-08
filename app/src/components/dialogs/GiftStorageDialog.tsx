@@ -300,17 +300,17 @@ export default function GiftStorageDialog({
         if (glideTxHash && payment.referenceId) {
           payment.fulfillmentHash = glideTxHash;
           updatePayment(payment);
-          toast.success(`Gifted storage to @${social.profileName}`);
+          toast.success(`Bought storage for @${social.profileName}`);
 
           await delay(2000);
           navigate(0);
         } else {
-          toast.error(`Failed to gift storage!`);
+          toast.error(`Failed to buy storage!`);
         }
       }
     } catch (error) {
-      toast.error(`Failed to gift storage!`);
-      console.error('Failed to gift storage with error', error);
+      toast.error(`Failed to buy storage!`);
+      console.error('Failed to buy storage with error', error);
     }
   };
 
@@ -353,7 +353,7 @@ export default function GiftStorageDialog({
           backdropFilter: 'blur(5px)'
         }}
         {...(isMobile && { TransitionComponent: UpSlideTransition })}>
-        <BackDialogTitle title="Gift Farcaster Storage" closeStateCallback={closeStateCallback} />
+        <BackDialogTitle title="Buy Farcaster Storage" closeStateCallback={closeStateCallback} />
         <DialogContent
           sx={{
             p: 2
@@ -412,7 +412,7 @@ export default function GiftStorageDialog({
               />
               {!selectedWallet || chainId === selectedWallet.network ? (
                 <LoadingPaymentButton
-                  title="Gift"
+                  title="Buy"
                   loading={paymentPending}
                   disabled={!paymentOption}
                   status={isNativeFlow ? status : statusRegular}

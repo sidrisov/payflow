@@ -9,7 +9,7 @@ export const giftStorageHtml = (identity: IdentityType, storage: StorageUsage) =
 );
 
 function GiftStorage({ identity, storage }: { identity: IdentityType; storage: StorageUsage }) {
-  const title = '🎁 Gift Storage';
+  const title = 'Buy Storage';
 
   const farcasterSocial = identity?.meta?.socials?.find((s) => s.dappName === 'farcaster');
   const profileDisplayName = identity?.profile?.displayName ?? farcasterSocial?.profileDisplayName;

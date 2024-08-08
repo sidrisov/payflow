@@ -58,8 +58,8 @@ export default function Actions() {
                 startIcon={<Inventory />}
               />
               <CastActionButton
-                title="Gift Storage"
-                description="Use this action to gift a storage to a farcaster user via Payflow"
+                title="Buy Storage"
+                description="Use this action to buy storage for any farcaster user via Payflow"
                 installUrl="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fproducts%2Fstorage"
                 startIcon={<Storage />}
               />

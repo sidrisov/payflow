@@ -317,7 +317,7 @@ public class PaymentController {
 							.toUriString();
 
 					val castText = String.format("""
-									@%s, you've been gifted %s unit(s) of storage by @%s 🎉
+									@%s, you've been paid %s unit(s) of storage by @%s 🎉
 																		
 									📊Check your storage usage in the frame below 👇🏻
 																							
@@ -339,7 +339,7 @@ public class PaymentController {
 					if (payment.getReceiver() != null) {
 						try {
 							val messageText = String.format("""
-											 @%s, you've been gifted %s units of storage by @%s 🎉
+											 @%s, you've been paid %s units of storage by @%s 🎉
 																						
 											🔗 Source: %s
 											🧾 Receipt: %s

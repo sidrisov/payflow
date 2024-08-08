@@ -151,7 +151,7 @@ export function ReceiptsSection({ payments, ...props }: { payments?: PaymentType
                 alignItems="center"
                 justifyContent="space-between">
                 <Typography variant="subtitle2" fontWeight="bold" fontSize={14}>
-                  Gift Storage
+                  Buy Storage
                 </Typography>
                 <IconButton
                   size="small"

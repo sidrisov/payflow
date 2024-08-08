@@ -169,7 +169,7 @@ public class StorageController {
 		return FrameResponse.builder().imageUrl(storageImage)
 				.textInput("Enter storage units, default: 1")
 				.button(new FrameButton(
-						"Submit gift",
+						"Submit",
 						FrameButton.ActionType.POST,
 						submitUrl)
 				)
