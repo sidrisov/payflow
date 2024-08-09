@@ -462,7 +462,7 @@ export default function GiftStorageDialog({
           <Stack alignItems="flex-start" spacing={2}>
             <Typography variant="caption" color={grey[prefersDarkMode ? 400 : 700]}>
               Selected payment flow `<b>{senderFlow.title}`</b> signer is not connected! Please,
-              proceed with connecting the wallet mentioned below:
+              proceed with connecting the signer mentioned below:
             </Typography>
             <SwitchFlowSignerSection flow={senderFlow} />
           </Stack>
