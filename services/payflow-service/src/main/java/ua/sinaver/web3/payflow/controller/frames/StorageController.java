@@ -20,6 +20,9 @@ import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.DEFAULT_HTML_RESPONSE;
 import static ua.sinaver.web3.payflow.service.TokenService.ETH_TOKEN;
 import static ua.sinaver.web3.payflow.service.TokenService.OP_CHAIN_ID;
@@ -91,8 +94,8 @@ public class StorageController {
 					new FrameResponse.FrameMessage("Sign up on Payflow first!"));
 		}
 
-		val inputText = validateMessage.action().input() != null ?
-				validateMessage.action().input().text().toLowerCase() : null;
+		val inputText = validateMessage.action().input() != null ? validateMessage.action().input().text().toLowerCase()
+				: null;
 
 		int numberOfUnits = 1;
 		if (StringUtils.isNotBlank(inputText)) {
@@ -119,14 +122,19 @@ public class StorageController {
 				.path("?pay={refId}")
 				.buildAndExpand(payment.getReferenceId())
 				.toUriString();
+		val faqUrl = "https://payflowlabs.notion" +
+				".site/Payflow-FAQs-20593cf7734e4d78ad0dc91c8e8982e5#6862f9bffddc4fbe818a6ceb9ab968e7";
 
 		return FrameResponse.builder()
 				.imageUrl(storageImage)
 				.button(new FrameButton(
 						String.format("%s Unit(s) submitted: Pay", numberOfUnits),
 						FrameButton.ActionType.LINK,
-						paymentUrl)
-				)
+						paymentUrl))
+				.button(new FrameButton(
+						"FAQ",
+						FrameButton.ActionType.LINK,
+						faqUrl))
 				.build().toHtmlResponse();
 	}
 
@@ -144,7 +152,6 @@ public class StorageController {
 				validateMessage.action().url());
 
 		val castInteractorFid = validateMessage.action().interactor().fid();
-
 		val storageImage = UriComponentsBuilder.fromHttpUrl(framesServiceUrl)
 				.path("images/profile/fid/{fid}/storage.png") // add your path variables here
 				.buildAndExpand(castInteractorFid)
@@ -163,31 +170,32 @@ public class StorageController {
 
 		val addActionUrl = "https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fproducts%2Fstorage";
 
-		val faqUrl = "https://payflowlabs.notion" +
-				".site/Payflow-FAQs-20593cf7734e4d78ad0dc91c8e8982e5#6862f9bffddc4fbe818a6ceb9ab968e7";
+		val baseUrl = "https://warpcast.com/~/compose";
+		val castText = URLEncoder.encode("""
+						Buy Farcaster Storage via @payflow frame
+						cc: @sinaver.eth /payflow""",
+				StandardCharsets.UTF_8);
+		val embedUrl = String.format("https://frames.payflow.me/fid/%s/storage?v3", castInteractorFid);
+		val shareComposeDeeplink = String.format("%s?text=%s&embeds[]=%s", baseUrl, castText, embedUrl);
 
 		return FrameResponse.builder().imageUrl(storageImage)
 				.textInput("Enter storage units, default: 1")
 				.button(new FrameButton(
 						"Submit",
 						FrameButton.ActionType.POST,
-						submitUrl)
-				)
+						submitUrl))
 				.button(new FrameButton(
 						"My usage",
 						FrameButton.ActionType.POST,
-						checkUrl)
-				)
+						checkUrl))
 				.button(new FrameButton(
 						"Add action",
 						FrameButton.ActionType.LINK,
-						addActionUrl)
-				)
+						addActionUrl))
 				.button(new FrameButton(
-						"FAQ",
+						"Share",
 						FrameButton.ActionType.LINK,
-						faqUrl)
-				)
+						shareComposeDeeplink))
 				.build().toHtmlResponse();
 	}
 }

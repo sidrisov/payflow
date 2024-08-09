@@ -1,5 +1,4 @@
 import {
-  Avatar,
   Box,
   Divider,
   IconButton,
@@ -12,13 +11,13 @@ import {
   Typography
 } from '@mui/material';
 import { FlowType } from '../../types/FlowType';
-import { Add, Check, MoreHoriz, PlayForWork, Warning } from '@mui/icons-material';
+import { Add, Check, MoreHoriz, PlayForWork } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { useContext, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
-import { green, red } from '@mui/material/colors';
+import { green } from '@mui/material/colors';
 import { FlowSettingsMenu } from './FlowSettingsMenu';
-import { PiTipJar } from 'react-icons/pi';
+import { PaymentFlowSection } from '../PaymentFlowSection';
 
 export type ChooseFlowMenuProps = MenuProps &
   CloseCallbackType & {
@@ -67,103 +66,40 @@ export function ChooseFlowMenu({
                 '-webkit-overflow-scrolling': 'touch'
               }}>
               {flows && flows.length > 0 ? (
-                flows.map((option) => (
+                flows.map((flow) => (
                   <MenuItem
-                    key={option.uuid}
-                    selected={option.uuid === selectedFlow.uuid}
+                    key={flow.uuid}
+                    selected={flow.uuid === selectedFlow.uuid}
                     sx={{ alignContent: 'center' }}
                     onClick={async () => {
-                      setSelectedFlow(option);
+                      setSelectedFlow(flow);
                       closeStateCallback();
                     }}>
                     <Box
+                      width="100%"
                       display="flex"
                       flexDirection="row"
                       alignItems="center"
-                      justifyContent="space-between"
-                      width="100%">
-                      <Box
-                        display="flex"
-                        flexDirection="row"
-                        alignItems="center"
-                        justifyContent="flex-start">
-                        <Box
-                          display="flex"
-                          flexDirection="row"
-                          alignItems="center"
-                          justifyContent="flex-start"
-                          width={90}>
-                          <Box display="inherit" width={30}>
-                            {option.uuid === selectedFlow.uuid && (
-                              <Check sx={{ color: green.A700 }} />
-                            )}
-                          </Box>
-                          <Box display="inherit" width={30}>
-                            {option.uuid === profile.defaultFlow?.uuid && (
-                              <Tooltip title="Default for receiving payments">
-                                <PlayForWork />
-                              </Tooltip>
-                            )}
-                          </Box>
-
-                          {option.type === 'JAR' && (
-                            <Tooltip title="Jar">
-                              <PiTipJar size={20} />
-                            </Tooltip>
+                      justifyContent="space-between">
+                      <Stack direction="row" alignItems="center" justifyContent="flex-start">
+                        <Box display="inherit" width={30}>
+                          {flow.uuid === selectedFlow.uuid && (
+                            <Check sx={{ color: green.A700 }} />
                           )}
-
-                          {!option.type &&
-                            !(
-                              option.wallets.length > 0 &&
-                              option.wallets.find((w) => w.version === '1.3.0')
-                            ) && (
-                              <Tooltip title="Payment flow created in Payflow">
-                                <Avatar src="/payflow.png" sx={{ width: 20, height: 20 }} />
-                              </Tooltip>
-                            )}
-
-                          {option.type === 'FARCASTER_VERIFICATION' && (
-                            <Tooltip title="Farcaster Verification">
-                              <Avatar
-                                variant="rounded"
-                                src="/farcaster.svg"
-                                sx={{ width: 20, height: 20 }}
-                              />
-                            </Tooltip>
-                          )}
-
-                          {option.type === 'LINKED' && (
-                            <Tooltip title="Linked Wallet">
-                              <Box
-                                src="/coinbase_smart_wallet.svg"
-                                component="img"
-                                sx={{ width: 20, height: 20 }}
-                              />
-                            </Tooltip>
-                          )}
-
-                          {option.wallets.length > 0 &&
-                            option.wallets.find((w) => w.version === '1.3.0') && (
-                              <Tooltip
-                                arrow
-                                title={
-                                  <Typography variant="subtitle2" color={red[400]} width="300">
-                                    Legacy flows will be decomissioned soon! <br />
-                                    Please, move your funds to other flows.
-                                  </Typography>
-                                }>
-                                <Warning fontSize="small" sx={{ color: red[400] }} />
-                              </Tooltip>
-                            )}
                         </Box>
-                        <Typography variant="subtitle2" noWrap maxWidth={180}>
-                          {option.title}
-                        </Typography>
-                      </Box>
+                        <Box display="inherit" width={30}>
+                          {flow.uuid === profile.defaultFlow?.uuid && (
+                            <Tooltip title="Default for receiving payments">
+                              <PlayForWork />
+                            </Tooltip>
+                          )}
+                        </Box>
+                        <PaymentFlowSection flow={flow} />
+                      </Stack>
 
                       {configurable &&
-                        option === selectedFlow &&
-                        option.uuid !== profile.defaultFlow?.uuid && (
+                        flow === selectedFlow &&
+                        flow.uuid !== profile.defaultFlow?.uuid && (
                           <IconButton
                             size="small"
                             onClick={async (event) => {
@@ -224,3 +160,4 @@ export function ChooseFlowMenu({
     )
   );
 }
+

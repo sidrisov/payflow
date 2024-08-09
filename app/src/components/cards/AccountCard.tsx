@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   CardProps,
-  Chip,
   Divider,
   IconButton,
   Skeleton,
@@ -12,7 +11,7 @@ import {
   Tooltip,
   Typography
 } from '@mui/material';
-import { Send, Toll, ArrowOutward, Share, CallReceived } from '@mui/icons-material';
+import { Send, Toll, Share, CallReceived } from '@mui/icons-material';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
@@ -27,7 +26,7 @@ import SearchIdentityDialog from '../dialogs/SearchIdentityDialog';
 import { IdentityType, SelectedIdentityType } from '../../types/ProfileType';
 import PaymentDialog, { PaymentSenderType } from '../dialogs/PaymentDialog';
 import { Address } from 'viem';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { ShareFlowMenu } from '../menu/ShareFlowMenu';
 import { PaymentType } from '../../types/PaymentType';
 import { fetchPayment } from '../../services/payments';
@@ -35,6 +34,7 @@ import GiftStorageDialog from '../dialogs/GiftStorageDialog';
 import { GetFarcasterProfileQuery, Social } from '../../generated/graphql/types';
 import { QUERY_FARCASTER_PROFILE } from '../../utils/airstackQueries';
 import { fetchQuery } from '@airstack/airstack-react';
+import { PaymentFlowSection } from '../PaymentFlowSection';
 
 export type AccountNewDialogProps = CardProps & {
   flows: FlowType[];
@@ -81,8 +81,6 @@ export function AccountCard({
   const [recipient, setRecipient] = useState<SelectedIdentityType>();
 
   const { chain, address } = useAccount();
-
-  const navigate = useNavigate();
 
   useMemo(async () => {
     if (isFetched && balances && balances.length > 0) {
@@ -184,16 +182,7 @@ export function AccountCard({
             </AvatarGroup>
           </Tooltip>
           <Stack direction="row" alignItems="center" spacing={1}>
-            <Chip
-              label={selectedFlow.title}
-              variant="outlined"
-              {...(selectedFlow.type === 'JAR' && {
-                clickable: true,
-                onClick: () => navigate(`/jar/${selectedFlow.uuid}`),
-                avatar: <ArrowOutward fontSize="small" />
-              })}
-              sx={{ fontWeight: 'bold', maxWidth: 200, border: 0 }}
-            />
+            <PaymentFlowSection navigation flow={selectedFlow} />
             <Stack
               spacing={1}
               direction="row"

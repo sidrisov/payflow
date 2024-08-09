@@ -312,7 +312,7 @@ public class PaymentController {
 					}
 				} else if (payment.getCategory().equals("fc_storage")) {
 					val storageFrameUrl = UriComponentsBuilder.fromHttpUrl(framesServiceUrl)
-							.path("/fid/{fid}/storage") // add your path variables
+							.path("/fid/{fid}/storage?v3") // add your path variables
 							.buildAndExpand(payment.getReceiverFid())
 							.toUriString();
 

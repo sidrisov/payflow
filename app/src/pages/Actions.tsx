@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Avatar, Box, Container, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import PaymentCastActionDialog from '../components/dialogs/PaymentCastActionDialog';
-import { ElectricBolt, Interests, Inventory, PersonAdd, Storage } from '@mui/icons-material';
+import { AutoAwesome, ElectricBolt, Interests, PersonAdd } from '@mui/icons-material';
+
+import { PiTipJar } from 'react-icons/pi';
+import { GrStorage } from 'react-icons/gr';
+
 import CastActionButton from '../components/buttons/CastActionButton';
 
 export default function Actions() {
@@ -32,36 +36,44 @@ export default function Actions() {
             borderColor="divider">
             <Avatar src="/farcaster.svg" variant="rounded" />
             <Typography variant="h6">Farcaster Actions</Typography>
-            <Stack spacing={1} alignItems="center">
+            <Stack spacing={1.5} alignItems="center">
               <CastActionButton
                 title="Pay"
-                description="Use this action to pay any farcaster user whether they're on Payflow or not with in-frame txs or submit payment intent to Payflow app"
-                installUrl="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fprofile"
+                description="Social feed payments"
+                installUrl="https://warpcast.com/~/add-cast-action?url=https://api.alpha.payflow.me/api/farcaster/actions/profile"
                 startIcon={<ElectricBolt />}
               />
               <CastActionButton
+                title="Storage"
+                description="Buy farcaster storage"
+                installUrl="https://warpcast.com/~/add-cast-action?url=https://api.alpha.payflow.me/api/farcaster/actions/products/storage"
+                startIcon={<GrStorage size={20} />}
+              />
+              <CastActionButton
+                earlyFeature
+                title="Mint"
+                description="Mint from cast embeds"
+                installUrl="https://warpcast.com/~/add-cast-action?url=https://api.alpha.payflow.me/api/farcaster/actions/products/mint"
+                startIcon={<AutoAwesome />}
+              />
+              <CastActionButton
+                earlyFeature
+                title="Create Jar"
+                description="Collect contributions"
+                installUrl="https://warpcast.com/~/add-cast-action?url=https://api.alpha.payflow.me/api/farcaster/actions/jar"
+                startIcon={<PiTipJar size={20} />}
+              />
+              <CastActionButton
                 title="Intents"
-                description="Use this action to submit different payment intents tailored for your use case: Regular, Top Comment to pay any farcaster user in Payflow app"
+                description="Submit payment intents"
                 onClick={() => setOpenPaymentActionDialog(true)}
                 startIcon={<Interests />}
               />
               <CastActionButton
                 title="Invite"
-                description="Use this action to invite any farcaster user to Payflow"
-                installUrl="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Finvite"
+                description="Invite to Payflow"
+                installUrl="https://warpcast.com/~/add-cast-action?url=https://api.alpha.payflow.me/api/farcaster/actions/invite"
                 startIcon={<PersonAdd />}
-              />
-              <CastActionButton
-                title="Create Jar"
-                description="Use this action to turn any existing cast into contribution jar to fundraise for any purpose via Payflow"
-                installUrl="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fjar"
-                startIcon={<Inventory />}
-              />
-              <CastActionButton
-                title="Buy Storage"
-                description="Use this action to buy storage for any farcaster user via Payflow"
-                installUrl="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fproducts%2Fstorage"
-                startIcon={<Storage />}
               />
             </Stack>
           </Stack>

@@ -146,7 +146,6 @@ export default function PayComposerActionDialog({
               />
               <LoadingPaymentButton
                 title="Create Payment"
-                //loading={paymentPending}
                 disabled={!paymentEnabled}
                 onClick={async () => {
                   const newPayment = {

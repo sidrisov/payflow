@@ -15,6 +15,7 @@ import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useSetActiveWallet } from '@privy-io/wagmi';
 import { useEffect } from 'react';
 import { Toll } from '@mui/icons-material';
+import { PaymentFlowSection } from './PaymentFlowSection';
 
 export function SenderField({
   sender,
@@ -77,25 +78,25 @@ export function SenderField({
         </Typography>
       )}
 
-      {displayFlow && sender.identity.address && sender.type === 'profile' && (
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Typography mr={1} variant="caption" fontWeight="bold" maxWidth={150} noWrap>
-            {sender.identity.profile?.defaultFlow?.title}
-          </Typography>
-
-          {setOpenSelectFlow && (
-            <Tooltip title="Payment Flows">
-              <IconButton
-                size="medium"
-                onClick={async () => {
-                  setOpenSelectFlow(true);
-                }}>
-                <Toll fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          )}
-        </Stack>
-      )}
+      {displayFlow &&
+        sender.identity.address &&
+        sender.type === 'profile' &&
+        sender.identity.profile?.defaultFlow && (
+          <Stack direction="row" spacing={1} alignItems="center">
+            <PaymentFlowSection flow={sender.identity.profile?.defaultFlow} />
+            {setOpenSelectFlow && (
+              <Tooltip title="Payment Flows">
+                <IconButton
+                  size="medium"
+                  onClick={async () => {
+                    setOpenSelectFlow(true);
+                  }}>
+                  <Toll fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Stack>
+        )}
     </Box>
   );
 }

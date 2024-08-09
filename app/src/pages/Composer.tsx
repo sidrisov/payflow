@@ -1,16 +1,17 @@
 import { useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Avatar, Box, Container, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { CropDin, Send } from '@mui/icons-material';
+import { ElectricBolt } from '@mui/icons-material';
 import CastActionButton from '../components/buttons/CastActionButton';
 import { useSearchParams } from 'react-router-dom';
-import PaymentFrameComposerDialog from '../components/dialogs/PaymentFrameComposerDialog';
+import ContributionJarComposerDialog from '../components/dialogs/ContributionJarComposerDialog';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import { ProfileContext } from '../contexts/UserContext';
 import { SelectedIdentityType } from '../types/ProfileType';
 import { Address } from 'viem';
 import PayComposerActionDialog from '../components/dialogs/PayComposerActionDialog';
 import { useIdentity } from '../utils/queries/profiles';
+import { PiTipJar } from 'react-icons/pi';
 
 export default function Composer() {
   const theme = useTheme();
@@ -50,8 +51,8 @@ export default function Composer() {
         <title> Payflow | Composer Actions </title>
       </Helmet>
 
-      {openComposerAction === 'frame' && (
-        <PaymentFrameComposerDialog
+      {openComposerAction === 'jar' && (
+        <ContributionJarComposerDialog
           open={true}
           closeStateCallback={() => {
             setOpenComposerAction(undefined);
@@ -117,22 +118,21 @@ export default function Composer() {
               <Stack spacing={1} alignItems="center">
                 <CastActionButton
                   title="Pay"
-                  description="Use this composer action to create a payment frame"
+                  description="Send Payments"
                   onClick={async () => {
                     setOpenComposerAction('pay');
                     setOpenSearchIdentity(true);
                   }}
-                  startIcon={<Send />}
+                  startIcon={<ElectricBolt />}
                 />
-              </Stack>
-              <Stack spacing={1} alignItems="center">
                 <CastActionButton
-                  title="Receive Payment"
-                  description="Use this composer action to create a custom payment frame to receive payments"
+                  title="Jar"
+                  description="Collect contributions"
                   onClick={async () => {
-                    setOpenComposerAction('frame');
+                    setOpenComposerAction('jar');
+                    setOpenSearchIdentity(true);
                   }}
-                  startIcon={<CropDin />}
+                  startIcon={<PiTipJar size={20} />}
                 />
               </Stack>
             </Stack>

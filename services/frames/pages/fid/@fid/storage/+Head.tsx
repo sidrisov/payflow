@@ -6,6 +6,16 @@ export function Head() {
   const fid = routeParams?.fid;
 
   const imageUrl = `${FRAMES_URL}/images/profile/fid/${fid}/storage.png`;
+  const addActionUrl =
+    'https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fproducts%2Fstorage';
+
+  const baseUrl = 'https://warpcast.com/~/compose';
+  const castText = encodeURIComponent(
+    `Buy Farcaster Storage via @payflow frame\ncc: @sinaver.eth /payflow`
+  );
+  const embedUrl = `https://frames.payflow.me/fid/${fid}/storage?v3`;
+  const shareComposeDeeplink = `${baseUrl}?text=${castText}&embeds[]=${encodeURIComponent(embedUrl)}`;
+
   return (
     <>
       <head>
@@ -61,17 +71,11 @@ export function Head() {
 
         <meta property="fc:frame:button:3" content="Add action" />
         <meta property="fc:frame:button:3:action" content="link" />
-        <meta
-          property="fc:frame:button:3:target"
-          content="https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fproducts%2Fstorage"
-        />
+        <meta property="fc:frame:button:3:target" content={addActionUrl} />
 
-        <meta property="fc:frame:button:4" content="FAQ" />
+        <meta property="fc:frame:button:4" content="Share" />
         <meta property="fc:frame:button:4:action" content="link" />
-        <meta
-          property="fc:frame:button:4:target"
-          content="https://payflowlabs.notion.site/Payflow-FAQs-20593cf7734e4d78ad0dc91c8e8982e5#6862f9bffddc4fbe818a6ceb9ab968e7"
-        />
+        <meta property="fc:frame:button:4:target" content={shareComposeDeeplink} />
       </head>
     </>
   );
