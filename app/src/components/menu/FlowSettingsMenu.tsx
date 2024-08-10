@@ -54,6 +54,7 @@ export function FlowSettingsMenu({
                 color="inherit"
                 total={flow.wallets.length}
                 sx={{
+                  ml: 1,
                   alignItems: 'center',
                   justifyContent: 'center',
                   height: 30,

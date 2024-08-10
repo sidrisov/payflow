@@ -19,6 +19,7 @@ export function PaymentFlowSection({
       alignItems="center"
       justifyContent="flex-start"
       spacing={1}
+      borderColor="divider"
       {...(navigation &&
         isJarFlowType && {
           component: Button,

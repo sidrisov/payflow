@@ -2,14 +2,13 @@ import {
   Box,
   Card,
   CardProps,
-  Divider,
   IconButton,
   Skeleton,
   Stack,
   Tooltip,
   Typography
 } from '@mui/material';
-import { Send, Toll, Share, CallReceived } from '@mui/icons-material';
+import { Send, Toll, Share, CallReceived, ExpandMore } from '@mui/icons-material';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
@@ -128,7 +127,7 @@ export function AccountCard({
         elevation={5}
         sx={{
           m: 2,
-          p: 2,
+          p: 1.5,
           width: 350,
           height: 200,
           border: 1.5,
@@ -136,49 +135,35 @@ export function AccountCard({
           borderRadius: 5,
           display: 'flex',
           flexDirection: 'column',
+          alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-        <Box display="flex" flexDirection="row" justifyContent="space-between" alignItems="center">
+        <Box
+          width="100%"
+          display="flex"
+          flexDirection="row"
+          justifyContent="space-between"
+          alignItems="center">
           <PaymentFlowSection navigation flow={selectedFlow} />
           <Tooltip title="Payment Flows">
             <IconButton
-              size="medium"
-              sx={{ border: 1, borderStyle: 'dashed', borderRadius: 5 }}
               onClick={(event) => {
                 setFlowAnchorEl(event.currentTarget);
                 setOpenSelectFlow(true);
               }}>
-              <Toll fontSize="small" />
+              <ExpandMore />
             </IconButton>
           </Tooltip>
         </Box>
-        <Divider
-          flexItem
-          sx={{
-            '&::before, &::after': {
-              borderColor: 'inherit'
-            }
-          }}>
-          <Box
-            sx={{
-              p: 1,
-              border: 1,
-              borderRadius: 5,
-              minWidth: 100,
-              maxWidth: 150,
-              height: 60,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-            {isLoading || !totalBalance ? (
-              <Skeleton variant="rectangular" height={40} width={80} sx={{ borderRadius: 3 }} />
-            ) : (
-              <Typography variant="h4">${isFetched ? totalBalance : 'N/A'}</Typography>
-            )}
-          </Box>
-        </Divider>
-        <Stack spacing={1} direction="row" alignSelf="center">
+
+        {isLoading || !totalBalance ? (
+          <Skeleton variant="rectangular" height={50} width={120} sx={{ borderRadius: 3 }} />
+        ) : (
+          <Typography fontSize={40} fontWeight="bold">
+            ${isFetched ? totalBalance : 'N/A'}
+          </Typography>
+        )}
+        <Stack mb={0.5} spacing={1} direction="row" alignItems="center">
           <Tooltip title="Receive funds">
             <IconButton
               color="inherit"
@@ -186,7 +171,7 @@ export function AccountCard({
                 setTopUpMenuAnchorEl(event.currentTarget);
                 setOpenTopUpMenu(true);
               }}
-              sx={{ border: 1, borderStyle: 'dashed' }}>
+              sx={{ border: 1.5, borderStyle: 'dashed' }}>
               <CallReceived />
             </IconButton>
           </Tooltip>
@@ -196,7 +181,7 @@ export function AccountCard({
               onClick={async () => {
                 setOpenSearchIdentity(true);
               }}
-              sx={{ border: 1, borderStyle: 'dashed' }}>
+              sx={{ border: 1.5, borderStyle: 'dashed' }}>
               <Send />
             </IconButton>
           </Tooltip>
@@ -217,7 +202,7 @@ export function AccountCard({
                 setShareMenuAnchorEl(event.currentTarget);
                 setOpenShareMenu(true);
               }}
-              sx={{ border: 1, borderStyle: 'dashed' }}>
+              sx={{ border: 1.5, borderStyle: 'dashed' }}>
               <Share />
             </IconButton>
           </Tooltip>
