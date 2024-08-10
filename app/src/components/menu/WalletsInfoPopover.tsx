@@ -22,14 +22,15 @@ export function WalletsInfoPopover({
   }
   return (
     <Popover
+      elevation={15}
       {...props}
       sx={{ mt: 1, '.MuiPopover-paper': { borderRadius: 5 } }}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'left'
       }}>
-      <Stack m={2} spacing={1} direction="column">
-        <Typography fontWeight="bold" fontSize={16} textAlign="start" color="grey">
+      <Stack m={1} spacing={0.5} direction="column">
+        <Typography fontWeight="bold" fontSize={16} textAlign="center" color="grey">
           {flow.type === 'FARCASTER_VERIFICATION' ? 'Wallets' : 'Smart Wallets'}
         </Typography>
         {flow.wallets.map((wallet) => (

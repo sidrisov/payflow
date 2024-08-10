@@ -5,7 +5,6 @@ import { AccountCard } from '../components/cards/AccountCard';
 import { ProfileContext } from '../contexts/UserContext';
 import Assets from '../components/Assets';
 import { AssetType } from '../types/AssetType';
-import { getSupportedTokens } from '../utils/erc20contracts';
 import { FlowType } from '../types/FlowType';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +13,7 @@ import { usePendingPayments } from '../utils/queries/payments';
 import { PaymentIntentsSection } from '../components/PaymentIntentsSection';
 import { ReceiptsSection } from '../components/ReceiptsSection';
 import { FanTokenAuctionCard } from '../components/cards/FanTokenAuctionCard';
+import getFlowAssets from '../utils/assets';
 
 export default function Accounts() {
   const theme = useTheme();
@@ -45,19 +45,7 @@ export default function Accounts() {
     let assets: AssetType[] = [];
 
     if (selectedFlow) {
-      selectedFlow.wallets.forEach((wallet) => {
-        const chainId = wallet.network;
-        if (chainId) {
-          const tokens = getSupportedTokens(chainId);
-          tokens.forEach((token) => {
-            assets.push({
-              address: wallet.address,
-              chainId,
-              token
-            });
-          });
-        }
-      });
+      assets = getFlowAssets(selectedFlow);
     }
 
     console.log('Assets:', assets);

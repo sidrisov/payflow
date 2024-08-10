@@ -1,7 +1,5 @@
 import {
-  AvatarGroup,
   Box,
-  Button,
   Card,
   CardProps,
   Divider,
@@ -15,12 +13,10 @@ import { Send, Toll, Share, CallReceived } from '@mui/icons-material';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
-import { WalletsInfoPopover } from '../menu/WalletsInfoPopover';
 import { FlowType } from '../../types/FlowType';
 import { ChooseFlowMenu } from '../menu/ChooseFlowMenu';
 import { FlowTopUpMenu } from '../menu/FlowTopUpMenu';
 import WalletQRCodeShareDialog from '../dialogs/WalletQRCodeShareDialog';
-import NetworkAvatar from '../avatars/NetworkAvatar';
 import { useAccount } from 'wagmi';
 import SearchIdentityDialog from '../dialogs/SearchIdentityDialog';
 import { IdentityType, SelectedIdentityType } from '../../types/ProfileType';
@@ -63,14 +59,12 @@ export function AccountCard({
   const [paymentSocial, setPaymentSocial] = useState<Social>();
 
   const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(false);
-  const [openWalletDetailsPopover, setOpenWalletDetailsPopover] = useState(false);
   const [openSelectFlow, setOpenSelectFlow] = useState(false);
   const [openTopUpMenu, setOpenTopUpMenu] = useState(false);
   const [openShareMenu, setOpenShareMenu] = useState(false);
 
   const [openFlowReceiveQRCode, setOpenFlowReceiveQRCode] = useState(false);
 
-  const [walletAnchorEl, setWalletAnchorEl] = useState<null | HTMLElement>(null);
   const [flowAnchorEl, setFlowAnchorEl] = useState<null | HTMLElement>(null);
   const [topUpMenuAnchorEl, setTopUpMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [shareMenuAnchorEl, setShareMenuAnchorEl] = useState<null | HTMLElement>(null);
@@ -145,61 +139,18 @@ export function AccountCard({
           justifyContent: 'space-between'
         }}>
         <Box display="flex" flexDirection="row" justifyContent="space-between" alignItems="center">
-          <Tooltip
-            title={selectedFlow.type === 'FARCASTER_VERIFICATION' ? 'Wallets' : 'Smart Wallets'}>
-            <AvatarGroup
-              max={4}
-              color="inherit"
-              total={selectedFlow.wallets.length}
-              component={Button}
-              sx={{
-                alignSelf: 'center',
-                height: 36,
-                minWidth: 36,
-                '& .MuiAvatar-root': {
-                  borderStyle: 'none',
-                  border: 0,
-                  width: 20,
-                  height: 20,
-                  fontSize: 10
-                },
-                p: 1,
-                pl: 2,
-                border: 1,
-                borderStyle: 'dashed',
-                borderRadius: 5
-              }}
+          <PaymentFlowSection navigation flow={selectedFlow} />
+          <Tooltip title="Payment Flows">
+            <IconButton
+              size="medium"
+              sx={{ border: 1, borderStyle: 'dashed', borderRadius: 5 }}
               onClick={(event) => {
-                setWalletAnchorEl(event.currentTarget);
-                setOpenWalletDetailsPopover(true);
+                setFlowAnchorEl(event.currentTarget);
+                setOpenSelectFlow(true);
               }}>
-              {[...Array(Math.min(4, selectedFlow.wallets.length))].map((_item, i) => (
-                <NetworkAvatar
-                  key={`account_card_wallet_list_${selectedFlow.wallets[i].network}`}
-                  chainId={selectedFlow.wallets[i].network}
-                />
-              ))}
-            </AvatarGroup>
+              <Toll fontSize="small" />
+            </IconButton>
           </Tooltip>
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <PaymentFlowSection navigation flow={selectedFlow} />
-            <Stack
-              spacing={1}
-              direction="row"
-              alignItems="center"
-              sx={{ p: 0, border: 1, borderStyle: 'dashed', borderRadius: 5 }}>
-              <Tooltip title="Payment Flows">
-                <IconButton
-                  size="medium"
-                  onClick={(event) => {
-                    setFlowAnchorEl(event.currentTarget);
-                    setOpenSelectFlow(true);
-                  }}>
-                  <Toll fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Stack>
-          </Stack>
         </Box>
         <Divider
           flexItem
@@ -377,16 +328,10 @@ export function AccountCard({
           />
         )}
 
-        <WalletsInfoPopover
-          open={openWalletDetailsPopover}
-          onClose={async () => setOpenWalletDetailsPopover(false)}
-          anchorEl={walletAnchorEl}
-          flow={selectedFlow}
-          balanceFetchResult={{ isLoading, isFetched, balances }}
-        />
         <ChooseFlowMenu
           anchorEl={flowAnchorEl}
           open={openSelectFlow}
+          closeOnSelect={false}
           closeStateCallback={() => setOpenSelectFlow(false)}
           flows={flows}
           selectedFlow={selectedFlow}

@@ -22,6 +22,7 @@ import { PaymentFlowSection } from '../PaymentFlowSection';
 export type ChooseFlowMenuProps = MenuProps &
   CloseCallbackType & {
     configurable?: boolean;
+    closeOnSelect?: boolean;
     flows: FlowType[];
     selectedFlow: FlowType;
     setSelectedFlow: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
@@ -29,6 +30,7 @@ export type ChooseFlowMenuProps = MenuProps &
 
 export function ChooseFlowMenu({
   configurable = true,
+  closeOnSelect = true,
   flows,
   selectedFlow,
   setSelectedFlow,
@@ -73,7 +75,9 @@ export function ChooseFlowMenu({
                     sx={{ alignContent: 'center' }}
                     onClick={async () => {
                       setSelectedFlow(flow);
-                      closeStateCallback();
+                      if (closeOnSelect) {
+                        closeStateCallback();
+                      }
                     }}>
                     <Box
                       width="100%"
@@ -83,9 +87,7 @@ export function ChooseFlowMenu({
                       justifyContent="space-between">
                       <Stack direction="row" alignItems="center" justifyContent="flex-start">
                         <Box display="inherit" width={30}>
-                          {flow.uuid === selectedFlow.uuid && (
-                            <Check sx={{ color: green.A700 }} />
-                          )}
+                          {flow.uuid === selectedFlow.uuid && <Check sx={{ color: green.A700 }} />}
                         </Box>
                         <Box display="inherit" width={30}>
                           {flow.uuid === profile.defaultFlow?.uuid && (
@@ -97,20 +99,18 @@ export function ChooseFlowMenu({
                         <PaymentFlowSection flow={flow} />
                       </Stack>
 
-                      {configurable &&
-                        flow === selectedFlow &&
-                        flow.uuid !== profile.defaultFlow?.uuid && (
-                          <IconButton
-                            size="small"
-                            onClick={async (event) => {
-                              event.stopPropagation();
-                              setFlowAnchorEl(event.currentTarget);
-                              setOpenFlowSettingsMenu(true);
-                            }}
-                            sx={{ mx: 1 }}>
-                            <MoreHoriz fontSize="small" />
-                          </IconButton>
-                        )}
+                      {configurable && flow === selectedFlow && (
+                        <IconButton
+                          size="small"
+                          onClick={async (event) => {
+                            event.stopPropagation();
+                            setFlowAnchorEl(event.currentTarget);
+                            setOpenFlowSettingsMenu(true);
+                          }}
+                          sx={{ mx: 1 }}>
+                          <MoreHoriz fontSize="small" />
+                        </IconButton>
+                      )}
                     </Box>
                   </MenuItem>
                 ))
@@ -153,6 +153,7 @@ export function ChooseFlowMenu({
             open={openFlowSettingsMenu}
             anchorEl={flowAnchorEl}
             onClose={async () => setOpenFlowSettingsMenu(false)}
+            defaultFlow={selectedFlow.uuid === profile.defaultFlow?.uuid}
             flow={selectedFlow}
           />
         )}
@@ -160,4 +161,3 @@ export function ChooseFlowMenu({
     )
   );
 }
-
