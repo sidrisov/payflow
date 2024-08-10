@@ -51,7 +51,7 @@ export default function Composer() {
         <title> Payflow | Composer Actions </title>
       </Helmet>
 
-      {openComposerAction === 'jar' && (
+      {openComposerAction === 'jar' && profile && (
         <ContributionJarComposerDialog
           open={true}
           closeStateCallback={() => {

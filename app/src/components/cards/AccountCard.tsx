@@ -8,7 +8,9 @@ import {
   Tooltip,
   Typography
 } from '@mui/material';
-import { Send, Toll, Share, CallReceived, ExpandMore } from '@mui/icons-material';
+
+
+import { Send, Share, CallReceived } from '@mui/icons-material';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
@@ -30,6 +32,7 @@ import { GetFarcasterProfileQuery, Social } from '../../generated/graphql/types'
 import { QUERY_FARCASTER_PROFILE } from '../../utils/airstackQueries';
 import { fetchQuery } from '@airstack/airstack-react';
 import { PaymentFlowSection } from '../PaymentFlowSection';
+import { IoMdArrowDropdown } from 'react-icons/io';
 
 export type AccountNewDialogProps = CardProps & {
   flows: FlowType[];
@@ -151,7 +154,7 @@ export function AccountCard({
                 setFlowAnchorEl(event.currentTarget);
                 setOpenSelectFlow(true);
               }}>
-              <ExpandMore />
+              <IoMdArrowDropdown />
             </IconButton>
           </Tooltip>
         </Box>

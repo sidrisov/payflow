@@ -14,8 +14,8 @@ import { ProfileSection } from './ProfileSection';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useSetActiveWallet } from '@privy-io/wagmi';
 import { useEffect } from 'react';
-import { Toll } from '@mui/icons-material';
 import { PaymentFlowSection } from './PaymentFlowSection';
+import { IoMdArrowDropdown } from 'react-icons/io';
 
 export function SenderField({
   sender,
@@ -87,11 +87,11 @@ export function SenderField({
             {setOpenSelectFlow && (
               <Tooltip title="Payment Flows">
                 <IconButton
-                  size="medium"
+                  size="small"
                   onClick={async () => {
                     setOpenSelectFlow(true);
                   }}>
-                  <Toll fontSize="small" />
+                  <IoMdArrowDropdown />
                 </IconButton>
               </Tooltip>
             )}
