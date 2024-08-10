@@ -9,8 +9,7 @@ import {
   Typography
 } from '@mui/material';
 
-
-import { Send, Share, CallReceived } from '@mui/icons-material';
+import { Share, CallReceived } from '@mui/icons-material';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
@@ -33,6 +32,7 @@ import { QUERY_FARCASTER_PROFILE } from '../../utils/airstackQueries';
 import { fetchQuery } from '@airstack/airstack-react';
 import { PaymentFlowSection } from '../PaymentFlowSection';
 import { IoMdArrowDropdown } from 'react-icons/io';
+import { TbSend } from 'react-icons/tb';
 
 export type AccountNewDialogProps = CardProps & {
   flows: FlowType[];
@@ -147,7 +147,7 @@ export function AccountCard({
           flexDirection="row"
           justifyContent="space-between"
           alignItems="center">
-          <PaymentFlowSection navigation flow={selectedFlow} />
+          <PaymentFlowSection ml={1} navigation flow={selectedFlow} />
           <Tooltip title="Payment Flows">
             <IconButton
               onClick={(event) => {
@@ -174,7 +174,7 @@ export function AccountCard({
                 setTopUpMenuAnchorEl(event.currentTarget);
                 setOpenTopUpMenu(true);
               }}
-              sx={{ border: 1.5, borderStyle: 'dashed' }}>
+              sx={{ border: 1 }}>
               <CallReceived />
             </IconButton>
           </Tooltip>
@@ -184,8 +184,8 @@ export function AccountCard({
               onClick={async () => {
                 setOpenSearchIdentity(true);
               }}
-              sx={{ border: 1.5, borderStyle: 'dashed' }}>
-              <Send />
+              sx={{ border: 1 }}>
+              <TbSend />
             </IconButton>
           </Tooltip>
           {/* <Tooltip title={assetsOrActivityView === 'assets' ? ' Activity' : 'Assets'}>
@@ -205,7 +205,7 @@ export function AccountCard({
                 setShareMenuAnchorEl(event.currentTarget);
                 setOpenShareMenu(true);
               }}
-              sx={{ border: 1.5, borderStyle: 'dashed' }}>
+              sx={{ border: 1 }}>
               <Share />
             </IconButton>
           </Tooltip>
