@@ -9,13 +9,18 @@ import java.util.List;
 
 @Slf4j
 public record ParsedMintUrlMessage(
+		String url,
 		String provider,
 		String chain,
 		String contract,
 		String token,
 		String referrer
 ) {
-	public static final List<String> SUPPORTED_MINT_PROVIDERS = List.of("zora.co", "rodeo.club");
+	public static final String ZORA_PROVIDER = "zora.co";
+	public static final String RODEO_PROVIDER = "rodeo.club";
+	public static final String HIGHLIGHTS_PROVIDER = "highlight.xyz";
+	public static final List<String> SUPPORTED_MINT_PROVIDERS = List.of(ZORA_PROVIDER,
+			RODEO_PROVIDER, HIGHLIGHTS_PROVIDER);
 
 	// Static method to parse the URL
 	public static ParsedMintUrlMessage parse(String url) {
@@ -24,7 +29,7 @@ public record ParsedMintUrlMessage(
 		// Extract provider (host)
 		val provider = uriComponents.getHost();
 
-		if (!SUPPORTED_MINT_PROVIDERS.contains(provider)) {
+		if (provider == null || !SUPPORTED_MINT_PROVIDERS.contains(provider)) {
 			log.error("Not supported mint url: {}", url);
 			return null;
 		}
@@ -39,7 +44,11 @@ public record ParsedMintUrlMessage(
 		String contract = null;
 		String token = null;
 
-		if (pathParts.length >= 4) {
+		if (provider.equals(HIGHLIGHTS_PROVIDER)) {
+			if (pathParts.length >= 3) {
+				contract = pathParts[2];
+			}
+		} else if (pathParts.length >= 4) {
 			if (pathParts[2].contains(":")) {
 				String[] chainAndContract = pathParts[2].split(":");
 				chain = chainAndContract[0];
@@ -52,6 +61,6 @@ public record ParsedMintUrlMessage(
 
 		// Extract optional referrer
 		val referrer = uriComponents.getQueryParams().getFirst("referrer");
-		return new ParsedMintUrlMessage(provider, chain, contract, token, referrer);
+		return new ParsedMintUrlMessage(url, provider, chain, contract, token, referrer);
 	}
 }

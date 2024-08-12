@@ -33,7 +33,7 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
         fontSize: 28,
         padding: 16
       }}>
-      <p style={{ fontSize: 60, fontWeight: 'bold', fontStyle: 'italic' }}>{title}</p>
+      <p style={{ fontSize: 60, fontWeight: 'bold' }}>{title}</p>
       <div
         style={{
           marginTop: 20,
@@ -42,14 +42,14 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'flex-start',
-          height: 375,
+          height: 300,
           gap: 50
         }}>
         <div
           style={{
             padding: 16,
-            width: 350,
-            maxHeight: 350,
+            width: 375,
+            maxHeight: 275,
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -63,8 +63,8 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
               <div
                 key={chain.id}
                 style={{
-                  width: 60,
-                  height: 60,
+                  width: 70,
+                  height: 70,
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center'
@@ -72,8 +72,8 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
                 <img
                   src={chainImg}
                   style={{
-                    width: 40,
-                    height: 40,
+                    width: 50,
+                    height: 50,
                     borderRadius: '50%'
                   }}
                   alt="Supported Chain"
@@ -86,8 +86,8 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
         <div
           style={{
             padding: 16,
-            width: 350,
-            maxHeight: 350,
+            width: 375,
+            maxHeight: 275,
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -103,8 +103,8 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
               <div
                 key={token}
                 style={{
-                  width: 50,
-                  height: 50,
+                  width: 60,
+                  height: 60,
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center'
@@ -112,8 +112,8 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
                 <img
                   src={tokenImgSrc}
                   style={{
-                    width: 30,
-                    height: 30,
+                    width: 40,
+                    height: 40,
                     borderRadius: '50%'
                   }}
                   alt="Supported Token"
@@ -123,6 +123,7 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
           })}
         </div>
       </div>
+      <p style={{ fontSize: 35, fontWeight: 'bold' }}>with 20+ tokens across multiple l2 chains</p>
     </div>
   );
 }

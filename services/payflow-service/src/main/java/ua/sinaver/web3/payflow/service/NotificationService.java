@@ -20,6 +20,8 @@ public class NotificationService {
 	@Autowired
 	private IdentityService identityService;
 
+	@Autowired
+	private ReceiptService receiptService;
 
 	public void paymentReply(Payment payment) {
 		val senderIdentity = payment.getSender() != null ? payment.getSender().getIdentity()
@@ -35,8 +37,7 @@ public class NotificationService {
 
 		val senderFname = identityService.getIdentityFname(senderIdentity);
 		val receiverFname = identityService.getIdentityFname(receiverIdentity);
-		val receiptUrl = String.format(
-				"https://onceupon.gg/%s", payment.getHash());
+		val receiptUrl = receiptService.getReceiptUrl(payment);
 		val embeds = Collections.singletonList(new Cast.Embed(receiptUrl));
 
 		val castText = String.format("""

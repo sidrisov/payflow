@@ -7,6 +7,7 @@ import { green } from '@mui/material/colors';
 import { IoCheckmarkDoneCircle } from 'react-icons/io5';
 import { IoIosCheckmarkCircle } from 'react-icons/io';
 import { TbProgressCheck } from 'react-icons/tb';
+import { getReceiptUrl } from '../../utils/receipts';
 
 export function PaymentMenu({ payment, ...props }: MenuProps & { payment: PaymentType }) {
   return (
@@ -40,7 +41,7 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
           <>
             <MenuItem
               component="a"
-              href={`https://www.onceupon.xyz/${payment.hash}`}
+              href={getReceiptUrl(payment, false)}
               target="_blank"
               sx={{ color: green.A700 }}>
               <ListItemIcon sx={{ color: green.A700 }}>
@@ -52,7 +53,7 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
             {payment.fulfillmentHash && (
               <MenuItem
                 component="a"
-                href={`https://www.onceupon.xyz/${payment.fulfillmentHash}`}
+                href={getReceiptUrl(payment, true)}
                 target="_blank"
                 sx={{ color: green.A700 }}>
                 <ListItemIcon sx={{ color: green.A700 }}>

@@ -86,6 +86,9 @@ public class JarContributionController {
 	@Autowired
 	private XmtpValidationService xmtpValidationService;
 
+	@Autowired
+	private ReceiptService receiptService;
+
 	@Value("${payflow.farcaster.bot.cast.signer}")
 	private String botSignerUuid;
 
@@ -621,7 +624,7 @@ public class JarContributionController {
 									apiServiceUrl.concat(String.format(COMMENT_PATH, uuid))))
 							.button(new FrameButton("\uD83D\uDD0E Receipt",
 									FrameButton.ActionType.LINK,
-									"https://onceupon.gg/" + transactionId))
+									receiptService.getReceiptUrl(payment)))
 							.state(state)
 							.build().toHtmlResponse();
 				} else if (buttonIndex == 1) {
@@ -706,7 +709,7 @@ public class JarContributionController {
 							.imageUrl(jarImage)
 							.button(new FrameButton("\uD83D\uDD0E Receipt",
 									FrameButton.ActionType.LINK,
-									"https://onceupon.gg/" + payment.getHash()))
+									receiptService.getReceiptUrl(payment)))
 							.state(validateMessage.action().state().serialized());
 
 					val input = validateMessage.action().input();

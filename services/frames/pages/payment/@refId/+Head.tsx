@@ -1,4 +1,5 @@
 import { API_URL, DAPP_URL, FRAMES_URL } from '../../../utils/constants';
+import { getReceiptUrl } from '../../../utils/networks';
 import { Data } from './+data';
 import { useData } from 'vike-react/useData';
 
@@ -16,6 +17,9 @@ export function Head() {
         ? `${FRAMES_URL}/images/profile/${identity}/payment.png?step=execute&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount ?? ''}&tokenAmount=${payment.tokenAmount ?? ''}`
         : `${FRAMES_URL}/images/profile/${identity}/payment.png?step=confirm&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount ?? ''}&tokenAmount=${payment.tokenAmount ?? ''}`
       : `${FRAMES_URL}/images/profile/${identity}/payment.png?step=execute&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount ?? ''}&tokenAmount=${payment.tokenAmount ?? ''}&status=success`;
+
+  const receiptUrl = getReceiptUrl(payment.chainId, payment.hash ?? payment.fulfillmentHash);
+
   return (
     <>
       <head>
@@ -105,10 +109,7 @@ export function Head() {
           <>
             <meta property="fc:frame:button:1" content="🔎 Receipt" />
             <meta property="fc:frame:button:1:action" content="link" />
-            <meta
-              property="fc:frame:button:1:target"
-              content={`https://onceupon.gg/${payment.hash}`}
-            />
+            <meta property="fc:frame:button:1:target" content={receiptUrl} />
           </>
         )}
       </head>

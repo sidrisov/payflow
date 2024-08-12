@@ -1,3 +1,4 @@
+import { getChains } from '@wagmi/core';
 import { base, optimism, zora, baseSepolia, degen, arbitrum, mode } from 'viem/chains';
 
 export const SUPPORTED_CHAINS = [base, optimism, degen, arbitrum, mode, zora, baseSepolia];
@@ -41,4 +42,35 @@ export function getNetworkDisplayName(chainId: number): string {
   }
 
   return displayName;
+}
+
+export function getReceiptUrl(chainId: number, hash: string): string {
+  let baseUrl;
+
+  switch (chainId) {
+    case base.id:
+      baseUrl = base.blockExplorers.default.url;
+      break;
+    case optimism.id:
+      baseUrl = optimism.blockExplorers.default.url;
+      break;
+    case zora.id:
+      baseUrl = zora.blockExplorers.default.url;
+      break;
+    case degen.id:
+      baseUrl = degen.blockExplorers.default.url;
+      break;
+    case arbitrum.id:
+      baseUrl = arbitrum.blockExplorers.default.url;
+      break;
+    case mode.id:
+      baseUrl = mode.blockExplorers.default.url;
+      break;
+  }
+
+  if (!baseUrl) {
+    throw new Error(`Chain ${chainId} not supported!`);
+  }
+
+  return `${baseUrl}/tx/${hash}`;
 }

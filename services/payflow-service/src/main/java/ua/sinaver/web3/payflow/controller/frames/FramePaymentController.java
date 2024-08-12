@@ -94,6 +94,9 @@ public class FramePaymentController {
 	@Autowired
 	private NotificationService notificationService;
 
+	@Autowired
+	private ReceiptService receiptService;
+
 	private static String roundTokenAmount(double amount) {
 		val scale = amount < 1.0 ? 5 : 1;
 		val amountInDecimals = BigDecimal.valueOf(amount);
@@ -498,6 +501,8 @@ public class FramePaymentController {
 						paymentIdentity, payment.getNetwork(), payment.getToken(),
 						StringUtils.isNotBlank(payment.getUsdAmount()) ? payment.getUsdAmount() : "",
 						roundTokenAmount(tokenAmount), "success"));
+
+				val receiptUrl = receiptService.getReceiptUrl(payment);
 				return FrameResponse.builder()
 						.imageUrl(profileImage)
 						.textInput("Enter comment (255 max)")
@@ -507,7 +512,7 @@ public class FramePaymentController {
 										payment.getReferenceId()))))
 						.button(new FrameButton("\uD83D\uDD0E Receipt",
 								FrameButton.ActionType.LINK,
-								String.format("https://onceupon.gg/%s", payment.getHash())))
+								receiptUrl))
 						.build().toHtmlResponse();
 			} else if (buttonIndex == 1) {
 				log.debug("Handling payment through frame tx: {}", payment);
@@ -572,11 +577,12 @@ public class FramePaymentController {
 						StringUtils.isNotBlank(payment.getUsdAmount()) ? payment.getUsdAmount() : "", tokenAmount,
 						"success"));
 
+				val receiptUrl = receiptService.getReceiptUrl(payment);
 				val frameResponseBuilder = FrameResponse.builder()
 						.imageUrl(profileImage)
 						.button(new FrameButton("\uD83D\uDD0E Receipt",
 								FrameButton.ActionType.LINK,
-								String.format("https://onceupon.gg/%s", payment.getHash())))
+								receiptUrl))
 						.state(validateMessage.action().state().serialized());
 
 				val input = validateMessage.action().input();
@@ -591,8 +597,7 @@ public class FramePaymentController {
 						val receiverFid = identityService.getIdentityFid(paymentIdentity);
 						val receiverFname = identityService.getIdentityFname(paymentIdentity);
 						val senderFname = senderFarcasterUser.username();
-
-						val receiptUrl = String.format("https://onceupon.gg/%s", payment.getHash());
+						
 						val messageText = String.format("""
 										 @%s, you've been paid %s %s by @%s 🎉
 										💬 Comment: %s

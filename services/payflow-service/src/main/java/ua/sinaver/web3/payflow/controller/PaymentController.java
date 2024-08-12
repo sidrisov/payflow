@@ -17,10 +17,7 @@ import ua.sinaver.web3.payflow.message.PaymentUpdateMessage;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
-import ua.sinaver.web3.payflow.service.AirstackSocialGraphService;
-import ua.sinaver.web3.payflow.service.FarcasterMessagingService;
-import ua.sinaver.web3.payflow.service.FarcasterPaymentBotService;
-import ua.sinaver.web3.payflow.service.PaymentService;
+import ua.sinaver.web3.payflow.service.*;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
@@ -58,6 +55,9 @@ public class PaymentController {
 
 	@Autowired
 	private IFarcasterNeynarService neynarService;
+
+	@Autowired
+	private ReceiptService receiptService;
 
 	@Value("${payflow.frames.url}")
 	private String framesServiceUrl;
@@ -219,10 +219,7 @@ public class PaymentController {
 						.getIdentityFname(payment.getReceiver() != null ? payment.getReceiver().getIdentity()
 								: payment.getReceiverAddress() != null ? payment.getReceiverAddress()
 								: "fc_fid:" + payment.getReceiverFid());
-				val receiptUrl = String.format(
-						"https://onceupon.gg/%s",
-						StringUtils.isNotBlank(payment.getFulfillmentHash()) ?
-								payment.getFulfillmentHash() : payment.getHash());
+				val receiptUrl = receiptService.getReceiptUrl(payment);
 				var embeds = Collections.singletonList(new Cast.Embed(receiptUrl));
 				val sourceRef = String.format("https://warpcast.com/%s/%s",
 						receiverFname, payment.getSourceHash().substring(0, 10));
