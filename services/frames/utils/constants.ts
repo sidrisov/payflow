@@ -17,3 +17,5 @@ export const FRAMES_URL =
   'https://frames.payflow.me';
 
 console.log(API_URL, DAPP_URL, FRAMES_URL);
+
+export const BUY_STORAGE_FRAME_VERSION = 'v3';

@@ -19,20 +19,20 @@ import { GiftProfileType } from './types/GiftType';
 import { BalanceType } from './types/BalanceType';
 import { PaymentType } from './types/PaymentType';
 import { payProfileHtml } from './components/PayProfile';
-import { Address, createPublicClient, http, keccak256, toBytes } from 'viem';
-import { arbitrum, base, degen, mode, optimism } from 'viem/chains';
+import { Address, Chain, createPublicClient, http, keccak256, toBytes } from 'viem';
+import { arbitrum, base, degen, mode, optimism, zora } from 'viem/chains';
 import { signerToSafeSmartAccount } from './utils/permissionless_forked/signerToSafeSmartAccount';
 import { ENTRYPOINT_ADDRESS_V06, isSmartAccountDeployed } from 'permissionless';
 import { SmartAccountSigner } from 'permissionless/accounts';
 import { FlowWalletType, JarType } from './types/FlowType';
 import { jarHtml } from './components/Jar';
 import { fetchTokenPrices } from './utils/prices';
-import { TokenPrices } from './utils/erc20contracts';
+import { ERC20_CONTRACTS, TokenPrices } from './utils/erc20contracts';
 import { getAssetBalances, getFlowAssets, getTotalBalance } from './utils/balances';
 import { XmtpOpenFramesRequest, validateFramesPost } from '@xmtp/frames-validator';
 import { normalizeNumberPrecision } from './utils/format';
 import { createJarHtml } from './components/CreateJar';
-import { giftStorageHtml } from './components/GiftStorage';
+import { buyStorageEntryHtml, buyStorageHtml } from './components/BuyStorage';
 import { StorageUsage } from './types/StorageUsageType';
 
 dotenv.config();
@@ -45,6 +45,7 @@ const root = __dirname;
 const API_URL = process.env.VITE_PAYFLOW_SERVICE_API_URL;
 
 const balanceParams = ['eth', 'usdc', 'degen'];
+const oneDayInSeconds = 24 * 60 * 60;
 
 startServer();
 
@@ -206,6 +207,39 @@ async function startServer() {
     }
   });
 
+  app.get('/images/storage.png', async (req, res) => {
+    try {
+      const chains: Chain[] = [base, optimism, zora, arbitrum, mode, degen];
+      const tokens: string[] = [
+        'eth',
+        'weth',
+        'op',
+        'arb',
+        'usdc',
+        'eurc',
+        'usdglo',
+        'moxie',
+        'degen',
+        'higher',
+        'onchain',
+        'tn100x',
+        'build',
+        'dog',
+        'doginme',
+        'tybg',
+        'farther',
+        'nouns',
+        'enjoy',
+        'imagine'
+      ];
+      const image = await htmlToImage(buyStorageEntryHtml(chains, tokens), 'landscape');
+      res.setHeader('Cache-Control', `max-age=${oneDayInSeconds}`).type('png').send(image);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error retrieving profile data');
+    }
+  });
+
   app.get('/images/profile/fid/:fid/storage.png', async (req, res) => {
     const fid = req.params.fid as Address;
 
@@ -217,7 +251,7 @@ async function startServer() {
 
       const storageResponse = await axios.get(`${API_URL}/api/user/storage/fid/${fid}`);
       const storageData = storageResponse.data as StorageUsage;
-      const image = await htmlToImage(giftStorageHtml(identityData, storageData), 'landscape');
+      const image = await htmlToImage(buyStorageHtml(identityData, storageData), 'landscape');
       res.setHeader('Cache-Control', 'max-age=60').type('png').send(image);
     } catch (error) {
       console.error(error);

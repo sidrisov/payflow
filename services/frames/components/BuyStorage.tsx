@@ -1,14 +1,133 @@
 /* eslint-disable jsx-a11y/alt-text */
+import { Chain } from 'viem';
 import { IdentityType } from '../types/ProfleType';
 import { StorageUsage } from '../types/StorageUsageType';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { formatNumberWithSuffix } from '../utils/format';
+import { assetImageSrc } from '../utils/image';
+import getNetworkImageSrc from '../utils/networks';
+import { ERC20_CONTRACTS } from '../utils/erc20contracts';
 
-export const giftStorageHtml = (identity: IdentityType, storage: StorageUsage) => (
-  <GiftStorage identity={identity} storage={storage} />
+export const buyStorageEntryHtml = (chains: Chain[], tokens: string[]) => (
+  <BuyStorageEntry chains={chains} tokens={tokens} />
 );
 
-function GiftStorage({ identity, storage }: { identity: IdentityType; storage: StorageUsage }) {
+export const buyStorageHtml = (identity: IdentityType, storage: StorageUsage) => (
+  <BuyStorage identity={identity} storage={storage} />
+);
+
+function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[] }) {
+  const title = 'Buy Storage';
+
+  return (
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        backgroundColor: '#f8fafc',
+        fontFamily: 'Roboto',
+        fontSize: 28,
+        padding: 16
+      }}>
+      <p style={{ fontSize: 60, fontWeight: 'bold', fontStyle: 'italic' }}>{title}</p>
+      <div
+        style={{
+          marginTop: 20,
+          padding: 16,
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          height: 375,
+          gap: 50
+        }}>
+        <div
+          style={{
+            padding: 16,
+            width: 350,
+            maxHeight: 350,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 10
+          }}>
+          {chains.map((chain, index) => {
+            const chainImg = assetImageSrc(getNetworkImageSrc(chain.id));
+
+            return (
+              <div
+                key={chain.id}
+                style={{
+                  width: 60,
+                  height: 60,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}>
+                <img
+                  src={chainImg}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: '50%'
+                  }}
+                  alt="Supported Chain"
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        <div
+          style={{
+            padding: 16,
+            width: 350,
+            maxHeight: 350,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 5
+          }}>
+          {tokens.map((token, index) => {
+            const tokenImgSrc =
+              ERC20_CONTRACTS.find((t) => t.id === token)?.imageURL ??
+              assetImageSrc(`/assets/coins/${token}.png`);
+
+            return (
+              <div
+                key={token}
+                style={{
+                  width: 50,
+                  height: 50,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}>
+                <img
+                  src={tokenImgSrc}
+                  style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: '50%'
+                  }}
+                  alt="Supported Token"
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BuyStorage({ identity, storage }: { identity: IdentityType; storage: StorageUsage }) {
   const title = 'Buy Storage';
 
   const farcasterSocial = identity?.meta?.socials?.find((s) => s.dappName === 'farcaster');

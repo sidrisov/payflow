@@ -1,11 +1,7 @@
-import { usePageContext } from 'vike-react/usePageContext';
-import { DAPP_URL, FRAMES_URL, API_URL, BUY_STORAGE_FRAME_VERSION } from '../../../../utils/constants';
+import { DAPP_URL, FRAMES_URL, API_URL, BUY_STORAGE_FRAME_VERSION } from '../../utils/constants';
 
 export function Head() {
-  const { routeParams } = usePageContext();
-  const fid = routeParams?.fid;
-
-  const imageUrl = `${FRAMES_URL}/images/profile/fid/${fid}/storage.png`;
+  const imageUrl = `${FRAMES_URL}/images/storage.png`;
   const addActionUrl =
     'https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fproducts%2Fstorage';
 
@@ -13,7 +9,7 @@ export function Head() {
   const castText = encodeURIComponent(
     `Buy Farcaster Storage via @payflow frame\ncc: @sinaver.eth /payflow`
   );
-  const embedUrl = `https://frames.payflow.me/fid/${fid}/storage?${BUY_STORAGE_FRAME_VERSION}`;
+  const embedUrl = `https://frames.payflow.me/storage?${BUY_STORAGE_FRAME_VERSION}`;
   const shareComposeDeeplink = `${baseUrl}?text=${castText}&embeds[]=${encodeURIComponent(embedUrl)}`;
 
   return (
@@ -26,7 +22,7 @@ export function Head() {
         <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-        <title>Payflow | Frames</title>
+        <title>Payflow | Buy Storage</title>
         <meta
           name="description"
           content="Onchain Social Payments across Farcaster, Lens, and Ens."
@@ -56,26 +52,20 @@ export function Head() {
         <meta property="fc:frame" content="vNext" />
 
         <meta property="fc:frame:image" content={imageUrl} />
-        <meta property="fc:frame:input:text" content="Enter storage units, default: 1" />
-        <meta property="fc:frame:button:1" content="Submit" />
+
+        <meta property="fc:frame:button:1" content="My usage" />
         <meta
           property="fc:frame:button:1:target"
-          content={`${API_URL}/api/farcaster/frames/storage/${fid}/submit`}
-        />
-
-        <meta property="fc:frame:button:2" content="My usage" />
-        <meta
-          property="fc:frame:button:2:target"
           content={`${API_URL}/api/farcaster/frames/storage/check`}
         />
 
-        <meta property="fc:frame:button:3" content="Add action" />
-        <meta property="fc:frame:button:3:action" content="link" />
-        <meta property="fc:frame:button:3:target" content={addActionUrl} />
+        <meta property="fc:frame:button:2" content="Add action" />
+        <meta property="fc:frame:button:2:action" content="link" />
+        <meta property="fc:frame:button:2:target" content={addActionUrl} />
 
-        <meta property="fc:frame:button:4" content="Share" />
-        <meta property="fc:frame:button:4:action" content="link" />
-        <meta property="fc:frame:button:4:target" content={shareComposeDeeplink} />
+        <meta property="fc:frame:button:3" content="Share" />
+        <meta property="fc:frame:button:3:action" content="link" />
+        <meta property="fc:frame:button:3:target" content={shareComposeDeeplink} />
       </head>
     </>
   );
