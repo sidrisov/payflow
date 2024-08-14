@@ -3,7 +3,6 @@ import { fileURLToPath } from 'node:url';
 import express from 'express';
 import bodyParser from 'body-parser';
 import { renderPage } from 'vike/server';
-import { test } from './components/test';
 import { htmlToImage } from './utils/image';
 import axios from 'axios';
 import { profileHtml } from './components/Profile';
@@ -18,7 +17,7 @@ import { giftLeaderboardHtml } from './components/GiftLeaderboard';
 import { GiftProfileType } from './types/GiftType';
 import { BalanceType } from './types/BalanceType';
 import { PaymentType } from './types/PaymentType';
-import { payProfileHtml } from './components/PayProfile';
+import { paymentHtml } from './components/Payment';
 import { Address, Chain, createPublicClient, http, keccak256, toBytes } from 'viem';
 import { arbitrum, base, degen, mode, optimism, zora } from 'viem/chains';
 import { signerToSafeSmartAccount } from './utils/permissionless_forked/signerToSafeSmartAccount';
@@ -27,7 +26,7 @@ import { SmartAccountSigner } from 'permissionless/accounts';
 import { FlowWalletType, JarType } from './types/FlowType';
 import { jarHtml } from './components/Jar';
 import { fetchTokenPrices } from './utils/prices';
-import { ERC20_CONTRACTS, TokenPrices } from './utils/erc20contracts';
+import { TokenPrices } from './utils/erc20contracts';
 import { getAssetBalances, getFlowAssets, getTotalBalance } from './utils/balances';
 import { XmtpOpenFramesRequest, validateFramesPost } from '@xmtp/frames-validator';
 import { normalizeNumberPrecision } from './utils/format';
@@ -124,12 +123,6 @@ async function startServer() {
     }
   });
 
-  // handling frames image generation
-  app.get('/images/welcome.png', async (_, res) => {
-    const image = await htmlToImage(test('Payflow'), 'landscape');
-    res.type('png').send(image);
-  });
-
   app.get('/images/profile/:fname/welcome.png', async (req, res) => {
     const fname = req.params.fname;
 
@@ -197,7 +190,7 @@ async function startServer() {
       const response = await axios.get(`${API_URL}/api/user/identities/${identity}`);
       let identityData = (response.data !== '' ? response.data : { identity }) as IdentityType;
       const image = await htmlToImage(
-        payProfileHtml(identityData, step as any, payment, entryTitle as any),
+        paymentHtml(identityData, step as any, payment, entryTitle as any),
         'landscape'
       );
       res.setHeader('Cache-Control', 'max-age=60').type('png').send(image);
@@ -213,24 +206,25 @@ async function startServer() {
       const tokens: string[] = [
         'eth',
         'weth',
-        'op',
-        'arb',
         'usdc',
         'eurc',
-        'usdglo',
-        'moxie',
         'degen',
+        'moxie',
         'higher',
         'onchain',
         'tn100x',
         'build',
-        'dog',
         'doginme',
         'tybg',
-        'farther',
         'nouns',
+        'farther',
+        'dog',
+        'usdglo',
         'enjoy',
-        'imagine'
+        'imagine',
+        'op',
+        'arb',
+        'hunt'
       ];
       const image = await htmlToImage(buyStorageEntryHtml(chains, tokens), 'landscape');
       res.setHeader('Cache-Control', `max-age=${oneDayInSeconds}`).type('png').send(image);

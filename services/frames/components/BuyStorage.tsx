@@ -7,6 +7,7 @@ import { formatNumberWithSuffix } from '../utils/format';
 import { assetImageSrc } from '../utils/image';
 import getNetworkImageSrc from '../utils/networks';
 import { ERC20_CONTRACTS } from '../utils/erc20contracts';
+import Card from './Card';
 
 export const buyStorageEntryHtml = (chains: Chain[], tokens: string[]) => (
   <BuyStorageEntry chains={chains} tokens={tokens} />
@@ -20,19 +21,7 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
   const title = 'Buy Storage';
 
   return (
-    <div
-      style={{
-        height: '100%',
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        backgroundColor: '#f8fafc',
-        fontFamily: 'Roboto',
-        fontSize: 28,
-        padding: 16
-      }}>
+    <Card>
       <p style={{ fontSize: 60, fontWeight: 'bold' }}>{title}</p>
       <div
         style={{
@@ -43,7 +32,7 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
           alignItems: 'center',
           justifyContent: 'flex-start',
           height: 300,
-          gap: 50
+          gap: 30
         }}>
         <div
           style={{
@@ -86,7 +75,7 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
         <div
           style={{
             padding: 16,
-            width: 375,
+            width: 425,
             maxHeight: 275,
             display: 'flex',
             justifyContent: 'center',
@@ -124,7 +113,7 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
         </div>
       </div>
       <p style={{ fontSize: 35, fontWeight: 'bold' }}>with 20+ tokens across multiple l2 chains</p>
-    </div>
+    </Card>
   );
 }
 
@@ -138,19 +127,7 @@ function BuyStorage({ identity, storage }: { identity: IdentityType; storage: St
   const maxNameWidth = 450;
 
   return (
-    <div
-      style={{
-        height: '100%',
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        backgroundColor: '#f8fafc',
-        fontFamily: 'Roboto',
-        fontSize: 28,
-        padding: 16
-      }}>
+    <Card>
       <p style={{ fontSize: 60, fontWeight: 'bold', fontStyle: 'italic' }}>{title}</p>
       <div
         style={{
@@ -215,7 +192,7 @@ function BuyStorage({ identity, storage }: { identity: IdentityType; storage: St
             padding: 16,
             fontSize: 36,
             backgroundColor: '#e0e0e0',
-            borderRadius: 25,
+            borderRadius: '16px',
             gap: 10
           }}>
           <div
@@ -305,18 +282,8 @@ function BuyStorage({ identity, storage }: { identity: IdentityType; storage: St
               </b>
             </span>
           </div>
-
-          {/* <span>
-            <b>
-              {payment.status
-                ? payment.status === 'success'
-                  ? '✅ Success'
-                  : '❌ Failed'
-                : '⏳ Pending'}
-            </b>
-          </span> */}
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

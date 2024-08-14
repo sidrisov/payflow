@@ -18,4 +18,4 @@ export const FRAMES_URL =
 
 console.log(API_URL, DAPP_URL, FRAMES_URL);
 
-export const BUY_STORAGE_FRAME_VERSION = 'v3';
+export const BUY_STORAGE_FRAME_VERSION = 'v3.2';

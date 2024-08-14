@@ -6,15 +6,16 @@ import { assetImageSrc } from '../utils/image';
 import getNetworkImageSrc, { getNetworkDisplayName } from '../utils/networks';
 import { ERC20_CONTRACTS } from '../utils/erc20contracts';
 import { formatNumberWithSuffix } from '../utils/format';
+import Card from './Card';
 
 type PaymentStep = 'create' | 'start' | 'command' | 'confirm' | 'execute';
 
-export const payProfileHtml = (
+export const paymentHtml = (
   identity: IdentityType,
   step: PaymentStep,
   payment: PaymentType,
   entryTitle?: string
-) => <PayProfile identity={identity} step={step} payment={payment} entryTitle={entryTitle} />;
+) => <Payment identity={identity} step={step} payment={payment} entryTitle={entryTitle} />;
 
 const paymentStepTitle = (step: PaymentStep, entryTitle?: string) => {
   switch (step) {
@@ -31,7 +32,7 @@ const paymentStepTitle = (step: PaymentStep, entryTitle?: string) => {
   }
 };
 
-function PayProfile({
+function Payment({
   identity,
   step,
   payment,
@@ -58,19 +59,7 @@ function PayProfile({
   const maxNameWidth = isPaymentInitiated ? 450 : 600;
 
   return (
-    <div
-      style={{
-        height: '100%',
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        backgroundColor: '#f8fafc',
-        fontFamily: 'Roboto',
-        fontSize: 28,
-        padding: 16
-      }}>
+    <Card>
       <p style={{ fontSize: 60, fontWeight: 'bold', fontStyle: 'italic' }}>{title}</p>
       <div
         style={{
@@ -196,6 +185,6 @@ function PayProfile({
           </div>
         )}
       </div>
-    </div>
+    </Card>
   );
 }

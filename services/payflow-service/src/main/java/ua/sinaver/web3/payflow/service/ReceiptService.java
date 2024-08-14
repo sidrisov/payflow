@@ -8,10 +8,10 @@ import ua.sinaver.web3.payflow.data.Payment;
 @Slf4j
 @Service
 public class ReceiptService {
-	
+
 	public String getReceiptUrl(Payment payment) {
 		val baseUrl = switch (payment.getNetwork()) {
-			case 1 -> // Base Chain ID
+			case 8453 -> // Base Chain ID
 					"https://basescan.org";
 			case 10 -> // Optimism Chain ID
 					"https://optimistic.etherscan.io";

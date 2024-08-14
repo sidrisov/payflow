@@ -225,12 +225,10 @@ public class FramePaymentController {
 					.button(new FrameButton("⚡\uFE0F Pay",
 							FrameButton.ActionType.POST,
 							apiServiceUrl.concat(String.format(PAY_IN_FRAME, paymentProfile.getIdentity()))))
-					.button(new FrameButton("\uD83D\uDCF1 App", FrameButton.ActionType.LINK,
+					.button(new FrameButton("App", FrameButton.ActionType.LINK,
 							paymentLink))
-					.button(new FrameButton("➕ Action", FrameButton.ActionType.LINK,
+					.button(new FrameButton("Add Action", FrameButton.ActionType.LINK,
 							installCastActionLink))
-					.button(new FrameButton("\uD83E\uDE84 Create", FrameButton.ActionType.POST,
-							apiServiceUrl.concat(PAY_CREATE)))
 					.build().toHtmlResponse();
 		}
 		return DEFAULT_HTML_RESPONSE;
@@ -513,6 +511,9 @@ public class FramePaymentController {
 						.button(new FrameButton("\uD83D\uDD0E Receipt",
 								FrameButton.ActionType.LINK,
 								receiptUrl))
+						/*	.button(new FrameButton("\uD83E\uDEF6\uD83C\uDFFB Tip",
+									FrameButton.ActionType.POST,
+									apiServiceUrl.concat(String.format(PAY_PAYFLOW_JAR))))*/
 						.build().toHtmlResponse();
 			} else if (buttonIndex == 1) {
 				log.debug("Handling payment through frame tx: {}", payment);
@@ -583,6 +584,9 @@ public class FramePaymentController {
 						.button(new FrameButton("\uD83D\uDD0E Receipt",
 								FrameButton.ActionType.LINK,
 								receiptUrl))
+						/*.button(new FrameButton("\uD83E\uDEF6\uD83C\uDFFB Tip",
+								FrameButton.ActionType.POST,
+								apiServiceUrl.concat(String.format(PAY_PAYFLOW_JAR))))*/
 						.state(validateMessage.action().state().serialized());
 
 				val input = validateMessage.action().input();
@@ -597,7 +601,7 @@ public class FramePaymentController {
 						val receiverFid = identityService.getIdentityFid(paymentIdentity);
 						val receiverFname = identityService.getIdentityFname(paymentIdentity);
 						val senderFname = senderFarcasterUser.username();
-						
+
 						val messageText = String.format("""
 										 @%s, you've been paid %s %s by @%s 🎉
 										💬 Comment: %s

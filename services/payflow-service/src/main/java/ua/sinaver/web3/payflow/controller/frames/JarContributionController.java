@@ -43,8 +43,8 @@ import static ua.sinaver.web3.payflow.service.TransactionService.isFramePaymentM
 @Slf4j
 public class JarContributionController {
 
+	public static final String PAY_PAYFLOW_JAR = "/api/farcaster/frames/jar/payflow";
 	private static final String PAY_JAR_PATH = "/api/farcaster/frames/jar/%s/contribute";
-
 	private static final String CHOOSE_CHAIN_PATH = PAY_JAR_PATH +
 			"/chain";
 	private static final String CHOOSE_AMOUNT_PATH = PAY_JAR_PATH +
@@ -98,6 +98,12 @@ public class JarContributionController {
 		val roundedAmount = amountInDecimals.setScale(scale, RoundingMode.HALF_UP).toString();
 		log.debug("roundTokenAmount: before {} after {} with scale {}", amountInDecimals, roundedAmount, scale);
 		return roundedAmount;
+	}
+
+	@PostMapping("/payflow")
+	public ResponseEntity<?> tipPayflow() {
+		return ResponseEntity.ok().body(
+				new FrameResponse.ActionFrame("frame", "https://frames.payflow.me/0x0dee77c83cb8b14fa95497825df93202abf6ad83?entryTitle=%25F0%259F%25AB%25B6%25F0%259F%258F%25BB%2520Support%2520Payflow"));
 	}
 
 	@PostMapping("/create")

@@ -1,11 +1,16 @@
 import { usePageContext } from 'vike-react/usePageContext';
-import { DAPP_URL, FRAMES_URL, API_URL, BUY_STORAGE_FRAME_VERSION } from '../../../../utils/constants';
+import {
+  DAPP_URL,
+  FRAMES_URL,
+  API_URL,
+  BUY_STORAGE_FRAME_VERSION
+} from '../../../../utils/constants';
 
 export function Head() {
   const { routeParams } = usePageContext();
   const fid = routeParams?.fid;
 
-  const imageUrl = `${FRAMES_URL}/images/profile/fid/${fid}/storage.png`;
+  const imageUrl = `${FRAMES_URL}/images/profile/fid/${fid}/storage.png?${BUY_STORAGE_FRAME_VERSION}`;
   const addActionUrl =
     'https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fproducts%2Fstorage';
 
