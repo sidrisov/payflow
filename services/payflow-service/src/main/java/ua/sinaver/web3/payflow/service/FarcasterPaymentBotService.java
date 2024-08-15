@@ -88,8 +88,8 @@ public class FarcasterPaymentBotService {
 					.map(Pattern::quote)
 					.collect(Collectors.joining("|"));
 			val botCommandPattern = String.format("\\s*(?<beforeText>.*?)?@payflow%s\\s+" +
-							"(?<command>%s)" +
-							"(?:\\s+(?<remaining>.+))?",
+					"(?<command>%s)" +
+					"(?:\\s+(?<remaining>.+))?",
 					isTestBotEnabled ? "\\s+test" : "",
 					supportedCommands);
 
@@ -109,6 +109,7 @@ public class FarcasterPaymentBotService {
 					return;
 				}
 
+				// TODO: allow auto-sign up as well
 				val casterAddresses = cast.author().verifications();
 				casterAddresses.add(cast.author().custodyAddress());
 
@@ -251,11 +252,10 @@ public class FarcasterPaymentBotService {
 									cast.author().username(),
 									cast.hash().substring(0, 10));
 							val sourceHash = cast.hash();
-							val payment =
-									new Payment((command.equals("send") || command.equals(
-											"pay")) ? Payment.PaymentType.FRAME : Payment.PaymentType.INTENT,
-											receiverProfile,
-											token.chainId(), token.id());
+							val payment = new Payment((command.equals("send") || command.equals(
+									"pay")) ? Payment.PaymentType.FRAME : Payment.PaymentType.INTENT,
+									receiverProfile,
+									token.chainId(), token.id());
 							payment.setReceiverAddress(receiverAddress);
 							payment.setSender(casterProfile);
 							if (amountStr.startsWith("$")) {
@@ -282,11 +282,9 @@ public class FarcasterPaymentBotService {
 									receiverName);
 						}
 
-						val frameUrl = refId == null ?
-								String.format("https://frames.payflow.me/%s",
-										receiverProfile != null ?
-												receiverProfile.getUsername() : receiverAddresses) :
-								String.format("https://frames.payflow.me/payment/%s", refId);
+						val frameUrl = refId == null ? String.format("https://frames.payflow.me/%s",
+								receiverProfile != null ? receiverProfile.getUsername() : receiverAddresses)
+								: String.format("https://frames.payflow.me/payment/%s", refId);
 
 						val embeds = Collections.singletonList(
 								new Cast.Embed(frameUrl));
@@ -323,8 +321,8 @@ public class FarcasterPaymentBotService {
 
 						val mentions = cast.mentionedProfiles().stream()
 								.filter(u -> !u.username().equals("payflow")
-										&& !u.username().equals("bountybot")
-								).distinct().toList();
+										&& !u.username().equals("bountybot"))
+								.distinct().toList();
 
 						log.debug("Receivers: {}, amount: {}, token: {}",
 								mentions, amountStr, token);
@@ -348,8 +346,8 @@ public class FarcasterPaymentBotService {
 
 								String receiverAddress = null;
 								if (receiverProfile != null) {
-									receiverAddress =
-											paymentService.getUserReceiverAddress(receiverProfile, token.chainId());
+									receiverAddress = paymentService.getUserReceiverAddress(receiverProfile,
+											token.chainId());
 								}
 
 								if (receiverAddress == null) {
@@ -363,8 +361,9 @@ public class FarcasterPaymentBotService {
 										cast.hash().substring(0, 10));
 								val sourceHash = cast.hash();
 								// TODO: check if token available for chain
-								val payment = new Payment(command.equals("batch") ?
-										Payment.PaymentType.FRAME : Payment.PaymentType.INTENT,
+								val payment = new Payment(
+										command.equals("batch") ? Payment.PaymentType.FRAME
+												: Payment.PaymentType.INTENT,
 										receiverProfile,
 										token.chainId(), token.id());
 								payment.setReceiverAddress(receiverAddress);
@@ -391,7 +390,8 @@ public class FarcasterPaymentBotService {
 											receiver);
 								}
 
-								val frameUrl = String.format("https://frames.payflow.me/payment/%s", payment.getReferenceId());
+								val frameUrl = String.format("https://frames.payflow.me/payment/%s",
+										payment.getReferenceId());
 								val embeds = Collections.singletonList(
 										new Cast.Embed(frameUrl));
 								val processed = reply(castText, cast.hash(), embeds);
@@ -418,7 +418,7 @@ public class FarcasterPaymentBotService {
 										cast.author().username(),
 										cast.hash().substring(0, 10));
 								log.debug("Executing jar creation with title `{}`, desc `{}`, " +
-												"embeds {}, source {}",
+										"embeds {}, source {}",
 										title, beforeText, cast.embeds(),
 										source);
 
@@ -442,7 +442,7 @@ public class FarcasterPaymentBotService {
 										cast.author().username());
 								val embeds = Collections.singletonList(
 										new Cast.Embed(String.format("https://frames.payflow" +
-														".me/jar/%s",
+												".me/jar/%s",
 												jar.getFlow().getUuid())));
 								val processed = reply(castText, cast.hash(), embeds);
 								if (processed) {

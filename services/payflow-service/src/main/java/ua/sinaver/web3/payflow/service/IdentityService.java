@@ -122,6 +122,11 @@ public class IdentityService implements IIdentityService {
 			return null;
 		}
 
+		if (wallet.getSocials() == null) {
+			log.warn("Username for {} was not found - no socials!", fid);
+			return null;
+		}
+
 		val username = wallet.getSocials().stream()
 				.filter(social -> social.getDappName().equals(SocialDappName.farcaster)
 						&& social.getUserId().equals(String.valueOf(fid)))

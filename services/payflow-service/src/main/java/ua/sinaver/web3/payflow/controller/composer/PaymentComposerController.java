@@ -75,7 +75,7 @@ public class PaymentComposerController {
 		val interactor = validateMessage.action().interactor();
 		User profile;
 		try {
-			profile = userService.getOrCreateUserFromFarcasterProfile(interactor);
+			profile = userService.getOrCreateUserFromFarcasterProfile(interactor, true, true);
 		} catch (IllegalArgumentException exception) {
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Missing verified identity! Contact @sinaver.eth"));

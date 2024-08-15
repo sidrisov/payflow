@@ -81,7 +81,7 @@ export default function PaymentDialog({
           backdropFilter: 'blur(5px)'
         }}
         {...(isMobile && { TransitionComponent: UpSlideTransition })}>
-        <BackDialogTitle title="Pay" closeStateCallback={closeStateCallback} />
+        <BackDialogTitle title={props.title ?? 'Pay'} closeStateCallback={closeStateCallback} />
         <DialogContent
           sx={{
             p: 2

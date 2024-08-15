@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.Payment;
+import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.message.FrameButton;
 import ua.sinaver.web3.payflow.message.FramePaymentMessage;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
@@ -298,7 +299,14 @@ public class FramePaymentController {
 							"information :("));
 		}
 
-		val profiles = identityService.getProfiles(senderFarcasterUser.addressesWithoutCustodialIfAvailable());
+		User senderProfile;
+		try {
+			senderProfile = userService.getOrCreateUserFromFarcasterProfile(senderFarcasterUser,
+					false, false);
+		} catch (IllegalArgumentException exception) {
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameMessage("Missing verified identity! Contact @sinaver.eth"));
+		}
 
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val sourceHash = validateMessage.action().cast().hash();
@@ -373,11 +381,9 @@ public class FramePaymentController {
 
 			val payment = new Payment(Payment.PaymentType.FRAME, paymentProfile,
 					token.chainId(), token.id());
-			// TODO: calculate correct address
-			payment.setSenderAddress(senderFarcasterUser.addressesWithoutCustodialIfAvailable().getFirst());
-			if (!profiles.isEmpty()) {
-				payment.setSender(profiles.getFirst());
-			}
+			payment.setSenderAddress(senderProfile != null ? senderProfile.getIdentity() :
+					identityService.getHighestScoredIdentity(senderFarcasterUser.addressesWithoutCustodialIfAvailable()));
+			payment.setSender(senderProfile);
 			payment.setReceiverAddress(paymentAddress);
 			if (tokenAmount != null) {
 				payment.setTokenAmount(tokenAmount.toString());
@@ -408,11 +414,10 @@ public class FramePaymentController {
 					.imageUrl(profileImage)
 					.state(Base64.getEncoder().encodeToString(updatedState.getBytes()));
 
-			// for now just check if profile exists
-			if (!profiles.isEmpty()) {
+			if (senderProfile != null) {
 				frameResponseBuilder.button(new FrameButton("App",
 						FrameButton.ActionType.LINK,
-						dAppServiceUrl.concat(String.format("?pay=%s", payment.getReferenceId()))));
+						dAppServiceUrl.concat(String.format("/payment/%s", payment.getReferenceId()))));
 			}
 
 			frameResponseBuilder.button(new FrameButton("FAQ",
@@ -442,6 +447,7 @@ public class FramePaymentController {
 				validateMessage.action().url());
 
 		val buttonIndex = validateMessage.action().tappedButton().index();
+		// TODO: pass, wallet as sender which was used to execute transaction
 		val transactionId = validateMessage.action().transaction() != null
 				? validateMessage.action().transaction().hash()
 				: null;

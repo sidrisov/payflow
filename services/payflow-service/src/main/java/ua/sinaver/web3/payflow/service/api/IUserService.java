@@ -13,7 +13,9 @@ public interface IUserService {
 
 	void saveUser(User user);
 
-	User getOrCreateUserFromFarcasterProfile(FarcasterUser farcasterUser);
+	User getOrCreateUserFromFarcasterProfile(FarcasterUser farcasterUser,
+	                                         boolean forceWhitelist,
+	                                         boolean setDefaultReceivingAddress);
 
 	void updateLastSeen(User user);
 

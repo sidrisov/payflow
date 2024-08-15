@@ -68,7 +68,7 @@ export function Head() {
               <meta property="fc:frame:button:1:action" content="link" />
               <meta
                 property="fc:frame:button:1:target"
-                content={DAPP_URL.concat(`?pay=${refId}`)}
+                content={DAPP_URL.concat(`/payment/${refId}`)}
               />
             </>
           ) : (
@@ -87,7 +87,7 @@ export function Head() {
               <meta property="fc:frame:button:2:action" content="link" />
               <meta
                 property="fc:frame:button:2:target"
-                content={DAPP_URL.concat(`?pay=${refId}`)}
+                content={DAPP_URL.concat(`/payment/${refId}`)}
               />
 
               <meta property="fc:frame:button:3" content="Add action" />

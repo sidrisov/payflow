@@ -53,7 +53,8 @@ export default function AppLayout({
   const { isLoading, isFetched, data: prices } = useTokenPrices();
   console.log('prices: ', isLoading, isFetched, prices);
 
-  const showToolbar = location.pathname !== '/composer';
+  const showToolbar =
+    location.pathname !== '/composer' && !location.pathname.startsWith('/payment');
 
   useEffect(() => {
     if (profile) {

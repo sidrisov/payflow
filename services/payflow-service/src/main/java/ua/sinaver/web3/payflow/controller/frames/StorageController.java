@@ -16,8 +16,8 @@ import ua.sinaver.web3.payflow.message.farcaster.FarcasterUser;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.message.farcaster.ValidatedFrameResponseMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
+import ua.sinaver.web3.payflow.service.UserService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
-import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.net.URLEncoder;
@@ -38,14 +38,15 @@ public class StorageController {
 	private IFarcasterNeynarService neynarService;
 	@Autowired
 	private PaymentRepository paymentRepository;
-	@Autowired
-	private IIdentityService identityService;
 	@Value("${payflow.frames.url}")
 	private String framesServiceUrl;
 	@Value("${payflow.api.url}")
 	private String apiServiceUrl;
 	@Value("${payflow.dapp.url}")
 	private String dAppServiceUrl;
+
+	@Autowired
+	private UserService userService;
 
 	private static Payment getPayment(ValidatedFrameResponseMessage validateMessage,
 	                                  FarcasterUser gifteeUser, User clickedProfile,
@@ -86,8 +87,16 @@ public class StorageController {
 
 		val gifteeUser = neynarService.fetchFarcasterUser(fid);
 		val castInteractor = validateMessage.action().interactor();
-		val clickedProfile = identityService.getProfiles(castInteractor.addressesWithoutCustodialIfAvailable())
-				.stream().findFirst().orElse(null);
+
+		User clickedProfile;
+		try {
+			clickedProfile = userService.getOrCreateUserFromFarcasterProfile(castInteractor,
+					false, false);
+		} catch (IllegalArgumentException exception) {
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameMessage("Missing verified identity! Contact @sinaver.eth"));
+		}
+
 		if (clickedProfile == null) {
 			log.error("Clicked fid {} is not on payflow", castInteractor);
 			return ResponseEntity.badRequest().body(
@@ -119,7 +128,7 @@ public class StorageController {
 				.toUriString();
 
 		val paymentUrl = UriComponentsBuilder.fromHttpUrl(dAppServiceUrl)
-				.path("?pay={refId}")
+				.path("/payment/{refId}")
 				.buildAndExpand(payment.getReferenceId())
 				.toUriString();
 		val faqUrl = "https://payflowlabs.notion" +

@@ -30,25 +30,19 @@ import static ua.sinaver.web3.payflow.config.CacheConfig.USERS_CACHE_NAME;
 public class UserService implements IUserService {
 
 	private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_-]*$");
-
+	private static final Integer WHITELISTED_FID_UPPER_RANGE = 20000;
 	@Value("${payflow.invitation.allowance.enabled:false}")
 	private boolean invitationAllowanceEnabled;
-
 	@Value("${payflow.invitation.whitelisted.default.users}")
 	private Set<String> defaultWhitelistedUsers;
-
 	@Value("${payflow.invitation.default.allowance:10}")
 	private int defaultInvitationAllowance;
-
 	@Value("${payflow.favourites.limit:10}")
 	private int defaultFavouriteContactLimit;
-
 	@Autowired
 	private UserRepository userRepository;
-
 	@Autowired
 	private InvitationRepository invitationRepository;
-
 	@Autowired
 	private IdentityService identityService;
 
@@ -65,11 +59,13 @@ public class UserService implements IUserService {
 	}
 
 	@Override
-	public User getOrCreateUserFromFarcasterProfile(FarcasterUser farcasterUser) {
+	public User getOrCreateUserFromFarcasterProfile(FarcasterUser farcasterUser,
+	                                                boolean forceWhitelist,
+	                                                boolean setDefaultReceivingAddress) {
 		val verifications = farcasterUser.addressesWithoutCustodialIfAvailable();
 		var profile = identityService.getProfiles(verifications)
 				.stream().findFirst().orElse(null);
-		if (profile == null) {
+		if (profile == null && (forceWhitelist || farcasterUser.fid() <= WHITELISTED_FID_UPPER_RANGE || farcasterUser.powerBadge())) {
 			val identityToCreateProfile = identityService.getIdentitiesInfo(verifications)
 					.stream().max(Comparator.comparingInt(IdentityMessage::score))
 					.orElse(null);
@@ -89,7 +85,9 @@ public class UserService implements IUserService {
 			profile.setUsername(farcasterUser.username().replace(".eth", ""));
 			profile.setDisplayName(farcasterUser.displayName());
 			profile.setProfileImage(farcasterUser.pfpUrl());
-			profile.setDefaultReceivingAddress(identityToCreateProfile.address());
+			if (setDefaultReceivingAddress) {
+				profile.setDefaultReceivingAddress(identityToCreateProfile.address());
+			}
 			profile.setLastSeen(new Date());
 			saveUser(profile);
 		}

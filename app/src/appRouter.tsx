@@ -12,6 +12,7 @@ import PublicProfile from './layouts/PublicProfile';
 import Jar from './pages/Jar';
 import Actions from './pages/Actions';
 import Composer from './pages/Composer';
+import Payment from './pages/Payment';
 
 export const appRoutes = ['/home', '/flows', '/requests', '/settings'];
 
@@ -49,6 +50,11 @@ export const appRouter = createBrowserRouter([
       },
       { path: '/search', element: <PublicProfile />, errorElement: <Page404 /> },
       { path: '/leaderboard', element: <Leaderboard />, errorElement: <Page404 /> },
+      {
+        path: '/payment/:refId',
+        element: <Payment />,
+        errorElement: <Page404 />
+      },
       {
         path: '/:username',
         element: <PublicProfile />,
