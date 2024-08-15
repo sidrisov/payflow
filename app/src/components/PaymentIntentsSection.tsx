@@ -15,25 +15,22 @@ import {
 } from '@mui/material';
 import { PaymentType } from '../types/PaymentType';
 import { ProfileSection } from './ProfileSection';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { ExpandLess, ExpandMore, MoreHoriz, Schedule } from '@mui/icons-material';
 import TokenAvatar from './avatars/TokenAvatar';
 import { getNetworkDisplayName } from '../utils/networks';
 import NetworkAvatar from './avatars/NetworkAvatar';
 import getTokenName, { ERC20_CONTRACTS, Token } from '../utils/erc20contracts';
-import { IdentityType, SelectedIdentityType } from '../types/ProfileType';
-import PaymentDialog from './dialogs/PaymentDialog';
 import { AddressSection } from './AddressSection';
 import { PaymentMenu } from './menu/PaymentMenu';
-import GiftStorageDialog from './dialogs/GiftStorageDialog';
 import { FlowType } from '../types/FlowType';
 import { FarcasterProfileSection } from './FarcasterProfileSection';
-import { ProfileContext } from '../contexts/UserContext';
 import { QUERY_FARCASTER_PROFILE } from '../utils/airstackQueries';
 import { useQuery } from '@airstack/airstack-react';
 import { Social } from '../generated/graphql/types';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../utils/formats';
 import calculateMaxPages from '../utils/pagination';
+import { useNavigate } from 'react-router-dom';
 
 const pageSize = 5;
 
@@ -51,13 +48,9 @@ export function PaymentIntentsSection({
 } & {} & StackProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const navigate = useNavigate();
+
   const [expand, setExpand] = useState<boolean>(false);
-  const [payment, setPayment] = useState<PaymentType>();
-  const [fidSocial, setFidSocial] = useState<Social>();
-
-  const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
-
-  const { profile } = useContext(ProfileContext);
 
   const maxPages = calculateMaxPages(payments?.length ?? 0, pageSize);
   const [page, setPage] = useState<number>(1);
@@ -126,67 +119,7 @@ export function PaymentIntentsSection({
             </Stack>
           )}
         </Stack>
-        {openPaymentDialog && payment && !payment.category && profile && selectedFlow && (
-          <PaymentDialog
-            open={openPaymentDialog}
-            paymentType="payflow"
-            payment={payment}
-            sender={{
-              identity: {
-                profile: { ...profile, defaultFlow: selectedFlow },
-                address: profile.identity
-              },
-              type: 'profile'
-            }}
-            recipient={
-              {
-                identity: {
-                  ...(payment.receiver
-                    ? {
-                        profile: {
-                          ...payment.receiver,
-                          ...(payment.receiverFlow && { defaultFlow: payment.receiverFlow })
-                        }
-                      }
-                    : {
-                        address: payment.receiverAddress
-                      })
-                } as IdentityType,
-                type: payment.receiver ? 'profile' : 'address'
-              } as SelectedIdentityType
-            }
-            flows={flows}
-            selectedFlow={selectedFlow}
-            setSelectedFlow={setSelectedFlow}
-            closeStateCallback={async () => {
-              setOpenPaymentDialog(false);
-              setPayment(undefined);
-            }}
-          />
-        )}
-
-        {openPaymentDialog && profile && payment?.category === 'fc_storage' && fidSocial && (
-          <GiftStorageDialog
-            open={openPaymentDialog}
-            sender={{
-              identity: {
-                profile: { ...profile, defaultFlow: selectedFlow },
-                address: profile.identity
-              },
-              type: 'profile'
-            }}
-            payment={payment}
-            social={fidSocial}
-            flows={flows}
-            selectedFlow={selectedFlow}
-            setSelectedFlow={setSelectedFlow}
-            closeStateCallback={async () => {
-              setOpenPaymentDialog(false);
-              setPayment(undefined);
-              setFidSocial(undefined);
-            }}
-          />
-        )}
+      
       </>
     )
   );
@@ -215,11 +148,7 @@ export function PaymentIntentsSection({
             variant: 'text',
             textTransform: 'none',
             onClick: () => {
-              if (social) {
-                setPayment(payment);
-                setOpenPaymentDialog(true);
-                setFidSocial(social);
-              }
+              navigate(`/payment/${payment.referenceId}`);
             }
           })}
           sx={{
@@ -309,8 +238,7 @@ export function PaymentIntentsSection({
             variant: 'text',
             textTransform: 'none',
             onClick: () => {
-              setPayment(payment);
-              setOpenPaymentDialog(true);
+              navigate(`/payment/${payment.referenceId}`);
             }
           })}
           sx={{

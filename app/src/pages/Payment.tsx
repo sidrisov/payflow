@@ -84,6 +84,7 @@ export default function Payment() {
         payment.status === 'PENDING' &&
         (!payment.category ? (
           <PaymentDialog
+            alwaysShowBackButton
             title="Complete Payment"
             open={payment != null}
             paymentType="payflow"
@@ -113,7 +114,7 @@ export default function Payment() {
               } as SelectedIdentityType
             }
             closeStateCallback={async () => {
-              setPayment(undefined);
+              navigate('/');
             }}
             flows={flows}
             selectedFlow={selectedFlow}
@@ -123,6 +124,8 @@ export default function Payment() {
           payment.category === 'fc_storage' &&
           paymentSocial && (
             <GiftStorageDialog
+              alwaysShowBackButton
+              title="Complete Storage Payment"
               open={payment != null}
               payment={payment}
               sender={{
@@ -134,8 +137,7 @@ export default function Payment() {
               }}
               social={paymentSocial}
               closeStateCallback={async () => {
-                setPayment(undefined);
-                setPaymentSocial(undefined);
+                navigate('/');
               }}
               flows={flows}
               selectedFlow={selectedFlow}

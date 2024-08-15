@@ -49,7 +49,6 @@ import { grey, red } from '@mui/material/colors';
 import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
 import { CAIP19, createSession, executeSession } from '@paywithglide/glide-js';
 import { delay } from '../../utils/delay';
-import { useNavigate } from 'react-router-dom';
 import { ChooseFlowMenu } from '../menu/ChooseFlowMenu';
 import ResponsiveDialog from './ResponsiveDialog';
 import { UpSlideTransition } from './TransitionDownUpSlide';
@@ -60,12 +59,14 @@ export type GiftStorageDialog = DialogProps &
     payment: PaymentType;
     social: Social;
   } & {
+    alwaysShowBackButton?: boolean;
     flows?: FlowType[];
     selectedFlow?: FlowType;
     setSelectedFlow?: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
   };
 
 export default function GiftStorageDialog({
+  alwaysShowBackButton = false,
   sender,
   payment,
   social,
@@ -79,8 +80,6 @@ export default function GiftStorageDialog({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-
-  const navigate = useNavigate();
 
   const [openSelectFlow, setOpenSelectFlow] = useState(false);
 
@@ -303,7 +302,7 @@ export default function GiftStorageDialog({
           toast.success(`Storage paid for @${social.profileName}`);
 
           await delay(2000);
-          navigate(0);
+          window.location.href = '/';
         } else {
           toast.error(`Failed to pay for storage!`);
         }
@@ -353,7 +352,11 @@ export default function GiftStorageDialog({
           backdropFilter: 'blur(5px)'
         }}
         {...(isMobile && { TransitionComponent: UpSlideTransition })}>
-        <BackDialogTitle title="Farcaster Storage" closeStateCallback={closeStateCallback} />
+        <BackDialogTitle
+          showOnDesktop={alwaysShowBackButton}
+          title={props.title ?? 'Farcaster Storage'}
+          closeStateCallback={closeStateCallback}
+        />
         <DialogContent
           sx={{
             p: 2

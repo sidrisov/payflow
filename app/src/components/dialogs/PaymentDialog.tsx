@@ -29,6 +29,7 @@ export type PaymentDialogProps = DialogProps &
     payment?: PaymentType;
     sender: SelectedIdentityType;
     recipient: SelectedIdentityType;
+    alwaysShowBackButton?: boolean;
   } & { setOpenSearchIdentity?: React.Dispatch<React.SetStateAction<boolean>> } & {
     flows?: FlowType[];
     selectedFlow?: FlowType;
@@ -36,6 +37,7 @@ export type PaymentDialogProps = DialogProps &
   };
 
 export default function PaymentDialog({
+  alwaysShowBackButton = false,
   paymentType = 'payflow',
   payment,
   recipient,
@@ -81,7 +83,11 @@ export default function PaymentDialog({
           backdropFilter: 'blur(5px)'
         }}
         {...(isMobile && { TransitionComponent: UpSlideTransition })}>
-        <BackDialogTitle title={props.title ?? 'Pay'} closeStateCallback={closeStateCallback} />
+        <BackDialogTitle
+          showOnDesktop={alwaysShowBackButton}
+          title={props.title ?? 'Pay'}
+          closeStateCallback={closeStateCallback}
+        />
         <DialogContent
           sx={{
             p: 2
