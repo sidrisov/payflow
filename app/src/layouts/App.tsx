@@ -12,10 +12,14 @@ import {
   Avatar,
   useTheme,
   useMediaQuery,
-  Container
+  Container,
+  Paper,
+  BottomNavigation,
+  BottomNavigationAction
 } from '@mui/material';
 
 import { Home, HomeOutlined } from '@mui/icons-material';
+import { RiApps2Fill, RiApps2Line } from 'react-icons/ri';
 
 import { ProfileContext } from '../contexts/UserContext';
 import HideOnScroll from '../components/HideOnScroll';
@@ -29,6 +33,11 @@ import ProfileAvatar from '../components/avatars/ProfileAvatar';
 import PrimaryFlowOnboardingDialog from '../components/dialogs/PrimaryFlowOnboardingDialog';
 import { DAPP_URL } from '../utils/urlConstants';
 import { useTokenPrices } from '../utils/queries/prices';
+import {
+  IoHomeOutline,
+  IoHomeSharp,
+  IoSearch,
+  IoSearchOutline} from 'react-icons/io5';
 
 export default function AppLayout({
   profile,
@@ -91,7 +100,7 @@ export default function AppLayout({
                     justifyContent="space-between"
                     flexGrow={1}>
                     <Stack direction="row" alignItems="center">
-                      {profile && (
+                      {!isMobile && profile && (
                         <IconButton
                           color={location.pathname === '/' ? 'inherit' : undefined}
                           onClick={() => navigate('/')}>
@@ -100,7 +109,7 @@ export default function AppLayout({
                       )}
                       <HomeLogo />
                     </Stack>
-                    {location.pathname !== '/search' && (
+                    {!isMobile && location.pathname !== '/search' && (
                       <Box
                         ml={1}
                         display="flex"
@@ -158,6 +167,62 @@ export default function AppLayout({
             <Outlet />
           </Box>
         </Box>
+        {isMobile && (
+          <Paper
+            elevation={5}
+            sx={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 1500,
+              mx: 3,
+              mb: 1,
+              borderRadius: 10
+            }}>
+            <BottomNavigation sx={{ backgroundColor: 'transparent' }}>
+              <BottomNavigationAction
+                label="Home"
+                icon={
+                  !openSearchIdentity && location.pathname === '/' ? (
+                    <IoHomeSharp size={20} />
+                  ) : (
+                    <IoHomeOutline size={20} />
+                  )
+                }
+                onClick={async () => {
+                  navigate('/');
+                  setOpenSearchIdentity(false);
+                }}
+                sx={{ color: 'inherit' }}
+              />
+              <BottomNavigationAction
+                label="Search"
+                icon={openSearchIdentity ? <IoSearch size={20} /> : <IoSearchOutline size={20} />}
+                onClick={async () => {
+                  navigate('/');
+                  setOpenSearchIdentity(true);
+                }}
+                sx={{ color: 'inherit' }}
+              />
+              <BottomNavigationAction
+                label="Actions"
+                icon={
+                  location.pathname === '/actions' ? (
+                    <RiApps2Fill size={20} />
+                  ) : (
+                    <RiApps2Line size={20} />
+                  )
+                }
+                onClick={async () => {
+                  navigate('/actions');
+                  setOpenSearchIdentity(false);
+                }}
+                sx={{ color: 'inherit' }}
+              />
+            </BottomNavigation>
+          </Paper>
+        )}
       </Container>
 
       {profile && (

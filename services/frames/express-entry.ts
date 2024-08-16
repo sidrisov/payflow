@@ -224,7 +224,8 @@ async function startServer() {
         'imagine',
         'op',
         'arb',
-        'hunt'
+        'hunt',
+        'masks'
       ];
       const image = await htmlToImage(buyStorageEntryHtml(chains, tokens), 'landscape');
       res.setHeader('Cache-Control', `max-age=${oneDayInSeconds}`).type('png').send(image);

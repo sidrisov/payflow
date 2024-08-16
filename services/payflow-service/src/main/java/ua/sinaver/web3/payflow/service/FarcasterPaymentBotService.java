@@ -41,6 +41,8 @@ public class FarcasterPaymentBotService {
 	private PaymentRepository paymentRepository;
 	@Autowired
 	private PaymentService paymentService;
+	@Autowired
+	private UserService userService;
 	@Value("${payflow.farcaster.bot.cast.signer}")
 	private String botSignerUuid;
 	@Value("${payflow.farcaster.bot.enabled:false}")
@@ -88,8 +90,8 @@ public class FarcasterPaymentBotService {
 					.map(Pattern::quote)
 					.collect(Collectors.joining("|"));
 			val botCommandPattern = String.format("\\s*(?<beforeText>.*?)?@payflow%s\\s+" +
-					"(?<command>%s)" +
-					"(?:\\s+(?<remaining>.+))?",
+							"(?<command>%s)" +
+							"(?:\\s+(?<remaining>.+))?",
 					isTestBotEnabled ? "\\s+test" : "",
 					supportedCommands);
 
@@ -109,12 +111,8 @@ public class FarcasterPaymentBotService {
 					return;
 				}
 
-				// TODO: allow auto-sign up as well
-				val casterAddresses = cast.author().verifications();
-				casterAddresses.add(cast.author().custodyAddress());
-
-				val casterProfile = identityService.getProfiles(casterAddresses)
-						.stream().findFirst().orElse(null);
+				val casterProfile = userService.getOrCreateUserFromFarcasterProfile(cast.author(),
+						false, false);
 
 				switch (command) {
 					case "receive": {
@@ -418,7 +416,7 @@ public class FarcasterPaymentBotService {
 										cast.author().username(),
 										cast.hash().substring(0, 10));
 								log.debug("Executing jar creation with title `{}`, desc `{}`, " +
-										"embeds {}, source {}",
+												"embeds {}, source {}",
 										title, beforeText, cast.embeds(),
 										source);
 
@@ -442,7 +440,7 @@ public class FarcasterPaymentBotService {
 										cast.author().username());
 								val embeds = Collections.singletonList(
 										new Cast.Embed(String.format("https://frames.payflow" +
-												".me/jar/%s",
+														".me/jar/%s",
 												jar.getFlow().getUuid())));
 								val processed = reply(castText, cast.hash(), embeds);
 								if (processed) {

@@ -1,10 +1,11 @@
-import { Avatar, ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/material';
+import { ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/material';
 import { ProfileType } from '../../types/ProfileType';
 import { FilterFrames, Person } from '@mui/icons-material';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { DAPP_URL, FRAMES_URL } from '../../utils/urlConstants';
 import { toast } from 'react-toastify';
 import { FlowType } from '../../types/FlowType';
+import { PiTipJar } from 'react-icons/pi';
 
 export function ShareFlowMenu({
   profile,
@@ -52,7 +53,7 @@ export function ShareFlowMenu({
             }}
             sx={{ fontSize: '10' }}>
             <ListItemIcon>
-              <Avatar src="/jar.png" sx={{ width: 20, height: 20 }} />
+              <PiTipJar size={20} />
             </ListItemIcon>
             Jar link
           </MenuItem>
