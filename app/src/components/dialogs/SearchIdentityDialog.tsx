@@ -326,7 +326,7 @@ export default function SearchIdentityDialog({
           )}
         </Stack>
       </DialogTitle>
-      <DialogContent sx={{ mb: 0.5 }}>
+      <DialogContent sx={{ mb: isMobile ? '56px' : 0.5 }}>
         <Box display="flex" flexDirection="column" alignContent="center">
           {isAuthenticated && !searchString && contacts.length > 0 && (
             <SearchResultView

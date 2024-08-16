@@ -33,11 +33,7 @@ import ProfileAvatar from '../components/avatars/ProfileAvatar';
 import PrimaryFlowOnboardingDialog from '../components/dialogs/PrimaryFlowOnboardingDialog';
 import { DAPP_URL } from '../utils/urlConstants';
 import { useTokenPrices } from '../utils/queries/prices';
-import {
-  IoHomeOutline,
-  IoHomeSharp,
-  IoSearch,
-  IoSearchOutline} from 'react-icons/io5';
+import { IoHomeOutline, IoHomeSharp, IoSearch, IoSearchOutline } from 'react-icons/io5';
 
 export default function AppLayout({
   profile,
@@ -51,6 +47,8 @@ export default function AppLayout({
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const bottomToolbarEnabled = isMobile;
 
   const navigate = useNavigate();
   const [authorized, setAuthorized] = useState<boolean>(false);
@@ -86,13 +84,9 @@ export default function AppLayout({
       <Container maxWidth="xs">
         <Box height="100vh" display="flex" flexDirection="column" justifyContent="flex-start">
           <HideOnScroll>
-            <AppBar
-              position="sticky"
-              color="transparent"
-              elevation={0}
-              sx={{ backdropFilter: 'blur(5px)' }}>
+            <AppBar position="sticky" color="transparent" elevation={0}>
               {showToolbar && (
-                <Toolbar>
+                <Toolbar sx={{ padding: 0 }}>
                   <Box
                     display="flex"
                     flexDirection="row"
@@ -100,7 +94,7 @@ export default function AppLayout({
                     justifyContent="space-between"
                     flexGrow={1}>
                     <Stack direction="row" alignItems="center">
-                      {!isMobile && profile && (
+                      {!bottomToolbarEnabled && profile && (
                         <IconButton
                           color={location.pathname === '/' ? 'inherit' : undefined}
                           onClick={() => navigate('/')}>
@@ -109,7 +103,7 @@ export default function AppLayout({
                       )}
                       <HomeLogo />
                     </Stack>
-                    {!isMobile && location.pathname !== '/search' && (
+                    {!bottomToolbarEnabled && location.pathname !== '/search' && (
                       <Box
                         ml={1}
                         display="flex"
@@ -163,11 +157,11 @@ export default function AppLayout({
               )}
             </AppBar>
           </HideOnScroll>
-          <Box display="flex" mt={3}>
+          <Box display="flex" mt={3} pb={bottomToolbarEnabled ? 10 : 0}>
             <Outlet />
           </Box>
         </Box>
-        {isMobile && (
+        {bottomToolbarEnabled && (
           <Paper
             elevation={5}
             sx={{
@@ -176,12 +170,13 @@ export default function AppLayout({
               left: 0,
               right: 0,
               zIndex: 1500,
-              mx: 3,
+              mx: 5,
               mb: 1,
               borderRadius: 10
             }}>
             <BottomNavigation sx={{ backgroundColor: 'transparent' }}>
               <BottomNavigationAction
+                disableRipple
                 label="Home"
                 icon={
                   !openSearchIdentity && location.pathname === '/' ? (
@@ -197,6 +192,7 @@ export default function AppLayout({
                 sx={{ color: 'inherit' }}
               />
               <BottomNavigationAction
+                disableRipple
                 label="Search"
                 icon={openSearchIdentity ? <IoSearch size={20} /> : <IoSearchOutline size={20} />}
                 onClick={async () => {
@@ -206,6 +202,7 @@ export default function AppLayout({
                 sx={{ color: 'inherit' }}
               />
               <BottomNavigationAction
+                disableRipple
                 label="Actions"
                 icon={
                   location.pathname === '/actions' ? (
@@ -245,7 +242,7 @@ export default function AppLayout({
           }}
         />
       )}
-      {profile && !profile.defaultFlow && (
+      {!location.pathname.startsWith('/payment/') && profile && !profile.defaultFlow && (
         <PrimaryFlowOnboardingDialog
           fullScreen={isMobile}
           open={!profile.defaultFlow}
