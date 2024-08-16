@@ -48,7 +48,14 @@ export default function AppLayout({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const bottomToolbarEnabled = isMobile;
+  const bottomToolbarEnabled =
+    isMobile &&
+    location.pathname !== '/composer' &&
+    location.pathname !== '/search' &&
+    !location.pathname.startsWith('/payment');
+
+  const showToolbar =
+    location.pathname !== '/composer' && !location.pathname.startsWith('/payment');
 
   const navigate = useNavigate();
   const [authorized, setAuthorized] = useState<boolean>(false);
@@ -59,9 +66,6 @@ export default function AppLayout({
 
   const { isLoading, isFetched, data: prices } = useTokenPrices();
   console.log('prices: ', isLoading, isFetched, prices);
-
-  const showToolbar =
-    location.pathname !== '/composer' && !location.pathname.startsWith('/payment');
 
   useEffect(() => {
     if (profile) {

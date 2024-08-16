@@ -34,7 +34,7 @@ export default function Payment() {
 
   useEffect(() => {
     if (!selectedFlow && flows && flows.length > 0) {
-      setSelectedFlow(flows.find((f) => f.uuid === profile?.defaultFlow?.uuid));
+      setSelectedFlow(flows.find((f) => f.uuid === profile?.defaultFlow?.uuid) ?? flows[0]);
     }
   }, [selectedFlow, flows]);
 
