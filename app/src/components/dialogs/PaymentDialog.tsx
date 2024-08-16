@@ -86,7 +86,7 @@ export default function PaymentDialog({
         {...(isMobile && { TransitionComponent: UpSlideTransition })}>
         <BackDialogTitle
           showOnDesktop={alwaysShowBackButton}
-          title={props.title ?? 'Pay'}
+          title={props.title ?? 'New Payment'}
           closeStateCallback={closeStateCallback}
         />
         <DialogContent

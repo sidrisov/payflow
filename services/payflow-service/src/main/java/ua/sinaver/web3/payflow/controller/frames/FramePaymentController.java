@@ -415,7 +415,7 @@ public class FramePaymentController {
 					.state(Base64.getEncoder().encodeToString(updatedState.getBytes()));
 
 			if (senderProfile != null) {
-				frameResponseBuilder.button(new FrameButton("App",
+				frameResponseBuilder.button(new FrameButton("Complete in App",
 						FrameButton.ActionType.LINK,
 						dAppServiceUrl.concat(String.format("/payment/%s", payment.getReferenceId()))));
 			}
