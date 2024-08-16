@@ -65,7 +65,7 @@ public class UserService implements IUserService {
 		val verifications = farcasterUser.addressesWithoutCustodialIfAvailable();
 		var profile = identityService.getProfiles(verifications)
 				.stream().findFirst().orElse(null);
-		if (profile == null && (forceWhitelist || farcasterUser.fid() <= WHITELISTED_FID_UPPER_RANGE || farcasterUser.powerBadge())) {
+		if (profile == null && (forceWhitelist || farcasterUser.fid() <= WHITELISTED_FID_UPPER_RANGE || farcasterUser.powerBadge() || farcasterUser.username().endsWith(".eth"))) {
 			val identityToCreateProfile = identityService.getIdentitiesInfo(verifications)
 					.stream().max(Comparator.comparingInt(IdentityMessage::score))
 					.orElse(null);

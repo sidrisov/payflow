@@ -47,7 +47,7 @@ export function ChooseFlowMenu({
       <>
         <Menu
           onClose={closeStateCallback}
-          sx={{ mt: 1, maxWidth: 365, '.MuiMenu-paper': { borderRadius: 5 } }}
+          sx={{ mt: 1, maxWidth: 365, '.MuiMenu-paper': { borderRadius: 5 }, zIndex: 1550 }}
           anchorOrigin={{
             vertical: 'bottom',
             horizontal: 'left'
