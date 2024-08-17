@@ -7,9 +7,7 @@ import {
   Toolbar,
   Box,
   Stack,
-  Typography,
   Button,
-  Avatar,
   useTheme,
   useMediaQuery,
   Container,
@@ -18,7 +16,6 @@ import {
   BottomNavigationAction
 } from '@mui/material';
 
-import { Home, HomeOutlined } from '@mui/icons-material';
 import { RiApps2Fill, RiApps2Line } from 'react-icons/ri';
 
 import { ProfileContext } from '../contexts/UserContext';
@@ -34,6 +31,7 @@ import PrimaryFlowOnboardingDialog from '../components/dialogs/PrimaryFlowOnboar
 import { DAPP_URL } from '../utils/urlConstants';
 import { useTokenPrices } from '../utils/queries/prices';
 import { IoHomeOutline, IoHomeSharp, IoSearch, IoSearchOutline } from 'react-icons/io5';
+import { PiPersonSimpleTaiChi, PiPersonSimpleTaiChiBold } from 'react-icons/pi';
 
 export default function AppLayout({
   profile,
@@ -47,9 +45,9 @@ export default function AppLayout({
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const navigate = useNavigate();
 
   const bottomToolbarEnabled =
-    isMobile &&
     location.pathname !== '/composer' &&
     location.pathname !== '/search' &&
     !location.pathname.startsWith('/payment');
@@ -57,7 +55,8 @@ export default function AppLayout({
   const showToolbar =
     location.pathname !== '/composer' && !location.pathname.startsWith('/payment');
 
-  const navigate = useNavigate();
+  const [bottonToolbarActionValue, setBottonToolbarActionValue] = useState(0);
+
   const [authorized, setAuthorized] = useState<boolean>(false);
 
   const [profileMenuAnchorEl, setProfileMenuAnchorEl] = useState<null | HTMLElement>(null);
@@ -97,39 +96,7 @@ export default function AppLayout({
                     alignItems="center"
                     justifyContent="space-between"
                     flexGrow={1}>
-                    <Stack direction="row" alignItems="center">
-                      {!bottomToolbarEnabled && profile && (
-                        <IconButton
-                          color={location.pathname === '/' ? 'inherit' : undefined}
-                          onClick={() => navigate('/')}>
-                          {location.pathname === '/' ? <Home /> : <HomeOutlined />}
-                        </IconButton>
-                      )}
-                      <HomeLogo />
-                    </Stack>
-                    {!bottomToolbarEnabled && location.pathname !== '/search' && (
-                      <Box
-                        ml={1}
-                        display="flex"
-                        flexDirection="row"
-                        alignItems="center"
-                        component={Button}
-                        color="inherit"
-                        sx={{
-                          width: 120,
-                          borderRadius: 5,
-                          border: 1,
-                          borderColor: 'inherit',
-                          textTransform: 'none',
-                          justifyContent: 'space-evenly'
-                        }}
-                        onClick={async () => {
-                          setOpenSearchIdentity(true);
-                        }}>
-                        <Avatar src="/payflow.png" sx={{ width: 24, height: 24 }} />
-                        <Typography variant="subtitle2">Search ... </Typography>
-                      </Box>
-                    )}
+                    <HomeLogo />
                     <Stack direction="row" spacing={0.5} alignItems="center">
                       {profile ? (
                         <IconButton
@@ -161,29 +128,48 @@ export default function AppLayout({
               )}
             </AppBar>
           </HideOnScroll>
-          <Box display="flex" mt={3} pb={bottomToolbarEnabled ? 10 : 0}>
+          <Box display="flex" mt={3} pb={10}>
             <Outlet />
           </Box>
         </Box>
         {bottomToolbarEnabled && (
-          <Paper
-            elevation={5}
+          <Box
             sx={{
+              display: 'flex',
+              justifyContent: 'center',
               position: 'fixed',
               bottom: 0,
               left: 0,
               right: 0,
-              zIndex: 1500,
-              mx: 5,
-              mb: 1,
-              borderRadius: 10
+              width: '100%',
+              zIndex: 1500
             }}>
-            <BottomNavigation sx={{ backgroundColor: 'transparent' }}>
+            <BottomNavigation
+              showLabels
+              elevation={5}
+              component={Paper}
+              value={bottonToolbarActionValue}
+              onChange={(_, newValue) => {
+                setBottonToolbarActionValue(newValue);
+              }}
+              sx={{
+                maxWidth: 350,
+                mx: 5,
+                mb: 1,
+                borderRadius: 10,
+                '& .Mui-selected': {
+                  color: 'inherit',
+                  fontWeight: '500'
+                },
+                '& .MuiBottomNavigationAction-label': {
+                  fontSize: 14
+                }
+              }}>
               <BottomNavigationAction
                 disableRipple
                 label="Home"
                 icon={
-                  !openSearchIdentity && location.pathname === '/' ? (
+                  bottonToolbarActionValue === 0 ? (
                     <IoHomeSharp size={20} />
                   ) : (
                     <IoHomeOutline size={20} />
@@ -193,23 +179,44 @@ export default function AppLayout({
                   navigate('/');
                   setOpenSearchIdentity(false);
                 }}
-                sx={{ color: 'inherit' }}
               />
               <BottomNavigationAction
                 disableRipple
                 label="Search"
-                icon={openSearchIdentity ? <IoSearch size={20} /> : <IoSearchOutline size={20} />}
+                icon={
+                  bottonToolbarActionValue === 1 ? (
+                    <IoSearch size={20} />
+                  ) : (
+                    <IoSearchOutline size={20} />
+                  )
+                }
                 onClick={async () => {
                   navigate('/');
                   setOpenSearchIdentity(true);
                 }}
-                sx={{ color: 'inherit' }}
               />
+
+              <BottomNavigationAction
+                disableRipple
+                label="Useful"
+                icon={
+                  bottonToolbarActionValue === 2 ? (
+                    <PiPersonSimpleTaiChiBold size={20} />
+                  ) : (
+                    <PiPersonSimpleTaiChi size={20} />
+                  )
+                }
+                onClick={async () => {
+                  navigate('/useful');
+                  setOpenSearchIdentity(false);
+                }}
+              />
+
               <BottomNavigationAction
                 disableRipple
                 label="Actions"
                 icon={
-                  location.pathname === '/actions' ? (
+                  bottonToolbarActionValue === 3 ? (
                     <RiApps2Fill size={20} />
                   ) : (
                     <RiApps2Line size={20} />
@@ -219,10 +226,9 @@ export default function AppLayout({
                   navigate('/actions');
                   setOpenSearchIdentity(false);
                 }}
-                sx={{ color: 'inherit' }}
               />
             </BottomNavigation>
-          </Paper>
+          </Box>
         )}
       </Container>
 
@@ -243,6 +249,7 @@ export default function AppLayout({
           open={openSearchIdentity}
           closeStateCallback={() => {
             setOpenSearchIdentity(false);
+            setBottonToolbarActionValue(0);
           }}
         />
       )}

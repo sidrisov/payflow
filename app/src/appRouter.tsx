@@ -13,6 +13,7 @@ import Jar from './pages/Jar';
 import Actions from './pages/Actions';
 import Composer from './pages/Composer';
 import Payment from './pages/Payment';
+import Useful from './pages/Useful';
 
 export const appRoutes = ['/home', '/flows', '/requests', '/settings'];
 
@@ -39,6 +40,10 @@ export const appRouter = createBrowserRouter([
       {
         path: 'actions',
         element: <Actions />
+      },
+      {
+        path: 'useful',
+        element: <Useful />
       },
       {
         path: 'composer',

@@ -1,4 +1,4 @@
-import { Box, Container, Stack, useMediaQuery, useTheme } from '@mui/material';
+import { Container, Stack, useMediaQuery, useTheme } from '@mui/material';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { AccountCard } from '../components/cards/AccountCard';
@@ -64,7 +64,7 @@ export default function Accounts() {
       </Helmet>
       <Container maxWidth="md">
         {isAuthenticated && flows && selectedFlow ? (
-          <Box display="flex" flexDirection="column" alignItems="center">
+          <Stack alignItems="center" spacing={1}>
             <AccountCard
               key={`account_card`}
               flows={flows ?? []}
@@ -96,7 +96,7 @@ export default function Accounts() {
               <FanTokenAuctionCard />
               <Assets assetBalancesResult={{ isLoading, isFetched, balances }} />
             </Stack>
-          </Box>
+          </Stack>
         ) : (
           <CenteredCircularProgress />
         )}

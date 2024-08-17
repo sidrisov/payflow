@@ -119,7 +119,6 @@ export function PaymentIntentsSection({
             </Stack>
           )}
         </Stack>
-      
       </>
     )
   );

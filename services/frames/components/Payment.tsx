@@ -26,7 +26,7 @@ const paymentStepTitle = (step: PaymentStep, entryTitle?: string) => {
     case 'command':
       return 'Enter payment token details';
     case 'confirm':
-      return 'Pay';
+      return 'Complete payment';
     case 'execute':
       return 'Payment details';
   }

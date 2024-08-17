@@ -129,12 +129,10 @@ export function AccountCard({
       <Card
         elevation={5}
         sx={{
-          m: 2,
+          mx: 2,
           p: 1.5,
           width: 350,
           height: 200,
-          border: 1.5,
-          borderColor: 'divider',
           borderRadius: 5,
           display: 'flex',
           flexDirection: 'column',

@@ -23,17 +23,15 @@ export function FanTokenAuctionCard() {
 
   return (
     <Card
-      elevation={3}
+      elevation={0}
       sx={{
-        border: 1,
-        borderColor: 'divider',
         borderRadius: '15px',
         width: 350,
         maxHeight: 175,
-        padding: 1
+        background: 'transparent'
       }}>
       <CardHeader
-        title="Ⓜ️ Fan Token Auction"
+        title="Ⓜ️ Auctions among your contacts"
         titleTypographyProps={{ variant: 'subtitle2', fontWeight: 'bold' }}
         sx={{ padding: 1, paddingBottom: 0 }}
       />
@@ -62,10 +60,8 @@ export function FanTokenAuctionCard() {
                 elevation={2}
                 key={`contact_auction_card:${contactWithAuction.contact.data.address}`}
                 sx={{
-                  border: 1,
-                  borderColor: 'divider',
                   borderRadius: '15px',
-                  minWidth: 220,
+                  minWidth: 160,
                   height: 100,
                   p: 0.5
                 }}>
