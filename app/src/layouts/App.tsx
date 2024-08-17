@@ -157,7 +157,7 @@ export default function AppLayout({
                 mx: 5,
                 mb: 1,
                 borderRadius: 10,
-                '& .Mui-selected': {
+                '& .MuiBottomNavigationAction-root.Mui-selected': {
                   color: 'inherit',
                   fontWeight: '500'
                 },
