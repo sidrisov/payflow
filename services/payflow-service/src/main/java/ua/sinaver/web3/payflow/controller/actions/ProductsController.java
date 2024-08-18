@@ -6,11 +6,12 @@ import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
+import ua.sinaver.web3.payflow.config.PayflowConfig;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
 import ua.sinaver.web3.payflow.message.farcaster.CastActionMeta;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.message.nft.ParsedMintUrlMessage;
-import ua.sinaver.web3.payflow.service.WalletService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
@@ -39,6 +40,9 @@ public class ProductsController {
 
 	@Autowired
 	private IIdentityService identityService;
+
+	@Autowired
+	private PayflowConfig payflowConfig;
 
 	@GetMapping("/storage")
 	public CastActionMeta storageMetadata() {
@@ -79,9 +83,13 @@ public class ProductsController {
 					new FrameResponse.FrameMessage("Sign up on Payflow first!"));
 		}
 
+		val storageFrameUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getFramesServiceUrl())
+				.path("/fid/{fid}/storage?v3.3")
+				.buildAndExpand(castAuthor.fid())
+				.toUriString();
+
 		return ResponseEntity.ok().body(
-				new FrameResponse.ActionFrame("frame", String.format("https://frames.payflow" +
-						".me/fid/%s/storage?v3", castAuthor.fid())));
+				new FrameResponse.ActionFrame("frame", storageFrameUrl));
 	}
 
 	@PostMapping("/mint")
@@ -109,12 +117,31 @@ public class ProductsController {
 			}
 		}
 
-		return parsedMintUrlMessage != null ?
-				ResponseEntity.ok().body(new FrameResponse.FrameMessage(
+		if (parsedMintUrlMessage == null) {
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameMessage("No mint found!"));
+		}
+
+		val mintFrameUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getFramesServiceUrl())
+				.path("/mint?provider={provider}" +
+						"&chain={chain}" +
+						"&contract={contract}" +
+						"&tokenId={tokenId}" +
+						"&original={original}")
+				.buildAndExpand(parsedMintUrlMessage.provider(),
+						parsedMintUrlMessage.chain(),
+						parsedMintUrlMessage.contract(),
+						parsedMintUrlMessage.tokenId(),
+						parsedMintUrlMessage.url())
+				.toUriString();
+
+		log.debug("Returning mintFrameUrl: {}", mintFrameUrl);
+		return ResponseEntity.ok().body(
+				new FrameResponse.ActionFrame("frame", mintFrameUrl));
+				/*ResponseEntity.ok().body(new FrameResponse.FrameMessage(
 						String.format("Found mint: %s",
 								WalletService.shortenWalletAddressLabel(
-										parsedMintUrlMessage.contract())))) :
-				ResponseEntity.badRequest().body(
-						new FrameResponse.FrameMessage("No mint found!"));
+										parsedMintUrlMessage.contract()))))*/
+
 	}
 }

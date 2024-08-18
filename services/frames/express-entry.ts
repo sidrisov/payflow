@@ -33,6 +33,13 @@ import { normalizeNumberPrecision } from './utils/format';
 import { createJarHtml } from './components/CreateJar';
 import { buyStorageEntryHtml, buyStorageHtml } from './components/BuyStorage';
 import { StorageUsage } from './types/StorageUsageType';
+import { mintHtml } from './components/Mint';
+import {
+  fetchCollectionName,
+  fetchCollectionOwner,
+  fetchCollectionTokenMetadataURI,
+  fetchTokenMetadata
+} from './utils/mint';
 
 dotenv.config();
 
@@ -76,7 +83,7 @@ async function startServer() {
     try {
       const owners = Array.isArray(req.query.owners) ? req.query.owners : [req.query.owners];
       const saltNonce = req.query.saltNonce as string;
-      const chains = [base, optimism, degen, arbitrum, mode];
+      const chains = [base, optimism, degen, arbitrum];
       const safeVersion = '1.4.1';
 
       const wallets: FlowWalletType[] = [];
@@ -197,6 +204,39 @@ async function startServer() {
     } catch (error) {
       console.error(error);
       res.status(500).send('Error retrieving profile data');
+    }
+  });
+
+  app.get('/images/mint.png', async (req, res) => {
+    try {
+      const provider = req.query.provider as string;
+      const chain = req.query.chain as string;
+      const contract = req.query.contract as Address;
+      const tokenId = parseInt(req.query.tokenId as string) as number;
+
+      const collectionOwner = await fetchCollectionOwner(chain, contract);
+      const identityResponse = await axios.get(`${API_URL}/api/user/identities/${collectionOwner}`);
+      let identity = (
+        identityResponse.data !== '' ? identityResponse.data : { collectionOwner }
+      ) as IdentityType;
+
+      const collectionName = (await fetchCollectionName(chain, contract)).concat(` #${tokenId}`);
+      const tokenMetadataUri = await fetchCollectionTokenMetadataURI(chain, contract, tokenId);
+      const metadata = await fetchTokenMetadata(tokenMetadataUri);
+      if (!metadata) {
+        res.status(500).send('Failed to load mint metadata');
+        return;
+      }
+
+      console.debug(collectionName, metadata);
+      const image = await htmlToImage(
+        mintHtml(identity, provider, collectionName, metadata.name, metadata.image),
+        'portrait'
+      );
+      res.setHeader('Cache-Control', `max-age=${oneDayInSeconds}`).type('png').send(image);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Failed to generate mint image');
     }
   });
 

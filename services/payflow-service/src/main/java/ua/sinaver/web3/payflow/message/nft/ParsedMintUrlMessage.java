@@ -13,14 +13,13 @@ public record ParsedMintUrlMessage(
 		String provider,
 		String chain,
 		String contract,
-		String token,
+		String tokenId,
 		String referrer
 ) {
 	public static final String ZORA_PROVIDER = "zora.co";
 	public static final String RODEO_PROVIDER = "rodeo.club";
 	public static final String HIGHLIGHTS_PROVIDER = "highlight.xyz";
-	public static final List<String> SUPPORTED_MINT_PROVIDERS = List.of(ZORA_PROVIDER,
-			RODEO_PROVIDER, HIGHLIGHTS_PROVIDER);
+	public static final List<String> SUPPORTED_MINT_PROVIDERS = List.of(ZORA_PROVIDER, RODEO_PROVIDER);
 
 	// Static method to parse the URL
 	public static ParsedMintUrlMessage parse(String url) {
@@ -42,25 +41,31 @@ public record ParsedMintUrlMessage(
 		val pathParts = uriComponents.getPath().split("/");
 		String chain = null;
 		String contract = null;
-		String token = null;
+		String tokenId = null;
 
 		if (provider.equals(HIGHLIGHTS_PROVIDER)) {
 			if (pathParts.length >= 3) {
 				contract = pathParts[2];
 			}
 		} else if (pathParts.length >= 4) {
+			if ((provider.equals(ZORA_PROVIDER) && !pathParts[1].equals("collect"))
+					|| (provider.equals(RODEO_PROVIDER) && !pathParts[1].equals("post"))) {
+				return null;
+			}
+
 			if (pathParts[2].contains(":")) {
 				String[] chainAndContract = pathParts[2].split(":");
 				chain = chainAndContract[0];
 				contract = chainAndContract[1];
 			} else {
+				chain = "base";
 				contract = pathParts[2];
 			}
-			token = pathParts[3];
+			tokenId = pathParts[3];
 		}
 
 		// Extract optional referrer
 		val referrer = uriComponents.getQueryParams().getFirst("referrer");
-		return new ParsedMintUrlMessage(url, provider, chain, contract, token, referrer);
+		return new ParsedMintUrlMessage(url, provider, chain, contract, tokenId, referrer);
 	}
 }
