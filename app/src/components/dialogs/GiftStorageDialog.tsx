@@ -381,12 +381,7 @@ export default function GiftStorageDialog({
                     sx={{ borderRadius: 3, height: 45, width: 100 }}
                   />
                 ) : paymentOption ? (
-                  <Typography
-                    fontSize={30}
-                    fontWeight="bold"
-                    textOverflow="ellipsis"
-                    overflow="auto"
-                    textAlign="center">
+                  <Typography fontSize={30} fontWeight="bold" textAlign="center">
                     {normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))}{' '}
                     {paymentOption.currencySymbol}
                   </Typography>

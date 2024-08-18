@@ -25,7 +25,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,jpg,svg}'],
-        maximumFileSizeToCacheInBytes: 7000000,
+        maximumFileSizeToCacheInBytes: 7500000,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/[^\.]+\.blockscout\.com\/.*/i,

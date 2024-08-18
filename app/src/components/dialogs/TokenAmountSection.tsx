@@ -120,38 +120,24 @@ export function TokenAmountSection({
   ]);
 
   return (
-    <Box
-      width="100%"
-      height="100%"
-      display="flex"
-      flexDirection="column"
-      justifyContent="space-between">
-      <Stack mx={1} alignItems="center">
-        <Box
-          m={1}
-          mt={3}
-          display="flex"
-          flexDirection="row"
-          justifyContent="space-evenly"
-          alignItems="center">
-          {!payment?.token && balanceCheck && <Box width={65} />}
+    <Stack height="100%" mt={1} alignItems="center">
+      {!payment?.token ? (
+        <Box m={1} display="flex" flexDirection="row" justifyContent="center" alignItems="center">
+          {balanceCheck && <Box width={80} />}
           <TokenAmountTextField
             // don't auto focus if it's pending payment
-            {...(!payment?.token && !sendAmount && { autoFocus: true, focused: true })}
+            {...(!sendAmount && { autoFocus: true, focused: true })}
             variant="standard"
-            type="number"
-            placeholder="0"
-            value={usdAmountMode ? sendAmountUSD : sendAmount}
+            value={usdAmountMode ? sendAmountUSD ?? 0 : sendAmount ?? 0}
             error={
               (usdAmountMode ? sendAmountUSD !== undefined : sendAmount !== undefined) &&
               balanceEnough === false
             }
             inputProps={{
               style: {
-                maxWidth: 150,
+                maxWidth: 120,
                 fontWeight: 'bold',
                 fontSize: 30,
-                alignSelf: 'center',
                 textAlign: 'center'
               }
             }}
@@ -160,7 +146,7 @@ export function TokenAmountSection({
                 ? {
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Typography fontSize={20} fontWeight="bold">
+                        <Typography fontSize={24} fontWeight="bold">
                           $
                         </Typography>
                       </InputAdornment>
@@ -169,37 +155,32 @@ export function TokenAmountSection({
                 : {
                     endAdornment: (
                       <InputAdornment position="start">
-                        <Typography fontSize={20} fontWeight="bold">
+                        <Typography ml={0.5} fontSize={24} fontWeight="bold">
                           {selectedToken?.id.toUpperCase()}
                         </Typography>
                       </InputAdornment>
                     )
                   }),
-              inputMode: 'decimal',
               disableUnderline: true
             }}
             onChange={async (event) => {
-              // don't allow changing amount if passed
-              if (payment?.usdAmount || payment?.tokenAmount) {
-                return;
-              }
-
               if (event.target.value) {
                 const amount = parseFloat(event.target.value);
-                if (usdAmountMode) {
-                  setSendAmountUSD(amount);
-                } else {
-                  setSendAmount(amount);
+                if (!isNaN(amount) && amount > 0) {
+                  if (usdAmountMode) {
+                    setSendAmountUSD(amount);
+                  } else {
+                    setSendAmount(amount);
+                  }
                 }
               } else {
                 setSendAmountUSD(undefined);
                 setSendAmount(undefined);
               }
             }}
-            sx={{ border: 1, borderRadius: 10, borderColor: 'divider', px: 2, ml: 2, mr: 1 }}
           />
 
-          {!payment?.token && selectedToken && balanceCheck && (
+          {selectedToken && balanceCheck && (
             <Button
               variant="text"
               size="small"
@@ -227,39 +208,42 @@ export function TokenAmountSection({
             </Button>
           )}
         </Box>
+      ) : (
+        <Typography fontSize={30} fontWeight="bold" textAlign="center">
+          {usdAmountMode
+            ? `$ ${sendAmountUSD}`
+            : `${sendAmount} ${selectedToken?.id.toUpperCase()}`}
+        </Typography>
+      )}
 
-        {(usdAmountMode ? sendAmountUSD : sendAmount) && balanceEnough === false ? (
-          <Stack direction="row" spacing={0.5} alignItems="center">
-            <PriorityHigh fontSize="small" sx={{ color: red.A400 }} />
-            <Typography fontSize={14} fontWeight="bold" color={red.A400}>
-              balance not enough
-            </Typography>
-          </Stack>
-        ) : (
-          <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
-            <Typography
-              fontSize={14}
-              fontWeight="bold"
-              textOverflow="ellipsis"
-              overflow="auto"
-              textAlign="center">
-              {usdAmountMode
-                ? `${normalizeNumberPrecision(sendAmount ?? 0)} ${selectedToken?.id.toUpperCase()}`
-                : `$ ${normalizeNumberPrecision(sendAmountUSD ?? 0)}`}
-            </Typography>
-            {!payment?.token && (
-              <IconButton
-                size="small"
-                sx={{ color: grey[400] }}
-                onClick={async () => {
-                  setUsdAmountMode(!usdAmountMode);
-                }}>
-                <SwapVert fontSize="small" />
-              </IconButton>
-            )}
-          </Stack>
-        )}
-      </Stack>
-    </Box>
+      {(usdAmountMode ? sendAmountUSD : sendAmount) && balanceEnough === false && (
+        <Stack direction="row" spacing={0.5} alignItems="center">
+          <PriorityHigh fontSize="small" sx={{ color: red.A400 }} />
+          <Typography fontSize={14} fontWeight="bold" color={red.A400}>
+            balance not enough
+          </Typography>
+        </Stack>
+      )}
+
+      {balanceEnough && (
+        <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
+          <Typography fontSize={18} fontWeight="bold" textAlign="center">
+            {usdAmountMode
+              ? `${normalizeNumberPrecision(sendAmount ?? 0)} ${selectedToken?.id.toUpperCase()}`
+              : `$ ${normalizeNumberPrecision(sendAmountUSD ?? 0)}`}
+          </Typography>
+          {!payment?.token && (
+            <IconButton
+              size="small"
+              sx={{ color: grey[400] }}
+              onClick={async () => {
+                setUsdAmountMode(!usdAmountMode);
+              }}>
+              <SwapVert fontSize="small" />
+            </IconButton>
+          )}
+        </Stack>
+      )}
+    </Stack>
   );
 }
