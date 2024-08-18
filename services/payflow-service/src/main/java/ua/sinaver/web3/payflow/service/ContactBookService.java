@@ -111,7 +111,10 @@ public class ContactBookService implements IContactBookService {
 		val allPaymentRecipients = paymentService.getAllPaymentRecipients(user);
 		val allPaymentUniqueRecipients = allPaymentRecipients.stream().distinct().toList();
 		log.debug("Fetched payment recipients: {}", allPaymentUniqueRecipients);
-		
+
+		val recent = allPaymentRecipients.stream().limit(3).toList();
+		log.debug("Fetched top 3 recent payment recipients: {}", recent);
+
 		val popular = allPaymentRecipients.stream()
 				.filter(identity -> !verifications.contains(identity))
 				.collect(Collectors.groupingBy(identity -> identity,
@@ -122,8 +125,7 @@ public class ContactBookService implements IContactBookService {
 				.limit(3)
 				.map(Map.Entry::getKey)
 				.toList();
-		log.debug("Fetched popular payment recipients: {}", popular);
-
+		log.debug("Fetched top 3 popular payment recipients: {}", popular);
 
 		val fanTokenContacts = fanTokenService.fetchFanTokenHolders(user.getIdentity());
 		log.debug("Fetched fan token holders: {}", fanTokenContacts);
@@ -148,8 +150,12 @@ public class ContactBookService implements IContactBookService {
 			tags.add("popular");
 		}
 
-		if (!allPaymentUniqueRecipients.isEmpty()) {
+		if (!recent.isEmpty()) {
 			tags.add("recent");
+		}
+
+		if (!allPaymentUniqueRecipients.isEmpty()) {
+			tags.add("transacted");
 		}
 
 		if (!alfaFrensContacts.isEmpty()) {
@@ -173,20 +179,21 @@ public class ContactBookService implements IContactBookService {
 		}
 
 		val allContacts = Stream.of(
-						verifications.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "verifications")),
-						popular.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "popular")),
-						allPaymentUniqueRecipients.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "recent")),
-						favourites.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(), "favourites")),
-						followings.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "friends")),
-						fanTokenContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "moxie")),
-						fabricContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "hypersub")),
-						paragraphContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "paragraph")),
-						alfaFrensContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "alfafrens"))
-				).flatMap(stream -> stream)
+				verifications.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "verifications")),
+				popular.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "popular")),
+				recent.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "recent")),
+				allPaymentUniqueRecipients.stream()
+						.map(identity -> new AbstractMap.SimpleEntry<>(identity, "transacted")),
+				favourites.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(), "favourites")),
+				followings.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "friends")),
+				fanTokenContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "moxie")),
+				fabricContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "hypersub")),
+				paragraphContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "paragraph")),
+				alfaFrensContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "alfafrens")))
+				.flatMap(stream -> stream)
 				.collect(Collectors.groupingBy(
 						Map.Entry::getKey,
-						Collectors.mapping(Map.Entry::getValue, Collectors.toList())
-				));
+						Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
 
 		log.debug("All contacts[{}]: {}", allContacts.size(), allContacts);
 
@@ -196,45 +203,44 @@ public class ContactBookService implements IContactBookService {
 			val contactMessages = Flux
 					.fromIterable(allContacts.keySet())
 					.flatMap(contact -> Mono.zip(
-											Mono.just(contact),
-											Mono.justOrEmpty(userRepository.findByIdentity(contact)).singleOptional(),
-											Mono.fromCallable(
-															() -> socialGraphService.getSocialMetadata(contact))
-													.subscribeOn(Schedulers.boundedElastic())
-													.onErrorResume(exception -> {
-														log.error("Error fetching social graph for {} - {}",
-																contact,
-																exception.getMessage());
-														return Mono.empty();
-													}),
-											Mono.fromCallable(
-															() -> socialGraphService.getSocialInsights(contact,
-																	user.getIdentity()))
-													.subscribeOn(Schedulers.boundedElastic())
-													.onErrorResume(exception -> {
-														log.error("Error fetching social insights" +
-																		" for {} - {}",
-																contact,
-																exception.getMessage());
-														return Mono.empty();
-													}),
-											Mono.fromCallable(
-															() -> invited.contains(contact))
-													.onErrorResume(exception -> {
-														log.error("Error checking invitation status for user {} - {}",
-																contact,
-																exception.getMessage());
-														return Mono.empty();
-													}))
-									.map(tuple ->
-											ContactMessage.convert(
-													tuple.getT1(),
-													tuple.getT2().orElse(null),
-													tuple.getT3(),
-													tuple.getT4(),
-													tuple.getT5(),
-													allContacts.get(contact)))
-							// TODO: fail fast, seems doesn't to work properly with threads
+							Mono.just(contact),
+							Mono.justOrEmpty(userRepository.findByIdentity(contact)).singleOptional(),
+							Mono.fromCallable(
+									() -> socialGraphService.getSocialMetadata(contact))
+									.subscribeOn(Schedulers.boundedElastic())
+									.onErrorResume(exception -> {
+										log.error("Error fetching social graph for {} - {}",
+												contact,
+												exception.getMessage());
+										return Mono.empty();
+									}),
+							Mono.fromCallable(
+									() -> socialGraphService.getSocialInsights(contact,
+											user.getIdentity()))
+									.subscribeOn(Schedulers.boundedElastic())
+									.onErrorResume(exception -> {
+										log.error("Error fetching social insights" +
+												" for {} - {}",
+												contact,
+												exception.getMessage());
+										return Mono.empty();
+									}),
+							Mono.fromCallable(
+									() -> invited.contains(contact))
+									.onErrorResume(exception -> {
+										log.error("Error checking invitation status for user {} - {}",
+												contact,
+												exception.getMessage());
+										return Mono.empty();
+									}))
+							.map(tuple -> ContactMessage.convert(
+									tuple.getT1(),
+									tuple.getT2().orElse(null),
+									tuple.getT3(),
+									tuple.getT4(),
+									tuple.getT5(),
+									allContacts.get(contact)))
+					// TODO: fail fast, seems doesn't to work properly with threads
 					)
 					.timeout(contactsFetchTimeout, Mono.empty())
 					.collectList()
@@ -253,7 +259,7 @@ public class ContactBookService implements IContactBookService {
 		}
 	}
 
-	//@Scheduled(fixedRate = 60 * 1000)
+	// @Scheduled(fixedRate = 60 * 1000)
 	public void updateContactsAtFixedRate() {
 		val lastUpdateDate = new Date(System.currentTimeMillis() - contactsUpdateDuration.toMillis());
 		val lastSeenDate = new Date(
@@ -334,7 +340,8 @@ public class ContactBookService implements IContactBookService {
 		}
 
 		try {
-			val farConParticipants = socialGraphService.getAllTokenOwners("base", "0x43ad2d5bd48de6d20530a48b5c357e26459afb3c");
+			val farConParticipants = socialGraphService.getAllTokenOwners("base",
+					"0x43ad2d5bd48de6d20530a48b5c357e26459afb3c");
 
 			if (log.isDebugEnabled()) {
 				log.debug("Fetched FarCon participants: {}",

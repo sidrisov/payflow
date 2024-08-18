@@ -118,6 +118,10 @@ export function SearchResultView({
     ? identities.filter((identity) => identity.tags?.includes('verifications'))
     : [];
 
+  const recent = showExtra
+    ? identities.filter((identity) => identity.tags?.includes('recent'))
+    : [];
+
   const popular = showExtra
     ? identities.filter((identity) => identity.tags?.includes('popular'))
     : [];
@@ -135,14 +139,22 @@ export function SearchResultView({
             closeStateCallback={closeStateCallback}
           />
           <SearchResultProfileListView
-            title="Popular"
+            title="Recent recipients"
+            identities={recent}
+            profileRedirect={profileRedirect}
+            selectIdentityCallback={selectIdentityCallback}
+            updateIdentityCallback={updateIdentityCallback}
+            closeStateCallback={closeStateCallback}
+          />
+          <SearchResultProfileListView
+            title="Popular recipients"
             identities={popular}
             profileRedirect={profileRedirect}
             selectIdentityCallback={selectIdentityCallback}
             updateIdentityCallback={updateIdentityCallback}
             closeStateCallback={closeStateCallback}
           />
-          {(verifications.length > 0 || popular.length > 0) && (
+          {(verifications.length > 0 || recent.length > 0 || popular.length > 0) && (
             <Divider flexItem variant="middle" sx={{ mb: 1.5 }} />
           )}
         </>

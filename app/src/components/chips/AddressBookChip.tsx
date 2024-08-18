@@ -8,7 +8,7 @@ const contactTypeLabel = (type: AddressBookType) => {
   switch (type) {
     case 'all':
       return 'All';
-    case 'recent':
+    case 'transacted':
       return 'Transacted';
     case 'favourites':
       return 'Favourites';
@@ -35,7 +35,7 @@ const contactTypeIcon = (type: AddressBookType, selectedType: AddressBookType) =
   switch (type) {
     case 'all':
       return <BlurOn fontSize={fontSize} />;
-    case 'recent':
+    case 'transacted':
       return <PlaylistAddCheck fontSize={fontSize} />;
     case 'favourites':
       return <Star fontSize={fontSize} />;
@@ -150,10 +150,10 @@ export function AddressBookToolBar({
           setAddressBookView={setAddressBookView}
         />
       )}
-      {tags.includes('recent') && (
+      {tags.includes('transacted') && (
         <AddressBookChip
-          key="recent"
-          type="recent"
+          key="transacted"
+          type="transacted"
           addressBookView={addressBookView}
           setAddressBookView={setAddressBookView}
         />

@@ -1,6 +1,6 @@
 export type AddressBookType =
   | 'all'
-  | 'recent'
+  | 'transacted'
   | 'favourites'
   | 'friends'
   | 'farcon'
