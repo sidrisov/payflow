@@ -138,7 +138,6 @@ export default function Jar() {
             )}
 
             <Button
-              variant="text"
               startIcon={<Add />}
               sx={{
                 color: lightGreen.A700,

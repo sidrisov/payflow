@@ -109,7 +109,6 @@ export default function AppLayout({
                         </IconButton>
                       ) : (
                         <Button
-                          variant="text"
                           color="inherit"
                           size="medium"
                           href={`${DAPP_URL}/connect`}

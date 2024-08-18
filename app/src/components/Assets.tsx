@@ -81,7 +81,6 @@ export default function Assets({
         <Button
           color="inherit"
           size="small"
-          variant="text"
           onClick={async () => {
             setShowAll(!showAll);
           }}
