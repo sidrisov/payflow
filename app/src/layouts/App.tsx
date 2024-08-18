@@ -85,7 +85,7 @@ export default function AppLayout({
         setAppSettings
       }}>
       <Container maxWidth="xs">
-        <Box height="100vh" display="flex" flexDirection="column" justifyContent="flex-start">
+        <Box display="flex" flexDirection="column" justifyContent="flex-start">
           <HideOnScroll>
             <AppBar position="sticky" color="transparent" elevation={0}>
               {showToolbar && (
@@ -128,7 +128,7 @@ export default function AppLayout({
               )}
             </AppBar>
           </HideOnScroll>
-          <Box display="flex" mt={3} pb={10}>
+          <Box display="flex" mt={3} pb={8}>
             <Outlet />
           </Box>
         </Box>
@@ -146,17 +146,16 @@ export default function AppLayout({
             }}>
             <BottomNavigation
               showLabels
-              elevation={5}
+              elevation={10}
               component={Paper}
               value={bottonToolbarActionValue}
               onChange={(_, newValue) => {
                 setBottonToolbarActionValue(newValue);
               }}
               sx={{
-                maxWidth: 350,
-                mx: 5,
-                mb: 1,
-                borderRadius: 10,
+                ...(isMobile
+                  ? { width: '100%', borderTopLeftRadius: 25, borderTopRightRadius: 25 }
+                  : { maxWidth: 350, mx: 5, mb: 1, borderRadius: 10 }),
                 '& .MuiBottomNavigationAction-root.Mui-selected': {
                   color: 'inherit',
                   fontWeight: '500'

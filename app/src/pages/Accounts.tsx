@@ -73,7 +73,8 @@ export default function Accounts() {
               assetBalancesResult={{ isLoading, isFetched, balances }}
             />
 
-            <Stack width={smallScreen ? 350 : 375} spacing={1} alignItems="center">
+            <Stack width={smallScreen ? 350 : 375} spacing={0.5} alignItems="center">
+              <FanTokenAuctionCard />
               {isPaymentFetched && (
                 <>
                   <PaymentIntentsSection
@@ -93,7 +94,6 @@ export default function Accounts() {
                   />
                 </>
               )}
-              <FanTokenAuctionCard />
               <Assets assetBalancesResult={{ isLoading, isFetched, balances }} />
             </Stack>
           </Stack>

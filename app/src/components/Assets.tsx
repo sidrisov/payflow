@@ -51,7 +51,7 @@ export default function Assets({
   const nonZeroAggregatedBalances = balances && aggregateAssets(balances);
 
   return (
-    <Stack p={1} spacing={1} width="100%" maxHeight={265} overflow="auto">
+    <Stack p={1} spacing={1} width="100%" maxHeight={285} overflow="auto">
       {isLoading || !isFetched ? (
         <ActivitySkeletonSection />
       ) : isFetched && nonZeroAggregatedBalances ? (
