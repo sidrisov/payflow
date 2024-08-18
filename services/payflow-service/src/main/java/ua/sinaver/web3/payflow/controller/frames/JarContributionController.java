@@ -88,6 +88,9 @@ public class JarContributionController {
 
 	@Autowired
 	private ReceiptService receiptService;
+	
+	@Autowired
+	private ContactBookService contactBookService;
 
 	@Value("${payflow.farcaster.bot.cast.signer}")
 	private String botSignerUuid;
@@ -613,6 +616,10 @@ public class JarContributionController {
 					payment.setHash(transactionId);
 					payment.setStatus(Payment.PaymentStatus.COMPLETED);
 					payment.setCompletedDate(new Date());
+
+					if (payment.getSender() != null) {
+						contactBookService.cleanContactsCache(payment.getSender());
+					}
 
 					log.debug("Updated payment for ref: {} - {}", refId, payment);
 

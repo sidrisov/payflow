@@ -98,6 +98,9 @@ public class FramePaymentController {
 	@Autowired
 	private ReceiptService receiptService;
 
+	@Autowired
+	private ContactBookService contactBookService;
+
 	private static String roundTokenAmount(double amount) {
 		val scale = amount < 1.0 ? 5 : 1;
 		val amountInDecimals = BigDecimal.valueOf(amount);
@@ -476,6 +479,9 @@ public class FramePaymentController {
 				payment.setHash(transactionId);
 				payment.setStatus(Payment.PaymentStatus.COMPLETED);
 				payment.setCompletedDate(new Date());
+				if (payment.getSender() != null) {
+					contactBookService.cleanContactsCache(payment.getSender());
+				}
 
 				log.debug("Updated payment for ref: {} - {}", refId, payment);
 

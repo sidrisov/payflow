@@ -59,6 +59,9 @@ public class PaymentController {
 	@Autowired
 	private ReceiptService receiptService;
 
+	@Autowired
+	private ContactBookService contactBookService;
+
 	@Value("${payflow.frames.url}")
 	private String framesServiceUrl;
 
@@ -117,6 +120,8 @@ public class PaymentController {
 		payment.setStatus(paymentMessage.status());
 		payment.setCompletedDate(new Date());
 		paymentRepository.save(payment);
+
+		contactBookService.cleanContactsCache(user);
 		log.debug("Saved payment: {}", payment);
 		return ResponseEntity.ok(new PaymentReferenceMessage(payment.getReferenceId()));
 	}
@@ -210,6 +215,11 @@ public class PaymentController {
 
 			payment.setStatus(Payment.PaymentStatus.COMPLETED);
 			payment.setCompletedDate(new Date());
+
+			// TODO: move to event system
+			if (payment.getSender() != null) {
+				contactBookService.cleanContactsCache(payment.getSender());
+			}
 
 			// notify only for empty category as p2p payment
 			// handle with different messages for other kind of payments
