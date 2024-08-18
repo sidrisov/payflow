@@ -51,38 +51,41 @@ export default function Assets({
   const nonZeroAggregatedBalances = balances && aggregateAssets(balances);
 
   return (
-    <Stack p={1} spacing={1} width="100%" maxHeight={285} overflow="auto">
-      {isLoading || !isFetched ? (
-        <ActivitySkeletonSection />
-      ) : isFetched && nonZeroAggregatedBalances ? (
-        nonZeroAggregatedBalances
-          .slice(0, showAll ? nonZeroAggregatedBalances.length : 3)
-          .map((assetBalance) => {
-            return (
-              <AggregatedAssetBalanceSection
-                key={`network_asset_balance_${assetBalance.tokenId}`}
-                assets={assetBalance.assets.map((asset) => asset.asset)}
-                balance={formatUnits(
-                  assetBalance.totalBalance,
-                  assetBalance.assets[0]?.asset.token.decimals ?? 0
-                )}
-                usdValue={assetBalance.totalUSDBalance}
-              />
-            );
-          })
-      ) : (
-        <Typography variant="subtitle2" textAlign="center">
-          Couldn't fetch. Try again!
-        </Typography>
-      )}
+    <Stack p={0.5} spacing={0.5} width="100%" height={230}>
+      <Stack px={1.5} spacing={1} height={180} sx={{ overflowY: 'scroll' }}>
+        {isLoading || !isFetched ? (
+          <ActivitySkeletonSection />
+        ) : isFetched && nonZeroAggregatedBalances ? (
+          nonZeroAggregatedBalances
+            .slice(0, showAll ? nonZeroAggregatedBalances.length : 3)
+            .map((assetBalance) => {
+              return (
+                <AggregatedAssetBalanceSection
+                  key={`network_asset_balance_${assetBalance.tokenId}`}
+                  assets={assetBalance.assets.map((asset) => asset.asset)}
+                  balance={formatUnits(
+                    assetBalance.totalBalance,
+                    assetBalance.assets[0]?.asset.token.decimals ?? 0
+                  )}
+                  usdValue={assetBalance.totalUSDBalance}
+                />
+              );
+            })
+        ) : (
+          <Typography variant="subtitle2" textAlign="center">
+            Couldn't fetch. Try again!
+          </Typography>
+        )}
+      </Stack>
       {nonZeroAggregatedBalances && nonZeroAggregatedBalances.length > 3 && (
         <Button
           color="inherit"
+          size="small"
           variant="text"
           onClick={async () => {
             setShowAll(!showAll);
           }}
-          sx={{ alignSelf: 'center', textTransform: 'none', borderRadius: 10 }}>
+          sx={{ alignSelf: 'center', textTransform: 'none', borderRadius: 10, fontSize: 14 }}>
           {showAll ? 'Show less tokens' : 'Show more tokens'}
         </Button>
       )}

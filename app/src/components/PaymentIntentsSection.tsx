@@ -16,7 +16,7 @@ import {
 import { PaymentType } from '../types/PaymentType';
 import { ProfileSection } from './ProfileSection';
 import { useState } from 'react';
-import { ExpandLess, ExpandMore, MoreHoriz, Schedule } from '@mui/icons-material';
+import { ExpandLess, ExpandMore, MoreHoriz } from '@mui/icons-material';
 import TokenAvatar from './avatars/TokenAvatar';
 import { getNetworkDisplayName } from '../utils/networks';
 import NetworkAvatar from './avatars/NetworkAvatar';
@@ -31,6 +31,8 @@ import { Social } from '../generated/graphql/types';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../utils/formats';
 import calculateMaxPages from '../utils/pagination';
 import { useNavigate } from 'react-router-dom';
+
+import { MdOutlinePlaylistAdd } from 'react-icons/md';
 
 const pageSize = 5;
 
@@ -50,7 +52,7 @@ export function PaymentIntentsSection({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
 
-  const [expand, setExpand] = useState<boolean>(false);
+  const [expand, setExpand] = useState<boolean>(true);
 
   const maxPages = calculateMaxPages(payments?.length ?? 0, pageSize);
   const [page, setPage] = useState<number>(1);
@@ -66,18 +68,20 @@ export function PaymentIntentsSection({
             justifyContent="space-between"
             alignItems="center">
             <Chip
-              icon={<Schedule fontSize="small" />}
+              icon={<MdOutlinePlaylistAdd color="inherit" size={24} />}
               label={`Intents (${payments.length})`}
               variant="outlined"
               sx={{ border: 0, fontSize: 14, fontWeight: 'bold' }}
             />
-            <IconButton size="small" onClick={() => setExpand(!expand)}>
+            <IconButton size="small" color="inherit" onClick={() => setExpand(!expand)}>
               {expand ? <ExpandLess /> : <ExpandMore />}
             </IconButton>
           </Box>
           {expand && (
             <Stack
-              p={2}
+              px={1.5}
+              pb={1}
+              pt={0.5}
               direction="row"
               spacing={3}
               sx={{
@@ -161,7 +165,12 @@ export function PaymentIntentsSection({
             justifyContent: 'flex-start',
             alignItems: 'flex-start',
             gap: 1,
-            color: 'inherit'
+            color: 'inherit',
+            '&:hover': {
+              backgroundColor: 'inherit',
+              border: 1,
+              borderStyle: 'dashed'
+            }
           }}
           {...props}>
           {loadingSocials || !social ? (
@@ -242,8 +251,8 @@ export function PaymentIntentsSection({
           })}
           sx={{
             p: 1.5,
-            border: 1,
             borderRadius: 5,
+            border: 1,
             borderColor: 'divider',
             minWidth: isMobile ? 145 : 155,
             display: 'flex',
@@ -251,7 +260,12 @@ export function PaymentIntentsSection({
             justifyContent: 'flex-start',
             alignItems: 'flex-start',
             gap: 1,
-            color: 'inherit'
+            color: 'inherit',
+            '&:hover': {
+              backgroundColor: 'inherit',
+              border: 1,
+              borderStyle: 'dashed'
+            }
           }}
           {...props}>
           <Box

@@ -17,12 +17,13 @@ export function AggregatedAssetBalanceSection({
 }) {
   return (
     <Box
-      p={1}
+      py={0.5}
+      px={1}
       display="flex"
       flexDirection="row"
       alignItems="center"
       justifyContent="space-between"
-      sx={{ border: 1.5, borderRadius: 5, borderColor: 'divider' }}>
+      sx={{ border: 1, borderRadius: 5, borderColor: 'divider' }}>
       <Box display="flex" flexDirection="row" alignItems="center" justifyContent="flex-start">
         <Tooltip
           title={
@@ -76,14 +77,16 @@ export function AggregatedAssetBalanceSection({
           </Badge>
         </Tooltip>
         <Stack ml={2} direction="column" spacing={0.2}>
-          <Typography variant="subtitle2">{assets[0].token.name}</Typography>
-          <Typography variant="caption">
+          <Typography variant="subtitle2" fontWeight="bold">
+            {assets[0].token.name}
+          </Typography>
+          <Typography variant="caption" fontWeight={500}>
             {formatAmountWithSuffix(normalizeNumberPrecision(parseFloat(balance)))}
           </Typography>
         </Stack>
       </Box>
 
-      <Typography>${usdValue.toFixed(1)}</Typography>
+      <Typography fontWeight={500}>${usdValue.toFixed(1)}</Typography>
     </Box>
   );
 }

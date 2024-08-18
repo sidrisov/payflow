@@ -14,7 +14,7 @@ import {
 import { PaymentType } from '../types/PaymentType';
 import { ProfileSection } from './ProfileSection';
 import { useState } from 'react';
-import { ExpandLess, ExpandMore, MoreHoriz, Receipt } from '@mui/icons-material';
+import { ExpandLess, ExpandMore, MoreHoriz } from '@mui/icons-material';
 import TokenAvatar from './avatars/TokenAvatar';
 import { getNetworkDisplayName } from '../utils/networks';
 import NetworkAvatar from './avatars/NetworkAvatar';
@@ -27,10 +27,14 @@ import { useQuery } from '@airstack/airstack-react';
 import { Social } from '../generated/graphql/types';
 import { formatAmountWithSuffix } from '../utils/formats';
 import calculateMaxPages from '../utils/pagination';
+import { MdOutlinePlaylistAddCheck } from 'react-icons/md';
 
 const pageSize = 10;
 
-export function ReceiptsSection({ payments, ...props }: { payments?: PaymentType[] } & StackProps) {
+export function PaymentReceiptsSection({
+  payments,
+  ...props
+}: { payments?: PaymentType[] } & StackProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [expand, setExpand] = useState<boolean>(false);
@@ -49,18 +53,19 @@ export function ReceiptsSection({ payments, ...props }: { payments?: PaymentType
             justifyContent="space-between"
             alignItems="center">
             <Chip
-              icon={<Receipt fontSize="small" />}
+              icon={<MdOutlinePlaylistAddCheck color="inherit" size={24} />}
               label={`Receipts (${payments.length})`}
               variant="outlined"
               sx={{ border: 0, fontSize: 14, fontWeight: 'bold' }}
             />
-            <IconButton size="small" onClick={() => setExpand(!expand)}>
+            <IconButton size="small" color="inherit" onClick={() => setExpand(!expand)}>
               {expand ? <ExpandLess /> : <ExpandMore />}
             </IconButton>
           </Box>
           {expand && (
             <Stack
-              p={2}
+              px={1.5}
+              pb={1}
               direction="row"
               spacing={3}
               sx={{
@@ -72,7 +77,7 @@ export function ReceiptsSection({ payments, ...props }: { payments?: PaymentType
                 '&-ms-overflow-style:': {
                   display: 'none' // Hide the scrollbar for IE
                 },
-                '-webkit-overflow-scrolling': 'touch', // Improve scrolling on iOS
+                '-webkit-overflow-scrolling': 'touch' // Improve scrolling on iOS
               }}>
               {payments
                 .slice(0, page * pageSize)

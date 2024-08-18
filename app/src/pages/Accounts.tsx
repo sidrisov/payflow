@@ -11,8 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAssetBalances } from '../utils/queries/balances';
 import { usePendingPayments } from '../utils/queries/payments';
 import { PaymentIntentsSection } from '../components/PaymentIntentsSection';
-import { ReceiptsSection } from '../components/ReceiptsSection';
-import { FanTokenAuctionCard } from '../components/cards/FanTokenAuctionCard';
+import { PaymentReceiptsSection } from '../components/PaymentReceiptsSection';
 import getFlowAssets from '../utils/assets';
 
 export default function Accounts() {
@@ -74,7 +73,6 @@ export default function Accounts() {
             />
 
             <Stack width={smallScreen ? 350 : 375} spacing={0.5} alignItems="center">
-              <FanTokenAuctionCard />
               {isPaymentFetched && (
                 <>
                   <PaymentIntentsSection
@@ -86,7 +84,7 @@ export default function Accounts() {
                     )}
                     width="100%"
                   />
-                  <ReceiptsSection
+                  <PaymentReceiptsSection
                     payments={payments?.filter(
                       (p) => p.status === 'COMPLETED' || p.status === 'REFUNDED'
                     )}

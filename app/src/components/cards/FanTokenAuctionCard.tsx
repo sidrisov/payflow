@@ -23,27 +23,36 @@ export function FanTokenAuctionCard() {
 
   return (
     <Card
-      elevation={0}
+      elevation={8}
       sx={{
+        p: 1,
         borderRadius: '15px',
-        width: 350,
-        maxHeight: 175,
-        background: 'transparent'
+        width: '100%'
       }}>
       <CardHeader
         title="Ⓜ️ Auctions among your contacts"
-        titleTypographyProps={{ variant: 'subtitle2', fontWeight: 'bold' }}
-        sx={{ padding: 1, paddingBottom: 0 }}
+        titleTypographyProps={{
+          variant: 'subtitle2',
+          fontWeight: 'bold',
+          textAlign: 'center'
+        }}
+        sx={{ p: 1, pt: 0.5 }}
       />
-      <CardContent sx={{ padding: 1 }}>
+      <CardContent
+        sx={{
+          p: 0,
+          '&:last-child': {
+            paddingBottom: 0.5
+          }
+        }}>
         {isFetchingAuctions ? (
           <Skeleton variant="rectangular" height={100} sx={{ borderRadius: '15px' }} />
         ) : contactsWithAuction && contactsWithAuction.length > 0 ? (
           <Box
-            p={0.5}
             display="flex"
-            gap={2}
+            gap={1}
             sx={{
+              borderRadius: '15px',
               overflowX: 'scroll',
               scrollbarWidth: 'none',
               '&-ms-overflow-style:': {
@@ -57,17 +66,20 @@ export function FanTokenAuctionCard() {
             }}>
             {contactsWithAuction.map((contactWithAuction) => (
               <Card
-                elevation={2}
+                elevation={3}
                 key={`contact_auction_card:${contactWithAuction.contact.data.address}`}
                 sx={{
                   borderRadius: '15px',
                   minWidth: 160,
-                  height: 100,
+                  maxHeight: 100,
                   p: 0.5
                 }}>
                 <CardContent
                   sx={{
                     p: 0.5,
+                    '&:last-child': {
+                      paddingBottom: 0.5
+                    },
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center'
