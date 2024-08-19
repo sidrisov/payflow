@@ -113,6 +113,8 @@ public class FarcasterPaymentBotService {
 
 				val casterProfile = userService.getOrCreateUserFromFarcasterProfile(cast.author(),
 						false, false);
+				val casterAddress = casterProfile != null ? casterProfile.getIdentity() :
+						identityService.getHighestScoredIdentity(cast.author().addressesWithoutCustodialIfAvailable());
 
 				switch (command) {
 					case "receive": {
@@ -255,6 +257,7 @@ public class FarcasterPaymentBotService {
 									receiverProfile,
 									token.chainId(), token.id());
 							payment.setReceiverAddress(receiverAddress);
+							payment.setSenderAddress(casterAddress);
 							payment.setSender(casterProfile);
 							if (amountStr.startsWith("$")) {
 								payment.setUsdAmount(amountStr.replace("$", ""));

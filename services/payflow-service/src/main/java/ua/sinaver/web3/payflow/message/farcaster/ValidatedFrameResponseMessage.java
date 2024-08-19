@@ -20,6 +20,7 @@ public record ValidatedFrameResponseMessage(
 			Cast cast,
 			String timestamp,
 			Transaction transaction,
+			String address,
 			Signer signer) {
 	}
 

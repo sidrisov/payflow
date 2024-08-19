@@ -384,9 +384,9 @@ public class FramePaymentController {
 
 			val payment = new Payment(Payment.PaymentType.FRAME, paymentProfile,
 					token.chainId(), token.id());
+			payment.setSender(senderProfile);
 			payment.setSenderAddress(senderProfile != null ? senderProfile.getIdentity() :
 					identityService.getHighestScoredIdentity(senderFarcasterUser.addressesWithoutCustodialIfAvailable()));
-			payment.setSender(senderProfile);
 			payment.setReceiverAddress(paymentAddress);
 			if (tokenAmount != null) {
 				payment.setTokenAmount(tokenAmount.toString());
@@ -473,10 +473,15 @@ public class FramePaymentController {
 				: Double.parseDouble(payment.getUsdAmount()) / tokenPriceService.getPrices().get(payment.getToken());
 		if (paymentIdentity != null) {
 			// handle transaction execution result
-			if (!StringUtils.isBlank(transactionId)) {
-				log.debug("Handling tx id {} for {}", transactionId, payment);
+			if (StringUtils.isNotBlank(transactionId)) {
+				val senderAddress = validateMessage.action().address();
+				log.debug("Handling tx id {} by {} for {}", transactionId, senderAddress, payment);
 				// TODO: check tx execution status
 				payment.setHash(transactionId);
+				// update with sender address which made the transaction
+				if (StringUtils.isNotBlank(senderAddress)) {
+					payment.setSenderAddress(senderAddress);
+				}
 				payment.setStatus(Payment.PaymentStatus.COMPLETED);
 				payment.setCompletedDate(new Date());
 				if (payment.getSender() != null) {
