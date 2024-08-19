@@ -88,6 +88,9 @@ export default function GiftStorageDialog({
 
   const isNativeFlow = senderFlow.type !== 'FARCASTER_VERIFICATION' && senderFlow.type !== 'LINKED';
 
+  // force to display sponsored
+  const [gasFee] = useState<bigint | undefined>(isNativeFlow ? BigInt(0) : undefined);
+
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
 
@@ -395,13 +398,14 @@ export default function GiftStorageDialog({
                   </Typography>
                 )}
                 <Typography fontSize={18} fontWeight="bold">
-                  {numberOfUnits} Unit{numberOfUnits > 1 ? 's' : ''} of Storage
+                  for {numberOfUnits} Unit{numberOfUnits > 1 ? 's' : ''} of Storage
                 </Typography>
               </Stack>
             )}
 
             <Stack width="100%">
               <NetworkTokenSelector
+                crossChainMode
                 payment={payment}
                 selectedWallet={selectedWallet}
                 setSelectedWallet={setSelectedWallet}
@@ -411,7 +415,7 @@ export default function GiftStorageDialog({
                 enabledChainCurrencies={
                   paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
                 }
-                gasFee={BigInt(0)}
+                gasFee={gasFee}
               />
               {!selectedWallet || chainId === selectedWallet.network ? (
                 <LoadingPaymentButton

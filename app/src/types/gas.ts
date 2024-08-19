@@ -1,12 +1,18 @@
 import { formatEther } from 'viem';
 import { normalizeNumberPrecision } from '../utils/formats';
 
-export function getGasFeeText(gasFee: bigint | undefined, ethUsdPrice: number | undefined): string {
-  return gasFee !== undefined
-    ? gasFee === BigInt(0)
-      ? 'sponsored'
+export function getFeeText(
+  type: 'gas' | 'cross-chain',
+  fee: bigint | undefined,
+  ethUsdPrice: number | undefined
+): string {
+  return fee !== undefined
+    ? fee === BigInt(0)
+      ? type === 'gas'
+        ? 'sponsored'
+        : 'no fee'
       : `$${normalizeNumberPrecision(
-          parseFloat(formatEther(gasFee)) * (ethUsdPrice ?? 0)
-        )} ≈ ETH ${normalizeNumberPrecision(parseFloat(formatEther(gasFee)))}`
+          parseFloat(formatEther(fee)) * (ethUsdPrice ?? 0)
+        )} ≈ ETH ${normalizeNumberPrecision(parseFloat(formatEther(fee)))}`
     : '...';
 }

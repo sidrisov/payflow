@@ -1,5 +1,5 @@
 import { ExpandLess, ExpandMore, Token as NetworkToken } from '@mui/icons-material';
-import { Stack, Box, Chip, Typography, IconButton } from '@mui/material';
+import { Stack, Box, Chip, Typography, IconButton, Divider } from '@mui/material';
 import { useState, useMemo, useEffect } from 'react';
 import { formatUnits } from 'viem';
 import { useBalance, useChainId } from 'wagmi';
@@ -10,12 +10,13 @@ import { normalizeNumberPrecision } from '../utils/formats';
 import { useTokenPrices } from '../utils/queries/prices';
 import { NetworkSelectorButton } from './buttons/NetworkSelectorButton';
 import { TokenSelectorButton } from './buttons/TokenSelectorButton';
-import { GasFeeSection } from './dialogs/GasFeeSection';
+import { FeeSection } from './dialogs/GasFeeSection';
 import { PaymentType } from '../types/PaymentType';
 import { degen } from 'viem/chains';
 
 export function NetworkTokenSelector({
   payment,
+  crossChainMode = false,
   selectedWallet,
   setSelectedWallet,
   compatibleWallets,
@@ -27,6 +28,7 @@ export function NetworkTokenSelector({
   expandSection = false
 }: {
   payment?: PaymentType;
+  crossChainMode?: boolean;
   selectedWallet: FlowWalletType | undefined;
   setSelectedWallet: React.Dispatch<React.SetStateAction<FlowWalletType | undefined>>;
   compatibleWallets: FlowWalletType[];
@@ -120,13 +122,13 @@ export function NetworkTokenSelector({
         alignItems="center">
         <Chip
           icon={<NetworkToken fontSize="small" />}
-          label="Network & Token"
+          label="Payment Token Details"
           variant="outlined"
-          sx={{ border: 0, fontSize: 14, fontWeight: 'bold' }}
+          sx={{ border: 0, fontSize: 14, fontWeight: 500 }}
         />
         {selectedWallet ? (
           <Stack direction="row" spacing={0.5} alignItems="center">
-            <Typography variant="subtitle2">
+            <Typography variant="subtitle2" fontWeight={500}>
               {getNetworkDisplayName(selectedWallet.network)} / {selectedToken?.id.toUpperCase()}
             </Typography>
             <IconButton size="small" onClick={() => setExpand(!expand)}>
@@ -154,9 +156,11 @@ export function NetworkTokenSelector({
               flexDirection="row"
               justifyContent="space-between"
               alignItems="center">
-              <Typography variant="caption">Network</Typography>
+              <Typography variant="caption" fontWeight={500}>
+                Network
+              </Typography>
               <Stack direction="row" alignItems="center" spacing={1}>
-                <Typography variant="caption">
+                <Typography variant="caption" fontWeight="bold">
                   {getNetworkDisplayName(selectedWallet.network)}
                 </Typography>
                 <NetworkSelectorButton
@@ -172,9 +176,13 @@ export function NetworkTokenSelector({
               flexDirection="row"
               justifyContent="space-between"
               alignItems="center">
-              <Typography variant="caption">Token</Typography>
+              <Typography variant="caption" fontWeight={500}>
+                Token
+              </Typography>
               <Stack direction="row" alignItems="center" spacing={1}>
-                <Typography variant="caption">{selectedToken?.name}</Typography>
+                <Typography variant="caption" fontWeight="bold">
+                  {selectedToken?.name}
+                </Typography>
                 <TokenSelectorButton
                   selectedToken={selectedToken}
                   setSelectedToken={setSelectedToken}
@@ -189,14 +197,33 @@ export function NetworkTokenSelector({
                 flexDirection="row"
                 justifyContent="space-between"
                 alignItems="center">
-                <Typography variant="caption">Available</Typography>
-                <Typography variant="caption">
+                <Typography variant="caption" fontWeight={500}>
+                  Balance
+                </Typography>
+                <Typography variant="caption" fontWeight="bold">
                   {`${maxBalance} ${selectedToken?.name} ≈ $${maxBalanceUsd}`}
                 </Typography>
               </Box>
             )}
+            {(gasFee !== undefined || crossChainMode) && <Divider variant="fullWidth" />}
             {gasFee !== undefined && (
-              <GasFeeSection selectedToken={selectedToken} gasFee={gasFee} />
+              <FeeSection
+                type="gas"
+                tooltip="Gas is paid by the sending flow wallet via Gelato SyncFee call method. 
+                    The fee includes Gelato onchain call, safe tx fee + deployment fee on the first tx, and 10% Gelato's comission on top of all."
+                title="Transaction fee"
+                token={selectedToken}
+                fee={gasFee}
+              />
+            )}
+            {crossChainMode && (
+              <FeeSection
+                type="cross-chain"
+                tooltip="Charged fee for fasciliating cross-chain payments"
+                title="Cross-chain fee"
+                token={selectedToken}
+                fee={BigInt(0)}
+              />
             )}
           </Box>
         </>
