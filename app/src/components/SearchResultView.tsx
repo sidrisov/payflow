@@ -22,6 +22,7 @@ interface SearchResultViewProps
 }
 
 interface SearchResultProfileListViewProps {
+  showHorizantally?: boolean;
   title: string;
   identities: ContactType[];
   profileRedirect?: boolean;
@@ -41,6 +42,7 @@ export function SearchResultView({
   const navigate = useNavigate();
 
   function SearchResultProfileListView({
+    showHorizantally = false,
     title,
     identities,
     profileRedirect,
@@ -77,15 +79,37 @@ export function SearchResultView({
       <>
         {mergedIdentities.length > 0 && (
           <>
-            <Typography ml={1} variant="subtitle2">
-              {title}
-              {` (${mergedIdentities.length})`}
-            </Typography>
+            {!showHorizantally && (
+              <Typography ml={1} variant="subtitle2">
+                {title}
+                {` (${mergedIdentities.length})`}
+              </Typography>
+            )}
 
-            <Stack m={1} spacing={1} alignItems="center">
+            <Stack
+              mx={1}
+              mb={1}
+              direction={showHorizantally ? 'row' : 'column'}
+              spacing={showHorizantally ? 0 : 1}
+              alignItems="center"
+              justifyContent="flex-start"
+              sx={{
+                ...(showHorizantally && {
+                  overflowX: 'scroll',
+                  scrollbarWidth: 'auto', // Hide the scrollbar for firefox
+                  '&::-webkit-scrollbar': {
+                    display: 'none' // Hide the scrollbar for WebKit browsers (Chrome, Safari, Edge, etc.)
+                  },
+                  '&-ms-overflow-style:': {
+                    display: 'none' // Hide the scrollbar for IE
+                  },
+                  '-webkit-overflow-scrolling': 'touch' // Improve scrolling on iOS
+                })
+              }}>
               {mergedIdentities.slice(0, page * pageSize).map(({ identity, view }) => (
                 <SearchIdentityListItem
                   key={view === 'profile' ? identity.data.profile?.username : identity.data.address}
+                  showHorizantally={showHorizantally}
                   view={view}
                   contact={identity}
                   updateIdentityCallback={updateIdentityCallback}
@@ -114,6 +138,10 @@ export function SearchResultView({
     );
   }
 
+  const popular = showExtra
+    ? identities.filter((identity) => identity.tags?.includes('popular'))
+    : [];
+
   const verifications = showExtra
     ? identities.filter((identity) => identity.tags?.includes('verifications'))
     : [];
@@ -122,14 +150,19 @@ export function SearchResultView({
     ? identities.filter((identity) => identity.tags?.includes('recent'))
     : [];
 
-  const popular = showExtra
-    ? identities.filter((identity) => identity.tags?.includes('popular'))
-    : [];
-
   return (
     <>
       {showExtra && (
         <>
+          <SearchResultProfileListView
+            showHorizantally={true}
+            title="Popular recipients"
+            identities={popular}
+            profileRedirect={profileRedirect}
+            selectIdentityCallback={selectIdentityCallback}
+            updateIdentityCallback={updateIdentityCallback}
+            closeStateCallback={closeStateCallback}
+          />
           <SearchResultProfileListView
             title="My wallets"
             identities={verifications}
@@ -146,14 +179,7 @@ export function SearchResultView({
             updateIdentityCallback={updateIdentityCallback}
             closeStateCallback={closeStateCallback}
           />
-          <SearchResultProfileListView
-            title="Popular recipients"
-            identities={popular}
-            profileRedirect={profileRedirect}
-            selectIdentityCallback={selectIdentityCallback}
-            updateIdentityCallback={updateIdentityCallback}
-            closeStateCallback={closeStateCallback}
-          />
+
           {(verifications.length > 0 || recent.length > 0 || popular.length > 0) && (
             <Divider flexItem variant="middle" sx={{ mb: 1.5 }} />
           )}

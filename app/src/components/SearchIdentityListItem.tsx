@@ -43,6 +43,7 @@ function removeFromFavourites(tags: string[]): string[] {
 export function SearchIdentityListItem(
   props: BoxProps &
     UpdateIdentityCallbackType & {
+      showHorizantally?: boolean;
       contact: ContactType;
       view: 'address' | 'profile';
     }
@@ -53,7 +54,7 @@ export function SearchIdentityListItem(
   const accessToken = searchParams.get('access_token') ?? '';
 
   const { profile } = useContext(ProfileContext);
-  const { contact, view, updateIdentityCallback } = props;
+  const { contact, view, updateIdentityCallback, showHorizantally = false } = props;
 
   const identity = contact.data;
   const tags = contact.tags;
@@ -135,44 +136,46 @@ export function SearchIdentityListItem(
           alignItems="center"
           width="100%"
           height={60}>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Box
-              justifyContent="flex-start"
-              minWidth={175}
-              maxWidth={200}
-              color="inherit"
-              {...(props.onClick
-                ? { component: Button, onClick: props.onClick, textTransform: 'none' }
-                : {})}
-              sx={{ borderRadius: 5 }}>
-              {view === 'profile' && identity.profile && (
-                <ProfileSection maxWidth={200} profile={identity.profile} />
-              )}
-
-              {view === 'address' && identity.meta && (
-                <AddressSection maxWidth={200} identity={identity} />
-              )}
-            </Box>
-          </Stack>
-
-          <Stack direction="column" spacing={0.5} alignItems="center" sx={{ width: 100 }}>
-            {identity.meta && (
-              <SocialPresenceStack
-                key={`social_presence_stack_${identity.address}`}
-                meta={identity.meta}
-              />
+          <Box
+            justifyContent="flex-start"
+            minWidth={80}
+            maxWidth={200}
+            color="inherit"
+            {...(props.onClick
+              ? { component: Button, onClick: props.onClick, textTransform: 'none' }
+              : {})}
+            sx={{ borderRadius: 5 }}>
+            {view === 'profile' && identity.profile && (
+              <ProfileSection maxWidth={200} profile={identity.profile} />
             )}
-          </Stack>
 
-          <IconButton
-            size="small"
-            onClick={(event) => {
-              event.stopPropagation();
-              setOpenIdentityMenu(true);
-              setIdentityMenuAnchorEl(event.currentTarget);
-            }}>
-            <MoreHoriz fontSize="small" />
-          </IconButton>
+            {view === 'address' && identity.meta && (
+              <AddressSection maxWidth={200} identity={identity} />
+            )}
+          </Box>
+
+          {!showHorizantally && (
+            <>
+              <Stack direction="column" spacing={0.5} alignItems="center" sx={{ width: 100 }}>
+                {identity.meta && (
+                  <SocialPresenceStack
+                    key={`social_presence_stack_${identity.address}`}
+                    meta={identity.meta}
+                  />
+                )}
+              </Stack>
+
+              <IconButton
+                size="small"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setOpenIdentityMenu(true);
+                  setIdentityMenuAnchorEl(event.currentTarget);
+                }}>
+                <MoreHoriz fontSize="small" />
+              </IconButton>
+            </>
+          )}
         </Box>
       )}
       {openIdentityMenu && (
