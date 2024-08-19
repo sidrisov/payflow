@@ -55,7 +55,18 @@ export default function AppLayout({
   const showToolbar =
     location.pathname !== '/composer' && !location.pathname.startsWith('/payment');
 
-  const [bottonToolbarActionValue, setBottonToolbarActionValue] = useState(0);
+  const defaultToolbarAction = (() => {
+    switch (location.pathname) {
+      case '/actions':
+        return 3;
+      case '/useful':
+        return 2;
+      default:
+        return 0;
+    }
+  })();
+
+  const [bottonToolbarActionValue, setBottonToolbarActionValue] = useState(defaultToolbarAction);
 
   const [authorized, setAuthorized] = useState<boolean>(false);
 
