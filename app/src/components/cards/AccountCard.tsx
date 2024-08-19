@@ -14,7 +14,7 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
 import { FlowType } from '../../types/FlowType';
-import { ChooseFlowDialog } from '../menu/ChooseFlowMenu';
+import { ChooseFlowDialog } from '../dialogs/ChooseFlowDialog';
 import { FlowTopUpMenu } from '../menu/FlowTopUpMenu';
 import WalletQRCodeShareDialog from '../dialogs/WalletQRCodeShareDialog';
 import { useAccount } from 'wagmi';

@@ -242,6 +242,7 @@ export default function AppLayout({
       )}
       {openSearchIdentity && (
         <SearchIdentityDialog
+          showOnTopOfNavigation={false}
           address={profile?.identity}
           profileRedirect={true}
           open={openSearchIdentity}

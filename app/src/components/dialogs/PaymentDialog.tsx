@@ -15,7 +15,7 @@ import { PaymentType } from '../../types/PaymentType';
 import { SenderField } from '../SenderField';
 import { KeyboardDoubleArrowDown } from '@mui/icons-material';
 import { RecipientField } from '../RecipientField';
-import { ChooseFlowDialog } from '../menu/ChooseFlowMenu';
+import { ChooseFlowDialog } from './ChooseFlowDialog';
 import { FlowType } from '../../types/FlowType';
 import { useState } from 'react';
 import React from 'react';

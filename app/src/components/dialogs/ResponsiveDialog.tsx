@@ -85,6 +85,7 @@ const ResponsiveDialog: React.FC<ResponsiveDialogProps> = ({
         }
       }}
       sx={{
+        zIndex: 1600,
         backdropFilter: 'blur(5px)'
       }}>
       <DialogTitle variant="h6" textAlign="center" sx={{ pb: 1 }}>

@@ -1,11 +1,8 @@
 import {
   Stack,
-  Tooltip,
   StackProps,
   Box,
   Popover,
-  useTheme,
-  useMediaQuery,
   Button
 } from '@mui/material';
 import { MetaType } from '../types/ProfileType';
@@ -75,44 +72,25 @@ const renderSocialPresenceAvatarsWithMeta = ({ meta }: { meta: MetaType }) => (
 );
 
 export function SocialPresenceStack({ meta, ...props }: { meta: MetaType & StackProps }) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-  let farcasterFound = false;
-  let lensFound = false;
-
   const [openSocialPresencePopover, setOpenSocialPresencePopover] = useState(false);
   const [socialPresencePopoverAnchorEl, setSocialPresencePopoverAnchorEl] =
     useState<null | HTMLElement>(null);
 
   return (
     <>
-      {isMobile ? (
-        <Stack
-          {...props}
-          direction="row"
-          spacing={0.5}
-          alignItems="center"
-          component={Button}
-          borderRadius={5}
-          onClick={async (event) => {
-            setSocialPresencePopoverAnchorEl(event.currentTarget);
-            setOpenSocialPresencePopover(true);
-          }}>
-          {renderSocialPresenceAvatars({ meta })}
-        </Stack>
-      ) : (
-        <Tooltip
-          arrow
-          disableFocusListener
-          enterDelay={50}
-          enterTouchDelay={300}
-          title={renderSocialPresenceAvatarsWithMeta({ meta })}>
-          <Stack {...props} direction="row" spacing={0.5} alignItems="center">
-            {renderSocialPresenceAvatars({ meta })}
-          </Stack>
-        </Tooltip>
-      )}
+      <Stack
+        {...props}
+        direction="row"
+        spacing={0.5}
+        alignItems="center"
+        component={Button}
+        borderRadius={5}
+        onClick={async (event) => {
+          setSocialPresencePopoverAnchorEl(event.currentTarget);
+          setOpenSocialPresencePopover(true);
+        }}>
+        {renderSocialPresenceAvatars({ meta })}
+      </Stack>
       <Popover
         open={openSocialPresencePopover}
         anchorEl={socialPresencePopoverAnchorEl}
@@ -120,6 +98,7 @@ export function SocialPresenceStack({ meta, ...props }: { meta: MetaType & Stack
           setOpenSocialPresencePopover(false);
         }}
         sx={{
+          zIndex: 1550,
           '& .MuiPaper-root': {
             borderRadius: 5
           }

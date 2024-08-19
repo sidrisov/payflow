@@ -48,7 +48,7 @@ export type SearchIdentityDialogProps = DialogProps &
     address?: Address;
     profileRedirect?: boolean;
     walletMenuEnabled?: boolean;
-  } & { hideBackButton?: boolean };
+  } & { hideBackButton?: boolean; showOnTopOfNavigation?: boolean };
 
 // TODO: back button + title alignment hack - check with someone knowledgeable on proper solution
 export default function SearchIdentityDialog({
@@ -58,6 +58,7 @@ export default function SearchIdentityDialog({
   closeStateCallback,
   selectIdentityCallback,
   title,
+  showOnTopOfNavigation = true,
   hideBackButton = false,
   ...props
 }: SearchIdentityDialogProps) {
@@ -229,6 +230,7 @@ export default function SearchIdentityDialog({
       fullScreen={isMobile}
       onClose={handleCloseCampaignDialog}
       sx={{
+        ...(showOnTopOfNavigation && { zIndex: 1550 }),
         backdropFilter: 'blur(5px)'
       }}
       PaperProps={{

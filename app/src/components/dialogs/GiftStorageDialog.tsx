@@ -49,7 +49,7 @@ import { grey, red } from '@mui/material/colors';
 import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
 import { CAIP19, createSession, executeSession } from '@paywithglide/glide-js';
 import { delay } from '../../utils/delay';
-import { ChooseFlowDialog } from '../menu/ChooseFlowMenu';
+import { ChooseFlowDialog } from './ChooseFlowDialog';
 import ResponsiveDialog from './ResponsiveDialog';
 import { UpSlideTransition } from './TransitionDownUpSlide';
 

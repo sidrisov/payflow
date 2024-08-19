@@ -14,9 +14,9 @@ import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { useContext, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { green } from '@mui/material/colors';
-import { FlowSettingsMenu } from './FlowSettingsMenu';
+import { FlowSettingsMenu } from '../menu/FlowSettingsMenu';
 import { PaymentFlowSection } from '../PaymentFlowSection';
-import ResponsiveDialog, { ResponsiveDialogProps } from '../dialogs/ResponsiveDialog';
+import ResponsiveDialog, { ResponsiveDialogProps } from './ResponsiveDialog';
 
 export type ChooseFlowMenuProps = ResponsiveDialogProps &
   CloseCallbackType & {
