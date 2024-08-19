@@ -38,6 +38,8 @@
     "axios": "^1.4.0",
     "buffer": "^6.0.3",
     "date-fns": "^3.6.0",
+    "graphql": "^16.9.0",
+    "graphql-request": "^7.1.0",
     "javascript-time-ago": "^2.5.9",
     "lodash.merge": "^4.6.2",
     "permissionless": "0.1.43",

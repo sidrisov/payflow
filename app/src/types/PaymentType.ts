@@ -13,7 +13,7 @@ export interface PaymentType {
   receiverAddress: Address;
   receiverFid?: number;
   chainId: number;
-  token: 'eth' | 'usdc' | 'degen';
+  token: string;
   usdAmount: number;
   tokenAmount: number;
   hash?: Hash;

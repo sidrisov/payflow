@@ -318,3 +318,18 @@ export const QUERY_FARCASTER_PROFILE = /* GraphQL */ `
     }
   }
 `;
+
+export const QUERY_MOXIE_REWARDS = `
+  query FarcasterUserClaimTransactionDetails($fid: Int!) {
+    FarcasterUserClaimTransactionDetails(input: { fid: $fid }) {
+      fid
+      availableClaimAmount
+      minimumClaimableAmountInWei
+      availableClaimAmountInWei
+      claimedAmount
+      claimedAmountInWei
+      processingAmount
+      processingAmountInWei
+    }
+  }
+`;

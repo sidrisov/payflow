@@ -23,24 +23,24 @@ export function FanTokenAuctionCard() {
 
   return (
     <Card
-      elevation={8}
+      elevation={12}
       sx={{
         p: 1,
-        borderRadius: '15px',
+        borderRadius: '25px',
         width: '100%'
       }}>
       <CardHeader
-        title="Ⓜ️ Auctions among your contacts"
+        title="Ⓜ️ Auctions among contacts"
         titleTypographyProps={{
-          variant: 'subtitle2',
+          fontSize: 18,
           fontWeight: 'bold',
           textAlign: 'center'
         }}
-        sx={{ p: 1, pt: 0.5 }}
+        sx={{ p: 1 }}
       />
       <CardContent
         sx={{
-          p: 0,
+          p: 0.5,
           '&:last-child': {
             paddingBottom: 0.5
           }
@@ -52,7 +52,6 @@ export function FanTokenAuctionCard() {
             display="flex"
             gap={1}
             sx={{
-              borderRadius: '15px',
               overflowX: 'scroll',
               scrollbarWidth: 'none',
               '&-ms-overflow-style:': {
@@ -72,6 +71,7 @@ export function FanTokenAuctionCard() {
                   borderRadius: '15px',
                   minWidth: 160,
                   maxHeight: 100,
+                  m: 1,
                   p: 0.5
                 }}>
                 <CardContent
@@ -139,7 +139,9 @@ export function FanTokenAuctionCard() {
             ))}
           </Box>
         ) : (
-          <Typography variant="caption">No auction available among your contacts</Typography>
+          <Typography fontSize={14} textAlign="center">
+            No auctions available among contacts
+          </Typography>
         )}
       </CardContent>
     </Card>
