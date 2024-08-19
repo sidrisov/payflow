@@ -10,7 +10,11 @@ import ua.sinaver.web3.payflow.data.Payment;
 public class ReceiptService {
 
 	public String getReceiptUrl(Payment payment) {
-		val baseUrl = switch (payment.getNetwork()) {
+		val receiptChainId = payment.getFulfillmentHash() != null && payment.getFulfillmentChainId() != null ?
+				payment.getFulfillmentChainId() : payment.getNetwork();
+		val receiptHash = payment.getFulfillmentHash() != null ?
+				payment.getFulfillmentHash() : payment.getHash();
+		val baseUrl = switch (receiptChainId) {
 			case 8453 -> // Base Chain ID
 					"https://basescan.org";
 			case 10 -> // Optimism Chain ID
@@ -28,8 +32,6 @@ public class ReceiptService {
 							"supported!");
 		};
 
-		val receiptHash = payment.getFulfillmentHash() != null ? payment.getFulfillmentHash() :
-				payment.getHash();
 		return baseUrl + "/tx/" + receiptHash;
 	}
 }

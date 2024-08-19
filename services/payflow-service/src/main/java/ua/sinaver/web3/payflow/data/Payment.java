@@ -75,6 +75,9 @@ public class Payment {
 	@Column(name = "fulfillment_id")
 	private String fulfillmentId;
 
+	@Column(name = "fulfillment_chain_id")
+	private Integer fulfillmentChainId;
+
 	@Column(name = "fulfillment_hash")
 	private String fulfillmentHash;
 

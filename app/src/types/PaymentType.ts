@@ -18,6 +18,7 @@ export interface PaymentType {
   tokenAmount: number;
   hash?: Hash;
   fulfillmentId?: string;
+  fulfillmentChainId?: number;
   fulfillmentHash?: Hash;
   source?: { app: string; ref?: string };
   comment?: string;

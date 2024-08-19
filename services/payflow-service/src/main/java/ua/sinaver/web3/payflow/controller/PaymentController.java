@@ -208,6 +208,7 @@ public class PaymentController {
 			// if it's fulfillment type of payment, save only fulfillment hash
 			// otherwise treat as regular payment
 			if (payment.getStatus().equals(Payment.PaymentStatus.INPROGRESS)) {
+				payment.setFulfillmentChainId(paymentUpdateMessage.fulfillmentChainId());
 				payment.setFulfillmentHash(paymentUpdateMessage.fulfillmentHash());
 			} else {
 				payment.setHash(paymentUpdateMessage.hash());

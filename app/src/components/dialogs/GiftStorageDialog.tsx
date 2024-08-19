@@ -298,6 +298,7 @@ export default function GiftStorageDialog({
 
         if (glideTxHash && payment.referenceId) {
           payment.fulfillmentHash = glideTxHash;
+          payment.fulfillmentChainId = chainId;
           updatePayment(payment);
           toast.success(`Storage paid for @${social.profileName}`);
 
