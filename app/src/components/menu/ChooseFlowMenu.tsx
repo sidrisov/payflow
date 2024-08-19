@@ -2,10 +2,8 @@ import {
   Box,
   Divider,
   IconButton,
-  Menu,
   MenuItem,
   MenuList,
-  MenuProps,
   Stack,
   Tooltip,
   Typography
@@ -18,8 +16,9 @@ import { ProfileContext } from '../../contexts/UserContext';
 import { green } from '@mui/material/colors';
 import { FlowSettingsMenu } from './FlowSettingsMenu';
 import { PaymentFlowSection } from '../PaymentFlowSection';
+import ResponsiveDialog, { ResponsiveDialogProps } from '../dialogs/ResponsiveDialog';
 
-export type ChooseFlowMenuProps = MenuProps &
+export type ChooseFlowMenuProps = ResponsiveDialogProps &
   CloseCallbackType & {
     configurable?: boolean;
     closeOnSelect?: boolean;
@@ -28,7 +27,7 @@ export type ChooseFlowMenuProps = MenuProps &
     setSelectedFlow: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
   };
 
-export function ChooseFlowMenu({
+export function ChooseFlowDialog({
   configurable = true,
   closeOnSelect = true,
   flows,
@@ -45,24 +44,17 @@ export function ChooseFlowMenu({
   return (
     profile && (
       <>
-        <Menu
-          onClose={closeStateCallback}
-          sx={{ mt: 1, maxWidth: 365, '.MuiMenu-paper': { borderRadius: 5 }, zIndex: 1550 }}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'left'
-          }}
-          {...props}>
-          <MenuList dense disablePadding>
-            <MenuItem disabled key="payment_flow_title" sx={{ justifyContent: 'center' }}>
-              <Typography fontWeight="bold" fontSize={16}>
-                Payment Flows
-              </Typography>
-            </MenuItem>
+        <ResponsiveDialog
+          title="Choose payment flow"
+          open={props.open}
+          onOpen={() => {}}
+          onClose={closeStateCallback}>
+          <MenuList sx={{ width: '100%' }}>
             <Divider variant="middle" />
             <Stack
-              maxHeight={400}
-              my={1}
+              maxHeight={300}
+              mt={1}
+              pr={1}
               sx={{
                 overflowY: 'scroll',
                 '-webkit-overflow-scrolling': 'touch'
@@ -72,7 +64,7 @@ export function ChooseFlowMenu({
                   <MenuItem
                     key={flow.uuid}
                     selected={flow.uuid === selectedFlow.uuid}
-                    sx={{ alignContent: 'center' }}
+                    sx={{ borderRadius: 5 }}
                     onClick={async () => {
                       setSelectedFlow(flow);
                       if (closeOnSelect) {
@@ -138,7 +130,7 @@ export function ChooseFlowMenu({
               </>
             )}
           </MenuList>
-        </Menu>
+        </ResponsiveDialog>
         {/* {openNewFlowDialig && (
           <NewFlowDialog
             profile={profile}

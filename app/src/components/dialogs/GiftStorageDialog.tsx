@@ -49,7 +49,7 @@ import { grey, red } from '@mui/material/colors';
 import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
 import { CAIP19, createSession, executeSession } from '@paywithglide/glide-js';
 import { delay } from '../../utils/delay';
-import { ChooseFlowMenu } from '../menu/ChooseFlowMenu';
+import { ChooseFlowDialog } from '../menu/ChooseFlowMenu';
 import ResponsiveDialog from './ResponsiveDialog';
 import { UpSlideTransition } from './TransitionDownUpSlide';
 
@@ -433,17 +433,10 @@ export default function GiftStorageDialog({
         </DialogContent>
       </Dialog>
       {flows && selectedFlow && setSelectedFlow && (
-        <ChooseFlowMenu
+        <ChooseFlowDialog
           configurable={false}
           open={openSelectFlow}
-          anchorOrigin={{
-            vertical: 'center',
-            horizontal: 'center'
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'left'
-          }}
+          onClose={async () => setOpenSelectFlow(false)}
           closeStateCallback={async () => setOpenSelectFlow(false)}
           flows={flows}
           selectedFlow={selectedFlow}

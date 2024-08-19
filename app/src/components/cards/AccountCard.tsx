@@ -14,7 +14,7 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
 import { FlowType } from '../../types/FlowType';
-import { ChooseFlowMenu } from '../menu/ChooseFlowMenu';
+import { ChooseFlowDialog } from '../menu/ChooseFlowMenu';
 import { FlowTopUpMenu } from '../menu/FlowTopUpMenu';
 import WalletQRCodeShareDialog from '../dialogs/WalletQRCodeShareDialog';
 import { useAccount } from 'wagmi';
@@ -33,6 +33,8 @@ import { fetchQuery } from '@airstack/airstack-react';
 import { PaymentFlowSection } from '../PaymentFlowSection';
 import { IoMdArrowDropdown } from 'react-icons/io';
 import { TbSend } from 'react-icons/tb';
+import ResponsiveDialog from '../dialogs/ResponsiveDialog';
+import { SwitchFlowSignerSection } from '../dialogs/SwitchFlowSignerSection';
 
 export type AccountNewDialogProps = CardProps & {
   flows: FlowType[];
@@ -314,10 +316,10 @@ export function AccountCard({
           />
         )}
 
-        <ChooseFlowMenu
-          anchorEl={flowAnchorEl}
+        <ChooseFlowDialog
           open={openSelectFlow}
           closeOnSelect={false}
+          onClose={() => setOpenSelectFlow(false)}
           closeStateCallback={() => setOpenSelectFlow(false)}
           flows={flows}
           selectedFlow={selectedFlow}

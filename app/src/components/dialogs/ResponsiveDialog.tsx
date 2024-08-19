@@ -7,14 +7,14 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { DialogContent, DialogTitle } from '@mui/material';
 import { grey } from '@mui/material/colors';
 
-interface ResponsiveDialogProps {
+export interface ResponsiveDialogProps {
   open: boolean;
-  onOpen: () => void;
+  onOpen?: () => void;
   onClose: () => void;
-  title: string;
+  title?: string;
   width?: number;
   height?: number;
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 const Puller = styled('div')(({ theme }) => ({
@@ -45,7 +45,7 @@ const ResponsiveDialog: React.FC<ResponsiveDialogProps> = ({
       anchor="bottom"
       open={open}
       onClose={onClose}
-      onOpen={onOpen}
+      onOpen={onOpen ? onOpen : () => {}}
       disableSwipeToOpen={true}
       PaperProps={{
         sx: {

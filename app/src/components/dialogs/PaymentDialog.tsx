@@ -15,7 +15,7 @@ import { PaymentType } from '../../types/PaymentType';
 import { SenderField } from '../SenderField';
 import { KeyboardDoubleArrowDown } from '@mui/icons-material';
 import { RecipientField } from '../RecipientField';
-import { ChooseFlowMenu } from '../menu/ChooseFlowMenu';
+import { ChooseFlowDialog } from '../menu/ChooseFlowMenu';
 import { FlowType } from '../../types/FlowType';
 import { useState } from 'react';
 import React from 'react';
@@ -126,17 +126,10 @@ export default function PaymentDialog({
       </Dialog>
 
       {recipientCompatibleFlows && selectedFlow && setSelectedFlow && (
-        <ChooseFlowMenu
+        <ChooseFlowDialog
           configurable={false}
           open={openSelectFlow}
-          anchorOrigin={{
-            vertical: 'center',
-            horizontal: 'center'
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'left'
-          }}
+          onClose={async () => setOpenSelectFlow(false)}
           closeStateCallback={async () => setOpenSelectFlow(false)}
           flows={recipientCompatibleFlows}
           selectedFlow={selectedFlow}
