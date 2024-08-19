@@ -52,6 +52,7 @@ import { delay } from '../../utils/delay';
 import { ChooseFlowDialog } from './ChooseFlowDialog';
 import ResponsiveDialog from './ResponsiveDialog';
 import { UpSlideTransition } from './TransitionDownUpSlide';
+import PoweredByGlideText from '../text/PoweredByGlideText';
 
 export type GiftStorageDialog = DialogProps &
   CloseCallbackType & {
@@ -226,7 +227,7 @@ export default function GiftStorageDialog({
       return;
     }
     try {
-      if (profile && client && signer && selectedWallet && paymentOption) {
+      if (profile && client && signer && selectedWallet && selectedToken && paymentOption) {
         if (isNativeFlow) {
           reset();
         } else {
@@ -287,6 +288,8 @@ export default function GiftStorageDialog({
 
             if (txHash) {
               payment.fulfillmentId = session.sessionId;
+              payment.chainId = selectedToken.chainId;
+              payment.token = selectedToken.id;
               payment.hash = txHash;
               updatePayment(payment);
             }
@@ -298,7 +301,7 @@ export default function GiftStorageDialog({
 
         if (glideTxHash && payment.referenceId) {
           payment.fulfillmentHash = glideTxHash;
-          payment.fulfillmentChainId = chainId;
+          payment.fulfillmentChainId = optimism.id;
           updatePayment(payment);
           toast.success(`Storage paid for @${social.profileName}`);
 
@@ -421,14 +424,7 @@ export default function GiftStorageDialog({
               ) : (
                 <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
               )}
-              <Typography variant="caption" textAlign="center" color={grey[400]}>
-                Cross-chain payments facilitated by{' '}
-                <b>
-                  <a href="https://paywithglide.xyz" target="_blank" style={{ color: 'inherit' }}>
-                    Glide
-                  </a>
-                </b>
-              </Typography>
+              <PoweredByGlideText />
             </Stack>
           </Box>
         </DialogContent>

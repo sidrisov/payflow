@@ -7,6 +7,8 @@ export async function completePayment(payment: PaymentType): Promise<boolean | u
     const response = await axios.put(
       `${API_URL}/api/payment/${payment.referenceId}`,
       {
+        chainId: payment.chainId,
+        token: payment.token,
         hash: payment.hash,
         fulfillmentId: payment.fulfillmentId,
         fulfillmentChainId: payment.fulfillmentChainId,

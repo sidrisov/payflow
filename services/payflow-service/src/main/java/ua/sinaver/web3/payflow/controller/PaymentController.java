@@ -211,6 +211,12 @@ public class PaymentController {
 				payment.setFulfillmentChainId(paymentUpdateMessage.fulfillmentChainId());
 				payment.setFulfillmentHash(paymentUpdateMessage.fulfillmentHash());
 			} else {
+				if (paymentUpdateMessage.chainId() != null) {
+					payment.setNetwork(paymentUpdateMessage.chainId());
+				}
+				if (paymentUpdateMessage.token() != null) {
+					payment.setToken(paymentUpdateMessage.token());
+				}
 				payment.setHash(paymentUpdateMessage.hash());
 			}
 

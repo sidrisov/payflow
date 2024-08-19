@@ -58,6 +58,7 @@ public class StorageController {
 				gifteeUser.username(), castHash.substring(0,
 						10));
 
+		// TODO: save instead as fulfillmentChainId + fulfillmentTokenId
 		val payment = new Payment(Payment.PaymentType.INTENT,
 				null, OP_CHAIN_ID, ETH_TOKEN);
 		payment.setCategory("fc_storage");
