@@ -252,17 +252,57 @@ export default function SearchIdentityDialog({
                 ? 'flex-start'
                 : 'center'
             }>
-            <Stack direction="row" alignItems="center">
+            <Stack direction="row" alignItems="center" width="100%">
               {isMobile && !hideBackButton && (
                 <IconButton onClick={closeStateCallback}>
                   <ArrowBack />
                 </IconButton>
               )}
-              <Typography
-                ml={isMobile && !hideBackButton ? 2 : walletMenuEnabled ? 1 : 0}
-                variant="h6">
-                {title ?? 'Search'}
-              </Typography>
+              <TextField
+                fullWidth
+                margin="dense"
+                label="search by name, @fname, lens:, .eth, or 0x"
+                type="text"
+                value={searchString ?? ''}
+                InputProps={{
+                  startAdornment: shrink && (
+                    <InputAdornment position="start">
+                      <Avatar src="payflow.png" sx={{ ml: 1, width: 28, height: 28 }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchString && (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={async () => {
+                          setFoundIdentities([]);
+                          setSearchString(undefined);
+                          setShrink(false);
+                        }}>
+                        <Clear fontSize="small" />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                  inputProps: { maxLength: 42 },
+                  sx: {
+                    borderRadius: 5,
+                    maxHeight: 50
+                  }
+                }}
+                onFocus={() => setShrink(true)}
+                onBlur={(e) => setShrink(!!e.target.value)}
+                InputLabelProps={{
+                  shrink,
+                  margin: 'dense',
+                  sx: {
+                    lineHeight: '1.1'
+                  }
+                }}
+                onChange={async (event) => {
+                  setFoundIdentities([]);
+                  setSearchString(event.target.value);
+                }}
+              />
             </Stack>
 
             {walletMenuEnabled && (
@@ -276,42 +316,6 @@ export default function SearchIdentityDialog({
               </IconButton>
             )}
           </Box>
-
-          <TextField
-            fullWidth
-            margin="normal"
-            label="search by name, @fname, lens:, .eth, or 0x"
-            value={searchString ?? ''}
-            InputProps={{
-              startAdornment: shrink && (
-                <InputAdornment position="start">
-                  <Avatar src="payflow.png" sx={{ ml: 1, width: 28, height: 28 }} />
-                </InputAdornment>
-              ),
-              endAdornment: debouncedSearchString && (
-                <InputAdornment position="end">
-                  <IconButton
-                    size="small"
-                    onClick={async () => {
-                      setFoundIdentities([]);
-                      setSearchString(undefined);
-                      setShrink(false);
-                    }}>
-                    <Clear fontSize="small" />
-                  </IconButton>
-                </InputAdornment>
-              ),
-              inputProps: { maxLength: 42, inputMode: 'search' },
-              sx: { borderRadius: 5 }
-            }}
-            onFocus={() => setShrink(true)}
-            onBlur={(e) => setShrink(!!e.target.value)}
-            InputLabelProps={{ shrink, margin: 'dense' }}
-            onChange={async (event) => {
-              setFoundIdentities([]);
-              setSearchString(event.target.value);
-            }}
-          />
 
           {isAuthenticated && contacts.length > 0 && (
             <AddressBookToolBar
@@ -328,7 +332,7 @@ export default function SearchIdentityDialog({
           )}
         </Stack>
       </DialogTitle>
-      <DialogContent sx={{ mb: isMobile ? '56px' : 0.5 }}>
+      <DialogContent sx={{ mb: isMobile && !showOnTopOfNavigation ? 4 : 0.5 }}>
         <Box display="flex" flexDirection="column" alignContent="center">
           {isAuthenticated && !searchString && contacts.length > 0 && (
             <SearchResultView

@@ -1,4 +1,4 @@
-import { Button, Divider, Stack, Typography } from '@mui/material';
+import { Button, Divider, Stack, Typography, useMediaQuery } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { ContactType } from '../types/ProfileType';
 import { useNavigate } from 'react-router-dom';
@@ -9,6 +9,7 @@ import {
 } from './dialogs/SearchIdentityDialog';
 import { useState } from 'react';
 import calculateMaxPages from '../utils/pagination';
+import { grey } from '@mui/material/colors';
 
 const pageSize = 30;
 
@@ -39,6 +40,7 @@ export function SearchResultView({
   updateIdentityCallback,
   identities
 }: SearchResultViewProps) {
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
   const navigate = useNavigate();
 
   function SearchResultProfileListView({
@@ -79,18 +81,18 @@ export function SearchResultView({
       <>
         {mergedIdentities.length > 0 && (
           <>
-            {!showHorizantally && (
-              <Typography ml={1} variant="subtitle2">
-                {title}
-                {` (${mergedIdentities.length})`}
-              </Typography>
-            )}
-
+            <Typography
+              ml={1}
+              variant="caption"
+              fontWeight={500}
+              color={grey[prefersDarkMode ? 400 : 700]}
+              textTransform="uppercase">
+              {title}
+              {` (${mergedIdentities.length})`}
+            </Typography>
             <Stack
-              mx={1}
               mb={1}
               direction={showHorizantally ? 'row' : 'column'}
-              spacing={showHorizantally ? 0 : 1}
               alignItems="center"
               justifyContent="flex-start"
               sx={{
@@ -124,7 +126,7 @@ export function SearchResultView({
                     setPage(page + 1);
                   }}
                   sx={{
-                    p: 1,
+                    p: 0.5,
                     textTransform: 'none',
                     borderRadius: 5
                   }}>
@@ -138,16 +140,15 @@ export function SearchResultView({
     );
   }
 
-  const popular = showExtra
-    ? identities.filter((identity) => identity.tags?.includes('popular'))
+  const recent = showExtra
+    ? identities.filter((identity) => identity.tags?.includes('recent'))
     : [];
 
   const verifications = showExtra
     ? identities.filter((identity) => identity.tags?.includes('verifications'))
     : [];
-
-  const recent = showExtra
-    ? identities.filter((identity) => identity.tags?.includes('recent'))
+  const popular = showExtra
+    ? identities.filter((identity) => identity.tags?.includes('popular'))
     : [];
 
   return (
@@ -156,8 +157,8 @@ export function SearchResultView({
         <>
           <SearchResultProfileListView
             showHorizantally={true}
-            title="Popular recipients"
-            identities={popular}
+            title="Recent"
+            identities={recent}
             profileRedirect={profileRedirect}
             selectIdentityCallback={selectIdentityCallback}
             updateIdentityCallback={updateIdentityCallback}
@@ -172,8 +173,8 @@ export function SearchResultView({
             closeStateCallback={closeStateCallback}
           />
           <SearchResultProfileListView
-            title="Recent recipients"
-            identities={recent}
+            title="Popular"
+            identities={popular}
             profileRedirect={profileRedirect}
             selectIdentityCallback={selectIdentityCallback}
             updateIdentityCallback={updateIdentityCallback}
@@ -187,7 +188,7 @@ export function SearchResultView({
       )}
 
       <SearchResultProfileListView
-        title="Contacts"
+        title="Total"
         identities={identities}
         profileRedirect={profileRedirect}
         selectIdentityCallback={selectIdentityCallback}

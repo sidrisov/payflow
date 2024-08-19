@@ -119,7 +119,7 @@ export function AddressBookToolBar({
     <Stack
       spacing={1}
       ref={boxRef}
-      my={1}
+      mt={1}
       mx={0.5}
       direction="row"
       alignItems="center"

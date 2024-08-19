@@ -128,17 +128,15 @@ export function SearchIdentityListItem(
     <>
       {(view === 'profile' ? identity.profile : identity.meta) && (
         <Box
-          m={1}
-          pl={0.5}
           display="flex"
           flexDirection="row"
           justifyContent="space-between"
           alignItems="center"
           width="100%"
-          height={60}>
+          height={55}>
           <Box
             justifyContent="flex-start"
-            minWidth={80}
+            minWidth={showHorizantally ? 120 : 200}
             maxWidth={200}
             color="inherit"
             {...(props.onClick
