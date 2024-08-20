@@ -27,6 +27,8 @@ export const useAvailableMoxieRewards = (fid: number | undefined) => {
   });
 };
 
+const PENDING_STATUS = 'PENDING';
+
 export const useMoxieRewardsClaimStatus = (
   fid: number | undefined,
   transactionId: string | undefined
@@ -36,14 +38,33 @@ export const useMoxieRewardsClaimStatus = (
     queryKey: ['moxie_rewards_status', fid, transactionId],
     staleTime: Infinity,
     refetchInterval: 120_000,
-    queryFn: async () =>
-      graphQLClient.request(QUERY_MOXIE_REWARDS_CLAIM_STATUS, { fid, transactionId }, headers),
+    queryFn: async () => {
+      const data = await graphQLClient.request<ClaimTransactionDetailsResponse>(
+        QUERY_MOXIE_REWARDS_CLAIM_STATUS,
+        { fid, transactionId },
+        headers
+      );
+
+      // Retry if status is not SUCCESS
+      if (data.FarcasterUserClaimTransactionDetails.transactionStatus !== 'SUCCESS') {
+        throw new Error(PENDING_STATUS);
+      }
+
+      return data;
+    },
     select(data: any) {
       return {
         status: data.FarcasterUserClaimTransactionDetails.transactionStatus,
         rewards: data.FarcasterUserClaimTransactionDetails.transactionAmount
       };
-    }
+    },
+    retry: (failureCount, error) => {
+      if (error.message === PENDING_STATUS && failureCount < 5) {
+        return true;
+      }
+      return false;
+    },
+    retryDelay: 3000
   });
 };
 
@@ -55,6 +76,13 @@ type ClaimRewardsInput = {
 type ClaimRewardsResponse = {
   FarcasterUserClaimMoxie: {
     transactionId: string;
+  };
+};
+
+type ClaimTransactionDetailsResponse = {
+  FarcasterUserClaimTransactionDetails: {
+    transactionStatus: string;
+    transactionAmount: number;
   };
 };
 
