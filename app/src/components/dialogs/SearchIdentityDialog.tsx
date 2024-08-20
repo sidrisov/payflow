@@ -261,7 +261,7 @@ export default function SearchIdentityDialog({
               <TextField
                 fullWidth
                 margin="dense"
-                label="search by name, @fname, lens:, .eth, or 0x"
+                label="search by name, @fname, lens:, .eth, 0x"
                 type="text"
                 value={searchString ?? ''}
                 InputProps={{
