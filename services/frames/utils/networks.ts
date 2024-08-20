@@ -1,4 +1,3 @@
-import { getChains } from '@wagmi/core';
 import { base, optimism, zora, baseSepolia, degen, arbitrum, mode } from 'viem/chains';
 
 export const SUPPORTED_CHAINS = [base, optimism, degen, arbitrum, mode, zora, baseSepolia];

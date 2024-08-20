@@ -525,7 +525,7 @@ public class FramePaymentController {
 								FrameButton.ActionType.POST,
 								apiServiceUrl.concat(String.format(PAY_IN_FRAME_COMMENT,
 										payment.getReferenceId()))))
-						.button(new FrameButton("\uD83D\uDD0E Receipt",
+						.button(new FrameButton("🧾 Receipt",
 								FrameButton.ActionType.LINK,
 								receiptUrl))
 						/*	.button(new FrameButton("\uD83E\uDEF6\uD83C\uDFFB Tip",
@@ -598,7 +598,7 @@ public class FramePaymentController {
 				val receiptUrl = receiptService.getReceiptUrl(payment);
 				val frameResponseBuilder = FrameResponse.builder()
 						.imageUrl(profileImage)
-						.button(new FrameButton("\uD83D\uDD0E Receipt",
+						.button(new FrameButton("🧾Receipt",
 								FrameButton.ActionType.LINK,
 								receiptUrl))
 						/*.button(new FrameButton("\uD83E\uDEF6\uD83C\uDFFB Tip",

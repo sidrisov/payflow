@@ -64,7 +64,7 @@ export function Head() {
         {status === 'PENDING' ? (
           type === 'INTENT' ? (
             <>
-              <meta property="fc:frame:button:1" content="App" />
+              <meta property="fc:frame:button:1" content="Complete in App" />
               <meta property="fc:frame:button:1:action" content="link" />
               <meta
                 property="fc:frame:button:1:target"
@@ -107,7 +107,7 @@ export function Head() {
           )
         ) : (
           <>
-            <meta property="fc:frame:button:1" content="🔎 Receipt" />
+            <meta property="fc:frame:button:1" content="🧾 Receipt" />
             <meta property="fc:frame:button:1:action" content="link" />
             <meta property="fc:frame:button:1:target" content={receiptUrl} />
           </>

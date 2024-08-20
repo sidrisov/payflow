@@ -635,7 +635,7 @@ public class JarContributionController {
 							.button(new FrameButton("\uD83D\uDCAC Add comment",
 									FrameButton.ActionType.POST,
 									apiServiceUrl.concat(String.format(COMMENT_PATH, uuid))))
-							.button(new FrameButton("\uD83D\uDD0E Receipt",
+							.button(new FrameButton("🧾 Receipt",
 									FrameButton.ActionType.LINK,
 									receiptService.getReceiptUrl(payment)))
 							.state(state)
@@ -720,7 +720,7 @@ public class JarContributionController {
 
 					val frameResponseBuilder = FrameResponse.builder()
 							.imageUrl(jarImage)
-							.button(new FrameButton("\uD83D\uDD0E Receipt",
+							.button(new FrameButton("🧾 Receipt",
 									FrameButton.ActionType.LINK,
 									receiptService.getReceiptUrl(payment)))
 							.state(validateMessage.action().state().serialized());
