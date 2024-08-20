@@ -197,7 +197,7 @@ export function MoxieInfoCard() {
             fontWeight="bold"
             color={grey[prefersDarkMode ? 400 : 700]}
             textTransform="uppercase">
-            Claimable Daily Rewards
+            Claimable Everyday Rewards
           </Typography>
           {isFetchingRewards || !fid ? (
             <Skeleton variant="rectangular" height={55} width={100} sx={{ borderRadius: '15px' }} />
@@ -212,7 +212,7 @@ export function MoxieInfoCard() {
               {normalizeNumberPrecision(claimableRewards)}
             </Typography>
           ) : (
-            <Typography fontSize={14}>No pending rewards for claim</Typography>
+            <Typography fontSize={14}>No pending rewards to claim</Typography>
           )}
         </Stack>
       </CardContent>
