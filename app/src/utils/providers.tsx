@@ -16,7 +16,7 @@ init(AIRSTACK_API_KEY);
 const PRIVY_API_KEY = import.meta.env.VITE_PRIVY_API_KEY;
 
 const farcasterAuthConfig = {
-  rpcUrl: `https://optimism-mainnet.infura.io/v3/${import.meta.env.VITE_INFURA_API_KEY}`,
+  rpcUrl: `https://opt-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`,
   domain: window.location.hostname,
   siweUri: window.location.origin,
   relay: 'https://relay.farcaster.xyz',

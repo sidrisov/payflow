@@ -27,7 +27,7 @@ export const useAvailableMoxieRewards = (fid: number | undefined) => {
   });
 };
 
-const PENDING_STATUS = 'PENDING';
+const WAITING_FOR_EXECUTION = 'PENDING';
 
 export const useMoxieRewardsClaimStatus = (
   fid: number | undefined,
@@ -45,9 +45,9 @@ export const useMoxieRewardsClaimStatus = (
         headers
       );
 
-      // Retry if status is not SUCCESS
-      if (data.FarcasterUserClaimTransactionDetails.transactionStatus !== 'SUCCESS') {
-        throw new Error(PENDING_STATUS);
+      const status = data.FarcasterUserClaimTransactionDetails.transactionStatus;
+      if (status !== 'FAILED' && status !== 'SUCCESS') {
+        throw new Error(WAITING_FOR_EXECUTION);
       }
 
       return data;
@@ -59,7 +59,7 @@ export const useMoxieRewardsClaimStatus = (
       };
     },
     retry: (failureCount, error) => {
-      if (error.message === PENDING_STATUS && failureCount < 5) {
+      if (error.message === WAITING_FOR_EXECUTION && failureCount < 5) {
         return true;
       }
       return false;
@@ -81,7 +81,7 @@ type ClaimRewardsResponse = {
 
 type ClaimTransactionDetailsResponse = {
   FarcasterUserClaimTransactionDetails: {
-    transactionStatus: string;
+    transactionStatus: 'REQUESTED' | 'PROCESSING' | 'SUBMITTED' | 'SUCCESS' | 'FAILED';
     transactionAmount: number;
   };
 };
