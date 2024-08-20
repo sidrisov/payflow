@@ -1,8 +1,9 @@
 import { ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/material';
-import { People, PersonAdd, Star, StarBorder } from '@mui/icons-material';
+import { People, PersonAdd } from '@mui/icons-material';
 import { IdentityType } from '../../types/ProfileType';
 import { useContext } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
+import { TbStar, TbStarOff } from 'react-icons/tb';
 
 export function SearchIdentityMenu({
   identity,
@@ -39,9 +40,7 @@ export function SearchIdentityMenu({
         {isAuthenticated && (
           <>
             <MenuItem onClick={onFavouriteClick}>
-              <ListItemIcon>
-                {favourite ? <Star fontSize="small" /> : <StarBorder fontSize="small" />}
-              </ListItemIcon>
+              <ListItemIcon>{favourite ? <TbStarOff /> : <TbStar />}</ListItemIcon>
               {favourite ? 'Remove from favourites' : 'Add to favourites'}
             </MenuItem>
             {onInviteClick && !identity.invited && !identity.profile && (
