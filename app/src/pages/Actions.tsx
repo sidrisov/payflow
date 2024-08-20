@@ -10,7 +10,6 @@ import { GrStorage } from 'react-icons/gr';
 import CastActionButton from '../components/buttons/CastActionButton';
 
 export default function Actions() {
-
   const [openPaymentActionDialog, setOpenPaymentActionDialog] = useState<boolean>(false);
 
   return (
@@ -58,8 +57,8 @@ export default function Actions() {
               startIcon={<PiTipJar size={20} />}
             />
             <CastActionButton
-              title="Intents"
-              description="Submit payment intents"
+              title="Compose Intents"
+              description="Submit custom intents"
               onClick={() => setOpenPaymentActionDialog(true)}
               startIcon={<Interests />}
             />

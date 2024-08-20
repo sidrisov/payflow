@@ -75,7 +75,7 @@ export default function PaymentCastActionDialog({
         )}
         <Box display="flex" justifyContent="center">
           <Typography variant="h6" sx={{ overflow: 'auto' }}>
-            Payment Intent Action
+            Compose Intent Action
           </Typography>
         </Box>
       </DialogTitle>

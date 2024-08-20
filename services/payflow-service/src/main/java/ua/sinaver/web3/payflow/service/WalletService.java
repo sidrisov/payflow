@@ -33,6 +33,14 @@ public class WalletService {
 		}
 	}
 
+	public static String shortenWalletAddressLabel2(String walletAddress) {
+		if (walletAddress != null && !walletAddress.isEmpty()) {
+			return walletAddress.substring(0, 6) + "..." + walletAddress.substring(walletAddress.length() - 4);
+		} else {
+			return "";
+		}
+	}
+
 	public List<WalletMessage> calculateWallets(List<String> owners, String saltNonce) {
 		val wallets = webClient.get()
 				.uri(uriBuilder -> uriBuilder.path("/wallets")

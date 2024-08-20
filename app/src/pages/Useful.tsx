@@ -3,8 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Container, Stack } from '@mui/material';
 
 import { ProfileContext } from '../contexts/UserContext';
-import { FanTokenAuctionCard } from '../components/cards/FanTokenAuctionCard';
-import { AvailableMoxieRewardsCard } from '../components/cards/AvailableMoxieRewardsCard';
+import { MoxieInfoCard } from '../components/cards/MoxieInfoCard';
 
 export default function Useful() {
   const { isAuthenticated } = useContext(ProfileContext);
@@ -17,8 +16,7 @@ export default function Useful() {
       <Container maxWidth="xs">
         {isAuthenticated && (
           <Stack alignItems="center" spacing={3}>
-            <AvailableMoxieRewardsCard />
-            <FanTokenAuctionCard />
+            <MoxieInfoCard />
           </Stack>
         )}
       </Container>

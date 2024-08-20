@@ -7,7 +7,7 @@ import ua.sinaver.web3.payflow.data.User;
 import java.util.List;
 
 import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS;
-import static ua.sinaver.web3.payflow.service.WalletService.shortenWalletAddressLabel;
+import static ua.sinaver.web3.payflow.service.WalletService.shortenWalletAddressLabel2;
 
 public record FlowMessage(String signer, String signerProvider,
                           String signerType, String signerCredential,
@@ -92,7 +92,7 @@ public record FlowMessage(String signer, String signerProvider,
 				.toList();
 		return new FlowMessage(verificationAddress, null,
 				null, null,
-				"Verification: " + shortenWalletAddressLabel(verificationAddress),
+				"Verified: " + shortenWalletAddressLabel2(verificationAddress),
 				Flow.FlowType.FARCASTER_VERIFICATION.toString(),
 				verificationAddress,
 				null, null, wallets);

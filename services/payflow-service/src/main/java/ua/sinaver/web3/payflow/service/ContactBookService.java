@@ -113,7 +113,7 @@ public class ContactBookService implements IContactBookService {
 		log.debug("Fetched payment recipients: {}", allPaymentUniqueRecipients);
 
 		val recent = allPaymentRecipients.stream().limit(10).toList();
-		log.debug("Fetched top 3 recent payment recipients: {}", recent);
+		log.debug("Fetched top 10 recent payment recipients: {}", recent);
 
 		val popular = allPaymentRecipients.stream()
 				.filter(identity -> !verifications.contains(identity))

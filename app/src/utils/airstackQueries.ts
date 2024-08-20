@@ -333,3 +333,41 @@ export const QUERY_MOXIE_REWARDS = `
     }
   }
 `;
+
+export const QUERY_CLAIM_MOXIE_REWARDS = `
+  mutation FarcasterUserClaimMoxie($fid: Int!, $preferredConnectedWallet: String!) {
+    FarcasterUserClaimMoxie(
+      input: {fid: $fid, preferredConnectedWallet: $preferredConnectedWallet}
+    ) {
+      fid
+      availableClaimAmount
+      minimumClaimableAmountInWei
+      availableClaimAmountInWei
+      claimedAmount
+      claimedAmountInWei
+      processingAmount
+      processingAmountInWei
+      tokenAddress
+      chainId
+      transactionId
+      transactionStatus
+      transactionAmount
+      transactionAmountInWei
+      rewardsLastEarnedTimestamp
+    }
+  }
+`;
+
+export const QUERY_CHECK_STATUS_CLAIM_MOXIE_REWARDS = `
+  query FarcasterUserClaimTransactionDetails($fid: Int!, $transactionId: String) {
+    FarcasterUserClaimTransactionDetails(
+      input: {fid: $fid, transactionId: $transactionId}
+    ) {
+      transactionId
+      transactionStatus
+      transactionAmount
+      transactionAmountInWei
+      rewardsLastEarnedTimestamp
+    }
+  }
+`;

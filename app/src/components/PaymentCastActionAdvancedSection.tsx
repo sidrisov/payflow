@@ -77,7 +77,7 @@ export function PaymentCastActionAdvancedSection({
                       href="https://docs.airstack.xyz/airstack-docs-and-faqs/abstractions/trending-casts/social-capital-value-and-social-capital-scores"
                       target="_blank"
                       style={{ color: 'inherit' }}>
-                      Airstack's Social Capital Value
+                      Airstack's Cast Scores
                     </a>
                   </b>
                 </>
