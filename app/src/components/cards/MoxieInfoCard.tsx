@@ -199,7 +199,7 @@ export function MoxieInfoCard() {
             textTransform="uppercase">
             Claimable Daily Rewards
           </Typography>
-          {isFetchingRewards ? (
+          {isFetchingRewards || !fid ? (
             <Skeleton variant="rectangular" height={55} width={100} sx={{ borderRadius: '15px' }} />
           ) : claimableRewards && claimableRewards > 1 ? (
             <Typography
