@@ -211,7 +211,14 @@ export function MoxieInfoCard() {
               variant="h4"
               fontWeight="bold"
               component={Button}
-              sx={{ borderRadius: 5, textTransform: 'none', color: 'inherit' }}
+              sx={{
+                borderRadius: 5,
+                border: 2,
+                borderStyle: 'dotted',
+                borderColor: 'divider',
+                textTransform: 'none',
+                color: 'inherit'
+              }}
               onClick={() => setOpenClaimRewardsDialog(true)}>
               {normalizeNumberPrecision(claimableRewards)}
             </Typography>
