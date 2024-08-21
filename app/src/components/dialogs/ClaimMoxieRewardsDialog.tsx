@@ -49,15 +49,15 @@ export function ClaimMoxieRewardsDialog({
   useEffect(() => {
     const handleClaimStatus = async () => {
       if (claimError) {
-        toast.error(`${claimError.message}`);
+        toast.error(`${claimError.message}`, { autoClose: 2000 });
         return;
       }
 
       if (claimStatus) {
         if (claimStatus.status === 'SUCCESS') {
-          toast.success(
-            `Claimed ${normalizeNumberPrecision(claimStatus.rewards)} Moxie`
-          );
+          toast.success(`Claimed ${normalizeNumberPrecision(claimStatus.rewards)} Moxie`, {
+            autoClose: 2000
+          });
           await delay(3000);
           navigate(0);
         } else {
