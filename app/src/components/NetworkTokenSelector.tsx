@@ -13,6 +13,9 @@ import { TokenSelectorButton } from './buttons/TokenSelectorButton';
 import { FeeSection } from './dialogs/GasFeeSection';
 import { PaymentType } from '../types/PaymentType';
 import { degen } from 'viem/chains';
+import { MdMultipleStop } from 'react-icons/md';
+import { TbSend } from 'react-icons/tb';
+import { IoMdArrowDropdown, IoMdArrowDropup, IoMdArrowUp } from 'react-icons/io';
 
 export function NetworkTokenSelector({
   payment,
@@ -90,7 +93,7 @@ export function NetworkTokenSelector({
     }
     // filter by passed token if available
     const tokens = getSupportedTokens(selectedWallet.network).filter((t) =>
-      !payment?.receiverFid && payment?.token ? t.id === payment?.token : true
+      !crossChainMode && payment?.token ? t.id === payment?.token : true
     );
 
     setCompatibleTokens(
@@ -115,24 +118,24 @@ export function NetworkTokenSelector({
   return (
     <Stack width="100%">
       <Box
-        px={1}
+        px={0.5}
         display="flex"
         flexDirection="row"
         justifyContent="space-between"
         alignItems="center">
         <Chip
-          icon={<NetworkToken fontSize="small" />}
-          label="Payment Token Details"
+          icon={crossChainMode ? <MdMultipleStop size={20} /> : <TbSend size={20} />}
+          label={crossChainMode ? 'Cross-Chain Payment Token' : 'Payment Token'}
           variant="outlined"
-          sx={{ border: 0, fontSize: 14, fontWeight: 500 }}
+          sx={{ border: 0, fontSize: 13, fontWeight: 500 }}
         />
         {selectedWallet ? (
           <Stack direction="row" spacing={0.5} alignItems="center">
-            <Typography variant="subtitle2" fontWeight={500}>
+            <Typography fontSize={13} fontWeight={500}>
               {getNetworkDisplayName(selectedWallet.network)} / {selectedToken?.id.toUpperCase()}
             </Typography>
-            <IconButton size="small" onClick={() => setExpand(!expand)}>
-              {expand ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
+            <IconButton size="small" onClick={() => setExpand(!expand)} sx={{ p: 0.3 }}>
+              {expand ? <IoMdArrowDropup /> : <IoMdArrowDropdown />}
             </IconButton>
           </Stack>
         ) : (
@@ -205,7 +208,6 @@ export function NetworkTokenSelector({
                 </Typography>
               </Box>
             )}
-            {(gasFee !== undefined || crossChainMode) && <Divider variant="fullWidth" />}
             {gasFee !== undefined && (
               <FeeSection
                 type="gas"

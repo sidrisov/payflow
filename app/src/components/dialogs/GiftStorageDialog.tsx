@@ -53,6 +53,7 @@ import { ChooseFlowDialog } from './ChooseFlowDialog';
 import ResponsiveDialog from './ResponsiveDialog';
 import { UpSlideTransition } from './TransitionDownUpSlide';
 import PoweredByGlideText from '../text/PoweredByGlideText';
+import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
 
 export type GiftStorageDialog = DialogProps &
   CloseCallbackType & {
@@ -104,8 +105,6 @@ export default function GiftStorageDialog({
   const [selectedToken, setSelectedToken] = useState<Token>();
 
   const [paymentPending, setPaymentPending] = useState<boolean>(false);
-
-  const [compatibleWallets, setCompatibleWallets] = useState<FlowWalletType[]>([]);
 
   const { data: signer } = useWalletClient();
   const client = useClient();
@@ -169,15 +168,15 @@ export default function GiftStorageDialog({
     data: paymentOption
   } = useGlideEstimatePayment(
     isUnitPriceFetched &&
-      Boolean(selectedWallet) &&
+      Boolean(selectedToken) &&
       Boolean(rentUnitPrice) &&
       Boolean(payment.receiverFid),
     {
       account: senderFlow.wallets[0].address,
-      paymentCurrency: `eip155:${selectedWallet?.network}/${
+      paymentCurrency: `eip155:${selectedToken?.chainId}/${
         selectedToken?.tokenAddress
           ? `erc20:${selectedToken.tokenAddress}`
-          : selectedWallet?.network === degen.id
+          : selectedToken?.chainId === degen.id
           ? 'slip44:33436'
           : 'slip44:60'
       }` as CAIP19,
@@ -204,17 +203,13 @@ export default function GiftStorageDialog({
 
   console.log('Payment Options: ', paymentOptions);
 
-  const [openConnectSignerDrawer, setOpenConnectSignerDrawer] = useState<boolean>(false);
+  const compatibleWallets = useCompatibleWallets({
+    sender: senderFlow,
+    payment,
+    paymentOptions: !isPaymentOptionsLoading ? paymentOptions : undefined
+  });
 
-  useMemo(async () => {
-    if (!isPaymentOptionsLoading && paymentOptions) {
-      setCompatibleWallets(
-        senderFlow.wallets.filter((w) =>
-          paymentOptions.find((o) => o.paymentCurrency.startsWith(`eip155:${w.network}`))
-        )
-      );
-    }
-  }, [isPaymentOptionsLoading, paymentOptions]);
+  const [openConnectSignerDrawer, setOpenConnectSignerDrawer] = useState<boolean>(false);
 
   useMemo(async () => {
     if (compatibleWallets.length === 0) {
@@ -381,25 +376,30 @@ export default function GiftStorageDialog({
                 <KeyboardDoubleArrowDown />
                 <FarcasterRecipientField social={social} />
 
-                {!rentUnitPrice || isPaymentOptionLoading || isPaymentOptionsLoading ? (
-                  <Skeleton
-                    title="fetching price"
-                    variant="rectangular"
-                    sx={{ borderRadius: 3, height: 45, width: 100 }}
-                  />
-                ) : paymentOption ? (
-                  <Typography fontSize={30} fontWeight="bold" textAlign="center">
-                    {normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))}{' '}
-                    {paymentOption.currencySymbol}
+                <Stack alignItems="center">
+                  {!rentUnitPrice || isPaymentOptionLoading || isPaymentOptionsLoading ? (
+                    <Skeleton
+                      title="fetching price"
+                      variant="rectangular"
+                      sx={{ borderRadius: 3, height: 45, width: 100 }}
+                    />
+                  ) : paymentOption ? (
+                    <Typography fontSize={30} fontWeight="bold" textAlign="center">
+                      {normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))}{' '}
+                      {paymentOption.currencySymbol}
+                    </Typography>
+                  ) : (
+                    <Typography fontSize={14} fontWeight="bold" color={red.A400}>
+                      You don't have any balance to cover storage cost
+                    </Typography>
+                  )}
+                  <Typography fontSize={18} fontWeight="bold">
+                    for{' '}
+                    <u>
+                      {numberOfUnits} Unit{numberOfUnits > 1 ? 's' : ''} of Storage
+                    </u>
                   </Typography>
-                ) : (
-                  <Typography fontSize={14} fontWeight="bold" color={red.A400}>
-                    You don't have any balance to cover storage cost
-                  </Typography>
-                )}
-                <Typography fontSize={18} fontWeight="bold">
-                  for {numberOfUnits} Unit{numberOfUnits > 1 ? 's' : ''} of Storage
-                </Typography>
+                </Stack>
               </Stack>
             )}
 
@@ -417,7 +417,7 @@ export default function GiftStorageDialog({
                 }
                 gasFee={gasFee}
               />
-              {!selectedWallet || chainId === selectedWallet.network ? (
+              {!selectedToken || chainId === selectedToken.chainId ? (
                 <LoadingPaymentButton
                   title="Pay"
                   loading={paymentPending}
@@ -426,7 +426,7 @@ export default function GiftStorageDialog({
                   onClick={submitGlideTransaction}
                 />
               ) : (
-                <LoadingSwitchNetworkButton chainId={selectedWallet.network} />
+                <LoadingSwitchNetworkButton chainId={selectedToken.chainId} />
               )}
               <PoweredByGlideText />
             </Stack>

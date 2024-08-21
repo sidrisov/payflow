@@ -82,7 +82,7 @@ export function SenderField({
         sender.identity.address &&
         sender.type === 'profile' &&
         sender.identity.profile?.defaultFlow && (
-          <Stack direction="row" spacing={1} alignItems="center">
+          <Stack direction="row" spacing={0.5} alignItems="center">
             <PaymentFlowSection flow={sender.identity.profile?.defaultFlow} />
             {setOpenSelectFlow && (
               <Tooltip title="Payment Flows">
@@ -90,7 +90,8 @@ export function SenderField({
                   size="small"
                   onClick={async () => {
                     setOpenSelectFlow(true);
-                  }}>
+                  }}
+                  sx={{ p: 0.3 }}>
                   <IoMdArrowDropdown />
                 </IconButton>
               </Tooltip>
