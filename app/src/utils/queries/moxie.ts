@@ -59,7 +59,7 @@ export const useMoxieRewardsClaimStatus = (
       };
     },
     retry: (failureCount, error) => {
-      if (error.message === WAITING_FOR_EXECUTION && failureCount < 5) {
+      if (error.message === WAITING_FOR_EXECUTION && failureCount < 10) {
         return true;
       }
       return false;
