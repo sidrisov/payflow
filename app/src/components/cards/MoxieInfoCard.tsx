@@ -35,7 +35,11 @@ export function MoxieInfoCard() {
     Number(identity?.meta?.socials?.find((s) => s.dappName === FARCASTER_DAPP)?.profileId) ||
     undefined;
 
-  const { isFetching: isFetchingRewards, data: claimableRewards } = useAvailableMoxieRewards(fid);
+  const {
+    isFetching: isFetchingRewards,
+    data: claimableRewards,
+    error: rewardsError
+  } = useAvailableMoxieRewards(fid);
 
   const [openClaimRewardsDialog, setOpenClaimRewardsDialog] = useState<boolean>(false);
 
@@ -212,7 +216,23 @@ export function MoxieInfoCard() {
               {normalizeNumberPrecision(claimableRewards)}
             </Typography>
           ) : (
-            <Typography fontSize={14}>No pending rewards to claim</Typography>
+            <Typography fontSize={14} color="inherit">
+              {!rewardsError ? (
+                'No pending rewards to claim'
+              ) : (
+                <>
+                  {rewardsError.message}
+                  {'! '}
+                  <a
+                    href="https://warpcast.com/~/inbox/create/19129"
+                    target="_blank"
+                    style={{ color: 'inherit' }}>
+                    Contact Support
+                  </a>{' '}
+                  💬
+                </>
+              )}
+            </Typography>
           )}
         </Stack>
       </CardContent>

@@ -112,7 +112,7 @@ public class ContactBookService implements IContactBookService {
 		val allPaymentUniqueRecipients = allPaymentRecipients.stream().distinct().toList();
 		log.debug("Fetched payment recipients: {}", allPaymentUniqueRecipients);
 
-		val recent = allPaymentRecipients.stream().limit(10).toList();
+		val recent = allPaymentUniqueRecipients.stream().limit(10).toList();
 		log.debug("Fetched top 10 recent payment recipients: {}", recent);
 
 		val popular = allPaymentRecipients.stream()

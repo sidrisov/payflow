@@ -247,7 +247,7 @@ public class PaymentController {
 
 						val cast = socialGraphService.getReplySocialCapitalValue(payment.getSourceHash());
 						if (cast != null) {
-							scvText = String.format("with SCV score: %s ",
+							scvText = String.format("with cast score: %s ",
 									formatDouble(cast.getSocialCapitalValue().getFormattedValue()));
 						}
 
