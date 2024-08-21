@@ -37,7 +37,6 @@ export const useMoxieRewardsClaimStatus = (
     enabled: Boolean(fid && transactionId),
     queryKey: ['moxie_rewards_status', fid, transactionId],
     staleTime: Infinity,
-    refetchInterval: 120_000,
     queryFn: async () => {
       const data = await graphQLClient.request<ClaimTransactionDetailsResponse>(
         QUERY_MOXIE_REWARDS_CLAIM_STATUS,
