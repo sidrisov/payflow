@@ -56,9 +56,9 @@ export function ClaimMoxieRewardsDialog({
       if (claimStatus) {
         if (claimStatus.status === 'SUCCESS') {
           toast.success(
-            `Successfully claimed ${normalizeNumberPrecision(claimStatus.rewards)} Moxie`
+            `Claimed ${normalizeNumberPrecision(claimStatus.rewards)} Moxie`
           );
-          await delay(1500);
+          await delay(3000);
           navigate(0);
         } else {
           toast.error('Failed to claim rewards');
