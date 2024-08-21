@@ -23,6 +23,7 @@ interface SearchResultViewProps
 }
 
 interface SearchResultProfileListViewProps {
+  showContactsNumber?: boolean;
   showHorizantally?: boolean;
   title: string;
   identities: ContactType[];
@@ -44,6 +45,7 @@ export function SearchResultView({
   const navigate = useNavigate();
 
   function SearchResultProfileListView({
+    showContactsNumber = true,
     showHorizantally = false,
     title,
     identities,
@@ -88,7 +90,7 @@ export function SearchResultView({
               color={grey[prefersDarkMode ? 400 : 700]}
               textTransform="uppercase">
               {title}
-              {` (${mergedIdentities.length})`}
+              {showContactsNumber && ` (${mergedIdentities.length})`}
             </Typography>
             <Stack
               mb={1}
@@ -157,6 +159,7 @@ export function SearchResultView({
         <>
           <SearchResultProfileListView
             showHorizantally={true}
+            showContactsNumber={false}
             title="Recent"
             identities={recent}
             profileRedirect={profileRedirect}
@@ -165,6 +168,7 @@ export function SearchResultView({
             closeStateCallback={closeStateCallback}
           />
           <SearchResultProfileListView
+            showContactsNumber={false}
             title="My wallets"
             identities={verifications}
             profileRedirect={profileRedirect}
@@ -173,6 +177,7 @@ export function SearchResultView({
             closeStateCallback={closeStateCallback}
           />
           <SearchResultProfileListView
+            showContactsNumber={false}
             title="Popular"
             identities={popular}
             profileRedirect={profileRedirect}
