@@ -229,7 +229,7 @@ export function PaymentReceiptsSection({
             alignItems="center"
             justifyContent="space-between">
             <Typography variant="subtitle2" fontWeight="bold" fontSize={14}>
-              Payment
+              {payment.type === 'INTENT_TOP_REPLY' ? 'Top Reply' : 'Payment'}
             </Typography>
             <IconButton
               size="small"
