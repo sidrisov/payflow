@@ -8,7 +8,7 @@ export function shortenWalletAddressLabel(walletAddress: string | undefined) {
 
 export function shortenWalletAddressLabel2(walletAddress: string | undefined) {
   if (walletAddress) {
-    return walletAddress.slice(0, 7) + '...' + walletAddress.slice(walletAddress.length - 5);
+    return walletAddress.slice(0, 6) + '...' + walletAddress.slice(walletAddress.length - 4);
   } else {
     return '';
   }

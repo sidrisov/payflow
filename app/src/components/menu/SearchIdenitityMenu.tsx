@@ -1,9 +1,13 @@
-import { ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/material';
-import { People, PersonAdd } from '@mui/icons-material';
+import { Divider, ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/material';
+import { PersonAdd } from '@mui/icons-material';
 import { IdentityType } from '../../types/ProfileType';
 import { useContext } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
-import { TbStar, TbStarOff } from 'react-icons/tb';
+import { TbCopy, TbStar, TbStarOff } from 'react-icons/tb';
+import { copyToClipboard } from '../../utils/copyToClipboard';
+import { shortenWalletAddressLabel2 } from '../../utils/address';
+import { IoPeople } from 'react-icons/io5';
+import { toast } from 'react-toastify';
 
 export function SearchIdentityMenu({
   identity,
@@ -33,9 +37,20 @@ export function SearchIdentityMenu({
       <MenuList dense disablePadding>
         <MenuItem onClick={onSocilLinksClick}>
           <ListItemIcon>
-            <People fontSize="small" />
+            <IoPeople />
           </ListItemIcon>
-          Social links
+          Connections
+        </MenuItem>
+        <Divider />
+        <MenuItem
+          onClick={() => {
+            copyToClipboard(identity.address);
+            toast.success('Copied!');
+          }}>
+          <ListItemIcon>
+            <TbCopy />
+          </ListItemIcon>
+          {shortenWalletAddressLabel2(identity.address)}
         </MenuItem>
         {isAuthenticated && (
           <>
@@ -46,7 +61,7 @@ export function SearchIdentityMenu({
             {onInviteClick && !identity.invited && !identity.profile && (
               <MenuItem onClick={onInviteClick}>
                 <ListItemIcon>
-                  <PersonAdd fontSize="small" />
+                  <PersonAdd />
                 </ListItemIcon>
                 Invite
               </MenuItem>

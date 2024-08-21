@@ -212,7 +212,7 @@ export function SearchIdentityListItem(
           horizontal: 'right'
         }}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}>
-        <Box p={1}>
+        <Box p={1.5}>
           {profile?.identity || address ? (
             (profile?.identity ?? address) === identity.profile?.identity ? (
               <Typography variant="caption" fontWeight="bold">

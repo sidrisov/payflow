@@ -108,7 +108,7 @@ export function SocialPresenceStack({ meta, ...props }: { meta: MetaType & Stack
           horizontal: 'center'
         }}
         transformOrigin={{ horizontal: 'center', vertical: 'top' }}>
-        <Box p={1}>{renderSocialPresenceAvatarsWithMeta({ meta })}</Box>
+        <Box p={1.5}>{renderSocialPresenceAvatarsWithMeta({ meta })}</Box>
       </Popover>
     </>
   );
