@@ -69,7 +69,7 @@ export default function PaymentDialogContent({
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
   const [selectedToken, setSelectedToken] = useState<Token>();
 
-  const toAddress = useToAddress({ recipient, selectedWallet });
+  const toAddress = useToAddress({ recipient, chainId: selectedToken?.chainId });
 
   const [sendAmount, setSendAmount] = useState<number | undefined>(payment?.tokenAmount);
   const [sendAmountUSD, setSendAmountUSD] = useState<number | undefined>(payment?.usdAmount);

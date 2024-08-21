@@ -73,7 +73,7 @@ export default function PayComposerActionDialog({
 
   const [paymentEnabled, setPaymentEnabled] = useState<boolean>(false);
 
-  const toAddress = useToAddress({ recipient, selectedWallet });
+  const toAddress = useToAddress({ recipient, chainId: selectedToken?.chainId });
 
   useMemo(async () => {
     if (compatibleWallets.length === 0) {
