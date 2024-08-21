@@ -159,7 +159,8 @@ public class UserService implements IUserService {
 
 			user.setUsername(profile.username().toLowerCase());
 			user.setProfileImage(profile.profileImage());
-			if (user.getDefaultFlow() == null && profile.defaultFlow() != null) {
+			if (user.getDefaultFlow() == null && user.getDefaultReceivingAddress() == null &&
+					profile.defaultFlow() != null) {
 				val defaultFlow = FlowMessage.convert(profile.defaultFlow(), user);
 				log.debug("Setting primary flow to: {}", defaultFlow);
 				user.setDefaultFlow(defaultFlow);
