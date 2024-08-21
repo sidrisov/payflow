@@ -243,7 +243,7 @@ export function MoxieInfoCard() {
           )}
         </Stack>
       </CardContent>
-      {openClaimRewardsDialog && fid && claimableRewards && (
+      {openClaimRewardsDialog && fid && (
         <ClaimMoxieRewardsDialog
           fid={fid}
           claimableRewardsAmount={claimableRewards}
