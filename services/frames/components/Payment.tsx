@@ -63,7 +63,7 @@ function Payment({
       <p style={{ fontSize: 60, fontWeight: 'bold', fontStyle: 'italic' }}>{title}</p>
       <div
         style={{
-          marginTop: 30,
+          marginTop: 20,
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',

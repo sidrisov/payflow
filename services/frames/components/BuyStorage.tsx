@@ -25,20 +25,20 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
       <p style={{ fontSize: 60, fontWeight: 'bold' }}>{title}</p>
       <div
         style={{
-          marginTop: 20,
+          marginTop: 15,
           padding: 16,
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'flex-start',
-          height: 300,
+          height: 275,
           gap: 30
         }}>
         <div
           style={{
             padding: 16,
             width: 375,
-            maxHeight: 275,
+            maxHeight: 250,
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -76,7 +76,7 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
           style={{
             padding: 16,
             width: 425,
-            maxHeight: 275,
+            maxHeight: 250,
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -131,7 +131,7 @@ function BuyStorage({ identity, storage }: { identity: IdentityType; storage: St
       <p style={{ fontSize: 60, fontWeight: 'bold', fontStyle: 'italic' }}>{title}</p>
       <div
         style={{
-          marginTop: 30,
+          marginTop: 15,
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',

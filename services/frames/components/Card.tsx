@@ -1,3 +1,5 @@
+import { assetImageSrc } from '../utils/image';
+
 export default function Card({ children }: { children: React.ReactNode }) {
   return (
     <div
@@ -27,21 +29,33 @@ export default function Card({ children }: { children: React.ReactNode }) {
           borderRadius: 12
         }}>
         {children}
-        {/* <div
+        <div
           style={{
             position: 'absolute',
-            bottom: 5,
-            left: 5,
+            bottom: 12,
             display: 'flex',
             flexDirection: 'row',
-            justifyContent: 'flex-start',
-            alignItems: 'center'
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#e0e0e0',
+            borderRadius: 25,
+            padding: 5
           }}>
-          <img src={assetImageSrc(`/assets/payflow.png`)} alt="Logo" height="50" />
-          <span style={{ fontSize: 24, fontWeight: 'bold' }}>
-            <b>payflow</b> by <b>@sinaver.eth</b>
-          </span>
-        </div> */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 5
+            }}>
+            <img
+              src={assetImageSrc('/assets/payflow.png')}
+              alt="profile"
+              style={{ height: 20, width: 20, borderRadius: '50%' }}
+            />
+            <span style={{ fontSize: 18, fontWeight: 'bold' }}>Payflow by sinaver.eth</span>
+          </div>
+        </div>
       </div>
     </div>
   );

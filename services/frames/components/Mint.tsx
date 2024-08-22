@@ -79,13 +79,13 @@ function Mint({
       <div
         style={{
           position: 'absolute',
-          bottom: 0,
+          bottom: 12,
+          padding: 5,
           width: '100%',
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingBottom: 12
+          justifyContent: 'space-between'
         }}>
         <div
           style={{
