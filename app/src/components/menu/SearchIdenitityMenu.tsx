@@ -8,6 +8,8 @@ import { copyToClipboard } from '../../utils/copyToClipboard';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
 import { IoPeople } from 'react-icons/io5';
 import { toast } from 'react-toastify';
+import { FARCASTER_DAPP, socialLink } from '../../utils/dapps';
+import { SiFarcaster } from 'react-icons/si';
 
 export function SearchIdentityMenu({
   identity,
@@ -24,6 +26,11 @@ export function SearchIdentityMenu({
   onSocilLinksClick?: () => void;
 } & MenuProps) {
   const { isAuthenticated } = useContext(ProfileContext);
+  const ens = identity.meta?.ens;
+  const address = identity.address;
+  const farcasterName = identity.meta?.socials?.find(
+    (s) => s.dappName === FARCASTER_DAPP
+  )?.profileName;
 
   return (
     <Menu
@@ -42,15 +49,35 @@ export function SearchIdentityMenu({
           Connections
         </MenuItem>
         <Divider />
+        {farcasterName && (
+          <MenuItem component="a" href={socialLink(FARCASTER_DAPP, farcasterName)} target="_blank">
+            <ListItemIcon>
+              <SiFarcaster />
+            </ListItemIcon>
+            {farcasterName}
+          </MenuItem>
+        )}
+        {ens && (
+          <MenuItem
+            onClick={() => {
+              copyToClipboard(ens);
+              toast.success('ENS copied!');
+            }}>
+            <ListItemIcon>
+              <TbCopy />
+            </ListItemIcon>
+            {ens}
+          </MenuItem>
+        )}
         <MenuItem
           onClick={() => {
-            copyToClipboard(identity.address);
-            toast.success('Copied!');
+            copyToClipboard(address);
+            toast.success('Address copied!');
           }}>
           <ListItemIcon>
             <TbCopy />
           </ListItemIcon>
-          {shortenWalletAddressLabel2(identity.address)}
+          {shortenWalletAddressLabel2(address)}
         </MenuItem>
         {isAuthenticated && (
           <>
