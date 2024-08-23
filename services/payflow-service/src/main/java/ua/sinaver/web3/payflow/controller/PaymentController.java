@@ -197,29 +197,27 @@ public class PaymentController {
 			if (payment.getStatus().equals(Payment.PaymentStatus.PENDING)
 					&& StringUtils.isNotBlank(paymentUpdateMessage.fulfillmentId())) {
 				payment.setFulfillmentId(paymentUpdateMessage.fulfillmentId());
-				if (StringUtils.isNotBlank(paymentUpdateMessage.hash())) {
-					payment.setHash(paymentUpdateMessage.hash());
+				if (paymentUpdateMessage.fulfillmentChainId() != null &&
+						StringUtils.isNotBlank(paymentUpdateMessage.fulfillmentHash())) {
+					payment.setFulfillmentChainId(paymentUpdateMessage.fulfillmentChainId());
+					payment.setFulfillmentHash(paymentUpdateMessage.fulfillmentHash());
 					payment.setStatus(Payment.PaymentStatus.INPROGRESS);
 				}
 				log.debug("Updated payment: {}", payment);
 				return;
 			}
 
-			// if it's fulfillment type of payment, save only fulfillment hash
-			// otherwise treat as regular payment
-			if (payment.getStatus().equals(Payment.PaymentStatus.INPROGRESS)) {
-				payment.setFulfillmentChainId(paymentUpdateMessage.fulfillmentChainId());
-				payment.setFulfillmentHash(paymentUpdateMessage.fulfillmentHash());
-			} else {
+			// if it's not a fulfillment type of payment, save additionally chainId and token
+			if (!payment.getStatus().equals(Payment.PaymentStatus.INPROGRESS)) {
 				if (paymentUpdateMessage.chainId() != null) {
 					payment.setNetwork(paymentUpdateMessage.chainId());
 				}
 				if (paymentUpdateMessage.token() != null) {
 					payment.setToken(paymentUpdateMessage.token());
 				}
-				payment.setHash(paymentUpdateMessage.hash());
 			}
 
+			payment.setHash(paymentUpdateMessage.hash());
 			payment.setStatus(Payment.PaymentStatus.COMPLETED);
 			payment.setCompletedDate(new Date());
 

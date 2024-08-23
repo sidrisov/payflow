@@ -18,6 +18,7 @@ import { Token } from '../../utils/erc20contracts';
 import { normalizeNumberPrecision } from '../../utils/formats';
 import { useTokenPrices } from '../../utils/queries/prices';
 import { PaymentType } from '../../types/PaymentType';
+import { MdMultipleStop } from 'react-icons/md';
 
 const TokenAmountTextField = styled(TextField)(() => ({
   '& .MuiInputBase-input::placeholder': {
@@ -27,21 +28,29 @@ const TokenAmountTextField = styled(TextField)(() => ({
 
 export function TokenAmountSection({
   payment,
+  crossChainMode = false,
+  setCrossChainMode,
+  setPaymentEnabled,
   selectedWallet,
   selectedToken,
-  sendAmount,
-  setSendAmount,
-  sendAmountUSD,
-  setSendAmountUSD,
+  paymentAmount,
+  setPaymentAmount,
+  paymentAmountUSD,
+  setPaymentAmountUSD,
   balanceCheck = true
 }: {
   payment?: PaymentType;
+  crossChainMode?: boolean;
+  setCrossChainMode?: React.Dispatch<React.SetStateAction<boolean>>;
+  setPaymentEnabled?: React.Dispatch<React.SetStateAction<boolean>>;
   selectedWallet: FlowWalletType;
   selectedToken?: Token;
-  sendAmount?: number;
-  setSendAmount: React.Dispatch<React.SetStateAction<number | undefined>>;
-  sendAmountUSD?: number;
-  setSendAmountUSD: React.Dispatch<React.SetStateAction<number | undefined>>;
+  paymentAmount?: number;
+  setPaymentAmount: React.Dispatch<React.SetStateAction<number | undefined>>;
+  paymentAmountUSD?: number;
+  setPaymentAmountUSD: React.Dispatch<React.SetStateAction<number | undefined>>;
+  crossChainPaymentAmount?: number;
+  setCrossChainPaymentAmount?: React.Dispatch<React.SetStateAction<number | undefined>>;
   balanceCheck?: boolean;
 }) {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
@@ -56,12 +65,14 @@ export function TokenAmountSection({
 
   const [usdAmountMode, setUsdAmountMode] = useState<boolean>(Boolean(payment?.usdAmount));
 
+  const crossChainModeSupported = Boolean(payment?.token);
+
   const { data: balance } = useBalance({
     address: selectedWallet?.address,
     chainId: chain?.id,
     token: selectedToken?.tokenAddress,
     query: {
-      enabled: balanceCheck && selectedWallet !== undefined && selectedToken !== undefined,
+      enabled: balanceCheck && Boolean(selectedWallet && selectedToken),
       gcTime: 5000
     }
   });
@@ -76,62 +87,77 @@ export function TokenAmountSection({
   }, [selectedToken, tokenPrices]);
 
   useEffect(() => {
-    if (selectedToken && selectedTokenPrice && (!balanceCheck || balance)) {
-      if (usdAmountMode === true && sendAmountUSD !== undefined) {
-        const amount = parseUnits(
-          (sendAmountUSD / selectedTokenPrice).toString(),
-          selectedToken.decimals
-        );
-        const balanceEnough = !balanceCheck ? true : amount <= (balance?.value ?? 0);
-
-        setBalanceEnough(balanceEnough);
-        if (balanceEnough) {
-          setSendAmount(parseFloat(formatUnits(amount, selectedToken.decimals)));
-        } else {
-          setSendAmount(undefined);
-        }
-      }
-
-      if (usdAmountMode === false && sendAmount !== undefined) {
-        const usdAmount = sendAmount * selectedTokenPrice;
-        const balanceEnough = !balanceCheck
-          ? true
-          : parseUnits(sendAmount.toString(), selectedToken.decimals) <= (balance?.value ?? 0);
-
-        setBalanceEnough(balanceEnough);
-        if (balanceEnough) {
-          setSendAmountUSD(parseFloat(normalizeNumberPrecision(usdAmount)));
-        } else {
-          setSendAmountUSD(undefined);
-        }
-      }
-
+    if (crossChainMode) {
       return;
     }
 
-    setBalanceEnough(undefined);
+    console.log(
+      'updating amount: ',
+      crossChainMode,
+      usdAmountMode,
+      paymentAmount,
+      paymentAmountUSD
+    );
+
+    let balanceEnough: boolean | undefined;
+    if (selectedToken && selectedTokenPrice && (!balanceCheck || balance)) {
+      if (usdAmountMode === true && paymentAmountUSD !== undefined) {
+        const amount = parseUnits(
+          (paymentAmountUSD / selectedTokenPrice).toString(),
+          selectedToken.decimals
+        );
+        balanceEnough = !balanceCheck || crossChainMode ? true : amount <= (balance?.value ?? 0);
+        setPaymentAmount(parseFloat(formatUnits(amount, selectedToken.decimals)));
+      }
+      if (usdAmountMode === false && paymentAmount !== undefined) {
+        const usdAmount = paymentAmount * selectedTokenPrice;
+        balanceEnough =
+          !balanceCheck || crossChainMode
+            ? true
+            : parseUnits(paymentAmount.toString(), selectedToken.decimals) <= (balance?.value ?? 0);
+        setPaymentAmountUSD(parseFloat(normalizeNumberPrecision(usdAmount)));
+      }
+    }
+    setBalanceEnough(balanceEnough);
   }, [
+    crossChainMode,
     balanceCheck,
     usdAmountMode,
-    sendAmountUSD,
-    sendAmount,
+    paymentAmountUSD,
+    paymentAmount,
     chain?.id,
     selectedToken,
     balance,
     selectedTokenPrice
   ]);
 
+  useMemo(() => {
+    if (setPaymentEnabled) {
+      setPaymentEnabled(
+        Boolean(
+          balanceEnough &&
+            paymentAmount &&
+            paymentAmount > 0 &&
+            paymentAmountUSD &&
+            paymentAmountUSD > 0
+        )
+      );
+    }
+  }, [balanceEnough, paymentAmount, paymentAmountUSD]);
+
   return (
     <Stack height="100%" mt={1} alignItems="center">
       {!payment?.token ? (
         <TokenAmountTextField
           // don't auto focus if it's pending payment
-          {...(!sendAmount && { autoFocus: true, focused: true })}
+          {...(!paymentAmount && { autoFocus: true, focused: true })}
           variant="standard"
-          value={usdAmountMode ? sendAmountUSD ?? 0 : sendAmount ?? 0}
+          placeholder="0"
+          margin="dense"
+          type="number"
+          value={usdAmountMode ? paymentAmountUSD : paymentAmount}
           error={
-            (usdAmountMode ? sendAmountUSD !== undefined : sendAmount !== undefined) &&
-            balanceEnough === false
+            Boolean(usdAmountMode ? paymentAmountUSD : paymentAmount) && balanceEnough === false
           }
           inputProps={{
             style: {
@@ -166,38 +192,81 @@ export function TokenAmountSection({
           onChange={async (event) => {
             if (event.target.value) {
               const amount = parseFloat(event.target.value);
-              if (!isNaN(amount) && amount > 0) {
+              if (!isNaN(amount) && amount >= 0) {
                 if (usdAmountMode) {
-                  setSendAmountUSD(amount);
+                  setPaymentAmountUSD(amount);
                 } else {
-                  setSendAmount(amount);
+                  setPaymentAmount(amount);
                 }
               }
             } else {
-              setSendAmountUSD(undefined);
-              setSendAmount(undefined);
+              setPaymentAmountUSD(undefined);
+              setPaymentAmount(undefined);
             }
           }}
           sx={{ minWidth: 'auto' }}
         />
       ) : (
-        <Typography fontSize={30} fontWeight="bold" textAlign="center">
-          {usdAmountMode
-            ? `$ ${sendAmountUSD}`
-            : `${sendAmount} ${selectedToken?.id.toUpperCase()}`}
+        !crossChainMode && (
+          <Typography fontSize={30} fontWeight="bold" textAlign="center">
+            {usdAmountMode
+              ? `$ ${paymentAmountUSD}`
+              : `${paymentAmount} ${selectedToken?.id.toUpperCase()}`}
+          </Typography>
+        )
+      )}
+
+      {crossChainMode && (
+        <Typography fontSize={18} fontWeight="bold" textAlign="center">
+          for{' '}
+          <u>
+            {usdAmountMode
+              ? `$ ${paymentAmountUSD}`
+              : `${paymentAmount} ${selectedToken?.id.toUpperCase()}`}{' '}
+            ≈{' '}
+            {usdAmountMode
+              ? `${normalizeNumberPrecision(paymentAmount ?? 0)} ${selectedToken?.id.toUpperCase()}`
+              : `$ ${normalizeNumberPrecision(paymentAmountUSD ?? 0)}`}
+          </u>
         </Typography>
       )}
 
-      {(usdAmountMode ? sendAmountUSD : sendAmount) && balanceEnough === false && (
-        <Stack direction="row" spacing={0.5} alignItems="center">
-          <PriorityHigh fontSize="small" sx={{ color: red.A400 }} />
-          <Typography fontSize={14} fontWeight="bold" color={red.A400}>
-            balance not enough
-          </Typography>
-        </Stack>
-      )}
+      {!crossChainMode &&
+        Boolean(usdAmountMode ? paymentAmountUSD : paymentAmount) &&
+        balanceEnough === false && (
+          <>
+            <Stack direction="row" spacing={0.5} alignItems="center">
+              <PriorityHigh fontSize="small" sx={{ color: red.A400 }} />
+              <Typography fontSize={14} fontWeight="bold" color={red.A400}>
+                balance not enough
+              </Typography>
+            </Stack>
+            {crossChainModeSupported &&
+              !crossChainMode &&
+              paymentAmountUSD &&
+              paymentAmountUSD <= 10 && (
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  sx={{
+                    mt: 1,
+                    textTransform: 'none',
+                    borderRadius: 5,
+                    border: 2,
+                    borderColor: 'divider',
+                    borderStyle: 'dotted'
+                  }}
+                  onClick={async () => {
+                    setCrossChainMode?.(true);
+                  }}
+                  startIcon={<MdMultipleStop />}>
+                  Press to pay with different token
+                </Button>
+              )}
+          </>
+        )}
 
-      {balanceEnough && (
+      {!crossChainMode && balanceEnough && (
         <Stack direction="row" alignItems="center" spacing={0.5}>
           {!payment?.token && (
             <IconButton
@@ -211,8 +280,8 @@ export function TokenAmountSection({
           )}
           <Typography fontSize={20} fontWeight="bold">
             {usdAmountMode
-              ? `${normalizeNumberPrecision(sendAmount ?? 0)} ${selectedToken?.id.toUpperCase()}`
-              : `$ ${normalizeNumberPrecision(sendAmountUSD ?? 0)}`}
+              ? `${normalizeNumberPrecision(paymentAmount ?? 0)} ${selectedToken?.id.toUpperCase()}`
+              : `$ ${normalizeNumberPrecision(paymentAmountUSD ?? 0)}`}
           </Typography>
 
           {!payment?.token && selectedToken && balanceCheck && (
@@ -221,14 +290,14 @@ export function TokenAmountSection({
                 if (balance && selectedTokenPrice) {
                   const maxAmount = parseFloat(formatUnits(balance.value, selectedToken.decimals));
                   if (usdAmountMode) {
-                    setSendAmountUSD(
+                    setPaymentAmountUSD(
                       parseFloat(normalizeNumberPrecision(maxAmount * selectedTokenPrice))
                     );
                   } else {
-                    setSendAmount(parseFloat(normalizeNumberPrecision(maxAmount)));
+                    setPaymentAmount(parseFloat(normalizeNumberPrecision(maxAmount)));
                   }
                 } else {
-                  setSendAmount(undefined);
+                  setPaymentAmount(undefined);
                 }
               }}
               sx={{

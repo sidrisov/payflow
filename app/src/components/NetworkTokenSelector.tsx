@@ -1,4 +1,3 @@
-import { ExpandLess, ExpandMore, Token as NetworkToken } from '@mui/icons-material';
 import { Stack, Box, Chip, Typography, IconButton, Divider } from '@mui/material';
 import { useState, useMemo, useEffect } from 'react';
 import { formatUnits } from 'viem';
@@ -20,11 +19,11 @@ import { IoMdArrowDropdown, IoMdArrowDropup, IoMdArrowUp } from 'react-icons/io'
 export function NetworkTokenSelector({
   payment,
   crossChainMode = false,
-  selectedWallet,
-  setSelectedWallet,
+  paymentWallet,
+  setPaymentWallet,
   compatibleWallets,
-  selectedToken,
-  setSelectedToken,
+  paymentToken,
+  setPaymentToken,
   enabledChainCurrencies,
   gasFee,
   showBalance = true,
@@ -32,11 +31,11 @@ export function NetworkTokenSelector({
 }: {
   payment?: PaymentType;
   crossChainMode?: boolean;
-  selectedWallet: FlowWalletType | undefined;
-  setSelectedWallet: React.Dispatch<React.SetStateAction<FlowWalletType | undefined>>;
+  paymentWallet: FlowWalletType | undefined;
+  setPaymentWallet: React.Dispatch<React.SetStateAction<FlowWalletType | undefined>>;
   compatibleWallets: FlowWalletType[];
-  selectedToken?: Token;
-  setSelectedToken: React.Dispatch<React.SetStateAction<Token | undefined>>;
+  paymentToken?: Token;
+  setPaymentToken: React.Dispatch<React.SetStateAction<Token | undefined>>;
   enabledChainCurrencies?: string[];
   gasFee?: bigint;
   showBalance?: boolean;
@@ -53,18 +52,18 @@ export function NetworkTokenSelector({
   const { data: tokenPrices } = useTokenPrices();
 
   const { isSuccess, data: balance } = useBalance({
-    address: selectedWallet?.address,
+    address: paymentWallet?.address,
     chainId,
-    token: selectedToken?.tokenAddress,
+    token: paymentToken?.tokenAddress,
     query: {
-      enabled: showBalance && selectedWallet !== undefined && selectedToken !== undefined,
-      gcTime: 5000
+      enabled: showBalance && paymentWallet !== undefined && paymentToken !== undefined,
+      gcTime: 3000
     }
   });
 
   useMemo(async () => {
     if (showBalance) {
-      const selectedTokenPrice = selectedToken && tokenPrices?.[selectedToken.id];
+      const selectedTokenPrice = paymentToken && tokenPrices?.[paymentToken.id];
       const maxBalance =
         isSuccess && balance ? parseFloat(formatUnits(balance.value, balance.decimals)) : 0;
 
@@ -80,19 +79,22 @@ export function NetworkTokenSelector({
 
   useEffect(() => {
     // don't update if selected token was already selected
-    if (selectedToken && compatibleTokens.find((t) => t === selectedToken)) {
+    if (paymentToken && compatibleTokens.find((t) => t === paymentToken)) {
       return;
     }
 
-    setSelectedToken(compatibleTokens[0]);
-  }, [selectedToken, compatibleTokens, selectedWallet?.network]);
+    setPaymentToken(compatibleTokens[0]);
+  }, [paymentToken, compatibleTokens, paymentWallet?.network]);
+
+  console.log('Compatible tokens: ', compatibleTokens);
+  console.log('Selected token: ', paymentToken);
 
   useMemo(() => {
-    if (!selectedWallet) {
+    if (!paymentWallet) {
       return;
     }
     // filter by passed token if available
-    const tokens = getSupportedTokens(selectedWallet.network).filter((t) =>
+    const tokens = getSupportedTokens(paymentWallet.network).filter((t) =>
       !crossChainMode && payment?.token ? t.id === payment?.token : true
     );
 
@@ -102,10 +104,10 @@ export function NetworkTokenSelector({
             enabledChainCurrencies.find(
               (c) =>
                 c ===
-                `eip155:${selectedWallet.network}/${
+                `eip155:${paymentWallet.network}/${
                   t.tokenAddress
                     ? `erc20:${t.tokenAddress}`
-                    : selectedWallet.network === degen.id
+                    : paymentWallet.network === degen.id
                     ? 'slip44:33436'
                     : 'slip44:60'
                 }`
@@ -113,7 +115,7 @@ export function NetworkTokenSelector({
           )
         : tokens
     );
-  }, [selectedWallet]);
+  }, [crossChainMode, paymentWallet, enabledChainCurrencies]);
 
   return (
     <Stack width="100%">
@@ -129,10 +131,10 @@ export function NetworkTokenSelector({
           variant="outlined"
           sx={{ border: 0, fontSize: 13, fontWeight: 500 }}
         />
-        {selectedWallet ? (
+        {paymentToken ? (
           <Stack direction="row" spacing={0.5} alignItems="center">
             <Typography fontSize={13} fontWeight={500}>
-              {getNetworkDisplayName(selectedWallet.network)} / {selectedToken?.id.toUpperCase()}
+              {getNetworkDisplayName(paymentToken.chainId)} / {paymentToken.id.toUpperCase()}
             </Typography>
             <IconButton size="small" onClick={() => setExpand(!expand)} sx={{ p: 0.3 }}>
               {expand ? <IoMdArrowDropup /> : <IoMdArrowDropdown />}
@@ -143,7 +145,7 @@ export function NetworkTokenSelector({
         )}
       </Box>
 
-      {expand && selectedWallet && compatibleTokens && (
+      {expand && paymentToken && paymentWallet && compatibleTokens && (
         <>
           <Box
             py={1}
@@ -164,11 +166,11 @@ export function NetworkTokenSelector({
               </Typography>
               <Stack direction="row" alignItems="center" spacing={1}>
                 <Typography variant="caption" fontWeight="bold">
-                  {getNetworkDisplayName(selectedWallet.network)}
+                  {getNetworkDisplayName(paymentWallet.network)}
                 </Typography>
                 <NetworkSelectorButton
-                  selectedWallet={selectedWallet}
-                  setSelectedWallet={setSelectedWallet}
+                  selectedWallet={paymentWallet}
+                  setSelectedWallet={setPaymentWallet}
                   wallets={compatibleWallets}
                 />
               </Stack>
@@ -184,11 +186,11 @@ export function NetworkTokenSelector({
               </Typography>
               <Stack direction="row" alignItems="center" spacing={1}>
                 <Typography variant="caption" fontWeight="bold">
-                  {selectedToken?.name}
+                  {paymentToken?.name}
                 </Typography>
                 <TokenSelectorButton
-                  selectedToken={selectedToken}
-                  setSelectedToken={setSelectedToken}
+                  selectedToken={paymentToken}
+                  setSelectedToken={setPaymentToken}
                   tokens={compatibleTokens}
                 />
               </Stack>
@@ -204,7 +206,7 @@ export function NetworkTokenSelector({
                   Balance
                 </Typography>
                 <Typography variant="caption" fontWeight="bold">
-                  {`${maxBalance} ${selectedToken?.name} ≈ $${maxBalanceUsd}`}
+                  {`${maxBalance} ${paymentToken?.name} ≈ $${maxBalanceUsd}`}
                 </Typography>
               </Box>
             )}
@@ -214,7 +216,7 @@ export function NetworkTokenSelector({
                 tooltip="Gas is paid by the sending flow wallet via Gelato SyncFee call method. 
                     The fee includes Gelato onchain call, safe tx fee + deployment fee on the first tx, and 10% Gelato's comission on top of all."
                 title="Transaction fee"
-                token={selectedToken}
+                token={paymentToken}
                 fee={gasFee}
               />
             )}
@@ -223,7 +225,7 @@ export function NetworkTokenSelector({
                 type="cross-chain"
                 tooltip="Charged fee for fasciliating cross-chain payments"
                 title="Cross-chain fee"
-                token={selectedToken}
+                token={paymentToken}
                 fee={BigInt(0)}
               />
             )}

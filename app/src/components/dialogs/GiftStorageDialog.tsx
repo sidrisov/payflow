@@ -44,7 +44,7 @@ import { toast } from 'react-toastify';
 import { Social } from '../../generated/graphql/types';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
-import { completePayment as updatePayment } from '../../services/payments';
+import { updatePayment } from '../../services/payments';
 import { grey, red } from '@mui/material/colors';
 import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
 import { CAIP19, createSession, executeSession } from '@paywithglide/glide-js';
@@ -101,9 +101,8 @@ export default function GiftStorageDialog({
 
   const { profile } = useContext(ProfileContext);
 
-  const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
-  const [selectedToken, setSelectedToken] = useState<Token>();
-
+  const [paymentWallet, setPaymentWallet] = useState<FlowWalletType>();
+  const [paymentToken, setPaymentToken] = useState<Token>();
   const [paymentPending, setPaymentPending] = useState<boolean>(false);
 
   const { data: signer } = useWalletClient();
@@ -148,15 +147,15 @@ export default function GiftStorageDialog({
 
   const { isLoading: isPaymentOptionLoading, data: paymentOption } = useGlideEstimatePayment(
     isUnitPriceFetched &&
-      Boolean(selectedToken) &&
+      Boolean(paymentToken) &&
       Boolean(rentUnitPrice) &&
       Boolean(payment.receiverFid),
     {
       account: senderFlow.wallets[0].address,
-      paymentCurrency: `eip155:${selectedToken?.chainId}/${
-        selectedToken?.tokenAddress
-          ? `erc20:${selectedToken.tokenAddress}`
-          : selectedToken?.chainId === degen.id
+      paymentCurrency: `eip155:${paymentToken?.chainId}/${
+        paymentToken?.tokenAddress
+          ? `erc20:${paymentToken.tokenAddress}`
+          : paymentToken?.chainId === degen.id
           ? 'slip44:33436'
           : 'slip44:60'
       }` as CAIP19,
@@ -186,10 +185,10 @@ export default function GiftStorageDialog({
 
   useMemo(async () => {
     if (compatibleWallets.length === 0) {
-      setSelectedWallet(undefined);
+      setPaymentWallet(undefined);
       return;
     }
-    setSelectedWallet(compatibleWallets.find((w) => w.network === chainId) ?? compatibleWallets[0]);
+    setPaymentWallet(compatibleWallets.find((w) => w.network === chainId) ?? compatibleWallets[0]);
   }, [compatibleWallets, chainId]);
 
   const submitGlideTransaction = async () => {
@@ -198,7 +197,7 @@ export default function GiftStorageDialog({
       return;
     }
     try {
-      if (profile && client && signer && selectedWallet && selectedToken && paymentOption) {
+      if (profile && client && signer && paymentWallet && paymentToken && paymentOption) {
         if (isNativeFlow) {
           reset();
         } else {
@@ -206,7 +205,7 @@ export default function GiftStorageDialog({
         }
 
         const session = await createSession(glideConfig, {
-          account: selectedWallet.address,
+          account: paymentWallet.address,
           paymentCurrency: paymentOption.paymentCurrency,
           currentChainId: chainId,
           ...(paymentTx as any),
@@ -238,13 +237,13 @@ export default function GiftStorageDialog({
               };
 
               const saltNonce = senderFlow.saltNonce as string;
-              const safeVersion = selectedWallet.version as SafeVersion;
+              const safeVersion = paymentWallet.version as SafeVersion;
 
               txHash = await transfer(
                 client,
                 signer,
                 {
-                  from: selectedWallet.address,
+                  from: paymentWallet.address,
                   to: tx.to,
                   data: tx.data && tx.data.length ? tx.data : undefined,
                   value: tx.value
@@ -259,9 +258,8 @@ export default function GiftStorageDialog({
 
             if (txHash) {
               payment.fulfillmentId = session.sessionId;
-              payment.chainId = selectedToken.chainId;
-              payment.token = selectedToken.id;
-              payment.hash = txHash;
+              payment.fulfillmentChainId = paymentTx.chainId;
+              payment.fulfillmentHash = txHash;
               updatePayment(payment);
             }
             return txHash as Hash;
@@ -271,8 +269,7 @@ export default function GiftStorageDialog({
         console.log('Glide txHash:', glideTxHash);
 
         if (glideTxHash && payment.referenceId) {
-          payment.fulfillmentHash = glideTxHash;
-          payment.fulfillmentChainId = optimism.id;
+          payment.hash = glideTxHash;
           updatePayment(payment);
           toast.success(`Storage paid for @${social.profileName}`);
 
@@ -289,7 +286,7 @@ export default function GiftStorageDialog({
   };
 
   useMemo(async () => {
-    if (senderFlow.type !== 'FARCASTER_VERIFICATION' && senderFlow.type !== 'LINKED') {
+    if (isNativeFlow) {
       setPaymentPending(Boolean(loading || (txHash && !confirmed && !error)));
     } else {
       setPaymentPending(
@@ -381,17 +378,17 @@ export default function GiftStorageDialog({
               <NetworkTokenSelector
                 crossChainMode
                 payment={payment}
-                selectedWallet={selectedWallet}
-                setSelectedWallet={setSelectedWallet}
-                selectedToken={selectedToken}
-                setSelectedToken={setSelectedToken}
+                paymentWallet={paymentWallet}
+                setPaymentWallet={setPaymentWallet}
+                paymentToken={paymentToken}
+                setPaymentToken={setPaymentToken}
                 compatibleWallets={compatibleWallets}
                 enabledChainCurrencies={
                   paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
                 }
                 gasFee={gasFee}
               />
-              {!selectedToken || chainId === selectedToken.chainId ? (
+              {!paymentToken || chainId === paymentToken.chainId ? (
                 <LoadingPaymentButton
                   title="Pay"
                   loading={paymentPending}
@@ -400,7 +397,7 @@ export default function GiftStorageDialog({
                   onClick={submitGlideTransaction}
                 />
               ) : (
-                <LoadingSwitchNetworkButton chainId={selectedToken.chainId} />
+                <LoadingSwitchNetworkButton chainId={paymentToken.chainId} />
               )}
               <PoweredByGlideText />
             </Stack>

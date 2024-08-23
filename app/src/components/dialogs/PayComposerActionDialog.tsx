@@ -129,17 +129,17 @@ export default function PayComposerActionDialog({
               <TokenAmountSection
                 selectedWallet={selectedWallet}
                 selectedToken={selectedToken}
-                sendAmount={sendAmount}
-                setSendAmount={setSendAmount}
-                sendAmountUSD={sendAmountUSD}
-                setSendAmountUSD={setSendAmountUSD}
+                paymentAmount={sendAmount}
+                setPaymentAmount={setSendAmount}
+                paymentAmountUSD={sendAmountUSD}
+                setPaymentAmountUSD={setSendAmountUSD}
                 balanceCheck={false}
               />
               <NetworkTokenSelector
-                selectedWallet={selectedWallet}
-                setSelectedWallet={setSelectedWallet}
-                selectedToken={selectedToken}
-                setSelectedToken={setSelectedToken}
+                paymentWallet={selectedWallet}
+                setPaymentWallet={setSelectedWallet}
+                paymentToken={selectedToken}
+                setPaymentToken={setSelectedToken}
                 compatibleWallets={compatibleWallets}
                 showBalance={false}
                 expandSection={true}

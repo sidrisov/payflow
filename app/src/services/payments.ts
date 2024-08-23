@@ -2,13 +2,11 @@ import axios from 'axios';
 import { PaymentType } from '../types/PaymentType';
 import { API_URL } from '../utils/urlConstants';
 
-export async function completePayment(payment: PaymentType): Promise<boolean | undefined> {
+export async function updatePayment(payment: PaymentType): Promise<boolean | undefined> {
   try {
     const response = await axios.put(
       `${API_URL}/api/payment/${payment.referenceId}`,
       {
-        chainId: payment.chainId,
-        token: payment.token,
         hash: payment.hash,
         fulfillmentId: payment.fulfillmentId,
         fulfillmentChainId: payment.fulfillmentChainId,

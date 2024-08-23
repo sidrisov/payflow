@@ -5,16 +5,19 @@ import { SelectedIdentityType } from '../../types/ProfileType';
 import { ProfileSection } from '../ProfileSection';
 import { AddressSection } from '../AddressSection';
 import { normalizeNumberPrecision } from '../../utils/formats';
+import { Token } from '../../utils/erc20contracts';
 
 export function TransferToastContent({
   from,
   to,
-  usdAmount,
+  amount,
+  token,
   status
 }: {
   from: SelectedIdentityType;
   to: SelectedIdentityType;
-  usdAmount: number;
+  amount: number;
+  token: Token;
   status?: TypeOptions;
 }) {
   return (
@@ -23,13 +26,13 @@ export function TransferToastContent({
       display="flex"
       flexDirection="row"
       alignItems="center"
-      justifyContent="space-between">
+      justifyContent="space-evenly">
       {from.type === 'profile'
         ? from.identity.profile && <ProfileSection profile={from.identity.profile} />
         : from.identity.address && <AddressSection identity={from.identity} />}
-      <Stack mx={1} width={50} alignItems="center" justifyContent="center">
-        <Typography noWrap variant="subtitle2">
-          ${normalizeNumberPrecision(usdAmount)}
+      <Stack mx={1} width={75} alignItems="center" justifyContent="center">
+        <Typography variant="subtitle2" fontWeight="bold">
+          {normalizeNumberPrecision(amount)} {token.id.toUpperCase()}
         </Typography>
         {status === 'error' ? <Close /> : <ArrowForward />}
       </Stack>
