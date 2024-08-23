@@ -310,11 +310,11 @@ export function convertSocialResults(wallet: Wallet): ContactType | undefined {
     meta.ensAvatar = meta.socials[0].profileImage;
   }
 
-  if (wallet.xmtp && wallet.xmtp[0].isXMTPEnabled) {
+  /*   if (wallet.xmtp && wallet.xmtp[0].isXMTPEnabled) {
     meta.xmtp = true;
   } else {
     meta.xmtp = false;
-  }
+  } */
 
   meta.insights = {} as InsightsType;
 
