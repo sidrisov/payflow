@@ -1,5 +1,5 @@
 import { glideConfig } from '../glide';
-import { Address, Hex } from 'viem';
+import { Hex } from 'viem';
 import { useQuery } from '@tanstack/react-query';
 import {
   CAIP19,
@@ -41,7 +41,7 @@ export type EstimatePaymentArgs = {
 
 export const useGlideEstimatePayment = (enabled: boolean, args: EstimatePaymentArgs) => {
   return useQuery({
-    enabled: enabled,
+    enabled,
     queryKey: ['estimateGlidePayment', args],
     staleTime: Infinity,
     refetchInterval: 30_000,
@@ -53,7 +53,7 @@ export const useGlideEstimatePayment = (enabled: boolean, args: EstimatePaymentA
 
 export const useGlidePaymentOptions = (enabled: boolean, args: ListPaymentOptionsArgs) => {
   return useQuery({
-    enabled: enabled,
+    enabled,
     queryKey: ['listPaymentOptions', args],
     staleTime: Infinity,
     refetchInterval: 30_000,

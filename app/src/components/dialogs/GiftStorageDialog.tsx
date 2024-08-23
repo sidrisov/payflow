@@ -146,27 +146,7 @@ export default function GiftStorageDialog({
     value?: bigint;
   };
 
-  /*  const paymentTx = {
-    chainId: base.id,
-    address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
-    abi: erc20Abi,
-    functionName: 'transfer',
-    args: ['0x0dEe77c83cB8b14fA95497825dF93202AbF6ad83', parseUnits('1', 6)],
-  } as {
-    chainId: number;
-    address: Address;
-    abi: Abi;
-    functionName: ContractFunctionName;
-    args?: ContractFunctionArgs;
-    value?: bigint;
-  }; */
-
-  const {
-    isLoading: isPaymentOptionLoading,
-    isFetched: isPaymentOptionFetched,
-    isPending: isPaymentOptionPending,
-    data: paymentOption
-  } = useGlideEstimatePayment(
+  const { isLoading: isPaymentOptionLoading, data: paymentOption } = useGlideEstimatePayment(
     isUnitPriceFetched &&
       Boolean(selectedToken) &&
       Boolean(rentUnitPrice) &&
@@ -183,13 +163,6 @@ export default function GiftStorageDialog({
       ...(paymentTx as any),
       value: rentUnitPrice ?? 0n
     }
-  );
-
-  console.log(
-    'Fetching status:',
-    isPaymentOptionLoading,
-    isPaymentOptionPending,
-    isPaymentOptionFetched
   );
 
   const { isLoading: isPaymentOptionsLoading, data: paymentOptions } = useGlidePaymentOptions(
@@ -390,7 +363,8 @@ export default function GiftStorageDialog({
                     </Typography>
                   ) : (
                     <Typography fontSize={14} fontWeight="bold" color={red.A400}>
-                      You don't have any balance to cover storage cost
+                      You don't have any balance to cover storage cost, switch to different payment
+                      flow!
                     </Typography>
                   )}
                   <Typography fontSize={18} fontWeight="bold">

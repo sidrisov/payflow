@@ -28,8 +28,5 @@ query GetSocialMetadataByIdentity($identity: Identity!) {
             followerCount
             isFarcasterPowerUser
         }
-        xmtp {
-            isXMTPEnabled
-        }
     }
 }

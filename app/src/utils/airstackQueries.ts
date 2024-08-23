@@ -28,9 +28,6 @@ export const QUERY_SOCIALS_INSIGHTS = /* GraphQL */ `
         followerCount
         isFarcasterPowerUser
       }
-      xmtp {
-        isXMTPEnabled
-      }
       socialFollowers(
         input: { filter: { identity: { _eq: $me }, dappName: { _in: [farcaster, lens] } } }
       ) {
@@ -89,9 +86,6 @@ export const QUERY_SOCIALS = /* GraphQL */ `
         followerCount
         isFarcasterPowerUser
       }
-      xmtp {
-        isXMTPEnabled
-      }
     }
   }
 `;
@@ -143,9 +137,6 @@ export const QUERY_SOCIALS_INSIGHTS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE
             followerCount
             isFarcasterPowerUser
             userAddress
-          }
-          xmtp {
-            isXMTPEnabled
           }
           socialFollowers(
             input: { filter: { identity: { _eq: $me }, dappName: { _in: [farcaster, lens] } } }
@@ -221,9 +212,6 @@ export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = /
             isFarcasterPowerUser
             userAddress
           }
-          xmtp {
-            isXMTPEnabled
-          }
         }
       }
     }
@@ -244,9 +232,6 @@ export const QUERY_SOCIALS_INSIGHTS_LIGHT = /* GraphQL */ `
         profileName
         followerCount
         isFarcasterPowerUser
-      }
-      xmtp {
-        isXMTPEnabled
       }
       socialFollowers(
         input: { filter: { identity: { _eq: $me }, dappName: { _in: [farcaster, lens] } } }
@@ -290,9 +275,6 @@ export const QUERY_SOCIALS_LIGHT = /* GraphQL */ `
         profileName
         followerCount
         isFarcasterPowerUser
-      }
-      xmtp {
-        isXMTPEnabled
       }
     }
   }
