@@ -303,12 +303,12 @@ export function SearchIdentityListItem(
               </>
             ) : (
               <Typography variant="caption" fontWeight="bold">
-                No insights
+                No connections found
               </Typography>
             )
           ) : (
             <Typography variant="caption" fontWeight="bold">
-              For insights connect wallet
+              For social connections connect wallet
             </Typography>
           )}
         </Box>
