@@ -72,10 +72,8 @@ export default function SearchIdentityDialog({
 
   const [searchString, setSearchString] = useState<string>();
 
-  const [debouncedSearchString] = useDebounce(searchString?.replace(' ', '').toLowerCase(), 500, {
-    leading: true,
-    trailing: true,
-    maxWait: 5000
+  const [debouncedSearchString] = useDebounce(searchString?.trim().toLowerCase(), 1000, {
+    maxWait: 10000
   });
 
   const [foundIdentities, setFoundIdentities] = useState<ContactType[]>([]);
@@ -86,7 +84,7 @@ export default function SearchIdentityDialog({
 
   const [addressBookView, setAddressBookView] = useState<AddressBookType>('all');
 
-  const { isFetching: isFetchingContacts, data } = useContacts({
+  const { isFetching: isFetchingContacts, data: contactsData } = useContacts({
     enabled: isAuthenticated,
     accessToken: accessToken
   });
@@ -102,81 +100,88 @@ export default function SearchIdentityDialog({
 
   useEffect(() => {
     console.log('Is fetching contacts', isFetchingContacts);
-    if (!isFetchingContacts && data) {
-      setTags(data.tags);
-      setContacts(data.contacts);
+    if (!isFetchingContacts && contactsData) {
+      setTags(contactsData.tags);
+      setContacts(contactsData.contacts);
     }
-  }, [data, isFetchingContacts]);
+  }, [contactsData, isFetchingContacts]);
 
-  useMemo(async () => {
-    if (debouncedSearchString && debouncedSearchString?.length > 1) {
-      try {
-        setSearchingContacts(true);
-        // search among contacts
-        let foundAmongContacts: ContactType[] = [];
-        if (contacts?.length > 0) {
-          // support different search criterias, e.g. if with fc search only among fc name, if lens, if eth...,
-          // also if search by ens and result is found, skip online search
-          foundAmongContacts = contacts.filter(
-            (c) =>
-              (addressBookView !== 'all' ? c.tags?.includes(addressBookView) : true) &&
-              (c.data.profile?.username?.includes(debouncedSearchString) ||
-                c.data.profile?.displayName?.toLowerCase().includes(debouncedSearchString) ||
-                c.data.meta?.ens?.includes(debouncedSearchString) ||
-                c.data.meta?.socials?.find((s) => {
-                  let socialSearchStr = debouncedSearchString;
+  useEffect(() => {
+    console.log('Searching among contacts and globally: ', debouncedSearchString);
+    if (debouncedSearchString && debouncedSearchString.length > 1) {
+      const fetchData = async () => {
+        await searchContacts(debouncedSearchString);
+      };
 
-                  if (
-                    (s.dappName === FARCASTER_DAPP && debouncedSearchString.startsWith('@fname')) ||
-                    (s.dappName === LENS_DAPP && debouncedSearchString.startsWith('lens:'))
-                  ) {
-                    socialSearchStr = socialSearchStr.substring(socialSearchStr.indexOf(':') + 1);
-                  }
-
-                  return (
-                    s.profileDisplayName.toLowerCase().includes(socialSearchStr) ||
-                    s.profileName.includes(socialSearchStr)
-                  );
-                }) ||
-                c.tags?.find((tag) => tag.includes(debouncedSearchString)))
-          );
-
-          setFoundIdentities(foundAmongContacts);
-          console.debug('Found among contacts: ', foundAmongContacts);
-        }
-
-        // skip search if we have 5 results and its all tab
-        if (foundAmongContacts.length <= 5 && addressBookView === 'all') {
-          const addresses = foundAmongContacts.map((p) => p.data.address);
-
-          // general search
-          const identities = (await searchIdentity(debouncedSearchString, address)).filter(
-            (fi) => !addresses.includes(fi.data.address)
-          );
-
-          if (identities.length > 0 && isAuthenticated) {
-            const inviteStatuses = await identitiesInvited(
-              identities.map((identity) => identity.data.address),
-              accessToken
-            );
-
-            // Update identities in a single pass:
-            identities.forEach((identity) => {
-              identity.data.invited = inviteStatuses[identity.data.address];
-            });
-          }
-
-          const allFoundProfiles = sortBySocialScore(foundAmongContacts.concat(identities));
-          console.debug('All found profiles:', allFoundProfiles);
-          setFoundIdentities(allFoundProfiles);
-        }
-      } finally {
-        setSearchingContacts(false);
-      }
-    } else {
-      setFoundIdentities([]);
+      fetchData();
     }
   }, [debouncedSearchString, address, addressBookView]);
+
+  async function searchContacts(debouncedSearchString: string) {
+    try {
+      setSearchingContacts(true);
+      // search among contacts
+      let foundAmongContacts: ContactType[] = [];
+      if (contacts?.length > 0) {
+        // support different search criterias, e.g. if with fc search only among fc name, if lens, if eth...,
+        // also if search by ens and result is found, skip online search
+        foundAmongContacts = contacts.filter(
+          (c) =>
+            (addressBookView !== 'all' ? c.tags?.includes(addressBookView) : true) &&
+            (c.data.profile?.username?.includes(debouncedSearchString) ||
+              c.data.profile?.displayName?.toLowerCase().includes(debouncedSearchString) ||
+              c.data.meta?.ens?.includes(debouncedSearchString) ||
+              c.data.meta?.socials?.find((s) => {
+                let socialSearchStr = debouncedSearchString;
+
+                if (
+                  (s.dappName === FARCASTER_DAPP && debouncedSearchString.startsWith('@fname')) ||
+                  (s.dappName === LENS_DAPP && debouncedSearchString.startsWith('lens:'))
+                ) {
+                  socialSearchStr = socialSearchStr.substring(socialSearchStr.indexOf(':') + 1);
+                }
+
+                return (
+                  s.profileDisplayName.toLowerCase().includes(socialSearchStr) ||
+                  s.profileName.includes(socialSearchStr)
+                );
+              }) ||
+              c.tags?.find((tag) => tag.includes(debouncedSearchString)))
+        );
+
+        setFoundIdentities(foundAmongContacts);
+        console.debug('Found among contacts: ', foundAmongContacts);
+      }
+
+      // skip search if we have 5 results and its all tab
+      if (foundAmongContacts.length <= 5 && addressBookView === 'all') {
+        const addresses = foundAmongContacts.map((p) => p.data.address);
+
+        // general search
+        const identities = (await searchIdentity(debouncedSearchString, address)).filter(
+          (fi) => !addresses.includes(fi.data.address)
+        );
+
+        if (identities.length > 0 && isAuthenticated) {
+          const inviteStatuses = await identitiesInvited(
+            identities.map((identity) => identity.data.address),
+            accessToken
+          );
+
+          // Update identities in a single pass:
+          identities.forEach((identity) => {
+            identity.data.invited = inviteStatuses[identity.data.address];
+          });
+        }
+
+        const allFoundProfiles = sortBySocialScore(foundAmongContacts.concat(identities));
+        console.debug('All found profiles:', allFoundProfiles);
+        setFoundIdentities(allFoundProfiles);
+      }
+    } finally {
+      setSearchingContacts(false);
+    }
+  }
 
   const updateIdentityCallback = ({ contact }: { contact: ContactType }) => {
     updateIdentity(contact);
@@ -362,6 +367,7 @@ export default function SearchIdentityDialog({
           {(isAuthenticated && contacts.length === 0 && !isFetchingContacts) ||
             (debouncedSearchString &&
               debouncedSearchString.length > 1 &&
+              searchString === debouncedSearchString &&
               foundIdentities.length === 0 &&
               !isSearchingContacts && (
                 <Typography alignSelf="center" variant="subtitle2">
