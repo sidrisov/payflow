@@ -82,7 +82,7 @@ public class PayController {
 						paymentAddresses.getFirst();
 			} else {
 				return ResponseEntity.badRequest().body(
-						new FrameResponse.FrameMessage("Recipient address not found!"));
+						new FrameResponse.FrameMessage("Missing verified identity! Contact @sinaver.eth"));
 			}
 		} else {
 			// return profile identity

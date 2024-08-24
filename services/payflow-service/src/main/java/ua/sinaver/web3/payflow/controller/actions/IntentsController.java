@@ -162,7 +162,7 @@ public class IntentsController {
 			paymentAddress = identityService.getHighestScoredIdentity(paymentAddresses);
 			if (paymentAddress == null) {
 				return ResponseEntity.badRequest().body(
-						new FrameResponse.FrameMessage("Recipient address not found!"));
+						new FrameResponse.FrameMessage("Missing verified identity! Contact @sinaver.eth"));
 			}
 		}
 
@@ -183,7 +183,7 @@ public class IntentsController {
 		}
 
 		// check if profile accepts payment on the chain
-		if (paymentProfile != null && paymentProfile.getDefaultFlow() != null) {
+		if (paymentProfile != null && (paymentProfile.getDefaultFlow() != null || paymentProfile.getDefaultReceivingAddress() != null)) {
 			val isWalletPresent = paymentService.getUserReceiverAddress(paymentProfile, chainId) != null;
 			if (!isWalletPresent) {
 				return ResponseEntity.badRequest().body(

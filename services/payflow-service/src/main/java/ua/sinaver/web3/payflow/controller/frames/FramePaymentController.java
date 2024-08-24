@@ -143,7 +143,7 @@ public class FramePaymentController {
 				paymentIdentity = paymentAddresses.getFirst();
 			} else {
 				return ResponseEntity.badRequest().body(
-						new FrameResponse.FrameMessage("Recipient address not found!"));
+						new FrameResponse.FrameMessage("Missing verified identity! Contact @sinaver.eth"));
 			}
 		} else {
 			// return profile identity
@@ -214,7 +214,7 @@ public class FramePaymentController {
 				validateMessage.action().url());
 
 		val paymentProfile = userService.findByUsernameOrIdentity(identity);
-		if (paymentProfile != null) {
+		if (paymentProfile != null && paymentProfile.isAllowed()) {
 			val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
 							"/payment.png?step=start",
 					paymentProfile.getIdentity()));
@@ -366,7 +366,7 @@ public class FramePaymentController {
 		String paymentAddress = null;
 		val paymentProfile = userService.findByUsernameOrIdentity(identity);
 
-		if (paymentProfile != null) {
+		if (paymentProfile != null && paymentProfile.isAllowed()) {
 			paymentAddress = paymentService.getUserReceiverAddress(paymentProfile, token.chainId());
 		}
 		if (StringUtils.isBlank(paymentAddress)) {
@@ -382,7 +382,8 @@ public class FramePaymentController {
 
 		try {
 
-			val payment = new Payment(Payment.PaymentType.FRAME, paymentProfile,
+			val payment = new Payment(Payment.PaymentType.FRAME,
+					paymentProfile != null && paymentProfile.isAllowed() ? paymentProfile : null,
 					token.chainId(), token.id());
 			payment.setSender(senderProfile);
 			payment.setSenderAddress(senderProfile != null ? senderProfile.getIdentity() :

@@ -170,7 +170,7 @@ public class UserController {
 					identities.add(usernameOrAddress);
 				} else {
 					val user = userService.findByUsernameOrIdentity(usernameOrAddress);
-					if (user != null) {
+					if (user != null && user.isAllowed()) {
 						identities.add(user.getIdentity());
 					} else {
 						val fnameAddresses = identityService.getFnameAddresses(usernameOrAddress);
