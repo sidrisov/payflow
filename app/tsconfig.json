@@ -17,7 +17,8 @@
     "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "types": ["vite-plugin-pwa/react"]
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

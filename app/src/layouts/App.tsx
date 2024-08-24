@@ -32,6 +32,7 @@ import { DAPP_URL } from '../utils/urlConstants';
 import { useTokenPrices } from '../utils/queries/prices';
 import { IoHomeOutline, IoHomeSharp, IoSearch, IoSearchOutline } from 'react-icons/io5';
 import { PiPersonSimpleTaiChi, PiPersonSimpleTaiChiBold } from 'react-icons/pi';
+import { UpdateVersionPrompt } from '../components/UpdateVersionPrompt';
 
 export default function AppLayout({
   profile,
@@ -108,36 +109,36 @@ export default function AppLayout({
                     justifyContent="space-between"
                     flexGrow={1}>
                     <HomeLogo />
-                    <Stack direction="row" spacing={0.5} alignItems="center">
-                      {profile ? (
-                        <IconButton
-                          size="small"
-                          onClick={async (event) => {
-                            setProfileMenuAnchorEl(event.currentTarget);
-                            setOpenProfileMenu(true);
-                          }}>
-                          <ProfileAvatar profile={profile} sx={{ width: 36, height: 36 }} />
-                        </IconButton>
-                      ) : (
-                        <Button
-                          color="inherit"
-                          size="medium"
-                          href={`${DAPP_URL}/connect`}
-                          sx={{
-                            borderRadius: 5,
-                            fontWeight: 'bold',
-                            fontSize: 18,
-                            textTransform: 'none'
-                          }}>
-                          sign in
-                        </Button>
-                      )}
-                    </Stack>
+
+                    {profile ? (
+                      <IconButton
+                        size="small"
+                        onClick={async (event) => {
+                          setProfileMenuAnchorEl(event.currentTarget);
+                          setOpenProfileMenu(true);
+                        }}>
+                        <ProfileAvatar profile={profile} sx={{ width: 36, height: 36 }} />
+                      </IconButton>
+                    ) : (
+                      <Button
+                        color="inherit"
+                        size="medium"
+                        href={`${DAPP_URL}/connect`}
+                        sx={{
+                          borderRadius: 5,
+                          fontWeight: 'bold',
+                          fontSize: 18,
+                          textTransform: 'none'
+                        }}>
+                        sign in
+                      </Button>
+                    )}
                   </Box>
                 </Toolbar>
               )}
             </AppBar>
           </HideOnScroll>
+          <UpdateVersionPrompt />
           <Box display="flex" mt={3} pb={8}>
             <Outlet />
           </Box>

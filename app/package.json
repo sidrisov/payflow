@@ -75,7 +75,8 @@
     "typescript": "^5.1.6",
     "vite": "^5.2.11",
     "vite-plugin-node-polyfills": "^0.22.0",
-    "vite-plugin-pwa": "^0.20.0"
+    "vite-plugin-pwa": "^0.20.0",
+    "workbox-window": "^7.1.0"
   },
   "overrides": {
     "agp-js": "github:runic-inc/apg-js#8bb92ff0780819170fee7e756d26e0562e442983"

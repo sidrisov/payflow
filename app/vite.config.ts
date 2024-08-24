@@ -22,7 +22,7 @@ export default defineConfig({
         enabled: true
       },
       injectRegister: 'auto',
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,jpg,svg}'],
         maximumFileSizeToCacheInBytes: 7500000,
