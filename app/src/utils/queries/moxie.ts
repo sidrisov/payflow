@@ -9,7 +9,7 @@ import {
 import { Address } from 'viem';
 
 const headers = {
-  'x-airstack-claims': import.meta.env.VITE_AIRSTACK_API_KEY
+  'x-airstack-claims': import.meta.env.VITE_MOXIE_API_KEY
 };
 
 const graphQLClient = new GraphQLClient('https://claims.airstack.xyz/moxie');

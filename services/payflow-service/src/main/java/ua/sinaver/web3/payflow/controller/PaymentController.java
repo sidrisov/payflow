@@ -239,6 +239,7 @@ public class PaymentController {
 				val sourceRef = String.format("https://warpcast.com/%s/%s",
 						receiverFname, payment.getSourceHash().substring(0, 10));
 
+				val crossChainText = payment.getFulfillmentId() != null ? " (cross-chain)" : "";
 				if (StringUtils.isBlank(payment.getCategory())) {
 					if (payment.getType().equals(Payment.PaymentType.INTENT_TOP_REPLY)) {
 						var scvText = "";
@@ -250,7 +251,7 @@ public class PaymentController {
 						}
 
 						val castText = String.format("""
-										@%s, you've been paid %s %s by @%s for your top comment %s🎉
+										@%s, you've been paid %s %s%s by @%s for your top comment %s🎉
 
 										p.s. join /payflow channel for updates 👀""",
 								receiverFname,
@@ -258,6 +259,7 @@ public class PaymentController {
 										PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 										: String.format("$%s", payment.getUsdAmount()),
 								payment.getToken().toUpperCase(),
+								crossChainText,
 								senderFname,
 								scvText);
 
@@ -271,13 +273,14 @@ public class PaymentController {
 					} else {
 						// send both reply + intent for recipient who's on payflow
 						val castText = String.format("""
-										@%s, you've been paid %s %s by @%s 🎉
+										@%s, you've been paid %s %s%s by @%s 🎉
 
 										p.s. join /payflow channel for updates 👀""",
 								receiverFname,
 								StringUtils.isNotBlank(payment.getTokenAmount()) ? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 										: String.format("$%s", payment.getUsdAmount()),
 								payment.getToken().toUpperCase(),
+								crossChainText,
 								senderFname);
 
 						val processed = farcasterPaymentBotService.reply(castText,
@@ -296,7 +299,7 @@ public class PaymentController {
 
 							try {
 								val messageText = String.format("""
-												 @%s, you've been paid %s %s by @%s 🎉
+												 @%s, you've been paid %s %s%s by @%s 🎉
 
 												%s
 												🧾 Receipt: %s
@@ -306,6 +309,7 @@ public class PaymentController {
 										StringUtils.isNotBlank(payment.getTokenAmount()) ? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 												: String.format("$%s", payment.getUsdAmount()),
 										payment.getToken().toUpperCase(),
+										crossChainText,
 										senderFname,
 										payment.getSourceRef() != null ? String.format("🔗 Source: %s",
 												payment.getSourceRef()) : "",
@@ -329,13 +333,14 @@ public class PaymentController {
 							.toUriString();
 
 					val castText = String.format("""
-									@%s, you've been paid %s unit(s) of storage by @%s 🎉
+									@%s, you've been paid %s unit(s) of storage%s by @%s 🎉
 																		
 									📊Check your storage usage in the frame below 👇🏻
 																							
 									p.s. join /payflow channel for updates 👀""",
 							receiverFname,
 							payment.getTokenAmount(),
+							crossChainText,
 							senderFname);
 
 					// update embeds to include storage frame as well!
@@ -351,7 +356,7 @@ public class PaymentController {
 					if (payment.getReceiver() != null) {
 						try {
 							val messageText = String.format("""
-											 @%s, you've been paid %s units of storage by @%s 🎉
+											 @%s, you've been paid %s units of storage%s by @%s 🎉
 																						
 											🔗 Source: %s
 											🧾 Receipt: %s
@@ -360,6 +365,7 @@ public class PaymentController {
 											p.s. join /payflow channel for updates 👀""",
 									receiverFname,
 									payment.getTokenAmount(),
+									crossChainText,
 									senderFname,
 									sourceRef,
 									receiptUrl,
