@@ -6,6 +6,7 @@ export const FARCASTER_DAPP = 'farcaster';
 export const LENS_DAPP = 'lens';
 export const ADDRESS = 'address';
 export const PAYFLOW = 'payflow';
+export const ZAPPER = 'zapper';
 
 export type dAppType =
   | typeof XMPT_DAPP
@@ -13,7 +14,8 @@ export type dAppType =
   | typeof FARCASTER_DAPP
   | typeof LENS_DAPP
   | typeof ADDRESS
-  | typeof PAYFLOW;
+  | typeof PAYFLOW
+  | typeof ZAPPER;
 
 export const XMTP_INBOX = 'inbox';
 export const XMTP_CONVERSE = 'converse';
@@ -37,5 +39,7 @@ export function socialLink(dappName: dAppType, profileName?: string) {
       return `https://hey.xyz/u/${profileName}`;
     case 'payflow':
       return `${DAPP_URL}/${profileName}`;
+    case 'zapper':
+      return `https://zapper.xyz/account/${profileName}`;
   }
 }

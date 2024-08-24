@@ -1,4 +1,4 @@
-import { Divider, ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/material';
+import { Avatar, Divider, ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/material';
 import { PersonAdd } from '@mui/icons-material';
 import { IdentityType } from '../../types/ProfileType';
 import { useContext } from 'react';
@@ -8,7 +8,7 @@ import { copyToClipboard } from '../../utils/copyToClipboard';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
 import { IoPeople } from 'react-icons/io5';
 import { toast } from 'react-toastify';
-import { FARCASTER_DAPP, socialLink } from '../../utils/dapps';
+import { FARCASTER_DAPP, socialLink, ZAPPER } from '../../utils/dapps';
 import { SiFarcaster } from 'react-icons/si';
 
 export function SearchIdentityMenu({
@@ -95,6 +95,13 @@ export function SearchIdentityMenu({
             )}
           </>
         )}
+        <Divider />
+        <MenuItem component="a" href={socialLink(ZAPPER, address)} target="_blank">
+          <ListItemIcon>
+            <Avatar src="/dapps/zapper.png" sx={{ width: 20, height: 20 }} />
+          </ListItemIcon>
+          More on Zapper
+        </MenuItem>
       </MenuList>
     </Menu>
   );

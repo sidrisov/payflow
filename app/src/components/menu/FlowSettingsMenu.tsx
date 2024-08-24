@@ -1,5 +1,7 @@
 import {
+  Avatar,
   AvatarGroup,
+  Divider,
   ListItemIcon,
   Menu,
   MenuItem,
@@ -19,6 +21,7 @@ import { WalletsInfoPopover } from './WalletsInfoPopover';
 import getFlowAssets from '../../utils/assets';
 import { useAssetBalances } from '../../utils/queries/balances';
 import { IoIosWallet } from 'react-icons/io';
+import { socialLink, ZAPPER } from '../../utils/dapps';
 
 export function FlowSettingsMenu({
   flow,
@@ -94,6 +97,16 @@ export function FlowSettingsMenu({
               Make default for receiving
             </MenuItem>
           )}
+          <Divider />
+          <MenuItem
+            component="a"
+            href={socialLink(ZAPPER, flow.wallets[0].address)}
+            target="_blank">
+            <ListItemIcon>
+              <Avatar src="/dapps/zapper.png" sx={{ width: 20, height: 20 }} />
+            </ListItemIcon>
+            More on Zapper
+          </MenuItem>
         </MenuList>
       </Menu>
       <WalletsInfoPopover
