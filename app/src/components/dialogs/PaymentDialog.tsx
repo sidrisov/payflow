@@ -66,7 +66,6 @@ export default function PaymentDialog({
   return (
     <>
       <Dialog
-        disableEnforceFocus
         fullScreen={isMobile}
         onClose={closeStateCallback}
         {...props}
