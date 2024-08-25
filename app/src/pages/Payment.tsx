@@ -77,56 +77,17 @@ export default function Payment() {
       <Helmet>
         <title> Payflow | Payment </title>
       </Helmet>
-      <Container maxWidth="md"></Container>
-      {profile &&
-        selectedFlow &&
-        payment &&
-        payment.status === 'PENDING' &&
-        (!payment.category ? (
-          <PaymentDialog
-            alwaysShowBackButton
-            title="Complete Payment"
-            open={payment != null}
-            paymentType="payflow"
-            payment={payment}
-            sender={{
-              identity: {
-                profile: { ...profile, defaultFlow: selectedFlow },
-                address: profile.identity
-              },
-              type: 'profile'
-            }}
-            recipient={
-              {
-                identity: {
-                  ...(payment.receiver
-                    ? {
-                        profile: {
-                          ...payment.receiver,
-                          ...(payment.receiverFlow && { defaultFlow: payment.receiverFlow })
-                        }
-                      }
-                    : {
-                        address: payment.receiverAddress
-                      })
-                } as IdentityType,
-                type: payment.receiver ? 'profile' : 'address'
-              } as SelectedIdentityType
-            }
-            closeStateCallback={async () => {
-              navigate('/');
-            }}
-            flows={flows}
-            selectedFlow={selectedFlow}
-            setSelectedFlow={setSelectedFlow}
-          />
-        ) : (
-          payment.category === 'fc_storage' &&
-          paymentSocial && (
-            <GiftStorageDialog
+      <Container maxWidth="md">
+        {profile &&
+          selectedFlow &&
+          payment &&
+          payment.status === 'PENDING' &&
+          (!payment.category ? (
+            <PaymentDialog
               alwaysShowBackButton
-              title="Complete Storage Payment"
+              title="Complete Payment"
               open={payment != null}
+              paymentType="payflow"
               payment={payment}
               sender={{
                 identity: {
@@ -135,7 +96,23 @@ export default function Payment() {
                 },
                 type: 'profile'
               }}
-              social={paymentSocial}
+              recipient={
+                {
+                  identity: {
+                    ...(payment.receiver
+                      ? {
+                          profile: {
+                            ...payment.receiver,
+                            ...(payment.receiverFlow && { defaultFlow: payment.receiverFlow })
+                          }
+                        }
+                      : {
+                          address: payment.receiverAddress
+                        })
+                  } as IdentityType,
+                  type: payment.receiver ? 'profile' : 'address'
+                } as SelectedIdentityType
+              }
               closeStateCallback={async () => {
                 navigate('/');
               }}
@@ -143,8 +120,32 @@ export default function Payment() {
               selectedFlow={selectedFlow}
               setSelectedFlow={setSelectedFlow}
             />
-          )
-        ))}
+          ) : (
+            payment.category === 'fc_storage' &&
+            paymentSocial && (
+              <GiftStorageDialog
+                alwaysShowBackButton
+                title="Complete Storage Payment"
+                open={payment != null}
+                payment={payment}
+                sender={{
+                  identity: {
+                    profile: { ...profile, defaultFlow: selectedFlow },
+                    address: profile.identity
+                  },
+                  type: 'profile'
+                }}
+                social={paymentSocial}
+                closeStateCallback={async () => {
+                  navigate('/');
+                }}
+                flows={flows}
+                selectedFlow={selectedFlow}
+                setSelectedFlow={setSelectedFlow}
+              />
+            )
+          ))}
+      </Container>
     </>
   );
 }
