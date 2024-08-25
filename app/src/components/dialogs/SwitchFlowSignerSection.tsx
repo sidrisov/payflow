@@ -33,7 +33,11 @@ export function SwitchFlowSignerSection({ flow }: { flow: FlowType }) {
       onClick={async () => {
         if (flow.signerProvider === 'privy') {
           if (!authenticated) {
-            login();
+            login({
+              ...(flow.signerCredential && {
+                prefill: { type: 'email', value: flow.signerCredential }
+              })
+            });
           } else {
             const embeddedWallet = wallets.find(
               (w) =>
@@ -44,7 +48,11 @@ export function SwitchFlowSignerSection({ flow }: { flow: FlowType }) {
               // logout previously connected social wallet
               await logout();
               // login again
-              login();
+              login({
+                ...(flow.signerCredential && {
+                  prefill: { type: 'email', value: flow.signerCredential }
+                })
+              });
             }
           }
         } else {
