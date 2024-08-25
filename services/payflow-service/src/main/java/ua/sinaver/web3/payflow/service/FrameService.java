@@ -68,7 +68,7 @@ public class FrameService implements IFrameService {
 
 		val randomTokenIndex = random.nextInt(TOKENS.size());
 		val randomToken = TOKENS.get(randomTokenIndex);
-		val gifted = userRepository.findByIdentity(giftedContact.data().profile().identity());
+		val gifted = userRepository.findByIdentityIgnoreCase(giftedContact.data().profile().identity());
 		giftRepository.save(new Gift(gifter, gifted, randomToken));
 		return giftedContact;
 	}

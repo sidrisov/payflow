@@ -73,7 +73,7 @@ public class AuthController {
 		}*/
 
 		val authentication = authManager.authenticate(
-				new Web3Authentication(identity, siwe.message(), siwe.signature()));
+				new Web3Authentication(identity.toLowerCase(), siwe.message(), siwe.signature()));
 
 		if (authentication.isAuthenticated()) {
 			// save authentication to security context

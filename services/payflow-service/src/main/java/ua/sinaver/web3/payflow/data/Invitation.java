@@ -49,7 +49,7 @@ public class Invitation {
 	private Long version;
 
 	public Invitation(String identity, String code) {
-		this.identity = identity;
+		this.identity = identity != null ? identity.toLowerCase() : null;
 		this.code = code;
 	}
 

@@ -45,7 +45,7 @@ public class Wallet {
 
 	public Wallet(String address, Integer network, String walletVersion,
 	              boolean safeDeployed) {
-		this.address = address;
+		this.address = address.toLowerCase();
 		this.network = network;
 		this.walletVersion = walletVersion;
 		this.deployed = safeDeployed;

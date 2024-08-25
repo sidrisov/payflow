@@ -80,7 +80,11 @@ public class UserService implements IUserService {
 					farcasterUser,
 					identityToCreateProfile);
 
-			profile = new User(identityToCreateProfile.address());
+			// fetch again for those who attempted to signed in
+			profile = userRepository.findByIdentityIgnoreCase(identityToCreateProfile.address());
+			if (profile == null) {
+				profile = new User(identityToCreateProfile.address());
+			}
 			profile.setAllowed(true);
 			profile.setUsername(farcasterUser.username().replace(".eth", ""));
 			profile.setDisplayName(farcasterUser.displayName());
@@ -103,7 +107,7 @@ public class UserService implements IUserService {
 	@Override
 	@CacheEvict(value = USERS_CACHE_NAME, key = "#identity")
 	public void updateProfile(String identity, ProfileMessage profile, String invitationCode) {
-		User user = userRepository.findByIdentity(identity);
+		User user = userRepository.findByIdentityIgnoreCase(identity);
 
 		if (user == null) {
 			throw new Error("User not found");
@@ -177,17 +181,17 @@ public class UserService implements IUserService {
 
 	@Override
 	public User findByIdentity(String signer) {
-		return userRepository.findByIdentity(signer);
+		return userRepository.findByIdentityIgnoreCase(signer);
 	}
 
 	@Override
 	public User findByUsername(String username) {
-		return userRepository.findByUsernameOrIdentity(username);
+		return userRepository.findByUsernameOrIdentityIgnoreCase(username);
 	}
 
 	@Override
 	public User findByUsernameOrIdentity(String usernameOrIdentity) {
-		return userRepository.findByUsernameOrIdentity(usernameOrIdentity);
+		return userRepository.findByUsernameOrIdentityIgnoreCase(usernameOrIdentity);
 	}
 
 	@Override

@@ -108,7 +108,7 @@ public class IdentityService implements IIdentityService {
 
 	@Override
 	public List<User> getProfiles(List<String> addresses) {
-		return addresses.stream().map(address -> userRepository.findByIdentityAndAllowedTrue(address))
+		return addresses.stream().map(address -> userRepository.findByIdentityIgnoreCaseAndAllowedTrue(address))
 				.filter(Objects::nonNull).limit(3).toList();
 	}
 
@@ -204,7 +204,7 @@ public class IdentityService implements IIdentityService {
 					.flatMap(identity -> Mono.zip(
 											Mono.just(identity),
 											Mono.fromCallable(
-															() -> Optional.ofNullable(userRepository.findByIdentityAndAllowedTrue(identity)))
+															() -> Optional.ofNullable(userRepository.findByIdentityIgnoreCaseAndAllowedTrue(identity)))
 													.onErrorResume(exception -> {
 														log.error("Error fetching user {} - {}",
 																identity,

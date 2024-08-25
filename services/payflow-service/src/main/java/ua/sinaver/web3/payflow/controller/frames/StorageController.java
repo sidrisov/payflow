@@ -6,6 +6,7 @@ import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -87,19 +88,23 @@ public class StorageController {
 				validateMessage.action().url());
 
 		val gifteeUser = neynarService.fetchFarcasterUser(fid);
-		val castInteractor = validateMessage.action().interactor();
+		val interactor = validateMessage.action().interactor();
 
 		User clickedProfile;
 		try {
-			clickedProfile = userService.getOrCreateUserFromFarcasterProfile(castInteractor,
+			clickedProfile = userService.getOrCreateUserFromFarcasterProfile(interactor,
 					false, false);
 		} catch (IllegalArgumentException exception) {
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Missing verified identity! Contact @sinaver.eth"));
+		} catch (DataIntegrityViolationException exception) {
+			log.error("Failed to create a user for {}", interactor.username(), exception);
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameMessage("Identity conflict! Contact @sinaver.eth"));
 		}
 
 		if (clickedProfile == null) {
-			log.error("Clicked fid {} is not on payflow", castInteractor);
+			log.error("Clicked fid {} is not on payflow", interactor);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Sign up on Payflow first!"));
 		}
@@ -112,7 +117,7 @@ public class StorageController {
 			try {
 				numberOfUnits = Integer.parseInt(inputText);
 			} catch (Throwable t) {
-				log.warn("Couldn't parse input text of storage units {} by {}", inputText, castInteractor);
+				log.warn("Couldn't parse input text of storage units {} by {}", inputText, interactor);
 				return ResponseEntity.badRequest().body(
 						new FrameResponse.FrameMessage("Enter units in numeric format, e.g. 1-5"));
 			}

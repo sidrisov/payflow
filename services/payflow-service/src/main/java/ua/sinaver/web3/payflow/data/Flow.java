@@ -82,7 +82,7 @@ public class Flow {
 		this.title = title;
 		this.uuid = RandomStringUtils.random(8, true, true);
 
-		this.signer = signer;
+		this.signer = signer != null ? signer.toLowerCase() : null;
 		this.signerProvider = signerProvider;
 		this.signerType = signerType;
 		this.signerCredential = signerCredential;

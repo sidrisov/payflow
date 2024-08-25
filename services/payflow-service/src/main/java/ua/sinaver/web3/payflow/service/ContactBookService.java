@@ -204,7 +204,7 @@ public class ContactBookService implements IContactBookService {
 					.fromIterable(allContacts.keySet())
 					.flatMap(contact -> Mono.zip(
 											Mono.just(contact),
-											Mono.justOrEmpty(userRepository.findByIdentity(contact)).singleOptional(),
+											Mono.justOrEmpty(userRepository.findByIdentityIgnoreCase(contact)).singleOptional(),
 											Mono.fromCallable(
 															() -> socialGraphService.getSocialMetadata(contact))
 													.subscribeOn(Schedulers.boundedElastic())

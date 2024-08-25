@@ -41,6 +41,7 @@ public class FlowService implements IFlowService {
 	@Override
 	public Jar createJar(String title, String description, String image, String source, User user) {
 		// use same signer as default flow
+		// TODO: find Payflow Balance
 		val signer = user.getDefaultFlow().getSigner();
 		val signerProvider = user.getDefaultFlow().getSignerProvider();
 		val signerType = user.getDefaultFlow().getSignerType();

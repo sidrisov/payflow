@@ -85,6 +85,6 @@ public class User {
 	private Long version;
 
 	public User(String identity) {
-		this.identity = identity;
+		this.identity = identity.toLowerCase();
 	}
 }

@@ -61,6 +61,7 @@ public class PaymentBotJob {
 	public enum Status {
 		PENDING,
 		REJECTED,
+		ERROR,
 		PROCESSED
 	}
 }

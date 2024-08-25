@@ -16,32 +16,21 @@ import ua.sinaver.web3.payflow.message.WalletProfileRequestMessage;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public interface UserRepository extends CrudRepository<User, Integer> {
-	User findByIdentity(String identity);
+	User findByIdentityIgnoreCase(String identity);
 
 	User findByAccessToken(String accessToken);
 
-	Stream<User> findByIdentityIn(List<String> identities);
+	User findByIdentityIgnoreCaseAndAllowedTrue(String identity);
 
-	default Map<String, User> findByIdentityAsMapIn(List<String> identities) {
-		return findByIdentityIn(identities)
-				.collect(Collectors.toMap(User::getIdentity, Function.identity()));
+	User findByUsernameOrIdentityIgnoreCase(String username, String identity);
+
+	default User findByUsernameOrIdentityIgnoreCase(String usernameOrIdentity) {
+		return findByUsernameOrIdentityIgnoreCase(usernameOrIdentity, usernameOrIdentity);
 	}
 
-	User findByIdentityAndAllowedTrue(String identity);
-
-	User findByUsernameOrIdentity(String username, String identity);
-
-	default User findByUsernameOrIdentity(String usernameOrIdentity) {
-		return findByUsernameOrIdentity(usernameOrIdentity, usernameOrIdentity);
-	}
-
-	@Query("SELECT u FROM User u WHERE u.displayName LIKE %:query% OR u.username LIKE %:query% OR u.identity LIKE %:query%")
+	@Query("SELECT u FROM User u WHERE LOWER(u.displayName) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(u.username) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(u.identity) LIKE LOWER(CONCAT('%', :query, '%'))")
 	List<User> findBySearchQuery(@Param("query") String searchQuery);
 
 	@Query(value = "SELECT * FROM user WHERE id " +
