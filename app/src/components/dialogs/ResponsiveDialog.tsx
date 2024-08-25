@@ -41,6 +41,8 @@ const ResponsiveDialog: React.FC<ResponsiveDialogProps> = ({
 
   return isMobile ? (
     <SwipeableDrawer
+      disableEnforceFocus
+      disableAutoFocus
       anchor="bottom"
       open={open}
       onClose={onClose}
@@ -54,7 +56,7 @@ const ResponsiveDialog: React.FC<ResponsiveDialogProps> = ({
         }
       }}
       ModalProps={{
-        sx: { zIndex: 1600, backdropFilter: 'blur(5px)' }
+        sx: { zIndex: 1400, backdropFilter: 'blur(5px)' }
       }}>
       <Puller />
       <Box p={2} pt={1} pb={3}>
@@ -72,6 +74,8 @@ const ResponsiveDialog: React.FC<ResponsiveDialogProps> = ({
     </SwipeableDrawer>
   ) : (
     <Dialog
+      disableEnforceFocus
+      disableAutoFocus
       open={open}
       onClose={onClose}
       PaperProps={{
@@ -82,7 +86,7 @@ const ResponsiveDialog: React.FC<ResponsiveDialogProps> = ({
         }
       }}
       sx={{
-        zIndex: 1600,
+        zIndex: 1400,
         backdropFilter: 'blur(5px)'
       }}>
       <DialogTitle variant="h6" textAlign="center" sx={{ pb: 1 }}>

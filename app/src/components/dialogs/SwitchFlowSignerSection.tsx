@@ -35,7 +35,8 @@ export function SwitchFlowSignerSection({ flow }: { flow: FlowType }) {
           if (!authenticated) {
             login({
               ...(flow.signerCredential && {
-                prefill: { type: 'email', value: flow.signerCredential }
+                prefill: { type: 'email', value: flow.signerCredential },
+                defaultPrevented: true
               })
             });
           } else {

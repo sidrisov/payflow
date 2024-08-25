@@ -1,10 +1,4 @@
-import {
-  Stack,
-  StackProps,
-  Box,
-  Popover,
-  Button
-} from '@mui/material';
+import { Stack, StackProps, Box, Popover, Button } from '@mui/material';
 import { MetaType } from '../types/ProfileType';
 import SocialPresenceAvatar from './avatars/SocialPresenceAvatar';
 import { FARCASTER_DAPP, LENS_DAPP, dAppType } from '../utils/dapps';
@@ -98,7 +92,7 @@ export function SocialPresenceStack({ meta, ...props }: { meta: MetaType & Stack
           setOpenSocialPresencePopover(false);
         }}
         sx={{
-          zIndex: 1550,
+          zIndex: 1350,
           '& .MuiPaper-root': {
             borderRadius: 5
           }

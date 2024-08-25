@@ -321,7 +321,7 @@ export default function GiftStorageDialog({
           }
         }}
         sx={{
-          zIndex: 1550,
+          zIndex: 1350,
           backdropFilter: 'blur(5px)'
         }}
         {...(isMobile && { TransitionComponent: UpSlideTransition })}>

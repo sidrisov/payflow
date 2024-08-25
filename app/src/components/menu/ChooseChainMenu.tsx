@@ -23,7 +23,7 @@ export function ChooseChainMenu({
     <Menu
       {...props}
       onClose={closeStateCallback}
-      sx={{ mt: 1.5, '.MuiMenu-paper': { borderRadius: 5, minWidth: 180 }, zIndex: 1550 }}
+      sx={{ mt: 1.5, '.MuiMenu-paper': { borderRadius: 5, minWidth: 180 }, zIndex: 1350 }}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'left'

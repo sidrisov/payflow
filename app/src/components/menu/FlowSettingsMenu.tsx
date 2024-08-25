@@ -39,7 +39,7 @@ export function FlowSettingsMenu({
     <>
       <Menu
         {...props}
-        sx={{ mt: 1, '.MuiMenu-paper': { borderRadius: 5 }, zIndex: 1600 }}
+        sx={{ mt: 1, '.MuiMenu-paper': { borderRadius: 5 }, zIndex: 1400 }}
         transformOrigin={{ horizontal: 'left', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
         <MenuList dense disablePadding>

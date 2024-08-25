@@ -202,7 +202,7 @@ export function SearchIdentityListItem(
           setOpenSocialLinksPopover(false);
         }}
         sx={{
-          zIndex: 1550,
+          zIndex: 1350,
           '& .MuiPaper-root': {
             borderRadius: 5
           }

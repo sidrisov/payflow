@@ -66,6 +66,8 @@ export default function PaymentDialog({
   return (
     <>
       <Dialog
+        disableEnforceFocus
+        disableAutoFocus
         fullScreen={isMobile}
         onClose={closeStateCallback}
         {...props}
@@ -79,7 +81,7 @@ export default function PaymentDialog({
           }
         }}
         sx={{
-          zIndex: 1550,
+          zIndex: 1350,
           backdropFilter: 'blur(5px)'
         }}
         {...(isMobile && { TransitionComponent: UpSlideTransition })}>
