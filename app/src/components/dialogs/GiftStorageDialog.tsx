@@ -321,7 +321,7 @@ export default function GiftStorageDialog({
           }
         }}
         sx={{
-          zIndex: 1350,
+          zIndex: 1450,
           backdropFilter: 'blur(5px)'
         }}
         {...(isMobile && { TransitionComponent: UpSlideTransition })}>
@@ -428,7 +428,10 @@ export default function GiftStorageDialog({
               Selected payment flow `<b>{senderFlow.title}`</b> signer is not connected! Please,
               proceed with connecting the signer mentioned below:
             </Typography>
-            <SwitchFlowSignerSection flow={senderFlow} />
+            <SwitchFlowSignerSection
+              onSwitch={() => setOpenConnectSignerDrawer(false)}
+              flow={senderFlow}
+            />
           </Stack>
         </ResponsiveDialog>
       )}

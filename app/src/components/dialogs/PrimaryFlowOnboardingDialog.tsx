@@ -136,7 +136,7 @@ export default function PrimaryFlowOnboardingDialog({
         }
       }}
       sx={{
-        zIndex: 1350,
+        zIndex: 1450,
         backdropFilter: 'blur(5px)'
       }}>
       <BackDialogTitle

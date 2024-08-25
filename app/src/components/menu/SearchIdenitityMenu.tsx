@@ -35,7 +35,7 @@ export function SearchIdentityMenu({
   return (
     <Menu
       {...props}
-      sx={{ '.MuiMenu-paper': { borderRadius: 5 }, zIndex: 1350 }}
+      sx={{ '.MuiMenu-paper': { borderRadius: 5 }, zIndex: 1450 }}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'right'

@@ -7,7 +7,13 @@ import { grey } from '@mui/material/colors';
 import AddressAvatar from '../avatars/AddressAvatar';
 import { useEffect } from 'react';
 
-export function SwitchFlowSignerSection({ flow }: { flow: FlowType }) {
+export function SwitchFlowSignerSection({
+  flow,
+  onSwitch
+}: {
+  onSwitch?: () => void;
+  flow: FlowType;
+}) {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
   const { authenticated, ready, connectWallet, login, logout } = usePrivy();
@@ -59,6 +65,8 @@ export function SwitchFlowSignerSection({ flow }: { flow: FlowType }) {
         } else {
           connectWallet({ suggestedAddress: flow.signer });
         }
+
+        onSwitch?.();
       }}
       sx={{ borderRadius: 5, textTransform: 'none', height: 50, justifyContent: 'flex-start' }}>
       {flow.signerCredential ? (

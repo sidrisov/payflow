@@ -81,7 +81,7 @@ export default function PaymentDialog({
           }
         }}
         sx={{
-          zIndex: 1350,
+          zIndex: 1450,
           backdropFilter: 'blur(5px)'
         }}
         {...(isMobile && { TransitionComponent: UpSlideTransition })}>

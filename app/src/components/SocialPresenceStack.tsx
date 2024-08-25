@@ -92,7 +92,7 @@ export function SocialPresenceStack({ meta, ...props }: { meta: MetaType & Stack
           setOpenSocialPresencePopover(false);
         }}
         sx={{
-          zIndex: 1350,
+          zIndex: 1450,
           '& .MuiPaper-root': {
             borderRadius: 5
           }

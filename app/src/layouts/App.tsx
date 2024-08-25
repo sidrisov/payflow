@@ -153,7 +153,7 @@ export default function AppLayout({
               left: 0,
               right: 0,
               width: '100%',
-              zIndex: 1300
+              zIndex: 1400
             }}>
             <BottomNavigation
               showLabels

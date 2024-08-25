@@ -24,7 +24,7 @@ export function WalletsInfoPopover({
     <Popover
       elevation={15}
       {...props}
-      sx={{ mt: 1, '.MuiPopover-paper': { borderRadius: 5 }, zIndex: 1400 }}
+      sx={{ mt: 1, '.MuiPopover-paper': { borderRadius: 5 }, zIndex: 1500 }}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'left'

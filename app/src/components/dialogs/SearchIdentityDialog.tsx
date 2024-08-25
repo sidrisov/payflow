@@ -235,7 +235,7 @@ export default function SearchIdentityDialog({
       fullScreen={isMobile}
       onClose={handleCloseCampaignDialog}
       sx={{
-        ...(showOnTopOfNavigation && { zIndex: 1350 }),
+        ...(showOnTopOfNavigation && { zIndex: 1450 }),
         backdropFilter: 'blur(5px)'
       }}
       PaperProps={{

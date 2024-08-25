@@ -643,7 +643,10 @@ export default function PaymentDialogContent({
               Selected payment flow `<b>{senderFlow.title}`</b> signer is not connected! Please,
               proceed with connecting the signer mentioned below:
             </Typography>
-            <SwitchFlowSignerSection flow={senderFlow} />
+            <SwitchFlowSignerSection
+              onSwitch={() => setOpenConnectSignerDrawer(false)}
+              flow={senderFlow}
+            />
           </Stack>
         </ResponsiveDialog>
       )}

@@ -33,8 +33,6 @@ import { fetchQuery } from '@airstack/airstack-react';
 import { PaymentFlowSection } from '../PaymentFlowSection';
 import { IoMdArrowDropdown } from 'react-icons/io';
 import { TbSend } from 'react-icons/tb';
-import ResponsiveDialog from '../dialogs/ResponsiveDialog';
-import { SwitchFlowSignerSection } from '../dialogs/SwitchFlowSignerSection';
 
 export type AccountNewDialogProps = CardProps & {
   flows: FlowType[];

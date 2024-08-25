@@ -56,7 +56,7 @@ const ResponsiveDialog: React.FC<ResponsiveDialogProps> = ({
         }
       }}
       ModalProps={{
-        sx: { zIndex: 1400, backdropFilter: 'blur(5px)' }
+        sx: { zIndex: 1500, backdropFilter: 'blur(5px)' }
       }}>
       <Puller />
       <Box p={2} pt={1} pb={3}>
@@ -86,7 +86,7 @@ const ResponsiveDialog: React.FC<ResponsiveDialogProps> = ({
         }
       }}
       sx={{
-        zIndex: 1400,
+        zIndex: 1500,
         backdropFilter: 'blur(5px)'
       }}>
       <DialogTitle variant="h6" textAlign="center" sx={{ pb: 1 }}>
