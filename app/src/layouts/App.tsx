@@ -6,7 +6,6 @@ import {
   IconButton,
   Toolbar,
   Box,
-  Stack,
   Button,
   useTheme,
   useMediaQuery,
@@ -88,6 +87,8 @@ export default function AppLayout({
     }
   }, [profile]);
 
+  // specify container height,
+  // otherwise privy will have an issue displaying the dialog content
   return (
     <ProfileContext.Provider
       value={{
@@ -96,7 +97,7 @@ export default function AppLayout({
         appSettings,
         setAppSettings
       }}>
-      <Container maxWidth="xs">
+      <Container maxWidth="xs" sx={{ height: '100vh' }}>
         <Box display="flex" flexDirection="column" justifyContent="flex-start">
           <HideOnScroll>
             <AppBar position="sticky" color="transparent" elevation={0}>
