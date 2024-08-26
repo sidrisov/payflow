@@ -4,9 +4,9 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -97,7 +97,7 @@ public class StorageController {
 		} catch (IllegalArgumentException exception) {
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Missing verified identity! Contact @sinaver.eth"));
-		} catch (DataIntegrityViolationException exception) {
+		} catch (ConstraintViolationException exception) {
 			log.error("Failed to create a user for {}", interactor.username(), exception);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Identity conflict! Contact @sinaver.eth"));

@@ -1,5 +1,6 @@
 package ua.sinaver.web3.payflow.service;
 
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
@@ -45,20 +46,25 @@ public class UserService implements IUserService {
 	private InvitationRepository invitationRepository;
 	@Autowired
 	private IdentityService identityService;
+	@Autowired
+	private EntityManager entityManager;
 
 	@Override
 	@CacheEvict(value = USERS_CACHE_NAME)
 	public void saveUser(String identity) {
 		userRepository.save(new User(identity));
+		entityManager.flush();
 	}
 
 	@Override
 	@CacheEvict(value = USERS_CACHE_NAME, key = "#user.identity")
 	public void saveUser(User user) {
 		userRepository.save(user);
+		entityManager.flush();
 	}
 
 	@Override
+	@Transactional(value = Transactional.TxType.REQUIRES_NEW)
 	public User getOrCreateUserFromFarcasterProfile(FarcasterUser farcasterUser,
 	                                                boolean forceWhitelist,
 	                                                boolean setDefaultReceivingAddress) {
