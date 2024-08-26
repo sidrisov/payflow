@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Container } from '@mui/material';
 import { useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ProfileContext } from '../contexts/UserContext';
@@ -17,7 +17,6 @@ export default function Payment() {
   const navigate = useNavigate();
 
   const { refId } = useParams();
-
   const { profile } = useContext(ProfileContext);
 
   const { flows } = profile ?? { flows: [] };
@@ -28,7 +27,7 @@ export default function Payment() {
 
   useEffect(() => {
     if (!profile) {
-      navigate('/search');
+      navigate('/connect');
     }
   }, []);
 
@@ -70,62 +69,24 @@ export default function Payment() {
     fetchData();
   }, [refId, payment]);
 
+  // specify height, otherwise the privy dialog won't be properly displayed
   return (
     <>
       <Helmet>
         <title> Payflow | Payment </title>
       </Helmet>
-      <Box />
-      {profile &&
-        payment &&
-        flows &&
-        selectedFlow &&
-        payment.status === 'PENDING' &&
-        (!payment.category ? (
-          <PaymentDialog
-            alwaysShowBackButton
-            title="Complete Payment"
-            open={payment != null}
-            paymentType="payflow"
-            payment={payment}
-            sender={{
-              identity: {
-                profile: { ...profile, defaultFlow: selectedFlow },
-                address: profile.identity
-              },
-              type: 'profile'
-            }}
-            recipient={
-              {
-                identity: {
-                  ...(payment.receiver
-                    ? {
-                        profile: {
-                          ...payment.receiver,
-                          ...(payment.receiverFlow && { defaultFlow: payment.receiverFlow })
-                        }
-                      }
-                    : {
-                        address: payment.receiverAddress
-                      })
-                } as IdentityType,
-                type: payment.receiver ? 'profile' : 'address'
-              } as SelectedIdentityType
-            }
-            closeStateCallback={async () => {
-              navigate('/');
-            }}
-            flows={flows}
-            selectedFlow={selectedFlow}
-            setSelectedFlow={setSelectedFlow}
-          />
-        ) : (
-          payment.category === 'fc_storage' &&
-          paymentSocial && (
-            <GiftStorageDialog
+      <Container maxWidth="md" sx={{ height: '100vh' }}>
+        {profile &&
+          payment &&
+          flows &&
+          selectedFlow &&
+          payment.status === 'PENDING' &&
+          (!payment.category ? (
+            <PaymentDialog
               alwaysShowBackButton
-              title="Complete Storage Payment"
+              title="Complete Payment"
               open={payment != null}
+              paymentType="payflow"
               payment={payment}
               sender={{
                 identity: {
@@ -134,7 +95,23 @@ export default function Payment() {
                 },
                 type: 'profile'
               }}
-              social={paymentSocial}
+              recipient={
+                {
+                  identity: {
+                    ...(payment.receiver
+                      ? {
+                          profile: {
+                            ...payment.receiver,
+                            ...(payment.receiverFlow && { defaultFlow: payment.receiverFlow })
+                          }
+                        }
+                      : {
+                          address: payment.receiverAddress
+                        })
+                  } as IdentityType,
+                  type: payment.receiver ? 'profile' : 'address'
+                } as SelectedIdentityType
+              }
               closeStateCallback={async () => {
                 navigate('/');
               }}
@@ -142,8 +119,32 @@ export default function Payment() {
               selectedFlow={selectedFlow}
               setSelectedFlow={setSelectedFlow}
             />
-          )
-        ))}
+          ) : (
+            payment.category === 'fc_storage' &&
+            paymentSocial && (
+              <GiftStorageDialog
+                alwaysShowBackButton
+                title="Complete Storage Payment"
+                open={payment != null}
+                payment={payment}
+                sender={{
+                  identity: {
+                    profile: { ...profile, defaultFlow: selectedFlow },
+                    address: profile.identity
+                  },
+                  type: 'profile'
+                }}
+                social={paymentSocial}
+                closeStateCallback={async () => {
+                  navigate('/');
+                }}
+                flows={flows}
+                selectedFlow={selectedFlow}
+                setSelectedFlow={setSelectedFlow}
+              />
+            )
+          ))}
+      </Container>
     </>
   );
 }

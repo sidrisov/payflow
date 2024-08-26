@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 
 import { Share, CallReceived } from '@mui/icons-material';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
 import { FlowType } from '../../types/FlowType';
@@ -22,14 +22,7 @@ import SearchIdentityDialog from '../dialogs/SearchIdentityDialog';
 import { IdentityType, SelectedIdentityType } from '../../types/ProfileType';
 import PaymentDialog, { PaymentSenderType } from '../dialogs/PaymentDialog';
 import { Address } from 'viem';
-import { useSearchParams } from 'react-router-dom';
 import { ShareFlowMenu } from '../menu/ShareFlowMenu';
-import { PaymentType } from '../../types/PaymentType';
-import { fetchPayment } from '../../services/payments';
-import GiftStorageDialog from '../dialogs/GiftStorageDialog';
-import { GetFarcasterProfileQuery, Social } from '../../generated/graphql/types';
-import { QUERY_FARCASTER_PROFILE } from '../../utils/airstackQueries';
-import { fetchQuery } from '@airstack/airstack-react';
 import { PaymentFlowSection } from '../PaymentFlowSection';
 import { IoMdArrowDropdown } from 'react-icons/io';
 import { TbSend } from 'react-icons/tb';
@@ -39,26 +32,15 @@ export type AccountNewDialogProps = CardProps & {
   selectedFlow: FlowType;
   setSelectedFlow: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
   assetBalancesResult: BalanceFetchResultType;
-  /* assetsOrActivityView: 'assets' | 'activity';
-  setAssetsOrActivityView: React.Dispatch<React.SetStateAction<'assets' | 'activity'>>; */
 };
 
 export function AccountCard({
   flows,
   selectedFlow,
   setSelectedFlow,
-  /*  assetsOrActivityView,
-  setAssetsOrActivityView, */
   assetBalancesResult: { isLoading, isFetched, balances }
 }: AccountNewDialogProps) {
   const { profile } = useContext(ProfileContext);
-
-  const [searchParams] = useSearchParams();
-  const paymentRefId = searchParams.get('pay');
-
-  const [payment, setPayment] = useState<PaymentType>();
-  // TODO: hack, return in payments from back-end instead
-  const [paymentSocial, setPaymentSocial] = useState<Social>();
 
   const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(false);
   const [openSelectFlow, setOpenSelectFlow] = useState(false);
@@ -67,7 +49,6 @@ export function AccountCard({
 
   const [openFlowReceiveQRCode, setOpenFlowReceiveQRCode] = useState(false);
 
-  const [flowAnchorEl, setFlowAnchorEl] = useState<null | HTMLElement>(null);
   const [topUpMenuAnchorEl, setTopUpMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [shareMenuAnchorEl, setShareMenuAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -90,39 +71,6 @@ export function AccountCard({
       setTotalBalance(totalBalance);
     }
   }, [isFetched, balances]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (paymentRefId && !payment) {
-        try {
-          // Fetch payment data
-          const paymentData = await fetchPayment(paymentRefId);
-          if (paymentData) {
-            if (paymentData.receiverFid) {
-              // Fetch Farcaster profile data
-              const { data } = await fetchQuery<GetFarcasterProfileQuery>(
-                QUERY_FARCASTER_PROFILE,
-                { fid: paymentData.receiverFid.toString() },
-                { cache: true }
-              );
-
-              // Update social information if available
-              const social = data?.Socials?.Social?.[0];
-              if (social) {
-                setPaymentSocial(social as Social);
-              }
-            }
-            // Update payment state
-            setPayment(paymentData);
-          }
-        } catch (error) {
-          console.error('Error fetching data:', error);
-        }
-      }
-    };
-
-    fetchData();
-  }, [paymentRefId, payment]);
 
   return (
     profile && (
@@ -147,11 +95,7 @@ export function AccountCard({
           alignItems="center">
           <PaymentFlowSection ml={1} navigation flow={selectedFlow} />
           <Tooltip title="Payment Flows">
-            <IconButton
-              onClick={(event) => {
-                setFlowAnchorEl(event.currentTarget);
-                setOpenSelectFlow(true);
-              }}>
+            <IconButton onClick={() => setOpenSelectFlow(true)}>
               <IoMdArrowDropdown />
             </IconButton>
           </Tooltip>
@@ -186,16 +130,6 @@ export function AccountCard({
               <TbSend />
             </IconButton>
           </Tooltip>
-          {/* <Tooltip title={assetsOrActivityView === 'assets' ? ' Activity' : 'Assets'}>
-            <IconButton
-              color="inherit"
-              onClick={() => {
-                setAssetsOrActivityView(assetsOrActivityView === 'assets' ? 'activity' : 'assets');
-              }}
-              sx={{ border: 1, borderStyle: 'dashed' }}>
-              {assetsOrActivityView === 'assets' ? <Receipt /> : <AccountBalance />}
-            </IconButton>
-          </Tooltip> */}
           <Tooltip title="Share">
             <IconButton
               color="inherit"
@@ -234,71 +168,6 @@ export function AccountCard({
             }}
           />
         )}
-
-        {profile &&
-          selectedFlow &&
-          payment &&
-          payment.status === 'PENDING' &&
-          (!payment.category ? (
-            <PaymentDialog
-              open={payment != null}
-              paymentType="payflow"
-              payment={payment}
-              sender={{
-                identity: {
-                  profile: { ...profile, defaultFlow: selectedFlow },
-                  address: profile.identity
-                },
-                type: 'profile'
-              }}
-              recipient={
-                {
-                  identity: {
-                    ...(payment.receiver
-                      ? {
-                          profile: {
-                            ...payment.receiver,
-                            ...(payment.receiverFlow && { defaultFlow: payment.receiverFlow })
-                          }
-                        }
-                      : {
-                          address: payment.receiverAddress
-                        })
-                  } as IdentityType,
-                  type: payment.receiver ? 'profile' : 'address'
-                } as SelectedIdentityType
-              }
-              closeStateCallback={async () => {
-                setPayment(undefined);
-              }}
-              flows={flows}
-              selectedFlow={selectedFlow}
-              setSelectedFlow={setSelectedFlow}
-            />
-          ) : (
-            payment.category === 'fc_storage' &&
-            paymentSocial && (
-              <GiftStorageDialog
-                open={payment != null}
-                payment={payment}
-                sender={{
-                  identity: {
-                    profile: { ...profile, defaultFlow: selectedFlow },
-                    address: profile.identity
-                  },
-                  type: 'profile'
-                }}
-                social={paymentSocial}
-                closeStateCallback={async () => {
-                  setPayment(undefined);
-                  setPaymentSocial(undefined);
-                }}
-                flows={flows}
-                selectedFlow={selectedFlow}
-                setSelectedFlow={setSelectedFlow}
-              />
-            )
-          ))}
 
         {openSearchIdentity && (
           <SearchIdentityDialog
