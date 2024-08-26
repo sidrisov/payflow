@@ -23,9 +23,13 @@ import { useAvailableMoxieRewards } from '../../utils/queries/moxie';
 import { useIdentity } from '../../utils/queries/profiles';
 import { grey } from '@mui/material/colors';
 import { ClaimMoxieRewardsDialog } from '../dialogs/ClaimMoxieRewardsDialog';
+import { useSearchParams } from 'react-router-dom';
 
 export function MoxieInfoCard() {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+
+  const [searchParams] = useSearchParams();
+  const accessToken = searchParams.get('access_token') ?? undefined;
 
   const { profile } = useContext(ProfileContext);
 
@@ -44,7 +48,8 @@ export function MoxieInfoCard() {
   const [openClaimRewardsDialog, setOpenClaimRewardsDialog] = useState<boolean>(false);
 
   const { isFetching: isFetchingAuctions, data: contactsWithAuction } = useFanTokens({
-    enabled: true
+    enabled: true,
+    accessToken
   });
 
   const currentTime = new Date();

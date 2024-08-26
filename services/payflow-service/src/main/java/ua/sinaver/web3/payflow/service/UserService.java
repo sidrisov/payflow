@@ -241,6 +241,7 @@ public class UserService implements IUserService {
 	public String generateAccessToken(User user) {
 		String accessToken = UUID.randomUUID().toString();
 		user.setAccessToken(accessToken);
+		userRepository.save(user);
 		return accessToken;
 	}
 }
