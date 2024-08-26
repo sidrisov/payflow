@@ -1,15 +1,15 @@
 import { AutoAwesome, ExpandLess, ExpandMore } from '@mui/icons-material';
 import { Stack, Box, Chip, Typography, IconButton, NativeSelect } from '@mui/material';
 import { useState } from 'react';
-import { type } from '../types/PaymentType';
+import { Type } from '../types/PaymentType';
 import { grey } from '@mui/material/colors';
 
 export function PaymentCastActionAdvancedSection({
   type,
   setType
 }: {
-  type: type;
-  setType: React.Dispatch<React.SetStateAction<type>>;
+  type: Type;
+  setType: React.Dispatch<React.SetStateAction<Type>>;
 }) {
   const [expand, setExpand] = useState<boolean>(false);
 
@@ -51,7 +51,7 @@ export function PaymentCastActionAdvancedSection({
                 disableUnderline
                 value={type}
                 onChange={(event) => {
-                  setType(event.target.value as type);
+                  setType(event.target.value as Type);
                 }}
                 inputMode="text"
                 sx={{ fontSize: 13, fontWeight: 'bold' }}>

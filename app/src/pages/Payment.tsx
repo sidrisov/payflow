@@ -12,6 +12,8 @@ import { GetFarcasterProfileQuery, Social } from '../generated/graphql/types';
 import GiftStorageDialog from '../components/dialogs/GiftStorageDialog';
 import PaymentDialog from '../components/dialogs/PaymentDialog';
 import { IdentityType, SelectedIdentityType } from '../types/ProfileType';
+import { toast } from 'react-toastify';
+import { statusToToastType } from '../components/Toasts';
 
 export default function Payment() {
   const navigate = useNavigate();
@@ -58,6 +60,15 @@ export default function Payment() {
                 setPaymentSocial(social as Social);
               }
             }
+
+            if (paymentData.status !== 'PENDING') {
+              toast(`Payment ${paymentData.status}!`, {
+                delay: 3000,
+                type: statusToToastType[paymentData.status] || 'default'
+              });
+              return;
+            }
+
             // Update payment state
             setPayment(paymentData);
           }
@@ -80,7 +91,6 @@ export default function Payment() {
           payment &&
           flows &&
           selectedFlow &&
-          payment.status === 'PENDING' &&
           (!payment.category ? (
             <PaymentDialog
               alwaysShowBackButton

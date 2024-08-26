@@ -25,7 +25,7 @@ import { ArrowBack, SwapVert } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { grey } from '@mui/material/colors';
 import { PaymentCastActionAdvancedSection } from '../PaymentCastActionAdvancedSection';
-import { type } from '../../types/PaymentType';
+import { Type } from '../../types/PaymentType';
 
 export default function PaymentCastActionDialog({
   closeStateCallback,
@@ -42,7 +42,7 @@ export default function PaymentCastActionDialog({
   const [token, setToken] = useState<Token | undefined>();
   const [tokens, setTokens] = useState<Token[]>([]);
   const [chain, setChain] = useState<Chain>(base);
-  const [type, setType] = useState<type>('INTENT');
+  const [type, setType] = useState<Type>('INTENT');
 
   const [usdAmountMode, setUsdAmountMode] = useState<boolean>(false);
 

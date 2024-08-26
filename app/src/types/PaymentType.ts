@@ -2,12 +2,13 @@ import { Address, Hash } from 'viem';
 import { ProfileType } from './ProfileType';
 import { FlowType } from './FlowType';
 
-export type type = 'FRAME' | 'INTENT' | 'APP' | 'INTENT_TOP_REPLY' | 'BATCH';
+export type PaymentStatus = 'PENDING' | 'INPROGRESS' | 'REFUNDED' | 'COMPLETED' | 'CANCELLED';
+export type Type = 'FRAME' | 'INTENT' | 'APP' | 'INTENT_TOP_REPLY' | 'BATCH';
 export interface PaymentType {
   referenceId?: string;
-  type: type;
+  type: Type;
   category?: string;
-  status: 'PENDING' | 'INPROGRESS' | 'REFUNDED' | 'COMPLETED';
+  status: PaymentStatus;
   receiver: ProfileType;
   receiverFlow: FlowType;
   receiverAddress: Address;
