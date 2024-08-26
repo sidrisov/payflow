@@ -24,7 +24,7 @@ export const UpdateVersionPrompt = () => {
     <Box display="flex" alignItems="center">
       <RiSparklingFill color="inherit" fontSize="large" style={{ marginRight: 8 }} />
       <Typography variant="caption" fontWeight="bold" noWrap>
-        New version is available
+        New app version available
       </Typography>
     </Box>
   );
