@@ -34,6 +34,7 @@ import { PiPersonSimpleRun, PiPersonSimpleRunBold } from 'react-icons/pi';
 import { UpdateVersionPrompt } from '../components/UpdateVersionPrompt';
 
 import PullToRefresh from 'react-simple-pull-to-refresh';
+import { usePwa } from '../utils/pwa';
 
 export default function AppLayout({
   profile,
@@ -48,6 +49,8 @@ export default function AppLayout({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
+
+  const isPwa = usePwa();
 
   const bottomToolbarEnabled =
     location.pathname !== '/composer' &&
@@ -100,7 +103,7 @@ export default function AppLayout({
         setAppSettings
       }}>
       <PullToRefresh
-        isPullable={isMobile}
+        isPullable={isPwa}
         onRefresh={async () => {
           navigate(0);
         }}>
