@@ -66,7 +66,8 @@ export const UpdateVersionPrompt = () => {
         p={1}
         sx={{
           borderStyle: 'dashed',
-          borderColor: 'divider'
+          borderColor: 'divider',
+          zIndex: 1600 // always display on top
         }}>
         <NewVersionNotice />
         <UpdateVersionButton onClick={() => updateServiceWorker(true)} />
