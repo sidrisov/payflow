@@ -18,6 +18,9 @@ import java.util.Date;
 import java.util.List;
 
 public interface UserRepository extends CrudRepository<User, Integer> {
+
+	boolean existsByUsername(String username);
+
 	User findByIdentityIgnoreCase(String identity);
 
 	User findByAccessToken(String accessToken);

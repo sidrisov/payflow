@@ -53,6 +53,7 @@ export function MoxieInfoCard() {
     <Card
       elevation={12}
       sx={{
+        mt: 2,
         p: 1,
         borderRadius: '25px',
         width: '100%'
@@ -76,7 +77,16 @@ export function MoxieInfoCard() {
             padding: 0.5
           }
         }}>
-        <Stack p={0.5} pt={1} border={1} borderRadius={5} borderColor="divider">
+        <Stack
+          p={0.5}
+          pt={1}
+          spacing={1}
+          minHeight={70}
+          sx={{
+            border: 1,
+            borderRadius: 5,
+            borderColor: 'divider'
+          }}>
           <Typography
             fontSize={12}
             fontWeight="bold"
@@ -189,7 +199,7 @@ export function MoxieInfoCard() {
         <Stack
           p={1}
           spacing={1}
-          minHeight={50}
+          minHeight={70}
           sx={{
             border: 1,
             borderRadius: 5,

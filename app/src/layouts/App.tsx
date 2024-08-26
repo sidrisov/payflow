@@ -30,7 +30,7 @@ import PrimaryFlowOnboardingDialog from '../components/dialogs/PrimaryFlowOnboar
 import { DAPP_URL } from '../utils/urlConstants';
 import { useTokenPrices } from '../utils/queries/prices';
 import { IoHomeOutline, IoHomeSharp, IoSearch, IoSearchOutline } from 'react-icons/io5';
-import { PiPersonSimpleTaiChi, PiPersonSimpleTaiChiBold } from 'react-icons/pi';
+import { PiPersonSimpleRun, PiPersonSimpleRunBold, PiPersonSimpleTaiChi, PiPersonSimpleTaiChiBold } from 'react-icons/pi';
 import { UpdateVersionPrompt } from '../components/UpdateVersionPrompt';
 
 export default function AppLayout({
@@ -212,9 +212,9 @@ export default function AppLayout({
                 label="Useful"
                 icon={
                   bottonToolbarActionValue === 2 ? (
-                    <PiPersonSimpleTaiChiBold size={20} />
+                    <PiPersonSimpleRunBold size={20} />
                   ) : (
-                    <PiPersonSimpleTaiChi size={20} />
+                    <PiPersonSimpleRun size={20} />
                   )
                 }
                 onClick={async () => {

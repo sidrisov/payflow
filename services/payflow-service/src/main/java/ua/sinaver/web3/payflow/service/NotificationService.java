@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
+import ua.sinaver.web3.payflow.message.farcaster.FarcasterUser;
 
 import java.util.Collections;
 
@@ -23,7 +24,7 @@ public class NotificationService {
 	@Autowired
 	private ReceiptService receiptService;
 
-	public void paymentReply(Payment payment) {
+	public void paymentReply(Payment payment, FarcasterUser sender, FarcasterUser receiver) {
 		val senderIdentity = payment.getSender() != null ? payment.getSender().getIdentity()
 				: payment.getSenderAddress();
 		val receiverIdentity = payment.getReceiver() != null ? payment.getReceiver().getIdentity()
@@ -35,8 +36,10 @@ public class NotificationService {
 			return;
 		}
 
-		val senderFname = identityService.getIdentityFname(senderIdentity);
-		val receiverFname = identityService.getIdentityFname(receiverIdentity);
+		val senderFname = sender != null ? sender.username() :
+				identityService.getIdentityFname(senderIdentity);
+		val receiverFname = receiver != null ? receiver.username() :
+				identityService.getIdentityFname(receiverIdentity);
 		val receiptUrl = receiptService.getReceiptUrl(payment);
 		val embeds = Collections.singletonList(new Cast.Embed(receiptUrl));
 

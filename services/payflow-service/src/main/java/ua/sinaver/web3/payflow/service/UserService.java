@@ -86,13 +86,18 @@ public class UserService implements IUserService {
 					farcasterUser,
 					identityToCreateProfile);
 
+			var username = farcasterUser.username().replace(".eth", "");
 			// fetch again for those who attempted to signed in
 			profile = userRepository.findByIdentityIgnoreCase(identityToCreateProfile.address());
 			if (profile == null) {
 				profile = new User(identityToCreateProfile.address());
+				// check if username taken
+				if (userRepository.existsByUsername(username)) {
+					username = username + "_";
+				}
 			}
 			profile.setAllowed(true);
-			profile.setUsername(farcasterUser.username().replace(".eth", ""));
+			profile.setUsername(username);
 			profile.setDisplayName(farcasterUser.displayName());
 			profile.setProfileImage(farcasterUser.pfpUrl());
 			if (setDefaultReceivingAddress) {

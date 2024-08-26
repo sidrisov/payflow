@@ -4,14 +4,14 @@ import { Avatar, Box, Container, Stack, Typography, useMediaQuery, useTheme } fr
 import { ElectricBolt } from '@mui/icons-material';
 import CastActionButton from '../components/buttons/CastActionButton';
 import { useSearchParams } from 'react-router-dom';
-import ContributionJarComposerDialog from '../components/dialogs/ContributionJarComposerDialog';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import { ProfileContext } from '../contexts/UserContext';
 import { SelectedIdentityType } from '../types/ProfileType';
 import { Address } from 'viem';
 import PayComposerActionDialog from '../components/dialogs/PayComposerActionDialog';
 import { useIdentity } from '../utils/queries/profiles';
-import { PiTipJar } from 'react-icons/pi';
+import { PiPersonSimpleRunBold, PiTipJar } from 'react-icons/pi';
+import UsefulComposerActionDialog from '../components/dialogs/UsefulComposerActionDialog';
 
 export default function Composer() {
   const theme = useTheme();
@@ -51,18 +51,6 @@ export default function Composer() {
         <title> Payflow | Composer Actions </title>
       </Helmet>
 
-      {openComposerAction === 'jar' && profile && (
-        <ContributionJarComposerDialog
-          open={true}
-          closeStateCallback={() => {
-            setOpenComposerAction(undefined);
-          }}
-          onClose={() => {
-            setOpenComposerAction(undefined);
-          }}
-        />
-      )}
-
       {openComposerAction === 'pay' && recipient && profile && (
         <PayComposerActionDialog
           open={recipient != null}
@@ -77,6 +65,18 @@ export default function Composer() {
           setOpenSearchIdentity={setOpenSearchIdentity}
           closeStateCallback={async () => {
             setRecipient(undefined);
+          }}
+        />
+      )}
+
+      {openComposerAction === 'useful' && profile && (
+        <UsefulComposerActionDialog
+          open={true}
+          closeStateCallback={() => {
+            setOpenComposerAction(undefined);
+          }}
+          onClose={() => {
+            setOpenComposerAction(undefined);
           }}
         />
       )}
@@ -126,11 +126,18 @@ export default function Composer() {
                   startIcon={<ElectricBolt />}
                 />
                 <CastActionButton
+                  title="Useful"
+                  description="Information for you"
+                  onClick={async () => {
+                    setOpenComposerAction('useful');
+                  }}
+                  startIcon={<PiPersonSimpleRunBold />}
+                />
+                <CastActionButton
                   title="Jar"
                   description="Collect contributions"
                   onClick={async () => {
                     setOpenComposerAction('jar');
-                    setOpenSearchIdentity(true);
                   }}
                   startIcon={<PiTipJar size={20} />}
                 />

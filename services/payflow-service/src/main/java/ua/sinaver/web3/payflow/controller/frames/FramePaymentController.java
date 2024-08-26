@@ -455,6 +455,8 @@ public class FramePaymentController {
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
 				validateMessage.action().url());
 
+		val interactor = validateMessage.action().interactor();
+
 		val buttonIndex = validateMessage.action().tappedButton().index();
 		// TODO: pass, wallet as sender which was used to execute transaction
 		val transactionId = validateMessage.action().transaction() != null
@@ -514,7 +516,7 @@ public class FramePaymentController {
 					}
 				}
 
-				notificationService.paymentReply(payment);
+				notificationService.paymentReply(payment, interactor, null);
 
 				val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
 								"/payment.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
