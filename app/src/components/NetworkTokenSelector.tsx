@@ -5,7 +5,7 @@ import { useBalance, useChainId } from 'wagmi';
 import { FlowWalletType } from '../types/FlowType';
 import { Token, getSupportedTokens } from '../utils/erc20contracts';
 import { getNetworkDisplayName } from '../utils/networks';
-import { normalizeNumberPrecision } from '../utils/formats';
+import { formatAmountWithSuffix, normalizeNumberPrecision } from '../utils/formats';
 import { useTokenPrices } from '../utils/queries/prices';
 import { NetworkSelectorButton } from './buttons/NetworkSelectorButton';
 import { TokenSelectorButton } from './buttons/TokenSelectorButton';
@@ -206,7 +206,7 @@ export function NetworkTokenSelector({
                   Balance
                 </Typography>
                 <Typography variant="caption" fontWeight="bold">
-                  {`${maxBalance} ${paymentToken?.name} ≈ $${maxBalanceUsd}`}
+                  {`${formatAmountWithSuffix(maxBalance)} ${paymentToken?.name} ≈ $${maxBalanceUsd}`}
                 </Typography>
               </Box>
             )}

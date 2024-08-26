@@ -15,7 +15,7 @@ import { formatUnits, parseUnits } from 'viem';
 import { FlowWalletType } from '../../types/FlowType';
 import { grey, red } from '@mui/material/colors';
 import { Token } from '../../utils/erc20contracts';
-import { normalizeNumberPrecision } from '../../utils/formats';
+import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useTokenPrices } from '../../utils/queries/prices';
 import { PaymentType } from '../../types/PaymentType';
 import { MdMultipleStop } from 'react-icons/md';
@@ -211,7 +211,9 @@ export function TokenAmountSection({
           <Typography fontSize={30} fontWeight="bold" textAlign="center">
             {usdAmountMode
               ? `$ ${paymentAmountUSD}`
-              : `${paymentAmount} ${selectedToken?.id.toUpperCase()}`}
+              : `${formatAmountWithSuffix(
+                  normalizeNumberPrecision(paymentAmount ?? 0)
+                )} ${selectedToken?.id.toUpperCase()}`}
           </Typography>
         )
       )}
@@ -222,10 +224,14 @@ export function TokenAmountSection({
           <u>
             {usdAmountMode
               ? `$ ${paymentAmountUSD}`
-              : `${paymentAmount} ${selectedToken?.id.toUpperCase()}`}{' '}
+              : `${formatAmountWithSuffix(
+                  normalizeNumberPrecision(paymentAmount ?? 0)
+                )} ${selectedToken?.id.toUpperCase()}`}{' '}
             ≈{' '}
             {usdAmountMode
-              ? `${normalizeNumberPrecision(paymentAmount ?? 0)} ${selectedToken?.id.toUpperCase()}`
+              ? `${formatAmountWithSuffix(
+                  normalizeNumberPrecision(paymentAmount ?? 0)
+                )} ${selectedToken?.id.toUpperCase()}`
               : `$ ${normalizeNumberPrecision(paymentAmountUSD ?? 0)}`}
           </u>
         </Typography>
@@ -280,7 +286,9 @@ export function TokenAmountSection({
           )}
           <Typography fontSize={20} fontWeight="bold">
             {usdAmountMode
-              ? `${normalizeNumberPrecision(paymentAmount ?? 0)} ${selectedToken?.id.toUpperCase()}`
+              ? `${formatAmountWithSuffix(
+                  normalizeNumberPrecision(paymentAmount ?? 0)
+                )} ${selectedToken?.id.toUpperCase()}`
               : `$ ${normalizeNumberPrecision(paymentAmountUSD ?? 0)}`}
           </Typography>
 
