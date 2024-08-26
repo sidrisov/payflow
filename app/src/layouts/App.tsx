@@ -30,8 +30,10 @@ import PrimaryFlowOnboardingDialog from '../components/dialogs/PrimaryFlowOnboar
 import { DAPP_URL } from '../utils/urlConstants';
 import { useTokenPrices } from '../utils/queries/prices';
 import { IoHomeOutline, IoHomeSharp, IoSearch, IoSearchOutline } from 'react-icons/io5';
-import { PiPersonSimpleRun, PiPersonSimpleRunBold, PiPersonSimpleTaiChi, PiPersonSimpleTaiChiBold } from 'react-icons/pi';
+import { PiPersonSimpleRun, PiPersonSimpleRunBold } from 'react-icons/pi';
 import { UpdateVersionPrompt } from '../components/UpdateVersionPrompt';
+
+import PullToRefresh from 'react-simple-pull-to-refresh';
 
 export default function AppLayout({
   profile,
@@ -97,151 +99,157 @@ export default function AppLayout({
         appSettings,
         setAppSettings
       }}>
-      <Container maxWidth="xs" sx={{ height: '100vh' }}>
-        <Box display="flex" flexDirection="column" justifyContent="flex-start">
-          <HideOnScroll>
-            <AppBar position="sticky" color="transparent" elevation={0}>
-              {showToolbar && (
-                <Toolbar sx={{ padding: 0 }}>
-                  <Box
-                    display="flex"
-                    flexDirection="row"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    flexGrow={1}>
-                    <HomeLogo />
+      <PullToRefresh
+        isPullable={isMobile}
+        onRefresh={async () => {
+          navigate(0);
+        }}>
+        <Container maxWidth="xs" sx={{ height: '100vh' }}>
+          <Box display="flex" flexDirection="column" justifyContent="flex-start">
+            <HideOnScroll>
+              <AppBar position="sticky" color="transparent" elevation={0}>
+                {showToolbar && (
+                  <Toolbar sx={{ padding: 0 }}>
+                    <Box
+                      display="flex"
+                      flexDirection="row"
+                      alignItems="center"
+                      justifyContent="space-between"
+                      flexGrow={1}>
+                      <HomeLogo />
 
-                    {profile ? (
-                      <IconButton
-                        size="small"
-                        onClick={async (event) => {
-                          setProfileMenuAnchorEl(event.currentTarget);
-                          setOpenProfileMenu(true);
-                        }}>
-                        <ProfileAvatar profile={profile} sx={{ width: 36, height: 36 }} />
-                      </IconButton>
-                    ) : (
-                      <Button
-                        color="inherit"
-                        size="medium"
-                        href={`${DAPP_URL}/connect`}
-                        sx={{
-                          borderRadius: 5,
-                          fontWeight: 'bold',
-                          fontSize: 18,
-                          textTransform: 'none'
-                        }}>
-                        sign in
-                      </Button>
-                    )}
-                  </Box>
-                </Toolbar>
-              )}
-            </AppBar>
-          </HideOnScroll>
-          <UpdateVersionPrompt />
-          <Box display="flex" mt={3} pb={8}>
-            <Outlet />
+                      {profile ? (
+                        <IconButton
+                          size="small"
+                          onClick={async (event) => {
+                            setProfileMenuAnchorEl(event.currentTarget);
+                            setOpenProfileMenu(true);
+                          }}>
+                          <ProfileAvatar profile={profile} sx={{ width: 36, height: 36 }} />
+                        </IconButton>
+                      ) : (
+                        <Button
+                          color="inherit"
+                          size="medium"
+                          href={`${DAPP_URL}/connect`}
+                          sx={{
+                            borderRadius: 5,
+                            fontWeight: 'bold',
+                            fontSize: 18,
+                            textTransform: 'none'
+                          }}>
+                          sign in
+                        </Button>
+                      )}
+                    </Box>
+                  </Toolbar>
+                )}
+              </AppBar>
+            </HideOnScroll>
+            <UpdateVersionPrompt />
+            <Box display="flex" mt={3} pb={8}>
+              <Outlet />
+            </Box>
           </Box>
-        </Box>
-        {bottomToolbarEnabled && (
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              width: '100%',
-              zIndex: 1400
-            }}>
-            <BottomNavigation
-              showLabels
-              elevation={10}
-              component={Paper}
-              value={bottonToolbarActionValue}
-              onChange={(_, newValue) => {
-                setBottonToolbarActionValue(newValue);
-              }}
+          {bottomToolbarEnabled && (
+            <Box
               sx={{
-                ...(isMobile
-                  ? { width: '100%', borderTopLeftRadius: 25, borderTopRightRadius: 25 }
-                  : { maxWidth: 350, mx: 5, mb: 1, borderRadius: 10 }),
-                '& .MuiBottomNavigationAction-root.Mui-selected': {
-                  color: 'inherit',
-                  fontWeight: '500'
-                },
-                '& .MuiBottomNavigationAction-label': {
-                  fontSize: 14
-                }
+                display: 'flex',
+                justifyContent: 'center',
+                position: 'fixed',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                width: '100%',
+                zIndex: 1400
               }}>
-              <BottomNavigationAction
-                disableRipple
-                label="Home"
-                icon={
-                  bottonToolbarActionValue === 0 ? (
-                    <IoHomeSharp size={20} />
-                  ) : (
-                    <IoHomeOutline size={20} />
-                  )
-                }
-                onClick={async () => {
-                  navigate('/');
-                  setOpenSearchIdentity(false);
+              <BottomNavigation
+                showLabels
+                elevation={10}
+                component={Paper}
+                value={bottonToolbarActionValue}
+                onChange={(_, newValue) => {
+                  setBottonToolbarActionValue(newValue);
                 }}
-              />
-              <BottomNavigationAction
-                disableRipple
-                label="Search"
-                icon={
-                  bottonToolbarActionValue === 1 ? (
-                    <IoSearch size={20} />
-                  ) : (
-                    <IoSearchOutline size={20} />
-                  )
-                }
-                onClick={async () => {
-                  navigate('/');
-                  setOpenSearchIdentity(true);
-                }}
-              />
+                sx={{
+                  ...(isMobile
+                    ? { width: '100%', borderTopLeftRadius: 25, borderTopRightRadius: 25 }
+                    : { maxWidth: 350, mx: 5, mb: 1, borderRadius: 10 }),
+                  '& .MuiBottomNavigationAction-root.Mui-selected': {
+                    color: 'inherit',
+                    fontWeight: '500'
+                  },
+                  '& .MuiBottomNavigationAction-label': {
+                    fontSize: 14
+                  }
+                }}>
+                <BottomNavigationAction
+                  disableRipple
+                  label="Home"
+                  icon={
+                    bottonToolbarActionValue === 0 ? (
+                      <IoHomeSharp size={20} />
+                    ) : (
+                      <IoHomeOutline size={20} />
+                    )
+                  }
+                  onClick={async () => {
+                    navigate('/');
+                    setOpenSearchIdentity(false);
+                  }}
+                />
+                <BottomNavigationAction
+                  disableRipple
+                  label="Search"
+                  icon={
+                    bottonToolbarActionValue === 1 ? (
+                      <IoSearch size={20} />
+                    ) : (
+                      <IoSearchOutline size={20} />
+                    )
+                  }
+                  onClick={async () => {
+                    navigate('/');
+                    setOpenSearchIdentity(true);
+                  }}
+                />
 
-              <BottomNavigationAction
-                disableRipple
-                label="Useful"
-                icon={
-                  bottonToolbarActionValue === 2 ? (
-                    <PiPersonSimpleRunBold size={20} />
-                  ) : (
-                    <PiPersonSimpleRun size={20} />
-                  )
-                }
-                onClick={async () => {
-                  navigate('/useful');
-                  setOpenSearchIdentity(false);
-                }}
-              />
+                <BottomNavigationAction
+                  disableRipple
+                  label="Useful"
+                  icon={
+                    bottonToolbarActionValue === 2 ? (
+                      <PiPersonSimpleRunBold size={20} />
+                    ) : (
+                      <PiPersonSimpleRun size={20} />
+                    )
+                  }
+                  onClick={async () => {
+                    navigate('/useful');
+                    setOpenSearchIdentity(false);
+                  }}
+                />
 
-              <BottomNavigationAction
-                disableRipple
-                label="Actions"
-                icon={
-                  bottonToolbarActionValue === 3 ? (
-                    <RiApps2Fill size={20} />
-                  ) : (
-                    <RiApps2Line size={20} />
-                  )
-                }
-                onClick={async () => {
-                  navigate('/actions');
-                  setOpenSearchIdentity(false);
-                }}
-              />
-            </BottomNavigation>
-          </Box>
-        )}
-      </Container>
+                <BottomNavigationAction
+                  disableRipple
+                  label="Actions"
+                  icon={
+                    bottonToolbarActionValue === 3 ? (
+                      <RiApps2Fill size={20} />
+                    ) : (
+                      <RiApps2Line size={20} />
+                    )
+                  }
+                  onClick={async () => {
+                    navigate('/actions');
+                    setOpenSearchIdentity(false);
+                  }}
+                />
+              </BottomNavigation>
+            </Box>
+          )}
+        </Container>
+      </PullToRefresh>
 
       {profile && (
         <ProfileMenu
