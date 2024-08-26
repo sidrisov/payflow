@@ -46,7 +46,7 @@ import { useGlideEstimatePayment, useGlidePaymentOptions } from '../../utils/hoo
 import { useTokenPrices } from '../../utils/queries/prices';
 import { CAIP19, createSession, executeSession } from '@paywithglide/glide-js';
 import { degen } from 'viem/chains';
-import { normalizeNumberPrecision } from '../../utils/formats';
+import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { glideConfig } from '../../utils/glide';
 
 export default function PaymentDialogContent({
@@ -564,7 +564,9 @@ export default function PaymentDialogContent({
                 />
               ) : paymentOption ? (
                 <Typography fontSize={30} fontWeight="bold" textAlign="center">
-                  {normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))}{' '}
+                  {formatAmountWithSuffix(
+                    normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
+                  )}{' '}
                   {paymentOption.currencySymbol}
                 </Typography>
               ) : (
