@@ -6,7 +6,8 @@ import {
   InputAdornment,
   IconButton,
   styled,
-  useMediaQuery
+  useMediaQuery,
+  Skeleton
 } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { useAccount, useBalance } from 'wagmi';
@@ -67,7 +68,8 @@ export function TokenAmountSection({
 
   const crossChainModeSupported = Boolean(payment?.token);
 
-  const { data: balance } = useBalance({
+  // replace with balance as well
+  const { isFetching: isBalanceFetching, data: balance } = useBalance({
     address: selectedWallet?.address,
     chainId: chain?.id,
     token: selectedToken?.tokenAddress,
@@ -284,13 +286,21 @@ export function TokenAmountSection({
               <SwapVert fontSize="small" />
             </IconButton>
           )}
-          <Typography fontSize={20} fontWeight="bold">
-            {usdAmountMode
-              ? `${formatAmountWithSuffix(
-                  normalizeNumberPrecision(paymentAmount ?? 0)
-                )} ${selectedToken?.id.toUpperCase()}`
-              : `$ ${normalizeNumberPrecision(paymentAmountUSD ?? 0)}`}
-          </Typography>
+          {isBalanceFetching ? (
+            <Skeleton
+              title="fetching price"
+              variant="rectangular"
+              sx={{ borderRadius: 3, height: 45, width: 100 }}
+            />
+          ) : (
+            <Typography fontSize={20} fontWeight="bold">
+              {usdAmountMode
+                ? `${formatAmountWithSuffix(
+                    normalizeNumberPrecision(paymentAmount ?? 0)
+                  )} ${selectedToken?.id.toUpperCase()}`
+                : `$ ${normalizeNumberPrecision(paymentAmountUSD ?? 0)}`}
+            </Typography>
+          )}
 
           {!payment?.token && selectedToken && balanceCheck && (
             <Button

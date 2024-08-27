@@ -1,12 +1,10 @@
-import { Stack, Box, Chip, Typography, IconButton, Divider } from '@mui/material';
+import { Stack, Box, Chip, Typography, IconButton } from '@mui/material';
 import { useState, useMemo, useEffect } from 'react';
 import { formatUnits } from 'viem';
-import { useBalance, useChainId } from 'wagmi';
 import { FlowWalletType } from '../types/FlowType';
 import { Token, getSupportedTokens } from '../utils/erc20contracts';
 import { getNetworkDisplayName } from '../utils/networks';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../utils/formats';
-import { useTokenPrices } from '../utils/queries/prices';
 import { NetworkSelectorButton } from './buttons/NetworkSelectorButton';
 import { TokenSelectorButton } from './buttons/TokenSelectorButton';
 import { FeeSection } from './dialogs/GasFeeSection';
@@ -14,7 +12,9 @@ import { PaymentType } from '../types/PaymentType';
 import { degen } from 'viem/chains';
 import { MdMultipleStop } from 'react-icons/md';
 import { TbSend } from 'react-icons/tb';
-import { IoMdArrowDropdown, IoMdArrowDropup, IoMdArrowUp } from 'react-icons/io';
+import { IoMdArrowDropdown, IoMdArrowDropup } from 'react-icons/io';
+import { useAssetBalances } from '../utils/queries/balances';
+import { getFlowWalletAssets } from '../utils/assets';
 
 export function NetworkTokenSelector({
   payment,
@@ -41,41 +41,36 @@ export function NetworkTokenSelector({
   showBalance?: boolean;
   expandSection?: boolean;
 }) {
-  const chainId = useChainId();
-
   const [expand, setExpand] = useState<boolean>(expandSection);
   const [compatibleTokens, setCompatibleTokens] = useState<Token[]>([]);
 
   const [maxBalance, setMaxBalance] = useState<string>('0.0');
   const [maxBalanceUsd, setMaxBalanceUsd] = useState<string>('0.0');
 
-  const { data: tokenPrices } = useTokenPrices();
-
-  const { isSuccess, data: balance } = useBalance({
-    address: paymentWallet?.address,
-    chainId,
-    token: paymentToken?.tokenAddress,
-    query: {
-      enabled: showBalance && paymentWallet !== undefined && paymentToken !== undefined,
-      gcTime: 3000
-    }
-  });
+  const { isFetched: isBalanceFetched, data: balances } = useAssetBalances(
+    showBalance && paymentWallet ? getFlowWalletAssets(paymentWallet) : []
+  );
 
   useMemo(async () => {
     if (showBalance) {
-      const selectedTokenPrice = paymentToken && tokenPrices?.[paymentToken.id];
-      const maxBalance =
-        isSuccess && balance ? parseFloat(formatUnits(balance.value, balance.decimals)) : 0;
+      if (isBalanceFetched && balances) {
+        const paymentTokenBalance = balances.find(
+          (balance) => balance.asset.token === paymentToken
+        );
 
-      const maxBalanceUsd =
-        isSuccess && balance
-          ? parseFloat(formatUnits(balance.value, balance.decimals)) * (selectedTokenPrice ?? 0)
+        const maxBalance = paymentTokenBalance?.balance
+          ? parseFloat(
+              formatUnits(paymentTokenBalance.balance.value, paymentTokenBalance.balance.decimals)
+            )
           : 0;
 
-      setMaxBalance(normalizeNumberPrecision(maxBalance));
-      setMaxBalanceUsd(normalizeNumberPrecision(maxBalanceUsd));
+        const maxBalanceUsd = paymentTokenBalance ? paymentTokenBalance.usdValue : 0;
+
+        setMaxBalance(normalizeNumberPrecision(maxBalance));
+        setMaxBalanceUsd(normalizeNumberPrecision(maxBalanceUsd));
+      }
     }
-  }, [isSuccess, balance, tokenPrices]);
+  }, [isBalanceFetched, paymentToken, balances]);
 
   useEffect(() => {
     // don't update if selected token was already selected
@@ -98,24 +93,31 @@ export function NetworkTokenSelector({
       !crossChainMode && payment?.token ? t.id === payment?.token : true
     );
 
-    setCompatibleTokens(
-      enabledChainCurrencies
-        ? tokens.filter((t) =>
-            enabledChainCurrencies.find(
-              (c) =>
-                c ===
-                `eip155:${paymentWallet.network}/${
-                  t.tokenAddress
-                    ? `erc20:${t.tokenAddress}`
-                    : paymentWallet.network === degen.id
-                    ? 'slip44:33436'
-                    : 'slip44:60'
-                }`
-            )
+    const compatibleTokens = enabledChainCurrencies
+      ? tokens.filter((t) =>
+          enabledChainCurrencies.find(
+            (c) =>
+              c ===
+              `eip155:${paymentWallet.network}/${
+                t.tokenAddress
+                  ? `erc20:${t.tokenAddress}`
+                  : paymentWallet.network === degen.id
+                  ? 'slip44:33436'
+                  : 'slip44:60'
+              }`
           )
-        : tokens
+        )
+      : tokens;
+
+    setCompatibleTokens(
+      !showBalance || payment?.token || crossChainMode
+        ? compatibleTokens
+        : compatibleTokens.filter(
+            (token) =>
+              balances?.find((balance) => balance.asset.token === token)?.balance?.value ?? 0 > 0
+          )
     );
-  }, [crossChainMode, paymentWallet, enabledChainCurrencies]);
+  }, [crossChainMode, paymentWallet, enabledChainCurrencies, balances]);
 
   return (
     <Stack width="100%">
@@ -131,7 +133,7 @@ export function NetworkTokenSelector({
           variant="outlined"
           sx={{ border: 0, fontSize: 13, fontWeight: 500 }}
         />
-        {paymentToken ? (
+        {paymentToken && (!showBalance || isBalanceFetched) ? (
           <Stack direction="row" spacing={0.5} alignItems="center">
             <Typography fontSize={13} fontWeight={500}>
               {getNetworkDisplayName(paymentToken.chainId)} / {paymentToken.id.toUpperCase()}
@@ -206,7 +208,9 @@ export function NetworkTokenSelector({
                   Balance
                 </Typography>
                 <Typography variant="caption" fontWeight="bold">
-                  {`${formatAmountWithSuffix(maxBalance)} ${paymentToken?.name} ≈ $${maxBalanceUsd}`}
+                  {`${formatAmountWithSuffix(maxBalance)} ${
+                    paymentToken?.name
+                  } ≈ $${maxBalanceUsd}`}
                 </Typography>
               </Box>
             )}

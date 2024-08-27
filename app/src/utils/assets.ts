@@ -1,4 +1,4 @@
-import { FlowType } from '../types/FlowType';
+import { FlowType, FlowWalletType } from '../types/FlowType';
 import { getSupportedTokens } from './erc20contracts';
 
 export default function getFlowAssets(flow: FlowType) {
@@ -11,4 +11,14 @@ export default function getFlowAssets(flow: FlowType) {
         }))
       : []
   );
+}
+
+export function getFlowWalletAssets(wallet: FlowWalletType) {
+  return wallet.network
+    ? getSupportedTokens(wallet.network).map((token) => ({
+        address: wallet.address,
+        chainId: wallet.network,
+        token
+      }))
+    : [];
 }
