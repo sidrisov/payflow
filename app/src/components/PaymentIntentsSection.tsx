@@ -98,8 +98,14 @@ export function PaymentIntentsSection({
               {payments
                 .slice(0, page * pageSize)
                 .map((payment, index) =>
-                  payment.category === 'fc_storage' && payment.receiverFid !== undefined ? (
-                    <GiftStoragePayment key={`pending_payment_${index}`} payment={payment} />
+                  payment.receiverFid !== undefined ? (
+                    payment.category === 'fc_storage' ? (
+                      <GiftStoragePayment key={`pending_payment_${index}`} payment={payment} />
+                    ) : (
+                      payment.category === 'mint' && (
+                        <MintPayment key={`pending_payment_${index}`} payment={payment} />
+                      )
+                    )
                   ) : (
                     <IntentPayment key={`pending_payment_${index}`} payment={payment} />
                   )
@@ -231,6 +237,109 @@ export function PaymentIntentsSection({
     );
   }
 
+  function MintPayment({ payment, ...props }: BoxProps & { payment: PaymentType }) {
+    const [openPaymentMenu, setOpenPaymentMenu] = useState(false);
+    const [paymentMenuAnchorEl, setPaymentMenuAnchorEl] = useState<null | HTMLElement>(null);
+
+    const { data: social, loading: loadingSocials } = useQuery<Social>(
+      QUERY_FARCASTER_PROFILE,
+      { fid: payment.receiverFid?.toString() },
+      {
+        cache: true,
+        dataFormatter(data) {
+          return data.Socials.Social[0];
+        }
+      }
+    );
+
+    return (
+      <>
+        <Box
+          {...(payment.status === 'PENDING' && {
+            component: Button,
+            variant: 'text',
+            textTransform: 'none',
+            onClick: () => {
+              navigate(`/payment/${payment.referenceId}`);
+            }
+          })}
+          sx={{
+            p: 1.5,
+            border: 1,
+            borderRadius: 5,
+            borderColor: 'divider',
+            minWidth: isMobile ? 145 : 155,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-start',
+            alignItems: 'flex-start',
+            gap: 1,
+            color: 'inherit',
+            '&:hover': {
+              backgroundColor: 'inherit',
+              border: 1,
+              borderStyle: 'dashed'
+            }
+          }}
+          {...props}>
+          {loadingSocials || !social ? (
+            <Skeleton variant="rounded" sx={{ width: '100%', height: '100%' }} />
+          ) : (
+            <>
+              <Box
+                alignSelf="stretch"
+                display="flex"
+                flexDirection="row"
+                alignItems="center"
+                justifyContent="space-between">
+                {payment.status === 'INPROGRESS' && (
+                  <Tooltip title="Payment in-progress">
+                    <CircularProgress color="inherit" size={20} />
+                  </Tooltip>
+                )}
+                <Typography variant="subtitle2" fontWeight="bold" fontSize={14}>
+                  Mint Payment
+                </Typography>
+                <IconButton
+                  size="small"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setOpenPaymentMenu(true);
+                    setPaymentMenuAnchorEl(event.currentTarget);
+                  }}>
+                  <MoreHoriz fontSize="small" />
+                </IconButton>
+              </Box>
+
+              <FarcasterProfileSection social={social} />
+
+              <Typography
+                textAlign="start"
+                variant="subtitle2"
+                fontWeight="bold"
+                fontSize={isMobile ? 12 : 13}>
+                {payment.token}
+              </Typography>
+            </>
+          )}
+        </Box>
+        {openPaymentMenu && payment && (
+          <PaymentMenu
+            open={openPaymentMenu}
+            payment={payment}
+            anchorEl={paymentMenuAnchorEl}
+            onClose={() => {
+              setOpenPaymentMenu(false);
+            }}
+            onClick={() => {
+              setOpenPaymentMenu(false);
+            }}
+          />
+        )}
+      </>
+    );
+  }
+
   function IntentPayment({ payment, ...props }: BoxProps & { payment: PaymentType }) {
     const [openPaymentMenu, setOpenPaymentMenu] = useState(false);
     const [paymentMenuAnchorEl, setPaymentMenuAnchorEl] = useState<null | HTMLElement>(null);
@@ -280,7 +389,7 @@ export function PaymentIntentsSection({
               </Tooltip>
             )}
             <Typography variant="subtitle2" fontWeight="bold" fontSize={14}>
-              {payment.type === "INTENT_TOP_REPLY" ? "Top Reply" : "Payment" }
+              {payment.type === 'INTENT_TOP_REPLY' ? 'Top Reply' : 'Payment'}
             </Typography>
             <IconButton
               size="small"
