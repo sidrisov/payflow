@@ -44,7 +44,7 @@ export function TokenAmountSection({
   crossChainMode?: boolean;
   setCrossChainMode?: React.Dispatch<React.SetStateAction<boolean>>;
   setPaymentEnabled?: React.Dispatch<React.SetStateAction<boolean>>;
-  selectedWallet: FlowWalletType;
+  selectedWallet: FlowWalletType | undefined;
   selectedToken?: Token;
   paymentAmount?: number;
   setPaymentAmount: React.Dispatch<React.SetStateAction<number | undefined>>;
@@ -75,7 +75,7 @@ export function TokenAmountSection({
     token: selectedToken?.tokenAddress,
     query: {
       enabled: balanceCheck && Boolean(selectedWallet && selectedToken),
-      gcTime: 5000
+      staleTime: 60000
     }
   });
 
@@ -239,6 +239,65 @@ export function TokenAmountSection({
         </Typography>
       )}
 
+      {!crossChainMode && (
+        <Stack direction="row" alignItems="center" spacing={0.5}>
+          {!payment?.token && (
+            <IconButton
+              size="small"
+              sx={{ color: grey[prefersDarkMode ? 400 : 700] }}
+              onClick={async () => {
+                setUsdAmountMode(!usdAmountMode);
+              }}>
+              <SwapVert fontSize="small" />
+            </IconButton>
+          )}
+          {isBalanceFetching ? (
+            <Skeleton
+              title="fetching price"
+              variant="rectangular"
+              sx={{ borderRadius: 3, height: 35, width: 80 }}
+            />
+          ) : (
+            balanceEnough && (
+              <Typography fontSize={20} fontWeight="bold">
+                {usdAmountMode
+                  ? `${formatAmountWithSuffix(
+                      normalizeNumberPrecision(paymentAmount ?? 0)
+                    )} ${selectedToken?.id.toUpperCase()}`
+                  : `$ ${normalizeNumberPrecision(paymentAmountUSD ?? 0)}`}
+              </Typography>
+            )
+          )}
+
+          {!payment?.token && selectedToken && balanceCheck && (
+            <Button
+              onClick={async () => {
+                if (balance && selectedTokenPrice) {
+                  const maxAmount = parseFloat(formatUnits(balance.value, selectedToken.decimals));
+                  if (usdAmountMode) {
+                    setPaymentAmountUSD(
+                      parseFloat(normalizeNumberPrecision(maxAmount * selectedTokenPrice))
+                    );
+                  } else {
+                    setPaymentAmount(parseFloat(normalizeNumberPrecision(maxAmount)));
+                  }
+                } else {
+                  setPaymentAmount(undefined);
+                }
+              }}
+              sx={{
+                minWidth: 'auto',
+                borderRadius: 5,
+                fontWeight: 'bold',
+                textTransform: 'none',
+                color: grey[prefersDarkMode ? 400 : 700]
+              }}>
+              MAX
+            </Button>
+          )}
+        </Stack>
+      )}
+
       {!crossChainMode &&
         Boolean(usdAmountMode ? paymentAmountUSD : paymentAmount) &&
         balanceEnough === false && (
@@ -273,63 +332,6 @@ export function TokenAmountSection({
               )}
           </>
         )}
-
-      {!crossChainMode && balanceEnough && (
-        <Stack direction="row" alignItems="center" spacing={0.5}>
-          {!payment?.token && (
-            <IconButton
-              size="small"
-              sx={{ color: grey[prefersDarkMode ? 400 : 700] }}
-              onClick={async () => {
-                setUsdAmountMode(!usdAmountMode);
-              }}>
-              <SwapVert fontSize="small" />
-            </IconButton>
-          )}
-          {isBalanceFetching ? (
-            <Skeleton
-              title="fetching price"
-              variant="rectangular"
-              sx={{ borderRadius: 3, height: 45, width: 100 }}
-            />
-          ) : (
-            <Typography fontSize={20} fontWeight="bold">
-              {usdAmountMode
-                ? `${formatAmountWithSuffix(
-                    normalizeNumberPrecision(paymentAmount ?? 0)
-                  )} ${selectedToken?.id.toUpperCase()}`
-                : `$ ${normalizeNumberPrecision(paymentAmountUSD ?? 0)}`}
-            </Typography>
-          )}
-
-          {!payment?.token && selectedToken && balanceCheck && (
-            <Button
-              onClick={async () => {
-                if (balance && selectedTokenPrice) {
-                  const maxAmount = parseFloat(formatUnits(balance.value, selectedToken.decimals));
-                  if (usdAmountMode) {
-                    setPaymentAmountUSD(
-                      parseFloat(normalizeNumberPrecision(maxAmount * selectedTokenPrice))
-                    );
-                  } else {
-                    setPaymentAmount(parseFloat(normalizeNumberPrecision(maxAmount)));
-                  }
-                } else {
-                  setPaymentAmount(undefined);
-                }
-              }}
-              sx={{
-                minWidth: 'auto',
-                borderRadius: 5,
-                fontWeight: 'bold',
-                textTransform: 'none',
-                color: grey[prefersDarkMode ? 400 : 700]
-              }}>
-              MAX
-            </Button>
-          )}
-        </Stack>
-      )}
     </Stack>
   );
 }

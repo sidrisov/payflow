@@ -552,86 +552,83 @@ export default function PaymentDialogContent({
 
   return (
     <>
-      {paymentWallet && (
-        <>
-          <Stack mt={1} alignItems="center">
-            {crossChainMode &&
-              (isPaymentOptionLoading || isPaymentOptionsLoading ? (
-                <Skeleton
-                  title="fetching price"
-                  variant="rectangular"
-                  sx={{ borderRadius: 3, height: 45, width: 100 }}
-                />
-              ) : paymentOption ? (
-                <Typography fontSize={30} fontWeight="bold" textAlign="center">
-                  {formatAmountWithSuffix(
-                    normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
-                  )}{' '}
-                  {paymentOption.currencySymbol}
-                </Typography>
-              ) : (
-                <Typography fontSize={14} fontWeight="bold" color={red.A400} textAlign="center">
-                  You don't have any balance to cover cross-chain payment, switch to different
-                  payment flow!
-                </Typography>
-              ))}
-          </Stack>
-
-          <TokenAmountSection
-            payment={payment}
-            crossChainMode={crossChainMode}
-            setCrossChainMode={setCrossChainMode}
-            setPaymentEnabled={setPaymentEnabled}
-            selectedWallet={paymentWallet}
-            selectedToken={paymentToken}
-            paymentAmount={paymentAmount}
-            setPaymentAmount={setPaymentAmount}
-            paymentAmountUSD={paymentAmountUSD}
-            setPaymentAmountUSD={setPaymentAmountUSD}
-          />
-
-          <NetworkTokenSelector
-            payment={payment}
-            crossChainMode={crossChainMode}
-            paymentWallet={paymentWallet}
-            setPaymentWallet={setPaymentWallet}
-            paymentToken={crossChainMode ? crossChainPaymentToken : paymentToken}
-            setPaymentToken={crossChainMode ? setCrossChainPaymentToken : setPaymentToken}
-            compatibleWallets={compatibleWallets}
-            enabledChainCurrencies={
-              crossChainMode
-                ? paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
-                : undefined
-            }
-            gasFee={gasFee}
-          />
-          {(crossChainMode ? !crossChainPaymentToken : !paymentToken) ||
-          chainId === (crossChainMode ? crossChainPaymentToken?.chainId : paymentToken?.chainId) ? (
-            <LoadingPaymentButton
-              title="Pay"
-              loading={paymentPending}
-              disabled={!paymentEnabled}
-              status={isNativeFlow ? status : statusRegular}
-              onClick={async () => {
-                if (crossChainMode) {
-                  await submitGlideTransaction();
-                } else {
-                  await submitTransaction();
-                }
-              }}
+      <Stack mt={1} alignItems="center">
+        {crossChainMode &&
+          (isPaymentOptionLoading || isPaymentOptionsLoading ? (
+            <Skeleton
+              title="fetching price"
+              variant="rectangular"
+              sx={{ borderRadius: 3, height: 45, width: 100 }}
             />
+          ) : paymentOptions && paymentOption ? (
+            <Typography fontSize={30} fontWeight="bold" textAlign="center">
+              {formatAmountWithSuffix(
+                normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
+              )}{' '}
+              {paymentOption.currencySymbol}
+            </Typography>
           ) : (
-            <LoadingSwitchNetworkButton
-              chainId={
-                crossChainMode
-                  ? (crossChainPaymentToken?.chainId as number)
-                  : (paymentToken?.chainId as number)
-              }
-            />
-          )}
-          {crossChainMode && <PoweredByGlideText />}
-        </>
+            <Typography fontSize={14} fontWeight="bold" color={red.A400} textAlign="center">
+              You don't have any balance to cover cross-chain payment, switch to different payment
+              flow!
+            </Typography>
+          ))}
+      </Stack>
+
+      <TokenAmountSection
+        payment={payment}
+        crossChainMode={crossChainMode}
+        setCrossChainMode={setCrossChainMode}
+        setPaymentEnabled={setPaymentEnabled}
+        selectedWallet={paymentWallet}
+        selectedToken={paymentToken}
+        paymentAmount={paymentAmount}
+        setPaymentAmount={setPaymentAmount}
+        paymentAmountUSD={paymentAmountUSD}
+        setPaymentAmountUSD={setPaymentAmountUSD}
+      />
+
+      <NetworkTokenSelector
+        payment={payment}
+        crossChainMode={crossChainMode}
+        paymentWallet={paymentWallet}
+        setPaymentWallet={setPaymentWallet}
+        paymentToken={crossChainMode ? crossChainPaymentToken : paymentToken}
+        setPaymentToken={crossChainMode ? setCrossChainPaymentToken : setPaymentToken}
+        compatibleWallets={compatibleWallets}
+        enabledChainCurrencies={
+          crossChainMode
+            ? paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
+            : undefined
+        }
+        gasFee={gasFee}
+      />
+      {(crossChainMode ? !crossChainPaymentToken : !paymentToken) ||
+      chainId === (crossChainMode ? crossChainPaymentToken?.chainId : paymentToken?.chainId) ? (
+        <LoadingPaymentButton
+          title="Pay"
+          loading={paymentPending}
+          disabled={!paymentEnabled}
+          status={isNativeFlow ? status : statusRegular}
+          onClick={async () => {
+            if (crossChainMode) {
+              await submitGlideTransaction();
+            } else {
+              await submitTransaction();
+            }
+          }}
+        />
+      ) : (
+        <LoadingSwitchNetworkButton
+          chainId={
+            crossChainMode
+              ? (crossChainPaymentToken?.chainId as number)
+              : (paymentToken?.chainId as number)
+          }
+        />
       )}
+      {crossChainMode && <PoweredByGlideText />}
+
       {paymentType !== 'wallet' && address?.toLowerCase() !== senderFlow.signer.toLowerCase() && (
         <ResponsiveDialog
           title="Connect Signer"
