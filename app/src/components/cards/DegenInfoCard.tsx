@@ -7,7 +7,6 @@ import InfoCard, { InfoStack } from './InfoCard';
 import { useAllowance, usePoints } from '../../utils/queries/degen';
 
 export function DegenInfoCard() {
-
   const { profile } = useContext(ProfileContext);
 
   const { data: identity } = useIdentity(profile?.identity);
@@ -34,18 +33,7 @@ export function DegenInfoCard() {
         {isFetchingAllowance || !fid ? (
           <Skeleton variant="rectangular" height={55} width={100} sx={{ borderRadius: '15px' }} />
         ) : allowance ? (
-          <Typography
-            m={1}
-            p={1}
-            variant="h4"
-            fontWeight="bold"
-            sx={{
-              borderRadius: 5,
-              border: 2,
-              borderColor: 'divider',
-              textTransform: 'none',
-              color: 'inherit'
-            }}>
+          <Typography m={1} p={1} variant="h4" fontWeight="bold">
             {allowance.remainingTipAllowance} / {allowance.tipAllowance}
           </Typography>
         ) : (
@@ -72,18 +60,7 @@ export function DegenInfoCard() {
         {isFetchingPoints || isFetchingAllowance ? (
           <Skeleton variant="rectangular" height={55} width={100} sx={{ borderRadius: '15px' }} />
         ) : points ? (
-          <Typography
-            m={1}
-            p={1}
-            variant="h4"
-            fontWeight="bold"
-            sx={{
-              borderRadius: 5,
-              border: 2,
-              borderColor: 'divider',
-              textTransform: 'none',
-              color: 'inherit'
-            }}>
+          <Typography m={1} p={1} variant="h4" fontWeight="bold">
             {points.points}
           </Typography>
         ) : (

@@ -7,9 +7,7 @@ import {
   Typography,
   Chip,
   Skeleton,
-  Button,
-  useMediaQuery
-} from '@mui/material';
+  Button} from '@mui/material';
 import { countdown } from '../../utils/date';
 import { useFanTokens } from '../../utils/queries/fanTokens';
 import { AddressSection } from '../AddressSection';
@@ -25,7 +23,6 @@ import { useSearchParams } from 'react-router-dom';
 import InfoCard, { InfoStack } from './InfoCard';
 
 export function MoxieInfoCard() {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
   const [searchParams] = useSearchParams();
   const accessToken = searchParams.get('access_token') ?? undefined;
