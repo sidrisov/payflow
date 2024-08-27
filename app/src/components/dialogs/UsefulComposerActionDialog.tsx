@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogProps, useMediaQuery, useTheme } from '@mu
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { BackDialogTitle } from './BackDialogTitle';
 import { MoxieInfoCard } from '../cards/MoxieInfoCard';
+import { DegenInfoCard } from '../cards/DegenInfoCard';
 
 export type UsefulComposerActionDialogProps = DialogProps & CloseCallbackType;
 
@@ -19,6 +20,7 @@ export default function UsefulComposerActionDialog({
       onClose={closeStateCallback}
       {...props}
       PaperProps={{
+        elevation: 5,
         sx: {
           ...(!isMobile && {
             width: 375,
@@ -36,6 +38,7 @@ export default function UsefulComposerActionDialog({
       />
       <DialogContent>
         <MoxieInfoCard />
+        <DegenInfoCard />
       </DialogContent>
     </Dialog>
   );
