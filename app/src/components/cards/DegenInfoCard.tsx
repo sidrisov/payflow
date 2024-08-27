@@ -23,9 +23,11 @@ export function DegenInfoCard() {
 
   const {
     isFetching: isFetchingPoints,
-    data: points,
+    data: degenPoints,
     error: pointsError
   } = usePoints(allowance?.walletAddresses);
+
+  console.log('Error: ', pointsError);
 
   return (
     <InfoCard title="🎩 Degen Center">
@@ -57,11 +59,11 @@ export function DegenInfoCard() {
         )}
       </InfoStack>
       <InfoStack title="Claimable Season Points">
-        {isFetchingPoints || isFetchingAllowance ? (
+        {isFetchingAllowance || isFetchingPoints ? (
           <Skeleton variant="rectangular" height={55} width={100} sx={{ borderRadius: '15px' }} />
-        ) : points ? (
+        ) : degenPoints ? (
           <Typography m={1} p={1} variant="h4" fontWeight="bold">
-            {points.points}
+            {degenPoints.points}
           </Typography>
         ) : (
           <Typography fontSize={14} color="inherit">

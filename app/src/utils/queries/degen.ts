@@ -72,11 +72,13 @@ export const usePoints = (
   wallets: string[] | undefined
 ): UseQueryResult<DegenPoints | undefined, Error> => {
   return useQuery({
-    enabled: wallets && wallets.length > 0,
+    enabled: Boolean(wallets),
     queryKey: ['degen_points', wallets],
+    staleTime: Infinity,
+    refetchInterval: 120_000,
     queryFn: async () => {
-      if (!wallets) {
-        return;
+      if (!wallets || wallets.length === 0) {
+        return null;
       }
       for (const wallet of wallets) {
         const data = await fetchPointsForWallet(wallet);
