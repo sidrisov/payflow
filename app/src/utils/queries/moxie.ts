@@ -20,6 +20,7 @@ export const useAvailableMoxieRewards = (fid: number | undefined) => {
     queryKey: ['moxie_rewards', fid],
     staleTime: Infinity,
     refetchInterval: 120_000,
+    retry: false,
     queryFn: async () => graphQLClient.request(QUERY_MOXIE_REWARDS, { fid }, headers),
     select(data: any) {
       return data.FarcasterUserClaimTransactionDetails.availableClaimAmount;

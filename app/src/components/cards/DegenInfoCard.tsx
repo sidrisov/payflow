@@ -1,10 +1,11 @@
-import { Typography, Skeleton } from '@mui/material';
-import { useContext } from 'react';
+import { Typography, Skeleton, Button } from '@mui/material';
+import { useContext, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { FARCASTER_DAPP } from '../../utils/dapps';
 import { useIdentity } from '../../utils/queries/profiles';
 import InfoCard, { InfoStack } from './InfoCard';
 import { useAllowance, usePoints } from '../../utils/queries/degen';
+import { ClaimDegenPointsDialog } from '../dialogs/ClaimDegenPointsDialog';
 
 export function DegenInfoCard() {
   const { profile } = useContext(ProfileContext);
@@ -31,7 +32,7 @@ export function DegenInfoCard() {
     error: pointsError
   } = usePoints(verifications);
 
-  console.log('Error: ', pointsError);
+  const [openClaimPointsDialog, setOpenClaimPointsDialog] = useState<boolean>(false);
 
   return (
     <InfoCard title="🎩 Degen Center">
@@ -40,7 +41,7 @@ export function DegenInfoCard() {
           <Skeleton variant="rectangular" height={55} width={100} sx={{ borderRadius: '15px' }} />
         ) : allowance ? (
           <Typography m={1} p={1} variant="h4" fontWeight="bold">
-            {allowance.remainingTipAllowance} / {allowance.tipAllowance}
+            {allowance.remaining_tip_allowance} / {allowance.tip_allowance}
           </Typography>
         ) : (
           <Typography fontSize={14} color="inherit">
@@ -66,7 +67,23 @@ export function DegenInfoCard() {
         {isFetchingAllowance || isFetchingPoints ? (
           <Skeleton variant="rectangular" height={55} width={100} sx={{ borderRadius: '15px' }} />
         ) : degenPoints ? (
-          <Typography m={1} p={1} variant="h4" fontWeight="bold">
+          <Typography
+            m={1}
+            p={1}
+            variant="h4"
+            fontWeight="bold"
+            component={Button}
+            sx={{
+              borderRadius: 5,
+              border: 2,
+              borderStyle: 'dotted',
+              borderColor: 'divider',
+              textTransform: 'none',
+              color: 'inherit'
+            }}
+            onClick={() => {
+              setOpenClaimPointsDialog(true);
+            }}>
             {degenPoints.points}
           </Typography>
         ) : (
@@ -89,6 +106,15 @@ export function DegenInfoCard() {
           </Typography>
         )}
       </InfoStack>
+      {openClaimPointsDialog && degenPoints && (
+        <ClaimDegenPointsDialog
+          degenPoints={degenPoints}
+          open={openClaimPointsDialog}
+          onClose={() => {
+            setOpenClaimPointsDialog(false);
+          }}
+        />
+      )}
     </InfoCard>
   );
 }

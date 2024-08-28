@@ -121,7 +121,7 @@ public class ProductsController {
 
 		if (parsedMintUrlMessage == null) {
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameMessage("No supported collection to mint found!"));
+					new FrameResponse.FrameMessage("No supported collection found!"));
 		}
 
 		val chainId = PAYMENT_CHAIN_IDS.get(parsedMintUrlMessage.chain());

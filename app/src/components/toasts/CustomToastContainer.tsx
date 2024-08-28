@@ -9,7 +9,7 @@ export default function CustomToastContainer() {
       limit={3}
       newestOnTop={true}
       theme="colored"
-      
+      closeButton={false}
       toastStyle={{
         minHeight: 30,
         borderRadius: 15
