@@ -53,7 +53,7 @@ export default function Card({ children }: { children: React.ReactNode }) {
               alt="profile"
               style={{ height: 20, width: 20, borderRadius: '50%' }}
             />
-            <span style={{ fontSize: 18, fontWeight: 'bold' }}>Payflow by sinaver.eth</span>
+            <span style={{ fontSize: 18, fontWeight: 'bold' }}>Payflow by sinaver.eth with 💜</span>
           </div>
         </div>
       </div>

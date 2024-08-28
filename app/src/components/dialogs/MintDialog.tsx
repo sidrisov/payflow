@@ -7,7 +7,8 @@ import {
   useMediaQuery,
   useTheme,
   Typography,
-  Skeleton
+  Skeleton,
+  Avatar
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { degen, optimism } from 'viem/chains';
@@ -54,12 +55,14 @@ import ResponsiveDialog from './ResponsiveDialog';
 import { UpSlideTransition } from './TransitionDownUpSlide';
 import PoweredByGlideText from '../text/PoweredByGlideText';
 import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
+import { MintMetadata } from '../../utils/mint';
 
-export type GiftStorageDialogProps = DialogProps &
+export type MintDialogProps = DialogProps &
   CloseCallbackType & {
     sender: SelectedIdentityType;
     payment: PaymentType;
     social: Social;
+    mint: MintMetadata;
   } & {
     alwaysShowBackButton?: boolean;
     flows?: FlowType[];
@@ -67,17 +70,18 @@ export type GiftStorageDialogProps = DialogProps &
     setSelectedFlow?: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
   };
 
-export default function GiftStorageDialog({
+export default function MintDialog({
   alwaysShowBackButton = false,
   sender,
   payment,
   social,
+  mint,
   closeStateCallback,
   flows,
   selectedFlow,
   setSelectedFlow,
   ...props
-}: GiftStorageDialogProps) {
+}: MintDialogProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -364,12 +368,34 @@ export default function GiftStorageDialog({
                       flow!
                     </Typography>
                   )}
-                  <Typography fontSize={18} fontWeight="bold">
-                    for{' '}
-                    <u>
-                      {numberOfUnits} Unit{numberOfUnits > 1 ? 's' : ''} of Storage
-                    </u>
-                  </Typography>
+
+                  <Stack
+                    p={1}
+                    maxWidth={250}
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="center"
+                    spacing={1}>
+                    <Avatar
+                      variant="rounded"
+                      src={mint.metadata.image}
+                      sx={{
+                        width: 64,
+                        height: 64
+                      }}
+                    />
+                    <Stack alignItems="flex-start" spacing={0.5}>
+                      <Typography fontSize={18} fontWeight="bold">
+                        {mint.metadata.name}
+                      </Typography>
+                      <Typography
+                        textAlign="start"
+                        variant="subtitle2"
+                        color={grey[prefersDarkMode ? 400 : 700]}>
+                        {mint.collectionName}
+                      </Typography>
+                    </Stack>
+                  </Stack>
                 </Stack>
               </Stack>
             )}
@@ -392,7 +418,7 @@ export default function GiftStorageDialog({
                 <LoadingPaymentButton
                   title="Pay"
                   loading={paymentPending}
-                  disabled={!paymentOption}
+                  disabled={true}
                   status={isNativeFlow ? status : statusRegular}
                   onClick={submitGlideTransaction}
                 />

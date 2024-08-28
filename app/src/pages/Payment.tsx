@@ -14,6 +14,9 @@ import PaymentDialog from '../components/dialogs/PaymentDialog';
 import { IdentityType, SelectedIdentityType } from '../types/ProfileType';
 import { toast } from 'react-toastify';
 import { statusToToastType } from '../components/Toasts';
+import { fetchMintData, MintMetadata } from '../utils/mint';
+import { Address } from 'viem';
+import MintDialog from '../components/dialogs/MintDialog';
 
 export default function Payment() {
   const navigate = useNavigate();
@@ -26,6 +29,7 @@ export default function Payment() {
 
   const [payment, setPayment] = useState<PaymentType>();
   const [paymentSocial, setPaymentSocial] = useState<Social>();
+  const [mintData, setMintData] = useState<MintMetadata>();
 
   useEffect(() => {
     if (!profile) {
@@ -41,6 +45,21 @@ export default function Payment() {
 
   useEffect(() => {
     const fetchData = async () => {
+      type ParsedMintData = {
+        provider: string;
+        contract: Address;
+        tokenId?: number;
+      };
+
+      function parseMintToken(token: string): ParsedMintData {
+        const [provider, contract, tokenId] = token.split(':');
+        return {
+          provider,
+          contract: contract as Address,
+          tokenId: tokenId ? parseInt(tokenId) : undefined
+        };
+      }
+
       if (refId && !payment) {
         try {
           // Fetch payment data
@@ -58,6 +77,17 @@ export default function Payment() {
               const social = data?.Socials?.Social?.[0];
               if (social) {
                 setPaymentSocial(social as Social);
+              }
+
+              if (paymentData.category === 'mint') {
+                const parsedMintData = parseMintToken(paymentData.token);
+                const mintData = await fetchMintData(
+                  parsedMintData.provider,
+                  paymentData.chainId,
+                  parsedMintData.contract,
+                  parsedMintData.tokenId
+                );
+                setMintData(mintData);
               }
             }
 
@@ -130,8 +160,8 @@ export default function Payment() {
               setSelectedFlow={setSelectedFlow}
             />
           ) : (
-            payment.category === 'fc_storage' &&
-            paymentSocial && (
+            paymentSocial &&
+            ((payment.category === 'fc_storage' && (
               <GiftStorageDialog
                 alwaysShowBackButton
                 title="Complete Storage Payment"
@@ -152,7 +182,30 @@ export default function Payment() {
                 selectedFlow={selectedFlow}
                 setSelectedFlow={setSelectedFlow}
               />
-            )
+            )) ||
+              (payment.category === 'mint' && mintData && (
+                <MintDialog
+                  alwaysShowBackButton
+                  title="Complete Mint Payment"
+                  open={payment != null}
+                  payment={payment}
+                  sender={{
+                    identity: {
+                      profile: { ...profile, defaultFlow: selectedFlow },
+                      address: profile.identity
+                    },
+                    type: 'profile'
+                  }}
+                  social={paymentSocial}
+                  mint={mintData}
+                  closeStateCallback={async () => {
+                    navigate('/');
+                  }}
+                  flows={flows}
+                  selectedFlow={selectedFlow}
+                  setSelectedFlow={setSelectedFlow}
+                />
+              )))
           ))}
       </Container>
     </>

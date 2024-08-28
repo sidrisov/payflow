@@ -56,6 +56,8 @@ export function PaymentIntentsSection({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
 
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+
   const [expand, setExpand] = useState<boolean>(true);
 
   const maxPages = calculateMaxPages(payments?.length ?? 0, pageSize);
@@ -307,6 +309,7 @@ export function PaymentIntentsSection({
             borderRadius: 5,
             borderColor: 'divider',
             minWidth: isMobile ? 145 : 155,
+            minHeight: isMobile ? 145 : 155,
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'flex-start',
@@ -376,7 +379,7 @@ export function PaymentIntentsSection({
                 textAlign="start"
                 variant="caption"
                 fontWeight="bold"
-                color={grey[400]}
+                color={grey[prefersDarkMode ? 400 : 700]}
                 fontSize={isMobile ? 12 : 13}
                 sx={{
                   display: '-webkit-box',
