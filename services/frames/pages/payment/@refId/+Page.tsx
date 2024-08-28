@@ -14,6 +14,8 @@ export default function Page() {
       <br />
       Type: {payment.type}
       <br />
+      Category: {payment.category}
+      <br />
       Recipient: {payment.receiver ? `@${payment.receiver.username}` : payment.receiverAddress}
       {payment.sender && (
         <>

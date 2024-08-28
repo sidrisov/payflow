@@ -70,6 +70,9 @@ export function Head() {
                 property="fc:frame:button:1:target"
                 content={DAPP_URL.concat(`/payment/${refId}`)}
               />
+              {/*  <meta property="fc:frame:button:2" content="🌟 Tip" />
+              <meta property="fc:frame:button:2:action" content="post" />
+              <meta property="fc:frame:button:2:target" content={TIP_PAYFLOW_URL} /> */}
             </>
           ) : (
             <>
@@ -110,6 +113,9 @@ export function Head() {
             <meta property="fc:frame:button:1" content="🧾 Receipt" />
             <meta property="fc:frame:button:1:action" content="link" />
             <meta property="fc:frame:button:1:target" content={receiptUrl} />
+            {/*  <meta property="fc:frame:button:2" content="🌟 Tip" />
+            <meta property="fc:frame:button:2:action" content="post" />
+            <meta property="fc:frame:button:2:target" content={TIP_PAYFLOW_URL} /> */}
           </>
         )}
       </head>
