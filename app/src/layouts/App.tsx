@@ -107,7 +107,7 @@ export default function AppLayout({
         onRefresh={async () => {
           navigate(0);
         }}>
-        <Container maxWidth="xs" sx={{ height: '100vh' }}>
+        <Container maxWidth="xs">
           <Box display="flex" flexDirection="column" justifyContent="flex-start">
             <HideOnScroll>
               <AppBar position="sticky" color="transparent" elevation={0}>

@@ -16,7 +16,7 @@ export default function Useful() {
       </Helmet>
       <Container maxWidth="xs">
         {isAuthenticated && (
-          <Stack alignItems="center" spacing={3}>
+          <Stack height="100%" alignItems="center" spacing={3}>
             <MoxieInfoCard />
             <DegenInfoCard />
           </Stack>

@@ -62,7 +62,7 @@ export function DegenInfoCard() {
           </Typography>
         )}
       </InfoStack>
-      <InfoStack title="Claimable Season Points">
+      <InfoStack title="Current Season Points">
         {isFetchingAllowance || isFetchingPoints ? (
           <Skeleton variant="rectangular" height={55} width={100} sx={{ borderRadius: '15px' }} />
         ) : degenPoints ? (
