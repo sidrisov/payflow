@@ -21,11 +21,15 @@ export function DegenInfoCard() {
     error: allowanceError
   } = useAllowance(fid);
 
+  const verifications = profile?.flows
+    ?.filter((flow) => flow.type === 'FARCASTER_VERIFICATION')
+    .map((flow) => flow.wallets[0].address);
+
   const {
     isFetching: isFetchingPoints,
     data: degenPoints,
     error: pointsError
-  } = usePoints(allowance?.walletAddresses);
+  } = usePoints(verifications);
 
   console.log('Error: ', pointsError);
 
