@@ -1,21 +1,16 @@
 import { IdentityType } from '../types/ProfleType';
 import { shortenWalletAddressLabel2 } from '../utils/address';
 import { assetImageSrc } from '../utils/image';
+import { MintMetadata } from '../utils/mint';
 import Card from './Card';
 
-export const mintHtml = (
-  identity: IdentityType,
-  provider: string,
-  collectionName: string,
-  name: string,
-  url: string
-) => (
+export const mintHtml = (mintData: MintMetadata) => (
   <Mint
-    identity={identity}
-    provider={provider}
-    collectionName={collectionName}
-    name={name}
-    url={url}
+    identity={mintData.identity}
+    provider={mintData.provider}
+    collectionName={mintData.collectionName}
+    name={mintData.metadata.name}
+    url={mintData.metadata.image}
   />
 );
 

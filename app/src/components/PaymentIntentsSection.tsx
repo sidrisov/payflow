@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Box,
   BoxProps,
   Button,
@@ -15,7 +16,7 @@ import {
 } from '@mui/material';
 import { PaymentType } from '../types/PaymentType';
 import { ProfileSection } from './ProfileSection';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ExpandLess, ExpandMore, MoreHoriz } from '@mui/icons-material';
 import TokenAvatar from './avatars/TokenAvatar';
 import { getNetworkDisplayName } from '../utils/networks';
@@ -33,6 +34,9 @@ import calculateMaxPages from '../utils/pagination';
 import { useNavigate } from 'react-router-dom';
 
 import { MdOutlinePlaylistAdd } from 'react-icons/md';
+import { fetchMintData, MintMetadata } from '../utils/mint';
+import { Address } from 'viem';
+import { grey } from '@mui/material/colors';
 
 const pageSize = 5;
 
@@ -241,6 +245,7 @@ export function PaymentIntentsSection({
     const [openPaymentMenu, setOpenPaymentMenu] = useState(false);
     const [paymentMenuAnchorEl, setPaymentMenuAnchorEl] = useState<null | HTMLElement>(null);
 
+    const [mintData, setMintData] = useState<MintMetadata>();
     const { data: social, loading: loadingSocials } = useQuery<Social>(
       QUERY_FARCASTER_PROFILE,
       { fid: payment.receiverFid?.toString() },
@@ -251,6 +256,39 @@ export function PaymentIntentsSection({
         }
       }
     );
+
+    useEffect(() => {
+      const fetchData = async () => {
+        type ParsedMintData = {
+          provider: string;
+          contract: Address;
+          tokenId?: number;
+        };
+
+        function parseMintToken(token: string): ParsedMintData {
+          const [provider, contract, tokenId] = token.split(':');
+          return {
+            provider,
+            contract: contract as Address,
+            tokenId: tokenId ? parseInt(tokenId) : undefined
+          };
+        }
+
+        const parsedMintData = parseMintToken(payment.token);
+        const mintData = await fetchMintData(
+          parsedMintData.provider,
+          payment.chainId,
+          parsedMintData.contract,
+          parsedMintData.tokenId
+        );
+
+        setMintData(mintData);
+      };
+
+      if (payment) {
+        fetchData();
+      }
+    }, [payment]);
 
     return (
       <>
@@ -282,7 +320,7 @@ export function PaymentIntentsSection({
             }
           }}
           {...props}>
-          {loadingSocials || !social ? (
+          {loadingSocials || !social || !mintData ? (
             <Skeleton variant="rounded" sx={{ width: '100%', height: '100%' }} />
           ) : (
             <>
@@ -311,14 +349,44 @@ export function PaymentIntentsSection({
                 </IconButton>
               </Box>
 
-              <FarcasterProfileSection social={social} />
-
+              <Stack direction="row" alignItems="center" justifyContent="flex-start" spacing={0.5}>
+                <Avatar
+                  variant="rounded"
+                  src={mintData.metadata.image}
+                  sx={{
+                    width: 40,
+                    height: 40
+                  }}
+                />
+                <Typography
+                  textAlign="start"
+                  variant="subtitle2"
+                  sx={{
+                    display: '-webkit-box',
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    WebkitLineClamp: 2,
+                    wordBreak: 'break-word'
+                  }}>
+                  {mintData.metadata.name}
+                </Typography>
+              </Stack>
               <Typography
                 textAlign="start"
-                variant="subtitle2"
+                variant="caption"
                 fontWeight="bold"
-                fontSize={isMobile ? 12 : 13}>
-                {payment.token}
+                color={grey[400]}
+                fontSize={isMobile ? 12 : 13}
+                sx={{
+                  display: '-webkit-box',
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  WebkitLineClamp: 2,
+                  wordBreak: 'break-all'
+                }}>
+                {mintData.collectionName}
               </Typography>
             </>
           )}

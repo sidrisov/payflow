@@ -1,15 +1,27 @@
 import { usePageContext } from 'vike-react/usePageContext';
-import { DAPP_URL, FRAMES_URL } from '../../utils/constants';
+import { API_URL, DAPP_URL, FRAMES_URL } from '../../utils/constants';
+
+interface MintUrlParams {
+  original: string;
+  provider: string;
+  chainId: string;
+  contract: string;
+  tokenId: string;
+}
 
 export function Head() {
   const { urlParsed } = usePageContext();
-  const originalMintUrl = urlParsed.search.original;
-  const provider = urlParsed.search.provider;
-  const chain = urlParsed.search.chain;
-  const contract = urlParsed.search.contract;
-  const tokenId = urlParsed.search.tokenId;
+  const { original, provider, chainId, contract, tokenId }: MintUrlParams =
+    urlParsed.search as unknown as MintUrlParams;
 
-  const imageUrl = `${FRAMES_URL}/images/mint.png?provider=${provider}&chain=${chain}&contract=${contract}&tokenId=${tokenId}`;
+  const imageUrl = `${FRAMES_URL}/images/mint.png?provider=${provider}&chainId=${chainId}&contract=${contract}&tokenId=${tokenId}`;
+
+  const paymentMintSubmitUrl = new URL(`${API_URL}/api/farcaster/frames/mint/submit`);
+  paymentMintSubmitUrl.searchParams.append('provider', provider);
+  paymentMintSubmitUrl.searchParams.append('chainId', chainId);
+  paymentMintSubmitUrl.searchParams.append('contract', contract);
+  paymentMintSubmitUrl.searchParams.append('tokenId', tokenId);
+  paymentMintSubmitUrl.searchParams.append('original', original);
 
   return (
     <>
@@ -53,9 +65,12 @@ export function Head() {
         <meta property="fc:frame:image" content={imageUrl} />
         <meta property="fc:frame:image:aspect_ratio" content="1:1" />
 
-        <meta property="fc:frame:button:1" content={`View on ${provider}`} />
-        <meta property="fc:frame:button:1:action" content="link" />
-        <meta property="fc:frame:button:1:target" content={originalMintUrl} />
+        <meta property="fc:frame:button:1" content="Mint" />
+        <meta property="fc:frame:button:1:action" content="post_redirect" />
+        <meta property="fc:frame:button:1:target" content={paymentMintSubmitUrl.toString()} />
+        <meta property="fc:frame:button:2" content={`View on ${provider}`} />
+        <meta property="fc:frame:button:2:action" content="link" />
+        <meta property="fc:frame:button:2:target" content={original} />
       </head>
     </>
   );

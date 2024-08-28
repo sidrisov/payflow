@@ -1,13 +1,68 @@
 import { readContract } from '@wagmi/core';
 import { Address } from 'viem';
 import { wagmiConfig } from './wagmi';
-import { zoraErc1155Abi } from './abis';
+import { zoraErc1155Abi } from './abis/zoraErc1155Abi';
 import axios from 'axios';
+import { IdentityType } from '../types/ProfleType';
 
-export async function fetchCollectionOwner(chain: string, contract: Address): Promise<string> {
-  const chainId = wagmiConfig.chains.find((c) => c.name.toLowerCase().includes(chain))?.id;
+import dotenv from 'dotenv';
+dotenv.config();
+
+const API_URL = process.env.VITE_PAYFLOW_SERVICE_API_URL;
+
+export interface MintMetadata {
+  provider: string;
+  collectionName: string;
+  metadata: {
+    name: string;
+    image: string;
+  };
+  identity: IdentityType;
+}
+
+export async function fetchMintData(
+  provider: string,
+  chainId: number,
+  contract: Address,
+  tokenId?: number
+): Promise<MintMetadata | undefined> {
+  try {
+    const collectionOwner = await fetchCollectionOwner(chainId, contract);
+    const identityResponse = await axios.get(`${API_URL}/api/user/identities/${collectionOwner}`);
+    const identity =
+      identityResponse.data !== ''
+        ? identityResponse.data
+        : ({ address: collectionOwner } as IdentityType);
+
+    const collectionName = tokenId
+      ? (await fetchCollectionName(chainId, contract)).concat(` #${tokenId}`)
+      : await fetchCollectionName(chainId, contract);
+
+    const tokenMetadataUri = tokenId
+      ? await fetchCollectionTokenMetadataURI(chainId, contract, tokenId)
+      : null;
+
+    const metadata = tokenMetadataUri ? await fetchTokenMetadata(tokenMetadataUri) : null;
+
+    if (!metadata) {
+      return;
+    }
+
+    return {
+      provider,
+      collectionName,
+      metadata,
+      identity
+    };
+  } catch (error) {
+    console.error('Failed to fetch mint data:', error);
+    return;
+  }
+}
+
+export async function fetchCollectionOwner(chainId: number, contract: Address): Promise<string> {
   const owner = (await readContract(wagmiConfig, {
-    chainId,
+    chainId: chainId as any,
     address: contract,
     abi: zoraErc1155Abi,
     functionName: 'owner'
@@ -16,11 +71,10 @@ export async function fetchCollectionOwner(chain: string, contract: Address): Pr
   return owner;
 }
 
-export async function fetchCollectionName(chain: string, contract: Address): Promise<string> {
-  const chainId = wagmiConfig.chains.find((c) => c.name.toLowerCase().includes(chain))?.id;
+export async function fetchCollectionName(chainId: number, contract: Address): Promise<string> {
   const contractURI = resolveIpfsUri(
     (await readContract(wagmiConfig, {
-      chainId,
+      chainId: chainId as any,
       address: contract,
       abi: zoraErc1155Abi,
       functionName: 'contractURI'
@@ -33,13 +87,12 @@ export async function fetchCollectionName(chain: string, contract: Address): Pro
 }
 
 export async function fetchCollectionTokenMetadataURI(
-  chain: string,
+  chainId: number,
   contract: Address,
   tokenId: number
 ): Promise<string> {
-  const chainId = wagmiConfig.chains.find((c) => c.name.toLowerCase().includes(chain))?.id;
   return (await readContract(wagmiConfig, {
-    chainId,
+    chainId: chainId as any,
     address: contract,
     abi: zoraErc1155Abi,
     functionName: 'uri',
