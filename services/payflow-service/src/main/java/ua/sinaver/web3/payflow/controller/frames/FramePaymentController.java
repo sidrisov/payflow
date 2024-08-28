@@ -41,6 +41,7 @@ import java.util.regex.Pattern;
 
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.BASE_PATH;
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.DEFAULT_HTML_RESPONSE;
+import static ua.sinaver.web3.payflow.controller.frames.JarContributionController.PAY_PAYFLOW_JAR;
 
 @RestController
 @RequestMapping("/farcaster/frames/pay")
@@ -536,9 +537,9 @@ public class FramePaymentController {
 						.button(new FrameButton("🧾 Receipt",
 								FrameButton.ActionType.LINK,
 								receiptUrl))
-						/*	.button(new FrameButton("\uD83E\uDEF6\uD83C\uDFFB Tip",
-									FrameButton.ActionType.POST,
-									apiServiceUrl.concat(String.format(PAY_PAYFLOW_JAR))))*/
+						.button(new FrameButton("\uD83C\uDF1F Tip",
+								FrameButton.ActionType.POST,
+								apiServiceUrl.concat(String.format(PAY_PAYFLOW_JAR))))
 						.build().toHtmlResponse();
 			} else if (buttonIndex == 1) {
 				log.debug("Handling payment through frame tx: {}", payment);
@@ -609,9 +610,9 @@ public class FramePaymentController {
 						.button(new FrameButton("🧾Receipt",
 								FrameButton.ActionType.LINK,
 								receiptUrl))
-						/*.button(new FrameButton("\uD83E\uDEF6\uD83C\uDFFB Tip",
+						.button(new FrameButton("\uD83C\uDF1F Tip",
 								FrameButton.ActionType.POST,
-								apiServiceUrl.concat(String.format(PAY_PAYFLOW_JAR))))*/
+								apiServiceUrl.concat(String.format(PAY_PAYFLOW_JAR))))
 						.state(validateMessage.action().state().serialized());
 
 				val input = validateMessage.action().input();

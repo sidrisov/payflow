@@ -19,7 +19,7 @@ import {
 import axios from 'axios';
 import { BaseNameReponseType } from '../types/BaseNameType';
 import { getPublicClient } from 'wagmi/actions';
-import { privyWagmiConfig } from '../utils/wagmiConfig';
+import { wagmiConfig } from '../utils/wagmiConfig';
 import { degen } from 'viem/chains';
 
 const FOLLOWING = 7;
@@ -180,7 +180,7 @@ export async function searchIdentity(searchValue: string, me?: string): Promise<
     }
 
     if (searchValue.endsWith('.degen')) {
-      const publicClient = getPublicClient(privyWagmiConfig, { chainId: degen.id });
+      const publicClient = getPublicClient(wagmiConfig, { chainId: degen.id });
 
       if (publicClient) {
         const degenDomainHolderAddress = await publicClient.readContract({

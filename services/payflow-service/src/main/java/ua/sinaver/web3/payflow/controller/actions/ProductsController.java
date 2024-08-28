@@ -18,6 +18,8 @@ import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.util.Objects;
 
+import static ua.sinaver.web3.payflow.service.TokenService.PAYMENT_CHAIN_IDS;
+
 @RestController
 @RequestMapping("/farcaster/actions/products")
 @Transactional
@@ -119,17 +121,25 @@ public class ProductsController {
 
 		if (parsedMintUrlMessage == null) {
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameMessage("No mint found!"));
+					new FrameResponse.FrameMessage("No supported collection to mint found!"));
+		}
+
+		val chainId = PAYMENT_CHAIN_IDS.get(parsedMintUrlMessage.chain());
+		if (chainId == null) {
+			log.error("Chain not supported for minting on payflow: {}", parsedMintUrlMessage);
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameMessage(String.format("Mints on `%s` not supported!",
+							parsedMintUrlMessage.chain())));
 		}
 
 		val mintFrameUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getFramesServiceUrl())
 				.path("/mint?provider={provider}" +
-						"&chain={chain}" +
+						"&chainId={chainId}" +
 						"&contract={contract}" +
 						"&tokenId={tokenId}" +
 						"&original={original}")
 				.buildAndExpand(parsedMintUrlMessage.provider(),
-						parsedMintUrlMessage.chain(),
+						chainId,
 						parsedMintUrlMessage.contract(),
 						parsedMintUrlMessage.tokenId(),
 						parsedMintUrlMessage.url())
@@ -138,10 +148,5 @@ public class ProductsController {
 		log.debug("Returning mintFrameUrl: {}", mintFrameUrl);
 		return ResponseEntity.ok().body(
 				new FrameResponse.ActionFrame("frame", mintFrameUrl));
-				/*ResponseEntity.ok().body(new FrameResponse.FrameMessage(
-						String.format("Found mint: %s",
-								WalletService.shortenWalletAddressLabel(
-										parsedMintUrlMessage.contract()))))*/
-
 	}
 }

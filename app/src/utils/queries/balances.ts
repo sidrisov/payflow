@@ -1,6 +1,6 @@
 import { getBalance } from 'wagmi/actions';
 import { AssetType, AssetBalanceType } from '../../types/AssetType';
-import { privyWagmiConfig } from '../wagmiConfig';
+import { wagmiConfig } from '../wagmiConfig';
 import { formatUnits } from 'viem';
 import { GetBalanceData } from 'wagmi/query';
 import { useQuery } from '@tanstack/react-query';
@@ -22,7 +22,7 @@ export const useAssetBalances = (assets: AssetType[]) => {
     queryFn: () =>
       Promise.allSettled(
         assets.map((asset) =>
-          getBalance(privyWagmiConfig, {
+          getBalance(wagmiConfig, {
             address: asset.address,
             chainId: asset.chainId,
             token: asset.token.tokenAddress

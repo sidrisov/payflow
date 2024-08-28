@@ -25,7 +25,7 @@ import { Hash, Address, keccak256, toBytes, toHex } from 'viem';
 import { getRelayKitForChainId, getSponsoredCount, waitForRelayTaskToComplete } from './relayer';
 import { getGasPrice } from 'wagmi/actions';
 import { SUPPORTED_CHAINS } from './networks';
-import { privyWagmiConfig } from './wagmiConfig';
+import { wagmiConfig } from './wagmiConfig';
 import { ViemTransaction } from './hooks/useSafeTransfer';
 
 export async function transferWithGelato(
@@ -156,10 +156,10 @@ export async function isSafeSponsored(
 export async function estimateFee(isSafeDeployed: boolean, chainId: number): Promise<string> {
   const isMainnetChain = !SUPPORTED_CHAINS.find((c) => c.id === chainId)?.testnet;
 
-  const l1GasPrice = await getGasPrice(privyWagmiConfig, {
+  const l1GasPrice = await getGasPrice(wagmiConfig, {
     chainId: isMainnetChain ? 1 : 11155111
   });
-  const l2GasPrice = await getGasPrice(privyWagmiConfig, { chainId });
+  const l2GasPrice = await getGasPrice(wagmiConfig, { chainId });
 
   const l1GasLimit = BigInt(isSafeDeployed ? 8_500 : 13_000);
   const l2GasLimit = BigInt(isSafeDeployed ? 200_000 : 500_000);

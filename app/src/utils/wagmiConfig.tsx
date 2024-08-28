@@ -66,6 +66,6 @@ const commonWagmiConfig = {
   ]
 }); */
 
-export const privyWagmiConfig = createConfig({
+export const wagmiConfig = createConfig({
   ...commonWagmiConfig
 }) as Config;

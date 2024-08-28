@@ -4,7 +4,7 @@ import { FlowWalletType } from '../types/FlowType';
 import { signerToSafeSmartAccount } from './permissionless_forked/signerToSafeSmartAccount';
 import { ENTRYPOINT_ADDRESS_V06, isSmartAccountDeployed } from 'permissionless';
 import { getClient } from 'wagmi/actions';
-import { privyWagmiConfig } from './wagmiConfig';
+import { wagmiConfig } from './wagmiConfig';
 import { SmartAccountSigner } from 'permissionless/accounts';
 
 const DEFAULT_SAFE_VERSION = '1.4.1';
@@ -15,7 +15,7 @@ export default async function createSafeWallets(
   chains: Chain[]
 ): Promise<FlowWalletType[]> {
   const deployPromises = chains.map(async (chain) => {
-    const client = getClient(privyWagmiConfig, { chainId: chain.id });
+    const client = getClient(wagmiConfig, { chainId: chain.id });
 
     if (client) {
       const safeAccount = await signerToSafeSmartAccount(client as any, {

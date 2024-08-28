@@ -88,7 +88,7 @@ public class JarContributionController {
 
 	@Autowired
 	private ReceiptService receiptService;
-	
+
 	@Autowired
 	private ContactBookService contactBookService;
 
@@ -104,7 +104,8 @@ public class JarContributionController {
 	}
 
 	@PostMapping("/payflow")
-	public ResponseEntity<?> tipPayflow() {
+	public ResponseEntity<?> tipPayflow(@RequestBody FrameMessage frameMessage) {
+		log.debug("Received tip Payflow in frame message request: {}", frameMessage);
 		return ResponseEntity.ok().body(
 				new FrameResponse.ActionFrame("frame", "https://frames.payflow.me/0x0dee77c83cb8b14fa95497825df93202abf6ad83?entryTitle=%25F0%259F%25AB%25B6%25F0%259F%258F%25BB%2520Support%2520Payflow"));
 	}

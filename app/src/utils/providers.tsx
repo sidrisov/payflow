@@ -5,7 +5,7 @@ import CustomThemeProvider from '../theme/CustomThemeProvider';
 import CustomToastContainer from '../components/toasts/CustomToastContainer';
 import { PrivyClientConfig, PrivyProvider } from '@privy-io/react-auth';
 import { WagmiProvider as PrivyWagmiProvider } from '@privy-io/wagmi';
-import { privyWagmiConfig } from './wagmiConfig';
+import { wagmiConfig } from './wagmiConfig';
 import { AuthKitProvider } from '@farcaster/auth-kit';
 import { useMediaQuery } from '@mui/material';
 import { SUPPORTED_CHAINS } from './networks';
@@ -94,7 +94,7 @@ function PrivyAppProviders({
   return (
     <PrivyProvider appId={PRIVY_API_KEY} config={privyConfig(darkMode)}>
       <QueryClientProvider client={privyQueryClient}>
-        <PrivyWagmiProvider config={privyWagmiConfig}>
+        <PrivyWagmiProvider config={wagmiConfig}>
           <CommonoProviders darkMode={darkMode}>{children}</CommonoProviders>
           <CustomToastContainer />
         </PrivyWagmiProvider>
