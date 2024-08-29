@@ -105,56 +105,56 @@ export function ClaimDegenPointsDialog({
   }
 
   return (
-    season.contract && (
-      <ResponsiveDialog
-        title={`Degen Points: ${formatAmountWithSuffix(degenPoints.points)}`}
-        open={props.open}
-        onOpen={() => {}}
-        onClose={props.onClose}>
-        <Divider flexItem />
-        <Box
-          width="100%"
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="space-between">
-          {!degenPoints.wallet_address ? (
-            <>
-              <Typography textAlign="center" color={red[400]} fontWeight="bold">
-                Missing verified address linked to your farcaster!
-              </Typography>
-            </>
+    <ResponsiveDialog
+      title={`Degen Points: ${formatAmountWithSuffix(degenPoints.points)}`}
+      open={props.open && !isClaimedAlready}
+      onOpen={() => {}}
+      onClose={props.onClose}>
+      <Divider flexItem />
+      <Box
+        width="100%"
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="space-between">
+        {!degenPoints.wallet_address ? (
+          <>
+            <Typography textAlign="center" color={red[400]} fontWeight="bold">
+              Missing verified address linked to your farcaster!
+            </Typography>
+          </>
+        ) : (
+          <Stack width="100%" spacing={0.5} p={1} alignItems="flex-start" justifyContent="center">
+            <Typography
+              fontSize={16}
+              fontWeight="bold"
+              display="inline-flex"
+              alignItems="center"
+              color={grey[prefersDarkMode ? 400 : 700]}>
+              Claim rewards with:{' '}
+              <IoIosWallet fontSize="large" style={{ marginLeft: 4, marginRight: 2 }} />
+              {shortenWalletAddressLabel2(degenPoints.wallet_address)}
+            </Typography>
+          </Stack>
+        )}
+
+        {isClaimCheckPending ||
+        address?.toLowerCase() === degenPoints.wallet_address.toLowerCase() ? (
+          !isClaimCheckPending && chainId !== season.chainId ? (
+            <LoadingSwitchChainButton chainId={season.chainId} />
           ) : (
-            <Stack width="100%" spacing={0.5} p={1} alignItems="flex-start" justifyContent="center">
-              <Typography
-                fontSize={16}
-                fontWeight="bold"
-                display="inline-flex"
-                alignItems="center"
-                color={grey[prefersDarkMode ? 400 : 700]}>
-                Claim rewards with:{' '}
-                <IoIosWallet fontSize="large" style={{ marginLeft: 4, marginRight: 2 }} />
-                {shortenWalletAddressLabel2(degenPoints.wallet_address)}
-              </Typography>
-            </Stack>
-          )}
-          {address?.toLowerCase() === degenPoints.wallet_address.toLowerCase() ? (
-            !isClaimCheckPending && chainId !== season.chainId ? (
-              <LoadingSwitchChainButton chainId={season.chainId} />
-            ) : (
-              <CustomLoadingButton
-                title="Claim"
-                disabled={!merkleProofs /* || Boolean(isClaimedAlready) */}
-                loading={isFetchingMerkleProofs || isClaimCheckPending || isClaimPending}
-                status={isFetchingMerkleProofs || isClaimCheckPending ? 'Checking' : 'Claiming'}
-                onClick={handleClaimPoints}
-              />
-            )
-          ) : (
-            <LoadingConnectWalletButton address={degenPoints.wallet_address.toLowerCase()} />
-          )}
-        </Box>
-      </ResponsiveDialog>
-    )
+            <CustomLoadingButton
+              title="Claim"
+              disabled={!merkleProofs}
+              loading={isFetchingMerkleProofs || isClaimCheckPending || isClaimPending}
+              status={isFetchingMerkleProofs || isClaimCheckPending ? 'Checking' : 'Claiming'}
+              onClick={handleClaimPoints}
+            />
+          )
+        ) : (
+          <LoadingConnectWalletButton address={degenPoints.wallet_address.toLowerCase()} />
+        )}
+      </Box>
+    </ResponsiveDialog>
   );
 }
