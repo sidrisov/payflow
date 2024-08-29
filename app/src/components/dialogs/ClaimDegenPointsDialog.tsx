@@ -1,77 +1,113 @@
 import ResponsiveDialog, { ResponsiveDialogProps } from './ResponsiveDialog';
 import { Box, Divider, Stack, Typography, useMediaQuery } from '@mui/material';
-import { useContext, useEffect, useState } from 'react';
-import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';
-import { ProfileContext } from '../../contexts/UserContext';
+import { useEffect } from 'react';
+import { CustomLoadingButton } from '../buttons/LoadingPaymentButton';
 import { grey, red } from '@mui/material/colors';
-import { FlowType } from '../../types/FlowType';
-import { DegenPoints, useMerkleProofs } from '../../utils/queries/degen';
+import { DegenClaimSeason, DegenPoints, useMerkleProofs } from '../../utils/queries/degen';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
 import { toast } from 'react-toastify';
+import { useAccount, useReadContract, useWriteContract } from 'wagmi';
+import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
+import { LoadingSwitchChainButton } from '../buttons/LoadingSwitchNetworkButton';
+import { IoIosWallet } from 'react-icons/io';
+import { degenClaimAbi } from '../../utils/abi/degenClaimAbi';
+import { delay } from '../../utils/delay';
+import { useNavigate } from 'react-router-dom';
+import { formatAmountWithSuffix } from '../../utils/formats';
 
 export function ClaimDegenPointsDialog({
   degenPoints,
+  season,
   ...props
-}: { degenPoints: DegenPoints } & ResponsiveDialogProps) {
+}: { degenPoints: DegenPoints; season: DegenClaimSeason } & ResponsiveDialogProps) {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-
-  const { profile } = useContext(ProfileContext);
-
-  const flows = profile?.flows?.filter((flow) => flow.type === 'FARCASTER_VERIFICATION');
-
-  const [selectedFlow, setSelectedFlow] = useState<FlowType | undefined>(flows?.[0]);
+  const { address, chainId } = useAccount();
+  const navigate = useNavigate();
 
   const {
     isFetching: isFetchingMerkleProofs,
     data: merkleProofs,
     error: merkleProofsError
-  } = useMerkleProofs(degenPoints.wallet_address);
+  } = useMerkleProofs(degenPoints.wallet_address, season.id);
 
-  useEffect(() => {
-    if (merkleProofsError || (!isFetchingMerkleProofs && !merkleProofs)) {
-      toast.warn("Season 7 Points claiming hasn't started!", { delay: 2_000, closeButton: false });
-      props.onClose();
-    }
-  }, [isFetchingMerkleProofs, merkleProofs, props.onClose]);
+  const {
+    isPending: isClaimCheckPending,
+    data: isClaimedAlready,
+    isError: isClaimCheckError
+  } = useReadContract({
+    abi: degenClaimAbi,
+    chainId: season.chainId,
+    address: season.contract,
+    functionName: 'isClaimed',
+    args: merkleProofs && [BigInt(merkleProofs?.index)]
+  });
 
-  /* const { isFetching: isFetchingClaimStatus, data: claimStatus } = useMoxieRewardsClaimStatus(
-    fid,
-    claimResponse?.transactionId
+  console.log(
+    `Claim status [${season}]: isClaimed=${isClaimedAlready} isError=${isClaimCheckError}`
   );
 
-  async function handleClaimRewards() {
-    const preferredConnectedWallet = selectedFlow?.wallets[0].address;
-    if (preferredConnectedWallet) {
-      claimRewards({ preferredConnectedWallet });
+  const {
+    isPending: isClaimPending,
+    isSuccess: claimed,
+    isError: isClaimError,
+    writeContract
+  } = useWriteContract();
+
+  useEffect(() => {
+    if (isClaimedAlready) {
+      toast.success(`Claimed ${season.name} already!`, {
+        autoClose: 2_000
+      });
+      props.onClose();
+      return;
     }
-  } */
 
-  /* useEffect(() => {
-    const handleClaimStatus = async () => {
-      if (claimError) {
-        toast.error(`${claimError.message}`, { autoClose: 2000 });
-        return;
-      }
+    if (!season.contract || merkleProofsError || (!isFetchingMerkleProofs && !merkleProofs)) {
+      toast.warn(`${season.name} claiming hasn't started!`, { autoClose: 2_000 });
+      props.onClose();
+      return;
+    }
 
-      if (claimStatus) {
-        if (claimStatus.status === 'SUCCESS') {
-          toast.success(`Claimed ${normalizeNumberPrecision(claimStatus.rewards)} Moxie`, {
-            autoClose: 2000
-          });
-          await delay(3000);
-          navigate(0);
-        } else {
-          toast.error('Failed to claim rewards');
-        }
-      }
-    };
-    handleClaimStatus();
-  }, [claimStatus, claimError]); */
+    if (claimed) {
+      toast.success(`Claimed ${formatAmountWithSuffix(degenPoints.points)} Degen`, {
+        autoClose: 2000
+      });
+      delay(3000);
+      navigate(0);
+    } else if (isClaimError) {
+      toast.error('Failed to claim points');
+    }
+  }, [
+    isFetchingMerkleProofs,
+    isClaimedAlready,
+    claimed,
+    isClaimError,
+    merkleProofs,
+    props.onClose
+  ]);
+
+  async function handleClaimPoints() {
+    if (!season.contract || !merkleProofs) {
+      toast.error('Something went wrong!');
+      return;
+    }
+    writeContract({
+      abi: degenClaimAbi,
+      address: season.contract,
+      functionName: 'claim',
+      args: [
+        merkleProofs.index,
+        merkleProofs.wallet_address,
+        merkleProofs.amount,
+        merkleProofs.proof
+      ]
+    });
+  }
 
   return (
-    merkleProofs && (
+    season.contract && (
       <ResponsiveDialog
-        title={`Degen Points: ${degenPoints.points}`}
+        title={`Degen Points: ${formatAmountWithSuffix(degenPoints.points)}`}
         open={props.open}
         onOpen={() => {}}
         onClose={props.onClose}>
@@ -90,18 +126,33 @@ export function ClaimDegenPointsDialog({
             </>
           ) : (
             <Stack width="100%" spacing={0.5} p={1} alignItems="flex-start" justifyContent="center">
-              <Typography fontSize={16} fontWeight="bold" color={grey[prefersDarkMode ? 400 : 700]}>
-                Claim rewards with: {shortenWalletAddressLabel2(degenPoints.wallet_address)}
+              <Typography
+                fontSize={16}
+                fontWeight="bold"
+                display="inline-flex"
+                alignItems="center"
+                color={grey[prefersDarkMode ? 400 : 700]}>
+                Claim rewards with:{' '}
+                <IoIosWallet fontSize="large" style={{ marginLeft: 4, marginRight: 2 }} />
+                {shortenWalletAddressLabel2(degenPoints.wallet_address)}
               </Typography>
             </Stack>
           )}
-          <LoadingPaymentButton
-            title="Claim"
-            disabled={!selectedFlow}
-            /*  loading={isClaiming || isFetchingClaimStatus} */
-            status="Claiming"
-            /*  onClick={handleClaimRewards} */
-          />
+          {address?.toLowerCase() === degenPoints.wallet_address.toLowerCase() ? (
+            !isClaimCheckPending && chainId !== season.chainId ? (
+              <LoadingSwitchChainButton chainId={season.chainId} />
+            ) : (
+              <CustomLoadingButton
+                title="Claim"
+                disabled={!merkleProofs /* || Boolean(isClaimedAlready) */}
+                loading={isFetchingMerkleProofs || isClaimCheckPending || isClaimPending}
+                status={isFetchingMerkleProofs || isClaimCheckPending ? 'Checking' : 'Claiming'}
+                onClick={handleClaimPoints}
+              />
+            )
+          ) : (
+            <LoadingConnectWalletButton address={degenPoints.wallet_address.toLowerCase()} />
+          )}
         </Box>
       </ResponsiveDialog>
     )

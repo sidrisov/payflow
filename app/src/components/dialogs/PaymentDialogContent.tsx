@@ -26,8 +26,8 @@ import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { useSafeTransfer, ViemTransaction } from '../../utils/hooks/useSafeTransfer';
 import { updateWallet } from '../../services/flow';
 import { TransferToastContent } from '../toasts/TransferToastContent';
-import { LoadingSwitchNetworkButton } from '../buttons/LoadingSwitchNetworkButton';
-import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';
+import { LoadingSwitchChainButton } from '../buttons/LoadingSwitchNetworkButton';
+import { CustomLoadingButton } from '../buttons/LoadingPaymentButton';
 import { PaymentDialogProps } from './PaymentDialog';
 import { ERC20_CONTRACTS, Token } from '../../utils/erc20contracts';
 import { TokenAmountSection } from './TokenAmountSection';
@@ -605,7 +605,7 @@ export default function PaymentDialogContent({
       />
       {(crossChainMode ? !crossChainPaymentToken : !paymentToken) ||
       chainId === (crossChainMode ? crossChainPaymentToken?.chainId : paymentToken?.chainId) ? (
-        <LoadingPaymentButton
+        <CustomLoadingButton
           title="Pay"
           loading={paymentPending}
           disabled={!paymentEnabled}
@@ -619,7 +619,7 @@ export default function PaymentDialogContent({
           }}
         />
       ) : (
-        <LoadingSwitchNetworkButton
+        <LoadingSwitchChainButton
           chainId={
             crossChainMode
               ? (crossChainPaymentToken?.chainId as number)

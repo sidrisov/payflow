@@ -362,7 +362,13 @@ export default function ProfileOnboardingDialog({
             loadingIndicator={
               <Stack direction="row" spacing={1} alignItems="center">
                 <CircularProgress color="inherit" size={16} />
-                <Typography variant="button">
+                <Typography
+                  noWrap
+                  variant="button"
+                  textOverflow="ellipsis"
+                  overflow="hidden"
+                  whiteSpace="nowrap"
+                  sx={{ maxWidth: 200 }}>
                   {loadingUpdateProfile ? 'updating profile' : ''}
                 </Typography>
               </Stack>

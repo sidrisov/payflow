@@ -316,7 +316,13 @@ export default function PrimaryFlowOnboardingDialog({
               loadingIndicator={
                 <Stack direction="row" spacing={1} alignItems="center">
                   <CircularProgress color="inherit" size={16} />
-                  <Typography variant="button">
+                  <Typography
+                    noWrap
+                    variant="button"
+                    textOverflow="ellipsis"
+                    overflow="hidden"
+                    whiteSpace="nowrap"
+                    sx={{ maxWidth: 200 }}>
                     {loadingWallets ? 'setting up' : loadingUpdateProfile ? 'updating' : ''}
                   </Typography>
                 </Stack>
@@ -329,7 +335,7 @@ export default function PrimaryFlowOnboardingDialog({
               Complete
             </LoadingButton>
           ) : (
-            <LoadingConnectWalletButton isEmbeddedSigner={true} title="Next" />
+            <LoadingConnectWalletButton isEmbeddedSigner title="Next" />
           )}
         </Box>
       </DialogContent>

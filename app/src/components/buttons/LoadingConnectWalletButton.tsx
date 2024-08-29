@@ -3,14 +3,15 @@ import { PaymentSenderType } from '../dialogs/PaymentDialog';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useSetActiveWallet } from '@privy-io/wagmi';
 import { useEffect } from 'react';
+import { degen } from 'viem/chains';
 
 export function LoadingConnectWalletButton({
-  paymentType = 'payflow',
   isEmbeddedSigner = false,
+  address,
   title,
   ...props
 }: LoadingButtonProps & {
-  paymentType?: PaymentSenderType;
+  address?: string;
   isEmbeddedSigner?: boolean;
   title?: string;
 }) {
@@ -46,7 +47,7 @@ export function LoadingConnectWalletButton({
             login();
           }
         } else {
-          connectWallet();
+          connectWallet({ suggestedAddress: address });
         }
       }}
       sx={{ mt: 3, mb: 1, borderRadius: 5 }}>

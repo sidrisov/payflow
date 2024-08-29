@@ -1,9 +1,9 @@
 import ResponsiveDialog, { ResponsiveDialogProps } from './ResponsiveDialog';
-import { normalizeNumberPrecision } from '../../utils/formats';
+import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { Box, Button, Divider, Stack, Typography, useMediaQuery } from '@mui/material';
 import { useContext, useEffect, useState } from 'react';
 import { useClaimRewardsMutation, useMoxieRewardsClaimStatus } from '../../utils/queries/moxie';
-import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';
+import { CustomLoadingButton } from '../buttons/LoadingPaymentButton';
 import { ProfileContext } from '../../contexts/UserContext';
 import { Check } from '@mui/icons-material';
 import { grey, green, red } from '@mui/material/colors';
@@ -55,9 +55,14 @@ export function ClaimMoxieRewardsDialog({
 
       if (claimStatus) {
         if (claimStatus.status === 'SUCCESS') {
-          toast.success(`Claimed ${normalizeNumberPrecision(claimStatus.rewards)} Moxie`, {
-            autoClose: 2000
-          });
+          toast.success(
+            `Claimed ${formatAmountWithSuffix(
+              normalizeNumberPrecision(claimStatus.rewards)
+            )} Moxie`,
+            {
+              autoClose: 2000
+            }
+          );
           await delay(3000);
           navigate(0);
         } else {
@@ -70,7 +75,9 @@ export function ClaimMoxieRewardsDialog({
 
   return (
     <ResponsiveDialog
-      title={`Moxie Rewards: ${normalizeNumberPrecision(claimableRewardsAmount)}`}
+      title={`Moxie Rewards: ${formatAmountWithSuffix(
+        normalizeNumberPrecision(claimableRewardsAmount)
+      )}`}
       open={props.open}
       onOpen={() => {}}
       onClose={props.onClose}>
@@ -117,7 +124,7 @@ export function ClaimMoxieRewardsDialog({
             ))}
           </Stack>
         )}
-        <LoadingPaymentButton
+        <CustomLoadingButton
           title="Claim"
           disabled={!selectedFlow}
           loading={isClaiming || isFetchingClaimStatus}

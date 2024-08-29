@@ -1,13 +1,5 @@
 import { Circle } from '@mui/icons-material';
-import {
-  Card,
-  CardContent,
-  Box,
-  Stack,
-  Typography,
-  Chip,
-  Skeleton,
-  Button} from '@mui/material';
+import { Card, CardContent, Box, Stack, Typography, Chip, Skeleton, Button } from '@mui/material';
 import { countdown } from '../../utils/date';
 import { useFanTokens } from '../../utils/queries/fanTokens';
 import { AddressSection } from '../AddressSection';
@@ -15,7 +7,7 @@ import { ProfileSection } from '../ProfileSection';
 import { useContext, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { FARCASTER_DAPP } from '../../utils/dapps';
-import { normalizeNumberPrecision } from '../../utils/formats';
+import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useAvailableMoxieRewards } from '../../utils/queries/moxie';
 import { useIdentity } from '../../utils/queries/profiles';
 import { ClaimMoxieRewardsDialog } from '../dialogs/ClaimMoxieRewardsDialog';
@@ -23,7 +15,6 @@ import { useSearchParams } from 'react-router-dom';
 import InfoCard, { InfoStack } from './InfoCard';
 
 export function MoxieInfoCard() {
-
   const [searchParams] = useSearchParams();
   const accessToken = searchParams.get('access_token') ?? undefined;
 
@@ -148,7 +139,7 @@ export function MoxieInfoCard() {
             ))}
           </Box>
         ) : (
-          <Typography fontSize={14} textAlign="center">
+          <Typography variant="subtitle2" textAlign="center">
             No auctions available among contacts
           </Typography>
         )}
@@ -171,10 +162,10 @@ export function MoxieInfoCard() {
               color: 'inherit'
             }}
             onClick={() => setOpenClaimRewardsDialog(true)}>
-            {normalizeNumberPrecision(claimableRewards)}
+            {formatAmountWithSuffix(normalizeNumberPrecision(claimableRewards))}
           </Typography>
         ) : (
-          <Typography fontSize={14} color="inherit">
+          <Typography variant="subtitle2" color="inherit">
             {!rewardsError ? (
               'No pending rewards to claim'
             ) : (

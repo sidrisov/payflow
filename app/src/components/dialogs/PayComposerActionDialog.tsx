@@ -17,7 +17,7 @@ import { RecipientField } from '../RecipientField';
 import { useMemo, useState } from 'react';
 import { TokenAmountSection } from './TokenAmountSection';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
-import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';
+import { CustomLoadingButton } from '../buttons/LoadingPaymentButton';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { Token } from '../../utils/erc20contracts';
@@ -144,7 +144,7 @@ export default function PayComposerActionDialog({
                 showBalance={false}
                 expandSection={true}
               />
-              <LoadingPaymentButton
+              <CustomLoadingButton
                 title="Create Payment"
                 disabled={!paymentEnabled}
                 onClick={async () => {

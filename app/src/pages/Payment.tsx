@@ -93,7 +93,7 @@ export default function Payment() {
 
             if (paymentData.status !== 'PENDING') {
               toast(`Payment ${paymentData.status}!`, {
-                delay: 3000,
+                autoClose: 3000,
                 type: statusToToastType[paymentData.status] || 'default'
               });
               return;

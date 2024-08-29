@@ -29,8 +29,8 @@ import { KeyboardDoubleArrowDown } from '@mui/icons-material';
 import { SelectedIdentityType } from '../../types/ProfileType';
 import { FarcasterRecipientField } from '../FarcasterRecipientField';
 import { SwitchFlowSignerSection } from './SwitchFlowSignerSection';
-import { LoadingPaymentButton } from '../buttons/LoadingPaymentButton';
-import { LoadingSwitchNetworkButton } from '../buttons/LoadingSwitchNetworkButton';
+import { CustomLoadingButton } from '../buttons/LoadingPaymentButton';
+import { LoadingSwitchChainButton } from '../buttons/LoadingSwitchNetworkButton';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { PaymentType } from '../../types/PaymentType';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
@@ -415,7 +415,7 @@ export default function MintDialog({
                 gasFee={gasFee}
               />
               {!paymentToken || chainId === paymentToken.chainId ? (
-                <LoadingPaymentButton
+                <CustomLoadingButton
                   title="Pay"
                   loading={paymentPending}
                   disabled={true}
@@ -423,7 +423,7 @@ export default function MintDialog({
                   onClick={submitGlideTransaction}
                 />
               ) : (
-                <LoadingSwitchNetworkButton chainId={paymentToken.chainId} />
+                <LoadingSwitchChainButton chainId={paymentToken.chainId} />
               )}
               <PoweredByGlideText />
             </Stack>
