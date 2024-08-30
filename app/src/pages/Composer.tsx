@@ -18,7 +18,7 @@ import { RiApps2Line } from 'react-icons/ri';
 export default function Composer() {
   const [searchParams] = useSearchParams();
   const recipientIdentity = searchParams.get('recipient');
-  const action = searchParams.get('action') ?? (recipientIdentity && 'pay');
+  const action = searchParams.get('action');
 
   const { isLoading: isRecipientFetchingLoading, data: fetchedRecipientIdentity } = useIdentity(
     recipientIdentity as string

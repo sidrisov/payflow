@@ -108,7 +108,7 @@ public class PaymentComposerController {
 		val paymentFormUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 				.path("/composer")
 				.queryParam("access_token", accessToken)
-				//.queryParam("action", "pay")
+				.queryParam("action", StringUtils.isNotBlank(recipient) ? "pay" : "")
 				.queryParam("recipient", recipient)
 				.build()
 				.toUriString();
@@ -116,7 +116,7 @@ public class PaymentComposerController {
 		log.debug("Returning a composer payment form url for: {} - {}", interactor.username(), paymentFormUrl);
 
 		return ResponseEntity.ok().body(new FrameResponse.ComposerActionForm(
-				"form", "Onchain Social Payments", paymentFormUrl));
+				"form", "Payflow", paymentFormUrl));
 	}
 
 	private String determineRecipientIdentity(FarcasterUser user) {
