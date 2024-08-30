@@ -16,8 +16,8 @@ import ContributionJarComposerDialog from '../components/dialogs/ContributionJar
 
 export default function Composer() {
   const [searchParams] = useSearchParams();
-  const action = searchParams.get('action');
   const recipientIdentity = searchParams.get('recipient');
+  const action = searchParams.get('action') ?? (recipientIdentity && 'pay');
 
   const { isLoading: isRecipientFetchingLoading, data: fetchedRecipientIdentity } = useIdentity(
     recipientIdentity as string
