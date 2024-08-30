@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import { usePrivy } from '@privy-io/react-auth';
 import { useSearchParams } from 'react-router-dom';
+import { Avatar, Box, Stack, Typography } from '@mui/material';
 
 const appSettingsStorageItem = localStorage.getItem('appSettings');
 const appSettingsStored = appSettingsStorageItem
@@ -70,7 +71,20 @@ export default function AppWithProviders() {
   }, [appSettings]);
 
   return loading || !ready ? (
-    <CenteredCircularProgress />
+    <Box
+      position="fixed"
+      display="flex"
+      alignItems="center"
+      boxSizing="border-box"
+      justifyContent="center"
+      sx={{ inset: 0 }}>
+      <Stack direction="row" spacing={1} alignItems="center">
+        <Avatar src="/payflow.png" variant="circular" sx={{ width: 30, height: 30 }} />
+        <Typography variant="h5" fontWeight="bold" fontFamily="monospace">
+          PAYFLOW
+        </Typography>
+      </Stack>
+    </Box>
   ) : (
     <App profile={profile} appSettings={appSettings} setAppSettings={setAppSettings} />
   );

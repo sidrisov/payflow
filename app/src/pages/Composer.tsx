@@ -52,7 +52,7 @@ export default function Composer() {
       <Container maxWidth="md" sx={{ height: '80vh' }}>
         {!action && (
           <Stack
-            m={3}
+            m={1}
             p={3}
             spacing={3}
             component={Card}
