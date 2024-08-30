@@ -97,6 +97,6 @@ public class UsefulComposerController {
 				usefulFormUrl);
 
 		return ResponseEntity.ok().body(new FrameResponse.ComposerActionForm(
-				"form", "Payflow Useful", usefulFormUrl));
+				"form", "Moxie / Degen Claim", usefulFormUrl));
 	}
 }

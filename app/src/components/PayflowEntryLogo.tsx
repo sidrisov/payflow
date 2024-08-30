@@ -7,20 +7,22 @@ export default function PayflowEntryLogo() {
       position="fixed"
       display="flex"
       alignItems="center"
-      boxSizing="border-box"
       justifyContent="center"
       sx={{ inset: 0 }}>
-      <Stack direction="row" spacing={1} alignItems="center">
+      <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
         <Avatar
           src="/payflow.png"
-          variant="rounded"
           sx={{ width: 60, height: 60, borderRadius: 3, border: 0.5, borderColor: 'divider' }}
         />
-        <Stack>
-          <Typography variant="h5" fontWeight="bold">
+        <Stack spacing={0.1} alignItems="flex-start">
+          <Typography variant="h5" fontWeight="bold" fontFamily="monospace">
             Payflow
           </Typography>
-          <Typography fontSize={16} fontWeight="bold" sx={{ color: green.A700 }}>
+          <Typography
+            fontSize={16}
+            fontWeight="bold"
+            fontFamily="monospace"
+            sx={{ color: green.A700 }}>
             Onchain Social Payments
           </Typography>
         </Stack>
