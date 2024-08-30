@@ -13,6 +13,8 @@ import { useIdentity } from '../../utils/queries/profiles';
 import { ClaimMoxieRewardsDialog } from '../dialogs/ClaimMoxieRewardsDialog';
 import { useSearchParams } from 'react-router-dom';
 import InfoCard, { InfoStack } from './InfoCard';
+import { copyToClipboard } from '../../utils/copyToClipboard';
+import { toast } from 'react-toastify';
 
 export function MoxieInfoCard() {
   const [searchParams] = useSearchParams();
@@ -101,12 +103,19 @@ export function MoxieInfoCard() {
                       <Chip
                         size="small"
                         clickable
-                        component="a"
-                        href={
-                          contactWithAuction.auction.launchCastUrl ??
-                          `https://www.airstack.xyz/users/fc_fname:${contactWithAuction.auction.farcasterUsername}`
-                        }
-                        target="_blank"
+                        {...(window.self === window.top
+                          ? {
+                              component: 'a',
+                              href: `https://www.airstack.xyz/users/fc_fname:${contactWithAuction.auction.farcasterUsername}`,
+                              target: '_blank'
+                            }
+                          : {
+                              onClick: () => {
+                                const link = `https://www.airstack.xyz/users/fc_fname:${contactWithAuction.auction.farcasterUsername}`;
+                                copyToClipboard(link);
+                                toast.success('Airstack auction link copied!', { autoClose: 2000 });
+                              }
+                            })}
                         {...(new Date(contactWithAuction.auction.estimatedStartTimestamp) <=
                         currentTime
                           ? {
