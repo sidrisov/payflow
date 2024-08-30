@@ -12,11 +12,9 @@ import PayComposerActionDialog from '../components/dialogs/PayComposerActionDial
 import { useIdentity } from '../utils/queries/profiles';
 import { PiPersonSimpleRunBold, PiTipJar } from 'react-icons/pi';
 import UsefulComposerActionDialog from '../components/dialogs/UsefulComposerActionDialog';
+import ContributionJarComposerDialog from '../components/dialogs/ContributionJarComposerDialog';
 
 export default function Composer() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
   const [searchParams] = useSearchParams();
   const action = searchParams.get('action');
   const recipientIdentity = searchParams.get('recipient');
@@ -51,7 +49,49 @@ export default function Composer() {
         <title> Payflow | Composer Actions </title>
       </Helmet>
 
-      <Container maxWidth="xs" sx={{ height: '100vh' }}>
+      <Container maxWidth="xs" sx={{ height: '80vh' }}>
+        {!action && (
+          <Stack
+            m={3}
+            p={3}
+            spacing={3}
+            alignItems="center"
+            border={1.5}
+            borderRadius={5}
+            borderColor="divider">
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Avatar src="/farcaster.svg" variant="rounded" sx={{ height: 25, width: 25 }} />
+              <Typography variant="h6">Composer Actions</Typography>
+            </Stack>
+            <Stack spacing={1} alignItems="center">
+              <CastActionButton
+                title="Pay"
+                description="Send Payments"
+                onClick={async () => {
+                  setOpenComposerAction('pay');
+                  setOpenSearchIdentity(true);
+                }}
+                startIcon={<ElectricBolt />}
+              />
+              <CastActionButton
+                title="Useful"
+                description="Moxie, Degen, and more"
+                onClick={async () => {
+                  setOpenComposerAction('useful');
+                }}
+                startIcon={<PiPersonSimpleRunBold />}
+              />
+              <CastActionButton
+                title="Jar"
+                description="Collect contributions"
+                onClick={async () => {
+                  setOpenComposerAction('jar');
+                }}
+                startIcon={<PiTipJar size={20} />}
+              />
+            </Stack>
+          </Stack>
+        )}
         {openComposerAction === 'pay' && recipient && profile && (
           <PayComposerActionDialog
             open={recipient != null}
@@ -69,9 +109,19 @@ export default function Composer() {
             }}
           />
         )}
-
         {openComposerAction === 'useful' && profile && (
           <UsefulComposerActionDialog
+            open={true}
+            closeStateCallback={() => {
+              setOpenComposerAction(undefined);
+            }}
+            onClose={() => {
+              setOpenComposerAction(undefined);
+            }}
+          />
+        )}
+        {openComposerAction === 'jar' && profile && (
+          <ContributionJarComposerDialog
             open={true}
             closeStateCallback={() => {
               setOpenComposerAction(undefined);
@@ -95,55 +145,6 @@ export default function Composer() {
               setRecipient(recipient);
             }}
           />
-        )}
-
-        {!action && (
-          <Box
-            height="100%"
-            display="flex"
-            flexDirection="column"
-            justifyContent={isMobile ? 'space-between' : 'flex-start'}
-            sx={{ p: 3 }}>
-            <Stack
-              p={3}
-              spacing={3}
-              alignItems="center"
-              border={1.5}
-              borderRadius={5}
-              borderColor="divider">
-              <Avatar src="/farcaster.svg" variant="rounded" />
-              <Typography variant="h6" align="center">
-                Farcaster Composer Actions
-              </Typography>
-              <Stack spacing={1} alignItems="center">
-                <CastActionButton
-                  title="Pay"
-                  description="Send Payments"
-                  onClick={async () => {
-                    setOpenComposerAction('pay');
-                    setOpenSearchIdentity(true);
-                  }}
-                  startIcon={<ElectricBolt />}
-                />
-                <CastActionButton
-                  title="Useful"
-                  description="Information for you"
-                  onClick={async () => {
-                    setOpenComposerAction('useful');
-                  }}
-                  startIcon={<PiPersonSimpleRunBold />}
-                />
-                <CastActionButton
-                  title="Jar"
-                  description="Collect contributions"
-                  onClick={async () => {
-                    setOpenComposerAction('jar');
-                  }}
-                  startIcon={<PiTipJar size={20} />}
-                />
-              </Stack>
-            </Stack>
-          </Box>
         )}
       </Container>
     </>
