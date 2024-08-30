@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Avatar, Card, Container, Stack, Typography } from '@mui/material';
+import { Card, Container, Stack, Typography } from '@mui/material';
 import { ElectricBolt } from '@mui/icons-material';
 import CastActionButton from '../components/buttons/CastActionButton';
 import { useSearchParams } from 'react-router-dom';
@@ -13,6 +13,7 @@ import { useIdentity } from '../utils/queries/profiles';
 import { PiPersonSimpleRunBold, PiTipJar } from 'react-icons/pi';
 import UsefulComposerActionDialog from '../components/dialogs/UsefulComposerActionDialog';
 import ContributionJarComposerDialog from '../components/dialogs/ContributionJarComposerDialog';
+import { RiApps2Line } from 'react-icons/ri';
 
 export default function Composer() {
   const [searchParams] = useSearchParams();
@@ -61,9 +62,11 @@ export default function Composer() {
             borderRadius={5}
             minWidth={300}
             maxWidth={350}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Avatar src="/payflow.png" variant="circular" />
-              <Typography variant="h6">Payflow Mini Apps</Typography>
+            <Stack pl={2} direction="row" spacing={1} alignItems="center" alignSelf="flex-start">
+              <RiApps2Line size={30} />
+              <Typography fontSize={20} fontWeight="bold">
+                Payflow Actions
+              </Typography>
             </Stack>
             <Stack width="100%" spacing={2} alignItems="center">
               <CastActionButton
@@ -77,7 +80,7 @@ export default function Composer() {
               />
               <CastActionButton
                 title="Useful"
-                description="Claim Moxie & Degen"
+                description="Moxie / Degen Claim"
                 onClick={async () => {
                   setOpenComposerAction('useful');
                 }}
