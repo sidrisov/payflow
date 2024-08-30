@@ -37,7 +37,7 @@ export default function PublicProfile() {
       <Helmet>
         <title> Payflow {displayName ? '| ' + displayName : ''} </title>
       </Helmet>
-      <Box width="100%">
+      <Box width="100%" height="100vh">
         {username && !isProfileLoading && !identity && (
           <Stack mt={10}>
             <Typography

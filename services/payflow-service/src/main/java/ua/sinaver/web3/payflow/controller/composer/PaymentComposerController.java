@@ -37,7 +37,7 @@ public class PaymentComposerController {
 			"composer",
 			"Payflow",
 			"zap",
-			"Send payments",
+			"Onchain Social payments",
 			"https://payflow.me",
 			"https://payflow.me/apple-touch-icon.png",
 			new ComposerCastActionMeta.Action("post"));
