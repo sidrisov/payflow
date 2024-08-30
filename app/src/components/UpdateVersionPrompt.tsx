@@ -5,10 +5,7 @@ import { RiSparklingFill } from 'react-icons/ri';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 
 export const UpdateVersionPrompt = () => {
-  const {
-    needRefresh: [needRefresh],
-    updateServiceWorker
-  } = useRegisterSW({
+  const { updateServiceWorker } = useRegisterSW({
     onRegistered(r) {
       console.log('SW Registered: ' + r);
     },
@@ -53,25 +50,23 @@ export const UpdateVersionPrompt = () => {
   );
 
   return (
-    needRefresh && (
-      <Stack
-        mt={1}
-        width={275}
-        alignSelf="center"
-        direction="row"
-        alignItems="center"
-        justifyContent="space-between"
-        border={2}
-        borderRadius={5}
-        p={1}
-        sx={{
-          borderStyle: 'dashed',
-          borderColor: 'divider',
-          zIndex: 1600 // always display on top
-        }}>
-        <NewVersionNotice />
-        <UpdateVersionButton onClick={() => updateServiceWorker(true)} />
-      </Stack>
-    )
+    <Stack
+      mt={1}
+      width={350}
+      alignSelf="center"
+      direction="row"
+      alignItems="center"
+      justifyContent="space-between"
+      border={2}
+      borderRadius={5}
+      p={1}
+      sx={{
+        borderStyle: 'dashed',
+        borderColor: 'divider',
+        zIndex: 1600 // always display on top
+      }}>
+      <NewVersionNotice />
+      <UpdateVersionButton onClick={() => updateServiceWorker(true)} />
+    </Stack>
   );
 };
