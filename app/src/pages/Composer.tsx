@@ -59,12 +59,12 @@ export default function Composer() {
             elevation={5}
             alignItems="center"
             borderRadius={5}
-            borderColor="divider">
+            width={300}>
             <Stack direction="row" spacing={1} alignItems="center">
               <Avatar src="/payflow.png" variant="circular" />
               <Typography variant="h6">Payflow Mini Apps</Typography>
             </Stack>
-            <Stack spacing={2} alignItems="center">
+            <Stack width="100%" spacing={2} alignItems="center">
               <CastActionButton
                 title="Pay"
                 description="New payment frame"
