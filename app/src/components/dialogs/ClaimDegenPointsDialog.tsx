@@ -72,7 +72,9 @@ export function ClaimDegenPointsDialog({
       props.onClose();
       return;
     }
+  }, [isFetchingMerkleProofs, isClaimedAlready, merkleProofs, props.onClose]);
 
+  useEffect(() => {
     if (claimed) {
       toast.success(`Claimed ${formatAmountWithSuffix(degenPoints.points)} Degen`, {
         autoClose: 2000
@@ -82,14 +84,7 @@ export function ClaimDegenPointsDialog({
     } else if (isClaimError) {
       toast.error('Failed to claim points');
     }
-  }, [
-    isFetchingMerkleProofs,
-    isClaimedAlready,
-    claimed,
-    isClaimError,
-    merkleProofs,
-    props.onClose
-  ]);
+  }, [claimed, isClaimError]);
 
   async function handleClaimPoints() {
     if (!season.contract || !merkleProofs) {
