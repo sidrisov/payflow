@@ -59,7 +59,8 @@ export default function Composer() {
             elevation={5}
             alignItems="center"
             borderRadius={5}
-            width={300}>
+            minWidth={300}
+            maxWidth={350}>
             <Stack direction="row" spacing={1} alignItems="center">
               <Avatar src="/payflow.png" variant="circular" />
               <Typography variant="h6">Payflow Mini Apps</Typography>

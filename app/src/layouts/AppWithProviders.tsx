@@ -3,14 +3,13 @@ import App from './App';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AppSettings } from '../types/AppSettingsType';
 import { me } from '../services/user';
-import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { ProfileType } from '../types/ProfileType';
 import sortAndFilterFlows from '../utils/sortAndFilterFlows';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { usePrivy } from '@privy-io/react-auth';
 import { useSearchParams } from 'react-router-dom';
-import { Avatar, Box, Stack, Typography } from '@mui/material';
+import PayflowEntryLogo from '../components/PayflowEntryLogo';
 
 const appSettingsStorageItem = localStorage.getItem('appSettings');
 const appSettingsStored = appSettingsStorageItem
@@ -71,20 +70,7 @@ export default function AppWithProviders() {
   }, [appSettings]);
 
   return loading || !ready ? (
-    <Box
-      position="fixed"
-      display="flex"
-      alignItems="center"
-      boxSizing="border-box"
-      justifyContent="center"
-      sx={{ inset: 0 }}>
-      <Stack direction="row" spacing={1} alignItems="center">
-        <Avatar src="/payflow.png" variant="circular" sx={{ width: 30, height: 30 }} />
-        <Typography variant="h5" fontWeight="bold" fontFamily="monospace">
-          PAYFLOW
-        </Typography>
-      </Stack>
-    </Box>
+    <PayflowEntryLogo />
   ) : (
     <App profile={profile} appSettings={appSettings} setAppSettings={setAppSettings} />
   );

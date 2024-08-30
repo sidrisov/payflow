@@ -9,8 +9,7 @@ import { API_URL } from '../utils/urlConstants';
 import { toast } from 'react-toastify';
 import { AuthenticationStatus } from '../components/cards/ConnectCard';
 import { usePrivy } from '@privy-io/react-auth';
-import CenteredCircularProgress from '../components/CenteredCircularProgress';
-import { Box, Stack, Avatar, Typography } from '@mui/material';
+import PayflowEntryLogo from '../components/PayflowEntryLogo';
 
 export default function LoginWithProviders() {
   const fetchingStatusRef = useRef(false);
@@ -66,22 +65,5 @@ export default function LoginWithProviders() {
     }
   }, [authStatus, profile]);
 
-  return !ready ? (
-    <Box
-      position="fixed"
-      display="flex"
-      alignItems="center"
-      boxSizing="border-box"
-      justifyContent="center"
-      sx={{ inset: 0 }}>
-      <Stack direction="row" spacing={1} alignItems="center">
-        <Avatar src="/payflow.png" variant="circular" sx={{ width: 30, height: 30 }} />
-        <Typography variant="h5" fontWeight="bold" fontFamily="monospace">
-          PAYFLOW
-        </Typography>
-      </Stack>
-    </Box>
-  ) : (
-    <Login authStatus={authStatus} profile={profile} />
-  );
+  return !ready ? <PayflowEntryLogo /> : <Login authStatus={authStatus} profile={profile} />;
 }
