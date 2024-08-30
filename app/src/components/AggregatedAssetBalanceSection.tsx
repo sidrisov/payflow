@@ -15,6 +15,9 @@ export function AggregatedAssetBalanceSection({
   balance: string;
   usdValue: number;
 }) {
+  const uniqueAssets = assets.filter(
+    (asset, index, self) => index === self.findIndex((a) => a.chainId === asset.chainId)
+  );
   return (
     <Box
       py={0.5}
@@ -28,12 +31,12 @@ export function AggregatedAssetBalanceSection({
         <Tooltip
           title={
             <Typography variant="caption">
-              Balance of <b>{assets[0].token.name}</b> across chains:{' '}
+              Balance of <b>{uniqueAssets[0].token.name}</b> across chains:{' '}
               <b>
-                {assets.map((asset, index) => (
+                {uniqueAssets.map((asset, index) => (
                   <Fragment key={index}>
                     {getNetworkDisplayName(asset.token.chainId)}
-                    {index !== assets.length - 1 ? ', ' : ''}
+                    {index !== uniqueAssets.length - 1 ? ', ' : ''}
                   </Fragment>
                 ))}
               </b>{' '}
@@ -52,10 +55,10 @@ export function AggregatedAssetBalanceSection({
             anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             badgeContent={
               <AvatarGroup
-                key={`asset_chains_avatar_group_${assets[0].token.id}`}
+                key={`asset_chains_avatar_group_${uniqueAssets[0].token.id}`}
                 max={3}
                 color="inherit"
-                total={assets.length}
+                total={uniqueAssets.length}
                 sx={{
                   '& .MuiAvatar-root': {
                     borderStyle: 'none',
@@ -65,20 +68,20 @@ export function AggregatedAssetBalanceSection({
                   },
                   gap: 0.2
                 }}>
-                {[...Array(Math.min(3, assets.length))].map((_item, i) => (
+                {[...Array(Math.min(3, uniqueAssets.length))].map((_item, i) => (
                   <NetworkAvatar
-                    key={`asset_chains_avatar_group_${assets[0].token.id}_${assets[i].chainId}`}
-                    chainId={assets[i].chainId}
+                    key={`asset_chains_avatar_group_${uniqueAssets[0].token.id}_${uniqueAssets[i].chainId}`}
+                    chainId={uniqueAssets[i].chainId}
                   />
                 ))}
               </AvatarGroup>
             }>
-            <TokenAvatar token={assets[0].token} sx={{ width: 30, height: 30 }} />
+            <TokenAvatar token={uniqueAssets[0].token} sx={{ width: 30, height: 30 }} />
           </Badge>
         </Tooltip>
         <Stack ml={2} direction="column" spacing={0.2}>
           <Typography variant="subtitle2" fontWeight="bold">
-            {assets[0].token.name}
+            {uniqueAssets[0].token.name}
           </Typography>
           <Typography variant="caption" fontWeight={500}>
             {formatAmountWithSuffix(normalizeNumberPrecision(parseFloat(balance)))}

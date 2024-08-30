@@ -20,7 +20,7 @@ const aggregateAssets = (balances: AssetBalanceType[]): AggregatedAssetBalances[
   balances
     .filter((assetBalance) => assetBalance.balance?.value && assetBalance.balance.value > BigInt(0))
     .forEach((assetBalance) => {
-      const tokenId = assetBalance.asset.token.id;
+      const tokenId = assetBalance.asset.token.underlyingToken?.id ?? assetBalance.asset.token.id;
 
       if (!aggregationMap[tokenId]) {
         aggregationMap[tokenId] = {

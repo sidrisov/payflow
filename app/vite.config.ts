@@ -16,6 +16,7 @@ export default defineConfig({
   plugins: [
     react(),
     nodePolyfills(),
+    visualizer(),
     svgr({ include: '**/*.svg?react' }),
     VitePWA({
       devOptions: {
