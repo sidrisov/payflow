@@ -1,11 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import {
-  Avatar,
-  Card,
-  Container,
-  Stack,
-  Typography} from '@mui/material';
+import { Avatar, Card, Container, Stack, Typography } from '@mui/material';
 import { ElectricBolt } from '@mui/icons-material';
 import CastActionButton from '../components/buttons/CastActionButton';
 import { useSearchParams } from 'react-router-dom';
@@ -90,6 +85,7 @@ export default function Composer() {
               <CastActionButton
                 title="Jar"
                 description="Create contribution frame"
+                earlyFeature
                 onClick={async () => {
                   setOpenComposerAction('jar');
                 }}

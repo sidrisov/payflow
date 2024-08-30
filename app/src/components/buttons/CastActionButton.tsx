@@ -30,7 +30,7 @@ export default function CastActionButton({
       {...props}>
       <Stack ml={0.5} alignItems="start">
         <Typography fontSize={18} fontWeight="bold">
-          {title} {earlyFeature && <span style={{ color: 'red' }}>(early)</span>}
+          {title} {earlyFeature && <span style={{ fontSize: 16, color: 'red' }}>(early)</span>}
         </Typography>
         <Typography
           fontSize={14}
