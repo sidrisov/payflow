@@ -28,7 +28,7 @@ export default function Accounts() {
 
   useEffect(() => {
     if (!profile) {
-      navigate('/search');
+      navigate('/connect');
     }
   }, []);
 

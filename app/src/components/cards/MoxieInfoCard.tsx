@@ -76,7 +76,7 @@ export function MoxieInfoCard() {
                 key={`contact_auction_card:${contactWithAuction.contact.data.address}`}
                 sx={{
                   borderRadius: '15px',
-                  minWidth: 160,
+                  minWidth: 175,
                   maxHeight: 100,
                   m: 1,
                   p: 0.5
