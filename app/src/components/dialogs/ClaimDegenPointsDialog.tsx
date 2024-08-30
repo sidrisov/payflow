@@ -43,15 +43,20 @@ export function ClaimDegenPointsDialog({
   });
 
   console.log(
-    `Claim status [${season}]: isClaimed=${isClaimedAlready} isError=${isClaimCheckError}`
+    `Check if claimed [${season.id}]: isClaimed=${isClaimedAlready} isError=${isClaimCheckError}`
   );
 
   const {
     isPending: isClaimPending,
     isSuccess: claimed,
     isError: isClaimError,
+    error: claimError,
     writeContract
   } = useWriteContract();
+
+  console.log(
+    `Claiming status [${season.id}]: isClaiming=${isClaimPending} isError=${isClaimError} - ${claimError}`
+  );
 
   useEffect(() => {
     if (isClaimedAlready) {
