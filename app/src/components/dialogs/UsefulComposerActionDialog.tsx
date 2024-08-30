@@ -1,6 +1,5 @@
 import { Dialog, DialogContent, DialogProps, useMediaQuery, useTheme } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { BackDialogTitle } from './BackDialogTitle';
 import { MoxieInfoCard } from '../cards/MoxieInfoCard';
 import { DegenInfoCard } from '../cards/DegenInfoCard';
 
@@ -31,11 +30,11 @@ export default function UsefulComposerActionDialog({
       sx={{
         backdropFilter: 'blur(5px)'
       }}>
-      <BackDialogTitle
+      {/*       <BackDialogTitle
         title="Useful information for you"
         closeStateCallback={closeStateCallback}
         hidden
-      />
+      /> */}
       <DialogContent>
         <MoxieInfoCard />
         <DegenInfoCard />
