@@ -45,7 +45,12 @@ export function MoxieInfoCard() {
     <InfoCard title="Ⓜ️ Moxie Center">
       <InfoStack title="Auctions among contacts">
         {isFetchingAuctions ? (
-          <Skeleton variant="rectangular" height={100} sx={{ margin: 1, borderRadius: '15px' }} />
+          <Skeleton
+            variant="rectangular"
+            height={100}
+            width="100%"
+            sx={{ margin: 1, borderRadius: '15px' }}
+          />
         ) : contactsWithAuction && contactsWithAuction.length > 0 ? (
           <Box
             alignSelf="stretch"

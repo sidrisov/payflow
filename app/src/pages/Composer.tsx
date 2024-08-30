@@ -1,6 +1,11 @@
 import { useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Avatar, Box, Container, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import {
+  Avatar,
+  Card,
+  Container,
+  Stack,
+  Typography} from '@mui/material';
 import { ElectricBolt } from '@mui/icons-material';
 import CastActionButton from '../components/buttons/CastActionButton';
 import { useSearchParams } from 'react-router-dom';
@@ -49,45 +54,46 @@ export default function Composer() {
         <title> Payflow | Composer Actions </title>
       </Helmet>
 
-      <Container maxWidth="xs" sx={{ height: '80vh' }}>
+      <Container maxWidth="md" sx={{ height: '80vh' }}>
         {!action && (
           <Stack
             m={3}
             p={3}
             spacing={3}
+            component={Card}
+            elevation={5}
             alignItems="center"
-            border={1.5}
             borderRadius={5}
             borderColor="divider">
             <Stack direction="row" spacing={1} alignItems="center">
-              <Avatar src="/farcaster.svg" variant="rounded" sx={{ height: 25, width: 25 }} />
-              <Typography variant="h6">Composer Actions</Typography>
+              <Avatar src="/payflow.png" variant="circular" />
+              <Typography variant="h6">Payflow Mini Apps</Typography>
             </Stack>
-            <Stack spacing={1} alignItems="center">
+            <Stack spacing={2} alignItems="center">
               <CastActionButton
                 title="Pay"
-                description="Send Payments"
+                description="New payment frame"
                 onClick={async () => {
                   setOpenComposerAction('pay');
                   setOpenSearchIdentity(true);
                 }}
-                startIcon={<ElectricBolt />}
+                startIcon={<ElectricBolt sx={{ width: 25, height: 25 }} />}
               />
               <CastActionButton
                 title="Useful"
-                description="Moxie, Degen, and more"
+                description="Claim Moxie & Degen"
                 onClick={async () => {
                   setOpenComposerAction('useful');
                 }}
-                startIcon={<PiPersonSimpleRunBold />}
+                startIcon={<PiPersonSimpleRunBold size={25} />}
               />
               <CastActionButton
                 title="Jar"
-                description="Collect contributions"
+                description="Create contribution frame"
                 onClick={async () => {
                   setOpenComposerAction('jar');
                 }}
-                startIcon={<PiTipJar size={20} />}
+                startIcon={<PiTipJar size={25} />}
               />
             </Stack>
           </Stack>

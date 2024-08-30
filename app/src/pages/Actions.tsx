@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Avatar, Container, Stack, Typography } from '@mui/material';
+import { Avatar, Card, Container, Stack, Typography } from '@mui/material';
 import PaymentCastActionDialog from '../components/dialogs/PaymentCastActionDialog';
 import { AutoAwesome, ElectricBolt, Interests, PersonAdd } from '@mui/icons-material';
 
@@ -19,14 +19,16 @@ export default function Actions() {
       </Helmet>
       <Container maxWidth="xs" sx={{ height: '100%' }}>
         <Stack
+          m={3}
           p={3}
           spacing={3}
           alignItems="center"
-          border={1.5}
+          component={Card}
           borderRadius={5}
+          elevation={5}
           borderColor="divider">
           <Stack direction="row" spacing={1} alignItems="center">
-            <Avatar src="/farcaster.svg" variant="rounded" sx={{ height: 25, width: 25 }} />
+            <Avatar src="/farcaster.svg" variant="rounded" sx={{ height: 30, width: 30 }} />
             <Typography variant="h6">Farcaster Actions</Typography>
           </Stack>
           <Stack spacing={1.5} alignItems="center">
@@ -40,7 +42,7 @@ export default function Actions() {
               title="Storage"
               description="Buy farcaster storage"
               installUrl="https://warpcast.com/~/add-cast-action?url=https://api.alpha.payflow.me/api/farcaster/actions/products/storage"
-              startIcon={<GrStorage size={20} />}
+              startIcon={<GrStorage />}
             />
             <CastActionButton
               earlyFeature
@@ -54,7 +56,7 @@ export default function Actions() {
               title="Create Jar"
               description="Collect contributions"
               installUrl="https://warpcast.com/~/add-cast-action?url=https://api.alpha.payflow.me/api/farcaster/actions/jar"
-              startIcon={<PiTipJar size={20} />}
+              startIcon={<PiTipJar />}
             />
             <CastActionButton
               title="Compose Intents"

@@ -18,6 +18,7 @@ export default function CastActionButton({
   return (
     <Button
       variant="outlined"
+      size="large"
       color="inherit"
       fullWidth
       sx={{
@@ -28,11 +29,11 @@ export default function CastActionButton({
       {...(installUrl && { href: installUrl, target: '_blank' })}
       {...props}>
       <Stack ml={0.5} alignItems="start">
-        <Typography variant="subtitle2" fontWeight="bold">
+        <Typography fontSize={18} fontWeight="bold">
           {title} {earlyFeature && <span style={{ color: 'red' }}>(early)</span>}
         </Typography>
         <Typography
-          variant="caption"
+          fontSize={14}
           fontWeight="bold"
           color={grey[prefersDarkMode ? 400 : 700]}
           noWrap>
