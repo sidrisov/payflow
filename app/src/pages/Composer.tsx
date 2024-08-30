@@ -51,53 +51,53 @@ export default function Composer() {
         <title> Payflow | Composer Actions </title>
       </Helmet>
 
-      {openComposerAction === 'pay' && recipient && profile && (
-        <PayComposerActionDialog
-          open={recipient != null}
-          sender={{
-            type: 'profile',
-            identity: {
-              address: profile.identity as Address,
-              profile: profile
-            }
-          }}
-          recipient={recipient}
-          setOpenSearchIdentity={setOpenSearchIdentity}
-          closeStateCallback={async () => {
-            setRecipient(undefined);
-          }}
-        />
-      )}
+      <Container maxWidth="xs" sx={{ height: '100vh' }}>
+        {openComposerAction === 'pay' && recipient && profile && (
+          <PayComposerActionDialog
+            open={recipient != null}
+            sender={{
+              type: 'profile',
+              identity: {
+                address: profile.identity as Address,
+                profile: profile
+              }
+            }}
+            recipient={recipient}
+            setOpenSearchIdentity={setOpenSearchIdentity}
+            closeStateCallback={async () => {
+              setRecipient(undefined);
+            }}
+          />
+        )}
 
-      {openComposerAction === 'useful' && profile && (
-        <UsefulComposerActionDialog
-          open={true}
-          closeStateCallback={() => {
-            setOpenComposerAction(undefined);
-          }}
-          onClose={() => {
-            setOpenComposerAction(undefined);
-          }}
-        />
-      )}
+        {openComposerAction === 'useful' && profile && (
+          <UsefulComposerActionDialog
+            open={true}
+            closeStateCallback={() => {
+              setOpenComposerAction(undefined);
+            }}
+            onClose={() => {
+              setOpenComposerAction(undefined);
+            }}
+          />
+        )}
 
-      {openSearchIdentity && profile && (
-        <SearchIdentityDialog
-          hideBackButton={!Boolean(recipient)}
-          title="Search Recipient"
-          address={profile.identity}
-          open={openSearchIdentity}
-          closeStateCallback={async () => {
-            setOpenSearchIdentity(false);
-          }}
-          selectIdentityCallback={async (recipient) => {
-            setRecipient(recipient);
-          }}
-        />
-      )}
+        {openSearchIdentity && profile && (
+          <SearchIdentityDialog
+            hideBackButton={!Boolean(recipient)}
+            title="Search Recipient"
+            address={profile.identity}
+            open={openSearchIdentity}
+            closeStateCallback={async () => {
+              setOpenSearchIdentity(false);
+            }}
+            selectIdentityCallback={async (recipient) => {
+              setRecipient(recipient);
+            }}
+          />
+        )}
 
-      {!action && (
-        <Container maxWidth="xs" sx={{ height: '100%' }}>
+        {!action && (
           <Box
             height="100%"
             display="flex"
@@ -144,8 +144,8 @@ export default function Composer() {
               </Stack>
             </Stack>
           </Box>
-        </Container>
-      )}
+        )}
+      </Container>
     </>
   );
 }

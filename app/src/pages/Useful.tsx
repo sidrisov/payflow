@@ -14,7 +14,7 @@ export default function Useful() {
       <Helmet>
         <title> Payflow | Userful </title>
       </Helmet>
-      <Container maxWidth="xs">
+      <Container maxWidth="xs" sx={{ height: '100vh' }}>
         {isAuthenticated && (
           <Stack height="100%" alignItems="center" spacing={3}>
             <MoxieInfoCard />
