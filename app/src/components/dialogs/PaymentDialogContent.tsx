@@ -99,6 +99,7 @@ export default function PaymentDialogContent({
   const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
 
   const [openConnectSignerDrawer, setOpenConnectSignerDrawer] = useState<boolean>(false);
+  const [switchChain, setSwitchChain] = useState<boolean>(false);
 
   const {
     loading: loadingRegular,
@@ -202,12 +203,8 @@ export default function PaymentDialogContent({
   }, [senderFlow]);
 
   useMemo(async () => {
-    if (compatibleWallets.length === 0) {
-      setPaymentWallet(undefined);
-      return;
-    }
-    setPaymentWallet(compatibleWallets.find((w) => w.network === chainId) ?? compatibleWallets[0]);
-  }, [compatibleWallets, chainId]);
+    setPaymentWallet(compatibleWallets?.[0]);
+  }, [compatibleWallets]);
 
   const [crossChainPaymentTxPending, setCrossChainPaymentTxPending] = useState<boolean>();
   const [crossChainPaymentTxHash, setCrossChainPaymentTxHash] = useState<Hash>();
@@ -430,6 +427,15 @@ export default function PaymentDialogContent({
       return;
     }
 
+    if (!paymentToken) {
+      return;
+    }
+
+    if (chainId !== paymentToken.chainId && !isNativeFlow) {
+      setSwitchChain(true);
+      return;
+    }
+
     if (
       paymentWallet &&
       toAddress &&
@@ -550,6 +556,16 @@ export default function PaymentDialogContent({
     }
   }, [crossChainMode, paymentOption]);
 
+  useMemo(async () => {
+    if (
+      isNativeFlow &&
+      address?.toLowerCase() === senderFlow.signer.toLowerCase() &&
+      paymentToken?.chainId
+    ) {
+      await switchChainAsync({ chainId: paymentToken.chainId });
+    }
+  }, [isNativeFlow, address, senderFlow, paymentToken?.chainId]);
+
   return (
     <>
       <Stack mt={1} alignItems="center">
@@ -603,8 +619,17 @@ export default function PaymentDialogContent({
         }
         gasFee={gasFee}
       />
-      {(crossChainMode ? !crossChainPaymentToken : !paymentToken) ||
-      chainId === (crossChainMode ? crossChainPaymentToken?.chainId : paymentToken?.chainId) ? (
+      {switchChain ? (
+        <LoadingSwitchChainButton
+          lazy={false}
+          onSuccess={() => setSwitchChain(false)}
+          chainId={
+            crossChainMode
+              ? (crossChainPaymentToken?.chainId as number)
+              : (paymentToken?.chainId as number)
+          }
+        />
+      ) : (
         <CustomLoadingButton
           title="Pay"
           loading={paymentPending}
@@ -617,14 +642,6 @@ export default function PaymentDialogContent({
               await submitTransaction();
             }
           }}
-        />
-      ) : (
-        <LoadingSwitchChainButton
-          chainId={
-            crossChainMode
-              ? (crossChainPaymentToken?.chainId as number)
-              : (paymentToken?.chainId as number)
-          }
         />
       )}
       {crossChainMode && <PoweredByGlideText />}

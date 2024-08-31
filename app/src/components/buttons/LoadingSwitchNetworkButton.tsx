@@ -1,18 +1,29 @@
 import LoadingButton, { LoadingButtonProps } from '@mui/lab/LoadingButton';
 import { CircularProgress, Stack, Typography } from '@mui/material';
-import { useMemo } from 'react';
 import { useSwitchChain } from 'wagmi';
 
 export function LoadingSwitchChainButton({
   chainId,
+  onSuccess,
+  lazy = true,
   ...props
-}: { chainId: number } & LoadingButtonProps) {
-  const { switchChainAsync, isPending, isError, chains } = useSwitchChain();
+}: { chainId: number; onSuccess?: () => void; lazy?: boolean } & LoadingButtonProps) {
+  const { switchChainAsync, isPending, isError, chains } = useSwitchChain({
+    mutation: { onSuccess }
+  });
 
   const chainName = chains.find((c) => c.id === chainId)?.name;
-  useMemo(async () => {
-    await switchChainAsync({ chainId });
-  }, [chainId, switchChainAsync]);
+
+  /* useEffect(() => {
+    if (lazy) {
+      return;
+    }
+    try {
+      switchChainAsync({ chainId });
+    } catch (error) {
+      console.error('Error', error);
+    }
+  }, [lazy, chainId, switchChainAsync]); */
 
   console.log(`Switch chain: isPending=${isPending}' isError=${isError}`);
 

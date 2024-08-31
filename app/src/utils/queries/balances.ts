@@ -18,7 +18,7 @@ export const useAssetBalances = (assets: AssetType[]) => {
     enabled: isFetched && Boolean(tokenPrices) && assets && assets.length > 0,
     queryKey: ['balances', { assets, tokenPrices }],
     staleTime: Infinity,
-    refetchInterval: 60_000,
+    refetchInterval: 120_000,
     queryFn: () =>
       Promise.allSettled(
         assets.map((asset) =>

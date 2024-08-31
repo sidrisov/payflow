@@ -82,7 +82,7 @@ export function SenderField({
         sender.identity.address &&
         sender.type === 'profile' &&
         sender.identity.profile?.defaultFlow && (
-          <Stack direction="row" spacing={0.5} alignItems="center">
+          <Stack ml={0.5} direction="row" spacing={0.5} alignItems="center">
             <PaymentFlowSection flow={sender.identity.profile?.defaultFlow} />
             {setOpenSelectFlow && (
               <Tooltip title="Payment Flows">

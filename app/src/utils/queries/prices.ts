@@ -22,7 +22,7 @@ export const useTokenPrices = () => {
   return useQuery<TokenPrices>({
     queryKey: ['prices', { tokens }],
     staleTime: Infinity,
-    refetchInterval: 60_000,
+    refetchInterval: 120_000,
     queryFn: async () => {
       const response = await axios.get(PRICE_API, {
         params: { ids: tokens.join(','), vs_currencies: 'usd' }

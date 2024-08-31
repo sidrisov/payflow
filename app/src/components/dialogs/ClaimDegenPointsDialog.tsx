@@ -141,7 +141,7 @@ export function ClaimDegenPointsDialog({
         {isClaimCheckPending ||
         address?.toLowerCase() === degenPoints.wallet_address.toLowerCase() ? (
           !isClaimCheckPending && chainId !== season.chainId ? (
-            <LoadingSwitchChainButton chainId={season.chainId} />
+            <LoadingSwitchChainButton lazy={false} chainId={season.chainId} />
           ) : (
             <CustomLoadingButton
               title="Claim"

@@ -109,13 +109,18 @@ export function NetworkTokenSelector({
         )
       : tokens;
 
+    // return at least 1
     setCompatibleTokens(
       !showBalance || payment?.token || crossChainMode
         ? compatibleTokens
-        : compatibleTokens.filter(
-            (token) =>
-              balances?.find((balance) => balance.asset.token === token)?.balance?.value ?? 0 > 0
-          )
+        : (function () {
+            const filteredTokens = compatibleTokens.filter(
+              (token) =>
+                balances?.find((balance) => balance.asset.token === token)?.balance?.value ?? 0 > 0
+            );
+            // If no tokens are found with a balance > 0, select at least the first token
+            return filteredTokens.length > 0 ? filteredTokens : [compatibleTokens[0]];
+          })()
     );
   }, [crossChainMode, paymentWallet, enabledChainCurrencies, balances]);
 
