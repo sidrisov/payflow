@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Box,
   BoxProps,
   Button,
@@ -13,7 +14,7 @@ import {
 } from '@mui/material';
 import { PaymentType } from '../types/PaymentType';
 import { ProfileSection } from './ProfileSection';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ExpandLess, ExpandMore, MoreHoriz } from '@mui/icons-material';
 import TokenAvatar from './avatars/TokenAvatar';
 import { getNetworkDisplayName } from '../utils/networks';
@@ -28,6 +29,9 @@ import { Social } from '../generated/graphql/types';
 import { formatAmountWithSuffix } from '../utils/formats';
 import calculateMaxPages from '../utils/pagination';
 import { MdOutlinePlaylistAddCheck } from 'react-icons/md';
+import { grey } from '@mui/material/colors';
+import { fetchMintData, MintMetadata } from '../utils/mint';
+import { Address } from 'viem';
 
 const pageSize = 10;
 
@@ -41,6 +45,8 @@ export function PaymentReceiptsSection({
 
   const maxPages = calculateMaxPages(payments?.length ?? 0, pageSize);
   const [page, setPage] = useState<number>(1);
+
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
   return (
     payments && (
@@ -82,8 +88,14 @@ export function PaymentReceiptsSection({
               {payments
                 .slice(0, page * pageSize)
                 .map((payment, index) =>
-                  payment.category === 'fc_storage' && payment.receiverFid !== undefined ? (
-                    <GiftStoragePayment key={`completed_payment_${index}`} payment={payment} />
+                  payment.receiverFid !== undefined ? (
+                    payment.category === 'fc_storage' ? (
+                      <GiftStoragePayment key={`completed_payment_${index}`} payment={payment} />
+                    ) : (
+                      payment.category === 'mint' && (
+                        <MintPayment key={`pending_payment_${index}`} payment={payment} />
+                      )
+                    )
                   ) : (
                     <IntentPayment key={`completed_payment_${index}`} payment={payment} />
                   )
@@ -190,6 +202,155 @@ export function PaymentReceiptsSection({
               setOpenPaymentMenu(false);
             }}
             onClick={async () => {
+              setOpenPaymentMenu(false);
+            }}
+          />
+        )}
+      </>
+    );
+  }
+
+  function MintPayment({ payment, ...props }: BoxProps & { payment: PaymentType }) {
+    const [openPaymentMenu, setOpenPaymentMenu] = useState(false);
+    const [paymentMenuAnchorEl, setPaymentMenuAnchorEl] = useState<null | HTMLElement>(null);
+
+    const [mintData, setMintData] = useState<MintMetadata>();
+    const { data: social, loading: loadingSocials } = useQuery<Social>(
+      QUERY_FARCASTER_PROFILE,
+      { fid: payment.receiverFid?.toString() },
+      {
+        cache: true,
+        dataFormatter(data) {
+          return data.Socials.Social[0];
+        }
+      }
+    );
+
+    useEffect(() => {
+      const fetchData = async () => {
+        type ParsedMintData = {
+          provider: string;
+          contract: Address;
+          tokenId?: number;
+        };
+
+        function parseMintToken(token: string): ParsedMintData {
+          const [provider, contract, tokenId] = token.split(':');
+          return {
+            provider,
+            contract: contract as Address,
+            tokenId: tokenId ? parseInt(tokenId) : undefined
+          };
+        }
+
+        const parsedMintData = parseMintToken(payment.token);
+        const mintData = await fetchMintData(
+          parsedMintData.provider,
+          payment.chainId,
+          parsedMintData.contract,
+          parsedMintData.tokenId
+        );
+
+        setMintData(mintData);
+      };
+
+      if (payment) {
+        fetchData();
+      }
+    }, [payment]);
+
+    return (
+      <>
+        <Box
+          sx={{
+            p: 1.5,
+            border: 1,
+            borderRadius: 5,
+            borderColor: 'divider',
+            minWidth: isMobile ? 145 : 155,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-start',
+            alignItems: 'flex-start',
+            gap: 1,
+            color: 'inherit'
+          }}
+          {...props}>
+          {loadingSocials || !social || !mintData ? (
+            <Skeleton variant="rounded" sx={{ width: '100%', height: '100%' }} />
+          ) : (
+            <>
+              <Box
+                alignSelf="stretch"
+                display="flex"
+                flexDirection="row"
+                alignItems="center"
+                justifyContent="space-between">
+                <Typography variant="subtitle2" fontWeight="bold" fontSize={14}>
+                  Mint
+                </Typography>
+                <IconButton
+                  size="small"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setOpenPaymentMenu(true);
+                    setPaymentMenuAnchorEl(event.currentTarget);
+                  }}>
+                  <MoreHoriz fontSize="small" />
+                </IconButton>
+              </Box>
+
+              <Stack direction="row" alignItems="center" justifyContent="flex-start" spacing={0.5}>
+                <Avatar
+                  variant="rounded"
+                  src={mintData.metadata.image}
+                  sx={{
+                    width: 40,
+                    height: 40
+                  }}
+                />
+                <Typography
+                  textAlign="start"
+                  variant="subtitle2"
+                  sx={{
+                    display: '-webkit-box',
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    WebkitLineClamp: 2,
+                    wordBreak: 'break-word'
+                  }}>
+                  {mintData.metadata.name}
+                </Typography>
+              </Stack>
+              <Typography
+                textAlign="start"
+                variant="caption"
+                fontWeight="bold"
+                color={grey[prefersDarkMode ? 400 : 700]}
+                fontSize={isMobile ? 12 : 13}
+                sx={{
+                  display: '-webkit-box',
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  WebkitLineClamp: 2,
+                  wordBreak: 'break-all'
+                }}>
+                {mintData.collectionName}
+              </Typography>
+            </>
+          )}
+        </Box>
+        {openPaymentMenu && payment && (
+          <PaymentMenu
+            open={openPaymentMenu}
+            payment={payment}
+            anchorEl={paymentMenuAnchorEl}
+            onClose={() => {
+              setOpenPaymentMenu(false);
+            }}
+            onClick={() => {
               setOpenPaymentMenu(false);
             }}
           />

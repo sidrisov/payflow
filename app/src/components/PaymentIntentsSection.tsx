@@ -339,7 +339,7 @@ export function PaymentIntentsSection({
                   </Tooltip>
                 )}
                 <Typography variant="subtitle2" fontWeight="bold" fontSize={14}>
-                  Mint Payment
+                  Mint
                 </Typography>
                 <IconButton
                   size="small"

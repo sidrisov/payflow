@@ -273,17 +273,17 @@ export default function MintDialog({
         if (glideTxHash && payment.referenceId) {
           payment.hash = glideTxHash;
           updatePayment(payment);
-          toast.success(`Storage paid for @${social.profileName}`);
+          toast.success(`Minted "${mint.metadata.name}"`);
 
           await delay(2000);
           window.location.href = '/';
         } else {
-          toast.error(`Failed to pay for storage!`);
+          toast.error(`Failed to mint "${mint.metadata.name}"`);
         }
       }
     } catch (error) {
-      toast.error(`Failed to pay for storage!`);
-      console.error('Failed to pay for storage with error', error);
+      toast.error(`Failed to mint "${mint.metadata.name}"`);
+      console.error(`Failed to mint with error`, error);
     }
   };
 

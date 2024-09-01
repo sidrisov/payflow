@@ -350,7 +350,7 @@ public class PaymentController {
 							embeds);
 
 					if (!processed) {
-						log.error("Failed to reply with {} for payment intent completion", castText);
+						log.error("Failed to reply with {} for buy storage completion", castText);
 					}
 
 					if (payment.getReceiver() != null) {
@@ -370,6 +370,48 @@ public class PaymentController {
 									sourceRef,
 									receiptUrl,
 									storageFrameUrl);
+							val response = farcasterMessagingService.message(
+									new DirectCastMessage(payment.getReceiverFid().toString(), messageText,
+											UUID.randomUUID()));
+
+							if (!response.result().success()) {
+								log.error("Failed to send direct cast with {} for buy storage completion", messageText);
+							}
+						} catch (Throwable t) {
+							log.error("Failed to send direct cast with exception: ", t);
+						}
+					}
+				} else if (payment.getCategory().equals("mint")) {
+					// TODO: include the collection and author of the mint
+					val castText = String.format("""
+									@%s, you've been airdropped the NFT mint by @%s 🎉
+																																									
+									p.s. join /payflow channel for updates 👀""",
+							receiverFname,
+							senderFname);
+
+					embeds = Collections.singletonList(new Cast.Embed(receiptUrl));
+					val processed = farcasterPaymentBotService.reply(castText,
+							payment.getSourceHash(),
+							embeds);
+
+					if (!processed) {
+						log.error("Failed to reply with {} for mint completion", castText);
+					}
+
+					if (payment.getReceiver() != null) {
+						try {
+							val messageText = String.format("""
+											 @%s, you've been airdropped the NFT mint by @%s 🎉
+																						
+											🔗 Source: %s
+											🧾 Receipt: %s
+
+											p.s. join /payflow channel for updates 👀""",
+									receiverFname,
+									senderFname,
+									sourceRef,
+									receiptUrl);
 							val response = farcasterMessagingService.message(
 									new DirectCastMessage(payment.getReceiverFid().toString(), messageText,
 											UUID.randomUUID()));
