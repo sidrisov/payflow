@@ -5,7 +5,6 @@ import { useParams } from 'react-router-dom';
 import { SelectedIdentityType } from '../types/ProfileType';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import { orange } from '@mui/material/colors';
-import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { PublicProfileCard } from '../components/cards/PublicProfileCard';
 import { useAccount } from 'wagmi';
 import { Address } from 'viem';
@@ -14,6 +13,7 @@ import PaymentDialog from '../components/dialogs/PaymentDialog';
 import { PublicSearchPay } from './PublicSearchPay';
 import { ProfileContext } from '../contexts/UserContext';
 import { useIdentity } from '../utils/queries/profiles';
+import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 
 export default function PublicProfile() {
   const theme = useTheme();
@@ -62,7 +62,7 @@ export default function PublicProfile() {
         )}
 
         {isProfileLoading === true ? (
-          <CenteredCircularProgress />
+          <LoadingPayflowEntryLogo />
         ) : identity ? (
           <PublicProfileCard identity={identity} />
         ) : (

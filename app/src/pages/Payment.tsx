@@ -17,6 +17,7 @@ import { statusToToastType } from '../components/Toasts';
 import { fetchMintData, MintMetadata } from '../utils/mint';
 import { Address } from 'viem';
 import MintDialog from '../components/dialogs/MintDialog';
+import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 
 export default function Payment() {
   const navigate = useNavigate();
@@ -119,6 +120,7 @@ export default function Payment() {
         <title> Payflow | Payment </title>
       </Helmet>
       <Container maxWidth="md" sx={{ height: '100vh' }}>
+        <LoadingPayflowEntryLogo />
         {profile &&
           payment &&
           flows &&

@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import { usePrivy } from '@privy-io/react-auth';
 import { useSearchParams } from 'react-router-dom';
-import PayflowEntryLogo from '../components/PayflowEntryLogo';
+import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 
 const appSettingsStorageItem = localStorage.getItem('appSettings');
 const appSettingsStored = appSettingsStorageItem
@@ -70,7 +70,7 @@ export default function AppWithProviders() {
   }, [appSettings]);
 
   return loading || !ready ? (
-    <PayflowEntryLogo />
+    <LoadingPayflowEntryLogo />
   ) : (
     <App profile={profile} appSettings={appSettings} setAppSettings={setAppSettings} />
   );

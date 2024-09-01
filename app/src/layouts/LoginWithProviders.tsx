@@ -9,7 +9,7 @@ import { API_URL } from '../utils/urlConstants';
 import { toast } from 'react-toastify';
 import { AuthenticationStatus } from '../components/cards/ConnectCard';
 import { usePrivy } from '@privy-io/react-auth';
-import PayflowEntryLogo from '../components/PayflowEntryLogo';
+import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 
 export default function LoginWithProviders() {
   const fetchingStatusRef = useRef(false);
@@ -65,5 +65,5 @@ export default function LoginWithProviders() {
     }
   }, [authStatus, profile]);
 
-  return !ready ? <PayflowEntryLogo /> : <Login authStatus={authStatus} profile={profile} />;
+  return !ready ? <LoadingPayflowEntryLogo /> : <Login authStatus={authStatus} profile={profile} />;
 }

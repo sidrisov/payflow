@@ -6,13 +6,13 @@ import { ProfileContext } from '../contexts/UserContext';
 import Assets from '../components/Assets';
 import { AssetType } from '../types/AssetType';
 import { FlowType } from '../types/FlowType';
-import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { useNavigate } from 'react-router-dom';
 import { useAssetBalances } from '../utils/queries/balances';
 import { usePendingPayments } from '../utils/queries/payments';
 import { PaymentIntentsSection } from '../components/PaymentIntentsSection';
 import { PaymentReceiptsSection } from '../components/PaymentReceiptsSection';
 import getFlowAssets from '../utils/assets';
+import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 
 export default function Accounts() {
   const theme = useTheme();
@@ -96,7 +96,7 @@ export default function Accounts() {
             </Stack>
           </Stack>
         ) : (
-          <CenteredCircularProgress />
+          <LoadingPayflowEntryLogo />
         )}
       </Container>
     </>

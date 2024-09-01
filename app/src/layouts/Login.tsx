@@ -4,9 +4,9 @@ import CustomThemeProvider from '../theme/CustomThemeProvider';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import ProfileOnboardingDialog from '../components/dialogs/ProfileOnboardingDialog';
-import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import { ProfileType } from '../types/ProfileType';
 import { ConnectCard } from '../components/cards/ConnectCard';
+import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 
 export default function Login({
   authStatus,
@@ -44,7 +44,7 @@ export default function Login({
         <title> Payflow | Connect </title>
       </Helmet>
       {authStatus === 'loading' ? (
-        <CenteredCircularProgress />
+        <LoadingPayflowEntryLogo />
       ) : (
         !profile && (
           <Container maxWidth="sm">

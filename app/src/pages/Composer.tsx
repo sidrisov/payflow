@@ -14,6 +14,7 @@ import { PiPersonSimpleRunBold, PiTipJar } from 'react-icons/pi';
 import UsefulComposerActionDialog from '../components/dialogs/UsefulComposerActionDialog';
 import ContributionJarComposerDialog from '../components/dialogs/ContributionJarComposerDialog';
 import { RiApps2Line } from 'react-icons/ri';
+import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 
 export default function Composer() {
   const [searchParams] = useSearchParams();
@@ -51,7 +52,7 @@ export default function Composer() {
       </Helmet>
 
       <Container maxWidth="md" sx={{ height: '80vh' }}>
-        {!action && (
+        {!action ? (
           <Stack
             m={1}
             p={3}
@@ -97,6 +98,8 @@ export default function Composer() {
               />
             </Stack>
           </Stack>
+        ) : (
+          <LoadingPayflowEntryLogo />
         )}
         {openComposerAction === 'pay' && recipient && profile && (
           <PayComposerActionDialog

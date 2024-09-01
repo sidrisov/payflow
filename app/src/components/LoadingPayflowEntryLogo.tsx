@@ -1,7 +1,7 @@
 import { Avatar, Box, Stack, Typography } from '@mui/material';
 import { green } from '@mui/material/colors';
 
-export default function PayflowEntryLogo() {
+export default function LoadingPayflowEntryLogo() {
   return (
     <Box
       position="fixed"

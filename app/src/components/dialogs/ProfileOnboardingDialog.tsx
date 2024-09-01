@@ -26,12 +26,12 @@ import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../../utils/urlConstants';
 import { convertSocialResults, normalizeUsername } from '../../services/socials';
 import { useQuery } from '@airstack/airstack-react';
-import CenteredCircularProgress from '../CenteredCircularProgress';
 import { isAlphanumericPlusFewSpecialChars as isAlphanumericWithSpecials } from '../../utils/regex';
 import { green, lightGreen, red } from '@mui/material/colors';
 import { FARCASTER_DAPP, LENS_DAPP } from '../../utils/dapps';
 import { QUERY_SOCIALS } from '../../utils/airstackQueries';
 import { BackDialogTitle } from './BackDialogTitle';
+import LoadingPayflowEntryLogo from '../LoadingPayflowEntryLogo';
 
 export type ProfileOnboardingDialogProps = DialogProps &
   CloseCallbackType & {
@@ -213,9 +213,7 @@ export default function ProfileOnboardingDialog({
   }
 
   return loadingSocials ? (
-    <Box alignSelf="stretch" justifySelf="stretch">
-      <CenteredCircularProgress />
-    </Box>
+    <LoadingPayflowEntryLogo />
   ) : (
     <Dialog
       onClose={handleCloseCampaignDialog}
