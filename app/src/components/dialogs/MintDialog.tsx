@@ -14,12 +14,7 @@ import {
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { degen } from 'viem/chains';
 import { glideConfig } from '../../utils/glide';
-import {
-  useSwitchChain,
-  useChainId,
-  useAccount,
-  useWalletClient,
-  useClient} from 'wagmi';
+import { useSwitchChain, useChainId, useAccount, useWalletClient, useClient } from 'wagmi';
 import { ZORA_MINT_CONTRACT_ADDR } from '../../utils/contracts';
 import { BackDialogTitle } from './BackDialogTitle';
 import { SenderField } from '../SenderField';
@@ -430,7 +425,7 @@ export default function MintDialog({
                 <CustomLoadingButton
                   title="Mint"
                   loading={paymentPending}
-                  disabled={!paymentOption}
+                  disabled={!paymentOption || mint.provider !== 'zora.co'}
                   status={isNativeFlow ? status : statusRegular}
                   onClick={submitGlideTransaction}
                 />
