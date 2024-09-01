@@ -20,6 +20,7 @@ export default function Login({
   const [searchParams] = useSearchParams();
   const username = searchParams.get('username');
   const invitationCode = searchParams.get('code');
+  const redirect = searchParams.get('redirect');
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -31,8 +32,8 @@ export default function Login({
 
     if (profile && authStatus === 'authenticated') {
       if (profile.username) {
-        console.debug('redirecting to /');
-        navigate('/');
+        console.debug('redirecting to: ', redirect ?? '/');
+        navigate(redirect ?? '/');
       }
     }
   }, [authStatus, profile]);

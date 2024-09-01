@@ -33,7 +33,7 @@ export default function Payment() {
 
   useEffect(() => {
     if (!profile) {
-      navigate('/connect');
+      navigate(`/connect?redirect=/payment/${refId}`);
     }
   }, []);
 

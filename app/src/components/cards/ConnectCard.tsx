@@ -12,7 +12,7 @@ import { FarcasterAccountsCard } from './FarcasterAccountsCard';
 import { SiweMessage } from 'siwe';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useWalletClient } from 'wagmi';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { useSetActiveWallet } from '@privy-io/wagmi';
 
@@ -34,6 +34,8 @@ export type AuthenticationStatus = 'loading' | 'unauthenticated' | 'authenticate
 export function ConnectCard() {
   const [siwfNonce, setSiwfNonce] = useState<string>();
   const [sifwResponse, setSifeResponse] = useState<StatusAPIResponse>();
+  const [searchParams] = useSearchParams();
+  const redirect = searchParams.get('redirect');
 
   const { connectWallet, isModalOpen } = usePrivy();
 
@@ -102,7 +104,8 @@ export function ConnectCard() {
 
         if (response.status === 200) {
           setAuthStatus('authenticated');
-          navigate('/');
+          console.debug('redirecting to: ', redirect ?? '/');
+          navigate(redirect ?? '/');
         } else {
           toast.error('Failed to sign in with Ethereum');
           setAuthStatus('unauthenticated');
