@@ -86,7 +86,7 @@ public class ProductsController {
 		}
 
 		val storageFrameUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getFramesServiceUrl())
-				.path("/fid/{fid}/storage?v3.3")
+				.path("/fid/{fid}/storage?v3.4")
 				.buildAndExpand(castAuthor.fid())
 				.toUriString();
 

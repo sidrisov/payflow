@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -128,29 +129,12 @@ public class StorageController {
 
 		log.debug("Gift storage payment intent saved: {}", payment);
 
-		val storageImage = UriComponentsBuilder.fromHttpUrl(framesServiceUrl)
-				.path("images/profile/fid/{fid}/storage.png") // add your path variables here
-				.buildAndExpand(fid)
-				.toUriString();
-
-		val paymentUrl = UriComponentsBuilder.fromHttpUrl(dAppServiceUrl)
+		val storagePaymentUrl = UriComponentsBuilder.fromHttpUrl(dAppServiceUrl)
 				.path("/payment/{refId}")
-				.buildAndExpand(payment.getReferenceId())
-				.toUriString();
-		val faqUrl = "https://payflowlabs.notion" +
-				".site/Payflow-FAQs-20593cf7734e4d78ad0dc91c8e8982e5#6862f9bffddc4fbe818a6ceb9ab968e7";
+				.buildAndExpand(payment.getReferenceId()).toUri();
 
-		return FrameResponse.builder()
-				.imageUrl(storageImage)
-				.button(new FrameButton(
-						String.format("%s Unit(s) submitted: Pay", numberOfUnits),
-						FrameButton.ActionType.LINK,
-						paymentUrl))
-				.button(new FrameButton(
-						"FAQ",
-						FrameButton.ActionType.LINK,
-						faqUrl))
-				.build().toHtmlResponse();
+		log.debug("Redirecting to {}", storagePaymentUrl);
+		return ResponseEntity.status(HttpStatus.FOUND).location(storagePaymentUrl).build();
 	}
 
 	@PostMapping("/check")
@@ -196,8 +180,8 @@ public class StorageController {
 		return FrameResponse.builder().imageUrl(storageImage)
 				.textInput("Enter storage units, default: 1")
 				.button(new FrameButton(
-						"Submit",
-						FrameButton.ActionType.POST,
+						"Buy",
+						FrameButton.ActionType.POST_REDIRECT,
 						submitUrl))
 				.button(new FrameButton(
 						"My usage",

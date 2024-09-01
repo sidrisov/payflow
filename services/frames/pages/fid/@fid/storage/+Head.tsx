@@ -62,7 +62,9 @@ export function Head() {
 
         <meta property="fc:frame:image" content={imageUrl} />
         <meta property="fc:frame:input:text" content="Enter storage units, default: 1" />
-        <meta property="fc:frame:button:1" content="Submit" />
+
+        <meta property="fc:frame:button:1" content="Buy" />
+        <meta property="fc:frame:button:1:action" content="post_redirect" />
         <meta
           property="fc:frame:button:1:target"
           content={`${API_URL}/api/farcaster/frames/storage/${fid}/submit`}
