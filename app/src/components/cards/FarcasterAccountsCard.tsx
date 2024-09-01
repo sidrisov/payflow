@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { API_URL } from '../../utils/urlConstants';
 import { ParsedMessage } from '@spruceid/siwe-parser';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { Address, isAddress } from 'viem';
 import { sortBySocialScore } from '../../services/socials';
@@ -56,6 +56,8 @@ export function FarcasterAccountsCard({
   console.log(identities);
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirect = searchParams.get('redirect');
 
   async function completeSignUp() {
     if (siwfResponse != null) {
@@ -75,7 +77,8 @@ export function FarcasterAccountsCard({
           );
 
           if (response.status === 200) {
-            navigate('/');
+            console.debug('redirecting to: ', redirect ?? '/');
+            navigate(redirect ?? '/');
           } else {
             toast.error('Failed to sign in with Farcaster');
           }
