@@ -8,24 +8,30 @@ import { zoraErc1155Abi } from './abi/zoraErc1155Abi';
 
 export interface MintMetadata {
   provider: string;
+  chainId: number;
+  contract: Address;
+  tokenId?: number;
+  owner: IdentityType;
+  referral?: Address;
   collectionName: string;
   metadata: {
     name: string;
+    description: string;
     image: string;
   };
-  identity: IdentityType;
 }
 
 export async function fetchMintData(
   provider: string,
   chainId: number,
   contract: Address,
-  tokenId?: number
+  tokenId?: number,
+  referral?: Address
 ): Promise<MintMetadata | undefined> {
   try {
     const collectionOwner = await fetchCollectionOwner(chainId, contract);
     const identityResponse = await axios.get(`${API_URL}/api/user/identities/${collectionOwner}`);
-    const identity =
+    const owner =
       identityResponse.data !== ''
         ? identityResponse.data
         : ({ address: collectionOwner } as IdentityType);
@@ -46,9 +52,13 @@ export async function fetchMintData(
 
     return {
       provider,
+      chainId,
+      contract,
+      tokenId,
+      referral,
       collectionName,
       metadata,
-      identity
+      owner
     };
   } catch (error) {
     console.error('Failed to fetch mint data:', error);
@@ -103,6 +113,7 @@ export async function fetchTokenMetadata(metadataUri: string) {
     const metadataResponse = await axios.get(resolvedMetadataUri);
     const metadata = metadataResponse.data;
     const name = metadata.name;
+    const description = metadata.description;
     const imageUri = metadata.image;
     const resolvedImageUri = `https://media.decentralized-content.com/-/rs:fit:128:128/${btoa(
       resolveIpfsUri(imageUri)
@@ -111,7 +122,7 @@ export async function fetchTokenMetadata(metadataUri: string) {
     console.debug('Metadata:', metadata);
     console.debug('Image URL:', resolvedImageUri);
 
-    return { name, image: resolvedImageUri };
+    return { name, description, image: resolvedImageUri };
   } catch (error) {
     console.error('Error fetching metadata or image:', error);
   }

@@ -49,6 +49,7 @@ export default function Payment() {
         provider: string;
         contract: Address;
         tokenId?: number;
+        referral?: Address;
       };
 
       function parseMintToken(token: string): ParsedMintData {
@@ -85,7 +86,8 @@ export default function Payment() {
                   parsedMintData.provider,
                   paymentData.chainId,
                   parsedMintData.contract,
-                  parsedMintData.tokenId
+                  parsedMintData.tokenId,
+                  parsedMintData.referral
                 );
                 setMintData(mintData);
               }

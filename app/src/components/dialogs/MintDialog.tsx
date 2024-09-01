@@ -8,21 +8,19 @@ import {
   useTheme,
   Typography,
   Skeleton,
-  Avatar
+  Avatar,
+  Tooltip
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { degen, optimism } from 'viem/chains';
+import { degen } from 'viem/chains';
 import { glideConfig } from '../../utils/glide';
 import {
   useSwitchChain,
   useChainId,
   useAccount,
-  useReadContract,
   useWalletClient,
-  useClient
-} from 'wagmi';
-import { rentStorageAbi } from '../../utils/abi/rentFcStorageAbi';
-import { OP_FARCASTER_STORAGE_CONTRACT_ADDR } from '../../utils/contracts';
+  useClient} from 'wagmi';
+import { ZORA_MINT_CONTRACT_ADDR } from '../../utils/contracts';
 import { BackDialogTitle } from './BackDialogTitle';
 import { SenderField } from '../SenderField';
 import { KeyboardDoubleArrowDown } from '@mui/icons-material';
@@ -36,7 +34,15 @@ import { PaymentType } from '../../types/PaymentType';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { useContext, useMemo, useState } from 'react';
 import { Token } from '../../utils/erc20contracts';
-import { Abi, Address, ContractFunctionArgs, ContractFunctionName, Hash } from 'viem';
+import {
+  Abi,
+  Address,
+  ContractFunctionArgs,
+  ContractFunctionName,
+  Hash,
+  parseEther,
+  zeroAddress
+} from 'viem';
 import { normalizeNumberPrecision } from '../../utils/formats';
 import { useGlideEstimatePayment, useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
 import { ProfileContext } from '../../contexts/UserContext';
@@ -56,6 +62,7 @@ import { UpSlideTransition } from './TransitionDownUpSlide';
 import PoweredByGlideText from '../text/PoweredByGlideText';
 import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
 import { MintMetadata } from '../../utils/mint';
+import { zoraMintAbi } from '../../utils/abi/zoraMintAbi';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {
@@ -112,8 +119,6 @@ export default function MintDialog({
   const { data: signer } = useWalletClient();
   const client = useClient();
 
-  const numberOfUnits = payment.tokenAmount ?? 1;
-
   const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
   const {
     loading: loadingRegular,
@@ -125,21 +130,22 @@ export default function MintDialog({
     reset: resetRegular
   } = useRegularTransfer();
 
-  const { isFetched: isUnitPriceFetched, data: rentUnitPrice } = useReadContract({
-    chainId: optimism.id,
-    address: OP_FARCASTER_STORAGE_CONTRACT_ADDR,
-    abi: rentStorageAbi,
-    functionName: 'price',
-    args: [BigInt(numberOfUnits)]
-  });
+  const mintPrice = parseEther('0.000111');
 
   const paymentTx = {
-    chainId: optimism.id,
-    address: OP_FARCASTER_STORAGE_CONTRACT_ADDR,
-    abi: rentStorageAbi,
-    functionName: 'rent',
-    args: [BigInt(payment.receiverFid ?? 0), BigInt(numberOfUnits)],
-    value: rentUnitPrice
+    chainId: mint.chainId,
+    address: ZORA_MINT_CONTRACT_ADDR,
+    abi: zoraMintAbi,
+    functionName: 'mint',
+    args: [
+      profile?.identity,
+      1n,
+      mint.contract,
+      BigInt(mint.tokenId ?? 1),
+      mint.referral ?? zeroAddress,
+      `minted by @${social.profileName} on @payflow`
+    ],
+    value: mintPrice
   } as {
     chainId: number;
     address: Address;
@@ -149,11 +155,20 @@ export default function MintDialog({
     value?: bigint;
   };
 
+  console.log('Mint tx: ', paymentTx);
+
+  const { isLoading: isPaymentOptionsLoading, data: paymentOptions } = useGlidePaymentOptions(
+    Boolean(mintPrice),
+    {
+      account: senderFlow.wallets[0].address,
+      ...(paymentTx as any)
+    }
+  );
+
+  console.log('Payment Options: ', paymentOptions);
+
   const { isLoading: isPaymentOptionLoading, data: paymentOption } = useGlideEstimatePayment(
-    isUnitPriceFetched &&
-      Boolean(paymentToken) &&
-      Boolean(rentUnitPrice) &&
-      Boolean(payment.receiverFid),
+    Boolean(paymentToken) && Boolean(mintPrice),
     {
       account: senderFlow.wallets[0].address,
       paymentCurrency: `eip155:${paymentToken?.chainId}/${
@@ -163,21 +178,9 @@ export default function MintDialog({
           ? 'slip44:33436'
           : 'slip44:60'
       }` as CAIP19,
-      ...(paymentTx as any),
-      value: rentUnitPrice ?? 0n
+      ...(paymentTx as any)
     }
   );
-
-  const { isLoading: isPaymentOptionsLoading, data: paymentOptions } = useGlidePaymentOptions(
-    isUnitPriceFetched && Boolean(rentUnitPrice) && Boolean(payment.receiverFid),
-    {
-      account: senderFlow.wallets[0].address,
-      ...(paymentTx as any),
-      value: rentUnitPrice ?? 0n
-    }
-  );
-
-  console.log('Payment Options: ', paymentOptions);
 
   const compatibleWallets = useCompatibleWallets({
     sender: senderFlow,
@@ -213,7 +216,7 @@ export default function MintDialog({
           paymentCurrency: paymentOption.paymentCurrency,
           currentChainId: chainId,
           ...(paymentTx as any),
-          value: rentUnitPrice
+          value: mintPrice
         });
 
         const { sponsoredTransactionHash: glideTxHash } = await executeSession(glideConfig, {
@@ -351,7 +354,7 @@ export default function MintDialog({
                 <FarcasterRecipientField social={social} />
 
                 <Stack alignItems="center">
-                  {!rentUnitPrice || isPaymentOptionLoading || isPaymentOptionsLoading ? (
+                  {!mintPrice || isPaymentOptionLoading || isPaymentOptionsLoading ? (
                     <Skeleton
                       title="fetching price"
                       variant="rectangular"
@@ -363,39 +366,48 @@ export default function MintDialog({
                       {paymentOption.currencySymbol}
                     </Typography>
                   ) : (
-                    <Typography fontSize={14} fontWeight="bold" color={red.A400}>
+                    <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
                       You don't have any balance to cover storage cost, switch to different payment
                       flow!
                     </Typography>
                   )}
 
-                  <Stack
-                    p={1}
-                    maxWidth={250}
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="center"
-                    spacing={1}>
-                    <Avatar
-                      variant="rounded"
-                      src={mint.metadata.image}
-                      sx={{
-                        width: 64,
-                        height: 64
-                      }}
-                    />
-                    <Stack alignItems="flex-start" spacing={0.5}>
-                      <Typography fontSize={18} fontWeight="bold">
-                        {mint.metadata.name}
-                      </Typography>
-                      <Typography
-                        textAlign="start"
-                        variant="subtitle2"
-                        color={grey[prefersDarkMode ? 400 : 700]}>
-                        {mint.collectionName}
-                      </Typography>
+                  <Tooltip
+                    title={mint.metadata.description}
+                    arrow
+                    disableFocusListener
+                    sx={{ fontWeight: 'bold' }}
+                    slotProps={{
+                      tooltip: { sx: { p: 1, borderRadius: 5, fontWeight: 'bold' } }
+                    }}>
+                    <Stack
+                      p={1}
+                      maxWidth={250}
+                      direction="row"
+                      alignItems="center"
+                      justifyContent="center"
+                      spacing={1}>
+                      <Avatar
+                        variant="rounded"
+                        src={mint.metadata.image}
+                        sx={{
+                          width: 64,
+                          height: 64
+                        }}
+                      />
+                      <Stack alignItems="flex-start" spacing={0.5}>
+                        <Typography fontSize={18} fontWeight="bold">
+                          {mint.metadata.name}
+                        </Typography>
+                        <Typography
+                          textAlign="start"
+                          variant="subtitle2"
+                          color={grey[prefersDarkMode ? 400 : 700]}>
+                          {mint.collectionName}
+                        </Typography>
+                      </Stack>
                     </Stack>
-                  </Stack>
+                  </Tooltip>
                 </Stack>
               </Stack>
             )}
@@ -416,9 +428,9 @@ export default function MintDialog({
               />
               {!paymentToken || chainId === paymentToken.chainId ? (
                 <CustomLoadingButton
-                  title="Pay"
+                  title="Mint"
                   loading={paymentPending}
-                  disabled={true}
+                  disabled={!paymentOption}
                   status={isNativeFlow ? status : statusRegular}
                   onClick={submitGlideTransaction}
                 />
