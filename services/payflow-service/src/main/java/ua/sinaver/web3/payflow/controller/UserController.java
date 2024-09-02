@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ua.sinaver.web3.payflow.data.PreferredTokens;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 import ua.sinaver.web3.payflow.message.*;
@@ -53,7 +54,11 @@ public class UserController {
 					user.getSigner(),
 					FlowMessage.convertDefaultFlow(user, true),
 					flowService.getAllFlows(user),
-					user.getUserAllowance() != null ? user.getUserAllowance().getIdentityInviteLimit() : -1);
+					user.getUserAllowance() != null ?
+							user.getUserAllowance().getIdentityInviteLimit() : -1,
+					Optional.ofNullable(user.getPreferredTokens())
+							.map(PreferredTokens::getTokenList)
+							.orElse(Collections.emptyList()));
 		} else {
 			return null;
 		}
@@ -251,7 +256,11 @@ public class UserController {
 						null,
 						FlowMessage.convertDefaultFlow(user, false),
 						null,
-						-1)).toList();
+						-1,
+						Optional.ofNullable(user.getPreferredTokens())
+								.map(PreferredTokens::getTokenList)
+								.orElse(Collections.emptyList()))
+				).toList();
 	}
 
 	@CrossOrigin(origins = "*", allowCredentials = "false")
@@ -266,7 +275,10 @@ public class UserController {
 					null,
 					FlowMessage.convertDefaultFlow(user, false),
 					null,
-					-1);
+					-1,
+					Optional.ofNullable(user.getPreferredTokens())
+							.map(PreferredTokens::getTokenList)
+							.orElse(Collections.emptyList()));
 		} else {
 			return null;
 		}

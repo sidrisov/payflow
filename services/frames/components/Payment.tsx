@@ -56,6 +56,10 @@ function Payment({
   const profileImage = identity?.profile?.profileImage ?? farcasterSocial?.profileImage;
 
   const isPaymentInitiated = step !== 'create' && step !== 'start' && step !== 'command';
+  const showPreferredTokens =
+    (step === 'start' || step === 'command') &&
+    identity.profile?.preferredTokens &&
+    identity.profile.preferredTokens.length > 0;
   const maxNameWidth = isPaymentInitiated ? 450 : 600;
 
   return (
@@ -182,6 +186,44 @@ function Payment({
                   : '⏳ Pending'}
               </b>
             </span>
+          </div>
+        )}
+        {showPreferredTokens && (
+          <div
+            style={{
+              margin: 10,
+              maxWidth: 300,
+              minHeight: 200,
+              maxHeight: 300,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-start',
+              alignItems: 'flex-start',
+              padding: 16,
+              fontSize: 36,
+              backgroundColor: '#e0e0e0',
+              borderRadius: '16px',
+              gap: 5
+            }}>
+            <span style={{ textAlign: 'center', fontSize: 30, fontWeight: 'bold' }}>Preferred</span>
+            {identity.profile?.preferredTokens?.slice(0, 5).map((tokenId) => {
+              const token = ERC20_CONTRACTS.find((t) => t.id === tokenId);
+              const tokenImgSrc = token?.imageURL ?? assetImageSrc(`/assets/coins/${tokenId}.png`);
+              return (
+                <div
+                  key={`preferred_token_${tokenId}`}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: 10
+                  }}>
+                  <img src={tokenImgSrc} style={{ width: 28, height: 28, borderRadius: '50%' }} />
+                  <span style={{ fontSize: 28, textTransform: 'uppercase' }}>{tokenId}</span>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

@@ -9,6 +9,7 @@ import ua.sinaver.web3.payflow.data.Wallet;
 import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -83,6 +84,17 @@ public class PaymentService {
 		val matchedToken = matcher.find() ? matcher.group("token").toLowerCase() : "usdc";
 		return tokens.stream().filter(t -> t.id().toLowerCase().equals(matchedToken)).toList();
 	}
+
+	public List<String> parsePreferredTokens(String text) {
+		val allTokenIds = tokenService.getTokens().stream().map(Token::id).distinct().toList();
+		return Arrays.stream(text
+						.replace(",", " ")  // Replace commas with spaces
+						.replace("$", "")    // Remove any $ symbols
+						.toLowerCase()       // Convert to lowercase
+						.split("\\s+"))      // Split by spaces
+				.filter(allTokenIds::contains).limit(5).toList();
+	}
+
 
 	public Double parseTokenAmount(String amountStr) {
 		var multiplier = 1;

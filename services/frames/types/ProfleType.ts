@@ -5,6 +5,7 @@ export interface ProfileType {
   displayName?: string;
   username?: string;
   profileImage?: string;
+  preferredTokens?: string[];
 }
 
 export interface SocialInfoType {

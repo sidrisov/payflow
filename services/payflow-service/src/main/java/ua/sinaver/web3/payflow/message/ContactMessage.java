@@ -2,10 +2,13 @@ package ua.sinaver.web3.payflow.message;
 
 import lombok.val;
 import ua.sinaver.web3.payflow.data.Contact;
+import ua.sinaver.web3.payflow.data.PreferredTokens;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public record ContactMessage(
 		IdentityMessage data,
@@ -13,6 +16,10 @@ public record ContactMessage(
 
 	public static ProfileMessage convert(User profile) {
 		if (profile != null && profile.isAllowed()) {
+			// TODO, move to utils
+			val preferredTokens = Optional.ofNullable(profile.getPreferredTokens())
+					.map(PreferredTokens::getTokenList)
+					.orElse(Collections.emptyList());
 			return new ProfileMessage(profile.getDisplayName(),
 					profile.getUsername(),
 					profile.getProfileImage(),
@@ -20,7 +27,8 @@ public record ContactMessage(
 					null,
 					FlowMessage.convertDefaultFlow(profile, false),
 					null,
-					-1);
+					-1,
+					preferredTokens);
 		} else {
 			return null;
 		}

@@ -5,11 +5,11 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
     application
-    id("org.springframework.boot") version "3.3.2"
+    id("org.springframework.boot") version "3.3.3"
     id("io.spring.dependency-management") version "1.1.4"
     id("com.google.cloud.artifactregistry.gradle-plugin") version "2.2.1"
     id("io.freefair.lombok") version "8.4"
-    id("com.netflix.dgs.codegen") version "6.2.2"
+    id("com.netflix.dgs.codegen") version "6.3.0"
 }
 
 application {
@@ -17,7 +17,7 @@ application {
 }
 
 group = "ua.sinaver.web3.payflow"
-version = "0.0.10-alpha"
+version = "0.0.11-alpha"
 
 java.sourceCompatibility = JavaVersion.VERSION_21
 
@@ -30,7 +30,7 @@ if (project.hasProperty("gcp")) {
     extra["springCloudVersion"] = "2023.0.2"
 }
 
-extra["flywayVersion"] = "10.16.0"
+extra["flywayVersion"] = "10.17.3"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -43,8 +43,8 @@ dependencies {
     implementation("org.springframework.session:spring-session-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-aop")
 
-    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.1")
-    implementation("io.jsonwebtoken:jjwt:0.9.1")
+    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.2")
+    implementation("io.jsonwebtoken:jjwt:0.12.6")
 
     if (project.hasProperty("gcp")) {
         project.logger.info("Including GCP dependencies")
@@ -72,12 +72,12 @@ dependencies {
     implementation("org.flywaydb:flyway-mysql:${property("flywayVersion")}")
 
     // utils
-    implementation("org.apache.commons:commons-lang3:3.15.0")
-    implementation("com.google.guava:guava:33.2.0-jre")
+    implementation("org.apache.commons:commons-lang3:3.17.0")
+    implementation("com.google.guava:guava:33.3.0-jre")
     implementation("com.google.code.gson:gson:2.11.0")
 
     // java.lang.NoSuchMethodError: 'reactor.core.publisher.Mono reactor.core.publisher.Mono.onErrorComplete()'
-    implementation("io.projectreactor:reactor-core:3.6.8")
+    implementation("io.projectreactor:reactor-core:3.6.9")
 
     runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.112.Final:osx-aarch_64")
 

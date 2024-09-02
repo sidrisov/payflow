@@ -12,8 +12,8 @@ import ua.sinaver.web3.payflow.message.farcaster.Cast;
 import ua.sinaver.web3.payflow.message.farcaster.CastActionMeta;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
-import ua.sinaver.web3.payflow.service.FarcasterPaymentBotService;
 import ua.sinaver.web3.payflow.service.IdentityService;
+import ua.sinaver.web3.payflow.service.NotificationService;
 import ua.sinaver.web3.payflow.service.api.IContactBookService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
@@ -44,7 +44,7 @@ public class InviteController {
 	private InvitationRepository invitationRepository;
 
 	@Autowired
-	private FarcasterPaymentBotService farcasterPaymentBotService;
+	private NotificationService notificationService;
 
 	@GetMapping
 	public CastActionMeta metadata() {
@@ -117,7 +117,7 @@ public class InviteController {
 					val embeds = Collections.singletonList(new Cast.Embed("https://app.payflow" +
 							".me/connect"));
 
-					val processed = farcasterPaymentBotService.reply(castText,
+					val processed = notificationService.reply(castText,
 							validateMessage.action().cast().hash(),
 							embeds);
 					if (!processed) {

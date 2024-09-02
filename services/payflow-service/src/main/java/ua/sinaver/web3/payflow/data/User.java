@@ -65,6 +65,9 @@ public class User {
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
 	private UserAllowance userAllowance;
 
+	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+	private PreferredTokens preferredTokens;
+
 	@Column
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createdDate = new Date();

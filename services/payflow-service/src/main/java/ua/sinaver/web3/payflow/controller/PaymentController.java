@@ -42,7 +42,7 @@ public class PaymentController {
 	private PaymentRepository paymentRepository;
 
 	@Autowired
-	private FarcasterPaymentBotService farcasterPaymentBotService;
+	private NotificationService notificationService;
 
 	@Autowired
 	private FarcasterMessagingService farcasterMessagingService;
@@ -263,7 +263,7 @@ public class PaymentController {
 								senderFname,
 								scvText);
 
-						val processed = farcasterPaymentBotService.reply(castText,
+						val processed = notificationService.reply(castText,
 								payment.getSourceHash(),
 								embeds);
 
@@ -283,7 +283,7 @@ public class PaymentController {
 								crossChainText,
 								senderFname);
 
-						val processed = farcasterPaymentBotService.reply(castText,
+						val processed = notificationService.reply(castText,
 								payment.getSourceHash(),
 								embeds);
 
@@ -345,7 +345,7 @@ public class PaymentController {
 
 					// update embeds to include storage frame as well!
 					embeds = List.of(new Cast.Embed(storageFrameUrl), new Cast.Embed(receiptUrl));
-					val processed = farcasterPaymentBotService.reply(castText,
+					val processed = notificationService.reply(castText,
 							payment.getSourceHash(),
 							embeds);
 
@@ -391,7 +391,7 @@ public class PaymentController {
 							senderFname);
 
 					embeds = Collections.singletonList(new Cast.Embed(receiptUrl));
-					val processed = farcasterPaymentBotService.reply(castText,
+					val processed = notificationService.reply(castText,
 							payment.getSourceHash(),
 							embeds);
 

@@ -2,6 +2,7 @@ package ua.sinaver.web3.payflow.message;
 
 import lombok.val;
 import org.apache.commons.lang3.BooleanUtils;
+import ua.sinaver.web3.payflow.data.PreferredTokens;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
 import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
@@ -9,6 +10,7 @@ import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public record IdentityMessage(
@@ -24,6 +26,9 @@ public record IdentityMessage(
 
 	public static ProfileMessage convert(User profile) {
 		if (profile != null && profile.isAllowed()) {
+			val preferredTokens = Optional.ofNullable(profile.getPreferredTokens())
+					.map(PreferredTokens::getTokenList)
+					.orElse(Collections.emptyList());
 			return new ProfileMessage(profile.getDisplayName(),
 					profile.getUsername(),
 					profile.getProfileImage(),
@@ -31,7 +36,8 @@ public record IdentityMessage(
 					null,
 					FlowMessage.convertDefaultFlow(profile, false),
 					null,
-					-1);
+					-1,
+					preferredTokens);
 		} else {
 			return null;
 		}
