@@ -1,10 +1,13 @@
 import { readContract } from '@wagmi/core';
 import axios from 'axios';
-import { Address } from 'viem';
+import { Abi, Address, ContractFunctionArgs, ContractFunctionName, PublicClient } from 'viem';
 import { IdentityType } from '../types/ProfileType';
 import { API_URL } from './urlConstants';
 import { wagmiConfig } from './wagmiConfig';
 import { zoraErc1155Abi } from './abi/zoraErc1155Abi';
+import { useMemo, useState } from 'react';
+import { createCollectorClient } from '@zoralabs/protocol-sdk';
+import { getPublicClient } from 'wagmi/actions';
 
 export interface MintMetadata {
   provider: string;
@@ -134,3 +137,54 @@ function resolveIpfsUri(uri: string): string {
   }
   return uri;
 }
+
+type PaymentTx = {
+  chainId: number;
+  address: Address;
+  abi: Abi;
+  functionName: ContractFunctionName;
+  args?: ContractFunctionArgs;
+  value?: bigint;
+};
+
+export const useMintPaymentTx = ({
+  mint,
+  minter,
+  recipient,
+  comment
+}: {
+  mint: MintMetadata;
+  minter: Address;
+  recipient: Address | undefined;
+  comment?: string;
+}) => {
+  const [paymentTx, setPaymentTx] = useState<PaymentTx>();
+
+  useMemo(async () => {
+    if (!minter || !recipient) {
+      return;
+    }
+
+    const publicClient = getPublicClient(wagmiConfig, { chainId: mint.chainId });
+    const collectorClient = createCollectorClient({
+      chainId: mint.chainId,
+      publicClient: publicClient as PublicClient
+    });
+
+    const { parameters } = await collectorClient.mint({
+      minterAccount: minter,
+      mintType: '1155',
+      quantityToMint: 1,
+      tokenContract: mint.contract,
+      tokenId: mint.tokenId,
+      mintReferral: mint.referral,
+      mintRecipient: recipient,
+      mintComment: comment
+    });
+
+    setPaymentTx({ ...parameters, chainId: mint.chainId });
+  }, [mint, minter, recipient, comment]);
+
+  console.log('Mint tx: ', paymentTx);
+  return { paymentTx };
+};

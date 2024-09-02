@@ -4,7 +4,7 @@ import AddressAvatar from './avatars/AddressAvatar';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { useEnsAvatar, useEnsName } from 'wagmi';
 import CopyToClipboardIconButton from './buttons/CopyToClipboardIconButton';
-import { useBaseName, useDegenName } from '../utils/queries/domainNames';
+import { useDegenName } from '../utils/queries/domainNames';
 
 export function AddressSection(props: {
   identity: IdentityType;
@@ -25,15 +25,7 @@ export function AddressSection(props: {
     }
   });
 
-  const { data: baseName, isFetched: isBaseNameFetched } = useBaseName(
-    identity.address,
-    isFetched && !ensName
-  );
-
-  const { data: degenName } = useDegenName(
-    identity.address,
-    (isFetched && !ensName) || (isBaseNameFetched && !baseName)
-  );
+  const { data: degenName } = useDegenName(identity.address, isFetched && !ensName);
 
   const ensAvatar = useEnsAvatar({
     name: identity.meta?.ens ?? (ensName as string),
@@ -51,7 +43,6 @@ export function AddressSection(props: {
     identity.meta?.socials[0]?.profileName.replace('lens/@', '') ||
     identity.meta?.ens ||
     ensName ||
-    baseName ||
     degenName;
 
   return (

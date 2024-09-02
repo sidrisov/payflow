@@ -169,15 +169,6 @@ export async function searchIdentity(searchValue: string, me?: string): Promise<
     searchValue.endsWith('.degen')
   ) {
     let identity = searchValue;
-    if (searchValue.endsWith('.base')) {
-      const response = await axios.get(`https://resolver-api.basename.app/v1/names/${searchValue}`);
-      const basename = response.data as BaseNameReponseType;
-      if (basename.address) {
-        identity = basename.address;
-      } else {
-        return foundProfiles;
-      }
-    }
 
     if (searchValue.endsWith('.degen')) {
       const publicClient = getPublicClient(wagmiConfig, { chainId: degen.id });

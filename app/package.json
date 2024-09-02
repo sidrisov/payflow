@@ -31,6 +31,7 @@
     "@tanstack/react-query": "^5.36.2",
     "@vercel/speed-insights": "^1.0.1",
     "@web3auth/ethereum-provider": "^8.0.0",
+    "@zoralabs/protocol-sdk": "^0.9.6",
     "apg-js": "github:runic-inc/apg-js#8bb92ff0780819170fee7e756d26e0562e442983",
     "axios": "^1.4.0",
     "buffer": "^6.0.3",

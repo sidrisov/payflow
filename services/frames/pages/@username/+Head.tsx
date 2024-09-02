@@ -48,10 +48,11 @@ export function Head() {
         <meta property="fc:frame" content="vNext" />
 
         <meta property="fc:frame:image" content={`${imageUrl}`} />
-        <meta property="fc:frame:button:1" content="⚡️ Pay" />
+        <meta property="fc:frame:input:text" content="50 degen or 100 moxie" />
+        <meta property="fc:frame:button:1" content="Confirm" />
         <meta
           property="fc:frame:button:1:target"
-          content={`${API_URL}/api/farcaster/frames/pay/${username}/frame`}
+          content={`${API_URL}/api/farcaster/frames/pay/${username}/frame/command`}
         />
         <meta property="fc:frame:button:2" content="App" />
         <meta property="fc:frame:button:2:action" content="link" />
@@ -62,6 +63,12 @@ export function Head() {
         <meta
           property="fc:frame:button:3:target"
           content={`https://warpcast.com/~/add-cast-action?url=${API_URL}/api/farcaster/actions/profile`}
+        />
+        <meta property="fc:frame:button:4" content="Tokens" />
+        <meta property="fc:frame:button:4:action" content="link" />
+        <meta
+          property="fc:frame:button:4:target"
+          content="https://payflowlabs.notion.site/Payflow-support-tokens-chains-e36f2c1e9f7e4bfd834baf604ce9a375"
         />
       </head>
     </>

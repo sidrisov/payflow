@@ -326,7 +326,7 @@ public class FramePaymentController {
 		if (!matcher.find()) {
 			log.warn("Enter command not recognized: {} by fid: {}", inputText, senderFarcasterUser);
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameMessage("Enter command not recognized!"));
+					new FrameResponse.FrameMessage("Entered token input not recognized!"));
 		}
 
 		val amountStr = matcher.group("amount");

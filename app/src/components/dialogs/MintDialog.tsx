@@ -15,7 +15,6 @@ import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { degen } from 'viem/chains';
 import { glideConfig } from '../../utils/glide';
 import { useSwitchChain, useChainId, useAccount, useWalletClient, useClient } from 'wagmi';
-import { ZORA_MINT_CONTRACT_ADDR } from '../../utils/contracts';
 import { BackDialogTitle } from './BackDialogTitle';
 import { SenderField } from '../SenderField';
 import { KeyboardDoubleArrowDown } from '@mui/icons-material';
@@ -29,15 +28,7 @@ import { PaymentType } from '../../types/PaymentType';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { useContext, useMemo, useState } from 'react';
 import { Token } from '../../utils/erc20contracts';
-import {
-  Abi,
-  Address,
-  ContractFunctionArgs,
-  ContractFunctionName,
-  Hash,
-  parseEther,
-  zeroAddress
-} from 'viem';
+import { Hash } from 'viem';
 import { normalizeNumberPrecision } from '../../utils/formats';
 import { useGlideEstimatePayment, useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
 import { ProfileContext } from '../../contexts/UserContext';
@@ -56,8 +47,7 @@ import ResponsiveDialog from './ResponsiveDialog';
 import { UpSlideTransition } from './TransitionDownUpSlide';
 import PoweredByGlideText from '../text/PoweredByGlideText';
 import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
-import { MintMetadata } from '../../utils/mint';
-import { zoraMintAbi } from '../../utils/abi/zoraMintAbi';
+import { MintMetadata, useMintPaymentTx } from '../../utils/mint';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {
@@ -125,37 +115,18 @@ export default function MintDialog({
     reset: resetRegular
   } = useRegularTransfer();
 
-  const mintPrice = parseEther('0.000111');
-
-  const paymentTx = {
-    chainId: mint.chainId,
-    address: ZORA_MINT_CONTRACT_ADDR,
-    abi: zoraMintAbi,
-    functionName: 'mint',
-    args: [
-      profile?.identity,
-      1n,
-      mint.contract,
-      BigInt(mint.tokenId ?? 1),
-      mint.referral ?? zeroAddress,
-      `minted by @${social.profileName} on @payflow`
-    ],
-    value: mintPrice
-  } as {
-    chainId: number;
-    address: Address;
-    abi: Abi;
-    functionName: ContractFunctionName;
-    args?: ContractFunctionArgs;
-    value?: bigint;
-  };
+  const { paymentTx } = useMintPaymentTx({
+    mint,
+    minter: senderFlow.wallets[0].address,
+    recipient: profile?.identity,
+    comment: `minted by @${social.profileName} on @payflow`
+  });
 
   console.log('Mint tx: ', paymentTx);
 
   const { isLoading: isPaymentOptionsLoading, data: paymentOptions } = useGlidePaymentOptions(
-    Boolean(mintPrice),
+    Boolean(paymentTx),
     {
-      account: senderFlow.wallets[0].address,
       ...(paymentTx as any)
     }
   );
@@ -163,9 +134,8 @@ export default function MintDialog({
   console.log('Payment Options: ', paymentOptions);
 
   const { isLoading: isPaymentOptionLoading, data: paymentOption } = useGlideEstimatePayment(
-    Boolean(paymentToken) && Boolean(mintPrice),
+    Boolean(paymentToken) && Boolean(paymentTx),
     {
-      account: senderFlow.wallets[0].address,
       paymentCurrency: `eip155:${paymentToken?.chainId}/${
         paymentToken?.tokenAddress
           ? `erc20:${paymentToken.tokenAddress}`
@@ -199,7 +169,15 @@ export default function MintDialog({
       return;
     }
     try {
-      if (profile && client && signer && paymentWallet && paymentToken && paymentOption) {
+      if (
+        paymentTx &&
+        profile &&
+        client &&
+        signer &&
+        paymentWallet &&
+        paymentToken &&
+        paymentOption
+      ) {
         if (isNativeFlow) {
           reset();
         } else {
@@ -207,11 +185,10 @@ export default function MintDialog({
         }
 
         const session = await createSession(glideConfig, {
-          account: paymentWallet.address,
           paymentCurrency: paymentOption.paymentCurrency,
           currentChainId: chainId,
           ...(paymentTx as any),
-          value: mintPrice
+          account: paymentWallet.address
         });
 
         const { sponsoredTransactionHash: glideTxHash } = await executeSession(glideConfig, {
@@ -349,7 +326,7 @@ export default function MintDialog({
                 <FarcasterRecipientField social={social} />
 
                 <Stack alignItems="center">
-                  {!mintPrice || isPaymentOptionLoading || isPaymentOptionsLoading ? (
+                  {!paymentTx || isPaymentOptionLoading || isPaymentOptionsLoading ? (
                     <Skeleton
                       title="fetching price"
                       variant="rectangular"
