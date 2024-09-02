@@ -14,8 +14,7 @@ import PaymentDialog from '../components/dialogs/PaymentDialog';
 import { IdentityType, SelectedIdentityType } from '../types/ProfileType';
 import { toast } from 'react-toastify';
 import { statusToToastType } from '../components/Toasts';
-import { fetchMintData, MintMetadata } from '../utils/mint';
-import { Address } from 'viem';
+import { fetchMintData, MintMetadata, parseMintToken } from '../utils/mint';
 import MintDialog from '../components/dialogs/MintDialog';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 
@@ -46,22 +45,6 @@ export default function Payment() {
 
   useEffect(() => {
     const fetchData = async () => {
-      type ParsedMintData = {
-        provider: string;
-        contract: Address;
-        tokenId?: number;
-        referral?: Address;
-      };
-
-      function parseMintToken(token: string): ParsedMintData {
-        const [provider, contract, tokenId] = token.split(':');
-        return {
-          provider,
-          contract: contract as Address,
-          tokenId: tokenId ? parseInt(tokenId) : undefined
-        };
-      }
-
       if (refId && !payment) {
         try {
           // Fetch payment data

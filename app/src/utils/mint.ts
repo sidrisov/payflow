@@ -188,3 +188,21 @@ export const useMintPaymentTx = ({
   console.log('Mint tx: ', paymentTx);
   return { paymentTx };
 };
+
+type ParsedMintData = {
+  provider: string;
+  contract: Address;
+  tokenId?: number;
+  referral?: Address;
+};
+
+export const parseMintToken = (token: string) => {
+  const [provider, contract, tokenId, referral] = token.split(':');
+
+  return {
+    provider,
+    contract,
+    tokenId: tokenId ? parseInt(tokenId) : undefined,
+    referral
+  } as ParsedMintData;
+};

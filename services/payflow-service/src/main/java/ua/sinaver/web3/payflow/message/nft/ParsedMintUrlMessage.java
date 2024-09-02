@@ -14,7 +14,7 @@ public record ParsedMintUrlMessage(
 		String chain,
 		String contract,
 		String tokenId,
-		String referrer
+		String referral
 ) {
 	public static final String ZORA_PROVIDER = "zora.co";
 	public static final String RODEO_PROVIDER = "rodeo.club";
@@ -64,8 +64,8 @@ public record ParsedMintUrlMessage(
 			tokenId = pathParts[3];
 		}
 
-		// Extract optional referrer
-		val referrer = uriComponents.getQueryParams().getFirst("referrer");
-		return new ParsedMintUrlMessage(url, provider, chain, contract, tokenId, referrer);
+		// Extract optional referral
+		val referral = uriComponents.getQueryParams().getFirst("referrer");
+		return new ParsedMintUrlMessage(url, provider, chain, contract, tokenId, referral);
 	}
 }

@@ -19,6 +19,8 @@ import ua.sinaver.web3.payflow.service.UserService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
+import java.util.Optional;
+
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.DEFAULT_HTML_RESPONSE;
 import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS;
 
@@ -71,6 +73,7 @@ public class MintController {
 	                                @RequestParam Integer chainId,
 	                                @RequestParam String contract,
 	                                @RequestParam(required = false) Integer tokenId,
+	                                @RequestParam(required = false) String referral,
 	                                @RequestParam String original) {
 
 		log.debug("Received submit mint message request: {}", frameMessage);
@@ -111,12 +114,10 @@ public class MintController {
 					new FrameResponse.FrameMessage(String.format("`%s` chain not supported!", chainId)));
 		}
 
-		String token;
-		if (tokenId != null) {
-			token = String.format("%s:%s:%s", provider, contract, tokenId);
-		} else {
-			token = String.format("%s:%s", provider, contract);
-		}
+		val token = String.format("%s:%s:%s:%s", provider, contract,
+				Optional.ofNullable(tokenId).map(String::valueOf).orElse(""),
+				Optional.ofNullable(referral).orElse(""));
+
 		val payment = getMintPayment(validateMessage, clickedProfile, chainId, token);
 		paymentRepository.save(payment);
 

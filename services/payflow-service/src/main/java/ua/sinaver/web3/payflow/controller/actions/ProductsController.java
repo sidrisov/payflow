@@ -137,11 +137,13 @@ public class ProductsController {
 						"&chainId={chainId}" +
 						"&contract={contract}" +
 						"&tokenId={tokenId}" +
+						"&referral={referral}" +
 						"&original={original}")
 				.buildAndExpand(parsedMintUrlMessage.provider(),
 						chainId,
 						parsedMintUrlMessage.contract(),
 						parsedMintUrlMessage.tokenId(),
+						parsedMintUrlMessage.referral(),
 						parsedMintUrlMessage.url())
 				.toUriString();
 

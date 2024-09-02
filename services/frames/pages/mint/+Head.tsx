@@ -6,12 +6,13 @@ interface MintUrlParams {
   provider: string;
   chainId: string;
   contract: string;
-  tokenId: string;
+  referral?: string;
+  tokenId?: string;
 }
 
 export function Head() {
   const { urlParsed } = usePageContext();
-  const { original, provider, chainId, contract, tokenId }: MintUrlParams =
+  const { original, provider, chainId, contract, referral, tokenId }: MintUrlParams =
     urlParsed.search as unknown as MintUrlParams;
 
   const imageUrl = `${FRAMES_URL}/images/mint.png?provider=${provider}&chainId=${chainId}&contract=${contract}&tokenId=${tokenId}`;
@@ -20,7 +21,8 @@ export function Head() {
   paymentMintSubmitUrl.searchParams.append('provider', provider);
   paymentMintSubmitUrl.searchParams.append('chainId', chainId);
   paymentMintSubmitUrl.searchParams.append('contract', contract);
-  paymentMintSubmitUrl.searchParams.append('tokenId', tokenId);
+  paymentMintSubmitUrl.searchParams.append('tokenId', tokenId ?? '');
+  paymentMintSubmitUrl.searchParams.append('referral', referral ?? '');
   paymentMintSubmitUrl.searchParams.append('original', original);
 
   return (
