@@ -14,14 +14,15 @@ import { API_URL } from './urlConstants';
 import { wagmiConfig } from './wagmiConfig';
 import { zoraErc1155Abi } from './abi/zoraErc1155Abi';
 import { useMemo, useState } from 'react';
-import { createCollectorClient } from '@zoralabs/protocol-sdk';
+import {
+  createCollectorClient} from '@zoralabs/protocol-sdk';
 import { getPublicClient } from 'wagmi/actions';
 import { rodeoMintAbi } from './abi/rodeoMintAbi';
 import { RODEO_MINT_CONTRACT_ADDR } from './contracts';
 
 const RODEO_MINT_PRICE = parseEther('0.0001');
 
-export interface MintMetadata {
+export type MintMetadata = {
   provider: string;
   chainId: number;
   contract: Address;
@@ -34,7 +35,9 @@ export interface MintMetadata {
     description: string;
     image: string;
   };
-}
+  salesStatus?: 'live' | 'ended';
+  mintType: '721' | '1155' | 'premint';
+};
 
 export async function fetchMintData(
   provider: string,
@@ -59,6 +62,33 @@ export async function fetchMintData(
       });
 
       console.log('Token:', token);
+
+      token.mintType;
+
+      //const salesConfig = (token as Partial<{ salesConfig: SalesConfigParamsType }>).salesConfig!;
+
+      const identityResponse = await axios.get(`${API_URL}/api/user/identities/${token.creator}`);
+      const owner =
+        identityResponse.data !== ''
+          ? identityResponse.data
+          : ({ address: token.creator } as IdentityType);
+
+      const metadata = await fetchTokenMetadata(token.tokenURI);
+      if (!metadata) {
+        return;
+      }
+
+      return {
+        provider,
+        chainId,
+        contract,
+        tokenId,
+        referral,
+        collectionName: `${token.contract.name} #${tokenId}`,
+        metadata,
+        owner,
+        mintType: token.mintType
+      };
     }
 
     const collectionOwner = await fetchCollectionOwner(chainId, contract);
@@ -92,7 +122,8 @@ export async function fetchMintData(
       referral,
       collectionName,
       metadata,
-      owner
+      owner,
+      mintType: '1155'
     };
   } catch (error) {
     console.error('Failed to fetch mint data:', error);
@@ -147,7 +178,12 @@ export async function fetchTokenMetadata(metadataUri: string) {
     const resolvedMetadataUri = resolveIpfsUri(metadataUri);
 
     console.log('Resolved metadata URI:', resolvedMetadataUri);
+    // add proxy
+    /* const metadataResponse = await axios.get(
+      `https://corsproxy.io/?${encodeURIComponent(resolvedMetadataUri)}`
+    ); */
     const metadataResponse = await axios.get(resolvedMetadataUri);
+
     const metadata = metadataResponse.data;
     const name = metadata.name;
     const description = metadata.description;
@@ -211,7 +247,7 @@ export const useMintPaymentTx = ({
 
         const { parameters } = await collectorClient.mint({
           minterAccount: minter,
-          mintType: '1155',
+          mintType: mint.mintType as any,
           quantityToMint: 1,
           tokenContract: mint.contract,
           tokenId: mint.tokenId,
