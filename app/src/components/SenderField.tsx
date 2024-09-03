@@ -1,29 +1,22 @@
-import {
-  Box,
-  Button,
-  Typography,
-  useTheme,
-  useMediaQuery,
-  Stack,
-  Tooltip,
-  IconButton
-} from '@mui/material';
-import { SelectedIdentityType } from '../types/ProfileType';
-import { AddressSection } from './AddressSection';
+import { Box, Stack, IconButton, Typography, Button, useMediaQuery, useTheme } from '@mui/material';
+import { PaymentFlowSection } from './PaymentFlowSection';
 import { ProfileSection } from './ProfileSection';
+import { AddressSection } from './AddressSection';
+import { SelectedIdentityType } from '../types/ProfileType';
+import { IoMdArrowDropdown } from 'react-icons/io';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useSetActiveWallet } from '@privy-io/wagmi';
 import { useEffect } from 'react';
-import { PaymentFlowSection } from './PaymentFlowSection';
-import { IoMdArrowDropdown } from 'react-icons/io';
 
 export function SenderField({
   sender,
-  setOpenSelectFlow,
-  displayFlow = true
-}: { sender: SelectedIdentityType } & {
+  displayFlow = true,
+  setOpenSelectFlow
+}: {
+  sender: SelectedIdentityType;
+  displayFlow?: boolean;
   setOpenSelectFlow?: React.Dispatch<React.SetStateAction<boolean>>;
-} & { displayFlow?: boolean }) {
+}) {
   const { ready, connectWallet } = usePrivy();
   const { wallets } = useWallets();
   const { setActiveWallet } = useSetActiveWallet();
@@ -66,10 +59,10 @@ export function SenderField({
       {sender.identity.address &&
         (sender.type === 'profile' ? (
           sender.identity.profile && (
-            <ProfileSection maxWidth={200} profile={sender.identity.profile} />
+            <ProfileSection maxWidth={150} profile={sender.identity.profile} />
           )
         ) : (
-          <AddressSection maxWidth={200} identity={sender.identity} />
+          <AddressSection maxWidth={150} identity={sender.identity} />
         ))}
 
       {!sender.identity.address && (
@@ -82,19 +75,30 @@ export function SenderField({
         sender.identity.address &&
         sender.type === 'profile' &&
         sender.identity.profile?.defaultFlow && (
-          <Stack ml={0.5} direction="row" spacing={0.5} alignItems="center">
-            <PaymentFlowSection flow={sender.identity.profile?.defaultFlow} />
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={0.5}
+            sx={{
+              flexGrow: 1,
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+              textAlign: 'right'
+            }}>
+            <Box
+              pl={0.5}
+              sx={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                flexGrow: 1
+              }}>
+              <PaymentFlowSection flow={sender.identity.profile.defaultFlow} />
+            </Box>
             {setOpenSelectFlow && (
-              <Tooltip title="Payment Flows">
-                <IconButton
-                  size="small"
-                  onClick={async () => {
-                    setOpenSelectFlow(true);
-                  }}
-                  sx={{ p: 0.3 }}>
-                  <IoMdArrowDropdown />
-                </IconButton>
-              </Tooltip>
+              <IconButton size="small" onClick={() => setOpenSelectFlow(true)} sx={{ p: 0.3 }}>
+                <IoMdArrowDropdown />
+              </IconButton>
             )}
           </Stack>
         )}

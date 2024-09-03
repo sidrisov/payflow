@@ -162,7 +162,7 @@ export default function PaymentDialogContent({
   const { isLoading: isPaymentOptionsLoading, data: paymentOptions } = useGlidePaymentOptions(
     crossChainMode,
     {
-      account: senderFlow.wallets[0].address,
+      account: senderFlow?.wallets[0].address,
       ...(paymentTx as any)
     }
   );
@@ -180,7 +180,7 @@ export default function PaymentDialogContent({
   const { isLoading: isPaymentOptionLoading, data: paymentOption } = useGlideEstimatePayment(
     crossChainMode && Boolean(crossChainPaymentToken),
     {
-      account: senderFlow.wallets[0].address,
+      account: senderFlow?.wallets[0].address,
       paymentCurrency: `eip155:${crossChainPaymentToken?.chainId}/${
         crossChainPaymentToken?.tokenAddress
           ? `erc20:${crossChainPaymentToken.tokenAddress}`
