@@ -115,7 +115,7 @@ export default function MintDialog({
     reset: resetRegular
   } = useRegularTransfer();
 
-  const { paymentTx } = useMintPaymentTx({
+  const { paymentTx, isMintActive } = useMintPaymentTx({
     mint,
     minter: senderFlow.wallets[0].address,
     recipient: profile?.identity,
@@ -125,7 +125,7 @@ export default function MintDialog({
   console.log('Mint tx: ', paymentTx);
 
   const { isLoading: isPaymentOptionsLoading, data: paymentOptions } = useGlidePaymentOptions(
-    Boolean(paymentTx),
+    Boolean(paymentTx) && isMintActive !== false,
     {
       ...(paymentTx as any)
     }
@@ -134,7 +134,7 @@ export default function MintDialog({
   console.log('Payment Options: ', paymentOptions);
 
   const { isLoading: isPaymentOptionLoading, data: paymentOption } = useGlideEstimatePayment(
-    Boolean(paymentToken) && Boolean(paymentTx),
+    Boolean(paymentToken) && Boolean(paymentTx) && isMintActive !== false,
     {
       paymentCurrency: `eip155:${paymentToken?.chainId}/${
         paymentToken?.tokenAddress
@@ -295,7 +295,7 @@ export default function MintDialog({
             ...(!isMobile && {
               width: 375,
               borderRadius: 5,
-              height: 600
+              height: 650
             })
           }
         }}
@@ -311,106 +311,119 @@ export default function MintDialog({
         />
         <DialogContent
           sx={{
-            p: 2
+            px: 2,
+            py: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
           }}>
+          {sender && (
+            <Stack mb={2} spacing={1} alignItems="center" width="100%">
+              <SenderField sender={sender} {...(setSelectedFlow && { setOpenSelectFlow })} />
+              <KeyboardDoubleArrowDown />
+              <FarcasterRecipientField social={social} />
+            </Stack>
+          )}
+
           <Box
-            height="100%"
+            flex={1}
+            overflow="auto"
             display="flex"
             flexDirection="column"
             alignItems="center"
             justifyContent="space-between">
-            {sender && (
-              <Stack spacing={1} alignItems="center" width="100%">
-                <SenderField sender={sender} {...(setSelectedFlow && { setOpenSelectFlow })} />
-                <KeyboardDoubleArrowDown />
-                <FarcasterRecipientField social={social} />
-
-                <Stack alignItems="center">
-                  {!paymentTx || isPaymentOptionLoading || isPaymentOptionsLoading ? (
-                    <Skeleton
-                      title="fetching price"
-                      variant="rectangular"
-                      sx={{ borderRadius: 3, height: 45, width: 100 }}
-                    />
-                  ) : paymentOption ? (
-                    <Typography fontSize={30} fontWeight="bold" textAlign="center">
-                      {normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))}{' '}
-                      {paymentOption.currencySymbol}
+            <Stack alignItems="center" justifyContent="start" spacing={0}>
+              <Tooltip
+                title={mint.metadata.description}
+                arrow
+                disableFocusListener
+                sx={{ fontWeight: 'bold' }}
+                slotProps={{
+                  tooltip: { sx: { p: 1, borderRadius: 5, fontWeight: 'bold' } }
+                }}>
+                <Stack
+                  p={1}
+                  maxWidth={250}
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="center"
+                  spacing={1}>
+                  <Avatar
+                    variant="rounded"
+                    src={mint.metadata.image}
+                    sx={{
+                      width: 64,
+                      height: 64
+                    }}
+                  />
+                  <Stack alignItems="flex-start" spacing={0.5}>
+                    <Typography fontSize={18} fontWeight="bold">
+                      {mint.metadata.name}
                     </Typography>
-                  ) : (
-                    <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
-                      You don't have any balance to cover storage cost, switch to different payment
-                      flow!
+                    <Typography
+                      textAlign="start"
+                      variant="subtitle2"
+                      color={grey[prefersDarkMode ? 400 : 700]}>
+                      {mint.collectionName}
                     </Typography>
-                  )}
-
-                  <Tooltip
-                    title={mint.metadata.description}
-                    arrow
-                    disableFocusListener
-                    sx={{ fontWeight: 'bold' }}
-                    slotProps={{
-                      tooltip: { sx: { p: 1, borderRadius: 5, fontWeight: 'bold' } }
-                    }}>
-                    <Stack
-                      p={1}
-                      maxWidth={250}
-                      direction="row"
-                      alignItems="center"
-                      justifyContent="center"
-                      spacing={1}>
-                      <Avatar
-                        variant="rounded"
-                        src={mint.metadata.image}
-                        sx={{
-                          width: 64,
-                          height: 64
-                        }}
-                      />
-                      <Stack alignItems="flex-start" spacing={0.5}>
-                        <Typography fontSize={18} fontWeight="bold">
-                          {mint.metadata.name}
-                        </Typography>
-                        <Typography
-                          textAlign="start"
-                          variant="subtitle2"
-                          color={grey[prefersDarkMode ? 400 : 700]}>
-                          {mint.collectionName}
-                        </Typography>
-                      </Stack>
-                    </Stack>
-                  </Tooltip>
+                  </Stack>
                 </Stack>
-              </Stack>
-            )}
+              </Tooltip>
 
-            <Stack width="100%">
-              <NetworkTokenSelector
-                crossChainMode
-                payment={payment}
-                paymentWallet={paymentWallet}
-                setPaymentWallet={setPaymentWallet}
-                paymentToken={paymentToken}
-                setPaymentToken={setPaymentToken}
-                compatibleWallets={compatibleWallets}
-                enabledChainCurrencies={
-                  paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
-                }
-                gasFee={gasFee}
-              />
-              {!paymentToken || chainId === paymentToken.chainId ? (
-                <CustomLoadingButton
-                  title="Mint"
-                  loading={paymentPending}
-                  disabled={!paymentOption || mint.provider !== 'zora.co'}
-                  status={isNativeFlow ? status : statusRegular}
-                  onClick={submitGlideTransaction}
+              {!paymentTx ||
+              isPaymentOptionLoading ||
+              isPaymentOptionsLoading ||
+              isMintActive === undefined ? (
+                <Skeleton
+                  title="fetching price"
+                  variant="rectangular"
+                  sx={{ borderRadius: 3, height: 45, width: 100 }}
                 />
+              ) : isMintActive === false ? (
+                <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
+                  Mint has ended
+                </Typography>
+              ) : paymentOption ? (
+                <Typography fontSize={30} fontWeight="bold" textAlign="center">
+                  {normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))}{' '}
+                  {paymentOption.currencySymbol}
+                </Typography>
               ) : (
-                <LoadingSwitchChainButton chainId={paymentToken.chainId} />
+                <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
+                  You don't have any balance to cover storage cost, switch to different payment
+                  flow!
+                </Typography>
               )}
-              <PoweredByGlideText />
             </Stack>
+
+            <NetworkTokenSelector
+              crossChainMode
+              payment={payment}
+              paymentWallet={paymentWallet}
+              setPaymentWallet={setPaymentWallet}
+              paymentToken={paymentToken}
+              setPaymentToken={setPaymentToken}
+              compatibleWallets={compatibleWallets}
+              enabledChainCurrencies={
+                paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
+              }
+              gasFee={gasFee}
+            />
+          </Box>
+
+          <Box display="flex" flexDirection="column" alignItems="center" width="100%">
+            {!paymentToken || chainId === paymentToken.chainId ? (
+              <CustomLoadingButton
+                title={isMintActive === false ? 'Mint Ended' : 'Mint'}
+                loading={paymentPending}
+                disabled={!paymentOption || mint.provider !== 'zora.co' || isMintActive === false}
+                status={isNativeFlow ? status : statusRegular}
+                onClick={submitGlideTransaction}
+              />
+            ) : (
+              <LoadingSwitchChainButton chainId={paymentToken.chainId} />
+            )}
+            <PoweredByGlideText />
           </Box>
         </DialogContent>
       </Dialog>

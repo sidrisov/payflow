@@ -316,7 +316,7 @@ export default function GiftStorageDialog({
             ...(!isMobile && {
               width: 375,
               borderRadius: 5,
-              height: 600
+              height: 650
             })
           }
         }}
