@@ -1,9 +1,13 @@
+import { useMediaQuery, useTheme } from '@mui/material';
 import { ToastContainer } from 'react-toastify';
 
 export default function CustomToastContainer() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
     <ToastContainer
-      position="top-center"
+      position={isMobile ? 'top-center' : 'top-right'}
       hideProgressBar
       autoClose={1000}
       limit={3}
@@ -11,6 +15,7 @@ export default function CustomToastContainer() {
       theme="colored"
       closeButton={false}
       toastStyle={{
+        marginTop: 10,
         minHeight: 30,
         borderRadius: 15
       }}
@@ -22,8 +27,7 @@ export default function CustomToastContainer() {
         minWidth: 200,
         maxWidth: 375,
         width: 'auto',
-        left: '50%',
-        transform: 'translateX(-50%)'
+        ...(isMobile && { left: '50%', transform: 'translateX(-50%)' })
       }}
     />
   );
