@@ -1,6 +1,14 @@
 import { readContract } from '@wagmi/core';
 import axios from 'axios';
-import { Abi, Address, ContractFunctionArgs, ContractFunctionName, PublicClient } from 'viem';
+import {
+  Abi,
+  Address,
+  ContractFunctionArgs,
+  ContractFunctionName,
+  parseEther,
+  PublicClient,
+  zeroAddress
+} from 'viem';
 import { IdentityType } from '../types/ProfileType';
 import { API_URL } from './urlConstants';
 import { wagmiConfig } from './wagmiConfig';
@@ -8,6 +16,11 @@ import { zoraErc1155Abi } from './abi/zoraErc1155Abi';
 import { useMemo, useState } from 'react';
 import { createCollectorClient } from '@zoralabs/protocol-sdk';
 import { getPublicClient } from 'wagmi/actions';
+import { rodeoMintAbi } from './abi/rodeoMintAbi';
+import { RODEO_MINT_CONTRACT_ADDR } from './contracts';
+import { toast } from 'react-toastify';
+
+const RODEO_MINT_PRICE = parseEther('0.0001');
 
 export interface MintMetadata {
   provider: string;
@@ -159,7 +172,7 @@ export const useMintPaymentTx = ({
   comment?: string;
 }) => {
   const [paymentTx, setPaymentTx] = useState<PaymentTx>();
-  const [isMintActive, setIsMintActive] = useState<boolean>();
+  const [mintStatus, setMintStatus] = useState<'live' | 'ended' | 'error'>();
 
   useMemo(async () => {
     if (!minter || !recipient) {
@@ -167,34 +180,58 @@ export const useMintPaymentTx = ({
     }
 
     try {
-      const publicClient = getPublicClient(wagmiConfig, { chainId: mint.chainId });
+      if (mint.provider === 'zora.co') {
+        const publicClient = getPublicClient(wagmiConfig, { chainId: mint.chainId });
 
-      const collectorClient = createCollectorClient({
-        chainId: mint.chainId,
-        publicClient: publicClient as PublicClient
-      });
+        const collectorClient = createCollectorClient({
+          chainId: mint.chainId,
+          publicClient: publicClient as PublicClient
+        });
 
-      const { parameters } = await collectorClient.mint({
-        minterAccount: minter,
-        mintType: '1155',
-        quantityToMint: 1,
-        tokenContract: mint.contract,
-        tokenId: mint.tokenId,
-        mintReferral: mint.referral,
-        mintRecipient: recipient,
-        mintComment: comment
-      });
+        const { parameters } = await collectorClient.mint({
+          minterAccount: minter,
+          mintType: '1155',
+          quantityToMint: 1,
+          tokenContract: mint.contract,
+          tokenId: mint.tokenId,
+          mintReferral: mint.referral,
+          mintRecipient: recipient,
+          mintComment: comment
+        });
 
-      setIsMintActive(true);
-      setPaymentTx({ ...parameters, chainId: mint.chainId });
+        setMintStatus('live');
+        setPaymentTx({ ...parameters, chainId: mint.chainId });
+      } else if (mint.provider === 'rodeo.club') {
+        const saleTermsId = await readContract(wagmiConfig, {
+          chainId: mint.chainId,
+          address: RODEO_MINT_CONTRACT_ADDR,
+          abi: rodeoMintAbi,
+          functionName: 'getSaleTermsForToken',
+          args: [mint.contract, mint.tokenId]
+        });
+
+        toast.success('Minting...' + saleTermsId);
+
+        setMintStatus('live');
+        setPaymentTx({
+          chainId: mint.chainId,
+          address: RODEO_MINT_CONTRACT_ADDR,
+          abi: rodeoMintAbi as Abi,
+          functionName: 'mintFromFixedPriceSale',
+          args: [saleTermsId, 1n, recipient, mint.referral ?? zeroAddress],
+          value: RODEO_MINT_PRICE
+        });
+      } else {
+        setMintStatus('error');
+      }
     } catch (error) {
       console.error('Error checking mint status or preparing mint transaction:', error);
-      setIsMintActive(false);
+      setMintStatus('error');
     }
   }, [mint, minter, recipient, comment]);
 
   console.log('Mint tx: ', paymentTx);
-  return { paymentTx, isMintActive };
+  return { paymentTx, mintStatus };
 };
 
 type ParsedMintData = {

@@ -115,7 +115,7 @@ export default function MintDialog({
     reset: resetRegular
   } = useRegularTransfer();
 
-  const { paymentTx, isMintActive } = useMintPaymentTx({
+  const { paymentTx, mintStatus } = useMintPaymentTx({
     mint,
     minter: senderFlow.wallets[0].address,
     recipient: profile?.identity,
@@ -125,7 +125,7 @@ export default function MintDialog({
   console.log('Mint tx: ', paymentTx);
 
   const { isLoading: isPaymentOptionsLoading, data: paymentOptions } = useGlidePaymentOptions(
-    Boolean(paymentTx) && isMintActive !== false,
+    Boolean(paymentTx) && mintStatus === 'live',
     {
       ...(paymentTx as any)
     }
@@ -134,7 +134,7 @@ export default function MintDialog({
   console.log('Payment Options: ', paymentOptions);
 
   const { isLoading: isPaymentOptionLoading, data: paymentOption } = useGlideEstimatePayment(
-    Boolean(paymentToken) && Boolean(paymentTx) && isMintActive !== false,
+    Boolean(paymentToken) && Boolean(paymentTx) && mintStatus === 'live',
     {
       paymentCurrency: `eip155:${paymentToken?.chainId}/${
         paymentToken?.tokenAddress
@@ -250,16 +250,16 @@ export default function MintDialog({
         if (glideTxHash && payment.referenceId) {
           payment.hash = glideTxHash;
           updatePayment(payment);
-          toast.success(`Minted "${mint.metadata.name}"`);
+          toast.success(`Minted "${mint.metadata.name}"`, { autoClose: 2000 });
 
           await delay(2000);
           window.location.href = '/';
         } else {
-          toast.error(`Failed to mint "${mint.metadata.name}"`);
+          toast.error(`Failed to mint "${mint.metadata.name}"`, { autoClose: 2000 });
         }
       }
     } catch (error) {
-      toast.error(`Failed to mint "${mint.metadata.name}"`);
+      toast.error(`Failed to mint "${mint.metadata.name}"`, { autoClose: 2000 });
       console.error(`Failed to mint with error`, error);
     }
   };
@@ -370,18 +370,15 @@ export default function MintDialog({
                 </Stack>
               </Tooltip>
 
-              {!paymentTx ||
-              isPaymentOptionLoading ||
-              isPaymentOptionsLoading ||
-              isMintActive === undefined ? (
+              {!paymentTx || isPaymentOptionLoading || isPaymentOptionsLoading || !mintStatus ? (
                 <Skeleton
                   title="fetching price"
                   variant="rectangular"
                   sx={{ borderRadius: 3, height: 45, width: 100 }}
                 />
-              ) : isMintActive === false ? (
+              ) : mintStatus !== 'live' ? (
                 <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
-                  Mint has ended
+                  {mintStatus === 'ended' ? 'Mint has ended' : 'Something went wrong'}
                 </Typography>
               ) : paymentOption ? (
                 <Typography fontSize={30} fontWeight="bold" textAlign="center">
@@ -414,9 +411,13 @@ export default function MintDialog({
           <Box display="flex" flexDirection="column" alignItems="center" width="100%">
             {!paymentToken || chainId === paymentToken.chainId ? (
               <CustomLoadingButton
-                title={isMintActive === false ? 'Mint Ended' : 'Mint'}
+                title={mintStatus === 'ended' ? 'Mint Ended' : 'Mint'}
                 loading={paymentPending}
-                disabled={!paymentOption || mint.provider !== 'zora.co' || isMintActive === false}
+                disabled={
+                  !paymentOption ||
+                  (mint.provider !== 'zora.co' && mint.provider !== 'rodeo.club') ||
+                  mintStatus !== 'live'
+                }
                 status={isNativeFlow ? status : statusRegular}
                 onClick={submitGlideTransaction}
               />
