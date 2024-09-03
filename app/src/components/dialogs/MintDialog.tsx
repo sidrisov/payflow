@@ -124,12 +124,13 @@ export default function MintDialog({
 
   console.log('Mint tx: ', paymentTx);
 
-  const { isLoading: isPaymentOptionsLoading, data: paymentOptions } = useGlidePaymentOptions(
-    Boolean(paymentTx) && mintStatus === 'live',
-    {
-      ...(paymentTx as any)
-    }
-  );
+  const {
+    isLoading: isPaymentOptionsLoading,
+    data: paymentOptions,
+    isError: isPaymentOptionsError
+  } = useGlidePaymentOptions(Boolean(paymentTx) && mintStatus === 'live', {
+    ...(paymentTx as any)
+  });
 
   console.log('Payment Options: ', paymentOptions);
 
@@ -306,7 +307,7 @@ export default function MintDialog({
         {...(isMobile && { TransitionComponent: UpSlideTransition })}>
         <BackDialogTitle
           showOnDesktop={alwaysShowBackButton}
-          title={props.title ?? 'Farcaster Storage'}
+          title={props.title ?? 'Mint Payment'}
           closeStateCallback={closeStateCallback}
         />
         <DialogContent
@@ -376,9 +377,11 @@ export default function MintDialog({
                   variant="rectangular"
                   sx={{ borderRadius: 3, height: 45, width: 100 }}
                 />
-              ) : mintStatus !== 'live' ? (
+              ) : isPaymentOptionsError || mintStatus !== 'live' ? (
                 <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
-                  {mintStatus === 'ended' ? 'Mint has ended' : 'Something went wrong'}
+                  {isPaymentOptionsError || mintStatus !== 'ended'
+                    ? 'Something went wrong'
+                    : 'Mint has ended'}
                 </Typography>
               ) : paymentOption ? (
                 <Typography fontSize={30} fontWeight="bold" textAlign="center">
@@ -387,8 +390,8 @@ export default function MintDialog({
                 </Typography>
               ) : (
                 <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
-                  You don't have any balance to cover storage cost, switch to different payment
-                  flow!
+                  You don't have any balance to cover mint cost. <br />
+                  Switch to a different payment flow!
                 </Typography>
               )}
             </Stack>

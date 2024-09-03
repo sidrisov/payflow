@@ -18,7 +18,6 @@ import { createCollectorClient } from '@zoralabs/protocol-sdk';
 import { getPublicClient } from 'wagmi/actions';
 import { rodeoMintAbi } from './abi/rodeoMintAbi';
 import { RODEO_MINT_CONTRACT_ADDR } from './contracts';
-import { toast } from 'react-toastify';
 
 const RODEO_MINT_PRICE = parseEther('0.0001');
 
@@ -45,6 +44,23 @@ export async function fetchMintData(
   referral?: Address
 ): Promise<MintMetadata | undefined> {
   try {
+    if (provider === 'zora.co') {
+      const publicClient = getPublicClient(wagmiConfig, { chainId });
+
+      const collectorClient = createCollectorClient({
+        chainId,
+        publicClient: publicClient as PublicClient
+      });
+
+      const { token } = await collectorClient.getToken({
+        mintType: '1155',
+        tokenContract: contract,
+        tokenId
+      });
+
+      console.log('Token:', token);
+    }
+
     const collectionOwner = await fetchCollectionOwner(chainId, contract);
     const identityResponse = await axios.get(`${API_URL}/api/user/identities/${collectionOwner}`);
     const owner =
@@ -55,6 +71,8 @@ export async function fetchMintData(
     const collectionName = tokenId
       ? (await fetchCollectionName(chainId, contract)).concat(` #${tokenId}`)
       : await fetchCollectionName(chainId, contract);
+
+    console.log('Collection name:', collectionName);
 
     const tokenMetadataUri = tokenId
       ? await fetchCollectionTokenMetadataURI(chainId, contract, tokenId)
@@ -103,7 +121,9 @@ export async function fetchCollectionName(chainId: number, contract: Address): P
     })) as string
   );
 
-  const contractMetadataResponse = await axios.get(contractURI);
+  console.log('Contract URI:', contractURI);
+
+  const contractMetadataResponse = await axios.get(contractURI, { withCredentials: false });
   const contractMetadata = contractMetadataResponse.data;
   return contractMetadata.name;
 }
@@ -126,6 +146,7 @@ export async function fetchTokenMetadata(metadataUri: string) {
   try {
     const resolvedMetadataUri = resolveIpfsUri(metadataUri);
 
+    console.log('Resolved metadata URI:', resolvedMetadataUri);
     const metadataResponse = await axios.get(resolvedMetadataUri);
     const metadata = metadataResponse.data;
     const name = metadata.name;
@@ -210,8 +231,6 @@ export const useMintPaymentTx = ({
           args: [mint.contract, mint.tokenId]
         });
 
-        toast.success('Minting...' + saleTermsId);
-
         setMintStatus('live');
         setPaymentTx({
           chainId: mint.chainId,
@@ -248,6 +267,6 @@ export const parseMintToken = (token: string) => {
     provider,
     contract,
     tokenId: tokenId ? parseInt(tokenId) : undefined,
-    referral
+    referral: referral === '' ? undefined : referral
   } as ParsedMintData;
 };
