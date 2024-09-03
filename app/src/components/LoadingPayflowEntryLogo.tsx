@@ -2,13 +2,10 @@ import { Avatar, Box, Stack, Typography } from '@mui/material';
 import { green } from '@mui/material/colors';
 import { keyframes } from '@mui/system';
 
-const rotate = keyframes`
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+const gradientChange = keyframes`
+  0% { border-color: transparent; }
+  50% { border-color: ${green.A700}; }
+  100% { border-color: transparent; }
 `;
 
 export default function LoadingPayflowEntryLogo() {
@@ -19,34 +16,24 @@ export default function LoadingPayflowEntryLogo() {
       alignItems="center"
       justifyContent="center"
       sx={{ inset: 0 }}>
-      <Stack mx={2} direction="row" spacing={2} alignItems="center" justifyContent="center">
-        <Box
-          position="relative"
+      <Stack direction="row" spacing={2} alignItems="center" justifyContent="center">
+        <Avatar
+          src="/payflow.png"
+          alt="Payflow Logo"
           sx={{
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              inset: -1.5,
-              borderRadius: 4,
-              padding: 2,
-              background: green.A700,
-              WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-              WebkitMaskComposite: 'xor',
-              maskComposite: 'exclude',
-              animation: `${rotate} 2s linear infinite`
-            }
-          }}>
-          <Avatar
-            src="/payflow.png"
-            sx={{ width: 60, height: 60, borderRadius: 3, border: 0.5, borderColor: 'divider' }}
-          />
-        </Box>
+            width: 60,
+            height: 60,
+            borderRadius: 4,
+            border: 3,
+            animation: `${gradientChange} 1s ease-in-out infinite`
+          }}
+        />
         <Stack spacing={0.1} alignItems="flex-start">
           <Typography variant="h5" fontWeight="bold" fontFamily="monospace">
             Payflow
           </Typography>
           <Typography
-            fontSize={18}
+            fontSize={16}
             fontWeight="bold"
             fontFamily="monospace"
             sx={{ color: green.A700 }}>
