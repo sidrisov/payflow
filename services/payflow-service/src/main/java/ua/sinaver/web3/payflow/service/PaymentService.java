@@ -1,8 +1,11 @@
 package ua.sinaver.web3.payflow.service;
 
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.data.Wallet;
@@ -10,12 +13,15 @@ import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
+@Slf4j
 public class PaymentService {
 	@Autowired
 	private TokenService tokenService;
@@ -95,7 +101,6 @@ public class PaymentService {
 				.filter(allTokenIds::contains).limit(5).toList();
 	}
 
-
 	public Double parseTokenAmount(String amountStr) {
 		var multiplier = 1;
 		if (amountStr.endsWith("k")) {
@@ -145,5 +150,31 @@ public class PaymentService {
 			return matched.toLowerCase();
 		}
 		return TokenService.BASE_CHAIN_NAME;
+	}
+
+	@Scheduled(fixedRate = 4 * 60 * 60 * 1000) // Run every 4 hours
+	@Transactional
+	public void expireOldPayments() {
+		log.info("Starting expiration of old payments");
+		val oneMonthAgo = new Date(System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000);
+		
+		try (Stream<Payment> oldPayments = paymentRepository.findOldPendingPaymentsWithLock(Payment.PaymentStatus.PENDING, oneMonthAgo)) {
+			val expiredPayments = oldPayments
+				.peek(payment -> {
+					payment.setStatus(Payment.PaymentStatus.EXPIRED);
+					payment.setCompletedDate(new Date());
+					log.debug("Expiring old payment: {}", payment.getId());
+				})
+				.toList();
+
+			if (!expiredPayments.isEmpty()) {
+				paymentRepository.saveAll(expiredPayments);
+				log.info("Expired {} old payments", expiredPayments.size());
+			} else {
+				log.info("No old payments to expire");
+			}
+		}
+
+		log.info("Finished expiration process");
 	}
 }

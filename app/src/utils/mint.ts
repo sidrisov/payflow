@@ -1,26 +1,19 @@
 import { readContract } from '@wagmi/core';
 import axios from 'axios';
-import {
-  Abi,
-  Address,
-  ContractFunctionArgs,
-  ContractFunctionName,
-  parseEther,
-  PublicClient,
-  zeroAddress
-} from 'viem';
+import { Address, PublicClient } from 'viem';
 import { IdentityType } from '../types/ProfileType';
 import { API_URL } from './urlConstants';
 import { wagmiConfig } from './wagmiConfig';
 import { zoraErc1155Abi } from './abi/zoraErc1155Abi';
-import { useMemo, useState } from 'react';
-import {
-  createCollectorClient} from '@zoralabs/protocol-sdk';
+import { createCollectorClient } from '@zoralabs/protocol-sdk';
 import { getPublicClient } from 'wagmi/actions';
-import { rodeoMintAbi } from './abi/rodeoMintAbi';
-import { RODEO_MINT_CONTRACT_ADDR } from './contracts';
 
-const RODEO_MINT_PRICE = parseEther('0.0001');
+type ParsedMintData = {
+  provider: string;
+  contract: Address;
+  tokenId?: number;
+  referral?: Address;
+};
 
 export type MintMetadata = {
   provider: string;
@@ -207,94 +200,6 @@ function resolveIpfsUri(uri: string): string {
   }
   return uri;
 }
-
-type PaymentTx = {
-  chainId: number;
-  address: Address;
-  abi: Abi;
-  functionName: ContractFunctionName;
-  args?: ContractFunctionArgs;
-  value?: bigint;
-};
-
-export const useMintPaymentTx = ({
-  mint,
-  minter,
-  recipient,
-  comment
-}: {
-  mint: MintMetadata;
-  minter: Address;
-  recipient: Address | undefined;
-  comment?: string;
-}) => {
-  const [paymentTx, setPaymentTx] = useState<PaymentTx>();
-  const [mintStatus, setMintStatus] = useState<'live' | 'ended' | 'error'>();
-
-  useMemo(async () => {
-    if (!minter || !recipient) {
-      return;
-    }
-
-    try {
-      if (mint.provider === 'zora.co') {
-        const publicClient = getPublicClient(wagmiConfig, { chainId: mint.chainId });
-
-        const collectorClient = createCollectorClient({
-          chainId: mint.chainId,
-          publicClient: publicClient as PublicClient
-        });
-
-        const { parameters } = await collectorClient.mint({
-          minterAccount: minter,
-          mintType: mint.mintType as any,
-          quantityToMint: 1,
-          tokenContract: mint.contract,
-          tokenId: mint.tokenId,
-          mintReferral: mint.referral,
-          mintRecipient: recipient,
-          mintComment: comment
-        });
-
-        setMintStatus('live');
-        setPaymentTx({ ...parameters, chainId: mint.chainId });
-      } else if (mint.provider === 'rodeo.club') {
-        const saleTermsId = await readContract(wagmiConfig, {
-          chainId: mint.chainId,
-          address: RODEO_MINT_CONTRACT_ADDR,
-          abi: rodeoMintAbi,
-          functionName: 'getSaleTermsForToken',
-          args: [mint.contract, mint.tokenId]
-        });
-
-        setMintStatus('live');
-        setPaymentTx({
-          chainId: mint.chainId,
-          address: RODEO_MINT_CONTRACT_ADDR,
-          abi: rodeoMintAbi as Abi,
-          functionName: 'mintFromFixedPriceSale',
-          args: [saleTermsId, 1n, recipient, mint.referral ?? zeroAddress],
-          value: RODEO_MINT_PRICE
-        });
-      } else {
-        setMintStatus('error');
-      }
-    } catch (error) {
-      console.error('Error checking mint status or preparing mint transaction:', error);
-      setMintStatus('error');
-    }
-  }, [mint, minter, recipient, comment]);
-
-  console.log('Mint tx: ', paymentTx);
-  return { paymentTx, mintStatus };
-};
-
-type ParsedMintData = {
-  provider: string;
-  contract: Address;
-  tokenId?: number;
-  referral?: Address;
-};
 
 export const parseMintToken = (token: string) => {
   const [provider, contract, tokenId, referral] = token.split(':');

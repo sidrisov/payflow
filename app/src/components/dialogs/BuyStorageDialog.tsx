@@ -55,7 +55,7 @@ import { UpSlideTransition } from './TransitionDownUpSlide';
 import PoweredByGlideText from '../text/PoweredByGlideText';
 import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
 
-export type GiftStorageDialogProps = DialogProps &
+export type BuyStorageDialogProps = DialogProps &
   CloseCallbackType & {
     sender: SelectedIdentityType;
     payment: PaymentType;
@@ -67,7 +67,7 @@ export type GiftStorageDialogProps = DialogProps &
     setSelectedFlow?: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
   };
 
-export default function GiftStorageDialog({
+export default function BuyStorageDialog({
   alwaysShowBackButton = false,
   sender,
   payment,
@@ -77,7 +77,7 @@ export default function GiftStorageDialog({
   selectedFlow,
   setSelectedFlow,
   ...props
-}: GiftStorageDialogProps) {
+}: BuyStorageDialogProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 

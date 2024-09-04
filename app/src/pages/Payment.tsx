@@ -9,7 +9,7 @@ import { fetchPayment } from '../services/payments';
 import { fetchQuery } from '@airstack/airstack-react';
 import { QUERY_FARCASTER_PROFILE } from '../utils/airstackQueries';
 import { GetFarcasterProfileQuery, Social } from '../generated/graphql/types';
-import GiftStorageDialog from '../components/dialogs/GiftStorageDialog';
+import GiftStorageDialog from '../components/dialogs/BuyStorageDialog';
 import PaymentDialog from '../components/dialogs/PaymentDialog';
 import { IdentityType, SelectedIdentityType } from '../types/ProfileType';
 import { toast } from 'react-toastify';

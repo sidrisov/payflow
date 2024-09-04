@@ -47,7 +47,8 @@ import ResponsiveDialog from './ResponsiveDialog';
 import { UpSlideTransition } from './TransitionDownUpSlide';
 import PoweredByGlideText from '../text/PoweredByGlideText';
 import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
-import { MintMetadata, useMintPaymentTx } from '../../utils/mint';
+import { MintMetadata } from '../../utils/mint';
+import { useMintPaymentTx } from '../../utils/hooks/useMintPaymentTx';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {

@@ -38,7 +38,7 @@ function Mint({
     <Card>
       <div
         style={{
-          margin: 20,
+          marginBottom: 10,
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'flex-start',
@@ -64,7 +64,7 @@ function Mint({
           style={{
             width: '100%',
             height: '100%',
-            objectFit: 'contain',
+            objectFit: 'fill',
             border: '3px',
             borderRadius: 10,
             boxSizing: 'content-box'
@@ -74,7 +74,7 @@ function Mint({
       <div
         style={{
           position: 'absolute',
-          bottom: 12,
+          top: 12,
           padding: 5,
           width: '100%',
           display: 'flex',

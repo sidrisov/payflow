@@ -15,8 +15,8 @@ import java.util.Date;
 @NoArgsConstructor
 @Entity
 @Table(uniqueConstraints = {
-		@UniqueConstraint(name = "uc_payment_reference_id", columnNames = {"reference_id"}),
-		@UniqueConstraint(name = "uc_payment_hash", columnNames = {"hash"})
+		@UniqueConstraint(name = "uc_payment_reference_id", columnNames = { "reference_id" }),
+		@UniqueConstraint(name = "uc_payment_hash", columnNames = { "hash" })
 })
 public class Payment {
 	@Id
@@ -121,7 +121,8 @@ public class Payment {
 		INPROGRESS,
 		COMPLETED,
 		REFUNDED,
-		CANCELLED
+		CANCELLED,
+		EXPIRED
 	}
 
 	public enum PaymentType {

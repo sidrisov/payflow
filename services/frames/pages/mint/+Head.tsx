@@ -70,7 +70,10 @@ export function Head() {
         <meta property="fc:frame:button:1" content="Mint" />
         <meta property="fc:frame:button:1:action" content="post_redirect" />
         <meta property="fc:frame:button:1:target" content={paymentMintSubmitUrl.toString()} />
-        <meta property="fc:frame:button:2" content={`View on ${provider}`} />
+        <meta
+          property="fc:frame:button:2"
+          content={`View on ${provider === 'zora.co' ? 'Zora' : 'Rodeo'}`}
+        />
         <meta property="fc:frame:button:2:action" content="link" />
         <meta property="fc:frame:button:2:target" content={original} />
       </head>

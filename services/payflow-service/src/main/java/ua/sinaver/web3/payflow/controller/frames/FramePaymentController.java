@@ -530,7 +530,7 @@ public class FramePaymentController {
 				return FrameResponse.builder()
 						.imageUrl(profileImage)
 						.textInput("Enter comment (255 max)")
-						.button(new FrameButton("\uD83D\uDCAC comment",
+						.button(new FrameButton("\uD83D\uDCAC Comment",
 								FrameButton.ActionType.POST,
 								apiServiceUrl.concat(String.format(PAY_IN_FRAME_COMMENT,
 										payment.getReferenceId()))))

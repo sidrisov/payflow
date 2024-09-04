@@ -45,6 +45,7 @@ export const useGlideEstimatePayment = (enabled: boolean, args: EstimatePaymentA
     queryKey: ['estimateGlidePayment', args],
     staleTime: Infinity,
     refetchInterval: 30_000,
+    retry: false,
     queryFn: async () => {
       return await estimatePaymentAmount(glideConfig, args as any);
     }
@@ -57,6 +58,7 @@ export const useGlidePaymentOptions = (enabled: boolean, args: ListPaymentOption
     queryKey: ['listPaymentOptions', args],
     staleTime: Infinity,
     refetchInterval: 30_000,
+    retry: false,
     queryFn: async () => {
       return await listPaymentOptions(glideConfig, args as any);
     }
