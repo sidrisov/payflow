@@ -116,8 +116,8 @@ export default function MintDialog({
   const { data: mintData, isLoading: isMintLoading } = useMintPaymentTx({
     mint,
     minter: senderFlow.wallets[0].address,
-    recipient: profile?.identity,
-    comment: `minted by @${social.profileName} on @payflow`
+    recipient: payment.receiverAddress,
+    comment: `Minted for @${social.profileName} on @payflow`
   });
 
   const paymentTx = mintData?.paymentTx;

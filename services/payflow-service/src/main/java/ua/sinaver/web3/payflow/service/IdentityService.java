@@ -159,6 +159,11 @@ public class IdentityService implements IIdentityService {
 	}
 
 	@Override
+	public String getFnameFid(String fname) {
+		return getIdentityFid("fc_fname:".concat(fname));
+	}
+
+	@Override
 	public String getIdentityFid(String identity) {
 		log.debug("Fetching fid for: {}", identity);
 
@@ -183,6 +188,7 @@ public class IdentityService implements IIdentityService {
 		return fid;
 	}
 
+
 	@Override
 	public List<IdentityMessage> getIdentitiesInfo(List<String> identities) {
 		return getIdentitiesInfo(identities, null);
@@ -193,6 +199,13 @@ public class IdentityService implements IIdentityService {
 		return getIdentitiesInfo(identities)
 				.stream().max(Comparator.comparingInt(IdentityMessage::score))
 				.map(IdentityMessage::address).orElse(null);
+	}
+
+	@Override
+	public IdentityMessage getHighestScoredIdentityInfo(List<String> identities) {
+		return getIdentitiesInfo(identities)
+				.stream().max(Comparator.comparingInt(IdentityMessage::score))
+				.orElse(null);
 	}
 
 	@Override

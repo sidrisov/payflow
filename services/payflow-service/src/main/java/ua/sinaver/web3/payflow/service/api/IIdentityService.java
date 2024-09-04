@@ -28,11 +28,15 @@ public interface IIdentityService {
 
 	String getIdentityFname(String identity);
 
+	String getFnameFid(String fname);
+
 	String getIdentityFid(String identity);
 
 	List<IdentityMessage> getIdentitiesInfo(List<String> identities);
 
 	String getHighestScoredIdentity(List<String> identities);
+
+	IdentityMessage getHighestScoredIdentityInfo(List<String> identities);
 
 	List<IdentityMessage> getIdentitiesInfo(List<String> identities, String me);
 }

@@ -3,6 +3,7 @@ package ua.sinaver.web3.payflow.controller.frames;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,9 +13,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.message.farcaster.ValidatedFrameResponseMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
+import ua.sinaver.web3.payflow.service.IdentityService;
 import ua.sinaver.web3.payflow.service.UserService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
@@ -30,7 +33,6 @@ import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYME
 @Slf4j
 public class MintController {
 
-	private static final String STORAGE_FRAME_API_BASE = "/api/farcaster/frames/storage";
 	@Autowired
 	private IFarcasterNeynarService neynarService;
 	@Autowired
@@ -45,8 +47,13 @@ public class MintController {
 	@Autowired
 	private UserService userService;
 
+	@Autowired
+	private IdentityService identityService;
+
 	private static Payment getMintPayment(ValidatedFrameResponseMessage validateMessage,
 	                                      User user,
+	                                      Integer receiverFid,
+	                                      String receiverAddress,
 	                                      Integer chainId,
 	                                      String token) {
 		val sourceApp = validateMessage.action().signer().client().displayName();
@@ -54,12 +61,11 @@ public class MintController {
 		val sourceRef = String.format("https://warpcast.com/%s/%s",
 				validateMessage.action().cast().author().username(), castHash.substring(0, 10));
 
-		val receiverFid = validateMessage.action().interactor().fid();
-
 		val payment = new Payment(Payment.PaymentType.INTENT, null, chainId, token);
 		payment.setCategory("mint");
 		payment.setToken(token);
 		payment.setReceiverFid(receiverFid);
+		payment.setReceiverAddress(receiverAddress);
 		payment.setSender(user);
 		payment.setSourceApp(sourceApp);
 		payment.setSourceRef(sourceRef);
@@ -114,11 +120,33 @@ public class MintController {
 					new FrameResponse.FrameMessage(String.format("`%s` chain not supported!", chainId)));
 		}
 
+		val recipientText = Optional.ofNullable(validateMessage.action().input())
+				.map(input -> input.text().trim().toLowerCase())
+				.orElse(null);
+
+		// TODO: refactor this!
+		var receiverFid = interactor.fid();
+		var receiverAddress = clickedProfile.getIdentity();
+		if (StringUtils.isNotBlank(recipientText)) {
+			val addresses = identityService.getFnameAddresses(recipientText);
+			val identity = identityService.getHighestScoredIdentityInfo(addresses);
+			if (identity == null) {
+				log.error("Farcaster user not found: {}", recipientText);
+				return ResponseEntity.badRequest().body(
+						new FrameResponse.FrameMessage("User not found, enter again!"));
+			} else {
+				receiverFid = Integer.parseInt(identity.meta().socials().stream().filter(s -> s.dappName().equals(SocialDappName.farcaster.name()))
+						.findFirst().get().profileId());
+				receiverAddress = identity.address();
+			}
+		}
+
 		val token = String.format("%s:%s:%s:%s", provider, contract,
 				Optional.ofNullable(tokenId).map(String::valueOf).orElse(""),
 				Optional.ofNullable(referral).orElse(""));
 
-		val payment = getMintPayment(validateMessage, clickedProfile, chainId, token);
+		val payment = getMintPayment(validateMessage, clickedProfile, receiverFid,
+				receiverAddress, chainId, token);
 		paymentRepository.save(payment);
 
 		log.debug("Mint payment intent saved: {}", payment);

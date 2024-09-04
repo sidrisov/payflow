@@ -66,6 +66,7 @@ export function Head() {
 
         <meta property="fc:frame:image" content={imageUrl} />
         <meta property="fc:frame:image:aspect_ratio" content="1:1" />
+        <meta property="fc:frame:input:text" content="For username, blank for yourself" />
 
         <meta property="fc:frame:button:1" content="Mint" />
         <meta property="fc:frame:button:1:action" content="post_redirect" />
