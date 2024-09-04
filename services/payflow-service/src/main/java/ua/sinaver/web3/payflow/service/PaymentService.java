@@ -152,7 +152,7 @@ public class PaymentService {
 		return TokenService.BASE_CHAIN_NAME;
 	}
 
-	@Scheduled(fixedRate = 4 * 60 * 60 * 1000) // Run every 4 hours
+	@Scheduled(fixedRate = 4 * 60 * 60 * 1000, initialDelay = 5 * 60 * 1000) // Run every 4 hours, with 5 minutes initial delay
 	@Transactional
 	public void expireOldPayments() {
 		log.info("Starting expiration of old payments");

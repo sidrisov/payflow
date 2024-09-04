@@ -10,33 +10,21 @@ import {
   Skeleton
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { degen, optimism } from 'viem/chains';
+import { degen } from 'viem/chains';
 import { glideConfig } from '../../utils/glide';
-import {
-  useSwitchChain,
-  useChainId,
-  useAccount,
-  useReadContract,
-  useWalletClient,
-  useClient
-} from 'wagmi';
-import { rentStorageAbi } from '../../utils/abi/rentFcStorageAbi';
-import { OP_FARCASTER_STORAGE_CONTRACT_ADDR } from '../../utils/contracts';
+import { useSwitchChain, useChainId, useAccount, useWalletClient, useClient } from 'wagmi';
 import { BackDialogTitle } from './BackDialogTitle';
 import { SenderField } from '../SenderField';
 import { KeyboardDoubleArrowDown } from '@mui/icons-material';
 import { SelectedIdentityType } from '../../types/ProfileType';
 import { FarcasterRecipientField } from '../FarcasterRecipientField';
-import { SwitchFlowSignerSection } from './SwitchFlowSignerSection';
-import { CustomLoadingButton } from '../buttons/LoadingPaymentButton';
-import { LoadingSwitchChainButton } from '../buttons/LoadingSwitchNetworkButton';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { PaymentType } from '../../types/PaymentType';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { useContext, useMemo, useState } from 'react';
 import { Token } from '../../utils/erc20contracts';
-import { Abi, Address, ContractFunctionArgs, ContractFunctionName, Hash } from 'viem';
-import { normalizeNumberPrecision } from '../../utils/formats';
+import { Hash } from 'viem';
+import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useGlideEstimatePayment, useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
 import { ProfileContext } from '../../contexts/UserContext';
 import { useSafeTransfer } from '../../utils/hooks/useSafeTransfer';
@@ -45,15 +33,16 @@ import { Social } from '../../generated/graphql/types';
 import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { updatePayment } from '../../services/payments';
-import { grey, red } from '@mui/material/colors';
+import { red } from '@mui/material/colors';
 import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
 import { CAIP19, createSession, executeSession } from '@paywithglide/glide-js';
 import { delay } from '../../utils/delay';
 import { ChooseFlowDialog } from './ChooseFlowDialog';
-import ResponsiveDialog from './ResponsiveDialog';
 import { UpSlideTransition } from './TransitionDownUpSlide';
 import PoweredByGlideText from '../text/PoweredByGlideText';
 import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
+import { PayButton } from '../buttons/PayButton';
+import { useStoragePaymentTx } from '../../utils/hooks/useStoragePaymentTx';
 
 export type BuyStorageDialogProps = DialogProps &
   CloseCallbackType & {
@@ -80,8 +69,6 @@ export default function BuyStorageDialog({
 }: BuyStorageDialogProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
   const [openSelectFlow, setOpenSelectFlow] = useState(false);
 
@@ -110,6 +97,11 @@ export default function BuyStorageDialog({
 
   const numberOfUnits = payment.tokenAmount ?? 1;
 
+  const { isLoading: isPaymentTxLoading, data: paymentTx } = useStoragePaymentTx(
+    numberOfUnits,
+    payment.receiverFid
+  );
+
   const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
   const {
     loading: loadingRegular,
@@ -121,37 +113,18 @@ export default function BuyStorageDialog({
     reset: resetRegular
   } = useRegularTransfer();
 
-  const { isFetched: isUnitPriceFetched, data: rentUnitPrice } = useReadContract({
-    chainId: optimism.id,
-    address: OP_FARCASTER_STORAGE_CONTRACT_ADDR,
-    abi: rentStorageAbi,
-    functionName: 'price',
-    args: [BigInt(numberOfUnits)]
+  const {
+    isLoading: isPaymentOptionsLoading,
+    data: paymentOptions,
+    isError: isPaymentOptionsError
+  } = useGlidePaymentOptions(Boolean(paymentTx), {
+    ...(paymentTx as any),
+    account: senderFlow.wallets[0].address
   });
 
-  const paymentTx = {
-    chainId: optimism.id,
-    address: OP_FARCASTER_STORAGE_CONTRACT_ADDR,
-    abi: rentStorageAbi,
-    functionName: 'rent',
-    args: [BigInt(payment.receiverFid ?? 0), BigInt(numberOfUnits)],
-    value: rentUnitPrice
-  } as {
-    chainId: number;
-    address: Address;
-    abi: Abi;
-    functionName: ContractFunctionName;
-    args?: ContractFunctionArgs;
-    value?: bigint;
-  };
-
   const { isLoading: isPaymentOptionLoading, data: paymentOption } = useGlideEstimatePayment(
-    isUnitPriceFetched &&
-      Boolean(paymentToken) &&
-      Boolean(rentUnitPrice) &&
-      Boolean(payment.receiverFid),
+    Boolean(paymentToken) && Boolean(paymentTx),
     {
-      account: senderFlow.wallets[0].address,
       paymentCurrency: `eip155:${paymentToken?.chainId}/${
         paymentToken?.tokenAddress
           ? `erc20:${paymentToken.tokenAddress}`
@@ -160,16 +133,7 @@ export default function BuyStorageDialog({
           : 'slip44:60'
       }` as CAIP19,
       ...(paymentTx as any),
-      value: rentUnitPrice ?? 0n
-    }
-  );
-
-  const { isLoading: isPaymentOptionsLoading, data: paymentOptions } = useGlidePaymentOptions(
-    isUnitPriceFetched && Boolean(rentUnitPrice) && Boolean(payment.receiverFid),
-    {
-      account: senderFlow.wallets[0].address,
-      ...(paymentTx as any),
-      value: rentUnitPrice ?? 0n
+      account: senderFlow.wallets[0].address
     }
   );
 
@@ -181,8 +145,6 @@ export default function BuyStorageDialog({
     paymentOptions: !isPaymentOptionsLoading ? paymentOptions : undefined
   });
 
-  const [openConnectSignerDrawer, setOpenConnectSignerDrawer] = useState<boolean>(false);
-
   useMemo(async () => {
     if (compatibleWallets.length === 0) {
       setPaymentWallet(undefined);
@@ -192,12 +154,16 @@ export default function BuyStorageDialog({
   }, [compatibleWallets, chainId]);
 
   const submitGlideTransaction = async () => {
-    if (address?.toLowerCase() !== senderFlow.signer.toLowerCase()) {
-      setOpenConnectSignerDrawer(true);
-      return;
-    }
     try {
-      if (profile && client && signer && paymentWallet && paymentToken && paymentOption) {
+      if (
+        paymentTx &&
+        profile &&
+        client &&
+        signer &&
+        paymentWallet &&
+        paymentToken &&
+        paymentOption
+      ) {
         if (isNativeFlow) {
           reset();
         } else {
@@ -208,8 +174,7 @@ export default function BuyStorageDialog({
           account: paymentWallet.address,
           paymentCurrency: paymentOption.paymentCurrency,
           currentChainId: chainId,
-          ...(paymentTx as any),
-          value: rentUnitPrice
+          ...(paymentTx as any)
         });
 
         const { sponsoredTransactionHash: glideTxHash } = await executeSession(glideConfig, {
@@ -304,6 +269,9 @@ export default function BuyStorageDialog({
     errorRegular
   ]);
 
+  const isLoading = isPaymentTxLoading || isPaymentOptionLoading || isPaymentOptionsLoading;
+  const hasPaymentOption = !isLoading && paymentOption && paymentToken;
+
   return (
     <>
       <Dialog
@@ -332,75 +300,80 @@ export default function BuyStorageDialog({
         />
         <DialogContent
           sx={{
-            p: 2
+            px: 2,
+            py: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
           }}>
+          {sender && (
+            <Stack mb={2} spacing={1} alignItems="center" width="100%">
+              <SenderField sender={sender} {...(setSelectedFlow && { setOpenSelectFlow })} />
+              <KeyboardDoubleArrowDown />
+              <FarcasterRecipientField social={social} />
+            </Stack>
+          )}
+
           <Box
-            height="100%"
+            flex={1}
+            overflow="auto"
             display="flex"
             flexDirection="column"
             alignItems="center"
             justifyContent="space-between">
-            {sender && (
-              <Stack spacing={1} alignItems="center" width="100%">
-                <SenderField sender={sender} {...(setSelectedFlow && { setOpenSelectFlow })} />
-                <KeyboardDoubleArrowDown />
-                <FarcasterRecipientField social={social} />
+            <Stack alignItems="center" justifyContent="start" spacing={1}>
+              <Typography fontSize={18} fontWeight="bold">
+                {numberOfUnits} Unit{numberOfUnits > 1 ? 's' : ''} of Storage
+              </Typography>
 
-                <Stack alignItems="center">
-                  {!rentUnitPrice || isPaymentOptionLoading || isPaymentOptionsLoading ? (
-                    <Skeleton
-                      title="fetching price"
-                      variant="rectangular"
-                      sx={{ borderRadius: 3, height: 45, width: 100 }}
-                    />
-                  ) : paymentOption ? (
-                    <Typography fontSize={30} fontWeight="bold" textAlign="center">
-                      {normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))}{' '}
-                      {paymentOption.currencySymbol}
-                    </Typography>
-                  ) : (
-                    <Typography fontSize={14} fontWeight="bold" color={red.A400}>
-                      You don't have any balance to cover storage cost, switch to different payment
-                      flow!
-                    </Typography>
-                  )}
-                  <Typography fontSize={18} fontWeight="bold">
-                    for{' '}
-                    <u>
-                      {numberOfUnits} Unit{numberOfUnits > 1 ? 's' : ''} of Storage
-                    </u>
-                  </Typography>
-                </Stack>
-              </Stack>
-            )}
-
-            <Stack width="100%">
-              <NetworkTokenSelector
-                crossChainMode
-                payment={payment}
-                paymentWallet={paymentWallet}
-                setPaymentWallet={setPaymentWallet}
-                paymentToken={paymentToken}
-                setPaymentToken={setPaymentToken}
-                compatibleWallets={compatibleWallets}
-                enabledChainCurrencies={
-                  paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
-                }
-                gasFee={gasFee}
-              />
-              {!paymentToken || chainId === paymentToken.chainId ? (
-                <CustomLoadingButton
-                  title="Pay"
-                  loading={paymentPending}
-                  disabled={!paymentOption}
-                  status={isNativeFlow ? status : statusRegular}
-                  onClick={submitGlideTransaction}
+              {isLoading ? (
+                <Skeleton
+                  title="fetching price"
+                  variant="rectangular"
+                  sx={{ borderRadius: 3, height: 45, width: 100 }}
                 />
+              ) : hasPaymentOption ? (
+                <Typography fontSize={30} fontWeight="bold" textAlign="center">
+                  {formatAmountWithSuffix(
+                    normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
+                  )}{' '}
+                  {paymentToken?.id.toUpperCase()}
+                </Typography>
               ) : (
-                <LoadingSwitchChainButton chainId={paymentToken.chainId} />
+                <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
+                  {isPaymentOptionsError
+                    ? 'Failed to fetch payment options. Please try again.'
+                    : "You don't have any balance to cover storage cost. Switch to a different payment flow!"}
+                </Typography>
               )}
-              <PoweredByGlideText />
             </Stack>
+
+            <NetworkTokenSelector
+              crossChainMode
+              payment={payment}
+              paymentWallet={paymentWallet}
+              setPaymentWallet={setPaymentWallet}
+              paymentToken={paymentToken}
+              setPaymentToken={setPaymentToken}
+              compatibleWallets={compatibleWallets}
+              enabledChainCurrencies={
+                paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
+              }
+              gasFee={gasFee}
+            />
+          </Box>
+
+          <Box display="flex" flexDirection="column" alignItems="center" width="100%">
+            <PayButton
+              paymentToken={paymentToken}
+              buttonText="Pay for Storage"
+              isLoading={paymentPending}
+              disabled={!paymentOption}
+              status={(isNativeFlow ? status : statusRegular) ?? ''}
+              onClick={submitGlideTransaction}
+              senderFlow={senderFlow}
+            />
+            <PoweredByGlideText />
           </Box>
         </DialogContent>
       </Dialog>
@@ -408,32 +381,12 @@ export default function BuyStorageDialog({
         <ChooseFlowDialog
           configurable={false}
           open={openSelectFlow}
-          onClose={async () => setOpenSelectFlow(false)}
-          closeStateCallback={async () => setOpenSelectFlow(false)}
+          onClose={() => setOpenSelectFlow(false)}
+          closeStateCallback={() => setOpenSelectFlow(false)}
           flows={flows}
           selectedFlow={selectedFlow}
           setSelectedFlow={setSelectedFlow}
         />
-      )}
-      {address?.toLowerCase() !== senderFlow.signer.toLowerCase() && (
-        <ResponsiveDialog
-          title="Connect Signer"
-          open={openConnectSignerDrawer}
-          onOpen={() => {
-            setOpenConnectSignerDrawer(true);
-          }}
-          onClose={() => setOpenConnectSignerDrawer(false)}>
-          <Stack alignItems="flex-start" spacing={2}>
-            <Typography variant="caption" color={grey[prefersDarkMode ? 400 : 700]}>
-              Selected payment flow `<b>{senderFlow.title}`</b> signer is not connected! Please,
-              proceed with connecting the signer mentioned below:
-            </Typography>
-            <SwitchFlowSignerSection
-              onSwitch={() => setOpenConnectSignerDrawer(false)}
-              flow={senderFlow}
-            />
-          </Stack>
-        </ResponsiveDialog>
       )}
     </>
   );

@@ -20,16 +20,13 @@ import { SenderField } from '../SenderField';
 import { KeyboardDoubleArrowDown } from '@mui/icons-material';
 import { SelectedIdentityType } from '../../types/ProfileType';
 import { FarcasterRecipientField } from '../FarcasterRecipientField';
-import { SwitchFlowSignerSection } from './SwitchFlowSignerSection';
-import { CustomLoadingButton } from '../buttons/LoadingPaymentButton';
-import { LoadingSwitchChainButton } from '../buttons/LoadingSwitchNetworkButton';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { PaymentType } from '../../types/PaymentType';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { useContext, useMemo, useState } from 'react';
 import { Token } from '../../utils/erc20contracts';
 import { Hash } from 'viem';
-import { normalizeNumberPrecision } from '../../utils/formats';
+import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useGlideEstimatePayment, useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
 import { ProfileContext } from '../../contexts/UserContext';
 import { useSafeTransfer } from '../../utils/hooks/useSafeTransfer';
@@ -43,12 +40,12 @@ import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
 import { CAIP19, createSession, executeSession } from '@paywithglide/glide-js';
 import { delay } from '../../utils/delay';
 import { ChooseFlowDialog } from './ChooseFlowDialog';
-import ResponsiveDialog from './ResponsiveDialog';
 import { UpSlideTransition } from './TransitionDownUpSlide';
 import PoweredByGlideText from '../text/PoweredByGlideText';
 import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
 import { MintMetadata } from '../../utils/mint';
 import { useMintPaymentTx } from '../../utils/hooks/useMintPaymentTx';
+import { PayButton } from '../buttons/PayButton';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {
@@ -116,12 +113,15 @@ export default function MintDialog({
     reset: resetRegular
   } = useRegularTransfer();
 
-  const { paymentTx, mintStatus } = useMintPaymentTx({
+  const { data: mintData, isLoading: isMintLoading } = useMintPaymentTx({
     mint,
     minter: senderFlow.wallets[0].address,
     recipient: profile?.identity,
     comment: `minted by @${social.profileName} on @payflow`
   });
+
+  const paymentTx = mintData?.paymentTx;
+  const mintStatus = mintData?.mintStatus;
 
   console.log('Mint tx: ', paymentTx);
 
@@ -130,7 +130,8 @@ export default function MintDialog({
     data: paymentOptions,
     isError: isPaymentOptionsError
   } = useGlidePaymentOptions(Boolean(paymentTx) && mintStatus === 'live', {
-    ...(paymentTx as any)
+    ...(paymentTx as any),
+    account: senderFlow.wallets[0].address
   });
 
   console.log('Payment Options: ', paymentOptions);
@@ -145,7 +146,8 @@ export default function MintDialog({
           ? 'slip44:33436'
           : 'slip44:60'
       }` as CAIP19,
-      ...(paymentTx as any)
+      ...(paymentTx as any),
+      account: senderFlow.wallets[0].address
     }
   );
 
@@ -154,8 +156,6 @@ export default function MintDialog({
     payment,
     paymentOptions: !isPaymentOptionsLoading ? paymentOptions : undefined
   });
-
-  const [openConnectSignerDrawer, setOpenConnectSignerDrawer] = useState<boolean>(false);
 
   useMemo(async () => {
     if (compatibleWallets.length === 0) {
@@ -166,10 +166,6 @@ export default function MintDialog({
   }, [compatibleWallets, chainId]);
 
   const submitGlideTransaction = async () => {
-    if (address?.toLowerCase() !== senderFlow.signer.toLowerCase()) {
-      setOpenConnectSignerDrawer(true);
-      return;
-    }
     try {
       if (
         paymentTx &&
@@ -285,6 +281,9 @@ export default function MintDialog({
     errorRegular
   ]);
 
+  const isLoading = isMintLoading || isPaymentOptionLoading || isPaymentOptionsLoading;
+  const hasPaymentOption = !isLoading && paymentOption && paymentToken && mintStatus === 'live';
+
   return (
     <>
       <Dialog
@@ -372,27 +371,26 @@ export default function MintDialog({
                 </Stack>
               </Tooltip>
 
-              {!paymentTx || isPaymentOptionLoading || isPaymentOptionsLoading || !mintStatus ? (
+              {isLoading ? (
                 <Skeleton
                   title="fetching price"
                   variant="rectangular"
                   sx={{ borderRadius: 3, height: 45, width: 100 }}
                 />
-              ) : isPaymentOptionsError || mintStatus !== 'live' ? (
-                <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
-                  {isPaymentOptionsError || mintStatus !== 'ended'
-                    ? 'Something went wrong'
-                    : 'Mint has ended'}
-                </Typography>
-              ) : paymentOption ? (
+              ) : hasPaymentOption ? (
                 <Typography fontSize={30} fontWeight="bold" textAlign="center">
-                  {normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))}{' '}
-                  {paymentOption.currencySymbol}
+                  {formatAmountWithSuffix(
+                    normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
+                  )}{' '}
+                  {paymentToken?.id.toUpperCase()}
                 </Typography>
               ) : (
                 <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
-                  You don't have any balance to cover mint cost. <br />
-                  Switch to a different payment flow!
+                  {mintStatus === 'ended'
+                    ? 'Mint has ended'
+                    : mintStatus === 'error'
+                    ? 'Something went wrong'
+                    : "You don't have any balance to cover mint cost. Switch to a different payment flow!"}
                 </Typography>
               )}
             </Stack>
@@ -413,21 +411,15 @@ export default function MintDialog({
           </Box>
 
           <Box display="flex" flexDirection="column" alignItems="center" width="100%">
-            {!paymentToken || chainId === paymentToken.chainId ? (
-              <CustomLoadingButton
-                title={mintStatus === 'ended' ? 'Mint Ended' : 'Mint'}
-                loading={paymentPending}
-                disabled={
-                  !paymentOption ||
-                  (mint.provider !== 'zora.co' && mint.provider !== 'rodeo.club') ||
-                  mintStatus !== 'live'
-                }
-                status={isNativeFlow ? status : statusRegular}
-                onClick={submitGlideTransaction}
-              />
-            ) : (
-              <LoadingSwitchChainButton chainId={paymentToken.chainId} />
-            )}
+            <PayButton
+              paymentToken={paymentToken}
+              buttonText={mintStatus === 'ended' ? 'Mint Ended' : 'Mint'}
+              isLoading={paymentPending}
+              disabled={!hasPaymentOption}
+              status={(isNativeFlow ? status : statusRegular) ?? ''}
+              onClick={submitGlideTransaction}
+              senderFlow={senderFlow}
+            />
             <PoweredByGlideText />
           </Box>
         </DialogContent>
@@ -436,32 +428,12 @@ export default function MintDialog({
         <ChooseFlowDialog
           configurable={false}
           open={openSelectFlow}
-          onClose={async () => setOpenSelectFlow(false)}
-          closeStateCallback={async () => setOpenSelectFlow(false)}
+          onClose={() => setOpenSelectFlow(false)}
+          closeStateCallback={() => setOpenSelectFlow(false)}
           flows={flows}
           selectedFlow={selectedFlow}
           setSelectedFlow={setSelectedFlow}
         />
-      )}
-      {address?.toLowerCase() !== senderFlow.signer.toLowerCase() && (
-        <ResponsiveDialog
-          title="Connect Signer"
-          open={openConnectSignerDrawer}
-          onOpen={() => {
-            setOpenConnectSignerDrawer(true);
-          }}
-          onClose={() => setOpenConnectSignerDrawer(false)}>
-          <Stack alignItems="flex-start" spacing={2}>
-            <Typography variant="caption" color={grey[prefersDarkMode ? 400 : 700]}>
-              Selected payment flow `<b>{senderFlow.title}`</b> signer is not connected! Please,
-              proceed with connecting the signer mentioned below:
-            </Typography>
-            <SwitchFlowSignerSection
-              onSwitch={() => setOpenConnectSignerDrawer(false)}
-              flow={senderFlow}
-            />
-          </Stack>
-        </ResponsiveDialog>
       )}
     </>
   );
