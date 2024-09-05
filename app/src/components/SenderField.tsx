@@ -1,4 +1,4 @@
-import { Box, Stack, IconButton, Typography, Button, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Stack, IconButton, Typography, Button } from '@mui/material';
 import { PaymentFlowSection } from './PaymentFlowSection';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
@@ -7,6 +7,7 @@ import { IoMdArrowDropdown } from 'react-icons/io';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useSetActiveWallet } from '@privy-io/wagmi';
 import { useEffect } from 'react';
+import { useMobile } from '../utils/hooks/useMobile';
 
 export function SenderField({
   sender,
@@ -21,8 +22,7 @@ export function SenderField({
   const { wallets } = useWallets();
   const { setActiveWallet } = useSetActiveWallet();
 
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   useEffect(() => {
     if (ready && wallets.length !== 0 && sender.type === 'address') {

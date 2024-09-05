@@ -4,20 +4,19 @@ import {
   Box,
   Chip,
   Stack,
-  Typography,
-  useMediaQuery,
-  useTheme
+  Typography
 } from '@mui/material';
 import { green, grey } from '@mui/material/colors';
+import { useDarkMode } from '../utils/hooks/useDarkMode';
+import { useMobile } from '../utils/hooks/useMobile';
 
 export function PublicSearchPay({
   setOpenSearchIdentity
 }: {
   setOpenSearchIdentity: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const isMobile = useMobile();
+  const prefersDarkMode = useDarkMode();
 
   return (
     <Box

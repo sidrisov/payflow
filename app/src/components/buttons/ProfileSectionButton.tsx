@@ -1,7 +1,8 @@
-import { Box, BoxProps, Button, ButtonProps, useMediaQuery, useTheme } from '@mui/material';
+import { Box, BoxProps, Button, ButtonProps } from '@mui/material';
 import { ProfileType } from '../../types/ProfileType';
 import { ProfileSection } from '../ProfileSection';
 import { useNavigate } from 'react-router-dom';
+import { useMobile } from '../../utils/hooks/useMobile';
 
 export default function ProfileSectionButton({
   profile,
@@ -9,8 +10,7 @@ export default function ProfileSectionButton({
 }: BoxProps & ButtonProps & { profile: ProfileType | undefined }) {
   const navigate = useNavigate();
 
-  const theme = useTheme();
-  const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const smallScreen = useMobile();
 
   return (
     profile && (

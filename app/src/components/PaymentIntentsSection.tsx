@@ -10,9 +10,7 @@ import {
   Stack,
   StackProps,
   Tooltip,
-  Typography,
-  useMediaQuery,
-  useTheme
+  Typography
 } from '@mui/material';
 import { PaymentType } from '../types/PaymentType';
 import { ProfileSection } from './ProfileSection';
@@ -37,6 +35,8 @@ import { MdOutlinePlaylistAdd } from 'react-icons/md';
 import { fetchMintData, MintMetadata } from '../utils/mint';
 import { Address } from 'viem';
 import { grey } from '@mui/material/colors';
+import { useDarkMode } from '../utils/hooks/useDarkMode';
+import { useMobile } from '../utils/hooks/useMobile';
 
 const pageSize = 5;
 
@@ -52,11 +52,10 @@ export function PaymentIntentsSection({
   setSelectedFlow: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
   payments?: PaymentType[];
 } & {} & StackProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
   const navigate = useNavigate();
 
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const prefersDarkMode = useDarkMode();
 
   const [expand, setExpand] = useState<boolean>(true);
 

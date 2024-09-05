@@ -1,6 +1,6 @@
 import ResponsiveDialog, { ResponsiveDialogProps } from './ResponsiveDialog';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
-import { Box, Button, Divider, Stack, Typography, useMediaQuery } from '@mui/material';
+import { Box, Button, Divider, Stack, Typography } from '@mui/material';
 import { useContext, useEffect, useState } from 'react';
 import { useClaimRewardsMutation, useMoxieRewardsClaimStatus } from '../../utils/queries/moxie';
 import { CustomLoadingButton } from '../buttons/LoadingPaymentButton';
@@ -12,13 +12,14 @@ import { PaymentFlowSection } from '../PaymentFlowSection';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { delay } from '../../utils/delay';
+import { useDarkMode } from '../../utils/hooks/useDarkMode';
 
 export function ClaimMoxieRewardsDialog({
   fid,
   claimableRewardsAmount,
   ...props
 }: { fid: number; claimableRewardsAmount: number } & ResponsiveDialogProps) {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const prefersDarkMode = useDarkMode();
   const navigate = useNavigate();
 
   const { profile } = useContext(ProfileContext);

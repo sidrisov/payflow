@@ -6,8 +6,6 @@ import {
   Stack,
   Typography,
   Box,
-  useMediaQuery,
-  useTheme,
   Button,
   TextField,
   InputAdornment,
@@ -26,13 +24,13 @@ import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { grey } from '@mui/material/colors';
 import { PaymentCastActionAdvancedSection } from '../PaymentCastActionAdvancedSection';
 import { Type } from '../../types/PaymentType';
+import { useMobile } from '../../utils/hooks/useMobile';
 
 export default function PaymentCastActionDialog({
   closeStateCallback,
   ...props
 }: DialogProps & CloseCallbackType) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   const [openSelectChain, setOpenSelectChain] = useState<boolean>(false);
   const [chainAnchorEl, setChainAnchorEl] = useState<null | HTMLElement>(null);

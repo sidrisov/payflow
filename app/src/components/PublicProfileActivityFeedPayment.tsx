@@ -5,9 +5,7 @@ import {
   Chip,
   Link,
   Stack,
-  Typography,
-  useMediaQuery,
-  useTheme
+  Typography
 } from '@mui/material';
 import { formatUnits } from 'viem';
 import { useState } from 'react';
@@ -28,6 +26,7 @@ import { ERC20_CONTRACTS, Token } from '../utils/erc20contracts';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../utils/formats';
 import TokenAvatar from './avatars/TokenAvatar';
 import { useTokenPrices } from '../utils/queries/prices';
+import { useMobile } from '../utils/hooks/useMobile';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
 function getActivityLabel(activity: string) {
@@ -35,8 +34,7 @@ function getActivityLabel(activity: string) {
 }
 
 export default function PublicProfileActivityFeedSection(props: BoxProps & { txInfo: TxInfo }) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   const { data: tokenPrices } = useTokenPrices();
   const { txInfo } = props;

@@ -8,9 +8,7 @@ import {
   Skeleton,
   Stack,
   StackProps,
-  Typography,
-  useMediaQuery,
-  useTheme
+  Typography
 } from '@mui/material';
 import { PaymentType } from '../types/PaymentType';
 import { ProfileSection } from './ProfileSection';
@@ -32,6 +30,8 @@ import { MdOutlinePlaylistAddCheck } from 'react-icons/md';
 import { grey } from '@mui/material/colors';
 import { fetchMintData, MintMetadata } from '../utils/mint';
 import { Address } from 'viem';
+import { useDarkMode } from '../utils/hooks/useDarkMode';
+import { useMobile } from '../utils/hooks/useMobile';
 
 const pageSize = 10;
 
@@ -39,14 +39,13 @@ export function PaymentReceiptsSection({
   payments,
   ...props
 }: { payments?: PaymentType[] } & StackProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
   const [expand, setExpand] = useState<boolean>(false);
 
   const maxPages = calculateMaxPages(payments?.length ?? 0, pageSize);
   const [page, setPage] = useState<number>(1);
 
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const prefersDarkMode = useDarkMode();
 
   return (
     payments && (

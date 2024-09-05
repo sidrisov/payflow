@@ -2,10 +2,10 @@ import React, { ReactNode } from 'react';
 import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 import Dialog from '@mui/material/Dialog';
 import Box from '@mui/material/Box';
-import { styled, useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
+import { styled } from '@mui/material/styles';
 import { DialogContent, DialogTitle } from '@mui/material';
 import { grey } from '@mui/material/colors';
+import { useMobile } from '../../utils/hooks/useMobile';
 
 export interface ResponsiveDialogProps {
   open: boolean;
@@ -36,8 +36,7 @@ const ResponsiveDialog: React.FC<ResponsiveDialogProps> = ({
   height,
   children
 }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   return isMobile ? (
     <SwipeableDrawer

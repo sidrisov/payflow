@@ -1,8 +1,9 @@
 import { BlurOn, People, PlaylistAddCheck, Star } from '@mui/icons-material';
-import { Avatar, Chip, Stack, Typography, useMediaQuery } from '@mui/material';
+import { Avatar, Chip, Stack, Typography } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { AddressBookType } from '../../types/ContactType';
 import { useEffect, useRef, useState } from 'react';
+import { useDarkMode } from '../../utils/hooks/useDarkMode';
 
 const contactTypeLabel = (type: AddressBookType) => {
   switch (type) {
@@ -28,7 +29,7 @@ const contactTypeLabel = (type: AddressBookType) => {
 };
 
 const contactTypeIcon = (type: AddressBookType, selectedType: AddressBookType) => {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const prefersDarkMode = useDarkMode();
 
   const fontSize = selectedType === type ? 'medium' : 'small';
   const avatarSize = selectedType === type ? { width: 22, height: 22 } : { width: 18, height: 18 };
@@ -71,7 +72,7 @@ export function AddressBookChip({
   addressBookView,
   setAddressBookView
 }: AddressBookChipProps) {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const prefersDarkMode = useDarkMode();
   const bgcolor = grey[prefersDarkMode ? 700 : 200];
   return (
     <Chip

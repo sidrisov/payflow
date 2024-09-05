@@ -4,16 +4,13 @@ import {
   DialogProps,
   Stack,
   Box,
-  useMediaQuery,
-  useTheme,
   Typography,
   Skeleton,
   Avatar,
   Tooltip
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { degen } from 'viem/chains';
-import { glideConfig } from '../../utils/glide';
+import { getPaymentOption, glideConfig } from '../../utils/glide';
 import { useSwitchChain, useChainId, useAccount, useWalletClient, useClient } from 'wagmi';
 import { BackDialogTitle } from './BackDialogTitle';
 import { SenderField } from '../SenderField';
@@ -27,7 +24,7 @@ import { useContext, useMemo, useState } from 'react';
 import { Token } from '../../utils/erc20contracts';
 import { Hash } from 'viem';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
-import { useGlideEstimatePayment, useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
+import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
 import { ProfileContext } from '../../contexts/UserContext';
 import { useSafeTransfer } from '../../utils/hooks/useSafeTransfer';
 import { toast } from 'react-toastify';
@@ -37,7 +34,7 @@ import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { updatePayment } from '../../services/payments';
 import { grey, red } from '@mui/material/colors';
 import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
-import { CAIP19, createSession, executeSession } from '@paywithglide/glide-js';
+import { createSession, executeSession } from '@paywithglide/glide-js';
 import { delay } from '../../utils/delay';
 import { ChooseFlowDialog } from './ChooseFlowDialog';
 import { UpSlideTransition } from './TransitionDownUpSlide';
@@ -46,6 +43,10 @@ import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
 import { MintMetadata } from '../../utils/mint';
 import { useMintPaymentTx } from '../../utils/hooks/useMintPaymentTx';
 import { PayButton } from '../buttons/PayButton';
+import { PaymentTxStatus } from '../../types/PaymentType';
+import { useEffect } from 'react';
+import { useDarkMode } from '../../utils/hooks/useDarkMode';
+import { useMobile } from '../../utils/hooks/useMobile';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {
@@ -72,10 +73,9 @@ export default function MintDialog({
   setSelectedFlow,
   ...props
 }: MintDialogProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const prefersDarkMode = useDarkMode();
 
   const [openSelectFlow, setOpenSelectFlow] = useState(false);
 
@@ -97,7 +97,13 @@ export default function MintDialog({
 
   const [paymentWallet, setPaymentWallet] = useState<FlowWalletType>();
   const [paymentToken, setPaymentToken] = useState<Token>();
-  const [paymentPending, setPaymentPending] = useState<boolean>(false);
+  const [paymentTxStatus, setPaymentTxStatus] = useState<PaymentTxStatus>({
+    isPending: false,
+    isConfirmed: false,
+    error: false,
+    txHash: null,
+    status: ''
+  });
 
   const { data: signer } = useWalletClient();
   const client = useClient();
@@ -113,10 +119,14 @@ export default function MintDialog({
     reset: resetRegular
   } = useRegularTransfer();
 
-  const { data: mintData, isLoading: isMintLoading } = useMintPaymentTx({
+  const {
+    data: mintData,
+    isLoading: isMintLoading,
+    isError: mintPaymentTxError
+  } = useMintPaymentTx({
     mint,
     minter: senderFlow.wallets[0].address,
-    recipient: payment.receiverAddress,
+    recipient: payment.receiverAddress ?? profile?.identity,
     comment: `Minted for @${social.profileName} on @payflow`
   });
 
@@ -136,19 +146,9 @@ export default function MintDialog({
 
   console.log('Payment Options: ', paymentOptions);
 
-  const { isLoading: isPaymentOptionLoading, data: paymentOption } = useGlideEstimatePayment(
-    Boolean(paymentToken) && Boolean(paymentTx) && mintStatus === 'live',
-    {
-      paymentCurrency: `eip155:${paymentToken?.chainId}/${
-        paymentToken?.tokenAddress
-          ? `erc20:${paymentToken.tokenAddress}`
-          : paymentToken?.chainId === degen.id
-          ? 'slip44:33436'
-          : 'slip44:60'
-      }` as CAIP19,
-      ...(paymentTx as any),
-      account: senderFlow.wallets[0].address
-    }
+  const paymentOption = useMemo(
+    () => getPaymentOption(paymentOptions, paymentToken),
+    [paymentOptions, paymentToken]
   );
 
   const compatibleWallets = useCompatibleWallets({
@@ -164,6 +164,38 @@ export default function MintDialog({
     }
     setPaymentWallet(compatibleWallets.find((w) => w.network === chainId) ?? compatibleWallets[0]);
   }, [compatibleWallets, chainId]);
+
+  useEffect(() => {
+    if (isNativeFlow) {
+      setPaymentTxStatus({
+        isPending: Boolean(loading || (txHash && !confirmed && !error)),
+        isConfirmed: Boolean(confirmed),
+        error: Boolean(error),
+        txHash: txHash ?? null,
+        status: status ?? ''
+      });
+    } else {
+      setPaymentTxStatus({
+        isPending: Boolean(loadingRegular || (txHashRegular && !confirmedRegular && !errorRegular)),
+        isConfirmed: Boolean(confirmedRegular),
+        error: Boolean(errorRegular),
+        txHash: txHashRegular ?? null,
+        status: statusRegular ?? ''
+      });
+    }
+  }, [
+    isNativeFlow,
+    loading,
+    txHash,
+    confirmed,
+    error,
+    status,
+    loadingRegular,
+    txHashRegular,
+    confirmedRegular,
+    errorRegular,
+    statusRegular
+  ]);
 
   const submitGlideTransaction = async () => {
     try {
@@ -262,27 +294,9 @@ export default function MintDialog({
     }
   };
 
-  useMemo(async () => {
-    if (isNativeFlow) {
-      setPaymentPending(Boolean(loading || (txHash && !confirmed && !error)));
-    } else {
-      setPaymentPending(
-        Boolean(loadingRegular || (txHashRegular && !confirmedRegular && !errorRegular))
-      );
-    }
-  }, [
-    loading,
-    txHash,
-    confirmed,
-    error,
-    loadingRegular,
-    txHashRegular,
-    confirmedRegular,
-    errorRegular
-  ]);
-
-  const isLoading = isMintLoading || isPaymentOptionLoading || isPaymentOptionsLoading;
-  const hasPaymentOption = !isLoading && paymentOption && paymentToken && mintStatus === 'live';
+  const isLoading = isMintLoading || isPaymentOptionsLoading;
+  const hasPaymentOption =
+    !isLoading && paymentOption && paymentToken && mintStatus === 'live' && !mintPaymentTxError;
 
   return (
     <>
@@ -388,9 +402,12 @@ export default function MintDialog({
                 <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
                   {mintStatus === 'ended'
                     ? 'Mint has ended'
-                    : mintStatus === 'error'
+                    : mintPaymentTxError || !paymentTx
+                    ? 'Failed to load payment transaction'
+                    : mintStatus === 'error' || isPaymentOptionsError
                     ? 'Something went wrong'
-                    : "You don't have any balance to cover mint cost. Switch to a different payment flow!"}
+                    : paymentOptions?.length === 0 &&
+                      "You don't have any balance to cover mint cost. Switch to a different payment flow!"}
                 </Typography>
               )}
             </Stack>
@@ -414,9 +431,9 @@ export default function MintDialog({
             <PayButton
               paymentToken={paymentToken}
               buttonText={mintStatus === 'ended' ? 'Mint Ended' : 'Mint'}
-              isLoading={paymentPending}
+              isLoading={paymentTxStatus.isPending}
               disabled={!hasPaymentOption}
-              status={(isNativeFlow ? status : statusRegular) ?? ''}
+              status={paymentTxStatus.status}
               onClick={submitGlideTransaction}
               senderFlow={senderFlow}
             />

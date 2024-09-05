@@ -1,13 +1,13 @@
-import { Box, Button, ButtonProps, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Button, ButtonProps } from '@mui/material';
 import { IdentityType } from '../../types/ProfileType';
 import { AddressSection } from '../AddressSection';
+import { useMobile } from '../../utils/hooks/useMobile';
 
 export default function AddressSectionButton({
   identity,
   ...props
 }: ButtonProps & { identity: IdentityType }) {
-  const theme = useTheme();
-  const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const smallScreen = useMobile();
 
   return (
     <Box

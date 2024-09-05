@@ -25,6 +25,7 @@ import { MoreHoriz } from '@mui/icons-material';
 import { SearchIdentityMenu } from './menu/SearchIdenitityMenu';
 import { useSearchParams } from 'react-router-dom';
 import { grey } from '@mui/material/colors';
+import { useDarkMode } from '../utils/hooks/useDarkMode';
 
 function addToFavourites(tags: string[]): string[] {
   const updatedTags = tags ?? [];
@@ -48,7 +49,7 @@ export function SearchIdentityListItem(
       view: 'address' | 'profile';
     }
 ) {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const prefersDarkMode = useDarkMode();
 
   const [searchParams] = useSearchParams();
   const accessToken = searchParams.get('access_token') ?? '';

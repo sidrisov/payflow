@@ -1,9 +1,8 @@
-import { useMediaQuery, useTheme } from '@mui/material';
 import { ToastContainer } from 'react-toastify';
+import { useMobile } from '../../utils/hooks/useMobile';
 
 export default function CustomToastContainer() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   return (
     <ToastContainer

@@ -4,14 +4,11 @@ import {
   DialogProps,
   Stack,
   Box,
-  useMediaQuery,
-  useTheme,
   Typography,
   Skeleton
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { degen } from 'viem/chains';
-import { glideConfig } from '../../utils/glide';
+import { getPaymentOption, glideConfig } from '../../utils/glide';
 import { useSwitchChain, useChainId, useAccount, useWalletClient, useClient } from 'wagmi';
 import { BackDialogTitle } from './BackDialogTitle';
 import { SenderField } from '../SenderField';
@@ -19,13 +16,13 @@ import { KeyboardDoubleArrowDown } from '@mui/icons-material';
 import { SelectedIdentityType } from '../../types/ProfileType';
 import { FarcasterRecipientField } from '../FarcasterRecipientField';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
-import { PaymentType } from '../../types/PaymentType';
+import { PaymentTxStatus, PaymentType } from '../../types/PaymentType';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { Token } from '../../utils/erc20contracts';
 import { Hash } from 'viem';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
-import { useGlideEstimatePayment, useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
+import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
 import { ProfileContext } from '../../contexts/UserContext';
 import { useSafeTransfer } from '../../utils/hooks/useSafeTransfer';
 import { toast } from 'react-toastify';
@@ -35,7 +32,7 @@ import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { updatePayment } from '../../services/payments';
 import { red } from '@mui/material/colors';
 import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
-import { CAIP19, createSession, executeSession } from '@paywithglide/glide-js';
+import { createSession, executeSession } from '@paywithglide/glide-js';
 import { delay } from '../../utils/delay';
 import { ChooseFlowDialog } from './ChooseFlowDialog';
 import { UpSlideTransition } from './TransitionDownUpSlide';
@@ -43,6 +40,7 @@ import PoweredByGlideText from '../text/PoweredByGlideText';
 import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
 import { PayButton } from '../buttons/PayButton';
 import { useStoragePaymentTx } from '../../utils/hooks/useStoragePaymentTx';
+import { useMobile } from '../../utils/hooks/useMobile';
 
 export type BuyStorageDialogProps = DialogProps &
   CloseCallbackType & {
@@ -67,8 +65,7 @@ export default function BuyStorageDialog({
   setSelectedFlow,
   ...props
 }: BuyStorageDialogProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   const [openSelectFlow, setOpenSelectFlow] = useState(false);
 
@@ -122,19 +119,9 @@ export default function BuyStorageDialog({
     account: senderFlow.wallets[0].address
   });
 
-  const { isLoading: isPaymentOptionLoading, data: paymentOption } = useGlideEstimatePayment(
-    Boolean(paymentToken) && Boolean(paymentTx),
-    {
-      paymentCurrency: `eip155:${paymentToken?.chainId}/${
-        paymentToken?.tokenAddress
-          ? `erc20:${paymentToken.tokenAddress}`
-          : paymentToken?.chainId === degen.id
-          ? 'slip44:33436'
-          : 'slip44:60'
-      }` as CAIP19,
-      ...(paymentTx as any),
-      account: senderFlow.wallets[0].address
-    }
+  const paymentOption = useMemo(
+    () => getPaymentOption(paymentOptions, paymentToken),
+    [paymentOptions, paymentToken]
   );
 
   console.log('Payment Options: ', paymentOptions);
@@ -152,6 +139,46 @@ export default function BuyStorageDialog({
     }
     setPaymentWallet(compatibleWallets.find((w) => w.network === chainId) ?? compatibleWallets[0]);
   }, [compatibleWallets, chainId]);
+
+  const [paymentTxStatus, setPaymentTxStatus] = useState<PaymentTxStatus>({
+    isPending: false,
+    isConfirmed: false,
+    error: false,
+    txHash: null,
+    status: ''
+  });
+
+  useEffect(() => {
+    if (isNativeFlow) {
+      setPaymentTxStatus({
+        isPending: Boolean(loading || (txHash && !confirmed && !error)),
+        isConfirmed: Boolean(confirmed),
+        error,
+        txHash: txHash ?? null,
+        status: status ?? ''
+      });
+    } else {
+      setPaymentTxStatus({
+        isPending: Boolean(loadingRegular || (txHashRegular && !confirmedRegular && !errorRegular)),
+        isConfirmed: Boolean(confirmedRegular),
+        error: errorRegular,
+        txHash: txHashRegular ?? null,
+        status: statusRegular ?? ''
+      });
+    }
+  }, [
+    isNativeFlow,
+    loading,
+    txHash,
+    confirmed,
+    error,
+    status,
+    loadingRegular,
+    txHashRegular,
+    confirmedRegular,
+    errorRegular,
+    statusRegular
+  ]);
 
   const submitGlideTransaction = async () => {
     try {
@@ -250,26 +277,7 @@ export default function BuyStorageDialog({
     }
   };
 
-  useMemo(async () => {
-    if (isNativeFlow) {
-      setPaymentPending(Boolean(loading || (txHash && !confirmed && !error)));
-    } else {
-      setPaymentPending(
-        Boolean(loadingRegular || (txHashRegular && !confirmedRegular && !errorRegular))
-      );
-    }
-  }, [
-    loading,
-    txHash,
-    confirmed,
-    error,
-    loadingRegular,
-    txHashRegular,
-    confirmedRegular,
-    errorRegular
-  ]);
-
-  const isLoading = isPaymentTxLoading || isPaymentOptionLoading || isPaymentOptionsLoading;
+  const isLoading = isPaymentTxLoading || isPaymentOptionsLoading;
   const hasPaymentOption = !isLoading && paymentOption && paymentToken;
 
   return (
@@ -367,9 +375,9 @@ export default function BuyStorageDialog({
             <PayButton
               paymentToken={paymentToken}
               buttonText="Pay for Storage"
-              isLoading={paymentPending}
+              isLoading={paymentTxStatus.isPending}
               disabled={!paymentOption}
-              status={(isNativeFlow ? status : statusRegular) ?? ''}
+              status={paymentTxStatus.status}
               onClick={submitGlideTransaction}
               senderFlow={senderFlow}
             />

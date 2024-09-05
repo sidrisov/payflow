@@ -3,9 +3,7 @@ import {
   Dialog,
   DialogContent,
   DialogProps,
-  Stack,
-  useMediaQuery,
-  useTheme
+  Stack
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { SelectedIdentityType } from '../../types/ProfileType';
@@ -28,6 +26,7 @@ import { toast } from 'react-toastify';
 import { FARCASTER_DAPP } from '../../utils/dapps';
 import { useSearchParams } from 'react-router-dom';
 import { normalizeNumberPrecision } from '../../utils/formats';
+import { useMobile } from '../../utils/hooks/useMobile';
 
 export type PaymentSenderType = 'payflow' | 'wallet' | 'none';
 
@@ -47,8 +46,7 @@ export default function PayComposerActionDialog({
   setOpenSearchIdentity,
   ...props
 }: PaymentDialogProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   const [searchParams] = useSearchParams();
   const accessToken = searchParams.get('access_token') ?? undefined;

@@ -19,6 +19,7 @@ import { createSiweMessage, generateSiweNonce } from 'viem/siwe';
 import { Address } from 'viem';
 import { usePrivy } from '@privy-io/react-auth';
 import { toast } from 'react-toastify';
+import { useMobile } from '../../utils/hooks/useMobile';
 export type NewFlowDialogProps = DialogProps &
   CloseCallbackType & {
     profile: ProfileType;
@@ -29,8 +30,7 @@ export default function NewFlowDialog({
   profile,
   ...props
 }: NewFlowDialogProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   const account = useAccount();
 

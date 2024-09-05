@@ -1,4 +1,4 @@
-import { Container, Stack, useMediaQuery, useTheme } from '@mui/material';
+import { Container, Stack } from '@mui/material';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { AccountCard } from '../components/cards/AccountCard';
@@ -13,10 +13,10 @@ import { PaymentIntentsSection } from '../components/PaymentIntentsSection';
 import { PaymentReceiptsSection } from '../components/PaymentReceiptsSection';
 import getFlowAssets from '../utils/assets';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
+import { useMobile } from '../utils/hooks/useMobile';
 
 export default function Accounts() {
-  const theme = useTheme();
-  const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const smallScreen = useMobile();
 
   const { isAuthenticated, profile } = useContext(ProfileContext);
 

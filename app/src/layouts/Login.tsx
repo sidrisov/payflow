@@ -1,4 +1,4 @@
-import { Box, Container, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Container } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -7,6 +7,8 @@ import ProfileOnboardingDialog from '../components/dialogs/ProfileOnboardingDial
 import { ProfileType } from '../types/ProfileType';
 import { ConnectCard } from '../components/cards/ConnectCard';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
+import { useDarkMode } from '../utils/hooks/useDarkMode';
+import { useMobile } from '../utils/hooks/useMobile';
 
 export default function Login({
   authStatus,
@@ -15,15 +17,14 @@ export default function Login({
   authStatus: string;
   profile: ProfileType | undefined;
 }) {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const prefersDarkMode = useDarkMode();
 
   const [searchParams] = useSearchParams();
   const username = searchParams.get('username');
   const invitationCode = searchParams.get('code');
   const redirect = searchParams.get('redirect');
 
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   const navigate = useNavigate();
 

@@ -2,20 +2,18 @@ import React, { useState } from 'react';
 import { useAccount, useChainId } from 'wagmi';
 import { CustomLoadingButton } from './LoadingPaymentButton';
 import { LoadingSwitchChainButton } from './LoadingSwitchNetworkButton';
-import ResponsiveDialog from '../dialogs/ResponsiveDialog';
-import { Stack, Typography } from '@mui/material';
-import { grey } from '@mui/material/colors';
-import { SwitchFlowSignerSection } from '../dialogs/SwitchFlowSignerSection';
-import { useMediaQuery } from '@mui/material';
+import { Token } from '../../utils/erc20contracts';
+import { FlowType } from '../../types/FlowType';
+import { ConnectSignerDialog } from '../dialogs/ConnectSignerDialog';
 
 type PayButtonProps = {
-  paymentToken: any;
+  paymentToken: Token | undefined;
   buttonText: string;
   isLoading: boolean;
   disabled: boolean;
   status: string;
   onClick: () => void;
-  senderFlow: any;
+  senderFlow: FlowType;
 };
 
 export const PayButton: React.FC<PayButtonProps> = ({
@@ -30,7 +28,6 @@ export const PayButton: React.FC<PayButtonProps> = ({
   const chainId = useChainId();
   const { address } = useAccount();
   const [openConnectSignerDrawer, setOpenConnectSignerDrawer] = useState(false);
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
   const handleClick = () => {
     if (address?.toLowerCase() !== senderFlow.signer.toLowerCase()) {
@@ -54,24 +51,11 @@ export const PayButton: React.FC<PayButtonProps> = ({
         <LoadingSwitchChainButton chainId={paymentToken.chainId} />
       )}
 
-      {address?.toLowerCase() !== senderFlow.signer.toLowerCase() && (
-        <ResponsiveDialog
-          title="Connect Signer"
-          open={openConnectSignerDrawer}
-          onOpen={() => setOpenConnectSignerDrawer(true)}
-          onClose={() => setOpenConnectSignerDrawer(false)}>
-          <Stack alignItems="flex-start" spacing={2}>
-            <Typography variant="caption" color={grey[prefersDarkMode ? 400 : 700]}>
-              Selected payment flow `<b>{senderFlow.title}</b>` signer is not connected! Please,
-              proceed with connecting the signer mentioned below:
-            </Typography>
-            <SwitchFlowSignerSection
-              onSwitch={() => setOpenConnectSignerDrawer(false)}
-              flow={senderFlow}
-            />
-          </Stack>
-        </ResponsiveDialog>
-      )}
+      <ConnectSignerDialog
+        open={openConnectSignerDrawer}
+        onClose={() => setOpenConnectSignerDrawer(false)}
+        senderFlow={senderFlow}
+      />
     </>
   );
 };

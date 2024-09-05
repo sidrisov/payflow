@@ -10,6 +10,7 @@ import {
 import { useState } from 'react';
 import calculateMaxPages from '../utils/pagination';
 import { grey } from '@mui/material/colors';
+import { useDarkMode } from '../utils/hooks/useDarkMode';
 
 const pageSize = 30;
 
@@ -41,7 +42,7 @@ export function SearchResultView({
   updateIdentityCallback,
   identities
 }: SearchResultViewProps) {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const prefersDarkMode = useDarkMode();
   const navigate = useNavigate();
 
   function SearchResultProfileListView({

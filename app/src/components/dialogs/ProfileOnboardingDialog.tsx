@@ -8,9 +8,7 @@ import {
   TextField,
   InputAdornment,
   Avatar,
-  CircularProgress,
-  useTheme,
-  useMediaQuery
+  CircularProgress
 } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 
@@ -32,6 +30,7 @@ import { FARCASTER_DAPP, LENS_DAPP } from '../../utils/dapps';
 import { QUERY_SOCIALS } from '../../utils/airstackQueries';
 import { BackDialogTitle } from './BackDialogTitle';
 import LoadingPayflowEntryLogo from '../LoadingPayflowEntryLogo';
+import { useMobile } from '../../utils/hooks/useMobile';
 
 export type ProfileOnboardingDialogProps = DialogProps &
   CloseCallbackType & {
@@ -47,8 +46,7 @@ export default function ProfileOnboardingDialog({
   code: paramCode,
   ...props
 }: ProfileOnboardingDialogProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   const [displayName, setDisplayName] = useState<string>(profile.displayName ?? '');
   const [username, setUsername] = useState<string>(paramUsername ?? '');

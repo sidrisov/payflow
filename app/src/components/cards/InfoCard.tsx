@@ -5,10 +5,10 @@ import {
   CardContent,
   Stack,
   StackProps,
-  Typography,
-  useMediaQuery
+  Typography
 } from '@mui/material';
 import { grey } from '@mui/material/colors';
+import { useDarkMode } from '../../utils/hooks/useDarkMode';
 
 export default function InfoCard({ title, children, ...props }: CardProps & { title: string }) {
   return (
@@ -47,7 +47,7 @@ export default function InfoCard({ title, children, ...props }: CardProps & { ti
 }
 
 export function InfoStack({ title, children, ...props }: StackProps & { title: string }) {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const prefersDarkMode = useDarkMode();
   return (
     <Stack
       p={1}

@@ -1,4 +1,4 @@
-import { Stack, Typography, Button, Avatar, useMediaQuery } from '@mui/material';
+import { Stack, Typography, Button, Avatar } from '@mui/material';
 import { FlowType } from '../../types/FlowType';
 import { shortenWalletAddressLabel } from '../../utils/address';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
@@ -6,6 +6,7 @@ import { useSetActiveWallet } from '@privy-io/wagmi';
 import { grey } from '@mui/material/colors';
 import AddressAvatar from '../avatars/AddressAvatar';
 import { useEffect } from 'react';
+import { useDarkMode } from '../../utils/hooks/useDarkMode';
 
 export function SwitchFlowSignerSection({
   flow,
@@ -14,7 +15,7 @@ export function SwitchFlowSignerSection({
   onSwitch?: () => void;
   flow: FlowType;
 }) {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const prefersDarkMode = useDarkMode();
 
   const { authenticated, ready, connectWallet, login, logout } = usePrivy();
   const { wallets } = useWallets();

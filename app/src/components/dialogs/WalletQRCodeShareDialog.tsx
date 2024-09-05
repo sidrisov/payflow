@@ -1,8 +1,6 @@
 import {
   Dialog,
   DialogContent,
-  useMediaQuery,
-  useTheme,
   DialogProps,
   DialogTitle,
   Stack,
@@ -22,6 +20,7 @@ import { ChooseWalletMenu } from '../menu/ChooseWalletMenu';
 import { FlowWalletType } from '../../types/FlowType';
 import NetworkAvatar from '../avatars/NetworkAvatar';
 import { getNetworkDisplayName, shortNetworkName } from '../../utils/networks';
+import { useMobile } from '../../utils/hooks/useMobile';
 
 export type WalletQRCodeShareDialogProps = DialogProps &
   CloseCallbackType & {
@@ -35,8 +34,7 @@ export default function WalletQRCodeShareDialog({
   closeStateCallback,
   ...props
 }: WalletQRCodeShareDialogProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   const [openSelectWallet, setOpenSelectWallet] = useState(false);
   const [walletAnchorEl, setWalletAnchorEl] = useState<null | HTMLElement>(null);

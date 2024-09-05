@@ -6,8 +6,6 @@ import {
   Skeleton,
   Stack,
   Typography,
-  useMediaQuery,
-  useTheme
 } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
@@ -28,10 +26,10 @@ import { IdentityType, ProfileType } from '../types/ProfileType';
 import ProfileAvatar from '../components/avatars/ProfileAvatar';
 import { ProfileDisplayNameWithLink } from '../components/ProfileDisplayNameWithLink';
 import { PublicProfileDetailsPopover } from '../components/menu/PublicProfileDetailsPopover';
+import { useMobile } from '../utils/hooks/useMobile';
 
 export default function Jar() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   const [openPayDialog, setOpenPayDialog] = useState(false);
 

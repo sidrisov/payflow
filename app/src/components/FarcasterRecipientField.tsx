@@ -1,6 +1,7 @@
-import { Box, Button, Typography, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { FarcasterProfileSection } from './FarcasterProfileSection';
 import { Social } from '../generated/graphql/types';
+import { useMobile } from '../utils/hooks/useMobile';
 
 export function FarcasterRecipientField({
   social,
@@ -9,8 +10,7 @@ export function FarcasterRecipientField({
   social: Social;
   setOpenSearchIdentity?: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   return (
     <Box

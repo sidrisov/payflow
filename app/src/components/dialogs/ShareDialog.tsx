@@ -6,15 +6,14 @@ import {
   Stack,
   Chip,
   Typography,
-  Box,
-  useMediaQuery,
-  useTheme
+  Box
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import QRCode from 'react-qr-code';
 import { Link } from '@mui/icons-material';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { toast } from 'react-toastify';
+import { useMobile } from '../../utils/hooks/useMobile';
 
 export type ShareDialogProps = DialogProps &
   CloseCallbackType & {
@@ -32,8 +31,7 @@ export default function ShareDialog({
     closeStateCallback();
   }
 
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   return (
     <Dialog

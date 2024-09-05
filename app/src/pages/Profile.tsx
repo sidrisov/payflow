@@ -10,9 +10,7 @@ import {
   Stack,
   TextField,
   Tooltip,
-  Typography,
-  useMediaQuery,
-  useTheme
+  Typography
 } from '@mui/material';
 import { ProfileSection } from '../components/ProfileSection';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -29,10 +27,10 @@ import { QUERY_SOCIALS } from '../utils/airstackQueries';
 import { useQuery } from '@airstack/airstack-react';
 import { convertSocialResults, normalizeUsername } from '../services/socials';
 import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';
+import { useMobile } from '../utils/hooks/useMobile';
 
 export default function Profile() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   const { profile } = useContext(ProfileContext);
 

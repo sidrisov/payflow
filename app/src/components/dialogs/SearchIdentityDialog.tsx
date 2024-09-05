@@ -1,8 +1,6 @@
 import {
   Dialog,
   DialogContent,
-  useMediaQuery,
-  useTheme,
   DialogProps,
   TextField,
   DialogTitle,
@@ -32,6 +30,7 @@ import { identitiesInvited } from '../../services/invitation';
 import { AddressBookToolBar } from '../chips/AddressBookChip';
 import { useContacts } from '../../utils/queries/contacts';
 import { useSearchParams } from 'react-router-dom';
+import { useMobile } from '../../utils/hooks/useMobile';
 
 export type SelectIdentityCallbackType = {
   selectIdentityCallback?: (selectedIdentity: SelectedIdentityType) => void;
@@ -62,8 +61,7 @@ export default function SearchIdentityDialog({
   hideBackButton = false,
   ...props
 }: SearchIdentityDialogProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   const [searchParams] = useSearchParams();
   const accessToken = searchParams.get('access_token') ?? undefined;

@@ -1,4 +1,4 @@
-import { Box, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import { useContext, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
@@ -14,10 +14,10 @@ import { PublicSearchPay } from './PublicSearchPay';
 import { ProfileContext } from '../contexts/UserContext';
 import { useIdentity } from '../utils/queries/profiles';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
+import { useMobile } from '../utils/hooks/useMobile';
 
 export default function PublicProfile() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   const { username, fid } = useParams();
   const { isLoading: isProfileLoading, data: identity } = useIdentity(username, fid);

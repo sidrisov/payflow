@@ -20,6 +20,7 @@ import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/fo
 import { useTokenPrices } from '../../utils/queries/prices';
 import { PaymentType } from '../../types/PaymentType';
 import { MdMultipleStop } from 'react-icons/md';
+import { useDarkMode } from '../../utils/hooks/useDarkMode';
 
 const TokenAmountTextField = styled(TextField)(() => ({
   '& .MuiInputBase-input::placeholder': {
@@ -54,7 +55,7 @@ export function TokenAmountSection({
   setCrossChainPaymentAmount?: React.Dispatch<React.SetStateAction<number | undefined>>;
   balanceCheck?: boolean;
 }) {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const prefersDarkMode = useDarkMode();
 
   const { data: tokenPrices } = useTokenPrices();
 

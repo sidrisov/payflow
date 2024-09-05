@@ -4,8 +4,6 @@ import {
   DialogProps,
   Typography,
   Box,
-  useMediaQuery,
-  useTheme,
   Button,
   Stack,
   TextField
@@ -19,13 +17,13 @@ import { BackDialogTitle } from './BackDialogTitle';
 import { ProfileContext } from '../../contexts/UserContext';
 import { PaymentFlowSection } from '../PaymentFlowSection';
 import { FlowType } from '../../types/FlowType';
+import { useMobile } from '../../utils/hooks/useMobile';
 
 export default function ContributionJarComposerDialog({
   closeStateCallback,
   ...props
 }: DialogProps & CloseCallbackType) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   const { profile } = useContext(ProfileContext);
 

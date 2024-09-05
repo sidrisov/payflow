@@ -1,9 +1,8 @@
-import { ExpandMore } from '@mui/icons-material';
-import { Box, Button, Typography, Stack, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { SelectedIdentityType } from '../types/ProfileType';
 import { AddressSection } from './AddressSection';
 import { ProfileSection } from './ProfileSection';
-import { PayflowChip } from './chips/IdentityStatusChips';
+import { useMobile } from '../utils/hooks/useMobile';
 
 export function RecipientField({
   recipient,
@@ -12,8 +11,7 @@ export function RecipientField({
   recipient?: SelectedIdentityType;
   setOpenSearchIdentity?: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   return (
     <Box

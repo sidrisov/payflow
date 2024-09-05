@@ -1,8 +1,9 @@
-import { Typography, useMediaQuery } from '@mui/material';
+import { Typography } from '@mui/material';
 import { grey } from '@mui/material/colors';
+import { useDarkMode } from '../../utils/hooks/useDarkMode';
 
 export default function PoweredByGlideText() {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const prefersDarkMode = useDarkMode();
 
   return (
     <Typography variant="caption" textAlign="center" color={grey[prefersDarkMode ? 400 : 700]}>

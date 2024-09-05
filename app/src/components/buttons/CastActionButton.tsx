@@ -1,5 +1,6 @@
 import { Button, ButtonProps, Stack, Typography, useMediaQuery } from '@mui/material';
 import { grey } from '@mui/material/colors';
+import { useDarkMode } from '../../utils/hooks/useDarkMode';
 
 export default function CastActionButton({
   title,
@@ -13,7 +14,7 @@ export default function CastActionButton({
   installUrl?: string;
   earlyFeature?: boolean;
 }) {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const prefersDarkMode = useDarkMode();
 
   return (
     <Button

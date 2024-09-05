@@ -1,12 +1,12 @@
 import { useContext } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ProfileContext } from '../contexts/UserContext';
-import { Box, Container, Divider, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Container, Divider, Stack, Typography } from '@mui/material';
 import { AddressSection } from '../components/AddressSection';
+import { useMobile } from '../utils/hooks/useMobile';
 
 export default function Advanced() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   const { profile } = useContext(ProfileContext);
 

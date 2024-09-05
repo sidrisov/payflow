@@ -1,12 +1,12 @@
-import { Link, LinkProps, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Link, LinkProps, Typography } from '@mui/material';
 import { ProfileType } from '../types/ProfileType';
+import { useMobile } from '../utils/hooks/useMobile';
 
 export function ProfileDisplayNameWithLink({
   profile,
   ...props
 }: { profile: ProfileType } & LinkProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   return (
     <Link

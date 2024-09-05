@@ -1,5 +1,5 @@
 import ResponsiveDialog, { ResponsiveDialogProps } from './ResponsiveDialog';
-import { Box, Divider, Stack, Typography, useMediaQuery } from '@mui/material';
+import { Box, Divider, Stack, Typography } from '@mui/material';
 import { useEffect } from 'react';
 import { CustomLoadingButton } from '../buttons/LoadingPaymentButton';
 import { grey, red } from '@mui/material/colors';
@@ -14,13 +14,14 @@ import { degenClaimAbi } from '../../utils/abi/degenClaimAbi';
 import { delay } from '../../utils/delay';
 import { useNavigate } from 'react-router-dom';
 import { formatAmountWithSuffix } from '../../utils/formats';
+import { useDarkMode } from '../../utils/hooks/useDarkMode';
 
 export function ClaimDegenPointsDialog({
   degenPoints,
   season,
   ...props
 }: { degenPoints: DegenPoints; season: DegenClaimSeason } & ResponsiveDialogProps) {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const prefersDarkMode = useDarkMode();
   const { address, chainId } = useAccount();
   const navigate = useNavigate();
 

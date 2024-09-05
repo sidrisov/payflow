@@ -48,6 +48,7 @@ import { CAIP19, createSession, executeSession } from '@paywithglide/glide-js';
 import { degen } from 'viem/chains';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { glideConfig } from '../../utils/glide';
+import { useDarkMode } from '../../utils/hooks/useDarkMode';
 
 export default function PaymentDialogContent({
   paymentType,
@@ -55,7 +56,7 @@ export default function PaymentDialogContent({
   sender,
   recipient
 }: PaymentDialogProps) {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const prefersDarkMode = useDarkMode();
 
   const senderAddress = sender.identity.address as Address;
   const senderFlow = sender.identity.profile?.defaultFlow as FlowType;

@@ -7,8 +7,8 @@ import { PrivyClientConfig, PrivyProvider } from '@privy-io/react-auth';
 import { WagmiProvider as PrivyWagmiProvider } from '@privy-io/wagmi';
 import { wagmiConfig } from './wagmiConfig';
 import { AuthKitProvider } from '@farcaster/auth-kit';
-import { useMediaQuery } from '@mui/material';
 import { SUPPORTED_CHAINS } from './networks';
+import { useDarkMode } from './hooks/useDarkMode';
 
 const AIRSTACK_API_KEY = import.meta.env.VITE_AIRSTACK_API_KEY;
 init(AIRSTACK_API_KEY);
@@ -26,7 +26,7 @@ const farcasterAuthConfig = {
 export type WalletProviderType = 'privy' | 'rainbowkit';
 
 export default function AppProviders({ children }: { children: React.ReactNode }) {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const prefersDarkMode = useDarkMode();
 
   /* return WALLET_PROVIDER === 'privy' ? (
     <PrivyAppProviders darkMode={darkMode ?? prefersDarkMode}>{children}</PrivyAppProviders>

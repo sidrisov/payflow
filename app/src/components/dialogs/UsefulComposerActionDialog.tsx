@@ -1,7 +1,8 @@
-import { Dialog, DialogContent, DialogProps, useMediaQuery, useTheme } from '@mui/material';
+import { Dialog, DialogContent, DialogProps } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { MoxieInfoCard } from '../cards/MoxieInfoCard';
 import { DegenInfoCard } from '../cards/DegenInfoCard';
+import { useMobile } from '../../utils/hooks/useMobile';
 
 export type UsefulComposerActionDialogProps = DialogProps & CloseCallbackType;
 
@@ -9,8 +10,7 @@ export default function UsefulComposerActionDialog({
   closeStateCallback,
   ...props
 }: UsefulComposerActionDialogProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   return (
     <Dialog

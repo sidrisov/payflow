@@ -1,7 +1,8 @@
-import { Link, LinkProps, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Link, LinkProps, Typography } from '@mui/material';
 import { socialLink } from '../utils/dapps';
 import { Address } from 'viem';
 import { shortenWalletAddressLabel } from '../utils/address';
+import { useMobile } from '../utils/hooks/useMobile';
 
 export function AddressOrEnsWithLink({
   address,
@@ -9,8 +10,7 @@ export function AddressOrEnsWithLink({
   blockExplorerUrl,
   ...props
 }: { address: Address; ens?: string; blockExplorerUrl?: string } & LinkProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   return (
     <Link

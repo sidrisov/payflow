@@ -7,9 +7,7 @@ import {
   IconButton,
   Stack,
   Tooltip,
-  Typography,
-  useMediaQuery,
-  useTheme
+  Typography
 } from '@mui/material';
 import { lightGreen, red } from '@mui/material/colors';
 import { formatUnits } from 'viem';
@@ -23,6 +21,7 @@ import { timeAgo } from '../utils/time';
 import { ERC20_CONTRACTS, Token } from '../utils/erc20contracts';
 import { normalizeNumberPrecision } from '../utils/formats';
 import { useTokenPrices } from '../utils/queries/prices';
+import { useMobile } from '../utils/hooks/useMobile';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
 function getActivityLabel(activity: string) {
@@ -59,8 +58,7 @@ function getActivityIndicator(txInfo: TxInfo, blockExplorerUrl: string | undefin
 }
 
 export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
-  const theme = useTheme();
-  const smallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const smallScreen = useMobile();
 
   const { data: tokenPrices } = useTokenPrices();
   const { txInfo } = props;

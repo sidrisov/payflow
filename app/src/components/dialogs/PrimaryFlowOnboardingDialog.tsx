@@ -35,6 +35,7 @@ import { usePrivy } from '@privy-io/react-auth';
 import { BackDialogTitle } from './BackDialogTitle';
 import axios from 'axios';
 import { API_URL } from '../../utils/urlConstants';
+import { useMobile } from '../../utils/hooks/useMobile';
 
 export type PrimaryFlowOnboardingDialogProps = DialogProps &
   CloseCallbackType & {
@@ -50,8 +51,7 @@ export default function PrimaryFlowOnboardingDialog({
   profile,
   ...props
 }: PrimaryFlowOnboardingDialogProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   const { loading: loadingWallets, error, wallets, create, reset } = usePreCreateSafeWallets();
   const [loadingUpdateProfile, setLoadingUpdateProfile] = useState<boolean>(false);

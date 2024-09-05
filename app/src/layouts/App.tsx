@@ -7,8 +7,6 @@ import {
   Toolbar,
   Box,
   Button,
-  useTheme,
-  useMediaQuery,
   Container,
   Paper,
   BottomNavigation,
@@ -36,6 +34,7 @@ import { UpdateVersionPrompt } from '../components/UpdateVersionPrompt';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { usePwa } from '../utils/pwa';
 import { useRegisterSW } from 'virtual:pwa-register/react';
+import { useMobile } from '../utils/hooks/useMobile';
 
 export default function AppLayout({
   profile,
@@ -47,8 +46,7 @@ export default function AppLayout({
   setAppSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
 }) {
   const location = useLocation();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
   const navigate = useNavigate();
 
   const isPwa = usePwa();

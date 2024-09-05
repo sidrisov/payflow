@@ -3,12 +3,11 @@ import {
   DialogTitle,
   DialogTitleProps,
   IconButton,
-  Typography,
-  useMediaQuery,
-  useTheme
+  Typography
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { ArrowBack } from '@mui/icons-material';
+import { useMobile } from '../../utils/hooks/useMobile';
 
 export function BackDialogTitle({
   title,
@@ -22,8 +21,7 @@ export function BackDialogTitle({
   showOnDesktop?: boolean;
 } & CloseCallbackType &
   DialogTitleProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMobile();
 
   const showBackButton = !hidden && (showOnDesktop || isMobile);
 

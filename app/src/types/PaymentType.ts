@@ -25,3 +25,11 @@ export interface PaymentType {
   comment?: string;
   target?: string;
 }
+
+export type PaymentTxStatus = {
+  isPending: boolean;
+  isConfirmed: boolean;
+  error: boolean;
+  txHash: string | null;
+  status: string;
+};
