@@ -28,6 +28,7 @@ function getDomainFromUrl(url: string): string {
 
 export function PaymentMenu({ payment, ...props }: MenuProps & { payment: PaymentType }) {
   const targetDomain = payment.target ? getDomainFromUrl(payment.target) : '';
+  const sourceDomain = payment.source?.ref ? getDomainFromUrl(payment.source.ref) : '';
 
   return (
     <Menu
@@ -37,39 +38,40 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
       anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
       <MenuList dense disablePadding>
         {payment.source && payment.source.app && (
-          <>
-            <MenuItem
-              {...(payment.source.ref && {
-                component: 'a',
-                href: payment.source.ref,
-                target: '_blank'
-              })}>
-              <ListItemIcon>
-                <Avatar
-                  src={`/dapps/${payment.source.app.toLowerCase()}.png`}
-                  sx={{ width: 20, height: 20 }}
-                />
-              </ListItemIcon>
-              {payment.source.app}
-              <OpenInNew fontSize="small" sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
-            </MenuItem>
-          </>
+          <MenuItem
+            {...(payment.source.ref && {
+              component: 'a',
+              href: payment.source.ref,
+              target: '_blank'
+            })}>
+            <ListItemIcon>
+              <Avatar
+                src={`/dapps/${payment.source.app.toLowerCase()}.png`}
+                sx={{ width: 20, height: 20 }}
+              />
+            </ListItemIcon>
+            <Typography variant="body2">
+              Payment Source
+              <Typography variant="caption" display="block" color="text.secondary">
+                {sourceDomain || payment.source.app}
+              </Typography>
+            </Typography>
+            <OpenInNew fontSize="small" sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
+          </MenuItem>
         )}
         {payment.target && (
-          <>
-            <MenuItem component="a" href={payment.target} target="_blank">
-              <ListItemIcon>
-                <FaTag size={20} />
-              </ListItemIcon>
-              <Typography variant="body2">
-                {payment.category === 'mint' ? 'Mint Collection' : `View on ${targetDomain}`}
-                <Typography variant="caption" display="block" color="text.secondary">
-                  {targetDomain}
-                </Typography>
+          <MenuItem component="a" href={payment.target} target="_blank">
+            <ListItemIcon>
+              <FaTag size={20} />
+            </ListItemIcon>
+            <Typography variant="body2">
+              {payment.category === 'mint' ? 'Mint Collection' : `View on ${targetDomain}`}
+              <Typography variant="caption" display="block" color="text.secondary">
+                {targetDomain}
               </Typography>
-              <OpenInNew fontSize="small" sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
-            </MenuItem>
-          </>
+            </Typography>
+            <OpenInNew fontSize="small" sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
+          </MenuItem>
         )}
         {payment.status === 'COMPLETED' ? (
           <>
