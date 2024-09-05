@@ -1,16 +1,9 @@
 export const QUERY_SOCIALS_INSIGHTS = /* GraphQL */ `
   query GetSocialsInsights($identity: Identity!, $me: Identity!) {
-    Wallet(input: { identity: $identity, blockchain: ethereum }) {
+    Wallet(input: { identity: $identity }) {
       addresses
       primaryDomain {
         name
-        tokenNft {
-          contentValue {
-            image {
-              small
-            }
-          }
-        }
       }
       domains(input: { limit: 1 }) {
         name
@@ -26,31 +19,18 @@ export const QUERY_SOCIALS_INSIGHTS = /* GraphQL */ `
           }
         }
         followerCount
-        isFarcasterPowerUser
       }
-      socialFollowers(
-        input: { filter: { identity: { _eq: $me }, dappName: { _in: [farcaster, lens] } } }
-      ) {
+      socialFollowers(input: { filter: { identity: { _eq: $me }, dappName: { _eq: farcaster } } }) {
         Follower {
           dappName
         }
       }
       socialFollowings(
-        input: { filter: { identity: { _eq: $me }, dappName: { _in: [farcaster, lens] } } }
+        input: { filter: { identity: { _eq: $me }, dappName: { _eq: farcaster } } }
       ) {
         Following {
           dappName
         }
-      }
-      ethTransfers: tokenTransfers(
-        input: { limit: 6, filter: { from: { _eq: $me } }, blockchain: ethereum }
-      ) {
-        type
-      }
-      baseTransfers: tokenTransfers(
-        input: { limit: 6, filter: { from: { _eq: $me } }, blockchain: base }
-      ) {
-        type
       }
     }
   }
@@ -58,17 +38,10 @@ export const QUERY_SOCIALS_INSIGHTS = /* GraphQL */ `
 
 export const QUERY_SOCIALS = /* GraphQL */ `
   query GetSocials($identity: Identity!) {
-    Wallet(input: { identity: $identity, blockchain: ethereum }) {
+    Wallet(input: { identity: $identity }) {
       addresses
       primaryDomain {
         name
-        tokenNft {
-          contentValue {
-            image {
-              small
-            }
-          }
-        }
       }
       domains(input: { limit: 1 }) {
         name
@@ -84,7 +57,6 @@ export const QUERY_SOCIALS = /* GraphQL */ `
           }
         }
         followerCount
-        isFarcasterPowerUser
       }
     }
   }
@@ -113,13 +85,6 @@ export const QUERY_SOCIALS_INSIGHTS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE
           addresses
           primaryDomain {
             name
-            tokenNft {
-              contentValue {
-                image {
-                  small
-                }
-              }
-            }
           }
           domains(input: { limit: 1 }) {
             name
@@ -135,32 +100,21 @@ export const QUERY_SOCIALS_INSIGHTS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE
               }
             }
             followerCount
-            isFarcasterPowerUser
             userAddress
           }
           socialFollowers(
-            input: { filter: { identity: { _eq: $me }, dappName: { _in: [farcaster, lens] } } }
+            input: { filter: { identity: { _eq: $me }, dappName: { _eq: farcaster } } }
           ) {
             Follower {
               dappName
             }
           }
           socialFollowings(
-            input: { filter: { identity: { _eq: $me }, dappName: { _in: [farcaster, lens] } } }
+            input: { filter: { identity: { _eq: $me }, dappName: { _eq: farcaster } } }
           ) {
             Following {
               dappName
             }
-          }
-          ethTransfers: tokenTransfers(
-            input: { limit: 6, filter: { from: { _eq: $me } }, blockchain: ethereum }
-          ) {
-            type
-          }
-          baseTransfers: tokenTransfers(
-            input: { limit: 6, filter: { from: { _eq: $me } }, blockchain: base }
-          ) {
-            type
           }
         }
       }
@@ -187,13 +141,6 @@ export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = /
           addresses
           primaryDomain {
             name
-            tokenNft {
-              contentValue {
-                image {
-                  small
-                }
-              }
-            }
           }
           domains(input: { limit: 1 }) {
             name
@@ -209,7 +156,6 @@ export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = /
               }
             }
             followerCount
-            isFarcasterPowerUser
             userAddress
           }
         }
@@ -220,7 +166,7 @@ export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = /
 
 export const QUERY_SOCIALS_INSIGHTS_LIGHT = /* GraphQL */ `
   query GetSocialsInsightsLight($identity: Identity!, $me: Identity!) {
-    Wallet(input: { identity: $identity, blockchain: ethereum }) {
+    Wallet(input: { identity: $identity }) {
       primaryDomain {
         name
       }
@@ -231,31 +177,18 @@ export const QUERY_SOCIALS_INSIGHTS_LIGHT = /* GraphQL */ `
         dappName
         profileName
         followerCount
-        isFarcasterPowerUser
       }
-      socialFollowers(
-        input: { filter: { identity: { _eq: $me }, dappName: { _in: [farcaster, lens] } } }
-      ) {
+      socialFollowers(input: { filter: { identity: { _eq: $me }, dappName: { _eq: farcaster } } }) {
         Follower {
           dappName
         }
       }
       socialFollowings(
-        input: { filter: { identity: { _eq: $me }, dappName: { _in: [farcaster, lens] } } }
+        input: { filter: { identity: { _eq: $me }, dappName: { _eq: farcaster } } }
       ) {
         Following {
           dappName
         }
-      }
-      ethTransfers: tokenTransfers(
-        input: { limit: 6, filter: { from: { _eq: $me } }, blockchain: ethereum }
-      ) {
-        type
-      }
-      baseTransfers: tokenTransfers(
-        input: { limit: 6, filter: { from: { _eq: $me } }, blockchain: base }
-      ) {
-        type
       }
     }
   }
@@ -263,7 +196,7 @@ export const QUERY_SOCIALS_INSIGHTS_LIGHT = /* GraphQL */ `
 
 export const QUERY_SOCIALS_LIGHT = /* GraphQL */ `
   query GetSocialsLight($identity: Identity!) {
-    Wallet(input: { identity: $identity, blockchain: ethereum }) {
+    Wallet(input: { identity: $identity }) {
       primaryDomain {
         name
       }
@@ -274,7 +207,6 @@ export const QUERY_SOCIALS_LIGHT = /* GraphQL */ `
         dappName
         profileName
         followerCount
-        isFarcasterPowerUser
       }
     }
   }

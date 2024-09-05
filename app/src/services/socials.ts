@@ -276,7 +276,7 @@ export function convertSocialResults(wallet: Wallet): ContactType | undefined {
             profileDisplayName: s.profileDisplayName,
             profileImage: s.profileImageContentValue?.image?.small ?? s.profileImage,
             followerCount: s.followerCount,
-            isFarcasterPowerUser: s.isFarcasterPowerUser
+            isFarcasterPowerUser: false // todo: airstack api does not return this
           } as SocialInfoType);
         }
         return acc;
@@ -293,9 +293,10 @@ export function convertSocialResults(wallet: Wallet): ContactType | undefined {
     meta.socials = [];
   }
 
-  if (wallet.primaryDomain && wallet.primaryDomain.tokenNft) {
+  // todo: airstack api does not return this
+  /*   if (wallet.primaryDomain && wallet.primaryDomain.tokenNft) {
     meta.ensAvatar = wallet.primaryDomain.tokenNft.contentValue?.image?.small as string;
-  }
+  } */
 
   if (!meta.ensAvatar && meta.socials.length > 0) {
     meta.ensAvatar = meta.socials[0].profileImage;
@@ -327,9 +328,10 @@ export function convertSocialResults(wallet: Wallet): ContactType | undefined {
     }
   }
 
-  if (wallet.tokenTransfers && wallet.tokenTransfers.length > 0) {
+  // todo: airstack api does not return this
+  /* if (wallet.tokenTransfers && wallet.tokenTransfers.length > 0) {
     meta.insights.sentTxs = wallet.tokenTransfers.length;
-  }
+  } */
 
   // @ts-ignore
   if ((wallet.ethTransfers as any) && wallet.ethTransfers.length > 0) {
@@ -351,6 +353,5 @@ export function normalizeUsername(username: string) {
     .replace('.eth', '')
     .replace('.cb.id', '')
     .replace('.xyz', '')
-    .replace('.base', '')
     .replace('.degen', '');
 }
