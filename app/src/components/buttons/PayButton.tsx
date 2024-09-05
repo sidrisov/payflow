@@ -3,37 +3,64 @@ import { useAccount, useChainId } from 'wagmi';
 import { CustomLoadingButton } from './LoadingPaymentButton';
 import { LoadingSwitchChainButton } from './LoadingSwitchNetworkButton';
 import { Token } from '../../utils/erc20contracts';
-import { FlowType } from '../../types/FlowType';
+import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { ConnectSignerDialog } from '../dialogs/ConnectSignerDialog';
+import { usePayflowTransaction } from '../../utils/hooks/usePayflowTransaction';
+import { PaymentType } from '../../types/PaymentType';
+import { PaymentOption } from '@paywithglide/glide-js';
 
 type PayButtonProps = {
   paymentToken: Token | undefined;
   buttonText: string;
-  isLoading: boolean;
   disabled: boolean;
-  status: string;
-  onClick: () => void;
+  paymentTx: any;
+  paymentWallet: FlowWalletType;
+  paymentOption: PaymentOption;
+  payment: PaymentType;
   senderFlow: FlowType;
+  onSuccess: () => void;
+  onError: (error: any) => void;
 };
 
 export const PayButton: React.FC<PayButtonProps> = ({
   paymentToken,
   buttonText,
-  isLoading,
   disabled,
-  status,
-  onClick,
-  senderFlow
+  paymentTx,
+  paymentWallet,
+  paymentOption,
+  payment,
+  senderFlow,
+  onSuccess,
+  onError
 }) => {
   const chainId = useChainId();
   const { address } = useAccount();
   const [openConnectSignerDrawer, setOpenConnectSignerDrawer] = useState(false);
 
-  const handleClick = () => {
+  const isNativeFlow = senderFlow.type !== 'FARCASTER_VERIFICATION' && senderFlow.type !== 'LINKED';
+  const { handleGlideTransaction, paymentTxStatus } = usePayflowTransaction(isNativeFlow);
+
+  const handleClick = async () => {
     if (address?.toLowerCase() !== senderFlow.signer.toLowerCase()) {
       setOpenConnectSignerDrawer(true);
     } else {
-      onClick();
+      try {
+        const result = await handleGlideTransaction({
+          paymentTx,
+          paymentWallet,
+          paymentOption,
+          payment,
+          senderFlow
+        });
+        if (result.success) {
+          onSuccess();
+        } else {
+          onError(new Error('Transaction failed'));
+        }
+      } catch (error) {
+        onError(error);
+      }
     }
   };
 
@@ -42,9 +69,9 @@ export const PayButton: React.FC<PayButtonProps> = ({
       {!paymentToken || chainId === paymentToken.chainId ? (
         <CustomLoadingButton
           title={buttonText}
-          loading={isLoading}
+          loading={paymentTxStatus.isPending}
           disabled={disabled}
-          status={status}
+          status={paymentTxStatus.status}
           onClick={handleClick}
         />
       ) : (

@@ -10,8 +10,8 @@ import {
   Tooltip
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { getPaymentOption, glideConfig } from '../../utils/glide';
-import { useSwitchChain, useChainId, useAccount, useWalletClient, useClient } from 'wagmi';
+import { getPaymentOption } from '../../utils/glide';
+import { useChainId } from 'wagmi';
 import { BackDialogTitle } from './BackDialogTitle';
 import { SenderField } from '../SenderField';
 import { KeyboardDoubleArrowDown } from '@mui/icons-material';
@@ -22,20 +22,12 @@ import { PaymentType } from '../../types/PaymentType';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { useContext, useMemo, useState } from 'react';
 import { Token } from '../../utils/erc20contracts';
-import { Hash } from 'viem';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
 import { ProfileContext } from '../../contexts/UserContext';
-import { useSafeTransfer } from '../../utils/hooks/useSafeTransfer';
 import { toast } from 'react-toastify';
 import { Social } from '../../generated/graphql/types';
-import { SafeAccountConfig } from '@safe-global/protocol-kit';
-import { SafeVersion } from '@safe-global/safe-core-sdk-types';
-import { updatePayment } from '../../services/payments';
 import { grey, red } from '@mui/material/colors';
-import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
-import { createSession, executeSession } from '@paywithglide/glide-js';
-import { delay } from '../../utils/delay';
 import { ChooseFlowDialog } from './ChooseFlowDialog';
 import { UpSlideTransition } from './TransitionDownUpSlide';
 import PoweredByGlideText from '../text/PoweredByGlideText';
@@ -43,8 +35,6 @@ import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
 import { MintMetadata } from '../../utils/mint';
 import { useMintPaymentTx } from '../../utils/hooks/useMintPaymentTx';
 import { PayButton } from '../buttons/PayButton';
-import { PaymentTxStatus } from '../../types/PaymentType';
-import { useEffect } from 'react';
 import { useDarkMode } from '../../utils/hooks/useDarkMode';
 import { useMobile } from '../../utils/hooks/useMobile';
 
@@ -87,37 +77,11 @@ export default function MintDialog({
   const [gasFee] = useState<bigint | undefined>(isNativeFlow ? BigInt(0) : undefined);
 
   const chainId = useChainId();
-  const { switchChainAsync } = useSwitchChain();
-
-  const { isConnected, address } = useAccount();
-
-  console.log(isConnected, address);
 
   const { profile } = useContext(ProfileContext);
 
   const [paymentWallet, setPaymentWallet] = useState<FlowWalletType>();
   const [paymentToken, setPaymentToken] = useState<Token>();
-  const [paymentTxStatus, setPaymentTxStatus] = useState<PaymentTxStatus>({
-    isPending: false,
-    isConfirmed: false,
-    error: false,
-    txHash: null,
-    status: ''
-  });
-
-  const { data: signer } = useWalletClient();
-  const client = useClient();
-
-  const { loading, confirmed, error, status, txHash, transfer, reset } = useSafeTransfer();
-  const {
-    loading: loadingRegular,
-    confirmed: confirmedRegular,
-    error: errorRegular,
-    status: statusRegular,
-    txHash: txHashRegular,
-    sendTransactionAsync,
-    reset: resetRegular
-  } = useRegularTransfer();
 
   const {
     data: mintData,
@@ -164,135 +128,6 @@ export default function MintDialog({
     }
     setPaymentWallet(compatibleWallets.find((w) => w.network === chainId) ?? compatibleWallets[0]);
   }, [compatibleWallets, chainId]);
-
-  useEffect(() => {
-    if (isNativeFlow) {
-      setPaymentTxStatus({
-        isPending: Boolean(loading || (txHash && !confirmed && !error)),
-        isConfirmed: Boolean(confirmed),
-        error: Boolean(error),
-        txHash: txHash ?? null,
-        status: status ?? ''
-      });
-    } else {
-      setPaymentTxStatus({
-        isPending: Boolean(loadingRegular || (txHashRegular && !confirmedRegular && !errorRegular)),
-        isConfirmed: Boolean(confirmedRegular),
-        error: Boolean(errorRegular),
-        txHash: txHashRegular ?? null,
-        status: statusRegular ?? ''
-      });
-    }
-  }, [
-    isNativeFlow,
-    loading,
-    txHash,
-    confirmed,
-    error,
-    status,
-    loadingRegular,
-    txHashRegular,
-    confirmedRegular,
-    errorRegular,
-    statusRegular
-  ]);
-
-  const submitGlideTransaction = async () => {
-    try {
-      if (
-        paymentTx &&
-        profile &&
-        client &&
-        signer &&
-        paymentWallet &&
-        paymentToken &&
-        paymentOption
-      ) {
-        if (isNativeFlow) {
-          reset();
-        } else {
-          resetRegular();
-        }
-
-        const session = await createSession(glideConfig, {
-          paymentCurrency: paymentOption.paymentCurrency,
-          currentChainId: chainId,
-          ...(paymentTx as any),
-          account: paymentWallet.address
-        });
-
-        const { sponsoredTransactionHash: glideTxHash } = await executeSession(glideConfig, {
-          session,
-          currentChainId: chainId as any,
-          switchChainAsync,
-          sendTransactionAsync: async (tx) => {
-            console.log('Glide tnxs: ', tx);
-
-            let txHash;
-            if (isNativeFlow) {
-              // TODO: hard to figure out if there 2 signers or one, for now consider if signerProvider not specified - 1, otherwise - 2
-              const owners = [];
-              if (
-                senderFlow.signerProvider &&
-                senderFlow.signer.toLowerCase() !== profile.identity.toLowerCase()
-              ) {
-                owners.push(profile.identity);
-              }
-              owners.push(senderFlow.signer);
-
-              const safeAccountConfig: SafeAccountConfig = {
-                owners,
-                threshold: 1
-              };
-
-              const saltNonce = senderFlow.saltNonce as string;
-              const safeVersion = paymentWallet.version as SafeVersion;
-
-              txHash = await transfer(
-                client,
-                signer,
-                {
-                  from: paymentWallet.address,
-                  to: tx.to,
-                  data: tx.data && tx.data.length ? tx.data : undefined,
-                  value: tx.value
-                },
-                safeAccountConfig,
-                safeVersion,
-                saltNonce
-              );
-            } else {
-              txHash = await sendTransactionAsync(tx);
-            }
-
-            if (txHash) {
-              payment.fulfillmentId = session.sessionId;
-              payment.fulfillmentChainId = tx.chainId;
-              payment.fulfillmentHash = txHash;
-              updatePayment(payment);
-            }
-            return txHash as Hash;
-          }
-        });
-
-        console.log('Glide txHash:', glideTxHash);
-
-        if (glideTxHash && payment.referenceId) {
-          payment.hash = glideTxHash;
-          updatePayment(payment);
-          toast.success(`Minted "${mint.metadata.name}"`, { autoClose: 2000 });
-
-          await delay(2000);
-          window.location.href = '/';
-        } else {
-          toast.error(`Failed to mint "${mint.metadata.name}"`, { autoClose: 2000 });
-        }
-      }
-    } catch (error) {
-      toast.error(`Failed to mint "${mint.metadata.name}"`, { autoClose: 2000 });
-      console.error(`Failed to mint with error`, error);
-    }
-  };
 
   const isLoading = isMintLoading || isPaymentOptionsLoading;
   const hasPaymentOption =
@@ -431,11 +266,20 @@ export default function MintDialog({
             <PayButton
               paymentToken={paymentToken}
               buttonText={mintStatus === 'ended' ? 'Mint Ended' : 'Mint'}
-              isLoading={paymentTxStatus.isPending}
               disabled={!hasPaymentOption}
-              status={paymentTxStatus.status}
-              onClick={submitGlideTransaction}
+              paymentTx={paymentTx}
+              paymentWallet={paymentWallet!}
+              paymentOption={paymentOption!}
+              payment={payment}
               senderFlow={senderFlow}
+              onSuccess={() => {
+                toast.success(`Minted "${mint.metadata.name}"`, { autoClose: 2000 });
+                setTimeout(() => (window.location.href = '/'), 2000);
+              }}
+              onError={(error) => {
+                toast.error(`Failed to mint "${mint.metadata.name}"`, { autoClose: 2000 });
+                console.error(`Failed to mint with error`, error);
+              }}
             />
             <PoweredByGlideText />
           </Box>
