@@ -8,8 +8,6 @@ import ua.sinaver.web3.payflow.message.ConnectedAddresses;
 import java.util.List;
 
 public interface ISocialGraphService {
-	List<String> getAllTokenOwners(String blockchain, String address);
-
 	List<String> getSocialFollowings(String identity);
 
 	FarcasterCast getTopCastReply(String parentHash, List<String> ignoredFids);
@@ -17,9 +15,7 @@ public interface ISocialGraphService {
 	List<FarcasterFanTokenAuction> getFanTokenAuctions(List<String> farcasterUsernames);
 
 	List<String> getFanTokenHolders(String fanTokenName);
-
-	FarcasterFanTokenAuction getActiveFanTokenAuction(String farcasterUsername);
-
+	
 	FarcasterCast getReplySocialCapitalValue(String hash);
 
 	ConnectedAddresses getIdentityVerifiedAddresses(String identity);

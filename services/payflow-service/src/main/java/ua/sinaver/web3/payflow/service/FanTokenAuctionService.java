@@ -12,8 +12,10 @@ import ua.sinaver.web3.payflow.message.SocialInfo;
 import ua.sinaver.web3.payflow.service.api.IContactBookService;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
-import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static ua.sinaver.web3.payflow.config.CacheConfig.FAN_TOKENS_CACHE_NAME;
@@ -30,7 +32,7 @@ public class FanTokenAuctionService {
 
 	@Autowired
 	private ISocialGraphService socialGraphService;
-	
+
 	@Cacheable(value = FAN_TOKENS_CACHE_NAME, key = "#user.identity", unless = "#result.isEmpty()")
 	public List<ContactWithFanTokenAuction> getFanTokenAuctionsAmongContacts(User user) {
 		val contacts = contactBookService.getAllContacts(user).contacts();
@@ -68,38 +70,5 @@ public class FanTokenAuctionService {
 					).collect(Collectors.toList());
 		}
 		return Collections.emptyList();
-	}
-
-	public List<ContactWithFanTokenAuction> refreshTokensMeta(List<ContactWithFanTokenAuction> cachedContactWithFanTokenAuctions) {
-		Date now = new Date();
-		return cachedContactWithFanTokenAuctions.stream()
-				.filter(record ->
-						record.auction().estimatedStartTimestamp().toInstant()
-								.plus(3, ChronoUnit.DAYS)
-								.isAfter(now.toInstant()))
-				.toList();
-
-		/*val updatedList = cachedNotExpiredContactWithFanTokenAuctions.stream()
-				.takeWhile(contactWithFanTokenAuction -> contactWithFanTokenAuction.auction().estimatedStartTimestamp().before(now))
-				.map(contactWithFanTokenAuction -> {
-					val cachedAuction = contactWithFanTokenAuction.auction();
-					val updatedAuction = socialGraphService.getActiveFanTokenAuction(cachedAuction.farcasterUsername());
-					if (updatedAuction == null) {
-						return null;
-					}
-					val supply = (int) (updatedAuction.getAuctionSupply() / Math.pow(10, updatedAuction.getDecimals()));
-					return new ContactWithFanTokenAuction(contactWithFanTokenAuction.contact(),
-							new ContactWithFanTokenAuction.FanTokenAuction(
-									updatedAuction.getEntityName(),
-									supply,
-									updatedAuction.getEstimatedStartTimestamp(),
-									updatedAuction.getLaunchCastUrl()));
-				})
-				.filter(Objects::nonNull)
-				.collect(Collectors.toList());
-
-		// Add the remaining entries that were not processed
-		updatedList.addAll(cachedNotExpiredContactWithFanTokenAuctions.subList(updatedList.size(), cachedNotExpiredContactWithFanTokenAuctions.size()));
-		return updatedList;*/
 	}
 }

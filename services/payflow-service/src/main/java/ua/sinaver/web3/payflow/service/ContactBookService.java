@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -43,8 +42,6 @@ public class ContactBookService implements IContactBookService {
 	@Value("${payflow.favourites.limit:0}")
 	private int defaultFavouriteContactLimit;
 
-	@Value("${payflow.contacts.farcon.enabled:false}")
-	private boolean farConContactsEnabled;
 	@Autowired
 	private ContactRepository contactRepository;
 
@@ -75,7 +72,6 @@ public class ContactBookService implements IContactBookService {
 	// reuse property to increase the contacts limit
 	@Value("${payflow.invitation.whitelisted.default.users}")
 	private Set<String> whitelistedUsers;
-	private List<String> farConParticipants = new ArrayList<>();
 
 	@Override
 	@CacheEvict(value = CONTACTS_CACHE_NAME, key = "#user.identity")
@@ -310,8 +306,7 @@ public class ContactBookService implements IContactBookService {
 	public List<String> filterByInvited(List<String> addresses) {
 		log.debug("Whitelisted {}", whitelistedUsers);
 		var whitelistedAddresses = addresses.stream()
-				.filter(address -> whitelistedUsers.contains(address.toLowerCase())
-						|| farConParticipants.contains(address.toLowerCase()))
+				.filter(address -> whitelistedUsers.contains(address.toLowerCase()))
 				.toList();
 		log.debug("Whitelisted addresses {} {}", addresses, whitelistedUsers);
 
@@ -322,36 +317,5 @@ public class ContactBookService implements IContactBookService {
 				notWhitelisted);
 		return Stream.concat(whitelistedAddresses.stream(),
 				invitations.keySet().stream()).collect(Collectors.toList());
-	}
-
-	// run only once
-	@Scheduled(fixedRate = Long.MAX_VALUE)
-	// @CacheEvict(cacheNames = {ETH_DENVER_PARTICIPANTS_CACHE_NAME,
-	// ETH_DENVER_PARTICIPANTS_POAP_CACHE_NAME},
-	// beforeInvocation = true,
-	// allEntries = true)
-	public void preFetchFarConParticipants() {
-		if (!farConContactsEnabled) {
-			return;
-		}
-
-		if (log.isDebugEnabled()) {
-			log.debug("Fetching FarCon participants list");
-		}
-
-		try {
-			val farConParticipants = socialGraphService.getAllTokenOwners("base",
-					"0x43ad2d5bd48de6d20530a48b5c357e26459afb3c");
-
-			if (log.isDebugEnabled()) {
-				log.debug("Fetched FarCon participants: {}",
-						log.isTraceEnabled() ? farConParticipants : farConParticipants.size());
-			}
-
-			this.farConParticipants = farConParticipants;
-		} catch (Throwable t) {
-			log.error("Couldn't fetch FarCon participants {}, {}", t.getMessage(),
-					log.isTraceEnabled() ? t : null);
-		}
 	}
 }

@@ -35,10 +35,7 @@ public class InfoController {
 		if (principal != null) {
 			val user = userService.findByIdentity(principal.getName());
 			if (user != null) {
-				// TODO: a bit hacky, but is good enough for now! better to keep track each
-				//  record with cachedTimestamp
-				val cachedFanTokens = fanTokenAuctionService.getFanTokenAuctionsAmongContacts(user);
-				return fanTokenAuctionService.refreshTokensMeta(cachedFanTokens);
+				return fanTokenAuctionService.getFanTokenAuctionsAmongContacts(user);
 			} else {
 				throw new UsernameNotFoundException("User not found!");
 			}

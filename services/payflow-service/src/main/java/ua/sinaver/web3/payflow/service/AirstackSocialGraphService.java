@@ -18,7 +18,10 @@ import ua.sinaver.web3.payflow.message.moxie.FanTokenHolder;
 import ua.sinaver.web3.payflow.message.moxie.FanTokenLockWallet;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static ua.sinaver.web3.payflow.config.CacheConfig.*;
@@ -59,51 +62,6 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 		moxieVestingGraphQlClient = HttpGraphQlClient.builder(moxieWebClient)
 				.url(moxieUrl.concat("/moxie_vesting_mainnet/version/latest"))
 				.build();
-	}
-
-	@Override
-	@Cacheable(value = TOKEN_OWNERS_CACHE_NAME, unless = "#result.isEmpty()")
-	public List<String> getAllTokenOwners(String blockchain, String address) {
-		var hasNextPage = false;
-		var nextCursor = "";
-		val participants = new ArrayList<String>();
-
-		do {
-			try {
-				val owners = airstackGraphQlClient.documentName(
-								"getTokenOwners")
-						.variable("blockchain", blockchain)
-						.variable("tokenAddress", address)
-						.variable("cursor", nextCursor)
-						.execute().block();
-
-				if (owners != null) {
-					val pageInfo = owners
-							.field("TokenBalances.pageInfo")
-							.toEntity(PageInfo.class);
-					hasNextPage = pageInfo != null && pageInfo.getHasNextPage();
-					nextCursor = pageInfo != null ? pageInfo.getNextCursor() : "";
-
-					val rawParticipants = owners
-							.field("TokenBalances.TokenBalance")
-							.toEntityList(TokenBalance.class);
-
-					participants.addAll(rawParticipants.stream().map(o -> o.getOwner().getIdentity()).toList());
-
-					log.debug("Fetched {} participants ", participants.size());
-
-				} else {
-					hasNextPage = false;
-				}
-			} catch (Exception e) {
-				log.error("Error fetching FarCon participants (spork based): {}",
-						e.getMessage());
-				hasNextPage = false;
-			}
-
-		} while (hasNextPage);
-
-		return participants;
 	}
 
 	@Override
@@ -233,34 +191,7 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 		log.error("Failed to fetch fan token holders for token name: {}", fanTokenName);
 		return Collections.emptyList();
 	}
-
-	@Override
-	@Cacheable(value = FAN_TOKEN_CACHE_NAME, unless = "#result==null")
-	public FarcasterFanTokenAuction getActiveFanTokenAuction(String farcasterUsername) {
-		try {
-			val auctionsResponse = airstackGraphQlClient.documentName(
-							"getActiveFanTokenAuction")
-					.variable("entityName", farcasterUsername)
-					.execute().block();
-			if (auctionsResponse != null) {
-				log.debug("Response: {}", auctionsResponse);
-				val auction = auctionsResponse.field("FarcasterFanTokenAuctions.FarcasterFanTokenAuction")
-						.toEntityList(FarcasterFanTokenAuction.class).stream().findFirst().orElse(null);
-				log.debug("Fetched fan token {} for farcaster username: {}", auction,
-						farcasterUsername);
-				return auction;
-			}
-		} catch (Throwable t) {
-			log.error("Error during fetching fan token for farcaster username: {}, error: {} - {}",
-					farcasterUsername,
-					t.getMessage(),
-					log.isTraceEnabled() ? t : null);
-		}
-
-		log.error("Failed to fetch fan token for farcaster username: {}", farcasterUsername);
-		return null;
-	}
-
+	
 	@Override
 	public FarcasterCast getReplySocialCapitalValue(String hash) {
 		try {
@@ -386,7 +317,7 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 					val followers =
 							socialMetadataResponse.field("Wallet.socialFollowers.Follower")
 									.toEntityList(SocialFollower.class);
-					
+
 					val socialFollowings =
 							new SocialFollowingOutput.Builder().Following(followings).build();
 
