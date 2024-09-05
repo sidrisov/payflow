@@ -1,11 +1,17 @@
-import { Avatar, ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/material';
-import { Cancel, OpenInNew } from '@mui/icons-material';
+import {
+  Avatar,
+  ListItemIcon,
+  Menu,
+  MenuItem,
+  MenuList,
+  MenuProps,
+  Typography
+} from '@mui/material';
+import { Cancel, OpenInNew, Receipt, Paid } from '@mui/icons-material';
 import { cancelPayment } from '../../services/payments';
 import { PaymentType } from '../../types/PaymentType';
 import { toast } from 'react-toastify';
 import { green } from '@mui/material/colors';
-import { IoCheckmarkDoneCircle } from 'react-icons/io5';
-import { IoIosCheckmarkCircle } from 'react-icons/io';
 import { TbProgressCheck } from 'react-icons/tb';
 import { getReceiptUrl } from '../../utils/receipts';
 import { FaTag } from 'react-icons/fa6';
@@ -55,7 +61,12 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
               <ListItemIcon>
                 <FaTag size={20} />
               </ListItemIcon>
-              {`View on ${targetDomain}`}
+              <Typography variant="body2">
+                {payment.category === 'mint' ? 'Mint Collection' : `View on ${targetDomain}`}
+                <Typography variant="caption" display="block" color="text.secondary">
+                  {targetDomain}
+                </Typography>
+              </Typography>
               <OpenInNew fontSize="small" sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
             </MenuItem>
           </>
@@ -68,9 +79,14 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
               target="_blank"
               sx={{ color: green.A700 }}>
               <ListItemIcon sx={{ color: green.A700 }}>
-                <IoIosCheckmarkCircle size={20} />
+                <Receipt />
               </ListItemIcon>
-              Receipt
+              <Typography variant="body2">
+                Payment Receipt
+                <Typography variant="caption" display="block" color="text.secondary">
+                  Original payment transaction
+                </Typography>
+              </Typography>
               <OpenInNew fontSize="small" sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
             </MenuItem>
             {payment.fulfillmentHash && (
@@ -80,9 +96,14 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
                 target="_blank"
                 sx={{ color: green.A700 }}>
                 <ListItemIcon sx={{ color: green.A700 }}>
-                  <IoCheckmarkDoneCircle size={20} />
+                  <Paid />
                 </ListItemIcon>
-                Fulfilled
+                <Typography variant="body2">
+                  Fulfillment Receipt
+                  <Typography variant="caption" display="block" color="text.secondary">
+                    Cross-chain settlement transaction
+                  </Typography>
+                </Typography>
                 <OpenInNew fontSize="small" sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
               </MenuItem>
             )}
