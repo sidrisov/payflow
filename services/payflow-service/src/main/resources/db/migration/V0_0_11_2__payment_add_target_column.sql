@@ -1,0 +1,2 @@
+ALTER TABLE payment
+ADD COLUMN target VARCHAR(512);

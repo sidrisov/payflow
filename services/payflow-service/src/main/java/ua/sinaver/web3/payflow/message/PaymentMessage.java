@@ -21,7 +21,8 @@ public record PaymentMessage(String referenceId,
                              Integer fulfillmentChainId,
                              String fulfillmentHash,
                              PaymentSource source,
-                             String comment) {
+                             String comment,
+                             String target) {
 
 	public static PaymentMessage convert(Payment payment, boolean includeRef,
 	                                     boolean includeComment) {
@@ -51,7 +52,8 @@ public record PaymentMessage(String referenceId,
 				payment.getFulfillmentChainId(),
 				payment.getFulfillmentHash(),
 				new PaymentMessage.PaymentSource(payment.getSourceApp(), payment.getSourceRef()),
-				includeComment ? payment.getComment() : null);
+				includeComment ? payment.getComment() : null,
+				payment.getTarget());
 	}
 
 	public record PaymentSource(String app, String ref) {

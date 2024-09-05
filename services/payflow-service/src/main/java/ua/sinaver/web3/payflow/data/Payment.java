@@ -108,6 +108,9 @@ public class Payment {
 	@Version
 	private Long version;
 
+	@Column(name = "target", length = 512)
+	private String target;
+
 	public Payment(PaymentType type, User receiver, Integer network, String token) {
 		this.type = type;
 		this.receiver = receiver;

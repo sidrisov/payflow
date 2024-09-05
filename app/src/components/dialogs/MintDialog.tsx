@@ -235,7 +235,7 @@ export default function MintDialog({
 
             if (txHash) {
               payment.fulfillmentId = session.sessionId;
-              payment.fulfillmentChainId = paymentTx.chainId;
+              payment.fulfillmentChainId = tx.chainId;
               payment.fulfillmentHash = txHash;
               updatePayment(payment);
             }

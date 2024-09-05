@@ -23,4 +23,5 @@ export interface PaymentType {
   fulfillmentHash?: Hash;
   source?: { app: string; ref?: string };
   comment?: string;
+  target?: string;
 }

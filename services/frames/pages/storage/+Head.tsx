@@ -59,7 +59,7 @@ export function Head() {
           content={`${API_URL}/api/farcaster/frames/storage/check`}
         />
 
-        <meta property="fc:frame:button:2" content="Add action" />
+        <meta property="fc:frame:button:2" content="Install" />
         <meta property="fc:frame:button:2:action" content="link" />
         <meta property="fc:frame:button:2:target" content={addActionUrl} />
 

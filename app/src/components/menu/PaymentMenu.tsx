@@ -1,4 +1,4 @@
-import { Avatar, Divider, ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/material';
+import { Avatar, ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/material';
 import { Cancel, OpenInNew } from '@mui/icons-material';
 import { cancelPayment } from '../../services/payments';
 import { PaymentType } from '../../types/PaymentType';
@@ -8,8 +8,21 @@ import { IoCheckmarkDoneCircle } from 'react-icons/io5';
 import { IoIosCheckmarkCircle } from 'react-icons/io';
 import { TbProgressCheck } from 'react-icons/tb';
 import { getReceiptUrl } from '../../utils/receipts';
+import { FaTag } from 'react-icons/fa6';
+
+function getDomainFromUrl(url: string): string {
+  try {
+    const parsedUrl = new URL(url);
+    return parsedUrl.hostname;
+  } catch (error) {
+    console.error('Invalid URL:', url);
+    return url; // Return the original string if it's not a valid URL
+  }
+}
 
 export function PaymentMenu({ payment, ...props }: MenuProps & { payment: PaymentType }) {
+  const targetDomain = payment.target ? getDomainFromUrl(payment.target) : '';
+
   return (
     <Menu
       {...props}
@@ -32,9 +45,19 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
                 />
               </ListItemIcon>
               {payment.source.app}
-              <OpenInNew fontSize="small" sx={{ margin: 1 }} />
+              <OpenInNew fontSize="small" sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
             </MenuItem>
-            <Divider />
+          </>
+        )}
+        {payment.target && (
+          <>
+            <MenuItem component="a" href={payment.target} target="_blank">
+              <ListItemIcon>
+                <FaTag size={20} />
+              </ListItemIcon>
+              {`View on ${targetDomain}`}
+              <OpenInNew fontSize="small" sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
+            </MenuItem>
           </>
         )}
         {payment.status === 'COMPLETED' ? (
@@ -48,7 +71,7 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
                 <IoIosCheckmarkCircle size={20} />
               </ListItemIcon>
               Receipt
-              <OpenInNew fontSize="small" sx={{ ml: 1 }} />
+              <OpenInNew fontSize="small" sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
             </MenuItem>
             {payment.fulfillmentHash && (
               <MenuItem
@@ -60,7 +83,7 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
                   <IoCheckmarkDoneCircle size={20} />
                 </ListItemIcon>
                 Fulfilled
-                <OpenInNew fontSize="small" sx={{ ml: 1 }} />
+                <OpenInNew fontSize="small" sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
               </MenuItem>
             )}
           </>
@@ -75,7 +98,7 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
                   <TbProgressCheck size={20} />
                 </ListItemIcon>
                 Progress
-                <OpenInNew fontSize="small" sx={{ margin: 1 }} />
+                <OpenInNew fontSize="small" sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
               </MenuItem>
             )}
             <MenuItem

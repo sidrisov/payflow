@@ -12,7 +12,7 @@ interface MintUrlParams {
 
 export function Head() {
   const { urlParsed } = usePageContext();
-  const { original, provider, chainId, contract, referral, tokenId }: MintUrlParams =
+  const { provider, chainId, contract, tokenId, referral, original }: MintUrlParams =
     urlParsed.search as unknown as MintUrlParams;
 
   const imageUrl = `${FRAMES_URL}/images/mint.png?provider=${provider}&chainId=${chainId}&contract=${contract}&tokenId=${tokenId}`;
@@ -21,9 +21,34 @@ export function Head() {
   paymentMintSubmitUrl.searchParams.append('provider', provider);
   paymentMintSubmitUrl.searchParams.append('chainId', chainId);
   paymentMintSubmitUrl.searchParams.append('contract', contract);
-  paymentMintSubmitUrl.searchParams.append('tokenId', tokenId ?? '');
-  paymentMintSubmitUrl.searchParams.append('referral', referral ?? '');
+  if (tokenId) {
+    paymentMintSubmitUrl.searchParams.append('tokenId', tokenId);
+  }
+  if (referral) {
+    paymentMintSubmitUrl.searchParams.append('referral', referral);
+  }
   paymentMintSubmitUrl.searchParams.append('original', original);
+
+  const baseUrl = 'https://warpcast.com/~/compose';
+  const castText = encodeURIComponent(
+    `Mint via @payflow with 20+ tokens across multiple chains\ncc: @sinaver.eth /payflow`
+  );
+
+  const currentFrameUrl = new URL(`${FRAMES_URL}/mint`);
+  currentFrameUrl.searchParams.append('provider', provider);
+  currentFrameUrl.searchParams.append('chainId', chainId);
+  currentFrameUrl.searchParams.append('contract', contract);
+  if (tokenId) {
+    currentFrameUrl.searchParams.append('tokenId', tokenId);
+  }
+  if (referral) {
+    currentFrameUrl.searchParams.append('referral', referral);
+  }
+  currentFrameUrl.searchParams.append('original', encodeURIComponent(original));
+
+  const addActionUrl =
+    'https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fproducts%2Fmint';
+  const shareComposeDeeplink = `${baseUrl}?text=${castText}&embeds[]=${encodeURIComponent(currentFrameUrl.toString())}`;
 
   return (
     <>
@@ -73,10 +98,18 @@ export function Head() {
         <meta property="fc:frame:button:1:target" content={paymentMintSubmitUrl.toString()} />
         <meta
           property="fc:frame:button:2"
-          content={`View on ${provider === 'zora.co' ? 'Zora' : 'Rodeo'}`}
+          content={`${provider === 'zora.co' ? 'Zora' : 'Rodeo'}`}
         />
         <meta property="fc:frame:button:2:action" content="link" />
         <meta property="fc:frame:button:2:target" content={original} />
+
+        <meta property="fc:frame:button:3" content="Install" />
+        <meta property="fc:frame:button:3:action" content="link" />
+        <meta property="fc:frame:button:3:target" content={addActionUrl} />
+
+        <meta property="fc:frame:button:4" content="Share" />
+        <meta property="fc:frame:button:4:action" content="link" />
+        <meta property="fc:frame:button:4:target" content={shareComposeDeeplink} />
       </head>
     </>
   );

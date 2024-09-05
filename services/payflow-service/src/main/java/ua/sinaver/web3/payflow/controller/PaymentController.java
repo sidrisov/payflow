@@ -384,7 +384,7 @@ public class PaymentController {
 				} else if (payment.getCategory().equals("mint")) {
 					// TODO: include the collection and author of the mint
 					val castText = String.format("""
-									@%s, you've been airdropped the NFT mint by @%s 🎉
+									@%s, you've been airdropped NFT from the above cast by @%s 🎉
 																																									
 									p.s. join /payflow channel for updates 👀""",
 							receiverFname,
@@ -402,7 +402,7 @@ public class PaymentController {
 					if (payment.getReceiver() != null) {
 						try {
 							val messageText = String.format("""
-											 @%s, you've been airdropped the NFT mint by @%s 🎉
+											 @%s, you've been airdropped NFT from the following cast by @%s 🎉
 																						
 											🔗 Source: %s
 											🧾 Receipt: %s

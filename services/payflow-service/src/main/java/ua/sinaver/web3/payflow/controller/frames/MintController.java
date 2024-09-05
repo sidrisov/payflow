@@ -55,7 +55,8 @@ public class MintController {
 	                                      Integer receiverFid,
 	                                      String receiverAddress,
 	                                      Integer chainId,
-	                                      String token) {
+	                                      String token,
+	                                      String original) {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val castHash = validateMessage.action().cast().hash();
 		val sourceRef = String.format("https://warpcast.com/%s/%s",
@@ -70,6 +71,7 @@ public class MintController {
 		payment.setSourceApp(sourceApp);
 		payment.setSourceRef(sourceRef);
 		payment.setSourceHash(castHash);
+		payment.setTarget(original);
 		return payment;
 	}
 
@@ -146,7 +148,7 @@ public class MintController {
 				Optional.ofNullable(referral).orElse(""));
 
 		val payment = getMintPayment(validateMessage, clickedProfile, receiverFid,
-				receiverAddress, chainId, token);
+				receiverAddress, chainId, token, original);
 		paymentRepository.save(payment);
 
 		log.debug("Mint payment intent saved: {}", payment);
