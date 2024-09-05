@@ -20,20 +20,19 @@ import java.util.HashMap;
 
 @Configuration
 public class CacheConfig {
-	public static final String CACHE_PREFIX_V0 = "v0:";
-	public static final String CACHE_PREFIX_V1 = "v1:";
-	public static final String CONTACTS_CACHE_NAME = CACHE_PREFIX_V0 + "contacts";
-	public static final String CONTACT_LIST_CACHE_NAME = CACHE_PREFIX_V0 + "contact-list";
-	public static final String FAN_TOKENS_CACHE_NAME = CACHE_PREFIX_V0 + "moxie-fan-tokens";
-	public static final String FAN_TOKEN_CACHE_NAME = CACHE_PREFIX_V0 + "moxie-fan-token";
-	public static final String SOCIALS_CACHE_NAME = CACHE_PREFIX_V0 + "socials";
-	public static final String SOCIALS_INSIGHTS_CACHE_NAME = CACHE_PREFIX_V0 + "insights";
-	public static final String FARCASTER_VERIFICATIONS_CACHE_NAME = CACHE_PREFIX_V1 + "verifications";
-	public static final String NEYNAR_FARCASTER_USER_CACHE = CACHE_PREFIX_V1 + "farcaster-users";
-	public static final String TOKEN_OWNERS_CACHE_NAME = CACHE_PREFIX_V0 + "token-owners";
-	public static final String POAP_OWNERS_CACHE_NAME = CACHE_PREFIX_V0 + "poap-owners";
-	public static final String USERS_CACHE_NAME = CACHE_PREFIX_V0 + "users";
-	public static final String INVITATIONS_CACHE_NAME = CACHE_PREFIX_V0 + "invitations";
+	public static final String CACHE_PREFIX_VERSION = "v0.0.11_0:";
+	public static final String CONTACTS_CACHE_NAME = CACHE_PREFIX_VERSION + "contacts";
+	public static final String CONTACT_LIST_CACHE_NAME = CACHE_PREFIX_VERSION + "contact-list";
+	public static final String FAN_TOKENS_CACHE_NAME = CACHE_PREFIX_VERSION + "moxie-fan-tokens";
+	public static final String FAN_TOKEN_CACHE_NAME = CACHE_PREFIX_VERSION + "moxie-fan-token";
+	public static final String SOCIALS_CACHE_NAME = CACHE_PREFIX_VERSION + "socials";
+	public static final String SOCIALS_INSIGHTS_CACHE_NAME = CACHE_PREFIX_VERSION + "insights";
+	public static final String FARCASTER_VERIFICATIONS_CACHE_NAME = CACHE_PREFIX_VERSION + "verifications";
+	public static final String NEYNAR_FARCASTER_USER_CACHE = CACHE_PREFIX_VERSION + "farcaster-users";
+	public static final String TOKEN_OWNERS_CACHE_NAME = CACHE_PREFIX_VERSION + "token-owners";
+	public static final String POAP_OWNERS_CACHE_NAME = CACHE_PREFIX_VERSION + "poap-owners";
+	public static final String USERS_CACHE_NAME = CACHE_PREFIX_VERSION + "users";
+	public static final String INVITATIONS_CACHE_NAME = CACHE_PREFIX_VERSION + "invitations";
 
 
 	@Value("${spring.cache.contacts.eth-denver.expireAfterWrite:10m}")

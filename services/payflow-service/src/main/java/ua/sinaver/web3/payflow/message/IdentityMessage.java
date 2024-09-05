@@ -1,7 +1,6 @@
 package ua.sinaver.web3.payflow.message;
 
 import lombok.val;
-import org.apache.commons.lang3.BooleanUtils;
 import ua.sinaver.web3.payflow.data.PreferredTokens;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
@@ -55,16 +54,18 @@ public record IdentityMessage(
 		SocialInsights insights = null;
 
 		if (walletSocials != null) {
-			xmtp = walletSocials.getXmtp() != null && !walletSocials.getXmtp().isEmpty() && walletSocials.getXmtp().getFirst().getIsXMTPEnabled();
+			//xmtp =
+			//walletSocials.getXmtp() != null && !walletSocials.getXmtp().isEmpty() &&
+			// walletSocials.getXmtp().getFirst().getIsXMTPEnabled();
 
 			if (walletSocials.getPrimaryDomain() != null) {
 				ens = walletSocials.getPrimaryDomain().getName();
-				if (walletSocials.getPrimaryDomain().getTokenNft() != null) {
+				/*if (walletSocials.getPrimaryDomain().getTokenNft() != null) {
 					if (walletSocials.getPrimaryDomain().getTokenNft().getContentValue() != null
 							&& walletSocials.getPrimaryDomain().getTokenNft().getContentValue().getImage() != null)
 						ensAvatar =
 								walletSocials.getPrimaryDomain().getTokenNft().getContentValue().getImage().getSmall();
-				}
+				}*/
 			} else if (walletSocials.getDomains() != null && !walletSocials.getDomains().isEmpty()) {
 				ens = walletSocials.getDomains().getFirst().getName();
 			}
@@ -88,9 +89,9 @@ public record IdentityMessage(
 		String farcasterFollow = null;
 		String lensFollow = null;
 
-		if (wallet.getTokenTransfers() != null && !wallet.getTokenTransfers().isEmpty()) {
+		/*if (wallet.getTokenTransfers() != null && !wallet.getTokenTransfers().isEmpty()) {
 			sentTxs = wallet.getTokenTransfers().size();
-		}
+		}*/
 
 		val socialFollowers = wallet.getSocialFollowers();
 		val socialFollowings = wallet.getSocialFollowings();
@@ -108,7 +109,7 @@ public record IdentityMessage(
 				}
 			}
 
-			if (socialFollowings.getFollowing().stream()
+			/*if (socialFollowings.getFollowing().stream()
 					.anyMatch(f -> f.getDappName().equals(SocialDappName.lens.toString()))) {
 
 				if (socialFollowers.getFollower() != null && socialFollowers.getFollower().stream()
@@ -117,7 +118,7 @@ public record IdentityMessage(
 				} else {
 					lensFollow = "following";
 				}
-			}
+			}*/
 		}
 
 		return new SocialInsights(farcasterFollow, lensFollow, sentTxs);
@@ -139,7 +140,7 @@ public record IdentityMessage(
 						return new SocialInfo(s.getDappName().name(), s.getProfileName(),
 								s.getProfileDisplayName(), s.getUserId(),
 								profileImage, s.getFollowerCount(),
-								BooleanUtils.isTrue(s.getIsFarcasterPowerUser()));
+								/*BooleanUtils.isTrue(s.getIsFarcasterPowerUser()*/false);
 					}).collect(Collectors.toList());
 		} else {
 			return Collections.emptyList();

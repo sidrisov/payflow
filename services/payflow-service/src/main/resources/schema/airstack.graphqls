@@ -9,105 +9,8 @@ custom scalar types.
 """
 directive @specifiedBy(url: String!) on SCALAR
 
-"""Represents on-chain smart contract account"""
-type Account {
-  """Airstack unique identifier for the account"""
-  id: ID!
-
-  """Standard of account-  ERC6551, Safe etc"""
-  standard: AccountStandard!
-
-  """Blockchain where account is created"""
-  blockchain: TokenBlockchain
-
-  """ERC6551 standard: Address of ERC721 token"""
-  tokenAddress: Address
-
-  """ERC6551 standard: tokenId of ERC721 token"""
-  tokenId: String
-
-  """
-  Nested query - on-chain wallet related information, including address,
-  domains, social profile, other token balances, and transfer history
-  """
-  address: Wallet!
-
-  """ERC6551 standard : Registry used to deploy smart contract wallet"""
-  registry: Address
-
-  """
-  ERC6551 standard : Implementation address of on chain smart contract account
-  """
-  implementation: String
-
-  """ERC6551 standard salt for account creation"""
-  salt: String
-
-  """Block number of the account creation transaction"""
-  createdAtBlockNumber: Int
-
-  """Block timestamp of the account creation transaction"""
-  createdAtBlockTimestamp: Time
-
-  """Transaction Hash of the account creation transaction"""
-  creationTransactionHash: String
-
-  """Address of deployer"""
-  deployer: String
-
-  """Token NFT associated with erc-6551"""
-  nft: TokenNft
-
-  """Block number of the account updation transaction"""
-  updatedAtBlockNumber: Int
-
-  """Block timestamp of the account updation transaction"""
-  updatedAtBlockTimestamp: Time
-}
-
-input AccountFilter {
-  standard: AccountStandard_Comparator_Exp
-  tokenAddress: Address_Comparator_Exp
-  tokenId: String_Comparator_Exp
-  address: Identity_Comparator_Exp
-  registry: Address_Comparator_Exp
-  implementation: Address_Comparator_Exp
-  salt: String_Eq_Comparator_Exp
-  createdAtBlockTimestamp: Time_Comparator_Exp
-}
-
 input AccountOrderBy {
   createdAtBlockTimestamp: OrderBy
-}
-
-input AccountsInput {
-  order: [AccountOrderBy!]
-  filter: AccountFilter
-  blockchain: TokenBlockchain!
-  limit: Int
-  cursor: String
-}
-
-input AccountsNestedInput {
-  order: [AccountOrderBy]
-  filter: AccountFilter
-  blockchain: TokenBlockchain
-  showOptimisticAddress: Boolean
-  limit: Int
-}
-
-type AccountsOutput {
-  Account: [Account!]
-  pageInfo: PageInfo
-}
-
-enum AccountStandard {
-  ERC6551
-}
-
-input AccountStandard_Comparator_Exp {
-  _eq: AccountStandard
-  _in: [AccountStandard!]
 }
 
 scalar Address
@@ -153,20 +56,6 @@ type ConnectedAddress {
   chainId: String
   blockchain: String
   timestamp: Time
-}
-
-type ContractMetadata {
-  """Name of the token, mirrored from the smart contract"""
-  name: String
-
-  """Description of the token, mirrored from the smart contract"""
-  description: String
-  image: String
-  externalLink: String
-  sellerFeeBasisPoints: Int
-
-  """Royalties recipient address, mirrored from the smart contract"""
-  feeRecipient: String
 }
 
 input Date_Range_Comparator_Exp {
@@ -220,7 +109,7 @@ type Domain {
   name: String
 
   """Nested query - can retrieve payment token data (name, symbol, etc.)"""
-  paymentToken: Token
+  paymentToken: Address
 
   """payment amount in blockchain native token for the domain"""
   paymentTokenCostInNativeToken: Float
@@ -286,9 +175,6 @@ type Domain {
 
   """Token Address associated with the domain, if applicable"""
   tokenAddress: Address!
-
-  """Token nft associated with the domain, if applicable"""
-  tokenNft: TokenNft
 
   """Manager of Domain"""
   manager: Address!
@@ -379,6 +265,13 @@ type DomainTexts {
   value: String
 }
 
+enum EarnerType {
+  CREATOR
+  CREATOR_FANS
+  CHANNEL_FANS
+  NETWORK
+}
+
 enum EveryBlockchain {
   ALL
 }
@@ -405,6 +298,8 @@ type FarcasterCast {
   numberOfRecasts: Int
   numberOfReplies: Int
   socialCapitalValue: SocialCapitalValue
+  notaTokenEarned: SocialCapitalValue
+  moxieEarningsSplit: [MoxieEarningsSplit]
   castValue: CastValue
 }
 
@@ -464,7 +359,7 @@ input FarcasterChannelActionType_Comparator_Exp {
 }
 
 input FarcasterChannelFilter {
-  channelId: String_Comparator_Exp
+  channelId: Regex_String_Comparator_Exp
   name: Regex_String_Comparator_Exp
   leadId: String_Comparator_Exp
   leadIdentity: Identity_Comparator_Exp
@@ -505,7 +400,7 @@ type FarcasterChannelParticipant {
 
 input FarcasterChannelParticipantFilter {
   participant: Identity_Comparator_Exp
-  channelId: String_Comparator_Exp
+  channelId: Regex_String_Comparator_Exp
   channelName: Regex_String_Comparator_Exp
   channelActions: FarcasterChannelActionType_Comparator_Exp
   lastActionTimestamp: Time_Comparator_Exp
@@ -566,6 +461,7 @@ type FarcasterFanTokenAuction {
   launchCastUrl: String
   channel: FarcasterChannel
   socials(input: SocialsNestedInput): [Social]
+  rewardDistributionPercentage: RewardDistributionPercentage
 }
 
 enum FarcasterFanTokenAuctionEntityType {
@@ -587,7 +483,7 @@ input FarcasterFanTokenAuctionsFilter {
 }
 
 input FarcasterFanTokenAuctionsInput {
-  filter: FarcasterFanTokenAuctionsFilter
+  filter: FarcasterFanTokenAuctionsFilter!
   blockchain: EveryBlockchain!
   order: [FarcasterFanTokenAuctionsOrderBy!]
   limit: Int
@@ -646,6 +542,103 @@ type FarcasterFrameMessageOutput {
   interactedBy: Social
 }
 
+type FarcasterMoxieClaimDetails {
+  fid: String
+  availableClaimAmount: Float
+  availableClaimAmountInWei: String
+  claimedAmount: Float
+  claimedAmountInWei: String
+  processingAmount: Float
+  processingAmountInWei: String
+  tokenAddress: String
+  chainId: String
+  socials(input: SocialsNestedInput): [Social]
+}
+
+input FarcasterMoxieClaimDetailsFilter {
+  fid: String_Eq_In_Comparator_Exp
+}
+
+input FarcasterMoxieClaimDetailsInput {
+  filter: FarcasterMoxieClaimDetailsFilter!
+  blockchain: EveryBlockchain!
+  order: [FarcasterMoxieClaimDetailsOrderBy!]
+  limit: Int
+  cursor: String
+}
+
+input FarcasterMoxieClaimDetailsOrderBy {
+  availableClaimAmount: OrderBy
+  claimedAmount: OrderBy
+  processingAmount: OrderBy
+}
+
+type FarcasterMoxieClaimDetailsOutput {
+  FarcasterMoxieClaimDetails: [FarcasterMoxieClaimDetails!]
+  pageInfo: PageInfo
+}
+
+type FarcasterMoxieEarningStat {
+  entityId: String!
+  entityType: FarcasterMoxieEarningStatsEntityType!
+  allEarningsAmount: Float
+  allEarningsAmountInWei: String
+  castEarningsAmount: Float
+  castEarningsAmountInWei: String
+  frameDevEarningsAmount: Float
+  frameDevEarningsAmountInWei: String
+  otherEarningsAmount: Float
+  otherEarningsAmountInWei: String
+  channel: FarcasterChannel
+  socials(input: SocialsNestedInput): [Social]
+  timeframe: FarcasterMoxieEarningStatsTimeframe!
+  startTimestamp: Time!
+  endTimestamp: Time!
+}
+
+enum FarcasterMoxieEarningStatsEntityType {
+  CHANNEL
+  NETWORK
+  USER
+}
+
+input FarcasterMoxieEarningStatsEntityType_Comparator_Exp {
+  _eq: FarcasterMoxieEarningStatsEntityType
+  _in: [FarcasterMoxieEarningStatsEntityType!]
+}
+
+input FarcasterMoxieEarningStatsFilter {
+  entityId: String_Eq_In_Comparator_Exp
+  entityType: FarcasterMoxieEarningStatsEntityType_Comparator_Exp!
+}
+
+input FarcasterMoxieEarningStatsInput {
+  filter: FarcasterMoxieEarningStatsFilter!
+  timeframe: FarcasterMoxieEarningStatsTimeframe!
+  blockchain: EveryBlockchain!
+  order: [FarcasterMoxieEarningStatsOrderBy!]
+  limit: Int
+  cursor: String
+}
+
+input FarcasterMoxieEarningStatsOrderBy {
+  allEarnings: OrderBy
+  castEarnings: OrderBy
+  frameDevEarnings: OrderBy
+  otherEarnings: OrderBy
+}
+
+type FarcasterMoxieEarningStatsOutput {
+  FarcasterMoxieEarningStat: [FarcasterMoxieEarningStat!]
+  pageInfo: PageInfo
+}
+
+enum FarcasterMoxieEarningStatsTimeframe {
+  TODAY
+  WEEKLY
+  LIFETIME
+}
+
 type FarcasterNotaEarningStat {
   entityId: String!
   entityType: FarcasterFanTokenAuctionEntityType!
@@ -680,7 +673,7 @@ input FarcasterNotaEarningStatsFilter {
 }
 
 input FarcasterNotaEarningStatsInput {
-  filter: FarcasterNotaEarningStatsFilter
+  filter: FarcasterNotaEarningStatsFilter!
   timeframe: FarcasterNotaEarningStatsTimeframe!
   blockchain: EveryBlockchain!
   order: [FarcasterNotaEarningStatsOrderBy!]
@@ -701,8 +694,6 @@ type FarcasterNotaEarningStatsOutput {
 }
 
 enum FarcasterNotaEarningStatsTimeframe {
-  TODAY
-  WEEKLY
   LIFETIME
 }
 
@@ -743,7 +734,7 @@ input FarcasterReactionsFilter {
   castUrl: String_Eq_In_Comparator_Exp
   frameUrl: String_Eq_In_Comparator_Exp
   reactedBy: Identity_Comparator_Exp
-  channelId: String_Comparator_Exp
+  channelId: Regex_String_Comparator_Exp
 }
 
 input FarcasterReactionsInput {
@@ -783,6 +774,9 @@ type FarcasterScore {
   farScoreRaw: String
   farScore: Float
   farRank: Int
+  farBoost: Float
+  tvlBoost: Float
+  tvl: String
 }
 
 input Float_Comparator_Exp {
@@ -903,36 +897,10 @@ type Mentions {
   profile: Social
 }
 
-type NativeBalance {
-  """Airstack unique identifier for the data point"""
-  id: ID!
-
-  """Unique identifier for the blockchain"""
-  chainId: String!
-
-  """Blockchain where the token smart contract is deployed"""
-  blockchain: NativeBalanceBlockchain
-
-  """
-  Nested Query allowing to retrieve address, domain names, social profiles of the owner
-  """
-  owner: Wallet!
-
-  """Token amount the address currently holds"""
-  amount: String!
-
-  """Formatted token balance in decimals"""
-  formattedAmount: Float
-
-  """Block number of the latest token balance change happened"""
-  lastUpdatedBlock: Int!
-
-  """Timestamp of the latest token balance change happened"""
-  lastUpdatedTimestamp: Time
-}
-
-enum NativeBalanceBlockchain {
-  degen
+type MoxieEarningsSplit {
+  earnerType: EarnerType!
+  earningsAmount: Float
+  earningsAmountInWei: String
 }
 
 input NativeBalanceFilter {
@@ -943,83 +911,6 @@ input NativeBalanceFilter {
 
 input NativeBalanceOrderBy {
   lastUpdatedTimestamp: OrderBy
-}
-
-input NativeBalancesInput {
-  order: [NativeBalanceOrderBy!]
-  filter: NativeBalanceFilter!
-  blockchain: NativeBalanceBlockchain!
-  limit: Int
-  cursor: String
-}
-
-type NativeBalancesOutput {
-  NativeBalance: [NativeBalance!]
-  pageInfo: PageInfo
-}
-
-type NftAttribute {
-  """NFT attribute type as defined in the smart contract, e.g. background"""
-  trait_type: String
-
-  """NFT attribute value as defined in the smart contract, e.g. blue"""
-  value: String
-  displayType: String
-  maxValue: String
-}
-
-input NftAttributeFilter {
-  trait_type: String_Comparator_Exp
-  value: String_Comparator_Exp
-}
-
-input NftAttributesInput {
-  filter: NftAttributeFilter!
-  limit: Int
-  cursor: String
-}
-
-type NftAttributesOutput {
-  NftAttribute: [NftAttribute!]
-  pageInfo: PageInfo
-}
-
-type NftMetadata {
-  """Name of the token, mirrored from the smart contract"""
-  name: String
-
-  """Description of the token, mirrored from the smart contract"""
-  description: String
-
-  """Link to the token image, mirrored from the smart contract"""
-  image: String
-  attributes: [NftAttribute!]
-  imageData: String
-  backgroundColor: String
-  youtubeUrl: String
-  externalUrl: String
-  animationUrl: String
-}
-
-input NftMetadataFilter {
-  name: String_Comparator_Exp
-  attributes: NftAttributeFilter
-}
-
-input NftMetadataOrderBy {
-  attributes: OrderBy
-}
-
-input NftMetadatasInput {
-  order: [NftMetadataOrderBy!]
-  filter: NftMetadataFilter!
-  limit: Int
-  cursor: String
-}
-
-type NftMetadatasOutput {
-  NftMetadata: [NftMetadata!]
-  pageInfo: PageInfo
 }
 
 enum OrderBy {
@@ -1037,172 +928,6 @@ type PageInfo {
   nextCursor: String!
   hasPrevPage: Boolean!
   hasNextPage: Boolean!
-}
-
-type Poap {
-  """Airstack unique identifier for the data point"""
-  id: ID
-
-  """Unique identifier for the blockchain"""
-  chainId: String
-
-  """Blockchain associated with the Poap"""
-  blockchain: EveryBlockchain
-
-  """Poap DApp name"""
-  dappName: PoapDappName
-
-  """Poap DApp slug (contract version)"""
-  dappSlug: PoapDappSlug
-
-  """Airstack unique dapp version number"""
-  dappVersion: String
-
-  """Poap event id"""
-  eventId: String
-  owner: Wallet!
-
-  """Time when POAP was created"""
-  createdAtBlockTimestamp: Time
-
-  """Block Number when POAP was created"""
-  createdAtBlockNumber: Int
-  tokenId: String
-  tokenUri: String
-
-  """POAP Contract Address"""
-  tokenAddress: String
-  transferCount: Int
-  mintOrder: Int
-  mintHash: String
-  poapEvent: PoapEvent
-  attendee: PoapAttendee
-}
-
-type PoapAttendee {
-  totalPoapOwned: Int
-  owner: Wallet!
-}
-
-type PoapAttendeesOutput {
-  PoapAttendee: [PoapAttendee!]
-  pageInfo: PageInfo
-}
-
-enum PoapDappName {
-  poap
-}
-
-input PoapDappName_Comparator_Exp {
-  _eq: PoapDappName
-  _in: [PoapDappName!]
-}
-
-enum PoapDappSlug {
-  poap_mainnet
-  poap_gnosis
-}
-
-input PoapDappSlug_Comparator_Exp {
-  _eq: PoapDappSlug
-  _in: [PoapDappSlug!]
-}
-
-type PoapEvent {
-  """Airstack unique identifier for the data point"""
-  id: ID!
-
-  """Unique identifier for the blockchain"""
-  chainId: String
-
-  """Blockchain where the marketplace data is calculated from"""
-  blockchain: EveryBlockchain
-  dappName: PoapDappName
-  dappSlug: PoapDappSlug!
-  dappVersion: String
-  eventId: String
-  tokenMints: Int
-  metadata: Map
-  contentType: String
-  contentValue: Media
-  eventName: String
-  description: String
-  country: String
-  city: String
-  startDate: Time
-  endDate: Time
-
-  """If Event is Virtual or not"""
-  isVirtualEvent: Boolean
-
-  """The Event URL"""
-  eventURL: String
-  poaps(input: PoapsNestedInput): [Poap!]
-}
-
-input PoapEventFilter {
-  dappName: PoapDappName_Comparator_Exp
-  dappSlug: PoapDappSlug_Comparator_Exp
-  eventId: String_Comparator_Exp
-  tokenMints: Int_Comparator_Exp
-  eventName: Regex_String_Comparator_Exp
-  country: String_Comparator_Exp
-  city: String_Comparator_Exp
-  startDate: String_Comparator_Exp
-  endDate: String_Comparator_Exp
-  isVirtualEvent: Boolean_Comparator_Exp
-}
-
-input PoapEventOrderBy {
-  tokenMints: OrderBy
-  startDate: OrderBy
-  endDate: OrderBy
-}
-
-input PoapEventsInput {
-  order: [PoapEventOrderBy!]
-  filter: PoapEventFilter!
-  blockchain: EveryBlockchain!
-  limit: Int
-  cursor: String
-}
-
-type PoapEventsOutput {
-  PoapEvent: [PoapEvent!]
-  pageInfo: PageInfo
-}
-
-input PoapFilter {
-  dappName: PoapDappName_Comparator_Exp
-  dappSlug: PoapDappSlug_Comparator_Exp
-  eventId: String_Comparator_Exp
-  owner: Identity_Comparator_Exp
-  createdAtBlockNumber: Int_Comparator_Exp
-  tokenId: String_Comparator_Exp
-}
-
-input PoapOrderBy {
-  createdAtBlockNumber: OrderBy
-}
-
-input PoapsInput {
-  order: [PoapOrderBy!]
-  filter: PoapFilter!
-  blockchain: EveryBlockchain!
-  limit: Int
-  cursor: String
-}
-
-input PoapsNestedInput {
-  order: [PoapOrderBy]
-  filter: PoapFilter
-  blockchain: EveryBlockchain
-  limit: Int
-}
-
-type PoapsOutput {
-  Poap: [Poap!]
-  pageInfo: PageInfo
 }
 
 type PopularDapp {
@@ -1228,51 +953,15 @@ enum PopularDappsCriteria {
   GAS_SPENT
 }
 
-input PopularDappsInput {
-  timeFrame: TimeFrame!
-  userbase: Audience!
-  blockchain: TrendingBlockchain!
-  criteria: PopularDappsCriteria!
-  filter: TrendingFilter
-  limit: Int
-  cursor: String
-}
-
-type PopularDappsOutput {
-  PopularDapps: [PopularDapp!]
-  pageInfo: PageInfo
-}
-
-type ProjectDetails {
-  collectionName: String
-  description: String
-  externalUrl: String
-  twitterUrl: String
-  discordUrl: String
-  imageUrl: String
-}
-
 type Query {
-  Tokens(input: TokensInput!): TokensOutput
-  TokenNfts(input: TokenNftsInput!): TokenNftsOutput
-  TokenBalances(input: TokenBalancesInput!): TokenBalancesOutput
-  TokenTransfers(input: TokenTransfersInput!): TokenTransfersOutput
   Domains(input: DomainsInput!): DomainsOutput
   Wallet(input: WalletInput!): Wallet
   Socials(input: SocialsInput!): SocialsOutput
-  PoapEvents(input: PoapEventsInput!): PoapEventsOutput
-  Poaps(input: PoapsInput!): PoapsOutput
-  Accounts(input: AccountsInput!): AccountsOutput
-  XMTPs(input: XMTPsInput!): XMTPsOutput
   SocialFollowings(input: SocialFollowingInput!): SocialFollowingOutput
   SocialFollowers(input: SocialFollowerInput!): SocialFollowerOutput
-  Snapshots(input: SnapshotsInput!): SnapshotsOutput
-  TrendingMints(input: TrendingMintsInput!): TrendingMintsOutput
-  TrendingTokens(input: TrendingTokensInput!): TrendingTokensOutput
   FarcasterChannels(input: FarcasterChannelsInput!): FarcasterChannelsOutput
   FarcasterChannelParticipants(input: FarcasterChannelParticipantsInput!): FarcasterChannelParticipantsOutput
   FarcasterValidateFrameMessage(input: FarcasterFrameMessageInput!): FarcasterFrameMessageOutput
-  TrendingSwaps(input: TrendingSwapsInput!): TrendingSwapsOutput
   FarcasterCasts(input: FarcasterCastInput!): FarcasterCastOutput
   TrendingCasts(input: TrendingCastsInput!): TrendingCastsOutput
   FarcasterReplies(input: FarcasterRepliesInput!): FarcasterRepliesOutput
@@ -1280,6 +969,8 @@ type Query {
   FarcasterReactions(input: FarcasterReactionsInput!): FarcasterReactionsOutput
   FarcasterFanTokenAuctions(input: FarcasterFanTokenAuctionsInput!): FarcasterFanTokenAuctionsOutput
   FarcasterNotaEarningStats(input: FarcasterNotaEarningStatsInput!): FarcasterNotaEarningStatsOutput
+  FarcasterMoxieEarningStats(input: FarcasterMoxieEarningStatsInput!): FarcasterMoxieEarningStatsOutput
+  FarcasterMoxieClaimDetails(input: FarcasterMoxieClaimDetailsInput!): FarcasterMoxieClaimDetailsOutput
 }
 
 scalar Range
@@ -1301,59 +992,18 @@ input Regex_String_Comparator_Exp {
   _nin: [String!]
 }
 
+type RewardDistributionPercentage {
+  creator: Float!
+  creatorFans: Float!
+  channelFans: Float!
+  network: Float!
+}
+
 input Simple_String_Comparator_Exp {
   _eq: String
   _ne: String
   _in: [String!]
   _nin: [String!]
-}
-
-type Snapshot {
-  """Airstack unique identifier for the data point"""
-  id: ID!
-  owner: Wallet!
-  tokenAddress: Address!
-  amount: String
-  formattedAmount: Float
-  tokenType: TokenType
-  blockchain: TokenBlockchain
-  startBlockTimestamp: Time
-  endBlockTimestamp: Time
-  startBlockNumber: Int
-  endBlockNumber: Int
-  tokenNft: TokenNft
-  token: Token
-  chainId: String
-  tokenId: String
-}
-
-enum SnapshotBlockchain {
-  ethereum
-  base
-  zora
-  gold
-}
-
-input SnapshotFilter {
-  owner: Identity_Comparator_Exp
-  tokenId: String_Comparator_Exp
-  tokenAddress: Address_Comparator_Exp
-  tokenType: TokenType_Comparator_Exp
-  date: Date_Range_Comparator_Exp
-  timestamp: Time_Range_Comparator_Exp
-  blockNumber: Range_Comparator_Exp
-}
-
-input SnapshotsInput {
-  filter: SnapshotFilter!
-  blockchain: SnapshotBlockchain!
-  limit: Int
-  cursor: String
-}
-
-type SnapshotsOutput {
-  Snapshot: [Snapshot!]
-  pageInfo: PageInfo
 }
 
 type Social {
@@ -1403,10 +1053,9 @@ type Social {
   Blockchain address, ENS domain name, social identity such as Farcaster (for
   Farcaster use 'fc_fid:' prefix followed by the Farcaster user ID like
   fc_fid:5650, or use 'fc_fname:' prefix followed by the Farcaster user ID like
-  'fc_fname:vbuterin') or Lens (e.g. 'stani.lens)
+  'fc_fname:vbuterin')
   """
   identity: Identity
-  isFarcasterPowerUser: Boolean
   followerTokenAddress: Address
   followingCount: Int
   followerCount: Int
@@ -1437,6 +1086,9 @@ type SocialCapital {
   socialCapitalScoreRaw: String
   socialCapitalScore: Float
   socialCapitalRank: Int
+  farBoost: Float
+  tvlBoost: Float
+  tvl: String
 }
 
 type SocialCapitalValue {
@@ -1447,7 +1099,6 @@ type SocialCapitalValue {
 
 enum SocialDappName {
   farcaster
-  lens
 }
 
 input SocialDappName_Comparator_Exp {
@@ -1458,10 +1109,8 @@ input SocialDappName_Comparator_Exp {
 enum SocialDappSlug {
   farcaster_optimism
   farcaster_goerli
-  lens_polygon
   farcaster_v2_optimism
   farcaster_v3_optimism
-  lens_v2_polygon
 }
 
 input SocialDappSlug_Comparator_Exp {
@@ -1663,402 +1312,6 @@ enum TimeFrame {
 
 scalar TimeRange
 
-type Token {
-  """Airstack unique identifier for the contract"""
-  id: ID
-
-  """Smart contract address of the token"""
-  address: Address!
-
-  """Unique identifier for the blockchain"""
-  chainId: String
-
-  """Blockchain where the token smart contract is deployed"""
-  blockchain: TokenBlockchain
-
-  """Name of the token, mirrored from the smart contract"""
-  name: String
-
-  """Symbol of the token, mirrored from the smart contract"""
-  symbol: String
-
-  """The owner of the token contract"""
-  owner: Wallet
-
-  """Token type: ERC20, ERC721, or ERC1155"""
-  type: TokenType
-
-  """Amount of tokens in the protocol"""
-  totalSupply: String
-
-  """The number of decimal places this token uses, default to 18"""
-  decimals: Int
-
-  """Logo image for the contract in various sizes (if available)"""
-  logo: LogoSizes
-
-  """URI for the token's contract metadata"""
-  contractMetaDataURI: String
-
-  """Token contract metadata object"""
-  contractMetaData: ContractMetadata
-
-  """Token contract metadata as it appears inside the contract"""
-  rawContractMetaData: Map
-
-  """Base URI of the token contract"""
-  baseURI: String
-
-  """Timestamp of the token's most recent transfer"""
-  lastTransferTimestamp: Time
-
-  """Block number of the token's most recent transfer"""
-  lastTransferBlock: Int
-
-  """Transaction hash of the token's most recent transfer"""
-  lastTransferHash: String
-
-  """
-  Returns count of all NFT token attribute types and values for the given smart contract
-  """
-  tokenTraits: Map
-
-  """Nested Query - allows querying the tokenBalance information"""
-  tokenBalances(input: TokenBalancesNestedInput): [TokenBalance!]
-
-  """Nested Query - allows querying the tokenNFTs information"""
-  tokenNfts(input: TokenNftsNestedInput): [TokenNft!]
-
-  """off-chain data for the token project"""
-  projectDetails: ProjectDetails
-
-  """Indicates if the token is set to be spam - true or false"""
-  isSpam: Boolean
-}
-
-type TokenBalance {
-  """Airstack unique identifier for the data point"""
-  id: ID!
-
-  """Unique identifier for the blockchain"""
-  chainId: String!
-
-  """Blockchain where the token smart contract is deployed"""
-  blockchain: TokenBlockchain
-
-  """Smart contract address of the token"""
-  tokenAddress: Address!
-
-  """Unique NFT token ID"""
-  tokenId: String
-
-  """
-  Nested Query allowing to retrieve address, domain names, social profiles of the owner
-  """
-  owner: Wallet!
-
-  """Token amount the address currently holds"""
-  amount: String!
-
-  """Formatted token balance in decimals"""
-  formattedAmount: Float
-
-  """Block number of the latest token balance change happened"""
-  lastUpdatedBlock: Int!
-
-  """Timestamp of the latest token balance change happened"""
-  lastUpdatedTimestamp: Time
-
-  """Token type: ERC20, ERC721, or ERC1155"""
-  tokenType: TokenType
-
-  """Nested Query - allows retrieving token contract level data"""
-  token: Token
-
-  """
-  Nested Query - allows retrieving token NFT contract level data, such as images, traits, and so on
-  """
-  tokenNfts: TokenNft
-
-  """Nested Query - allows retrieving token transfer history"""
-  tokenTransfers(input: TokenTransfersNestedInput): [TokenTransfer!]
-}
-
-input TokenBalanceFilter {
-  tokenAddress: Address_Comparator_Exp
-  tokenId: String_Comparator_Exp
-  owner: Identity_Comparator_Exp
-  formattedAmount: Float_Comparator_Exp
-  lastUpdatedTimestamp: Time_Comparator_Exp
-  tokenType: TokenType_Comparator_Exp
-}
-
-input TokenBalanceOrderBy {
-  lastUpdatedTimestamp: OrderBy
-}
-
-input TokenBalancesInput {
-  order: [TokenBalanceOrderBy!]
-  filter: TokenBalanceFilter!
-  blockchain: TokenBlockchain!
-  limit: Int
-  cursor: String
-}
-
-input TokenBalancesNestedInput {
-  order: [TokenBalanceOrderBy]
-  filter: TokenBalanceFilter
-  blockchain: TokenBlockchain
-  limit: Int
-}
-
-type TokenBalancesOutput {
-  TokenBalance: [TokenBalance!]
-  pageInfo: PageInfo
-}
-
-enum TokenBlockchain {
-  ethereum
-  base
-  zora
-  gold
-  degen
-  ham
-  stp
-}
-
-input TokenFilter {
-  address: Address_Comparator_Exp
-  name: String_Comparator_Exp
-  symbol: String_Comparator_Exp
-  owner: Identity_Comparator_Exp
-  type: TokenType_Comparator_Exp
-  isSpam: Boolean_Comparator_Exp
-}
-
-type TokenNft {
-  """Airstack unique identifier for the NFT token"""
-  id: ID!
-
-  """Smart contract address of the token"""
-  address: Address!
-
-  """Unique NFT token ID"""
-  tokenId: String!
-
-  """Blockchain where the token smart contract is deployed"""
-  blockchain: TokenBlockchain
-
-  """Unique identifier for the blockchain"""
-  chainId: String!
-
-  """NFT Token type: ERC721, or ERC1155"""
-  type: TokenType
-
-  """Amount of NFT tokens in the protocol"""
-  totalSupply: String
-
-  """NFT token URI"""
-  tokenURI: String
-
-  """Content type of the NFT token (image, video, audio, etc.)"""
-  contentType: String
-
-  """NFT Media - resized images, animation, videos, etc."""
-  contentValue: Media
-
-  """NFT token metadata and attributes"""
-  metaData: NftMetadata
-
-  """NFT token metadata, mirrored from the smart contract"""
-  rawMetaData: Map
-
-  """Transaction hash of the NFT token most recent transfer"""
-  lastTransferHash: String
-
-  """Block number of the NFT token most recent transfer"""
-  lastTransferBlock: Int
-
-  """Timestamp of the NFT token most recent transfer"""
-  lastTransferTimestamp: Time
-
-  """Nested Query - allows retrieving token contract level data"""
-  token: Token
-
-  """Nested Query - allows querying the tokenBalance information"""
-  tokenBalances(input: TokenBalancesNestedInput): [TokenBalance!]
-
-  """Nested Query - allows querying the tokenTransfer information"""
-  tokenTransfers(input: TokenTransfersNestedInput): [TokenTransfer!]
-
-  """Nested Query - allows querying the erc6551 account"""
-  erc6551Accounts(input: AccountsNestedInput): [Account!]
-}
-
-input TokenNftFilter {
-  address: Address_Comparator_Exp
-  tokenId: String_Comparator_Exp
-  metaData: NftMetadataFilter
-}
-
-input TokenNftOrderBy {
-  tokenId: OrderBy
-}
-
-input TokenNftsInput {
-  order: [TokenNftOrderBy!]
-  filter: TokenNftFilter!
-  blockchain: TokenBlockchain!
-  limit: Int
-  cursor: String
-}
-
-input TokenNftsNestedInput {
-  order: [TokenNftOrderBy]
-  filter: TokenNftFilter
-  blockchain: TokenBlockchain
-  limit: Int
-}
-
-type TokenNftsOutput {
-  TokenNft: [TokenNft!]
-  pageInfo: PageInfo
-}
-
-input TokensInput {
-  filter: TokenFilter!
-  blockchain: TokenBlockchain!
-  limit: Int
-  cursor: String
-}
-
-type TokensOutput {
-  Token: [Token!]
-  pageInfo: PageInfo
-}
-
-type TokenTransfer {
-  """Airstack unique identifier for the data point"""
-  id: ID
-
-  """Unique identifier for the blockchain"""
-  chainId: String
-
-  """Blockchain where the token transfer took place"""
-  blockchain: TokenBlockchain
-
-  """
-  Nested query - sender wallet related information, including address, domains,
-  social profile, other token balances, and transfer history
-  """
-  from: Wallet
-
-  """
-  Nested query - recipient wallet related information, including address,
-  domains, social profile, other token balances, and transfer history
-  """
-  to: Wallet
-
-  """Type of the token transfer"""
-  type: TokenTransferType
-
-  """Transferred token smart contract address"""
-  tokenAddress: Address
-
-  """
-  Nested query - operator wallet (if the transaction was facilitated via smart
-  contract) related information, including address, domains, social profile,
-  other token balances, and transfer history
-  """
-  operator: Wallet
-
-  """Token amount in the transfer"""
-  amount: String
-
-  """Formatted transfer amount in decimals"""
-  formattedAmount: Float
-
-  """Unique NFT token ID"""
-  tokenId: String
-
-  """
-  Token amounts in the transfer, if applicable. This mostly occurs in ERC1155 batch transfers
-  """
-  amounts: [String!]
-
-  """Unique NFT token IDs if multiple NFTs were a part of the transfer"""
-  tokenIds: [String!]
-
-  """Token type: ERC20, ERC721, or ERC1155"""
-  tokenType: TokenType
-
-  """Token transfer transction hash"""
-  transactionHash: String!
-
-  """Block timestamp of the token transfer"""
-  blockTimestamp: Time
-
-  """Block number of the token transfer"""
-  blockNumber: Int
-
-  """
-  Nested Query - allows retrieving token Token NFT level data, such as images,
-  traits, and so on for each unique NFT in the transfer
-  """
-  tokenNft: TokenNft
-
-  """Nested Query - allows retrieving token contract level data"""
-  token: Token
-}
-
-input TokenTransferFilter {
-  from: Identity_Comparator_Exp
-  to: Identity_Comparator_Exp
-  type: TokenTransferType_Comparator_Exp
-  tokenAddress: Address_Comparator_Exp
-  operator: Identity_Comparator_Exp
-  formattedAmount: Float_Comparator_Exp
-  tokenId: String_Comparator_Exp
-  tokenType: TokenType_Comparator_Exp
-  transactionHash: String_Comparator_Exp
-  blockTimestamp: Time_Comparator_Exp
-}
-
-input TokenTransferOrderBy {
-  blockTimestamp: OrderBy
-}
-
-input TokenTransfersInput {
-  order: [TokenTransferOrderBy!]
-  filter: TokenTransferFilter!
-  blockchain: TokenBlockchain!
-  limit: Int
-  cursor: String
-}
-
-input TokenTransfersNestedInput {
-  order: [TokenTransferOrderBy]
-  filter: TokenTransferFilter
-  blockchain: TokenBlockchain
-  limit: Int
-}
-
-type TokenTransfersOutput {
-  TokenTransfer: [TokenTransfer!]
-  pageInfo: PageInfo
-}
-
-enum TokenTransferType {
-  MINT
-  BURN
-  TRANSFER
-}
-
-input TokenTransferType_Comparator_Exp {
-  _eq: TokenTransferType
-  _in: [TokenTransferType!]
-}
-
 enum TokenType {
   ERC1155
   ERC721
@@ -2073,11 +1326,6 @@ input TokenType_Comparator_Exp {
 input Trending_Comparator_Exp {
   _eq: Address
   _in: [Address!]
-}
-
-enum TrendingBlockchain {
-  base
-  degen
 }
 
 type TrendingCast {
@@ -2143,141 +1391,6 @@ input TrendingFilter {
   address: Trending_Comparator_Exp
 }
 
-type TrendingMint {
-  id: String
-  blockchain: String
-  chainId: String
-  address: String
-  criteriaCount: Int
-  token: Token
-  criteria: String
-  audience: String
-  timeFrom: Time
-  timeTo: Time
-  erc1155TokenID: String
-}
-
-enum TrendingMintsCriteria {
-  unique_wallets
-  total_mints
-}
-
-input TrendingMintsInput {
-  timeFrame: TimeFrame!
-  audience: Audience!
-  blockchain: TrendingBlockchain!
-  filter: TrendingFilter
-  criteria: TrendingMintsCriteria!
-  limit: Int
-  cursor: String
-}
-
-type TrendingMintsOutput {
-  TrendingMint: [TrendingMint!]
-  pageInfo: PageInfo
-}
-
-type TrendingSwap {
-  id: String
-  blockchain: String
-  chainId: String
-  address: String
-  token: Token
-  criteria: String
-  timeFrom: Time
-  timeTo: Time
-  buyTransactionCount: Int
-  sellTransactionCount: Int
-  totalTransactionCount: Int
-  buyVolume: Float
-  sellVolume: Float
-  totalVolume: Float
-  uniqueBuyWallets: Int
-  uniqueSellWallets: Int
-  totalUniqueWallets: Int
-}
-
-enum TrendingSwapsBlockchain {
-  base
-  ethereum
-}
-
-enum TrendingSwapsCriteria {
-  buy_transaction_count
-  sell_transaction_count
-  total_transaction_count
-  buy_volume
-  sell_volume
-  total_volume
-  unique_buy_wallets
-  unique_sell_wallets
-  total_unique_wallets
-}
-
-input TrendingSwapsFilter {
-  address: Trending_Comparator_Exp
-}
-
-input TrendingSwapsInput {
-  timeFrame: TimeFrame!
-  blockchain: TrendingSwapsBlockchain!
-  filter: TrendingSwapsFilter
-  criteria: TrendingSwapsCriteria!
-  limit: Int
-  cursor: String
-}
-
-type TrendingSwapsOutput {
-  TrendingSwap: [TrendingSwap!]
-  pageInfo: PageInfo
-}
-
-type TrendingToken {
-  id: String
-  blockchain: String
-  chainId: String
-  address: String
-  criteriaCount: Int
-  token: Token
-  criteria: String
-  audience: String
-  timeFrom: Time
-  timeTo: Time
-  uniqueHolders: Int
-}
-
-enum TrendingTokensCriteria {
-  unique_wallets
-  total_transfers
-  unique_holders
-}
-
-input TrendingTokensFilter {
-  address: Trending_Comparator_Exp
-}
-
-input TrendingTokensInput {
-  swappable: Boolean_Comparator_Exp
-  transferType: TrendingTokensTransferType!
-  timeFrame: TimeFrame!
-  audience: Audience!
-  blockchain: TrendingBlockchain!
-  filter: TrendingTokensFilter
-  criteria: TrendingTokensCriteria!
-  limit: Int
-  cursor: String
-}
-
-type TrendingTokensOutput {
-  TrendingToken: [TrendingToken!]
-  pageInfo: PageInfo
-}
-
-enum TrendingTokensTransferType {
-  all
-  self_initiated
-}
-
 type VideoVariants {
   original: String
 }
@@ -2287,12 +1400,9 @@ type Wallet {
   Blockchain address, ENS domain name, social identity such as Farcaster (for
   Farcaster use 'fc_fid:' prefix followed by the Farcaster user ID like
   fc_fid:5650, or use 'fc_fname:' prefix followed by the Farcaster user ID like
-  'fc_fname:vbuterin') or Lens (e.g. 'stani.lens)
+  'fc_fname:vbuterin')
   """
   identity: Identity!
-
-  """Blockchain associated with the provided identity"""
-  blockchain: TokenBlockchain
 
   """Returns addresses associated with the identity input"""
   addresses: [Address!]
@@ -2306,58 +1416,12 @@ type Wallet {
   """Returns social profile information related to the address"""
   socials(input: SocialsNestedInput): [Social!]
 
-  """
-  Nested query - allows returning token transfers and related information
-  """
-  tokenTransfers(input: TokenTransfersNestedInput): [TokenTransfer!]
-
-  """Nested query - allows returning token balances"""
-  tokenBalances(input: TokenBalancesNestedInput): [TokenBalance!]
-
-  """Returns Poaps owned by the address"""
-  poaps(input: PoapsNestedInput): [Poap!]
-
-  """Nested query - allows querying the XMTP enabled addresses"""
-  xmtp(input: XMTPsNestedInput): [XMTP!]
-
   """Represent On-chain smart-contract accounts"""
-  accounts(input: AccountsNestedInput): [Account!]
   socialFollowings(input: SocialFollowingNestedInput): SocialFollowingOutput
   socialFollowers(input: SocialFollowerNestedInput): SocialFollowerOutput
 }
 
 input WalletInput {
   identity: Identity!
-  blockchain: TokenBlockchain!
-}
-
-type XMTP {
-  """Airstack unique identifier for the data point"""
-  id: ID
-  blockchain: EveryBlockchain
-  owner: Wallet
-  isXMTPEnabled: Boolean
-}
-
-input XMTPFilter {
-  owner: Identity_Comparator_Exp
-}
-
-input XMTPsInput {
-  blockchain: EveryBlockchain!
-  filter: XMTPFilter!
-  limit: Int
-  cursor: String
-}
-
-input XMTPsNestedInput {
-  blockchain: EveryBlockchain
-  filter: XMTPFilter
-  limit: Int
-}
-
-type XMTPsOutput {
-  XMTP: [XMTP!]
-  pageInfo: PageInfo
 }
 

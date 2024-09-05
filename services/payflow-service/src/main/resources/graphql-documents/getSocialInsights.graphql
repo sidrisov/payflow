@@ -1,24 +1,18 @@
 query GetSocialInsightsByIdentity($identity: Identity!, $me: Identity!) {
-    Wallet(input: {identity: $identity, blockchain: ethereum}) {
+    Wallet(input: {identity: $identity}) {
         socialFollowers(
-            input: {filter: {identity: {_in: [$me]}, dappName: {_in: [farcaster,lens]}}}
+            input: {filter: {identity: {_in: [$me]}}}
         ) {
             Follower {
                 dappName
             }
         }
         socialFollowings(
-            input: {filter: {identity: {_in: [$me]}, dappName: {_in: [farcaster,lens]}}}
+            input: {filter: {identity: {_in: [$me]}}}
         ) {
             Following {
                 dappName
             }
-        }
-        ethTransfers: tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: ethereum}) {
-            type
-        }
-        baseTransfers: tokenTransfers(input:{limit: 6, filter: {from: {_in: [$me] }}, blockchain: base}) {
-            type
         }
     }
 }

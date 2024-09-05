@@ -1,15 +1,8 @@
 query GetSocialMetadataByIdentity($identity: Identity!) {
-    Wallet(input: {identity: $identity, blockchain: ethereum}) {
+    Wallet(input: {identity: $identity}) {
         addresses
         primaryDomain {
             name
-            tokenNft {
-                contentValue {
-                    image {
-                        small
-                    }
-                }
-            }
         }
         domains(input: { limit: 1 }) {
             name
@@ -26,7 +19,6 @@ query GetSocialMetadataByIdentity($identity: Identity!) {
             }
             userId
             followerCount
-            isFarcasterPowerUser
         }
     }
 }

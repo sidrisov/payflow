@@ -386,14 +386,7 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 					val followers =
 							socialMetadataResponse.field("Wallet.socialFollowers.Follower")
 									.toEntityList(SocialFollower.class);
-
-					val ethTransfers =
-							socialMetadataResponse.field("Wallet.ethTransfers")
-									.toEntityList(TokenTransfer.class);
-					val baseTransfers =
-							socialMetadataResponse.field("Wallet.baseTransfers")
-									.toEntityList(TokenTransfer.class);
-
+					
 					val socialFollowings =
 							new SocialFollowingOutput.Builder().Following(followings).build();
 
@@ -402,12 +395,6 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 
 					wallet.setSocialFollowings(socialFollowings);
 					wallet.setSocialFollowers(socialFollowers);
-
-					val tokenTransfers = new ArrayList<TokenTransfer>();
-					tokenTransfers.addAll(ethTransfers);
-					tokenTransfers.addAll(baseTransfers);
-					wallet.setTokenTransfers(tokenTransfers);
-
 				}
 				return wallet;
 			}
