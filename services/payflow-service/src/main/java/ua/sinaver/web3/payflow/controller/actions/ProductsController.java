@@ -137,14 +137,12 @@ public class ProductsController {
 						"&chainId={chainId}" +
 						"&contract={contract}" +
 						"&tokenId={tokenId}" +
-						"&referral={referral}" +
-						"&original={original}")
+						"&referral={referral}")
 				.buildAndExpand(parsedMintUrlMessage.provider(),
 						chainId,
 						parsedMintUrlMessage.contract(),
 						parsedMintUrlMessage.tokenId(),
-						parsedMintUrlMessage.referral(),
-						parsedMintUrlMessage.url())
+						parsedMintUrlMessage.referral())
 				.toUriString();
 
 		log.debug("Returning mintFrameUrl: {}", mintFrameUrl);

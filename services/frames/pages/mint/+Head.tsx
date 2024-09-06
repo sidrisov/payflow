@@ -2,7 +2,6 @@ import { usePageContext } from 'vike-react/usePageContext';
 import { API_URL, DAPP_URL, FRAMES_URL } from '../../utils/constants';
 
 interface MintUrlParams {
-  original: string;
   provider: string;
   chainId: string;
   contract: string;
@@ -12,8 +11,13 @@ interface MintUrlParams {
 
 export function Head() {
   const { urlParsed } = usePageContext();
-  const { provider, chainId, contract, tokenId, referral, original }: MintUrlParams =
+  const { provider, chainId, contract, tokenId, referral }: MintUrlParams =
     urlParsed.search as unknown as MintUrlParams;
+
+  const original =
+    provider === 'zora.co'
+      ? `https://zora.co/collect/${chainId}:${contract}/${tokenId || ''}${referral ? `?referrer=${referral}` : ''}`
+      : `https://rodeo.club/post/${contract}/${tokenId || ''}${referral ? `?referrer=${referral}` : ''}`;
 
   const imageUrl = `${FRAMES_URL}/images/mint.png?provider=${provider}&chainId=${chainId}&contract=${contract}&tokenId=${tokenId}`;
 
@@ -44,7 +48,6 @@ export function Head() {
   if (referral) {
     currentFrameUrl.searchParams.append('referral', referral);
   }
-  currentFrameUrl.searchParams.append('original', encodeURIComponent(original));
 
   const addActionUrl =
     'https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fproducts%2Fmint';

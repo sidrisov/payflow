@@ -31,7 +31,7 @@ import static ua.sinaver.web3.payflow.config.CacheConfig.USERS_CACHE_NAME;
 public class UserService implements IUserService {
 
 	private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_-]*$");
-	private static final Integer WHITELISTED_FID_UPPER_RANGE = 30000;
+	private static final Integer WHITELISTED_FID_UPPER_RANGE = 50000;
 	@Value("${payflow.invitation.allowance.enabled:false}")
 	private boolean invitationAllowanceEnabled;
 	@Value("${payflow.invitation.whitelisted.default.users}")

@@ -158,9 +158,6 @@ export default function MintDialog({
   if (profile?.identity) {
     shareFrameUrl.searchParams.append('referral', profile?.identity);
   }
-  if (payment.target) {
-    shareFrameUrl.searchParams.append('original', payment.target);
-  }
 
   const composeCastUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(
     `Minted ${mint.metadata.name}: ${mint.collectionName} for @${social.profileName}\n\n@payflow allows you to mint with 20+ tokens across multiple chains\ncc: @sinaver.eth /payflow`
