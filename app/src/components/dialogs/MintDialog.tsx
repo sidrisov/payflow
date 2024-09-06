@@ -37,6 +37,8 @@ import { useMintPaymentTx } from '../../utils/hooks/useMintPaymentTx';
 import { PayButton } from '../buttons/PayButton';
 import { useDarkMode } from '../../utils/hooks/useDarkMode';
 import { useMobile } from '../../utils/hooks/useMobile';
+import PaymentSuccessDialog from './PaymentSuccessDialog';
+import { getReceiptUrl } from '../../utils/receipts';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {
@@ -133,158 +135,173 @@ export default function MintDialog({
   const hasPaymentOption =
     !isLoading && paymentOption && paymentToken && mintStatus === 'live' && !mintPaymentTxError;
 
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+
+  const successMessage = `minted "${mint.metadata.name}" for @${social.profileName}`;
+  const receiptUrl = getReceiptUrl(payment, false);
+
   return (
     <>
-      <Dialog
-        disableEnforceFocus
-        fullScreen={isMobile}
-        onClose={closeStateCallback}
-        {...props}
-        PaperProps={{
-          sx: {
-            ...(!isMobile && {
-              width: 375,
-              borderRadius: 5,
-              height: 650
-            })
-          }
-        }}
-        sx={{
-          zIndex: 1450,
-          backdropFilter: 'blur(5px)'
-        }}
-        {...(isMobile && { TransitionComponent: UpSlideTransition })}>
-        <BackDialogTitle
-          showOnDesktop={alwaysShowBackButton}
-          title={props.title ?? 'Mint Payment'}
-          closeStateCallback={closeStateCallback}
-        />
-        <DialogContent
+      {!showSuccessDialog && (
+        <Dialog
+          disableEnforceFocus
+          fullScreen={isMobile}
+          onClose={closeStateCallback}
+          {...props}
+          PaperProps={{
+            sx: {
+              ...(!isMobile && {
+                width: 375,
+                borderRadius: 5,
+                height: 650
+              })
+            }
+          }}
           sx={{
-            px: 2,
-            py: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden'
-          }}>
-          {sender && (
-            <Stack mb={2} spacing={1} alignItems="center" width="100%">
-              <SenderField sender={sender} {...(setSelectedFlow && { setOpenSelectFlow })} />
-              <KeyboardDoubleArrowDown />
-              <FarcasterRecipientField social={social} />
-            </Stack>
-          )}
+            zIndex: 1450,
+            backdropFilter: 'blur(5px)'
+          }}
+          {...(isMobile && { TransitionComponent: UpSlideTransition })}>
+          <BackDialogTitle
+            showOnDesktop={alwaysShowBackButton}
+            title={props.title ?? 'Mint Payment'}
+            closeStateCallback={closeStateCallback}
+          />
+          <DialogContent
+            sx={{
+              px: 2,
+              py: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden'
+            }}>
+            {sender && (
+              <Stack mb={2} spacing={1} alignItems="center" width="100%">
+                <SenderField sender={sender} {...(setSelectedFlow && { setOpenSelectFlow })} />
+                <KeyboardDoubleArrowDown />
+                <FarcasterRecipientField social={social} />
+              </Stack>
+            )}
 
-          <Box
-            flex={1}
-            overflow="auto"
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            justifyContent="space-between">
-            <Stack alignItems="center" justifyContent="start" spacing={0}>
-              <Tooltip
-                title={mint.metadata.description}
-                arrow
-                disableFocusListener
-                sx={{ fontWeight: 'bold' }}
-                slotProps={{
-                  tooltip: { sx: { p: 1, borderRadius: 5, fontWeight: 'bold' } }
-                }}>
-                <Stack
-                  p={1}
-                  maxWidth={250}
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="center"
-                  spacing={1}>
-                  <Avatar
-                    variant="rounded"
-                    src={mint.metadata.image}
-                    sx={{
-                      width: 64,
-                      height: 64
-                    }}
-                  />
-                  <Stack alignItems="flex-start" spacing={0.5}>
-                    <Typography fontSize={18} fontWeight="bold">
-                      {mint.metadata.name}
-                    </Typography>
-                    <Typography
-                      textAlign="start"
-                      variant="subtitle2"
-                      color={grey[prefersDarkMode ? 400 : 700]}>
-                      {mint.collectionName}
-                    </Typography>
+            <Box
+              flex={1}
+              overflow="auto"
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="space-between">
+              <Stack alignItems="center" justifyContent="start" spacing={0}>
+                <Tooltip
+                  title={mint.metadata.description}
+                  arrow
+                  disableFocusListener
+                  sx={{ fontWeight: 'bold' }}
+                  slotProps={{
+                    tooltip: { sx: { p: 1, borderRadius: 5, fontWeight: 'bold' } }
+                  }}>
+                  <Stack
+                    p={1}
+                    maxWidth={250}
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="center"
+                    spacing={1}>
+                    <Avatar
+                      variant="rounded"
+                      src={mint.metadata.image}
+                      sx={{
+                        width: 64,
+                        height: 64
+                      }}
+                    />
+                    <Stack alignItems="flex-start" spacing={0.5}>
+                      <Typography fontSize={18} fontWeight="bold">
+                        {mint.metadata.name}
+                      </Typography>
+                      <Typography
+                        textAlign="start"
+                        variant="subtitle2"
+                        color={grey[prefersDarkMode ? 400 : 700]}>
+                        {mint.collectionName}
+                      </Typography>
+                    </Stack>
                   </Stack>
-                </Stack>
-              </Tooltip>
+                </Tooltip>
 
-              {isLoading ? (
-                <Skeleton
-                  title="fetching price"
-                  variant="rectangular"
-                  sx={{ borderRadius: 3, height: 45, width: 100 }}
-                />
-              ) : hasPaymentOption ? (
-                <Typography fontSize={30} fontWeight="bold" textAlign="center">
-                  {formatAmountWithSuffix(
-                    normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
-                  )}{' '}
-                  {paymentToken?.id.toUpperCase()}
-                </Typography>
-              ) : (
-                <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
-                  {mintStatus === 'ended'
-                    ? 'Mint has ended'
-                    : mintPaymentTxError || !paymentTx
-                    ? 'Failed to load payment transaction'
-                    : mintStatus === 'error' || isPaymentOptionsError
-                    ? 'Something went wrong'
-                    : paymentOptions?.length === 0 &&
-                      "You don't have any balance to cover mint cost. Switch to a different payment flow!"}
-                </Typography>
-              )}
-            </Stack>
+                {isLoading ? (
+                  <Skeleton
+                    title="fetching price"
+                    variant="rectangular"
+                    sx={{ borderRadius: 3, height: 45, width: 100 }}
+                  />
+                ) : hasPaymentOption ? (
+                  <Typography fontSize={30} fontWeight="bold" textAlign="center">
+                    {formatAmountWithSuffix(
+                      normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
+                    )}{' '}
+                    {paymentToken?.id.toUpperCase()}
+                  </Typography>
+                ) : (
+                  <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
+                    {mintStatus === 'ended'
+                      ? 'Mint has ended'
+                      : mintPaymentTxError || !paymentTx
+                      ? 'Failed to load payment transaction'
+                      : mintStatus === 'error' || isPaymentOptionsError
+                      ? 'Something went wrong'
+                      : paymentOptions?.length === 0 &&
+                        "You don't have any balance to cover mint cost. Switch to a different payment flow!"}
+                  </Typography>
+                )}
+              </Stack>
 
-            <NetworkTokenSelector
-              crossChainMode
-              payment={payment}
-              paymentWallet={paymentWallet}
-              setPaymentWallet={setPaymentWallet}
-              paymentToken={paymentToken}
-              setPaymentToken={setPaymentToken}
-              compatibleWallets={compatibleWallets}
-              enabledChainCurrencies={
-                paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
-              }
-              gasFee={gasFee}
-            />
-          </Box>
+              <NetworkTokenSelector
+                crossChainMode
+                payment={payment}
+                paymentWallet={paymentWallet}
+                setPaymentWallet={setPaymentWallet}
+                paymentToken={paymentToken}
+                setPaymentToken={setPaymentToken}
+                compatibleWallets={compatibleWallets}
+                enabledChainCurrencies={
+                  paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
+                }
+                gasFee={gasFee}
+              />
+            </Box>
 
-          <Box display="flex" flexDirection="column" alignItems="center" width="100%">
-            <PayButton
-              paymentToken={paymentToken}
-              buttonText={mintStatus === 'ended' ? 'Mint Ended' : 'Mint'}
-              disabled={!hasPaymentOption}
-              paymentTx={paymentTx}
-              paymentWallet={paymentWallet!}
-              paymentOption={paymentOption!}
-              payment={payment}
-              senderFlow={senderFlow}
-              onSuccess={() => {
-                toast.success(`Minted "${mint.metadata.name}"`, { autoClose: 2000 });
-                setTimeout(() => (window.location.href = '/'), 2000);
-              }}
-              onError={(error) => {
-                toast.error(`Failed to mint "${mint.metadata.name}"`, { autoClose: 2000 });
-                console.error(`Failed to mint with error`, error);
-              }}
-            />
-            <PoweredByGlideText />
-          </Box>
-        </DialogContent>
-      </Dialog>
+            <Box display="flex" flexDirection="column" alignItems="center" width="100%">
+              <PayButton
+                paymentToken={paymentToken}
+                buttonText={mintStatus === 'ended' ? 'Mint Ended' : 'Mint'}
+                disabled={!hasPaymentOption}
+                paymentTx={paymentTx}
+                paymentWallet={paymentWallet!}
+                paymentOption={paymentOption!}
+                payment={payment}
+                senderFlow={senderFlow}
+                onSuccess={() => {
+                  setShowSuccessDialog(true);
+                }}
+                onError={(error) => {
+                  toast.error(`Failed to mint "${mint.metadata.name}"`, { autoClose: 2000 });
+                  console.error(`Failed to mint with error`, error);
+                }}
+              />
+              <PoweredByGlideText />
+            </Box>
+          </DialogContent>
+        </Dialog>
+      )}
+      <PaymentSuccessDialog
+        open={showSuccessDialog}
+        onClose={() => {
+          window.location.href = '/';
+        }}
+        message={successMessage}
+        receiptUrl={receiptUrl}
+      />
+
       {flows && selectedFlow && setSelectedFlow && (
         <ChooseFlowDialog
           configurable={false}
