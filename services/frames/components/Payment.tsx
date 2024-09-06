@@ -60,7 +60,7 @@ function Payment({
     (step === 'start' || step === 'command') &&
     identity.profile?.preferredTokens &&
     identity.profile.preferredTokens.length > 0;
-  const maxNameWidth = isPaymentInitiated ? 450 : 600;
+  const maxNameWidth = isPaymentInitiated || showPreferredTokens ? 450 : 600;
 
   return (
     <Card>

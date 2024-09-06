@@ -1,6 +1,17 @@
-directive @binding(constraint: String!, errorCode: String!) on INPUT_FIELD_DEFINITION | ARGUMENT_DEFINITION
+directive @binding(
+  constraint: String!
+  errorCode: String!
+) on INPUT_FIELD_DEFINITION | ARGUMENT_DEFINITION
 
-directive @db(collectionFieldName: String, sqlTableName: String, startPrefix: String, endPrefix: String, isStartExclusive: String, isEndExclusive: String, isHexField: String) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
+directive @db(
+  collectionFieldName: String
+  sqlTableName: String
+  startPrefix: String
+  endPrefix: String
+  isStartExclusive: String
+  isEndExclusive: String
+  isHexField: String
+) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 
 """
 The @specifiedBy built-in directive is used within the type system definition
@@ -65,13 +76,19 @@ input Date_Range_Comparator_Exp {
 scalar DateRange
 
 type Domain {
-  """Airstack unique identifier for the data point"""
+  """
+  Airstack unique identifier for the data point
+  """
   id: ID
 
-  """Parent domain name, if the entity is a subdomain"""
+  """
+  Parent domain name, if the entity is a subdomain
+  """
   parent: String
 
-  """Owner of token associated with the domain"""
+  """
+  Owner of token associated with the domain
+  """
   owner: Address!
 
   """
@@ -85,16 +102,24 @@ type Domain {
   """
   resolvedAddressDetails: Wallet
 
-  """Blockchain address to which the domain is resolved"""
+  """
+  Blockchain address to which the domain is resolved
+  """
   resolvedAddress: Address
 
-  """Resolver address associated with Domain"""
+  """
+  Resolver address associated with Domain
+  """
   resolverAddress: Address
 
-  """Timestamp when the domain registration expires"""
+  """
+  Timestamp when the domain registration expires
+  """
   expiryTimestamp: Time
 
-  """Indicates if the domain is set to be primary - true or false"""
+  """
+  Indicates if the domain is set to be primary - true or false
+  """
   isPrimary: Boolean
 
   """
@@ -102,37 +127,59 @@ type Domain {
   """
   labelName: String
 
-  """Airstack unique domain hash"""
+  """
+  Airstack unique domain hash
+  """
   labelHash: String
 
-  """Full domain name, e.g. vitalik.eth"""
+  """
+  Full domain name, e.g. vitalik.eth
+  """
   name: String
 
-  """Nested query - can retrieve payment token data (name, symbol, etc.)"""
+  """
+  Nested query - can retrieve payment token data (name, symbol, etc.)
+  """
   paymentToken: Address
 
-  """payment amount in blockchain native token for the domain"""
+  """
+  payment amount in blockchain native token for the domain
+  """
   paymentTokenCostInNativeToken: Float
 
-  """payment amount in USDC for the domain"""
+  """
+  payment amount in USDC for the domain
+  """
   paymentTokenCostInUSDC: Float
 
-  """Domain registration cost"""
+  """
+  Domain registration cost
+  """
   registrationCost: String
 
-  """Domain registration cost in blockchain native token"""
+  """
+  Domain registration cost in blockchain native token
+  """
   registrationCostInNativeToken: String
 
-  """Domain registration cost in USDC"""
+  """
+  Domain registration cost in USDC
+  """
   registrationCostInUSDC: String
 
-  """Domain registration cost in decimals"""
+  """
+  Domain registration cost in decimals
+  """
   formattedRegistrationCost: Float
 
-  """Domain registration cost in native blockchain token in decimals"""
+  """
+  Domain registration cost in native blockchain token in decimals
+  """
   formattedRegistrationCostInNativeToken: Float
 
-  """Domain registration cost in USDC in decimals"""
+  """
+  Domain registration cost in USDC in decimals
+  """
   formattedRegistrationCostInUSDC: Float
 
   """
@@ -140,43 +187,69 @@ type Domain {
   """
   subDomains(input: DomainsNestedInput): [Domain]
 
-  """Count of subdomains linked to the domain"""
+  """
+  Count of subdomains linked to the domain
+  """
   subDomainCount: Int
 
-  """Domain Token ID associated with the domain, if applicable"""
+  """
+  Domain Token ID associated with the domain, if applicable
+  """
   tokenId: String
 
-  """Time-to-live value for the domain"""
+  """
+  Time-to-live value for the domain
+  """
   ttl: String
 
-  """Unique identifier for the blockchain"""
+  """
+  Unique identifier for the blockchain
+  """
   chainId: String
 
-  """Blockchain where the NFT sale took place"""
+  """
+  Blockchain where the NFT sale took place
+  """
   blockchain: Blockchain!
 
-  """DApp name associated with the domain (e.g. ENS)"""
+  """
+  DApp name associated with the domain (e.g. ENS)
+  """
   dappName: DomainDappName
 
-  """DApp slug (contract version) associated with the domain"""
+  """
+  DApp slug (contract version) associated with the domain
+  """
   dappSlug: DomainDappSlug
 
-  """Block number when the domain was created"""
+  """
+  Block number when the domain was created
+  """
   createdAtBlockNumber: Int
 
-  """Timestamp when the domain was created"""
+  """
+  Timestamp when the domain was created
+  """
   createdAtBlockTimestamp: Time
 
-  """Block number when the domain was last updated"""
+  """
+  Block number when the domain was last updated
+  """
   lastUpdatedBlockNumber: Int
 
-  """Timestamp when the domain was last updated"""
+  """
+  Timestamp when the domain was last updated
+  """
   lastUpdatedBlockTimestamp: Time
 
-  """Token Address associated with the domain, if applicable"""
+  """
+  Token Address associated with the domain, if applicable
+  """
   tokenAddress: Address!
 
-  """Manager of Domain"""
+  """
+  Manager of Domain
+  """
   manager: Address!
 
   """
@@ -184,16 +257,24 @@ type Domain {
   """
   managerDetails: Wallet
 
-  """Avatar of the domain"""
+  """
+  Avatar of the domain
+  """
   avatar: String
 
-  """Texts associated with the domain"""
+  """
+  Texts associated with the domain
+  """
   texts: [DomainTexts!]
 
-  """Domain is name wrapped or not"""
+  """
+  Domain is name wrapped or not
+  """
   isNameWrapped: Boolean
 
-  """Multichain associated with the domain"""
+  """
+  Multichain associated with the domain
+  """
   multiChainAddresses: [DomainMultiChainAddress!]
 }
 
@@ -224,10 +305,14 @@ input DomainFilter {
 }
 
 type DomainMultiChainAddress {
-  """symbol according to SLIP-0044"""
+  """
+  symbol according to SLIP-0044
+  """
   symbol: String
 
-  """address"""
+  """
+  address
+  """
   address: String
 }
 
@@ -258,10 +343,14 @@ type DomainsOutput {
 }
 
 type DomainTexts {
-  """key of the text"""
+  """
+  key of the text
+  """
   key: String
 
-  """value of the text"""
+  """
+  value of the text
+  """
   value: String
 }
 
@@ -328,7 +417,9 @@ type FarcasterCastOutput {
 }
 
 type FarcasterChannel {
-  """Airstack unique identifier for the data point"""
+  """
+  Airstack unique identifier for the data point
+  """
   id: ID!
   dappName: String!
   dappSlug: String!
@@ -382,7 +473,9 @@ input FarcasterChannelOrderBy {
 }
 
 type FarcasterChannelParticipant {
-  """Airstack unique identifier for the data point"""
+  """
+  Airstack unique identifier for the data point
+  """
   id: ID
   dappName: String!
   dappSlug: String!
@@ -960,7 +1053,9 @@ type Query {
   SocialFollowings(input: SocialFollowingInput!): SocialFollowingOutput
   SocialFollowers(input: SocialFollowerInput!): SocialFollowerOutput
   FarcasterChannels(input: FarcasterChannelsInput!): FarcasterChannelsOutput
-  FarcasterChannelParticipants(input: FarcasterChannelParticipantsInput!): FarcasterChannelParticipantsOutput
+  FarcasterChannelParticipants(
+    input: FarcasterChannelParticipantsInput!
+  ): FarcasterChannelParticipantsOutput
   FarcasterValidateFrameMessage(input: FarcasterFrameMessageInput!): FarcasterFrameMessageOutput
   FarcasterCasts(input: FarcasterCastInput!): FarcasterCastOutput
   TrendingCasts(input: TrendingCastsInput!): TrendingCastsOutput
@@ -969,8 +1064,12 @@ type Query {
   FarcasterReactions(input: FarcasterReactionsInput!): FarcasterReactionsOutput
   FarcasterFanTokenAuctions(input: FarcasterFanTokenAuctionsInput!): FarcasterFanTokenAuctionsOutput
   FarcasterNotaEarningStats(input: FarcasterNotaEarningStatsInput!): FarcasterNotaEarningStatsOutput
-  FarcasterMoxieEarningStats(input: FarcasterMoxieEarningStatsInput!): FarcasterMoxieEarningStatsOutput
-  FarcasterMoxieClaimDetails(input: FarcasterMoxieClaimDetailsInput!): FarcasterMoxieClaimDetailsOutput
+  FarcasterMoxieEarningStats(
+    input: FarcasterMoxieEarningStatsInput!
+  ): FarcasterMoxieEarningStatsOutput
+  FarcasterMoxieClaimDetails(
+    input: FarcasterMoxieClaimDetailsInput!
+  ): FarcasterMoxieClaimDetailsOutput
 }
 
 scalar Range
@@ -1007,22 +1106,34 @@ input Simple_String_Comparator_Exp {
 }
 
 type Social {
-  """Airstack unique identifier for the data point"""
+  """
+  Airstack unique identifier for the data point
+  """
   id: ID
 
-  """Unique identifier for the blockchain"""
+  """
+  Unique identifier for the blockchain
+  """
   chainId: String
 
-  """Blockchain associated with the social identity"""
+  """
+  Blockchain associated with the social identity
+  """
   blockchain: Blockchain
 
-  """Social DApp name"""
+  """
+  Social DApp name
+  """
   dappName: SocialDappName
 
-  """Social DApp slug (contract version)"""
+  """
+  Social DApp slug (contract version)
+  """
   dappSlug: SocialDappSlug
 
-  """Airstack unique dapp version number"""
+  """
+  Airstack unique dapp version number
+  """
   dappVersion: String
   userId: String
   userAddress: Address
@@ -1036,7 +1147,9 @@ type Social {
   userHomeURL: String
   userRecoveryAddress: Address
 
-  """blockchain addresses associated with the social profile"""
+  """
+  blockchain addresses associated with the social profile
+  """
   userAssociatedAddresses: [Address!]
   profileName: String
   profileTokenId: String
@@ -1099,6 +1212,7 @@ type SocialCapitalValue {
 
 enum SocialDappName {
   farcaster
+  lens
 }
 
 input SocialDappName_Comparator_Exp {
@@ -1404,19 +1518,29 @@ type Wallet {
   """
   identity: Identity!
 
-  """Returns addresses associated with the identity input"""
+  """
+  Returns addresses associated with the identity input
+  """
   addresses: [Address!]
 
-  """Nested query - allows returning primary domains, if applicable"""
+  """
+  Nested query - allows returning primary domains, if applicable
+  """
   primaryDomain: Domain
 
-  """Nested query - allows querying domains owned by the address"""
+  """
+  Nested query - allows querying domains owned by the address
+  """
   domains(input: DomainsNestedInput): [Domain!]
 
-  """Returns social profile information related to the address"""
+  """
+  Returns social profile information related to the address
+  """
   socials(input: SocialsNestedInput): [Social!]
 
-  """Represent On-chain smart-contract accounts"""
+  """
+  Represent On-chain smart-contract accounts
+  """
   socialFollowings(input: SocialFollowingNestedInput): SocialFollowingOutput
   socialFollowers(input: SocialFollowerNestedInput): SocialFollowerOutput
 }
@@ -1424,4 +1548,3 @@ type Wallet {
 input WalletInput {
   identity: Identity!
 }
-
