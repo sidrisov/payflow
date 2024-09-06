@@ -81,6 +81,7 @@
     "workbox-window": "^7.1.0"
   },
   "overrides": {
-    "agp-js": "github:runic-inc/apg-js#8bb92ff0780819170fee7e756d26e0562e442983"
+    "agp-js": "github:runic-inc/apg-js#8bb92ff0780819170fee7e756d26e0562e442983",
+    "ethers": "6.7.0"
   }
 }
