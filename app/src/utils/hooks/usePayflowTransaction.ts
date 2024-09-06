@@ -46,24 +46,40 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
     status: ''
   });
 
+  const [glideStatus, setGlideStatus] = useState<PaymentTxStatus>({
+    isPending: false,
+    isConfirmed: false,
+    error: false,
+    txHash: null,
+    status: ''
+  });
+
   useEffect(() => {
-    if (isNativeFlow) {
-      setPaymentTxStatus({
-        isPending: Boolean(loadingSafe || (txHashSafe && !confirmedSafe && !errorSafe)),
-        isConfirmed: Boolean(confirmedSafe),
-        error: Boolean(errorSafe),
-        txHash: txHashSafe ?? null,
-        status: statusSafe ?? ''
-      });
-    } else {
-      setPaymentTxStatus({
-        isPending: Boolean(loadingRegular || (txHashRegular && !confirmedRegular && !errorRegular)),
-        isConfirmed: Boolean(confirmedRegular),
-        error: Boolean(errorRegular),
-        txHash: txHashRegular ?? null,
-        status: statusRegular ?? ''
-      });
-    }
+    const transferStatus = isNativeFlow
+      ? {
+          isPending: Boolean(loadingSafe || (txHashSafe && !confirmedSafe && !errorSafe)),
+          isConfirmed: Boolean(confirmedSafe),
+          error: Boolean(errorSafe),
+          txHash: txHashSafe,
+          status: statusSafe
+        }
+      : {
+          isPending: Boolean(
+            loadingRegular || (txHashRegular && !confirmedRegular && !errorRegular)
+          ),
+          isConfirmed: Boolean(confirmedRegular),
+          error: Boolean(errorRegular),
+          txHash: txHashRegular,
+          status: statusRegular
+        };
+
+    setPaymentTxStatus({
+      isPending: transferStatus.isPending || glideStatus.isPending,
+      isConfirmed: transferStatus.isConfirmed && glideStatus.isConfirmed,
+      error: transferStatus.error || glideStatus.error,
+      txHash: glideStatus.txHash || transferStatus.txHash || null,
+      status: transferStatus.isConfirmed ? glideStatus.status : transferStatus.status || 'Loading'
+    });
   }, [
     isNativeFlow,
     loadingSafe,
@@ -75,7 +91,8 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
     txHashRegular,
     confirmedRegular,
     errorRegular,
-    statusRegular
+    statusRegular,
+    glideStatus
   ]);
 
   const handleGlideTransaction = async ({
@@ -101,74 +118,103 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
       resetRegular();
     }
 
-    const session = await createSession(glideConfig, {
-      account: paymentWallet.address,
-      paymentCurrency: paymentOption.paymentCurrency,
-      currentChainId: chainId,
-      ...(paymentTx as any)
+    setGlideStatus({
+      isPending: true,
+      isConfirmed: false,
+      error: false,
+      txHash: null,
+      status: 'Fulfilling'
     });
 
-    const { sponsoredTransactionHash: glideTxHash } = await executeSession(glideConfig, {
-      session,
-      currentChainId: chainId as any,
-      switchChainAsync,
-      sendTransactionAsync: async (tx) => {
-        console.log('Glide tnxs: ', tx);
+    try {
+      const session = await createSession(glideConfig, {
+        account: paymentWallet.address,
+        paymentCurrency: paymentOption.paymentCurrency,
+        currentChainId: chainId,
+        ...(paymentTx as any)
+      });
 
-        let txHash;
-        if (isNativeFlow) {
-          // TODO: hard to figure out if there 2 signers or one, for now consider if signerProvider not specified - 1, otherwise - 2
-          const owners = [];
-          if (
-            senderFlow.signerProvider &&
-            senderFlow.signer.toLowerCase() !== profile.identity.toLowerCase()
-          ) {
-            owners.push(profile.identity);
+      const { sponsoredTransactionHash: glideTxHash } = await executeSession(glideConfig, {
+        session,
+        currentChainId: chainId as any,
+        switchChainAsync,
+        sendTransactionAsync: async (tx) => {
+          console.log('Glide tnxs: ', tx);
+
+          let txHash;
+          if (isNativeFlow) {
+            const owners = [];
+            if (
+              senderFlow.signerProvider &&
+              senderFlow.signer.toLowerCase() !== profile.identity.toLowerCase()
+            ) {
+              owners.push(profile.identity);
+            }
+            owners.push(senderFlow.signer);
+
+            const safeAccountConfig: SafeAccountConfig = {
+              owners,
+              threshold: 1
+            };
+
+            const saltNonce = senderFlow.saltNonce as string;
+            const safeVersion = paymentWallet.version as SafeVersion;
+
+            txHash = await transfer(
+              client,
+              signer,
+              {
+                from: paymentWallet.address,
+                to: tx.to,
+                data: tx.data && tx.data.length ? tx.data : undefined,
+                value: tx.value
+              },
+              safeAccountConfig,
+              safeVersion,
+              saltNonce
+            );
+          } else {
+            txHash = (await sendTransactionAsync(tx)) as Hash;
           }
-          owners.push(senderFlow.signer);
 
-          const safeAccountConfig: SafeAccountConfig = {
-            owners,
-            threshold: 1
-          };
+          if (txHash) {
+            payment.fulfillmentId = session.sessionId;
+            payment.fulfillmentChainId = tx.chainId;
+            payment.fulfillmentHash = txHash;
+            updatePayment(payment);
+          }
 
-          const saltNonce = senderFlow.saltNonce as string;
-          const safeVersion = paymentWallet.version as SafeVersion;
-
-          txHash = await transfer(
-            client,
-            signer,
-            {
-              from: paymentWallet.address,
-              to: tx.to,
-              data: tx.data && tx.data.length ? tx.data : undefined,
-              value: tx.value
-            },
-            safeAccountConfig,
-            safeVersion,
-            saltNonce
-          );
-        } else {
-          txHash = (await sendTransactionAsync(tx)) as Hash;
+          return txHash as Hash;
         }
+      });
 
-        if (txHash) {
-          payment.fulfillmentId = session.sessionId;
-          payment.fulfillmentChainId = tx.chainId;
-          payment.fulfillmentHash = txHash;
-          updatePayment(payment);
-        }
-        return txHash as Hash;
+      console.log('Glide txHash:', glideTxHash);
+
+      if (glideTxHash && payment.referenceId) {
+        payment.hash = glideTxHash;
+        updatePayment(payment);
+
+        setGlideStatus({
+          isPending: false,
+          isConfirmed: true,
+          error: false,
+          txHash: glideTxHash,
+          status: 'Fulfilled'
+        });
+
+        return { success: true, txHash: glideTxHash };
+      } else {
+        throw new Error('Transaction failed');
       }
-    });
-
-    console.log('Glide txHash:', glideTxHash);
-
-    if (glideTxHash && payment.referenceId) {
-      payment.hash = glideTxHash;
-      updatePayment(payment);
-      return { success: true, txHash: glideTxHash };
-    } else {
+    } catch (error) {
+      console.error('Glide transaction error:', error);
+      setGlideStatus({
+        isPending: false,
+        isConfirmed: false,
+        error: true,
+        txHash: null,
+        status: 'Failed'
+      });
       return { success: false };
     }
   };
