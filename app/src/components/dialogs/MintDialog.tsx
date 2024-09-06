@@ -7,7 +7,10 @@ import {
   Typography,
   Skeleton,
   Avatar,
-  Tooltip
+  Tooltip,
+  IconButton,
+  TextField,
+  Button
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { getPaymentOption } from '../../utils/glide';
@@ -39,6 +42,11 @@ import { useDarkMode } from '../../utils/hooks/useDarkMode';
 import { useMobile } from '../../utils/hooks/useMobile';
 import PaymentSuccessDialog from './PaymentSuccessDialog';
 import { getReceiptUrl } from '../../utils/receipts';
+import React from 'react';
+import { SiFarcaster } from 'react-icons/si';
+import { TbCopy } from 'react-icons/tb';
+import { FRAMES_URL } from '../../utils/urlConstants';
+import { copyToClipboard } from '../../utils/copyToClipboard';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {
@@ -139,6 +147,81 @@ export default function MintDialog({
 
   const successMessage = `minted "${mint.metadata.name}" for @${social.profileName}`;
   const receiptUrl = getReceiptUrl(payment, false);
+
+  const shareFrameUrl = new URL(`${FRAMES_URL}/mint`);
+  shareFrameUrl.searchParams.append('provider', mint.provider);
+  shareFrameUrl.searchParams.append('chainId', mint.chainId.toString());
+  shareFrameUrl.searchParams.append('contract', mint.contract);
+  if (mint.tokenId) {
+    shareFrameUrl.searchParams.append('tokenId', mint.tokenId.toString());
+  }
+  if (profile?.identity) {
+    shareFrameUrl.searchParams.append('referral', profile?.identity);
+  }
+  if (payment.target) {
+    shareFrameUrl.searchParams.append('original', payment.target);
+  }
+
+  const composeCastUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(
+    `Minted ${mint.metadata.name}: ${mint.collectionName} for @${social.profileName}\n\n@payflow allows you to mint with 20+ tokens across multiple chains\ncc: @sinaver.eth /payflow`
+  )}&embeds[]=${encodeURIComponent(shareFrameUrl.toString())}`;
+
+  const handleCopyLink = () => {
+    copyToClipboard(shareFrameUrl.toString());
+    toast.success('Mint frame link copied!');
+  };
+
+  const shareComponents = (
+    <>
+      <Button
+        fullWidth
+        onClick={() => window.open(composeCastUrl, '_blank')}
+        startIcon={<SiFarcaster />}
+        variant="outlined"
+        size="small"
+        color="inherit"
+        sx={{
+          fontSize: 14,
+          fontWeight: 'normal',
+          height: 45,
+          '&:hover': {
+            backgroundColor: 'action.hover'
+          },
+          borderRadius: 3,
+          borderColor: 'divider',
+          textTransform: 'none',
+          justifyContent: 'flex-start',
+          px: 2
+        }}>
+        Share on Farcaster
+      </Button>
+      <TextField
+        fullWidth
+        variant="outlined"
+        size="small"
+        value={shareFrameUrl}
+        slotProps={{
+          input: {
+            sx: {
+              mt: 1,
+              borderRadius: 3,
+              fontSize: 14,
+              height: 45
+            },
+
+            readOnly: true,
+            endAdornment: (
+              <Tooltip title="Copy frame link">
+                <IconButton size="small" color="inherit" onClick={handleCopyLink} edge="end">
+                  <TbCopy />
+                </IconButton>
+              </Tooltip>
+            )
+          }
+        }}
+      />
+    </>
+  );
 
   return (
     <>
@@ -300,6 +383,7 @@ export default function MintDialog({
         }}
         message={successMessage}
         receiptUrl={receiptUrl}
+        shareComponents={shareComponents}
       />
 
       {flows && selectedFlow && setSelectedFlow && (

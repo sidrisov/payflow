@@ -10,13 +10,15 @@ interface PaymentSuccessDialogProps {
   onClose: () => void;
   message: string;
   receiptUrl: string;
+  shareComponents?: React.ReactNode;
 }
 
 const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
   open,
   onClose,
   message,
-  receiptUrl
+  receiptUrl,
+  shareComponents
 }) => {
   return (
     <ResponsiveDialog open={open} onClose={onClose}>
@@ -28,10 +30,26 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
         <Typography variant="h6" textAlign="center" mb={2} sx={{ color: 'gray' }}>
           {message}
         </Typography>
+        {shareComponents && (
+          <Box
+            mb={2}
+            sx={{
+              border: '1px dashed',
+              borderColor: 'divider',
+              borderRadius: 5,
+              p: 3,
+              pt: 2,
+              width: '100%'
+            }}>
+            <Typography mb={2} textAlign="center" variant="body1" color="grey">
+              Share on socials
+            </Typography>
+            {shareComponents}
+          </Box>
+        )}
         <Typography
           variant="body2"
           textAlign="center"
-          mb={1}
           sx={{ color: 'gray', whiteSpace: 'balance' }}>
           You can view the payment details in the receipts section or{' '}
           <Link
