@@ -58,7 +58,7 @@ export function Head() {
         <meta property="fc:frame:button:2:action" content="link" />
         <meta property="fc:frame:button:2:target" content={`${DAPP_URL}/${username}?pay`} />
 
-        <meta property="fc:frame:button:3" content="Install" />
+        <meta property="fc:frame:button:3" content="Action" />
         <meta property="fc:frame:button:3:action" content="link" />
         <meta
           property="fc:frame:button:3:target"

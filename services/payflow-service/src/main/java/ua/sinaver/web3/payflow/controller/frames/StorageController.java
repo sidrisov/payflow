@@ -188,7 +188,7 @@ public class StorageController {
 						FrameButton.ActionType.POST,
 						checkUrl))
 				.button(new FrameButton(
-						"Install",
+						"Action",
 						FrameButton.ActionType.LINK,
 						addActionUrl))
 				.button(new FrameButton(

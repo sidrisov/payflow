@@ -93,7 +93,7 @@ export function Head() {
                 content={DAPP_URL.concat(`/payment/${refId}`)}
               />
 
-              <meta property="fc:frame:button:3" content="Install" />
+              <meta property="fc:frame:button:3" content="Action" />
               <meta property="fc:frame:button:3:action" content="link" />
               <meta
                 property="fc:frame:button:3:target"

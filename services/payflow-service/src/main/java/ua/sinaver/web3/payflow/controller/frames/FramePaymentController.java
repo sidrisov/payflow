@@ -233,7 +233,7 @@ public class FramePaymentController {
 							apiServiceUrl.concat(String.format(PAY_IN_FRAME, paymentProfile.getIdentity()))))
 					.button(new FrameButton("App", FrameButton.ActionType.LINK,
 							paymentLink))
-					.button(new FrameButton("Install", FrameButton.ActionType.LINK,
+					.button(new FrameButton("Action", FrameButton.ActionType.LINK,
 							installCastActionLink))
 					.build().toHtmlResponse();
 		}
