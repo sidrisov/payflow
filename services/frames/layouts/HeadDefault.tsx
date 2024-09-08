@@ -34,9 +34,9 @@ export default function HeadDefault() {
       />
       <meta name="twitter:image" content="https://i.imgur.com/Vs0loYg.png" />
 
-      <meta property="fc:frame" content="vNext" />
+      {/*       <meta property="fc:frame" content="vNext" />
       <meta property="fc:frame:image" content="https://i.imgur.com/Vs0loYg.png" />
-      <meta property="fc:frame:button:1" content="Connect" />
+      <meta property="fc:frame:button:1" content="Connect" /> */}
     </>
   );
 }

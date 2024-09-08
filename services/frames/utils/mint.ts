@@ -10,6 +10,14 @@ dotenv.config();
 
 const API_URL = process.env.VITE_PAYFLOW_SERVICE_API_URL;
 
+export interface MintUrlParams {
+  provider: string;
+  chainId: string;
+  contract: Address;
+  referral?: string;
+  tokenId?: string;
+}
+
 export interface MintMetadata {
   provider: string;
   collectionName: string;
@@ -61,14 +69,12 @@ export async function fetchMintData(
 }
 
 export async function fetchCollectionOwner(chainId: number, contract: Address): Promise<string> {
-  const owner = (await readContract(wagmiConfig, {
+  return (await readContract(wagmiConfig, {
     chainId: chainId as any,
     address: contract,
     abi: zoraErc1155Abi,
     functionName: 'owner'
-  })) as string;
-
-  return owner;
+  })) as Address;
 }
 
 export async function fetchCollectionName(chainId: number, contract: Address): Promise<string> {

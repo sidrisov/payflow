@@ -1,18 +1,15 @@
 import { usePageContext } from 'vike-react/usePageContext';
 import { API_URL, DAPP_URL, FRAMES_URL } from '../../utils/constants';
-
-interface MintUrlParams {
-  provider: string;
-  chainId: string;
-  contract: string;
-  referral?: string;
-  tokenId?: string;
-}
+import { MintUrlParams } from '../../utils/mint';
+import { useData } from 'vike-react/useData';
+import { Data } from './+data';
 
 export function Head() {
   const { urlParsed } = usePageContext();
-  const { provider, chainId, contract, tokenId, referral }: MintUrlParams =
+  const { provider, chainId, contract, tokenId, referral } =
     urlParsed.search as unknown as MintUrlParams;
+
+  const author = useData<Data>();
 
   const original =
     provider === 'zora.co'
@@ -23,7 +20,7 @@ export function Head() {
 
   const paymentMintSubmitUrl = new URL(`${API_URL}/api/farcaster/frames/mint/submit`);
   paymentMintSubmitUrl.searchParams.append('provider', provider);
-  paymentMintSubmitUrl.searchParams.append('chainId', chainId);
+  paymentMintSubmitUrl.searchParams.append('chainId', chainId.toString());
   paymentMintSubmitUrl.searchParams.append('contract', contract);
   if (tokenId) {
     paymentMintSubmitUrl.searchParams.append('tokenId', tokenId);
@@ -31,7 +28,9 @@ export function Head() {
   if (referral) {
     paymentMintSubmitUrl.searchParams.append('referral', referral);
   }
-  paymentMintSubmitUrl.searchParams.append('original', original);
+  if (author) {
+    paymentMintSubmitUrl.searchParams.append('author', author);
+  }
 
   const baseUrl = 'https://warpcast.com/~/compose';
   const castText = encodeURIComponent(
@@ -40,7 +39,7 @@ export function Head() {
 
   const currentFrameUrl = new URL(`${FRAMES_URL}/mint`);
   currentFrameUrl.searchParams.append('provider', provider);
-  currentFrameUrl.searchParams.append('chainId', chainId);
+  currentFrameUrl.searchParams.append('chainId', chainId.toString());
   currentFrameUrl.searchParams.append('contract', contract);
   if (tokenId) {
     currentFrameUrl.searchParams.append('tokenId', tokenId);
@@ -96,7 +95,7 @@ export function Head() {
         <meta property="fc:frame:image:aspect_ratio" content="1:1" />
         <meta property="fc:frame:input:text" content="For username, blank for yourself" />
 
-        <meta property="fc:frame:button:1" content="Mint" />
+        <meta property="fc:frame:button:1" content="✨ Mint" />
         <meta property="fc:frame:button:1:action" content="post_redirect" />
         <meta property="fc:frame:button:1:target" content={paymentMintSubmitUrl.toString()} />
         <meta

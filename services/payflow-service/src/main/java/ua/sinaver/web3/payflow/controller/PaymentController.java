@@ -16,11 +16,13 @@ import ua.sinaver.web3.payflow.message.PaymentReferenceMessage;
 import ua.sinaver.web3.payflow.message.PaymentUpdateMessage;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
+import ua.sinaver.web3.payflow.message.nft.ParsedMintUrlMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.*;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
+import ua.sinaver.web3.payflow.utils.MintUrlUtils;
 
 import java.security.Principal;
 import java.text.DecimalFormat;
@@ -109,8 +111,9 @@ public class PaymentController {
 			return ResponseEntity.badRequest().build();
 		}
 
-		val receiver = paymentMessage.receiver() != null ?
-				userService.findByIdentity(paymentMessage.receiver().identity()) : null;
+		val receiver = paymentMessage.receiver() != null
+				? userService.findByIdentity(paymentMessage.receiver().identity())
+				: null;
 		val payment = new Payment(paymentMessage.type(), receiver,
 				paymentMessage.chainId(), paymentMessage.token());
 		payment.setReceiverAddress(paymentMessage.receiverAddress());
@@ -207,7 +210,8 @@ public class PaymentController {
 				return;
 			}
 
-			// if it's not a fulfillment type of payment, save additionally chainId and token
+			// if it's not a fulfillment type of payment, save additionally chainId and
+			// token
 			if (!payment.getStatus().equals(Payment.PaymentStatus.INPROGRESS)) {
 				if (paymentUpdateMessage.chainId() != null) {
 					payment.setNetwork(paymentUpdateMessage.chainId());
@@ -240,6 +244,8 @@ public class PaymentController {
 						receiverFname, payment.getSourceHash().substring(0, 10));
 
 				val crossChainText = payment.getFulfillmentId() != null ? " (cross-chain)" : "";
+
+				val isSelfPurchase = StringUtils.equalsIgnoreCase(senderFname, receiverFname);
 				if (StringUtils.isBlank(payment.getCategory())) {
 					if (payment.getType().equals(Payment.PaymentType.INTENT_TOP_REPLY)) {
 						var scvText = "";
@@ -251,12 +257,12 @@ public class PaymentController {
 						}
 
 						val castText = String.format("""
-										@%s, you've been paid %s %s%s by @%s for your top comment %s🎉
+										@%s, you've been paid %s %s%s by @%s for your top comment %s 🏆
 
 										p.s. join /payflow channel for updates 👀""",
 								receiverFname,
-								StringUtils.isNotBlank(payment.getTokenAmount()) ?
-										PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
+								StringUtils.isNotBlank(payment.getTokenAmount())
+										? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 										: String.format("$%s", payment.getUsdAmount()),
 								payment.getToken().toUpperCase(),
 								crossChainText,
@@ -273,11 +279,12 @@ public class PaymentController {
 					} else {
 						// send both reply + intent for recipient who's on payflow
 						val castText = String.format("""
-										@%s, you've been paid %s %s%s by @%s 🎉
+										@%s, you've been paid %s %s%s by @%s 💸
 
 										p.s. join /payflow channel for updates 👀""",
 								receiverFname,
-								StringUtils.isNotBlank(payment.getTokenAmount()) ? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
+								StringUtils.isNotBlank(payment.getTokenAmount())
+										? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 										: String.format("$%s", payment.getUsdAmount()),
 								payment.getToken().toUpperCase(),
 								crossChainText,
@@ -299,14 +306,15 @@ public class PaymentController {
 
 							try {
 								val messageText = String.format("""
-												 @%s, you've been paid %s %s%s by @%s 🎉
+												 @%s, you've been paid %s %s%s by @%s 💸
 
 												%s
 												🧾 Receipt: %s
 
 												p.s. join /payflow channel for updates 👀""",
 										receiverFname,
-										StringUtils.isNotBlank(payment.getTokenAmount()) ? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
+										StringUtils.isNotBlank(payment.getTokenAmount())
+												? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 												: String.format("$%s", payment.getUsdAmount()),
 										payment.getToken().toUpperCase(),
 										crossChainText,
@@ -333,10 +341,10 @@ public class PaymentController {
 							.toUriString();
 
 					val castText = String.format("""
-									@%s, you've been paid %s unit(s) of storage%s by @%s 🎉
-																		
+									@%s, you've been paid %s unit(s) of storage%s by @%s 🗄
+
 									📊Check your storage usage in the frame below 👇🏻
-																							
+
 									p.s. join /payflow channel for updates 👀""",
 							receiverFname,
 							payment.getTokenAmount(),
@@ -356,8 +364,8 @@ public class PaymentController {
 					if (payment.getReceiver() != null) {
 						try {
 							val messageText = String.format("""
-											 @%s, you've been paid %s units of storage%s by @%s 🎉
-																						
+											 @%s, you've been paid %s units of storage%s by @%s 🗄
+
 											🔗 Source: %s
 											🧾 Receipt: %s
 											📊 Your storage usage now: %s
@@ -382,15 +390,42 @@ public class PaymentController {
 						}
 					}
 				} else if (payment.getCategory().equals("mint")) {
-					// TODO: include the collection and author of the mint
-					val castText = String.format("""
-									@%s, you've been airdropped NFT from the above cast by @%s 🎉
-																																									
-									p.s. join /payflow channel for updates 👀""",
-							receiverFname,
-							senderFname);
+					val mintUrlMessage = ParsedMintUrlMessage.fromCompositeToken(payment.getToken(),
+							payment.getNetwork().toString());
 
-					embeds = Collections.singletonList(new Cast.Embed(receiptUrl));
+					val frameMintUrl = MintUrlUtils.calculateFrameMintUrlFromToken(
+							framesServiceUrl,
+							payment.getToken(),
+							payment.getNetwork().toString(),
+							payment.getSender().getIdentity());
+
+					var authorPart = "";
+					if (mintUrlMessage != null && mintUrlMessage.author() != null) {
+						val author = identityService.getIdentityFname(mintUrlMessage.author());
+						if (author != null) {
+							authorPart = String.format("@%s's ", author);
+						}
+					}
+
+					String castText;
+					if (isSelfPurchase) {
+						castText = String.format("""
+										@%s, you've successfully minted %scollectible from the cast above ✨
+										                                
+										p.s. join /payflow channel for updates 👀""",
+								senderFname,
+								authorPart);
+					} else {
+						castText = String.format("""
+										@%s, you've been gifted %scollectible by @%s from the cast above  ✨
+										                         
+										p.s. join /payflow channel for updates 👀""",
+								receiverFname,
+								authorPart,
+								senderFname);
+					}
+
+					embeds = List.of(new Cast.Embed(frameMintUrl), new Cast.Embed(receiptUrl));
 					val processed = notificationService.reply(castText,
 							payment.getSourceHash(),
 							embeds);
@@ -401,17 +436,35 @@ public class PaymentController {
 
 					if (payment.getReceiver() != null) {
 						try {
-							val messageText = String.format("""
-											 @%s, you've been airdropped NFT from the following cast by @%s 🎉
-																						
-											🔗 Source: %s
-											🧾 Receipt: %s
+							String messageText;
+							if (isSelfPurchase) {
+								messageText = String.format("""
+												 @%s, you've successfully minted %scollectible from the cast above ✨
 
-											p.s. join /payflow channel for updates 👀""",
-									receiverFname,
-									senderFname,
-									sourceRef,
-									receiptUrl);
+												🔗 Source: %s
+												🧾 Receipt: %s
+
+												p.s. join /payflow channel for updates 👀""",
+										senderFname,
+										authorPart,
+										sourceRef,
+										receiptUrl);
+							} else {
+								messageText = String.format("""
+												 @%s, you've been gifted %scollectible by @%s from the cast above ✨
+
+												🔗 Source: %s
+												🧾 Receipt: %s
+
+												p.s. join /payflow channel for updates 👀""",
+										receiverFname,
+										authorPart,
+										senderFname,
+										sourceRef,
+										receiptUrl);
+							}
+
+
 							val response = farcasterMessagingService.message(
 									new DirectCastMessage(payment.getReceiverFid().toString(), messageText,
 											UUID.randomUUID()));

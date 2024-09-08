@@ -21,6 +21,7 @@ import ua.sinaver.web3.payflow.service.IdentityService;
 import ua.sinaver.web3.payflow.service.UserService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
+import ua.sinaver.web3.payflow.utils.MintUrlUtils;
 
 import java.util.Optional;
 
@@ -56,7 +57,7 @@ public class MintController {
 	                                      String receiverAddress,
 	                                      Integer chainId,
 	                                      String token,
-	                                      String original) {
+	                                      String originalMintUrl) {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val castHash = validateMessage.action().cast().hash();
 		val sourceRef = String.format("https://warpcast.com/%s/%s",
@@ -71,18 +72,19 @@ public class MintController {
 		payment.setSourceApp(sourceApp);
 		payment.setSourceRef(sourceRef);
 		payment.setSourceHash(castHash);
-		payment.setTarget(original);
+		payment.setTarget(originalMintUrl);
 		return payment;
 	}
+
 
 	@PostMapping("/submit")
 	public ResponseEntity<?> submit(@RequestBody FrameMessage frameMessage,
 	                                @RequestParam String provider,
 	                                @RequestParam Integer chainId,
 	                                @RequestParam String contract,
+	                                @RequestParam(required = false) String author,
 	                                @RequestParam(required = false) Integer tokenId,
-	                                @RequestParam(required = false) String referral,
-	                                @RequestParam String original) {
+	                                @RequestParam(required = false) String referral) {
 
 		log.debug("Received submit mint message request: {}", frameMessage);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
@@ -137,18 +139,23 @@ public class MintController {
 				return ResponseEntity.badRequest().body(
 						new FrameResponse.FrameMessage("User not found, enter again!"));
 			} else {
-				receiverFid = Integer.parseInt(identity.meta().socials().stream().filter(s -> s.dappName().equals(SocialDappName.farcaster.name()))
+				receiverFid = Integer.parseInt(identity.meta().socials().stream()
+						.filter(s -> s.dappName().equals(SocialDappName.farcaster.name()))
 						.findFirst().get().profileId());
 				receiverAddress = identity.address();
 			}
 		}
 
-		val token = String.format("%s:%s:%s:%s", provider, contract,
+		val token = String.format("%s:%s:%s:%s:%s", provider, contract,
 				Optional.ofNullable(tokenId).map(String::valueOf).orElse(""),
-				Optional.ofNullable(referral).orElse(""));
+				Optional.ofNullable(referral).orElse(""),
+				Optional.ofNullable(author).orElse(""));
+
+		val originalMintUrl = MintUrlUtils.calculateProviderMintUrl(
+				provider, chainId, contract, tokenId, referral);
 
 		val payment = getMintPayment(validateMessage, clickedProfile, receiverFid,
-				receiverAddress, chainId, token, original);
+				receiverAddress, chainId, token, originalMintUrl);
 		paymentRepository.save(payment);
 
 		log.debug("Mint payment intent saved: {}", payment);

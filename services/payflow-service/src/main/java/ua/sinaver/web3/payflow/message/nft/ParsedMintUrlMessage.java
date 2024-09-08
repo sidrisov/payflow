@@ -6,16 +6,15 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
-
 @Slf4j
 public record ParsedMintUrlMessage(
-		String url,
 		String provider,
 		String chain,
 		String contract,
-		String tokenId,
-		String referral
-) {
+		Integer tokenId,
+		String referral,
+		String author) {
+
 	public static final String ZORA_PROVIDER = "zora.co";
 	public static final String RODEO_PROVIDER = "rodeo.club";
 	public static final String HIGHLIGHTS_PROVIDER = "highlight.xyz";
@@ -41,7 +40,7 @@ public record ParsedMintUrlMessage(
 		val pathParts = uriComponents.getPath().split("/");
 		String chain = null;
 		String contract = null;
-		String tokenId = null;
+		Integer tokenId = null;
 
 		if (provider.equals(HIGHLIGHTS_PROVIDER)) {
 			if (pathParts.length >= 3) {
@@ -61,11 +60,30 @@ public record ParsedMintUrlMessage(
 				chain = "base";
 				contract = pathParts[2];
 			}
-			tokenId = pathParts[3];
+			tokenId = Integer.parseInt(pathParts[3]);
 		}
 
 		// Extract optional referral
 		val referral = uriComponents.getQueryParams().getFirst("referrer");
-		return new ParsedMintUrlMessage(url, provider, chain, contract, tokenId, referral);
+		return new ParsedMintUrlMessage(provider, chain, contract, tokenId, referral, null);
+	}
+
+	public static ParsedMintUrlMessage fromCompositeToken(String compositeToken, String chainId) {
+		val parts = compositeToken.split(":");
+		if (parts.length < 4) {
+			log.error("Invalid composite token format: {}", compositeToken);
+			return null;
+		}
+		String author = null;
+
+		val provider = parts[0];
+		val contract = parts[1];
+		val tokenId = Integer.parseInt(parts[2]);
+		val referral = parts[3];
+		if (parts.length == 5) {
+			author = parts[4];
+		}
+
+		return new ParsedMintUrlMessage(provider, String.valueOf(chainId), contract, tokenId, referral, author);
 	}
 }

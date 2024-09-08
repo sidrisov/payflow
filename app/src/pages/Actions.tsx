@@ -45,7 +45,6 @@ export default function Actions() {
               startIcon={<GrStorage />}
             />
             <CastActionButton
-              earlyFeature
               title="Mint"
               description="Mint from cast embeds"
               installUrl="https://warpcast.com/~/add-cast-action?url=https://api.alpha.payflow.me/api/farcaster/actions/products/mint"
