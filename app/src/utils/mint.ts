@@ -237,6 +237,11 @@ export function createShareFrameUrl({
   return shareFrameUrl.toString();
 }
 
+const providerChannelMap: { [key: string]: string } = {
+  'zora.co': 'zora',
+  'rodeo.club': 'rodeo-club'
+};
+
 export function createShareUrls({
   mint,
   recipientSocial,
@@ -278,9 +283,11 @@ export function createShareUrls({
 
   text += `\n\n@payflow lets you mint collectibles with 20+ tokens across multiple chains!\ncc: @sinaver.eth /payflow`;
 
+  const channelKey = providerChannelMap[mint.provider] || 'nft';
+
   const composeCastUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(
     text
-  )}&embeds[]=${encodeURIComponent(shareFrameUrl)}`;
+  )}&embeds[]=${encodeURIComponent(shareFrameUrl)}&channelKey=${channelKey}`;
 
   return { shareFrameUrl, composeCastUrl };
 }
