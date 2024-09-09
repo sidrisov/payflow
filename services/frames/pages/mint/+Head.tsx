@@ -69,7 +69,7 @@ export function Head() {
         />
         <meta property="og:url" content={DAPP_URL} />
         <meta property="og:type" content="website" />
-        <meta property="og:title" content="Payflow | Frames" />
+        <meta property="og:title" content="Payflow | Cross-Chain Mint" />
         <meta
           property="og:description"
           content="Onchain Social Payments across Farcaster, Lens, and Ens."
@@ -78,7 +78,7 @@ export function Head() {
         <meta name="twitter:card" content="summary_large_image" />
         <meta property="twitter:domain" content="app.payflow.me" />
         <meta property="twitter:url" content={DAPP_URL} />
-        <meta name="twitter:title" content="Payflow | Frames" />
+        <meta name="twitter:title" content="Payflow | Cross-Chain Mint" />
         <meta
           name="twitter:description"
           content="Onchain Social Payments across Farcaster, Lens, and Ens."

@@ -45,7 +45,6 @@ import { getReceiptUrl } from '../../utils/receipts';
 import React from 'react';
 import { SiFarcaster } from 'react-icons/si';
 import { TbCopy } from 'react-icons/tb';
-import { FRAMES_URL } from '../../utils/urlConstants';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { createShareUrls } from '../../utils/mint';
 

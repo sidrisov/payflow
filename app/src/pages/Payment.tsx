@@ -161,7 +161,7 @@ export default function Payment() {
                   },
                   type: 'profile'
                 }}
-                social={paymentSocial}
+                recipientSocial={paymentSocial}
                 closeStateCallback={async () => {
                   navigate('/');
                 }}
@@ -183,7 +183,7 @@ export default function Payment() {
                     },
                     type: 'profile'
                   }}
-                  social={paymentSocial}
+                  recipientSocial={paymentSocial}
                   mint={mintData}
                   closeStateCallback={async () => {
                     navigate('/');

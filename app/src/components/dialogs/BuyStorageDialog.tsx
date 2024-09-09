@@ -39,7 +39,7 @@ export type BuyStorageDialogProps = DialogProps &
   CloseCallbackType & {
     sender: SelectedIdentityType;
     payment: PaymentType;
-    social: Social;
+    recipientSocial: Social;
   } & {
     alwaysShowBackButton?: boolean;
     flows?: FlowType[];
@@ -51,7 +51,7 @@ export default function BuyStorageDialog({
   alwaysShowBackButton = false,
   sender,
   payment,
-  social,
+  recipientSocial,
   closeStateCallback,
   flows,
   selectedFlow,
@@ -118,7 +118,7 @@ export default function BuyStorageDialog({
 
   const successMessage = `Successfully bought ${numberOfUnits} unit${
     numberOfUnits > 1 ? 's' : ''
-  } of storage for @${social.profileName}`;
+  } of storage for @${recipientSocial.profileName}`;
   const receiptUrl = getReceiptUrl(payment, false);
 
   return (
@@ -160,7 +160,7 @@ export default function BuyStorageDialog({
               <Stack mb={2} spacing={1} alignItems="center" width="100%">
                 <SenderField sender={sender} {...(setSelectedFlow && { setOpenSelectFlow })} />
                 <KeyboardDoubleArrowDown />
-                <FarcasterRecipientField social={social} />
+                <FarcasterRecipientField social={recipientSocial} />
               </Stack>
             )}
 
