@@ -271,12 +271,12 @@ export function createShareUrls({
   }
 
   if (isGift) {
-    text += `for @${recipientSocial.profileName} `;
+    text += `to @${recipientSocial.profileName} `;
   }
 
-  text += `using @payflow`;
+  text += `using @payflow mint action`;
 
-  text += `\n\n@payflow lets you mint collectibles with 20+ tokens across multiple chains! No more ETH-only mints.\ncc: @sinaver.eth /payflow`;
+  text += `\n\n@payflow lets you mint collectibles with 20+ tokens across multiple chains!\ncc: @sinaver.eth /payflow`;
 
   const composeCastUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(
     text
