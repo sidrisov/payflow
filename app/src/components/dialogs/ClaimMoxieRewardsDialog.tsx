@@ -41,7 +41,7 @@ export function ClaimMoxieRewardsDialog({
     error: claimStatusError
   } = useMoxieRewardsClaimStatus(fid, claimResponse?.transactionId);
 
-  const [countdown, setCountdown] = useState(20);
+  const [countdown, setCountdown] = useState(30);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -50,7 +50,7 @@ export function ClaimMoxieRewardsDialog({
         setCountdown((prevCountdown) => (prevCountdown > 0 ? prevCountdown - 1 : 0));
       }, 1000);
     } else {
-      setCountdown(20);
+      setCountdown(30);
     }
     return () => clearInterval(timer);
   }, [isClaiming, isFetchingClaimStatus]);
@@ -148,7 +148,7 @@ export function ClaimMoxieRewardsDialog({
           title="Claim"
           disabled={!selectedFlow || countdown === 0}
           loading={isClaiming || isFetchingClaimStatus}
-          status={`Claiming (${countdown}s)`}
+          status={`Claiming (${countdown})`}
           onClick={handleClaimRewards}
         />
       </Box>
