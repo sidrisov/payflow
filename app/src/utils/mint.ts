@@ -263,8 +263,8 @@ export function createShareUrls({
     case 'zora.co':
       text += `on @zora `;
       break;
-    case 'rodeodotclub':
-      text += `on @rodeoclub `;
+    case 'rodeo.club':
+      text += `on @rodeodotclub `;
       break;
     default:
       text += `on ${mint.provider} `;
