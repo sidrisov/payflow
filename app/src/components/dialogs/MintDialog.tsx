@@ -47,12 +47,13 @@ import { SiFarcaster } from 'react-icons/si';
 import { TbCopy } from 'react-icons/tb';
 import { FRAMES_URL } from '../../utils/urlConstants';
 import { copyToClipboard } from '../../utils/copyToClipboard';
+import { createShareUrls } from '../../utils/mint';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {
     sender: SelectedIdentityType;
     payment: PaymentType;
-    social: Social;
+    recipientSocial: Social;
     mint: MintMetadata;
   } & {
     alwaysShowBackButton?: boolean;
@@ -65,7 +66,7 @@ export default function MintDialog({
   alwaysShowBackButton = false,
   sender,
   payment,
-  social,
+  recipientSocial,
   mint,
   closeStateCallback,
   flows,
@@ -101,7 +102,7 @@ export default function MintDialog({
     mint,
     minter: senderFlow.wallets[0].address,
     recipient: payment.receiverAddress ?? profile?.identity,
-    comment: `Minted for @${social.profileName} on @payflow`
+    comment: `Minted for @${recipientSocial.profileName} on @payflow`
   });
 
   const paymentTx = mintData?.paymentTx;
@@ -145,26 +146,20 @@ export default function MintDialog({
 
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
-  const successMessage = `minted "${mint.metadata.name}" for @${social.profileName}`;
+  const successMessage = `minted "${mint.metadata.name}" for @${recipientSocial.profileName}`;
   const receiptUrl = getReceiptUrl(payment, false);
 
-  const shareFrameUrl = new URL(`${FRAMES_URL}/mint`);
-  shareFrameUrl.searchParams.append('provider', mint.provider);
-  shareFrameUrl.searchParams.append('chainId', mint.chainId.toString());
-  shareFrameUrl.searchParams.append('contract', mint.contract);
-  if (mint.tokenId) {
-    shareFrameUrl.searchParams.append('tokenId', mint.tokenId.toString());
-  }
-  if (profile?.identity) {
-    shareFrameUrl.searchParams.append('referral', profile?.identity);
-  }
+  const isGift = payment.receiverAddress !== profile?.identity;
 
-  const composeCastUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(
-    `Minted ${mint.metadata.name}: ${mint.collectionName} for @${social.profileName}\n\n@payflow allows you to mint with 20+ tokens across multiple chains\ncc: @sinaver.eth /payflow`
-  )}&embeds[]=${encodeURIComponent(shareFrameUrl.toString())}`;
+  const { shareFrameUrl, composeCastUrl } = createShareUrls({
+    mint,
+    recipientSocial,
+    profile: profile!,
+    isGift
+  });
 
   const handleCopyLink = () => {
-    copyToClipboard(shareFrameUrl.toString());
+    copyToClipboard(shareFrameUrl);
     toast.success('Mint frame link copied!');
   };
 
@@ -205,7 +200,6 @@ export default function MintDialog({
               fontSize: 14,
               height: 45
             },
-
             readOnly: true,
             endAdornment: (
               <Tooltip title="Copy frame link">
@@ -259,7 +253,7 @@ export default function MintDialog({
               <Stack mb={2} spacing={1} alignItems="center" width="100%">
                 <SenderField sender={sender} {...(setSelectedFlow && { setOpenSelectFlow })} />
                 <KeyboardDoubleArrowDown />
-                <FarcasterRecipientField social={social} />
+                <FarcasterRecipientField social={recipientSocial} />
               </Stack>
             )}
 

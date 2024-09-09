@@ -2,17 +2,21 @@ import { readContract } from '@wagmi/core';
 import axios from 'axios';
 import { Address, PublicClient } from 'viem';
 import { IdentityType } from '../types/ProfileType';
-import { API_URL } from './urlConstants';
+import { API_URL, FRAMES_URL } from './urlConstants';
 import { wagmiConfig } from './wagmiConfig';
 import { zoraErc1155Abi } from './abi/zoraErc1155Abi';
 import { createCollectorClient } from '@zoralabs/protocol-sdk';
 import { getPublicClient } from 'wagmi/actions';
+import { ProfileType } from '../types/ProfileType';
+import { FARCASTER_DAPP } from './dapps';
+import { Social } from '../generated/graphql/types';
 
 type ParsedMintData = {
   provider: string;
   contract: Address;
   tokenId?: number;
   referral?: Address;
+  author?: Address;
 };
 
 export type MintMetadata = {
@@ -202,12 +206,81 @@ function resolveIpfsUri(uri: string): string {
 }
 
 export const parseMintToken = (token: string) => {
-  const [provider, contract, tokenId, referral] = token.split(':');
+  const [provider, contract, tokenId, referral, author] = token.split(':');
 
   return {
     provider,
     contract,
     tokenId: tokenId ? parseInt(tokenId) : undefined,
-    referral: referral === '' ? undefined : referral
+    referral: referral === '' ? undefined : referral,
+    author: author === '' ? undefined : author
   } as ParsedMintData;
 };
+
+export function createShareFrameUrl({
+  mint,
+  profile
+}: {
+  mint: MintMetadata;
+  profile: ProfileType;
+}): string {
+  const shareFrameUrl = new URL(`${FRAMES_URL}/mint`);
+  shareFrameUrl.searchParams.append('provider', mint.provider);
+  shareFrameUrl.searchParams.append('chainId', mint.chainId.toString());
+  shareFrameUrl.searchParams.append('contract', mint.contract);
+  if (mint.tokenId) {
+    shareFrameUrl.searchParams.append('tokenId', mint.tokenId.toString());
+  }
+  if (profile.identity) {
+    shareFrameUrl.searchParams.append('referral', profile.identity);
+  }
+  return shareFrameUrl.toString();
+}
+
+export function createShareUrls({
+  mint,
+  recipientSocial,
+  profile,
+  isGift
+}: {
+  mint: MintMetadata;
+  recipientSocial: Social;
+  profile: ProfileType;
+  isGift: boolean;
+}): { shareFrameUrl: string; composeCastUrl: string } {
+  const shareFrameUrl = createShareFrameUrl({ mint, profile });
+
+  let text = isGift ? `I just gifted ` : `I just minted `;
+
+  const farcasterSocial = mint.owner?.meta?.socials.find((s) => s.dappName === FARCASTER_DAPP);
+  if (farcasterSocial) {
+    text += `@${farcasterSocial.profileName}'s `;
+  }
+
+  text += `${mint.metadata.name}: ${mint.collectionName} `;
+
+  switch (mint.provider) {
+    case 'zora.co':
+      text += `on @zora `;
+      break;
+    case 'rodeodotclub':
+      text += `on @rodeoclub `;
+      break;
+    default:
+      text += `on ${mint.provider} `;
+  }
+
+  if (isGift) {
+    text += `for @${recipientSocial.profileName} `;
+  }
+
+  text += `using @payflow`;
+
+  text += `\n\n@payflow lets you mint collectibles with 20+ tokens across multiple chains! No more ETH-only mints.\ncc: @sinaver.eth /payflow`;
+
+  const composeCastUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(
+    text
+  )}&embeds[]=${encodeURIComponent(shareFrameUrl)}`;
+
+  return { shareFrameUrl, composeCastUrl };
+}
