@@ -35,10 +35,25 @@ export function ClaimMoxieRewardsDialog({
     mutateAsync: claimRewards
   } = useClaimRewardsMutation();
 
-  const { isFetching: isFetchingClaimStatus, data: claimStatus } = useMoxieRewardsClaimStatus(
-    fid,
-    claimResponse?.transactionId
-  );
+  const {
+    isFetching: isFetchingClaimStatus,
+    data: claimStatus,
+    error: claimStatusError
+  } = useMoxieRewardsClaimStatus(fid, claimResponse?.transactionId);
+
+  const [countdown, setCountdown] = useState(20);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isClaiming || isFetchingClaimStatus) {
+      timer = setInterval(() => {
+        setCountdown((prevCountdown) => (prevCountdown > 0 ? prevCountdown - 1 : 0));
+      }, 1000);
+    } else {
+      setCountdown(20);
+    }
+    return () => clearInterval(timer);
+  }, [isClaiming, isFetchingClaimStatus]);
 
   async function handleClaimRewards() {
     const preferredConnectedWallet = selectedFlow?.wallets[0].address;
@@ -49,8 +64,12 @@ export function ClaimMoxieRewardsDialog({
 
   useEffect(() => {
     const handleClaimStatus = async () => {
-      if (claimError) {
-        toast.error(`${claimError.message}`, { autoClose: 2000 });
+      if (claimError || claimStatusError) {
+        toast.error(
+          `Failed to claim rewards: ${claimError?.message || claimStatusError?.message}`,
+          { autoClose: 2000 }
+        );
+        props.onClose?.();
         return;
       }
 
@@ -72,7 +91,7 @@ export function ClaimMoxieRewardsDialog({
       }
     };
     handleClaimStatus();
-  }, [claimStatus, claimError]);
+  }, [claimStatus, claimError, claimStatusError]);
 
   return (
     <ResponsiveDialog
@@ -127,9 +146,9 @@ export function ClaimMoxieRewardsDialog({
         )}
         <CustomLoadingButton
           title="Claim"
-          disabled={!selectedFlow}
+          disabled={!selectedFlow || countdown === 0}
           loading={isClaiming || isFetchingClaimStatus}
-          status="Claiming"
+          status={`Claiming (${countdown}s)`}
           onClick={handleClaimRewards}
         />
       </Box>
