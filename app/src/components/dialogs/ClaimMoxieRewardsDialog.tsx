@@ -1,6 +1,6 @@
 import ResponsiveDialog, { ResponsiveDialogProps } from './ResponsiveDialog';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
-import { Box, Button, Divider, Stack, Typography } from '@mui/material';
+import { Box, Button, Divider, Stack, Typography, Card } from '@mui/material';
 import { useContext, useEffect, useState } from 'react';
 import { useClaimRewardsMutation, useMoxieRewardsClaimStatus } from '../../utils/queries/moxie';
 import { CustomLoadingButton } from '../buttons/LoadingPaymentButton';
@@ -41,7 +41,7 @@ export function ClaimMoxieRewardsDialog({
     error: claimStatusError
   } = useMoxieRewardsClaimStatus(fid, claimResponse?.transactionId);
 
-  const [countdown, setCountdown] = useState(30);
+  const [countdown, setCountdown] = useState(59);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -50,10 +50,12 @@ export function ClaimMoxieRewardsDialog({
         setCountdown((prevCountdown) => (prevCountdown > 0 ? prevCountdown - 1 : 0));
       }, 1000);
     } else {
-      setCountdown(30);
+      setCountdown(59);
     }
     return () => clearInterval(timer);
   }, [isClaiming, isFetchingClaimStatus]);
+
+  const isAlreadyClaimed = claimError?.message === 'No pending rewards for claim';
 
   async function handleClaimRewards() {
     const preferredConnectedWallet = selectedFlow?.wallets[0].address;
@@ -64,7 +66,18 @@ export function ClaimMoxieRewardsDialog({
 
   useEffect(() => {
     const handleClaimStatus = async () => {
-      if (claimError || claimStatusError) {
+      if (isAlreadyClaimed) {
+        toast.success('Claimed already!', {
+          autoClose: 2000
+        });
+        props.onClose?.();
+        return;
+      }
+
+      if (
+        (claimError && claimError?.message !== 'No pending rewards for claim') ||
+        claimStatusError
+      ) {
         toast.error(
           `Failed to claim rewards: ${claimError?.message || claimStatusError?.message}`,
           { autoClose: 2000 }
@@ -91,7 +104,7 @@ export function ClaimMoxieRewardsDialog({
       }
     };
     handleClaimStatus();
-  }, [claimStatus, claimError, claimStatusError]);
+  }, [claimStatus, claimError, claimStatusError, isAlreadyClaimed]);
 
   return (
     <ResponsiveDialog
@@ -108,41 +121,75 @@ export function ClaimMoxieRewardsDialog({
         flexDirection="column"
         alignItems="center"
         justifyContent="space-between">
-        {flows && flows.length === 0 && (
+        {isFetchingClaimStatus ? (
+          <Card
+            elevation={15}
+            sx={{
+              p: 1,
+              m: 2,
+              borderRadius: 3
+            }}>
+            <Typography variant="body1" color="text.primary" paragraph>
+              Your claim for{' '}
+              <Box component="span" fontWeight="bold" color="text.primary">
+                {formatAmountWithSuffix(normalizeNumberPrecision(claimableRewardsAmount))} Moxie
+              </Box>{' '}
+              has been submitted!
+            </Typography>
+            <Typography variant="body2" color="text.secondary" paragraph>
+              This process can take up to a minute. You can wait here for confirmation or close this
+              dialog and check your balance later.
+            </Typography>
+            <Typography variant="body2" fontStyle="italic">
+              Thank you for your patience!
+            </Typography>
+          </Card>
+        ) : (
           <>
-            <Typography textAlign="center" color={red[400]} fontWeight="bold">
-              No verified address linked to your farcaster!
-              <br />
-              You need at least one to claim rewards
-            </Typography>
-          </>
-        )}
+            {flows && flows.length === 0 && (
+              <Typography textAlign="center" color={red[400]} fontWeight="bold">
+                No verified address linked to your farcaster!
+                <br />
+                You need at least one to claim rewards
+              </Typography>
+            )}
 
-        {selectedFlow && (
-          <Stack width="100%" spacing={0.5} p={1} alignItems="flex-start" justifyContent="center">
-            <Typography fontSize={16} fontWeight="bold" color={grey[prefersDarkMode ? 400 : 700]}>
-              Claim rewards with a verified wallet:
-            </Typography>
-            {flows?.map((verification) => (
+            {selectedFlow && (
               <Stack
-                pl={1}
-                direction="row"
-                spacing={1}
-                alignItems="center"
-                component={Button}
-                textTransform="none"
-                color="inherit"
-                borderRadius={5}
-                onClick={() => setSelectedFlow(verification)}>
-                <Box display="flex" width={30}>
-                  {verification.uuid === selectedFlow?.uuid && (
-                    <Check sx={{ alignSelf: 'center', color: green[400] }} />
-                  )}
-                </Box>
-                <PaymentFlowSection flow={verification} />
+                width="100%"
+                spacing={0.5}
+                p={1}
+                alignItems="flex-start"
+                justifyContent="center">
+                <Typography
+                  fontSize={16}
+                  fontWeight="bold"
+                  color={grey[prefersDarkMode ? 400 : 700]}>
+                  Claim rewards with a verified wallet:
+                </Typography>
+                {flows?.map((verification) => (
+                  <Stack
+                    key={verification.uuid}
+                    pl={1}
+                    direction="row"
+                    spacing={1}
+                    alignItems="center"
+                    component={Button}
+                    textTransform="none"
+                    color="inherit"
+                    borderRadius={5}
+                    onClick={() => setSelectedFlow(verification)}>
+                    <Box display="flex" width={30}>
+                      {verification.uuid === selectedFlow?.uuid && (
+                        <Check sx={{ alignSelf: 'center', color: green[400] }} />
+                      )}
+                    </Box>
+                    <PaymentFlowSection flow={verification} />
+                  </Stack>
+                ))}
               </Stack>
-            ))}
-          </Stack>
+            )}
+          </>
         )}
         <CustomLoadingButton
           title="Claim"

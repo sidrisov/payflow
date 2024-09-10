@@ -23,7 +23,10 @@ export const useAvailableMoxieRewards = (fid: number | undefined) => {
     retry: false,
     queryFn: async () => graphQLClient.request(QUERY_MOXIE_REWARDS, { fid }, headers),
     select(data: any) {
-      return data.FarcasterUserClaimTransactionDetails.availableClaimAmount;
+      return {
+        availableClaimAmount: data.FarcasterUserClaimTransactionDetails.availableClaimAmount,
+        claimedAmount: data.FarcasterUserClaimTransactionDetails.claimedAmount
+      };
     }
   });
 };
@@ -59,12 +62,12 @@ export const useMoxieRewardsClaimStatus = (
       };
     },
     retry: (failureCount, error) => {
-      if (error.message === WAITING_FOR_EXECUTION && failureCount < 10) {
+      if (error.message === WAITING_FOR_EXECUTION && failureCount < 9) {
         return true;
       }
       return false;
     },
-    retryDelay: 3000
+    retryDelay: 5000
   });
 };
 

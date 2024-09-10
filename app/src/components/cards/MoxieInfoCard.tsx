@@ -8,7 +8,7 @@ import { useContext, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { FARCASTER_DAPP } from '../../utils/dapps';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
-import { useAvailableMoxieRewards } from '../../utils/queries/moxie';
+import { useAvailableMoxieRewards as useMoxieRewards } from '../../utils/queries/moxie';
 import { useIdentity } from '../../utils/queries/profiles';
 import { ClaimMoxieRewardsDialog } from '../dialogs/ClaimMoxieRewardsDialog';
 import { useSearchParams } from 'react-router-dom';
@@ -30,9 +30,9 @@ export function MoxieInfoCard() {
 
   const {
     isFetching: isFetchingRewards,
-    data: claimableRewards,
+    data: rewards,
     error: rewardsError
-  } = useAvailableMoxieRewards(fid);
+  } = useMoxieRewards(fid);
 
   const [openClaimRewardsDialog, setOpenClaimRewardsDialog] = useState<boolean>(false);
 
@@ -158,30 +158,35 @@ export function MoxieInfoCard() {
           </Typography>
         )}
       </InfoStack>
-      <InfoStack title="Claimable Everyday Rewards">
+      <InfoStack title="Claimable /  Total Rewards">
         {isFetchingRewards || !fid ? (
           <Skeleton variant="rectangular" height={55} width={100} sx={{ borderRadius: '15px' }} />
-        ) : claimableRewards && claimableRewards > 1 ? (
+        ) : rewards ? (
           <Typography
             m={1}
             variant="h4"
             fontWeight="bold"
-            component={Button}
+            {...(rewards.availableClaimAmount > 0 && {
+              component: Button,
+              onClick: () => setOpenClaimRewardsDialog(true)
+            })}
             sx={{
-              borderRadius: 5,
-              border: 2,
-              borderStyle: 'dotted',
-              borderColor: 'divider',
-              textTransform: 'none',
-              color: 'inherit'
-            }}
-            onClick={() => setOpenClaimRewardsDialog(true)}>
-            {formatAmountWithSuffix(normalizeNumberPrecision(claimableRewards))}
+              ...(rewards.availableClaimAmount > 0 && {
+                color: 'inherit',
+                borderRadius: 5,
+                border: 2,
+                borderColor: 'divider',
+                textTransform: 'none',
+                borderStyle: 'dotted'
+              })
+            }}>
+            {formatAmountWithSuffix(normalizeNumberPrecision(rewards.availableClaimAmount))} /{' '}
+            {formatAmountWithSuffix(normalizeNumberPrecision(rewards.claimedAmount))}
           </Typography>
         ) : (
           <Typography variant="subtitle2" color="inherit">
             {!rewardsError ? (
-              'No pending rewards to claim'
+              'Unable to fetch reward information'
             ) : (
               <>
                 {rewardsError.message}
@@ -201,7 +206,7 @@ export function MoxieInfoCard() {
       {openClaimRewardsDialog && fid && (
         <ClaimMoxieRewardsDialog
           fid={fid}
-          claimableRewardsAmount={claimableRewards}
+          claimableRewardsAmount={rewards?.availableClaimAmount}
           open={openClaimRewardsDialog}
           onClose={() => {
             setOpenClaimRewardsDialog(false);
