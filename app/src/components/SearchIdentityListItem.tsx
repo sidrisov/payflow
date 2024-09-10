@@ -142,11 +142,15 @@ export function SearchIdentityListItem(
             '&:hover': {
               backgroundColor: 'action.hover'
             },
+            '&:active': {
+              backgroundColor: 'action.selected',
+              borderRadius: 4,
+            },
             borderRadius: 4,
-            padding: 1
+            padding: 1,
+            WebkitTapHighlightColor: 'transparent', // Remove default mobile tap highlight
           }}>
           {view === 'profile' && identity.profile && <ProfileSection profile={identity.profile} />}
-
           {view === 'address' && identity.meta && <AddressSection identity={identity} />}
           {!minimized && (
             <IconButton onClick={handleMenuClick} size="small">

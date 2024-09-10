@@ -103,25 +103,35 @@ export function SearchIdentityMenu({
   return (
     <Menu
       {...props}
-      sx={{ '.MuiMenu-paper': { borderRadius: 5 }, zIndex: 1450 }}
+      sx={{
+        '& .MuiMenu-paper': {
+          borderRadius: 5
+        },
+        '& .MuiList-root': {
+          p: 0
+        },
+        zIndex: 1450
+      }}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'right'
       }}
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}>
-      <MenuList dense disablePadding>
+      <MenuList>
         <MenuItem onClick={handleProfileClick}>
           <ListItemIcon>
             <BsFillPersonFill />
           </ListItemIcon>
-          Profile
+          <Typography sx={{ flex: 1 }}>Profile</Typography>
+          <OpenInNew sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
         </MenuItem>
         {farcasterProfile && (
           <MenuItem onClick={handleChatClick}>
             <ListItemIcon>
               <IoIosChatbubbles />
             </ListItemIcon>
-            Message
+            <Typography sx={{ flex: 1 }}>Message</Typography>
+            <OpenInNew sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
           </MenuItem>
         )}
         <MenuItem onClick={onSocilLinksClick}>
@@ -130,7 +140,7 @@ export function SearchIdentityMenu({
           </ListItemIcon>
           Connections
         </MenuItem>
-        <Divider />
+        <Divider sx={{ borderBottomWidth: 10, my: 0, '&.MuiDivider-root': { my: 0 } }} />
         {socials.map(renderSocialMenuItem)}
         {ens && (
           <MenuItem
@@ -156,7 +166,7 @@ export function SearchIdentityMenu({
         </MenuItem>
         {isAuthenticated && (
           <>
-            <Divider />
+            <Divider sx={{ borderBottomWidth: 10, my: 0, '&.MuiDivider-root': { my: 0 } }} />
             <MenuItem onClick={onFavouriteClick}>
               <ListItemIcon>{favourite ? <TbStarOff /> : <TbStar />}</ListItemIcon>
               {favourite ? 'Remove from favourites' : 'Add to favourites'}
@@ -171,12 +181,13 @@ export function SearchIdentityMenu({
             )}
           </>
         )}
-        <Divider />
+        <Divider sx={{ borderBottomWidth: 10, my: 0, '&.MuiDivider-root': { my: 0 } }} />
         <MenuItem component="a" href={socialLink(ZAPPER, address)} target="_blank">
           <ListItemIcon>
             <Avatar src="/dapps/zapper.png" sx={{ width: 20, height: 20 }} />
           </ListItemIcon>
-          More on Zapper
+          <Typography sx={{ flex: 1 }}>More on Zapper</Typography>
+          <OpenInNew sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
         </MenuItem>
       </MenuList>
     </Menu>
