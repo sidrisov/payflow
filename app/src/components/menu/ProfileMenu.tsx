@@ -74,16 +74,6 @@ export function ProfileMenu({
         <MenuItem
           onClick={async () => {
             closeStateCallback();
-            navigate('/actions');
-          }}>
-          <ListItemIcon>
-            <GridView fontSize="small" />
-          </ListItemIcon>
-          Actions
-        </MenuItem>
-        <MenuItem
-          onClick={async () => {
-            closeStateCallback();
             navigate('/advanced');
           }}>
           <ListItemIcon>

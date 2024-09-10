@@ -1,14 +1,4 @@
-import {
-  Box,
-  Stack,
-  Button,
-  BoxProps,
-  Avatar,
-  IconButton,
-  Typography,
-  Popover,
-  useMediaQuery
-} from '@mui/material';
+import { Box, Stack, BoxProps, Avatar, IconButton, Typography, Popover } from '@mui/material';
 import { ContactType } from '../types/ProfileType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
@@ -20,8 +10,7 @@ import { toast } from 'react-toastify';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { useAccount } from 'wagmi';
 import { UpdateIdentityCallbackType } from './dialogs/SearchIdentityDialog';
-import { SocialPresenceStack } from './SocialPresenceStack';
-import { MoreHoriz } from '@mui/icons-material';
+import { MoreVert } from '@mui/icons-material';
 import { SearchIdentityMenu } from './menu/SearchIdenitityMenu';
 import { useSearchParams } from 'react-router-dom';
 import { grey } from '@mui/material/colors';
@@ -44,7 +33,7 @@ function removeFromFavourites(tags: string[]): string[] {
 export function SearchIdentityListItem(
   props: BoxProps &
     UpdateIdentityCallbackType & {
-      showHorizantally?: boolean;
+      minimized?: boolean;
       contact: ContactType;
       view: 'address' | 'profile';
     }
@@ -55,7 +44,7 @@ export function SearchIdentityListItem(
   const accessToken = searchParams.get('access_token') ?? '';
 
   const { profile } = useContext(ProfileContext);
-  const { contact, view, updateIdentityCallback, showHorizantally = false } = props;
+  const { contact, view, updateIdentityCallback, minimized = false } = props;
 
   const identity = contact.data;
   const tags = contact.tags;
@@ -125,55 +114,44 @@ export function SearchIdentityListItem(
     setOpenSocialLinksPopover(true);
   };
 
+  const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    setOpenIdentityMenu(true);
+    setIdentityMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleBoxClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (props.onClick) {
+      props?.onClick(event);
+    }
+  };
+
   return (
     <>
       {(view === 'profile' ? identity.profile : identity.meta) && (
         <Box
+          onClick={handleBoxClick}
           display="flex"
           flexDirection="row"
           justifyContent="space-between"
           alignItems="center"
           width="100%"
-          height={55}>
-          <Box
-            justifyContent="flex-start"
-            minWidth={showHorizantally ? 120 : 200}
-            maxWidth={200}
-            color="inherit"
-            {...(props.onClick
-              ? { component: Button, onClick: props.onClick, textTransform: 'none' }
-              : {})}
-            sx={{ borderRadius: 5 }}>
-            {view === 'profile' && identity.profile && (
-              <ProfileSection maxWidth={200} profile={identity.profile} />
-            )}
+          height={55}
+          sx={{
+            cursor: 'pointer',
+            '&:hover': {
+              backgroundColor: 'action.hover'
+            },
+            borderRadius: 4,
+            padding: 1
+          }}>
+          {view === 'profile' && identity.profile && <ProfileSection profile={identity.profile} />}
 
-            {view === 'address' && identity.meta && (
-              <AddressSection maxWidth={200} identity={identity} />
-            )}
-          </Box>
-
-          {!showHorizantally && (
-            <>
-              <Stack direction="column" spacing={0.5} alignItems="center" sx={{ width: 100 }}>
-                {identity.meta && (
-                  <SocialPresenceStack
-                    key={`social_presence_stack_${identity.address}`}
-                    meta={identity.meta}
-                  />
-                )}
-              </Stack>
-
-              <IconButton
-                size="small"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setOpenIdentityMenu(true);
-                  setIdentityMenuAnchorEl(event.currentTarget);
-                }}>
-                <MoreHoriz fontSize="small" />
-              </IconButton>
-            </>
+          {view === 'address' && identity.meta && <AddressSection identity={identity} />}
+          {!minimized && (
+            <IconButton onClick={handleMenuClick} size="small">
+              <MoreVert />
+            </IconButton>
           )}
         </Box>
       )}

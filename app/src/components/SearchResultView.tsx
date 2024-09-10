@@ -114,7 +114,7 @@ export function SearchResultView({
               {mergedIdentities.slice(0, page * pageSize).map(({ identity, view }) => (
                 <SearchIdentityListItem
                   key={view === 'profile' ? identity.data.profile?.username : identity.data.address}
-                  showHorizantally={showHorizantally}
+                  minimized={showHorizantally}
                   view={view}
                   contact={identity}
                   updateIdentityCallback={updateIdentityCallback}
