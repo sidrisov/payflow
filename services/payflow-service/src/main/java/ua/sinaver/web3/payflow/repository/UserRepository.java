@@ -54,13 +54,19 @@ public interface UserRepository extends CrudRepository<User, Integer> {
 			"(u.lastUpdatedContacts < :updateDate" +
 			" OR u.lastUpdatedContacts IS NULL)")
 	Page<User> findByAllowedTrueAndLastUpdatedContactsBeforeAndLastSeenAfter(Date updateDate,
-	                                                                         Date lastSeenDate,
-	                                                                         Pageable pageable);
+			Date lastSeenDate,
+			Pageable pageable);
 
 	default List<User> findTop5ByAllowedTrueAndLastUpdatedContactsBeforeAndLastSeenAfter(Date updateDate,
-	                                                                                     Date lastSeenDate) {
+			Date lastSeenDate) {
 		return this.findByAllowedTrueAndLastUpdatedContactsBeforeAndLastSeenAfter(updateDate,
 				lastSeenDate, PageRequest.of(0, 5)).getContent();
 	}
 
+	@Query("SELECT DISTINCT u FROM User u " +
+			"JOIN u.flows f " +
+			"JOIN f.wallets w " +
+			"WHERE f.disabled = false " +
+			"AND w.walletVersion = :walletVersion")
+	List<User> findUsersWithNonDisabledFlowAndWalletVersion(@Param("walletVersion") String walletVersion);
 }

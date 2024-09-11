@@ -26,4 +26,6 @@ public interface IFlowService {
 	void updateFlowWallet(String uuid, WalletMessage wallet, User user) throws Exception;
 
 	void deleteFlowWallet(String uuid, WalletMessage wallet, User user) throws Exception;
+
+	List<String> getOwnersOfLegacyFlows();
 }
