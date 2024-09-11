@@ -114,7 +114,7 @@ export async function fetchTokenMetadata(metadataUri: string) {
     const metadata = metadataResponse.data;
     const name = metadata.name;
     const imageUri = metadata.image;
-    const resolvedImageUri = `https://media.decentralized-content.com/-/rs:fit:500:500/${btoa(resolveIpfsUri(imageUri))}`;
+    const resolvedImageUri = `https://media.decentralized-content.com/-/rs:fit:800:800/${btoa(resolveIpfsUri(imageUri))}`;
 
     console.debug('Metadata:', metadata);
     console.debug('Image URL:', resolvedImageUri);

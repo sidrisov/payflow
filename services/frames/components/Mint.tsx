@@ -64,9 +64,8 @@ function Mint({
           style={{
             width: '100%',
             height: '100%',
-            objectFit: 'fill',
-            border: '3px',
-            borderRadius: 10,
+            objectFit: 'cover',
+            borderRadius: 15,
             boxSizing: 'content-box'
           }}
         />

@@ -138,7 +138,7 @@ export function ClaimMoxieRewardsDialog({
             </Typography>
             <Typography variant="body2" color="text.secondary" paragraph>
               This process can take up to a minute. You can wait here for confirmation or close this
-              dialog and check your balance later.
+              dialog and check your total claimed balance later.
             </Typography>
             <Typography variant="body2" fontStyle="italic">
               Thank you for your patience!
