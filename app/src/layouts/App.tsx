@@ -110,7 +110,7 @@ export default function AppLayout({
         onRefresh={async () => {
           navigate(0);
         }}>
-        <Container maxWidth="xs">
+        <Container maxWidth="xs" sx={{ height: '100vh' }}>
           <Box display="flex" flexDirection="column" justifyContent="flex-start">
             <HideOnScroll>
               <AppBar position="sticky" color="transparent" elevation={0}>
@@ -285,14 +285,17 @@ export default function AppLayout({
           }}
         />
       )}
-      {!location.pathname.startsWith('/payment/') && profile && !profile.defaultFlow && (
-        <PrimaryFlowOnboardingDialog
-          fullScreen={isMobile}
-          open={!profile.defaultFlow}
-          profile={profile}
-          closeStateCallback={() => {}}
-        />
-      )}
+      {!location.pathname.startsWith('/payment/') &&
+        location.pathname !== '/actions' &&
+        profile &&
+        !profile.defaultFlow && (
+          <PrimaryFlowOnboardingDialog
+            fullScreen={isMobile}
+            open={!profile.defaultFlow}
+            profile={profile}
+            closeStateCallback={() => {}}
+          />
+        )}
     </ProfileContext.Provider>
   );
 }
