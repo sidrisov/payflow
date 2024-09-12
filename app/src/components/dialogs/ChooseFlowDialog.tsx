@@ -1,15 +1,6 @@
-import {
-  Box,
-  Divider,
-  IconButton,
-  MenuItem,
-  MenuList,
-  Stack,
-  Tooltip,
-  Typography
-} from '@mui/material';
+import { Box, IconButton, MenuItem, MenuList, Stack, Tooltip, Typography } from '@mui/material';
 import { FlowType } from '../../types/FlowType';
-import { Add, Check, MoreHoriz, PlayForWork } from '@mui/icons-material';
+import { MoreHoriz, PlayForWork } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { useContext, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
@@ -17,6 +8,7 @@ import { green } from '@mui/material/colors';
 import { FlowSettingsMenu } from '../menu/FlowSettingsMenu';
 import { PaymentFlowSection } from '../PaymentFlowSection';
 import ResponsiveDialog, { ResponsiveDialogProps } from './ResponsiveDialog';
+import { FaCheckCircle, FaRegCircle } from 'react-icons/fa';
 
 export type ChooseFlowMenuProps = ResponsiveDialogProps &
   CloseCallbackType & {
@@ -41,6 +33,74 @@ export function ChooseFlowDialog({
   const [openFlowSettingsMenu, setOpenFlowSettingsMenu] = useState<boolean>(false);
   const [flowAnchorEl, setFlowAnchorEl] = useState<null | HTMLElement>(null);
 
+  // Update this function to separate flows into three categories
+  const separateFlows = (flows: FlowType[]) => {
+    const legacy = flows.filter(
+      (flow) => flow.wallets.length > 0 && flow.wallets.some((w) => w.version === '1.3.0')
+    );
+    const farcaster = flows.filter((flow) => flow.type === 'FARCASTER_VERIFICATION');
+    const regular = flows.filter(
+      (flow) =>
+        !(flow.wallets.length > 0 && flow.wallets.some((w) => w.version === '1.3.0')) &&
+        flow.type !== 'FARCASTER_VERIFICATION'
+    );
+    return { regular, farcaster, legacy };
+  };
+
+  // Separate the flows
+  const { regular, farcaster, legacy } = separateFlows(flows);
+
+  const renderMenuItem = (flow: FlowType) => (
+    <MenuItem
+      key={flow.uuid}
+      selected={flow.uuid === selectedFlow.uuid}
+      sx={{ borderRadius: 5 }}
+      onClick={async () => {
+        setSelectedFlow(flow);
+        if (closeOnSelect) {
+          closeStateCallback();
+        }
+      }}>
+      <Box
+        width="100%"
+        display="flex"
+        flexDirection="row"
+        alignItems="center"
+        justifyContent="space-between">
+        <Stack direction="row" alignItems="center" justifyContent="flex-start">
+          <Box display="inherit" width={30}>
+            {flow.uuid === selectedFlow.uuid ? (
+              <FaCheckCircle color={green.A700} size={18} />
+            ) : (
+              <FaRegCircle size={18} />
+            )}
+          </Box>
+          <Box display="inherit" width={30}>
+            {flow.uuid === profile?.defaultFlow?.uuid && (
+              <Tooltip title="Default for receiving payments">
+                <PlayForWork />
+              </Tooltip>
+            )}
+          </Box>
+          <PaymentFlowSection flow={flow} />
+        </Stack>
+
+        {configurable && flow === selectedFlow && (
+          <IconButton
+            size="small"
+            onClick={async (event) => {
+              event.stopPropagation();
+              setFlowAnchorEl(event.currentTarget);
+              setOpenFlowSettingsMenu(true);
+            }}
+            sx={{ mx: 1 }}>
+            <MoreHoriz fontSize="small" />
+          </IconButton>
+        )}
+      </Box>
+    </MenuItem>
+  );
+
   return (
     profile && (
       <>
@@ -49,8 +109,7 @@ export function ChooseFlowDialog({
           open={props.open}
           onOpen={() => {}}
           onClose={closeStateCallback}>
-          <MenuList sx={{ width: '100%' }}>
-            <Divider variant="middle" />
+          <MenuList disablePadding sx={{ width: '100%' }}>
             <Stack
               maxHeight={300}
               mt={1}
@@ -59,87 +118,39 @@ export function ChooseFlowDialog({
                 overflowY: 'scroll',
                 '-webkit-overflow-scrolling': 'touch'
               }}>
-              {flows && flows.length > 0 ? (
-                flows.map((flow) => (
-                  <MenuItem
-                    key={flow.uuid}
-                    selected={flow.uuid === selectedFlow.uuid}
-                    sx={{ borderRadius: 5 }}
-                    onClick={async () => {
-                      setSelectedFlow(flow);
-                      if (closeOnSelect) {
-                        closeStateCallback();
-                      }
-                    }}>
-                    <Box
-                      width="100%"
-                      display="flex"
-                      flexDirection="row"
-                      alignItems="center"
-                      justifyContent="space-between">
-                      <Stack direction="row" alignItems="center" justifyContent="flex-start">
-                        <Box display="inherit" width={30}>
-                          {flow.uuid === selectedFlow.uuid && <Check sx={{ color: green.A700 }} />}
-                        </Box>
-                        <Box display="inherit" width={30}>
-                          {flow.uuid === profile.defaultFlow?.uuid && (
-                            <Tooltip title="Default for receiving payments">
-                              <PlayForWork />
-                            </Tooltip>
-                          )}
-                        </Box>
-                        <PaymentFlowSection flow={flow} />
-                      </Stack>
-
-                      {configurable && flow === selectedFlow && (
-                        <IconButton
-                          size="small"
-                          onClick={async (event) => {
-                            event.stopPropagation();
-                            setFlowAnchorEl(event.currentTarget);
-                            setOpenFlowSettingsMenu(true);
-                          }}
-                          sx={{ mx: 1 }}>
-                          <MoreHoriz fontSize="small" />
-                        </IconButton>
-                      )}
-                    </Box>
-                  </MenuItem>
-                ))
+              <Typography variant="subtitle2" sx={{ px: 2, py: 1, color: 'text.secondary' }}>
+                Native
+              </Typography>
+              {regular && regular.length > 0 ? (
+                regular.map(renderMenuItem)
               ) : (
                 <MenuItem disabled key="payment_flow_not_available">
                   <Typography>Not available.</Typography>
                 </MenuItem>
               )}
-            </Stack>
-            {configurable && (
-              <>
-                <Divider variant="middle" />
-                <MenuItem
-                  disabled
-                  key="add_payment_flow"
-                  onClick={async () => {
-                    setOpenNewFlowDialig(true);
-                  }}
-                  sx={{ justifyContent: 'center' }}>
-                  <Add fontSize="small" sx={{ width: 30, color: green.A700 }} />
-                  <Typography variant="subtitle2" color={green.A700}>
-                    New Payment Flow
+
+              {/* Add Native Farcaster section */}
+              {farcaster && farcaster.length > 0 && (
+                <>
+                  <Typography variant="subtitle2" sx={{ px: 2, py: 1, color: 'text.secondary' }}>
+                    Farcaster
                   </Typography>
-                </MenuItem>
-              </>
-            )}
+                  {farcaster.map(renderMenuItem)}
+                </>
+              )}
+
+              {/* Legacy section */}
+              {legacy && legacy.length > 0 && (
+                <>
+                  <Typography variant="subtitle2" sx={{ px: 2, py: 1, color: 'text.secondary' }}>
+                    Legacy
+                  </Typography>
+                  {legacy.map(renderMenuItem)}
+                </>
+              )}
+            </Stack>
           </MenuList>
         </ResponsiveDialog>
-        {/* {openNewFlowDialig && (
-          <NewFlowDialog
-            profile={profile}
-            open={openNewFlowDialig}
-            closeStateCallback={async () => {
-              setOpenNewFlowDialig(false);
-            }}
-          />
-        )} */}
         {openFlowSettingsMenu && (
           <FlowSettingsMenu
             open={openFlowSettingsMenu}
