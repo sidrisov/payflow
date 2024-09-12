@@ -13,17 +13,20 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
 import ua.sinaver.web3.payflow.message.FrameButton;
 import ua.sinaver.web3.payflow.message.farcaster.FarcasterUser;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.message.farcaster.ValidatedFrameResponseMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
+import ua.sinaver.web3.payflow.service.IdentityService;
 import ua.sinaver.web3.payflow.service.UserService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.DEFAULT_HTML_RESPONSE;
 import static ua.sinaver.web3.payflow.service.TokenService.ETH_TOKEN;
@@ -49,6 +52,9 @@ public class StorageController {
 
 	@Autowired
 	private UserService userService;
+
+	@Autowired
+	private IdentityService identityService;
 
 	private static Payment getPayment(ValidatedFrameResponseMessage validateMessage,
 	                                  FarcasterUser gifteeUser, User clickedProfile,
@@ -150,10 +156,46 @@ public class StorageController {
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
 				validateMessage.action().url());
 
-		val castInteractorFid = validateMessage.action().interactor().fid();
+
+		var castInteractorFid = validateMessage.action().interactor().fid();
+		val recipientText = Optional.ofNullable(validateMessage.action().input())
+				.map(input -> input.text().trim().toLowerCase())
+				.orElse(null);
+
+		// TODO: refactor this!
+		Integer receiverFid;
+		if (StringUtils.isNotBlank(recipientText)) {
+			val addresses = identityService.getFnameAddresses(recipientText);
+			val identity = identityService.getHighestScoredIdentityInfo(addresses);
+			if (identity == null) {
+				log.error("Farcaster user not found: {}", recipientText);
+				return ResponseEntity.badRequest().body(
+						new FrameResponse.FrameMessage("User not found, enter again!"));
+			} else {
+				receiverFid = identity.meta().socials().stream()
+						.filter(s -> SocialDappName.farcaster.name().equals(s.dappName()))
+						.map(s -> {
+							try {
+								return Integer.parseInt(s.profileId());
+							} catch (NumberFormatException e) {
+								return null;
+							}
+						})
+						.findFirst()
+						.orElse(null);
+				if (receiverFid == null) {
+					log.error("Farcaster user not found: {}", recipientText);
+					return ResponseEntity.badRequest().body(
+							new FrameResponse.FrameMessage("User not found, enter again!"));
+				}
+			}
+		} else {
+			receiverFid = validateMessage.action().interactor().fid();
+		}
+
 		val storageImage = UriComponentsBuilder.fromHttpUrl(framesServiceUrl)
 				.path("images/profile/fid/{fid}/storage.png") // add your path variables here
-				.buildAndExpand(castInteractorFid)
+				.buildAndExpand(receiverFid)
 				.toUriString();
 
 		String submitUrl = UriComponentsBuilder.fromHttpUrl(apiServiceUrl)

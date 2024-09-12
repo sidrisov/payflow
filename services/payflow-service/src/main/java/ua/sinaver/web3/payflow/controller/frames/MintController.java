@@ -129,8 +129,8 @@ public class MintController {
 				.orElse(null);
 
 		// TODO: refactor this!
-		var receiverFid = interactor.fid();
-		var receiverAddress = clickedProfile.getIdentity();
+		Integer receiverFid;
+		String receiverAddress;
 		if (StringUtils.isNotBlank(recipientText)) {
 			val addresses = identityService.getFnameAddresses(recipientText);
 			val identity = identityService.getHighestScoredIdentityInfo(addresses);
@@ -139,11 +139,27 @@ public class MintController {
 				return ResponseEntity.badRequest().body(
 						new FrameResponse.FrameMessage("User not found, enter again!"));
 			} else {
-				receiverFid = Integer.parseInt(identity.meta().socials().stream()
-						.filter(s -> s.dappName().equals(SocialDappName.farcaster.name()))
-						.findFirst().get().profileId());
+				receiverFid = identity.meta().socials().stream()
+						.filter(s -> SocialDappName.farcaster.name().equals(s.dappName()))
+						.map(s -> {
+							try {
+								return Integer.parseInt(s.profileId());
+							} catch (NumberFormatException e) {
+								return null;
+							}
+						})
+						.findFirst()
+						.orElse(null);
+				if (receiverFid == null) {
+					log.error("Farcaster user not found: {}", recipientText);
+					return ResponseEntity.badRequest().body(
+							new FrameResponse.FrameMessage("User not found, enter again!"));
+				}
 				receiverAddress = identity.address();
 			}
+		} else {
+			receiverFid = interactor.fid();
+			receiverAddress = clickedProfile.getIdentity();
 		}
 
 		val token = String.format("%s:%s:%s:%s:%s", provider, contract,
