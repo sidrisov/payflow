@@ -15,7 +15,8 @@ public record FlowMessage(String signer, String signerProvider,
                           String type,
                           String uuid,
                           String walletProvider,
-                          String saltNonce, List<WalletMessage> wallets) {
+                          String saltNonce, List<WalletMessage> wallets,
+                          boolean archived) {
 	public static String getFlowSigner(Flow flow, User user) {
 		// required only because when we don't want to return flow signer info
 		if (user == null) {
@@ -75,7 +76,7 @@ public record FlowMessage(String signer, String signerProvider,
 
 
 		val wallets = flow.getWallets().stream()
-				.filter(w -> !w.isDisabled())
+				//.filter(w -> !w.isDisabled())
 				.map(WalletMessage::convert)
 				.toList();
 		return new FlowMessage(flowSigner, flowSignerProvider,
@@ -83,7 +84,8 @@ public record FlowMessage(String signer, String signerProvider,
 				flow.getTitle(),
 				flow.getType() != null ? flow.getType().toString() : "",
 				flow.getUuid(),
-				flow.getWalletProvider(), flow.getSaltNonce(), wallets);
+				flow.getWalletProvider(), flow.getSaltNonce(), wallets,
+				flow.isArchived() || flow.isDisabled());
 	}
 
 	public static FlowMessage convertFarcasterVerification(String verificationAddress, User user) {
@@ -95,7 +97,8 @@ public record FlowMessage(String signer, String signerProvider,
 				"Verified: " + shortenWalletAddressLabel2(verificationAddress),
 				Flow.FlowType.FARCASTER_VERIFICATION.toString(),
 				verificationAddress,
-				null, null, wallets);
+				null, null, wallets,
+				false);
 	}
 
 	public static FlowMessage convertDefaultFlow(User user, boolean signerInfo) {

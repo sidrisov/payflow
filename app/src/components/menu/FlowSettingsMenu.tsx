@@ -80,7 +80,7 @@ export function FlowSettingsMenu({
               </AvatarGroup>
             </Stack>
           </MenuItem>
-          {!defaultFlow && (
+          {!defaultFlow && !flow.archived && (
             <MenuItem
               onClick={async () => {
                 if (await setReceivingFlow(flow.uuid)) {

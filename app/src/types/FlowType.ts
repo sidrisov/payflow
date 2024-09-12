@@ -12,6 +12,7 @@ export interface FlowType {
   walletProvider: string;
   saltNonce: string;
   wallets: FlowWalletType[];
+  archived: boolean;
 }
 
 export interface JarType {
