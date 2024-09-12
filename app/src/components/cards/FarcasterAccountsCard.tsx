@@ -99,9 +99,7 @@ export function FarcasterAccountsCard({
       sx={{
         m: 2,
         p: 3,
-        border: 1.5,
         borderRadius: 5,
-        borderColor: 'divider',
         width: 360,
         maxHeight: 550,
         display: 'flex',
