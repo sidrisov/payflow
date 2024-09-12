@@ -25,25 +25,20 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
       <p style={{ fontSize: 60, fontWeight: 'bold' }}>{title}</p>
       <div
         style={{
-          marginTop: 15,
-          padding: 16,
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'flex-start',
-          height: 275,
-          gap: 30
+          height: 275
         }}>
         <div
           style={{
-            padding: 16,
             width: 375,
-            maxHeight: 250,
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: 10
+            gap: 15
           }}>
           {chains.map((chain, index) => {
             const chainImg = assetImageSrc(getNetworkImageSrc(chain.id));
@@ -74,14 +69,12 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
 
         <div
           style={{
-            padding: 16,
             width: 425,
-            maxHeight: 250,
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: 5
+            gap: 10
           }}>
           {tokens.map((token, index) => {
             const tokenImgSrc =
@@ -112,7 +105,9 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
           })}
         </div>
       </div>
-      <p style={{ fontSize: 35, fontWeight: 'bold' }}>with 20+ tokens across multiple l2 chains</p>
+      <p style={{ marginTop: 10, fontSize: 35, fontWeight: 'bold' }}>
+        with 20+ tokens across multiple l2 chains
+      </p>
     </Card>
   );
 }

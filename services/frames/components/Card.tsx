@@ -32,14 +32,15 @@ export default function Card({ children }: { children: React.ReactNode }) {
         <div
           style={{
             position: 'absolute',
-            bottom: 12,
+            left: 16,
+            bottom: 16,
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: '#e0e0e0',
             borderRadius: 25,
-            padding: 5
+            padding: 8
           }}>
           <div
             style={{
@@ -51,11 +52,9 @@ export default function Card({ children }: { children: React.ReactNode }) {
             <img
               src={assetImageSrc('/assets/payflow.png')}
               alt="profile"
-              style={{ height: 20, width: 20, borderRadius: '50%' }}
+              style={{ height: 28, width: 28, borderRadius: '50%' }}
             />
-            <span style={{ fontSize: 18, fontWeight: 'bold' }}>
-              Payflow with 💜 by sinaver.eth
-            </span>
+            <span style={{ fontSize: 24, fontWeight: 'bold' }}>Payflow</span>
           </div>
         </div>
       </div>
