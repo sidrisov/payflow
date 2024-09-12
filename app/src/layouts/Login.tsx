@@ -44,11 +44,11 @@ export default function Login({
       <Helmet>
         <title> Payflow | Connect </title>
       </Helmet>
-      {authStatus === 'loading' ? (
-        <LoadingPayflowEntryLogo />
-      ) : (
-        !profile && (
-          <Container maxWidth="sm">
+      <Container maxWidth="sm" sx={{ height: '80vh' }}>
+        {authStatus === 'loading' ? (
+          <LoadingPayflowEntryLogo />
+        ) : (
+          !profile && (
             <Box
               position="fixed"
               display="flex"
@@ -58,19 +58,19 @@ export default function Login({
               sx={{ inset: 0 }}>
               <ConnectCard />
             </Box>
-          </Container>
-        )
-      )}
-      {profile && !profile.username && (
-        <ProfileOnboardingDialog
-          fullScreen={isMobile}
-          open={!profile.username}
-          profile={profile}
-          closeStateCallback={() => {}}
-          username={username}
-          code={invitationCode}
-        />
-      )}
+          )
+        )}
+        {profile && !profile.username && (
+          <ProfileOnboardingDialog
+            fullScreen={isMobile}
+            open={!profile.username}
+            profile={profile}
+            closeStateCallback={() => {}}
+            username={username}
+            code={invitationCode}
+          />
+        )}
+      </Container>
     </CustomThemeProvider>
   );
 }
