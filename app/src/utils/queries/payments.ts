@@ -22,22 +22,40 @@ export const usePendingPayments = (enabled: boolean) => {
   });
 };
 
-export const useCompletedPayments = (identity: string, page: number = 0, size: number = 20) => {
-  return useQuery({
-    enabled: Boolean(identity),
-    queryKey: ['completedPayments', identity, page, size],
-    staleTime: 120_000,
-    refetchInterval: 30_000,
-    queryFn: () =>
+import { useInfiniteQuery } from '@tanstack/react-query';
+
+// ... other existing code ...
+
+interface PaginatedResponse {
+  content: PaymentType[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    // ... other pageable properties
+  };
+  last: boolean;
+  totalPages: number;
+  totalElements: number;
+  number: number;
+  // ... other pagination properties
+}
+
+export const useCompletedPayments = (identity: string, size: number = 5) => {
+  return useInfiniteQuery<PaginatedResponse, Error>({
+    queryKey: ['completedPayments', identity],
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => {
+      return lastPage.last ? undefined : lastPage.number + 1;
+    },
+    queryFn: ({ pageParam = 0 }) =>
       axios
-        .get(`${API_URL}/api/payment/completed`, {
-          params: { identity, page, size },
+        .get<PaginatedResponse>(`${API_URL}/api/payment/completed`, {
+          params: { identity, page: pageParam, size },
           withCredentials: true
         })
         .then((res) => {
-          const payments = res.data.content as PaymentType[];
-          console.log('Fetched completed payments: ', payments);
-          return payments;
+          console.log('Fetched completed payments: ', res.data);
+          return res.data;
         })
   });
 };
