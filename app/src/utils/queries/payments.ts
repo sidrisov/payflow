@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { API_URL } from '../urlConstants';
 import axios from 'axios';
 import { PaymentType } from '../../types/PaymentType';
+import { useInfiniteQuery } from '@tanstack/react-query';
 
 export const usePendingPayments = (enabled: boolean) => {
   return useQuery({
@@ -22,25 +23,19 @@ export const usePendingPayments = (enabled: boolean) => {
   });
 };
 
-import { useInfiniteQuery } from '@tanstack/react-query';
-
-// ... other existing code ...
-
 interface PaginatedResponse {
   content: PaymentType[];
   pageable: {
     pageNumber: number;
     pageSize: number;
-    // ... other pageable properties
   };
   last: boolean;
   totalPages: number;
   totalElements: number;
   number: number;
-  // ... other pagination properties
 }
 
-export const useCompletedPayments = (identity: string, size: number = 5) => {
+export const useCompletedPayments = (identity: string, size: number = 20) => {
   return useInfiniteQuery<PaginatedResponse, Error>({
     queryKey: ['completedPayments', identity],
     initialPageParam: 0,
