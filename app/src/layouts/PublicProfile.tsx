@@ -64,7 +64,7 @@ export default function PublicProfile() {
         {isProfileLoading === true ? (
           <LoadingPayflowEntryLogo />
         ) : identity ? (
-          <Box flexGrow={1} overflow="hidden" sx={{ mb: 20 }} border={1}>
+          <Box flexGrow={1} overflow="hidden" sx={{ mb: 20 }}>
             <PublicProfileCard identity={identity} />
           </Box>
         ) : (

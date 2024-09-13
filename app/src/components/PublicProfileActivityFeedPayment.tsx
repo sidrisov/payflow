@@ -25,12 +25,15 @@ import { green, red } from '@mui/material/colors';
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
 
 function getActivityType(identity: IdentityType, payment: PaymentType) {
-  return payment.senderAddress === payment.receiverAddress ||
-    payment.sender?.identity === payment.receiver?.identity
-    ? 'self'
-    : payment.sender?.identity === identity.address || payment.senderAddress === identity.address
-    ? 'outbound'
-    : 'inbound';
+  const isSelfTransaction =
+    (payment.senderAddress && payment.receiverAddress && payment.senderAddress === payment.receiverAddress) ||
+    (payment.sender?.identity && payment.receiver?.identity && payment.sender.identity === payment.receiver.identity);
+
+  const isOutbound =
+    (payment.sender?.identity && identity.address && payment.sender.identity === identity.address) ||
+    (payment.senderAddress && identity.address && payment.senderAddress === identity.address);
+
+  return isSelfTransaction ? 'self' : isOutbound ? 'outbound' : 'inbound';
 }
 
 const ActivityIcon = ({ identity, payment }: { identity: IdentityType; payment: PaymentType }) => {
@@ -64,19 +67,19 @@ export default function PublicProfileActivityFeedSection(
   const defultBlockExplorerUrl = getNetworkDefaultBlockExplorerUrl(payment.chainId);
 
   const { data: ensNameFrom } = useEnsName({
-    address: payment.senderAddress as `0x${string}`,
+    address: payment.senderAddress ? (payment.senderAddress as `0x${string}`) : undefined,
     chainId: 1,
     query: {
-      enabled: !payment.sender,
+      enabled: !payment.sender && !!payment.senderAddress,
       staleTime: 300_000
     }
   });
 
   const { data: ensNameTo } = useEnsName({
-    address: payment.receiverAddress as `0x${string}`,
+    address: payment.receiverAddress ? (payment.receiverAddress as `0x${string}`) : undefined,
     chainId: 1,
     query: {
-      enabled: !payment.receiver,
+      enabled: !payment.receiver && !!payment.receiverAddress,
       staleTime: 300_000
     }
   });
@@ -85,7 +88,7 @@ export default function PublicProfileActivityFeedSection(
     name: ensNameFrom as string,
     chainId: 1,
     query: {
-      enabled: !payment.sender,
+      enabled: !payment.sender && !!payment.senderAddress,
       staleTime: 300_000
     }
   });
@@ -94,7 +97,7 @@ export default function PublicProfileActivityFeedSection(
     name: ensNameTo as string,
     chainId: 1,
     query: {
-      enabled: !payment.receiver,
+      enabled: !payment.receiver && !!payment.receiverAddress,
       staleTime: 300_000
     }
   });
@@ -128,8 +131,10 @@ export default function PublicProfileActivityFeedSection(
           <ProfileAvatar profile={payment.sender} />
         ) : avatarFrom.data ? (
           <Avatar src={avatarFrom.data} />
-        ) : (
+        ) : payment.senderAddress ? (
           <AddressAvatar address={payment.senderAddress} />
+        ) : (
+          <Avatar>?</Avatar> // Fallback avatar
         )}
         <Stack spacing={0.5} width="100%">
           <Box
@@ -150,12 +155,16 @@ export default function PublicProfileActivityFeedSection(
                   setPopOverProfile(undefined);
                 }}
               />
-            ) : (
+            ) : payment.senderAddress ? (
               <AddressOrEnsWithLink
                 address={payment.senderAddress}
                 blockExplorerUrl={defultBlockExplorerUrl}
                 ens={ensNameFrom ?? undefined}
               />
+            ) : (
+              <Typography noWrap variant="caption" fontSize={isMobile ? 12 : 14}>
+                Unknown @unknown
+              </Typography>
             )}
 
             <IconButton
@@ -179,12 +188,14 @@ export default function PublicProfileActivityFeedSection(
                   <ProfileAvatar profile={payment.receiver} sx={{ width: 25, height: 25 }} />
                 ) : avatarTo.data ? (
                   <Avatar src={avatarTo.data} sx={{ width: 25, height: 25 }} />
-                ) : (
+                ) : payment.receiverAddress ? (
                   <AddressAvatar
                     address={payment.receiverAddress}
                     scale={3}
                     sx={{ width: 25, height: 25 }}
                   />
+                ) : (
+                  <Avatar>?</Avatar> // Fallback avatar
                 )}
                 {payment.receiver ? (
                   <ProfileDisplayNameWithLink
