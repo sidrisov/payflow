@@ -37,7 +37,7 @@ export default function PublicProfile() {
       <Helmet>
         <title> Payflow {displayName ? '| ' + displayName : ''} </title>
       </Helmet>
-      <Box width="100%" height="100vh" display="flex" flexDirection="column">
+      <Box display="flex" flexDirection="column" height="100vh" width="100%">
         {username && !isProfileLoading && !identity && (
           <Stack mt={10}>
             <Typography
@@ -64,7 +64,7 @@ export default function PublicProfile() {
         {isProfileLoading === true ? (
           <LoadingPayflowEntryLogo />
         ) : identity ? (
-          <Box flexGrow={1} overflow="hidden">
+          <Box flexGrow={1} overflow="hidden" sx={{ mb: 20 }} border={1}>
             <PublicProfileCard identity={identity} />
           </Box>
         ) : (

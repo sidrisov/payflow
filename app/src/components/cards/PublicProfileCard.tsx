@@ -10,24 +10,19 @@ export function PublicProfileCard({ identity, ...props }: { identity: IdentityTy
 
   return (
     <Box display="flex" flexDirection="column" height="100%">
-      <Box flexShrink={0}>
-        <Card
-          {...props}
-          elevation={3}
-          sx={{
-            m: 2,
-            p: 2,
-            border: 1.5,
-            borderColor: 'divider',
-            borderRadius: 5
-          }}>
-          <PublicProfileDetails openPayDialogParam={pay !== null} identity={identity} />
-        </Card>
-      </Box>
+      <Card
+        {...props}
+        elevation={3}
+        sx={{
+          m: 2,
+          p: 2,
+          borderRadius: 5,
+          flexShrink: 0
+        }}>
+        <PublicProfileDetails openPayDialogParam={pay !== null} identity={identity} />
+      </Card>
 
-      <Box mx={1} flexGrow={1} overflow="hidden" mb={20}>
-        <PublicProfileActivityFeed identity={identity} />
-      </Box>
+      <PublicProfileActivityFeed identity={identity} />
     </Box>
   );
 }

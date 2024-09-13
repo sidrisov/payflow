@@ -25,7 +25,6 @@ export default function PublicProfileActivityFeed({ identity, selectedChain }: A
   const theme = useTheme();
   const { profile: loggedProfile } = useContext(ProfileContext);
   const { address } = useAccount();
-  const lastScrollTop = useRef(0);
 
   const { isLoading, isFetched, data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useCompletedPayments(identity.address);
@@ -74,87 +73,84 @@ export default function PublicProfileActivityFeed({ identity, selectedChain }: A
   }, [transactions]);
 
   return (
-    <Box display="flex" flexDirection="column" height="100%">
-      <Stack
-        spacing={2}
-        width="100%"
-        flexGrow={1}
-        sx={{
-          overflowY: 'auto',
-          '&::-webkit-scrollbar': {
-            display: 'none'
-          },
-          msOverflowStyle: 'none',
-          scrollbarWidth: 'none'
-        }}>
-        {isLoading ? (
-          <Box color="inherit" display="flex" justifyContent="center" p={2}>
-            <CircularProgress size={24} />
-          </Box>
-        ) : isFetched ? (
-          <>
-            {Object.keys(groupedTransactions).length > 0 ? (
-              <>
-                {Object.entries(groupedTransactions).map(([date, payments], index, array) => (
-                  <Box key={date} sx={{ position: 'relative' }}>
-                    <Typography
-                      variant="body2"
-                      textAlign="center"
-                      sx={{
-                        position: 'sticky',
-                        zIndex: 2,
-                        top: -1,
-                        backgroundColor: theme.palette.mode === 'dark' ? '#242424' : '#f8fafc'
-                      }}
-                      data-date={date}>
-                      {date}
-                    </Typography>
-                    {payments
-                      .filter((payment) => {
-                        const chainMatch = selectedChain
-                          ? payment.chainId === selectedChain.id
-                          : true;
-                        const feedMatch =
-                          feedOption === 1 ||
-                          payment.receiverAddress === address ||
-                          payment.senderAddress === address ||
-                          (loggedProfile &&
-                            (payment.sender?.identity === loggedProfile.identity ||
-                              payment.receiver?.identity === loggedProfile.identity));
-                        return chainMatch && feedMatch;
-                      })
-                      .map((payment, paymentIndex, filteredPayments) => (
-                        <div
-                          key={`activity_section_${payment.chainId}_${payment.hash}`}
-                          ref={
-                            index === array.length - 1 &&
-                            paymentIndex === filteredPayments.length - 1
-                              ? lastElementRef
-                              : null
-                          }>
-                          <PublicProfileActivityFeedSection identity={identity} payment={payment} />
-                        </div>
-                      ))}
-                  </Box>
-                ))}
-                {isFetchingNextPage && (
-                  <Box display="flex" justifyContent="center" p={2}>
-                    <CircularProgress size={24} />
-                  </Box>
-                )}
-              </>
-            ) : (
-              <Typography variant="subtitle2" textAlign="center">
-                No transactions found.
-              </Typography>
-            )}
-          </>
-        ) : (
-          <Typography variant="subtitle2" textAlign="center">
-            Couldn't fetch. Try again!
-          </Typography>
-        )}
-      </Stack>
-    </Box>
+    <Stack
+      mx={2}
+      spacing={1}
+      height="100%"
+      sx={{
+        overflowY: 'scroll',
+        '&::-webkit-scrollbar': {
+          display: 'none'
+        },
+        msOverflowStyle: 'none',
+        scrollbarWidth: 'none'
+      }}>
+      {isLoading ? (
+        <Box color="inherit" display="flex" justifyContent="center" p={2}>
+          <CircularProgress size={24} />
+        </Box>
+      ) : isFetched ? (
+        <>
+          {Object.keys(groupedTransactions).length > 0 ? (
+            <>
+              {Object.entries(groupedTransactions).map(([date, payments], index, array) => (
+                <Box key={date} sx={{ position: 'relative' }}>
+                  <Typography
+                    variant="body2"
+                    textAlign="center"
+                    sx={{
+                      position: 'sticky',
+                      zIndex: 2,
+                      top: -1,
+                      backgroundColor: theme.palette.mode === 'dark' ? '#242424' : '#f8fafc'
+                    }}
+                    data-date={date}>
+                    {date}
+                  </Typography>
+                  {payments
+                    .filter((payment) => {
+                      const chainMatch = selectedChain
+                        ? payment.chainId === selectedChain.id
+                        : true;
+                      const feedMatch =
+                        feedOption === 1 ||
+                        payment.receiverAddress === address ||
+                        payment.senderAddress === address ||
+                        (loggedProfile &&
+                          (payment.sender?.identity === loggedProfile.identity ||
+                            payment.receiver?.identity === loggedProfile.identity));
+                      return chainMatch && feedMatch;
+                    })
+                    .map((payment, paymentIndex, filteredPayments) => (
+                      <div
+                        key={`activity_section_${payment.chainId}_${payment.hash}`}
+                        ref={
+                          index === array.length - 1 && paymentIndex === filteredPayments.length - 1
+                            ? lastElementRef
+                            : null
+                        }>
+                        <PublicProfileActivityFeedSection identity={identity} payment={payment} />
+                      </div>
+                    ))}
+                </Box>
+              ))}
+              {isFetchingNextPage && (
+                <Box display="flex" justifyContent="center" p={2}>
+                  <CircularProgress size={24} />
+                </Box>
+              )}
+            </>
+          ) : (
+            <Typography variant="subtitle2" textAlign="center">
+              No transactions found.
+            </Typography>
+          )}
+        </>
+      ) : (
+        <Typography variant="subtitle2" textAlign="center">
+          Couldn't fetch. Try again!
+        </Typography>
+      )}
+    </Stack>
   );
 }
