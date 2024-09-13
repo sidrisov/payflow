@@ -1,6 +1,5 @@
 import { Box, NativeSelect, Stack, Typography } from '@mui/material';
 import { ActivitySkeletonSection } from './skeletons/ActivitySkeletonSection';
-import PublicProfileActivityFeedSection from './PublicProfileActivityFeedPayment';
 import { useState } from 'react';
 import { Chain } from 'viem';
 import { useTransactions } from '../utils/queries/transactions';
@@ -50,11 +49,11 @@ export default function JarActivityFeed({ flow, selectedChain }: AssetsProps) {
                 (feedOption === 1 ? tx.activity === 'inbound' : tx.activity === 'outbound')
               );
             })
-            .map((txInfo) => (
-              <PublicProfileActivityFeedSection
+            .map((_) => (
+              /*               <PublicProfileActivityFeedSection
                 key={`activity_section_${txInfo.chainId}_${txInfo.hash}`}
-                txInfo={txInfo}
-              />
+                //txInfo={txInfo!}
+              /> */ <></>
             ))
         ) : (
           <Typography variant="subtitle2" textAlign="center">

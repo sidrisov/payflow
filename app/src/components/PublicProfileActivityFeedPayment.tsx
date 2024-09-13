@@ -2,7 +2,7 @@ import { Avatar, Box, BoxProps, IconButton, Link, Stack, Typography } from '@mui
 import { useState } from 'react';
 import { PaymentType } from '../types/PaymentType';
 import NetworkAvatar from './avatars/NetworkAvatar';
-import { getNetworkDefaultBlockExplorerUrl, getNetworkDisplayName } from '../utils/networks';
+import { getNetworkDefaultBlockExplorerUrl } from '../utils/networks';
 
 import AddressAvatar from './avatars/AddressAvatar';
 import { useEnsAvatar, useEnsName } from 'wagmi';
@@ -18,48 +18,31 @@ import { useTokenPrices } from '../utils/queries/prices';
 import { useMobile } from '../utils/hooks/useMobile';
 import { PaymentMenu } from './menu/PaymentMenu';
 import { MoreHoriz } from '@mui/icons-material';
-import { SwapHoriz } from '@mui/icons-material';
 import ArrowUpwardIcon from '@mui/icons-material/NorthEast';
 import ArrowDownwardIcon from '@mui/icons-material/SouthEast';
+import { green, red } from '@mui/material/colors';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
-function getActivityLabel(payment: PaymentType) {
-  return payment.senderAddress === payment.receiverAddress ? 'paid self' : 'paid';
+
+function getActivityType(identity: IdentityType, payment: PaymentType) {
+  return payment.senderAddress === payment.receiverAddress ||
+    payment.sender?.identity === payment.receiver?.identity
+    ? 'self'
+    : payment.sender?.identity === identity.address || payment.senderAddress === identity.address
+    ? 'outbound'
+    : 'inbound';
 }
 
 const ActivityIcon = ({ identity, payment }: { identity: IdentityType; payment: PaymentType }) => {
-  const activity =
-    payment.senderAddress === payment.receiverAddress
-      ? 'self'
-      : payment.sender?.identity === identity.address
-      ? 'outbound'
-      : 'inbound';
+  const activity = getActivityType(identity, payment);
 
   switch (activity) {
     case 'self':
-      return <SwapHoriz color="action" />;
+      return <></>;
     case 'inbound':
-      return <ArrowDownwardIcon color="success" />;
+      return <ArrowDownwardIcon sx={{ color: green.A700 }} />;
     default:
-      return <ArrowUpwardIcon color="error" />;
-  }
-};
-
-const getActivityColor = (identity: IdentityType, payment: PaymentType) => {
-  const activity =
-    payment.senderAddress === payment.receiverAddress
-      ? 'self'
-      : payment.sender?.identity === identity.address
-      ? 'outbound'
-      : 'inbound';
-
-  switch (activity) {
-    case 'self':
-      return 'text.primary';
-    case 'inbound':
-      return 'success.main';
-    default:
-      return 'error.main';
+      return <ArrowUpwardIcon sx={{ color: red.A400 }} />;
   }
 };
 
@@ -120,10 +103,18 @@ export default function PublicProfileActivityFeedSection(
     (t) => t.chainId === payment.chainId && t.id === payment.token
   ) as Token;
 
-  const value = parseFloat(payment.tokenAmount?.toString() || '0');
   const price = tokenPrices ? tokenPrices[token.id] : 0;
 
-  const formattedAmount = `$${normalizeNumberPrecision(value * price)}`;
+  const tokenAmount =
+    payment.tokenAmount || (payment.usdAmount ? (payment.usdAmount / price).toString() : '0');
+  const usdAmount =
+    payment.usdAmount ||
+    (payment.tokenAmount ? parseFloat(payment.tokenAmount.toString()) * price : 0);
+
+  const formattedTokenAmount = formatAmountWithSuffix(
+    normalizeNumberPrecision(parseFloat(tokenAmount.toString()))
+  );
+  const formattedUsdAmount = formatAmountWithSuffix(normalizeNumberPrecision(usdAmount));
 
   return (
     <>
@@ -180,38 +171,42 @@ export default function PublicProfileActivityFeedSection(
 
           <Stack direction="row" alignItems="center" spacing={0.5}>
             <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
-              {getActivityLabel(payment)}
+              {getActivityType(identity, payment) === 'self' ? 'moved funds' : 'paid'}
             </Typography>
-            {payment.receiver ? (
-              <ProfileAvatar profile={payment.receiver} sx={{ width: 25, height: 25 }} />
-            ) : avatarTo.data ? (
-              <Avatar src={avatarTo.data} sx={{ width: 25, height: 25 }} />
-            ) : (
-              <AddressAvatar
-                address={payment.receiverAddress}
-                scale={3}
-                sx={{ width: 25, height: 25 }}
-              />
-            )}
-            {payment.receiver ? (
-              <ProfileDisplayNameWithLink
-                profile={payment.receiver}
-                aria-owns={popoverProfile ? 'public-profile-popover' : undefined}
-                onMouseEnter={(event) => {
-                  setProfileDetailsPopoverAnchorEl(event.currentTarget);
-                  setPopOverProfile(payment.receiver);
-                }}
-                onMouseLeave={() => {
-                  setProfileDetailsPopoverAnchorEl(null);
-                  setPopOverProfile(undefined);
-                }}
-              />
-            ) : (
-              <AddressOrEnsWithLink
-                address={payment.receiverAddress}
-                blockExplorerUrl={defultBlockExplorerUrl}
-                ens={ensNameTo ?? undefined}
-              />
+            {getActivityType(identity, payment) !== 'self' && (
+              <>
+                {payment.receiver ? (
+                  <ProfileAvatar profile={payment.receiver} sx={{ width: 25, height: 25 }} />
+                ) : avatarTo.data ? (
+                  <Avatar src={avatarTo.data} sx={{ width: 25, height: 25 }} />
+                ) : (
+                  <AddressAvatar
+                    address={payment.receiverAddress}
+                    scale={3}
+                    sx={{ width: 25, height: 25 }}
+                  />
+                )}
+                {payment.receiver ? (
+                  <ProfileDisplayNameWithLink
+                    profile={payment.receiver}
+                    aria-owns={popoverProfile ? 'public-profile-popover' : undefined}
+                    onMouseEnter={(event) => {
+                      setProfileDetailsPopoverAnchorEl(event.currentTarget);
+                      setPopOverProfile(payment.receiver);
+                    }}
+                    onMouseLeave={() => {
+                      setProfileDetailsPopoverAnchorEl(null);
+                      setPopOverProfile(undefined);
+                    }}
+                  />
+                ) : (
+                  <AddressOrEnsWithLink
+                    address={payment.receiverAddress}
+                    blockExplorerUrl={defultBlockExplorerUrl}
+                    ens={ensNameTo ?? undefined}
+                  />
+                )}
+              </>
             )}
           </Stack>
           <Link
@@ -221,27 +216,24 @@ export default function PublicProfileActivityFeedSection(
             color="inherit"
             overflow="clip"
             textOverflow="ellipsis">
-            <Stack direction="row" spacing={0.5} alignItems="center">
+            <Stack
+              direction="row"
+              spacing={0.5}
+              alignItems="center"
+              flexWrap="wrap"
+              sx={{ textWrap: 'balance' }}>
+              <ActivityIcon identity={identity} payment={payment} />
               <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
-                {formatAmountWithSuffix(normalizeNumberPrecision(value))} {token.name}
+                {formattedTokenAmount} {token.name}
               </Typography>
-              <TokenAvatar
-                token={token}
-                sx={{
-                  width: 15,
-                  height: 15
-                }}
-              />
+              <TokenAvatar token={token} sx={{ width: 15, height: 15 }} />
+              <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
+                ${formattedUsdAmount}
+              </Typography>
               <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
-                on <b>{getNetworkDisplayName(payment.chainId)}</b>
+                on
               </Typography>
-              <NetworkAvatar
-                chainId={payment.chainId}
-                sx={{
-                  width: 15,
-                  height: 15
-                }}
-              />
+              <NetworkAvatar chainId={payment.chainId} sx={{ width: 15, height: 15 }} />
             </Stack>
           </Link>
 
@@ -259,21 +251,6 @@ export default function PublicProfileActivityFeedSection(
                 💬 {payment.comment}
               </Typography>
             )}
-            <Box
-              display="flex"
-              flexDirection="row"
-              alignItems="center"
-              justifyContent="flex-end"
-              ml="auto">
-              <ActivityIcon identity={identity} payment={payment} />
-              <Typography
-                variant="caption"
-                fontWeight="bold"
-                fontSize={isMobile ? 12 : 14}
-                color={getActivityColor(identity, payment)}>
-                {formattedAmount}
-              </Typography>
-            </Box>
           </Box>
         </Stack>
       </Stack>

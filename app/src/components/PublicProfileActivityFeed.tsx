@@ -88,7 +88,7 @@ export default function PublicProfileActivityFeed({ identity, selectedChain }: A
           scrollbarWidth: 'none'
         }}>
         {isLoading ? (
-          <Box display="flex" justifyContent="center" p={2}>
+          <Box color="inherit" display="flex" justifyContent="center" p={2}>
             <CircularProgress size={24} />
           </Box>
         ) : isFetched ? (
