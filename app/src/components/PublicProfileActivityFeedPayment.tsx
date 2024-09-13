@@ -1,22 +1,11 @@
-import {
-  Avatar,
-  Box,
-  BoxProps,
-  Chip,
-  Link,
-  Stack,
-  Typography
-} from '@mui/material';
-import { formatUnits } from 'viem';
+import { Avatar, Box, BoxProps, IconButton, Link, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { TxInfo } from '../types/ActivityFetchResultType';
 import NetworkAvatar from './avatars/NetworkAvatar';
 import { getNetworkDefaultBlockExplorerUrl, getNetworkDisplayName } from '../utils/networks';
 
 import AddressAvatar from './avatars/AddressAvatar';
-import { lightGreen, red } from '@mui/material/colors';
 import { useEnsAvatar, useEnsName } from 'wagmi';
-import { timeAgo } from '../utils/time';
 import ProfileAvatar from './avatars/ProfileAvatar';
 import { AddressOrEnsWithLink } from './AddressOrEnsWithLink';
 import { ProfileDisplayNameWithLink } from './ProfileDisplayNameWithLink';
@@ -27,11 +16,38 @@ import { formatAmountWithSuffix, normalizeNumberPrecision } from '../utils/forma
 import TokenAvatar from './avatars/TokenAvatar';
 import { useTokenPrices } from '../utils/queries/prices';
 import { useMobile } from '../utils/hooks/useMobile';
+import { PaymentMenu } from './menu/PaymentMenu';
+import { MoreHoriz } from '@mui/icons-material';
+import { SwapHoriz } from '@mui/icons-material';
+import ArrowUpwardIcon from '@mui/icons-material/NorthEast';
+import ArrowDownwardIcon from '@mui/icons-material/SouthEast';
 
 // TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
 function getActivityLabel(activity: string) {
   return activity === 'self' ? 'paid self' : 'paid';
 }
+
+const ActivityIcon = ({ activity }: { activity: string }) => {
+  switch (activity) {
+    case 'self':
+      return <SwapHoriz color="action" />;
+    case 'inbound':
+      return <ArrowDownwardIcon color="success" />;
+    default:
+      return <ArrowUpwardIcon color="error" />;
+  }
+};
+
+const getActivityColor = (activity: string) => {
+  switch (activity) {
+    case 'self':
+      return 'text.primary';
+    case 'inbound':
+      return 'success.main';
+    default:
+      return 'error.main';
+  }
+};
 
 export default function PublicProfileActivityFeedSection(props: BoxProps & { txInfo: TxInfo }) {
   const isMobile = useMobile();
@@ -42,6 +58,9 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
   const [profileDetailsPopoverAnchorEl, setProfileDetailsPopoverAnchorEl] =
     useState<null | HTMLElement>(null);
   const [popoverProfile, setPopOverProfile] = useState<ProfileType>();
+
+  const [openPaymentMenu, setOpenPaymentMenu] = useState(false);
+  const [paymentMenuAnchorEl, setPaymentMenuAnchorEl] = useState<null | HTMLElement>(null);
 
   const defultBlockExplorerUrl = getNetworkDefaultBlockExplorerUrl(txInfo.chainId);
 
@@ -82,15 +101,18 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
   });
 
   const token = ERC20_CONTRACTS.find(
-    (t) => t.chainId === txInfo.chainId && t.tokenAddress === txInfo.token?.address.toLowerCase()
+    (t) => t.chainId === txInfo.chainId && t.id === txInfo.token?.symbol
   ) as Token;
 
-  const value = parseFloat(formatUnits(BigInt(txInfo.value ?? 0), txInfo.token?.decimals ?? 18));
+  const value = parseFloat(txInfo.value?.toString() || '0');
   const price = tokenPrices ? tokenPrices[token.id] : 0;
+
+  const formattedAmount = `$${normalizeNumberPrecision(value * price)}`;
 
   return (
     <>
       <Stack
+        m={1}
         p={2}
         direction="row"
         spacing={0.5}
@@ -108,50 +130,36 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
             flexDirection="row"
             alignItems="center"
             justifyContent="space-between">
-            <Stack spacing={0.5} direction="row" alignItems="center">
-              {txInfo.fromProfile ? (
-                <ProfileDisplayNameWithLink
-                  profile={txInfo.fromProfile}
-                  aria-owns={popoverProfile ? 'public-profile-popover' : undefined}
-                  onMouseEnter={(event) => {
-                    setProfileDetailsPopoverAnchorEl(event.currentTarget);
-                    setPopOverProfile(txInfo.fromProfile);
-                  }}
-                  onMouseLeave={() => {
-                    setProfileDetailsPopoverAnchorEl(null);
-                    setPopOverProfile(undefined);
-                  }}
-                />
-              ) : (
-                <AddressOrEnsWithLink
-                  address={txInfo.from}
-                  blockExplorerUrl={defultBlockExplorerUrl}
-                  ens={ensNameFrom ?? undefined}
-                />
-              )}
-              <Typography variant="caption" fontSize={isMobile ? 13 : 15}>
-                •
-              </Typography>
-              <Typography noWrap variant="caption" fontSize={isMobile ? 13 : 15}>
-                {timeAgo.format(new Date(txInfo.timestamp), 'mini')}
-              </Typography>
-            </Stack>
-
-            {txInfo.payment && txInfo.payment.source && (
-              <Chip
-                variant="outlined"
-                size="medium"
-                clickable
-                label={txInfo.payment.source.app}
-                avatar={<Avatar src={`/dapps/${txInfo.payment.source.app.toLowerCase()}.png`} />}
-                {...(txInfo.payment.source.ref && {
-                  component: 'a',
-                  href: txInfo.payment.source.ref,
-                  target: '_blank'
-                })}
-                sx={{ fontWeight: 'bold', border: 0 }}
+            {txInfo.fromProfile ? (
+              <ProfileDisplayNameWithLink
+                profile={txInfo.fromProfile}
+                aria-owns={popoverProfile ? 'public-profile-popover' : undefined}
+                onMouseEnter={(event) => {
+                  setProfileDetailsPopoverAnchorEl(event.currentTarget);
+                  setPopOverProfile(txInfo.fromProfile);
+                }}
+                onMouseLeave={() => {
+                  setProfileDetailsPopoverAnchorEl(null);
+                  setPopOverProfile(undefined);
+                }}
+              />
+            ) : (
+              <AddressOrEnsWithLink
+                address={txInfo.from}
+                blockExplorerUrl={defultBlockExplorerUrl}
+                ens={ensNameFrom ?? undefined}
               />
             )}
+
+            <IconButton
+              size="small"
+              onClick={async (event) => {
+                event.stopPropagation();
+                setPaymentMenuAnchorEl(event.currentTarget);
+                setOpenPaymentMenu(true);
+              }}>
+              <MoreHoriz fontSize="small" />
+            </IconButton>
           </Box>
 
           <Stack direction="row" alignItems="center" spacing={0.5}>
@@ -195,7 +203,7 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
             textOverflow="ellipsis">
             <Stack direction="row" spacing={0.5} alignItems="center">
               <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
-                {formatAmountWithSuffix(normalizeNumberPrecision(value)) + ' ' + token.name}
+                {formatAmountWithSuffix(normalizeNumberPrecision(value))} {token.name}
               </Typography>
               <TokenAvatar
                 token={token}
@@ -233,32 +241,21 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
                 💬 {txInfo.payment.comment}
               </Typography>
             )}
-            <Chip
-              size="medium"
-              label={
-                (txInfo.activity !== 'self' ? (txInfo.activity === 'inbound' ? '+' : '-') : '') +
-                ('$' + normalizeNumberPrecision(value * price))
-              }
-              sx={{
-                minWidth: 60,
-                border: txInfo.activity === 'self' ? 0.5 : 0,
-                alignSelf: 'center',
-                fontSize: isMobile ? 12 : 14,
-                fontWeight: 'bold',
-                color:
-                  txInfo.activity === 'self'
-                    ? 'inherit'
-                    : txInfo.activity === 'inbound'
-                    ? 'black'
-                    : 'white',
-                bgcolor:
-                  txInfo.activity === 'self'
-                    ? 'inherit'
-                    : txInfo.activity === 'inbound'
-                    ? lightGreen.A700
-                    : red.A400
-              }}
-            />
+            <Box
+              display="flex"
+              flexDirection="row"
+              alignItems="center"
+              justifyContent="flex-end"
+              ml="auto">
+              <ActivityIcon activity={txInfo.activity} />
+              <Typography
+                variant="caption"
+                fontWeight="bold"
+                fontSize={isMobile ? 12 : 14}
+                color={getActivityColor(txInfo.activity)}>
+                {formattedAmount}
+              </Typography>
+            </Box>
           </Box>
         </Stack>
       </Stack>
@@ -268,6 +265,19 @@ export default function PublicProfileActivityFeedSection(props: BoxProps & { txI
           onClose={async () => setPopOverProfile(undefined)}
           anchorEl={profileDetailsPopoverAnchorEl}
           profile={popoverProfile}
+        />
+      )}
+      {openPaymentMenu && (
+        <PaymentMenu
+          open={openPaymentMenu}
+          payment={txInfo.payment!}
+          anchorEl={paymentMenuAnchorEl}
+          onClose={() => {
+            setOpenPaymentMenu(false);
+          }}
+          onClick={() => {
+            setOpenPaymentMenu(false);
+          }}
         />
       )}
     </>

@@ -9,8 +9,10 @@ export interface PaymentType {
   type: Type;
   category?: string;
   status: PaymentStatus;
+  sender: ProfileType;
   receiver: ProfileType;
   receiverFlow: FlowType;
+  senderAddress: Address;
   receiverAddress: Address;
   receiverFid?: number;
   chainId: number;
@@ -24,6 +26,8 @@ export interface PaymentType {
   source?: { app: string; ref?: string };
   comment?: string;
   target?: string;
+  createdAt?: Date;
+  completedAt?: Date;
 }
 
 export type PaymentTxStatus = {

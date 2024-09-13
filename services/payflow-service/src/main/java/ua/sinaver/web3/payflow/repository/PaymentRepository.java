@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.User;
 
@@ -31,6 +33,15 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 			@Param("statuses") List<Payment.PaymentStatus> statuses,
 			@Param("types") List<Payment.PaymentType> types);
 
+	@Query("SELECT p FROM Payment p WHERE p.status = COMPLETED  " +
+			"AND(p.sender = :user OR p.receiver = :user " +
+			"OR LOWER(p.senderAddress) IN :addresses " +
+			"OR LOWER(p.receiverAddress) IN :addresses) " +
+			"ORDER BY p.createdDate DESC")
+	List<Payment> findCompletedOrderByCreatedDateDesc(
+			@Param("user") User user,
+			@Param("addresses") List<String> addresses);
+
 	Payment findByReferenceId(String referenceId);
 
 	Payment findByReferenceIdAndSender(String referenceId, User sender);
@@ -41,5 +52,16 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@QueryHints(@QueryHint(name = AvailableSettings.JAKARTA_LOCK_TIMEOUT, value = "-2"))
 	@Query("SELECT p FROM Payment p WHERE p.status = :status AND p.createdDate < :date")
-	Stream<Payment> findOldPendingPaymentsWithLock(@Param("status") Payment.PaymentStatus status, @Param("date") Date date);
+	Stream<Payment> findOldPendingPaymentsWithLock(@Param("status") Payment.PaymentStatus status,
+			@Param("date") Date date);
+
+	@Query("SELECT p FROM Payment p " +
+			"WHERE (p.sender = :user OR p.receiver = :user " +
+			"OR LOWER(p.senderAddress) IN :addresses " +
+			"OR LOWER(p.receiverAddress) IN :addresses) " +
+			"AND p.status = COMPLETED ORDER BY p.createdDate DESC")
+	Page<Payment> findCompletedOrderByCreatedDateDesc(
+			@Param("user") User user,
+			@Param("addresses") List<String> addresses,
+			Pageable pageable);
 }

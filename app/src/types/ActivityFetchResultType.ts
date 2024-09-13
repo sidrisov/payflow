@@ -13,7 +13,7 @@ export interface TxInfo {
   chainId: number;
   block: number;
   hash: Hash;
-  timestamp: string;
+  timestamp: Date;
   success: boolean;
   from: Address;
   to: Address;

@@ -9,25 +9,25 @@ export function PublicProfileCard({ identity, ...props }: { identity: IdentityTy
   const pay = searchParams.get('pay');
 
   return (
-    <>
-      <Card
-        {...props}
-        elevation={3}
-        sx={{
-          m: 2,
-          p: 2,
-          border: 1.5,
-          borderColor: 'divider',
-          borderRadius: 5
-        }}>
-        <PublicProfileDetails openPayDialogParam={pay !== null} identity={identity} />
-      </Card>
+    <Box display="flex" flexDirection="column" height="100%">
+      <Box flexShrink={0}>
+        <Card
+          {...props}
+          elevation={3}
+          sx={{
+            m: 2,
+            p: 2,
+            border: 1.5,
+            borderColor: 'divider',
+            borderRadius: 5
+          }}>
+          <PublicProfileDetails openPayDialogParam={pay !== null} identity={identity} />
+        </Card>
+      </Box>
 
-      {identity?.profile?.defaultFlow && (
-        <Box mx={1}>
-          <PublicProfileActivityFeed flow={identity?.profile?.defaultFlow} />
-        </Box>
-      )}
-    </>
+      <Box mx={1} flexGrow={1} overflow="hidden" mb={20}>
+        <PublicProfileActivityFeed identity={identity} />
+      </Box>
+    </Box>
   );
 }

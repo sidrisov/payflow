@@ -23,7 +23,11 @@ export const useTransactions = (wallets: FlowWalletType[]) => {
             .map((result) => (result.status === 'fulfilled' ? result.value : undefined))
             .flat(1)
             .filter((tx) => tx) as TxInfo[]
-        ).sort((left, right) => right.timestamp.localeCompare(left.timestamp));
+        ).sort((left, right) => {
+          const leftDate = new Date(left.timestamp);
+          const rightDate = new Date(right.timestamp);
+          return rightDate.getTime() - leftDate.getTime();
+        });
 
         console.log('Fetched all txs: ', txs);
 
