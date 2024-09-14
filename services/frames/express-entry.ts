@@ -34,8 +34,7 @@ import { createJarHtml } from './components/CreateJar';
 import { buyStorageEntryHtml, buyStorageHtml } from './components/BuyStorage';
 import { StorageUsage } from './types/StorageUsageType';
 import { mintHtml } from './components/Mint';
-import {
-  fetchMintData} from './utils/mint';
+import { fetchMintData } from './utils/mint';
 
 dotenv.config();
 
@@ -251,7 +250,8 @@ async function startServer() {
         'op',
         'arb',
         'hunt',
-        'masks'
+        'masks',
+        'cbBTC'
       ];
       const image = await htmlToImage(buyStorageEntryHtml(chains, tokens), 'landscape');
       res.setHeader('Cache-Control', `max-age=${oneDayInSeconds}`).type('png').send(image);

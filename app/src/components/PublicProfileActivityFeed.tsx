@@ -86,8 +86,8 @@ export default function PublicProfileActivityFeed({ identity, selectedChain }: A
         scrollbarWidth: 'none'
       }}>
       {isLoading ? (
-        <Box color="inherit" display="flex" justifyContent="center" p={2}>
-          <CircularProgress size={24} />
+        <Box display="flex" justifyContent="center" p={2}>
+          <CircularProgress color="inherit" size={24} />
         </Box>
       ) : isFetched ? (
         <>
@@ -136,7 +136,7 @@ export default function PublicProfileActivityFeed({ identity, selectedChain }: A
               ))}
               {isFetchingNextPage && (
                 <Box display="flex" justifyContent="center" p={2}>
-                  <CircularProgress size={24} />
+                  <CircularProgress color="inherit" size={24} />
                 </Box>
               )}
             </>

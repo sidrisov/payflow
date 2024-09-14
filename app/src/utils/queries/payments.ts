@@ -35,7 +35,7 @@ interface PaginatedResponse {
   number: number;
 }
 
-export const useCompletedPayments = (identity: string, size: number = 20) => {
+export const useCompletedPayments = (identity: string, size: number = 25) => {
   return useInfiniteQuery<PaginatedResponse, Error>({
     queryKey: ['completedPayments', identity],
     initialPageParam: 0,
