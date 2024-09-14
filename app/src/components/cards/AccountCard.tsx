@@ -149,12 +149,15 @@ export function AccountCard({
           sx={{
             mx: 2,
             p: 2,
+            pt: 1,
+            px: 2.5,
+            pb: 2.5,
             width: 350,
             height: 'auto',
             borderRadius: 5,
             display: 'flex',
             flexDirection: 'column',
-            gap: 1,
+            gap: 1.5,
             transition: 'transform 0.3s ease-out',
             cursor: 'grab',
             '&:active': {
