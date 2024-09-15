@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.WalletUtils;
+import ua.sinaver.web3.payflow.config.PayflowConfig;
+import ua.sinaver.web3.payflow.data.Invitation;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.data.UserAllowance;
 import ua.sinaver.web3.payflow.message.FlowMessage;
@@ -31,7 +33,6 @@ import static ua.sinaver.web3.payflow.config.CacheConfig.USERS_CACHE_NAME;
 public class UserService implements IUserService {
 
 	private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_-]*$");
-	private static final Integer WHITELISTED_FID_UPPER_RANGE = 50000;
 	@Value("${payflow.invitation.allowance.enabled:false}")
 	private boolean invitationAllowanceEnabled;
 	@Value("${payflow.invitation.whitelisted.default.users}")
@@ -48,6 +49,12 @@ public class UserService implements IUserService {
 	private IdentityService identityService;
 	@Autowired
 	private EntityManager entityManager;
+
+	@Autowired
+	private InvitationService invitationService;
+
+	@Autowired
+	private PayflowConfig payflowConfig;
 
 	@Override
 	@CacheEvict(value = USERS_CACHE_NAME)
@@ -71,15 +78,15 @@ public class UserService implements IUserService {
 		val verifications = farcasterUser.addressesWithoutCustodialIfAvailable();
 		var profile = identityService.getProfiles(verifications)
 				.stream().findFirst().orElse(null);
-		if (profile == null && (forceWhitelist || farcasterUser.fid() <= WHITELISTED_FID_UPPER_RANGE || farcasterUser.powerBadge() || farcasterUser.username().endsWith(".eth"))) {
+		if (profile == null && (forceWhitelist || farcasterUser.fid() <= payflowConfig.getWhitelistedFidUpperRange()
+				|| farcasterUser.powerBadge() || farcasterUser.username().endsWith(".eth"))) {
 			val identityToCreateProfile = identityService.getIdentitiesInfo(verifications)
 					.stream().max(Comparator.comparingInt(IdentityMessage::score))
 					.orElse(null);
 			if (identityToCreateProfile == null) {
 				throw new IllegalStateException(String.format(
 						"Can't create profile for: %s - identity is missing",
-						farcasterUser.username())
-				);
+						farcasterUser.username()));
 			}
 
 			log.debug("Identity to create profile for interactor: {} : {}",
@@ -124,39 +131,15 @@ public class UserService implements IUserService {
 			throw new Error("User not found");
 		}
 
-		// 1. Check if user is whitelisted
-		// 2. Check if invitation by signer or code exists
-		// 2. Update invitation and user records
-		// 4. Throw error if none
-		// TODO: add roles later on instead
 		if (!user.isAllowed()) {
 			log.debug("Checking invitation for {} code {}", user, invitationCode);
-			// TODO: remove whitelist logic as it prevents updating invitee field
-			/*val whitelisted = !contactBookService.filterByInvited(
-					Collections.singletonList(user.getIdentity().toLowerCase())).isEmpty();
-			if (whitelisted) {
-				user.setAllowed(true);
-				user.setCreatedDate(new Date());
-				val defaultAllowance = new UserAllowance(defaultInvitationAllowance,
-						defaultInvitationAllowance, defaultFavouriteContactLimit);
-				defaultAllowance.setUser(user);
-				user.setUserAllowance(defaultAllowance);
-			} else {*/
-			val invitation = invitationRepository.findFirstValidByIdentityOrCode(identity,
-					invitationCode);
+			val invitation = invitationRepository.findFirstValidByIdentityOrCode(identity, invitationCode);
 
 			log.debug("Invitation: {} {} {}", invitation, identity, invitationCode);
 			if (invitation != null) {
-				user.setAllowed(true);
-				user.setCreatedDate(new Date());
-				invitation.setInvitee(user);
-				invitation.setExpiryDate(null);
-				if (invitationAllowanceEnabled) {
-					val defaultUserAllowance = new UserAllowance(defaultInvitationAllowance,
-							defaultInvitationAllowance, defaultFavouriteContactLimit);
-					defaultUserAllowance.setUser(user);
-					user.setUserAllowance(defaultUserAllowance);
-				}
+				allowUser(user, invitation);
+			} else if (invitationService.isWhitelistedByIdentityFid(identity)) {
+				allowUser(user, null);
 			} else {
 				throw new Error("Access not allowed");
 			}
@@ -187,6 +170,21 @@ public class UserService implements IUserService {
 			if (user.getSigner() == null && profile.signer() != null) {
 				user.setSigner(profile.signer());
 			}
+		}
+	}
+
+	private void allowUser(User user, Invitation invitation) {
+		user.setAllowed(true);
+		user.setCreatedDate(new Date());
+		if (invitation != null) {
+			invitation.setInvitee(user);
+			invitation.setExpiryDate(null);
+		}
+		if (invitationAllowanceEnabled) {
+			val defaultUserAllowance = new UserAllowance(defaultInvitationAllowance,
+					defaultInvitationAllowance, defaultFavouriteContactLimit);
+			defaultUserAllowance.setUser(user);
+			user.setUserAllowance(defaultUserAllowance);
 		}
 	}
 

@@ -16,4 +16,7 @@ public class PayflowConfig {
 
 	@Value("${payflow.frames.url}")
 	private String framesServiceUrl;
+
+	@Value("${payflow.invitation.whitelisted.fid:100000}")
+	private int whitelistedFidUpperRange;
 }

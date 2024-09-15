@@ -19,6 +19,7 @@ import ua.sinaver.web3.payflow.service.UserService;
 import ua.sinaver.web3.payflow.service.api.IContactBookService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterMessagingService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
+import ua.sinaver.web3.payflow.service.InvitationService;
 
 import java.security.Principal;
 import java.time.Period;
@@ -55,6 +56,8 @@ public class InvitationController {
 	@Autowired
 	private IFarcasterMessagingService farcasterMessagingService;
 
+	@Autowired
+	private InvitationService invitationService;
 
 	@GetMapping
 	public List<InvitationMessage> getAll(Principal principal) {
@@ -68,7 +71,8 @@ public class InvitationController {
 					.sorted(this::compareInvitations)
 					.map(invite -> new InvitationMessage(
 							invitedBy,
-							(invite.getInvitee() != null) ? ProfileMetaMessage.convert(invite.getInvitee(), false) : null,
+							(invite.getInvitee() != null) ? ProfileMetaMessage.convert(invite.getInvitee(), false)
+									: null,
 							invite.getIdentity(), invite.getCode(), invite.getCreatedDate(), invite.getExpiryDate()))
 					.toList();
 
@@ -79,7 +83,8 @@ public class InvitationController {
 	@GetMapping("/identity/{identity}")
 	@ResponseStatus(HttpStatus.OK)
 	public Boolean isInvited(@PathVariable String identity) {
-		return !contactBookService.filterByInvited(Collections.singletonList(identity)).isEmpty();
+		return invitationService.isWhitelistedByIdentityFid(identity) ||
+				!contactBookService.filterByInvited(Collections.singletonList(identity)).isEmpty();
 	}
 
 	@GetMapping("/identity")
@@ -88,8 +93,8 @@ public class InvitationController {
 		return identities.stream()
 				.collect(Collectors.toMap(
 						identity -> identity,
-						invited::contains
-				));
+						identity -> invitationService.isWhitelistedByIdentityFid(identity)
+								|| invited.contains(identity)));
 	}
 
 	@GetMapping("/code/{code}")
@@ -117,7 +122,8 @@ public class InvitationController {
 		if (!StringUtils.isBlank(invitationMessage.identityBased())) {
 			val invitation = new Invitation(invitationMessage.identityBased(), null);
 			invitation.setInvitedBy(user);
-			invitation.setExpiryDate(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(invitationExpiryPeriod.getDays())));
+			invitation.setExpiryDate(
+					new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(invitationExpiryPeriod.getDays())));
 			invitationRepository.save(invitation);
 
 			val inviterUsername = identityService.getIdentityFname(user.getIdentity());
@@ -126,13 +132,13 @@ public class InvitationController {
 
 			try {
 				val messageText = String.format("""
-								Congratulations @%s 🎉 You've been invited to @payflow by @%s
-																\t
-								Proceed to app.payflow.me/connect for sign up!
-																\t
-								`Sign In With Farcaster` is recommended for better experience 🙌🏻
-																\t
-								p.s. join /payflow channel for updates 👀""",
+						Congratulations @%s 🎉 You've been invited to @payflow by @%s
+														\t
+						Proceed to app.payflow.me/connect for sign up!
+														\t
+						`Sign In With Farcaster` is recommended for better experience 🙌🏻
+														\t
+						p.s. join /payflow channel for updates 👀""",
 						receiverUsername,
 						inviterUsername);
 
