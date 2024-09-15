@@ -26,11 +26,17 @@ import { green, red } from '@mui/material/colors';
 
 function getActivityType(identity: IdentityType, payment: PaymentType) {
   const isSelfTransaction =
-    (payment.senderAddress && payment.receiverAddress && payment.senderAddress === payment.receiverAddress) ||
-    (payment.sender?.identity && payment.receiver?.identity && payment.sender.identity === payment.receiver.identity);
+    (payment.senderAddress &&
+      payment.receiverAddress &&
+      payment.senderAddress === payment.receiverAddress) ||
+    (payment.sender?.identity &&
+      payment.receiver?.identity &&
+      payment.sender.identity === payment.receiver.identity);
 
   const isOutbound =
-    (payment.sender?.identity && identity.address && payment.sender.identity === identity.address) ||
+    (payment.sender?.identity &&
+      identity.address &&
+      payment.sender.identity === identity.address) ||
     (payment.senderAddress && identity.address && payment.senderAddress === identity.address);
 
   return isSelfTransaction ? 'self' : isOutbound ? 'outbound' : 'inbound';
@@ -47,6 +53,27 @@ const ActivityIcon = ({ identity, payment }: { identity: IdentityType; payment: 
     default:
       return <ArrowUpwardIcon sx={{ color: red.A400 }} />;
   }
+};
+
+const CommentBubble = ({ comment }: { comment: string }) => {
+  const isMobile = useMobile();
+  return (
+    <Typography
+      variant="caption"
+      fontWeight="bold"
+      fontSize={isMobile ? 12 : 14}
+      sx={{
+        p: 1,
+        border: 0.5,
+        borderStyle: 'dashed',
+        borderColor: 'divider',
+        borderRadius: '15px',
+        wordBreak: 'break-all',
+        width: 'fit-content'
+      }}>
+      <span style={{ fontSize: 18, verticalAlign: 'middle' }}>💬</span> {comment}
+    </Typography>
+  );
 };
 
 export default function PublicProfileActivityFeedSection(
@@ -248,21 +275,7 @@ export default function PublicProfileActivityFeedSection(
             </Stack>
           </Link>
 
-          <Box
-            display="flex"
-            flexDirection="row"
-            alignItems="center"
-            justifyContent={payment.comment ? 'space-between' : 'flex-end'}>
-            {payment.comment && (
-              <Typography
-                variant="caption"
-                fontWeight="bold"
-                fontSize={isMobile ? 12 : 14}
-                maxWidth={200}>
-                💬 {payment.comment}
-              </Typography>
-            )}
-          </Box>
+          {payment.comment && <CommentBubble comment={payment.comment} />}
         </Stack>
       </Stack>
       {popoverProfile !== undefined && (
