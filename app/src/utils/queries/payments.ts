@@ -35,7 +35,7 @@ interface PaginatedResponse {
   number: number;
 }
 
-export const useCompletedPayments = (identity: string, size: number = 25) => {
+export const useCompletedPayments = (identity: string, accessToken?: string, size: number = 25) => {
   return useInfiniteQuery<PaginatedResponse, Error>({
     queryKey: ['completedPayments', identity],
     initialPageParam: 0,
@@ -45,7 +45,12 @@ export const useCompletedPayments = (identity: string, size: number = 25) => {
     queryFn: ({ pageParam = 0 }) =>
       axios
         .get<PaginatedResponse>(`${API_URL}/api/payment/completed`, {
-          params: { identity, page: pageParam, size },
+          params: {
+            identity,
+            page: pageParam,
+            size,
+            ...(accessToken && { access_token: accessToken })
+          },
           withCredentials: true
         })
         .then((res) => {

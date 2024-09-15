@@ -15,6 +15,9 @@ import UsefulComposerActionDialog from '../components/dialogs/UsefulComposerActi
 import ContributionJarComposerDialog from '../components/dialogs/ContributionJarComposerDialog';
 import { RiApps2Line } from 'react-icons/ri';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
+import { MdPayments } from 'react-icons/md';
+import ActivityComposerActionDialog from '../components/dialogs/ActivityComposerActionDialog';
+import { TbArrowsDoubleNeSw } from 'react-icons/tb';
 
 export default function Composer() {
   const [searchParams] = useSearchParams();
@@ -88,6 +91,14 @@ export default function Composer() {
                 startIcon={<PiPersonSimpleRunBold size={25} />}
               />
               <CastActionButton
+                title="Activity"
+                description="Your Payflow activity"
+                onClick={async () => {
+                  setOpenComposerAction('activity');
+                }}
+                startIcon={<TbArrowsDoubleNeSw size={25} />}
+              />
+              <CastActionButton
                 title="Jar"
                 description="Create contribution frame"
                 earlyFeature
@@ -121,9 +132,6 @@ export default function Composer() {
         {openComposerAction === 'useful' && profile && (
           <UsefulComposerActionDialog
             open={true}
-            closeStateCallback={() => {
-              setOpenComposerAction(undefined);
-            }}
             onClose={() => {
               setOpenComposerAction(undefined);
             }}
@@ -135,6 +143,14 @@ export default function Composer() {
             closeStateCallback={() => {
               setOpenComposerAction(undefined);
             }}
+            onClose={() => {
+              setOpenComposerAction(undefined);
+            }}
+          />
+        )}
+        {openComposerAction === 'activity' && profile && (
+          <ActivityComposerActionDialog
+            open={true}
             onClose={() => {
               setOpenComposerAction(undefined);
             }}

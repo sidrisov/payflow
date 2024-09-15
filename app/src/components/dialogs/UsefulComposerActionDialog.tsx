@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogProps, Tabs, Tab, Box } from '@mui/material';
 import { green } from '@mui/material/colors';
-import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { MoxieInfoCard } from '../cards/MoxieInfoCard';
 import { DegenInfoCard } from '../cards/DegenInfoCard';
 import { useMobile } from '../../utils/hooks/useMobile';
 
-export type UsefulComposerActionDialogProps = DialogProps & CloseCallbackType;
+export type UsefulComposerActionDialogProps = DialogProps;
 
-export default function UsefulComposerActionDialog({
-  closeStateCallback,
-  ...props
-}: UsefulComposerActionDialogProps) {
+export default function UsefulComposerActionDialog({ ...props }: UsefulComposerActionDialogProps) {
   const isMobile = useMobile();
   const [activeTab, setActiveTab] = useState(0);
 
@@ -23,7 +19,6 @@ export default function UsefulComposerActionDialog({
     <Dialog
       disableEnforceFocus
       fullScreen={isMobile}
-      onClose={closeStateCallback}
       {...props}
       PaperProps={{
         elevation: 5,
@@ -38,41 +33,40 @@ export default function UsefulComposerActionDialog({
         backdropFilter: 'blur(5px)'
       }}>
       <DialogContent>
-        <Tabs 
-          value={activeTab} 
+        <Tabs
+          value={activeTab}
           onChange={handleTabChange}
-          sx={{ 
-            mb: 2, 
+          sx={{
+            mb: 2,
             '& .MuiTabs-flexContainer': {
-              gap: 1,
+              gap: 1
             },
-            '& .MuiTab-root': { 
+            '& .MuiTab-root': {
               fontWeight: 'bold',
               fontSize: '1rem',
               borderRadius: '16px',
               minHeight: '48px',
               '&:hover': {
-                backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                backgroundColor: 'rgba(0, 0, 0, 0.04)'
               },
-              '&.Mui-selected': { 
+              '&.Mui-selected': {
                 color: green.A700,
-                fontWeight: 'bolder',
-              },
+                fontWeight: 'bolder'
+              }
             },
-            '& .MuiTabs-indicator': { 
+            '& .MuiTabs-indicator': {
               backgroundColor: green.A700,
               height: 3,
-              borderRadius: '3px',
+              borderRadius: '3px'
             },
             '& .MuiTouchRipple-root': {
-              borderRadius: '16px',
-            },
-          }}
-        >
+              borderRadius: '16px'
+            }
+          }}>
           <Tab label="Moxie" disableRipple />
           <Tab label="Degen" disableRipple />
         </Tabs>
-        
+
         <Box>
           {activeTab === 0 && <MoxieInfoCard />}
           {activeTab === 1 && <DegenInfoCard />}

@@ -40,8 +40,7 @@ export function SearchIdentityListItem(
 ) {
   const prefersDarkMode = useDarkMode();
 
-  const [searchParams] = useSearchParams();
-  const accessToken = searchParams.get('access_token') ?? '';
+const accessToken = useSearchParams()[0].get('access_token') ?? undefined;
 
   const { profile } = useContext(ProfileContext);
   const { contact, view, updateIdentityCallback, minimized = false } = props;

@@ -63,8 +63,7 @@ export default function SearchIdentityDialog({
 }: SearchIdentityDialogProps) {
   const isMobile = useMobile();
 
-  const [searchParams] = useSearchParams();
-  const accessToken = searchParams.get('access_token') ?? undefined;
+  const accessToken = useSearchParams()[0].get('access_token') ?? undefined;
 
   const { isAuthenticated } = useContext(ProfileContext);
 

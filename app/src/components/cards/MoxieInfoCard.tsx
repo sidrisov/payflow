@@ -17,8 +17,7 @@ import { copyToClipboard } from '../../utils/copyToClipboard';
 import { toast } from 'react-toastify';
 
 export function MoxieInfoCard() {
-  const [searchParams] = useSearchParams();
-  const accessToken = searchParams.get('access_token') ?? undefined;
+  const accessToken = useSearchParams()[0].get('access_token') ?? undefined;
 
   const { profile } = useContext(ProfileContext);
 

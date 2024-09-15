@@ -9,6 +9,7 @@ import { format, parseISO, isToday, isYesterday } from 'date-fns';
 import { IdentityType } from '../types/ProfileType';
 import { PaymentType } from '../types/PaymentType';
 import { useTheme } from '@mui/material/styles';
+import { useSearchParams } from 'react-router-dom';
 
 export type AssetsProps = {
   identity: IdentityType;
@@ -26,8 +27,10 @@ export default function PublicProfileActivityFeed({ identity, selectedChain }: A
   const { profile: loggedProfile } = useContext(ProfileContext);
   const { address } = useAccount();
 
+  const accessToken = useSearchParams()[0].get('access_token') ?? undefined;
+
   const { isLoading, isFetched, data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useCompletedPayments(identity.address);
+    useCompletedPayments(identity.address, accessToken);
 
   const observer = useRef<IntersectionObserver | null>(null);
   const lastElementRef = useCallback(

@@ -27,8 +27,7 @@ export default function AppWithProviders() {
 
   const { ready } = usePrivy();
 
-  const [searchParams] = useSearchParams();
-  const accessToken = searchParams.get('access_token') ?? '';
+  const accessToken = useSearchParams()[0].get('access_token') ?? undefined;
 
   // Fetch user when:
   useEffect(() => {

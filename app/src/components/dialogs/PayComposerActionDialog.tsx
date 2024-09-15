@@ -1,10 +1,4 @@
-import {
-  Box,
-  Dialog,
-  DialogContent,
-  DialogProps,
-  Stack
-} from '@mui/material';
+import { Box, Dialog, DialogContent, DialogProps, Stack } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { SelectedIdentityType } from '../../types/ProfileType';
 import { BackDialogTitle } from './BackDialogTitle';
@@ -48,8 +42,7 @@ export default function PayComposerActionDialog({
 }: PaymentDialogProps) {
   const isMobile = useMobile();
 
-  const [searchParams] = useSearchParams();
-  const accessToken = searchParams.get('access_token') ?? undefined;
+  const accessToken = useSearchParams()[0].get('access_token') ?? undefined;
 
   const compatibleWallets = useCompatibleWallets({
     sender:
