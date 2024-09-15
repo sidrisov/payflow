@@ -144,14 +144,18 @@ export function SearchIdentityListItem(
             },
             '&:active': {
               backgroundColor: 'action.selected',
-              borderRadius: 4,
+              borderRadius: 4
             },
             borderRadius: 4,
             padding: 1,
-            WebkitTapHighlightColor: 'transparent', // Remove default mobile tap highlight
+            WebkitTapHighlightColor: 'transparent' // Remove default mobile tap highlight
           }}>
-          {view === 'profile' && identity.profile && <ProfileSection profile={identity.profile} />}
-          {view === 'address' && identity.meta && <AddressSection identity={identity} />}
+          {view === 'profile' && identity.profile && (
+            <ProfileSection maxWidth={300} profile={identity.profile} />
+          )}
+          {view === 'address' && identity.meta && (
+            <AddressSection maxWidth={300} identity={identity} />
+          )}
           {!minimized && (
             <IconButton onClick={handleMenuClick} size="small">
               <MoreVert />

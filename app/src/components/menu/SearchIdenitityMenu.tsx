@@ -22,15 +22,14 @@ import { toast } from 'react-toastify';
 import { FARCASTER_DAPP, LENS_DAPP, socialLink, ZAPPER } from '../../utils/dapps';
 import { SiFarcaster } from 'react-icons/si';
 import { FaCheckCircle } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
 import { IoIosChatbubbles } from 'react-icons/io';
 
 export function SearchIdentityMenu({
   identity,
+  favourite,
   onInviteClick,
   onFavouriteClick,
   onSocilLinksClick,
-  favourite,
   ...props
 }: {
   identity: IdentityType;
@@ -40,7 +39,6 @@ export function SearchIdentityMenu({
   onSocilLinksClick?: () => void;
 } & MenuProps) {
   const { isAuthenticated } = useContext(ProfileContext);
-  const navigate = useNavigate();
   const ens = identity.meta?.ens;
   const address = identity.address;
   const socials = identity.meta?.socials || [];
@@ -90,7 +88,8 @@ export function SearchIdentityMenu({
   };
 
   const handleProfileClick = () => {
-    navigate(`/${identity.profile?.username ?? identity.address}`);
+    const path = `/${identity.profile?.username ?? identity.address}`;
+    window.location.href = path;
   };
 
   const handleChatClick = () => {

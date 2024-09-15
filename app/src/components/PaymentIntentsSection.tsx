@@ -24,7 +24,10 @@ import { AddressSection } from './AddressSection';
 import { PaymentMenu } from './menu/PaymentMenu';
 import { FlowType } from '../types/FlowType';
 import { FarcasterProfileSection } from './FarcasterProfileSection';
-import { QUERY_FARCASTER_PROFILE } from '../utils/airstackQueries';
+import {
+  QUERY_FARCASTER_PROFILE,
+  QUERY_FARCASTER_PROFILE_BY_IDENTITY
+} from '../utils/airstackQueries';
 import { useQuery } from '@airstack/airstack-react';
 import { Social } from '../generated/graphql/types';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../utils/formats';
@@ -37,6 +40,7 @@ import { Address } from 'viem';
 import { grey } from '@mui/material/colors';
 import { useDarkMode } from '../utils/hooks/useDarkMode';
 import { useMobile } from '../utils/hooks/useMobile';
+import { toast } from 'react-toastify';
 
 const pageSize = 5;
 
@@ -417,6 +421,18 @@ export function PaymentIntentsSection({
     const token = ERC20_CONTRACTS.find(
       (t) => t.chainId === payment.chainId && t.id === payment.token
     );
+
+    const { data: social } = useQuery<Social>(
+      QUERY_FARCASTER_PROFILE_BY_IDENTITY,
+      { identity: payment.receiverAddress },
+      {
+        cache: true,
+        dataFormatter(data) {
+          return data.Socials.Social[0];
+        }
+      }
+    );
+
     return (
       <>
         <Box
@@ -474,6 +490,8 @@ export function PaymentIntentsSection({
 
           {payment.receiver ? (
             <ProfileSection profile={payment.receiver} />
+          ) : social ? (
+            <FarcasterProfileSection social={social} />
           ) : (
             <AddressSection identity={{ address: payment.receiverAddress }} />
           )}

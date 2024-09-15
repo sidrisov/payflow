@@ -52,7 +52,7 @@ export function Head() {
         <meta property="fc:frame" content="vNext" />
 
         <meta property="fc:frame:image" content={imageUrl} />
-        <meta property="fc:frame:input:text" content="Enter username (blank for self)" />
+        <meta property="fc:frame:input:text" content="Gift username (blank for self)" />
 
         <meta property="fc:frame:button:1" content="Check usage" />
         <meta

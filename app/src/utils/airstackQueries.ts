@@ -233,6 +233,27 @@ export const QUERY_FARCASTER_PROFILE = /* GraphQL */ `
   }
 `;
 
+export const QUERY_FARCASTER_PROFILE_BY_IDENTITY = /* GraphQL */ `
+  query GetFarcasterProfileByIdentity($identity: Identity) {
+    Socials(
+      input: {
+        filter: { dappName: { _eq: farcaster }, identity: { _eq: $identity } }
+        blockchain: ethereum
+      }
+    ) {
+      Social {
+        profileName
+        profileDisplayName
+        profileImageContentValue {
+          image {
+            extraSmall
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const QUERY_MOXIE_REWARDS = `
   query FarcasterUserClaimTransactionDetails($fid: Int!) {
     FarcasterUserClaimTransactionDetails(input: { fid: $fid }) {

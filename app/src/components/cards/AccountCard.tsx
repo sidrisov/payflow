@@ -3,10 +3,12 @@ import {
   Card,
   CardProps,
   IconButton,
+  Paper,
   Skeleton,
   Stack,
   Tooltip,
-  Typography} from '@mui/material';
+  Typography
+} from '@mui/material';
 import { Share, CallReceived } from '@mui/icons-material';
 import { useContext, useMemo, useState } from 'react';
 import { useAccount } from 'wagmi';
@@ -277,15 +279,14 @@ export function AccountCard({
             closeStateCallback={() => setOpenFlowReceiveQRCode(false)}
           />
         </Card>
-        <Box
+        <Paper
+          elevation={5}
           sx={{
             mt: 2,
             display: 'flex',
             alignItems: 'center',
-            backgroundColor: 'background.paper',
             borderRadius: 16,
-            padding: '2px',
-            boxShadow: 1
+            padding: '2px'
           }}>
           <IconButton size="small" onClick={() => handleSwipe('RIGHT')} sx={{ p: 0.5 }}>
             <ChevronLeft sx={{ fontSize: 16 }} />
@@ -308,7 +309,7 @@ export function AccountCard({
           <IconButton size="small" onClick={() => handleSwipe('LEFT')} sx={{ p: 0.5 }}>
             <ChevronRight sx={{ fontSize: 16 }} />
           </IconButton>
-        </Box>
+        </Paper>
       </Box>
     )
   );
