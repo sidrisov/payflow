@@ -58,7 +58,7 @@ export default function PublicProfileActivityFeed({ identity, selectedChain }: A
 
   // Update the transactions useMemo
   const transactions: PaymentType[] = useMemo(() => {
-    return data?.pages.flatMap((page) => page.content.filter((p) => !p.category)) || [];
+    return data?.pages.flatMap((page) => page.content) || [];
   }, [data]);
 
   // Update the groupedTransactions useMemo

@@ -1,4 +1,13 @@
-import { Avatar, Box, BoxProps, IconButton, Link, Stack, Typography } from '@mui/material';
+import {
+  Avatar,
+  Box,
+  BoxProps,
+  IconButton,
+  Link,
+  Stack,
+  Typography,
+  Skeleton
+} from '@mui/material';
 import { useState } from 'react';
 import { PaymentType } from '../types/PaymentType';
 import NetworkAvatar from './avatars/NetworkAvatar';
@@ -21,30 +30,40 @@ import { MoreHoriz } from '@mui/icons-material';
 import ArrowUpwardIcon from '@mui/icons-material/NorthEast';
 import ArrowDownwardIcon from '@mui/icons-material/SouthEast';
 import { green, red } from '@mui/material/colors';
+import { useMintData } from '../utils/hooks/useMintData';
 
 const usePaymentDetails = (payment: PaymentType) => {
   const { data: tokenPrices } = useTokenPrices();
-  const token = ERC20_CONTRACTS.find(
-    (t) => t.chainId === payment.chainId && t.id === payment.token
-  ) as Token;
+  const { mintData } = useMintData(payment);
 
-  const price = tokenPrices ? tokenPrices[token.id] : 0;
-  const tokenAmount =
-    payment.tokenAmount || (payment.usdAmount ? (payment.usdAmount / price).toString() : '0');
-  const usdAmount =
-    payment.usdAmount ||
-    (payment.tokenAmount ? parseFloat(payment.tokenAmount.toString()) * price : 0);
+  let token, tokenAmount, usdAmount, formattedTokenAmount, formattedUsdAmount;
 
-  const formattedTokenAmount = formatAmountWithSuffix(
-    normalizeNumberPrecision(parseFloat(tokenAmount.toString()))
-  );
-  const formattedUsdAmount = formatAmountWithSuffix(normalizeNumberPrecision(usdAmount));
+  if (payment.category === 'mint' && mintData) {
+    tokenAmount = '1';
+  } else {
+    token = ERC20_CONTRACTS.find(
+      (t) => t.chainId === payment.chainId && t.id === payment.token
+    ) as Token;
+
+    const price = tokenPrices ? tokenPrices[token.id] : 0;
+
+    tokenAmount =
+      payment.tokenAmount || (payment.usdAmount ? (payment.usdAmount / price).toString() : '0');
+    usdAmount =
+      payment.usdAmount ||
+      (payment.tokenAmount ? parseFloat(payment.tokenAmount.toString()) * price : 0);
+    formattedTokenAmount = formatAmountWithSuffix(
+      normalizeNumberPrecision(parseFloat(tokenAmount.toString()))
+    );
+    formattedUsdAmount = formatAmountWithSuffix(normalizeNumberPrecision(usdAmount));
+  }
 
   return {
     token,
     formattedTokenAmount,
     formattedUsdAmount,
-    defultBlockExplorerUrl: getNetworkDefaultBlockExplorerUrl(payment.chainId)
+    defultBlockExplorerUrl: getNetworkDefaultBlockExplorerUrl(payment.chainId),
+    mintData
   };
 };
 
@@ -66,7 +85,7 @@ function getActivityType(identity: IdentityType, payment: PaymentType) {
   return isSelfTransaction ? 'self' : isOutbound ? 'outbound' : 'inbound';
 }
 
-function getActivityDescription(identity: IdentityType, payment: PaymentType): string {
+function getActivityName(identity: IdentityType, payment: PaymentType): string {
   const activityType = getActivityType(identity, payment);
 
   if (activityType === 'self') {
@@ -119,12 +138,103 @@ const CommentBubble = ({ comment }: { comment: string }) => {
   );
 };
 
+// Add this interface above the PaymentDetails component
+interface PaymentDetailsProps {
+  payment: PaymentType;
+  identity: IdentityType;
+  token?: Token;
+  formattedTokenAmount?: string;
+  formattedUsdAmount?: string;
+  mintData?: any;
+}
+
+const PaymentDetails = ({
+  payment,
+  identity,
+  token,
+  formattedTokenAmount,
+  formattedUsdAmount,
+  mintData
+}: PaymentDetailsProps) => {
+  const isMobile = useMobile();
+
+  if (payment.category === 'fc_storage') {
+    return (
+      <Stack
+        direction="row"
+        spacing={0.5}
+        alignItems="center"
+        flexWrap="wrap"
+        sx={{ textWrap: 'balance' }}>
+        <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
+          {formattedTokenAmount} Unit{parseFloat(formattedTokenAmount!) > 1 ? 's' : ''} of Storage
+        </Typography>
+        <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
+          ${formattedUsdAmount}
+        </Typography>
+        <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
+          on
+        </Typography>
+        <NetworkAvatar chainId={payment.chainId} sx={{ width: 15, height: 15 }} />
+      </Stack>
+    );
+  }
+
+  if (payment.category === 'mint') {
+    if (mintData === undefined) {
+      return (
+        <Stack direction="row" spacing={0.5} alignItems="center">
+          <Skeleton variant="rounded" width={25} height={25} />
+          <Skeleton variant="text" width={120} />
+        </Stack>
+      );
+    }
+
+    if (mintData) {
+      return (
+        <Stack direction="row" spacing={1} alignItems="center" useFlexGap>
+          <Avatar variant="rounded" src={mintData.metadata.image} sx={{ width: 30, height: 30 }} />
+          <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
+            {mintData.metadata.name}:
+            <Typography variant="caption" display="block" color="text.secondary">
+              {mintData.collectionName}
+            </Typography>
+          </Typography>
+        </Stack>
+      );
+    }
+  }
+
+  // Default case (for regular payments)
+  return (
+    <Stack
+      direction="row"
+      spacing={0.5}
+      alignItems="center"
+      flexWrap="wrap"
+      sx={{ textWrap: 'balance' }}>
+      <ActivityIcon identity={identity} payment={payment} />
+      <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
+        {formattedTokenAmount} {token!.name}
+      </Typography>
+      <TokenAvatar token={token!} sx={{ width: 15, height: 15 }} />
+      <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
+        ${formattedUsdAmount}
+      </Typography>
+      <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
+        on
+      </Typography>
+      <NetworkAvatar chainId={payment.chainId} sx={{ width: 15, height: 15 }} />
+    </Stack>
+  );
+};
+
 export default function PublicProfileActivityFeedSection(
   props: BoxProps & { identity: IdentityType; payment: PaymentType }
 ) {
   const isMobile = useMobile();
   const { identity, payment } = props;
-  const { token, formattedTokenAmount, formattedUsdAmount, defultBlockExplorerUrl } =
+  const { token, formattedTokenAmount, formattedUsdAmount, defultBlockExplorerUrl, mintData } =
     usePaymentDetails(payment);
 
   const [profileDetailsPopoverAnchorEl, setProfileDetailsPopoverAnchorEl] =
@@ -231,7 +341,7 @@ export default function PublicProfileActivityFeedSection(
 
           <Stack direction="row" alignItems="center" spacing={0.5}>
             <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
-              {getActivityDescription(identity, payment)}
+              {getActivityName(identity, payment)}
             </Typography>
             {getActivityType(identity, payment) !== 'self' && (
               <>
@@ -278,25 +388,14 @@ export default function PublicProfileActivityFeedSection(
             color="inherit"
             overflow="clip"
             textOverflow="ellipsis">
-            <Stack
-              direction="row"
-              spacing={0.5}
-              alignItems="center"
-              flexWrap="wrap"
-              sx={{ textWrap: 'balance' }}>
-              <ActivityIcon identity={identity} payment={payment} />
-              <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
-                {formattedTokenAmount} {token.name}
-              </Typography>
-              <TokenAvatar token={token} sx={{ width: 15, height: 15 }} />
-              <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
-                ${formattedUsdAmount}
-              </Typography>
-              <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
-                on
-              </Typography>
-              <NetworkAvatar chainId={payment.chainId} sx={{ width: 15, height: 15 }} />
-            </Stack>
+            <PaymentDetails
+              payment={payment}
+              identity={identity}
+              token={token}
+              formattedTokenAmount={formattedTokenAmount}
+              formattedUsdAmount={formattedUsdAmount}
+              mintData={mintData}
+            />
           </Link>
 
           {payment.comment && <CommentBubble comment={payment.comment} />}

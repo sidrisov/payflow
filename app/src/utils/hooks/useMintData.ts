@@ -20,14 +20,16 @@ function parseMintToken(token: string): ParsedMintData {
 
 export function useMintData(payment: PaymentType) {
   const fetchData = async (): Promise<MintMetadata | null> => {
-    if (!payment) return null;
+    if (!payment || payment.category !== 'mint') return null;
     const parsedMintData = parseMintToken(payment.token);
-    return (await fetchMintData(
-      parsedMintData.provider,
-      payment.chainId,
-      parsedMintData.contract,
-      parsedMintData.tokenId
-    )) ?? null;
+    return (
+      (await fetchMintData(
+        parsedMintData.provider,
+        payment.chainId,
+        parsedMintData.contract,
+        parsedMintData.tokenId
+      )) ?? null
+    );
   };
 
   const { data: mintData, isLoading } = useQuery<MintMetadata | null>({
