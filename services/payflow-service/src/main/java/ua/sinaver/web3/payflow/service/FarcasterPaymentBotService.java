@@ -82,8 +82,8 @@ public class FarcasterPaymentBotService {
 				.map(Pattern::quote)
 				.collect(Collectors.joining("|"));
 		val botCommandPattern = String.format("\\s*(?<beforeText>.*?)?@payflow%s\\s+" +
-						"(?<command>%s)" +
-						"(?:\\s+(?<remaining>.+))?",
+				"(?<command>%s)" +
+				"(?:\\s+(?<remaining>.+))?",
 				isTestBotEnabled ? "\\s+test" : "",
 				supportedCommands);
 
@@ -105,8 +105,8 @@ public class FarcasterPaymentBotService {
 
 			val casterProfile = userService.getOrCreateUserFromFarcasterProfile(cast.author(),
 					false, false);
-			val casterAddress = casterProfile != null ? casterProfile.getIdentity() :
-					identityService.getHighestScoredIdentity(cast.author().addressesWithoutCustodialIfAvailable());
+			val casterAddress = casterProfile != null ? casterProfile.getIdentity()
+					: identityService.getHighestScoredIdentity(cast.author().addressesWithoutCustodialIfAvailable());
 
 			switch (command) {
 				case "receive": {
@@ -148,6 +148,7 @@ public class FarcasterPaymentBotService {
 						job.setStatus(PaymentBotJob.Status.PROCESSED);
 						return;
 					}
+					break;
 				}
 				case "pay":
 				case "intent":
@@ -287,6 +288,7 @@ public class FarcasterPaymentBotService {
 						job.setStatus(PaymentBotJob.Status.PROCESSED);
 						return;
 					}
+					break;
 				}
 				case "batch":
 				case "intents": {
@@ -371,6 +373,7 @@ public class FarcasterPaymentBotService {
 							payment.setSourceRef(sourceRef);
 							payment.setSourceHash(sourceHash);
 							paymentRepository.save(payment);
+							entityManager.flush();
 
 							String castText;
 							if (command.equals("batch")) {
@@ -394,8 +397,9 @@ public class FarcasterPaymentBotService {
 						} catch (Throwable t) {
 							log.error("Error in batch command processing: {}", job, t);
 						}
-						job.setStatus(PaymentBotJob.Status.PROCESSED);
 					}
+					job.setStatus(PaymentBotJob.Status.PROCESSED);
+					break;
 				}
 				case "jar": {
 					val jarTitlePattern = "\"(?<title>[^\"]*)\"";
@@ -411,7 +415,7 @@ public class FarcasterPaymentBotService {
 									cast.author().username(),
 									cast.hash().substring(0, 10));
 							log.debug("Executing jar creation with title `{}`, desc `{}`, " +
-											"embeds {}, source {}",
+									"embeds {}, source {}",
 									title, beforeText, cast.embeds(),
 									source);
 
@@ -435,7 +439,7 @@ public class FarcasterPaymentBotService {
 									cast.author().username());
 							val embeds = Collections.singletonList(
 									new Cast.Embed(String.format("https://frames.payflow" +
-													".me/jar/%s",
+											".me/jar/%s",
 											jar.getFlow().getUuid())));
 							val processed = notificationService.reply(castText, cast.hash(), embeds);
 							if (processed) {
@@ -449,7 +453,7 @@ public class FarcasterPaymentBotService {
 					} else {
 						log.error("Missing remaining text for title");
 					}
-
+					break;
 				}
 				case "config:tokens": {
 					if (casterProfile != null) {
@@ -470,6 +474,7 @@ public class FarcasterPaymentBotService {
 							return;
 						}
 					}
+					break;
 				}
 
 				default: {
