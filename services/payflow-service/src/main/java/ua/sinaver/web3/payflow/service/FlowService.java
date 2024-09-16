@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import ua.sinaver.web3.payflow.data.Flow;
 import ua.sinaver.web3.payflow.data.Jar;
 import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.data.Wallet;
 import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
 import ua.sinaver.web3.payflow.message.FlowMessage;
 import ua.sinaver.web3.payflow.message.JarMessage;
@@ -23,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import static ua.sinaver.web3.payflow.service.TokenService.BASE_CHAIN_ID;
 
 @Slf4j
 @Service
@@ -217,23 +220,41 @@ public class FlowService implements IFlowService {
 	}
 
 	@Override
-	public List<String> getOwnersOfLegacyFlows() {
+	public List<Flow> getOwnersOfLegacyFlows() {
 		return userRepository.findUsersWithNonDisabledFlowAndWalletVersion("1.3.0")
 				.stream()
-				.map(User::getIdentity)
 				.toList();
 	}
 
 	@Scheduled(initialDelay = 30 * 1000, fixedRate = 24 * 60 * 60 * 1000)
 	public void printOwnersOfLegacyFlows() {
-		val owners = getOwnersOfLegacyFlows();
-		val ownersSocialInfo = identityService.getIdentitiesInfo(owners);
-		val ownersFarcaster = ownersSocialInfo.stream()
-				.map(i -> i.meta().socials().stream()
-						.filter(s -> s.dappName().equals(SocialDappName.farcaster.name()))
-						.findFirst()
-						.map(s -> new SimpleEntry<>(s.profileName(), s.profileId()))
-						.orElse(null))
+		val legacyFlows = getOwnersOfLegacyFlows();
+		val ownersFarcaster = legacyFlows.stream()
+				.map(flow -> {
+					val user = userRepository.findById(flow.getUserId()).orElse(null);
+					if (user == null) return null;
+
+					val identityInfo = identityService.getIdentityInfo(user.getIdentity());
+					if (identityInfo == null) return null;
+
+					val socialEntry = identityInfo.meta().socials().stream()
+							.filter(s -> s.dappName().equals(SocialDappName.farcaster.name()))
+							.findFirst()
+							.map(s -> new SimpleEntry<>(s.profileName(), s.profileId()))
+							.orElse(null);
+
+					if (socialEntry == null) return null;
+
+					val walletAddress = flow.getWallets().stream()
+							.filter(w -> w.getNetwork().equals(BASE_CHAIN_ID))
+							.findFirst()
+							.map(Wallet::getAddress)
+							.orElse(null);
+
+					if (walletAddress == null) return null;
+
+					return new SimpleEntry<>(socialEntry, walletAddress);
+				})
 				.filter(Objects::nonNull)
 				.toList();
 		log.info("Owners of legacy flows (wallet version 1.3.0): [{}] {}", ownersFarcaster.size(), ownersFarcaster);

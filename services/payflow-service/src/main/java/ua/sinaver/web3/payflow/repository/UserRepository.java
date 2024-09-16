@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import ua.sinaver.web3.payflow.data.Flow;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.message.WalletProfileRequestMessage;
 
@@ -63,10 +64,11 @@ public interface UserRepository extends CrudRepository<User, Integer> {
 				lastSeenDate, PageRequest.of(0, 5)).getContent();
 	}
 
-	@Query("SELECT DISTINCT u FROM User u " +
+	@Query("SELECT DISTINCT f FROM User u " +
 			"JOIN u.flows f " +
 			"JOIN f.wallets w " +
 			"WHERE f.disabled = false " +
+			"AND f.archived = false " +
 			"AND w.walletVersion = :walletVersion")
-	List<User> findUsersWithNonDisabledFlowAndWalletVersion(@Param("walletVersion") String walletVersion);
+	List<Flow> findUsersWithNonDisabledFlowAndWalletVersion(@Param("walletVersion") String walletVersion);
 }

@@ -32,6 +32,8 @@ public interface IIdentityService {
 
 	String getIdentityFid(String identity);
 
+	IdentityMessage getIdentityInfo(String identity);
+
 	List<IdentityMessage> getIdentitiesInfo(List<String> identities);
 
 	String getHighestScoredIdentity(List<String> identities);

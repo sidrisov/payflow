@@ -151,8 +151,10 @@ public class IdentityService implements IIdentityService {
 
 		val username = wallet.getSocials().stream()
 				.filter(social -> social.getDappName().equals(SocialDappName.farcaster))
-				.min(/*Comparator.comparing(Social::getIsFarcasterPowerUser).reversed()
-						.thenComparing(*/Comparator.comparingInt(Social::getFollowerCount).reversed())
+				.min(/*
+						 * Comparator.comparing(Social::getIsFarcasterPowerUser).reversed()
+						 * .thenComparing(
+						 */Comparator.comparingInt(Social::getFollowerCount).reversed())
 				.map(Social::getProfileName).orElse(null);
 		log.debug("Username for {}: {}", identity, username);
 		return username;
@@ -181,13 +183,20 @@ public class IdentityService implements IIdentityService {
 
 		val fid = wallet.getSocials().stream()
 				.filter(social -> social.getDappName().equals(SocialDappName.farcaster))
-				.min(/*Comparator.comparing(Social::getIsFarcasterPowerUser).reversed()
-						.thenComparing(*/Comparator.comparingInt(Social::getFollowerCount).reversed())
+				.min(/*
+						 * Comparator.comparing(Social::getIsFarcasterPowerUser).reversed()
+						 * .thenComparing(
+						 */Comparator.comparingInt(Social::getFollowerCount).reversed())
 				.map(Social::getUserId).orElse(null);
 		log.debug("Fid for {}: {}", identity, fid);
 		return fid;
 	}
 
+	@Override
+	public IdentityMessage getIdentityInfo(String identity) {
+		List<IdentityMessage> results = getIdentitiesInfo(Collections.singletonList(identity));
+		return results.isEmpty() ? null : results.get(0);
+	}
 
 	@Override
 	public List<IdentityMessage> getIdentitiesInfo(List<String> identities) {
@@ -215,53 +224,55 @@ public class IdentityService implements IIdentityService {
 			val identityMessages = Flux
 					.fromIterable(identities)
 					.flatMap(identity -> Mono.zip(
-											Mono.just(identity),
-											Mono.fromCallable(
-															() -> Optional.ofNullable(userRepository.findByIdentityIgnoreCaseAndAllowedTrue(identity)))
-													.onErrorResume(exception -> {
-														log.error("Error fetching user {} - {}",
-																identity,
-																exception.getMessage());
-														return Mono.empty();
-													}),
-											Mono.fromCallable(
-															() -> socialGraphService.getSocialMetadata(identity))
-													.subscribeOn(Schedulers.boundedElastic())
-													.onErrorResume(exception -> {
-														log.error("Error fetching social graph for {} - " +
-																		"{}",
-																identity,
-																exception.getMessage());
-														return Mono.empty();
-													}),
-											Mono.fromCallable(
-															() -> Optional.ofNullable(StringUtils.isNotBlank(me) ?
-																	socialGraphService.getSocialInsights(identity, me) : null))
-													.subscribeOn(Schedulers.boundedElastic())
-													.onErrorResume(exception -> {
-														log.error("Error fetching social insights" +
-																		" for {} - {}",
-																identity,
-																exception.getMessage());
-														return Mono.empty();
-													}),
-											// TODO: fetch only if social graph fetched
-											Mono.fromCallable(
-															() -> whitelistedUsers.contains(identity)
-																	|| invitationRepository.existsByIdentityAndValid(identity))
-													.onErrorResume(exception -> {
-														log.error("Error checking invitation status for user {} - {}",
-																identity,
-																exception.getMessage());
-														return Mono.empty();
-													}))
-									.map(tuple -> IdentityMessage.convert(
-											identity,
-											tuple.getT2().orElse(null),
-											tuple.getT3(),
-											tuple.getT4().orElse(null),
-											tuple.getT5()))
-							// TODO: fail fast, seems doesn't to work properly with threads
+							Mono.just(identity),
+							Mono.fromCallable(
+									() -> Optional.ofNullable(
+											userRepository.findByIdentityIgnoreCaseAndAllowedTrue(identity)))
+									.onErrorResume(exception -> {
+										log.error("Error fetching user {} - {}",
+												identity,
+												exception.getMessage());
+										return Mono.empty();
+									}),
+							Mono.fromCallable(
+									() -> socialGraphService.getSocialMetadata(identity))
+									.subscribeOn(Schedulers.boundedElastic())
+									.onErrorResume(exception -> {
+										log.error("Error fetching social graph for {} - " +
+												"{}",
+												identity,
+												exception.getMessage());
+										return Mono.empty();
+									}),
+							Mono.fromCallable(
+									() -> Optional.ofNullable(StringUtils.isNotBlank(me)
+											? socialGraphService.getSocialInsights(identity, me)
+											: null))
+									.subscribeOn(Schedulers.boundedElastic())
+									.onErrorResume(exception -> {
+										log.error("Error fetching social insights" +
+												" for {} - {}",
+												identity,
+												exception.getMessage());
+										return Mono.empty();
+									}),
+							// TODO: fetch only if social graph fetched
+							Mono.fromCallable(
+									() -> whitelistedUsers.contains(identity)
+											|| invitationRepository.existsByIdentityAndValid(identity))
+									.onErrorResume(exception -> {
+										log.error("Error checking invitation status for user {} - {}",
+												identity,
+												exception.getMessage());
+										return Mono.empty();
+									}))
+							.map(tuple -> IdentityMessage.convert(
+									identity,
+									tuple.getT2().orElse(null),
+									tuple.getT3(),
+									tuple.getT4().orElse(null),
+									tuple.getT5()))
+					// TODO: fail fast, seems doesn't to work properly with threads
 					)
 					.timeout(Duration.ofSeconds(10), Mono.empty())
 					.collectList()

@@ -1,5 +1,6 @@
 package ua.sinaver.web3.payflow.service.api;
 
+import ua.sinaver.web3.payflow.data.Flow;
 import ua.sinaver.web3.payflow.data.Jar;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.message.FlowMessage;
@@ -27,5 +28,5 @@ public interface IFlowService {
 
 	void deleteFlowWallet(String uuid, WalletMessage wallet, User user) throws Exception;
 
-	List<String> getOwnersOfLegacyFlows();
+	List<Flow> getOwnersOfLegacyFlows();
 }
