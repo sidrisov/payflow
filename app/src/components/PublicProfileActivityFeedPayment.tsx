@@ -22,7 +22,28 @@ import ArrowUpwardIcon from '@mui/icons-material/NorthEast';
 import ArrowDownwardIcon from '@mui/icons-material/SouthEast';
 import { green, red } from '@mui/material/colors';
 
-// TODO: add meta information when sent between flows (addresses will be different, but avatar indicator same)
+const usePaymentDetails = (payment: PaymentType) => {
+  const { data: tokenPrices } = useTokenPrices();
+  const token = ERC20_CONTRACTS.find(
+    (t) => t.chainId === payment.chainId && t.id === payment.token
+  ) as Token;
+
+  const price = tokenPrices ? tokenPrices[token.id] : 0;
+  const tokenAmount = payment.tokenAmount || (payment.usdAmount ? (payment.usdAmount / price).toString() : '0');
+  const usdAmount = payment.usdAmount || (payment.tokenAmount ? parseFloat(payment.tokenAmount.toString()) * price : 0);
+
+  const formattedTokenAmount = formatAmountWithSuffix(
+    normalizeNumberPrecision(parseFloat(tokenAmount.toString()))
+  );
+  const formattedUsdAmount = formatAmountWithSuffix(normalizeNumberPrecision(usdAmount));
+
+  return {
+    token,
+    formattedTokenAmount,
+    formattedUsdAmount,
+    defultBlockExplorerUrl: getNetworkDefaultBlockExplorerUrl(payment.chainId),
+  };
+};
 
 function getActivityType(identity: IdentityType, payment: PaymentType) {
   const isSelfTransaction =
@@ -40,6 +61,25 @@ function getActivityType(identity: IdentityType, payment: PaymentType) {
     (payment.senderAddress && identity.address && payment.senderAddress === identity.address);
 
   return isSelfTransaction ? 'self' : isOutbound ? 'outbound' : 'inbound';
+}
+
+function getActivityDescription(identity: IdentityType, payment: PaymentType): string {
+  const activityType = getActivityType(identity, payment);
+
+  if (activityType === 'self') {
+    if (payment.category === 'fc_storage') {
+      return 'bought';
+    } else if (payment.category === 'mint') {
+      return 'minted';
+    }
+    return 'moved funds';
+  }
+
+  if (activityType === 'outbound') {
+    return 'gifted';
+  }
+
+  return 'paid';
 }
 
 const ActivityIcon = ({ identity, payment }: { identity: IdentityType; payment: PaymentType }) => {
@@ -80,9 +120,8 @@ export default function PublicProfileActivityFeedSection(
   props: BoxProps & { identity: IdentityType; payment: PaymentType }
 ) {
   const isMobile = useMobile();
-
-  const { data: tokenPrices } = useTokenPrices();
   const { identity, payment } = props;
+  const { token, formattedTokenAmount, formattedUsdAmount, defultBlockExplorerUrl } = usePaymentDetails(payment);
 
   const [profileDetailsPopoverAnchorEl, setProfileDetailsPopoverAnchorEl] =
     useState<null | HTMLElement>(null);
@@ -90,8 +129,6 @@ export default function PublicProfileActivityFeedSection(
 
   const [openPaymentMenu, setOpenPaymentMenu] = useState(false);
   const [paymentMenuAnchorEl, setPaymentMenuAnchorEl] = useState<null | HTMLElement>(null);
-
-  const defultBlockExplorerUrl = getNetworkDefaultBlockExplorerUrl(payment.chainId);
 
   const { data: ensNameFrom } = useEnsName({
     address: payment.senderAddress ? (payment.senderAddress as `0x${string}`) : undefined,
@@ -129,23 +166,6 @@ export default function PublicProfileActivityFeedSection(
     }
   });
 
-  const token = ERC20_CONTRACTS.find(
-    (t) => t.chainId === payment.chainId && t.id === payment.token
-  ) as Token;
-
-  const price = tokenPrices ? tokenPrices[token.id] : 0;
-
-  const tokenAmount =
-    payment.tokenAmount || (payment.usdAmount ? (payment.usdAmount / price).toString() : '0');
-  const usdAmount =
-    payment.usdAmount ||
-    (payment.tokenAmount ? parseFloat(payment.tokenAmount.toString()) * price : 0);
-
-  const formattedTokenAmount = formatAmountWithSuffix(
-    normalizeNumberPrecision(parseFloat(tokenAmount.toString()))
-  );
-  const formattedUsdAmount = formatAmountWithSuffix(normalizeNumberPrecision(usdAmount));
-
   return (
     <>
       <Stack
@@ -161,7 +181,7 @@ export default function PublicProfileActivityFeedSection(
         ) : payment.senderAddress ? (
           <AddressAvatar address={payment.senderAddress} />
         ) : (
-          <Avatar>?</Avatar> // Fallback avatar
+          <Avatar>?</Avatar>
         )}
         <Stack spacing={0.5} width="100%">
           <Box
@@ -207,7 +227,7 @@ export default function PublicProfileActivityFeedSection(
 
           <Stack direction="row" alignItems="center" spacing={0.5}>
             <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
-              {getActivityType(identity, payment) === 'self' ? 'moved funds' : 'paid'}
+              {getActivityDescription(identity, payment)}
             </Typography>
             {getActivityType(identity, payment) !== 'self' && (
               <>

@@ -7,7 +7,7 @@ export type Type = 'FRAME' | 'INTENT' | 'APP' | 'INTENT_TOP_REPLY' | 'BATCH';
 export interface PaymentType {
   referenceId?: string;
   type: Type;
-  category?: string;
+  category?: 'fc_storage' | 'mint';
   status: PaymentStatus;
   sender: ProfileType;
   receiver: ProfileType;

@@ -5,6 +5,7 @@ import { MdOutlinePlaylistAdd, MdOutlinePlaylistAddCheck } from 'react-icons/md'
 import { PaymentType } from '../../types/PaymentType';
 import { useMobile } from '../../utils/hooks/useMobile';
 import calculateMaxPages from '../../utils/pagination';
+import { PaymentItem } from './PaymentTypes';
 
 const PAGE_SIZE = 5;
 
@@ -86,5 +87,25 @@ export function PaymentSection({ payments, type, renderPayment, ...props }: Paym
         </Stack>
       )}
     </Stack>
+  );
+}
+
+interface PaymentListSectionProps extends StackProps {
+  payments?: PaymentType[];
+  type: 'intent' | 'receipt';
+}
+
+export function PaymentListSection({ payments, type, ...props }: PaymentListSectionProps) {
+  return (
+    payments && (
+      <PaymentSection
+        payments={payments}
+        type={type}
+        {...props}
+        renderPayment={(payment: PaymentType, index: number) => (
+          <PaymentItem key={`${type}_payment_${index}`} payment={payment} />
+        )}
+      />
+    )
   );
 }
