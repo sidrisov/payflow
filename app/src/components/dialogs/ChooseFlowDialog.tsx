@@ -11,7 +11,7 @@ import {
 import { FlowType } from '../../types/FlowType';
 import { MoreHoriz, PlayForWork, ExpandMore, ExpandLess } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { green } from '@mui/material/colors';
 import { FlowSettingsMenu } from '../menu/FlowSettingsMenu';
@@ -41,6 +41,7 @@ export function ChooseFlowDialog({
   const [openFlowSettingsMenu, setOpenFlowSettingsMenu] = useState<boolean>(false);
   const [flowAnchorEl, setFlowAnchorEl] = useState<null | HTMLElement>(null);
   const [archivedExpanded, setArchivedExpanded] = useState<boolean>(false);
+  const [selectedElement, setSelectedElement] = useState<HTMLLIElement | null>(null);
 
   // Update this function to separate flows into four categories
   const separateFlows = (flows: FlowType[]) => {
@@ -65,11 +66,23 @@ export function ChooseFlowDialog({
   // Separate the flows
   const { regular, farcaster, legacy, archived } = separateFlows(flows);
 
+  useEffect(() => {
+    if (props.open && selectedElement) {
+      selectedElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
+  }, [props.open, selectedElement]);
+
   const renderMenuItem = (flow: FlowType) => (
     <MenuItem
       key={flow.uuid}
       selected={flow.uuid === selectedFlow.uuid}
-      sx={{ borderRadius: 5 }}
+      {...(flow.uuid === selectedFlow.uuid && { ref: setSelectedElement })}
+      sx={{
+        borderRadius: 5
+      }}
       onClick={async () => {
         setSelectedFlow(flow);
         if (closeOnSelect) {
@@ -100,7 +113,7 @@ export function ChooseFlowDialog({
           <PaymentFlowSection flow={flow} />
         </Stack>
 
-        {configurable && flow === selectedFlow && (
+        {configurable && flow.uuid === selectedFlow.uuid && (
           <IconButton
             size="small"
             onClick={async (event) => {

@@ -40,7 +40,7 @@ export function SearchIdentityListItem(
 ) {
   const prefersDarkMode = useDarkMode();
 
-const accessToken = useSearchParams()[0].get('access_token') ?? undefined;
+  const accessToken = useSearchParams()[0].get('access_token') ?? undefined;
 
   const { profile } = useContext(ProfileContext);
   const { contact, view, updateIdentityCallback, minimized = false } = props;
@@ -54,6 +54,8 @@ const accessToken = useSearchParams()[0].get('access_token') ?? undefined;
   const [openIdentityMenu, setOpenIdentityMenu] = useState(false);
   const [openSocialLinksPopover, setOpenSocialLinksPopover] = useState(false);
   const [identityMenuAnchorEl, setIdentityMenuAnchorEl] = useState<null | HTMLElement>(null);
+
+  const [isHoveringMenu, setIsHoveringMenu] = useState(false);
 
   const inviteClickHandler = async () => {
     if (profile?.identityInviteLimit === 0 || profile?.identityInviteLimit === 1) {
@@ -129,25 +131,21 @@ const accessToken = useSearchParams()[0].get('access_token') ?? undefined;
     <>
       {(view === 'profile' ? identity.profile : identity.meta) && (
         <Box
-          onClick={handleBoxClick}
           display="flex"
           flexDirection="row"
           justifyContent="space-between"
           alignItems="center"
           width="100%"
           height={55}
+          {...(!isHoveringMenu && { onClick: handleBoxClick })}
           sx={{
             cursor: 'pointer',
             '&:hover': {
-              backgroundColor: 'action.hover'
-            },
-            '&:active': {
-              backgroundColor: 'action.selected',
-              borderRadius: 4
+              backgroundColor: isHoveringMenu ? 'inherit' : 'action.hover'
             },
             borderRadius: 4,
             padding: 1,
-            WebkitTapHighlightColor: 'transparent' // Remove default mobile tap highlight
+            WebkitTapHighlightColor: 'transparent'
           }}>
           {view === 'profile' && identity.profile && (
             <ProfileSection maxWidth={300} profile={identity.profile} />
@@ -156,7 +154,14 @@ const accessToken = useSearchParams()[0].get('access_token') ?? undefined;
             <AddressSection maxWidth={300} identity={identity} />
           )}
           {!minimized && (
-            <IconButton onClick={handleMenuClick} size="small">
+            <IconButton
+              onClick={(e) => {
+                e.stopPropagation();
+                handleMenuClick(e);
+              }}
+              onMouseEnter={() => setIsHoveringMenu(true)}
+              onMouseLeave={() => setIsHoveringMenu(false)}
+              size="small">
               <MoreVert />
             </IconButton>
           )}

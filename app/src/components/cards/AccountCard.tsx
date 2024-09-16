@@ -143,6 +143,8 @@ export function AccountCard({
   const orderedFlows = useMemo(() => separateFlows(flows), [flows]);
   const currentIndex = orderedFlows.findIndex((flow) => flow.uuid === selectedFlow.uuid);
 
+  const [isHoveringArrow, setIsHoveringArrow] = useState(false);
+
   return (
     profile && (
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -201,94 +203,30 @@ export function AccountCard({
               <ActionButton title="Share" onClick={handleShare} icon={<Share />} />
             </Stack>
           </Box>
-          {recipient && selectedFlow && (
-            <PaymentDialog
-              open={recipient != null}
-              paymentType={paymentType}
-              sender={{
-                type: paymentType === 'payflow' ? 'profile' : 'address',
-                identity: {
-                  address:
-                    paymentType === 'payflow'
-                      ? profile.identity
-                      : (address?.toLowerCase() as Address),
-                  ...(paymentType === 'payflow' && {
-                    profile: { ...profile, defaultFlow: selectedFlow }
-                  })
-                }
-              }}
-              recipient={recipient}
-              setOpenSearchIdentity={setOpenSearchIdentity}
-              flows={flows}
-              selectedFlow={selectedFlow}
-              setSelectedFlow={setSelectedFlow}
-              closeStateCallback={async () => {
-                setRecipient(undefined);
-              }}
-            />
-          )}
-
-          {openSearchIdentity && (
-            <SearchIdentityDialog
-              address={profile.identity}
-              open={openSearchIdentity}
-              closeStateCallback={async () => {
-                setOpenSearchIdentity(false);
-              }}
-              selectIdentityCallback={async (recipient) => {
-                setPaymentType('payflow');
-                setRecipient(recipient);
-              }}
-            />
-          )}
-
-          <ChooseFlowDialog
-            open={openSelectFlow}
-            closeOnSelect={false}
-            onClose={() => setOpenSelectFlow(false)}
-            closeStateCallback={() => setOpenSelectFlow(false)}
-            flows={flows}
-            selectedFlow={selectedFlow}
-            setSelectedFlow={setSelectedFlow}
-          />
-          <FlowTopUpMenu
-            anchorEl={topUpMenuAnchorEl}
-            open={openTopUpMenu}
-            depositClickCallback={() => {
-              setPaymentType('wallet');
-              setRecipient({ type: 'profile', identity: { profile } as IdentityType });
-            }}
-            qrClickCallback={() => setOpenFlowReceiveQRCode(true)}
-            onClose={() => setOpenTopUpMenu(false)}
-            onClick={() => setOpenTopUpMenu(false)}
-          />
-          <ShareFlowMenu
-            profile={profile}
-            selectedFlow={selectedFlow}
-            anchorEl={shareMenuAnchorEl}
-            open={openShareMenu}
-            onClose={() => setOpenShareMenu(false)}
-            onClick={() => setOpenShareMenu(false)}
-          />
-          <WalletQRCodeShareDialog
-            open={openFlowReceiveQRCode}
-            wallet={
-              selectedFlow.wallets.find((w) => w.network === chain?.id) ?? selectedFlow.wallets[0]
-            }
-            wallets={selectedFlow.wallets}
-            closeStateCallback={() => setOpenFlowReceiveQRCode(false)}
-          />
         </Card>
         <Paper
           elevation={5}
+          {...(!isHoveringArrow && { onClick: () => setOpenSelectFlow(true) })}
           sx={{
             mt: 2,
             display: 'flex',
             alignItems: 'center',
             borderRadius: 16,
-            padding: '2px'
+            padding: '2px',
+            cursor: isHoveringArrow ? 'default' : 'pointer',
+            '&:hover': {
+              backgroundColor: isHoveringArrow ? 'inherit' : 'action.hover'
+            }
           }}>
-          <IconButton size="small" onClick={() => handleSwipe('RIGHT')} sx={{ p: 0.5 }}>
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleSwipe('RIGHT');
+            }}
+            onMouseEnter={() => setIsHoveringArrow(true)}
+            onMouseLeave={() => setIsHoveringArrow(false)}
+            sx={{ p: 0.5 }}>
             <ChevronLeft sx={{ fontSize: 16 }} />
           </IconButton>
           <Box sx={{ display: 'flex', alignItems: 'center', mx: 1 }}>
@@ -306,10 +244,96 @@ export function AccountCard({
               />
             ))}
           </Box>
-          <IconButton size="small" onClick={() => handleSwipe('LEFT')} sx={{ p: 0.5 }}>
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleSwipe('LEFT');
+            }}
+            onMouseEnter={() => setIsHoveringArrow(true)}
+            onMouseLeave={() => setIsHoveringArrow(false)}
+            sx={{ p: 0.5 }}>
             <ChevronRight sx={{ fontSize: 16 }} />
           </IconButton>
         </Paper>
+
+        {recipient && selectedFlow && (
+          <PaymentDialog
+            open={recipient != null}
+            paymentType={paymentType}
+            sender={{
+              type: paymentType === 'payflow' ? 'profile' : 'address',
+              identity: {
+                address:
+                  paymentType === 'payflow'
+                    ? profile.identity
+                    : (address?.toLowerCase() as Address),
+                ...(paymentType === 'payflow' && {
+                  profile: { ...profile, defaultFlow: selectedFlow }
+                })
+              }
+            }}
+            recipient={recipient}
+            setOpenSearchIdentity={setOpenSearchIdentity}
+            flows={flows}
+            selectedFlow={selectedFlow}
+            setSelectedFlow={setSelectedFlow}
+            closeStateCallback={async () => {
+              setRecipient(undefined);
+            }}
+          />
+        )}
+
+        {openSearchIdentity && (
+          <SearchIdentityDialog
+            address={profile.identity}
+            open={openSearchIdentity}
+            closeStateCallback={async () => {
+              setOpenSearchIdentity(false);
+            }}
+            selectIdentityCallback={async (recipient) => {
+              setPaymentType('payflow');
+              setRecipient(recipient);
+            }}
+          />
+        )}
+
+        <ChooseFlowDialog
+          open={openSelectFlow}
+          closeOnSelect={false}
+          onClose={() => setOpenSelectFlow(false)}
+          closeStateCallback={() => setOpenSelectFlow(false)}
+          flows={flows}
+          selectedFlow={selectedFlow}
+          setSelectedFlow={setSelectedFlow}
+        />
+        <FlowTopUpMenu
+          anchorEl={topUpMenuAnchorEl}
+          open={openTopUpMenu}
+          depositClickCallback={() => {
+            setPaymentType('wallet');
+            setRecipient({ type: 'profile', identity: { profile } as IdentityType });
+          }}
+          qrClickCallback={() => setOpenFlowReceiveQRCode(true)}
+          onClose={() => setOpenTopUpMenu(false)}
+          onClick={() => setOpenTopUpMenu(false)}
+        />
+        <ShareFlowMenu
+          profile={profile}
+          selectedFlow={selectedFlow}
+          anchorEl={shareMenuAnchorEl}
+          open={openShareMenu}
+          onClose={() => setOpenShareMenu(false)}
+          onClick={() => setOpenShareMenu(false)}
+        />
+        <WalletQRCodeShareDialog
+          open={openFlowReceiveQRCode}
+          wallet={
+            selectedFlow.wallets.find((w) => w.network === chain?.id) ?? selectedFlow.wallets[0]
+          }
+          wallets={selectedFlow.wallets}
+          closeStateCallback={() => setOpenFlowReceiveQRCode(false)}
+        />
       </Box>
     )
   );
