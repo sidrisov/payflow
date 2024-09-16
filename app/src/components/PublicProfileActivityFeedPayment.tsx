@@ -29,8 +29,11 @@ const usePaymentDetails = (payment: PaymentType) => {
   ) as Token;
 
   const price = tokenPrices ? tokenPrices[token.id] : 0;
-  const tokenAmount = payment.tokenAmount || (payment.usdAmount ? (payment.usdAmount / price).toString() : '0');
-  const usdAmount = payment.usdAmount || (payment.tokenAmount ? parseFloat(payment.tokenAmount.toString()) * price : 0);
+  const tokenAmount =
+    payment.tokenAmount || (payment.usdAmount ? (payment.usdAmount / price).toString() : '0');
+  const usdAmount =
+    payment.usdAmount ||
+    (payment.tokenAmount ? parseFloat(payment.tokenAmount.toString()) * price : 0);
 
   const formattedTokenAmount = formatAmountWithSuffix(
     normalizeNumberPrecision(parseFloat(tokenAmount.toString()))
@@ -41,7 +44,7 @@ const usePaymentDetails = (payment: PaymentType) => {
     token,
     formattedTokenAmount,
     formattedUsdAmount,
-    defultBlockExplorerUrl: getNetworkDefaultBlockExplorerUrl(payment.chainId),
+    defultBlockExplorerUrl: getNetworkDefaultBlockExplorerUrl(payment.chainId)
   };
 };
 
@@ -75,7 +78,7 @@ function getActivityDescription(identity: IdentityType, payment: PaymentType): s
     return 'moved funds';
   }
 
-  if (activityType === 'outbound') {
+  if (activityType === 'outbound' && payment.category) {
     return 'gifted';
   }
 
@@ -121,7 +124,8 @@ export default function PublicProfileActivityFeedSection(
 ) {
   const isMobile = useMobile();
   const { identity, payment } = props;
-  const { token, formattedTokenAmount, formattedUsdAmount, defultBlockExplorerUrl } = usePaymentDetails(payment);
+  const { token, formattedTokenAmount, formattedUsdAmount, defultBlockExplorerUrl } =
+    usePaymentDetails(payment);
 
   const [profileDetailsPopoverAnchorEl, setProfileDetailsPopoverAnchorEl] =
     useState<null | HTMLElement>(null);

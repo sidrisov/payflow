@@ -211,12 +211,13 @@ export function AccountCard({
             mt: 2,
             display: 'flex',
             alignItems: 'center',
-            borderRadius: 16,
+            borderRadius: 5,
             padding: '2px',
             cursor: isHoveringArrow ? 'default' : 'pointer',
             '&:hover': {
               backgroundColor: isHoveringArrow ? 'inherit' : 'action.hover'
-            }
+            },
+            WebkitTapHighlightColor: 'transparent'
           }}>
           <IconButton
             size="small"
