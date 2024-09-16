@@ -89,5 +89,5 @@ export function useToAddress({
       return recipient.identity.profile?.defaultFlow?.wallets.find((w) => w.network === chainId)
         ?.address;
     }
-  }, [chainId]);
+  }, [chainId, recipient]);
 }
