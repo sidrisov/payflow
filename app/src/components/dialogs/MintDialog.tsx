@@ -106,6 +106,7 @@ export default function MintDialog({
 
   const paymentTx = mintData?.paymentTx;
   const mintStatus = mintData?.mintStatus;
+  const secondary = mintData?.secondary;
 
   console.log('Mint tx: ', paymentTx);
 
@@ -346,7 +347,9 @@ export default function MintDialog({
             <Box display="flex" flexDirection="column" alignItems="center" width="100%">
               <PayButton
                 paymentToken={paymentToken}
-                buttonText={mintStatus === 'ended' ? 'Mint Ended' : 'Mint'}
+                buttonText={
+                  mintStatus === 'ended' ? 'Mint Ended' : secondary ? 'Buy On Secondary' : 'Mint'
+                }
                 disabled={!hasPaymentOption}
                 paymentTx={paymentTx}
                 paymentWallet={paymentWallet!}

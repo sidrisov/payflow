@@ -36,8 +36,13 @@ async function fetchMintPaymentTx({
   minter: Address;
   recipient: Address;
   comment?: string;
-}): Promise<{ paymentTx: MintPaymentTx; mintStatus: 'live' | 'ended' | 'error' }> {
+}): Promise<{
+  paymentTx: MintPaymentTx;
+  mintStatus: 'live' | 'ended' | 'error';
+  secondary: boolean;
+}> {
   try {
+    let secondary = false;
     if (mint.provider === 'zora.co') {
       const publicClient = getPublicClient(wagmiConfig, { chainId: mint.chainId });
 
@@ -45,6 +50,29 @@ async function fetchMintPaymentTx({
         chainId: mint.chainId,
         publicClient: publicClient as PublicClient
       });
+
+      const secondaryInfo = await collectorClient.getSecondaryInfo({
+        contract: mint.contract,
+        tokenId: BigInt(mint.tokenId!)
+      });
+
+      console.log('SecondaryInfo: ', secondaryInfo);
+
+      if (secondaryInfo?.secondaryActivated) {
+        const { parameters } = await collectorClient.buy1155OnSecondary({
+          account: minter,
+          contract: mint.contract,
+          tokenId: BigInt(mint.tokenId!),
+          quantity: 1n,
+          recipient: recipient
+        });
+
+        return {
+          paymentTx: { ...parameters, chainId: mint.chainId },
+          mintStatus: 'live',
+          secondary
+        };
+      }
 
       const { parameters } = await collectorClient.mint({
         minterAccount: minter,
@@ -57,7 +85,7 @@ async function fetchMintPaymentTx({
         mintComment: comment
       });
 
-      return { paymentTx: { ...parameters, chainId: mint.chainId }, mintStatus: 'live' };
+      return { paymentTx: { ...parameters, chainId: mint.chainId }, mintStatus: 'live', secondary };
     } else if (mint.provider === 'rodeo.club') {
       const saleTermsId = await readContract(wagmiConfig, {
         chainId: mint.chainId,
@@ -76,14 +104,15 @@ async function fetchMintPaymentTx({
           args: [saleTermsId, 1n, recipient, mint.referral ?? zeroAddress],
           value: RODEO_MINT_PRICE
         },
-        mintStatus: 'live'
+        mintStatus: 'live',
+        secondary
       };
     } else {
       throw new Error('Unsupported mint provider');
     }
   } catch (error) {
     console.error('Error checking mint status or preparing mint transaction:', error);
-    return { paymentTx: {} as MintPaymentTx, mintStatus: 'error' };
+    return { paymentTx: {} as MintPaymentTx, mintStatus: 'error', secondary: false };
   }
 }
 
@@ -98,7 +127,10 @@ export function useMintPaymentTx({
   recipient: Address | undefined;
   comment?: string;
 }) {
-  return useQuery<{ paymentTx: MintPaymentTx; mintStatus: 'live' | 'ended' | 'error' }, Error>({
+  return useQuery<
+    { paymentTx: MintPaymentTx; mintStatus: 'live' | 'ended' | 'error'; secondary: boolean },
+    Error
+  >({
     enabled: Boolean(mint) && Boolean(minter) && Boolean(recipient),
     staleTime: Infinity,
     refetchInterval: 30_000,
@@ -110,4 +142,3 @@ export function useMintPaymentTx({
     }
   });
 }
-

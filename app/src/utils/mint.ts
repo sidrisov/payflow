@@ -60,9 +60,12 @@ export async function fetchMintData(
 
       console.log('Token:', token);
 
-      token.mintType;
+      const secondaryInfo = await collectorClient.getSecondaryInfo({
+        contract,
+        tokenId: BigInt(tokenId ?? 0)
+      });
 
-      //const salesConfig = (token as Partial<{ salesConfig: SalesConfigParamsType }>).salesConfig!;
+      console.debug('Secondary info:', secondaryInfo);
 
       const identityResponse = await axios.get(`${API_URL}/api/user/identities/${token.creator}`);
       const owner =
@@ -84,7 +87,8 @@ export async function fetchMintData(
         collectionName: `${token.contract.name} #${tokenId}`,
         metadata,
         owner,
-        mintType: token.mintType
+        mintType: token.mintType,
+        salesStatus: secondaryInfo?.saleEnd ? 'ended' : 'live'
       };
     }
 
