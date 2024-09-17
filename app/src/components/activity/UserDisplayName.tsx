@@ -1,9 +1,10 @@
-import { Typography } from '@mui/material';
+import { Link, Typography } from '@mui/material';
 import { ProfileType } from '../../types/ProfileType';
 import { ProfileDisplayNameWithLink } from './ProfileDisplayNameWithLink';
 import { AddressOrEnsWithLink } from './AddressOrEnsWithLink';
 import { Address } from 'viem';
 import { Social } from '../../generated/graphql/types';
+import { useMobile } from '../../utils/hooks/useMobile'; // Add this import
 
 interface UserDisplayNameProps {
   profile?: ProfileType;
@@ -22,6 +23,8 @@ export const UserDisplayName = ({
   onMouseEnter,
   onMouseLeave
 }: UserDisplayNameProps) => {
+  const isMobile = useMobile(); // Add this line
+
   if (profile) {
     return (
       <ProfileDisplayNameWithLink
@@ -33,14 +36,20 @@ export const UserDisplayName = ({
   }
   if (social) {
     return (
-      <Typography
-        noWrap
-        variant="caption"
-        fontSize={12}
+      <Link
+        aria-haspopup="true"
+        maxWidth={200}
+        href={`/${social.profileName}`}
+        underline="hover"
+        color="inherit"
+        overflow="clip"
+        textOverflow="ellipsis"
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}>
-        {social.profileDisplayName} @{social.profileName}
-      </Typography>
+        <Typography noWrap variant="caption" fontSize={isMobile ? 12 : 14}>
+          <b>{social.profileDisplayName}</b> @{social.profileName}
+        </Typography>
+      </Link>
     );
   }
 

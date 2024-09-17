@@ -111,14 +111,14 @@ export default function PublicProfileActivityFeedSection(
               profile={payment.sender}
               address={payment.senderAddress}
               ens={ensNameFrom ?? undefined}
-              onMouseEnter={(event) => {
+              /*               onMouseEnter={(event) => {
                 setProfileDetailsPopoverAnchorEl(event.currentTarget);
                 setPopOverProfile(payment.sender);
               }}
               onMouseLeave={() => {
                 setProfileDetailsPopoverAnchorEl(null);
                 setPopOverProfile(undefined);
-              }}
+              }} */
             />
 
             <IconButton
@@ -150,14 +150,14 @@ export default function PublicProfileActivityFeedSection(
                   address={payment.receiverAddress}
                   ens={ensNameTo ?? undefined}
                   social={receiverSocial ?? undefined}
-                  onMouseEnter={(event) => {
+                  /* onMouseEnter={(event) => {
                     setProfileDetailsPopoverAnchorEl(event.currentTarget);
                     setPopOverProfile(payment.receiver);
                   }}
                   onMouseLeave={() => {
                     setProfileDetailsPopoverAnchorEl(null);
                     setPopOverProfile(undefined);
-                  }}
+                  }} */
                 />
               </>
             )}
