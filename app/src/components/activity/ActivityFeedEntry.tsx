@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Box, BoxProps, IconButton, Stack, Typography } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { Box, BoxProps, IconButton, Stack, Typography, Skeleton } from '@mui/material';
 import { MoreHoriz } from '@mui/icons-material';
 
 import { PaymentType } from '../../types/PaymentType';
@@ -30,14 +30,62 @@ export default function PublicProfileActivityFeedSection(
   const [openPaymentMenu, setOpenPaymentMenu] = useState(false);
   const [paymentMenuAnchorEl, setPaymentMenuAnchorEl] = useState<null | HTMLElement>(null);
 
-  const activityType = getActivityType(identity, payment);
-
   const { ensName: ensNameFrom, ensAvatar: avatarFrom } = useEnsData(payment.senderAddress);
   const { ensName: ensNameTo, ensAvatar: avatarTo } = useEnsData(payment.receiverAddress);
 
-  const { social: receiverSocial } = useSocialData(
+  const { social: senderSocial, isLoading: isLoadingSenderSocial } = useSocialData(
+    undefined,
+    payment.senderAddress ?? payment.sender?.identity
+  );
+
+  const { social: receiverSocial, isLoading: isLoadingReceiverSocial } = useSocialData(
     payment.receiverFid?.toString(),
-    payment.receiverAddress
+    payment.receiverAddress ?? payment.receiver?.identity
+  );
+
+  if (isLoadingSenderSocial || isLoadingReceiverSocial) {
+    return (
+      <Stack
+        m={1}
+        p={2}
+        direction="row"
+        spacing={1}
+        alignItems="flex-start"
+        sx={{ border: 1, borderRadius: 5, borderColor: 'divider' }}>
+        <Skeleton variant="circular" width={40} height={40} sx={{ flexShrink: 0 }} />
+        <Stack spacing={0.5} width="100%">
+          <Skeleton variant="text" width="40%" />
+          <Skeleton variant="text" width="60%" />
+          <Skeleton variant="text" height={30} />
+        </Stack>
+      </Stack>
+    );
+  }
+
+  // Add error handling
+  if (!payment.senderAddress && !payment.sender?.identity) {
+    console.error('Missing sender information');
+    return (
+      <Typography textAlign="center" color="error">
+        Error: Missing sender information
+      </Typography>
+    );
+  }
+
+  if (!payment.receiverAddress && !payment.receiver?.identity) {
+    console.error('Missing receiver information');
+    return (
+      <Typography textAlign="center" color="error">
+        Error: Missing receiver information
+      </Typography>
+    );
+  }
+
+  const activityType = getActivityType(
+    identity,
+    payment,
+    senderSocial ?? undefined,
+    receiverSocial ?? undefined
   );
 
   return (
@@ -46,7 +94,7 @@ export default function PublicProfileActivityFeedSection(
         m={1}
         p={2}
         direction="row"
-        spacing={0.5}
+        spacing={1}
         sx={{ border: 1, borderRadius: 5, borderColor: 'divider' }}>
         <UserAvatar
           profile={payment.sender}
@@ -86,7 +134,7 @@ export default function PublicProfileActivityFeedSection(
 
           <Stack direction="row" alignItems="center" spacing={0.5}>
             <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
-              {getActivityName(identity, payment)}
+              {getActivityName(activityType, payment)}
             </Typography>
             {activityType !== 'self' && (
               <>
@@ -115,7 +163,7 @@ export default function PublicProfileActivityFeedSection(
             )}
           </Stack>
 
-          <PaymentDetails payment={payment} identity={identity} />
+          <PaymentDetails activity={activityType} payment={payment} />
 
           {payment.comment && <CommentBubble comment={payment.comment} />}
         </Stack>

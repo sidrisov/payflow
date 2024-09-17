@@ -4,14 +4,14 @@ import { IdentityType } from '../../types/ProfileType';
 import { useMobile } from '../../utils/hooks/useMobile';
 import TokenAvatar from '../avatars/TokenAvatar';
 import NetworkAvatar from '../avatars/NetworkAvatar';
-import { ActivityIcon } from './ActivityIcon';
+import { ActivityIcon, ActivityType } from './ActivityIcon';
 import { usePaymentActivityDetails } from '../../utils/hooks/usePaymentAcitivityDetails';
 import { PaymentType } from '../../types/PaymentType';
 import FarcasterAvatar from '../avatars/FarcasterAvatar';
 
 interface PaymentDetailsProps {
+  activity: ActivityType;
   payment: PaymentType;
-  identity: IdentityType;
 }
 
 interface BlockExplorerLinkProps extends Omit<LinkProps, 'href'> {
@@ -41,22 +41,21 @@ export const BlockExplorerLink: React.FC<BlockExplorerLinkProps> = ({
 };
 
 const ActivityWrapper: React.FC<{
-  payment: PaymentType;
-  identity: IdentityType;
+  activity: ActivityType;
   children: React.ReactNode;
-}> = ({ payment, identity, children }) => (
+}> = ({ activity, children }) => (
   <Stack
     direction="row"
     spacing={0.5}
     alignItems="center"
     flexWrap="wrap"
     sx={{ textWrap: 'pretty' }}>
-    <ActivityIcon identity={identity} payment={payment} />
+    <ActivityIcon activity={activity} />
     {children}
   </Stack>
 );
 
-export const PaymentDetails = ({ payment, identity }: PaymentDetailsProps) => {
+export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
   const isMobile = useMobile();
   const { token, formattedTokenAmount, formattedUsdAmount, defaultBlockExplorerUrl, mintData } =
     usePaymentActivityDetails(payment);
@@ -90,7 +89,7 @@ export const PaymentDetails = ({ payment, identity }: PaymentDetailsProps) => {
             <Avatar
               variant="rounded"
               src={mintData.metadata.image}
-              sx={{ width: 30, height: 30 }}
+              sx={{ width: 40, height: 40 }}
             />
             <Typography
               noWrap
@@ -100,7 +99,7 @@ export const PaymentDetails = ({ payment, identity }: PaymentDetailsProps) => {
               fontSize={isMobile ? 12 : 14}
               textOverflow="ellipsis"
               overflow="hidden">
-              {mintData.metadata.name}:
+              {mintData.metadata.name}
               <Typography
                 variant="caption"
                 display="block"
@@ -133,11 +132,7 @@ export const PaymentDetails = ({ payment, identity }: PaymentDetailsProps) => {
     );
   };
 
-  const content = (
-    <ActivityWrapper payment={payment} identity={identity}>
-      {renderContent()}
-    </ActivityWrapper>
-  );
+  const content = <ActivityWrapper activity={activity}>{renderContent()}</ActivityWrapper>;
 
   return defaultBlockExplorerUrl && payment.hash ? (
     <BlockExplorerLink blockExplorerUrl={defaultBlockExplorerUrl} txHash={payment.hash}>

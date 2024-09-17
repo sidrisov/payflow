@@ -42,12 +42,12 @@ function PaymentContent({ children, loading }: PaymentContentProps) {
 
 export function GiftStoragePayment({ payment, ...props }: BoxProps & { payment: PaymentType }) {
   const isMobile = useMobile();
-  const { social, loading } = useSocialData(payment.receiverFid?.toString());
+  const { social, isLoading: loadingSocials } = useSocialData(payment.receiverFid?.toString());
   const numberOfUnits = payment.tokenAmount ?? 1;
 
   return (
     <PaymentCard payment={payment} title="Buy Storage" {...props}>
-      <PaymentContent loading={loading}>
+      <PaymentContent loading={loadingSocials}>
         {social && (
           <>
             <FarcasterProfileSection social={social} />
@@ -66,7 +66,7 @@ export function GiftStoragePayment({ payment, ...props }: BoxProps & { payment: 
 }
 
 export function MintPayment({ payment, ...props }: BoxProps & { payment: PaymentType }) {
-  const { social, loading: loadingSocials } = useSocialData(payment.receiverFid?.toString());
+  const { social, isLoading: loadingSocials } = useSocialData(payment.receiverFid?.toString());
   const { mintData, loading: loadingMintData } = useMintData(payment);
   const isMobile = useMobile();
   const prefersDarkMode = useDarkMode();

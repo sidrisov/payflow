@@ -3,15 +3,24 @@ import ArrowUpwardIcon from '@mui/icons-material/NorthEast';
 import ArrowDownwardIcon from '@mui/icons-material/SouthEast';
 import { green, red } from '@mui/material/colors';
 import { PaymentType } from '../../types/PaymentType';
+import { Social } from '../../generated/graphql/types';
 
-export function getActivityType(identity: IdentityType, payment: PaymentType) {
+export type ActivityType = 'self' | 'inbound' | 'outbound';
+
+export function getActivityType(
+  identity: IdentityType,
+  payment: PaymentType,
+  senderSocial?: Social,
+  receiverSocial?: Social
+) {
   const isSelfTransaction =
     (payment.senderAddress &&
       payment.receiverAddress &&
       payment.senderAddress === payment.receiverAddress) ||
     (payment.sender?.identity &&
       payment.receiver?.identity &&
-      payment.sender.identity === payment.receiver.identity);
+      payment.sender.identity === payment.receiver.identity) ||
+    (senderSocial && receiverSocial && senderSocial.userId === receiverSocial.userId);
 
   const isOutbound =
     (payment.sender?.identity &&
@@ -22,10 +31,8 @@ export function getActivityType(identity: IdentityType, payment: PaymentType) {
   return isSelfTransaction ? 'self' : isOutbound ? 'outbound' : 'inbound';
 }
 
-export function getActivityName(identity: IdentityType, payment: PaymentType): string {
-  const activityType = getActivityType(identity, payment);
-
-  if (activityType === 'self') {
+export function getActivityName(activity: ActivityType, payment: PaymentType): string {
+  if (activity === 'self') {
     if (payment.category === 'fc_storage') {
       return 'bought';
     } else if (payment.category === 'mint') {
@@ -41,15 +48,7 @@ export function getActivityName(identity: IdentityType, payment: PaymentType): s
   }
 }
 
-export const ActivityIcon = ({
-  identity,
-  payment
-}: {
-  identity: IdentityType;
-  payment: PaymentType;
-}) => {
-  const activity = getActivityType(identity, payment);
-
+export const ActivityIcon = ({ activity }: { activity: ActivityType }) => {
   switch (activity) {
     case 'self':
       return <></>;

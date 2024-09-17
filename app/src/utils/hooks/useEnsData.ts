@@ -1,7 +1,7 @@
 import { useEnsAvatar, useEnsName } from 'wagmi';
 
 export const useEnsData = (address: string | undefined) => {
-  const { data: ensName } = useEnsName({
+  const { data: ensName, isFetching: isFetchingEnsName } = useEnsName({
     address: address ? (address as `0x${string}`) : undefined,
     chainId: 1,
     query: {
@@ -10,7 +10,7 @@ export const useEnsData = (address: string | undefined) => {
     }
   });
 
-  const { data: ensAvatar } = useEnsAvatar({
+  const { data: ensAvatar, isFetching: isFetchingEnsAvatar } = useEnsAvatar({
     name: ensName as string,
     chainId: 1,
     query: {
@@ -19,5 +19,5 @@ export const useEnsData = (address: string | undefined) => {
     }
   });
 
-  return { ensName, ensAvatar };
+  return { ensName, ensAvatar, isFetching: isFetchingEnsName || isFetchingEnsAvatar };
 };

@@ -10,6 +10,7 @@ import { IdentityType } from '../../types/ProfileType';
 import { PaymentType } from '../../types/PaymentType';
 import { useTheme } from '@mui/material/styles';
 import { useSearchParams } from 'react-router-dom';
+import { useTokenPrices } from '../../utils/queries/prices'; // Add this import
 
 export type AssetsProps = {
   identity: IdentityType;
@@ -31,6 +32,10 @@ export default function ActivityFeed({ identity, selectedChain }: AssetsProps) {
 
   const { isLoading, isFetched, data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useCompletedPayments(identity.address, accessToken);
+
+  const { isLoading: isPricesLoading } = useTokenPrices(); // Add this line
+
+  const isLoadingData = isLoading || isPricesLoading;
 
   const observer = useRef<IntersectionObserver | null>(null);
   const lastElementRef = useCallback(
@@ -88,7 +93,7 @@ export default function ActivityFeed({ identity, selectedChain }: AssetsProps) {
         msOverflowStyle: 'none',
         scrollbarWidth: 'none'
       }}>
-      {isLoading ? (
+      {isLoadingData ? ( // Change this line
         <Box display="flex" justifyContent="center" p={2}>
           <CircularProgress color="inherit" size={24} />
         </Box>

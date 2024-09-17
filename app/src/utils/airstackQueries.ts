@@ -101,6 +101,7 @@ export const QUERY_SOCIALS_INSIGHTS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE
             }
             followerCount
             userAddress
+            userId
           }
           socialFollowers(
             input: { filter: { identity: { _eq: $me }, dappName: { _eq: farcaster } } }
@@ -157,6 +158,7 @@ export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = /
             }
             followerCount
             userAddress
+            userId
           }
         }
       }
@@ -207,6 +209,7 @@ export const QUERY_SOCIALS_LIGHT = /* GraphQL */ `
         dappName
         profileName
         followerCount
+        userId
       }
     }
   }
@@ -228,6 +231,7 @@ export const QUERY_FARCASTER_PROFILE = /* GraphQL */ `
             extraSmall
           }
         }
+        userId
       }
     }
   }
@@ -249,6 +253,7 @@ export const QUERY_FARCASTER_PROFILE_BY_IDENTITY = /* GraphQL */ `
             extraSmall
           }
         }
+        userId
       }
     }
   }

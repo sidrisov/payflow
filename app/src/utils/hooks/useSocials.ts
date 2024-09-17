@@ -9,12 +9,12 @@ export function useSocialData(fid?: string, address?: string) {
   const { data, loading } = useQuery<Social>(query, variables, {
     cache: true,
     dataFormatter(data) {
-      return data.Socials.Social[0];
+      return data.Socials?.Social?.[0];
     }
   });
 
   return {
     social: data,
-    loading
+    isLoading: loading
   };
 }
