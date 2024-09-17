@@ -40,6 +40,8 @@ const usePaymentDetails = (payment: PaymentType) => {
 
   if (payment.category === 'mint' && mintData) {
     tokenAmount = '1';
+  } else if (payment.category === 'fc_storage') {
+    tokenAmount = payment.tokenAmount;
   } else {
     token = ERC20_CONTRACTS.find(
       (t) => t.chainId === payment.chainId && t.id === payment.token
@@ -169,13 +171,6 @@ const PaymentDetails = ({
         <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
           {formattedTokenAmount} Unit{parseFloat(formattedTokenAmount!) > 1 ? 's' : ''} of Storage
         </Typography>
-        <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
-          ${formattedUsdAmount}
-        </Typography>
-        <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
-          on
-        </Typography>
-        <NetworkAvatar chainId={payment.chainId} sx={{ width: 15, height: 15 }} />
       </Stack>
     );
   }
