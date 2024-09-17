@@ -50,7 +50,7 @@ const ActivityWrapper: React.FC<{
     spacing={0.5}
     alignItems="center"
     flexWrap="wrap"
-    sx={{ textWrap: 'balance' }}>
+    sx={{ textWrap: 'pretty' }}>
     <ActivityIcon identity={identity} payment={payment} />
     {children}
   </Stack>
@@ -92,9 +92,21 @@ export const PaymentDetails = ({ payment, identity }: PaymentDetailsProps) => {
               src={mintData.metadata.image}
               sx={{ width: 30, height: 30 }}
             />
-            <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
+            <Typography
+              noWrap
+              maxWidth={200}
+              variant="caption"
+              fontWeight="bold"
+              fontSize={isMobile ? 12 : 14}
+              textOverflow="ellipsis"
+              overflow="hidden">
               {mintData.metadata.name}:
-              <Typography variant="caption" display="block" color="text.secondary">
+              <Typography
+                variant="caption"
+                display="block"
+                color="text.secondary"
+                textOverflow="ellipsis"
+                overflow="hidden">
                 {mintData.collectionName}
               </Typography>
             </Typography>

@@ -27,15 +27,15 @@ export function getActivityName(identity: IdentityType, payment: PaymentType): s
 
   if (activityType === 'self') {
     if (payment.category === 'fc_storage') {
-      return 'bought storage';
+      return 'bought';
     } else if (payment.category === 'mint') {
-      return 'minted collectible';
+      return 'minted';
     }
     return 'moved funds';
   }
 
   if (payment.category) {
-    return 'gifted ' + (payment.category === 'mint' ? 'collectible' : 'storage');
+    return 'gifted';
   } else {
     return 'paid';
   }
