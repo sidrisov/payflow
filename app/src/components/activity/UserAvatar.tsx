@@ -8,15 +8,15 @@ interface UserAvatarProps extends AvatarProps {
   profile?: ProfileType;
   address?: string;
   ensAvatar?: string | null;
-  social?: Social; // Add this new prop
+  social?: Social;
 }
 
 export const UserAvatar = ({ profile, address, ensAvatar, social, ...props }: UserAvatarProps) => {
-  if (social?.profileImage) {
-    return <Avatar src={social.profileImage} {...props} />;
-  }
   if (profile) {
     return <ProfileAvatar profile={profile} {...props} />;
+  }
+  if (social?.profileImageContentValue?.image?.extraSmall) {
+    return <Avatar src={social.profileImageContentValue?.image?.extraSmall} {...props} />;
   }
   if (ensAvatar) {
     return <Avatar src={ensAvatar} {...props} />;

@@ -5,6 +5,8 @@ import { shortenWalletAddressLabel } from '../utils/address';
 import { useEnsAvatar, useEnsName } from 'wagmi';
 import CopyToClipboardIconButton from './buttons/CopyToClipboardIconButton';
 import { useDegenName } from '../utils/queries/domainNames';
+import FarcasterAvatar from './avatars/FarcasterAvatar';
+import LensAvatar from './avatars/LensAvatar';
 
 export function AddressSection(props: {
   identity: IdentityType;
@@ -45,6 +47,10 @@ export function AddressSection(props: {
     ensName ||
     degenName;
 
+  const icon =
+    social &&
+    (social.dappName === 'farcaster' ? <FarcasterAvatar size={15} /> : <LensAvatar size={15} />);
+
   return (
     <Stack maxWidth={maxWidth ?? 130} direction="row" spacing={0.5} alignItems="center">
       {social || identity.meta?.ensAvatar || (ensAvatar.isSuccess && ensAvatar.data) ? (
@@ -54,14 +60,7 @@ export function AddressSection(props: {
             horizontal: 'right'
           }}
           overlap="circular"
-          badgeContent={
-            social && (
-              <Avatar
-                src={social.dappName === 'farcaster' ? '/farcaster.svg' : '/lens.svg'}
-                sx={{ width: 15, height: 15 }}
-              />
-            )
-          }>
+          badgeContent={icon}>
           <Avatar
             src={
               social?.profileImage ??

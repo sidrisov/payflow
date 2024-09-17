@@ -34,11 +34,11 @@ export function getActivityName(identity: IdentityType, payment: PaymentType): s
     return 'moved funds';
   }
 
-  if (activityType === 'outbound' && payment.category) {
-    return 'gifted ' + payment.category === 'mint' ? 'collectible' : 'storage';
+  if (payment.category) {
+    return 'gifted ' + (payment.category === 'mint' ? 'collectible' : 'storage');
+  } else {
+    return 'paid';
   }
-
-  return 'paid';
 }
 
 export const ActivityIcon = ({

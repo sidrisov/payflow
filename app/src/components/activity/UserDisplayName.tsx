@@ -9,7 +9,7 @@ interface UserDisplayNameProps {
   profile?: ProfileType;
   address?: Address;
   ens?: string;
-  social?: Social; // Add this new prop
+  social?: Social;
   onMouseEnter?: (event: React.MouseEvent<HTMLElement>) => void;
   onMouseLeave?: () => void;
 }
@@ -22,6 +22,15 @@ export const UserDisplayName = ({
   onMouseEnter,
   onMouseLeave
 }: UserDisplayNameProps) => {
+  if (profile) {
+    return (
+      <ProfileDisplayNameWithLink
+        profile={profile}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      />
+    );
+  }
   if (social) {
     return (
       <Typography
@@ -34,15 +43,7 @@ export const UserDisplayName = ({
       </Typography>
     );
   }
-  if (profile) {
-    return (
-      <ProfileDisplayNameWithLink
-        profile={profile}
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
-      />
-    );
-  }
+
   if (address) {
     return <AddressOrEnsWithLink address={address} ens={ens} />;
   }

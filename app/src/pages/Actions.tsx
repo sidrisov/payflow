@@ -8,6 +8,7 @@ import { PiTipJar } from 'react-icons/pi';
 import { GrStorage } from 'react-icons/gr';
 
 import CastActionButton from '../components/buttons/CastActionButton';
+import FarcasterAvatar from '../components/avatars/FarcasterAvatar';
 
 export default function Actions() {
   const [openPaymentActionDialog, setOpenPaymentActionDialog] = useState<boolean>(false);
@@ -28,7 +29,7 @@ export default function Actions() {
           elevation={5}
           borderColor="divider">
           <Stack direction="row" spacing={1} alignItems="center">
-            <Avatar src="/farcaster.svg" variant="rounded" sx={{ height: 30, width: 30 }} />
+            <FarcasterAvatar size={30} />
             <Typography variant="h6">Farcaster Actions</Typography>
           </Stack>
           <Stack spacing={1.5} alignItems="center">

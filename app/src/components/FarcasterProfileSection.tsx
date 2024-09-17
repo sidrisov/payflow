@@ -1,5 +1,6 @@
 import { Avatar, Badge, Stack, Typography } from '@mui/material';
 import { Social } from '../generated/graphql/types';
+import FarcasterAvatar from './avatars/FarcasterAvatar';
 
 export function FarcasterProfileSection({
   social,
@@ -20,7 +21,7 @@ export function FarcasterProfileSection({
           horizontal: 'right'
         }}
         overlap="circular"
-        badgeContent={<Avatar src="/farcaster.svg" sx={{ width: 16, height: 16 }} />}>
+        badgeContent={<FarcasterAvatar size={16} />}>
         <Avatar
           src={social.profileImageContentValue?.image?.extraSmall ?? ''}
           sx={{ width: avatarSize, height: avatarSize }}

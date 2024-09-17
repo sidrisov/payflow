@@ -14,6 +14,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import { LoadingFarcasterAccountsSkeleton } from '../skeletons/LoadingFarcasterAccountsSkeleton';
 import { FarcasterIdentitySelectOption } from '../FarcasterIdentitySelectOption';
 import { grey } from '@mui/material/colors';
+import FarcasterAvatar from '../avatars/FarcasterAvatar';
 
 export function FarcasterAccountsCard({
   siwfResponse,
@@ -106,7 +107,7 @@ export function FarcasterAccountsCard({
         flexDirection: 'column'
       }}>
       <Stack mt={1} alignSelf="center" alignItems="center" spacing={1}>
-        <Avatar src="/farcaster.svg" variant="rounded" />
+        <FarcasterAvatar />
         <Stack alignItems="center">
           <Typography variant="h6" textAlign="center">
             Select Profile

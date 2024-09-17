@@ -15,6 +15,8 @@ import { SearchIdentityMenu } from './menu/SearchIdenitityMenu';
 import { useSearchParams } from 'react-router-dom';
 import { grey } from '@mui/material/colors';
 import { useDarkMode } from '../utils/hooks/useDarkMode';
+import FarcasterAvatar from './avatars/FarcasterAvatar';
+import LensAvatar from './avatars/LensAvatar';
 
 function addToFavourites(tags: string[]): string[] {
   const updatedTags = tags ?? [];
@@ -219,7 +221,7 @@ export function SearchIdentityListItem(
               <>
                 {identity.meta?.insights?.farcasterFollow && (
                   <Stack spacing={1} direction="row" alignItems="center">
-                    <Avatar src="/farcaster.svg" sx={{ width: 15, height: 15 }} />
+                    <FarcasterAvatar size={15} />
                     <Typography variant="caption" fontWeight="bold">
                       {identity.meta.insights.farcasterFollow === 'mutual'
                         ? 'Mutual follow'
@@ -229,7 +231,7 @@ export function SearchIdentityListItem(
                 )}
                 {identity.meta?.insights?.lensFollow && (
                   <Stack spacing={1} direction="row" alignItems="center">
-                    <Avatar src="/lens.svg" sx={{ width: 15, height: 15 }} />
+                    <LensAvatar size={15} />
                     <Typography variant="caption" fontWeight="bold">
                       {identity.meta.insights.lensFollow === 'mutual'
                         ? 'Mutual follow'

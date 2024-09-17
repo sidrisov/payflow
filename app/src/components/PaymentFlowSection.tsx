@@ -4,6 +4,7 @@ import { red } from '@mui/material/colors';
 import { PiTipJar } from 'react-icons/pi';
 import { FlowType } from '../types/FlowType';
 import { useNavigate } from 'react-router-dom';
+import FarcasterAvatar from './avatars/FarcasterAvatar';
 
 export function PaymentFlowSection({
   navigation = false,
@@ -45,7 +46,7 @@ export function PaymentFlowSection({
 
       {flow.type === 'FARCASTER_VERIFICATION' && (
         <Tooltip title="Farcaster Verification">
-          <Avatar variant="rounded" src="/farcaster.svg" sx={{ width: 20, height: 20 }} />
+          <FarcasterAvatar size={20} />
         </Tooltip>
       )}
 

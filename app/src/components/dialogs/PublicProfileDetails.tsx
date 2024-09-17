@@ -17,6 +17,8 @@ import { copyToClipboard } from '../../utils/copyToClipboard';
 import { FRAMES_URL } from '../../utils/urlConstants';
 import { toast } from 'react-toastify';
 import { FARCASTER_DAPP } from '../../utils/dapps';
+import FarcasterAvatar from '../avatars/FarcasterAvatar';
+import LensAvatar from '../avatars/LensAvatar';
 
 export function PublicProfileDetails({
   openPayDialogParam = false,
@@ -74,11 +76,7 @@ export function PublicProfileDetails({
                 <Stack my={1} spacing={1} alignSelf="center" alignItems="flex-start">
                   {socialInfo.insights.farcasterFollow && (
                     <Stack spacing={1} direction="row" alignItems="center">
-                      <Avatar
-                        variant="rounded"
-                        src="/farcaster.svg"
-                        sx={{ width: 15, height: 15 }}
-                      />
+                      <FarcasterAvatar size={15} />
                       <Typography variant="caption" fontWeight="bold" color={green.A700}>
                         {socialInfo.insights.farcasterFollow === 'mutual'
                           ? 'Mutual follow on farcaster'
@@ -88,7 +86,7 @@ export function PublicProfileDetails({
                   )}
                   {socialInfo.insights.lensFollow && (
                     <Stack spacing={1} direction="row" alignItems="center">
-                      <Avatar variant="rounded" src="/lens.svg" sx={{ width: 15, height: 15 }} />
+                      <LensAvatar size={15} />
                       <Typography variant="caption" fontWeight="bold" color={green.A700}>
                         {socialInfo.insights.lensFollow === 'mutual'
                           ? 'Mutual follow on lens'

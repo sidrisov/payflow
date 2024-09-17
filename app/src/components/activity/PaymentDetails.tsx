@@ -1,20 +1,17 @@
+import React from 'react';
 import { Avatar, Link, LinkProps, Skeleton, Stack, Typography } from '@mui/material';
 import { IdentityType } from '../../types/ProfileType';
-import { Token } from '../../utils/erc20contracts';
 import { useMobile } from '../../utils/hooks/useMobile';
 import TokenAvatar from '../avatars/TokenAvatar';
 import NetworkAvatar from '../avatars/NetworkAvatar';
 import { ActivityIcon } from './ActivityIcon';
-import { PaymentType } from '../../types/PaymentType';
 import { usePaymentActivityDetails } from '../../utils/hooks/usePaymentAcitivityDetails';
+import { PaymentType } from '../../types/PaymentType';
+import FarcasterAvatar from '../avatars/FarcasterAvatar';
 
 interface PaymentDetailsProps {
   payment: PaymentType;
   identity: IdentityType;
-  token?: Token;
-  formattedTokenAmount?: string;
-  formattedUsdAmount?: string;
-  mintData?: any;
 }
 
 interface BlockExplorerLinkProps extends Omit<LinkProps, 'href'> {
@@ -43,6 +40,22 @@ export const BlockExplorerLink: React.FC<BlockExplorerLinkProps> = ({
   );
 };
 
+const ActivityWrapper: React.FC<{
+  payment: PaymentType;
+  identity: IdentityType;
+  children: React.ReactNode;
+}> = ({ payment, identity, children }) => (
+  <Stack
+    direction="row"
+    spacing={0.5}
+    alignItems="center"
+    flexWrap="wrap"
+    sx={{ textWrap: 'balance' }}>
+    <ActivityIcon identity={identity} payment={payment} />
+    {children}
+  </Stack>
+);
+
 export const PaymentDetails = ({ payment, identity }: PaymentDetailsProps) => {
   const isMobile = useMobile();
   const { token, formattedTokenAmount, formattedUsdAmount, defaultBlockExplorerUrl, mintData } =
@@ -51,16 +64,12 @@ export const PaymentDetails = ({ payment, identity }: PaymentDetailsProps) => {
   const renderContent = () => {
     if (payment.category === 'fc_storage') {
       return (
-        <Stack
-          direction="row"
-          spacing={0.5}
-          alignItems="center"
-          flexWrap="wrap"
-          sx={{ textWrap: 'balance' }}>
+        <Stack direction="row" spacing={0.5} alignItems="center">
           <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
-            {formattedTokenAmount} unit{parseFloat(formattedTokenAmount!) > 1 ? 's' : ''} of
-            farcaster storage
+            {formattedTokenAmount} unit{formattedTokenAmount !== '1' ? 's' : ''} of farcaster
+            storage
           </Typography>
+          <FarcasterAvatar size={15} />
         </Stack>
       );
     }
@@ -68,16 +77,16 @@ export const PaymentDetails = ({ payment, identity }: PaymentDetailsProps) => {
     if (payment.category === 'mint') {
       if (mintData === undefined) {
         return (
-          <Stack direction="row" spacing={0.5} alignItems="center">
+          <>
             <Skeleton variant="rounded" width={25} height={25} />
             <Skeleton variant="text" width={120} />
-          </Stack>
+          </>
         );
       }
 
       if (mintData) {
         return (
-          <Stack direction="row" spacing={1} alignItems="center" useFlexGap>
+          <>
             <Avatar
               variant="rounded"
               src={mintData.metadata.image}
@@ -89,20 +98,14 @@ export const PaymentDetails = ({ payment, identity }: PaymentDetailsProps) => {
                 {mintData.collectionName}
               </Typography>
             </Typography>
-          </Stack>
+          </>
         );
       }
     }
 
     // Default case (for regular payments)
     return (
-      <Stack
-        direction="row"
-        spacing={0.5}
-        alignItems="center"
-        flexWrap="wrap"
-        sx={{ textWrap: 'balance' }}>
-        <ActivityIcon identity={identity} payment={payment} />
+      <>
         <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
           {formattedTokenAmount} {token!.name}
         </Typography>
@@ -114,15 +117,21 @@ export const PaymentDetails = ({ payment, identity }: PaymentDetailsProps) => {
           on
         </Typography>
         <NetworkAvatar chainId={payment.chainId} sx={{ width: 15, height: 15 }} />
-      </Stack>
+      </>
     );
   };
 
+  const content = (
+    <ActivityWrapper payment={payment} identity={identity}>
+      {renderContent()}
+    </ActivityWrapper>
+  );
+
   return defaultBlockExplorerUrl && payment.hash ? (
     <BlockExplorerLink blockExplorerUrl={defaultBlockExplorerUrl} txHash={payment.hash}>
-      {renderContent()}
+      {content}
     </BlockExplorerLink>
   ) : (
-    renderContent()
+    content
   );
 };
