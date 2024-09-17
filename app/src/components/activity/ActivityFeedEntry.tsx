@@ -66,16 +66,16 @@ export default function PublicProfileActivityFeedSection(
   if (!payment.senderAddress && !payment.sender?.identity) {
     console.error('Missing sender information');
     return (
-      <Typography textAlign="center" color="error">
+      <Typography fontSize={12} textAlign="center" color="error">
         Error: Missing sender information
       </Typography>
     );
   }
 
-  if (!payment.receiverAddress && !payment.receiver?.identity) {
+  if (!payment.receiverAddress && !payment.receiver?.identity && !payment.receiverFid) {
     console.error('Missing receiver information');
     return (
-      <Typography textAlign="center" color="error">
+      <Typography fontSize={12} textAlign="center" color="error">
         Error: Missing receiver information
       </Typography>
     );

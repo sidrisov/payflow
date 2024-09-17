@@ -1,6 +1,5 @@
 import React from 'react';
 import { Avatar, Link, LinkProps, Skeleton, Stack, Typography } from '@mui/material';
-import { IdentityType } from '../../types/ProfileType';
 import { useMobile } from '../../utils/hooks/useMobile';
 import TokenAvatar from '../avatars/TokenAvatar';
 import NetworkAvatar from '../avatars/NetworkAvatar';
@@ -89,7 +88,7 @@ export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
             <Avatar
               variant="rounded"
               src={mintData.metadata.image}
-              sx={{ width: 40, height: 40 }}
+              sx={{ width: 35, height: 35 }}
             />
             <Typography
               noWrap
