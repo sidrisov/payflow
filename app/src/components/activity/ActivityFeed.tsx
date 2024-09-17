@@ -99,8 +99,8 @@ export default function ActivityFeed({ identity, selectedChain }: AssetsProps) {
               {Object.entries(groupedTransactions).map(([date, payments], index, array) => (
                 <Box key={date} sx={{ position: 'relative' }}>
                   <Typography
-                    variant="body2"
                     textAlign="center"
+                    fontSize={14}
                     sx={{
                       position: 'sticky',
                       zIndex: 2,
