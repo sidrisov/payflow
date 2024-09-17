@@ -1,5 +1,5 @@
 import { Dialog, DialogTitle, DialogContent, DialogProps } from '@mui/material';
-import PublicProfileActivityFeed from '../PublicProfileActivityFeed';
+import ActivityFeed from '../activity/ActivityFeed';
 import { useContext } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { Address } from 'viem';
@@ -32,7 +32,7 @@ export default function ActivityComposerActionDialog({
       }}>
       <DialogContent>
         {profile && (
-          <PublicProfileActivityFeed
+          <ActivityFeed
             identity={{
               address: profile.identity as Address,
               profile: profile

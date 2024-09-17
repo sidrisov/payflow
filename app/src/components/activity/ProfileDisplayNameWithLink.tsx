@@ -1,6 +1,6 @@
 import { Link, LinkProps, Typography } from '@mui/material';
-import { ProfileType } from '../types/ProfileType';
-import { useMobile } from '../utils/hooks/useMobile';
+import { ProfileType } from '../../types/ProfileType';
+import { useMobile } from '../../utils/hooks/useMobile';
 
 export function ProfileDisplayNameWithLink({
   profile,

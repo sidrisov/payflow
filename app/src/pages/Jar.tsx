@@ -1,12 +1,4 @@
-import {
-  Box,
-  Button,
-  Chip,
-  Container,
-  Skeleton,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { Box, Button, Chip, Container, Skeleton, Stack, Typography } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
 import { useJar } from '../utils/queries/jars';
@@ -24,7 +16,7 @@ import { ProfileContext } from '../contexts/UserContext';
 import ChoosePaymentOptionDialog from '../components/dialogs/ChoosePaymentOptionDialog';
 import { IdentityType, ProfileType } from '../types/ProfileType';
 import ProfileAvatar from '../components/avatars/ProfileAvatar';
-import { ProfileDisplayNameWithLink } from '../components/ProfileDisplayNameWithLink';
+import { ProfileDisplayNameWithLink } from '../components/activity/ProfileDisplayNameWithLink';
 import { PublicProfileDetailsPopover } from '../components/menu/PublicProfileDetailsPopover';
 import { useMobile } from '../utils/hooks/useMobile';
 

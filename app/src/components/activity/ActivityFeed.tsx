@@ -1,13 +1,13 @@
 import { Box, Typography, Stack, CircularProgress } from '@mui/material';
-import PublicProfileActivityFeedSection from './PublicProfileActivityFeedPayment';
+import PublicProfileActivityFeedSection from './ActivityFeedEntry';
 import { useAccount } from 'wagmi';
 import { useContext, useMemo, useCallback, useRef, useState } from 'react';
-import { ProfileContext } from '../contexts/UserContext';
+import { ProfileContext } from '../../contexts/UserContext';
 import { Chain } from 'viem';
-import { useCompletedPayments } from '../utils/queries/payments';
+import { useCompletedPayments } from '../../utils/queries/payments';
 import { format, parseISO, isToday, isYesterday } from 'date-fns';
-import { IdentityType } from '../types/ProfileType';
-import { PaymentType } from '../types/PaymentType';
+import { IdentityType } from '../../types/ProfileType';
+import { PaymentType } from '../../types/PaymentType';
 import { useTheme } from '@mui/material/styles';
 import { useSearchParams } from 'react-router-dom';
 
@@ -22,7 +22,7 @@ const formatDate = (date: Date) => {
   return format(date, 'd MMMM');
 };
 
-export default function PublicProfileActivityFeed({ identity, selectedChain }: AssetsProps) {
+export default function ActivityFeed({ identity, selectedChain }: AssetsProps) {
   const theme = useTheme();
   const { profile: loggedProfile } = useContext(ProfileContext);
   const { address } = useAccount();

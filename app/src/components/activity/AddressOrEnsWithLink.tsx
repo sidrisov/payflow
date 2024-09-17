@@ -1,8 +1,8 @@
 import { Link, LinkProps, Typography } from '@mui/material';
-import { socialLink } from '../utils/dapps';
+import { socialLink } from '../../utils/dapps';
 import { Address } from 'viem';
-import { shortenWalletAddressLabel } from '../utils/address';
-import { useMobile } from '../utils/hooks/useMobile';
+import { shortenWalletAddressLabel } from '../../utils/address';
+import { useMobile } from '../../utils/hooks/useMobile';
 
 export function AddressOrEnsWithLink({
   address,

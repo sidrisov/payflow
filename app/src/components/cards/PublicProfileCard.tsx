@@ -1,6 +1,6 @@
 import { Box, Card, CardProps } from '@mui/material';
 import { IdentityType } from '../../types/ProfileType';
-import PublicProfileActivityFeed from '../PublicProfileActivityFeed';
+import ActivityFeed from '../activity/ActivityFeed';
 import { PublicProfileDetails } from '../dialogs/PublicProfileDetails';
 import { useSearchParams } from 'react-router-dom';
 
@@ -22,7 +22,7 @@ export function PublicProfileCard({ identity, ...props }: { identity: IdentityTy
         <PublicProfileDetails openPayDialogParam={pay !== null} identity={identity} />
       </Card>
 
-      <PublicProfileActivityFeed identity={identity} />
+      <ActivityFeed identity={identity} />
     </Box>
   );
 }
