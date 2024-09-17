@@ -38,7 +38,7 @@ const usePaymentDetails = (payment: PaymentType) => {
 
   let token, tokenAmount, usdAmount, formattedTokenAmount, formattedUsdAmount;
 
-  if (payment.category === 'mint' && mintData) {
+  if (payment.category === 'mint') {
     tokenAmount = '1';
   } else if (payment.category === 'fc_storage') {
     tokenAmount = payment.tokenAmount;
