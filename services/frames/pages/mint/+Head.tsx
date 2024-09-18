@@ -11,10 +11,26 @@ export function Head() {
 
   const author = useData<Data>();
 
-  const original =
-    provider === 'zora.co'
-      ? `https://zora.co/collect/${chainId}:${contract}/${tokenId || ''}${referral ? `?referrer=${referral}` : ''}`
-      : `https://rodeo.club/post/${contract}/${tokenId || ''}${referral ? `?referrer=${referral}` : ''}`;
+  const providerInfo = {
+    'zora.co': {
+      name: 'Zora',
+      url: (chainId: string, contract: string, tokenId?: string, referral?: string) =>
+        `https://zora.co/collect/${chainId}:${contract}/${tokenId || ''}${referral ? `?referrer=${referral}` : ''}`
+    },
+    'highlight.xyz': {
+      name: 'Highlight',
+      url: (chainId: string, contract: string, tokenId?: string, referral?: string) =>
+        `https://highlight.xyz/mint/${chainId}:${contract}${tokenId ? `/${tokenId}` : ''}${referral ? `?referrer=${referral}` : ''}`
+    },
+    'rodeo.club': {
+      name: 'Rodeo',
+      url: (chainId: string, contract: string, tokenId?: string, referral?: string) =>
+        `https://rodeo.club/post/${contract}/${tokenId || ''}${referral ? `?referrer=${referral}` : ''}`
+    }
+  };
+
+  const providerName = providerInfo[provider as keyof typeof providerInfo]?.name || 'Unknown Provider';
+  const original = providerInfo[provider as keyof typeof providerInfo]?.url(chainId, contract, tokenId, referral) || '';
 
   const imageUrl = `${FRAMES_URL}/images/mint.png?provider=${provider}&chainId=${chainId}&contract=${contract}&tokenId=${tokenId}`;
 
@@ -100,7 +116,7 @@ export function Head() {
         <meta property="fc:frame:button:1:target" content={paymentMintSubmitUrl.toString()} />
         <meta
           property="fc:frame:button:2"
-          content={`${provider === 'zora.co' ? 'Zora' : 'Rodeo'}`}
+          content={providerName}
         />
         <meta property="fc:frame:button:2:action" content="link" />
         <meta property="fc:frame:button:2:target" content={original} />

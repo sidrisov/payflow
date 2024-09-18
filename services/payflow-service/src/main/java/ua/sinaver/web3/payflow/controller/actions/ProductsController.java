@@ -19,6 +19,7 @@ import ua.sinaver.web3.payflow.utils.FrameResponse;
 import java.util.Objects;
 
 import static ua.sinaver.web3.payflow.service.TokenService.PAYMENT_CHAIN_IDS;
+import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS;
 
 @RestController
 @RequestMapping("/farcaster/actions/products")
@@ -72,9 +73,8 @@ public class ProductsController {
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
 				validateMessage.action().url());
 
-		val castAuthor = validateMessage.action().cast().author() != null ?
-				validateMessage.action().cast().author() :
-				neynarService.fetchFarcasterUser(validateMessage.action().cast().fid());
+		val castAuthor = validateMessage.action().cast().author() != null ? validateMessage.action().cast().author()
+				: neynarService.fetchFarcasterUser(validateMessage.action().cast().fid());
 		val castInteractor = validateMessage.action().interactor();
 
 		val clickedProfile = identityService.getProfiles(castInteractor.addressesWithoutCustodialIfAvailable())
@@ -111,6 +111,8 @@ public class ProductsController {
 		val embeds = validateMessage.action().cast().embeds()
 				.stream().map(Cast.Embed::url).filter(Objects::nonNull).toList();
 
+		log.debug("Potential collectible embeds: {}", embeds);
+
 		ParsedMintUrlMessage parsedMintUrlMessage = null;
 		for (val embed : embeds) {
 			parsedMintUrlMessage = ParsedMintUrlMessage.parse(embed);
@@ -124,7 +126,20 @@ public class ProductsController {
 					new FrameResponse.FrameMessage("No supported collection found!"));
 		}
 
-		val chainId = PAYMENT_CHAIN_IDS.get(parsedMintUrlMessage.chain());
+		Integer chainId;
+		try {
+			// Try parsing the chain as a number
+			val parsedChainId = Integer.parseInt(parsedMintUrlMessage.chain());
+			if (SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS.contains(parsedChainId)) {
+				chainId = parsedChainId;
+			} else {
+				chainId = null;
+			}
+		} catch (NumberFormatException e) {
+			// If not a number, fall back to string-based lookup
+			chainId = PAYMENT_CHAIN_IDS.get(parsedMintUrlMessage.chain());
+		}
+
 		if (chainId == null) {
 			log.error("Chain not supported for minting on payflow: {}", parsedMintUrlMessage);
 			return ResponseEntity.badRequest().body(

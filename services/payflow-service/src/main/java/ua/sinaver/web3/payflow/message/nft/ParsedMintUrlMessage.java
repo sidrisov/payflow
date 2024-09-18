@@ -2,8 +2,11 @@ package ua.sinaver.web3.payflow.message.nft;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.HttpURLConnection;
+import java.net.URI;
 import java.util.List;
 
 @Slf4j
@@ -18,7 +21,8 @@ public record ParsedMintUrlMessage(
 	public static final String ZORA_PROVIDER = "zora.co";
 	public static final String RODEO_PROVIDER = "rodeo.club";
 	public static final String HIGHLIGHTS_PROVIDER = "highlight.xyz";
-	public static final List<String> SUPPORTED_MINT_PROVIDERS = List.of(ZORA_PROVIDER, RODEO_PROVIDER);
+	public static final List<String> SUPPORTED_MINT_PROVIDERS = List.of(ZORA_PROVIDER, RODEO_PROVIDER,
+			HIGHLIGHTS_PROVIDER);
 
 	// Static method to parse the URL
 	public static ParsedMintUrlMessage parse(String url) {
@@ -37,35 +41,97 @@ public record ParsedMintUrlMessage(
 			return null;
 		}
 
+		ParsedMintUrlMessage result = switch (provider) {
+			case ZORA_PROVIDER -> parseZora(uriComponents);
+			case RODEO_PROVIDER -> parseRodeo(uriComponents);
+			case HIGHLIGHTS_PROVIDER -> parseHighlight(uriComponents);
+			default -> null;
+		};
+
+		if (result != null) {
+			// Extract optional referral
+			val referral = uriComponents.getQueryParams().getFirst("referrer");
+			return new ParsedMintUrlMessage(result.provider(), result.chain(), result.contract(), result.tokenId(),
+					referral, result.author());
+		}
+		return null;
+	}
+
+	private static ParsedMintUrlMessage parseZora(UriComponents uriComponents) {
 		val pathParts = uriComponents.getPath().split("/");
-		String chain = null;
-		String contract = null;
-		Integer tokenId = null;
-
-		if (provider.equals(HIGHLIGHTS_PROVIDER)) {
-			if (pathParts.length >= 3) {
-				contract = pathParts[2];
-			}
-		} else if (pathParts.length >= 4) {
-			if ((provider.equals(ZORA_PROVIDER) && !pathParts[1].equals("collect"))
-					|| (provider.equals(RODEO_PROVIDER) && !pathParts[1].equals("post"))) {
-				return null;
-			}
-
-			if (pathParts[2].contains(":")) {
-				String[] chainAndContract = pathParts[2].split(":");
-				chain = chainAndContract[0];
-				contract = chainAndContract[1];
-			} else {
-				chain = "base";
-				contract = pathParts[2];
-			}
-			tokenId = Integer.parseInt(pathParts[3]);
+		if (pathParts.length < 4 || !pathParts[1].equals("collect")) {
+			return null;
 		}
 
-		// Extract optional referral
-		val referral = uriComponents.getQueryParams().getFirst("referrer");
-		return new ParsedMintUrlMessage(provider, chain, contract, tokenId, referral, null);
+		String chain;
+		String contract;
+		if (pathParts[2].contains(":")) {
+			val chainAndContract = pathParts[2].split(":");
+			chain = chainAndContract[0];
+			contract = chainAndContract[1];
+		} else {
+			chain = "base";
+			contract = pathParts[2];
+		}
+		val tokenId = Integer.parseInt(pathParts[3]);
+		return new ParsedMintUrlMessage(ZORA_PROVIDER, chain, contract, tokenId, null, null);
+	}
+
+	private static ParsedMintUrlMessage parseRodeo(UriComponents uriComponents) {
+		val pathParts = uriComponents.getPath().split("/");
+		if (pathParts.length < 4 || !pathParts[1].equals("post")) {
+			return null;
+		}
+
+		String chain;
+		String contract;
+		if (pathParts[2].contains(":")) {
+			val chainAndContract = pathParts[2].split(":");
+			chain = chainAndContract[0];
+			contract = chainAndContract[1];
+		} else {
+			chain = "base";
+			contract = pathParts[2];
+		}
+		val tokenId = Integer.parseInt(pathParts[3]);
+		return new ParsedMintUrlMessage(RODEO_PROVIDER, chain, contract, tokenId, null, null);
+	}
+
+	private static ParsedMintUrlMessage parseHighlight(UriComponents uriComponents) {
+		val pathParts = uriComponents.getPath().split("/");
+		if (pathParts.length < 3 || !pathParts[1].equals("mint")) {
+			return null;
+		}
+
+		String chain;
+		String contract;
+
+		if (pathParts[2].contains(":")) {
+			val chainAndContract = pathParts[2].split(":");
+			chain = chainAndContract[0];
+			contract = chainAndContract[1];
+		} else {
+			val redirectLocation = getRedirectLocation(uriComponents.toUriString());
+			if (redirectLocation == null) {
+				return null;
+			}
+			UriComponents redirectComponents = UriComponentsBuilder.fromUriString(redirectLocation).build();
+			return parseHighlight(redirectComponents);
+		}
+
+		return new ParsedMintUrlMessage(HIGHLIGHTS_PROVIDER, chain, contract, null, null, null);
+	}
+
+	private static String getRedirectLocation(String url) {
+		try {
+			val connection = (HttpURLConnection) URI.create(url).toURL().openConnection();
+			connection.setRequestMethod("HEAD");
+			connection.setInstanceFollowRedirects(false);
+			return connection.getHeaderField("Location");
+		} catch (Exception e) {
+			log.error("Error getting redirect location for URL: {}", url, e);
+			return null;
+		}
 	}
 
 	public static ParsedMintUrlMessage fromCompositeToken(String compositeToken, String chainId) {
