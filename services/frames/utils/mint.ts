@@ -1,5 +1,5 @@
 import { readContract } from '@wagmi/core';
-import { Address } from 'viem';
+import { Address, erc721Abi } from 'viem';
 import { wagmiConfig } from './wagmi';
 import { zoraErc1155Abi } from './abis/zoraErc1155Abi';
 import axios from 'axios';
@@ -34,22 +34,38 @@ export async function fetchMintData(
   contract: Address,
   tokenId?: number
 ): Promise<MintMetadata | undefined> {
+  const mintType = provider === 'highlight.xyz' ? 'erc721' : 'erc1155';
   try {
+    console.log(`Fetching collection owner for contract: ${contract}`);
     const collectionOwner = await fetchCollectionOwner(chainId, contract);
+    console.log(`Collection owner: ${collectionOwner}`);
+
+    console.log(`Fetching identity for collection owner: ${collectionOwner}`);
     const identityResponse = await axios.get(`${API_URL}/api/user/identities/${collectionOwner}`);
+    console.log(`Identity response:`, identityResponse.data);
+
     const identity =
       identityResponse.data !== ''
         ? identityResponse.data
         : ({ address: collectionOwner } as IdentityType);
+    console.log(`Resolved identity:`, identity);
 
+    console.log(`Fetching collection name for contract: ${contract}`);
     const collectionName = tokenId
       ? (await fetchCollectionName(chainId, contract)).concat(` #${tokenId}`)
       : await fetchCollectionName(chainId, contract);
+    console.log(`Collection name: ${collectionName}`);
 
-    const tokenMetadataUri = tokenId
-      ? await fetchCollectionTokenMetadataURI(chainId, contract, tokenId)
-      : null;
+    console.log(`Fetching token metadata URI for tokenId: ${tokenId}`);
+    const tokenMetadataUri = await fetchCollectionTokenMetadataURI(
+      mintType,
+      chainId,
+      contract,
+      tokenId ?? 1
+    );
+    console.log(`Token metadata URI: ${tokenMetadataUri}`);
 
+    console.log(`Fetching token metadata from URI: ${tokenMetadataUri}`);
     const metadata = tokenMetadataUri ? await fetchTokenMetadata(tokenMetadataUri) : null;
 
     if (!metadata) {
@@ -93,15 +109,18 @@ export async function fetchCollectionName(chainId: number, contract: Address): P
 }
 
 export async function fetchCollectionTokenMetadataURI(
+  mintType: 'erc721' | 'erc1155',
   chainId: number,
   contract: Address,
   tokenId: number
 ): Promise<string> {
+  const functionName = mintType === 'erc721' ? 'tokenURI' : 'uri';
+  const abi = mintType === 'erc721' ? erc721Abi : zoraErc1155Abi;
   return (await readContract(wagmiConfig, {
     chainId: chainId as any,
     address: contract,
-    abi: zoraErc1155Abi,
-    functionName: 'uri',
+    abi,
+    functionName: functionName as any,
     args: [BigInt(tokenId)]
   })) as string;
 }
@@ -114,7 +133,7 @@ export async function fetchTokenMetadata(metadataUri: string) {
     const metadata = metadataResponse.data;
     const name = metadata.name;
     const imageUri = metadata.image;
-    const resolvedImageUri = `https://media.decentralized-content.com/-/rs:fit:800:800/${btoa(resolveIpfsUri(imageUri))}`;
+    const resolvedImageUri = `https://media.decentralized-content.com/-/rs:fit:600:600/${btoa(resolveIpfsUri(imageUri))}`;
 
     console.debug('Metadata:', metadata);
     console.debug('Image URL:', resolvedImageUri);

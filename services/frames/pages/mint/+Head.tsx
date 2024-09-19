@@ -32,7 +32,15 @@ export function Head() {
   const providerName = providerInfo[provider as keyof typeof providerInfo]?.name || 'Unknown Provider';
   const original = providerInfo[provider as keyof typeof providerInfo]?.url(chainId, contract, tokenId, referral) || '';
 
-  const imageUrl = `${FRAMES_URL}/images/mint.png?provider=${provider}&chainId=${chainId}&contract=${contract}&tokenId=${tokenId}`;
+  const imageUrl = new URL(`${FRAMES_URL}/images/mint.png`);
+  imageUrl.searchParams.append('provider', provider);
+  imageUrl.searchParams.append('chainId', chainId);
+  imageUrl.searchParams.append('contract', contract);
+  if (tokenId) {
+    imageUrl.searchParams.append('tokenId', tokenId);
+  }
+
+  const imageUrlString = imageUrl.toString();
 
   const paymentMintSubmitUrl = new URL(`${API_URL}/api/farcaster/frames/mint/submit`);
   paymentMintSubmitUrl.searchParams.append('provider', provider);
@@ -107,7 +115,7 @@ export function Head() {
 
         <meta property="fc:frame" content="vNext" />
 
-        <meta property="fc:frame:image" content={imageUrl} />
+        <meta property="fc:frame:image" content={imageUrlString} />
         <meta property="fc:frame:image:aspect_ratio" content="1:1" />
         <meta property="fc:frame:input:text" content="Gift username (blank for self)" />
 

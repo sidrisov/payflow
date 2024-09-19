@@ -5,7 +5,7 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
     application
-    id("org.springframework.boot") version "3.3.3"
+    id("org.springframework.boot") version "3.3.4"
     id("io.spring.dependency-management") version "1.1.4"
     id("com.google.cloud.artifactregistry.gradle-plugin") version "2.2.1"
     id("io.freefair.lombok") version "8.4"
@@ -26,13 +26,16 @@ repositories {
 }
 
 if (project.hasProperty("gcp")) {
-    extra["springCloudGcpVersion"] = "5.4.3"
-    extra["springCloudVersion"] = "2023.0.2"
+    extra["springCloudGcpVersion"] = "5.6.0"
+    extra["springCloudVersion"] = "2023.0.3"
 }
 
-extra["flywayVersion"] = "10.17.3"
+extra["flywayVersion"] = "10.18.0"
 
 dependencies {
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -77,9 +80,9 @@ dependencies {
     implementation("com.google.code.gson:gson:2.11.0")
 
     // java.lang.NoSuchMethodError: 'reactor.core.publisher.Mono reactor.core.publisher.Mono.onErrorComplete()'
-    implementation("io.projectreactor:reactor-core:3.6.9")
+    implementation("io.projectreactor:reactor-core:3.6.10")
 
-    runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.112.Final:osx-aarch_64")
+    runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.113.Final:osx-aarch_64")
 
     // crypto
     implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
@@ -204,6 +207,8 @@ tasks.withType<BootRun> {
     } else {
         systemProperty("spring.profiles.active", "local,caffeine")
     }
+
+    sourceResources(sourceSets["main"])
 }
 
 // gradle -d  bootBuildImage -P{profile} \                                    ✘ INT  10:54:12

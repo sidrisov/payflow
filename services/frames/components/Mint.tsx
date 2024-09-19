@@ -34,6 +34,12 @@ function Mint({
     identity.meta?.ens ??
     shortenWalletAddressLabel2(identity.address);
   const profileImage = identity.profile?.profileImage ?? farcasterSocial?.profileImage;
+  
+  const providerImage = 
+    provider === 'zora.co' ? 'zora.png' :
+    provider === 'highlight.xyz' ? 'highlight.png' :
+    'rodeo.png';
+
   return (
     <Card>
       <div
@@ -105,9 +111,7 @@ function Mint({
             gap: 5
           }}>
           <img
-            src={assetImageSrc(
-              `/assets/apps/${provider === 'zora.co' ? 'zora.png' : 'rodeo_club.png'}`
-            )}
+            src={assetImageSrc(`/assets/apps/${providerImage}`)}
             alt="provider"
             style={{ height: 28, width: 28, borderRadius: '50%' }}
           />

@@ -207,7 +207,7 @@ async function startServer() {
       const provider = req.query.provider as string;
       const chainId = parseInt(req.query.chainId as string);
       const contract = req.query.contract as Address;
-      const tokenId = parseInt(req.query.tokenId as string) as number;
+      const tokenId = req.query.tokenId ? parseInt(req.query.tokenId as string) : undefined;
 
       const mintData = await fetchMintData(provider, chainId, contract, tokenId);
       if (!mintData) {

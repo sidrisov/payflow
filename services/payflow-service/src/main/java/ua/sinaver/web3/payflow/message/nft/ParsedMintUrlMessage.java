@@ -2,11 +2,13 @@ package ua.sinaver.web3.payflow.message.nft;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
 
-import java.net.HttpURLConnection;
-import java.net.URI;
 import java.util.List;
 
 @Slf4j
@@ -23,6 +25,10 @@ public record ParsedMintUrlMessage(
 	public static final String HIGHLIGHTS_PROVIDER = "highlight.xyz";
 	public static final List<String> SUPPORTED_MINT_PROVIDERS = List.of(ZORA_PROVIDER, RODEO_PROVIDER,
 			HIGHLIGHTS_PROVIDER);
+
+	private static final WebClient webClient = WebClient.builder()
+			.clientConnector(new ReactorClientHttpConnector(HttpClient.create().followRedirect(false)))
+			.build();
 
 	// Static method to parse the URL
 	public static ParsedMintUrlMessage parse(String url) {
@@ -112,22 +118,32 @@ public record ParsedMintUrlMessage(
 			contract = chainAndContract[1];
 		} else {
 			val redirectLocation = getRedirectLocation(uriComponents.toUriString());
+			log.debug("Redirected from {} to: {}", uriComponents.toUriString(), redirectLocation);
 			if (redirectLocation == null) {
 				return null;
 			}
-			UriComponents redirectComponents = UriComponentsBuilder.fromUriString(redirectLocation).build();
+			val redirectComponents = UriComponentsBuilder.fromUriString(redirectLocation).build();
 			return parseHighlight(redirectComponents);
 		}
 
 		return new ParsedMintUrlMessage(HIGHLIGHTS_PROVIDER, chain, contract, null, null, null);
 	}
 
-	private static String getRedirectLocation(String url) {
+	public static String getRedirectLocation(String url) {
 		try {
-			val connection = (HttpURLConnection) URI.create(url).toURL().openConnection();
-			connection.setRequestMethod("HEAD");
-			connection.setInstanceFollowRedirects(false);
-			return connection.getHeaderField("Location");
+			return webClient.get()
+					.uri(url)
+					.exchangeToMono(response -> {
+						if (response.statusCode().is3xxRedirection()) {
+							String location = response.headers().header("Location").getFirst();
+							log.debug("Redirect location: {}", location);
+							return Mono.just(location);
+						} else {
+							log.debug("No redirection");
+							return Mono.empty();
+						}
+					})
+					.block();
 		} catch (Exception e) {
 			log.error("Error getting redirect location for URL: {}", url, e);
 			return null;
