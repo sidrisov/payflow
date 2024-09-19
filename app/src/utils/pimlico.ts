@@ -71,8 +71,6 @@ const pimlicoRpcNetworkName = (chainId: number) => {
 
 // mainnet sponsorship policies
 const BASE_POLICIES = JSON.parse(import.meta.env.VITE_PIMLICO_SPONSORED_POLICY_BASE) as string[];
-const OP_POLICIES = JSON.parse(import.meta.env.VITE_PIMLICO_SPONSORED_POLICY_OP) as string[];
-const DEGEN_POLICIES = JSON.parse(import.meta.env.VITE_PIMLICO_SPONSORED_POLICY_DEGEN) as string[];
 // testnet sponsorship policies
 const BASE_SEPOLIA_POLICIES = JSON.parse(
   import.meta.env.VITE_PIMLICO_SPONSORED_POLICY_BASE_SEPOLIA
@@ -86,10 +84,6 @@ export const paymasterSponsorshipPolicyIds = (chainId: number) => {
     case degen.id:
     case mode.id:
       return BASE_POLICIES;
-    /* case optimism.id:
-      return OP_POLICIES;
-    case degen.id:
-      return DEGEN_POLICIES; */
     case baseSepolia.id:
       return BASE_SEPOLIA_POLICIES;
     default:
