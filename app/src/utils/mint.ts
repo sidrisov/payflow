@@ -1,6 +1,6 @@
 import { readContract } from '@wagmi/core';
 import axios from 'axios';
-import { Address, PublicClient } from 'viem';
+import { Address, erc721Abi, PublicClient } from 'viem';
 import { IdentityType } from '../types/ProfileType';
 import { API_URL, FRAMES_URL } from './urlConstants';
 import { wagmiConfig } from './wagmiConfig';
@@ -91,24 +91,38 @@ export async function fetchMintData(
         salesStatus: secondaryInfo?.saleEnd ? 'ended' : 'live'
       };
     }
+    const mintType = provider === 'highlight.xyz' ? '721' : '1155';
 
+    console.log(`Fetching collection owner for contract: ${contract}`);
     const collectionOwner = await fetchCollectionOwner(chainId, contract);
+    console.log(`Collection owner: ${collectionOwner}`);
+
+    console.log(`Fetching identity for collection owner: ${collectionOwner}`);
     const identityResponse = await axios.get(`${API_URL}/api/user/identities/${collectionOwner}`);
-    const owner =
+    console.log(`Identity response:`, identityResponse.data);
+
+    const identity =
       identityResponse.data !== ''
         ? identityResponse.data
         : ({ address: collectionOwner } as IdentityType);
+    console.log(`Resolved identity:`, identity);
 
+    console.log(`Fetching collection name for contract: ${contract}`);
     const collectionName = tokenId
       ? (await fetchCollectionName(chainId, contract)).concat(` #${tokenId}`)
       : await fetchCollectionName(chainId, contract);
+    console.log(`Collection name: ${collectionName}`);
 
-    console.log('Collection name:', collectionName);
+    console.log(`Fetching token metadata URI for tokenId: ${tokenId}`);
+    const tokenMetadataUri = await fetchCollectionTokenMetadataURI(
+      mintType,
+      chainId,
+      contract,
+      tokenId ?? 1
+    );
+    console.log(`Token metadata URI: ${tokenMetadataUri}`);
 
-    const tokenMetadataUri = tokenId
-      ? await fetchCollectionTokenMetadataURI(chainId, contract, tokenId)
-      : null;
-
+    console.log(`Fetching token metadata from URI: ${tokenMetadataUri}`);
     const metadata = tokenMetadataUri ? await fetchTokenMetadata(tokenMetadataUri) : null;
 
     if (!metadata) {
@@ -123,8 +137,8 @@ export async function fetchMintData(
       referral,
       collectionName,
       metadata,
-      owner,
-      mintType: '1155'
+      owner: identity,
+      mintType
     };
   } catch (error) {
     console.error('Failed to fetch mint data:', error);
@@ -161,15 +175,18 @@ export async function fetchCollectionName(chainId: number, contract: Address): P
 }
 
 export async function fetchCollectionTokenMetadataURI(
+  mintType: '721' | '1155',
   chainId: number,
   contract: Address,
   tokenId: number
 ): Promise<string> {
+  const functionName = mintType === '721' ? 'tokenURI' : 'uri';
+  const abi = mintType === '721' ? erc721Abi : zoraErc1155Abi;
   return (await readContract(wagmiConfig, {
     chainId: chainId as any,
     address: contract,
-    abi: zoraErc1155Abi,
-    functionName: 'uri',
+    abi,
+    functionName: functionName as any,
     args: [BigInt(tokenId)]
   })) as string;
 }
