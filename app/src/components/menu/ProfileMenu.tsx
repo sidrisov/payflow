@@ -2,12 +2,10 @@ import { Divider, ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui
 import { ProfileType } from '../../types/ProfileType';
 import { useNavigate } from 'react-router-dom';
 import {
-  GridView,
   Groups,
   Help,
   LeaderboardRounded,
   Logout,
-  Person,
   PersonAdd,
   QuestionAnswer,
   Settings
@@ -46,21 +44,11 @@ export function ProfileMenu({
           sx={{ minWidth: 150 }}
           onClick={async () => {
             closeStateCallback();
-            navigate(`/${profile.username}`);
+            navigate('/profile');
           }}>
           <ProfileSection maxWidth={150} profile={profile} />
         </MenuItem>
         <Divider />
-        <MenuItem
-          onClick={async () => {
-            closeStateCallback();
-            navigate('/profile');
-          }}>
-          <ListItemIcon>
-            <Person fontSize="small" />
-          </ListItemIcon>
-          Profile
-        </MenuItem>
         <MenuItem
           onClick={async () => {
             closeStateCallback();
