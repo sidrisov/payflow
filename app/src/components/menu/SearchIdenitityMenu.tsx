@@ -24,12 +24,13 @@ import { SiFarcaster } from 'react-icons/si';
 import { FaCheckCircle } from 'react-icons/fa';
 import { IoIosChatbubbles } from 'react-icons/io';
 
-export function SearchIdentityMenu({
+export function IdentityMenu({
   identity,
   favourite,
   onInviteClick,
   onFavouriteClick,
   onSocilLinksClick,
+  currentIdentity = false,
   ...props
 }: {
   identity: IdentityType;
@@ -37,6 +38,7 @@ export function SearchIdentityMenu({
   onInviteClick?: () => void;
   onFavouriteClick?: () => void;
   onSocilLinksClick?: () => void;
+  currentIdentity?: boolean;
 } & MenuProps) {
   const { isAuthenticated } = useContext(ProfileContext);
   const ens = identity.meta?.ens;
@@ -99,12 +101,17 @@ export function SearchIdentityMenu({
     }
   };
 
+  const showAuthenticatedSection =
+    isAuthenticated &&
+    (onFavouriteClick || (onInviteClick && !identity.invited && !identity.profile));
+
   return (
     <Menu
       {...props}
       sx={{
         '& .MuiMenu-paper': {
-          borderRadius: 5
+          borderRadius: 5,
+          mt: 0.5
         },
         '& .MuiList-root': {
           p: 0
@@ -117,13 +124,15 @@ export function SearchIdentityMenu({
       }}
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}>
       <MenuList>
-        <MenuItem onClick={handleProfileClick}>
-          <ListItemIcon>
-            <BsFillPersonFill />
-          </ListItemIcon>
-          <Typography sx={{ flex: 1 }}>Profile</Typography>
-          <OpenInNew sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
-        </MenuItem>
+        {!currentIdentity && (
+          <MenuItem onClick={handleProfileClick}>
+            <ListItemIcon>
+              <BsFillPersonFill />
+            </ListItemIcon>
+            <Typography sx={{ flex: 1 }}>Profile</Typography>
+            <OpenInNew sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
+          </MenuItem>
+        )}
         {farcasterProfile && (
           <MenuItem onClick={handleChatClick}>
             <ListItemIcon>
@@ -163,13 +172,15 @@ export function SearchIdentityMenu({
           </ListItemIcon>
           {shortenWalletAddressLabel2(address)}
         </MenuItem>
-        {isAuthenticated && (
+        {showAuthenticatedSection && (
           <>
             <Divider sx={{ borderBottomWidth: 10, my: 0, '&.MuiDivider-root': { my: 0 } }} />
-            <MenuItem onClick={onFavouriteClick}>
-              <ListItemIcon>{favourite ? <TbStarOff /> : <TbStar />}</ListItemIcon>
-              {favourite ? 'Remove from favourites' : 'Add to favourites'}
-            </MenuItem>
+            {onFavouriteClick && (
+              <MenuItem onClick={onFavouriteClick}>
+                <ListItemIcon>{favourite ? <TbStarOff /> : <TbStar />}</ListItemIcon>
+                {favourite ? 'Remove from favourites' : 'Add to favourites'}
+              </MenuItem>
+            )}
             {onInviteClick && !identity.invited && !identity.profile && (
               <MenuItem onClick={onInviteClick}>
                 <ListItemIcon>

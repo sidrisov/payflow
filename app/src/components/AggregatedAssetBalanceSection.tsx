@@ -9,11 +9,13 @@ import { Fragment } from 'react/jsx-runtime';
 export function AggregatedAssetBalanceSection({
   assets,
   balance,
-  usdValue
+  usdValue,
+  balanceVisible
 }: {
   assets: AssetType[];
   balance: string;
   usdValue: number;
+  balanceVisible: boolean;
 }) {
   const uniqueAssets = assets.filter(
     (asset, index, self) => index === self.findIndex((a) => a.chainId === asset.chainId)
@@ -84,12 +86,16 @@ export function AggregatedAssetBalanceSection({
             {uniqueAssets[0].token.name}
           </Typography>
           <Typography variant="caption" fontWeight={500}>
-            {formatAmountWithSuffix(normalizeNumberPrecision(parseFloat(balance)))}
+            {balanceVisible
+              ? formatAmountWithSuffix(normalizeNumberPrecision(parseFloat(balance)))
+              : '*****'}
           </Typography>
         </Stack>
       </Box>
 
-      <Typography fontWeight={500}>${usdValue.toFixed(1)}</Typography>
+      <Typography fontWeight={500}>
+        {balanceVisible ? `$${usdValue.toFixed(1)}` : '*****'}
+      </Typography>
     </Box>
   );
 }

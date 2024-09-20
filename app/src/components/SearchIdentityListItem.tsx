@@ -1,4 +1,4 @@
-import { Box, Stack, BoxProps, Avatar, IconButton, Typography, Popover } from '@mui/material';
+import { Box, BoxProps, IconButton } from '@mui/material';
 import { ContactType } from '../types/ProfileType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
@@ -11,12 +11,10 @@ import { shortenWalletAddressLabel } from '../utils/address';
 import { useAccount } from 'wagmi';
 import { UpdateIdentityCallbackType } from './dialogs/SearchIdentityDialog';
 import { MoreVert } from '@mui/icons-material';
-import { SearchIdentityMenu } from './menu/SearchIdenitityMenu';
+import { IdentityMenu } from './menu/SearchIdenitityMenu';
 import { useSearchParams } from 'react-router-dom';
-import { grey } from '@mui/material/colors';
 import { useDarkMode } from '../utils/hooks/useDarkMode';
-import FarcasterAvatar from './avatars/FarcasterAvatar';
-import LensAvatar from './avatars/LensAvatar';
+import { SocialLinksPopover } from './dialogs/SocialLinksPopover';
 
 function addToFavourites(tags: string[]): string[] {
   const updatedTags = tags ?? [];
@@ -170,7 +168,7 @@ export function SearchIdentityListItem(
         </Box>
       )}
       {openIdentityMenu && (
-        <SearchIdentityMenu
+        <IdentityMenu
           open={true}
           identity={identity}
           {...((profile?.identityInviteLimit ?? 0 > 0) && {
@@ -188,124 +186,16 @@ export function SearchIdentityListItem(
           }}
         />
       )}
-      <Popover
+      <SocialLinksPopover
         open={openSocialLinksPopover}
         anchorEl={identityMenuAnchorEl}
-        onClose={async () => {
-          setOpenSocialLinksPopover(false);
-        }}
-        sx={{
-          zIndex: 1450,
-          '& .MuiPaper-root': {
-            borderRadius: 5
-          }
-        }}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right'
-        }}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}>
-        <Box p={1.5}>
-          {profile?.identity || address ? (
-            (profile?.identity ?? address) === identity.profile?.identity ? (
-              <Typography variant="caption" fontWeight="bold">
-                Your {view === 'profile' ? 'profile' : 'address'}
-              </Typography>
-            ) : identity?.meta?.insights?.farcasterFollow ||
-              identity?.meta?.insights?.lensFollow ||
-              identity?.meta?.insights?.sentTxs ||
-              tags?.includes('hypersub') ||
-              tags?.includes('paragraph') ||
-              tags?.includes('alfafrens') ||
-              tags?.includes('moxie') ? (
-              <>
-                {identity.meta?.insights?.farcasterFollow && (
-                  <Stack spacing={1} direction="row" alignItems="center">
-                    <FarcasterAvatar size={15} />
-                    <Typography variant="caption" fontWeight="bold">
-                      {identity.meta.insights.farcasterFollow === 'mutual'
-                        ? 'Mutual follow'
-                        : 'You follow them'}
-                    </Typography>
-                  </Stack>
-                )}
-                {identity.meta?.insights?.lensFollow && (
-                  <Stack spacing={1} direction="row" alignItems="center">
-                    <LensAvatar size={15} />
-                    <Typography variant="caption" fontWeight="bold">
-                      {identity.meta.insights.lensFollow === 'mutual'
-                        ? 'Mutual follow'
-                        : 'You follow them'}
-                    </Typography>
-                  </Stack>
-                )}
-                {identity.meta?.insights && identity.meta.insights.sentTxs > 0 && (
-                  <Stack spacing={1} direction="row" alignItems="center">
-                    <Avatar src="/ethereum.png" sx={{ width: 15, height: 15 }} />
-                    <Typography variant="caption" fontWeight="bold">
-                      {`Transacted ${
-                        identity.meta.insights.sentTxs === 1
-                          ? 'once'
-                          : (identity.meta.insights.sentTxs > 5
-                              ? '5+'
-                              : identity.meta.insights.sentTxs) + ' times'
-                      }`}
-                    </Typography>
-                  </Stack>
-                )}
-                {tags?.includes('moxie') && (
-                  <Stack spacing={1} direction="row" alignItems="center">
-                    <Avatar variant="square" src="/moxie.png" sx={{ width: 15, height: 15 }} />
-                    <Typography variant="caption" fontWeight="bold">
-                      Fan token holder
-                    </Typography>
-                  </Stack>
-                )}
-                {tags?.includes('hypersub') && (
-                  <Stack spacing={1} direction="row" alignItems="center">
-                    <Avatar src="/fabric.png" sx={{ width: 15, height: 15 }} />
-                    <Typography variant="caption" fontWeight="bold">
-                      Fabric subscriber
-                    </Typography>
-                  </Stack>
-                )}
-                {tags?.includes('paragraph') && (
-                  <Stack spacing={1} direction="row" alignItems="center">
-                    <Avatar
-                      variant="square"
-                      src="/paragraph.png"
-                      sx={{
-                        width: 15,
-                        height: 15,
-                        backgroundColor: prefersDarkMode ? 'inherit' : grey[700]
-                      }}
-                    />
-                    <Typography variant="caption" fontWeight="bold">
-                      Paragraph subscriber
-                    </Typography>
-                  </Stack>
-                )}
-                {tags?.includes('alfafrens') && (
-                  <Stack spacing={1} direction="row" alignItems="center">
-                    <Avatar src="/alfafrens.png" sx={{ width: 15, height: 15 }} />
-                    <Typography variant="caption" fontWeight="bold">
-                      Subscribed to channel
-                    </Typography>
-                  </Stack>
-                )}
-              </>
-            ) : (
-              <Typography variant="caption" fontWeight="bold">
-                No connections found
-              </Typography>
-            )
-          ) : (
-            <Typography variant="caption" fontWeight="bold">
-              For social connections connect wallet
-            </Typography>
-          )}
-        </Box>
-      </Popover>
+        onClose={() => setOpenSocialLinksPopover(false)}
+        identity={identity}
+        profile={profile}
+        address={address}
+        view={view}
+        tags={tags}
+      />
     </>
   );
 }

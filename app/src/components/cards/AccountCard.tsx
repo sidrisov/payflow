@@ -7,10 +7,11 @@ import {
   Skeleton,
   Stack,
   Tooltip,
-  Typography
+  Typography,
+  SxProps
 } from '@mui/material';
 import { Share, CallReceived } from '@mui/icons-material';
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useMemo, useState, useCallback, useRef } from 'react';
 import { useAccount } from 'wagmi';
 import { Address } from 'viem';
 import { IoMdArrowDropdown } from 'react-icons/io';
@@ -18,6 +19,7 @@ import { TbSend } from 'react-icons/tb';
 import { useSwipeable } from 'react-swipeable';
 import { green } from '@mui/material/colors';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 import { ProfileContext } from '../../contexts/UserContext';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
@@ -31,35 +33,32 @@ import PaymentDialog, { PaymentSenderType } from '../dialogs/PaymentDialog';
 import { ShareFlowMenu } from '../menu/ShareFlowMenu';
 import { PaymentFlowSection } from '../PaymentFlowSection';
 import { formatAmountWithSuffix } from '../../utils/formats';
+import { ActionButton } from '../buttons/ActionButton';
+
+// Add this new constant for the non-selectable text style
+const nonSelectableText: SxProps = {
+  userSelect: 'none',
+  WebkitUserSelect: 'none',
+  MozUserSelect: 'none',
+  msUserSelect: 'none',
+};
 
 export type AccountCardProps = CardProps & {
   flows: FlowType[];
   selectedFlow: FlowType;
   setSelectedFlow: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
   assetBalancesResult: BalanceFetchResultType;
+  balanceVisible: boolean;
+  setBalanceVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
-
-const ActionButton = ({
-  title,
-  onClick,
-  icon
-}: {
-  title: string;
-  onClick: (event: React.MouseEvent<HTMLElement>) => void;
-  icon: React.ReactNode;
-}) => (
-  <Tooltip title={title}>
-    <IconButton color="inherit" onClick={onClick} sx={{ border: 1 }}>
-      {icon}
-    </IconButton>
-  </Tooltip>
-);
 
 export function AccountCard({
   flows,
   selectedFlow,
   setSelectedFlow,
-  assetBalancesResult: { isLoading, isFetched, balances }
+  assetBalancesResult: { isLoading, isFetched, balances },
+  balanceVisible,
+  setBalanceVisible
 }: AccountCardProps) {
   const { profile } = useContext(ProfileContext);
 
@@ -79,6 +78,20 @@ export function AccountCard({
   const [recipient, setRecipient] = useState<SelectedIdentityType>();
 
   const { chain, address } = useAccount();
+
+  const holdTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleBalanceMouseDown = useCallback(() => {
+    holdTimerRef.current = setTimeout(() => {
+      setBalanceVisible(prev => !prev);
+    }, 500); // Hold for 500ms to toggle
+  }, [setBalanceVisible]);
+
+  const handleBalanceMouseUp = useCallback(() => {
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+    }
+  }, []);
 
   useMemo(() => {
     if (isFetched && balances && balances.length > 0) {
@@ -193,14 +206,27 @@ export function AccountCard({
             {isLoading || !totalBalance ? (
               <Skeleton variant="rectangular" height={50} width={120} sx={{ borderRadius: 3 }} />
             ) : (
-              <Typography fontSize={40} fontWeight="bold">
-                ${isFetched ? totalBalance : 'N/A'}
+              <Typography
+                fontSize={40}
+                fontWeight="bold"
+                onMouseDown={handleBalanceMouseDown}
+                onMouseUp={handleBalanceMouseUp}
+                onMouseLeave={handleBalanceMouseUp}
+                onTouchStart={handleBalanceMouseDown}
+                onTouchEnd={handleBalanceMouseUp}
+                sx={nonSelectableText}
+              >
+                {balanceVisible ? `$${isFetched ? totalBalance : 'N/A'}` : '*****'}
               </Typography>
             )}
             <Stack direction="row" spacing={1}>
-              <ActionButton title="Receive funds" onClick={handleReceive} icon={<CallReceived />} />
-              <ActionButton title="Send" onClick={handleSend} icon={<TbSend />} />
-              <ActionButton title="Share" onClick={handleShare} icon={<Share />} />
+              <ActionButton
+                tooltip="Receive funds"
+                onClick={handleReceive}
+                icon={<CallReceived />}
+              />
+              <ActionButton tooltip="Send" onClick={handleSend} icon={<TbSend />} />
+              <ActionButton tooltip="Share" onClick={handleShare} icon={<Share />} />
             </Stack>
           </Box>
         </Card>

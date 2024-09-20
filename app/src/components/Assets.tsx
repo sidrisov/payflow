@@ -2,7 +2,7 @@ import { Button, Stack, Typography } from '@mui/material';
 
 import { formatUnits } from 'viem';
 import { AggregatedAssetBalanceSection } from './AggregatedAssetBalanceSection';
-import { BalanceFetchResultType as AssetBalancesResultType } from '../types/BalanceFetchResultType';
+import { BalanceFetchResultType } from '../types/BalanceFetchResultType';
 import { ActivitySkeletonSection } from './skeletons/ActivitySkeletonSection';
 import { useState } from 'react';
 import { AssetBalanceType } from '../types/AssetType';
@@ -41,12 +41,15 @@ const aggregateAssets = (balances: AssetBalanceType[]): AggregatedAssetBalances[
     .sort((left, right) => right.totalUSDBalance - left.totalUSDBalance);
 };
 
-export default function Assets({
-  assetBalancesResult: { isLoading, isFetched, balances }
-}: {
-  assetBalancesResult: AssetBalancesResultType;
-}) {
+type AssetsProps = {
+  assetBalancesResult: BalanceFetchResultType;
+  balanceVisible: boolean;
+};
+
+export default function Assets({ assetBalancesResult, balanceVisible }: AssetsProps) {
   const [showAll, setShowAll] = useState<boolean>(false);
+
+  const { isLoading, isFetched, balances } = assetBalancesResult;
 
   const nonZeroAggregatedBalances = balances && aggregateAssets(balances);
 
@@ -68,6 +71,7 @@ export default function Assets({
                     assetBalance.assets[0]?.asset.token.decimals ?? 0
                   )}
                   usdValue={assetBalance.totalUSDBalance}
+                  balanceVisible={balanceVisible}
                 />
               );
             })
@@ -81,9 +85,7 @@ export default function Assets({
         <Button
           color="inherit"
           size="small"
-          onClick={async () => {
-            setShowAll(!showAll);
-          }}
+          onClick={() => setShowAll(!showAll)}
           sx={{ alignSelf: 'center', textTransform: 'none', borderRadius: 10, fontSize: 14 }}>
           {showAll ? 'Show less tokens' : 'Show more tokens'}
         </Button>

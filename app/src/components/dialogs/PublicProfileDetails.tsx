@@ -1,24 +1,18 @@
-import { Avatar, Box, Button, IconButton, Stack, Tooltip, Typography } from '@mui/material';
-import { useContext, useState } from 'react';
+import { Divider, Stack } from '@mui/material';
+import { useContext, useState, useRef } from 'react';
 import { IdentityType } from '../../types/ProfileType';
 import { useAccount } from 'wagmi';
-import { CropSquare, Send } from '@mui/icons-material';
+import { MoreVert } from '@mui/icons-material';
 import { ProfileSection } from '../ProfileSection';
-import SocialPresenceChipWithLink, {
-  SocialDirectMessageButton
-} from '../chips/SocialPresenceChipWithLink';
-import { green } from '@mui/material/colors';
 import { Address } from 'viem';
 import PaymentDialog, { PaymentSenderType } from './PaymentDialog';
 import { ProfileContext } from '../../contexts/UserContext';
 import ChoosePaymentOptionDialog from './ChoosePaymentOptionDialog';
 import { AddressSection } from '../AddressSection';
-import { copyToClipboard } from '../../utils/copyToClipboard';
-import { FRAMES_URL } from '../../utils/urlConstants';
-import { toast } from 'react-toastify';
-import { FARCASTER_DAPP } from '../../utils/dapps';
-import FarcasterAvatar from '../avatars/FarcasterAvatar';
-import LensAvatar from '../avatars/LensAvatar';
+import { ActionButton } from '../buttons/ActionButton';
+import { TbSend } from 'react-icons/tb';
+import { IdentityMenu } from '../menu/SearchIdenitityMenu';
+import { SocialLinksPopover } from './SocialLinksPopover';
 
 export function PublicProfileDetails({
   openPayDialogParam = false,
@@ -28,6 +22,9 @@ export function PublicProfileDetails({
   identity: IdentityType;
 }) {
   const [openPayDialog, setOpenPayDialog] = useState(openPayDialogParam);
+  const [openIdentityMenu, setOpenIdentityMenu] = useState(false);
+  const identityMenuAnchorRef = useRef<HTMLButtonElement>(null);
+  const [openSocialLinksPopover, setOpenSocialLinksPopover] = useState(false);
 
   const { profile: loggedProfile } = useContext(ProfileContext);
 
@@ -37,112 +34,43 @@ export function PublicProfileDetails({
     !loggedProfile ? 'wallet' : 'none'
   );
 
-  const socialInfo = identity?.meta;
+  const handlePayButtonClick = () => setOpenPayDialog(true);
+  const handleMoreButtonClick = () => setOpenIdentityMenu(true);
+  const handleSocialLinksClick = () => setOpenSocialLinksPopover(true);
+
+  const handlePayDialogClose = async () => {
+    setOpenPayDialog(false);
+    setPaymentType('none');
+  };
+
+  const handleIdentityMenuClose = () => setOpenIdentityMenu(false);
+  const handleSocialLinksPopoverClose = () => setOpenSocialLinksPopover(false);
+
+  const ProfileInfo = () =>
+    identity?.profile ? (
+      <ProfileSection profile={identity.profile} maxWidth={300} />
+    ) : (
+      identity?.meta && <AddressSection maxWidth={300} identity={identity} />
+    );
 
   return (
     <>
-      <Stack spacing={1} direction="column" alignItems="center">
-        <Stack direction="row" alignItems="center" spacing={1}>
-          {identity?.profile ? (
-            <ProfileSection profile={identity.profile} maxWidth={300} />
-          ) : (
-            identity?.meta && <AddressSection maxWidth={300} identity={identity} />
-          )}
-        </Stack>
-        {socialInfo && (
-          <Stack>
-            <Box flexWrap="wrap" display="flex" justifyContent="center" alignItems="center">
-              <SocialPresenceChipWithLink
-                type={socialInfo.ens ? 'ens' : 'address'}
-                name={socialInfo.ens ?? identity.address}
-              />
-
-              {socialInfo.socials &&
-                socialInfo.socials
-                  .filter((s: any) => s.profileName)
-                  .map((s: any) => (
-                    <SocialPresenceChipWithLink
-                      key={s.dappName}
-                      type={s.dappName}
-                      name={s.profileName}
-                    />
-                  ))}
-            </Box>
-
-            {socialInfo.insights &&
-              (socialInfo.insights.farcasterFollow ||
-                socialInfo.insights.lensFollow ||
-                socialInfo.insights.sentTxs > 0) && (
-                <Stack my={1} spacing={1} alignSelf="center" alignItems="flex-start">
-                  {socialInfo.insights.farcasterFollow && (
-                    <Stack spacing={1} direction="row" alignItems="center">
-                      <FarcasterAvatar size={15} />
-                      <Typography variant="caption" fontWeight="bold" color={green.A700}>
-                        {socialInfo.insights.farcasterFollow === 'mutual'
-                          ? 'Mutual follow on farcaster'
-                          : 'You follow them on farcaster'}
-                      </Typography>
-                    </Stack>
-                  )}
-                  {socialInfo.insights.lensFollow && (
-                    <Stack spacing={1} direction="row" alignItems="center">
-                      <LensAvatar size={15} />
-                      <Typography variant="caption" fontWeight="bold" color={green.A700}>
-                        {socialInfo.insights.lensFollow === 'mutual'
-                          ? 'Mutual follow on lens'
-                          : 'You follow them on lens'}
-                      </Typography>
-                    </Stack>
-                  )}
-                  {socialInfo.insights.sentTxs > 0 && (
-                    <Stack spacing={1} direction="row" alignItems="center">
-                      <Avatar
-                        variant="rounded"
-                        src="/ethereum.png"
-                        sx={{ width: 15, height: 15 }}
-                      />
-                      <Typography variant="caption" fontWeight="bold" color={green.A700}>
-                        {`Transacted ${
-                          socialInfo.insights.sentTxs === 1
-                            ? 'once'
-                            : (socialInfo.insights.sentTxs > 5
-                                ? '5+'
-                                : socialInfo.insights.sentTxs) + ' times'
-                        } onchain`}
-                      </Typography>
-                    </Stack>
-                  )}
-                </Stack>
-              )}
-          </Stack>
-        )}
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Button
-            variant="outlined"
-            color="inherit"
-            endIcon={<Send />}
-            onClick={() => setOpenPayDialog(true)}
-            sx={{
-              borderRadius: 5,
-              textTransform: 'lowercase'
-            }}>
-            Pay
-          </Button>
-          {(socialInfo?.xmtp ||
-            socialInfo?.socials.find((s) => s.dappName === FARCASTER_DAPP && s.profileId)) && (
-            <SocialDirectMessageButton identity={identity} />
-          )}
-          <Tooltip title="Copy payment frame link">
-            <IconButton
-              color="inherit"
-              onClick={() => {
-                copyToClipboard(`${FRAMES_URL}/${identity.address}`);
-                toast.success('Payment frame link copied!');
-              }}
-              sx={{ border: 1, width: 36, height: 36 }}>
-              <CropSquare fontSize="medium" />
-            </IconButton>
-          </Tooltip>
+      <Stack width="100%" direction="row" alignItems="center" justifyContent="space-between">
+        <ProfileInfo />
+        <Stack direction="row" spacing={1}>
+          <ActionButton
+            icon={<TbSend />}
+            title="Pay"
+            onClick={handlePayButtonClick}
+            border={false}
+          />
+          <Divider variant="middle" flexItem orientation="vertical" />
+          <ActionButton
+            ref={identityMenuAnchorRef}
+            icon={<MoreVert />}
+            onClick={handleMoreButtonClick}
+            border={false}
+          />
         </Stack>
       </Stack>
 
@@ -165,19 +93,38 @@ export function PublicProfileDetails({
               type: identity.profile ? 'profile' : 'address',
               identity
             }}
-            closeStateCallback={async () => {
-              setOpenPayDialog(false);
-              setPaymentType('none');
-            }}
+            closeStateCallback={handlePayDialogClose}
           />
 
           <ChoosePaymentOptionDialog
             open={Boolean(loggedProfile) && paymentType === 'none'}
             setPaymentType={setPaymentType}
-            closeStateCallback={async () => setOpenPayDialog(false)}
+            closeStateCallback={handlePayDialogClose}
           />
         </>
       )}
+
+      {openIdentityMenu && (
+        <IdentityMenu
+          open={true}
+          identity={identity}
+          anchorEl={identityMenuAnchorRef.current}
+          currentIdentity
+          onClose={handleIdentityMenuClose}
+          onClick={handleIdentityMenuClose}
+          onSocilLinksClick={handleSocialLinksClick}
+        />
+      )}
+
+      <SocialLinksPopover
+        open={openSocialLinksPopover}
+        anchorEl={identityMenuAnchorRef.current}
+        onClose={handleSocialLinksPopoverClose}
+        identity={identity}
+        profile={loggedProfile}
+        address={address}
+        view={identity.profile ? 'profile' : 'address'}
+      />
     </>
   );
 }

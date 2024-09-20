@@ -26,6 +26,8 @@ export default function Accounts() {
 
   const [selectedFlow, setSelectedFlow] = useState<FlowType>();
 
+  const [balanceVisible, setBalanceVisible] = useState(false);
+
   useEffect(() => {
     if (!profile) {
       navigate('/connect');
@@ -70,6 +72,8 @@ export default function Accounts() {
               selectedFlow={selectedFlow}
               setSelectedFlow={setSelectedFlow}
               assetBalancesResult={{ isLoading, isFetched, balances }}
+              balanceVisible={balanceVisible}
+              setBalanceVisible={setBalanceVisible}
             />
 
             <Stack width={smallScreen ? 350 : 375} spacing={0.5} alignItems="center">
@@ -89,7 +93,10 @@ export default function Accounts() {
                   />
                 </>
               )}
-              <Assets assetBalancesResult={{ isLoading, isFetched, balances }} />
+              <Assets 
+                assetBalancesResult={{ isLoading, isFetched, balances }} 
+                balanceVisible={balanceVisible}
+              />
             </Stack>
           </Stack>
         ) : (
