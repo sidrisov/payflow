@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 
 import { RiApps2Fill, RiApps2Line } from 'react-icons/ri';
+import { CgProfile } from 'react-icons/cg';
 
 import { ProfileContext } from '../contexts/UserContext';
 import HideOnScroll from '../components/HideOnScroll';
@@ -65,6 +66,8 @@ export default function AppLayout({
         return 3;
       case '/useful':
         return 2;
+      case `/${profile?.username}`:
+        return profile ? 4 : 3;
       default:
         return 0;
     }
@@ -174,8 +177,8 @@ export default function AppLayout({
               '&::-webkit-scrollbar': {
                 display: 'none'
               },
-              msOverflowStyle: 'none',  // IE and Edge
-              scrollbarWidth: 'none'  // Firefox
+              msOverflowStyle: 'none', // IE and Edge
+              scrollbarWidth: 'none' // Firefox
             }}>
             <Outlet />
           </Box>
@@ -203,6 +206,9 @@ export default function AppLayout({
                   ...(isMobile
                     ? { width: '100%', borderTopLeftRadius: 25, borderTopRightRadius: 25 }
                     : { maxWidth: 350, mx: 5, mb: 1, borderRadius: 10 }),
+                  '& .MuiBottomNavigationAction-root': {
+                    minWidth: 'auto'
+                  },
                   '& .MuiBottomNavigationAction-root.Mui-selected': {
                     color: 'inherit',
                     fontWeight: '500'
@@ -241,7 +247,6 @@ export default function AppLayout({
                     setOpenSearchIdentity(true);
                   }}
                 />
-
                 <BottomNavigationAction
                   disableRipple
                   label="Useful"
@@ -257,7 +262,6 @@ export default function AppLayout({
                     setOpenSearchIdentity(false);
                   }}
                 />
-
                 <BottomNavigationAction
                   disableRipple
                   label="Actions"
@@ -273,6 +277,19 @@ export default function AppLayout({
                     setOpenSearchIdentity(false);
                   }}
                 />
+                {profile && (
+                  <BottomNavigationAction
+                    disableRipple
+                    label="Activity"
+                    icon={<CgProfile size={20} />}
+                    onClick={async () => {
+                      if (profile.username) {
+                        navigate(`/${profile.username}`);
+                      }
+                      setOpenSearchIdentity(false);
+                    }}
+                  />
+                )}
               </BottomNavigation>
             </Box>
           )}
