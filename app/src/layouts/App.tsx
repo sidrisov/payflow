@@ -110,57 +110,74 @@ export default function AppLayout({
         onRefresh={async () => {
           navigate(0);
         }}>
-        <Container maxWidth="xs" sx={{ height: '100vh' }}>
-          <Box display="flex" flexDirection="column" justifyContent="flex-start">
-            <HideOnScroll>
-              <AppBar position="sticky" color="transparent" elevation={0}>
-                {needRefresh ? (
-                  <UpdateVersionPrompt />
-                ) : (
-                  showToolbar && (
-                    <Toolbar sx={{ padding: 0 }}>
-                      <Box
-                        display="flex"
-                        flexDirection="row"
-                        alignItems="center"
-                        justifyContent="space-between"
-                        flexGrow={1}>
-                        <HomeLogo />
-                        {profile ? (
-                          <IconButton
-                            size="small"
-                            onClick={async (event) => {
-                              setProfileMenuAnchorEl(event.currentTarget);
-                              setOpenProfileMenu(true);
-                            }}>
-                            <ProfileAvatar
-                              profile={profile as ProfileType}
-                              sx={{ width: 36, height: 36 }}
-                            />
-                          </IconButton>
-                        ) : (
-                          <Button
-                            color="inherit"
-                            size="medium"
-                            href={`${DAPP_URL}/connect`}
-                            sx={{
-                              borderRadius: 5,
-                              fontWeight: 'bold',
-                              fontSize: 18,
-                              textTransform: 'none'
-                            }}>
-                            sign in
-                          </Button>
-                        )}
-                      </Box>
-                    </Toolbar>
-                  )
-                )}
-              </AppBar>
-            </HideOnScroll>
-            <Box display="flex" mt={3} pb={8}>
-              <Outlet />
-            </Box>
+        <Container
+          maxWidth="xs"
+          sx={{
+            height: '100vh',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+          <HideOnScroll>
+            <AppBar position="sticky" color="transparent" elevation={0}>
+              {needRefresh ? (
+                <UpdateVersionPrompt />
+              ) : (
+                showToolbar && (
+                  <Toolbar sx={{ padding: 0 }}>
+                    <Box
+                      display="flex"
+                      flexDirection="row"
+                      alignItems="center"
+                      justifyContent="space-between"
+                      flexGrow={1}>
+                      <HomeLogo />
+                      {profile ? (
+                        <IconButton
+                          size="small"
+                          onClick={async (event) => {
+                            setProfileMenuAnchorEl(event.currentTarget);
+                            setOpenProfileMenu(true);
+                          }}>
+                          <ProfileAvatar
+                            profile={profile as ProfileType}
+                            sx={{ width: 36, height: 36 }}
+                          />
+                        </IconButton>
+                      ) : (
+                        <Button
+                          color="inherit"
+                          size="medium"
+                          href={`${DAPP_URL}/connect`}
+                          sx={{
+                            borderRadius: 5,
+                            fontWeight: 'bold',
+                            fontSize: 18,
+                            textTransform: 'none'
+                          }}>
+                          sign in
+                        </Button>
+                      )}
+                    </Box>
+                  </Toolbar>
+                )
+              )}
+            </AppBar>
+          </HideOnScroll>
+          <Box
+            flexGrow={1}
+            display="flex"
+            flexDirection="column"
+            mb={bottomToolbarEnabled ? 7.5 : 0}
+            sx={{
+              overflowX: 'hidden',
+              overflowY: 'auto',
+              '&::-webkit-scrollbar': {
+                display: 'none'
+              },
+              msOverflowStyle: 'none',  // IE and Edge
+              scrollbarWidth: 'none'  // Firefox
+            }}>
+            <Outlet />
           </Box>
           {bottomToolbarEnabled && (
             <Box

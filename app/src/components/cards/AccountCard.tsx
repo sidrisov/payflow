@@ -3,7 +3,6 @@ import {
   Card,
   CardProps,
   IconButton,
-  Paper,
   Skeleton,
   Stack,
   Tooltip,
@@ -17,9 +16,6 @@ import { Address } from 'viem';
 import { IoMdArrowDropdown } from 'react-icons/io';
 import { TbSend } from 'react-icons/tb';
 import { useSwipeable } from 'react-swipeable';
-import { green } from '@mui/material/colors';
-import { ChevronLeft, ChevronRight } from '@mui/icons-material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 import { ProfileContext } from '../../contexts/UserContext';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
@@ -40,7 +36,7 @@ const nonSelectableText: SxProps = {
   userSelect: 'none',
   WebkitUserSelect: 'none',
   MozUserSelect: 'none',
-  msUserSelect: 'none',
+  msUserSelect: 'none'
 };
 
 export type AccountCardProps = CardProps & {
@@ -83,7 +79,7 @@ export function AccountCard({
 
   const handleBalanceMouseDown = useCallback(() => {
     holdTimerRef.current = setTimeout(() => {
-      setBalanceVisible(prev => !prev);
+      setBalanceVisible((prev) => !prev);
     }, 500); // Hold for 500ms to toggle
   }, [setBalanceVisible]);
 
@@ -156,20 +152,18 @@ export function AccountCard({
   const orderedFlows = useMemo(() => separateFlows(flows), [flows]);
   const currentIndex = orderedFlows.findIndex((flow) => flow.uuid === selectedFlow.uuid);
 
-  const [isHoveringArrow, setIsHoveringArrow] = useState(false);
-
   return (
     profile && (
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <>
         <Card
           elevation={5}
           sx={{
-            mx: 2,
-            p: 2,
+            m: 2,
             pt: 1,
-            px: 2.5,
             pb: 2.5,
-            width: 350,
+            px: 2.5,
+            maxWidth: 350,
+            width: '100%',
             height: 'auto',
             borderRadius: 5,
             display: 'flex',
@@ -191,7 +185,7 @@ export function AccountCard({
             alignItems="center">
             <PaymentFlowSection navigation flow={selectedFlow} />
             <Tooltip title="Payment Flows">
-              <IconButton onClick={() => setOpenSelectFlow(true)}>
+              <IconButton color="inherit" onClick={() => setOpenSelectFlow(true)}>
                 <IoMdArrowDropdown />
               </IconButton>
             </Tooltip>
@@ -214,8 +208,7 @@ export function AccountCard({
                 onMouseLeave={handleBalanceMouseUp}
                 onTouchStart={handleBalanceMouseDown}
                 onTouchEnd={handleBalanceMouseUp}
-                sx={nonSelectableText}
-              >
+                sx={nonSelectableText}>
                 {balanceVisible ? `$${isFetched ? totalBalance : 'N/A'}` : '*****'}
               </Typography>
             )}
@@ -230,59 +223,6 @@ export function AccountCard({
             </Stack>
           </Box>
         </Card>
-        <Paper
-          elevation={5}
-          {...(!isHoveringArrow && { onClick: () => setOpenSelectFlow(true) })}
-          sx={{
-            mt: 2,
-            display: 'flex',
-            alignItems: 'center',
-            borderRadius: 5,
-            padding: '2px',
-            cursor: isHoveringArrow ? 'default' : 'pointer',
-            '&:hover': {
-              backgroundColor: isHoveringArrow ? 'inherit' : 'action.hover'
-            },
-            WebkitTapHighlightColor: 'transparent'
-          }}>
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleSwipe('RIGHT');
-            }}
-            onMouseEnter={() => setIsHoveringArrow(true)}
-            onMouseLeave={() => setIsHoveringArrow(false)}
-            sx={{ p: 0.5 }}>
-            <ChevronLeft sx={{ fontSize: 16 }} />
-          </IconButton>
-          <Box sx={{ display: 'flex', alignItems: 'center', mx: 1 }}>
-            {orderedFlows.map((flow, index) => (
-              <Box
-                key={flow.uuid}
-                sx={{
-                  width: index === currentIndex ? 6 : 4,
-                  height: index === currentIndex ? 6 : 4,
-                  borderRadius: '50%',
-                  mx: 0.25,
-                  bgcolor: index === currentIndex ? green.A700 : 'text.disabled',
-                  transition: 'all 0.3s ease'
-                }}
-              />
-            ))}
-          </Box>
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleSwipe('LEFT');
-            }}
-            onMouseEnter={() => setIsHoveringArrow(true)}
-            onMouseLeave={() => setIsHoveringArrow(false)}
-            sx={{ p: 0.5 }}>
-            <ChevronRight sx={{ fontSize: 16 }} />
-          </IconButton>
-        </Paper>
 
         {recipient && selectedFlow && (
           <PaymentDialog
@@ -361,7 +301,7 @@ export function AccountCard({
           wallets={selectedFlow.wallets}
           closeStateCallback={() => setOpenFlowReceiveQRCode(false)}
         />
-      </Box>
+      </>
     )
   );
 }

@@ -1,4 +1,4 @@
-import { Container, Stack } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { AccountCard } from '../components/cards/AccountCard';
@@ -63,9 +63,9 @@ export default function Accounts() {
       <Helmet>
         <title> Payflow | Home </title>
       </Helmet>
-      <Container maxWidth="md">
+      <Box display="flex" flexDirection="column" height="100%" width="100%">
         {isAuthenticated && flows && selectedFlow ? (
-          <Stack alignItems="center" spacing={1}>
+          <Stack p={1} alignItems="center" spacing={1}>
             <AccountCard
               key={`account_card`}
               flows={flows ?? []}
@@ -93,8 +93,8 @@ export default function Accounts() {
                   />
                 </>
               )}
-              <Assets 
-                assetBalancesResult={{ isLoading, isFetched, balances }} 
+              <Assets
+                assetBalancesResult={{ isLoading, isFetched, balances }}
                 balanceVisible={balanceVisible}
               />
             </Stack>
@@ -102,7 +102,7 @@ export default function Accounts() {
         ) : (
           <LoadingPayflowEntryLogo />
         )}
-      </Container>
+      </Box>
     </>
   );
 }

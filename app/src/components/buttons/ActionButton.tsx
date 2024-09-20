@@ -46,7 +46,12 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
         {title}
       </Button>
     ) : (
-      <IconButton ref={ref} sx={buttonStyle} onClick={handleClick} {...(props as IconButtonProps)}>
+      <IconButton
+        color="inherit"
+        ref={ref}
+        sx={buttonStyle}
+        onClick={handleClick}
+        {...(props as IconButtonProps)}>
         {icon}
       </IconButton>
     );

@@ -15,6 +15,7 @@ import { ProfileContext } from '../contexts/UserContext';
 import { useIdentity } from '../utils/queries/profiles';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 import { useMobile } from '../utils/hooks/useMobile';
+import ActivityFeed from '../components/activity/ActivityFeed';
 
 export default function PublicProfile() {
   const isMobile = useMobile();
@@ -37,7 +38,13 @@ export default function PublicProfile() {
       <Helmet>
         <title> Payflow {displayName ? '| ' + displayName : ''} </title>
       </Helmet>
-      <Box display="flex" flexDirection="column" height="100vh" width="100%">
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        width="100%"
+        height="100%"
+        overflow="hidden">
         {username && !isProfileLoading && !identity && (
           <Stack mt={10}>
             <Typography
@@ -64,9 +71,14 @@ export default function PublicProfile() {
         {isProfileLoading === true ? (
           <LoadingPayflowEntryLogo />
         ) : identity ? (
-          <Box flexGrow={1} overflow="hidden" sx={{ mb: 20 }}>
-            <PublicProfileCard identity={identity} />
-          </Box>
+          <>
+            <Box width="100%">
+              <PublicProfileCard identity={identity} />
+            </Box>
+            <Box flexGrow={1} px={1} overflow="auto" width="100%" maxWidth={375}>
+              <ActivityFeed identity={identity} />
+            </Box>
+          </>
         ) : (
           <PublicSearchPay setOpenSearchIdentity={setOpenSearchIdentity} />
         )}
