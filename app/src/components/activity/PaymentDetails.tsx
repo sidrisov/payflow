@@ -86,6 +86,11 @@ export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
         const mintCount = payment.tokenAmount || 1;
         return (
           <>
+            {mintCount > 1 && (
+              <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14} ml={1}>
+                {mintCount}x
+              </Typography>
+            )}
             <Avatar
               variant="rounded"
               src={mintData.metadata.image}
@@ -93,7 +98,7 @@ export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
             />
             <Typography
               noWrap
-              maxWidth={200}
+              maxWidth={180}
               variant="caption"
               fontWeight="bold"
               fontSize={isMobile ? 12 : 14}
@@ -109,11 +114,6 @@ export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
                 {mintData.collectionName}
               </Typography>
             </Typography>
-            {mintCount > 1 && (
-              <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14} ml={1}>
-                x{mintCount}
-              </Typography>
-            )}
           </>
         );
       }
