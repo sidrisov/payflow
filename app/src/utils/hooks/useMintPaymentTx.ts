@@ -36,12 +36,14 @@ async function fetchMintPaymentTx({
   mint,
   minter,
   recipient,
-  comment
+  comment,
+  amount
 }: {
   mint: MintMetadata;
   minter: Address;
   recipient: Address;
   comment?: string;
+  amount: number;
 }): Promise<MintPaymentResult> {
   try {
     if (mint.provider === 'zora.co') {
@@ -61,17 +63,18 @@ async function fetchMintPaymentTx({
 
       if (secondaryInfo?.secondaryActivated) {
         const { parameters, price, error } = await collectorClient.buy1155OnSecondary({
-          account: minter,
+          // temp hack to overcome secondary restriction on having balance on the minter address
+          account: '0x0dEe77c83cB8b14fA95497825dF93202AbF6ad83',
           contract: mint.contract,
           tokenId: BigInt(mint.tokenId!),
-          quantity: 1n,
-          recipient: recipient
+          quantity: BigInt(amount),
+          recipient
         });
 
         console.log('Secondary buy1155OnSecondary: ', parameters, price, error);
 
         return {
-          paymentTx: { ...parameters, chainId: mint.chainId },
+          paymentTx: { ...parameters, minter, chainId: mint.chainId },
           mintStatus: 'live',
           secondary: true
         };
@@ -80,7 +83,7 @@ async function fetchMintPaymentTx({
       const { parameters } = await collectorClient.mint({
         minterAccount: minter,
         mintType: mint.mintType as any,
-        quantityToMint: 1,
+        quantityToMint: BigInt(amount),
         tokenContract: mint.contract,
         tokenId: mint.tokenId,
         mintReferral: mint.referral,
@@ -108,8 +111,8 @@ async function fetchMintPaymentTx({
           address: RODEO_MINT_CONTRACT_ADDR,
           abi: rodeoMintAbi as Abi,
           functionName: 'mintFromFixedPriceSale',
-          args: [saleTermsId, 1n, recipient, mint.referral ?? zeroAddress],
-          value: RODEO_MINT_PRICE
+          args: [saleTermsId, BigInt(amount), recipient, mint.referral ?? zeroAddress], // Update amount
+          value: RODEO_MINT_PRICE * BigInt(amount)
         },
         mintStatus: 'live'
       };
@@ -126,22 +129,24 @@ export function useMintPaymentTx({
   mint,
   minter,
   recipient,
-  comment
+  comment,
+  amount
 }: {
   mint: MintMetadata;
   minter: Address;
   recipient: Address | undefined;
   comment?: string;
+  amount: number;
 }) {
   return useQuery<MintPaymentResult, Error>({
-    enabled: Boolean(mint) && Boolean(minter) && Boolean(recipient),
+    enabled: Boolean(mint) && Boolean(minter) && Boolean(recipient) && amount > 0,
     staleTime: Infinity,
     refetchInterval: 30_000,
     retry: false,
-    queryKey: ['mintPaymentTx', mint, minter, recipient, comment],
+    queryKey: ['mintPaymentTx', mint, minter, recipient, comment, amount],
     queryFn: async () => {
       if (!recipient) throw new Error('Recipient not found');
-      return fetchMintPaymentTx({ mint, minter, recipient, comment });
+      return fetchMintPaymentTx({ mint, minter, recipient, comment, amount });
     }
   });
 }

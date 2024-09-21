@@ -47,6 +47,7 @@ import { SiFarcaster } from 'react-icons/si';
 import { TbCopy } from 'react-icons/tb';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { createShareUrls } from '../../utils/mint';
+import { Add, Remove } from '@mui/icons-material';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {
@@ -93,6 +94,8 @@ export default function MintDialog({
   const [paymentWallet, setPaymentWallet] = useState<FlowWalletType>();
   const [paymentToken, setPaymentToken] = useState<Token>();
 
+  const [mintCount, setMintCount] = useState(1);
+
   const {
     data: mintData,
     isLoading: isMintLoading,
@@ -101,7 +104,8 @@ export default function MintDialog({
     mint,
     minter: senderFlow.wallets[0].address,
     recipient: payment.receiverAddress ?? profile?.identity,
-    comment: `Minted for @${recipientSocial.profileName} on @payflow`
+    comment: `Minted ${mintCount} for @${recipientSocial.profileName} on @payflow`,
+    amount: mintCount
   });
 
   const paymentTx = mintData?.paymentTx;
@@ -301,6 +305,18 @@ export default function MintDialog({
                     </Stack>
                   </Stack>
                 </Tooltip>
+
+                <Stack direction="row" alignItems="center" spacing={2} mb={2}>
+                  <IconButton onClick={() => setMintCount((prev) => Math.max(prev - 1, 1))}>
+                    <Remove fontSize="small" sx={{ color: 'text.secondary' }} />
+                  </IconButton>
+                  <Typography variant="h5" fontWeight="bold">
+                    {mintCount}
+                  </Typography>
+                  <IconButton onClick={() => setMintCount((prev) => Math.min(prev + 1, 10))}>
+                    <Add fontSize="small" sx={{ color: 'text.secondary' }} />
+                  </IconButton>
+                </Stack>
 
                 {isLoading ? (
                   <Skeleton
