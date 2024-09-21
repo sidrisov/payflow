@@ -106,7 +106,7 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
         </div>
       </div>
       <p style={{ marginTop: 10, fontSize: 35, fontWeight: 'bold' }}>
-        with 20+ tokens across multiple l2 chains
+        with 25+ tokens cross-chain
       </p>
     </Card>
   );
