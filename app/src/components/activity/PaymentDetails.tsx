@@ -83,6 +83,7 @@ export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
       }
 
       if (mintData) {
+        const mintCount = payment.tokenAmount || 1;
         return (
           <>
             <Avatar
@@ -108,6 +109,11 @@ export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
                 {mintData.collectionName}
               </Typography>
             </Typography>
+            {mintCount > 1 && (
+              <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14} ml={1}>
+                x{mintCount}
+              </Typography>
+            )}
           </>
         );
       }

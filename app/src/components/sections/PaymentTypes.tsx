@@ -70,6 +70,7 @@ export function MintPayment({ payment, ...props }: BoxProps & { payment: Payment
   const { mintData, loading: loadingMintData } = useMintData(payment);
   const isMobile = useMobile();
   const prefersDarkMode = useDarkMode();
+  const mintCount = payment.tokenAmount ?? 1;
 
   return (
     <PaymentCard payment={payment} title="Mint" {...props}>
@@ -100,6 +101,15 @@ export function MintPayment({ payment, ...props }: BoxProps & { payment: Payment
               }}>
               {mintData.collectionName}
             </Typography>
+            {mintCount > 1 && (
+              <Typography
+                textAlign="start"
+                variant="subtitle2"
+                fontWeight="bold"
+                fontSize={isMobile ? 12 : 13}>
+                Mint Count: {mintCount}
+              </Typography>
+            )}
           </>
         )}
       </PaymentContent>
