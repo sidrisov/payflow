@@ -26,7 +26,7 @@ export default function Accounts() {
 
   const [selectedFlow, setSelectedFlow] = useState<FlowType>();
 
-  const [balanceVisible, setBalanceVisible] = useState(false);
+  const [balanceVisible, setBalanceVisible] = useState(true);
 
   useEffect(() => {
     if (!profile) {
