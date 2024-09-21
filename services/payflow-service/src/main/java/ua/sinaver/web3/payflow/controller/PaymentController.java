@@ -239,6 +239,9 @@ public class PaymentController {
 					payment.setFulfillmentChainId(paymentUpdateMessage.fulfillmentChainId());
 					payment.setFulfillmentHash(paymentUpdateMessage.fulfillmentHash());
 					payment.setStatus(Payment.PaymentStatus.INPROGRESS);
+					if (payment.getCategory().equals("mint")) {
+						payment.setTokenAmount(paymentUpdateMessage.tokenAmount().toString());
+					}
 				}
 				log.debug("Updated payment: {}", payment);
 				return;
@@ -469,20 +472,25 @@ public class PaymentController {
 					}
 				}
 
+				val tokenAmount = Integer.parseInt(payment.getTokenAmount());
+				val tokenAmountText = tokenAmount > 1 ? tokenAmount + "x " : "";
+
 				String castText;
 				if (isSelfPurchase) {
 					castText = String.format("""
-							@%s, you've successfully minted %scollectible from the cast above ✨
+							@%s, you've successfully minted %s%scollectible from the cast above ✨
 
 							p.s. join /payflow channel for updates 👀""",
 							senderFname,
+							tokenAmountText,
 							authorPart);
 				} else {
 					castText = String.format("""
-							@%s, you've been gifted %scollectible by @%s from the cast above  ✨
+							@%s, you've been gifted %s%scollectible by @%s from the cast above  ✨
 
 							p.s. join /payflow channel for updates 👀""",
 							receiverFname,
+							tokenAmountText,
 							authorPart,
 							senderFname);
 				}
@@ -501,25 +509,27 @@ public class PaymentController {
 						String messageText;
 						if (isSelfPurchase) {
 							messageText = String.format("""
-									 @%s, you've successfully minted %scollectible from the cast above ✨
+									 @%s, you've successfully minted %s%scollectible from the cast above ✨
 
 									%s
 									🧾 Receipt: %s
 
 									p.s. join /payflow channel for updates 👀""",
 									senderFname,
+									tokenAmountText,
 									authorPart,
 									sourceRefText,
 									receiptUrl);
 						} else {
 							messageText = String.format("""
-									 @%s, you've been gifted %scollectible by @%s from the cast above ✨
+									 @%s, you've been gifted %s%scollectible by @%s from the cast above ✨
 
 									%s
 									🧾 Receipt: %s
 
 									p.s. join /payflow channel for updates 👀""",
 									receiverFname,
+									tokenAmountText,
 									authorPart,
 									senderFname,
 									sourceRefText,

@@ -60,8 +60,10 @@ public class PaymentComposerController {
 	}
 
 	@PostMapping
-	public ResponseEntity<?> form(@RequestBody FrameMessage composerActionMessage) {
-		log.debug("Received composer action: payment form {}", composerActionMessage);
+	public ResponseEntity<?> form(@RequestBody FrameMessage composerActionMessage,
+	                              @RequestParam(required = false) String action) {
+		log.debug("Received composer action: payment form {} - action (optional): {}",
+				composerActionMessage, action);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				composerActionMessage.trustedData().messageBytes());
 		if (!validateMessage.valid()) {
@@ -104,11 +106,13 @@ public class PaymentComposerController {
 			}
 		}
 
-
 		val paymentFormUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 				.path("/composer")
 				.queryParam("access_token", accessToken)
-				.queryParam("action", StringUtils.isNotBlank(recipient) ? "pay" : "")
+				.queryParam("action",
+						StringUtils.isNotBlank(action) ? action : StringUtils.isNotBlank(recipient)
+								? "pay" :
+								action)
 				.queryParam("recipient", recipient)
 				.build()
 				.toUriString();

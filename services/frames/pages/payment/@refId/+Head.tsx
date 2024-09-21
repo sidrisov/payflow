@@ -20,6 +20,9 @@ export function Head() {
 
   const receiptUrl = getReceiptUrl(payment.chainId, payment.hash ?? payment.fulfillmentHash);
 
+  const activityUrl =
+    'https://warpcast.com/~/composer-action?url=https://api.alpha.payflow.me/api/farcaster/composer/pay?action=activity';
+
   return (
     <>
       <head>
@@ -113,6 +116,9 @@ export function Head() {
             <meta property="fc:frame:button:1" content="🧾 Receipt" />
             <meta property="fc:frame:button:1:action" content="link" />
             <meta property="fc:frame:button:1:target" content={receiptUrl} />
+            <meta property="fc:frame:button:2" content="💸 History" />
+            <meta property="fc:frame:button:2:action" content="link" />
+            <meta property="fc:frame:button:2:target" content={activityUrl} />
             {/*  <meta property="fc:frame:button:2" content="🌟 Tip" />
             <meta property="fc:frame:button:2:action" content="post" />
             <meta property="fc:frame:button:2:target" content={TIP_PAYFLOW_URL} /> */}

@@ -52,12 +52,12 @@ public class MintController {
 	private IdentityService identityService;
 
 	private static Payment getMintPayment(ValidatedFrameResponseMessage validateMessage,
-	                                      User user,
-	                                      Integer receiverFid,
-	                                      String receiverAddress,
-	                                      Integer chainId,
-	                                      String token,
-	                                      String originalMintUrl) {
+			User user,
+			Integer receiverFid,
+			String receiverAddress,
+			Integer chainId,
+			String token,
+			String originalMintUrl) {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val castHash = validateMessage.action().cast().hash();
 		val sourceRef = String.format("https://warpcast.com/%s/%s",
@@ -66,6 +66,7 @@ public class MintController {
 		val payment = new Payment(Payment.PaymentType.INTENT, null, chainId, token);
 		payment.setCategory("mint");
 		payment.setToken(token);
+		payment.setTokenAmount("1");
 		payment.setReceiverFid(receiverFid);
 		payment.setReceiverAddress(receiverAddress);
 		payment.setSender(user);
@@ -76,15 +77,14 @@ public class MintController {
 		return payment;
 	}
 
-
 	@PostMapping("/submit")
 	public ResponseEntity<?> submit(@RequestBody FrameMessage frameMessage,
-	                                @RequestParam String provider,
-	                                @RequestParam Integer chainId,
-	                                @RequestParam String contract,
-	                                @RequestParam(required = false) String author,
-	                                @RequestParam(required = false) Integer tokenId,
-	                                @RequestParam(required = false) String referral) {
+			@RequestParam String provider,
+			@RequestParam Integer chainId,
+			@RequestParam String contract,
+			@RequestParam(required = false) String author,
+			@RequestParam(required = false) Integer tokenId,
+			@RequestParam(required = false) String referral) {
 
 		log.debug("Received submit mint message request: {}", frameMessage);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(

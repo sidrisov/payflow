@@ -267,16 +267,22 @@ export function createShareUrls({
   mint,
   recipientSocial,
   profile,
-  isGift
+  isGift,
+  tokenAmount
 }: {
   mint: MintMetadata;
   recipientSocial: Social;
   profile: ProfileType;
   isGift: boolean;
+  tokenAmount: number;
 }): { shareFrameUrl: string; composeCastUrl: string } {
   const shareFrameUrl = createShareFrameUrl({ mint, profile });
 
   let text = isGift ? `I just gifted ` : `I just minted `;
+
+  if (tokenAmount > 1) {
+    text += `${tokenAmount}x `;
+  }
 
   const farcasterSocial = mint.owner?.meta?.socials.find((s) => s.dappName === FARCASTER_DAPP);
   if (farcasterSocial) {

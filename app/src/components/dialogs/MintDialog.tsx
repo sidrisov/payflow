@@ -150,7 +150,7 @@ export default function MintDialog({
 
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
-  const successMessage = `minted "${mint.metadata.name}" for @${recipientSocial.profileName}`;
+  const successMessage = `minted ${mintCount > 1 ? `${mintCount}x ` : ''}"${mint.metadata.name}" for @${recipientSocial.profileName}`;
   const receiptUrl = getReceiptUrl(payment, false);
 
   const isGift = payment.receiverAddress !== profile?.identity;
@@ -159,7 +159,8 @@ export default function MintDialog({
     mint,
     recipientSocial,
     profile: profile!,
-    isGift
+    isGift,
+    tokenAmount: mintCount
   });
 
   const handleCopyLink = () => {
@@ -370,7 +371,7 @@ export default function MintDialog({
                 paymentTx={paymentTx}
                 paymentWallet={paymentWallet!}
                 paymentOption={paymentOption!}
-                payment={payment}
+                payment={{ ...payment, tokenAmount: mintCount }}
                 senderFlow={senderFlow}
                 onSuccess={() => {
                   setShowSuccessDialog(true);
