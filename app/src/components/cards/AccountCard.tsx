@@ -16,6 +16,7 @@ import { Address } from 'viem';
 import { IoMdArrowDropdown } from 'react-icons/io';
 import { TbSend } from 'react-icons/tb';
 import { useSwipeable } from 'react-swipeable';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 import { ProfileContext } from '../../contexts/UserContext';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
@@ -30,8 +31,8 @@ import { ShareFlowMenu } from '../menu/ShareFlowMenu';
 import { PaymentFlowSection } from '../PaymentFlowSection';
 import { formatAmountWithSuffix } from '../../utils/formats';
 import { ActionButton } from '../buttons/ActionButton';
+import { FlowNavigator } from '../navigation/FlowNavigator';
 
-// Add this new constant for the non-selectable text style
 const nonSelectableText: SxProps = {
   userSelect: 'none',
   WebkitUserSelect: 'none',
@@ -159,7 +160,7 @@ export function AccountCard({
           elevation={5}
           sx={{
             m: 2,
-            pt: 1,
+            pt: 2,
             pb: 2.5,
             px: 2.5,
             maxWidth: 350,
@@ -183,10 +184,21 @@ export function AccountCard({
             flexDirection="row"
             justifyContent="space-between"
             alignItems="center">
-            <PaymentFlowSection navigation flow={selectedFlow} />
+            <Stack direction="row" alignItems="center" spacing={0.5}>
+              <PaymentFlowSection navigation flow={selectedFlow} />
+              <Tooltip title={balanceVisible ? 'Hide Balance' : 'Show Balance'}>
+                <IconButton size="small" onClick={() => setBalanceVisible((prev) => !prev)}>
+                  {balanceVisible ? (
+                    <VisibilityOff sx={{ fontSize: 16 }} />
+                  ) : (
+                    <Visibility sx={{ fontSize: 16 }} />
+                  )}
+                </IconButton>
+              </Tooltip>
+            </Stack>
             <Tooltip title="Payment Flows">
-              <IconButton color="inherit" onClick={() => setOpenSelectFlow(true)}>
-                <IoMdArrowDropdown />
+              <IconButton size="small" color="inherit" onClick={() => setOpenSelectFlow(true)}>
+                <IoMdArrowDropdown size={20} />
               </IconButton>
             </Tooltip>
           </Box>
@@ -223,6 +235,13 @@ export function AccountCard({
             </Stack>
           </Box>
         </Card>
+
+        <FlowNavigator
+          orderedFlows={orderedFlows}
+          currentIndex={currentIndex}
+          onSwipe={handleSwipe}
+          onOpenSelectFlow={() => setOpenSelectFlow(true)}
+        />
 
         {recipient && selectedFlow && (
           <PaymentDialog
