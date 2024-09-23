@@ -48,11 +48,13 @@ import { TbCopy } from 'react-icons/tb';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { createShareUrls } from '../../utils/mint';
 import { useDebounce } from 'use-debounce';
+import { FARCASTER_DAPP } from '../../utils/dapps';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {
     sender: SelectedIdentityType;
     payment: PaymentType;
+    senderSocial: Social;
     recipientSocial: Social;
     mint: MintMetadata;
   } & {
@@ -66,6 +68,7 @@ export default function MintDialog({
   alwaysShowBackButton = false,
   sender,
   payment,
+  senderSocial,
   recipientSocial,
   mint,
   closeStateCallback,
@@ -99,9 +102,9 @@ export default function MintDialog({
 
   const [commentEnabled, setCommentEnabled] = useState(false);
 
-  const payflowCommentSection = `(${
-    isGift ? `gifted to @${recipientSocial.profileName}` : 'minted'
-  } on @payflow)`;
+  const payflowCommentSection = `${
+    isGift ? `Gifted to @${recipientSocial.profileName}` : 'Minted'
+  } by @${senderSocial.profileName} via @payflow`;
   const [comment, setComment] = useState('');
   const [debouncedComment] = useDebounce(comment, 1000);
 
@@ -113,7 +116,7 @@ export default function MintDialog({
     mint,
     minter: senderFlow.wallets[0].address,
     recipient: payment.receiverAddress ?? profile?.identity,
-    comment: `${debouncedComment ? debouncedComment + '\n\n' : ''}${payflowCommentSection}`,
+    comment: `${payflowCommentSection}${debouncedComment ? `:\n\n"${debouncedComment}"` : ''}`,
     amount: mintCount
   });
 
@@ -403,7 +406,7 @@ export default function MintDialog({
               />
             </Box>
 
-            <Box display="flex" flexDirection="column" alignItems="center" width="100%" mt={-1.5}>
+            <Box display="flex" flexDirection="column" alignItems="center" width="100%">
               <PayButton
                 paymentToken={paymentToken}
                 buttonText={

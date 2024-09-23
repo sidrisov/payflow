@@ -151,16 +151,22 @@ export function NetworkTokenSelector({
           })
         }}>
         <Chip
-          icon={crossChainMode ? <MdMultipleStop size={20} /> : <TbSend size={20} />}
+          icon={
+            crossChainMode ? (
+              <MdMultipleStop color="inherit" size={20} />
+            ) : (
+              <TbSend color="inherit" size={20} />
+            )
+          }
           label={label}
           variant="outlined"
-          sx={{ border: 0, fontSize: 13, fontWeight: 500 }}
+          sx={{ border: 0, fontSize: 13, fontWeight: 'bold' }}
         />
         {paymentTokenSelectable ? (
           <Stack direction="row" alignItems="center" spacing={1}>
             <Typography
               fontSize={13}
-              fontWeight={500}
+              fontWeight="bold"
               noWrap
               maxWidth={100}
               textOverflow="ellipsis"

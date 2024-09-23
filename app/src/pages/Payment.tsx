@@ -7,8 +7,15 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { PaymentType } from '../types/PaymentType';
 import { fetchPayment } from '../services/payments';
 import { fetchQuery } from '@airstack/airstack-react';
-import { QUERY_FARCASTER_PROFILE } from '../utils/airstackQueries';
-import { GetFarcasterProfileQuery, Social } from '../generated/graphql/types';
+import {
+  QUERY_FARCASTER_PROFILE,
+  QUERY_FARCASTER_PROFILE_BY_IDENTITY
+} from '../utils/airstackQueries';
+import {
+  GetFarcasterProfileByIdentityQuery,
+  GetFarcasterProfileQuery,
+  Social
+} from '../generated/graphql/types';
 import GiftStorageDialog from '../components/dialogs/BuyStorageDialog';
 import PaymentDialog from '../components/dialogs/PaymentDialog';
 import { IdentityType, SelectedIdentityType } from '../types/ProfileType';
@@ -28,7 +35,8 @@ export default function Payment() {
   const [selectedFlow, setSelectedFlow] = useState<FlowType>();
 
   const [payment, setPayment] = useState<PaymentType>();
-  const [paymentSocial, setPaymentSocial] = useState<Social>();
+  const [senderSocial, setSenderSocial] = useState<Social>();
+  const [recipientSocial, setRecipientSocial] = useState<Social>();
   const [mintData, setMintData] = useState<MintMetadata>();
 
   useEffect(() => {
@@ -49,19 +57,38 @@ export default function Payment() {
         try {
           // Fetch payment data
           const paymentData = await fetchPayment(refId);
+
           if (paymentData) {
+            if (paymentData.status !== 'PENDING') {
+              toast(`Payment ${paymentData.status}!`, {
+                autoClose: 3000,
+                type: statusToToastType[paymentData.status] || 'default'
+              });
+              return;
+            }
+
             if (paymentData.receiverFid) {
-              // Fetch Farcaster profile data
-              const { data } = await fetchQuery<GetFarcasterProfileQuery>(
+              // TODO: fetch from server instead
+              const { data: recipientData } = await fetchQuery<GetFarcasterProfileQuery>(
                 QUERY_FARCASTER_PROFILE,
                 { fid: paymentData.receiverFid.toString() },
                 { cache: true }
               );
 
-              // Update social information if available
-              const social = data?.Socials?.Social?.[0];
-              if (social) {
-                setPaymentSocial(social as Social);
+              const recipientSocial = recipientData?.Socials?.Social?.[0];
+              if (recipientSocial) {
+                setRecipientSocial(recipientSocial as Social);
+              }
+
+              const { data: senderData } = await fetchQuery<GetFarcasterProfileByIdentityQuery>(
+                QUERY_FARCASTER_PROFILE_BY_IDENTITY,
+                { identity: profile?.identity },
+                { cache: true }
+              );
+
+              const senderSocial = senderData?.Socials?.Social?.[0];
+              if (senderSocial) {
+                setSenderSocial(senderSocial as Social);
               }
 
               if (paymentData.category === 'mint') {
@@ -75,14 +102,6 @@ export default function Payment() {
                 );
                 setMintData(mintData);
               }
-            }
-
-            if (paymentData.status !== 'PENDING') {
-              toast(`Payment ${paymentData.status}!`, {
-                autoClose: 3000,
-                type: statusToToastType[paymentData.status] || 'default'
-              });
-              return;
             }
 
             // Update payment state
@@ -147,7 +166,8 @@ export default function Payment() {
               setSelectedFlow={setSelectedFlow}
             />
           ) : (
-            paymentSocial &&
+            senderSocial &&
+            recipientSocial &&
             ((payment.category === 'fc_storage' && (
               <GiftStorageDialog
                 alwaysShowBackButton
@@ -161,7 +181,7 @@ export default function Payment() {
                   },
                   type: 'profile'
                 }}
-                recipientSocial={paymentSocial}
+                recipientSocial={recipientSocial}
                 closeStateCallback={async () => {
                   navigate('/');
                 }}
@@ -183,7 +203,8 @@ export default function Payment() {
                     },
                     type: 'profile'
                   }}
-                  recipientSocial={paymentSocial}
+                  senderSocial={senderSocial}
+                  recipientSocial={recipientSocial}
                   mint={mintData}
                   closeStateCallback={async () => {
                     navigate('/');
