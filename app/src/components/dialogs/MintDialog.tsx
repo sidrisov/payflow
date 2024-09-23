@@ -48,7 +48,7 @@ import { TbCopy } from 'react-icons/tb';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { createShareUrls } from '../../utils/mint';
 import { useDebounce } from 'use-debounce';
-import { FARCASTER_DAPP } from '../../utils/dapps';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {
@@ -78,6 +78,7 @@ export default function MintDialog({
   ...props
 }: MintDialogProps) {
   const isMobile = useMobile();
+  const [showTooltip, setShowTooltip] = useState(false);
 
   const prefersDarkMode = useDarkMode();
 
@@ -100,7 +101,7 @@ export default function MintDialog({
   const [mintCount, setMintCount] = useState(1);
   const isGift = payment.receiverAddress !== profile?.identity;
 
-  const [commentEnabled, setCommentEnabled] = useState(false);
+  const [zoraCommentEnabled, setTxCommentEnabled] = useState(false);
 
   const payflowCommentSection = `${
     isGift ? `Gifted to @${recipientSocial.profileName}` : 'Minted'
@@ -116,7 +117,9 @@ export default function MintDialog({
     mint,
     minter: senderFlow.wallets[0].address,
     recipient: payment.receiverAddress ?? profile?.identity,
-    comment: `${payflowCommentSection}${debouncedComment ? `:\n\n"${debouncedComment}"` : ''}`,
+    comment: zoraCommentEnabled
+      ? `${payflowCommentSection}${debouncedComment ? `:\n\n"${debouncedComment}"` : ''}`
+      : undefined,
     amount: mintCount
   });
 
@@ -125,8 +128,8 @@ export default function MintDialog({
   const secondary = mintData?.secondary;
 
   useEffect(() => {
-    if (mint.provider === 'zora.co' && !commentEnabled) {
-      setCommentEnabled(Boolean(mintStatus === 'live' && !secondary));
+    if (mint.provider === 'zora.co' && !zoraCommentEnabled) {
+      setTxCommentEnabled(Boolean(mintStatus === 'live' && !secondary));
     }
   }, [mintStatus, secondary]);
 
@@ -315,10 +318,7 @@ export default function MintDialog({
                       <Typography fontSize={18} fontWeight="bold">
                         {mint.metadata.name}
                       </Typography>
-                      <Typography
-                        textAlign="start"
-                        variant="subtitle2"
-                        color={grey[prefersDarkMode ? 400 : 700]}>
+                      <Typography variant="subtitle2" color={grey[prefersDarkMode ? 400 : 700]}>
                         {mint.collectionName}
                       </Typography>
                     </Stack>
@@ -363,32 +363,53 @@ export default function MintDialog({
                   </Typography>
                 )}
 
-                {commentEnabled && (
-                  <TextField
-                    fullWidth
-                    variant="outlined"
-                    size="small"
-                    placeholder="Add a comment..."
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    multiline
-                    sx={{
-                      mt: 1,
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 5,
-                        fontSize: 14,
-                        height: 'auto',
-                        '&.Mui-focused fieldset': {
-                          border: 1,
-                          borderColor: 'inherit'
-                        }
-                      },
-                      '& .MuiInputBase-input': {
-                        padding: '8px 12px'
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                  placeholder="Add a comment..."
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  multiline
+                  sx={{
+                    mt: 1,
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 5,
+                      fontSize: 14,
+                      height: 'auto',
+                      '&.Mui-focused fieldset': {
+                        border: 1,
+                        borderColor: 'inherit'
                       }
-                    }}
-                  />
-                )}
+                    },
+                    '& .MuiInputBase-input': {
+                      padding: '8px 12px'
+                    }
+                  }}
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <Tooltip
+                          title={
+                            zoraCommentEnabled
+                              ? 'Comment will be added to payflow and zora.co'
+                              : 'Comment will be added only to payflow'
+                          }
+                          arrow
+                          open={isMobile ? showTooltip : undefined}
+                          disableFocusListener={isMobile}
+                          disableHoverListener={isMobile}
+                          disableTouchListener={isMobile}>
+                          <IconButton
+                            size="small"
+                            onClick={() => isMobile && setShowTooltip(!showTooltip)}>
+                            <InfoOutlinedIcon fontSize="inherit" color="action" />
+                          </IconButton>
+                        </Tooltip>
+                      )
+                    }
+                  }}
+                />
               </Stack>
 
               <NetworkTokenSelector
@@ -416,7 +437,7 @@ export default function MintDialog({
                 paymentTx={paymentTx}
                 paymentWallet={paymentWallet!}
                 paymentOption={paymentOption!}
-                payment={{ ...payment, tokenAmount: mintCount, comment: debouncedComment }}
+                payment={{ ...payment, tokenAmount: mintCount, comment }}
                 senderFlow={senderFlow}
                 onSuccess={() => {
                   setShowSuccessDialog(true);
