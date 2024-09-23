@@ -416,7 +416,7 @@ export default function MintDialog({
                 paymentTx={paymentTx}
                 paymentWallet={paymentWallet!}
                 paymentOption={paymentOption!}
-                payment={{ ...payment, tokenAmount: mintCount }}
+                payment={{ ...payment, tokenAmount: mintCount, comment: debouncedComment }}
                 senderFlow={senderFlow}
                 onSuccess={() => {
                   setShowSuccessDialog(true);

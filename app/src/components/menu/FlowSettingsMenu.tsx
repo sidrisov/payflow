@@ -7,7 +7,8 @@ import {
   MenuItem,
   MenuList,
   MenuProps,
-  Stack
+  Stack,
+  Typography
 } from '@mui/material';
 import { PlayForWork } from '@mui/icons-material';
 import { FlowType } from '../../types/FlowType';
@@ -20,8 +21,11 @@ import NetworkAvatar from '../avatars/NetworkAvatar';
 import { WalletsInfoPopover } from './WalletsInfoPopover';
 import getFlowAssets from '../../utils/assets';
 import { useAssetBalances } from '../../utils/queries/balances';
-import { IoIosWallet } from 'react-icons/io';
+import { IoIosSquare, IoIosWallet, IoMdSquare } from 'react-icons/io';
 import { socialLink, ZAPPER } from '../../utils/dapps';
+import { FRAMES_URL } from '../../utils/urlConstants';
+import { copyToClipboard } from '../../utils/copyToClipboard';
+import { IoSquare } from 'react-icons/io5';
 
 export function FlowSettingsMenu({
   flow,
@@ -43,6 +47,24 @@ export function FlowSettingsMenu({
         transformOrigin={{ horizontal: 'left', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
         <MenuList dense disablePadding>
+          {flow.type === 'FARCASTER_VERIFICATION' && (
+            <MenuItem
+              onClick={() => {
+                const paymentFrameUrl = `${FRAMES_URL}/${flow.wallets[0].address}`;
+                copyToClipboard(paymentFrameUrl);
+                toast.success('Pay Me frame URL copied!');
+              }}>
+              <ListItemIcon>
+                <IoMdSquare />
+              </ListItemIcon>
+              <Stack>
+                <Typography>Pay Me</Typography>
+                <Typography variant="caption" color="text.secondary" noWrap>
+                  Copy & embed frame in socials
+                </Typography>
+              </Stack>
+            </MenuItem>
+          )}
           <MenuItem
             onClick={async (event) => {
               setWalletAnchorEl(event.currentTarget);
