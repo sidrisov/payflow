@@ -1,5 +1,4 @@
 import react from '@vitejs/plugin-react';
-import svgr from 'vite-plugin-svgr';
 import { VitePWA } from 'vite-plugin-pwa';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -18,7 +17,6 @@ export default defineConfig({
     react(),
     nodePolyfills(),
     visualizer(),
-    svgr({ include: '**/*.svg?react' }),
     VitePWA({
       devOptions: {
         enabled: true

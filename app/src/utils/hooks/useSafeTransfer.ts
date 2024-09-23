@@ -11,12 +11,7 @@ import {
   keccak256,
   toBytes
 } from 'viem';
-import { transferWithGelato } from '../safeTransactions';
-
-import { SafeAccountConfig } from '@safe-global/protocol-kit';
-import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { useWaitForTransactionReceipt } from 'wagmi';
-import { clientToSigner } from './useEthersSigner';
 import {
   walletClientToSmartAccountSigner,
   createSmartAccountClient,
@@ -56,8 +51,8 @@ export const useSafeTransfer = (): {
     client: Client<Transport, Chain>,
     signer: WalletClient<Transport, Chain, Account>,
     tx: ViemTransaction,
-    safeAccountConfig: SafeAccountConfig,
-    safeVersion: SafeVersion,
+    safeAccountConfig: { owners: Address[]; threshold: number },
+    safeVersion: string,
     saltNonce: string
   ) => Promise<Hash | undefined>;
   reset: () => void;
@@ -101,8 +96,8 @@ export const useSafeTransfer = (): {
     client: Client<Transport, Chain>,
     signer: WalletClient<Transport, Chain, Account>,
     tx: ViemTransaction,
-    safeAccountConfig: SafeAccountConfig,
-    safeVersion: SafeVersion,
+    safeAccountConfig: { owners: Address[]; threshold: number },
+    safeVersion: string,
     saltNonce: string
   ): Promise<Hash | undefined> {
     setLoading(true);
@@ -191,18 +186,9 @@ export const useSafeTransfer = (): {
         setTxHash(txHash);
         return txHash;
       } else {
-        // handle with gelato relayer and safe sdk
-        const txHash = await transferWithGelato(
-          clientToSigner(signer),
-          tx,
-          isSafeDeployed,
-          safeAccountConfig,
-          safeVersion,
-          saltNonce,
-          statusCallback
-        );
-        setTxHash(txHash);
-        return txHash;
+        setStatus('Not supported');
+        setError(true);
+        return;
       }
     } catch (error) {
       const message = (error as Error).message;

@@ -6,12 +6,12 @@ import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useWalletClient } from 'wagmi';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import LoadingButton from '@mui/lab/LoadingButton';
-import { SiweMessage } from 'siwe';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { API_URL } from '../../utils/urlConstants';
 import { FarcasterAccountsCard } from './FarcasterAccountsCard';
 import { useSetActiveWallet } from '@privy-io/wagmi';
+import { createSiweMessage, parseSiweMessage } from 'viem/siwe';
 
 const FARCASTER_CONNECT_ENABLED = import.meta.env.VITE_FARCASTER_CONNECT_ENABLED === 'true';
 
@@ -21,6 +21,7 @@ export function ConnectCard() {
   const [siwfNonce, setSiwfNonce] = useState<string>();
   const [sifwResponse, setSifeResponse] = useState<StatusAPIResponse>();
   const [authStatus, setAuthStatus] = useState<AuthenticationStatus>('unauthenticated');
+  const [nonceFetched, setNonceFetched] = useState(false);
 
   const { connectWallet, isModalOpen, ready } = usePrivy();
   const { data: signer, isSuccess } = useWalletClient();
@@ -47,36 +48,41 @@ export function ConnectCard() {
 
   useEffect(() => {
     const fetchNonce = async () => {
-      if (FARCASTER_CONNECT_ENABLED && !siwfNonce) {
+      if (FARCASTER_CONNECT_ENABLED && !siwfNonce && !nonceFetched) {
         try {
           const response = await axios.get(`${API_URL}/api/auth/nonce`, { withCredentials: true });
           setSiwfNonce(response.data);
+          setNonceFetched(true);
         } catch (error) {
           console.error('Failed to fetch nonce:', error);
         }
       }
     };
     fetchNonce();
-  }, [siwfNonce]);
+  }, [siwfNonce, nonceFetched]);
 
   const signInWithEthereum = useCallback(async () => {
     if (isSuccess && signer && authStatus === 'unauthenticated') {
       setAuthStatus('loading');
+
+      const address = signer.account.address;
       try {
-        const siweMessage = new SiweMessage({
+        const message = createSiweMessage({
           domain: window.location.host,
-          address: signer.account.address,
+          address,
           statement: 'Sign in with Ethereum to Payflow',
           uri: window.location.origin,
           version: '1',
           chainId: signer.chain.id,
-          nonce: siwfNonce
+          nonce: siwfNonce!
         });
 
-        const signature = await signer.signMessage({ message: siweMessage.prepareMessage() });
+        console.log('SIWE Message: ', message);
+
+        const signature = await signer.signMessage({ message });
         const response = await axios.post(
-          `${API_URL}/api/auth/verify/${siweMessage.address}`,
-          { message: siweMessage, signature },
+          `${API_URL}/api/auth/verify/${address}`,
+          { message: parseSiweMessage(message), signature },
           { withCredentials: true }
         );
 

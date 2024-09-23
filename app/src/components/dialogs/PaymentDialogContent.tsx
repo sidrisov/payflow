@@ -20,9 +20,7 @@ import {
 
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { ProfileType } from '../../types/ProfileType';
-import { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { ProfileContext } from '../../contexts/UserContext';
-import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { useSafeTransfer, ViemTransaction } from '../../utils/hooks/useSafeTransfer';
 import { updateWallet } from '../../services/flow';
 import { TransferToastContent } from '../toasts/TransferToastContent';
@@ -475,7 +473,7 @@ export default function PaymentDialogContent({
           signer,
           profile,
           senderFlow,
-          paymentWallet.version as SafeVersion,
+          paymentWallet.version,
           paymentTx
         );
       } else {
@@ -494,19 +492,19 @@ export default function PaymentDialogContent({
     signer: WalletClient<Transport, Chain, Account>,
     profile: ProfileType,
     flow: FlowType,
-    version: SafeVersion,
+    version: string,
     tx: ViemTransaction
   ) {
     reset();
 
     // TODO: hard to figure out if there 2 signers or one, for now consider if signerProvider not specified - 1, otherwise - 2
-    const owners = [];
+    const owners: Address[] = [];
     if (flow.signerProvider && flow.signer.toLowerCase() !== profile.identity.toLowerCase()) {
       owners.push(profile.identity);
     }
     owners.push(flow.signer);
 
-    const safeAccountConfig: SafeAccountConfig = {
+    const safeAccountConfig: { owners: Address[]; threshold: number } = {
       owners,
       threshold: 1
     };

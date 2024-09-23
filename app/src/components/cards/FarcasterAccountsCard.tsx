@@ -1,9 +1,9 @@
-import { Avatar, Box, Button, Card, CardProps, Stack, Typography } from '@mui/material';
+import { Box, Button, Card, CardProps, Stack, Typography } from '@mui/material';
 import { StatusAPIResponse } from '@farcaster/auth-kit';
 
 import { useMemo, useState } from 'react';
 import { API_URL } from '../../utils/urlConstants';
-import { ParsedMessage } from '@spruceid/siwe-parser';
+import { parseSiweMessage } from 'viem/siwe';
 import { toast } from 'react-toastify';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
@@ -64,7 +64,7 @@ export function FarcasterAccountsCard({
     if (siwfResponse != null) {
       console.debug('onFarcasterSignInSuccess: ', siwfResponse);
       if (siwfResponse.message && siwfResponse.signature && siwfResponse.state === 'completed') {
-        const parsedMessage = new ParsedMessage(siwfResponse.message);
+        const parsedMessage = parseSiweMessage(siwfResponse.message);
         const signature = siwfResponse.signature;
         const verifications = siwfResponse.verifications;
         console.debug(parsedMessage, signature, verifications);

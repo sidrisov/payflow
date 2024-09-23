@@ -2,15 +2,13 @@ import { useContext, useState, useEffect } from 'react';
 import { useChainId, useSwitchChain, useWalletClient, useClient } from 'wagmi';
 import { createSession, executeSession, PaymentOption } from '@paywithglide/glide-js';
 import { ProfileContext } from '../../contexts/UserContext';
-import { SafeAccountConfig } from '@safe-global/protocol-kit';
-import { SafeVersion } from '@safe-global/safe-core-sdk-types';
 import { updatePayment } from '../../services/payments';
 import { PaymentTxStatus, PaymentType } from '../../types/PaymentType';
 import { glideConfig } from '../glide';
 import { useRegularTransfer } from './useRegularTransfer';
 import { useSafeTransfer } from './useSafeTransfer';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
-import { Hash } from 'viem';
+import { Address, Hash } from 'viem';
 
 export const usePayflowTransaction = (isNativeFlow: boolean) => {
   const chainId = useChainId();
@@ -143,7 +141,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
 
           let txHash;
           if (isNativeFlow) {
-            const owners = [];
+            const owners: Address[] = [];
             if (
               senderFlow.signerProvider &&
               senderFlow.signer.toLowerCase() !== profile.identity.toLowerCase()
@@ -152,13 +150,13 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
             }
             owners.push(senderFlow.signer);
 
-            const safeAccountConfig: SafeAccountConfig = {
+            const safeAccountConfig: { owners: Address[]; threshold: number } = {
               owners,
               threshold: 1
             };
 
             const saltNonce = senderFlow.saltNonce as string;
-            const safeVersion = paymentWallet.version as SafeVersion;
+            const safeVersion = paymentWallet.version;
 
             txHash = await transfer(
               client,
