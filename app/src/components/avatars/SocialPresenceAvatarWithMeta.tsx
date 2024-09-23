@@ -1,19 +1,17 @@
 import { Stack, StackProps, Typography } from '@mui/material';
 import { LENS_DAPP, XMPT_DAPP, dAppType } from '../../utils/dapps';
-import SocialPresenceAvatar, { PowerUserAvatar } from './SocialPresenceAvatar';
+import SocialPresenceAvatar from './SocialPresenceAvatar';
 
 export type SocialPresenceAvatarProps = StackProps & {
   dappName: dAppType;
   profileName?: string;
   followerCount?: number;
-  isPowerUser?: boolean;
 };
 
 export default function SocialPresenceAvatarWithMeta({
   dappName,
   profileName,
   followerCount,
-  isPowerUser,
   ...props
 }: SocialPresenceAvatarProps) {
   const normalizedProfileName =
@@ -34,7 +32,6 @@ export default function SocialPresenceAvatarWithMeta({
           ({followerCount})
         </Typography>
       )}
-      {isPowerUser && <PowerUserAvatar />}
     </Stack>
   );
 }

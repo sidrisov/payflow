@@ -21,8 +21,9 @@ import { BsFillPersonFill } from 'react-icons/bs';
 import { toast } from 'react-toastify';
 import { FARCASTER_DAPP, LENS_DAPP, socialLink, ZAPPER } from '../../utils/dapps';
 import { SiFarcaster } from 'react-icons/si';
-import { FaCheckCircle } from 'react-icons/fa';
 import { IoIosChatbubbles } from 'react-icons/io';
+import { FRAMES_URL } from '../../utils/urlConstants';
+import { FaSquare } from 'react-icons/fa6';
 
 export function IdentityMenu({
   identity,
@@ -49,12 +50,10 @@ export function IdentityMenu({
 
   const renderSocialMenuItem = (social: SocialInfoType) => {
     let icon;
-    let isPowerUser = false;
 
     switch (social.dappName) {
       case FARCASTER_DAPP:
         icon = <SiFarcaster />;
-        isPowerUser = social.isFarcasterPowerUser || false;
         break;
       case LENS_DAPP:
         icon = <Avatar src="/dapps/lens.png" sx={{ width: 20, height: 20 }} />;
@@ -72,12 +71,7 @@ export function IdentityMenu({
         sx={{ display: 'flex', alignItems: 'center', py: 1 }}>
         <ListItemIcon>{icon}</ListItemIcon>
         <Stack sx={{ flex: 1, minWidth: 0 }}>
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <Typography noWrap fontSize={14}>
-              {social.profileName}
-            </Typography>
-            {isPowerUser && <FaCheckCircle size={16} />}
-          </Stack>
+          <Typography>{social.profileName}</Typography>
           {social.followerCount && (
             <Typography variant="caption" color="text.secondary" noWrap>
               {social.followerCount} followers
@@ -149,6 +143,22 @@ export function IdentityMenu({
           Connections
         </MenuItem>
         <Divider sx={{ borderBottomWidth: 10, my: 0, '&.MuiDivider-root': { my: 0 } }} />
+        <MenuItem
+          onClick={() => {
+            const paymentFrameUrl = `${FRAMES_URL}/${address}`;
+            copyToClipboard(paymentFrameUrl);
+            toast.success('Pay Me frame URL copied!');
+          }}>
+          <ListItemIcon>
+            <FaSquare />
+          </ListItemIcon>
+          <Stack>
+            <Typography>Pay Me</Typography>
+            <Typography variant="caption" color="text.secondary" noWrap>
+              Copy & embed frame in socials
+            </Typography>
+          </Stack>
+        </MenuItem>
         {socials.map(renderSocialMenuItem)}
         {ens && (
           <MenuItem

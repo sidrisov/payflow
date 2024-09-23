@@ -58,7 +58,6 @@ const renderSocialPresenceAvatarsWithMeta = ({ meta }: { meta: MetaType }) => (
             dappName={s.dappName as dAppType}
             profileName={s.profileName}
             followerCount={s.followerCount}
-            isPowerUser={s.isFarcasterPowerUser}
           />
         ))}
     {meta.xmtp && <SocialPresenceAvatarWithMeta dappName="xmtp" />}

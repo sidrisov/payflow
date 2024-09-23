@@ -10,7 +10,3 @@ export default function SocialPresenceAvatar({ dappName, ...props }: SocialPrese
 
   return <Avatar {...props} src={avatarSrc} sx={{ width: 15, height: 15 }} />;
 }
-
-export function PowerUserAvatar({ ...props }: AvatarProps) {
-  return <Avatar {...props} src="/power.png" sx={{ width: 15, height: 15 }} />;
-}

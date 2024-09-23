@@ -16,8 +16,6 @@ import {
   QUERY_SOCIALS_INSIGHTS,
   QUERY_SOCIALS
 } from '../utils/airstackQueries';
-import axios from 'axios';
-import { BaseNameReponseType } from '../types/BaseNameType';
 import { getPublicClient } from 'wagmi/actions';
 import { wagmiConfig } from '../utils/wagmiConfig';
 import { degen } from 'viem/chains';
@@ -256,7 +254,6 @@ export function convertSocialResults(wallet: Wallet): ContactType | undefined {
             profileDisplayName: s.profileDisplayName,
             profileImage: s.profileImageContentValue?.image?.small ?? s.profileImage,
             followerCount: s.followerCount,
-            isFarcasterPowerUser: s.isFarcasterPowerUser
           } as SocialInfoType)
       )
       .sort((a, b) => b.followerCount - a.followerCount);
@@ -276,7 +273,6 @@ export function convertSocialResults(wallet: Wallet): ContactType | undefined {
             profileDisplayName: s.profileDisplayName,
             profileImage: s.profileImageContentValue?.image?.small ?? s.profileImage,
             followerCount: s.followerCount,
-            isFarcasterPowerUser: false // todo: airstack api does not return this
           } as SocialInfoType);
         }
         return acc;
