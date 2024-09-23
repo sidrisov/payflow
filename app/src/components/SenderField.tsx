@@ -45,7 +45,7 @@ export function SenderField({
       color="inherit"
       {...(sender.type === 'address' && {
         component: Button,
-        onClick: async () => {
+        onClick: () => {
           connectWallet();
         }
       })}

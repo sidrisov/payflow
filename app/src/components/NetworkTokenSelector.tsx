@@ -1,4 +1,4 @@
-import { Stack, Box, Chip, Typography, IconButton } from '@mui/material';
+import { Stack, Box, Chip, Typography } from '@mui/material';
 import { useState, useMemo, useEffect } from 'react';
 import { formatUnits } from 'viem';
 import { FlowWalletType } from '../types/FlowType';
@@ -12,9 +12,9 @@ import { PaymentType } from '../types/PaymentType';
 import { degen } from 'viem/chains';
 import { MdMultipleStop } from 'react-icons/md';
 import { TbSend } from 'react-icons/tb';
-import { IoMdArrowDropdown, IoMdArrowDropup } from 'react-icons/io';
 import { useAssetBalances } from '../utils/queries/balances';
 import { getFlowWalletAssets } from '../utils/assets';
+import ResponsiveDialog from './dialogs/ResponsiveDialog';
 
 export function NetworkTokenSelector({
   payment,
@@ -124,6 +124,9 @@ export function NetworkTokenSelector({
     );
   }, [crossChainMode, paymentWallet, enabledChainCurrencies, balances]);
 
+  const label = `${crossChainMode ? 'Cross-Chain ' : ''}Payment Token`;
+
+  const paymentTokenSelectable = paymentToken && (!showBalance || isBalanceFetched);
   return (
     <Stack width="100%">
       <Box
@@ -131,30 +134,44 @@ export function NetworkTokenSelector({
         display="flex"
         flexDirection="row"
         justifyContent="space-between"
-        alignItems="center">
+        alignItems="center"
+        {...(paymentTokenSelectable && {
+          onClick: () => setExpand(true)
+        })}
+        sx={{
+          ...(paymentTokenSelectable && {
+            cursor: 'pointer',
+            '&:hover': {
+              backgroundColor: 'action.hover'
+            },
+            borderRadius: 5,
+            padding: 1,
+            WebkitTapHighlightColor: 'transparent'
+          })
+        }}>
         <Chip
           icon={crossChainMode ? <MdMultipleStop size={20} /> : <TbSend size={20} />}
-          label={crossChainMode ? 'Cross-Chain Payment Token' : 'Payment Token'}
+          label={label}
           variant="outlined"
           sx={{ border: 0, fontSize: 13, fontWeight: 500 }}
         />
-        {paymentToken && (!showBalance || isBalanceFetched) ? (
-          <Stack direction="row" spacing={0.5} alignItems="center">
-            <Typography fontSize={13} fontWeight={500}>
-              {getNetworkDisplayName(paymentToken.chainId)} / {paymentToken.id.toUpperCase()}
-            </Typography>
-            <IconButton size="small" onClick={() => setExpand(!expand)} sx={{ p: 0.3 }}>
-              {expand ? <IoMdArrowDropup /> : <IoMdArrowDropdown />}
-            </IconButton>
-          </Stack>
+        {paymentTokenSelectable ? (
+          <Typography fontSize={13} fontWeight={500}>
+            {getNetworkDisplayName(paymentToken.chainId)} / {paymentToken.id.toUpperCase()}
+          </Typography>
         ) : (
           <Typography variant="subtitle2">...</Typography>
         )}
       </Box>
 
-      {expand && paymentToken && paymentWallet && compatibleTokens && (
-        <>
+      {paymentToken && paymentWallet && compatibleTokens && (
+        <ResponsiveDialog
+          open={expand}
+          onClose={() => setExpand(false)}
+          title={label}
+          zIndex={1450}>
           <Box
+            width="100%"
             py={1}
             px={2}
             display="flex"
@@ -239,7 +256,7 @@ export function NetworkTokenSelector({
               />
             )}
           </Box>
-        </>
+        </ResponsiveDialog>
       )}
     </Stack>
   );

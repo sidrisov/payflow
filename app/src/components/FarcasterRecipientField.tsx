@@ -22,7 +22,7 @@ export function FarcasterRecipientField({
       color="inherit"
       {...(setOpenSearchIdentity && {
         component: Button,
-        onClick: async () => setOpenSearchIdentity(true)
+        onClick: () => setOpenSearchIdentity(true)
       })}
       sx={{
         border: 1,

@@ -14,6 +14,7 @@ export interface ResponsiveDialogProps {
   title?: string;
   width?: number;
   height?: number;
+  zIndex?: number;
   children?: ReactNode;
 }
 
@@ -34,6 +35,7 @@ const ResponsiveDialog: React.FC<ResponsiveDialogProps> = ({
   title,
   width = 360,
   height,
+  zIndex = 1500,
   children
 }) => {
   const isMobile = useMobile();
@@ -55,7 +57,7 @@ const ResponsiveDialog: React.FC<ResponsiveDialogProps> = ({
         }
       }}
       ModalProps={{
-        sx: { zIndex: 1500, backdropFilter: 'blur(5px)' }
+        sx: { zIndex, backdropFilter: 'blur(5px)' }
       }}>
       <Puller />
       <Box p={2} pt={1} pb={3}>
@@ -85,7 +87,7 @@ const ResponsiveDialog: React.FC<ResponsiveDialogProps> = ({
         }
       }}
       sx={{
-        zIndex: 1500,
+        zIndex,
         backdropFilter: 'blur(5px)'
       }}>
       <DialogTitle variant="h6" textAlign="center" sx={{ pb: 1 }}>
