@@ -284,7 +284,7 @@ export default function MintDialog({
               flexDirection="column"
               alignItems="center"
               justifyContent="space-between">
-              <Stack alignItems="center" justifyContent="start" spacing={0}>
+              <Stack alignItems="center" justifyContent="start" spacing={0} width="100%">
                 <Tooltip
                   title={mint.metadata.description}
                   arrow
@@ -321,6 +321,7 @@ export default function MintDialog({
                     </Stack>
                   </Stack>
                 </Tooltip>
+
                 <Stack direction="row" alignItems="center" spacing={2} mb={1}>
                   <IconButton onClick={() => setMintCount((prev) => Math.max(prev - 1, 1))}>
                     <Remove fontSize="small" sx={{ color: 'text.secondary' }} />
@@ -358,33 +359,34 @@ export default function MintDialog({
                         "You don't have any balance to cover mint cost. Switch to a different payment flow!"}
                   </Typography>
                 )}
-              </Stack>
 
-              {commentEnabled && (
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  size="small"
-                  placeholder="Add a comment..."
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  multiline
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 5,
-                      fontSize: 14,
-                      height: 'auto',
-                      '&.Mui-focused fieldset': {
-                        border: 1,
-                        borderColor: 'inherit'
+                {commentEnabled && (
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    size="small"
+                    placeholder="Add a comment..."
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    multiline
+                    sx={{
+                      mt: 1,
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 5,
+                        fontSize: 14,
+                        height: 'auto',
+                        '&.Mui-focused fieldset': {
+                          border: 1,
+                          borderColor: 'inherit'
+                        }
+                      },
+                      '& .MuiInputBase-input': {
+                        padding: '8px 12px'
                       }
-                    },
-                    '& .MuiInputBase-input': {
-                      padding: '8px 12px'
-                    }
-                  }}
-                />
-              )}
+                    }}
+                  />
+                )}
+              </Stack>
 
               <NetworkTokenSelector
                 crossChainMode
