@@ -401,7 +401,7 @@ export default function MintDialog({
               />
             </Box>
 
-            <Box display="flex" flexDirection="column" alignItems="center" width="100%">
+            <Box display="flex" flexDirection="column" alignItems="center" width="100%" mt={-1.5}>
               <PayButton
                 paymentToken={paymentToken}
                 buttonText={

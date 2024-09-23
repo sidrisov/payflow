@@ -15,6 +15,7 @@ import { TbSend } from 'react-icons/tb';
 import { useAssetBalances } from '../utils/queries/balances';
 import { getFlowWalletAssets } from '../utils/assets';
 import ResponsiveDialog from './dialogs/ResponsiveDialog';
+import NetworkAvatar from './avatars/NetworkAvatar';
 
 export function NetworkTokenSelector({
   payment,
@@ -128,7 +129,7 @@ export function NetworkTokenSelector({
 
   const paymentTokenSelectable = paymentToken && (!showBalance || isBalanceFetched);
   return (
-    <Stack width="100%">
+    <Box width="100%">
       <Box
         px={0.5}
         display="flex"
@@ -139,14 +140,14 @@ export function NetworkTokenSelector({
           onClick: () => setExpand(true)
         })}
         sx={{
+          borderRadius: 5,
+          p: 1,
+          WebkitTapHighlightColor: 'transparent',
           ...(paymentTokenSelectable && {
             cursor: 'pointer',
             '&:hover': {
               backgroundColor: 'action.hover'
-            },
-            borderRadius: 5,
-            padding: 1,
-            WebkitTapHighlightColor: 'transparent'
+            }
           })
         }}>
         <Chip
@@ -156,9 +157,18 @@ export function NetworkTokenSelector({
           sx={{ border: 0, fontSize: 13, fontWeight: 500 }}
         />
         {paymentTokenSelectable ? (
-          <Typography fontSize={13} fontWeight={500}>
-            {getNetworkDisplayName(paymentToken.chainId)} / {paymentToken.id.toUpperCase()}
-          </Typography>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Typography
+              fontSize={13}
+              fontWeight={500}
+              noWrap
+              maxWidth={100}
+              textOverflow="ellipsis"
+              overflow="hidden">
+              {`${formatAmountWithSuffix(maxBalance)} ${paymentToken?.name}`}
+            </Typography>
+            <NetworkAvatar chainId={paymentToken.chainId} sx={{ width: 15, height: 15 }} />
+          </Stack>
         ) : (
           <Typography variant="subtitle2">...</Typography>
         )}
@@ -258,6 +268,6 @@ export function NetworkTokenSelector({
           </Box>
         </ResponsiveDialog>
       )}
-    </Stack>
+    </Box>
   );
 }
