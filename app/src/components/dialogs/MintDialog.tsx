@@ -17,13 +17,13 @@ import { getPaymentOption } from '../../utils/glide';
 import { useChainId } from 'wagmi';
 import { BackDialogTitle } from './BackDialogTitle';
 import { SenderField } from '../SenderField';
-import { KeyboardDoubleArrowDown } from '@mui/icons-material';
+import { KeyboardDoubleArrowDown, Add, Remove } from '@mui/icons-material';
 import { SelectedIdentityType } from '../../types/ProfileType';
 import { FarcasterRecipientField } from '../FarcasterRecipientField';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { PaymentType } from '../../types/PaymentType';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useMemo, useState, useEffect } from 'react';
 import { Token } from '../../utils/erc20contracts';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
@@ -47,7 +47,7 @@ import { SiFarcaster } from 'react-icons/si';
 import { TbCopy } from 'react-icons/tb';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { createShareUrls } from '../../utils/mint';
-import { Add, Remove } from '@mui/icons-material';
+import { useDebounce } from 'use-debounce';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {
@@ -95,6 +95,15 @@ export default function MintDialog({
   const [paymentToken, setPaymentToken] = useState<Token>();
 
   const [mintCount, setMintCount] = useState(1);
+  const isGift = payment.receiverAddress !== profile?.identity;
+
+  const [commentEnabled, setCommentEnabled] = useState(false);
+
+  const payflowCommentSection = `(${
+    isGift ? `gifted to @${recipientSocial.profileName}` : 'minted'
+  } on @payflow)`;
+  const [comment, setComment] = useState('');
+  const [debouncedComment] = useDebounce(comment, 1000);
 
   const {
     data: mintData,
@@ -104,13 +113,19 @@ export default function MintDialog({
     mint,
     minter: senderFlow.wallets[0].address,
     recipient: payment.receiverAddress ?? profile?.identity,
-    comment: `Minted ${mintCount} for @${recipientSocial.profileName} on @payflow`,
+    comment: `${debouncedComment ? debouncedComment + '\n\n' : ''}${payflowCommentSection}`,
     amount: mintCount
   });
 
   const paymentTx = mintData?.paymentTx;
   const mintStatus = mintData?.mintStatus;
   const secondary = mintData?.secondary;
+
+  useEffect(() => {
+    if (mint.provider === 'zora.co' && !commentEnabled) {
+      setCommentEnabled(Boolean(mintStatus === 'live' && !secondary));
+    }
+  }, [mintStatus, secondary]);
 
   console.log('Mint tx: ', paymentTx);
 
@@ -150,10 +165,10 @@ export default function MintDialog({
 
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
-  const successMessage = `minted ${mintCount > 1 ? `${mintCount}x ` : ''}"${mint.metadata.name}" for @${recipientSocial.profileName}`;
+  const successMessage = `minted ${mintCount > 1 ? `${mintCount}x ` : ''}"${
+    mint.metadata.name
+  }" for @${recipientSocial.profileName}`;
   const receiptUrl = getReceiptUrl(payment, false);
-
-  const isGift = payment.receiverAddress !== profile?.identity;
 
   const { shareFrameUrl, composeCastUrl } = createShareUrls({
     mint,
@@ -306,8 +321,7 @@ export default function MintDialog({
                     </Stack>
                   </Stack>
                 </Tooltip>
-
-                <Stack direction="row" alignItems="center" spacing={2} mb={2}>
+                <Stack direction="row" alignItems="center" spacing={2} mb={1}>
                   <IconButton onClick={() => setMintCount((prev) => Math.max(prev - 1, 1))}>
                     <Remove fontSize="small" sx={{ color: 'text.secondary' }} />
                   </IconButton>
@@ -345,6 +359,32 @@ export default function MintDialog({
                   </Typography>
                 )}
               </Stack>
+
+              {commentEnabled && (
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                  placeholder="Add a comment..."
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  multiline
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 5,
+                      fontSize: 14,
+                      height: 'auto',
+                      '&.Mui-focused fieldset': {
+                        border: 1,
+                        borderColor: 'inherit'
+                      }
+                    },
+                    '& .MuiInputBase-input': {
+                      padding: '8px 12px'
+                    }
+                  }}
+                />
+              )}
 
               <NetworkTokenSelector
                 crossChainMode
