@@ -1,6 +1,6 @@
 import { readContract } from '@wagmi/core';
 import axios from 'axios';
-import { Address, erc721Abi, PublicClient } from 'viem';
+import { Address, PublicClient } from 'viem';
 import { IdentityType } from '../types/ProfileType';
 import { API_URL, FRAMES_URL } from './urlConstants';
 import { wagmiConfig } from './wagmiConfig';
@@ -10,6 +10,7 @@ import { getPublicClient } from 'wagmi/actions';
 import { ProfileType } from '../types/ProfileType';
 import { FARCASTER_DAPP } from './dapps';
 import { Social } from '../generated/graphql/types';
+import { erc721Abi } from './abi/erc721Abi';
 
 type ParsedMintData = {
   provider: MintProvider;

@@ -1,11 +1,12 @@
 import { readContract } from '@wagmi/core';
-import { Address, erc721Abi } from 'viem';
+import { Address } from 'viem';
 import { wagmiConfig } from './wagmi';
 import { zoraErc1155Abi } from './abis/zoraErc1155Abi';
 import axios from 'axios';
 import { IdentityType } from '../types/ProfleType';
 
 import dotenv from 'dotenv';
+import { erc721Abi } from './abis/erc721Abi';
 dotenv.config();
 
 const API_URL = process.env.VITE_PAYFLOW_SERVICE_API_URL;
