@@ -160,7 +160,7 @@ public record ParsedMintUrlMessage(
 
 		val provider = parts[0];
 		val contract = parts[1];
-		val tokenId = Integer.parseInt(parts[2]);
+		val tokenId = !parts[2].isEmpty() ? Integer.parseInt(parts[2]) : null;
 		val referral = parts[3];
 		if (parts.length == 5) {
 			author = parts[4];

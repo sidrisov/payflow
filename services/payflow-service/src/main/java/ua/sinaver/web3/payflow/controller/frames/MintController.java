@@ -6,11 +6,11 @@ import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import ua.sinaver.web3.payflow.config.PayflowConfig;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
@@ -23,10 +23,8 @@ import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 import ua.sinaver.web3.payflow.utils.MintUrlUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Optional;
+import java.net.URI;
+import java.util.*;
 
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.DEFAULT_HTML_RESPONSE;
 import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS;
@@ -36,21 +34,15 @@ import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYME
 @Transactional
 @Slf4j
 public class MintController {
-
+	private static final List<String> miniAppAllowlist = Collections.emptyList();
 	@Autowired
 	private IFarcasterNeynarService neynarService;
 	@Autowired
 	private PaymentRepository paymentRepository;
-	@Value("${payflow.frames.url}")
-	private String framesServiceUrl;
-	@Value("${payflow.api.url}")
-	private String apiServiceUrl;
-	@Value("${payflow.dapp.url}")
-	private String dAppServiceUrl;
-
+	@Autowired
+	private PayflowConfig payflowConfig;
 	@Autowired
 	private UserService userService;
-
 	@Autowired
 	private IdentityService identityService;
 
@@ -193,9 +185,27 @@ public class MintController {
 		paymentRepository.saveAll(payments);
 		log.debug("Mint payment intents saved: {}", payments);
 
-		val paymentMintUrl = UriComponentsBuilder.fromHttpUrl(dAppServiceUrl)
-				.path("/payment/{refId}")
-				.buildAndExpand(payments.getFirst().getReferenceId()).toUri();
+		val miniAppRedirect = validateMessage.action().signer().client().username().equals("warpcast") &&
+				miniAppAllowlist.contains(interactor.username());
+
+		val paymentRefId = payments.get(0).getReferenceId();
+		URI paymentMintUrl;
+		if (miniAppRedirect) {
+			paymentMintUrl = UriComponentsBuilder.fromHttpUrl("https://warpcast.com")
+					.path("/~/composer-action")
+					.queryParam("url", UriComponentsBuilder.fromHttpUrl(payflowConfig.getApiServiceUrl())
+							.path("/api/farcaster/composer/pay")
+							.queryParam("action", "payment")
+							.queryParam("refId", paymentRefId)
+							.build().encode()
+							.toUriString())
+					.build()
+					.toUri();
+		} else {
+			paymentMintUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
+					.path("/payment/{refId}")
+					.buildAndExpand(paymentRefId).toUri();
+		}
 
 		log.debug("Redirecting to {}", paymentMintUrl);
 		return ResponseEntity.status(HttpStatus.FOUND).location(paymentMintUrl).build();

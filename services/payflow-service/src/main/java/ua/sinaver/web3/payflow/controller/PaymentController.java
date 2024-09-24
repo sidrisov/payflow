@@ -158,7 +158,7 @@ public class PaymentController {
 				.map(String::toLowerCase)
 				.toList();
 
-		val paymentsPage = paymentRepository.findCompletedOrderByCreatedDateDesc(user,
+		val paymentsPage = paymentRepository.findCompletedOrderByCompletedDateDesc(user,
 				verifications, PageRequest.of(page, size));
 
 		// Check if we should include comments (when logged user is viewing their own
