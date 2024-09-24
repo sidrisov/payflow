@@ -310,7 +310,10 @@ async function fetchMintPaymentTx({
 
           let mintStatus: 'live' | 'upcoming' | 'ended' | 'sold';
           const now = new Date();
-          if (mintVector.mintVectorStats.sold >= mintVector.maxPerVector) {
+          if (
+            mintVector.mintVectorStats.total !== 0 &&
+            mintVector.mintVectorStats.sold >= mintVector.mintVectorStats.total
+          ) {
             mintStatus = 'sold';
           } else if (now < start) {
             mintStatus = 'upcoming';
