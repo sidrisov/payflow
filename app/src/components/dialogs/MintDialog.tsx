@@ -64,6 +64,76 @@ export type MintDialogProps = DialogProps &
     setSelectedFlow?: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
   };
 
+type CommentFieldProps = {
+  disabled: boolean;
+  comment: string;
+  setComment: React.Dispatch<React.SetStateAction<string>>;
+  zoraCommentEnabled: boolean;
+};
+
+const CommentField: React.FC<CommentFieldProps> = ({
+  disabled,
+  comment,
+  setComment,
+  zoraCommentEnabled
+}) => {
+  const isMobile = useMobile();
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  return (
+    <TextField
+      // TODO: also, check if not in pending payment state
+      disabled={disabled}
+      fullWidth
+      variant="outlined"
+      size="small"
+      placeholder="Add a comment..."
+      value={comment}
+      onChange={(e) => setComment(e.target.value)}
+      multiline
+      sx={{
+        mt: 1,
+        '& .MuiOutlinedInput-root': {
+          borderRadius: 5,
+          fontSize: 14,
+          height: 'auto',
+          '&.Mui-focused fieldset': {
+            border: 1,
+            borderColor: 'inherit'
+          }
+        },
+        '& .MuiInputBase-input': {
+          padding: '8px 12px'
+        }
+      }}
+      slotProps={{
+        input: {
+          endAdornment: (
+            <Tooltip
+              title={
+                zoraCommentEnabled
+                  ? 'Comment will be added to payflow and zora.co'
+                  : 'Comment will be added only to payflow'
+              }
+              arrow
+              open={isMobile ? showTooltip : undefined}
+              disableFocusListener={isMobile}
+              disableHoverListener={isMobile}
+              disableTouchListener={isMobile}>
+              <IconButton
+                disabled={disabled}
+                size="small"
+                onClick={() => isMobile && setShowTooltip(!showTooltip)}>
+                <InfoOutlinedIcon fontSize="inherit" />
+              </IconButton>
+            </Tooltip>
+          )
+        }
+      }}
+    />
+  );
+};
+
 export default function MintDialog({
   alwaysShowBackButton = false,
   sender,
@@ -78,8 +148,6 @@ export default function MintDialog({
   ...props
 }: MintDialogProps) {
   const isMobile = useMobile();
-  const [showTooltip, setShowTooltip] = useState(false);
-
   const prefersDarkMode = useDarkMode();
 
   const [openSelectFlow, setOpenSelectFlow] = useState(false);
@@ -112,7 +180,8 @@ export default function MintDialog({
   const {
     data: mintData,
     isLoading: isMintLoading,
-    isError: mintPaymentTxError
+    isError: isMintPaymentTxError,
+    error: mintPaymentTxError
   } = useMintPaymentTx({
     mint,
     minter: senderFlow.wallets[0].address,
@@ -138,7 +207,8 @@ export default function MintDialog({
   const {
     isLoading: isPaymentOptionsLoading,
     data: paymentOptions,
-    isError: isPaymentOptionsError
+    isError: isPaymentOptionsError,
+    error: paymentOptionsError
   } = useGlidePaymentOptions(Boolean(paymentTx) && mintStatus === 'live', {
     ...(paymentTx as any),
     account: senderFlow.wallets[0].address
@@ -167,7 +237,7 @@ export default function MintDialog({
 
   const isLoading = isMintLoading || isPaymentOptionsLoading;
   const hasPaymentOption =
-    !isLoading && paymentOption && paymentToken && mintStatus === 'live' && !mintPaymentTxError;
+    !isLoading && paymentOption && paymentToken && mintStatus === 'live' && !isMintPaymentTxError;
 
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
@@ -351,64 +421,35 @@ export default function MintDialog({
                     {paymentToken?.id.toUpperCase()}
                   </Typography>
                 ) : (
-                  <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
-                    {mintStatus === 'ended'
-                      ? 'Mint has ended'
-                      : mintPaymentTxError || !paymentTx
-                      ? 'Failed to load payment transaction'
-                      : mintStatus === 'error' || isPaymentOptionsError
-                      ? 'Something went wrong'
-                      : paymentOptions?.length === 0 &&
-                        "You don't have any balance to cover mint cost. Switch to a different payment flow!"}
+                  <Typography
+                    textAlign="center"
+                    fontSize={14}
+                    fontWeight="bold"
+                    color={red.A400}
+                    sx={{
+                      textWrap: 'balance'
+                    }}>
+                    {mintStatus === 'ended' && 'Mint has ended'}
+                    {mintStatus === 'upcoming' && 'Mint has not started yet'}
+                    {mintStatus === 'sold' && 'Mint is sold out'}
+                    {isMintPaymentTxError &&
+                      (mintPaymentTxError?.message ?? 'Failed to load payment transaction')}
+                    {(paymentOptions?.length === 0 || isPaymentOptionsError) &&
+                      (paymentOptionsError?.message ??
+                        "You don't have any balance to cover mint cost. Switch to a different payment flow!")}
                   </Typography>
                 )}
 
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  size="small"
-                  placeholder="Add a comment..."
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  multiline
-                  sx={{
-                    mt: 1,
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 5,
-                      fontSize: 14,
-                      height: 'auto',
-                      '&.Mui-focused fieldset': {
-                        border: 1,
-                        borderColor: 'inherit'
-                      }
-                    },
-                    '& .MuiInputBase-input': {
-                      padding: '8px 12px'
-                    }
-                  }}
-                  slotProps={{
-                    input: {
-                      endAdornment: (
-                        <Tooltip
-                          title={
-                            zoraCommentEnabled
-                              ? 'Comment will be added to payflow and zora.co'
-                              : 'Comment will be added only to payflow'
-                          }
-                          arrow
-                          open={isMobile ? showTooltip : undefined}
-                          disableFocusListener={isMobile}
-                          disableHoverListener={isMobile}
-                          disableTouchListener={isMobile}>
-                          <IconButton
-                            size="small"
-                            onClick={() => isMobile && setShowTooltip(!showTooltip)}>
-                            <InfoOutlinedIcon fontSize="inherit" color="action" />
-                          </IconButton>
-                        </Tooltip>
-                      )
-                    }
-                  }}
+                <CommentField
+                  disabled={
+                    !mintStatus ||
+                    mintStatus !== 'live' ||
+                    isMintPaymentTxError ||
+                    isPaymentOptionsError
+                  }
+                  comment={comment}
+                  setComment={setComment}
+                  zoraCommentEnabled={zoraCommentEnabled}
                 />
               </Stack>
 
@@ -431,7 +472,13 @@ export default function MintDialog({
               <PayButton
                 paymentToken={paymentToken}
                 buttonText={
-                  mintStatus === 'ended' ? 'Mint Ended' : secondary ? 'Buy On Secondary' : 'Mint'
+                  mintStatus === 'ended'
+                    ? 'Mint Ended'
+                    : mintStatus === 'upcoming'
+                    ? 'Mint Not Started'
+                    : secondary
+                    ? 'Buy On Secondary'
+                    : 'Mint'
                 }
                 disabled={!hasPaymentOption}
                 paymentTx={paymentTx}
