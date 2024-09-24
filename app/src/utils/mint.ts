@@ -119,7 +119,7 @@ export async function fetchMintData(
       mintType,
       chainId,
       contract,
-      tokenId ?? 1
+      tokenId
     );
     console.log(`Token metadata URI: ${tokenMetadataUri}`);
 
@@ -179,7 +179,7 @@ export async function fetchCollectionTokenMetadataURI(
   mintType: '721' | '1155',
   chainId: number,
   contract: Address,
-  tokenId: number
+  tokenId?: number
 ): Promise<string> {
   // TODO: instead pre-fetch tokenId the one to mint
   const functionName = mintType === '721' ? (tokenId ? 'tokenURI' : 'contractURI') : 'uri';
@@ -189,7 +189,7 @@ export async function fetchCollectionTokenMetadataURI(
     address: contract,
     abi,
     functionName: functionName as any,
-    args: tokenId ? [BigInt(tokenId)] : undefined
+    args: tokenId ? [BigInt(tokenId ?? 1)] : undefined
   })) as string;
 }
 
