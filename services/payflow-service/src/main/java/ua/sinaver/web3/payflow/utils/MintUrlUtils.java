@@ -34,6 +34,13 @@ public class MintUrlUtils {
                                 "contract", contract,
                                 "tokenId", tokenId != null ? tokenId.toString() : ""));
                 break;
+            case "highlight.xyz":
+                builder = UriComponentsBuilder.fromHttpUrl("https://highlight.xyz")
+                        .path("/mint/{chainId}:{contract}")
+                        .uriVariables(Map.of(
+                                "chainId", chainId,
+                                "contract", contract));
+                break;
             default:
                 log.warn("Unknown provider: {}. Returning empty string.", provider);
                 return "";

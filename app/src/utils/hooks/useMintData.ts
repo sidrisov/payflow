@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { Address } from 'viem';
 import { PaymentType } from '../../types/PaymentType';
-import { fetchMintData, MintMetadata } from '../mint';
+import { fetchMintData, MintMetadata, MintProvider } from '../mint';
 
 type ParsedMintData = {
-  provider: string;
+  provider: MintProvider;
   contract: Address;
   tokenId?: number;
 };
@@ -15,7 +15,7 @@ function parseMintToken(token: string): ParsedMintData {
     provider,
     contract: contract as Address,
     tokenId: tokenId ? parseInt(tokenId) : undefined
-  };
+  } as ParsedMintData;
 }
 
 export function useMintData(payment: PaymentType) {
