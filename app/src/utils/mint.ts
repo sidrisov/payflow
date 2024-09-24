@@ -183,14 +183,27 @@ export async function fetchCollectionTokenMetadataURI(
   tokenId?: number
 ): Promise<string> {
   // TODO: instead pre-fetch tokenId the one to mint
-  const functionName = mintType === '721' ? (tokenId ? 'tokenURI' : 'contractURI') : 'uri';
+
   const abi = mintType === '721' ? erc721Abi : zoraErc1155Abi;
+
+  let tokenIdSanitized = tokenId;
+  if (!tokenId) {
+    tokenIdSanitized = (await readContract(wagmiConfig, {
+      chainId: chainId as any,
+      address: contract,
+      abi,
+      functionName: 'supply'
+    })) as number;
+  }
+
+  const functionName = mintType === '721' ? 'tokenURI' : 'uri';
+
   return (await readContract(wagmiConfig, {
     chainId: chainId as any,
     address: contract,
     abi,
     functionName: functionName as any,
-    args: tokenId ? [BigInt(tokenId ?? 1)] : undefined
+    args: [BigInt(tokenIdSanitized ?? 0 + 1)]
   })) as string;
 }
 
