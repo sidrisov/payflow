@@ -347,7 +347,11 @@ export default function SearchIdentityDialog({
               identities={
                 addressBookView === 'all'
                   ? contacts
-                  : contacts.filter((c) => c.tags?.includes(addressBookView))
+                  : contacts.filter((c) => 
+                      addressBookView === 'friends'
+                        ? c.tags?.includes('friends') || c.tags?.includes('efp')
+                        : c.tags?.includes(addressBookView)
+                  )
               }
             />
           )}
