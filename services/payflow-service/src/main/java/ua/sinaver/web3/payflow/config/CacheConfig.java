@@ -29,14 +29,9 @@ public class CacheConfig {
 	public static final String SOCIALS_INSIGHTS_CACHE_NAME = CACHE_PREFIX_VERSION + "insights";
 	public static final String FARCASTER_VERIFICATIONS_CACHE_NAME = CACHE_PREFIX_VERSION + "verifications";
 	public static final String NEYNAR_FARCASTER_USER_CACHE = CACHE_PREFIX_VERSION + "farcaster-users";
-	public static final String TOKEN_OWNERS_CACHE_NAME = CACHE_PREFIX_VERSION + "token-owners";
-	public static final String POAP_OWNERS_CACHE_NAME = CACHE_PREFIX_VERSION + "poap-owners";
 	public static final String USERS_CACHE_NAME = CACHE_PREFIX_VERSION + "users";
 	public static final String INVITATIONS_CACHE_NAME = CACHE_PREFIX_VERSION + "invitations";
 
-
-	@Value("${spring.cache.contacts.eth-denver.expireAfterWrite:10m}")
-	private Duration poapAndTokenOwnersExpireAfterWriteDuration;
 	@Value("${spring.cache.contacts.all.expireAfterWrite:10m}")
 	private Duration contactsExpireAfterWriteDuration;
 	@Value("${spring.cache.contacts.list.expireAfterWrite:10m}")
@@ -87,14 +82,6 @@ public class CacheConfig {
 						.SerializationPair
 						.fromSerializer(serializer));
 
-		val ethDenverContactsCacheConfigs =
-				RedisCacheConfiguration.defaultCacheConfig()
-						.disableCachingNullValues()
-						.entryTtl(poapAndTokenOwnersExpireAfterWriteDuration)
-						.serializeValuesWith(RedisSerializationContext
-								.SerializationPair
-								.fromSerializer(serializer));
-
 		val socialsCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
 				.disableCachingNullValues()
 				.entryTtl(socialsExpireAfterWriteDuration)
@@ -114,8 +101,6 @@ public class CacheConfig {
 		cacheConfigurations.put(CONTACT_LIST_CACHE_NAME, contactsListCacheConfigs);
 		cacheConfigurations.put(FAN_TOKENS_CACHE_NAME, contactsCacheConfigs);
 		cacheConfigurations.put(FAN_TOKEN_CACHE_NAME, fanTokenCacheConfigs);
-		cacheConfigurations.put(TOKEN_OWNERS_CACHE_NAME, ethDenverContactsCacheConfigs);
-		cacheConfigurations.put(POAP_OWNERS_CACHE_NAME, ethDenverContactsCacheConfigs);
 		cacheConfigurations.put(SOCIALS_CACHE_NAME, socialsCacheConfig);
 		cacheConfigurations.put(SOCIALS_INSIGHTS_CACHE_NAME, socialsCacheConfig);
 		cacheConfigurations.put(NEYNAR_FARCASTER_USER_CACHE, verificationsCacheConfig);
@@ -147,12 +132,6 @@ public class CacheConfig {
 
 		cacheManager.registerCustomCache(FAN_TOKEN_CACHE_NAME,
 				buildCache(Duration.ofMinutes(5)));
-
-		cacheManager.registerCustomCache(TOKEN_OWNERS_CACHE_NAME,
-				buildCache(poapAndTokenOwnersExpireAfterWriteDuration));
-
-		cacheManager.registerCustomCache(POAP_OWNERS_CACHE_NAME,
-				buildCache(poapAndTokenOwnersExpireAfterWriteDuration));
 
 		cacheManager.registerCustomCache(SOCIALS_CACHE_NAME,
 				buildCache(socialsExpireAfterWriteDuration, socialsMaxSize));

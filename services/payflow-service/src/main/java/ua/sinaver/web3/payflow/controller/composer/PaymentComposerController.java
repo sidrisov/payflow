@@ -108,7 +108,7 @@ public class PaymentComposerController {
 		}
 
 		String miniAppUrl;
-		if (action.equals("payment") && StringUtils.isNotBlank(refId)) {
+		if (StringUtils.equals(action, "payment") && StringUtils.isNotBlank(refId)) {
 			miniAppUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 					.path("/payment/{refId}")
 					.queryParam("access_token", accessToken)
