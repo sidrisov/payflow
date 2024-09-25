@@ -124,7 +124,11 @@ export default function SearchIdentityDialog({
         // also if search by ens and result is found, skip online search
         foundAmongContacts = contacts.filter(
           (c) =>
-            (addressBookView !== 'all' ? c.tags?.includes(addressBookView) : true) &&
+            (addressBookView !== 'all'
+              ? addressBookView === 'friends'
+                ? c.tags?.includes('friends') || c.tags?.includes('efp')
+                : c.tags?.includes(addressBookView)
+              : true) &&
             (c.data.profile?.username?.includes(debouncedSearchString) ||
               c.data.profile?.displayName?.toLowerCase().includes(debouncedSearchString) ||
               c.data.meta?.ens?.includes(debouncedSearchString) ||
@@ -347,11 +351,11 @@ export default function SearchIdentityDialog({
               identities={
                 addressBookView === 'all'
                   ? contacts
-                  : contacts.filter((c) => 
+                  : contacts.filter((c) =>
                       addressBookView === 'friends'
                         ? c.tags?.includes('friends') || c.tags?.includes('efp')
                         : c.tags?.includes(addressBookView)
-                  )
+                    )
               }
             />
           )}
