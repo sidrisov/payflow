@@ -3,13 +3,13 @@ package ua.sinaver.web3.payflow.repository;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
 import org.hibernate.cfg.AvailableSettings;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.User;
 
@@ -38,7 +38,7 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 			"OR LOWER(p.senderAddress) IN :addresses " +
 			"OR LOWER(p.receiverAddress) IN :addresses) " +
 			"ORDER BY p.createdDate DESC")
-	List<Payment> findCompletedOrderByCreatedDateDesc(
+	List<Payment> findCompletedOrderByCompletedDateDesc(
 			@Param("user") User user,
 			@Param("addresses") List<String> addresses);
 
@@ -53,14 +53,14 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 	@QueryHints(@QueryHint(name = AvailableSettings.JAKARTA_LOCK_TIMEOUT, value = "-2"))
 	@Query("SELECT p FROM Payment p WHERE p.status = :status AND p.createdDate < :date")
 	Stream<Payment> findOldPendingPaymentsWithLock(@Param("status") Payment.PaymentStatus status,
-			@Param("date") Date date);
+	                                               @Param("date") Date date);
 
 	@Query("SELECT p FROM Payment p " +
 			"WHERE (p.sender = :user OR p.receiver = :user " +
 			"OR LOWER(p.senderAddress) IN :addresses " +
 			"OR LOWER(p.receiverAddress) IN :addresses) " +
-			"AND p.status = COMPLETED ORDER BY p.createdDate DESC")
-	Page<Payment> findCompletedOrderByCreatedDateDesc(
+			"AND p.status = COMPLETED ORDER BY p.completedDate DESC")
+	Page<Payment> findCompletedOrderByCompletedDateDesc(
 			@Param("user") User user,
 			@Param("addresses") List<String> addresses,
 			Pageable pageable);

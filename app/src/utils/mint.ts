@@ -12,15 +12,16 @@ import { FARCASTER_DAPP } from './dapps';
 import { Social } from '../generated/graphql/types';
 
 type ParsedMintData = {
-  provider: string;
+  provider: MintProvider;
   contract: Address;
   tokenId?: number;
   referral?: Address;
   author?: Address;
 };
+export type MintProvider = 'zora.co' | 'rodeo.club' | 'highlight.xyz';
 
 export type MintMetadata = {
-  provider: string;
+  provider: MintProvider;
   chainId: number;
   contract: Address;
   tokenId?: number;
@@ -37,7 +38,7 @@ export type MintMetadata = {
 };
 
 export async function fetchMintData(
-  provider: string,
+  provider: MintProvider,
   chainId: number,
   contract: Address,
   tokenId?: number,
@@ -118,7 +119,7 @@ export async function fetchMintData(
       mintType,
       chainId,
       contract,
-      tokenId ?? 1
+      tokenId
     );
     console.log(`Token metadata URI: ${tokenMetadataUri}`);
 
@@ -178,16 +179,31 @@ export async function fetchCollectionTokenMetadataURI(
   mintType: '721' | '1155',
   chainId: number,
   contract: Address,
-  tokenId: number
+  tokenId?: number
 ): Promise<string> {
-  const functionName = mintType === '721' ? 'tokenURI' : 'uri';
+  // TODO: instead pre-fetch tokenId the one to mint
+
   const abi = mintType === '721' ? erc721Abi : zoraErc1155Abi;
+
+  let tokenIdSanitized: bigint;
+  if (!tokenId) {
+    tokenIdSanitized = (await readContract(wagmiConfig, {
+      chainId: chainId as any,
+      address: contract,
+      abi,
+      functionName: 'totalSupply'
+    })) as bigint;
+  } else {
+    tokenIdSanitized = BigInt(tokenId);
+  }
+
+  const functionName = mintType === '721' ? 'tokenURI' : 'uri';
   return (await readContract(wagmiConfig, {
     chainId: chainId as any,
     address: contract,
     abi,
     functionName: functionName as any,
-    args: [BigInt(tokenId)]
+    args: [tokenIdSanitized]
   })) as string;
 }
 
@@ -196,17 +212,13 @@ export async function fetchTokenMetadata(metadataUri: string) {
     const resolvedMetadataUri = resolveIpfsUri(metadataUri);
 
     console.log('Resolved metadata URI:', resolvedMetadataUri);
-    // add proxy
-    /* const metadataResponse = await axios.get(
-      `https://corsproxy.io/?${encodeURIComponent(resolvedMetadataUri)}`
-    ); */
     const metadataResponse = await axios.get(resolvedMetadataUri);
 
     const metadata = metadataResponse.data;
     const name = metadata.name;
     const description = metadata.description;
     const imageUri = metadata.image;
-    const resolvedImageUri = `https://media.decentralized-content.com/-/rs:fit:128:128/${btoa(
+    const resolvedImageUri = `https://media.decentralized-content.com/-/rs:fit:64:64/${btoa(
       resolveIpfsUri(imageUri)
     )}`;
 
@@ -258,9 +270,10 @@ export function createShareFrameUrl({
   return shareFrameUrl.toString();
 }
 
-const providerChannelMap: { [key: string]: string } = {
+const providerFarcasterChannelMap: { [key: string]: string } = {
   'zora.co': 'zora',
-  'rodeo.club': 'rodeo-club'
+  'rodeo.club': 'rodeo-club',
+  'highlight.xyz': 'highlight'
 };
 
 export function createShareUrls({
@@ -298,6 +311,9 @@ export function createShareUrls({
     case 'rodeo.club':
       text += `on @rodeodotclub `;
       break;
+    case 'highlight.xyz':
+      text += `on @highlight `;
+      break;
     default:
       text += `on ${mint.provider} `;
   }
@@ -308,7 +324,7 @@ export function createShareUrls({
 
   text += `\n\n@payflow cast action lets you mint or gift collectibles with 25+ tokens cross-chain! cc: @sinaver.eth /payflow`;
 
-  const channelKey = providerChannelMap[mint.provider] || 'nft';
+  const channelKey = providerFarcasterChannelMap[mint.provider] || 'nft';
 
   const composeCastUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(
     text

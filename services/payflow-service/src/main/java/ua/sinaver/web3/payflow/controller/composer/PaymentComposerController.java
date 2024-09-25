@@ -61,7 +61,8 @@ public class PaymentComposerController {
 
 	@PostMapping
 	public ResponseEntity<?> form(@RequestBody FrameMessage composerActionMessage,
-	                              @RequestParam(required = false) String action) {
+	                              @RequestParam(required = false) String action,
+	                              @RequestParam(required = false) String refId) {
 		log.debug("Received composer action: payment form {} - action (optional): {}",
 				composerActionMessage, action);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
@@ -106,21 +107,47 @@ public class PaymentComposerController {
 			}
 		}
 
-		val paymentFormUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
-				.path("/composer")
-				.queryParam("access_token", accessToken)
-				.queryParam("action",
-						StringUtils.isNotBlank(action) ? action : StringUtils.isNotBlank(recipient)
-								? "pay" :
-								action)
-				.queryParam("recipient", recipient)
-				.build()
-				.toUriString();
+		String miniAppUrl = switch (action) {
+			case "app" -> UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
+					.path("/")
+					.queryParam("access_token", accessToken)
+					.build()
+					.toUriString();
+			case "payment" -> {
+				if (StringUtils.isNotBlank(refId)) {
+					yield UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
+							.path("/payment/{refId}")
+							.queryParam("access_token", accessToken)
+							.buildAndExpand(refId)
+							.toUriString();
+				} else {
+					yield null;
+				}
+			}
+			default -> UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
+					.path("/composer")
+					.queryParam("access_token", accessToken)
+					.queryParam("action",
+							StringUtils.isNotBlank(action) ? action : StringUtils.isNotBlank(recipient)
+									? "pay" :
+									action)
+					.queryParam("recipient", recipient)
+					.build()
+					.toUriString();
+		};
 
-		log.debug("Returning a composer payment form url for: {} - {}", interactor.username(), paymentFormUrl);
+		if (miniAppUrl == null) {
+			log.error("Action not supported: {} by {}", validateMessage,
+					interactor.username());
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameMessage("Action not supported!"));
+		}
+
+		log.debug("Returning a mini app url for: {} - {}", interactor.username(),
+				miniAppUrl);
 
 		return ResponseEntity.ok().body(new FrameResponse.ComposerActionForm(
-				"form", "Payflow", paymentFormUrl));
+				"form", "Payflow", miniAppUrl));
 	}
 
 	private String determineRecipientIdentity(FarcasterUser user) {

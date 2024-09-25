@@ -11,7 +11,8 @@ export async function updatePayment(payment: PaymentType): Promise<boolean | und
         fulfillmentId: payment.fulfillmentId,
         fulfillmentChainId: payment.fulfillmentChainId,
         fulfillmentHash: payment.fulfillmentHash,
-        tokenAmount: payment.tokenAmount
+        tokenAmount: payment.tokenAmount,
+        comment: payment.comment
       },
       {
         withCredentials: true

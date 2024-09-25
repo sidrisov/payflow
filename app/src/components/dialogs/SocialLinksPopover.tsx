@@ -44,8 +44,7 @@ export const SocialLinksPopover: React.FC<SocialLinksPopoverProps> = ({
         vertical: 'bottom',
         horizontal: 'right'
       }}
-      transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-    >
+      transformOrigin={{ horizontal: 'right', vertical: 'top' }}>
       <Box p={1.5}>
         {profile?.identity || address ? (
           (profile?.identity ?? address) === identity.profile?.identity ? (
@@ -58,7 +57,8 @@ export const SocialLinksPopover: React.FC<SocialLinksPopoverProps> = ({
             tags?.includes('hypersub') ||
             tags?.includes('paragraph') ||
             tags?.includes('alfafrens') ||
-            tags?.includes('moxie') ? (
+            tags?.includes('moxie') ||
+            tags?.includes('efp') ? (
             <>
               {identity.meta?.insights?.farcasterFollow && (
                 <Stack spacing={1} direction="row" alignItems="center">
@@ -131,6 +131,14 @@ export const SocialLinksPopover: React.FC<SocialLinksPopoverProps> = ({
                   <Avatar src="/alfafrens.png" sx={{ width: 15, height: 15 }} />
                   <Typography variant="caption" fontWeight="bold">
                     Subscribed to channel
+                  </Typography>
+                </Stack>
+              )}
+              {tags?.includes('efp') && (
+                <Stack spacing={1} direction="row" alignItems="center">
+                  <Avatar variant="rounded" src="/dapps/efp.png" sx={{ width: 15, height: 15 }} />
+                  <Typography variant="caption" fontWeight="bold">
+                    You follow them
                   </Typography>
                 </Stack>
               )}

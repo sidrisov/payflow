@@ -6,11 +6,11 @@ import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import ua.sinaver.web3.payflow.config.PayflowConfig;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
@@ -23,7 +23,8 @@ import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 import ua.sinaver.web3.payflow.utils.MintUrlUtils;
 
-import java.util.Optional;
+import java.net.URI;
+import java.util.*;
 
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.DEFAULT_HTML_RESPONSE;
 import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS;
@@ -33,31 +34,25 @@ import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYME
 @Transactional
 @Slf4j
 public class MintController {
-
+	private static final List<String> miniAppAllowlist = Collections.emptyList();
 	@Autowired
 	private IFarcasterNeynarService neynarService;
 	@Autowired
 	private PaymentRepository paymentRepository;
-	@Value("${payflow.frames.url}")
-	private String framesServiceUrl;
-	@Value("${payflow.api.url}")
-	private String apiServiceUrl;
-	@Value("${payflow.dapp.url}")
-	private String dAppServiceUrl;
-
+	@Autowired
+	private PayflowConfig payflowConfig;
 	@Autowired
 	private UserService userService;
-
 	@Autowired
 	private IdentityService identityService;
 
 	private static Payment getMintPayment(ValidatedFrameResponseMessage validateMessage,
-			User user,
-			Integer receiverFid,
-			String receiverAddress,
-			Integer chainId,
-			String token,
-			String originalMintUrl) {
+	                                      User user,
+	                                      Integer receiverFid,
+	                                      String receiverAddress,
+	                                      Integer chainId,
+	                                      String token,
+	                                      String originalMintUrl) {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val castHash = validateMessage.action().cast().hash();
 		val sourceRef = String.format("https://warpcast.com/%s/%s",
@@ -79,12 +74,12 @@ public class MintController {
 
 	@PostMapping("/submit")
 	public ResponseEntity<?> submit(@RequestBody FrameMessage frameMessage,
-			@RequestParam String provider,
-			@RequestParam Integer chainId,
-			@RequestParam String contract,
-			@RequestParam(required = false) String author,
-			@RequestParam(required = false) Integer tokenId,
-			@RequestParam(required = false) String referral) {
+	                                @RequestParam String provider,
+	                                @RequestParam Integer chainId,
+	                                @RequestParam String contract,
+	                                @RequestParam(required = false) String author,
+	                                @RequestParam(required = false) Integer tokenId,
+	                                @RequestParam(required = false) String referral) {
 
 		log.debug("Received submit mint message request: {}", frameMessage);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
@@ -124,44 +119,6 @@ public class MintController {
 					new FrameResponse.FrameMessage(String.format("`%s` chain not supported!", chainId)));
 		}
 
-		val recipientText = Optional.ofNullable(validateMessage.action().input())
-				.map(input -> input.text().trim().toLowerCase())
-				.orElse(null);
-
-		// TODO: refactor this!
-		Integer receiverFid;
-		String receiverAddress;
-		if (StringUtils.isNotBlank(recipientText)) {
-			val addresses = identityService.getFnameAddresses(recipientText);
-			val identity = identityService.getHighestScoredIdentityInfo(addresses);
-			if (identity == null) {
-				log.error("Farcaster user not found: {}", recipientText);
-				return ResponseEntity.badRequest().body(
-						new FrameResponse.FrameMessage("User not found, enter again!"));
-			} else {
-				receiverFid = identity.meta().socials().stream()
-						.filter(s -> SocialDappName.farcaster.name().equals(s.dappName()))
-						.map(s -> {
-							try {
-								return Integer.parseInt(s.profileId());
-							} catch (NumberFormatException e) {
-								return null;
-							}
-						})
-						.findFirst()
-						.orElse(null);
-				if (receiverFid == null) {
-					log.error("Farcaster user not found: {}", recipientText);
-					return ResponseEntity.badRequest().body(
-							new FrameResponse.FrameMessage("User not found, enter again!"));
-				}
-				receiverAddress = identity.address();
-			}
-		} else {
-			receiverFid = interactor.fid();
-			receiverAddress = clickedProfile.getIdentity();
-		}
-
 		val token = String.format("%s:%s:%s:%s:%s", provider, contract,
 				Optional.ofNullable(tokenId).map(String::valueOf).orElse(""),
 				Optional.ofNullable(referral).orElse(""),
@@ -170,15 +127,85 @@ public class MintController {
 		val originalMintUrl = MintUrlUtils.calculateProviderMintUrl(
 				provider, chainId, contract, tokenId, referral);
 
-		val payment = getMintPayment(validateMessage, clickedProfile, receiverFid,
-				receiverAddress, chainId, token, originalMintUrl);
-		paymentRepository.save(payment);
+		val recipientTexts = Optional.ofNullable(validateMessage.action().input())
+				.map(input -> input.text().trim())
+				.filter(text -> !text.isEmpty())
+				.map(text -> text.toLowerCase().split("[,\\s]+"))
+				.map(Arrays::asList)
+				.orElse(Collections.singletonList(""));
 
-		log.debug("Mint payment intent saved: {}", payment);
+		val payments = new ArrayList<Payment>();
+		for (val recipientText : recipientTexts) {
+			try {
+				Integer receiverFid;
+				String receiverAddress;
+				if (StringUtils.isNotBlank(recipientText)) {
+					val addresses = identityService.getFnameAddresses(recipientText);
+					val identity = identityService.getHighestScoredIdentityInfo(addresses);
+					if (identity == null) {
+						log.error("Farcaster user identity not found: {}", recipientText);
+						continue;
+					}
+					receiverFid = identity.meta().socials().stream()
+							.filter(s -> SocialDappName.farcaster.name().equals(s.dappName()))
+							.map(s -> {
+								try {
+									return Integer.parseInt(s.profileId());
+								} catch (NumberFormatException e) {
+									return null;
+								}
+							})
+							.findFirst()
+							.orElse(null);
+					if (receiverFid == null) {
+						log.error("Farcaster user fid not found: {}", recipientText);
+						continue;
+					}
+					receiverAddress = identity.address();
+				} else {
+					// Self-mint case
+					receiverFid = interactor.fid();
+					receiverAddress = clickedProfile.getIdentity();
+				}
 
-		val paymentMintUrl = UriComponentsBuilder.fromHttpUrl(dAppServiceUrl)
-				.path("/payment/{refId}")
-				.buildAndExpand(payment.getReferenceId()).toUri();
+				val payment = getMintPayment(validateMessage, clickedProfile, receiverFid,
+						receiverAddress, chainId, token, originalMintUrl);
+				payments.add(payment);
+				log.debug("Mint payment intent saved: {}", payment);
+			} catch (Exception e) {
+				log.error("Error processing recipient: {}", recipientText, e);
+			}
+		}
+
+		if (payments.isEmpty()) {
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameMessage("No user found, try again"));
+		}
+
+		paymentRepository.saveAll(payments);
+		log.debug("Mint payment intents saved: {}", payments);
+
+		val miniAppRedirect = validateMessage.action().signer().client().username().equals("warpcast") &&
+				miniAppAllowlist.contains(interactor.username());
+
+		val paymentRefId = payments.get(0).getReferenceId();
+		URI paymentMintUrl;
+		if (miniAppRedirect) {
+			paymentMintUrl = UriComponentsBuilder.fromHttpUrl("https://warpcast.com")
+					.path("/~/composer-action")
+					.queryParam("url", UriComponentsBuilder.fromHttpUrl(payflowConfig.getApiServiceUrl())
+							.path("/api/farcaster/composer/pay")
+							.queryParam("action", "payment")
+							.queryParam("refId", paymentRefId)
+							.build().encode()
+							.toUriString())
+					.build()
+					.toUri();
+		} else {
+			paymentMintUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
+					.path("/payment/{refId}")
+					.buildAndExpand(paymentRefId).toUri();
+		}
 
 		log.debug("Redirecting to {}", paymentMintUrl);
 		return ResponseEntity.status(HttpStatus.FOUND).location(paymentMintUrl).build();

@@ -5,7 +5,8 @@ import {
   CAIP19,
   Currency,
   estimatePaymentAmount,
-  listPaymentOptions
+  listPaymentOptions,
+  ResponseNotOkError
 } from '@paywithglide/glide-js';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -47,7 +48,17 @@ export const useGlideEstimatePayment = (enabled: boolean, args: EstimatePaymentA
     refetchInterval: 30_000,
     retry: false,
     queryFn: async () => {
-      return await estimatePaymentAmount(glideConfig, args as any);
+      try {
+        return await estimatePaymentAmount(glideConfig, args as any);
+      } catch (error: any) {
+        if (error instanceof ResponseNotOkError) {
+          console.error('Error in useGlideEstimatePayment', error);
+          const errorMessage =
+            'The contract or the function you are trying to interact with is not supported';
+          throw new Error(errorMessage);
+        }
+        throw error;
+      }
     }
   });
 };
@@ -60,7 +71,17 @@ export const useGlidePaymentOptions = (enabled: boolean, args: ListPaymentOption
     refetchInterval: 30_000,
     retry: false,
     queryFn: async () => {
-      return await listPaymentOptions(glideConfig, args as any);
+      try {
+        return await listPaymentOptions(glideConfig, args as any);
+      } catch (error: any) {
+        if (error instanceof ResponseNotOkError) {
+          console.error('Error in useGlidePaymentOptions', error);
+          const errorMessage =
+            'The contract or the function you are trying to interact with is not supported';
+          throw new Error(errorMessage);
+        }
+        throw error;
+      }
     }
   });
 };

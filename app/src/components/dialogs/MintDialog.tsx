@@ -17,13 +17,13 @@ import { getPaymentOption } from '../../utils/glide';
 import { useChainId } from 'wagmi';
 import { BackDialogTitle } from './BackDialogTitle';
 import { SenderField } from '../SenderField';
-import { KeyboardDoubleArrowDown } from '@mui/icons-material';
+import { KeyboardDoubleArrowDown, Add, Remove } from '@mui/icons-material';
 import { SelectedIdentityType } from '../../types/ProfileType';
 import { FarcasterRecipientField } from '../FarcasterRecipientField';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { PaymentType } from '../../types/PaymentType';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useMemo, useState, useEffect } from 'react';
 import { Token } from '../../utils/erc20contracts';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
@@ -47,12 +47,14 @@ import { SiFarcaster } from 'react-icons/si';
 import { TbCopy } from 'react-icons/tb';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { createShareUrls } from '../../utils/mint';
-import { Add, Remove } from '@mui/icons-material';
+import { useDebounce } from 'use-debounce';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {
     sender: SelectedIdentityType;
     payment: PaymentType;
+    senderSocial: Social;
     recipientSocial: Social;
     mint: MintMetadata;
   } & {
@@ -62,10 +64,81 @@ export type MintDialogProps = DialogProps &
     setSelectedFlow?: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
   };
 
+type CommentFieldProps = {
+  disabled: boolean;
+  comment: string;
+  setComment: React.Dispatch<React.SetStateAction<string>>;
+  zoraCommentEnabled: boolean;
+};
+
+const CommentField: React.FC<CommentFieldProps> = ({
+  disabled,
+  comment,
+  setComment,
+  zoraCommentEnabled
+}) => {
+  const isMobile = useMobile();
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  return (
+    <TextField
+      // TODO: also, check if not in pending payment state
+      disabled={disabled}
+      fullWidth
+      variant="outlined"
+      size="small"
+      placeholder="Add a comment..."
+      value={comment}
+      onChange={(e) => setComment(e.target.value)}
+      multiline
+      sx={{
+        mt: 1,
+        '& .MuiOutlinedInput-root': {
+          borderRadius: 5,
+          fontSize: 14,
+          height: 'auto',
+          '&.Mui-focused fieldset': {
+            border: 1,
+            borderColor: 'inherit'
+          }
+        },
+        '& .MuiInputBase-input': {
+          padding: '8px 12px'
+        }
+      }}
+      slotProps={{
+        input: {
+          endAdornment: (
+            <Tooltip
+              title={
+                zoraCommentEnabled
+                  ? 'Comment will be added to payflow and zora.co'
+                  : 'Comment will be added only to payflow'
+              }
+              arrow
+              open={isMobile ? showTooltip : undefined}
+              disableFocusListener={isMobile}
+              disableHoverListener={isMobile}
+              disableTouchListener={isMobile}>
+              <IconButton
+                disabled={disabled}
+                size="small"
+                onClick={() => isMobile && setShowTooltip(!showTooltip)}>
+                <InfoOutlinedIcon fontSize="inherit" />
+              </IconButton>
+            </Tooltip>
+          )
+        }
+      }}
+    />
+  );
+};
+
 export default function MintDialog({
   alwaysShowBackButton = false,
   sender,
   payment,
+  senderSocial,
   recipientSocial,
   mint,
   closeStateCallback,
@@ -75,7 +148,6 @@ export default function MintDialog({
   ...props
 }: MintDialogProps) {
   const isMobile = useMobile();
-
   const prefersDarkMode = useDarkMode();
 
   const [openSelectFlow, setOpenSelectFlow] = useState(false);
@@ -95,16 +167,28 @@ export default function MintDialog({
   const [paymentToken, setPaymentToken] = useState<Token>();
 
   const [mintCount, setMintCount] = useState(1);
+  const isGift = payment.receiverAddress !== profile?.identity;
+
+  const [zoraCommentEnabled, setTxCommentEnabled] = useState(false);
+
+  const payflowCommentSection = `${
+    isGift ? `Gifted to @${recipientSocial.profileName}` : 'Minted'
+  } by @${senderSocial.profileName} via @payflow`;
+  const [comment, setComment] = useState('');
+  const [debouncedComment] = useDebounce(comment, 1000);
 
   const {
     data: mintData,
     isLoading: isMintLoading,
-    isError: mintPaymentTxError
+    isError: isMintPaymentTxError,
+    error: mintPaymentTxError
   } = useMintPaymentTx({
     mint,
     minter: senderFlow.wallets[0].address,
     recipient: payment.receiverAddress ?? profile?.identity,
-    comment: `Minted ${mintCount} for @${recipientSocial.profileName} on @payflow`,
+    comment: zoraCommentEnabled
+      ? `${payflowCommentSection}${debouncedComment ? `:\n\n"${debouncedComment}"` : ''}`
+      : undefined,
     amount: mintCount
   });
 
@@ -112,12 +196,19 @@ export default function MintDialog({
   const mintStatus = mintData?.mintStatus;
   const secondary = mintData?.secondary;
 
+  useEffect(() => {
+    if (mint.provider === 'zora.co' && !zoraCommentEnabled) {
+      setTxCommentEnabled(Boolean(mintStatus === 'live' && !secondary));
+    }
+  }, [mintStatus, secondary]);
+
   console.log('Mint tx: ', paymentTx);
 
   const {
     isLoading: isPaymentOptionsLoading,
     data: paymentOptions,
-    isError: isPaymentOptionsError
+    isError: isPaymentOptionsError,
+    error: paymentOptionsError
   } = useGlidePaymentOptions(Boolean(paymentTx) && mintStatus === 'live', {
     ...(paymentTx as any),
     account: senderFlow.wallets[0].address
@@ -146,14 +237,14 @@ export default function MintDialog({
 
   const isLoading = isMintLoading || isPaymentOptionsLoading;
   const hasPaymentOption =
-    !isLoading && paymentOption && paymentToken && mintStatus === 'live' && !mintPaymentTxError;
+    !isLoading && paymentOption && paymentToken && mintStatus === 'live' && !isMintPaymentTxError;
 
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
-  const successMessage = `minted ${mintCount > 1 ? `${mintCount}x ` : ''}"${mint.metadata.name}" for @${recipientSocial.profileName}`;
+  const successMessage = `minted ${mintCount > 1 ? `${mintCount}x ` : ''}"${
+    mint.metadata.name
+  }" for @${recipientSocial.profileName}`;
   const receiptUrl = getReceiptUrl(payment, false);
-
-  const isGift = payment.receiverAddress !== profile?.identity;
 
   const { shareFrameUrl, composeCastUrl } = createShareUrls({
     mint,
@@ -269,7 +360,7 @@ export default function MintDialog({
               flexDirection="column"
               alignItems="center"
               justifyContent="space-between">
-              <Stack alignItems="center" justifyContent="start" spacing={0}>
+              <Stack alignItems="center" justifyContent="start" spacing={0} width="100%">
                 <Tooltip
                   title={mint.metadata.description}
                   arrow
@@ -297,17 +388,14 @@ export default function MintDialog({
                       <Typography fontSize={18} fontWeight="bold">
                         {mint.metadata.name}
                       </Typography>
-                      <Typography
-                        textAlign="start"
-                        variant="subtitle2"
-                        color={grey[prefersDarkMode ? 400 : 700]}>
+                      <Typography variant="subtitle2" color={grey[prefersDarkMode ? 400 : 700]}>
                         {mint.collectionName}
                       </Typography>
                     </Stack>
                   </Stack>
                 </Tooltip>
 
-                <Stack direction="row" alignItems="center" spacing={2} mb={2}>
+                <Stack direction="row" alignItems="center" spacing={2} mb={1}>
                   <IconButton onClick={() => setMintCount((prev) => Math.max(prev - 1, 1))}>
                     <Remove fontSize="small" sx={{ color: 'text.secondary' }} />
                   </IconButton>
@@ -333,17 +421,36 @@ export default function MintDialog({
                     {paymentToken?.id.toUpperCase()}
                   </Typography>
                 ) : (
-                  <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
-                    {mintStatus === 'ended'
-                      ? 'Mint has ended'
-                      : mintPaymentTxError || !paymentTx
-                      ? 'Failed to load payment transaction'
-                      : mintStatus === 'error' || isPaymentOptionsError
-                      ? 'Something went wrong'
-                      : paymentOptions?.length === 0 &&
-                        "You don't have any balance to cover mint cost. Switch to a different payment flow!"}
+                  <Typography
+                    textAlign="center"
+                    fontSize={14}
+                    fontWeight="bold"
+                    color={red.A400}
+                    sx={{
+                      textWrap: 'balance'
+                    }}>
+                    {mintStatus === 'ended' && 'Mint has ended'}
+                    {mintStatus === 'upcoming' && 'Mint has not started yet'}
+                    {mintStatus === 'sold' && 'Mint is sold out'}
+                    {isMintPaymentTxError &&
+                      (mintPaymentTxError?.message ?? 'Failed to load payment transaction')}
+                    {(paymentOptions?.length === 0 || isPaymentOptionsError) &&
+                      (paymentOptionsError?.message ??
+                        "You don't have any balance to cover mint cost. Switch to a different payment flow!")}
                   </Typography>
                 )}
+
+                <CommentField
+                  disabled={
+                    !mintStatus ||
+                    mintStatus !== 'live' ||
+                    isMintPaymentTxError ||
+                    isPaymentOptionsError
+                  }
+                  comment={comment}
+                  setComment={setComment}
+                  zoraCommentEnabled={zoraCommentEnabled}
+                />
               </Stack>
 
               <NetworkTokenSelector
@@ -365,13 +472,19 @@ export default function MintDialog({
               <PayButton
                 paymentToken={paymentToken}
                 buttonText={
-                  mintStatus === 'ended' ? 'Mint Ended' : secondary ? 'Buy On Secondary' : 'Mint'
+                  mintStatus === 'ended'
+                    ? 'Mint Ended'
+                    : mintStatus === 'upcoming'
+                    ? 'Mint Not Started'
+                    : secondary
+                    ? 'Buy On Secondary'
+                    : 'Mint'
                 }
                 disabled={!hasPaymentOption}
                 paymentTx={paymentTx}
                 paymentWallet={paymentWallet!}
                 paymentOption={paymentOption!}
-                payment={{ ...payment, tokenAmount: mintCount }}
+                payment={{ ...payment, tokenAmount: mintCount, comment }}
                 senderFlow={senderFlow}
                 onSuccess={() => {
                   setShowSuccessDialog(true);

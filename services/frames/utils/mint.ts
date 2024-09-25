@@ -34,7 +34,7 @@ export async function fetchMintData(
   contract: Address,
   tokenId?: number
 ): Promise<MintMetadata | undefined> {
-  const mintType = provider === 'highlight.xyz' ? 'erc721' : 'erc1155';
+  const mintType = provider === 'highlight.xyz' ? '721' : '1155';
   try {
     console.log(`Fetching collection owner for contract: ${contract}`);
     const collectionOwner = await fetchCollectionOwner(chainId, contract);
@@ -61,7 +61,7 @@ export async function fetchMintData(
       mintType,
       chainId,
       contract,
-      tokenId ?? 1
+      tokenId
     );
     console.log(`Token metadata URI: ${tokenMetadataUri}`);
 
@@ -109,19 +109,34 @@ export async function fetchCollectionName(chainId: number, contract: Address): P
 }
 
 export async function fetchCollectionTokenMetadataURI(
-  mintType: 'erc721' | 'erc1155',
+  mintType: '721' | '1155',
   chainId: number,
   contract: Address,
-  tokenId: number
+  tokenId?: number
 ): Promise<string> {
-  const functionName = mintType === 'erc721' ? 'tokenURI' : 'uri';
-  const abi = mintType === 'erc721' ? erc721Abi : zoraErc1155Abi;
+  // TODO: instead pre-fetch tokenId the one to mint
+
+  const abi = mintType === '721' ? erc721Abi : zoraErc1155Abi;
+
+  let tokenIdSanitized: bigint;
+  if (!tokenId) {
+    tokenIdSanitized = (await readContract(wagmiConfig, {
+      chainId: chainId as any,
+      address: contract,
+      abi,
+      functionName: 'totalSupply'
+    })) as bigint;
+  } else {
+    tokenIdSanitized = BigInt(tokenId);
+  }
+
+  const functionName = mintType === '721' ? 'tokenURI' : 'uri';
   return (await readContract(wagmiConfig, {
     chainId: chainId as any,
     address: contract,
     abi,
     functionName: functionName as any,
-    args: [BigInt(tokenId)]
+    args: [tokenIdSanitized]
   })) as string;
 }
 

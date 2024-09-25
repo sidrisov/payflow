@@ -59,6 +59,9 @@ public class ContactBookService implements IContactBookService {
 	private IdentityFollowingsService identityFollowingsService;
 
 	@Autowired
+	private EthereumFollowProtocolService ethereumFollowProtocolService;
+
+	@Autowired
 	private IdentityService identityService;
 
 	@Autowired
@@ -104,6 +107,9 @@ public class ContactBookService implements IContactBookService {
 		val followings = identityFollowingsService.fetchFarcasterFollowings(user.getIdentity());
 		log.debug("Fetched followings: {}", followings);
 
+		val efpFollowings = ethereumFollowProtocolService.fetchFollowings(user.getIdentity());
+		log.debug("Fetched EFP followings: {}", followings);
+
 		val allPaymentRecipients = paymentService.getAllPaymentRecipients(user);
 		val allPaymentUniqueRecipients = allPaymentRecipients.stream().distinct().toList();
 		log.debug("Fetched payment recipients: {}", allPaymentUniqueRecipients);
@@ -137,6 +143,11 @@ public class ContactBookService implements IContactBookService {
 
 		val favourites = contactRepository.findByUserAndProfileCheckedTrue(user);
 		val tags = new ArrayList<>(List.of("friends"));
+
+
+		if (!efpFollowings.isEmpty()) {
+			tags.add("efp");
+		}
 
 		if (!verifications.isEmpty()) {
 			tags.add("verifications");
@@ -182,6 +193,7 @@ public class ContactBookService implements IContactBookService {
 								.map(identity -> new AbstractMap.SimpleEntry<>(identity, "transacted")),
 						favourites.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(), "favourites")),
 						followings.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "friends")),
+						efpFollowings.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "efp")),
 						fanTokenContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "moxie")),
 						fabricContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "hypersub")),
 						paragraphContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "paragraph")),

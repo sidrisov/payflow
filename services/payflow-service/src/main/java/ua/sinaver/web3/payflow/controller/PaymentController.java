@@ -73,7 +73,7 @@ public class PaymentController {
 
 	@GetMapping
 	public List<PaymentMessage> payments(@RequestParam(value = "hashes") List<String> hashes,
-			Principal principal) {
+	                                     Principal principal) {
 
 		val username = principal != null ? principal.getName() : null;
 		log.debug("{} fetching payments info for {}", username, hashes);
@@ -94,7 +94,7 @@ public class PaymentController {
 
 	@PostMapping
 	public ResponseEntity<PaymentReferenceMessage> submitPayment(@RequestBody PaymentMessage paymentMessage,
-			Principal principal) {
+	                                                             Principal principal) {
 		val username = principal != null ? principal.getName() : null;
 
 		log.debug("Saving completed payment {} for {}", paymentMessage, username);
@@ -121,6 +121,10 @@ public class PaymentController {
 		payment.setHash(paymentMessage.hash());
 		payment.setStatus(paymentMessage.status());
 		payment.setCompletedDate(new Date());
+
+		if (StringUtils.isNotBlank(paymentMessage.comment())) {
+			payment.setComment(paymentMessage.comment());
+		}
 		paymentRepository.save(payment);
 
 		notifyPaymentCompletion(payment, user);
@@ -132,9 +136,9 @@ public class PaymentController {
 
 	@GetMapping("/completed")
 	public Page<PaymentMessage> completedPayments(Principal principal,
-			@RequestParam(required = false) String identity,
-			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+	                                              @RequestParam(required = false) String identity,
+	                                              @RequestParam(defaultValue = "0") int page,
+	                                              @RequestParam(defaultValue = "20") int size) {
 		val loggedIdentity = principal != null ? principal.getName() : null;
 
 		log.debug("Fetching completed payments for identity: {}, logged user: {}", identity, loggedIdentity);
@@ -154,7 +158,7 @@ public class PaymentController {
 				.map(String::toLowerCase)
 				.toList();
 
-		val paymentsPage = paymentRepository.findCompletedOrderByCreatedDateDesc(user,
+		val paymentsPage = paymentRepository.findCompletedOrderByCompletedDateDesc(user,
 				verifications, PageRequest.of(page, size));
 
 		// Check if we should include comments (when logged user is viewing their own
@@ -176,12 +180,12 @@ public class PaymentController {
 				.map(String::toLowerCase).toList();
 
 		return paymentRepository.findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedDateDesc(
-				user, verifications, List.of(Payment.PaymentStatus.PENDING,
-						Payment.PaymentStatus.INPROGRESS,
-						Payment.PaymentStatus.COMPLETED, Payment.PaymentStatus.REFUNDED),
-				List.of(Payment.PaymentType.APP, Payment.PaymentType.INTENT,
-						Payment.PaymentType.INTENT_TOP_REPLY,
-						Payment.PaymentType.FRAME))
+						user, verifications, List.of(Payment.PaymentStatus.PENDING,
+								Payment.PaymentStatus.INPROGRESS,
+								Payment.PaymentStatus.COMPLETED, Payment.PaymentStatus.REFUNDED),
+						List.of(Payment.PaymentType.APP, Payment.PaymentType.INTENT,
+								Payment.PaymentType.INTENT_TOP_REPLY,
+								Payment.PaymentType.FRAME))
 				.stream()
 				.map(payment -> PaymentMessage.convert(payment, true, true))
 				.toList();
@@ -214,7 +218,7 @@ public class PaymentController {
 	@PutMapping("/{referenceId}")
 	@ResponseStatus(HttpStatus.OK)
 	public void updatePayment(@PathVariable String referenceId,
-			@RequestBody PaymentUpdateMessage paymentUpdateMessage, Principal principal) {
+	                          @RequestBody PaymentUpdateMessage paymentUpdateMessage, Principal principal) {
 		log.debug("Received update {} for payment {} by user {}",
 				paymentUpdateMessage,
 				referenceId,
@@ -258,6 +262,10 @@ public class PaymentController {
 				}
 			}
 
+			if (StringUtils.isNotBlank(paymentUpdateMessage.comment())) {
+				payment.setComment(paymentUpdateMessage.comment());
+			}
+
 			payment.setHash(paymentUpdateMessage.hash());
 			payment.setStatus(Payment.PaymentStatus.COMPLETED);
 			payment.setCompletedDate(new Date());
@@ -296,7 +304,7 @@ public class PaymentController {
 			val receiverFname = identityService
 					.getIdentityFname(payment.getReceiver() != null ? payment.getReceiver().getIdentity()
 							: payment.getReceiverAddress() != null ? payment.getReceiverAddress()
-									: "fc_fid:" + payment.getReceiverFid());
+							: "fc_fid:" + payment.getReceiverFid());
 			if (StringUtils.isBlank(receiverFname)) {
 				log.warn("Can't notify user, since farcaster name wasn't found: {}", payment);
 				return;
@@ -323,9 +331,9 @@ public class PaymentController {
 					}
 
 					val castText = String.format("""
-							@%s, you've been paid %s %s%s by @%s for your top comment %s 🏆
+									@%s, you've been paid %s %s%s by @%s for your top comment %s 🏆
 
-							p.s. join /payflow channel for updates 👀""",
+									p.s. join /payflow channel for updates 👀""",
 							receiverFname,
 							StringUtils.isNotBlank(payment.getTokenAmount())
 									? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
@@ -345,9 +353,9 @@ public class PaymentController {
 				} else {
 					// send both reply + intent for recipient who's on payflow
 					val castText = String.format("""
-							@%s, you've been paid %s %s%s by @%s 💸
+									@%s, you've been paid %s %s%s by @%s 💸
 
-							p.s. join /payflow channel for updates 👀""",
+									p.s. join /payflow channel for updates 👀""",
 							receiverFname,
 							StringUtils.isNotBlank(payment.getTokenAmount())
 									? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
@@ -372,12 +380,12 @@ public class PaymentController {
 
 						try {
 							val messageText = String.format("""
-									 @%s, you've been paid %s %s%s by @%s 💸
+											 @%s, you've been paid %s %s%s by @%s 💸
 
-									%s
-									🧾 Receipt: %s
+											%s
+											🧾 Receipt: %s
 
-									p.s. join /payflow channel for updates 👀""",
+											p.s. join /payflow channel for updates 👀""",
 									receiverFname,
 									StringUtils.isNotBlank(payment.getTokenAmount())
 											? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
@@ -406,11 +414,11 @@ public class PaymentController {
 						.toUriString();
 
 				val castText = String.format("""
-						@%s, you've been paid %s unit(s) of storage%s by @%s 🗄
+								@%s, you've been paid %s unit(s) of storage%s by @%s 🗄
 
-						📊Check your storage usage in the frame below 👇🏻
+								📊Check your storage usage in the frame below 👇🏻
 
-						p.s. join /payflow channel for updates 👀""",
+								p.s. join /payflow channel for updates 👀""",
 						receiverFname,
 						payment.getTokenAmount(),
 						crossChainText,
@@ -429,13 +437,13 @@ public class PaymentController {
 				if (payment.getReceiver() != null) {
 					try {
 						val messageText = String.format("""
-								 @%s, you've been paid %s units of storage%s by @%s 🗄
+										 @%s, you've been paid %s units of storage%s by @%s 🗄
 
-								%s
-								🧾 Receipt: %s
-								📊 Your storage usage now: %s
+										%s
+										🧾 Receipt: %s
+										📊 Your storage usage now: %s
 
-								p.s. join /payflow channel for updates 👀""",
+										p.s. join /payflow channel for updates 👀""",
 								receiverFname,
 								payment.getTokenAmount(),
 								crossChainText,
@@ -478,17 +486,17 @@ public class PaymentController {
 				String castText;
 				if (isSelfPurchase) {
 					castText = String.format("""
-							@%s, you've successfully minted %s%scollectible from the cast above ✨
+									@%s, you've successfully minted %s%scollectible from the cast above ✨
 
-							p.s. join /payflow channel for updates 👀""",
+									p.s. join /payflow channel for updates 👀""",
 							senderFname,
 							tokenAmountText,
 							authorPart);
 				} else {
 					castText = String.format("""
-							@%s, you've been gifted %s%scollectible by @%s from the cast above  ✨
+									@%s, you've been gifted %s%scollectible by @%s from the cast above  ✨
 
-							p.s. join /payflow channel for updates 👀""",
+									p.s. join /payflow channel for updates 👀""",
 							receiverFname,
 							tokenAmountText,
 							authorPart,
@@ -509,12 +517,12 @@ public class PaymentController {
 						String messageText;
 						if (isSelfPurchase) {
 							messageText = String.format("""
-									 @%s, you've successfully minted %s%scollectible from the cast above ✨
+											 @%s, you've successfully minted %s%scollectible from the cast above ✨
 
-									%s
-									🧾 Receipt: %s
+											%s
+											🧾 Receipt: %s
 
-									p.s. join /payflow channel for updates 👀""",
+											p.s. join /payflow channel for updates 👀""",
 									senderFname,
 									tokenAmountText,
 									authorPart,
@@ -522,12 +530,12 @@ public class PaymentController {
 									receiptUrl);
 						} else {
 							messageText = String.format("""
-									 @%s, you've been gifted %s%scollectible by @%s from the cast above ✨
+											 @%s, you've been gifted %s%scollectible by @%s from the cast above ✨
 
-									%s
-									🧾 Receipt: %s
+											%s
+											🧾 Receipt: %s
 
-									p.s. join /payflow channel for updates 👀""",
+											p.s. join /payflow channel for updates 👀""",
 									receiverFname,
 									tokenAmountText,
 									authorPart,
