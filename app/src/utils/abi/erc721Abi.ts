@@ -21,6 +21,16 @@ export const erc721Abi = [
   },
   {
     inputs: [],
+    name: 'FileAlreadyRegistered',
+    type: 'error'
+  },
+  {
+    inputs: [],
+    name: 'FileNotRegistered',
+    type: 'error'
+  },
+  {
+    inputs: [],
     name: 'InvalidManager',
     type: 'error'
   },
@@ -433,6 +443,24 @@ export const erc721Abi = [
   {
     inputs: [
       {
+        internalType: 'string',
+        name: 'fileName',
+        type: 'string'
+      },
+      {
+        internalType: 'address[]',
+        name: 'fileStorageAddresses',
+        type: 'address[]'
+      }
+    ],
+    name: 'addFile',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function'
+  },
+  {
+    inputs: [
+      {
         internalType: 'address',
         name: 'to',
         type: 'address'
@@ -508,6 +536,24 @@ export const erc721Abi = [
   },
   {
     inputs: [],
+    name: 'customRendererConfig',
+    outputs: [
+      {
+        internalType: 'address',
+        name: 'renderer',
+        type: 'address'
+      },
+      {
+        internalType: 'bool',
+        name: 'processMintDataOnRenderer',
+        type: 'bool'
+      }
+    ],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
+    inputs: [],
     name: 'defaultManager',
     outputs: [
       {
@@ -522,25 +568,52 @@ export const erc721Abi = [
   {
     inputs: [
       {
-        internalType: 'bytes',
-        name: 'data',
-        type: 'bytes'
-      },
-      {
-        internalType: 'bytes',
-        name: 'key',
-        type: 'bytes'
+        internalType: 'string',
+        name: 'fileName',
+        type: 'string'
       }
     ],
-    name: 'encryptDecrypt',
+    name: 'fileContents',
     outputs: [
       {
-        internalType: 'bytes',
-        name: 'result',
-        type: 'bytes'
+        internalType: 'string',
+        name: '',
+        type: 'string'
       }
     ],
-    stateMutability: 'pure',
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
+    inputs: [
+      {
+        internalType: 'string',
+        name: 'fileName',
+        type: 'string'
+      }
+    ],
+    name: 'fileStorage',
+    outputs: [
+      {
+        internalType: 'address[]',
+        name: '',
+        type: 'address[]'
+      }
+    ],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
+    inputs: [],
+    name: 'files',
+    outputs: [
+      {
+        internalType: 'string[]',
+        name: '',
+        type: 'string[]'
+      }
+    ],
+    stateMutability: 'view',
     type: 'function'
   },
   {
@@ -548,6 +621,19 @@ export const erc721Abi = [
     name: 'freezeMints',
     outputs: [],
     stateMutability: 'nonpayable',
+    type: 'function'
+  },
+  {
+    inputs: [],
+    name: 'generativeCodeUri',
+    outputs: [
+      {
+        internalType: 'string',
+        name: '',
+        type: 'string'
+      }
+    ],
+    stateMutability: 'view',
     type: 'function'
   },
   {
@@ -572,84 +658,14 @@ export const erc721Abi = [
   {
     inputs: [
       {
-        internalType: 'bytes',
-        name: 'data',
-        type: 'bytes'
-      }
-    ],
-    name: 'initialize',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function'
-  },
-  {
-    inputs: [
-      {
         internalType: 'address',
         name: 'creator',
         type: 'address'
       },
       {
-        internalType: 'string',
-        name: '_contractURI',
-        type: 'string'
-      },
-      {
-        components: [
-          {
-            internalType: 'address',
-            name: 'recipientAddress',
-            type: 'address'
-          },
-          {
-            internalType: 'uint16',
-            name: 'royaltyPercentageBPS',
-            type: 'uint16'
-          }
-        ],
-        internalType: 'struct IRoyaltyManager.Royalty',
-        name: 'defaultRoyalty',
-        type: 'tuple'
-      },
-      {
-        internalType: 'address',
-        name: '_defaultTokenManager',
-        type: 'address'
-      },
-      {
-        internalType: 'string',
-        name: '_name',
-        type: 'string'
-      },
-      {
-        internalType: 'string',
-        name: '_symbol',
-        type: 'string'
-      },
-      {
-        internalType: 'address',
-        name: 'trustedForwarder',
-        type: 'address'
-      },
-      {
-        internalType: 'address',
-        name: 'initialMinter',
-        type: 'address'
-      },
-      {
-        internalType: 'string',
-        name: 'newBaseURI',
-        type: 'string'
-      },
-      {
-        internalType: 'uint256',
-        name: '_limitSupply',
-        type: 'uint256'
-      },
-      {
-        internalType: 'bool',
-        name: 'useMarketplaceFiltererRegistry',
-        type: 'bool'
+        internalType: 'bytes',
+        name: 'data',
+        type: 'bytes'
       },
       {
         internalType: 'address',
@@ -787,42 +803,6 @@ export const erc721Abi = [
     type: 'function'
   },
   {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'recipient',
-        type: 'address'
-      },
-      {
-        internalType: 'uint256',
-        name: 'tokenId',
-        type: 'uint256'
-      }
-    ],
-    name: 'mintSpecificTokenToOneRecipient',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function'
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'recipient',
-        type: 'address'
-      },
-      {
-        internalType: 'uint256[]',
-        name: 'tokenIds',
-        type: 'uint256[]'
-      }
-    ],
-    name: 'mintSpecificTokensToOneRecipient',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function'
-  },
-  {
     inputs: [],
     name: 'minters',
     outputs: [
@@ -909,6 +889,19 @@ export const erc721Abi = [
   {
     inputs: [],
     name: 'removeDefaultTokenManager',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function'
+  },
+  {
+    inputs: [
+      {
+        internalType: 'string',
+        name: 'fileName',
+        type: 'string'
+      }
+    ],
+    name: 'removeFile',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function'
@@ -1093,6 +1086,31 @@ export const erc721Abi = [
         components: [
           {
             internalType: 'address',
+            name: 'renderer',
+            type: 'address'
+          },
+          {
+            internalType: 'bool',
+            name: 'processMintDataOnRenderer',
+            type: 'bool'
+          }
+        ],
+        internalType: 'struct ERC721GeneralSequenceBase.CustomRendererConfig',
+        name: '_customRendererConfig',
+        type: 'tuple'
+      }
+    ],
+    name: 'setCustomRenderer',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function'
+  },
+  {
+    inputs: [
+      {
+        components: [
+          {
+            internalType: 'address',
             name: 'recipientAddress',
             type: 'address'
           },
@@ -1215,6 +1233,19 @@ export const erc721Abi = [
     name: 'setTokenURIs',
     outputs: [],
     stateMutability: 'nonpayable',
+    type: 'function'
+  },
+  {
+    inputs: [],
+    name: 'supply',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256'
+      }
+    ],
+    stateMutability: 'view',
     type: 'function'
   },
   {

@@ -1,5 +1,5 @@
 import { usePageContext } from 'vike-react/usePageContext';
-import { API_URL, DAPP_URL, FRAMES_URL } from '../../utils/constants';
+import { API_URL, DAPP_URL, FRAMES_URL, MINT_FRAME_VERSION } from '../../utils/constants';
 import { MintUrlParams } from '../../utils/mint';
 import { useData } from 'vike-react/useData';
 import { Data } from './+data';
@@ -29,8 +29,15 @@ export function Head() {
     }
   };
 
-  const providerName = providerInfo[provider as keyof typeof providerInfo]?.name || 'Unknown Provider';
-  const original = providerInfo[provider as keyof typeof providerInfo]?.url(chainId, contract, tokenId, referral) || '';
+  const providerName =
+    providerInfo[provider as keyof typeof providerInfo]?.name || 'Unknown Provider';
+  const original =
+    providerInfo[provider as keyof typeof providerInfo]?.url(
+      chainId,
+      contract,
+      tokenId,
+      referral
+    ) || '';
 
   const imageUrl = new URL(`${FRAMES_URL}/images/mint.png`);
   imageUrl.searchParams.append('provider', provider);
@@ -39,6 +46,7 @@ export function Head() {
   if (tokenId) {
     imageUrl.searchParams.append('tokenId', tokenId);
   }
+  imageUrl.searchParams.append('v', MINT_FRAME_VERSION);
 
   const imageUrlString = imageUrl.toString();
 
@@ -122,10 +130,7 @@ export function Head() {
         <meta property="fc:frame:button:1" content="✨ Mint" />
         <meta property="fc:frame:button:1:action" content="post_redirect" />
         <meta property="fc:frame:button:1:target" content={paymentMintSubmitUrl.toString()} />
-        <meta
-          property="fc:frame:button:2"
-          content={providerName}
-        />
+        <meta property="fc:frame:button:2" content={providerName} />
         <meta property="fc:frame:button:2:action" content="link" />
         <meta property="fc:frame:button:2:target" content={original} />
 

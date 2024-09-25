@@ -212,17 +212,13 @@ export async function fetchTokenMetadata(metadataUri: string) {
     const resolvedMetadataUri = resolveIpfsUri(metadataUri);
 
     console.log('Resolved metadata URI:', resolvedMetadataUri);
-    // add proxy
-    /* const metadataResponse = await axios.get(
-      `https://corsproxy.io/?${encodeURIComponent(resolvedMetadataUri)}`
-    ); */
     const metadataResponse = await axios.get(resolvedMetadataUri);
 
     const metadata = metadataResponse.data;
     const name = metadata.name;
     const description = metadata.description;
     const imageUri = metadata.image;
-    const resolvedImageUri = `https://media.decentralized-content.com/-/rs:fit:128:128/${btoa(
+    const resolvedImageUri = `https://media.decentralized-content.com/-/rs:fit:64:64/${btoa(
       resolveIpfsUri(imageUri)
     )}`;
 

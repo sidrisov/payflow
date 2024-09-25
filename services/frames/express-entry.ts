@@ -218,7 +218,10 @@ async function startServer() {
       console.debug(mintData);
 
       const image = await htmlToImage(mintHtml(mintData), 'portrait');
-      res.setHeader('Cache-Control', `max-age=${oneDayInSeconds}`).type('png').send(image);
+      res
+        .setHeader('Cache-Control', `max-age=${60 * 60 * 1000}`)
+        .type('png')
+        .send(image);
     } catch (error) {
       console.error(error);
       res.status(500).send('Failed to generate mint image');

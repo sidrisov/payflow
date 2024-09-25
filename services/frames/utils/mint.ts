@@ -119,24 +119,25 @@ export async function fetchCollectionTokenMetadataURI(
 
   const abi = mintType === '721' ? erc721Abi : zoraErc1155Abi;
 
-  let tokenIdSanitized = tokenId;
+  let tokenIdSanitized: bigint;
   if (!tokenId) {
     tokenIdSanitized = (await readContract(wagmiConfig, {
       chainId: chainId as any,
       address: contract,
       abi,
       functionName: 'supply'
-    })) as number;
+    })) as bigint;
+  } else {
+    tokenIdSanitized = BigInt(tokenId);
   }
 
   const functionName = mintType === '721' ? 'tokenURI' : 'uri';
-
   return (await readContract(wagmiConfig, {
     chainId: chainId as any,
     address: contract,
     abi,
     functionName: functionName as any,
-    args: [BigInt(tokenIdSanitized ?? 0 + 1)]
+    args: [tokenIdSanitized]
   })) as string;
 }
 
