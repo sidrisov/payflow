@@ -13,6 +13,7 @@ import ua.sinaver.web3.payflow.message.efp.EfpFollowingsMessage;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static ua.sinaver.web3.payflow.config.CacheConfig.CONTACT_LIST_CACHE_NAME;
 
@@ -29,7 +30,7 @@ public class EthereumFollowProtocolService {
 				.build();
 	}
 
-	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'efp-followings-list:' + #identity",
+	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'efp-list:' + #identity",
 			unless = "#result.isEmpty()")
 	public List<String> fetchFollowings(String identity) {
 		log.debug("Calling EFP Fetch Followings API by identity {}", identity);
@@ -61,7 +62,7 @@ public class EthereumFollowProtocolService {
 				.blockOptional()
 				.map(efpFollowingsMessage -> efpFollowingsMessage.following().stream()
 						.map(EfpFollowingsMessage.EftFollowing::address) // Assuming
-						.toList())
+						.collect(Collectors.toList()))
 				.orElse(Collections.emptyList());
 	}
 }

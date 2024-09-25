@@ -1,6 +1,6 @@
 import { readContract } from '@wagmi/core';
 import axios from 'axios';
-import { Address, PublicClient } from 'viem';
+import { Address, erc721Abi, PublicClient } from 'viem';
 import { IdentityType } from '../types/ProfileType';
 import { API_URL, FRAMES_URL } from './urlConstants';
 import { wagmiConfig } from './wagmiConfig';
@@ -10,7 +10,6 @@ import { getPublicClient } from 'wagmi/actions';
 import { ProfileType } from '../types/ProfileType';
 import { FARCASTER_DAPP } from './dapps';
 import { Social } from '../generated/graphql/types';
-import { erc721Abi } from './abi/erc721Abi';
 
 type ParsedMintData = {
   provider: MintProvider;
@@ -186,24 +185,25 @@ export async function fetchCollectionTokenMetadataURI(
 
   const abi = mintType === '721' ? erc721Abi : zoraErc1155Abi;
 
-  let tokenIdSanitized = tokenId;
+  let tokenIdSanitized: bigint;
   if (!tokenId) {
     tokenIdSanitized = (await readContract(wagmiConfig, {
       chainId: chainId as any,
       address: contract,
       abi,
-      functionName: 'supply'
-    })) as number;
+      functionName: 'totalSupply'
+    })) as bigint;
+  } else {
+    tokenIdSanitized = BigInt(tokenId);
   }
 
   const functionName = mintType === '721' ? 'tokenURI' : 'uri';
-
   return (await readContract(wagmiConfig, {
     chainId: chainId as any,
     address: contract,
     abi,
     functionName: functionName as any,
-    args: [BigInt(tokenIdSanitized ?? 0 + 1)]
+    args: [tokenIdSanitized]
   })) as string;
 }
 

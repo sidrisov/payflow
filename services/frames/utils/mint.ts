@@ -1,12 +1,11 @@
 import { readContract } from '@wagmi/core';
-import { Address } from 'viem';
+import { Address, erc721Abi } from 'viem';
 import { wagmiConfig } from './wagmi';
 import { zoraErc1155Abi } from './abis/zoraErc1155Abi';
 import axios from 'axios';
 import { IdentityType } from '../types/ProfleType';
 
 import dotenv from 'dotenv';
-import { erc721Abi } from './abis/erc721Abi';
 dotenv.config();
 
 const API_URL = process.env.VITE_PAYFLOW_SERVICE_API_URL;
@@ -125,7 +124,7 @@ export async function fetchCollectionTokenMetadataURI(
       chainId: chainId as any,
       address: contract,
       abi,
-      functionName: 'supply'
+      functionName: 'totalSupply'
     })) as bigint;
   } else {
     tokenIdSanitized = BigInt(tokenId);
