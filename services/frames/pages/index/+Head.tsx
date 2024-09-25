@@ -1,6 +1,8 @@
-import { DAPP_URL, API_URL } from "../../utils/constants";
+import { API_URL, DAPP_URL } from '../../utils/constants';
 
 export function Head() {
+  const miniAppUrl = `${API_URL}/api/farcaster/composer/pay?action=app`;
+  const miniAppDeeplink = `https://warpcast.com/~/composer-action?url=${encodeURIComponent(miniAppUrl)}&view=prompt`;
   return (
     <>
       <head>
@@ -26,7 +28,7 @@ export function Head() {
           property="og:description"
           content="Onchain Social Payments across Farcaster, Lens, and Ens."
         />
-        <meta property="og:image" content="https://i.imgur.com/Vs0loYg.png" />
+        <meta property="og:image" content="https://imgur.com/aMVyyBX.png" />
 
         <meta name="twitter:card" content="summary_large_image" />
         <meta property="twitter:domain" content="app.payflow.me" />
@@ -36,15 +38,18 @@ export function Head() {
           name="twitter:description"
           content="Onchain Social Payments across Farcaster, Lens, and Ens."
         />
-        <meta name="twitter:image" content="https://i.imgur.com/Vs0loYg.png" />
+        <meta name="twitter:image" content="https://imgur.com/aMVyyBX.png" />
 
         <meta property="of:accepts:xmtp" content="2024-02-01" />
         <meta property="of:accepts:lens" content="1.1" />
         <meta property="fc:frame" content="vNext" />
 
-        <meta property="fc:frame:image" content="https://i.imgur.com/Vs0loYg.png" />
-        <meta property="fc:frame:button:1" content="Connect" />
-        <meta property="fc:frame:post_url" content={`${API_URL}/api/farcaster/frames/connect`} />
+        <meta property="fc:frame:image" content="https://imgur.com/aMVyyBX.png" />
+        <meta property="fc:frame:image:aspect_ratio" content="1:1" />
+
+        <meta property="fc:frame:button:1" content="Payflow" />
+        <meta property="fc:frame:button:1:action" content="link" />
+        <meta property="fc:frame:button:1:target" content={miniAppDeeplink} />
       </head>
     </>
   );

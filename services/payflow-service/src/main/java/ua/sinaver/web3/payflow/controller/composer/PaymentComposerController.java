@@ -107,15 +107,24 @@ public class PaymentComposerController {
 			}
 		}
 
-		String miniAppUrl;
-		if (StringUtils.equals(action, "payment") && StringUtils.isNotBlank(refId)) {
-			miniAppUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
-					.path("/payment/{refId}")
+		String miniAppUrl = switch (action) {
+			case "app" -> UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
+					.path("/")
 					.queryParam("access_token", accessToken)
-					.buildAndExpand(refId)
+					.build()
 					.toUriString();
-		} else {
-			miniAppUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
+			case "payment" -> {
+				if (StringUtils.isNotBlank(refId)) {
+					yield UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
+							.path("/payment/{refId}")
+							.queryParam("access_token", accessToken)
+							.buildAndExpand(refId)
+							.toUriString();
+				} else {
+					yield null;
+				}
+			}
+			default -> UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 					.path("/composer")
 					.queryParam("access_token", accessToken)
 					.queryParam("action",
@@ -125,6 +134,13 @@ public class PaymentComposerController {
 					.queryParam("recipient", recipient)
 					.build()
 					.toUriString();
+		};
+
+		if (miniAppUrl == null) {
+			log.error("Action not supported: {} by {}", validateMessage,
+					interactor.username());
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameMessage("Action not supported!"));
 		}
 
 		log.debug("Returning a mini app url for: {} - {}", interactor.username(),
