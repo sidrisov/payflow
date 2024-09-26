@@ -23,7 +23,6 @@ import { ProfileType } from '../types/ProfileType';
 import { AppSettings } from '../types/AppSettingsType';
 import { ProfileMenu } from '../components/menu/ProfileMenu';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
-import HomeLogo from '../components/Logo';
 import ProfileAvatar from '../components/avatars/ProfileAvatar';
 import PrimaryFlowOnboardingDialog from '../components/dialogs/PrimaryFlowOnboardingDialog';
 import { DAPP_URL } from '../utils/urlConstants';
@@ -36,6 +35,7 @@ import PullToRefresh from 'react-simple-pull-to-refresh';
 import { usePwa } from '../utils/pwa';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useMobile } from '../utils/hooks/useMobile';
+import Logo from '../components/Logo';
 
 export default function AppLayout({
   profile,
@@ -133,7 +133,7 @@ export default function AppLayout({
                       alignItems="center"
                       justifyContent="space-between"
                       flexGrow={1}>
-                      <HomeLogo />
+                      <Logo p="5px" />
                       {profile ? (
                         <IconButton
                           size="small"

@@ -4,243 +4,176 @@ import {
   Box,
   Typography,
   Button,
-  Stack,
-  TextField,
+  Container,
   useMediaQuery,
-  useTheme,
-  Avatar,
-  Badge,
   IconButton
 } from '@mui/material';
-
 import CustomThemeProvider from '../theme/CustomThemeProvider';
-import HideOnScroll from '../components/HideOnScroll';
 import Logo from '../components/Logo';
-import { green, grey } from '@mui/material/colors';
-import { useState } from 'react';
-import { Help } from '@mui/icons-material';
+import { green } from '@mui/material/colors';
+import { ArrowForward, Help } from '@mui/icons-material';
 import { SiFarcaster } from 'react-icons/si';
 import { FaXTwitter } from 'react-icons/fa6';
+import { MdRocketLaunch } from 'react-icons/md';
 
 const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
 
+const farcasterPurple = '#8A63D2';
+
 export default function Home() {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [profile, setProfile] = useState<string>();
 
   return (
     <CustomThemeProvider darkMode={prefersDarkMode}>
-      <HideOnScroll>
-        <AppBar
-          position="sticky"
-          color="transparent"
-          elevation={0}
-          sx={{ backdropFilter: 'blur(5px)' }}>
-          <Toolbar
-            sx={{
-              justifyContent: 'space-between'
-            }}>
-            <Logo />
-            <Box>
-              <IconButton
-                color="inherit"
-                size="small"
-                href="https://warpcast.com/~/channel/payflow"
-                target="_blank">
-                <SiFarcaster size="20" />
-              </IconButton>
-              <IconButton
-                color="inherit"
-                size="small"
-                href="https://x.com/payflowme"
-                target="_blank">
-                <FaXTwitter size={20} />
-              </IconButton>
-              <Button
-                endIcon={<Help />}
-                variant="text"
-                color="inherit"
-                size="small"
-                href="https://payflowlabs.notion.site/Payflow-FAQs-20593cf7734e4d78ad0dc91c8e8982e5"
-                target="_blank"
-                sx={{ borderRadius: 5, fontSize: 15, fontWeight: 'bold' }}>
-                FAQ
-              </Button>
-              <Button
-                variant="outlined"
-                color="inherit"
-                size="small"
-                href={`${DAPP_URL}/connect`}
-                target="_blank"
-                sx={{ mx: 1, borderRadius: 5, fontSize: 15, fontWeight: 'bold' }}>
-                Sign In
-              </Button>
-            </Box>
-          </Toolbar>
-        </AppBar>
-      </HideOnScroll>
-      <Box
-        my={isMobile ? 10 : 5}
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center">
-        <Stack direction="column" alignItems="center" spacing={1}>
-          <Badge
-            badgeContent={
-              <Typography
-                variant={isMobile ? 'h5' : 'h4'}
-                fontWeight="bold"
-                color={green.A700}
-                sx={{ mb: 3, ml: isMobile ? -25 : 0 }}>
-                made easy
-              </Typography>
-            }>
-            <Typography
-              maxWidth={isMobile ? 350 : 700}
-              textAlign="center"
-              variant={isMobile ? 'h4' : 'h2'}
-              fontWeight="bold">
-              Onchain Social Payments
-            </Typography>
-          </Badge>
-
-          <Typography
-            fontSize={isMobile ? 18 : 24}
-            fontWeight="bold"
-            color={green.A700}
-            textAlign="center">
-            Connect | Discover | Pay
-          </Typography>
-
-          <Stack spacing={1} direction="row" alignItems="center">
-            <Stack spacing={1} direction="row" alignItems="center">
-              <Avatar variant="rounded" src="farcaster.svg" sx={{ width: 20, height: 20 }} />
-              <Typography color={grey[500]} fontSize={15} fontWeight="bold">
-                farcaster
-              </Typography>
-            </Stack>
-            <Typography>|</Typography>
-            <Stack spacing={1} direction="row" alignItems="center">
-              <Avatar variant="rounded" src="lens.svg" sx={{ width: 20, height: 20 }} />
-              <Typography color={grey[500]} fontSize={15} fontWeight="bold">
-                lens
-              </Typography>
-            </Stack>
-            <Typography>|</Typography>
-            <Stack spacing={1} direction="row" alignItems="center">
-              <Avatar variant="rounded" src="ens.svg" sx={{ width: 20, height: 20 }} />
-              <Typography color={grey[500]} fontSize={15} fontWeight="bold">
-                ens
-              </Typography>
-            </Stack>
-          </Stack>
-
-          <Stack p={1} direction="row" spacing={3} alignItems="center">
-            <img
-              width={isMobile ? 95 : 190}
-              height={isMobile ? 190 : 380}
-              src={prefersDarkMode ? 'payflow_ux_search_dark.png' : 'payflow_ux_search_light.png'}
-            />
-            <img
-              width={isMobile ? 110 : 220}
-              height={isMobile ? 215 : 430}
-              src={prefersDarkMode ? 'payflow_ux_home_dark.png' : 'payflow_ux_home_light.png'}
-            />
-            <img
-              width={isMobile ? 95 : 190}
-              height={isMobile ? 190 : 380}
-              src={prefersDarkMode ? 'payflow_ux_send_dark.png' : 'payflow_ux_send_light.png'}
-            />
-          </Stack>
-        </Stack>
+      <AppBar position="sticky" color="transparent" elevation={0}>
+        <Toolbar
+          sx={{
+            justifyContent: 'space-between'
+          }}>
+          <Logo />
+          <Box>
+            <IconButton
+              color="inherit"
+              size="small"
+              href="https://warpcast.com/~/channel/payflow"
+              target="_blank">
+              <SiFarcaster size="20" />
+            </IconButton>
+            <IconButton color="inherit" size="small" href="https://x.com/payflowme" target="_blank">
+              <FaXTwitter size={20} />
+            </IconButton>
+            <Button
+              startIcon={<Help />}
+              variant="text"
+              color="inherit"
+              size="medium"
+              href="https://payflowlabs.notion.site/Payflow-FAQs-20593cf7734e4d78ad0dc91c8e8982e5"
+              target="_blank"
+              sx={{ borderRadius: 5, fontSize: 15, fontWeight: 'bold' }}>
+              FAQ
+            </Button>
+          </Box>
+        </Toolbar>
+      </AppBar>
+      <Container
+        maxWidth="lg"
+        sx={{
+          height: 'calc(100vh - 100px)',
+          display: 'flex',
+          alignItems: 'center',
+          flexDirection: 'column'
+        }}>
+        <Typography
+          mt={2}
+          variant="h2"
+          fontWeight="bold"
+          textAlign="center"
+          sx={{ fontSize: { xs: '2rem', sm: '3rem' } }}>
+          Onchain Social Payments
+        </Typography>
+        <Typography
+          variant="h6"
+          fontWeight="bold"
+          textAlign="center"
+          color={green.A700}
+          sx={{
+            fontSize: { xs: '1.2rem', sm: '1.5rem' },
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 1
+          }}>
+          Connect
+          <ArrowForward fontSize="small" />
+          Discover
+          <ArrowForward fontSize="small" />
+          Pay
+        </Typography>
 
         <Box
-          display="flex"
-          flexDirection="row"
-          alignItems="center"
+          mt={1}
           sx={{
-            mt: 3,
-            mx: 1,
-            border: 2,
-            borderRadius: 10,
-            borderStyle: 'dashed',
-            borderColor: grey[500]
+            position: 'relative',
+            height: 'calc(100vh - 350px)',
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            overflow: 'hidden'
           }}>
-          <Avatar src="payflow.png" sx={{ mx: 1, width: 36, height: 36 }} />
-          <Typography fontSize={isMobile ? 16 : 18} fontWeight="bold">
-            payflow.me/
-          </Typography>
-          <TextField
-            size="small"
-            variant="standard"
-            margin="dense"
-            InputProps={{
-              inputProps: { maxLength: 16 },
-              placeholder: 'yourname',
-              sx: { fontSize: isMobile ? 18 : 20, width: 90 },
-              disableUnderline: true
-            }}
-            onChange={(event) => {
-              setProfile(event.target.value);
-            }}
-          />
+          {['payflow_ux.png', 'payflow_ux_contacts.png'].map((src, index) => (
+            <Box
+              key={index}
+              sx={{
+                position: 'absolute',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: index === 0 ? 2 : 1,
+                left: '50%',
+                transform: 'translateX(-60%)'
+              }}>
+              <Box
+                component="img"
+                src={src}
+                alt={`Payflow UX ${index + 1}`}
+                sx={{
+                  height: '100%',
+                  transform: index === 1 ? 'scale(0.9) translate(-24%, 3%)' : 'translateX(29%)'
+                }}
+              />
+            </Box>
+          ))}
+        </Box>
+        <Box mt={3} display="flex" gap={2} flexWrap="wrap" justifyContent="center">
           <Button
-            size="medium"
-            variant="contained"
-            href={`${DAPP_URL}/connect${profile ? `?username=${profile}` : ''}`}
+            variant="outlined"
+            size="large"
+            href={`${DAPP_URL}/connect`}
+            target="_blank"
+            startIcon={<MdRocketLaunch size={20} />}
             sx={{
-              m: 1,
-              borderRadius: 5,
-              bgcolor: prefersDarkMode ? 'white' : 'black',
-              '&:hover': { bgcolor: green.A700 }
+              borderRadius: 28,
+              fontSize: 18,
+              fontWeight: 'bold',
+              px: 4,
+              py: 1.5,
+              borderColor: green.A700,
+              color: green.A700,
+              textTransform: 'none',
+              width: 220,
+              '&:hover': {
+                backgroundColor: green[50],
+                borderColor: green.A700
+              }
             }}>
-            JOIN 🚀
+            Get Started
+          </Button>
+          <Button
+            variant="contained"
+            size="large"
+            href="https://warpcast.com/~/composer-action?url=https://api.alpha.payflow.me/api/farcaster/composer/pay?action=app&view=prompt"
+            target="_blank"
+            startIcon={<SiFarcaster size={20} />}
+            sx={{
+              borderRadius: 28,
+              fontSize: 18,
+              fontWeight: 'bold',
+              px: 4,
+              py: 1.5,
+              backgroundColor: farcasterPurple,
+              color: 'white',
+              textTransform: 'none',
+              width: 220,
+              '&:hover': {
+                backgroundColor: '#7550B8'
+              }
+            }}>
+            On Warpcast
           </Button>
         </Box>
-
-        {/* <Box mt={10} display="flex" flexDirection="column" alignItems="center">
-            <Typography fontSize={30} fontFamily="monospace">
-              Powered By
-            </Typography>
-            <Box
-              mt={1}
-              display="flex"
-              flexDirection="column"
-              alignItems="center"
-              justifyContent="flex-start">
-              <Stack direction="row" spacing={1} maxWidth={isMobile ? 300 : 600} overflow="auto">
-                <Box
-                  p={1}
-                  sx={{ color: 'black', borderRadius: 5, border: 1 }}
-                  style={{ fill: 'green' }}>
-                  <img width={isMobile ? 50 : 150} height={isMobile ? 20 : 40} src="safe.svg" />
-                </Box>
-                <Box p={1} sx={{ borderRadius: 5, border: 1 }}>
-                  <img width={isMobile ? 50 : 150} height={isMobile ? 20 : 40} src="gelato.svg" />
-                </Box>
-                <Box p={1} sx={{ borderRadius: 5, border: 1 }}>
-                  <img width={isMobile ? 50 : 150} height={isMobile ? 20 : 40} src="airstack.svg" />
-                </Box>
-              </Stack>
-              <Box
-                mt={2}
-                p={1}
-                sx={{
-                  borderRadius: 5,
-                  border: 1
-                }}>
-                <img
-                  width={isMobile ? 100 : 200}
-                  height={isMobile ? 20 : 40}
-                  src="gcp_for_startups.png"
-                />
-              </Box>
-            </Box>
-          </Box> */}
-      </Box>
+      </Container>
     </CustomThemeProvider>
   );
 }

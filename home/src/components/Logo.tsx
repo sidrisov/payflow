@@ -1,21 +1,27 @@
-import { SvgIcon, Typography } from '@mui/material';
-import { Box } from '@mui/system';
-import Logo from '../assets/logo.svg?react';
+import { Avatar, Stack, Typography } from '@mui/material';
 
-export default function HomeLogo(props: any) {
+export default function Logo(props: any) {
   return (
-    <Box
+    <Stack
       {...props}
-      sx={{
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center'
-      }}>
-      {/*       <SvgIcon component={Logo} inheritViewBox fontSize="large" />
-       */}
-      <Typography ml={0.5} sx={{ fontSize: 20, fontWeight: 'bold', fontFamily: 'monospace' }}>
-        payflow
+      p="5px"
+      direction="row"
+      spacing={1}
+      alignItems="center"
+      justifyContent="center">
+      <Avatar
+        src="/payflow.png"
+        alt="Payflow Logo"
+        sx={{
+          width: 36,
+          height: 36,
+          borderRadius: 3
+        }}
+      />
+
+      <Typography fontSize={20} fontWeight="bold" fontFamily="monospace">
+        Payflow
       </Typography>
-    </Box>
+    </Stack>
   );
 }
