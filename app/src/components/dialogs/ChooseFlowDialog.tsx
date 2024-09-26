@@ -9,7 +9,7 @@ import {
   Collapse
 } from '@mui/material';
 import { FlowType } from '../../types/FlowType';
-import { MoreHoriz, PlayForWork, ExpandMore, ExpandLess } from '@mui/icons-material';
+import { PlayForWork, ExpandMore, ExpandLess, MoreVert } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { useContext, useEffect, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
@@ -42,6 +42,7 @@ export function ChooseFlowDialog({
   const [flowAnchorEl, setFlowAnchorEl] = useState<null | HTMLElement>(null);
   const [archivedExpanded, setArchivedExpanded] = useState<boolean>(false);
   const [selectedElement, setSelectedElement] = useState<HTMLLIElement | null>(null);
+  const [menuFlow, setMenuFlow] = useState<FlowType | null>(null);
 
   // Update this function to separate flows into four categories
   const separateFlows = (flows: FlowType[]) => {
@@ -84,9 +85,11 @@ export function ChooseFlowDialog({
         borderRadius: 5
       }}
       onClick={async () => {
-        setSelectedFlow(flow);
-        if (closeOnSelect) {
-          closeStateCallback();
+        if (!flow.archived) {
+          setSelectedFlow(flow);
+          if (closeOnSelect) {
+            closeStateCallback();
+          }
         }
       }}>
       <Box
@@ -97,11 +100,12 @@ export function ChooseFlowDialog({
         justifyContent="space-between">
         <Stack direction="row" alignItems="center" justifyContent="flex-start">
           <Box display="inherit" width={30}>
-            {flow.uuid === selectedFlow.uuid ? (
-              <FaCheckCircle color={green.A700} size={18} />
-            ) : (
-              <FaRegCircle size={18} />
-            )}
+            {!flow.archived &&
+              (flow.uuid === selectedFlow.uuid ? (
+                <FaCheckCircle color={green.A700} size={18} />
+              ) : (
+                <FaRegCircle size={18} />
+              ))}
           </Box>
           <Box display="inherit" width={30}>
             {flow.uuid === profile?.defaultFlow?.uuid && (
@@ -113,16 +117,19 @@ export function ChooseFlowDialog({
           <PaymentFlowSection flow={flow} />
         </Stack>
 
-        {configurable && flow.uuid === selectedFlow.uuid && (
+        {configurable && (
           <IconButton
             size="small"
-            onClick={async (event) => {
+            onClick={(event) => {
               event.stopPropagation();
               setFlowAnchorEl(event.currentTarget);
+              setMenuFlow(flow);
               setOpenFlowSettingsMenu(true);
             }}
-            sx={{ mx: 1 }}>
-            <MoreHoriz fontSize="small" />
+            sx={{
+              pointerEvents: 'auto' // This ensures the button is always clickable
+            }}>
+            <MoreVert fontSize="small" />
           </IconButton>
         )}
       </Box>
@@ -199,13 +206,16 @@ export function ChooseFlowDialog({
             </Stack>
           </MenuList>
         </ResponsiveDialog>
-        {openFlowSettingsMenu && (
+        {openFlowSettingsMenu && menuFlow && (
           <FlowSettingsMenu
             open={openFlowSettingsMenu}
             anchorEl={flowAnchorEl}
-            onClose={async () => setOpenFlowSettingsMenu(false)}
-            defaultFlow={selectedFlow.uuid === profile.defaultFlow?.uuid}
-            flow={selectedFlow}
+            onClose={async () => {
+              setOpenFlowSettingsMenu(false);
+              setMenuFlow(null);
+            }}
+            defaultFlow={menuFlow.uuid === profile.defaultFlow?.uuid}
+            flow={menuFlow}
           />
         )}
       </>
