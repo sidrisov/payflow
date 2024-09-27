@@ -10,8 +10,7 @@ export function createCastPostMessage(text: string, frameEmbed: string, channelK
     data: {
       cast: {
         text: encodeURIComponent(text),
-        embeds: [encodeURI(frameEmbed)],
-        ...(channelKey && { channelKey })
+        embeds: [encodeURI(frameEmbed)]
       }
     }
   };
