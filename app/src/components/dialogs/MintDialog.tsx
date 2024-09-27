@@ -50,6 +50,7 @@ import { createShareUrls } from '../../utils/mint';
 import { useDebounce } from 'use-debounce';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { createCastPostMessage, createComposeCastUrl } from '../../utils/warpcast';
+import { useSearchParams } from 'react-router-dom';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {
@@ -150,7 +151,10 @@ export default function MintDialog({
 }: MintDialogProps) {
   const isMobile = useMobile();
   const prefersDarkMode = useDarkMode();
-  const miniApp = useMiniApp();
+
+  const miniApp = useSearchParams()[0].get('view') === 'embedded';
+
+  //const miniApp = useMiniApp();
 
   const [openSelectFlow, setOpenSelectFlow] = useState(false);
 
@@ -241,7 +245,7 @@ export default function MintDialog({
   const hasPaymentOption =
     !isLoading && paymentOption && paymentToken && mintStatus === 'live' && !isMintPaymentTxError;
 
-  const [showSuccessDialog, setShowSuccessDialog] = useState(true);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(payment.status === 'COMPLETED');
 
   const successMessage = `minted ${mintCount > 1 ? `${mintCount}x ` : ''}"${
     mint.metadata.name

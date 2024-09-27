@@ -38,8 +38,6 @@ export function SearchIdentityListItem(
       view: 'address' | 'profile';
     }
 ) {
-  const prefersDarkMode = useDarkMode();
-
   const accessToken = useSearchParams()[0].get('access_token') ?? undefined;
 
   const { profile } = useContext(ProfileContext);

@@ -39,7 +39,8 @@ export function PaymentCard({ payment, title, children, ...props }: PaymentCardP
   return (
     <>
       <Box
-        {...(payment.status === 'PENDING' && {
+        {...((payment.status === 'PENDING' ||
+          (payment.status === 'COMPLETED' && payment.category === 'mint')) && {
           component: Button,
           variant: 'text',
           textTransform: 'none',
