@@ -8,11 +8,19 @@ import { DEGEN_CLAIM_SEASONS, useAllowance, usePoints } from '../../utils/querie
 import { ClaimDegenPointsDialog } from '../dialogs/ClaimDegenPointsDialog';
 import { ArrowBackIos, ArrowForwardIos } from '@mui/icons-material';
 import { formatAmountWithSuffix } from '../../utils/formats';
-import { green } from '@mui/material/colors';
+import { green, orange } from '@mui/material/colors';
+import { useQuery } from '@tanstack/react-query';
+import { usePublicClient } from 'wagmi';
+import { erc20Abi, formatUnits } from 'viem';
+import tokens from '../../utils/tokens.json';
+import { degen } from 'viem/chains';
+
+const wdegenToken = tokens.find((token) => token.id === 'wdegen' && token.chain === 'degen');
 
 export function DegenInfoCard() {
   const { profile } = useContext(ProfileContext);
   const { data: identity } = useIdentity(profile?.identity);
+  const publicClient = usePublicClient({ chainId: degen.id });
 
   const [currentSeasonIndex, setCurrentSeasonIndex] = useState<number>(
     DEGEN_CLAIM_SEASONS.findIndex((season) => season.id === 'season8')
@@ -29,6 +37,43 @@ export function DegenInfoCard() {
   };
 
   const season = DEGEN_CLAIM_SEASONS[currentSeasonIndex];
+
+  const { data: contractWDegenBalance = 0 } = useQuery({
+    queryKey: ['contractWDegenBalance', season?.contract],
+    queryFn: async () => {
+      if (!season?.contract || !wdegenToken) return 0n;
+
+      const balance = await publicClient?.readContract({
+        address: wdegenToken.tokenAddress as `0x${string}`,
+        abi: erc20Abi,
+        functionName: 'balanceOf',
+        args: [season.contract]
+      });
+
+      return Number(formatUnits(balance ?? 0n, wdegenToken.decimals));
+    },
+    enabled: publicClient && !!season?.contract && !!wdegenToken
+  });
+
+  const isClaimingEnabled = season?.contract && contractWDegenBalance >= 50_000;
+
+  const claimingOpenComponent = (
+    <Chip
+      label={isClaimingEnabled ? 'Claiming is live' : 'Claiming is not live'}
+      size="small"
+      sx={{
+        bgcolor: isClaimingEnabled ? green.A400 : orange[500],
+        fontSize: 12,
+        color: 'black',
+        '& .MuiChip-label': {
+          px: 1,
+          fontWeight: 'bold'
+        }
+      }}
+    />
+  );
+
+  console.log('Claiming Open Component:', claimingOpenComponent); // Keep this for debugging
 
   const fid =
     Number(identity?.meta?.socials?.find((s) => s.dappName === FARCASTER_DAPP)?.profileId) ||
@@ -51,24 +96,6 @@ export function DegenInfoCard() {
   } = usePoints(verifications, season?.id as any);
 
   const [openClaimPointsDialog, setOpenClaimPointsDialog] = useState<boolean>(false);
-
-  const claimingOpenComponent = season?.contract ? (
-    <Chip
-      label="Claiming Open"
-      size="small"
-      sx={{
-        bgcolor: green.A400,
-        fontSize: 12,
-        color: 'black',
-        '& .MuiChip-label': {
-          px: 1,
-          fontWeight: 'bold'
-        }
-      }}
-    />
-  ) : null;
-
-  console.log('Claiming Open Component:', claimingOpenComponent); // Keep this for debugging
 
   return (
     <InfoCard title="🎩 Degen Center" rightComponent={claimingOpenComponent}>
@@ -125,12 +152,12 @@ export function DegenInfoCard() {
                 p={1}
                 variant="h4"
                 fontWeight="bold"
-                {...(season.contract && {
+                {...(isClaimingEnabled && {
                   component: Button,
                   onClick: () => setOpenClaimPointsDialog(true)
                 })}
                 sx={{
-                  ...(season.contract && {
+                  ...(isClaimingEnabled && {
                     color: 'inherit',
                     borderRadius: 5,
                     border: 2,
