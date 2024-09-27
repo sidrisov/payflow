@@ -1,20 +1,13 @@
-import React, { useState, useContext } from 'react';
+import { useContext } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Container, Tabs, Tab, Box } from '@mui/material';
-import { green } from '@mui/material/colors';
+import { Container } from '@mui/material';
 
 import { ProfileContext } from '../contexts/UserContext';
-import { DegenInfoCard } from '../components/cards/DegenInfoCard';
-import { MoxieInfoCard } from '../components/cards/MoxieInfoCard';
+import { UsefulTabs } from '../components/useful/UsefulTabs';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 
 export default function Useful() {
   const { isAuthenticated } = useContext(ProfileContext);
-  const [activeTab, setActiveTab] = useState(0);
-
-  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue);
-  };
 
   return (
     <>
@@ -22,50 +15,7 @@ export default function Useful() {
         <title> Payflow | Useful </title>
       </Helmet>
       <Container maxWidth="xs" sx={{ height: '100vh' }}>
-        {isAuthenticated ? (
-          <>
-            <Tabs
-              value={activeTab}
-              onChange={handleTabChange}
-              sx={{
-                mb: 2,
-                '& .MuiTabs-flexContainer': {
-                  gap: 1 // Add some space between tabs
-                },
-                '& .MuiTab-root': {
-                  fontWeight: 'bold',
-                  fontSize: '1rem',
-                  borderRadius: '16px 16px 0 0', // Rounded top corners, flat bottom
-                  minHeight: '48px', // Adjust height as needed
-                  '&:hover': {
-                    backgroundColor: 'rgba(0, 0, 0, 0.04)' // Slight background on hover
-                  },
-                  '&.Mui-selected': {
-                    color: green.A700,
-                    fontWeight: 'bolder'
-                  }
-                },
-                '& .MuiTabs-indicator': {
-                  backgroundColor: green.A700,
-                  height: 3,
-                  borderRadius: '3px' // Rounded corners for the indicator
-                },
-                '& .MuiTouchRipple-root': {
-                  borderRadius: '16px' // Rounded corners for the ripple effect
-                }
-              }}>
-              <Tab label="Degen" disableRipple />
-              <Tab label="Moxie" disableRipple />
-            </Tabs>
-
-            <Box>
-              {activeTab === 0 && <DegenInfoCard />}
-              {activeTab === 1 && <MoxieInfoCard />}
-            </Box>
-          </>
-        ) : (
-          <LoadingPayflowEntryLogo />
-        )}
+        {isAuthenticated ? <UsefulTabs /> : <LoadingPayflowEntryLogo />}
       </Container>
     </>
   );
