@@ -15,8 +15,11 @@ import { useSearchParams } from 'react-router-dom';
 import InfoCard, { InfoStack } from './InfoCard';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { toast } from 'react-toastify';
+import { useMiniApp } from '../../utils/hooks/useMobile';
 
 export function MoxieInfoCard() {
+  const miniApp = useMiniApp();
+
   const accessToken = useSearchParams()[0].get('access_token') ?? undefined;
 
   const { profile } = useContext(ProfileContext);
@@ -102,7 +105,7 @@ export function MoxieInfoCard() {
                       <Chip
                         size="small"
                         clickable
-                        {...(window.self === window.top
+                        {...(miniApp
                           ? {
                               component: 'a',
                               href: `https://www.airstack.xyz/users/fc_fname:${contactWithAuction.auction.farcasterUsername}`,

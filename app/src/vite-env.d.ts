@@ -25,6 +25,7 @@ interface ImportMetaEnv {
   readonly VITE_PIMLICO_SPONSORED_POLICY_OP: string;
   readonly VITE_PIMLICO_SPONSORED_POLICY_DEGEN: string;
   readonly VITE_PRIVY_API_KEY: string;
+  readonly VITE_PRIVY_CLIENT_ID_KEY: string;
   readonly VITE_GLIDE_API_KEY: string;
 }
 

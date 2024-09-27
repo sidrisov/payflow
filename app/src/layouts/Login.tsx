@@ -8,9 +8,8 @@ import { ProfileType } from '../types/ProfileType';
 import { ConnectCard } from '../components/cards/ConnectCard';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 import { useDarkMode } from '../utils/hooks/useDarkMode';
-import { useMobile } from '../utils/hooks/useMobile';
+import { useMobile, usePwa } from '../utils/hooks/useMobile';
 import PullToRefresh from 'react-simple-pull-to-refresh';
-import { usePwa } from '../utils/pwa';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { UpdateVersionPrompt } from '../components/UpdateVersionPrompt';
 

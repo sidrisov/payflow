@@ -18,6 +18,7 @@ import { ProfileContext } from '../../contexts/UserContext';
 import { PaymentFlowSection } from '../PaymentFlowSection';
 import { FlowType } from '../../types/FlowType';
 import { useMobile } from '../../utils/hooks/useMobile';
+import { createCastPostMessage } from '../../utils/warpcast';
 
 export default function ContributionJarComposerDialog({
   closeStateCallback,
@@ -156,21 +157,12 @@ export default function ContributionJarComposerDialog({
             sx={{ borderRadius: 5 }}
             onClick={() => {
               window.parent.postMessage(
-                {
-                  type: 'createCast',
-                  data: {
-                    cast: {
-                      text: `Created contribution jar: "${jarTitle}" using @payflow composer action 💜💜💜`,
-                      embeds: [
-                        encodeURI(
-                          `https://frames.payflow.me/${
-                            selectedFlow?.uuid
-                          }?entryTitle=${encodeURIComponent(jarTitle)}`
-                        )
-                      ]
-                    }
-                  }
-                },
+                createCastPostMessage(
+                  `Created contribution jar: "${jarTitle}" using @payflow composer action 💜💜💜`,
+                  `https://frames.payflow.me/${selectedFlow?.uuid}?entryTitle=${encodeURIComponent(
+                    jarTitle
+                  )}`
+                ),
                 '*'
               );
             }}>

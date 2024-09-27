@@ -1,10 +1,4 @@
-import {
-  Avatar,
-  Button,
-  DialogProps,
-  Stack,
-  Typography
-} from '@mui/material';
+import { Avatar, Button, DialogProps, Stack, Typography } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { AccountBalanceWallet } from '@mui/icons-material';
 import { PaymentSenderType } from './PaymentDialog';

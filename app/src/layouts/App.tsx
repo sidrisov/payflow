@@ -32,9 +32,8 @@ import { PiPersonSimpleRun, PiPersonSimpleRunBold } from 'react-icons/pi';
 import { UpdateVersionPrompt } from '../components/UpdateVersionPrompt';
 
 import PullToRefresh from 'react-simple-pull-to-refresh';
-import { usePwa } from '../utils/pwa';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { useMobile } from '../utils/hooks/useMobile';
+import { useMobile, usePwa } from '../utils/hooks/useMobile';
 import Logo from '../components/Logo';
 
 export default function AppLayout({

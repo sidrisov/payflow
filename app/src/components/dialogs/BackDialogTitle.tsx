@@ -1,10 +1,4 @@
-import {
-  Box,
-  DialogTitle,
-  DialogTitleProps,
-  IconButton,
-  Typography
-} from '@mui/material';
+import { Box, DialogTitle, DialogTitleProps, IconButton, Typography } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { ArrowBack } from '@mui/icons-material';
 import { useMobile } from '../../utils/hooks/useMobile';

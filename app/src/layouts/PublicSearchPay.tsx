@@ -1,11 +1,4 @@
-import {
-  Avatar,
-  Badge,
-  Box,
-  Chip,
-  Stack,
-  Typography
-} from '@mui/material';
+import { Avatar, Badge, Box, Chip, Stack, Typography } from '@mui/material';
 import { green, grey } from '@mui/material/colors';
 import { useDarkMode } from '../utils/hooks/useDarkMode';
 import { useMobile } from '../utils/hooks/useMobile';

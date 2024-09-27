@@ -39,7 +39,7 @@ import { MintMetadata } from '../../utils/mint';
 import { useMintPaymentTx } from '../../utils/hooks/useMintPaymentTx';
 import { PayButton } from '../buttons/PayButton';
 import { useDarkMode } from '../../utils/hooks/useDarkMode';
-import { useMobile } from '../../utils/hooks/useMobile';
+import { useMiniApp, useMobile } from '../../utils/hooks/useMobile';
 import PaymentSuccessDialog from './PaymentSuccessDialog';
 import { getReceiptUrl } from '../../utils/receipts';
 import React from 'react';
@@ -49,6 +49,7 @@ import { copyToClipboard } from '../../utils/copyToClipboard';
 import { createShareUrls } from '../../utils/mint';
 import { useDebounce } from 'use-debounce';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { createCastPostMessage, createComposeCastUrl } from '../../utils/warpcast';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {
@@ -149,6 +150,7 @@ export default function MintDialog({
 }: MintDialogProps) {
   const isMobile = useMobile();
   const prefersDarkMode = useDarkMode();
+  const miniApp = useMiniApp();
 
   const [openSelectFlow, setOpenSelectFlow] = useState(false);
 
@@ -239,14 +241,14 @@ export default function MintDialog({
   const hasPaymentOption =
     !isLoading && paymentOption && paymentToken && mintStatus === 'live' && !isMintPaymentTxError;
 
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(true);
 
   const successMessage = `minted ${mintCount > 1 ? `${mintCount}x ` : ''}"${
     mint.metadata.name
   }" for @${recipientSocial.profileName}`;
   const receiptUrl = getReceiptUrl(payment, false);
 
-  const { shareFrameUrl, composeCastUrl } = createShareUrls({
+  const { shareFrameUrl, text, channelKey } = createShareUrls({
     mint,
     recipientSocial,
     profile: profile!,
@@ -263,7 +265,13 @@ export default function MintDialog({
     <>
       <Button
         fullWidth
-        onClick={() => window.open(composeCastUrl, '_blank')}
+        onClick={() => {
+          if (miniApp) {
+            window.parent.postMessage(createCastPostMessage(text, shareFrameUrl, channelKey), '*');
+          } else {
+            window.open(createComposeCastUrl(text, shareFrameUrl, channelKey), '_blank');
+          }
+        }}
         startIcon={<SiFarcaster />}
         variant="outlined"
         size="small"

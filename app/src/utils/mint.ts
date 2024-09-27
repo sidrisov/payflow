@@ -288,7 +288,7 @@ export function createShareUrls({
   profile: ProfileType;
   isGift: boolean;
   tokenAmount: number;
-}): { shareFrameUrl: string; composeCastUrl: string } {
+}): { shareFrameUrl: string; text: string; channelKey: string } {
   const shareFrameUrl = createShareFrameUrl({ mint, profile });
 
   let text = isGift ? `I just gifted ` : `I just minted `;
@@ -326,9 +326,5 @@ export function createShareUrls({
 
   const channelKey = providerFarcasterChannelMap[mint.provider] || 'nft';
 
-  const composeCastUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(
-    text
-  )}&embeds[]=${encodeURIComponent(shareFrameUrl)}&channelKey=${channelKey}`;
-
-  return { shareFrameUrl, composeCastUrl };
+  return { shareFrameUrl, text, channelKey };
 }

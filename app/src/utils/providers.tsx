@@ -14,6 +14,7 @@ const AIRSTACK_API_KEY = import.meta.env.VITE_AIRSTACK_API_KEY;
 init(AIRSTACK_API_KEY);
 
 const PRIVY_API_KEY = import.meta.env.VITE_PRIVY_API_KEY;
+const PRIVY_CLIENT_ID_KEY = import.meta.env.VITE_PRIVY_CLIENT_ID_KEY;
 
 const farcasterAuthConfig = {
   rpcUrl: `https://opt-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`,
@@ -92,7 +93,10 @@ function PrivyAppProviders({
   darkMode: boolean;
 }) {
   return (
-    <PrivyProvider appId={PRIVY_API_KEY} config={privyConfig(darkMode)}>
+    <PrivyProvider
+      appId={PRIVY_API_KEY}
+      clientId={PRIVY_CLIENT_ID_KEY}
+      config={privyConfig(darkMode)}>
       <QueryClientProvider client={privyQueryClient}>
         <PrivyWagmiProvider config={wagmiConfig}>
           <CommonoProviders darkMode={darkMode}>{children}</CommonoProviders>

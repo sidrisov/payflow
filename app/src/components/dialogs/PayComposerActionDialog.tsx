@@ -21,6 +21,7 @@ import { FARCASTER_DAPP } from '../../utils/dapps';
 import { useSearchParams } from 'react-router-dom';
 import { normalizeNumberPrecision } from '../../utils/formats';
 import { useMobile } from '../../utils/hooks/useMobile';
+import { createCastPostMessage } from '../../utils/warpcast';
 
 export type PaymentSenderType = 'payflow' | 'wallet' | 'none';
 
@@ -158,19 +159,13 @@ export default function PayComposerActionDialog({
                   }
 
                   window.parent.postMessage(
-                    {
-                      type: 'createCast',
-                      data: {
-                        cast: {
-                          text: `Hey, @${
-                            recipient.identity.meta?.socials.find(
-                              (s) => s.dappName === FARCASTER_DAPP
-                            )?.profileName
-                          } paying you with the frame`,
-                          embeds: [encodeURI(`https://frames.payflow.me/payment/${refId}`)]
-                        }
-                      }
-                    },
+                    createCastPostMessage(
+                      `Hey, @${
+                        recipient.identity.meta?.socials.find((s) => s.dappName === FARCASTER_DAPP)
+                          ?.profileName
+                      } paying you with the frame`,
+                      `https://frames.payflow.me/payment/${refId}`
+                    ),
                     '*'
                   );
                 }}

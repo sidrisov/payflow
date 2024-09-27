@@ -1,10 +1,4 @@
-import {
-  Box,
-  Dialog,
-  DialogContent,
-  DialogProps,
-  Stack
-} from '@mui/material';
+import { Box, Dialog, DialogContent, DialogProps, Stack } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { SelectedIdentityType } from '../../types/ProfileType';
 import PaymentDialogContent from './PaymentDialogContent';

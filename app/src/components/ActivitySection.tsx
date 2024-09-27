@@ -1,14 +1,5 @@
 import { Repeat, ArrowDownward, Send } from '@mui/icons-material';
-import {
-  Badge,
-  Box,
-  BoxProps,
-  Chip,
-  IconButton,
-  Stack,
-  Tooltip,
-  Typography
-} from '@mui/material';
+import { Badge, Box, BoxProps, Chip, IconButton, Stack, Tooltip, Typography } from '@mui/material';
 import { lightGreen, red } from '@mui/material/colors';
 import { formatUnits } from 'viem';
 import { IdentityType } from '../types/ProfileType';
