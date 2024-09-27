@@ -1,4 +1,4 @@
-import { Typography, Skeleton, Button, Stack, IconButton } from '@mui/material';
+import { Typography, Skeleton, Button, Stack, IconButton, Chip } from '@mui/material';
 import { useContext, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { FARCASTER_DAPP } from '../../utils/dapps';
@@ -8,13 +8,14 @@ import { DEGEN_CLAIM_SEASONS, useAllowance, usePoints } from '../../utils/querie
 import { ClaimDegenPointsDialog } from '../dialogs/ClaimDegenPointsDialog';
 import { ArrowBackIos, ArrowForwardIos } from '@mui/icons-material';
 import { formatAmountWithSuffix } from '../../utils/formats';
+import { green } from '@mui/material/colors';
 
 export function DegenInfoCard() {
   const { profile } = useContext(ProfileContext);
   const { data: identity } = useIdentity(profile?.identity);
 
   const [currentSeasonIndex, setCurrentSeasonIndex] = useState<number>(
-    DEGEN_CLAIM_SEASONS.findIndex((season) => season.id === 'current')
+    DEGEN_CLAIM_SEASONS.findIndex((season) => season.id === 'season8')
   );
 
   const handleNextSeason = () => {
@@ -51,8 +52,26 @@ export function DegenInfoCard() {
 
   const [openClaimPointsDialog, setOpenClaimPointsDialog] = useState<boolean>(false);
 
+  const claimingOpenComponent = season?.contract ? (
+    <Chip
+      label="Claiming Open"
+      size="small"
+      sx={{
+        bgcolor: green.A400,
+        fontSize: 12,
+        color: 'black',
+        '& .MuiChip-label': {
+          px: 1,
+          fontWeight: 'bold'
+        }
+      }}
+    />
+  ) : null;
+
+  console.log('Claiming Open Component:', claimingOpenComponent); // Keep this for debugging
+
   return (
-    <InfoCard title="🎩 Degen Center">
+    <InfoCard title="🎩 Degen Center" rightComponent={claimingOpenComponent}>
       <InfoStack title="Everyday Allowance">
         {isFetchingAllowance || !fid ? (
           <Skeleton variant="rectangular" height={55} width={100} sx={{ borderRadius: '15px' }} />

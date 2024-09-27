@@ -5,12 +5,21 @@ import {
   CardContent,
   Stack,
   StackProps,
-  Typography
+  Typography,
+  Box
 } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { useDarkMode } from '../../utils/hooks/useDarkMode';
 
-export default function InfoCard({ title, children, ...props }: CardProps & { title: string }) {
+export default function InfoCard({
+  title,
+  children,
+  rightComponent,
+  ...props
+}: CardProps & {
+  title: string;
+  rightComponent?: React.ReactNode;
+}) {
   return (
     <Card
       elevation={12}
@@ -22,13 +31,15 @@ export default function InfoCard({ title, children, ...props }: CardProps & { ti
       }}
       {...props}>
       <CardHeader
-        title={title}
-        titleTypographyProps={{
-          fontSize: 20,
-          fontWeight: 'bold',
-          textAlign: 'center'
-        }}
-        sx={{ p: 0, pb: 0.5 }}
+        title={
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography fontSize={20} fontWeight="bold">
+              {title}
+            </Typography>
+            {rightComponent && <Box sx={{ ml: 1 }}>{rightComponent}</Box>}
+          </Box>
+        }
+        sx={{ py: 0.5, px: 1 }}
       />
       <CardContent
         sx={{

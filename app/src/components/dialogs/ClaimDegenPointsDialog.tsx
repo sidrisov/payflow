@@ -97,7 +97,8 @@ export function ClaimDegenPointsDialog({
       index: BigInt(merkleProofs.index),
       wallet_address: merkleProofs.wallet_address,
       amount: BigInt(merkleProofs.amount),
-      proof: merkleProofs.proof
+      proof: merkleProofs.proof,
+      seasonContract: season.contract
     });
 
     writeContract({

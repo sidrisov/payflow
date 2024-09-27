@@ -35,7 +35,7 @@ export default function Useful() {
                 '& .MuiTab-root': {
                   fontWeight: 'bold',
                   fontSize: '1rem',
-                  borderRadius: '16px', // Rounded corners for tabs
+                  borderRadius: '16px 16px 0 0', // Rounded top corners, flat bottom
                   minHeight: '48px', // Adjust height as needed
                   '&:hover': {
                     backgroundColor: 'rgba(0, 0, 0, 0.04)' // Slight background on hover
@@ -54,13 +54,13 @@ export default function Useful() {
                   borderRadius: '16px' // Rounded corners for the ripple effect
                 }
               }}>
-              <Tab label="Moxie" disableRipple />
               <Tab label="Degen" disableRipple />
+              <Tab label="Moxie" disableRipple />
             </Tabs>
 
             <Box>
-              {activeTab === 0 && <MoxieInfoCard />}
-              {activeTab === 1 && <DegenInfoCard />}
+              {activeTab === 0 && <DegenInfoCard />}
+              {activeTab === 1 && <MoxieInfoCard />}
             </Box>
           </Card>
         ) : (
