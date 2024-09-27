@@ -92,14 +92,22 @@ export function ClaimDegenPointsDialog({
       toast.error('Something went wrong!');
       return;
     }
+
+    console.log('Claiming points', {
+      index: BigInt(merkleProofs.index),
+      wallet_address: merkleProofs.wallet_address,
+      amount: BigInt(merkleProofs.amount),
+      proof: merkleProofs.proof
+    });
+
     writeContract({
       abi: degenClaimAbi,
       address: season.contract,
       functionName: 'claim',
       args: [
-        merkleProofs.index,
+        BigInt(merkleProofs.index),
         merkleProofs.wallet_address,
-        merkleProofs.amount,
+        BigInt(merkleProofs.amount),
         merkleProofs.proof
       ]
     });
