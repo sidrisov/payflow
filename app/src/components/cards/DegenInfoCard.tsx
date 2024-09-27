@@ -38,7 +38,7 @@ export function DegenInfoCard() {
 
   const season = DEGEN_CLAIM_SEASONS[currentSeasonIndex];
 
-  const { data: contractWDegenBalance = 0 } = useQuery({
+  const { data: contractWDegenBalance, isLoading: isLoadingBalance } = useQuery({
     queryKey: ['contractWDegenBalance', season?.contract],
     queryFn: async () => {
       if (!season?.contract || !wdegenToken) return 0n;
@@ -55,23 +55,25 @@ export function DegenInfoCard() {
     enabled: publicClient && !!season?.contract && !!wdegenToken
   });
 
-  const isClaimingEnabled = season?.contract && contractWDegenBalance >= 50_000;
+  const isClaimingEnabled =
+    season?.contract && contractWDegenBalance && contractWDegenBalance >= 50_000;
 
-  const claimingOpenComponent = (
-    <Chip
-      label={isClaimingEnabled ? 'Claiming is live' : 'Claiming is not live'}
-      size="small"
-      sx={{
-        bgcolor: isClaimingEnabled ? green.A400 : orange[500],
-        fontSize: 12,
-        color: 'black',
-        '& .MuiChip-label': {
-          px: 1,
-          fontWeight: 'bold'
-        }
-      }}
-    />
-  );
+  const claimingOpenComponent =
+    !isLoadingBalance && contractWDegenBalance !== undefined ? (
+      <Chip
+        label={isClaimingEnabled ? 'Claiming is live' : 'Claiming is not live'}
+        size="small"
+        sx={{
+          bgcolor: isClaimingEnabled ? green.A400 : orange[500],
+          fontSize: 12,
+          color: 'black',
+          '& .MuiChip-label': {
+            px: 1,
+            fontWeight: 'bold'
+          }
+        }}
+      />
+    ) : null;
 
   console.log('Claiming Open Component:', claimingOpenComponent); // Keep this for debugging
 
