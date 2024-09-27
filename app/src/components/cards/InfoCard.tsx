@@ -33,7 +33,7 @@ export default function InfoCard({
       <CardHeader
         title={
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography fontSize={20} fontWeight="bold">
+            <Typography fontSize={18} fontWeight="bold">
               {title}
             </Typography>
             {rightComponent && <Box sx={{ ml: 1 }}>{rightComponent}</Box>}

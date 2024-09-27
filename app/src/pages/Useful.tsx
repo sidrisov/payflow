@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Container, Card, Tabs, Tab, Box } from '@mui/material';
+import { Container, Tabs, Tab, Box } from '@mui/material';
 import { green } from '@mui/material/colors';
 
 import { ProfileContext } from '../contexts/UserContext';
@@ -23,7 +23,7 @@ export default function Useful() {
       </Helmet>
       <Container maxWidth="xs" sx={{ height: '100vh' }}>
         {isAuthenticated ? (
-          <Card elevation={5} sx={{ mt: 2, p: 3, borderRadius: 4, height: 'auto' }}>
+          <>
             <Tabs
               value={activeTab}
               onChange={handleTabChange}
@@ -62,7 +62,7 @@ export default function Useful() {
               {activeTab === 0 && <DegenInfoCard />}
               {activeTab === 1 && <MoxieInfoCard />}
             </Box>
-          </Card>
+          </>
         ) : (
           <LoadingPayflowEntryLogo />
         )}
