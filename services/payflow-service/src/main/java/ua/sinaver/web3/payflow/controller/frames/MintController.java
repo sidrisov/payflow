@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 import ua.sinaver.web3.payflow.config.PayflowConfig;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.User;
@@ -18,12 +17,12 @@ import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.message.farcaster.ValidatedFrameResponseMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.IdentityService;
+import ua.sinaver.web3.payflow.service.LinkService;
 import ua.sinaver.web3.payflow.service.UserService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 import ua.sinaver.web3.payflow.utils.MintUrlUtils;
 
-import java.net.URI;
 import java.util.*;
 
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.DEFAULT_HTML_RESPONSE;
@@ -34,7 +33,7 @@ import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYME
 @Transactional
 @Slf4j
 public class MintController {
-	private static final List<String> miniAppAllowlist = Collections.emptyList();
+	private static final List<String> miniAppAllowlist = Collections.singletonList("sinaver.eth");
 	@Autowired
 	private IFarcasterNeynarService neynarService;
 	@Autowired
@@ -45,6 +44,9 @@ public class MintController {
 	private UserService userService;
 	@Autowired
 	private IdentityService identityService;
+
+	@Autowired
+	private LinkService linkService;
 
 	private static Payment getMintPayment(ValidatedFrameResponseMessage validateMessage,
 	                                      User user,
@@ -187,27 +189,8 @@ public class MintController {
 
 		val miniAppRedirect = validateMessage.action().signer().client().username().equals("warpcast") &&
 				miniAppAllowlist.contains(interactor.username());
-
-		val paymentRefId = payments.get(0).getReferenceId();
-		URI paymentMintUrl;
-		if (miniAppRedirect) {
-			paymentMintUrl = UriComponentsBuilder.fromHttpUrl("https://warpcast.com")
-					.path("/~/composer-action")
-					.queryParam("url", UriComponentsBuilder.fromHttpUrl(payflowConfig.getApiServiceUrl())
-							.path("/api/farcaster/composer/pay")
-							.queryParam("action", "payment")
-							.queryParam("refId", paymentRefId)
-							.build().encode()
-							.toUriString())
-					.build()
-					.toUri();
-		} else {
-			paymentMintUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
-					.path("/payment/{refId}")
-					.buildAndExpand(paymentRefId).toUri();
-		}
-
-		log.debug("Redirecting to {}", paymentMintUrl);
-		return ResponseEntity.status(HttpStatus.FOUND).location(paymentMintUrl).build();
+		val paymentLink = linkService.paymentLink(payments.getFirst(), miniAppRedirect);
+		log.debug("Redirecting to {}", paymentLink);
+		return ResponseEntity.status(HttpStatus.FOUND).location(paymentLink).build();
 	}
 }

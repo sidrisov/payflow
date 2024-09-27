@@ -6,11 +6,11 @@ import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import ua.sinaver.web3.payflow.config.PayflowConfig;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
@@ -20,12 +20,15 @@ import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.message.farcaster.ValidatedFrameResponseMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.IdentityService;
+import ua.sinaver.web3.payflow.service.LinkService;
 import ua.sinaver.web3.payflow.service.UserService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.DEFAULT_HTML_RESPONSE;
@@ -38,23 +41,24 @@ import static ua.sinaver.web3.payflow.service.TokenService.OP_CHAIN_ID;
 @Slf4j
 public class StorageController {
 
+	private static final List<String> miniAppAllowlist = Collections.singletonList("sinaver.eth");
 	private static final String STORAGE_FRAME_API_BASE = "/api/farcaster/frames/storage";
 	@Autowired
 	private IFarcasterNeynarService neynarService;
 	@Autowired
 	private PaymentRepository paymentRepository;
-	@Value("${payflow.frames.url}")
-	private String framesServiceUrl;
-	@Value("${payflow.api.url}")
-	private String apiServiceUrl;
-	@Value("${payflow.dapp.url}")
-	private String dAppServiceUrl;
+
+	@Autowired
+	private PayflowConfig payflowConfig;
 
 	@Autowired
 	private UserService userService;
 
 	@Autowired
 	private IdentityService identityService;
+
+	@Autowired
+	private LinkService linkService;
 
 	private static Payment getPayment(ValidatedFrameResponseMessage validateMessage,
 	                                  FarcasterUser gifteeUser, User clickedProfile,
@@ -135,12 +139,11 @@ public class StorageController {
 
 		log.debug("Gift storage payment intent saved: {}", payment);
 
-		val storagePaymentUrl = UriComponentsBuilder.fromHttpUrl(dAppServiceUrl)
-				.path("/payment/{refId}")
-				.buildAndExpand(payment.getReferenceId()).toUri();
-
-		log.debug("Redirecting to {}", storagePaymentUrl);
-		return ResponseEntity.status(HttpStatus.FOUND).location(storagePaymentUrl).build();
+		val miniAppRedirect = validateMessage.action().signer().client().username().equals("warpcast") &&
+				miniAppAllowlist.contains(interactor.username());
+		val paymentLink = linkService.paymentLink(payment, miniAppRedirect);
+		log.debug("Redirecting to {}", paymentLink);
+		return ResponseEntity.status(HttpStatus.FOUND).location(paymentLink).build();
 	}
 
 	@PostMapping("/check")
@@ -193,18 +196,18 @@ public class StorageController {
 			receiverFid = validateMessage.action().interactor().fid();
 		}
 
-		val storageImage = UriComponentsBuilder.fromHttpUrl(framesServiceUrl)
+		val storageImage = UriComponentsBuilder.fromHttpUrl(payflowConfig.getFramesServiceUrl())
 				.path("images/profile/fid/{fid}/storage.png") // add your path variables here
 				.buildAndExpand(receiverFid)
 				.toUriString();
 
-		String submitUrl = UriComponentsBuilder.fromHttpUrl(apiServiceUrl)
+		String submitUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getApiServiceUrl())
 				.path(STORAGE_FRAME_API_BASE)
 				.path("/{fid}/submit")
 				.buildAndExpand(castInteractorFid)
 				.toUriString();
 
-		String checkUrl = UriComponentsBuilder.fromHttpUrl(apiServiceUrl)
+		String checkUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getApiServiceUrl())
 				.path(STORAGE_FRAME_API_BASE)
 				.path("/check")
 				.toUriString();

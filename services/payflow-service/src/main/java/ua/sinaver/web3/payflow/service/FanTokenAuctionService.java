@@ -12,10 +12,7 @@ import ua.sinaver.web3.payflow.message.SocialInfo;
 import ua.sinaver.web3.payflow.service.api.IContactBookService;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
-import java.util.AbstractMap;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static ua.sinaver.web3.payflow.config.CacheConfig.FAN_TOKENS_CACHE_NAME;
@@ -57,17 +54,25 @@ public class FanTokenAuctionService {
 			val usernames = usernameToContactMap.keySet().stream().toList();
 			val auctions = socialGraphService.getFanTokenAuctions(usernames);
 
-			return auctions.stream()
+			val contactWithAuctionList = auctions.stream()
 					.map(a -> {
-								val supply = (int) (a.getAuctionSupply() / Math.pow(10, a.getDecimals()));
-								return new ContactWithFanTokenAuction(usernameToContactMap.get(a.getEntityName()),
-										new ContactWithFanTokenAuction.FanTokenAuction(
-												a.getEntityName(),
-												supply,
-												a.getEstimatedStartTimestamp(),
-												a.getLaunchCastUrl()));
+								val contact = usernameToContactMap.get(a.getEntityName());
+								if (contact != null && contact.data() != null) {
+									val supply = (int) (a.getAuctionSupply() / Math.pow(10, a.getDecimals()));
+									return new ContactWithFanTokenAuction(contact,
+											new ContactWithFanTokenAuction.FanTokenAuction(
+													a.getEntityName(),
+													supply,
+													a.getEstimatedStartTimestamp(),
+													a.getLaunchCastUrl()));
+								}
+								return null;
 							}
-					).collect(Collectors.toList());
+					)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toList());
+
+			log.debug("Contacts with auctions for {}: {}", contactWithAuctionList, user.getIdentity());
 		}
 		return Collections.emptyList();
 	}

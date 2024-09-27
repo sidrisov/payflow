@@ -107,7 +107,7 @@ public class PaymentComposerController {
 			}
 		}
 
-		String miniAppUrl = switch (action) {
+		String miniAppUrl = StringUtils.isNotBlank(action) ? switch (action) {
 			case "app" -> UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 					.path("/")
 					.queryParam("access_token", accessToken)
@@ -134,7 +134,16 @@ public class PaymentComposerController {
 					.queryParam("recipient", recipient)
 					.build()
 					.toUriString();
-		};
+		} : UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
+				.path("/composer")
+				.queryParam("access_token", accessToken)
+				.queryParam("action",
+						StringUtils.isNotBlank(action) ? action : StringUtils.isNotBlank(recipient)
+								? "pay" :
+								action)
+				.queryParam("recipient", recipient)
+				.build()
+				.toUriString();
 
 		if (miniAppUrl == null) {
 			log.error("Action not supported: {} by {}", validateMessage,
