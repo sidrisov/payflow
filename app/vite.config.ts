@@ -24,6 +24,8 @@ export default defineConfig({
       injectRegister: 'auto',
       registerType: 'prompt',
       workbox: {
+        clientsClaim: true,
+        skipWaiting: true,
         globPatterns: ['**/*.{js,css,html,ico,png,jpg,svg}'],
         maximumFileSizeToCacheInBytes: 7500000,
         runtimeCaching: [
@@ -163,7 +165,8 @@ export default defineConfig({
         name: 'Payflow',
         short_name: 'Payflow',
         description: 'Onchain Social Payments',
-        theme_color: '#ffffff',
+        display: 'standalone',
+        orientation: 'portrait',
         icons: [
           {
             src: 'pwa-192x192.png',
