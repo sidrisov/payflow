@@ -13,8 +13,7 @@ import { Share, CallReceived } from '@mui/icons-material';
 import { useContext, useMemo, useState, useCallback, useRef } from 'react';
 import { useAccount } from 'wagmi';
 import { Address } from 'viem';
-import { IoMdArrowDropdown } from 'react-icons/io';
-import { TbSend } from 'react-icons/tb';
+import { TbSelector, TbSend } from 'react-icons/tb';
 import { useSwipeable } from 'react-swipeable';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 
@@ -169,6 +168,7 @@ export function AccountCard({
             borderRadius: 5,
             display: 'flex',
             flexDirection: 'column',
+            alignItems: 'center',
             gap: 1.5,
             transition: 'transform 0.3s ease-out',
             cursor: 'grab',
@@ -198,7 +198,7 @@ export function AccountCard({
             </Stack>
             <Tooltip title="Payment Flows">
               <IconButton size="small" color="inherit" onClick={() => setOpenSelectFlow(true)}>
-                <IoMdArrowDropdown size={20} />
+                <TbSelector size={20} />
               </IconButton>
             </Tooltip>
           </Box>
@@ -236,12 +236,7 @@ export function AccountCard({
           </Box>
         </Card>
 
-        <FlowNavigator
-          orderedFlows={orderedFlows}
-          currentIndex={currentIndex}
-          onSwipe={handleSwipe}
-          onOpenSelectFlow={() => setOpenSelectFlow(true)}
-        />
+        <FlowNavigator orderedFlows={orderedFlows} currentIndex={currentIndex} />
 
         {recipient && selectedFlow && (
           <PaymentDialog
