@@ -15,7 +15,7 @@ export const QUERY_SOCIALS_INSIGHTS = /* GraphQL */ `
         profileImage
         profileImageContentValue {
           image {
-            small
+            extraSmall
           }
         }
         followerCount
@@ -53,7 +53,7 @@ export const QUERY_SOCIALS = /* GraphQL */ `
         profileImage
         profileImageContentValue {
           image {
-            small
+            extraSmall
           }
         }
         followerCount
@@ -96,7 +96,7 @@ export const QUERY_SOCIALS_INSIGHTS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE
             profileImage
             profileImageContentValue {
               image {
-                small
+                extraSmall
               }
             }
             followerCount
@@ -153,7 +153,7 @@ export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = /
             profileImage
             profileImageContentValue {
               image {
-                small
+                extraSmall
               }
             }
             followerCount
