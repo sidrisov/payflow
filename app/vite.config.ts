@@ -23,7 +23,7 @@ function createCache(
   cacheName: string,
   handler: 'StaleWhileRevalidate' | 'CacheFirst' | 'NetworkFirst',
   maxEntries: number,
-  maxAge: number
+  maxAgeSeconds: number
 ): RuntimeCaching {
   return {
     urlPattern,
@@ -33,7 +33,7 @@ function createCache(
       cacheName,
       expiration: {
         maxEntries,
-        maxAgeSeconds: maxAge
+        maxAgeSeconds
       },
       cacheableResponse: {
         statuses: [0, 200]
@@ -42,14 +42,63 @@ function createCache(
   };
 }
 
-// https://vitejs.dev/config/
 export default defineConfig({
   // specify same port for dev as for preview
   server: { port: 4173, hmr: { overlay: false } },
+  build: {
+    rollupOptions: {
+      output: {
+        compact: true,
+        minifyInternalExports: true,
+        generatedCode: 'es2015',
+        format: 'es',
+        manualChunks: {
+          // Core React dependencies
+          'react-core': ['react', 'react-dom', 'react-router-dom'],
+          // UI and styling related
+          ui: [
+            '@emotion/react',
+            '@emotion/styled',
+            '@mui/material',
+            '@mui/icons-material',
+            '@mui/lab'
+          ],
+          // Web3 core libraries
+          'web3-core': ['viem', 'wagmi', 'permissionless'],
+          // Web3 SDK and additional libraries
+          'web3-sdk': [
+            '@privy-io/react-auth',
+            '@privy-io/wagmi',
+            '@farcaster/auth-kit',
+            '@zoralabs/protocol-sdk'
+          ],
+          // Data fetching and state management
+          data: ['@tanstack/react-query', 'axios', 'graphql', 'graphql-request'],
+          // Utility libraries
+          utils: ['date-fns', 'lodash.merge', 'semver', 'use-debounce'],
+          // Visualization and media
+          media: ['react-blockies', 'react-qr-code', 'react-icons'],
+          // Third-party services
+          services: ['@airstack/airstack-react', '@paywithglide/glide-js', '@vercel/speed-insights']
+        }
+      }
+    },
+    target: 'es2020',
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    },
+    sourcemap: false,
+    chunkSizeWarningLimit: 1000
+  },
+
   plugins: [
     react(),
     nodePolyfills(),
-    visualizer(),
+    visualizer({ template: 'sunburst', gzipSize: true, brotliSize: true }),
     VitePWA({
       devOptions: {
         enabled: true
