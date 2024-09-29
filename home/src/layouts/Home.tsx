@@ -126,7 +126,7 @@ export default function Home() {
             </Box>
           ))}
         </Box>
-        <Box mt={3} display="flex" gap={2} flexWrap="wrap" justifyContent="center">
+        <Box mt={3} mb={2} display="flex" gap={2} flexWrap="wrap" justifyContent="center">
           <Button
             variant="outlined"
             size="large"

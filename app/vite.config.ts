@@ -59,7 +59,7 @@ export default defineConfig({
       workbox: {
         clientsClaim: true,
         globPatterns: ['**/*.{html,js,css}'],
-        maximumFileSizeToCacheInBytes: 6000000,
+        maximumFileSizeToCacheInBytes: 6200000,
         runtimeCaching: [
           createCache(
             /^https:\/\/assets\.airstack\.xyz\/.*/i,

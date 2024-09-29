@@ -8,7 +8,7 @@ import { ProfileType } from '../types/ProfileType';
 import { ConnectCard } from '../components/cards/ConnectCard';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 import { useDarkMode } from '../utils/hooks/useDarkMode';
-import { useMobile, usePwa } from '../utils/hooks/useMobile';
+import { useMiniApp, useMobile, usePwa } from '../utils/hooks/useMobile';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { UpdateVersionPrompt } from '../components/UpdateVersionPrompt';
@@ -27,7 +27,7 @@ export default function Login({
   const redirect = searchParams.get('redirect');
   const isMobile = useMobile();
   const navigate = useNavigate();
-  const isPwa = usePwa();
+  const enablePullToRefresh = usePwa() || useMiniApp();
 
   const {
     needRefresh: [needRefresh]
@@ -55,7 +55,7 @@ export default function Login({
       <Helmet>
         <title> Payflow | Connect </title>
       </Helmet>
-      <PullToRefresh onRefresh={handleRefresh} isPullable={isPwa}>
+      <PullToRefresh onRefresh={handleRefresh} isPullable={enablePullToRefresh}>
         <Container maxWidth="sm" sx={{ height: '80vh' }}>
           {needRefresh && <UpdateVersionPrompt />}
           {authStatus === 'loading' ? (

@@ -49,7 +49,7 @@ export default function AppLayout({
   const isMobile = useMobile();
   const navigate = useNavigate();
 
-  const isPwa = usePwa();
+  const enablePullToRefresh = usePwa() || useMiniApp();
 
   const bottomToolbarEnabled =
     location.pathname !== '/composer' &&
@@ -108,7 +108,7 @@ export default function AppLayout({
         setAppSettings
       }}>
       <PullToRefresh
-        isPullable={isPwa}
+        isPullable={enablePullToRefresh}
         onRefresh={async () => {
           navigate(0);
         }}>

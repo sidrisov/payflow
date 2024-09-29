@@ -29,7 +29,7 @@ export const useMobile = () => {
 
 export const useMiniApp = () => {
   // Check if the app is loaded in an iframe
-  const isInIframe = window.self !== window.top;
+  const isInIframe = window !== window.parent || window.self !== window.top;
 
   return isInIframe || useInWebView();
 };
