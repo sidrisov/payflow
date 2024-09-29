@@ -54,13 +54,14 @@ export default defineConfig({
       devOptions: {
         enabled: true
       },
-      injectRegister: 'auto',
+      injectRegister: 'inline',
       registerType: 'prompt',
       workbox: {
         clientsClaim: true,
-        globPatterns: ['**/*.{html,js,css}'],
+        globPatterns: ['**/*.{html,css}'],
         maximumFileSizeToCacheInBytes: 6200000,
         runtimeCaching: [
+          createCache(/\.js$/, 'js-cache', 'CacheFirst', 100, Time.weeks(4)),
           createCache(
             /^https:\/\/assets\.airstack\.xyz\/.*/i,
             'airstack-assets-cache',
