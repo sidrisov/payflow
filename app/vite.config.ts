@@ -66,12 +66,8 @@ export default defineConfig({
           // Web3 core libraries
           'web3-core': ['viem', 'wagmi', 'permissionless'],
           // Web3 SDK and additional libraries
-          'web3-sdk': [
-            '@privy-io/react-auth',
-            '@privy-io/wagmi',
-            '@farcaster/auth-kit',
-            '@zoralabs/protocol-sdk'
-          ],
+          privy: ['@privy-io/react-auth', '@privy-io/wagmi'],
+          'web3-sdk': ['@farcaster/auth-kit', '@zoralabs/protocol-sdk'],
           // Data fetching and state management
           data: ['@tanstack/react-query', 'axios', 'graphql', 'graphql-request'],
           // Utility libraries
@@ -98,7 +94,7 @@ export default defineConfig({
   plugins: [
     react(),
     nodePolyfills(),
-    visualizer({ template: 'sunburst', gzipSize: true, brotliSize: true }),
+    visualizer({ gzipSize: true, brotliSize: true }),
     VitePWA({
       devOptions: {
         enabled: true
