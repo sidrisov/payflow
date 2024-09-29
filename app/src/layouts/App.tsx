@@ -33,7 +33,7 @@ import { UpdateVersionPrompt } from '../components/UpdateVersionPrompt';
 
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { useMobile, usePwa } from '../utils/hooks/useMobile';
+import { useMiniApp, useMobile, usePwa } from '../utils/hooks/useMobile';
 import Logo from '../components/Logo';
 
 export default function AppLayout({
