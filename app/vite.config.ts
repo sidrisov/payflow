@@ -178,7 +178,7 @@ export default defineConfig({
         name: 'Payflow',
         short_name: 'Payflow',
         description: 'Onchain Social Payments',
-        theme_color: '#000000',
+        theme_color: '#242424',
         display: 'standalone',
         orientation: 'portrait',
         icons: [

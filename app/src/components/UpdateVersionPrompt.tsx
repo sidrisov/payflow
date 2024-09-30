@@ -42,7 +42,8 @@ export const UpdateVersionPrompt = () => {
         backgroundColor: green.A700,
         '&:hover': {
           backgroundColor: green.A400
-        }
+        },
+        zIndex: 1600 // always display on top
       }}
       onClick={onClick}>
       Update
