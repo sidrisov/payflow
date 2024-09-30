@@ -18,6 +18,7 @@ public record Cast(
 		FarcasterUser author,
 		String text,
 		String timestamp,
+		Channel channel,
 		List<Embed> embeds,
 		List<Frame> frames,
 		Reactions reactions,
@@ -71,5 +72,13 @@ public record Cast(
 	}
 
 	public record ViewerContext(boolean following, boolean followedBy) {
+	}
+
+	@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+	public record Channel(
+			String id,
+			String url,
+			String name,
+			String description) {
 	}
 }

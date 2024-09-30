@@ -81,7 +81,8 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 				.bodyToMono(StorageAllocationsResponse.class)
 				.onErrorResume(WebClientResponseException.class, e -> {
 					if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-						log.debug("404 error calling Neynar Storage Allocations API by fid {} - {}", fid, e.getMessage());
+						log.debug("404 error calling Neynar Storage Allocations API by fid {} - {}", fid,
+								e.getMessage());
 						return Mono.empty();
 					}
 					log.debug("Exception calling Neynar Storage Allocations API by fid {} - {}", fid, e.getMessage());
@@ -97,18 +98,25 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 
 	@Override
 	@Retryable
-	public ValidatedFrameResponseMessage validateFrameMessageWithNeynar(String frameMessageInHex) {
+	public ValidatedFrameResponseMessage validateFrameMessageWithNeynar(String frameMessageInHex,
+	                                                                    boolean includeChannelContext) {
 		log.debug("Calling Neynar Frame Validate API for message {}",
 				frameMessageInHex);
 		try {
 			return neynarClient.post()
 					.uri("/frame/validate")
-					.bodyValue(new ValidateMessageRequest(true, false, true, frameMessageInHex))
+					.bodyValue(new ValidateMessageRequest(true, false, true,
+							includeChannelContext, frameMessageInHex))
 					.retrieve().bodyToMono(ValidatedFrameResponseMessage.class).block();
 		} catch (Throwable t) {
 			log.debug("Exception calling Neynar Frame Validate API: {}", t.getMessage());
 			throw t;
 		}
+	}
+
+	@Override
+	public ValidatedFrameResponseMessage validateFrameMessageWithNeynar(String frameMessageInHex) {
+		return validateFrameMessageWithNeynar(frameMessageInHex, false);
 	}
 
 	@Override
@@ -237,7 +245,7 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 				.blockOptional()
 				.map(FarcasterUsersResponseMessage::users)
 				.filter(users -> !users.isEmpty())
-				.map(List::getFirst)  // Get only the first user
+				.map(List::getFirst) // Get only the first user
 				.orElse(null);
 	}
 
@@ -291,7 +299,8 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 				.bodyToMono(SubscriptionsCreatedMessage.class)
 				.onErrorResume(WebClientResponseException.class, e -> {
 					if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-						log.debug("404 error calling Neynar Created Subscriptions API by fid {} - {}", fid, e.getMessage());
+						log.debug("404 error calling Neynar Created Subscriptions API by fid {} - {}", fid,
+								e.getMessage());
 						return Mono.empty();
 					}
 					log.debug("Exception calling Neynar Created Subscriptions API by fid {} - {}", fid, e.getMessage());
@@ -308,8 +317,7 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 
 	@Override
 	public List<SubscribersMessage.Subscriber> subscribers(int fid, boolean fabric) {
-		log.debug("Calling Neynar Subscribers[{}] API by fid {}", fabric ? "Hypersub" :
-				"Paragraph", fid);
+		log.debug("Calling Neynar Subscribers[{}] API by fid {}", fabric ? "Hypersub" : "Paragraph", fid);
 		return neynarClient.get()
 				.uri(uriBuilder -> uriBuilder.path("/user/subscribers")
 						.queryParam("fid", fabric && fid == 19129 ? 576 : fid)
@@ -323,7 +331,8 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 				.bodyToMono(SubscribersMessage.class)
 				.onErrorResume(WebClientResponseException.class, e -> {
 					if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-						log.debug("404 error calling Neynar Created Subscriptions API by fid {} - {}", fid, e.getMessage());
+						log.debug("404 error calling Neynar Created Subscriptions API by fid {} - {}", fid,
+								e.getMessage());
 						return Mono.empty();
 					}
 					log.debug("Exception calling Neynar Created Subscriptions API by fid {} - {}", fid, e.getMessage());

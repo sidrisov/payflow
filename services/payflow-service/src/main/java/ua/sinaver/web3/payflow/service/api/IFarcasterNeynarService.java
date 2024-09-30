@@ -12,6 +12,9 @@ public interface IFarcasterNeynarService {
 
 	StorageAllocationsResponse fetchStorageAllocations(int fid);
 
+	ValidatedFrameResponseMessage validateFrameMessageWithNeynar(String frameMessageInHex,
+	                                                             boolean includeChannelContext);
+
 	ValidatedFrameResponseMessage validateFrameMessageWithNeynar(String frameMessageInHex);
 
 	CastResponseMessage cast(String signer, String message, String parentHash,

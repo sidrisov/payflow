@@ -118,6 +118,7 @@ public class PaymentComposerController {
 					yield UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 							.path("/payment/{refId}")
 							.queryParam("access_token", accessToken)
+							.queryParam("view", "embedded")
 							.buildAndExpand(refId)
 							.toUriString();
 				} else {

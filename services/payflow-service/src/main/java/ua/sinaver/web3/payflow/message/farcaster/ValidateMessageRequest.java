@@ -8,6 +8,7 @@ public record ValidateMessageRequest(
 		boolean castReactionContext,
 		boolean followContext,
 		boolean signerContext,
+		boolean includeChannelContext,
 		String messageBytesInHex
 ) {
 }

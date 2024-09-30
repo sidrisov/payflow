@@ -61,4 +61,21 @@ public class FanTokenService {
 			throw t;
 		}
 	}
+
+	/*public String fetchFanTokenContractAddress(String name) {
+		log.debug("Fetching fan token info: {}", name);
+
+		try {
+			var fanTokenHolders = socialGraphService.getFanToken(name);
+
+			log.debug("Total fan token holders: {} for fname: {}", fanTokenHolders.size(),
+					fname);
+
+			return fanTokenHolders;
+		} catch (Throwable t) {
+			log.error("Exception fetching fan token holders for identity: {}, error: {}",
+					identity, t.getMessage());
+			throw t;
+		}
+	}*/
 }

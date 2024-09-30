@@ -1,24 +1,24 @@
 query GetSocialMetadataByIdentity($identity: Identity!) {
-    Wallet(input: {identity: $identity}) {
-        addresses
-        primaryDomain {
-            name
-        }
-        domains(input: { limit: 1 }) {
-            name
-        }
-        socials(input: {limit: 5, filter: {followerCount: {_gt: 5}}}) {
-            dappName
-            profileName
-            profileDisplayName
-            profileImage
-            profileImageContentValue {
-                image {
-                    small
-                }
-            }
-            userId
-            followerCount
-        }
+  Wallet(input: { identity: $identity }) {
+    addresses
+    primaryDomain {
+      name
     }
+    domains(input: { limit: 1 }) {
+      name
+    }
+    socials(input: { limit: 5, filter: { followerCount: { _gt: 5 } } }) {
+      dappName
+      profileName
+      profileDisplayName
+      profileImage
+      profileImageContentValue {
+        image {
+          extraSmall
+        }
+      }
+      userId
+      followerCount
+    }
+  }
 }
