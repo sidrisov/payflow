@@ -1,15 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, Tab, Box } from '@mui/material';
 import { green } from '@mui/material/colors';
 import { MoxieInfoCard } from '../cards/MoxieInfoCard';
 import { DegenInfoCard } from '../cards/DegenInfoCard';
 
 interface UsefulTabsProps {
-  initialTab?: number;
+  tab?: string;
 }
 
-export function UsefulTabs({ initialTab = 0 }: UsefulTabsProps) {
-  const [activeTab, setActiveTab] = useState(initialTab);
+const getTabIndex = (tab: string | undefined): number => {
+  switch (tab?.toLowerCase()) {
+    case 'degen':
+      return 0;
+    case 'moxie':
+      return 1;
+    default:
+      return 0;
+  }
+};
+
+export function UsefulTabs({ tab }: UsefulTabsProps) {
+  const [activeTab, setActiveTab] = useState(getTabIndex(tab));
+
+  useEffect(() => {
+    const tabIndex = getTabIndex(tab);
+    setActiveTab(tabIndex);
+  }, [tab]);
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);

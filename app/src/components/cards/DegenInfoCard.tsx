@@ -101,34 +101,6 @@ export function DegenInfoCard() {
 
   return (
     <InfoCard title="🎩 Degen Center" rightComponent={claimingOpenComponent}>
-      <InfoStack title="Everyday Allowance">
-        {isFetchingAllowance || !fid ? (
-          <Skeleton variant="rectangular" height={55} width={100} sx={{ borderRadius: '15px' }} />
-        ) : allowance ? (
-          <Typography m={1} p={1} variant="h4" fontWeight="bold">
-            {formatAmountWithSuffix(allowance.remaining_tip_allowance)} /{' '}
-            {formatAmountWithSuffix(allowance.tip_allowance)}
-          </Typography>
-        ) : (
-          <Typography variant="subtitle2" color="inherit">
-            {!allowanceError ? (
-              'Allowance not available'
-            ) : (
-              <>
-                {allowanceError.message}
-                {'! '}
-                <a
-                  href="https://warpcast.com/~/inbox/create/19129"
-                  target="_blank"
-                  style={{ color: 'inherit' }}>
-                  Contact Support
-                </a>{' '}
-                💬
-              </>
-            )}
-          </Typography>
-        )}
-      </InfoStack>
       {season && (
         <InfoStack title={`${season.name} Points`}>
           <Stack
@@ -197,6 +169,34 @@ export function DegenInfoCard() {
           </Stack>
         </InfoStack>
       )}
+      <InfoStack title="Everyday Allowance">
+        {isFetchingAllowance || !fid ? (
+          <Skeleton variant="rectangular" height={55} width={100} sx={{ borderRadius: '15px' }} />
+        ) : allowance ? (
+          <Typography m={1} p={1} variant="h4" fontWeight="bold">
+            {formatAmountWithSuffix(allowance.remaining_tip_allowance)} /{' '}
+            {formatAmountWithSuffix(allowance.tip_allowance)}
+          </Typography>
+        ) : (
+          <Typography variant="subtitle2" color="inherit">
+            {!allowanceError ? (
+              'Allowance not available'
+            ) : (
+              <>
+                {allowanceError.message}
+                {'! '}
+                <a
+                  href="https://warpcast.com/~/inbox/create/19129"
+                  target="_blank"
+                  style={{ color: 'inherit' }}>
+                  Contact Support
+                </a>{' '}
+                💬
+              </>
+            )}
+          </Typography>
+        )}
+      </InfoStack>
       {season && openClaimPointsDialog && degenPoints && (
         <ClaimDegenPointsDialog
           degenPoints={degenPoints}

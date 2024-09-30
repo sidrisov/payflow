@@ -2,11 +2,13 @@ import React from 'react';
 import { Dialog, DialogContent, DialogProps } from '@mui/material';
 import { UsefulTabs } from '../useful/UsefulTabs';
 import { useMobile } from '../../utils/hooks/useMobile';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 export type UsefulComposerActionDialogProps = DialogProps;
 
 export default function UsefulComposerActionDialog({ ...props }: UsefulComposerActionDialogProps) {
   const isMobile = useMobile();
+  const tab = useSearchParams()[0].get('tab') ?? undefined;
 
   return (
     <Dialog
@@ -26,7 +28,7 @@ export default function UsefulComposerActionDialog({ ...props }: UsefulComposerA
         backdropFilter: 'blur(5px)'
       }}>
       <DialogContent>
-        <UsefulTabs />
+        <UsefulTabs tab={tab} />
       </DialogContent>
     </Dialog>
   );

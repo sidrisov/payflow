@@ -47,6 +47,51 @@ export function MoxieInfoCard() {
 
   return (
     <InfoCard title="Ⓜ️ Moxie Center">
+      <InfoStack title="Claimable /  Total Rewards">
+        {isFetchingRewards || !fid ? (
+          <Skeleton variant="rectangular" height={55} width={100} sx={{ borderRadius: '15px' }} />
+        ) : rewards ? (
+          <Typography
+            m={1}
+            variant="h4"
+            fontWeight="bold"
+            {...(rewards.availableClaimAmount > 0 && {
+              component: Button,
+              onClick: () => setOpenClaimRewardsDialog(true)
+            })}
+            sx={{
+              ...(rewards.availableClaimAmount > 0 && {
+                color: 'inherit',
+                borderRadius: 5,
+                border: 2,
+                borderColor: 'divider',
+                textTransform: 'none',
+                borderStyle: 'dotted'
+              })
+            }}>
+            {formatAmountWithSuffix(normalizeNumberPrecision(rewards.availableClaimAmount))} /{' '}
+            {formatAmountWithSuffix(normalizeNumberPrecision(rewards.claimedAmount))}
+          </Typography>
+        ) : (
+          <Typography variant="subtitle2" color="inherit">
+            {!rewardsError ? (
+              'Unable to fetch reward information'
+            ) : (
+              <>
+                {rewardsError.message}
+                {'! '}
+                <a
+                  href="https://warpcast.com/~/inbox/create/19129"
+                  target="_blank"
+                  style={{ color: 'inherit' }}>
+                  Contact Support
+                </a>{' '}
+                💬
+              </>
+            )}
+          </Typography>
+        )}
+      </InfoStack>
       <InfoStack title="Auctions among contacts">
         {isFetchingAuctions ? (
           <Skeleton
@@ -160,51 +205,7 @@ export function MoxieInfoCard() {
           </Typography>
         )}
       </InfoStack>
-      <InfoStack title="Claimable /  Total Rewards">
-        {isFetchingRewards || !fid ? (
-          <Skeleton variant="rectangular" height={55} width={100} sx={{ borderRadius: '15px' }} />
-        ) : rewards ? (
-          <Typography
-            m={1}
-            variant="h4"
-            fontWeight="bold"
-            {...(rewards.availableClaimAmount > 0 && {
-              component: Button,
-              onClick: () => setOpenClaimRewardsDialog(true)
-            })}
-            sx={{
-              ...(rewards.availableClaimAmount > 0 && {
-                color: 'inherit',
-                borderRadius: 5,
-                border: 2,
-                borderColor: 'divider',
-                textTransform: 'none',
-                borderStyle: 'dotted'
-              })
-            }}>
-            {formatAmountWithSuffix(normalizeNumberPrecision(rewards.availableClaimAmount))} /{' '}
-            {formatAmountWithSuffix(normalizeNumberPrecision(rewards.claimedAmount))}
-          </Typography>
-        ) : (
-          <Typography variant="subtitle2" color="inherit">
-            {!rewardsError ? (
-              'Unable to fetch reward information'
-            ) : (
-              <>
-                {rewardsError.message}
-                {'! '}
-                <a
-                  href="https://warpcast.com/~/inbox/create/19129"
-                  target="_blank"
-                  style={{ color: 'inherit' }}>
-                  Contact Support
-                </a>{' '}
-                💬
-              </>
-            )}
-          </Typography>
-        )}
-      </InfoStack>
+
       {openClaimRewardsDialog && fid && (
         <ClaimMoxieRewardsDialog
           fid={fid}

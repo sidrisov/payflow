@@ -191,7 +191,7 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 		log.error("Failed to fetch fan token holders for token name: {}", fanTokenName);
 		return Collections.emptyList();
 	}
-	
+
 	@Override
 	public FarcasterCast getReplySocialCapitalValue(String hash) {
 		try {
@@ -220,6 +220,12 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 		log.error("Failed to fetch reply SCV for hash: {} ", hash);
 		return null;
 
+	}
+
+	@Override
+	@CacheEvict(value = FARCASTER_VERIFICATIONS_CACHE_NAME)
+	public void cleanIdentityVerifiedAddressesCache(String identity) {
+		log.debug("Cleared verification cache for {}", identity);
 	}
 
 	@Override

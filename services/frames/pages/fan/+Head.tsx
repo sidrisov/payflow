@@ -13,7 +13,7 @@ export function Head() {
     if (id.includes(':')) {
       const [type, name] = id.split(':');
       if (type.toLowerCase() === 'network') {
-        return `network:${name}`;
+        return `${name}`;
       } else if (type.toLowerCase() === 'channel') {
         return `/${name}`;
       }

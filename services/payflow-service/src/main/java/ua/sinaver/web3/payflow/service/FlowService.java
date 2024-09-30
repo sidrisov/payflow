@@ -4,7 +4,6 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ua.sinaver.web3.payflow.data.Flow;
 import ua.sinaver.web3.payflow.data.Jar;
@@ -44,6 +43,9 @@ public class FlowService implements IFlowService {
 
 	@Autowired
 	private IdentityService identityService;
+
+	@Autowired
+	private AirstackSocialGraphService socialGraphService;
 
 	@Override
 	public Jar createJar(String title, String description, String image, String source, User user) {
@@ -100,6 +102,7 @@ public class FlowService implements IFlowService {
 			flows.addAll(nativeFlows);
 		}
 
+		socialGraphService.cleanIdentityVerifiedAddressesCache(user.getIdentity());
 		val verifications = identityService.getIdentityAddresses(user.getIdentity());
 		if (verifications != null && !verifications.isEmpty()) {
 			val verificationFlows = verifications.stream()
@@ -226,7 +229,7 @@ public class FlowService implements IFlowService {
 				.toList();
 	}
 
-	@Scheduled(initialDelay = 30 * 1000, fixedRate = 24 * 60 * 60 * 1000)
+	//@Scheduled(initialDelay = 30 * 1000, fixedRate = 24 * 60 * 60 * 1000)
 	public void printOwnersOfLegacyFlows() {
 		val legacyFlows = getOwnersOfLegacyFlows();
 		val ownersFarcaster = legacyFlows.stream()

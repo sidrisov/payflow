@@ -15,8 +15,10 @@ public interface ISocialGraphService {
 	List<FarcasterFanTokenAuction> getFanTokenAuctions(List<String> farcasterUsernames);
 
 	List<String> getFanTokenHolders(String fanTokenName);
-	
+
 	FarcasterCast getReplySocialCapitalValue(String hash);
+
+	void cleanIdentityVerifiedAddressesCache(String identity);
 
 	ConnectedAddresses getIdentityVerifiedAddresses(String identity);
 

@@ -87,12 +87,12 @@ export default defineConfig({
     },
     target: 'es2020',
     minify: 'terser',
-    terserOptions: {
+    /*     terserOptions: {
       compress: {
         drop_console: true,
         drop_debugger: true
       }
-    },
+    }, */
     sourcemap: false,
     chunkSizeWarningLimit: 1000
   },

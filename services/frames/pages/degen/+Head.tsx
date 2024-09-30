@@ -1,7 +1,7 @@
 import { API_URL, DAPP_URL } from '../../utils/constants';
 
 export function Head() {
-  const miniAppUrl = `${API_URL}/api/farcaster/composer/pay?action=useful`;
+  const miniAppUrl = `${API_URL}/api/farcaster/composer/pay?action=degen`;
   const miniAppDeeplink = `https://warpcast.com/~/composer-action?url=${encodeURIComponent(miniAppUrl)}&view=prompt`;
 
   const imageUrl = 'https://i.imgur.com/FMusAac.png';

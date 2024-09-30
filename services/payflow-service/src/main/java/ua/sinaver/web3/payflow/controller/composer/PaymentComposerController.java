@@ -113,6 +113,14 @@ public class PaymentComposerController {
 					.queryParam("access_token", accessToken)
 					.build()
 					.toUriString();
+			case "degen", "moxie" ->
+					UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
+							.path("/composer")
+							.queryParam("action", "useful")
+							.queryParam("tab", action)
+							.queryParam("access_token", accessToken)
+							.build()
+							.toUriString();
 			case "payment" -> {
 				if (StringUtils.isNotBlank(refId)) {
 					yield UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
