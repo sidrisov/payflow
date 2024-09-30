@@ -7,10 +7,10 @@ export default function Page() {
       </ul>
 
       <img
-        src="https://i.imgur.com/FMusAac.png"
+        src="https://i.imgur.com/820tSXJ.png"
         width={500}
         height={500}
-        alt="Claim Degen on Payflow"
+        alt="Claim Moxie on Payflow"
         className="mt-4 max-w-full h-auto"
       />
     </>

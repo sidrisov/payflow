@@ -12,6 +12,10 @@ interface User {
   wallet: string;
 }
 
+const zapperHeaders = {
+  Authorization: `Basic ${Buffer.from(process.env.ZAPPER_API_KEY + ':').toString('base64')}`
+};
+
 // Read users from JSON file
 const usersFilePath = path.join(__dirname, 'users_test.json');
 const users: User[] = JSON.parse(fs.readFileSync(usersFilePath, 'utf-8'));
@@ -53,18 +57,40 @@ Your balance: ~${balance} USD, you can also check tokens portfolio on Zapper:
 https://zapper.xyz/account/${wallet}?tab=portfolio
 
 Need help? Contact me anytime
-
 Thanks, Sinaver from @payflow
 
 https://warpcast.com/sinaver.eth/0xc909c30e`;
 
+const messageTemplate3 = (username: string, wallet: string, balance: string) => `Hey @${username} 👋🏻
+
+Last reminder to migrate your funds from legacy wallet.
+You have 24 hours left!
+
+Your balance: ~${balance} USD, you can also check tokens portfolio on Zapper:
+https://zapper.xyz/account/${wallet}?tab=portfolio
+
+Need help? Contact me anytime
+Thanks, Sinaver from @payflow
+
+https://warpcast.com/sinaver.eth/0xa744c180`;
 const url = 'https://api.warpcast.com/v2/ext-send-direct-cast';
 
-async function sendDirectCast(user: User, balance: number, idempotencyKey: string): Promise<void> {
+async function sendDirectCast(
+  user: User,
+  balance: number,
+  idempotencyKey: string,
+  test: boolean = true
+): Promise<void> {
   const balanceStr = balance.toFixed(2);
-  const message = messageTemplate2(user.username, user.wallet, balanceStr);
+  const message = messageTemplate3(user.username, user.wallet, balanceStr);
 
-  console.log(`Sending direct cast to @${user.username} (FID ${user.fid}): ${message}`);
+  console.log(`Sending direct cast to @${user.username} (FID ${user.fid}): \n${message}`);
+
+  if (test) {
+    console.log('Test mode, skipping actual request');
+    return;
+  }
+
   try {
     const response = await axios.put(
       url,
@@ -99,14 +125,25 @@ async function sendDirectCast(user: User, balance: number, idempotencyKey: strin
   }
 }
 
-async function getZapperBalance(wallet: string): Promise<number> {
+async function getZapperBalance(wallet: string, cached: boolean = true): Promise<number> {
   const zapperUrl = `https://api.zapper.xyz/v2/balances/tokens?addresses[]=${wallet}&networks[]=base&networks[]=optimism`;
 
   try {
+    if (!cached) {
+      await axios.post(
+        zapperUrl,
+        {},
+        {
+          headers: zapperHeaders
+        }
+      );
+
+      // wait for 1 second to make sure zapper has processed the request
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+
     const response = await axios.get(zapperUrl, {
-      headers: {
-        Authorization: `Basic ${Buffer.from(process.env.ZAPPER_API_KEY + ':').toString('base64')}`
-      }
+      headers: zapperHeaders
     });
 
     let totalBalanceUSD = 0;
@@ -118,8 +155,8 @@ async function getZapperBalance(wallet: string): Promise<number> {
     }
 
     return totalBalanceUSD;
-  } catch (error) {
-    console.error(`Error fetching Zapper balance for ${wallet}:`, error);
+  } catch (error: any) {
+    console.error(`Error fetching Zapper balance for ${wallet}:`, error.message);
     return Number.NaN;
   }
 }
@@ -129,8 +166,11 @@ async function main() {
   const totalUsers = users.length;
   let processed = 0;
   let skipped = 0;
+  let skippedUsers: string[] = [];
+  let totalUSDBalance = 0; // New variable to track total USD balance
 
   for (const user of users) {
+    console.log(`======= ${user.username} =======`);
     const balance = await getZapperBalance(user.wallet);
     if (Number.isNaN(balance) || balance < 1) {
       console.log(
@@ -139,16 +179,22 @@ async function main() {
         }`
       );
       skipped++;
+      skippedUsers.push(user.username);
       continue;
     }
-    await sendDirectCast(user, balance, idempotencyKey);
+    totalUSDBalance += balance; // Add user's balance to total
+    await sendDirectCast(user, balance, idempotencyKey, false);
     processed++;
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    console.log(`======= ${user.username} =======\n`);
   }
 
   console.log(
     `Process completed. Total: ${totalUsers}, Processed: ${processed}, Skipped: ${skipped}`
   );
+  console.log(`Total USD balance among all users: $${totalUSDBalance.toFixed(2)}`);
+  console.log('Skipped users:');
+  skippedUsers.forEach((username) => console.log(username));
 }
 
 main().catch((error) => console.error('Main error:', error.message));
