@@ -54,7 +54,7 @@ export default defineConfig({
         format: 'es',
         manualChunks: {
           // Core React dependencies
-          'react-core': ['react', 'react-dom', 'react-router-dom'],
+          'react-core': ['react', 'react-dom', 'react-router-dom', 'react-helmet-async'],
           // UI and styling related
           ui: [
             '@emotion/react',
@@ -63,11 +63,15 @@ export default defineConfig({
             '@mui/icons-material',
             '@mui/lab'
           ],
-          // Web3 core libraries
-          'web3-core': ['viem', 'wagmi', 'permissionless'],
-          // Web3 SDK and additional libraries
-          privy: ['@privy-io/react-auth', '@privy-io/wagmi'],
-          'web3-sdk': ['@farcaster/auth-kit', '@zoralabs/protocol-sdk'],
+          viem: ['viem'],
+          wagmi: ['wagmi'],
+          ethers: ['ethers'],
+          walletconnect: ['@walletconnect/core'],
+          permissionless: ['permissionless'],
+          'privy-auth': ['@privy-io/react-auth'],
+          'privy-wagmi': ['@privy-io/wagmi'],
+          farcaster: ['@farcaster/auth-kit'],
+          zora: ['@zoralabs/protocol-sdk'],
           // Data fetching and state management
           data: ['@tanstack/react-query', 'axios', 'graphql', 'graphql-request'],
           // Utility libraries
@@ -75,7 +79,9 @@ export default defineConfig({
           // Visualization and media
           media: ['react-blockies', 'react-qr-code', 'react-icons'],
           // Third-party services
-          services: ['@airstack/airstack-react', '@paywithglide/glide-js', '@vercel/speed-insights']
+          airstack: ['@airstack/airstack-react'],
+          glide: ['@paywithglide/glide-js'],
+          speedinsights: ['@vercel/speed-insights']
         }
       }
     },
