@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import ua.sinaver.web3.payflow.message.moxie.FanToken;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
 import java.util.Collections;
@@ -62,20 +63,16 @@ public class FanTokenService {
 		}
 	}
 
-	/*public String fetchFanTokenContractAddress(String name) {
+	public FanToken getFanToken(String name) {
 		log.debug("Fetching fan token info: {}", name);
-
 		try {
-			var fanTokenHolders = socialGraphService.getFanToken(name);
-
-			log.debug("Total fan token holders: {} for fname: {}", fanTokenHolders.size(),
-					fname);
-
-			return fanTokenHolders;
+			var fanToken = socialGraphService.getFanToken(name);
+			log.debug("Fetched fan token: {}", fanToken);
+			return fanToken;
 		} catch (Throwable t) {
-			log.error("Exception fetching fan token holders for identity: {}, error: {}",
-					identity, t.getMessage());
+			log.error("Exception fetching fan token: {}, error: {}",
+					name, t.getMessage());
 			throw t;
 		}
-	}*/
+	}
 }

@@ -1,0 +1,9 @@
+query FanToken($name: String) {
+    subjectTokens(where: {name: $name}) {
+        tokenAddress: id
+        name
+        symbol
+        currentPriceInMoxie
+        currentPriceInWeiInMoxie
+    }
+}

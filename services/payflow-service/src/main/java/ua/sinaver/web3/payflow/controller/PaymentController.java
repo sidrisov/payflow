@@ -243,7 +243,7 @@ public class PaymentController {
 					payment.setFulfillmentChainId(paymentUpdateMessage.fulfillmentChainId());
 					payment.setFulfillmentHash(paymentUpdateMessage.fulfillmentHash());
 					payment.setStatus(Payment.PaymentStatus.INPROGRESS);
-					if (payment.getCategory().equals("mint")) {
+					if (List.of("mint", "fan").contains(payment.getCategory())) {
 						payment.setTokenAmount(paymentUpdateMessage.tokenAmount().toString());
 					}
 				}

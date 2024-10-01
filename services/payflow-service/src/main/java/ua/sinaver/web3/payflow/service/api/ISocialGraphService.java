@@ -4,6 +4,7 @@ import ua.sinaver.web3.payflow.graphql.generated.types.FarcasterCast;
 import ua.sinaver.web3.payflow.graphql.generated.types.FarcasterFanTokenAuction;
 import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 import ua.sinaver.web3.payflow.message.ConnectedAddresses;
+import ua.sinaver.web3.payflow.message.moxie.FanToken;
 
 import java.util.List;
 
@@ -13,6 +14,8 @@ public interface ISocialGraphService {
 	FarcasterCast getTopCastReply(String parentHash, List<String> ignoredFids);
 
 	List<FarcasterFanTokenAuction> getFanTokenAuctions(List<String> farcasterUsernames);
+
+	FanToken getFanToken(String name);
 
 	List<String> getFanTokenHolders(String fanTokenName);
 

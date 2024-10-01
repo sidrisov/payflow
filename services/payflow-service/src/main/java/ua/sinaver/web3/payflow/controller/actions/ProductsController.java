@@ -12,14 +12,16 @@ import ua.sinaver.web3.payflow.message.farcaster.Cast;
 import ua.sinaver.web3.payflow.message.farcaster.CastActionMeta;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.message.farcaster.ValidatedFrameResponseMessage;
+import ua.sinaver.web3.payflow.message.moxie.FanToken;
 import ua.sinaver.web3.payflow.message.nft.ParsedMintUrlMessage;
+import ua.sinaver.web3.payflow.service.FanTokenService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
-import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import static ua.sinaver.web3.payflow.service.TokenService.PAYMENT_CHAIN_IDS;
 import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS;
@@ -48,9 +50,10 @@ public class ProductsController {
 	@Autowired
 	private IFarcasterNeynarService neynarService;
 	@Autowired
-	private IIdentityService identityService;
-	@Autowired
 	private PayflowConfig payflowConfig;
+
+	@Autowired
+	private FanTokenService fanTokenService;
 
 	@GetMapping("/{action}")
 	public ResponseEntity<CastActionMeta> getActionMetadata(@PathVariable String action) {
@@ -133,19 +136,24 @@ public class ProductsController {
 	private ResponseEntity<?> processFanTokenAction(ValidatedFrameResponseMessage.Action action) {
 		val castAuthor = action.cast().author() != null ? action.cast().author()
 				: neynarService.fetchFarcasterUser(action.cast().fid());
-		val fanTokenIds = new ArrayList<>();
-		fanTokenIds.add(castAuthor.username());
-		// Add channel option if available
-		if (action.cast().channel() != null) {
-			fanTokenIds.add("channel:" + action.cast().channel().id());
-		}
-		// Always add network:farcaster option
-		fanTokenIds.add("network:farcaster");
 
-		// Construct the fan token frame URL
+		val fanTokens = Stream.of(
+				castAuthor.username(),
+				Optional.ofNullable(action.cast().channel()).map(channel -> "/" + channel.id()).orElse(null),
+				"network:farcaster")
+				.filter(Objects::nonNull)
+				.map(fanTokenService::getFanToken)
+				.filter(Objects::nonNull)
+				.toList();
+
+		if (fanTokens.isEmpty()) {
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameMessage("No fan token found!"));
+		}
+
 		val fanTokenFrameUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getFramesServiceUrl())
 				.path("/fan")
-				.queryParam("ids", fanTokenIds.toArray())
+				.queryParam("names", fanTokens.stream().map(FanToken::name).toArray())
 				.build()
 				.encode()
 				.toUriString();

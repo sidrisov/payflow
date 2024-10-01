@@ -6,19 +6,16 @@ export function Head() {
 
   const { urlParsed } = usePageContext();
 
-  // Parse the ids from the query parameter, no defaults
-  const ids = urlParsed.searchAll.ids ? urlParsed.searchAll.ids : [];
+  // Parse the names from the query parameter, no defaults
+  const names = urlParsed.searchAll.names ? urlParsed.searchAll.names : [];
 
-  const getButtonContent = (id: string) => {
-    if (id.includes(':')) {
-      const [type, name] = id.split(':');
-      if (type.toLowerCase() === 'network') {
-        return `${name}`;
-      } else if (type.toLowerCase() === 'channel') {
-        return `/${name}`;
-      }
+  const getButtonContent = (name: string) => {
+    if (name.startsWith('network:')) {
+      return name.split(':')[1];
+    } else if (name.startsWith('/')) {
+      return name;
     }
-    return `@${id}`;
+    return `@${name}`;
   };
 
   return (
@@ -62,13 +59,13 @@ export function Head() {
         <meta property="fc:frame:image" content={imageUrl} />
         <meta property="fc:frame:input:text" content="Gift username (blank for self)" />
 
-        {ids.map((id, index) => (
+        {names.map((name, index) => (
           <>
-            <meta property={`fc:frame:button:${index + 1}`} content={getButtonContent(id)} />
-            <meta property={`fc:frame:button:${index + 1}:action`} content="post" />
+            <meta property={`fc:frame:button:${index + 1}`} content={getButtonContent(name)} />
+            <meta property={`fc:frame:button:${index + 1}:action`} content="post_redirect" />
             <meta
               property={`fc:frame:button:${index + 1}:target`}
-              content={`${API_URL}/api/farcaster/frames/fan/${id}/submit`}
+              content={`${API_URL}/api/farcaster/frames/fan/${name}/submit`}
             />
           </>
         ))}

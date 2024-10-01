@@ -27,10 +27,9 @@ import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
+import static ua.sinaver.web3.payflow.config.PayflowConfig.MINIAPP_REDIRECT_ALLOWLIST;
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.DEFAULT_HTML_RESPONSE;
 import static ua.sinaver.web3.payflow.service.TokenService.ETH_TOKEN;
 import static ua.sinaver.web3.payflow.service.TokenService.OP_CHAIN_ID;
@@ -41,7 +40,6 @@ import static ua.sinaver.web3.payflow.service.TokenService.OP_CHAIN_ID;
 @Slf4j
 public class StorageController {
 
-	private static final List<String> miniAppAllowlist = Collections.singletonList("sinaver.eth");
 	private static final String STORAGE_FRAME_API_BASE = "/api/farcaster/frames/storage";
 	@Autowired
 	private IFarcasterNeynarService neynarService;
@@ -140,7 +138,7 @@ public class StorageController {
 		log.debug("Gift storage payment intent saved: {}", payment);
 
 		val miniAppRedirect = validateMessage.action().signer().client().username().equals("warpcast") &&
-				miniAppAllowlist.contains(interactor.username());
+				MINIAPP_REDIRECT_ALLOWLIST.contains(interactor.username());
 		val paymentLink = linkService.paymentLink(payment, miniAppRedirect);
 		log.debug("Redirecting to {}", paymentLink);
 		return ResponseEntity.status(HttpStatus.FOUND).location(paymentLink).build();

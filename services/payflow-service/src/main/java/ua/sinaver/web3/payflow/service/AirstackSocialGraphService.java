@@ -14,6 +14,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import ua.sinaver.web3.payflow.graphql.generated.types.*;
 import ua.sinaver.web3.payflow.message.ConnectedAddresses;
+import ua.sinaver.web3.payflow.message.moxie.FanToken;
 import ua.sinaver.web3.payflow.message.moxie.FanTokenHolder;
 import ua.sinaver.web3.payflow.message.moxie.FanTokenLockWallet;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
@@ -33,7 +34,6 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 	private final GraphQlClient airstackGraphQlClient;
 	private final GraphQlClient moxieStatsGraphQlClient;
 	private final GraphQlClient moxieVestingGraphQlClient;
-
 
 	@Value("${payflow.airstack.contacts.limit:10}")
 	private int contactsLimit;
@@ -66,11 +66,9 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 
 	@Override
 	public List<String> getSocialFollowings(String identity) {
-		val identityLimitAdjusted = contactsLimit * (whitelistedUsers.contains(identity) ?
-				3 : 1);
+		val identityLimitAdjusted = contactsLimit * (whitelistedUsers.contains(identity) ? 3 : 1);
 
-		val addressesLimitAdjusted = contactsLimit * (whitelistedUsers.contains(identity) ?
-				5 : 2);
+		val addressesLimitAdjusted = contactsLimit * (whitelistedUsers.contains(identity) ? 5 : 2);
 
 		val topFollowingsResponse = airstackGraphQlClient.documentName("getSocialFollowings")
 				.variable("identity", identity)
@@ -114,7 +112,7 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 					log.isTraceEnabled() ? t : null);
 		}
 
-		log.error("Failed to fetch top cast reply for hash: {} ", parentHash);
+		log.warn("Failed to fetch top cast reply for hash: {} ", parentHash);
 		return null;
 
 	}
@@ -142,8 +140,35 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 					log.isTraceEnabled() ? t : null);
 		}
 
-		log.error("Failed to fetch fan tokens for farcaster usernames: {}", farcasterUsernames);
+		log.warn("Failed to fetch fan tokens for farcaster usernames: {}", farcasterUsernames);
 		return Collections.emptyList();
+	}
+
+	@Override
+	public FanToken getFanToken(String name) {
+		try {
+			val response = moxieStatsGraphQlClient.documentName("getFanToken")
+					.variable("name", name)
+					.execute().block();
+			if (response != null) {
+				log.debug("Response: {}", response);
+				val subjectTokens = response.field("subjectTokens")
+						.toEntityList(FanToken.class);
+				if (!subjectTokens.isEmpty()) {
+					val fanToken = subjectTokens.getFirst();
+					log.debug("Fetched fan token: {}", fanToken);
+					return fanToken;
+				}
+			}
+		} catch (Throwable t) {
+			log.error("Error during fetching fan token for name: {}, error: {} - {}",
+					name,
+					t.getMessage(),
+					log.isTraceEnabled() ? t : null);
+		}
+
+		log.warn("Failed to fetch fan token for name: {}", name);
+		return null;
 	}
 
 	@Override
@@ -173,8 +198,7 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 							.toEntityList(FanTokenLockWallet.class)
 							.stream().collect(Collectors.toMap(
 									FanTokenLockWallet::address,
-									FanTokenLockWallet::beneficiary
-							));
+									FanTokenLockWallet::beneficiary));
 
 					return holders.stream().map(holder -> lockWalletsMap.getOrDefault(holder,
 							holder)).collect(Collectors.toList());
@@ -188,7 +212,7 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 					log.isTraceEnabled() ? t : null);
 		}
 
-		log.error("Failed to fetch fan token holders for token name: {}", fanTokenName);
+		log.warn("Failed to fetch fan token holders for token name: {}", fanTokenName);
 		return Collections.emptyList();
 	}
 
@@ -217,7 +241,7 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 					log.isTraceEnabled() ? t : null);
 		}
 
-		log.error("Failed to fetch reply SCV for hash: {} ", hash);
+		log.warn("Failed to fetch reply SCV for hash: {} ", hash);
 		return null;
 
 	}
@@ -246,8 +270,8 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 				.map(s -> new ConnectedAddresses(s.getUserAddress(),
 						s.getUserAssociatedAddresses().stream()
 								.filter(address -> address.startsWith("0x"))
-								.toList())
-				).orElse(null);
+								.toList()))
+				.orElse(null);
 		log.debug("Found verified addresses for {} - {}", verifiedAddresses, identity);
 		return verifiedAddresses;
 	}
@@ -290,7 +314,6 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 		return null;
 	}
 
-
 	@Override
 	@Cacheable(cacheNames = SOCIALS_INSIGHTS_CACHE_NAME, unless = "#result==null")
 	public Wallet getSocialInsights(String identity, String me) {
@@ -316,19 +339,15 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 				val wallet = socialMetadataResponse.field("Wallet").toEntity(Wallet.class);
 
 				if (wallet != null) {
-					val followings =
-							socialMetadataResponse.field("Wallet.socialFollowings.Following")
-									.toEntityList(SocialFollowing.class);
+					val followings = socialMetadataResponse.field("Wallet.socialFollowings.Following")
+							.toEntityList(SocialFollowing.class);
 
-					val followers =
-							socialMetadataResponse.field("Wallet.socialFollowers.Follower")
-									.toEntityList(SocialFollower.class);
+					val followers = socialMetadataResponse.field("Wallet.socialFollowers.Follower")
+							.toEntityList(SocialFollower.class);
 
-					val socialFollowings =
-							new SocialFollowingOutput.Builder().Following(followings).build();
+					val socialFollowings = new SocialFollowingOutput.Builder().Following(followings).build();
 
-					val socialFollowers =
-							new SocialFollowerOutput.Builder().Follower(followers).build();
+					val socialFollowers = new SocialFollowerOutput.Builder().Follower(followers).build();
 
 					wallet.setSocialFollowings(socialFollowings);
 					wallet.setSocialFollowers(socialFollowers);

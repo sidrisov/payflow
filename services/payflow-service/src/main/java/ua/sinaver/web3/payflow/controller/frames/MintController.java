@@ -23,8 +23,12 @@ import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 import ua.sinaver.web3.payflow.utils.MintUrlUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Optional;
 
+import static ua.sinaver.web3.payflow.config.PayflowConfig.MINIAPP_REDIRECT_ALLOWLIST;
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.DEFAULT_HTML_RESPONSE;
 import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS;
 
@@ -33,7 +37,6 @@ import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYME
 @Transactional
 @Slf4j
 public class MintController {
-	private static final List<String> miniAppAllowlist = Collections.singletonList("sinaver.eth");
 	@Autowired
 	private IFarcasterNeynarService neynarService;
 	@Autowired
@@ -188,7 +191,7 @@ public class MintController {
 		log.debug("Mint payment intents saved: {}", payments);
 
 		val miniAppRedirect = validateMessage.action().signer().client().username().equals("warpcast") &&
-				miniAppAllowlist.contains(interactor.username());
+				MINIAPP_REDIRECT_ALLOWLIST.contains(interactor.username());
 		val paymentLink = linkService.paymentLink(payments.getFirst(), miniAppRedirect);
 		log.debug("Redirecting to {}", paymentLink);
 		return ResponseEntity.status(HttpStatus.FOUND).location(paymentLink).build();
