@@ -48,7 +48,7 @@ public class UserController {
 		log.trace("{} fetching its profile info", principal.getName());
 		val user = userService.findByIdentity(principal.getName());
 		if (user != null) {
-			user.setLastSeen(new Date());
+			userService.updateLastSeen(user);
 			return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
 					user.getIdentity(),
 					user.getSigner(),

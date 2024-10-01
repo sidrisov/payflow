@@ -7,6 +7,8 @@ import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.WalletUtils;
 import ua.sinaver.web3.payflow.config.PayflowConfig;
@@ -22,6 +24,7 @@ import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
 import ua.sinaver.web3.payflow.service.api.IUserService;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -117,9 +120,18 @@ public class UserService implements IUserService {
 	}
 
 	@Override
+	@Transactional(dontRollbackOn = OptimisticLockingFailureException.class)
+	@Retryable(retryFor = OptimisticLockingFailureException.class)
 	public void updateLastSeen(User user) {
-		user.setLastSeen(new Date());
-		userRepository.save(user);
+		Date currentTime = new Date();
+		Date lastSeenTime = user.getLastSeen();
+
+		if (lastSeenTime == null || Duration.between(
+						lastSeenTime.toInstant(), currentTime.toInstant())
+				.toHours() >= 1) {
+			user.setLastSeen(currentTime);
+			userRepository.save(user);
+		}
 	}
 
 	@Override

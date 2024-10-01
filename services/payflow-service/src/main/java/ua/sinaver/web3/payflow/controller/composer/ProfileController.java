@@ -73,7 +73,6 @@ public class ProfileController {
 				identityService.getProfiles(validateMessage.action().interactor().addressesWithoutCustodialIfAvailable()).stream().findFirst().orElse(null);
 		var accessToken = "";
 		if (profile == null) {
-
 			// for now invite first
 			val identityToCreateProfile = identityService.getIdentitiesInfo(validateMessage.action().interactor().addressesWithoutCustodialIfAvailable())
 					.stream().max(Comparator.comparingInt(IdentityMessage::score))
@@ -113,7 +112,6 @@ public class ProfileController {
 				recipient = determineRecipientIdentity(parentCast.author());
 			}
 		}
-
 
 		val paymentFormUrl = UriComponentsBuilder.newInstance()
 				.scheme("https").host("app.payflow.me")
