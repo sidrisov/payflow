@@ -5,14 +5,15 @@ import {
   Stack,
   Box,
   Typography,
-  Skeleton
+  Skeleton,
+  IconButton
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { getPaymentOption } from '../../utils/glide';
 import { useChainId } from 'wagmi';
-import { BackDialogTitle } from './BackDialogTitle';
+import { BackDialogTitle } from '../dialogs/BackDialogTitle';
 import { SenderField } from '../SenderField';
-import { KeyboardDoubleArrowDown } from '@mui/icons-material';
+import { KeyboardDoubleArrowDown, Add, Remove } from '@mui/icons-material';
 import { SelectedIdentityType } from '../../types/ProfileType';
 import { FarcasterRecipientField } from '../FarcasterRecipientField';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
@@ -25,20 +26,22 @@ import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
 import { toast } from 'react-toastify';
 import { Social } from '../../generated/graphql/types';
 import { red } from '@mui/material/colors';
-import { ChooseFlowDialog } from './ChooseFlowDialog';
-import { UpSlideTransition } from './TransitionDownUpSlide';
+import { ChooseFlowDialog } from '../dialogs/ChooseFlowDialog';
+import { UpSlideTransition } from '../dialogs/TransitionDownUpSlide';
 import PoweredByGlideText from '../text/PoweredByGlideText';
 import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
 import { PayButton } from '../buttons/PayButton';
 import { useStoragePaymentTx } from '../../utils/hooks/useStoragePaymentTx';
 import { useMobile } from '../../utils/hooks/useMobile';
-import PaymentSuccessDialog from './PaymentSuccessDialog';
+import PaymentSuccessDialog from '../dialogs/PaymentSuccessDialog';
 import { getReceiptUrl } from '../../utils/receipts';
+import { useFanTokenPaymentTx } from '../../utils/hooks/useFanTokenPaymentTx';
 
-export type BuyStorageDialogProps = DialogProps &
+export type BuyFanTokenDialogProps = DialogProps &
   CloseCallbackType & {
     sender: SelectedIdentityType;
     payment: PaymentType;
+    senderSocial: Social;
     recipientSocial: Social;
   } & {
     alwaysShowBackButton?: boolean;
@@ -47,17 +50,18 @@ export type BuyStorageDialogProps = DialogProps &
     setSelectedFlow?: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
   };
 
-export default function BuyStorageDialog({
+export default function BuyFanTokenDialog({
   alwaysShowBackButton = false,
   sender,
   payment,
+  senderSocial,
   recipientSocial,
   closeStateCallback,
   flows,
   selectedFlow,
   setSelectedFlow,
   ...props
-}: BuyStorageDialogProps) {
+}: BuyFanTokenDialogProps) {
   const isMobile = useMobile();
 
   const [openSelectFlow, setOpenSelectFlow] = useState(false);
@@ -74,12 +78,14 @@ export default function BuyStorageDialog({
   const [paymentWallet, setPaymentWallet] = useState<FlowWalletType>();
   const [paymentToken, setPaymentToken] = useState<Token>();
 
-  const numberOfUnits = payment.tokenAmount ?? 1;
+  const [fanTokenAmount, setFanTokenAmount] = useState(payment.tokenAmount ?? 1);
 
-  const { isLoading: isPaymentTxLoading, data: paymentTx } = useStoragePaymentTx(
-    numberOfUnits,
-    payment.receiverFid
+  const { isLoading: isPaymentTxLoading, data: paymentTx } = useFanTokenPaymentTx(
+    '0x248139a7a8862c7e8376e714784b643dc36d4000',
+    fanTokenAmount
   );
+
+  console.log('Payment Tx: ', isPaymentTxLoading, paymentTx);
 
   const {
     isLoading: isPaymentOptionsLoading,
@@ -116,9 +122,9 @@ export default function BuyStorageDialog({
 
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
-  const successMessage = `Successfully bought ${numberOfUnits} unit${
-    numberOfUnits > 1 ? 's' : ''
-  } of storage for @${recipientSocial.profileName}`;
+  const successMessage = `Successfully bought ${fanTokenAmount} fan token${
+    fanTokenAmount > 1 ? 's' : ''
+  } for @${recipientSocial.profileName}`;
   const receiptUrl = getReceiptUrl(payment, false);
 
   return (
@@ -145,7 +151,7 @@ export default function BuyStorageDialog({
           {...(isMobile && { TransitionComponent: UpSlideTransition })}>
           <BackDialogTitle
             showOnDesktop={alwaysShowBackButton}
-            title={props.title ?? 'Farcaster Storage'}
+            title={props.title ?? 'Buy Fan Tokens'}
             closeStateCallback={closeStateCallback}
           />
           <DialogContent
@@ -173,8 +179,20 @@ export default function BuyStorageDialog({
               justifyContent="space-between">
               <Stack alignItems="center" justifyContent="start" spacing={1}>
                 <Typography fontSize={18} fontWeight="bold">
-                  {numberOfUnits} Unit{numberOfUnits > 1 ? 's' : ''} of Storage
+                  {payment.token}
                 </Typography>
+
+                <Stack direction="row" alignItems="center" spacing={2} mb={1}>
+                  <IconButton onClick={() => setFanTokenAmount((prev) => Math.max(prev - 1, 1))}>
+                    <Remove fontSize="small" sx={{ color: 'text.secondary' }} />
+                  </IconButton>
+                  <Typography variant="h5" fontWeight="bold">
+                    {fanTokenAmount}
+                  </Typography>
+                  <IconButton onClick={() => setFanTokenAmount((prev) => Math.min(prev + 1, 10))}>
+                    <Add fontSize="small" sx={{ color: 'text.secondary' }} />
+                  </IconButton>
+                </Stack>
 
                 {isLoading ? (
                   <Skeleton
@@ -185,7 +203,9 @@ export default function BuyStorageDialog({
                 ) : hasPaymentOption ? (
                   <Typography fontSize={30} fontWeight="bold" textAlign="center">
                     {formatAmountWithSuffix(
-                      normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
+                      normalizeNumberPrecision(
+                        parseFloat(paymentOption.paymentAmount) * fanTokenAmount
+                      )
                     )}{' '}
                     {paymentToken?.id.toUpperCase()}
                   </Typography>
@@ -193,7 +213,7 @@ export default function BuyStorageDialog({
                   <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
                     {isPaymentOptionsError
                       ? 'Failed to fetch payment options. Please try again.'
-                      : "You don't have any balance to cover storage cost. Switch to a different payment flow!"}
+                      : "You don't have any balance to cover the cost. Switch to a different payment flow!"}
                   </Typography>
                 )}
               </Stack>
@@ -216,19 +236,19 @@ export default function BuyStorageDialog({
             <Box display="flex" flexDirection="column" alignItems="center" width="100%">
               <PayButton
                 paymentToken={paymentToken}
-                buttonText="Pay For Storage"
+                buttonText="Buy Fan Tokens"
                 disabled={!hasPaymentOption}
                 paymentTx={paymentTx}
                 paymentWallet={paymentWallet!}
                 paymentOption={paymentOption!}
-                payment={payment}
+                payment={{ ...payment, tokenAmount: fanTokenAmount }}
                 senderFlow={senderFlow}
                 onSuccess={() => {
                   setShowSuccessDialog(true);
                 }}
                 onError={(error) => {
-                  toast.error(`Failed to pay for storage!`);
-                  console.error('Failed to pay for storage with error', error);
+                  toast.error(`Failed to buy fan tokens!`);
+                  console.error('Failed to buy fan tokens with error', error);
                 }}
               />
               <PoweredByGlideText />

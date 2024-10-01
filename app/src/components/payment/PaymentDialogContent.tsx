@@ -28,8 +28,6 @@ import { LoadingSwitchChainButton } from '../buttons/LoadingSwitchNetworkButton'
 import { CustomLoadingButton } from '../buttons/LoadingPaymentButton';
 import { PaymentDialogProps } from './PaymentDialog';
 import { ERC20_CONTRACTS, Token } from '../../utils/erc20contracts';
-import { TokenAmountSection } from './TokenAmountSection';
-import { SwitchFlowSignerSection } from './SwitchFlowSignerSection';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
 import { updatePayment, submitPayment } from '../../services/payments';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
@@ -37,7 +35,7 @@ import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
 import { PaymentType } from '../../types/PaymentType';
 import { delay } from '../../utils/delay';
 import { Skeleton, Stack, Typography, useMediaQuery } from '@mui/material';
-import ResponsiveDialog from './ResponsiveDialog';
+import ResponsiveDialog from '../dialogs/ResponsiveDialog';
 import { grey, red } from '@mui/material/colors';
 import PoweredByGlideText from '../text/PoweredByGlideText';
 import { useGlideEstimatePayment, useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
@@ -47,6 +45,8 @@ import { degen } from 'viem/chains';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { glideConfig } from '../../utils/glide';
 import { useDarkMode } from '../../utils/hooks/useDarkMode';
+import { TokenAmountSection } from '../dialogs/TokenAmountSection';
+import { SwitchFlowSignerSection } from '../dialogs/SwitchFlowSignerSection';
 
 export default function PaymentDialogContent({
   paymentType,

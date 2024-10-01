@@ -25,7 +25,7 @@ import { ChooseFlowDialog } from '../dialogs/ChooseFlowDialog';
 import { FlowTopUpMenu } from '../menu/FlowTopUpMenu';
 import WalletQRCodeShareDialog from '../dialogs/WalletQRCodeShareDialog';
 import SearchIdentityDialog from '../dialogs/SearchIdentityDialog';
-import PaymentDialog, { PaymentSenderType } from '../dialogs/PaymentDialog';
+import PaymentDialog, { PaymentSenderType } from '../payment/PaymentDialog';
 import { ShareFlowMenu } from '../menu/ShareFlowMenu';
 import { PaymentFlowSection } from '../PaymentFlowSection';
 import { formatAmountWithSuffix } from '../../utils/formats';

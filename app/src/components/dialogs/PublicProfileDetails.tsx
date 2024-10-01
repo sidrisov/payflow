@@ -5,7 +5,7 @@ import { useAccount } from 'wagmi';
 import { MoreVert } from '@mui/icons-material';
 import { ProfileSection } from '../ProfileSection';
 import { Address } from 'viem';
-import PaymentDialog, { PaymentSenderType } from './PaymentDialog';
+import PaymentDialog, { PaymentSenderType } from '../payment/PaymentDialog';
 import { ProfileContext } from '../../contexts/UserContext';
 import ChoosePaymentOptionDialog from './ChoosePaymentOptionDialog';
 import { AddressSection } from '../AddressSection';

@@ -10,7 +10,7 @@ import { AssetType } from '../types/AssetType';
 import { useAssetBalances } from '../utils/queries/balances';
 import { lightGreen } from '@mui/material/colors';
 import { Add, ArrowOutward } from '@mui/icons-material';
-import PaymentDialog, { PaymentSenderType } from '../components/dialogs/PaymentDialog';
+import PaymentDialog, { PaymentSenderType } from '../components/payment/PaymentDialog';
 import { useAccount } from 'wagmi';
 import { ProfileContext } from '../contexts/UserContext';
 import ChoosePaymentOptionDialog from '../components/dialogs/ChoosePaymentOptionDialog';

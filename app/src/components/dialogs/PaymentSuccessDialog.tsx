@@ -25,7 +25,7 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
       <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" p={2}>
         <CheckCircleIcon sx={{ fontSize: 80, color: green.A700, mb: 2 }} />
         <Typography variant="h6" textAlign="center" mb={1} sx={{ fontWeight: 'bold' }}>
-          Payment Successful!
+          Payment completed
         </Typography>
         <Typography variant="h6" textAlign="center" mb={2} sx={{ color: 'gray' }}>
           {message}

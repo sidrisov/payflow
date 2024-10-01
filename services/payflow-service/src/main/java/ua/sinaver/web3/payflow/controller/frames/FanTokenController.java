@@ -65,7 +65,6 @@ public class FanTokenController {
 
 		val payment = new Payment(Payment.PaymentType.INTENT, null, BASE_CHAIN_ID, fanToken.name());
 		payment.setCategory("fan");
-		payment.setTokenAmount("1");
 		payment.setReceiverFid(receiverFid);
 		payment.setReceiverAddress(receiverAddress);
 		payment.setSender(user);

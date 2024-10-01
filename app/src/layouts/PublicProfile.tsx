@@ -9,7 +9,7 @@ import { PublicProfileCard } from '../components/cards/PublicProfileCard';
 import { useAccount } from 'wagmi';
 import { Address } from 'viem';
 
-import PaymentDialog from '../components/dialogs/PaymentDialog';
+import PaymentDialog from '../components/payment/PaymentDialog';
 import { PublicSearchPay } from './PublicSearchPay';
 import { ProfileContext } from '../contexts/UserContext';
 import { useIdentity } from '../utils/queries/profiles';

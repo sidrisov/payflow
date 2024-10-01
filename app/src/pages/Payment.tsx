@@ -16,14 +16,15 @@ import {
   GetFarcasterProfileQuery,
   Social
 } from '../generated/graphql/types';
-import GiftStorageDialog from '../components/dialogs/BuyStorageDialog';
-import PaymentDialog from '../components/dialogs/PaymentDialog';
+import GiftStorageDialog from '../components/payment/BuyStorageDialog';
+import PaymentDialog from '../components/payment/PaymentDialog';
 import { IdentityType, SelectedIdentityType } from '../types/ProfileType';
 import { toast } from 'react-toastify';
 import { statusToToastType } from '../components/Toasts';
 import { fetchMintData, MintMetadata, parseMintToken } from '../utils/mint';
-import MintDialog from '../components/dialogs/MintDialog';
+import MintDialog from '../components/payment/MintDialog';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
+import BuyFanTokenDialog from '../components/payment/BuyFanTokenDialog';
 
 export default function Payment() {
   const navigate = useNavigate();
@@ -206,6 +207,29 @@ export default function Payment() {
                   senderSocial={senderSocial}
                   recipientSocial={recipientSocial}
                   mint={mintData}
+                  closeStateCallback={async () => {
+                    navigate('/');
+                  }}
+                  flows={flows}
+                  selectedFlow={selectedFlow}
+                  setSelectedFlow={setSelectedFlow}
+                />
+              )) ||
+              (senderSocial && recipientSocial && payment.category === 'fan' && (
+                <BuyFanTokenDialog
+                  alwaysShowBackButton
+                  title="Complete Fan Token Purchase"
+                  open={payment != null}
+                  payment={payment}
+                  sender={{
+                    identity: {
+                      profile: { ...profile, defaultFlow: selectedFlow },
+                      address: profile.identity
+                    },
+                    type: 'profile'
+                  }}
+                  senderSocial={senderSocial}
+                  recipientSocial={recipientSocial}
                   closeStateCallback={async () => {
                     navigate('/');
                   }}
