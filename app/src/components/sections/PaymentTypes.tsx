@@ -179,6 +179,9 @@ export const FanTokenPayment: React.FC<PaymentComponentProps> = ({ payment }) =>
             variant="subtitle2"
             fontWeight="bold"
             fontSize={isMobile ? 12 : 13}>
+            {payment.tokenAmount
+              ? `${formatAmountWithSuffix(payment.tokenAmount.toString())} `
+              : ''}
             {payment.token.split(';')[0]}
           </Typography>
         </>

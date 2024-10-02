@@ -13,6 +13,8 @@ export const usePaymentActivityDetails = (payment: PaymentType) => {
 
   if (payment.category === 'mint') {
     formattedTokenAmount = '1';
+  } else if (payment.category === 'fan') {
+    formattedTokenAmount = formatAmountWithSuffix(payment.tokenAmount.toString());
   } else if (payment.category === 'fc_storage') {
     formattedTokenAmount = formatAmountWithSuffix(payment.tokenAmount.toString());
   } else {
