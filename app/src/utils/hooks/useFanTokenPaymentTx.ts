@@ -17,7 +17,8 @@ type FanTokenPaymentTx = {
 
 async function fetchFanTokenPaymentTx(
   tokenAddress: Address,
-  tokenAmount: number
+  tokenAmount: number,
+  recipient: Address
 ): Promise<FanTokenPaymentTx> {
   console.log('tokenAddress', tokenAddress);
   console.log('tokenAmount', tokenAmount);
@@ -47,23 +48,22 @@ async function fetchFanTokenPaymentTx(
     args: [
       tokenAddress,
       moxieAmount,
-      '0x0dEe77c83cB8b14fA95497825dF93202AbF6ad83',
+      recipient,
       minSubjectTokenAmount
     ],
     value: 0n
   };
 }
 
-export function useFanTokenPaymentTx(tokenAddress: Address, tokenAmount: number) {
+export function useFanTokenPaymentTx(tokenAddress: Address, tokenAmount: number, recipient: Address) {
   return useQuery<FanTokenPaymentTx, Error>({
-    enabled: true,
+    enabled: Boolean(tokenAddress && tokenAmount && recipient),
     staleTime: Infinity,
     refetchInterval: 30_000,
     retry: false,
-    queryKey: ['fanTokenPaymentTx', tokenAddress, tokenAmount],
+    queryKey: ['fanTokenPaymentTx', tokenAddress, tokenAmount, recipient],
     queryFn: async () => {
-      if (!tokenAddress || !tokenAmount) throw new Error('Token address or amount not found');
-      return fetchFanTokenPaymentTx(tokenAddress, tokenAmount);
+      return fetchFanTokenPaymentTx(tokenAddress, tokenAmount, recipient);
     }
   });
 }

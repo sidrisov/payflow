@@ -1,16 +1,7 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogProps,
-  Stack,
-  Box,
-  Typography,
-  Skeleton
-} from '@mui/material';
+import { Stack, Box, Typography, Skeleton, DialogProps } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { getPaymentOption } from '../../utils/glide';
 import { useChainId } from 'wagmi';
-import { BackDialogTitle } from '../dialogs/BackDialogTitle';
 import { SenderField } from '../SenderField';
 import { KeyboardDoubleArrowDown } from '@mui/icons-material';
 import { SelectedIdentityType } from '../../types/ProfileType';
@@ -26,21 +17,20 @@ import { toast } from 'react-toastify';
 import { Social } from '../../generated/graphql/types';
 import { red } from '@mui/material/colors';
 import { ChooseFlowDialog } from '../dialogs/ChooseFlowDialog';
-import { UpSlideTransition } from '../dialogs/TransitionDownUpSlide';
-import PoweredByGlideText from '../text/PoweredByGlideText';
 import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
 import { PayButton } from '../buttons/PayButton';
 import { useStoragePaymentTx } from '../../utils/hooks/useStoragePaymentTx';
-import { useMobile } from '../../utils/hooks/useMobile';
 import PaymentSuccessDialog from '../dialogs/PaymentSuccessDialog';
 import { getReceiptUrl } from '../../utils/receipts';
+import { BasePaymentDialog } from './BasePaymentDialog';
+import { FlowSelector } from './FlowSelector';
+import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 
 export type BuyStorageDialogProps = DialogProps &
   CloseCallbackType & {
     sender: SelectedIdentityType;
     payment: PaymentType;
     recipientSocial: Social;
-  } & {
     alwaysShowBackButton?: boolean;
     flows?: FlowType[];
     selectedFlow?: FlowType;
@@ -58,10 +48,6 @@ export default function BuyStorageDialog({
   setSelectedFlow,
   ...props
 }: BuyStorageDialogProps) {
-  const isMobile = useMobile();
-
-  const [openSelectFlow, setOpenSelectFlow] = useState(false);
-
   const senderFlow = sender.identity.profile?.defaultFlow as FlowType;
 
   const isNativeFlow = senderFlow.type !== 'FARCASTER_VERIFICATION' && senderFlow.type !== 'LINKED';
@@ -124,45 +110,41 @@ export default function BuyStorageDialog({
   return (
     <>
       {!showSuccessDialog && (
-        <Dialog
-          disableEnforceFocus
-          fullScreen={isMobile}
-          onClose={closeStateCallback}
+        <BasePaymentDialog
+          alwaysShowBackButton={alwaysShowBackButton}
+          title={props.title ?? 'Farcaster Storage'}
+          closeStateCallback={closeStateCallback}
           {...props}
-          PaperProps={{
-            sx: {
-              ...(!isMobile && {
-                width: 375,
-                borderRadius: 5,
-                height: 650
-              })
-            }
-          }}
-          sx={{
-            zIndex: 1450,
-            backdropFilter: 'blur(5px)'
-          }}
-          {...(isMobile && { TransitionComponent: UpSlideTransition })}>
-          <BackDialogTitle
-            showOnDesktop={alwaysShowBackButton}
-            title={props.title ?? 'Farcaster Storage'}
-            closeStateCallback={closeStateCallback}
-          />
-          <DialogContent
-            sx={{
-              px: 2,
-              py: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden'
-            }}>
-            {sender && (
-              <Stack mb={2} spacing={1} alignItems="center" width="100%">
-                <SenderField sender={sender} {...(setSelectedFlow && { setOpenSelectFlow })} />
-                <KeyboardDoubleArrowDown />
-                <FarcasterRecipientField social={recipientSocial} />
-              </Stack>
-            )}
+          footerContent={
+            <PayButton
+              paymentToken={paymentToken}
+              buttonText="Pay For Storage"
+              disabled={!hasPaymentOption}
+              paymentTx={paymentTx}
+              paymentWallet={paymentWallet!}
+              paymentOption={paymentOption!}
+              payment={payment}
+              senderFlow={senderFlow}
+              onSuccess={() => {
+                setShowSuccessDialog(true);
+              }}
+              onError={(error) => {
+                toast.error(`Failed to pay for storage!`);
+                console.error('Failed to pay for storage with error', error);
+              }}
+            />
+          }>
+          <Stack spacing={2} height="100%">
+            <Box display="flex" alignItems="center" width="100%">
+              <FlowSelector
+                sender={sender}
+                flows={flows!}
+                selectedFlow={selectedFlow!}
+                setSelectedFlow={setSelectedFlow!}
+              />
+              <ArrowRightIcon sx={{ mx: 1 }} />
+              <FarcasterRecipientField social={recipientSocial} />
+            </Box>
 
             <Box
               flex={1}
@@ -212,29 +194,8 @@ export default function BuyStorageDialog({
                 gasFee={gasFee}
               />
             </Box>
-
-            <Box display="flex" flexDirection="column" alignItems="center" width="100%">
-              <PayButton
-                paymentToken={paymentToken}
-                buttonText="Pay For Storage"
-                disabled={!hasPaymentOption}
-                paymentTx={paymentTx}
-                paymentWallet={paymentWallet!}
-                paymentOption={paymentOption!}
-                payment={payment}
-                senderFlow={senderFlow}
-                onSuccess={() => {
-                  setShowSuccessDialog(true);
-                }}
-                onError={(error) => {
-                  toast.error(`Failed to pay for storage!`);
-                  console.error('Failed to pay for storage with error', error);
-                }}
-              />
-              <PoweredByGlideText />
-            </Box>
-          </DialogContent>
-        </Dialog>
+          </Stack>
+        </BasePaymentDialog>
       )}
       <PaymentSuccessDialog
         open={showSuccessDialog}
@@ -244,17 +205,6 @@ export default function BuyStorageDialog({
         message={successMessage}
         receiptUrl={receiptUrl}
       />
-      {flows && selectedFlow && setSelectedFlow && (
-        <ChooseFlowDialog
-          configurable={false}
-          open={openSelectFlow}
-          onClose={() => setOpenSelectFlow(false)}
-          closeStateCallback={() => setOpenSelectFlow(false)}
-          flows={flows}
-          selectedFlow={selectedFlow}
-          setSelectedFlow={setSelectedFlow}
-        />
-      )}
     </>
   );
 }

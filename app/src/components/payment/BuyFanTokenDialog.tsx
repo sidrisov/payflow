@@ -1,41 +1,30 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogProps,
-  Stack,
-  Box,
-  Typography,
-  Skeleton,
-  IconButton
-} from '@mui/material';
+import { Stack, Box, Typography, Skeleton, DialogProps } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { getPaymentOption } from '../../utils/glide';
 import { useChainId } from 'wagmi';
-import { BackDialogTitle } from '../dialogs/BackDialogTitle';
-import { SenderField } from '../SenderField';
-import { KeyboardDoubleArrowDown, Add, Remove } from '@mui/icons-material';
 import { SelectedIdentityType } from '../../types/ProfileType';
 import { FarcasterRecipientField } from '../FarcasterRecipientField';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { PaymentType } from '../../types/PaymentType';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { Token } from '../../utils/erc20contracts';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
+import { ProfileContext } from '../../contexts/UserContext';
 import { toast } from 'react-toastify';
 import { Social } from '../../generated/graphql/types';
 import { red } from '@mui/material/colors';
-import { ChooseFlowDialog } from '../dialogs/ChooseFlowDialog';
-import { UpSlideTransition } from '../dialogs/TransitionDownUpSlide';
-import PoweredByGlideText from '../text/PoweredByGlideText';
 import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
 import { PayButton } from '../buttons/PayButton';
-import { useStoragePaymentTx } from '../../utils/hooks/useStoragePaymentTx';
-import { useMobile } from '../../utils/hooks/useMobile';
+import { useFanTokenPaymentTx } from '../../utils/hooks/useFanTokenPaymentTx';
 import PaymentSuccessDialog from '../dialogs/PaymentSuccessDialog';
 import { getReceiptUrl } from '../../utils/receipts';
-import { useFanTokenPaymentTx } from '../../utils/hooks/useFanTokenPaymentTx';
+import { QuantitySelector } from './QuantitySelector';
+import { BasePaymentDialog } from './BasePaymentDialog';
+import { FlowSelector } from './FlowSelector';
+import ArrowRightIcon from '@mui/icons-material/ArrowRight';
+import { Address } from 'viem';
 
 export type BuyFanTokenDialogProps = DialogProps &
   CloseCallbackType & {
@@ -43,7 +32,6 @@ export type BuyFanTokenDialogProps = DialogProps &
     payment: PaymentType;
     senderSocial: Social;
     recipientSocial: Social;
-  } & {
     alwaysShowBackButton?: boolean;
     flows?: FlowType[];
     selectedFlow?: FlowType;
@@ -62,30 +50,27 @@ export default function BuyFanTokenDialog({
   setSelectedFlow,
   ...props
 }: BuyFanTokenDialogProps) {
-  const isMobile = useMobile();
-
-  const [openSelectFlow, setOpenSelectFlow] = useState(false);
-
   const senderFlow = sender.identity.profile?.defaultFlow as FlowType;
-
   const isNativeFlow = senderFlow.type !== 'FARCASTER_VERIFICATION' && senderFlow.type !== 'LINKED';
 
-  // force to display sponsored
   const [gasFee] = useState<bigint | undefined>(isNativeFlow ? BigInt(0) : undefined);
 
   const chainId = useChainId();
+
+  const { profile } = useContext(ProfileContext);
 
   const [paymentWallet, setPaymentWallet] = useState<FlowWalletType>();
   const [paymentToken, setPaymentToken] = useState<Token>();
 
   const [fanTokenAmount, setFanTokenAmount] = useState(payment.tokenAmount ?? 1);
 
-  const { isLoading: isPaymentTxLoading, data: paymentTx } = useFanTokenPaymentTx(
-    '0x248139a7a8862c7e8376e714784b643dc36d4000',
-    fanTokenAmount
-  );
+  const [tokenName, tokenAddress] = payment.token.split(';');
 
-  console.log('Payment Tx: ', isPaymentTxLoading, paymentTx);
+  const { isLoading: isPaymentTxLoading, data: paymentTx } = useFanTokenPaymentTx(
+    tokenAddress as Address,
+    fanTokenAmount,
+    payment.receiverAddress ?? profile?.identity
+  );
 
   const {
     isLoading: isPaymentOptionsLoading,
@@ -100,8 +85,6 @@ export default function BuyFanTokenDialog({
     () => getPaymentOption(paymentOptions, paymentToken),
     [paymentOptions, paymentToken]
   );
-
-  console.log('Payment Options: ', paymentOptions);
 
   const compatibleWallets = useCompatibleWallets({
     sender: senderFlow,
@@ -122,7 +105,7 @@ export default function BuyFanTokenDialog({
 
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
-  const successMessage = `Successfully bought ${fanTokenAmount} fan token${
+  const successMessage = `Successfully bought ${fanTokenAmount} ${payment.token} fan token${
     fanTokenAmount > 1 ? 's' : ''
   } for @${recipientSocial.profileName}`;
   const receiptUrl = getReceiptUrl(payment, false);
@@ -130,45 +113,41 @@ export default function BuyFanTokenDialog({
   return (
     <>
       {!showSuccessDialog && (
-        <Dialog
-          disableEnforceFocus
-          fullScreen={isMobile}
-          onClose={closeStateCallback}
+        <BasePaymentDialog
+          alwaysShowBackButton={alwaysShowBackButton}
+          title={props.title ?? 'Buy Fan Tokens'}
+          closeStateCallback={closeStateCallback}
           {...props}
-          PaperProps={{
-            sx: {
-              ...(!isMobile && {
-                width: 375,
-                borderRadius: 5,
-                height: 650
-              })
-            }
-          }}
-          sx={{
-            zIndex: 1450,
-            backdropFilter: 'blur(5px)'
-          }}
-          {...(isMobile && { TransitionComponent: UpSlideTransition })}>
-          <BackDialogTitle
-            showOnDesktop={alwaysShowBackButton}
-            title={props.title ?? 'Buy Fan Tokens'}
-            closeStateCallback={closeStateCallback}
-          />
-          <DialogContent
-            sx={{
-              px: 2,
-              py: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden'
-            }}>
-            {sender && (
-              <Stack mb={2} spacing={1} alignItems="center" width="100%">
-                <SenderField sender={sender} {...(setSelectedFlow && { setOpenSelectFlow })} />
-                <KeyboardDoubleArrowDown />
-                <FarcasterRecipientField social={recipientSocial} />
-              </Stack>
-            )}
+          footerContent={
+            <PayButton
+              paymentToken={paymentToken}
+              buttonText="Buy Fan Tokens"
+              disabled={!hasPaymentOption}
+              paymentTx={paymentTx}
+              paymentWallet={paymentWallet!}
+              paymentOption={paymentOption!}
+              payment={{ ...payment, tokenAmount: fanTokenAmount }}
+              senderFlow={senderFlow}
+              onSuccess={() => {
+                setShowSuccessDialog(true);
+              }}
+              onError={(error) => {
+                toast.error(`Failed to buy fan tokens!`);
+                console.error('Failed to buy fan tokens with error', error);
+              }}
+            />
+          }>
+          <Stack spacing={2} height="100%">
+            <Box display="flex" alignItems="center" width="100%">
+              <FlowSelector
+                sender={sender}
+                flows={flows!}
+                selectedFlow={selectedFlow!}
+                setSelectedFlow={setSelectedFlow!}
+              />
+              <ArrowRightIcon sx={{ mx: 1 }} />
+              <FarcasterRecipientField social={recipientSocial} />
+            </Box>
 
             <Box
               flex={1}
@@ -179,20 +158,15 @@ export default function BuyFanTokenDialog({
               justifyContent="space-between">
               <Stack alignItems="center" justifyContent="start" spacing={1}>
                 <Typography fontSize={18} fontWeight="bold">
-                  {payment.token}
+                  {tokenName}
                 </Typography>
 
-                <Stack direction="row" alignItems="center" spacing={2} mb={1}>
-                  <IconButton onClick={() => setFanTokenAmount((prev) => Math.max(prev - 1, 1))}>
-                    <Remove fontSize="small" sx={{ color: 'text.secondary' }} />
-                  </IconButton>
-                  <Typography variant="h5" fontWeight="bold">
-                    {fanTokenAmount}
-                  </Typography>
-                  <IconButton onClick={() => setFanTokenAmount((prev) => Math.min(prev + 1, 10))}>
-                    <Add fontSize="small" sx={{ color: 'text.secondary' }} />
-                  </IconButton>
-                </Stack>
+                <QuantitySelector
+                  quantity={fanTokenAmount}
+                  min={0.1}
+                  decimals={1}
+                  setQuantity={setFanTokenAmount}
+                />
 
                 {isLoading ? (
                   <Skeleton
@@ -232,29 +206,8 @@ export default function BuyFanTokenDialog({
                 gasFee={gasFee}
               />
             </Box>
-
-            <Box display="flex" flexDirection="column" alignItems="center" width="100%">
-              <PayButton
-                paymentToken={paymentToken}
-                buttonText="Buy Fan Tokens"
-                disabled={!hasPaymentOption}
-                paymentTx={paymentTx}
-                paymentWallet={paymentWallet!}
-                paymentOption={paymentOption!}
-                payment={{ ...payment, tokenAmount: fanTokenAmount }}
-                senderFlow={senderFlow}
-                onSuccess={() => {
-                  setShowSuccessDialog(true);
-                }}
-                onError={(error) => {
-                  toast.error(`Failed to buy fan tokens!`);
-                  console.error('Failed to buy fan tokens with error', error);
-                }}
-              />
-              <PoweredByGlideText />
-            </Box>
-          </DialogContent>
-        </Dialog>
+          </Stack>
+        </BasePaymentDialog>
       )}
       <PaymentSuccessDialog
         open={showSuccessDialog}
@@ -264,17 +217,6 @@ export default function BuyFanTokenDialog({
         message={successMessage}
         receiptUrl={receiptUrl}
       />
-      {flows && selectedFlow && setSelectedFlow && (
-        <ChooseFlowDialog
-          configurable={false}
-          open={openSelectFlow}
-          onClose={() => setOpenSelectFlow(false)}
-          closeStateCallback={() => setOpenSelectFlow(false)}
-          flows={flows}
-          selectedFlow={selectedFlow}
-          setSelectedFlow={setSelectedFlow}
-        />
-      )}
     </>
   );
 }

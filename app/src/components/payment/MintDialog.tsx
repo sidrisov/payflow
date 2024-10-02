@@ -1,6 +1,4 @@
 import {
-  Dialog,
-  DialogContent,
   DialogProps,
   Stack,
   Box,
@@ -15,9 +13,6 @@ import {
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { getPaymentOption } from '../../utils/glide';
 import { useChainId } from 'wagmi';
-import { BackDialogTitle } from '../dialogs/BackDialogTitle';
-import { SenderField } from '../SenderField';
-import { KeyboardDoubleArrowDown, Add, Remove } from '@mui/icons-material';
 import { SelectedIdentityType } from '../../types/ProfileType';
 import { FarcasterRecipientField } from '../FarcasterRecipientField';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
@@ -31,15 +26,12 @@ import { ProfileContext } from '../../contexts/UserContext';
 import { toast } from 'react-toastify';
 import { Social } from '../../generated/graphql/types';
 import { grey, red } from '@mui/material/colors';
-import { ChooseFlowDialog } from '../dialogs/ChooseFlowDialog';
-import { UpSlideTransition } from '../dialogs/TransitionDownUpSlide';
-import PoweredByGlideText from '../text/PoweredByGlideText';
 import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
 import { MintMetadata } from '../../utils/mint';
 import { useMintPaymentTx } from '../../utils/hooks/useMintPaymentTx';
 import { PayButton } from '../buttons/PayButton';
 import { useDarkMode } from '../../utils/hooks/useDarkMode';
-import { useMiniApp, useMobile } from '../../utils/hooks/useMobile';
+import { useMobile } from '../../utils/hooks/useMobile';
 import PaymentSuccessDialog from '../dialogs/PaymentSuccessDialog';
 import { getReceiptUrl } from '../../utils/receipts';
 import React from 'react';
@@ -51,6 +43,10 @@ import { useDebounce } from 'use-debounce';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { createCastPostMessage, createComposeCastUrl } from '../../utils/warpcast';
 import { useSearchParams } from 'react-router-dom';
+import { QuantitySelector } from './QuantitySelector';
+import { BasePaymentDialog } from './BasePaymentDialog';
+import ArrowRightIcon from '@mui/icons-material/ArrowRight';
+import { FlowSelector } from './FlowSelector';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {
@@ -155,8 +151,6 @@ export default function MintDialog({
   const miniApp = useSearchParams()[0].get('view') === 'embedded';
 
   //const miniApp = useMiniApp();
-
-  const [openSelectFlow, setOpenSelectFlow] = useState(false);
 
   const senderFlow = sender.identity.profile?.defaultFlow as FlowType;
 
@@ -325,45 +319,49 @@ export default function MintDialog({
   return (
     <>
       {!showSuccessDialog && (
-        <Dialog
-          disableEnforceFocus
-          fullScreen={isMobile}
-          onClose={closeStateCallback}
+        <BasePaymentDialog
+          alwaysShowBackButton={alwaysShowBackButton}
+          title={props.title ?? 'Mint Payment'}
+          closeStateCallback={closeStateCallback}
           {...props}
-          PaperProps={{
-            sx: {
-              ...(!isMobile && {
-                width: 375,
-                borderRadius: 5,
-                height: 650
-              })
-            }
-          }}
-          sx={{
-            zIndex: 1450,
-            backdropFilter: 'blur(5px)'
-          }}
-          {...(isMobile && { TransitionComponent: UpSlideTransition })}>
-          <BackDialogTitle
-            showOnDesktop={alwaysShowBackButton}
-            title={props.title ?? 'Mint Payment'}
-            closeStateCallback={closeStateCallback}
-          />
-          <DialogContent
-            sx={{
-              px: 2,
-              py: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden'
-            }}>
-            {sender && (
-              <Stack mb={2} spacing={1} alignItems="center" width="100%">
-                <SenderField sender={sender} {...(setSelectedFlow && { setOpenSelectFlow })} />
-                <KeyboardDoubleArrowDown />
-                <FarcasterRecipientField social={recipientSocial} />
-              </Stack>
-            )}
+          footerContent={
+            <PayButton
+              paymentToken={paymentToken}
+              buttonText={
+                mintStatus === 'ended'
+                  ? 'Mint Ended'
+                  : mintStatus === 'upcoming'
+                  ? 'Mint Not Started'
+                  : secondary
+                  ? 'Buy On Secondary'
+                  : 'Mint'
+              }
+              disabled={!hasPaymentOption}
+              paymentTx={paymentTx}
+              paymentWallet={paymentWallet!}
+              paymentOption={paymentOption!}
+              payment={{ ...payment, tokenAmount: mintCount, comment }}
+              senderFlow={senderFlow}
+              onSuccess={() => {
+                setShowSuccessDialog(true);
+              }}
+              onError={(error) => {
+                toast.error(`Failed to mint "${mint.metadata.name}"`, { autoClose: 2000 });
+                console.error(`Failed to mint with error`, error);
+              }}
+            />
+          }>
+          <Stack spacing={2} height="100%">
+            <Box display="flex" alignItems="center" width="100%">
+              <FlowSelector
+                sender={sender}
+                flows={flows!}
+                selectedFlow={selectedFlow!}
+                setSelectedFlow={setSelectedFlow!}
+              />
+              <ArrowRightIcon sx={{ mx: 1 }} />
+              <FarcasterRecipientField social={recipientSocial} />
+            </Box>
 
             <Box
               flex={1}
@@ -407,17 +405,12 @@ export default function MintDialog({
                   </Stack>
                 </Tooltip>
 
-                <Stack direction="row" alignItems="center" spacing={2} mb={1}>
-                  <IconButton onClick={() => setMintCount((prev) => Math.max(prev - 1, 1))}>
-                    <Remove fontSize="small" sx={{ color: 'text.secondary' }} />
-                  </IconButton>
-                  <Typography variant="h5" fontWeight="bold">
-                    {mintCount}
-                  </Typography>
-                  <IconButton onClick={() => setMintCount((prev) => Math.min(prev + 1, 10))}>
-                    <Add fontSize="small" sx={{ color: 'text.secondary' }} />
-                  </IconButton>
-                </Stack>
+                <QuantitySelector
+                  quantity={mintCount}
+                  min={1}
+                  max={10}
+                  setQuantity={setMintCount}
+                />
 
                 {isLoading ? (
                   <Skeleton
@@ -479,38 +472,10 @@ export default function MintDialog({
                 gasFee={gasFee}
               />
             </Box>
-
-            <Box display="flex" flexDirection="column" alignItems="center" width="100%">
-              <PayButton
-                paymentToken={paymentToken}
-                buttonText={
-                  mintStatus === 'ended'
-                    ? 'Mint Ended'
-                    : mintStatus === 'upcoming'
-                    ? 'Mint Not Started'
-                    : secondary
-                    ? 'Buy On Secondary'
-                    : 'Mint'
-                }
-                disabled={!hasPaymentOption}
-                paymentTx={paymentTx}
-                paymentWallet={paymentWallet!}
-                paymentOption={paymentOption!}
-                payment={{ ...payment, tokenAmount: mintCount, comment }}
-                senderFlow={senderFlow}
-                onSuccess={() => {
-                  setShowSuccessDialog(true);
-                }}
-                onError={(error) => {
-                  toast.error(`Failed to mint "${mint.metadata.name}"`, { autoClose: 2000 });
-                  console.error(`Failed to mint with error`, error);
-                }}
-              />
-              <PoweredByGlideText />
-            </Box>
-          </DialogContent>
-        </Dialog>
+          </Stack>
+        </BasePaymentDialog>
       )}
+
       <PaymentSuccessDialog
         open={showSuccessDialog}
         onClose={() => {
@@ -520,18 +485,6 @@ export default function MintDialog({
         receiptUrl={receiptUrl}
         shareComponents={shareComponents}
       />
-
-      {flows && selectedFlow && setSelectedFlow && (
-        <ChooseFlowDialog
-          configurable={false}
-          open={openSelectFlow}
-          onClose={() => setOpenSelectFlow(false)}
-          closeStateCallback={() => setOpenSelectFlow(false)}
-          flows={flows}
-          selectedFlow={selectedFlow}
-          setSelectedFlow={setSelectedFlow}
-        />
-      )}
     </>
   );
 }

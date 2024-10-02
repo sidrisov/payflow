@@ -218,7 +218,7 @@ export default function Payment() {
               (senderSocial && recipientSocial && payment.category === 'fan' && (
                 <BuyFanTokenDialog
                   alwaysShowBackButton
-                  title="Complete Fan Token Purchase"
+                  title="Complete Token Purchase"
                   open={payment != null}
                   payment={payment}
                   sender={{

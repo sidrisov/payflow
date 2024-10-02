@@ -63,7 +63,8 @@ public class FanTokenController {
 		val sourceRef = String.format("https://warpcast.com/%s/%s",
 				validateMessage.action().cast().author().username(), castHash.substring(0, 10));
 
-		val payment = new Payment(Payment.PaymentType.INTENT, null, BASE_CHAIN_ID, fanToken.name());
+		val payment = new Payment(Payment.PaymentType.INTENT, null, BASE_CHAIN_ID,
+				String.format("%s:%s", fanToken.name(), fanToken.subject().subjectAddress()));
 		payment.setCategory("fan");
 		payment.setReceiverFid(receiverFid);
 		payment.setReceiverAddress(receiverAddress);

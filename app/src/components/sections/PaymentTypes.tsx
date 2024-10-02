@@ -27,7 +27,7 @@ const StyledTypography = styled(Typography)(() => ({
 const PAYMENT_TITLES: { [key: string]: string } = {
   fc_storage: 'Buy Storage',
   mint: 'Mint',
-  fan: 'Buy Fan Token',
+  fan: 'Buy Token',
   default: 'Payment'
 };
 
@@ -179,7 +179,7 @@ export const FanTokenPayment: React.FC<PaymentComponentProps> = ({ payment }) =>
             variant="subtitle2"
             fontWeight="bold"
             fontSize={isMobile ? 12 : 13}>
-            {payment.token}
+            {payment.token.split(';')[0]}
           </Typography>
         </>
       )}
