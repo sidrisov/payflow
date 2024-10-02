@@ -105,7 +105,7 @@ export default function BuyFanTokenDialog({
 
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
-  const successMessage = `Successfully bought ${fanTokenAmount} ${payment.token} fan token${
+  const successMessage = `Successfully bought ${fanTokenAmount} ${tokenName} fan token${
     fanTokenAmount > 1 ? 's' : ''
   } for @${recipientSocial.profileName}`;
   const receiptUrl = getReceiptUrl(payment, false);

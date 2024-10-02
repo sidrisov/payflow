@@ -110,7 +110,7 @@ public class FanTokenController {
 					new FrameResponse.FrameMessage("Sign up on Payflow first!"));
 		}
 
-		val fanToken = fanTokenService.getFanToken(name);
+		val fanToken = fanTokenService.getFanToken(name.replace("channel:", "/"));
 		if (fanToken == null) {
 			log.error("Fan token not found: {}", name);
 			return ResponseEntity.badRequest().body(

@@ -18,6 +18,13 @@ export function Head() {
     return `@${name}`;
   };
 
+  const getUrlSanitizedName = (name: string) => {
+    if (name.startsWith('/')) {
+      return name.replace('/', 'channel:');
+    }
+    return name;
+  };
+
   return (
     <>
       <head>
@@ -65,7 +72,7 @@ export function Head() {
             <meta property={`fc:frame:button:${index + 1}:action`} content="post_redirect" />
             <meta
               property={`fc:frame:button:${index + 1}:target`}
-              content={`${API_URL}/api/farcaster/frames/fan/${name}/submit`}
+              content={`${API_URL}/api/farcaster/frames/fan/${encodeURIComponent(getUrlSanitizedName(name))}/submit`}
             />
           </>
         ))}
