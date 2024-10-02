@@ -8,6 +8,7 @@ interface QuantitySelectorProps {
   min?: number;
   max?: number;
   decimals?: number;
+  step?: number;
 }
 
 export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
@@ -15,7 +16,8 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
   setQuantity,
   min = 1,
   max = 10,
-  decimals = 0
+  decimals = 0,
+  step = 1 / 10 ** decimals
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(quantity.toFixed(decimals));
@@ -77,7 +79,7 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
         height: 40
       }}>
       <IconButton
-        onClick={() => setQuantity((prev) => Math.max(prev - 1 / 10 ** decimals, min))}
+        onClick={() => setQuantity((prev) => Math.max(prev - step, min))}
         sx={{ borderRadius: 2, p: 0.5 }}>
         <Remove fontSize="small" sx={{ color: 'text.secondary' }} />
       </IconButton>
@@ -117,7 +119,7 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
         )}
       </Box>
       <IconButton
-        onClick={() => setQuantity((prev) => Math.min(prev + 1 / 10 ** decimals, max))}
+        onClick={() => setQuantity((prev) => Math.min(prev + step, max))}
         sx={{ borderRadius: 2, p: 0.5 }}>
         <Add fontSize="small" sx={{ color: 'text.secondary' }} />
       </IconButton>

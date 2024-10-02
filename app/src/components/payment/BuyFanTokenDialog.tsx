@@ -1,4 +1,4 @@
-import { Stack, Box, Typography, Skeleton, DialogProps, Avatar } from '@mui/material';
+import { Stack, Box, Typography, Skeleton, DialogProps } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { getPaymentOption } from '../../utils/glide';
 import { useChainId } from 'wagmi';
@@ -25,8 +25,7 @@ import { BasePaymentDialog } from './BasePaymentDialog';
 import { FlowSelector } from './FlowSelector';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import { Address } from 'viem';
-import { Chip, SvgIcon } from '@mui/material';
-import FarcasterAvatar from '../avatars/FarcasterAvatar';
+import { Chip } from '@mui/material';
 import { fanTokenUrl } from '../../utils/moxie';
 import MoxieAvatar from '../avatars/MoxieAvatar';
 
@@ -180,6 +179,7 @@ export default function BuyFanTokenDialog({
                   min={0.1}
                   max={1000}
                   decimals={1}
+                  step={10}
                   setQuantity={setFanTokenAmount}
                 />
 
