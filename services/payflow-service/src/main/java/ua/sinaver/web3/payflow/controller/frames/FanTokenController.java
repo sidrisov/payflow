@@ -54,10 +54,10 @@ public class FanTokenController {
 	private FanTokenService fanTokenService;
 
 	private static Payment getFanTokenPayment(ValidatedFrameResponseMessage validateMessage,
-	                                          User user,
-	                                          Integer receiverFid,
-	                                          String receiverAddress,
-	                                          FanToken fanToken) {
+			User user,
+			Integer receiverFid,
+			String receiverAddress,
+			FanToken fanToken) {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val castHash = validateMessage.action().cast().hash();
 		val sourceRef = String.format("https://warpcast.com/%s/%s",
@@ -77,7 +77,7 @@ public class FanTokenController {
 
 	@PostMapping("/{name}/submit")
 	public ResponseEntity<?> submit(@RequestBody FrameMessage frameMessage,
-	                                @PathVariable String name) {
+			@PathVariable String name) {
 		log.debug("Received submit buy fan token {} message request: {}", name, frameMessage);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
@@ -121,6 +121,7 @@ public class FanTokenController {
 		val recipientTexts = Optional.ofNullable(validateMessage.action().input())
 				.map(input -> input.text().trim())
 				.filter(text -> !text.isEmpty())
+				.map(text -> text.toLowerCase().replaceAll("@", ""))
 				.map(text -> text.toLowerCase().split("[,\\s]+"))
 				.map(Arrays::asList)
 				.orElse(Collections.singletonList(""));

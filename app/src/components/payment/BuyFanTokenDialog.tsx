@@ -1,4 +1,4 @@
-import { Stack, Box, Typography, Skeleton, DialogProps } from '@mui/material';
+import { Stack, Box, Typography, Skeleton, DialogProps, Avatar } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { getPaymentOption } from '../../utils/glide';
 import { useChainId } from 'wagmi';
@@ -25,6 +25,10 @@ import { BasePaymentDialog } from './BasePaymentDialog';
 import { FlowSelector } from './FlowSelector';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import { Address } from 'viem';
+import { Chip, SvgIcon } from '@mui/material';
+import FarcasterAvatar from '../avatars/FarcasterAvatar';
+import { fanTokenUrl } from '../../utils/moxie';
+import MoxieAvatar from '../avatars/MoxieAvatar';
 
 export type BuyFanTokenDialogProps = DialogProps &
   CloseCallbackType & {
@@ -157,13 +161,24 @@ export default function BuyFanTokenDialog({
               alignItems="center"
               justifyContent="space-between">
               <Stack alignItems="center" justifyContent="start" spacing={1} width="100%">
-                <Typography fontSize={18} fontWeight="bold">
-                  {tokenName}
-                </Typography>
+                <Chip
+                  icon={<MoxieAvatar size={18} />}
+                  label={tokenName}
+                  clickable={true}
+                  onClick={() => {
+                    window.open(fanTokenUrl(tokenName), '_blank');
+                  }}
+                  sx={{
+                    px: 0.5,
+                    fontSize: 18,
+                    fontWeight: 'bold'
+                  }}
+                />
 
                 <QuantitySelector
                   quantity={fanTokenAmount}
                   min={0.1}
+                  max={1000}
                   decimals={1}
                   setQuantity={setFanTokenAmount}
                 />
