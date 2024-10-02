@@ -5,5 +5,8 @@ query FanToken($name: String) {
         symbol
         currentPriceInMoxie
         currentPriceInWeiInMoxie
+        subject {
+            subjectAddress: id
+        }
     }
 }

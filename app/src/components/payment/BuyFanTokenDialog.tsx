@@ -177,9 +177,7 @@ export default function BuyFanTokenDialog({
                 ) : hasPaymentOption ? (
                   <Typography fontSize={30} fontWeight="bold" textAlign="center">
                     {formatAmountWithSuffix(
-                      normalizeNumberPrecision(
-                        parseFloat(paymentOption.paymentAmount) * fanTokenAmount
-                      )
+                      normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
                     )}{' '}
                     {paymentToken?.id.toUpperCase()}
                   </Typography>
