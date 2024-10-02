@@ -1,9 +1,7 @@
 import LoadingButton, { LoadingButtonProps } from '@mui/lab/LoadingButton';
-import { PaymentSenderType } from '../dialogs/PaymentDialog';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useSetActiveWallet } from '@privy-io/wagmi';
 import { useEffect } from 'react';
-import { degen } from 'viem/chains';
 
 export function LoadingConnectWalletButton({
   isEmbeddedSigner = false,

@@ -156,7 +156,7 @@ export default function BuyFanTokenDialog({
               flexDirection="column"
               alignItems="center"
               justifyContent="space-between">
-              <Stack alignItems="center" justifyContent="start" spacing={1}>
+              <Stack alignItems="center" justifyContent="start" spacing={1} width="100%">
                 <Typography fontSize={18} fontWeight="bold">
                   {tokenName}
                 </Typography>

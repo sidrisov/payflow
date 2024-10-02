@@ -370,7 +370,7 @@ export default function MintDialog({
               flexDirection="column"
               alignItems="center"
               justifyContent="space-between">
-              <Stack alignItems="center" justifyContent="start" spacing={0} width="100%">
+              <Stack alignItems="center" justifyContent="start" spacing={1} width="100%">
                 <Tooltip
                   title={mint.metadata.description}
                   arrow

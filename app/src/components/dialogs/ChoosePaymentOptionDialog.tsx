@@ -1,7 +1,7 @@
 import { Avatar, Button, DialogProps, Stack, Typography } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { AccountBalanceWallet } from '@mui/icons-material';
-import { PaymentSenderType } from './PaymentDialog';
+import { PaymentSenderType } from '../payment/PaymentDialog';
 import ResponsiveDialog from './ResponsiveDialog';
 import { useMobile } from '../../utils/hooks/useMobile';
 
