@@ -192,7 +192,7 @@ export default function BuyFanTokenDialog({
 
               <NetworkTokenSelector
                 crossChainMode
-                payment={payment}
+                payment={{ ...payment, tokenAmount: fanTokenAmount }}
                 paymentWallet={paymentWallet}
                 setPaymentWallet={setPaymentWallet}
                 paymentToken={paymentToken}
