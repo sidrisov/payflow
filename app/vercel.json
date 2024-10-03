@@ -2,7 +2,8 @@
   "rewrites": [{ "source": "/(.*)", "destination": "/" }],
   "headers": [
     {
-      "source": "/(.*)"
+      "source": "/(.*)",
+      "headers": []
     }
   ]
 }

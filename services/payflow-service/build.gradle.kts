@@ -216,6 +216,8 @@ tasks.withType<BootRun> {
 // --publishImage
 // TODO: permissions are not picked up for publishing - https://cloud.google.com/artifact-registry/docs/java/authentication#gcloud
 tasks.named<BootBuildImage>("bootBuildImage") {
+    environment.put("BP_JVM_VERSION", "21")
+
     if (project.hasProperty("gcp-image-name")) {
         imageName.set("${project.property("gcp-image-name")}:${project.version}")
     }
