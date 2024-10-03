@@ -107,11 +107,12 @@ export default function PublicProfileActivityFeedSection(
             flexDirection="row"
             alignItems="center"
             justifyContent="space-between">
-            <UserDisplayName
-              profile={payment.sender}
-              address={payment.senderAddress}
-              ens={ensNameFrom ?? undefined}
-              /*               onMouseEnter={(event) => {
+            <Stack direction="row" justifyContent="flex-start" alignItems="flex-end" spacing={0.5}>
+              <UserDisplayName
+                profile={payment.sender}
+                address={payment.senderAddress}
+                ens={ensNameFrom ?? undefined}
+                /*               onMouseEnter={(event) => {
                 setProfileDetailsPopoverAnchorEl(event.currentTarget);
                 setPopOverProfile(payment.sender);
               }}
@@ -119,7 +120,37 @@ export default function PublicProfileActivityFeedSection(
                 setProfileDetailsPopoverAnchorEl(null);
                 setPopOverProfile(undefined);
               }} */
-            />
+              />
+
+              <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
+                {getActivityName(activityType, payment)}
+              </Typography>
+              {activityType !== 'self' && (
+                <Stack direction="row" alignItems="center" spacing={0.5}>
+                  <UserAvatar
+                    profile={payment.receiver}
+                    address={payment.receiverAddress}
+                    ensAvatar={avatarTo}
+                    social={receiverSocial ?? undefined}
+                    sx={{ width: 20, height: 20 }}
+                  />
+                  <UserDisplayName
+                    profile={payment.receiver}
+                    address={payment.receiverAddress}
+                    ens={ensNameTo ?? undefined}
+                    social={receiverSocial ?? undefined}
+                    /* onMouseEnter={(event) => {
+                    setProfileDetailsPopoverAnchorEl(event.currentTarget);
+                    setPopOverProfile(payment.receiver);
+                  }}
+                  onMouseLeave={() => {
+                    setProfileDetailsPopoverAnchorEl(null);
+                    setPopOverProfile(undefined);
+                  }} */
+                  />
+                </Stack>
+              )}
+            </Stack>
 
             <IconButton
               size="small"
@@ -131,37 +162,6 @@ export default function PublicProfileActivityFeedSection(
               <MoreHoriz fontSize="small" />
             </IconButton>
           </Box>
-
-          <Stack direction="row" alignItems="center" spacing={0.5}>
-            <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
-              {getActivityName(activityType, payment)}
-            </Typography>
-            {activityType !== 'self' && (
-              <>
-                <UserAvatar
-                  profile={payment.receiver}
-                  address={payment.receiverAddress}
-                  ensAvatar={avatarTo}
-                  social={receiverSocial ?? undefined}
-                  sx={{ width: 25, height: 25 }}
-                />
-                <UserDisplayName
-                  profile={payment.receiver}
-                  address={payment.receiverAddress}
-                  ens={ensNameTo ?? undefined}
-                  social={receiverSocial ?? undefined}
-                  /* onMouseEnter={(event) => {
-                    setProfileDetailsPopoverAnchorEl(event.currentTarget);
-                    setPopOverProfile(payment.receiver);
-                  }}
-                  onMouseLeave={() => {
-                    setProfileDetailsPopoverAnchorEl(null);
-                    setPopOverProfile(undefined);
-                  }} */
-                />
-              </>
-            )}
-          </Stack>
 
           <PaymentDetails activity={activityType} payment={payment} />
 

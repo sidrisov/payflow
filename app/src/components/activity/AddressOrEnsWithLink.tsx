@@ -26,8 +26,8 @@ export function AddressOrEnsWithLink({
       overflow="clip"
       textOverflow="ellipsis"
       {...props}>
-      <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
-        <b>{ens ? ens : shortenWalletAddressLabel(address)}</b>
+      <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
+        {ens ? ens : shortenWalletAddressLabel(address)}
       </Typography>
     </Link>
   );

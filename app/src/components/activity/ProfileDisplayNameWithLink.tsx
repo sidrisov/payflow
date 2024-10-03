@@ -18,8 +18,8 @@ export function ProfileDisplayNameWithLink({
       overflow="clip"
       textOverflow="ellipsis"
       {...props}>
-      <Typography noWrap variant="caption" fontSize={isMobile ? 12 : 14}>
-        <b>{profile.displayName}</b> @{profile.username}
+      <Typography noWrap variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
+        {profile.username}
       </Typography>
     </Link>
   );

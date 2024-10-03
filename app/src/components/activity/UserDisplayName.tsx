@@ -46,8 +46,8 @@ export const UserDisplayName = ({
         textOverflow="ellipsis"
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}>
-        <Typography noWrap variant="caption" fontSize={isMobile ? 12 : 14}>
-          <b>{social.profileDisplayName}</b> @{social.profileName}
+        <Typography noWrap variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
+          {social.profileName}
         </Typography>
       </Link>
     );
