@@ -34,6 +34,8 @@ export const PayButton: React.FC<PayButtonProps> = ({
   onSuccess,
   onError
 }) => {
+  console.debug('Payment in PayButton: ', payment);
+
   const chainId = useChainId();
   const { address } = useAccount();
   const [openConnectSignerDrawer, setOpenConnectSignerDrawer] = useState(false);

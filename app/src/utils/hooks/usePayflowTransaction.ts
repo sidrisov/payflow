@@ -106,6 +106,8 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
     payment: PaymentType;
     senderFlow: FlowType;
   }) => {
+    console.debug('Payment in handleGlideTransaction: ', payment);
+
     if (!profile || !client || !signer) {
       return { success: false };
     }
