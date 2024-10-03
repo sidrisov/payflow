@@ -9,11 +9,6 @@ export const CommentBubble = ({ comment }: { comment: string }) => {
       fontWeight="bold"
       fontSize={isMobile ? 12 : 14}
       sx={{
-        p: 1,
-        border: 0.5,
-        borderStyle: 'dashed',
-        borderColor: 'divider',
-        borderRadius: '15px',
         wordBreak: 'break-all',
         width: 'fit-content'
       }}>

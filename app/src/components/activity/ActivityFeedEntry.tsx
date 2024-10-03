@@ -92,7 +92,7 @@ export default function PublicProfileActivityFeedSection(
     <>
       <Stack
         m={1}
-        p={2}
+        p={1.5}
         direction="row"
         spacing={1}
         sx={{ border: 1, borderRadius: 5, borderColor: 'divider' }}>
@@ -101,11 +101,11 @@ export default function PublicProfileActivityFeedSection(
           address={payment.senderAddress}
           ensAvatar={avatarFrom}
         />
-        <Stack spacing={0.5} width="100%">
+        <Stack spacing={0.2} width="100%">
           <Box
             display="flex"
             flexDirection="row"
-            alignItems="center"
+            alignItems="flex-start"
             justifyContent="space-between">
             <Stack direction="row" justifyContent="flex-start" alignItems="flex-end" spacing={0.5}>
               <UserDisplayName

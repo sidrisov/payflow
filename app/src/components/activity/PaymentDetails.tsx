@@ -65,8 +65,7 @@ export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
       return (
         <Stack direction="row" spacing={0.5} alignItems="center">
           <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
-            {formattedTokenAmount} unit{formattedTokenAmount !== '1' ? 's' : ''} of farcaster
-            storage
+            {formattedTokenAmount} storage unit{formattedTokenAmount !== '1' ? 's' : ''}
           </Typography>
           <FarcasterAvatar size={15} />
         </Stack>
