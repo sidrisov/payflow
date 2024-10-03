@@ -1,8 +1,8 @@
 import { usePageContext } from 'vike-react/usePageContext';
-import { API_URL, DAPP_URL, FRAMES_URL } from '../../utils/constants';
+import { API_URL, BUY_FAN_FRAME_VERSION, DAPP_URL, FRAMES_URL } from '../../utils/constants';
 
 export function Head() {
-  const imageUrl = `${FRAMES_URL}/images/fan.png?test1}`;
+  const imageUrl = `${FRAMES_URL}/images/fan.png?${BUY_FAN_FRAME_VERSION}}`;
 
   const { urlParsed } = usePageContext();
 
@@ -24,6 +24,9 @@ export function Head() {
     }
     return name;
   };
+
+  const addActionUrl =
+    'https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fproducts%2Ffan';
 
   return (
     <>
@@ -64,7 +67,16 @@ export function Head() {
 
         <meta property="fc:frame" content="vNext" />
         <meta property="fc:frame:image" content={imageUrl} />
-        <meta property="fc:frame:input:text" content="Gift username (blank for self)" />
+
+        {names.length !== 0 ? (
+          <meta property="fc:frame:input:text" content="Gift username (blank for self)" />
+        ) : (
+          <>
+            <meta property="fc:frame:button:1" content="Install Action" />
+            <meta property="fc:frame:button:1:action" content="link" />
+            <meta property="fc:frame:button:1:target" content={addActionUrl} />
+          </>
+        )}
 
         {names.map((name, index) => (
           <>
