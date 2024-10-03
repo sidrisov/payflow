@@ -75,4 +75,8 @@ public class FanTokenService {
 			throw t;
 		}
 	}
+
+	public List<String> filterByMoxiePassHolders(List<String> addresses) {
+		return addresses.stream().filter(address -> socialGraphService.hasMoxiePass(address)).toList();
+	}
 }

@@ -54,10 +54,10 @@ public class FanTokenController {
 	private FanTokenService fanTokenService;
 
 	private static Payment getFanTokenPayment(ValidatedFrameResponseMessage validateMessage,
-			User user,
-			Integer receiverFid,
-			String receiverAddress,
-			FanToken fanToken) {
+	                                          User user,
+	                                          Integer receiverFid,
+	                                          String receiverAddress,
+	                                          FanToken fanToken) {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val castHash = validateMessage.action().cast().hash();
 		val sourceRef = String.format("https://warpcast.com/%s/%s",
@@ -77,7 +77,7 @@ public class FanTokenController {
 
 	@PostMapping("/{name}/submit")
 	public ResponseEntity<?> submit(@RequestBody FrameMessage frameMessage,
-			@PathVariable String name) {
+	                                @PathVariable String name) {
 		log.debug("Received submit buy fan token {} message request: {}", name, frameMessage);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
@@ -133,7 +133,12 @@ public class FanTokenController {
 				String receiverAddress;
 				if (StringUtils.isNotBlank(recipientText)) {
 					val addresses = identityService.getFnameAddresses(recipientText);
-					val identity = identityService.getHighestScoredIdentityInfo(addresses);
+					val addressesWithMoxiePass = fanTokenService.filterByMoxiePassHolders(addresses);
+					if (addressesWithMoxiePass.isEmpty()) {
+						log.error("No moxie pass found for: {}", recipientText);
+						continue;
+					}
+					val identity = identityService.getHighestScoredIdentityInfo(addressesWithMoxiePass);
 					if (identity == null) {
 						log.error("Farcaster user identity not found: {}", recipientText);
 						continue;
@@ -155,11 +160,21 @@ public class FanTokenController {
 					}
 					receiverAddress = identity.address();
 				} else {
-					// Self-mint case
 					receiverFid = interactor.fid();
-					receiverAddress = clickedProfile.getIdentity();
+					val addressesWithMoxiePass = fanTokenService.filterByMoxiePassHolders(interactor.addressesWithoutCustodialIfAvailable());
+					if (addressesWithMoxiePass.isEmpty()) {
+						log.error("No moxie pass found for: {}", recipientText);
+						return ResponseEntity.badRequest().body(
+								new FrameResponse.FrameMessage("Moxie pass required"));
+					}
+					val identity = identityService.getHighestScoredIdentityInfo(addressesWithMoxiePass);
+					if (identity == null) {
+						log.error("Farcaster user identity not found: {}", recipientText);
+						return ResponseEntity.badRequest().body(
+								new FrameResponse.FrameMessage("Farcaster identity is missing"));
+					}
+					receiverAddress = identity.address();
 				}
-
 				val payment = getFanTokenPayment(validateMessage, clickedProfile, receiverFid,
 						receiverAddress, fanToken);
 				payments.add(payment);
@@ -171,7 +186,7 @@ public class FanTokenController {
 
 		if (payments.isEmpty()) {
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameMessage("No user found, try again"));
+					new FrameResponse.FrameMessage("No eligible username found"));
 		}
 
 		paymentRepository.saveAll(payments);

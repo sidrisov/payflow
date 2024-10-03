@@ -17,6 +17,8 @@ public interface ISocialGraphService {
 
 	FanToken getFanToken(String name);
 
+	boolean hasMoxiePass(String address);
+
 	List<String> getFanTokenHolders(String fanTokenName);
 
 	FarcasterCast getReplySocialCapitalValue(String hash);

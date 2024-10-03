@@ -34,6 +34,8 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 	private final GraphQlClient airstackGraphQlClient;
 	private final GraphQlClient moxieStatsGraphQlClient;
 	private final GraphQlClient moxieVestingGraphQlClient;
+	private final GraphQlClient moxieProtocolGraphQlClient;
+
 
 	@Value("${payflow.airstack.contacts.limit:10}")
 	private int contactsLimit;
@@ -44,23 +46,31 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 	public AirstackSocialGraphService(WebClient.Builder builder,
 	                                  @Value("${payflow.airstack.api.url}") String airstackUrl,
 	                                  @Value("${payflow.airstack.api.key}") String airstackApiKey,
-	                                  @Value("${payflow.moxie.api.url}") String moxieUrl) {
+	                                  @Value("${payflow.moxie.subgraph.url}") String moxieSubgraphUrl,
+	                                  @Value("${payflow.moxie.api.url}") String moxieUrl,
+	                                  @Value("${payflow.moxie.api.key}") String moxieApiKey) {
 		val airstackWebClient = builder
 				.baseUrl(airstackUrl)
 				.build();
 
-		val moxieWebClient = builder.build();
+		val moxieSubgraphWebClient = builder.build();
+		val moxieProtocolWebClient = builder.build();
 
 		airstackGraphQlClient = HttpGraphQlClient.builder(airstackWebClient)
 				.header(HttpHeaders.AUTHORIZATION, airstackApiKey)
 				.build();
 
-		moxieStatsGraphQlClient = HttpGraphQlClient.builder(moxieWebClient)
-				.url(moxieUrl.concat("/moxie_protocol_stats_mainnet/version/latest"))
+		moxieStatsGraphQlClient = HttpGraphQlClient.builder(moxieSubgraphWebClient)
+				.url(moxieSubgraphUrl.concat("/moxie_protocol_stats_mainnet/version/latest"))
 				.build();
 
-		moxieVestingGraphQlClient = HttpGraphQlClient.builder(moxieWebClient)
-				.url(moxieUrl.concat("/moxie_vesting_mainnet/version/latest"))
+		moxieVestingGraphQlClient = HttpGraphQlClient.builder(moxieSubgraphWebClient)
+				.url(moxieSubgraphUrl.concat("/moxie_vesting_mainnet/version/latest"))
+				.build();
+
+		moxieProtocolGraphQlClient = HttpGraphQlClient.builder(moxieProtocolWebClient)
+				.url(moxieUrl)
+				.header("x-airstack-protocol", moxieApiKey)
 				.build();
 	}
 
@@ -169,6 +179,31 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 
 		log.warn("Failed to fetch fan token for name: {}", name);
 		return null;
+	}
+
+	@Override
+	public boolean hasMoxiePass(String address) {
+		try {
+			val response = moxieProtocolGraphQlClient.documentName("hasMoxiePass")
+					.variable("address", address)
+					.execute().block();
+			if (response != null) {
+				log.debug("Response: {}", response);
+				val status = response.field("FarcasterMoxieMintStatus.status").toEntity(String.class);
+				if ("COMPLETED".equals(status)) {
+					log.debug("Moxie Pass status for address {}: {}", address, status);
+					return true;
+				}
+			}
+		} catch (Throwable t) {
+			log.error("Error during checking Moxie Pass for address: {}, error: {} - {}",
+					address,
+					t.getMessage(),
+					log.isTraceEnabled() ? t : null);
+		}
+
+		log.warn("Failed to check Moxie Pass for address: {}", address);
+		return false;
 	}
 
 	@Override

@@ -313,7 +313,7 @@ public class NotificationService {
 			}
 		}
 
-		val tokenAmount = Integer.parseInt(payment.getTokenAmount());
+		val tokenAmount = Double.parseDouble(payment.getTokenAmount());
 		val tokenAmountText = tokenAmount > 1 ? tokenAmount + "x " : "";
 
 		String castText;
