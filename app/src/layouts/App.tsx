@@ -307,7 +307,8 @@ export default function AppLayout({
       )}
       {openSearchIdentity && (
         <SearchIdentityDialog
-          showOnTopOfNavigation={false}
+          // TODO: doesn't work properly on IOS, navigation is hidden
+          //showOnTopOfNavigation={false}
           address={profile?.identity}
           profileRedirect={true}
           open={openSearchIdentity}
