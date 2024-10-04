@@ -1,5 +1,5 @@
 import { Box, Typography, Stack, CircularProgress } from '@mui/material';
-import PublicProfileActivityFeedSection from './ActivityFeedEntry';
+import ActivityFeedEntry from './ActivityFeedEntry';
 import { useAccount } from 'wagmi';
 import { useContext, useMemo, useCallback, useRef, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
@@ -139,7 +139,7 @@ export default function ActivityFeed({ identity, selectedChain }: AssetsProps) {
                               ? lastElementRef
                               : null
                           }>
-                          <PublicProfileActivityFeedSection identity={identity} payment={payment} />
+                          <ActivityFeedEntry identity={identity} payment={payment} />
                         </div>
                       ))}
                   </Box>

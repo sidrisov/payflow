@@ -63,7 +63,6 @@ export default function Actions() {
       startIcon: <AutoAwesome />
     },
     {
-      earlyFeature: true,
       title: 'Buy Fan Token',
       description: 'Buy fan tokens from cast',
       installUrl: `${BASE_URL}/products/fan`,

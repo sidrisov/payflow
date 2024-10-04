@@ -308,7 +308,6 @@ export default function AppLayout({
       {openSearchIdentity && (
         <SearchIdentityDialog
           showOnTopOfNavigation={false}
-          hideBackButton
           address={profile?.identity}
           profileRedirect={true}
           open={openSearchIdentity}

@@ -47,7 +47,8 @@ export default function PublicProfileActivityFeedSection(
     return (
       <Stack
         m={1}
-        p={2}
+        mt={2}
+        p={1.5}
         direction="row"
         spacing={1}
         alignItems="flex-start"
@@ -91,6 +92,7 @@ export default function PublicProfileActivityFeedSection(
     <>
       <Stack
         m={1}
+        mt={2}
         p={1.5}
         direction="row"
         spacing={1}
