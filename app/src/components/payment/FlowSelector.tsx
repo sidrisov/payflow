@@ -7,6 +7,7 @@ import { SelectedIdentityType } from '../../types/ProfileType';
 import { useMobile } from '../../utils/hooks/useMobile';
 
 type FlowSelectorProps = {
+  variant?: 'outlined' | 'text';
   sender: SelectedIdentityType;
   flows: FlowType[];
   selectedFlow: FlowType;
@@ -14,6 +15,7 @@ type FlowSelectorProps = {
 };
 
 export const FlowSelector: React.FC<FlowSelectorProps> = ({
+  variant = 'outlined',
   sender,
   flows,
   selectedFlow,
@@ -25,7 +27,6 @@ export const FlowSelector: React.FC<FlowSelectorProps> = ({
   return (
     <>
       <Box
-        component={Button}
         onClick={() => setOpenSelectFlow(true)}
         sx={{
           display: 'flex',
@@ -34,12 +35,18 @@ export const FlowSelector: React.FC<FlowSelectorProps> = ({
           alignItems: 'center',
           justifyContent: 'flex-start',
           color: 'inherit',
-          border: 1,
+          ...(variant === 'outlined' && {
+            border: 1,
+            borderColor: 'divider'
+          }),
           borderRadius: 5,
-          borderColor: 'divider',
           p: isMobile ? 1.5 : 1,
-          textTransform: 'none',
-          height: 56
+          WebkitTapHighlightColor: 'transparent',
+          cursor: 'pointer',
+          '&:hover': {
+            backgroundColor: 'action.hover'
+          },
+          textTransform: 'none'
         }}>
         {sender.identity.profile?.defaultFlow ? (
           <Box sx={{ width: '100%', overflow: 'hidden' }}>

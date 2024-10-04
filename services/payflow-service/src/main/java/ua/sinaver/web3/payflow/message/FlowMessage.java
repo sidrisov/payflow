@@ -94,7 +94,7 @@ public record FlowMessage(String signer, String signerProvider,
 				.toList();
 		return new FlowMessage(verificationAddress, null,
 				null, null,
-				"Verified: " + shortenWalletAddressLabel2(verificationAddress),
+				shortenWalletAddressLabel2(verificationAddress),
 				Flow.FlowType.FARCASTER_VERIFICATION.toString(),
 				verificationAddress,
 				null, null, wallets,

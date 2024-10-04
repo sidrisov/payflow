@@ -34,7 +34,7 @@ import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { useRegularTransfer } from '../../utils/hooks/useRegularTransfer';
 import { PaymentType } from '../../types/PaymentType';
 import { delay } from '../../utils/delay';
-import { Skeleton, Stack, Typography, useMediaQuery } from '@mui/material';
+import { Box, Skeleton, Stack, Typography } from '@mui/material';
 import ResponsiveDialog from '../dialogs/ResponsiveDialog';
 import { grey, red } from '@mui/material/colors';
 import PoweredByGlideText from '../text/PoweredByGlideText';
@@ -603,21 +603,24 @@ export default function PaymentDialogContent({
         setPaymentAmountUSD={setPaymentAmountUSD}
       />
 
-      <NetworkTokenSelector
-        payment={payment}
-        crossChainMode={crossChainMode}
-        paymentWallet={paymentWallet}
-        setPaymentWallet={setPaymentWallet}
-        paymentToken={crossChainMode ? crossChainPaymentToken : paymentToken}
-        setPaymentToken={crossChainMode ? setCrossChainPaymentToken : setPaymentToken}
-        compatibleWallets={compatibleWallets}
-        enabledChainCurrencies={
-          crossChainMode
-            ? paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
-            : undefined
-        }
-        gasFee={gasFee}
-      />
+      <Box width="100%" display="flex" flexDirection="row" justifyContent="flex-end">
+        <NetworkTokenSelector
+          payment={payment}
+          crossChainMode={crossChainMode}
+          paymentWallet={paymentWallet}
+          setPaymentWallet={setPaymentWallet}
+          paymentToken={crossChainMode ? crossChainPaymentToken : paymentToken}
+          setPaymentToken={crossChainMode ? setCrossChainPaymentToken : setPaymentToken}
+          compatibleWallets={compatibleWallets}
+          enabledChainCurrencies={
+            crossChainMode
+              ? paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
+              : undefined
+          }
+          gasFee={gasFee}
+        />
+      </Box>
+
       {switchChain ? (
         <LoadingSwitchChainButton
           lazy={false}

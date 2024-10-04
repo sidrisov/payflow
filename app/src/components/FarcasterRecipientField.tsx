@@ -5,8 +5,10 @@ import { useMobile } from '../utils/hooks/useMobile';
 
 export function FarcasterRecipientField({
   social,
-  setOpenSearchIdentity
+  setOpenSearchIdentity,
+  variant = 'outlined'
 }: {
+  variant?: 'outlined' | 'text';
   social: Social;
   setOpenSearchIdentity?: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
@@ -25,10 +27,12 @@ export function FarcasterRecipientField({
         onClick: () => setOpenSearchIdentity(true)
       })}
       sx={{
-        border: 1,
-        borderRadius: 5,
-        borderColor: 'divider',
-        p: isMobile ? 1.5 : 1,
+        ...(variant === 'outlined' && {
+          border: 1,
+          borderRadius: 5,
+          borderColor: 'divider',
+          p: isMobile ? 1.5 : 1
+        }),
         textTransform: 'none'
       }}>
       <FarcasterProfileSection maxWidth={200} social={social} />

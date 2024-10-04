@@ -167,7 +167,7 @@ export function ChooseFlowDialog({
               {farcaster && farcaster.length > 0 && (
                 <>
                   <Typography variant="subtitle2" sx={{ px: 2, py: 1, color: 'text.secondary' }}>
-                    Farcaster
+                    Farcaster Verified
                   </Typography>
                   {farcaster.map(renderMenuItem)}
                 </>

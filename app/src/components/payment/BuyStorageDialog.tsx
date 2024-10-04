@@ -2,8 +2,6 @@ import { Stack, Box, Typography, Skeleton, DialogProps } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { getPaymentOption } from '../../utils/glide';
 import { useChainId } from 'wagmi';
-import { SenderField } from '../SenderField';
-import { KeyboardDoubleArrowDown } from '@mui/icons-material';
 import { SelectedIdentityType } from '../../types/ProfileType';
 import { FarcasterRecipientField } from '../FarcasterRecipientField';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
@@ -16,7 +14,6 @@ import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
 import { toast } from 'react-toastify';
 import { Social } from '../../generated/graphql/types';
 import { red } from '@mui/material/colors';
-import { ChooseFlowDialog } from '../dialogs/ChooseFlowDialog';
 import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
 import { PayButton } from '../buttons/PayButton';
 import { useStoragePaymentTx } from '../../utils/hooks/useStoragePaymentTx';
@@ -24,7 +21,6 @@ import PaymentSuccessDialog from '../dialogs/PaymentSuccessDialog';
 import { getReceiptUrl } from '../../utils/receipts';
 import { BasePaymentDialog } from './BasePaymentDialog';
 import { FlowSelector } from './FlowSelector';
-import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 
 export type BuyStorageDialogProps = DialogProps &
   CloseCallbackType & {
@@ -134,52 +130,46 @@ export default function BuyStorageDialog({
               }}
             />
           }>
-          <Stack spacing={2} height="100%">
-            <Box display="flex" alignItems="center" width="100%">
+          <Box ml={1}>
+            <FarcasterRecipientField variant="text" social={recipientSocial} />
+          </Box>
+          <Stack flex={1} alignItems="center" justifyContent="center" spacing={1} overflow="auto">
+            <Typography fontSize={18} fontWeight="bold">
+              {numberOfUnits} Unit{numberOfUnits > 1 ? 's' : ''} of Storage
+            </Typography>
+
+            {isLoading ? (
+              <Skeleton
+                title="fetching price"
+                variant="rectangular"
+                sx={{ borderRadius: 3, height: 45, width: 100 }}
+              />
+            ) : hasPaymentOption ? (
+              <Typography fontSize={30} fontWeight="bold" textAlign="center">
+                {formatAmountWithSuffix(
+                  normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
+                )}{' '}
+                {paymentToken?.id.toUpperCase()}
+              </Typography>
+            ) : (
+              <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
+                {isPaymentOptionsError
+                  ? 'Failed to fetch payment options. Please try again.'
+                  : "You don't have any balance to cover storage cost. Switch to a different payment flow!"}
+              </Typography>
+            )}
+          </Stack>
+          <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
+            <Box width="50%">
               <FlowSelector
+                variant="text"
                 sender={sender}
                 flows={flows!}
                 selectedFlow={selectedFlow!}
                 setSelectedFlow={setSelectedFlow!}
               />
-              <ArrowRightIcon sx={{ mx: 1 }} />
-              <FarcasterRecipientField social={recipientSocial} />
             </Box>
-
-            <Box
-              flex={1}
-              overflow="auto"
-              display="flex"
-              flexDirection="column"
-              alignItems="center"
-              justifyContent="space-between">
-              <Stack alignItems="center" justifyContent="start" spacing={1}>
-                <Typography fontSize={18} fontWeight="bold">
-                  {numberOfUnits} Unit{numberOfUnits > 1 ? 's' : ''} of Storage
-                </Typography>
-
-                {isLoading ? (
-                  <Skeleton
-                    title="fetching price"
-                    variant="rectangular"
-                    sx={{ borderRadius: 3, height: 45, width: 100 }}
-                  />
-                ) : hasPaymentOption ? (
-                  <Typography fontSize={30} fontWeight="bold" textAlign="center">
-                    {formatAmountWithSuffix(
-                      normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
-                    )}{' '}
-                    {paymentToken?.id.toUpperCase()}
-                  </Typography>
-                ) : (
-                  <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
-                    {isPaymentOptionsError
-                      ? 'Failed to fetch payment options. Please try again.'
-                      : "You don't have any balance to cover storage cost. Switch to a different payment flow!"}
-                  </Typography>
-                )}
-              </Stack>
-
+            <Box width="50%">
               <NetworkTokenSelector
                 crossChainMode
                 payment={payment}
@@ -194,7 +184,7 @@ export default function BuyStorageDialog({
                 gasFee={gasFee}
               />
             </Box>
-          </Stack>
+          </Box>
         </BasePaymentDialog>
       )}
       <PaymentSuccessDialog

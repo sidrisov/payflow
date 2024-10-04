@@ -23,7 +23,6 @@ import { getReceiptUrl } from '../../utils/receipts';
 import { QuantitySelector } from './QuantitySelector';
 import { BasePaymentDialog } from './BasePaymentDialog';
 import { FlowSelector } from './FlowSelector';
-import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import { Address } from 'viem';
 import { Chip } from '@mui/material';
 import { fanTokenUrl } from '../../utils/moxie';
@@ -140,71 +139,71 @@ export default function BuyFanTokenDialog({
               }}
             />
           }>
-          <Stack spacing={2} height="100%">
-            <Box display="flex" alignItems="center" width="100%">
+          <Box ml={1}>
+            <FarcasterRecipientField variant="text" social={recipientSocial} />
+          </Box>
+          <Stack flex={1} alignItems="center" justifyContent="center" spacing={1} overflow="auto">
+            <Chip
+              icon={<MoxieAvatar size={18} />}
+              label={tokenName}
+              clickable={true}
+              onClick={() => {
+                window.open(fanTokenUrl(tokenName), '_blank');
+              }}
+              sx={{
+                px: 0.5,
+                fontSize: 18,
+                fontWeight: 'bold'
+              }}
+            />
+
+            <QuantitySelector
+              quantity={fanTokenAmount}
+              min={0.1}
+              max={1000}
+              decimals={1}
+              step={10}
+              setQuantity={setFanTokenAmount}
+            />
+
+            {isLoading ? (
+              <Skeleton
+                title="fetching price"
+                variant="rectangular"
+                sx={{ borderRadius: 3, height: 45, width: 100 }}
+              />
+            ) : hasPaymentOption ? (
+              <Typography fontSize={30} fontWeight="bold" textAlign="center">
+                {formatAmountWithSuffix(
+                  normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
+                )}{' '}
+                {paymentToken?.id.toUpperCase()}
+              </Typography>
+            ) : (
+              <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
+                {isPaymentOptionsError ? (
+                  'Failed to fetch payment options. Please try again.'
+                ) : (
+                  <>
+                    Balance not enough to cover the payment.
+                    <br />
+                    Switch to a different payment flow!
+                  </>
+                )}
+              </Typography>
+            )}
+          </Stack>
+          <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
+            <Box width="50%">
               <FlowSelector
+                variant="text"
                 sender={sender}
                 flows={flows!}
                 selectedFlow={selectedFlow!}
                 setSelectedFlow={setSelectedFlow!}
               />
-              <ArrowRightIcon sx={{ mx: 1 }} />
-              <FarcasterRecipientField social={recipientSocial} />
             </Box>
-
-            <Box
-              flex={1}
-              overflow="auto"
-              display="flex"
-              flexDirection="column"
-              alignItems="center"
-              justifyContent="space-between">
-              <Stack alignItems="center" justifyContent="start" spacing={1} width="100%">
-                <Chip
-                  icon={<MoxieAvatar size={18} />}
-                  label={tokenName}
-                  clickable={true}
-                  onClick={() => {
-                    window.open(fanTokenUrl(tokenName), '_blank');
-                  }}
-                  sx={{
-                    px: 0.5,
-                    fontSize: 18,
-                    fontWeight: 'bold'
-                  }}
-                />
-
-                <QuantitySelector
-                  quantity={fanTokenAmount}
-                  min={0.1}
-                  max={1000}
-                  decimals={1}
-                  step={10}
-                  setQuantity={setFanTokenAmount}
-                />
-
-                {isLoading ? (
-                  <Skeleton
-                    title="fetching price"
-                    variant="rectangular"
-                    sx={{ borderRadius: 3, height: 45, width: 100 }}
-                  />
-                ) : hasPaymentOption ? (
-                  <Typography fontSize={30} fontWeight="bold" textAlign="center">
-                    {formatAmountWithSuffix(
-                      normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
-                    )}{' '}
-                    {paymentToken?.id.toUpperCase()}
-                  </Typography>
-                ) : (
-                  <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
-                    {isPaymentOptionsError
-                      ? 'Failed to fetch payment options. Please try again.'
-                      : "You don't have any balance to cover the cost. Switch to a different payment flow!"}
-                  </Typography>
-                )}
-              </Stack>
-
+            <Box width="50%">
               <NetworkTokenSelector
                 crossChainMode
                 payment={{ ...payment, tokenAmount: fanTokenAmount }}
@@ -219,7 +218,7 @@ export default function BuyFanTokenDialog({
                 gasFee={gasFee}
               />
             </Box>
-          </Stack>
+          </Box>
         </BasePaymentDialog>
       )}
       <PaymentSuccessDialog

@@ -351,113 +351,102 @@ export default function MintDialog({
               }}
             />
           }>
-          <Stack spacing={2} height="100%">
-            <Box display="flex" alignItems="center" width="100%">
+          <Box ml={1}>
+            <FarcasterRecipientField variant="text" social={recipientSocial} />
+          </Box>
+          <Stack flex={1} alignItems="center" justifyContent="center" spacing={1} overflow="auto">
+            <Tooltip
+              title={mint.metadata.description}
+              arrow
+              disableFocusListener
+              sx={{ fontWeight: 'bold' }}
+              slotProps={{
+                tooltip: { sx: { p: 1, borderRadius: 5, fontWeight: 'bold' } }
+              }}>
+              <Stack
+                p={1}
+                maxWidth={250}
+                direction="row"
+                alignItems="center"
+                justifyContent="center"
+                spacing={1}>
+                <Avatar
+                  variant="rounded"
+                  src={mint.metadata.image}
+                  sx={{
+                    width: 64,
+                    height: 64
+                  }}
+                />
+                <Stack alignItems="flex-start" spacing={0.5}>
+                  <Typography fontSize={18} fontWeight="bold">
+                    {mint.metadata.name}
+                  </Typography>
+                  <Typography variant="subtitle2" color={grey[prefersDarkMode ? 400 : 700]}>
+                    {mint.collectionName}
+                  </Typography>
+                </Stack>
+              </Stack>
+            </Tooltip>
+
+            <QuantitySelector quantity={mintCount} min={1} max={10} setQuantity={setMintCount} />
+
+            {isLoading ? (
+              <Skeleton
+                title="fetching price"
+                variant="rectangular"
+                sx={{ borderRadius: 3, height: 45, width: 100 }}
+              />
+            ) : hasPaymentOption ? (
+              <Typography fontSize={30} fontWeight="bold" textAlign="center">
+                {formatAmountWithSuffix(
+                  normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
+                )}{' '}
+                {paymentToken?.id.toUpperCase()}
+              </Typography>
+            ) : (
+              <Typography
+                textAlign="center"
+                fontSize={14}
+                fontWeight="bold"
+                color={red.A400}
+                sx={{
+                  textWrap: 'balance'
+                }}>
+                {mintStatus === 'ended' && 'Mint has ended'}
+                {mintStatus === 'upcoming' && 'Mint has not started yet'}
+                {mintStatus === 'sold' && 'Mint is sold out'}
+                {isMintPaymentTxError &&
+                  (mintPaymentTxError?.message ?? 'Failed to load payment transaction')}
+                {(paymentOptions?.length === 0 || isPaymentOptionsError) &&
+                  (paymentOptionsError?.message ??
+                    "You don't have any balance to cover mint cost. Switch to a different payment flow!")}
+              </Typography>
+            )}
+
+            <CommentField
+              disabled={
+                !mintStatus ||
+                mintStatus !== 'live' ||
+                isMintPaymentTxError ||
+                isPaymentOptionsError
+              }
+              comment={comment}
+              setComment={setComment}
+              zoraCommentEnabled={zoraCommentEnabled}
+            />
+          </Stack>
+          <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
+            <Box width="50%">
               <FlowSelector
+                variant="text"
                 sender={sender}
                 flows={flows!}
                 selectedFlow={selectedFlow!}
                 setSelectedFlow={setSelectedFlow!}
               />
-              <ArrowRightIcon sx={{ mx: 1 }} />
-              <FarcasterRecipientField social={recipientSocial} />
             </Box>
-
-            <Box
-              flex={1}
-              overflow="auto"
-              display="flex"
-              flexDirection="column"
-              alignItems="center"
-              justifyContent="space-between">
-              <Stack alignItems="center" justifyContent="start" spacing={1} width="100%">
-                <Tooltip
-                  title={mint.metadata.description}
-                  arrow
-                  disableFocusListener
-                  sx={{ fontWeight: 'bold' }}
-                  slotProps={{
-                    tooltip: { sx: { p: 1, borderRadius: 5, fontWeight: 'bold' } }
-                  }}>
-                  <Stack
-                    p={1}
-                    maxWidth={250}
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="center"
-                    spacing={1}>
-                    <Avatar
-                      variant="rounded"
-                      src={mint.metadata.image}
-                      sx={{
-                        width: 64,
-                        height: 64
-                      }}
-                    />
-                    <Stack alignItems="flex-start" spacing={0.5}>
-                      <Typography fontSize={18} fontWeight="bold">
-                        {mint.metadata.name}
-                      </Typography>
-                      <Typography variant="subtitle2" color={grey[prefersDarkMode ? 400 : 700]}>
-                        {mint.collectionName}
-                      </Typography>
-                    </Stack>
-                  </Stack>
-                </Tooltip>
-
-                <QuantitySelector
-                  quantity={mintCount}
-                  min={1}
-                  max={10}
-                  setQuantity={setMintCount}
-                />
-
-                {isLoading ? (
-                  <Skeleton
-                    title="fetching price"
-                    variant="rectangular"
-                    sx={{ borderRadius: 3, height: 45, width: 100 }}
-                  />
-                ) : hasPaymentOption ? (
-                  <Typography fontSize={30} fontWeight="bold" textAlign="center">
-                    {formatAmountWithSuffix(
-                      normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
-                    )}{' '}
-                    {paymentToken?.id.toUpperCase()}
-                  </Typography>
-                ) : (
-                  <Typography
-                    textAlign="center"
-                    fontSize={14}
-                    fontWeight="bold"
-                    color={red.A400}
-                    sx={{
-                      textWrap: 'balance'
-                    }}>
-                    {mintStatus === 'ended' && 'Mint has ended'}
-                    {mintStatus === 'upcoming' && 'Mint has not started yet'}
-                    {mintStatus === 'sold' && 'Mint is sold out'}
-                    {isMintPaymentTxError &&
-                      (mintPaymentTxError?.message ?? 'Failed to load payment transaction')}
-                    {(paymentOptions?.length === 0 || isPaymentOptionsError) &&
-                      (paymentOptionsError?.message ??
-                        "You don't have any balance to cover mint cost. Switch to a different payment flow!")}
-                  </Typography>
-                )}
-
-                <CommentField
-                  disabled={
-                    !mintStatus ||
-                    mintStatus !== 'live' ||
-                    isMintPaymentTxError ||
-                    isPaymentOptionsError
-                  }
-                  comment={comment}
-                  setComment={setComment}
-                  zoraCommentEnabled={zoraCommentEnabled}
-                />
-              </Stack>
-
+            <Box width="50%">
               <NetworkTokenSelector
                 crossChainMode
                 payment={payment}
@@ -472,7 +461,7 @@ export default function MintDialog({
                 gasFee={gasFee}
               />
             </Box>
-          </Stack>
+          </Box>
         </BasePaymentDialog>
       )}
 

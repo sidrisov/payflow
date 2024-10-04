@@ -1,4 +1,4 @@
-import { Stack, Box, Chip, Typography } from '@mui/material';
+import { Stack, Box, Typography } from '@mui/material';
 import { useState, useMemo, useEffect } from 'react';
 import { formatUnits } from 'viem';
 import { FlowWalletType } from '../types/FlowType';
@@ -129,19 +129,21 @@ export function NetworkTokenSelector({
 
   const paymentTokenSelectable = paymentToken && (!showBalance || isBalanceFetched);
   return (
-    <Box width="100%">
+    <>
       <Box
+        maxWidth={200}
         px={0.5}
         display="flex"
         flexDirection="row"
-        justifyContent="space-between"
+        justifyContent="flex-start"
         alignItems="center"
+        gap={1}
         {...(paymentTokenSelectable && {
           onClick: () => setExpand(true)
         })}
         sx={{
+          height: 40,
           borderRadius: 5,
-          p: 1,
           WebkitTapHighlightColor: 'transparent',
           ...(paymentTokenSelectable && {
             cursor: 'pointer',
@@ -150,25 +152,21 @@ export function NetworkTokenSelector({
             }
           })
         }}>
-        <Chip
-          icon={
-            crossChainMode ? (
-              <MdMultipleStop color="inherit" size={20} />
-            ) : (
-              <TbSend color="inherit" size={20} />
-            )
-          }
-          label={label}
-          variant="outlined"
-          sx={{ border: 0, fontSize: 13, fontWeight: 'bold' }}
-        />
+        {crossChainMode ? (
+          <MdMultipleStop color="inherit" size={20} />
+        ) : (
+          <TbSend color="inherit" size={20} />
+        )}
+        <Typography fontSize={13} fontWeight="bold">
+          Token
+        </Typography>
         {paymentTokenSelectable ? (
           <Stack direction="row" alignItems="center" spacing={1}>
             <Typography
               fontSize={13}
               fontWeight="bold"
               noWrap
-              maxWidth={100}
+              maxWidth={80}
               textOverflow="ellipsis"
               overflow="hidden">
               {`${formatAmountWithSuffix(maxBalance)} ${paymentToken?.name}`}
@@ -274,6 +272,6 @@ export function NetworkTokenSelector({
           </Box>
         </ResponsiveDialog>
       )}
-    </Box>
+    </>
   );
 }
