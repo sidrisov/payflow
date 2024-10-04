@@ -11,7 +11,8 @@ import java.util.List;
 @Component
 public class PayflowConfig {
 
-	public static final List<String> MINIAPP_REDIRECT_ALLOWLIST = Collections.singletonList("sinaver.eth");
+	public static final List<String> MINIAPP_REDIRECT_ALLOWLIST = Collections.emptyList();
+	//Collections.singletonList("sinaver.eth");
 	@Value("${payflow.dapp.url}")
 	private String dAppServiceUrl;
 	@Value("${payflow.api.url}")

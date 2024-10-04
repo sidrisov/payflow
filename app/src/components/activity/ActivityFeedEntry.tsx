@@ -56,7 +56,6 @@ export default function PublicProfileActivityFeedSection(
         <Stack spacing={0.5} width="100%">
           <Skeleton variant="text" width="40%" />
           <Skeleton variant="text" width="60%" />
-          <Skeleton variant="text" height={30} />
         </Stack>
       </Stack>
     );
