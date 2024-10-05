@@ -45,7 +45,6 @@ import { createCastPostMessage, createComposeCastUrl } from '../../utils/warpcas
 import { useSearchParams } from 'react-router-dom';
 import { QuantitySelector } from './QuantitySelector';
 import { BasePaymentDialog } from './BasePaymentDialog';
-import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import { FlowSelector } from './FlowSelector';
 
 export type MintDialogProps = DialogProps &

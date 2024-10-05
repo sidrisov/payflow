@@ -128,10 +128,10 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
 
     try {
       const session = await createSession(glideConfig, {
-        account: paymentWallet.address,
         paymentCurrency: paymentOption.paymentCurrency,
         currentChainId: chainId,
-        ...(paymentTx as any)
+        ...(paymentTx as any),
+        account: paymentWallet.address
       });
 
       const { sponsoredTransactionHash: glideTxHash } = await executeSession(glideConfig, {
