@@ -4,30 +4,29 @@ import {
   Address,
   Chain,
   Client,
+  EIP1193Provider,
   Hash,
   Hex,
+  LocalAccount,
+  OneOf,
   Transport,
   WalletClient,
   keccak256,
   toBytes
 } from 'viem';
 import { useWaitForTransactionReceipt } from 'wagmi';
-import {
-  walletClientToSmartAccountSigner,
-  createSmartAccountClient,
-  isSmartAccountDeployed,
-  ENTRYPOINT_ADDRESS_V06
-} from 'permissionless';
-import {
-  paymasterClient,
-  bundlerClient,
-  transport,
-  PIMLICO_SPONSORED_ENABLED,
-  paymasterSponsorshipPolicyIds
-} from '../pimlico';
-import { signerToSafeSmartAccount } from '../permissionless_forked/signerToSafeSmartAccount';
+
 import { PimlicoSponsorUserOperationParameters } from 'permissionless/actions/pimlico';
-import { ENTRYPOINT_ADDRESS_V06_TYPE } from 'permissionless/types';
+import { entryPoint06Address, UserOperation } from 'viem/account-abstraction';
+import { toSafeSmartAccount } from '../../utils/permissionless_forked/toSafeSmartAccount';
+import { createSmartAccountClient, isSmartAccountDeployed } from 'permissionless';
+import {
+  paymasterSponsorshipPolicyIds as pimlicoSponsorshipPolicyIds,
+  PIMLICO_SPONSORED_ENABLED,
+  pimlicoClient,
+  transport
+} from '../pimlico';
+import { delay } from '../delay';
 
 export type ViemTransaction = {
   from: Address;
@@ -115,30 +114,46 @@ export const useSafeTransfer = (): {
       if (safeVersion === '1.4.1') {
         const chain = signer.chain;
 
-        const safeAccount = await signerToSafeSmartAccount(client as any, {
-          entryPoint: ENTRYPOINT_ADDRESS_V06,
-          signer: walletClientToSmartAccountSigner(signer),
-          owners: safeAccountConfig.owners as Address[],
-          safeVersion: '1.4.1',
+        const safeAccount = await toSafeSmartAccount({
+          address: tx.from,
+          client,
+          entryPoint: {
+            address: entryPoint06Address,
+            version: '0.6'
+          },
+          version: '1.4.1',
           saltNonce: BigInt(keccak256(toBytes(saltNonce))),
-          address: tx.from
+          owners: safeAccountConfig.owners.map((owner) => {
+            if (signer.account.address === owner) {
+              return signer;
+            } else {
+              return {
+                type: 'local',
+                address: owner
+              } as LocalAccount;
+            }
+          }) as [
+            OneOf<
+              EIP1193Provider | WalletClient<Transport, Chain | undefined, Account> | LocalAccount
+            >
+          ]
         });
 
         console.log(
           `Safe addresss: calculated with Pimlico - ${safeAccount.address} vs existing ${tx.from}`
         );
 
-        const sponsorUserOperation = async (
-          args: PimlicoSponsorUserOperationParameters<ENTRYPOINT_ADDRESS_V06_TYPE>
-        ) => {
-          const sponsorshipPolicyIds = paymasterSponsorshipPolicyIds(chain.id);
+        const sponsorshipPolicyIds = pimlicoSponsorshipPolicyIds(chain.id);
+
+        const sponsorUserOperation = async (args: PimlicoSponsorUserOperationParameters<'0.6'>) => {
+          const sponsorshipPolicyIds = pimlicoSponsorshipPolicyIds(chain.id);
           console.log(
             `Available sponsorshipPolicyIds ${sponsorshipPolicyIds} for userOperation: `,
             args.userOperation
           );
 
-          const validatedPoliciyIds = await paymasterClient(chain.id).validateSponsorshipPolicies({
-            userOperation: args.userOperation,
+          const validatedPoliciyIds = await pimlicoClient(chain.id).validateSponsorshipPolicies({
+            userOperation: args.userOperation as UserOperation<'0.6'>,
             sponsorshipPolicyIds
           });
 
@@ -152,24 +167,31 @@ export const useSafeTransfer = (): {
           }
 
           // return first
-          return paymasterClient(chain.id).sponsorUserOperation({
+          return pimlicoClient(chain.id).getPaymasterData({
             ...args,
-            sponsorshipPolicyId: validatedPoliciyIds[0].sponsorshipPolicyId
-          });
+            context: {
+              sponsorshipPolicyId: validatedPoliciyIds[0].sponsorshipPolicyId
+            }
+          } as any);
         };
 
         const smartAccountClient = createSmartAccountClient({
           account: safeAccount,
-          entryPoint: ENTRYPOINT_ADDRESS_V06,
           chain,
           bundlerTransport: transport(chain.id),
-          middleware: {
-            gasPrice: async () => {
-              return (await bundlerClient(chain.id).getUserOperationGasPrice()).fast;
-            },
+          paymaster: pimlicoClient(chain.id),
+          paymasterContext: {
+            sponsorshipPolicyId: sponsorshipPolicyIds?.[0]
+          },
+          /* paymasterContext: {
             ...(PIMLICO_SPONSORED_ENABLED && {
               sponsorUserOperation
             })
+          }, */
+          userOperation: {
+            estimateFeesPerGas: async () => {
+              return (await pimlicoClient(chain.id).getUserOperationGasPrice()).fast;
+            }
           }
         });
 

@@ -4,7 +4,7 @@ import {
   degen,
   arbitrum,
   zora,
-  zkSync,
+  zksync,
   mainnet,
   baseSepolia,
   sepolia,
@@ -23,7 +23,7 @@ export const SUPPORTED_CHAINS = [
   mode,
   arbitrum,
   zora,
-  zkSync,
+  zksync,
   mainnet,
   sepolia,
   baseSepolia
@@ -52,7 +52,7 @@ export function getNetworkShortName(chainId: number): string {
     case optimism.id:
       shortName = 'optimism';
       break;
-    case zkSync.id:
+    case zksync.id:
       shortName = 'zksync-era';
       break;
     case arbitrum.id:
@@ -91,7 +91,7 @@ export default function getNetworkImageSrc(chainId: number): string {
     case optimism.id:
       fileName = 'optimism';
       break;
-    case zkSync.id:
+    case zksync.id:
       fileName = 'zksync-era';
       break;
     case arbitrum.id:

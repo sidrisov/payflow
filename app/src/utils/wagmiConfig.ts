@@ -9,7 +9,7 @@ import {
   zora,
   sepolia,
   arbitrum,
-  zkSync,
+  zksync,
   mode
 } from 'viem/chains';
 
@@ -45,7 +45,7 @@ const commonWagmiConfig = {
     [degen.id]: http(),
     [arbitrum.id]: http(),
     [mode.id]: http(),
-    [zkSync.id]: http()
+    [zksync.id]: http()
   },
   syncConnectedChain: true
 };

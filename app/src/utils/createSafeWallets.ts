@@ -1,12 +1,11 @@
-import { Address, Chain, keccak256, toBytes } from 'viem';
+import { Address, Chain, keccak256, LocalAccount, toBytes } from 'viem';
 
 import { FlowWalletType } from '../types/FlowType';
-import { signerToSafeSmartAccount } from './permissionless_forked/signerToSafeSmartAccount';
-import { ENTRYPOINT_ADDRESS_V06, isSmartAccountDeployed } from 'permissionless';
+import { isSmartAccountDeployed } from 'permissionless';
 import { getClient } from 'wagmi/actions';
 import { wagmiConfig } from './wagmiConfig';
-import { SmartAccountSigner } from 'permissionless/accounts';
-
+import { entryPoint06Address } from 'viem/account-abstraction';
+import { toSafeSmartAccount } from '../utils/permissionless_forked/toSafeSmartAccount';
 const DEFAULT_SAFE_VERSION = '1.4.1';
 
 export default async function createSafeWallets(
@@ -18,12 +17,18 @@ export default async function createSafeWallets(
     const client = getClient(wagmiConfig, { chainId: chain.id });
 
     if (client) {
-      const safeAccount = await signerToSafeSmartAccount(client as any, {
-        entryPoint: ENTRYPOINT_ADDRESS_V06, // global entrypoint
-        signer: {} as SmartAccountSigner,
-        owners: owners,
-        safeVersion: '1.4.1',
-        saltNonce: BigInt(keccak256(toBytes(saltNonce)))
+      const safeAccount = await toSafeSmartAccount({
+        client,
+        entryPoint: {
+          address: entryPoint06Address,
+          version: '0.6'
+        },
+        version: '1.4.1',
+        saltNonce: BigInt(keccak256(toBytes(saltNonce))),
+        owners: owners.map((owner) => ({
+          type: 'local',
+          address: owner
+        })) as [LocalAccount]
       });
 
       const predictedAddress = safeAccount.address;
