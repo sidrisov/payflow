@@ -18,15 +18,13 @@ import { useWaitForTransactionReceipt } from 'wagmi';
 
 import { PimlicoSponsorUserOperationParameters } from 'permissionless/actions/pimlico';
 import { entryPoint06Address, UserOperation } from 'viem/account-abstraction';
-import { toSafeSmartAccount } from '../../utils/permissionless_forked/toSafeSmartAccount';
+import { toSafeSmartAccount } from '../pimlico/toSafeSmartAccount';
 import { createSmartAccountClient, isSmartAccountDeployed } from 'permissionless';
 import {
   paymasterSponsorshipPolicyIds as pimlicoSponsorshipPolicyIds,
-  PIMLICO_SPONSORED_ENABLED,
   pimlicoClient,
   transport
-} from '../pimlico';
-import { delay } from '../delay';
+} from '../pimlico/pimlico';
 
 export type ViemTransaction = {
   from: Address;
@@ -114,6 +112,8 @@ export const useSafeTransfer = (): {
       if (safeVersion === '1.4.1') {
         const chain = signer.chain;
 
+        console.debug('safe set up: ', safeAccountConfig, signer);
+
         const safeAccount = await toSafeSmartAccount({
           address: tx.from,
           client,
@@ -124,7 +124,8 @@ export const useSafeTransfer = (): {
           version: '1.4.1',
           saltNonce: BigInt(keccak256(toBytes(saltNonce))),
           owners: safeAccountConfig.owners.map((owner) => {
-            if (signer.account.address === owner) {
+            // test test
+            if (signer.account.address.toLowerCase() === owner.toLowerCase()) {
               return signer;
             } else {
               return {

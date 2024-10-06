@@ -5,7 +5,7 @@ import { isSmartAccountDeployed } from 'permissionless';
 import { getClient } from 'wagmi/actions';
 import { wagmiConfig } from './wagmiConfig';
 import { entryPoint06Address } from 'viem/account-abstraction';
-import { toSafeSmartAccount } from '../utils/permissionless_forked/toSafeSmartAccount';
+import { toSafeSmartAccount } from './pimlico/toSafeSmartAccount';
 const DEFAULT_SAFE_VERSION = '1.4.1';
 
 export default async function createSafeWallets(
