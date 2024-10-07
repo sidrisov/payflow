@@ -23,7 +23,7 @@ export function DegenInfoCard() {
   const publicClient = usePublicClient({ chainId: degen.id });
 
   const [currentSeasonIndex, setCurrentSeasonIndex] = useState<number>(
-    DEGEN_CLAIM_SEASONS.findIndex((season) => season.id === 'season8')
+    DEGEN_CLAIM_SEASONS.findIndex((season) => season.id === 'current')
   );
 
   const handleNextSeason = () => {

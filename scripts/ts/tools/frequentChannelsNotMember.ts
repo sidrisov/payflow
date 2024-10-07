@@ -80,7 +80,7 @@ async function getFrequentChannels(
 
     const frequentChannels = metrics.filter(
       (channel) =>
-        channel.channelID !== '' && (channel.casts >= minCasts || channel.replies >= minReplies)
+        channel.channelID !== '' && channel.casts >= minCasts && channel.replies >= minReplies
     );
 
     const nonMemberChannels = await Promise.all(

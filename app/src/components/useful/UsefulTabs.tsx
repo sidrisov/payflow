@@ -10,9 +10,9 @@ interface UsefulTabsProps {
 
 const getTabIndex = (tab: string | undefined): number => {
   switch (tab?.toLowerCase()) {
-    case 'degen':
-      return 0;
     case 'moxie':
+      return 0;
+    case 'degen':
       return 1;
     default:
       return 0;
@@ -63,13 +63,13 @@ export function UsefulTabs({ tab }: UsefulTabsProps) {
             borderRadius: '16px'
           }
         }}>
-        <Tab label="Degen" disableRipple />
         <Tab label="Moxie" disableRipple />
+        <Tab label="Degen" disableRipple />
       </Tabs>
 
       <Box>
-        {activeTab === 0 && <DegenInfoCard />}
-        {activeTab === 1 && <MoxieInfoCard />}
+        {activeTab === 0 && <MoxieInfoCard />}
+        {activeTab === 1 && <DegenInfoCard />}
       </Box>
     </>
   );
