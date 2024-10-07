@@ -55,23 +55,54 @@ const pimlicoRpcNetworkName = (chainId: number) => {
 };
 
 // mainnet sponsorship policies
-const BASE_POLICIES = JSON.parse(import.meta.env.VITE_PIMLICO_SPONSORED_POLICY_BASE) as string[];
+const MAINNET_POLICIES = JSON.parse(import.meta.env.VITE_PIMLICO_SPONSORED_POLICY_BASE) as string[];
 // testnet sponsorship policies
-const BASE_SEPOLIA_POLICIES = JSON.parse(
+const TESTNET_POLICIES = JSON.parse(
   import.meta.env.VITE_PIMLICO_SPONSORED_POLICY_BASE_SEPOLIA
 ) as string[];
 
 export const paymasterSponsorshipPolicyIds = (chainId: number) => {
   switch (chainId) {
     case base.id:
+      return MAINNET_POLICIES.slice(0, 1);
     case arbitrum.id:
     case optimism.id:
     case degen.id:
     case mode.id:
-      return BASE_POLICIES;
+      return MAINNET_POLICIES.slice(1, 2);
     case baseSepolia.id:
-      return BASE_SEPOLIA_POLICIES;
+      return TESTNET_POLICIES;
     default:
       return [];
   }
 };
+
+/* export const sponsorUserOperation = async (args: PimlicoSponsorUserOperationParameters<'0.6'>) => {
+  const sponsorshipPolicyIds = pimlicoSponsorshipPolicyIds(chain.id);
+  console.log(
+    `Available sponsorshipPolicyIds ${sponsorshipPolicyIds} for userOperation: `,
+    args.userOperation
+  );
+
+  const validatedPoliciyIds = await pimlicoClient(chain.id).validateSponsorshipPolicies({
+    userOperation: args.userOperation as UserOperation<'0.6'>,
+    sponsorshipPolicyIds
+  });
+
+  console.log(
+    `Can be sponsored by ${JSON.stringify(validatedPoliciyIds)} for userOperation: `,
+    args.userOperation
+  );
+
+  if (validatedPoliciyIds.length === 0) {
+    throw Error('Sponsorshipt not available');
+  }
+
+  // return first
+  return pimlicoClient(chain.id).getPaymasterData({
+    ...args,
+    context: {
+      sponsorshipPolicyId: validatedPoliciyIds[0].sponsorshipPolicyId
+    }
+  } as any);
+}; */

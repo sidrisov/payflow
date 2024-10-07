@@ -202,7 +202,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
           status: 'Fulfilled'
         });
 
-        return { success: true, txHash: glideTxHash };
+        return { success: true, txHash: glideTxHash as Hash };
       } else {
         throw new Error('Transaction failed');
       }

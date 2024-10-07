@@ -29,7 +29,7 @@ import { grey, red } from '@mui/material/colors';
 import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
 import { MintMetadata } from '../../utils/mint';
 import { useMintPaymentTx } from '../../utils/hooks/useMintPaymentTx';
-import { PayButton } from '../buttons/PayButton';
+import { PayButton, PaymentSuccess } from '../buttons/PayButton';
 import { useDarkMode } from '../../utils/hooks/useDarkMode';
 import { useMobile } from '../../utils/hooks/useMobile';
 import PaymentSuccessDialog from '../dialogs/PaymentSuccessDialog';
@@ -46,6 +46,7 @@ import { useSearchParams } from 'react-router-dom';
 import { QuantitySelector } from './QuantitySelector';
 import { BasePaymentDialog } from './BasePaymentDialog';
 import { FlowSelector } from './FlowSelector';
+import { Hash } from 'viem';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {
@@ -238,12 +239,13 @@ export default function MintDialog({
   const hasPaymentOption =
     !isLoading && paymentOption && paymentToken && mintStatus === 'live' && !isMintPaymentTxError;
 
-  const [showSuccessDialog, setShowSuccessDialog] = useState(payment.status === 'COMPLETED');
+  const [paymentSuccessData, setPaymentSuccessData] = useState<PaymentSuccess | null>(
+    payment.status === 'COMPLETED' ? { txHash: payment.hash as Hash } : null
+  );
 
   const successMessage = `minted ${mintCount > 1 ? `${mintCount}x ` : ''}"${
     mint.metadata.name
   }" for @${recipientSocial.profileName}`;
-  const receiptUrl = getReceiptUrl(payment, false);
 
   const { shareFrameUrl, text, channelKey } = createShareUrls({
     mint,
@@ -317,7 +319,7 @@ export default function MintDialog({
 
   return (
     <>
-      {!showSuccessDialog && (
+      {!paymentSuccessData && (
         <BasePaymentDialog
           alwaysShowBackButton={alwaysShowBackButton}
           title={props.title ?? 'Mint Payment'}
@@ -341,9 +343,7 @@ export default function MintDialog({
               paymentOption={paymentOption!}
               payment={{ ...payment, tokenAmount: mintCount, comment }}
               senderFlow={senderFlow}
-              onSuccess={() => {
-                setShowSuccessDialog(true);
-              }}
+              onSuccess={setPaymentSuccessData}
               onError={(error) => {
                 toast.error(`Failed to mint "${mint.metadata.name}"`, { autoClose: 2000 });
                 console.error(`Failed to mint with error`, error);
@@ -464,15 +464,17 @@ export default function MintDialog({
         </BasePaymentDialog>
       )}
 
-      <PaymentSuccessDialog
-        open={showSuccessDialog}
-        onClose={() => {
-          window.location.href = '/';
-        }}
-        message={successMessage}
-        receiptUrl={receiptUrl}
-        shareComponents={shareComponents}
-      />
+      {paymentSuccessData && (
+        <PaymentSuccessDialog
+          open={true}
+          onClose={() => {
+            window.location.href = '/';
+          }}
+          message={successMessage}
+          receiptUrl={getReceiptUrl({ ...payment, hash: paymentSuccessData.txHash }, false)}
+          shareComponents={shareComponents}
+        />
+      )}
     </>
   );
 }

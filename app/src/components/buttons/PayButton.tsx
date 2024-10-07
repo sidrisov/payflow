@@ -8,6 +8,11 @@ import { ConnectSignerDialog } from '../dialogs/ConnectSignerDialog';
 import { usePayflowTransaction } from '../../utils/hooks/usePayflowTransaction';
 import { PaymentType } from '../../types/PaymentType';
 import { PaymentOption } from '@paywithglide/glide-js';
+import { Hash } from 'viem';
+
+export type PaymentSuccess = {
+  txHash: Hash;
+};
 
 type PayButtonProps = {
   paymentToken: Token | undefined;
@@ -18,7 +23,7 @@ type PayButtonProps = {
   paymentOption: PaymentOption;
   payment: PaymentType;
   senderFlow: FlowType;
-  onSuccess: () => void;
+  onSuccess: (data: PaymentSuccess) => void;
   onError: (error: any) => void;
 };
 
@@ -55,8 +60,8 @@ export const PayButton: React.FC<PayButtonProps> = ({
           payment,
           senderFlow
         });
-        if (result.success) {
-          onSuccess();
+        if (result.success && result.txHash) {
+          onSuccess({ txHash: result.txHash });
         } else {
           onError(new Error('Transaction failed'));
         }

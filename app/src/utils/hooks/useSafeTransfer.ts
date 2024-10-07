@@ -16,14 +16,14 @@ import {
 } from 'viem';
 import { useWaitForTransactionReceipt } from 'wagmi';
 
-import { PimlicoSponsorUserOperationParameters } from 'permissionless/actions/pimlico';
-import { entryPoint06Address, UserOperation } from 'viem/account-abstraction';
+import { entryPoint06Address } from 'viem/account-abstraction';
 import { toSafeSmartAccount } from '../pimlico/toSafeSmartAccount';
 import { createSmartAccountClient, isSmartAccountDeployed } from 'permissionless';
 import {
   paymasterSponsorshipPolicyIds as pimlicoSponsorshipPolicyIds,
   pimlicoClient,
-  transport
+  transport,
+  PIMLICO_SPONSORED_ENABLED
 } from '../pimlico/pimlico';
 
 export type ViemTransaction = {
@@ -145,50 +145,16 @@ export const useSafeTransfer = (): {
         );
 
         const sponsorshipPolicyIds = pimlicoSponsorshipPolicyIds(chain.id);
-
-        const sponsorUserOperation = async (args: PimlicoSponsorUserOperationParameters<'0.6'>) => {
-          const sponsorshipPolicyIds = pimlicoSponsorshipPolicyIds(chain.id);
-          console.log(
-            `Available sponsorshipPolicyIds ${sponsorshipPolicyIds} for userOperation: `,
-            args.userOperation
-          );
-
-          const validatedPoliciyIds = await pimlicoClient(chain.id).validateSponsorshipPolicies({
-            userOperation: args.userOperation as UserOperation<'0.6'>,
-            sponsorshipPolicyIds
-          });
-
-          console.log(
-            `Can be sponsored by ${JSON.stringify(validatedPoliciyIds)} for userOperation: `,
-            args.userOperation
-          );
-
-          if (validatedPoliciyIds.length === 0) {
-            throw Error('Sponsorshipt not available');
-          }
-
-          // return first
-          return pimlicoClient(chain.id).getPaymasterData({
-            ...args,
-            context: {
-              sponsorshipPolicyId: validatedPoliciyIds[0].sponsorshipPolicyId
-            }
-          } as any);
-        };
-
         const smartAccountClient = createSmartAccountClient({
           account: safeAccount,
           chain,
           bundlerTransport: transport(chain.id),
           paymaster: pimlicoClient(chain.id),
-          paymasterContext: {
-            sponsorshipPolicyId: sponsorshipPolicyIds?.[0]
-          },
-          /* paymasterContext: {
-            ...(PIMLICO_SPONSORED_ENABLED && {
-              sponsorUserOperation
-            })
-          }, */
+          ...(PIMLICO_SPONSORED_ENABLED && {
+            paymasterContext: {
+              sponsorshipPolicyId: sponsorshipPolicyIds?.[0]
+            }
+          }),
           userOperation: {
             estimateFeesPerGas: async () => {
               return (await pimlicoClient(chain.id).getUserOperationGasPrice()).fast;

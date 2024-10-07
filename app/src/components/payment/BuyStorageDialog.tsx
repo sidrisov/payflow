@@ -15,12 +15,13 @@ import { toast } from 'react-toastify';
 import { Social } from '../../generated/graphql/types';
 import { red } from '@mui/material/colors';
 import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
-import { PayButton } from '../buttons/PayButton';
+import { PayButton, PaymentSuccess } from '../buttons/PayButton';
 import { useStoragePaymentTx } from '../../utils/hooks/useStoragePaymentTx';
 import PaymentSuccessDialog from '../dialogs/PaymentSuccessDialog';
 import { getReceiptUrl } from '../../utils/receipts';
 import { BasePaymentDialog } from './BasePaymentDialog';
 import { FlowSelector } from './FlowSelector';
+import { Hash } from 'viem';
 
 export type BuyStorageDialogProps = DialogProps &
   CloseCallbackType & {
@@ -96,16 +97,16 @@ export default function BuyStorageDialog({
   const isLoading = isPaymentTxLoading || isPaymentOptionsLoading;
   const hasPaymentOption = !isLoading && paymentOption && paymentToken;
 
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
-
+  const [paymentSuccessData, setPaymentSuccessData] = useState<PaymentSuccess | null>(
+    payment.status === 'COMPLETED' ? { txHash: payment.hash as Hash } : null
+  );
   const successMessage = `Successfully bought ${numberOfUnits} unit${
     numberOfUnits > 1 ? 's' : ''
   } of storage for @${recipientSocial.profileName}`;
-  const receiptUrl = getReceiptUrl(payment, false);
 
   return (
     <>
-      {!showSuccessDialog && (
+      {!paymentSuccessData && (
         <BasePaymentDialog
           alwaysShowBackButton={alwaysShowBackButton}
           title={props.title ?? 'Farcaster Storage'}
@@ -121,9 +122,7 @@ export default function BuyStorageDialog({
               paymentOption={paymentOption!}
               payment={payment}
               senderFlow={senderFlow}
-              onSuccess={() => {
-                setShowSuccessDialog(true);
-              }}
+              onSuccess={setPaymentSuccessData}
               onError={(error) => {
                 toast.error(`Failed to pay for storage!`);
                 console.error('Failed to pay for storage with error', error);
@@ -187,14 +186,16 @@ export default function BuyStorageDialog({
           </Box>
         </BasePaymentDialog>
       )}
-      <PaymentSuccessDialog
-        open={showSuccessDialog}
-        onClose={() => {
-          window.location.href = '/';
-        }}
-        message={successMessage}
-        receiptUrl={receiptUrl}
-      />
+      {paymentSuccessData && (
+        <PaymentSuccessDialog
+          open={true}
+          onClose={() => {
+            window.location.href = '/';
+          }}
+          message={successMessage}
+          receiptUrl={getReceiptUrl({ ...payment, hash: paymentSuccessData.txHash }, false)}
+        />
+      )}
     </>
   );
 }
