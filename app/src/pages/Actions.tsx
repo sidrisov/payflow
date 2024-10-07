@@ -7,6 +7,7 @@ import { PiTipJar } from 'react-icons/pi';
 import { GrStorage } from 'react-icons/gr';
 import CastActionButton from '../components/buttons/CastActionButton';
 import FarcasterAvatar from '../components/avatars/FarcasterAvatar';
+import { FaRegClock } from 'react-icons/fa';
 
 const BASE_URL =
   'https://warpcast.com/~/add-cast-action?url=https://api.alpha.payflow.me/api/farcaster/actions';
@@ -67,6 +68,13 @@ export default function Actions() {
       description: 'Buy fan tokens from cast',
       installUrl: `${BASE_URL}/products/fan`,
       startIcon: <Star />
+    },
+    {
+      earlyFeature: true,
+      title: 'Subscribe',
+      description: 'Buy Hypersub subscription',
+      installUrl: `${BASE_URL}/products/hypersub`,
+      startIcon: <FaRegClock />
     },
     {
       earlyFeature: true,

@@ -36,6 +36,7 @@ import { StorageUsage } from './types/StorageUsageType';
 import { mintHtml } from './components/Mint';
 import { fetchMintData } from './utils/mint';
 import { buyFanTokenEntryHtml } from './components/BuyFanToken';
+import { buyHypersubEntryHtml } from './components/Subsribe';
 
 dotenv.config();
 
@@ -48,6 +49,8 @@ const API_URL = process.env.VITE_PAYFLOW_SERVICE_API_URL;
 
 const balanceParams = ['eth', 'usdc', 'degen'];
 const oneDayInSeconds = 24 * 60 * 60;
+
+const chains: Chain[] = [base, optimism, zora, arbitrum, mode, degen];
 
 const SUPPORTED_TOKENS = [
   'eth',
@@ -257,7 +260,6 @@ async function startServer() {
 
   app.get('/images/storage.png', async (req, res) => {
     try {
-      const chains: Chain[] = [base, optimism, zora, arbitrum, mode, degen];
       const image = await htmlToImage(buyStorageEntryHtml(chains, SUPPORTED_TOKENS), 'landscape');
       res.setHeader('Cache-Control', `max-age=${oneDayInSeconds}`).type('png').send(image);
     } catch (error) {
@@ -268,8 +270,17 @@ async function startServer() {
 
   app.get('/images/fan.png', async (_, res) => {
     try {
-      const chains: Chain[] = [base, optimism, zora, arbitrum, mode, degen];
       const image = await htmlToImage(buyFanTokenEntryHtml(chains, SUPPORTED_TOKENS), 'landscape');
+      res.setHeader('Cache-Control', `max-age=${oneDayInSeconds}`).type('png').send(image);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error retrieving profile data');
+    }
+  });
+
+  app.get('/images/hypersub.png', async (_, res) => {
+    try {
+      const image = await htmlToImage(buyHypersubEntryHtml(chains, SUPPORTED_TOKENS), 'landscape');
       res.setHeader('Cache-Control', `max-age=${oneDayInSeconds}`).type('png').send(image);
     } catch (error) {
       console.error(error);

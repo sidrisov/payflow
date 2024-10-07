@@ -46,6 +46,11 @@ public class ProductsController {
 					"Buy Fan Token", "star",
 					"Use this action to submit fan token intent for caster, channel, and farcaster network",
 					"https://app.payflow.me/actions",
+					new CastActionMeta.Action("post")),
+			"hypersub", new CastActionMeta(
+					"Subscribe", "clock",
+					"Use this action to subscribe to hypersub of caster or channel",
+					"https://app.payflow.me/actions",
 					new CastActionMeta.Action("post")));
 	@Autowired
 	private IFarcasterNeynarService neynarService;
@@ -54,6 +59,7 @@ public class ProductsController {
 
 	@Autowired
 	private FanTokenService fanTokenService;
+
 
 	@GetMapping("/{action}")
 	public ResponseEntity<CastActionMeta> getActionMetadata(@PathVariable String action) {
@@ -84,6 +90,7 @@ public class ProductsController {
 			case "storage" -> processStorageAction(validateMessage.action());
 			case "mint" -> processMintAction(validateMessage.action().cast());
 			case "fan" -> processFanTokenAction(validateMessage.action());
+			case "hypersub" -> processHypersubAction(validateMessage.action());
 			default -> ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Unsupported action"));
 		};
@@ -138,9 +145,9 @@ public class ProductsController {
 				: neynarService.fetchFarcasterUser(action.cast().fid());
 
 		val fanTokens = Stream.of(
-				castAuthor.username(),
-				Optional.ofNullable(action.cast().channel()).map(channel -> "/" + channel.id()).orElse(null),
-				"network:farcaster")
+						castAuthor.username(),
+						Optional.ofNullable(action.cast().channel()).map(channel -> "/" + channel.id()).orElse(null),
+						"network:farcaster")
 				.filter(Objects::nonNull)
 				.map(fanTokenService::getFanToken)
 				.filter(Objects::nonNull)
@@ -154,6 +161,31 @@ public class ProductsController {
 		val fanTokenFrameUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getFramesServiceUrl())
 				.path("/fan")
 				.queryParam("names", fanTokens.stream().map(FanToken::name).toArray())
+				.build()
+				.encode()
+				.toUriString();
+
+		log.debug("Returning fan token frame URL: {}", fanTokenFrameUrl);
+
+		return ResponseEntity.ok().body(
+				new FrameResponse.ActionFrame("frame", fanTokenFrameUrl));
+	}
+
+	private ResponseEntity<?> processHypersubAction(ValidatedFrameResponseMessage.Action action) {
+		val castAuthorFid = action.cast().author() != null ? action.cast().author().fid() :
+				action.cast().fid();
+
+		val subscriptions = neynarService.subscriptionsCreated(castAuthorFid);
+
+		if (subscriptions.isEmpty()) {
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameMessage("No hypersub found!"));
+		}
+
+		val fanTokenFrameUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getFramesServiceUrl())
+				.path("/hypersub")
+				.queryParam("ids",
+						subscriptions.stream().map(s -> castAuthorFid + ":" + s.metadata().title()).toArray())
 				.build()
 				.encode()
 				.toUriString();
