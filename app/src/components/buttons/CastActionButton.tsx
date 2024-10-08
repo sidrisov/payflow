@@ -15,7 +15,7 @@ export default function CastActionButton({
   return (
     <Button
       variant="outlined"
-      size="small"
+      size="medium"
       color="inherit"
       fullWidth
       sx={{
@@ -28,7 +28,7 @@ export default function CastActionButton({
       {...props}>
       <Stack>
         <Box display="flex" alignItems="center">
-          <Typography fontSize={14} fontWeight="bold">
+          <Typography fontSize={16} fontWeight="bold">
             {title}
           </Typography>
           {earlyFeature && (
@@ -40,14 +40,14 @@ export default function CastActionButton({
                 borderRadius: '50%',
                 backgroundColor: 'error.main',
                 display: 'inline-block',
-                ml: 1
+                ml: 0.5
               }}
             />
           )}
         </Box>
         <Typography
           fontSize={12}
-          fontWeight="bold"
+          fontWeight="normal"
           color="text.secondary"
           sx={{
             width: '100%',

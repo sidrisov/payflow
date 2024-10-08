@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Container, Stack, Typography, Grid2, Box, Tooltip } from '@mui/material';
 import PaymentCastActionDialog from '../components/dialogs/PaymentCastActionDialog';
-import { AutoAwesome, ElectricBolt, Interests, PersonAdd, Star } from '@mui/icons-material';
+import { AutoAwesome, Interests, PersonAdd, Star } from '@mui/icons-material';
 import { PiTipJar } from 'react-icons/pi';
 import { GrStorage } from 'react-icons/gr';
 import CastActionButton from '../components/buttons/CastActionButton';
 import FarcasterAvatar from '../components/avatars/FarcasterAvatar';
 import { FaRegClock } from 'react-icons/fa';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { GoZap } from 'react-icons/go';
 
 const BASE_URL =
   'https://warpcast.com/~/add-cast-action?url=https://api.alpha.payflow.me/api/farcaster/actions';
@@ -56,51 +57,51 @@ export default function Actions() {
       title: 'Pay',
       description: 'Social feed payments',
       installUrl: `${BASE_URL}/profile`,
-      startIcon: <ElectricBolt sx={{ width: 20, height: 20 }} />
+      startIcon: <GoZap size={25} />
     },
     {
       title: 'Storage',
       description: 'Buy farcaster storage',
       installUrl: `${BASE_URL}/products/storage`,
-      startIcon: <GrStorage size={20} />
+      startIcon: <GrStorage size={25} />
     },
     {
       title: 'Mint',
       description: 'Mint from cast embeds',
       installUrl: `${BASE_URL}/products/mint`,
-      startIcon: <AutoAwesome sx={{ width: 20, height: 20 }} />
+      startIcon: <AutoAwesome sx={{ width: 25, height: 25 }} />
     },
     {
       title: 'Fan Token',
       description: 'Buy fan tokens from cast',
       installUrl: `${BASE_URL}/products/fan`,
-      startIcon: <Star sx={{ width: 20, height: 20 }} />
+      startIcon: <Star sx={{ width: 25, height: 25 }} />
     },
     {
       earlyFeature: true,
       title: 'Subscribe',
       description: 'Buy Hypersub subscription',
       installUrl: `${BASE_URL}/products/hypersub`,
-      startIcon: <FaRegClock size={20} />
+      startIcon: <FaRegClock size={25} />
     },
     {
       earlyFeature: true,
       title: 'Jar',
       description: 'Collect contributions',
       installUrl: `${BASE_URL}/jar`,
-      startIcon: <PiTipJar size={20} />
+      startIcon: <PiTipJar size={25} />
     },
     {
       title: 'Custom',
       description: 'Submit custom intents',
       onClick: () => setOpenPaymentActionDialog(true),
-      startIcon: <Interests sx={{ width: 20, height: 20 }} />
+      startIcon: <Interests sx={{ width: 25, height: 25 }} />
     },
     {
       title: 'Invite',
       description: 'Invite to Payflow',
       installUrl: `${BASE_URL}/invite`,
-      startIcon: <PersonAdd sx={{ width: 20, height: 20 }} />
+      startIcon: <PersonAdd sx={{ width: 25, height: 25 }} />
     }
   ];
 
@@ -112,7 +113,6 @@ export default function Actions() {
       <Container maxWidth="xs" sx={{ height: '100%' }}>
         <Stack
           alignItems="center"
-          mx={1}
           mt={3}
           mb={2}
           p={2}
