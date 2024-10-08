@@ -36,16 +36,11 @@ const ActionCategory: React.FC<ActionCategoryProps> = ({ title, icon, actions })
     </Stack>
     <Grid2
       container
-      rowSpacing={{ xs: 1, sm: 2, md: 3 }}
-      columnSpacing={{ xs: 1, sm: 2, md: 3 }}
+      rowSpacing={{ xs: 1, sm: 2 }}
+      columnSpacing={{ xs: 1, sm: 2 }}
       justifyContent="center">
       {actions.map((action, index) => (
-        <Grid2
-          component="span"
-          key={index}
-          size={{ xs: 10, sm: 6 }}
-          display="flex"
-          justifyContent="center">
+        <Grid2 component="span" key={index} size={{ xs: 6 }} display="flex" justifyContent="center">
           <CastActionButton {...action} />
         </Grid2>
       ))}

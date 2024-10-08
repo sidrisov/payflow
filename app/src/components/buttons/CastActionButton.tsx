@@ -15,19 +15,18 @@ export default function CastActionButton({
   return (
     <Button
       variant="outlined"
-      size="medium"
+      size="small"
       color="inherit"
       fullWidth
       sx={{
         textTransform: 'none',
         borderRadius: 5,
         borderColor: 'divider',
-        justifyContent: 'flex-start',
-        p: 1.5
+        justifyContent: 'flex-start'
       }}
       {...(installUrl && { href: installUrl, target: '_blank' })}
       {...props}>
-      <Stack ml={0.1} alignItems="flex-start" width="100%">
+      <Stack>
         <Box display="flex" alignItems="center">
           <Typography fontSize={14} fontWeight="bold">
             {title}
@@ -41,7 +40,7 @@ export default function CastActionButton({
                 borderRadius: '50%',
                 backgroundColor: 'error.main',
                 display: 'inline-block',
-                ml: 0.5
+                ml: 1
               }}
             />
           )}
@@ -55,7 +54,8 @@ export default function CastActionButton({
             wordBreak: 'break-word',
             whiteSpace: 'normal',
             textAlign: 'left',
-            overflowWrap: 'break-word',
+            overflowWrap: 'anywhere',
+            lineHeight: 1.2
           }}>
           {description}
         </Typography>
