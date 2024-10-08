@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Card, Container, Stack, Typography } from '@mui/material';
-import { ElectricBolt } from '@mui/icons-material';
+import { Box, Card, Container, Stack, Tooltip, Typography } from '@mui/material';
+import { ElectricBolt, InfoOutlined } from '@mui/icons-material';
 import CastActionButton from '../components/buttons/CastActionButton';
 import { useSearchParams } from 'react-router-dom';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
@@ -108,6 +108,25 @@ export default function Composer() {
                 startIcon={<PiTipJar size={25} />}
               />
             </Stack>
+            <Box display="flex" alignItems="center">
+              <Box
+                component="span"
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  backgroundColor: 'error.main',
+                  display: 'inline-block',
+                  mr: 1
+                }}
+              />
+              <Typography variant="caption" fontWeight="bold" color="text.secondary">
+                Early feature
+              </Typography>
+              <Tooltip title="These features are in early development and may be subject to changes or limitations.">
+                <InfoOutlined fontSize="small" sx={{ ml: 0.5, color: 'text.secondary' }} />
+              </Tooltip>
+            </Box>
           </Stack>
         ) : (
           <LoadingPayflowEntryLogo />
