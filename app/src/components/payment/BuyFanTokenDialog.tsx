@@ -1,4 +1,4 @@
-import { Stack, Box, Typography, Skeleton, DialogProps } from '@mui/material';
+import { Stack, Box, Typography, Skeleton, DialogProps, IconButton } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { getPaymentOption } from '../../utils/glide';
 import { useChainId } from 'wagmi';
@@ -8,7 +8,7 @@ import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { PaymentType } from '../../types/PaymentType';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { useContext, useMemo, useState } from 'react';
-import { Token } from '../../utils/erc20contracts';
+import { ERC20_CONTRACTS, Token } from '../../utils/erc20contracts';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
 import { ProfileContext } from '../../contexts/UserContext';
@@ -28,6 +28,8 @@ import { Chip } from '@mui/material';
 import { fanTokenUrl } from '../../utils/moxie';
 import MoxieAvatar from '../avatars/MoxieAvatar';
 
+import { IoMdLock, IoMdUnlock } from 'react-icons/io';
+
 export type BuyFanTokenDialogProps = DialogProps &
   CloseCallbackType & {
     sender: SelectedIdentityType;
@@ -39,6 +41,8 @@ export type BuyFanTokenDialogProps = DialogProps &
     selectedFlow?: FlowType;
     setSelectedFlow?: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
   };
+
+const MOXIE_CONTRACT_ADDRESS = ERC20_CONTRACTS.find((t) => t.id === 'moxie')?.tokenAddress;
 
 export default function BuyFanTokenDialog({
   alwaysShowBackButton = false,
@@ -68,10 +72,13 @@ export default function BuyFanTokenDialog({
 
   const [tokenName, tokenAddress] = payment.token.split(';');
 
+  const [locked, setLocked] = useState(false);
+
   const { isLoading: isPaymentTxLoading, data: paymentTx } = useFanTokenPaymentTx(
     tokenAddress as Address,
     fanTokenAmount,
-    payment.receiverAddress ?? profile?.identity
+    payment.receiverAddress ?? profile?.identity,
+    locked
   );
 
   const {
@@ -80,6 +87,10 @@ export default function BuyFanTokenDialog({
     isError: isPaymentOptionsError
   } = useGlidePaymentOptions(Boolean(paymentTx), {
     ...(paymentTx as any),
+    approval: {
+      token: MOXIE_CONTRACT_ADDRESS,
+      amount: paymentTx?.args?.[1] ?? 0n
+    },
     account: senderFlow.wallets[0].address
   });
 
@@ -125,7 +136,10 @@ export default function BuyFanTokenDialog({
               paymentToken={paymentToken}
               buttonText="Buy Fan Tokens"
               disabled={!hasPaymentOption}
-              paymentTx={paymentTx}
+              paymentTx={{
+                ...paymentTx,
+                approval: { token: MOXIE_CONTRACT_ADDRESS, amount: paymentTx?.args?.[1] }
+              }}
               paymentWallet={paymentWallet!}
               paymentOption={paymentOption!}
               payment={{ ...payment, tokenAmount: fanTokenAmount }}
@@ -141,19 +155,32 @@ export default function BuyFanTokenDialog({
             <FarcasterRecipientField variant="text" social={recipientSocial} />
           </Box>
           <Stack flex={1} alignItems="center" justifyContent="center" spacing={1} overflow="auto">
-            <Chip
-              icon={<MoxieAvatar size={18} />}
-              label={tokenName}
-              clickable={true}
-              onClick={() => {
-                window.open(fanTokenUrl(tokenName), '_blank');
-              }}
-              sx={{
-                px: 0.5,
-                fontSize: 18,
-                fontWeight: 'bold'
-              }}
-            />
+            <Stack alignItems="center" spacing={0.3}>
+              <Chip
+                icon={<MoxieAvatar size={18} />}
+                label={tokenName}
+                clickable={true}
+                onClick={() => {
+                  window.open(fanTokenUrl(tokenName), '_blank');
+                }}
+                sx={{
+                  px: 0.5,
+                  fontSize: 18,
+                  fontWeight: 'bold'
+                }}
+              />
+              <Box display="flex" alignItems="center">
+                <IconButton
+                  size="small"
+                  onClick={() => setLocked(!locked)}
+                  sx={{ mr: 0.5, color: 'text.secondary' }}>
+                  {locked ? <IoMdLock size={15} /> : <IoMdUnlock size={15} />}
+                </IconButton>
+                <Typography variant="caption" fontWeight="bold" color="text.secondary">
+                  {locked ? '3 months lock period' : 'No lock period'}
+                </Typography>
+              </Box>
+            </Stack>
 
             <QuantitySelector
               quantity={fanTokenAmount}

@@ -1,10 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { base } from 'viem/chains';
 import { Abi, Address, ContractFunctionArgs, ContractFunctionName, parseUnits } from 'viem';
-import { FAN_TOKEN_BOND_CURVE_CONTRACT_ADDR } from '../contracts';
+import { FAN_TOKEN_BOND_CURVE_CONTRACT_ADDR, FAN_TOKEN_STAKING_CONTRACT_ADDR } from '../contracts';
 import { readContract } from 'wagmi/actions';
 import { wagmiConfig } from '../wagmiConfig';
 import { buyFanTokenAbi } from '../abi/buyFanTokenAbi';
+import { buyAndLockFanTokenAbi } from '../abi/buyAndLockFanTokenAbi';
+
+const DEFAULT_FAN_TOKEN_LOCK_IN_SECONDS = BigInt(3 * 30 * 24 * 60 * 60);
 
 type FanTokenPaymentTx = {
   chainId: number;
@@ -18,7 +21,8 @@ type FanTokenPaymentTx = {
 async function fetchFanTokenPaymentTx(
   tokenAddress: Address,
   tokenAmount: number,
-  recipient: Address
+  recipient: Address,
+  lock: boolean
 ): Promise<FanTokenPaymentTx> {
   console.log('tokenAddress', tokenAddress);
   console.log('tokenAmount', tokenAmount);
@@ -42,28 +46,36 @@ async function fetchFanTokenPaymentTx(
 
   return {
     chainId: base.id,
-    address: FAN_TOKEN_BOND_CURVE_CONTRACT_ADDR,
-    abi: buyFanTokenAbi as Abi,
-    functionName: 'buySharesFor',
-    args: [
-      tokenAddress,
-      moxieAmount,
-      recipient,
-      minSubjectTokenAmount
-    ],
+    address: lock ? FAN_TOKEN_STAKING_CONTRACT_ADDR : FAN_TOKEN_BOND_CURVE_CONTRACT_ADDR,
+    abi: (lock ? buyAndLockFanTokenAbi : buyFanTokenAbi) as Abi,
+    functionName: lock ? 'buyAndLockFor' : 'buySharesFor',
+    args: lock
+      ? [
+          tokenAddress,
+          moxieAmount,
+          minSubjectTokenAmount,
+          DEFAULT_FAN_TOKEN_LOCK_IN_SECONDS,
+          recipient
+        ]
+      : [tokenAddress, moxieAmount, recipient, minSubjectTokenAmount],
     value: 0n
   };
 }
 
-export function useFanTokenPaymentTx(tokenAddress: Address, tokenAmount: number, recipient: Address) {
+export function useFanTokenPaymentTx(
+  tokenAddress: Address,
+  tokenAmount: number,
+  recipient: Address,
+  lock: boolean = false
+) {
   return useQuery<FanTokenPaymentTx, Error>({
     enabled: Boolean(tokenAddress && tokenAmount && recipient),
     staleTime: Infinity,
     refetchInterval: 30_000,
     retry: false,
-    queryKey: ['fanTokenPaymentTx', tokenAddress, tokenAmount, recipient],
+    queryKey: ['fanTokenPaymentTx', tokenAddress, tokenAmount, recipient, lock],
     queryFn: async () => {
-      return fetchFanTokenPaymentTx(tokenAddress, tokenAmount, recipient);
+      return fetchFanTokenPaymentTx(tokenAddress, tokenAmount, recipient, lock);
     }
   });
 }

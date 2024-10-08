@@ -37,6 +37,10 @@ export type EstimatePaymentArgs = {
   functionName: string;
   args?: unknown[];
   value?: bigint;
+  approval?: {
+    token: Hex;
+    amount: bigint;
+  };
   commissionUSD?: number;
 };
 

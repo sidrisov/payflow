@@ -16,3 +16,6 @@ export const HIGHLIGHT_MINT_MANAGER_ADDRS: { [chainId: number]: Address } = {
 
 export const FAN_TOKEN_BOND_CURVE_CONTRACT_ADDR: Address =
   '0x373065e66B32a1C428aa14698dFa99BA7199B55E';
+
+export const FAN_TOKEN_STAKING_CONTRACT_ADDR: Address =
+  '0xcb2513d389354f7ac80f5042bb8948a234a439b2';
