@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { FlowType } from '../../types/FlowType';
 import { ChooseFlowDialog } from '../dialogs/ChooseFlowDialog';
 import { PaymentFlowSection } from '../PaymentFlowSection';
@@ -60,7 +60,7 @@ export const FlowSelector: React.FC<FlowSelectorProps> = ({
       </Box>
 
       <ChooseFlowDialog
-        configurable={false}
+        showOnlySigner
         open={openSelectFlow}
         onClose={() => setOpenSelectFlow(false)}
         closeStateCallback={() => setOpenSelectFlow(false)}

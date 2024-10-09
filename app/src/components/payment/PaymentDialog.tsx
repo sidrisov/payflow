@@ -120,7 +120,7 @@ export default function PaymentDialog({
 
       {recipientCompatibleFlows && selectedFlow && setSelectedFlow && (
         <ChooseFlowDialog
-          configurable={false}
+          showOnlySigner
           open={openSelectFlow}
           onClose={async () => setOpenSelectFlow(false)}
           closeStateCallback={async () => setOpenSelectFlow(false)}

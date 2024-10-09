@@ -1,38 +1,44 @@
 import {
-  Avatar,
-  AvatarGroup,
-  Divider,
-  ListItemIcon,
   Menu,
   MenuItem,
   MenuList,
-  MenuProps,
+  ListItemIcon,
+  Divider,
   Stack,
+  Avatar,
+  AvatarGroup,
+  MenuProps,
   Typography
 } from '@mui/material';
 import { PlayForWork } from '@mui/icons-material';
+import { AiFillSignature } from 'react-icons/ai';
+
 import { FlowType } from '../../types/FlowType';
 import { setReceivingFlow } from '../../services/flow';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { delay } from '../../utils/delay';
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect, useRef } from 'react';
 import NetworkAvatar from '../avatars/NetworkAvatar';
 import { WalletsInfoPopover } from './WalletsInfoPopover';
 import getFlowAssets from '../../utils/assets';
 import { useAssetBalances } from '../../utils/queries/balances';
-import { IoIosSquare, IoIosWallet, IoMdSquare } from 'react-icons/io';
+import { IoIosWallet, IoMdSquare } from 'react-icons/io';
 import { socialLink, ZAPPER } from '../../utils/dapps';
 import { FRAMES_URL } from '../../utils/urlConstants';
 import { copyToClipboard } from '../../utils/copyToClipboard';
-import { IoSquare } from 'react-icons/io5';
 import { ProfileContext } from '../../contexts/UserContext';
+import { useWallets } from '@privy-io/react-auth';
+import { usePrivy } from '@privy-io/react-auth';
+import { useSetActiveWallet } from '@privy-io/wagmi';
+import { shortenWalletAddressLabel2 } from '../../utils/address';
 
 export function FlowSettingsMenu({
+  showOnlySigner,
   flow,
   defaultFlow,
   ...props
-}: MenuProps & { defaultFlow: boolean; flow: FlowType }) {
+}: MenuProps & { showOnlySigner: boolean; defaultFlow: boolean; flow: FlowType }) {
   const navigate = useNavigate();
 
   const [openWalletDetailsPopover, setOpenWalletDetailsPopover] = useState(false);
@@ -41,98 +47,188 @@ export function FlowSettingsMenu({
 
   const { isLoading, isFetched, data: balances } = useAssetBalances(getFlowAssets(flow));
 
+  const { wallets } = useWallets();
+  const { login, authenticated, ready, connectWallet } = usePrivy();
+  const { setActiveWallet } = useSetActiveWallet();
+
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (ready && wallets.length !== 0) {
+      const wallet = wallets.find((w) => w.address.toLowerCase() === flow.signer.toLowerCase());
+      if (wallet) {
+        setActiveWallet(wallet);
+      }
+    }
+  }, [flow, wallets, ready, setActiveWallet]);
+
+  useEffect(() => {
+    if (props.open && menuRef.current) {
+      menuRef.current.setAttribute('tabIndex', '-1');
+      menuRef.current.style.outline = 'none';
+    }
+  }, [props.open]);
+
+  const handleConnectWallet = async () => {
+    if (flow.signerProvider === 'privy') {
+      if (!authenticated) {
+        setTimeout(() => {
+          login({
+            ...(flow.signerCredential && {
+              prefill: { type: 'email', value: flow.signerCredential },
+              defaultPrevented: true
+            })
+          });
+        }, 100); // 100ms delay
+      } else {
+        const embeddedWallet = wallets.find(
+          (w) =>
+            w.walletClientType === 'privy' && w.address.toLowerCase() === flow.signer.toLowerCase()
+        );
+        if (embeddedWallet) {
+          // If the wallet is already connected, set it as active
+          await setActiveWallet(embeddedWallet);
+        } else {
+          // If the wallet is not connected, connect it
+          connectWallet({ suggestedAddress: flow.signer });
+        }
+      }
+    } else {
+      setTimeout(() => {
+        connectWallet({ suggestedAddress: flow.signer });
+      }, 100); // 100ms delay
+    }
+  };
+
+  const isConnected = wallets.some(
+    (wallet) => wallet.address.toLowerCase() === flow.signer.toLowerCase()
+  );
+
+  const getSignerInfo = () => {
+    if (flow.signerProvider === 'privy' && flow.signerCredential) {
+      return flow.signerCredential;
+    } else {
+      return shortenWalletAddressLabel2(flow.signer);
+    }
+  };
+
   return (
     <>
       <Menu
         {...props}
-        sx={{ mt: 1, '.MuiMenu-paper': { borderRadius: 5 }, zIndex: 1500 }}
+        ref={menuRef}
+        sx={{
+          mt: 1,
+          '.MuiMenu-paper': { borderRadius: 5 },
+          zIndex: 1500,
+          '&:focus': { outline: 'none' }
+        }}
         transformOrigin={{ horizontal: 'left', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
         <MenuList dense disablePadding>
-          {(flow.type === 'FARCASTER_VERIFICATION' || defaultFlow) && (
-            <MenuItem
-              onClick={() => {
-                const paymentFrameUrl = `${FRAMES_URL}/${
-                  defaultFlow ? profile?.identity : flow.wallets[0].address
-                }`;
-                copyToClipboard(paymentFrameUrl);
-                toast.success('Pay Me frame URL copied!');
-              }}>
-              <ListItemIcon>
-                <IoMdSquare />
-              </ListItemIcon>
-              <Stack>
-                <Typography>Pay Me</Typography>
-                <Typography variant="caption" color="text.secondary" noWrap>
-                  Copy & embed frame in socials
-                </Typography>
-              </Stack>
-            </MenuItem>
-          )}
-          <MenuItem
-            onClick={async (event) => {
-              setWalletAnchorEl(event.currentTarget);
-              setOpenWalletDetailsPopover(true);
-            }}>
+          <MenuItem onClick={handleConnectWallet}>
             <ListItemIcon>
-              <IoIosWallet />
+              <AiFillSignature />
             </ListItemIcon>
-            <Stack width="100%" direction="row" justifyContent="space-between" alignItems="center">
-              {flow.type === 'FARCASTER_VERIFICATION' ? 'Wallets' : 'Smart Wallets'}
-              <AvatarGroup
-                max={4}
-                color="inherit"
-                total={flow.wallets.length}
-                sx={{
-                  ml: 1,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: 30,
-                  minWidth: 30,
-                  '& .MuiAvatar-root': {
-                    borderStyle: 'none',
-                    border: 0,
-                    width: 18,
-                    height: 18,
-                    fontSize: 10
-                  }
-                }}>
-                {[...Array(Math.min(4, flow.wallets.length))].map((_item, i) => (
-                  <NetworkAvatar
-                    key={`account_card_wallet_list_${flow.wallets[i].network}`}
-                    chainId={flow.wallets[i].network}
-                  />
-                ))}
-              </AvatarGroup>
+            <Stack>
+              <Typography>{isConnected ? 'Re-connect Signer' : 'Connect Signer'}</Typography>
+              <Typography variant="caption" color="text.secondary">
+                {getSignerInfo()}
+              </Typography>
             </Stack>
           </MenuItem>
-          {!defaultFlow && !flow.archived && (
-            <MenuItem
-              onClick={async () => {
-                if (await setReceivingFlow(flow.uuid)) {
-                  toast.success('Saved! Reloading page ...', { isLoading: true });
-                  await delay(1000);
-                  navigate(0);
-                } else {
-                  toast.error('Something went wrong!');
-                }
-              }}>
-              <ListItemIcon>
-                <PlayForWork />
-              </ListItemIcon>
-              Make default for receiving
-            </MenuItem>
+          {!showOnlySigner && (
+            <>
+              {(flow.type === 'FARCASTER_VERIFICATION' || defaultFlow) && (
+                <MenuItem
+                  onClick={() => {
+                    const paymentFrameUrl = `${FRAMES_URL}/${
+                      defaultFlow ? profile?.identity : flow.wallets[0].address
+                    }`;
+                    copyToClipboard(paymentFrameUrl);
+                    toast.success('Pay Me frame URL copied!');
+                  }}>
+                  <ListItemIcon>
+                    <IoMdSquare />
+                  </ListItemIcon>
+                  <Stack>
+                    <Typography>Pay Me</Typography>
+                    <Typography variant="caption" color="text.secondary" noWrap>
+                      Copy & embed frame in socials
+                    </Typography>
+                  </Stack>
+                </MenuItem>
+              )}
+              <MenuItem
+                onClick={async (event) => {
+                  setWalletAnchorEl(event.currentTarget);
+                  setOpenWalletDetailsPopover(true);
+                }}>
+                <ListItemIcon>
+                  <IoIosWallet />
+                </ListItemIcon>
+                <Stack
+                  width="100%"
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center">
+                  {flow.type === 'FARCASTER_VERIFICATION' ? 'Wallets' : 'Smart Wallets'}
+                  <AvatarGroup
+                    max={4}
+                    color="inherit"
+                    total={flow.wallets.length}
+                    sx={{
+                      ml: 1,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: 30,
+                      minWidth: 30,
+                      '& .MuiAvatar-root': {
+                        borderStyle: 'none',
+                        border: 0,
+                        width: 18,
+                        height: 18,
+                        fontSize: 10
+                      }
+                    }}>
+                    {[...Array(Math.min(4, flow.wallets.length))].map((_item, i) => (
+                      <NetworkAvatar
+                        key={`account_card_wallet_list_${flow.wallets[i].network}`}
+                        chainId={flow.wallets[i].network}
+                      />
+                    ))}
+                  </AvatarGroup>
+                </Stack>
+              </MenuItem>
+              {!defaultFlow && !flow.archived && (
+                <MenuItem
+                  onClick={async () => {
+                    if (await setReceivingFlow(flow.uuid)) {
+                      toast.success('Saved! Reloading page ...', { isLoading: true });
+                      await delay(1000);
+                      navigate(0);
+                    } else {
+                      toast.error('Something went wrong!');
+                    }
+                  }}>
+                  <ListItemIcon>
+                    <PlayForWork />
+                  </ListItemIcon>
+                  Make default for receiving
+                </MenuItem>
+              )}
+              <Divider />
+              <MenuItem
+                component="a"
+                href={socialLink(ZAPPER, flow.wallets[0].address)}
+                target="_blank">
+                <ListItemIcon>
+                  <Avatar src="/dapps/zapper.png" sx={{ width: 20, height: 20 }} />
+                </ListItemIcon>
+                More on Zapper
+              </MenuItem>
+            </>
           )}
-          <Divider />
-          <MenuItem
-            component="a"
-            href={socialLink(ZAPPER, flow.wallets[0].address)}
-            target="_blank">
-            <ListItemIcon>
-              <Avatar src="/dapps/zapper.png" sx={{ width: 20, height: 20 }} />
-            </ListItemIcon>
-            More on Zapper
-          </MenuItem>
         </MenuList>
       </Menu>
       <WalletsInfoPopover

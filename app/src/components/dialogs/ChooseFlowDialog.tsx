@@ -22,6 +22,7 @@ import { FaCheckCircle, FaRegCircle } from 'react-icons/fa';
 export type ChooseFlowMenuProps = ResponsiveDialogProps &
   CloseCallbackType & {
     configurable?: boolean;
+    showOnlySigner?: boolean;
     closeOnSelect?: boolean;
     flows: FlowType[];
     selectedFlow: FlowType;
@@ -30,6 +31,7 @@ export type ChooseFlowMenuProps = ResponsiveDialogProps &
 
 export function ChooseFlowDialog({
   configurable = true,
+  showOnlySigner = false,
   closeOnSelect = true,
   flows,
   selectedFlow,
@@ -214,6 +216,7 @@ export function ChooseFlowDialog({
               setOpenFlowSettingsMenu(false);
               setMenuFlow(null);
             }}
+            showOnlySigner={showOnlySigner}
             defaultFlow={menuFlow.uuid === profile.defaultFlow?.uuid}
             flow={menuFlow}
           />

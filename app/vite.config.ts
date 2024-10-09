@@ -105,7 +105,7 @@ export default defineConfig({
       devOptions: {
         enabled: true
       },
-      injectRegister: 'auto',
+      injectRegister: 'inline',
       registerType: 'prompt',
       workbox: {
         clientsClaim: true,
