@@ -50,7 +50,7 @@ export async function fetchMintData(
   const metadata = await fetchNFTMetadataFromSimpleHash(
     chainId,
     contract,
-    tokenId,
+    tokenId ?? 1,
     SIMPLE_HASH_API_KEY
   );
   if (!metadata) {
@@ -153,11 +153,11 @@ export async function fetchMintData(
       contract,
       tokenId,
       referral,
-      collectionName: metadata.name + (tokenId ? ` #${tokenId}` : ''),
+      collectionName: metadata.collection.name + (tokenId ? ` #${tokenId}` : ''),
       metadata: {
         name: metadata.name,
         description: metadata.description ?? '',
-        image: metadata.previews.image_small_url
+        image: tokenId ? metadata.previews.image_small_url : metadata.collection.name
       },
       owner: identity,
       mintType

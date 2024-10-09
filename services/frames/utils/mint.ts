@@ -39,14 +39,14 @@ export async function fetchMintData(
   const metadata = await fetchNFTMetadataFromSimpleHash(
     chainId,
     contract,
-    tokenId,
+    tokenId ?? 1,
     SIMPLE_HASH_API_KEY!
   );
   if (!metadata) {
     return;
   }
 
-  const mintType = provider === 'highlight.xyz' ? '721' : '1155';
+  //const mintType = provider === 'highlight.xyz' ? '721' : '1155';
   try {
     console.log(`Fetching collection owner for contract: ${contract}`);
     const collectionOwner = await fetchCollectionOwner(chainId, contract);
@@ -86,10 +86,10 @@ export async function fetchMintData(
 
     return {
       provider,
-      collectionName: metadata.name + (tokenId ? ` #${tokenId}` : ''),
+      collectionName: metadata.collection.name + (tokenId ? ` #${tokenId}` : ''),
       metadata: {
         name: metadata.name,
-        image: metadata.previews.image_large_url
+        image: tokenId ? metadata.previews.image_medium_url : metadata.collection.image_url
       },
       identity
     };
