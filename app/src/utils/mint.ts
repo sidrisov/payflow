@@ -157,7 +157,7 @@ export async function fetchMintData(
       metadata: {
         name: metadata.name,
         description: metadata.description ?? '',
-        image: tokenId ? metadata.previews.image_small_url : metadata.collection.name
+        image: tokenId ? metadata.previews.image_small_url : metadata.collection.image_url
       },
       owner: identity,
       mintType
