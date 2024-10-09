@@ -1,11 +1,17 @@
 import { Box, Typography, Button, Stack } from '@mui/material';
 import { green } from '@mui/material/colors';
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { RiSparklingFill } from 'react-icons/ri';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 
 export const UpdateVersionPrompt = () => {
-  const { updateServiceWorker } = useRegisterSW({
+  const [needRefresh, setNeedRefresh] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const {
+    updateServiceWorker,
+    needRefresh: [_needRefresh, setNeedRefreshSW]
+  } = useRegisterSW({
     onRegistered(r) {
       console.log('SW Registered: ' + r);
     },
@@ -14,8 +20,24 @@ export const UpdateVersionPrompt = () => {
     },
     onNeedRefresh() {
       console.log('SW Need Refresh');
+      setNeedRefresh(true);
     }
   });
+
+  useEffect(() => {
+    setNeedRefresh(_needRefresh);
+  }, [_needRefresh]);
+
+  const handleUpdate = () => {
+    setIsUpdating(true);
+    updateServiceWorker(true).then(() => {
+      setIsUpdating(false);
+      setNeedRefresh(false);
+      setNeedRefreshSW(false);
+    });
+  };
+
+  if (!needRefresh) return null;
 
   const NewVersionNotice = () => (
     <Box display="flex" alignItems="center">
@@ -26,14 +48,11 @@ export const UpdateVersionPrompt = () => {
     </Box>
   );
 
-  const UpdateVersionButton = ({
-    onClick
-  }: {
-    onClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
-  }) => (
+  const UpdateVersionButton = () => (
     <Button
       size="small"
       variant="contained"
+      disabled={isUpdating}
       sx={{
         borderRadius: 5,
         textTransform: 'none',
@@ -45,8 +64,8 @@ export const UpdateVersionPrompt = () => {
         },
         zIndex: 1600 // always display on top
       }}
-      onClick={onClick}>
-      Update
+      onClick={handleUpdate}>
+      {isUpdating ? 'Updating...' : 'Update'}
     </Button>
   );
 
@@ -67,7 +86,7 @@ export const UpdateVersionPrompt = () => {
         zIndex: 1600 // always display on top
       }}>
       <NewVersionNotice />
-      <UpdateVersionButton onClick={() => updateServiceWorker(true)} />
+      <UpdateVersionButton />
     </Stack>
   );
 };
