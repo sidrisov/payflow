@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Avatar, Card, Divider, Stack, Typography } from '@mui/material';
 import { AuthClientError, SignInButton, StatusAPIResponse } from '@farcaster/auth-kit';
-import { green, grey } from '@mui/material/colors';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useWalletClient } from 'wagmi';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -117,12 +116,18 @@ export function ConnectCard() {
     toast.error('Failed to sign in with Farcaster. Try again!');
   }, []);
 
+  const handleConnectAnotherWallet = useCallback(() => {
+    connectWallet();
+  }, [connectWallet]);
+
   if (sifwResponse && sifwResponse.state === 'completed') {
     return <FarcasterAccountsCard siwfResponse={sifwResponse} />;
   }
 
   return (
-    <Card elevation={5} sx={{ p: 3, borderRadius: 5, width: 300, height: 300 }}>
+    <Card
+      elevation={5}
+      sx={{ p: 3, borderRadius: 5, maxWidth: 360, minHeight: 300, maxHeight: 350 }}>
       <Stack spacing={5} alignItems="center">
         <Typography variant="h5" fontWeight="bold" textAlign="center">
           Welcome to Payflow
@@ -140,32 +145,44 @@ export function ConnectCard() {
                 onSuccess={async (response) => setSifeResponse(response)}
                 onError={onFarcasterSignInError}
               />
-              <Divider flexItem sx={{ color: grey[400] }}>
+              <Divider flexItem sx={{ color: 'text.secondary' }}>
                 or
               </Divider>
             </>
           )}
-          <LoadingButton
-            variant="text"
-            color="inherit"
-            loading={isModalOpen || authStatus === 'loading'}
-            startIcon={
-              !(isModalOpen || authStatus === 'loading') && (
-                <Avatar src="/networks/ethereum.png" sx={{ width: 28, height: 28 }} />
-              )
-            }
-            sx={{
-              borderRadius: 3,
-              width: '100%',
-              height: 47,
-              textTransform: 'none',
-              fontWeight: 'bold',
-              fontSize: 18,
-              ...(signer && { background: green.A700 })
-            }}
-            onClick={handleEthereumClick}>
-            {!signer ? 'Ethereum' : 'Verify'}
-          </LoadingButton>
+          <Stack spacing={1} alignItems="center">
+            <LoadingButton
+              variant="text"
+              color="inherit"
+              loading={isModalOpen || authStatus === 'loading'}
+              startIcon={
+                !(isModalOpen || authStatus === 'loading') && (
+                  <Avatar src="/networks/ethereum.png" sx={{ width: 28, height: 28 }} />
+                )
+              }
+              sx={{
+                borderRadius: 3,
+                width: '100%',
+                height: 47,
+                textTransform: 'none',
+                fontWeight: 'bold',
+                fontSize: 18,
+                border: 1,
+                borderColor: 'divider'
+              }}
+              onClick={handleEthereumClick}>
+              {!signer ? 'Ethereum' : 'Verify'}
+            </LoadingButton>
+            {signer && (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                onClick={handleConnectAnotherWallet}>
+                with different wallet
+              </Typography>
+            )}
+          </Stack>
         </Stack>
       </Stack>
     </Card>
