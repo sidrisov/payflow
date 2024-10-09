@@ -109,8 +109,6 @@ export default defineConfig({
       registerType: 'prompt',
       workbox: {
         clientsClaim: true,
-        //globPatterns: ['**/*.{html,css}'],
-        maximumFileSizeToCacheInBytes: 6200000,
         runtimeCaching: [
           //createCache(/\.js$/, 'js-cache', 'CacheFirst', 100, Time.weeks(4)),
           createCache(
@@ -175,7 +173,21 @@ export default defineConfig({
             'image-cache',
             'CacheFirst',
             500,
-            Time.weeks(4)
+            Time.weeks(1)
+          ),
+          createCache(
+            /^https:\/\/api\.simplehash\.com\/api\/v0\/nfts\/.*/i,
+            'simplehash-nfts-cache',
+            'CacheFirst',
+            200,
+            Time.weeks(1)
+          ),
+          createCache(
+            /^https:\/\/(.+\.)?lh3\.googleusercontent\.com\/.*/i,
+            'google-user-content-cache',
+            'CacheFirst',
+            200,
+            Time.weeks(1)
           )
         ]
       },
