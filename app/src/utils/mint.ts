@@ -10,6 +10,7 @@ import { getPublicClient } from 'wagmi/actions';
 import { ProfileType } from '../types/ProfileType';
 import { FARCASTER_DAPP } from './dapps';
 import { Social } from '../generated/graphql/types';
+import { fetchNFTMetadataFromSimpleHash } from './simpleHash';
 
 type ParsedMintData = {
   provider: MintProvider;
@@ -44,6 +45,11 @@ export async function fetchMintData(
   tokenId?: number,
   referral?: Address
 ): Promise<MintMetadata | undefined> {
+  const metadata = await fetchNFTMetadataFromSimpleHash(chainId, contract, tokenId);
+  if (!metadata) {
+    return;
+  }
+
   try {
     if (provider === 'zora.co') {
       const publicClient = getPublicClient(wagmiConfig, { chainId });
@@ -74,10 +80,10 @@ export async function fetchMintData(
           ? identityResponse.data
           : ({ address: token.creator } as IdentityType);
 
-      const metadata = await fetchTokenMetadata(token.tokenURI);
+      /*   const metadata = await fetchTokenMetadata(token.tokenURI);
       if (!metadata) {
         return;
-      }
+      } */
 
       return {
         provider,
@@ -86,7 +92,11 @@ export async function fetchMintData(
         tokenId,
         referral,
         collectionName: `${token.contract.name} #${tokenId}`,
-        metadata,
+        metadata: {
+          name: metadata.name,
+          description: metadata.description ?? '',
+          image: metadata.previews.image_large_url
+        },
         owner,
         mintType: token.mintType,
         salesStatus: secondaryInfo?.saleEnd ? 'ended' : 'live'
@@ -108,7 +118,7 @@ export async function fetchMintData(
         : ({ address: collectionOwner } as IdentityType);
     console.log(`Resolved identity:`, identity);
 
-    console.log(`Fetching collection name for contract: ${contract}`);
+    /* console.log(`Fetching collection name for contract: ${contract}`);
     const collectionName = tokenId
       ? (await fetchCollectionName(chainId, contract)).concat(` #${tokenId}`)
       : await fetchCollectionName(chainId, contract);
@@ -128,7 +138,7 @@ export async function fetchMintData(
 
     if (!metadata) {
       return;
-    }
+    } */
 
     return {
       provider,
@@ -136,8 +146,12 @@ export async function fetchMintData(
       contract,
       tokenId,
       referral,
-      collectionName,
-      metadata,
+      collectionName: metadata.name + (tokenId ? ` #${tokenId}` : ''),
+      metadata: {
+        name: metadata.name,
+        description: metadata.description ?? '',
+        image: metadata.previews.image_small_url
+      },
       owner: identity,
       mintType
     };

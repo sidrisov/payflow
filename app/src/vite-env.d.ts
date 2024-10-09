@@ -27,6 +27,7 @@ interface ImportMetaEnv {
   readonly VITE_PRIVY_API_KEY: string;
   readonly VITE_PRIVY_CLIENT_ID_KEY: string;
   readonly VITE_GLIDE_API_KEY: string;
+  readonly VITE_SIMPLE_HASH_API_KEY: string;
 }
 
 interface ImportMeta {
