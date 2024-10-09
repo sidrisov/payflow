@@ -6,9 +6,11 @@ import axios from 'axios';
 import { IdentityType } from '../types/ProfleType';
 
 import dotenv from 'dotenv';
+import { fetchNFTMetadataFromSimpleHash } from './simpleHash';
 dotenv.config();
 
 const API_URL = process.env.VITE_PAYFLOW_SERVICE_API_URL;
+const SIMPLE_HASH_API_KEY = process.env.VITE_SIMPLE_HASH_API_KEY;
 
 export interface MintUrlParams {
   provider: string;
@@ -34,6 +36,16 @@ export async function fetchMintData(
   contract: Address,
   tokenId?: number
 ): Promise<MintMetadata | undefined> {
+  const metadata = await fetchNFTMetadataFromSimpleHash(
+    chainId,
+    contract,
+    tokenId,
+    SIMPLE_HASH_API_KEY!
+  );
+  if (!metadata) {
+    return;
+  }
+
   const mintType = provider === 'highlight.xyz' ? '721' : '1155';
   try {
     console.log(`Fetching collection owner for contract: ${contract}`);
@@ -50,7 +62,7 @@ export async function fetchMintData(
         : ({ address: collectionOwner } as IdentityType);
     console.log(`Resolved identity:`, identity);
 
-    console.log(`Fetching collection name for contract: ${contract}`);
+    /* console.log(`Fetching collection name for contract: ${contract}`);
     const collectionName = tokenId
       ? (await fetchCollectionName(chainId, contract)).concat(` #${tokenId}`)
       : await fetchCollectionName(chainId, contract);
@@ -70,12 +82,15 @@ export async function fetchMintData(
 
     if (!metadata) {
       return;
-    }
+    } */
 
     return {
       provider,
-      collectionName,
-      metadata,
+      collectionName: metadata.name + (tokenId ? ` #${tokenId}` : ''),
+      metadata: {
+        name: metadata.name,
+        image: metadata.previews.image_large_url
+      },
       identity
     };
   } catch (error) {

@@ -1,4 +1,15 @@
-import { base, optimism, zora, baseSepolia, degen, arbitrum, mode } from 'viem/chains';
+import {
+  base,
+  optimism,
+  zora,
+  baseSepolia,
+  degen,
+  arbitrum,
+  mode,
+  sepolia,
+  zkSync,
+  mainnet
+} from 'viem/chains';
 
 export const SUPPORTED_CHAINS = [base, optimism, degen, arbitrum, mode, zora, baseSepolia];
 
@@ -31,6 +42,49 @@ export default function getNetworkImageSrc(chainId: number): string {
   }
 
   return `/assets/chains/${fileName}.png`;
+}
+
+export function getNetworkShortName(chainId: number): string {
+  let shortName;
+
+  switch (chainId) {
+    case mainnet.id:
+      shortName = 'ethereum';
+      break;
+    case sepolia.id:
+      shortName = 'sepolia';
+      break;
+    case base.id:
+      shortName = 'base';
+      break;
+    case baseSepolia.id:
+      shortName = 'base';
+      break;
+    case optimism.id:
+      shortName = 'optimism';
+      break;
+    case zkSync.id:
+      shortName = 'zksync-era';
+      break;
+    case arbitrum.id:
+      shortName = 'arbitrum';
+      break;
+    case zora.id:
+      shortName = 'zora';
+      break;
+    case mode.id:
+      shortName = 'mode';
+      break;
+    case degen.id:
+      shortName = 'degen';
+      break;
+  }
+
+  if (!shortName) {
+    throw new Error(`Chain ${chainId} not supported!`);
+  }
+
+  return shortName;
 }
 
 export function getNetworkDisplayName(chainId: number): string {

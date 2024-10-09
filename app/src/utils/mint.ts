@@ -12,6 +12,8 @@ import { FARCASTER_DAPP } from './dapps';
 import { Social } from '../generated/graphql/types';
 import { fetchNFTMetadataFromSimpleHash } from './simpleHash';
 
+export const SIMPLE_HASH_API_KEY = import.meta.env.VITE_SIMPLE_HASH_API_KEY;
+
 type ParsedMintData = {
   provider: MintProvider;
   contract: Address;
@@ -45,7 +47,12 @@ export async function fetchMintData(
   tokenId?: number,
   referral?: Address
 ): Promise<MintMetadata | undefined> {
-  const metadata = await fetchNFTMetadataFromSimpleHash(chainId, contract, tokenId);
+  const metadata = await fetchNFTMetadataFromSimpleHash(
+    chainId,
+    contract,
+    tokenId,
+    SIMPLE_HASH_API_KEY
+  );
   if (!metadata) {
     return;
   }
