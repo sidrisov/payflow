@@ -25,7 +25,7 @@ export default function UsefulComposerActionDialog({ ...props }: UsefulComposerA
         }
       }}
       sx={{
-        backdropFilter: 'blur(5px)'
+        backdropFilter: 'blur(3px)'
       }}>
       <DialogContent>
         <UsefulTabs tab={tab} />

@@ -53,7 +53,7 @@ export default function ContributionJarComposerDialog({
         }
       }}
       sx={{
-        backdropFilter: 'blur(5px)'
+        backdropFilter: 'blur(3px)'
       }}>
       <BackDialogTitle title="Jar" closeStateCallback={closeStateCallback} hidden={true} />
       <DialogContent

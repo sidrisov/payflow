@@ -75,7 +75,8 @@ const SUPPORTED_TOKENS = [
   'arb',
   'hunt',
   'masks',
-  'cbBTC'
+  'cbBTC',
+  'mfer'
 ];
 
 startServer();

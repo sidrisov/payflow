@@ -58,7 +58,7 @@ export default function WalletQRCodeShareDialog({
           }
         }}
         sx={{
-          backdropFilter: 'blur(5px)'
+          backdropFilter: 'blur(3px)'
         }}>
         <DialogTitle>
           {isMobile && (

@@ -45,7 +45,7 @@ export default function ShareDialog({
         }
       }}
       sx={{
-        backdropFilter: 'blur(5px)'
+        backdropFilter: 'blur(3px)'
       }}>
       <DialogTitle>
         <Box display="flex" justifyContent="center">

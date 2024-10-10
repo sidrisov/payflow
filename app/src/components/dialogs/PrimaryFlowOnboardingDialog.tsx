@@ -137,7 +137,7 @@ export default function PrimaryFlowOnboardingDialog({
       }}
       sx={{
         zIndex: 1450,
-        backdropFilter: 'blur(5px)'
+        backdropFilter: 'blur(3px)'
       }}>
       <BackDialogTitle
         showOnDesktop

@@ -57,7 +57,7 @@ export default function NewFlowDialog({
         }
       }}
       sx={{
-        backdropFilter: 'blur(5px)'
+        backdropFilter: 'blur(3px)'
       }}>
       <BackDialogTitle
         showOnDesktop

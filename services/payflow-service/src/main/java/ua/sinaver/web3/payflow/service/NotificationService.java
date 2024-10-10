@@ -76,9 +76,7 @@ public class NotificationService {
 		val embeds = Collections.singletonList(new Cast.Embed(receiptUrl));
 
 		val castText = String.format("""
-						@%s, you've been paid %s %s by @%s 🎉
-
-						p.s. join /payflow channel for updates 👀""",
+						@%s, you've been paid %s %s by @%s 💸""",
 				receiverFname,
 				StringUtils.isNotBlank(payment.getTokenAmount())
 						? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
@@ -101,9 +99,7 @@ public class NotificationService {
 		val formattedTokenIds = String.join(", ", preferredTokenIds).toUpperCase();
 		val castText = String.format("""
 						@%s, your preferred receiving tokens have been updated:
-						%s ✅
-
-						p.s. join /payflow channel for updates 👀""",
+						%s ✅""",
 				user.username(), formattedTokenIds);
 
 		val embeds = Collections.singletonList(new Cast.Embed(

@@ -644,13 +644,11 @@ public class FramePaymentController {
 						val senderFname = senderFarcasterUser.username();
 
 						val messageText = String.format("""
-										 @%s, you've been paid %s %s by @%s 🎉
+										 @%s, you've been paid %s %s by @%s 💸
 										💬 Comment: %s
 
 										%s
-										🧾 Receipt: %s
-
-										p.s. join /payflow channel for updates 👀""",
+										🧾 Receipt: %s""",
 
 								receiverFname,
 								StringUtils.isNotBlank(payment.getTokenAmount())

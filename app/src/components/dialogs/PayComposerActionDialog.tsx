@@ -95,7 +95,7 @@ export default function PayComposerActionDialog({
         }
       }}
       sx={{
-        backdropFilter: 'blur(5px)'
+        backdropFilter: 'blur(3px)'
       }}>
       <BackDialogTitle title="New Payment" closeStateCallback={closeStateCallback} hidden={true} />
       <DialogContent

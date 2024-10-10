@@ -74,7 +74,7 @@ export default function PaymentDialog({
         }}
         sx={{
           zIndex: 1450,
-          backdropFilter: 'blur(5px)'
+          backdropFilter: 'blur(3px)'
         }}
         {...(isMobile && { TransitionComponent: UpSlideTransition })}>
         <BackDialogTitle
