@@ -5,6 +5,7 @@ import { visualizer } from 'rollup-plugin-visualizer';
 import { RuntimeCaching } from 'workbox-build';
 import { defineConfig, loadEnv } from 'vite';
 import { addSeconds, addMinutes, addHours, addDays, addWeeks } from 'date-fns';
+import { WorkboxPlugin } from 'workbox-core/types';
 
 // pass empty url if .env not available (for prodcution build should be poluted)
 const env = loadEnv('all', process.cwd());
@@ -23,7 +24,8 @@ function createCache(
   cacheName: string,
   handler: 'StaleWhileRevalidate' | 'CacheFirst' | 'NetworkFirst',
   maxEntries: number,
-  maxAgeSeconds: number
+  maxAgeSeconds: number,
+  plugins?: WorkboxPlugin[]
 ): RuntimeCaching {
   return {
     urlPattern,
@@ -31,6 +33,7 @@ function createCache(
     handler,
     options: {
       cacheName,
+      plugins,
       expiration: {
         maxEntries,
         maxAgeSeconds
@@ -177,10 +180,25 @@ export default defineConfig({
           ),
           createCache(
             /^https:\/\/api\.simplehash\.com\/api\/v0\/nfts\/.*/i,
-            'simplehash-nfts-cache',
+            'simplehash-nfts-cache-v1',
             'CacheFirst',
             200,
-            Time.weeks(1)
+            Time.weeks(1),
+            [
+              {
+                cacheWillUpdate: async ({ response }) => {
+                  if (!response) return null;
+                  const clonedResponse = response.clone();
+                  try {
+                    const data = await clonedResponse.json();
+                    return data && data.name ? response : null;
+                  } catch (error) {
+                    console.error('Error parsing SimpleHash response:', error);
+                    return null;
+                  }
+                }
+              } as WorkboxPlugin
+            ]
           ),
           createCache(
             /^https:\/\/(.+\.)?lh3\.googleusercontent\.com\/.*/i,
