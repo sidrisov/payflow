@@ -55,6 +55,14 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 	Stream<Payment> findOldPendingPaymentsWithLock(@Param("status") Payment.PaymentStatus status,
 	                                               @Param("date") Date date);
 
+	@Query("SELECT count(p) FROM Payment p " +
+			"WHERE (p.sender IN :users " +
+			"OR LOWER(p.senderAddress) IN :addresses) " +
+			"AND p.status = COMPLETED")
+	Long findNumberOutboundCompleted(
+			@Param("users") List<User> users,
+			@Param("addresses") List<String> addresses);
+
 	@Query("SELECT p FROM Payment p " +
 			"WHERE (p.sender = :user OR p.receiver = :user " +
 			"OR LOWER(p.senderAddress) IN :addresses " +

@@ -92,6 +92,8 @@ public class SecurityConfig {
 						// Farcaster webhooks
 						.requestMatchers(HttpMethod.GET, "/farcaster/webhooks/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/farcaster/webhooks/**").permitAll()
+						// Channel membership
+						.requestMatchers(HttpMethod.GET, "/farcaster/membership/allowed").permitAll()
 						// other authenticated
 						.anyRequest().authenticated())
 				.sessionManagement(session -> session
