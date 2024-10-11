@@ -22,12 +22,12 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
 }) => {
   return (
     <ResponsiveDialog open={open} onClose={onClose}>
-      <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" p={2}>
-        <CheckCircleIcon sx={{ fontSize: 80, color: green.A700, mb: 2 }} />
-        <Typography variant="h6" textAlign="center" mb={1} sx={{ fontWeight: 'bold' }}>
-          Payment completed
+      <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" p={1}>
+        <CheckCircleIcon sx={{ fontSize: 60, color: green.A700, mb: 1 }} />
+        <Typography fontSize={18} fontWeight="bold" textAlign="center" mb={1}>
+          Completed
         </Typography>
-        <Typography variant="h6" textAlign="center" mb={2} sx={{ color: 'gray' }}>
+        <Typography fontSize={18} textAlign="center" mb={2} sx={{ color: 'text.secondary' }}>
           {message}
         </Typography>
         {shareComponents && (
@@ -37,27 +37,27 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
               border: '1px dashed',
               borderColor: 'divider',
               borderRadius: 5,
-              p: 3,
-              pt: 2,
+              p: 2,
+              pt: 1.5,
               width: '100%'
             }}>
-            <Typography mb={2} textAlign="center" variant="body1" color="grey">
+            <Typography mb={1} textAlign="center" variant="body2" color="text.secondary">
               Share on socials
             </Typography>
             {shareComponents}
           </Box>
         )}
         <Typography
-          variant="body2"
+          variant="caption"
           textAlign="center"
-          sx={{ color: 'gray', whiteSpace: 'balance' }}>
+          sx={{ color: 'text.secondary', whiteSpace: 'balance' }}>
           You can view the payment details in the receipts section or{' '}
           <Link
             href={receiptUrl}
             target="_blank"
             color="inherit"
             sx={{ display: 'inline-flex', alignItems: 'center' }}>
-            click here <OpenInNewIcon sx={{ fontSize: 14, ml: 0.5 }} />
+            click here <OpenInNewIcon sx={{ fontSize: 12, ml: 0.5 }} />
           </Link>
         </Typography>
       </Box>
