@@ -185,7 +185,7 @@ public class ProductsController {
 		val fanTokenFrameUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getFramesServiceUrl())
 				.path("/hypersub")
 				.queryParam("ids",
-						subscriptions.stream().map(s -> castAuthorFid + ":" + s.metadata().title()).toArray())
+						subscriptions.stream().map(s -> s.chain() + ":" + s.contractAddress()).toArray())
 				.build()
 				.encode()
 				.toUriString();

@@ -15,7 +15,7 @@ export function Head() {
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
 
-        <title>Payflow | App</title>
+        <title>Payflow | Frames</title>
         <meta
           name="description"
           content="Onchain Social Payments across Farcaster, Lens, and Ens."

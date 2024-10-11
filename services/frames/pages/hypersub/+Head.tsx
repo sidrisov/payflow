@@ -1,21 +1,11 @@
-import { usePageContext } from 'vike-react/usePageContext';
 import { API_URL, BUY_HYPERSUB_FRAME_VERSION, DAPP_URL, FRAMES_URL } from '../../utils/constants';
+import { useData } from 'vike-react/useData';
+import { HypersubData } from './+data.js';
 
 export function Head() {
   const imageUrl = `${FRAMES_URL}/images/hypersub.png?${BUY_HYPERSUB_FRAME_VERSION}}`;
 
-  const { urlParsed } = usePageContext();
-
-  // Parse the ids from the query parameter, no defaults
-  const ids = urlParsed.searchAll.ids ? urlParsed.searchAll.ids : [];
-
-  const getButtonContent = (id: string) => {
-    const colonIndex = id.indexOf(':');
-    if (colonIndex !== -1) {
-      return id.slice(colonIndex + 1);
-    }
-    return id;
-  };
+  const hypersubs = useData<HypersubData[]>();
 
   const addActionUrl =
     'https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fproducts%2Fhypersub';
@@ -60,7 +50,7 @@ export function Head() {
         <meta property="fc:frame" content="vNext" />
         <meta property="fc:frame:image" content={imageUrl} />
 
-        {ids.length !== 0 ? (
+        {hypersubs.length !== 0 ? (
           <meta property="fc:frame:input:text" content="Gift username (blank for self)" />
         ) : (
           <>
@@ -70,13 +60,13 @@ export function Head() {
           </>
         )}
 
-        {ids.map((id, index) => (
+        {hypersubs.map((hypersub, index) => (
           <>
-            <meta property={`fc:frame:button:${index + 1}`} content={getButtonContent(id)} />
+            <meta property={`fc:frame:button:${index + 1}`} content={hypersub.state.name} />
             <meta property={`fc:frame:button:${index + 1}:action`} content="post_redirect" />
             <meta
               property={`fc:frame:button:${index + 1}:target`}
-              content={`${API_URL}/api/farcaster/frames/hypersub/${encodeURIComponent(id)}/submit`}
+              content={`${API_URL}/api/farcaster/frames/hypersub/${hypersub.contractAddress}/submit`}
             />
           </>
         ))}

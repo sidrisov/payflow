@@ -107,7 +107,7 @@ export function Head() {
               <meta property="fc:frame:button:4:action" content="link" />
               <meta
                 property="fc:frame:button:4:target"
-                content="https://payflowlabs.notion.site/FAQs-20593cf7734e4d78ad0dc91c8e8982e5"
+                content="https://warpcast.com/~/composer-action?url=https://api.alpha.payflow.me/api/farcaster/composer/pay?action=faq&view=prompt"
               />
             </>
           )

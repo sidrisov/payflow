@@ -61,8 +61,8 @@ public class PaymentComposerController {
 
 	@PostMapping
 	public ResponseEntity<?> form(@RequestBody FrameMessage composerActionMessage,
-	                              @RequestParam(required = false) String action,
-	                              @RequestParam(required = false) String refId) {
+			@RequestParam(required = false) String action,
+			@RequestParam(required = false) String refId) {
 		log.debug("Received composer action: payment form {} - action (optional): {}",
 				composerActionMessage, action);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
@@ -83,8 +83,7 @@ public class PaymentComposerController {
 		} catch (IllegalArgumentException exception) {
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Missing verified identity! Contact @sinaver.eth"));
-		} catch (
-				ConstraintViolationException exception) {
+		} catch (ConstraintViolationException exception) {
 			log.error("Failed to create a user for {}", interactor.username(), exception);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Identity conflict! Contact @sinaver.eth"));
@@ -114,13 +113,13 @@ public class PaymentComposerController {
 					.build()
 					.toUriString();
 			case "degen", "moxie" ->
-					UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
-							.path("/composer")
-							.queryParam("action", "useful")
-							.queryParam("tab", action)
-							.queryParam("access_token", accessToken)
-							.build()
-							.toUriString();
+				UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
+						.path("/composer")
+						.queryParam("action", "useful")
+						.queryParam("tab", action)
+						.queryParam("access_token", accessToken)
+						.build()
+						.toUriString();
 			case "payment" -> {
 				if (StringUtils.isNotBlank(refId)) {
 					yield UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
@@ -133,26 +132,30 @@ public class PaymentComposerController {
 					yield null;
 				}
 			}
+			case "faq" -> "https://payflowlabs.notion.site/Payflow-FAQs-20593cf7734e4d78ad0dc91c8e8982e5";
 			default -> UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 					.path("/composer")
 					.queryParam("access_token", accessToken)
 					.queryParam("action",
-							StringUtils.isNotBlank(action) ? action : StringUtils.isNotBlank(recipient)
-									? "pay" :
-									action)
+							StringUtils.isNotBlank(action) ? action
+									: StringUtils.isNotBlank(recipient)
+											? "pay"
+											: action)
 					.queryParam("recipient", recipient)
 					.build()
 					.toUriString();
-		} : UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
-				.path("/composer")
-				.queryParam("access_token", accessToken)
-				.queryParam("action",
-						StringUtils.isNotBlank(action) ? action : StringUtils.isNotBlank(recipient)
-								? "pay" :
-								action)
-				.queryParam("recipient", recipient)
-				.build()
-				.toUriString();
+		}
+				: UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
+						.path("/composer")
+						.queryParam("access_token", accessToken)
+						.queryParam("action",
+								StringUtils.isNotBlank(action) ? action
+										: StringUtils.isNotBlank(recipient)
+												? "pay"
+												: action)
+						.queryParam("recipient", recipient)
+						.build()
+						.toUriString();
 
 		if (miniAppUrl == null) {
 			log.error("Action not supported: {} by {}", validateMessage,
@@ -169,10 +172,9 @@ public class PaymentComposerController {
 	}
 
 	private String determineRecipientIdentity(FarcasterUser user) {
-		val paymentAddresses =
-				identityService.getIdentitiesInfo(user.addressesWithoutCustodialIfAvailable())
-						.stream().sorted(Comparator.comparingInt(IdentityMessage::score))
-						.map(IdentityMessage::address).toList();
+		val paymentAddresses = identityService.getIdentitiesInfo(user.addressesWithoutCustodialIfAvailable())
+				.stream().sorted(Comparator.comparingInt(IdentityMessage::score))
+				.map(IdentityMessage::address).toList();
 		// check if profile exist
 		val paymentProfile = identityService.getProfiles(paymentAddresses).stream().findFirst().orElse(null);
 		if (paymentProfile == null || (paymentProfile.getDefaultFlow() == null

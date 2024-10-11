@@ -439,7 +439,8 @@ public class FramePaymentController {
 
 			frameResponseBuilder.button(new FrameButton("FAQ",
 					FrameButton.ActionType.LINK,
-					"https://payflowlabs.notion.site/FAQs-20593cf7734e4d78ad0dc91c8e8982e5"));
+					"https://warpcast.com/~/composer-action?url=https://api.alpha.payflow" +
+							".me/api/farcaster/composer/pay?action=faq&view=prompt"));
 
 			return frameResponseBuilder.build().toHtmlResponse();
 		} catch (Throwable t) {
