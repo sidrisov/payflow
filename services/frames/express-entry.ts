@@ -18,11 +18,9 @@ import { GiftProfileType } from './types/GiftType';
 import { BalanceType } from './types/BalanceType';
 import { PaymentType } from './types/PaymentType';
 import { paymentHtml } from './components/Payment';
-import { Address, Chain, createPublicClient, http, keccak256, toBytes } from 'viem';
+import { Address, Chain, createPublicClient, http, keccak256, LocalAccount, toBytes } from 'viem';
 import { arbitrum, base, degen, mode, optimism, zora } from 'viem/chains';
-import { signerToSafeSmartAccount } from './utils/permissionless_forked/signerToSafeSmartAccount';
-import { ENTRYPOINT_ADDRESS_V06, isSmartAccountDeployed } from 'permissionless';
-import { SmartAccountSigner } from 'permissionless/accounts';
+import { isSmartAccountDeployed } from 'permissionless';
 import { FlowWalletType, JarType } from './types/FlowType';
 import { jarHtml } from './components/Jar';
 import { fetchTokenPrices } from './utils/prices';
@@ -37,6 +35,8 @@ import { mintHtml } from './components/Mint';
 import { fetchMintData } from './utils/mint';
 import { buyFanTokenEntryHtml } from './components/BuyFanToken';
 import { buyHypersubEntryHtml } from './components/Subsribe';
+import { toSafeSmartAccount } from './utils/pimlico/toSafeSmartAccount';
+import { entryPoint06Address } from 'viem/account-abstraction';
 
 dotenv.config();
 
@@ -121,12 +121,18 @@ async function startServer() {
         });
 
         if (client) {
-          const safeAccount = await signerToSafeSmartAccount(client as any, {
-            entryPoint: ENTRYPOINT_ADDRESS_V06,
-            signer: {} as SmartAccountSigner,
-            owners: owners as Address[],
-            safeVersion,
-            saltNonce: BigInt(keccak256(toBytes(saltNonce)))
+          const safeAccount = await toSafeSmartAccount({
+            client,
+            entryPoint: {
+              address: entryPoint06Address,
+              version: '0.6'
+            },
+            version: '1.4.1',
+            saltNonce: BigInt(keccak256(toBytes(saltNonce))),
+            owners: owners.map((owner) => ({
+              type: 'local',
+              address: owner
+            })) as [LocalAccount]
           });
 
           const predictedAddress = safeAccount.address;
