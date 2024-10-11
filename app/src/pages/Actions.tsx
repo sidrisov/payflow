@@ -78,7 +78,6 @@ export default function Actions() {
       startIcon: <Star sx={{ width: 25, height: 25 }} />
     },
     {
-      earlyFeature: true,
       title: 'Subscribe',
       description: 'Buy Hypersub subscription',
       installUrl: `${BASE_URL}/products/hypersub`,
