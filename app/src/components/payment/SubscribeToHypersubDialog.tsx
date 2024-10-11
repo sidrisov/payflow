@@ -27,6 +27,7 @@ import { FlowSelector } from './FlowSelector';
 import { Address, Hash } from 'viem';
 import { useHypersubPaymentTx } from '../../utils/hooks/useHypersubPaymentTx';
 import ReactMarkdown from 'react-markdown';
+import { secondsToTimeUnit } from '../../utils/time';
 
 const payflowReferrer = '0x0dEe77c83cB8b14fA95497825dF93202AbF6ad83' as Address;
 
@@ -130,6 +131,10 @@ export default function SubscribeToHypersubDialog({
     isGift ? `for @${recipientSocial.profileName}` : ''
   }`;
 
+  const { timeUnit, unitValue } = secondsToTimeUnit(
+    hypersub.state.tier1.params.periodDurationSeconds
+  );
+
   return (
     <>
       {!paymentSuccessData && (
@@ -199,10 +204,10 @@ export default function SubscribeToHypersubDialog({
 
             <QuantitySelector
               quantity={periods}
-              min={1}
+              min={unitValue}
               max={36}
               setQuantity={setPeriodsCount}
-              unitText="months"
+              unitText={timeUnit}
             />
 
             {isLoading ? (

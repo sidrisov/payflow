@@ -8,6 +8,7 @@ import { usePaymentActivityDetails } from '../../utils/hooks/usePaymentAcitivity
 import { PaymentType } from '../../types/PaymentType';
 import FarcasterAvatar from '../avatars/FarcasterAvatar';
 import MoxieAvatar from '../avatars/MoxieAvatar';
+import { secondsToTimeUnit } from '../../utils/time';
 
 interface PaymentDetailsProps {
   activity: ActivityType;
@@ -170,7 +171,8 @@ export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
                 color="text.secondary"
                 textOverflow="ellipsis"
                 overflow="hidden">
-                subscription: {payment.tokenAmount} month(s)
+                subscription: {payment.tokenAmount}{' '}
+                {secondsToTimeUnit(hypersubData.state.tier1.params.periodDurationSeconds).timeUnit}
               </Typography>
             </Typography>
           </>
