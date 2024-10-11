@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Address } from 'viem';
+import { Address, zeroAddress } from 'viem';
 
 import { Abi, ContractFunctionArgs, ContractFunctionName } from 'viem';
 import { hypersubAbi } from '../abi/hypersubAbi';
@@ -39,7 +39,7 @@ async function prepareHypersubPaymentTx(
     abi: hypersubAbi as Abi,
     functionName: 'mintAdvanced',
     args: [mintParams],
-    value: price
+    value: hypersub.state.currency === zeroAddress ? BigInt(price) : 0n
   };
 }
 
