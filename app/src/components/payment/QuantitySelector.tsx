@@ -9,6 +9,7 @@ interface QuantitySelectorProps {
   max?: number;
   decimals?: number;
   step?: number;
+  unitText?: string;
 }
 
 export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
@@ -17,7 +18,8 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
   min = 1,
   max = 10,
   decimals = 0,
-  step = 1 / 10 ** decimals
+  step = 1 / 10 ** decimals,
+  unitText = ''
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(quantity.toFixed(decimals));
@@ -83,7 +85,13 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
         sx={{ borderRadius: 2, p: 0.5 }}>
         <Remove fontSize="small" sx={{ color: 'text.secondary' }} />
       </IconButton>
-      <Box sx={{ width: 60, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <Box
+        sx={{
+          width: unitText ? 80 : 60,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
         {isEditing ? (
           <TextField
             value={inputValue}
@@ -115,6 +123,7 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
             onClick={handleEditStart}
             sx={{ cursor: 'pointer', textAlign: 'center' }}>
             {Number(quantity).toFixed(decimals)}
+            {unitText && <span style={{ fontSize: '1rem', marginLeft: '4px' }}>{unitText}</span>}
           </Typography>
         )}
       </Box>

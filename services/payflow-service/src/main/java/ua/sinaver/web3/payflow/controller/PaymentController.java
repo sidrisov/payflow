@@ -222,7 +222,7 @@ public class PaymentController {
 					payment.setFulfillmentChainId(paymentUpdateMessage.fulfillmentChainId());
 					payment.setFulfillmentHash(paymentUpdateMessage.fulfillmentHash());
 					payment.setStatus(Payment.PaymentStatus.INPROGRESS);
-					if (List.of("mint", "fan", "fc_storage").contains(payment.getCategory())) {
+					if (List.of("mint", "fan", "fc_storage", "hypersub").contains(payment.getCategory())) {
 						payment.setTokenAmount(paymentUpdateMessage.tokenAmount().toString());
 					}
 				}

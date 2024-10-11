@@ -362,6 +362,63 @@ public class NotificationService {
 		}
 	}
 
+	private void handleHypersubPaymentNotification(Payment payment, String senderFname,
+	                                               String receiverFname,
+	                                               List<Cast.Embed> embeds, String sourceRefText, boolean isSelfPurchase) {
+		val tokenAmount = Double.parseDouble(payment.getTokenAmount());
+		val tokenAmountText = tokenAmount + " month(s) ";
+
+		val authorPart = "";
+
+		String castText;
+		if (isSelfPurchase) {
+			castText = String.format("""
+							@%s, you've successfully subscribed to %s of %shypersub from the cast above 🕐""",
+					senderFname,
+					tokenAmountText,
+					authorPart);
+		} else {
+			castText = String.format("""
+							@%s, you've been gifted %s of %shypersub subscription by @%s from the cast above 🕐""",
+					receiverFname,
+					tokenAmountText,
+					authorPart,
+					senderFname);
+		}
+
+		sendCastReply(castText, payment.getSourceHash(), embeds);
+
+		if (payment.getReceiver() != null) {
+			String messageText;
+			if (isSelfPurchase) {
+				messageText = String.format("""
+								@%s, you've successfully subscribed to %s of %shypersub from the cast above 🕐
+
+								%s
+								🧾 Receipt: %s""",
+						senderFname,
+						tokenAmountText,
+						authorPart,
+						sourceRefText,
+						receiptService.getReceiptUrl(payment));
+			} else {
+				messageText = String.format("""
+								@%s, you've been gifted %s of %shypersub subscription by @%s from the cast above 🕐
+
+								%s
+								🧾 Receipt: %s""",
+						receiverFname,
+						tokenAmountText,
+						authorPart,
+						senderFname,
+						sourceRefText,
+						receiptService.getReceiptUrl(payment));
+			}
+
+			sendDirectMessage(messageText, payment.getReceiverFid().toString());
+		}
+	}
+
 	private void handleFanTokenPaymentNotification(Payment payment, String senderFname, String receiverFname,
 	                                               List<Cast.Embed> embeds, String crossChainText, String sourceRefText, boolean isSelfPurchase) {
 		val fanTokenParts = payment.getToken().split(";");

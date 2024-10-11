@@ -25,12 +25,11 @@ import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
 import { ProfileContext } from '../../contexts/UserContext';
 import { toast } from 'react-toastify';
 import { Social } from '../../generated/graphql/types';
-import { grey, red } from '@mui/material/colors';
+import { red } from '@mui/material/colors';
 import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
 import { MintMetadata } from '../../utils/mint';
 import { useMintPaymentTx } from '../../utils/hooks/useMintPaymentTx';
 import { PayButton, PaymentSuccess } from '../buttons/PayButton';
-import { useDarkMode } from '../../utils/hooks/useDarkMode';
 import { useMobile } from '../../utils/hooks/useMobile';
 import PaymentSuccessDialog from '../dialogs/PaymentSuccessDialog';
 import { getReceiptUrl } from '../../utils/receipts';
@@ -145,9 +144,6 @@ export default function MintDialog({
   setSelectedFlow,
   ...props
 }: MintDialogProps) {
-  const isMobile = useMobile();
-  const prefersDarkMode = useDarkMode();
-
   const miniApp = useSearchParams()[0].get('view') === 'embedded';
 
   //const miniApp = useMiniApp();
@@ -381,7 +377,7 @@ export default function MintDialog({
                   <Typography fontSize={18} fontWeight="bold">
                     {mint.metadata.name}
                   </Typography>
-                  <Typography variant="subtitle2" color={grey[prefersDarkMode ? 400 : 700]}>
+                  <Typography variant="subtitle2" color="text.secondary">
                     {mint.collectionName}
                   </Typography>
                 </Stack>

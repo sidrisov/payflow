@@ -66,7 +66,11 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
               <FaTag size={20} />
             </ListItemIcon>
             <Typography variant="body2">
-              {payment.category === 'mint' ? 'Mint Collection' : `View on ${targetDomain}`}
+              {payment.category === 'mint'
+                ? 'Mint Collection'
+                : payment.category === 'hypersub'
+                ? 'Hypersub Subscription'
+                : `View on ${targetDomain}`}
               <Typography variant="caption" display="block" color="text.secondary">
                 {targetDomain}
               </Typography>

@@ -9,9 +9,12 @@ import { wagmiConfig } from './wagmiConfig';
 import { AuthKitProvider } from '@farcaster/auth-kit';
 import { SUPPORTED_CHAINS } from './networks';
 import { useDarkMode } from './hooks/useDarkMode';
+import { configureFabricSDK } from '@withfabric/protocol-sdks';
 
 const AIRSTACK_API_KEY = import.meta.env.VITE_AIRSTACK_API_KEY;
 init(AIRSTACK_API_KEY);
+
+configureFabricSDK({ wagmiConfig });
 
 const PRIVY_API_KEY = import.meta.env.VITE_PRIVY_API_KEY;
 const PRIVY_CLIENT_ID_KEY = import.meta.env.VITE_PRIVY_CLIENT_ID_KEY;

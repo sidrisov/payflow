@@ -206,6 +206,13 @@ export default defineConfig({
             'CacheFirst',
             200,
             Time.weeks(1)
+          ),
+          createCache(
+            /^https:\/\/storage\.withfabric\.xyz\/.*/i,
+            'google-user-content-cache',
+            'CacheFirst',
+            50,
+            Time.weeks(1)
           )
         ]
       },

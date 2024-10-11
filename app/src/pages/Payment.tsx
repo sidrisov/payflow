@@ -25,6 +25,8 @@ import { fetchMintData, MintMetadata, parseMintToken } from '../utils/mint';
 import MintDialog from '../components/payment/MintDialog';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 import BuyFanTokenDialog from '../components/payment/BuyFanTokenDialog';
+import { fetchHypersubData, HypersubData } from '../utils/hooks/useHypersubData';
+import SubscribeToHypersubDialog from '../components/payment/SubscribeToHypersubDialog';
 
 export default function Payment() {
   const navigate = useNavigate();
@@ -39,6 +41,7 @@ export default function Payment() {
   const [senderSocial, setSenderSocial] = useState<Social>();
   const [recipientSocial, setRecipientSocial] = useState<Social>();
   const [mintData, setMintData] = useState<MintMetadata>();
+  const [hypersubData, setHypersubData] = useState<HypersubData | null>(null);
 
   useEffect(() => {
     if (!profile) {
@@ -102,6 +105,11 @@ export default function Payment() {
                   parsedMintData.referral
                 );
                 setMintData(mintData);
+              }
+
+              if (paymentData.category === 'hypersub') {
+                const hypersubData = await fetchHypersubData(paymentData);
+                setHypersubData(hypersubData);
               }
             }
 
@@ -215,7 +223,7 @@ export default function Payment() {
                   setSelectedFlow={setSelectedFlow}
                 />
               )) ||
-              (senderSocial && recipientSocial && payment.category === 'fan' && (
+              (payment.category === 'fan' && senderSocial && recipientSocial && (
                 <BuyFanTokenDialog
                   alwaysShowBackButton
                   title="Complete Token Purchase"
@@ -237,7 +245,34 @@ export default function Payment() {
                   selectedFlow={selectedFlow}
                   setSelectedFlow={setSelectedFlow}
                 />
-              )))
+              )) ||
+              (payment.category === 'hypersub' &&
+                hypersubData &&
+                senderSocial &&
+                recipientSocial && (
+                  <SubscribeToHypersubDialog
+                    alwaysShowBackButton
+                    title="Complete Subscription"
+                    open={payment != null}
+                    payment={payment}
+                    sender={{
+                      identity: {
+                        profile: { ...profile, defaultFlow: selectedFlow },
+                        address: profile.identity
+                      },
+                      type: 'profile'
+                    }}
+                    senderSocial={senderSocial}
+                    recipientSocial={recipientSocial}
+                    hypersub={hypersubData}
+                    closeStateCallback={async () => {
+                      navigate('/');
+                    }}
+                    flows={flows}
+                    selectedFlow={selectedFlow}
+                    setSelectedFlow={setSelectedFlow}
+                  />
+                )))
           ))}
       </Container>
     </>
