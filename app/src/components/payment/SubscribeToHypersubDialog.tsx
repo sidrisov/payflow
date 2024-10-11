@@ -126,7 +126,7 @@ export default function SubscribeToHypersubDialog({
     payment.status === 'COMPLETED' ? { txHash: payment.hash as Hash } : null
   );
 
-  const successMessage = `bought ${periods} months of "${hypersub.state.name}" subscription ${
+  const successMessage = `bought ${periods} month(s) of "${hypersub.state.name}" subscription ${
     isGift ? `for @${recipientSocial.profileName}` : ''
   }`;
 

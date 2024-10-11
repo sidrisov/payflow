@@ -33,7 +33,11 @@ export function getActivityType(
 
 export function getActivityName(activity: ActivityType, payment: PaymentType): string {
   if (activity === 'self') {
-    if (payment.category === 'fc_storage' || payment.category === 'fan') {
+    if (
+      payment.category === 'fc_storage' ||
+      payment.category === 'fan' ||
+      payment.category === 'hypersub'
+    ) {
       return 'bought';
     } else if (payment.category === 'mint') {
       return 'minted';

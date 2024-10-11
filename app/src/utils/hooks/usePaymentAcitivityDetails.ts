@@ -4,10 +4,12 @@ import { PaymentType } from '../../types/PaymentType';
 import { ERC20_CONTRACTS, Token } from '../../utils/erc20contracts';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { getNetworkDefaultBlockExplorerUrl } from '../../utils/networks';
+import { useHypersubData } from './useHypersubData';
 
 export const usePaymentActivityDetails = (payment: PaymentType) => {
   const { data: tokenPrices } = useTokenPrices();
   const { mintData } = useMintData(payment);
+  const { hypersubData } = useHypersubData(payment);
 
   let token, formattedTokenAmount, formattedUsdAmount;
 
@@ -16,6 +18,8 @@ export const usePaymentActivityDetails = (payment: PaymentType) => {
   } else if (payment.category === 'fan') {
     formattedTokenAmount = formatAmountWithSuffix(payment.tokenAmount.toString());
   } else if (payment.category === 'fc_storage') {
+    formattedTokenAmount = formatAmountWithSuffix(payment.tokenAmount.toString());
+  } else if (payment.category === 'hypersub') {
     formattedTokenAmount = formatAmountWithSuffix(payment.tokenAmount.toString());
   } else {
     token = ERC20_CONTRACTS.find(
@@ -40,6 +44,7 @@ export const usePaymentActivityDetails = (payment: PaymentType) => {
     formattedTokenAmount,
     formattedUsdAmount,
     defaultBlockExplorerUrl: getNetworkDefaultBlockExplorerUrl(payment.chainId),
-    mintData
+    mintData,
+    hypersubData
   };
 };

@@ -171,6 +171,9 @@ public class NotificationService {
 			} else if (payment.getCategory().equals("fan")) {
 				handleFanTokenPaymentNotification(payment, senderFname, receiverFname, embeds, crossChainText,
 						sourceRefText, isSelfPurchase);
+			} else if (payment.getCategory().equals("hypersub")) {
+				handleFanTokenPaymentNotification(payment, senderFname, receiverFname, embeds, crossChainText,
+						sourceRefText, isSelfPurchase);
 			}
 		}
 	}

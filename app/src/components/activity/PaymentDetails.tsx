@@ -57,8 +57,14 @@ const ActivityWrapper: React.FC<{
 
 export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
   const isMobile = useMobile();
-  const { token, formattedTokenAmount, formattedUsdAmount, defaultBlockExplorerUrl, mintData } =
-    usePaymentActivityDetails(payment);
+  const {
+    token,
+    formattedTokenAmount,
+    formattedUsdAmount,
+    defaultBlockExplorerUrl,
+    mintData,
+    hypersubData
+  } = usePaymentActivityDetails(payment);
 
   const renderContent = () => {
     if (payment.category === 'fc_storage') {
@@ -123,6 +129,48 @@ export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
                 textOverflow="ellipsis"
                 overflow="hidden">
                 {mintData.collectionName}
+              </Typography>
+            </Typography>
+          </>
+        );
+      }
+    }
+
+    if (payment.category === 'hypersub') {
+      if (hypersubData === undefined) {
+        return (
+          <>
+            <Skeleton variant="rounded" width={25} height={25} />
+            <Skeleton variant="text" width={120} />
+          </>
+        );
+      }
+
+      if (hypersubData) {
+        const mintCount = payment.tokenAmount || 1;
+        return (
+          <>
+            <Avatar
+              variant="rounded"
+              src={hypersubData.metadata?.image}
+              sx={{ width: 35, height: 35 }}
+            />
+            <Typography
+              noWrap
+              maxWidth={180}
+              variant="caption"
+              fontWeight="bold"
+              fontSize={isMobile ? 12 : 14}
+              textOverflow="ellipsis"
+              overflow="hidden">
+              {hypersubData.state.name}
+              <Typography
+                variant="caption"
+                display="block"
+                color="text.secondary"
+                textOverflow="ellipsis"
+                overflow="hidden">
+                subscription: {payment.tokenAmount} month(s)
               </Typography>
             </Typography>
           </>
