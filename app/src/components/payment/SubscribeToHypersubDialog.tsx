@@ -178,7 +178,7 @@ export default function SubscribeToHypersubDialog({
               }}>
               <Stack
                 p={1}
-                maxWidth={250}
+                maxWidth={200}
                 direction="row"
                 alignItems="center"
                 justifyContent="center"
@@ -191,14 +191,9 @@ export default function SubscribeToHypersubDialog({
                     height: 64
                   }}
                 />
-                <Stack alignItems="flex-start" spacing={0.5}>
-                  <Typography fontSize={18} fontWeight="bold">
-                    {hypersub.state.name}
-                  </Typography>
-                  <Typography variant="subtitle2" color="text.secondary">
-                    {hypersub.state.symbol}
-                  </Typography>
-                </Stack>
+                <Typography fontSize={18} fontWeight="bold">
+                  {hypersub.state.name}
+                </Typography>
               </Stack>
             </Tooltip>
 
