@@ -171,7 +171,8 @@ export default function SubscribeToHypersubDialog({
                   sx: {
                     p: 1,
                     borderRadius: 5,
-                    '& p': { margin: 0 }
+                    '& p': { margin: 0 },
+                    '& a': { color: 'inherit' }
                   }
                 }
               }}>
