@@ -172,7 +172,8 @@ public class NotificationService {
 				handleFanTokenPaymentNotification(payment, senderFname, receiverFname, embeds, crossChainText,
 						sourceRefText, isSelfPurchase);
 			} else if (payment.getCategory().equals("hypersub")) {
-				handleFanTokenPaymentNotification(payment, senderFname, receiverFname, embeds, crossChainText,
+				handleHypersubPaymentNotification(payment, senderFname, receiverFname,
+						embeds,
 						sourceRefText, isSelfPurchase);
 			}
 		}

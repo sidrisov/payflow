@@ -13,7 +13,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.bot.PaymentBotJob;
 import ua.sinaver.web3.payflow.message.farcaster.CastCreatedMessage;
+import ua.sinaver.web3.payflow.message.farcaster.modbot.MembershipRequestMessage;
+import ua.sinaver.web3.payflow.message.farcaster.modbot.MembershipResponseMessage;
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
+import ua.sinaver.web3.payflow.repository.PaymentRepository;
+import ua.sinaver.web3.payflow.service.IdentityService;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -37,6 +41,12 @@ public class WebhooksController {
 
 	@Autowired
 	private ObjectMapper objectMapper;
+
+	@Autowired
+	private IdentityService identityService;
+
+	@Autowired
+	private PaymentRepository paymentRepository;
 
 	private static String bytesToHex(byte[] bytes) {
 		StringBuilder hexString = new StringBuilder();
@@ -95,12 +105,56 @@ public class WebhooksController {
 		}
 	}
 
+	@PostMapping("/membership")
+	public ResponseEntity<MembershipResponseMessage> membership(@RequestBody MembershipRequestMessage request) {
+		val fid = request.user().fid();
+		val verifications = request.user().verifications();
+		val channelId = request.channel().id();
+
+		if (!StringUtils.equals("payflow", channelId)) {
+			log.error("Unsupported channelId: {}", channelId);
+			return ResponseEntity.badRequest().build();
+		}
+
+		log.debug("Checking whether membership allowed for fid {} based on number of outbound " +
+				"completed " +
+				"payments", request.user().fid());
+
+		if (verifications.isEmpty()) {
+			log.error("No verifications for {}", fid);
+			return ResponseEntity.badRequest().build();
+		}
+
+		val users = identityService.getProfiles(verifications);
+		if (users == null || users.isEmpty()) {
+			log.error("Profile not found for {}", fid);
+			return ResponseEntity.badRequest().build();
+		}
+
+		val numberOfPayments = paymentRepository.findNumberOutboundCompleted(
+				users, verifications);
+
+		val isMembershipAllowed = numberOfPayments >= 5;
+
+		log.debug("Membership for fid {}: number of outbound completed - {} " +
+				"allowed - {}", request.user().fid(), numberOfPayments, isMembershipAllowed);
+
+		if (isMembershipAllowed) {
+			log.info("Membership allowed for {}", fid);
+			return ResponseEntity.ok(new MembershipResponseMessage(String.format("Membership " +
+					"allowed with %s payments", numberOfPayments)));
+		} else {
+			log.error("Membership not allowed for {}", fid);
+			return ResponseEntity.badRequest().build();
+		}
+	}
+
 	private boolean verifySignature(String body, String sig, String secret) throws NoSuchAlgorithmException, InvalidKeyException {
-		Mac hmacSha512 = Mac.getInstance("HmacSHA512");
-		SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA512");
+		val hmacSha512 = Mac.getInstance("HmacSHA512");
+		val secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA512");
 		hmacSha512.init(secretKey);
-		byte[] hmac = hmacSha512.doFinal(body.getBytes(StandardCharsets.UTF_8));
-		String generatedSignature = bytesToHex(hmac);
+		val hmac = hmacSha512.doFinal(body.getBytes(StandardCharsets.UTF_8));
+		val generatedSignature = bytesToHex(hmac);
 		return generatedSignature.equals(sig);
 	}
 }

@@ -10,6 +10,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -50,11 +52,11 @@ public class SecurityConfig {
 	SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager)
 			throws Exception {
 		return http
-				.csrf(csrf -> csrf.disable())
+				.csrf(AbstractHttpConfigurer::disable)
 				.cors(Customizer.withDefaults())
-				.requestCache(reqCache -> reqCache.disable())
-				.httpBasic(basic -> basic.disable())
-				.formLogin(form -> form.disable())
+				.requestCache(RequestCacheConfigurer::disable)
+				.httpBasic(AbstractHttpConfigurer::disable)
+				.formLogin(AbstractHttpConfigurer::disable)
 				.authorizeHttpRequests(requests -> requests
 						// siwe
 						.requestMatchers(HttpMethod.GET, "/auth/nonce").permitAll()
