@@ -113,7 +113,8 @@ public class WebhooksController {
 
 		if (!StringUtils.equals("payflow", channelId)) {
 			log.error("Unsupported channelId: {}", channelId);
-			return ResponseEntity.badRequest().build();
+			return ResponseEntity.badRequest().body(new MembershipResponseMessage("Channel not " +
+					"supported"));
 		}
 
 		log.debug("Checking whether membership allowed for fid {} based on number of outbound " +
@@ -122,13 +123,15 @@ public class WebhooksController {
 
 		if (verifications.isEmpty()) {
 			log.error("No verifications for {}", fid);
-			return ResponseEntity.badRequest().build();
+			return ResponseEntity.badRequest().body(new MembershipResponseMessage("No " +
+					"verifications provided"));
 		}
 
 		val users = identityService.getProfiles(verifications);
 		if (users == null || users.isEmpty()) {
 			log.error("Profile not found for {}", fid);
-			return ResponseEntity.badRequest().build();
+			return ResponseEntity.badRequest().body(new MembershipResponseMessage("Payflow " +
+					"profile not found"));
 		}
 
 		val numberOfPayments = paymentRepository.findNumberOutboundCompleted(
@@ -142,10 +145,11 @@ public class WebhooksController {
 		if (isMembershipAllowed) {
 			log.info("Membership allowed for {}", fid);
 			return ResponseEntity.ok(new MembershipResponseMessage(String.format("Membership " +
-					"allowed with %s payments", numberOfPayments)));
+					"allowed with %s >= 5 payments", numberOfPayments)));
 		} else {
 			log.error("Membership not allowed for {}", fid);
-			return ResponseEntity.badRequest().build();
+			return ResponseEntity.ok(new MembershipResponseMessage(String.format("Membership not " +
+					"allowed with %s < 5 payments", numberOfPayments)));
 		}
 	}
 
