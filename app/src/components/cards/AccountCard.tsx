@@ -10,7 +10,7 @@ import {
   SxProps
 } from '@mui/material';
 import { Share, CallReceived } from '@mui/icons-material';
-import { useContext, useMemo, useState, useCallback, useRef } from 'react';
+import { useContext, useMemo, useState, useCallback, useRef, lazy } from 'react';
 import { useAccount } from 'wagmi';
 import { Address } from 'viem';
 import { TbSelector, TbSend } from 'react-icons/tb';
@@ -25,12 +25,13 @@ import { ChooseFlowDialog } from '../dialogs/ChooseFlowDialog';
 import { FlowTopUpMenu } from '../menu/FlowTopUpMenu';
 import WalletQRCodeShareDialog from '../dialogs/WalletQRCodeShareDialog';
 import SearchIdentityDialog from '../dialogs/SearchIdentityDialog';
-import PaymentDialog, { PaymentSenderType } from '../payment/PaymentDialog';
 import { ShareFlowMenu } from '../menu/ShareFlowMenu';
 import { PaymentFlowSection } from '../PaymentFlowSection';
 import { formatAmountWithSuffix } from '../../utils/formats';
 import { ActionButton } from '../buttons/ActionButton';
 import { FlowNavigator } from '../navigation/FlowNavigator';
+
+const LazyPaymentDialog = lazy(() => import('../payment/PaymentDialog'));
 
 const nonSelectableText: SxProps = {
   userSelect: 'none',
@@ -70,7 +71,7 @@ export function AccountCard({
 
   const [totalBalance, setTotalBalance] = useState<string>();
 
-  const [paymentType, setPaymentType] = useState<PaymentSenderType>();
+  const [paymentType, setPaymentType] = useState<any>();
   const [recipient, setRecipient] = useState<SelectedIdentityType>();
 
   const { chain, address } = useAccount();
@@ -239,7 +240,7 @@ export function AccountCard({
         <FlowNavigator orderedFlows={orderedFlows} currentIndex={currentIndex} />
 
         {recipient && selectedFlow && (
-          <PaymentDialog
+          <LazyPaymentDialog
             open={recipient != null}
             paymentType={paymentType}
             sender={{

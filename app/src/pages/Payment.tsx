@@ -1,5 +1,5 @@
 import { Container } from '@mui/material';
-import { useContext, useEffect, useState } from 'react';
+import { lazy, useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ProfileContext } from '../contexts/UserContext';
 import { FlowType } from '../types/FlowType';
@@ -16,17 +16,20 @@ import {
   GetFarcasterProfileQuery,
   Social
 } from '../generated/graphql/types';
-import GiftStorageDialog from '../components/payment/BuyStorageDialog';
-import PaymentDialog from '../components/payment/PaymentDialog';
 import { IdentityType, SelectedIdentityType } from '../types/ProfileType';
 import { toast } from 'react-toastify';
 import { statusToToastType } from '../components/Toasts';
 import { fetchMintData, MintMetadata, parseMintToken } from '../utils/mint';
-import MintDialog from '../components/payment/MintDialog';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
-import BuyFanTokenDialog from '../components/payment/BuyFanTokenDialog';
 import { fetchHypersubData, HypersubData } from '../utils/hooks/useHypersubData';
-import SubscribeToHypersubDialog from '../components/payment/SubscribeToHypersubDialog';
+
+const LazyMintDialog = lazy(() => import('../components/payment/MintDialog'));
+const LazyBuyFanTokenDialog = lazy(() => import('../components/payment/BuyFanTokenDialog'));
+const LazySubscribeToHypersubDialog = lazy(
+  () => import('../components/payment/SubscribeToHypersubDialog')
+);
+const LazyGiftStorageDialog = lazy(() => import('../components/payment/BuyStorageDialog'));
+const LazyPaymentDialog = lazy(() => import('../components/payment/PaymentDialog'));
 
 export default function Payment() {
   const navigate = useNavigate();
@@ -137,7 +140,7 @@ export default function Payment() {
           flows &&
           selectedFlow &&
           (!payment.category ? (
-            <PaymentDialog
+            <LazyPaymentDialog
               alwaysShowBackButton
               title="Complete Payment"
               open={payment != null}
@@ -178,7 +181,7 @@ export default function Payment() {
             senderSocial &&
             recipientSocial &&
             ((payment.category === 'fc_storage' && (
-              <GiftStorageDialog
+              <LazyGiftStorageDialog
                 alwaysShowBackButton
                 title="Complete Storage Payment"
                 open={payment != null}
@@ -200,7 +203,7 @@ export default function Payment() {
               />
             )) ||
               (payment.category === 'mint' && mintData && (
-                <MintDialog
+                <LazyMintDialog
                   alwaysShowBackButton
                   title="Complete Mint Payment"
                   open={payment != null}
@@ -224,7 +227,7 @@ export default function Payment() {
                 />
               )) ||
               (payment.category === 'fan' && senderSocial && recipientSocial && (
-                <BuyFanTokenDialog
+                <LazyBuyFanTokenDialog
                   alwaysShowBackButton
                   title="Complete Token Purchase"
                   open={payment != null}
@@ -250,7 +253,7 @@ export default function Payment() {
                 hypersubData &&
                 senderSocial &&
                 recipientSocial && (
-                  <SubscribeToHypersubDialog
+                  <LazySubscribeToHypersubDialog
                     alwaysShowBackButton
                     title="Complete Subscription"
                     open={payment != null}

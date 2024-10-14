@@ -102,7 +102,7 @@ function PrivyAppProviders({
       config={privyConfig(darkMode)}>
       <QueryClientProvider client={privyQueryClient}>
         <PrivyWagmiProvider config={wagmiConfig}>
-          <CommonoProviders darkMode={darkMode}>{children}</CommonoProviders>
+          <CommonProviders darkMode={darkMode}>{children}</CommonProviders>
           <CustomToastContainer />
         </PrivyWagmiProvider>
       </QueryClientProvider>
@@ -110,7 +110,7 @@ function PrivyAppProviders({
   );
 }
 
-function CommonoProviders({
+function CommonProviders({
   children,
   darkMode
 }: {

@@ -16,7 +16,7 @@ const FARCASTER_CONNECT_ENABLED = import.meta.env.VITE_FARCASTER_CONNECT_ENABLED
 
 export type AuthenticationStatus = 'loading' | 'unauthenticated' | 'authenticated';
 
-export function ConnectCard() {
+export default function ConnectCard() {
   const [siwfNonce, setSiwfNonce] = useState<string>();
   const [sifwResponse, setSifeResponse] = useState<StatusAPIResponse>();
   const [authStatus, setAuthStatus] = useState<AuthenticationStatus>('unauthenticated');
