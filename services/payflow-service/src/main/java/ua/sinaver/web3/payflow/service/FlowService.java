@@ -102,7 +102,6 @@ public class FlowService implements IFlowService {
 			flows.addAll(nativeFlows);
 		}
 
-		socialGraphService.cleanIdentityVerifiedAddressesCache(user.getIdentity());
 		val verifications = identityService.getIdentityAddresses(user.getIdentity());
 		if (verifications != null && !verifications.isEmpty()) {
 			val verificationFlows = verifications.stream()

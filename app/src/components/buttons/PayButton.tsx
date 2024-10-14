@@ -9,6 +9,7 @@ import { usePayflowTransaction } from '../../utils/hooks/usePayflowTransaction';
 import { PaymentType } from '../../types/PaymentType';
 import { PaymentOption } from '@paywithglide/glide-js';
 import { Hash } from 'viem';
+import { usePrivy } from '@privy-io/react-auth';
 
 export type PaymentSuccess = {
   txHash: Hash;
@@ -40,6 +41,8 @@ export const PayButton: React.FC<PayButtonProps> = ({
   onError
 }) => {
   console.debug('Payment in PayButton: ', payment);
+
+  const { ready } = usePrivy();
 
   const chainId = useChainId();
   const { address } = useAccount();
@@ -77,7 +80,7 @@ export const PayButton: React.FC<PayButtonProps> = ({
         <CustomLoadingButton
           title={buttonText}
           loading={paymentTxStatus.isPending}
-          disabled={disabled}
+          disabled={disabled || !ready}
           status={paymentTxStatus.status}
           onClick={handleClick}
         />

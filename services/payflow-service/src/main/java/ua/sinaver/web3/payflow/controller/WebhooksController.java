@@ -148,8 +148,8 @@ public class WebhooksController {
 					"allowed with %s >= 5 payments", numberOfPayments)));
 		} else {
 			log.error("Membership not allowed for {}", fid);
-			return ResponseEntity.ok(new MembershipResponseMessage(String.format("Membership not " +
-					"allowed with %s < 5 payments", numberOfPayments)));
+			return ResponseEntity.badRequest().body(new MembershipResponseMessage(String.format(
+					"Membership not allowed with %s < 5 payments", numberOfPayments)));
 		}
 	}
 

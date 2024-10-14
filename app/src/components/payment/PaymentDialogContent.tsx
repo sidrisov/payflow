@@ -47,6 +47,7 @@ import { glideConfig } from '../../utils/glide';
 import { useDarkMode } from '../../utils/hooks/useDarkMode';
 import { TokenAmountSection } from '../dialogs/TokenAmountSection';
 import { SwitchFlowSignerSection } from '../dialogs/SwitchFlowSignerSection';
+import { usePrivy } from '@privy-io/react-auth';
 
 export default function PaymentDialogContent({
   paymentType,
@@ -55,6 +56,8 @@ export default function PaymentDialogContent({
   recipient
 }: PaymentDialogProps) {
   const prefersDarkMode = useDarkMode();
+
+  const { ready } = usePrivy();
 
   const senderAddress = sender.identity.address as Address;
   const senderFlow = sender.identity.profile?.defaultFlow as FlowType;
@@ -635,7 +638,7 @@ export default function PaymentDialogContent({
         <CustomLoadingButton
           title="Pay"
           loading={paymentPending}
-          disabled={!paymentEnabled}
+          disabled={!paymentEnabled || !ready}
           status={isNativeFlow ? status : statusRegular}
           onClick={async () => {
             if (crossChainMode) {

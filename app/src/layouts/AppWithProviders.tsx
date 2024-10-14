@@ -7,7 +7,6 @@ import { ProfileType } from '../types/ProfileType';
 import sortAndFilterFlows from '../utils/sortAndFilterFlows';
 import { toast } from 'react-toastify';
 import axios from 'axios';
-import { usePrivy } from '@privy-io/react-auth';
 import { useSearchParams } from 'react-router-dom';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 
@@ -24,8 +23,6 @@ export default function AppWithProviders() {
   const fetchingStatusRef = useRef(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [profile, setProfile] = useState<ProfileType>();
-
-  const { ready } = usePrivy();
 
   const accessToken = useSearchParams()[0].get('access_token') ?? undefined;
 
@@ -68,7 +65,7 @@ export default function AppWithProviders() {
     localStorage.setItem('appSettings', JSON.stringify(appSettings));
   }, [appSettings]);
 
-  return loading || !ready ? (
+  return loading ? (
     <LoadingPayflowEntryLogo />
   ) : (
     <App profile={profile} appSettings={appSettings} setAppSettings={setAppSettings} />
