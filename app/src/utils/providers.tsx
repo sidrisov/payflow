@@ -6,7 +6,6 @@ import CustomToastContainer from '../components/toasts/CustomToastContainer';
 import { PrivyClientConfig, PrivyProvider } from '@privy-io/react-auth';
 import { WagmiProvider as PrivyWagmiProvider } from '@privy-io/wagmi';
 import { wagmiConfig } from './wagmiConfig';
-import { AuthKitProvider } from '@farcaster/auth-kit';
 import { SUPPORTED_CHAINS } from './networks';
 import { useDarkMode } from './hooks/useDarkMode';
 import { configureFabricSDK } from '@withfabric/protocol-sdks';
@@ -18,14 +17,6 @@ configureFabricSDK({ wagmiConfig });
 
 const PRIVY_API_KEY = import.meta.env.VITE_PRIVY_API_KEY;
 const PRIVY_CLIENT_ID_KEY = import.meta.env.VITE_PRIVY_CLIENT_ID_KEY;
-
-const farcasterAuthConfig = {
-  rpcUrl: `https://opt-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`,
-  domain: window.location.hostname,
-  siweUri: window.location.origin,
-  relay: 'https://relay.farcaster.xyz',
-  version: 'v1'
-};
 
 export type WalletProviderType = 'privy' | 'rainbowkit';
 
@@ -110,19 +101,13 @@ function PrivyAppProviders({
   );
 }
 
-function CommonProviders({
-  children,
-  darkMode
-}: {
-  children: React.ReactNode;
-  darkMode: boolean;
-}) {
+function CommonProviders({ children, darkMode }: { children: React.ReactNode; darkMode: boolean }) {
   return (
     <AirstackProvider apiKey={AIRSTACK_API_KEY}>
-      <AuthKitProvider config={farcasterAuthConfig}>
+      <>
         <CustomThemeProvider darkMode={darkMode}>{children}</CustomThemeProvider>
         <CustomToastContainer />
-      </AuthKitProvider>
+      </>
     </AirstackProvider>
   );
 }

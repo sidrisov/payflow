@@ -68,13 +68,10 @@ export default defineConfig({
           ],
           viem: ['viem'],
           wagmi: ['wagmi'],
-          ethers: ['ethers'],
           walletconnect: ['@walletconnect/core'],
           permissionless: ['permissionless'],
           'privy-auth': ['@privy-io/react-auth'],
           'privy-wagmi': ['@privy-io/wagmi'],
-          farcaster: ['@farcaster/auth-kit'],
-          zora: ['@zoralabs/protocol-sdk'],
           // Data fetching and state management
           data: ['@tanstack/react-query', 'axios', 'graphql', 'graphql-request'],
           // Utility libraries
