@@ -6,7 +6,8 @@ import {
   Stack,
   StackProps,
   CircularProgress,
-  Skeleton} from '@mui/material';
+  Skeleton
+} from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import { MdOutlinePlaylistAdd, MdOutlinePlaylistAddCheck } from 'react-icons/md';
 import { PaymentStatus } from '../../types/PaymentType';
@@ -52,6 +53,7 @@ export function PaymentSection({ type, ...props }: PaymentSectionProps) {
   );
 
   const payments = data?.pages.flatMap((page) => page.content) || [];
+  const totalCount = data?.pages[0]?.totalElements || 0;
 
   const icon =
     type === 'intent' ? (
@@ -72,7 +74,7 @@ export function PaymentSection({ type, ...props }: PaymentSectionProps) {
     };
 
     const scrollContainer = scrollContainerRef.current;
-    if (scrollContainer) {
+    if (scrollContainer && expand) {
       scrollContainer.addEventListener('scroll', handleScroll);
     }
 
@@ -81,7 +83,7 @@ export function PaymentSection({ type, ...props }: PaymentSectionProps) {
         scrollContainer.removeEventListener('scroll', handleScroll);
       }
     };
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, STATUS_MAP[type], expand]);
 
   const renderContent = () => {
     const commonStackProps = {
@@ -153,7 +155,7 @@ export function PaymentSection({ type, ...props }: PaymentSectionProps) {
               {isLoading ? (
                 <Skeleton width={20} sx={{ display: 'inline-block', mx: 0.5 }} />
               ) : (
-                payments.length
+                totalCount
               )}
               )
             </Box>
