@@ -135,150 +135,144 @@ export default function SubscribeToHypersubDialog({
     hypersub.state.tier1.params.periodDurationSeconds
   );
 
-  return (
-    <>
-      {!paymentSuccessData && (
-        <BasePaymentDialog
-          alwaysShowBackButton={alwaysShowBackButton}
-          title={props.title ?? 'Hypersub Payment'}
-          closeStateCallback={closeStateCallback}
-          {...props}
-          footerContent={
-            <PayButton
-              paymentToken={paymentToken}
-              buttonText="Subscribe"
-              disabled={!hasPaymentOption}
-              paymentTx={paymentTx}
-              paymentWallet={paymentWallet!}
-              paymentOption={paymentOption!}
-              payment={{ ...payment, tokenAmount: periods }}
-              senderFlow={senderFlow}
-              onSuccess={setPaymentSuccessData}
-              onError={(error) => {
-                toast.error(`Failed to subscribe to "${hypersub.metadata?.name}"`, {
-                  autoClose: 2000
-                });
-                console.error(`Failed to subscribe with error`, error);
+  return paymentSuccessData ? (
+    <PaymentSuccessDialog
+      open={true}
+      onClose={() => {
+        window.location.href = '/';
+      }}
+      message={successMessage}
+      receiptUrl={getReceiptUrl({ ...payment, hash: paymentSuccessData.txHash }, false)}
+    />
+  ) : (
+    <BasePaymentDialog
+      alwaysShowBackButton={alwaysShowBackButton}
+      title={props.title ?? 'Hypersub Payment'}
+      closeStateCallback={closeStateCallback}
+      {...props}
+      footerContent={
+        <PayButton
+          paymentToken={paymentToken}
+          buttonText="Subscribe"
+          disabled={!hasPaymentOption}
+          paymentTx={paymentTx}
+          paymentWallet={paymentWallet!}
+          paymentOption={paymentOption!}
+          payment={{ ...payment, tokenAmount: periods }}
+          senderFlow={senderFlow}
+          onSuccess={setPaymentSuccessData}
+          onError={(error) => {
+            toast.error(`Failed to subscribe to "${hypersub.metadata?.name}"`, {
+              autoClose: 2000
+            });
+            console.error(`Failed to subscribe with error`, error);
+          }}
+        />
+      }>
+      <Box ml={1}>
+        <FarcasterRecipientField variant="text" social={recipientSocial} />
+      </Box>
+      <Stack flex={1} alignItems="center" justifyContent="center" spacing={1} overflow="auto">
+        <Tooltip
+          title={<ReactMarkdown>{hypersub.metadata?.description ?? ''}</ReactMarkdown>}
+          arrow
+          disableFocusListener
+          sx={{ fontWeight: 'bold' }}
+          slotProps={{
+            tooltip: {
+              sx: {
+                p: 1,
+                borderRadius: 5,
+                '& p': { margin: 0 },
+                '& a': { color: 'inherit' }
+              }
+            }
+          }}>
+          <Stack
+            p={1}
+            maxWidth={200}
+            direction="row"
+            alignItems="center"
+            justifyContent="center"
+            spacing={1}>
+            <Avatar
+              variant="rounded"
+              src={hypersub.metadata?.image ?? ''}
+              sx={{
+                width: 64,
+                height: 64
               }}
             />
-          }>
-          <Box ml={1}>
-            <FarcasterRecipientField variant="text" social={recipientSocial} />
-          </Box>
-          <Stack flex={1} alignItems="center" justifyContent="center" spacing={1} overflow="auto">
-            <Tooltip
-              title={<ReactMarkdown>{hypersub.metadata?.description ?? ''}</ReactMarkdown>}
-              arrow
-              disableFocusListener
-              sx={{ fontWeight: 'bold' }}
-              slotProps={{
-                tooltip: {
-                  sx: {
-                    p: 1,
-                    borderRadius: 5,
-                    '& p': { margin: 0 },
-                    '& a': { color: 'inherit' }
-                  }
-                }
-              }}>
-              <Stack
-                p={1}
-                maxWidth={200}
-                direction="row"
-                alignItems="center"
-                justifyContent="center"
-                spacing={1}>
-                <Avatar
-                  variant="rounded"
-                  src={hypersub.metadata?.image ?? ''}
-                  sx={{
-                    width: 64,
-                    height: 64
-                  }}
-                />
-                <Typography fontSize={18} fontWeight="bold">
-                  {hypersub.state.name}
-                </Typography>
-              </Stack>
-            </Tooltip>
-
-            <QuantitySelector
-              quantity={periods}
-              min={unitValue}
-              max={36}
-              setQuantity={setPeriodsCount}
-              unitText={timeUnit}
-            />
-
-            {isLoading ? (
-              <Skeleton
-                title="fetching price"
-                variant="rectangular"
-                sx={{ borderRadius: 3, height: 45, width: 100 }}
-              />
-            ) : hasPaymentOption ? (
-              <Typography fontSize={30} fontWeight="bold" textAlign="center">
-                {formatAmountWithSuffix(
-                  normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
-                )}{' '}
-                {paymentToken?.id.toUpperCase()}
-              </Typography>
-            ) : (
-              <Typography
-                textAlign="center"
-                fontSize={14}
-                fontWeight="bold"
-                color={red.A400}
-                sx={{
-                  textWrap: 'balance'
-                }}>
-                {isHypersubPaymentTxError &&
-                  (hypersubPaymentTxError?.message ?? 'Failed to load payment transaction')}
-                {(paymentOptions?.length === 0 || isPaymentOptionsError) &&
-                  (paymentOptionsError?.message ??
-                    "You don't have any balance to cover subscription cost. Switch to a different payment flow!")}
-              </Typography>
-            )}
+            <Typography fontSize={18} fontWeight="bold">
+              {hypersub.state.name}
+            </Typography>
           </Stack>
-          <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
-            <Box width="50%">
-              <FlowSelector
-                variant="text"
-                sender={sender}
-                flows={flows!}
-                selectedFlow={selectedFlow!}
-                setSelectedFlow={setSelectedFlow!}
-              />
-            </Box>
-            <Box width="50%">
-              <NetworkTokenSelector
-                crossChainMode
-                payment={payment}
-                paymentWallet={paymentWallet}
-                setPaymentWallet={setPaymentWallet}
-                paymentToken={paymentToken}
-                setPaymentToken={setPaymentToken}
-                compatibleWallets={compatibleWallets}
-                enabledChainCurrencies={
-                  paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
-                }
-                gasFee={gasFee}
-              />
-            </Box>
-          </Box>
-        </BasePaymentDialog>
-      )}
+        </Tooltip>
 
-      {paymentSuccessData && (
-        <PaymentSuccessDialog
-          open={true}
-          onClose={() => {
-            window.location.href = '/';
-          }}
-          message={successMessage}
-          receiptUrl={getReceiptUrl({ ...payment, hash: paymentSuccessData.txHash }, false)}
+        <QuantitySelector
+          quantity={periods}
+          min={unitValue}
+          max={36}
+          setQuantity={setPeriodsCount}
+          unitText={timeUnit}
         />
-      )}
-    </>
+
+        {isLoading ? (
+          <Skeleton
+            title="fetching price"
+            variant="rectangular"
+            sx={{ borderRadius: 3, height: 45, width: 100 }}
+          />
+        ) : hasPaymentOption ? (
+          <Typography fontSize={30} fontWeight="bold" textAlign="center">
+            {formatAmountWithSuffix(
+              normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
+            )}{' '}
+            {paymentToken?.id.toUpperCase()}
+          </Typography>
+        ) : (
+          <Typography
+            textAlign="center"
+            fontSize={14}
+            fontWeight="bold"
+            color={red.A400}
+            sx={{
+              textWrap: 'balance'
+            }}>
+            {isHypersubPaymentTxError &&
+              (hypersubPaymentTxError?.message ?? 'Failed to load payment transaction')}
+            {(paymentOptions?.length === 0 || isPaymentOptionsError) &&
+              (paymentOptionsError?.message ??
+                "You don't have any balance to cover subscription cost. Switch to a different payment flow!")}
+          </Typography>
+        )}
+      </Stack>
+      <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
+        <Box width="50%">
+          <FlowSelector
+            variant="text"
+            sender={sender}
+            flows={flows!}
+            selectedFlow={selectedFlow!}
+            setSelectedFlow={setSelectedFlow!}
+          />
+        </Box>
+        <Box width="50%">
+          <NetworkTokenSelector
+            crossChainMode
+            payment={payment}
+            paymentWallet={paymentWallet}
+            setPaymentWallet={setPaymentWallet}
+            paymentToken={paymentToken}
+            setPaymentToken={setPaymentToken}
+            compatibleWallets={compatibleWallets}
+            enabledChainCurrencies={
+              paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
+            }
+            gasFee={gasFee}
+          />
+        </Box>
+      </Box>
+    </BasePaymentDialog>
   );
 }

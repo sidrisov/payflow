@@ -1,9 +1,9 @@
 import React from 'react';
 import ResponsiveDialog from './ResponsiveDialog';
 import { Box, Typography, Link } from '@mui/material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { green } from '@mui/material/colors';
+import { HiOutlineCheckCircle } from 'react-icons/hi2';
 
 interface PaymentSuccessDialogProps {
   open: boolean;
@@ -23,7 +23,7 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
   return (
     <ResponsiveDialog open={open} onClose={onClose}>
       <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" p={1}>
-        <CheckCircleIcon sx={{ fontSize: 60, color: green.A700, mb: 1 }} />
+        <HiOutlineCheckCircle style={{ fontSize: 65, color: green.A700, marginBottom: 1 }} />
         <Typography fontSize={18} fontWeight="bold" textAlign="center" mb={1}>
           Completed
         </Typography>

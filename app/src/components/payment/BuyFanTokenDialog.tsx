@@ -123,139 +123,134 @@ export default function BuyFanTokenDialog({
     fanTokenAmount > 1 ? 's' : ''
   } for @${recipientSocial.profileName}`;
 
-  return (
-    <>
-      {!paymentSuccessData && (
-        <BasePaymentDialog
-          alwaysShowBackButton={alwaysShowBackButton}
-          title={props.title ?? 'Buy Fan Tokens'}
-          closeStateCallback={closeStateCallback}
-          {...props}
-          footerContent={
-            <PayButton
-              paymentToken={paymentToken}
-              buttonText="Buy Fan Tokens"
-              disabled={!hasPaymentOption}
-              paymentTx={{
-                ...paymentTx,
-                approval: { token: MOXIE_CONTRACT_ADDRESS, amount: paymentTx?.args?.[1] }
-              }}
-              paymentWallet={paymentWallet!}
-              paymentOption={paymentOption!}
-              payment={{ ...payment, tokenAmount: fanTokenAmount }}
-              senderFlow={senderFlow}
-              onSuccess={setPaymentSuccessData}
-              onError={(error) => {
-                toast.error(`Failed to buy fan tokens!`);
-                console.error('Failed to buy fan tokens with error', error);
-              }}
-            />
-          }>
-          <Box ml={1}>
-            <FarcasterRecipientField variant="text" social={recipientSocial} />
-          </Box>
-          <Stack flex={1} alignItems="center" justifyContent="center" spacing={1} overflow="auto">
-            <Stack alignItems="center" spacing={0.3}>
-              <Chip
-                icon={<MoxieAvatar size={18} />}
-                label={tokenName}
-                clickable={true}
-                onClick={() => {
-                  window.open(fanTokenUrl(tokenName), '_blank');
-                }}
-                sx={{
-                  px: 0.5,
-                  fontSize: 18,
-                  fontWeight: 'bold'
-                }}
-              />
-              <Box display="flex" alignItems="center">
-                <IconButton
-                  size="small"
-                  onClick={() => setLocked(!locked)}
-                  sx={{ mr: 0.5, color: 'text.secondary' }}>
-                  {locked ? <IoMdLock size={15} /> : <IoMdUnlock size={15} />}
-                </IconButton>
-                <Typography variant="caption" fontWeight="bold" color="text.secondary">
-                  {locked ? '3 months lock period' : 'No lock period'}
-                </Typography>
-              </Box>
-            </Stack>
-
-            <QuantitySelector
-              quantity={fanTokenAmount}
-              min={0.1}
-              max={1000}
-              decimals={1}
-              step={1}
-              setQuantity={setFanTokenAmount}
-            />
-
-            {isLoading ? (
-              <Skeleton
-                title="fetching price"
-                variant="rectangular"
-                sx={{ borderRadius: 3, height: 45, width: 100 }}
-              />
-            ) : hasPaymentOption ? (
-              <Typography fontSize={30} fontWeight="bold" textAlign="center">
-                {formatAmountWithSuffix(
-                  normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
-                )}{' '}
-                {paymentToken?.id.toUpperCase()}
-              </Typography>
-            ) : (
-              <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
-                {isPaymentOptionsError ? (
-                  'Failed to fetch payment options. Please try again.'
-                ) : (
-                  <>
-                    Balance not enough to cover the payment.
-                    <br />
-                    Switch to a different payment flow!
-                  </>
-                )}
-              </Typography>
-            )}
-          </Stack>
-          <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
-            <Box width="50%">
-              <FlowSelector
-                variant="text"
-                sender={sender}
-                flows={flows!}
-                selectedFlow={selectedFlow!}
-                setSelectedFlow={setSelectedFlow!}
-              />
-            </Box>
-            <Box width="50%">
-              <NetworkTokenSelector
-                crossChainMode
-                payment={{ ...payment, tokenAmount: fanTokenAmount }}
-                paymentWallet={paymentWallet}
-                setPaymentWallet={setPaymentWallet}
-                paymentToken={paymentToken}
-                setPaymentToken={setPaymentToken}
-                compatibleWallets={compatibleWallets}
-                enabledChainCurrencies={
-                  paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
-                }
-                gasFee={gasFee}
-              />
-            </Box>
-          </Box>
-        </BasePaymentDialog>
-      )}
-      {paymentSuccessData && (
-        <PaymentSuccessDialog
-          open={true}
-          onClose={() => {
-            window.location.href = '/';
+  return paymentSuccessData ? (
+    <PaymentSuccessDialog
+      open={true}
+      onClose={() => {
+        window.location.href = '/';
+      }}
+      message={successMessage}
+      receiptUrl={getReceiptUrl({ ...payment, hash: paymentSuccessData.txHash }, false)}
+    />
+  ) : (
+    <BasePaymentDialog
+      alwaysShowBackButton={alwaysShowBackButton}
+      title={props.title ?? 'Buy Fan Tokens'}
+      closeStateCallback={closeStateCallback}
+      {...props}
+      footerContent={
+        <PayButton
+          paymentToken={paymentToken}
+          buttonText="Buy Fan Tokens"
+          disabled={!hasPaymentOption}
+          paymentTx={{
+            ...paymentTx,
+            approval: { token: MOXIE_CONTRACT_ADDRESS, amount: paymentTx?.args?.[1] }
           }}
-          message={successMessage}
-          receiptUrl={getReceiptUrl({ ...payment, hash: paymentSuccessData.txHash }, false)}
+          paymentWallet={paymentWallet!}
+          paymentOption={paymentOption!}
+          payment={{ ...payment, tokenAmount: fanTokenAmount }}
+          senderFlow={senderFlow}
+          onSuccess={setPaymentSuccessData}
+          onError={(error) => {
+            toast.error(`Failed to buy fan tokens!`);
+            console.error('Failed to buy fan tokens with error', error);
+          }}
         />
-      )}
-    </>
+      }>
+      <Box ml={1}>
+        <FarcasterRecipientField variant="text" social={recipientSocial} />
+      </Box>
+      <Stack flex={1} alignItems="center" justifyContent="center" spacing={1} overflow="auto">
+        <Stack alignItems="center" spacing={0.3}>
+          <Chip
+            icon={<MoxieAvatar size={18} />}
+            label={tokenName}
+            clickable={true}
+            onClick={() => {
+              window.open(fanTokenUrl(tokenName), '_blank');
+            }}
+            sx={{
+              px: 0.5,
+              fontSize: 18,
+              fontWeight: 'bold'
+            }}
+          />
+          <Box display="flex" alignItems="center">
+            <IconButton
+              size="small"
+              onClick={() => setLocked(!locked)}
+              sx={{ mr: 0.5, color: 'text.secondary' }}>
+              {locked ? <IoMdLock size={15} /> : <IoMdUnlock size={15} />}
+            </IconButton>
+            <Typography variant="caption" fontWeight="bold" color="text.secondary">
+              {locked ? '3 months lock period' : 'No lock period'}
+            </Typography>
+          </Box>
+        </Stack>
+
+        <QuantitySelector
+          quantity={fanTokenAmount}
+          min={0.1}
+          max={1000}
+          decimals={1}
+          step={1}
+          setQuantity={setFanTokenAmount}
+        />
+
+        {isLoading ? (
+          <Skeleton
+            title="fetching price"
+            variant="rectangular"
+            sx={{ borderRadius: 3, height: 45, width: 100 }}
+          />
+        ) : hasPaymentOption ? (
+          <Typography fontSize={30} fontWeight="bold" textAlign="center">
+            {formatAmountWithSuffix(
+              normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
+            )}{' '}
+            {paymentToken?.id.toUpperCase()}
+          </Typography>
+        ) : (
+          <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
+            {isPaymentOptionsError ? (
+              'Failed to fetch payment options. Please try again.'
+            ) : (
+              <>
+                Balance not enough to cover the payment.
+                <br />
+                Switch to a different payment flow!
+              </>
+            )}
+          </Typography>
+        )}
+      </Stack>
+      <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
+        <Box width="50%">
+          <FlowSelector
+            variant="text"
+            sender={sender}
+            flows={flows!}
+            selectedFlow={selectedFlow!}
+            setSelectedFlow={setSelectedFlow!}
+          />
+        </Box>
+        <Box width="50%">
+          <NetworkTokenSelector
+            crossChainMode
+            payment={{ ...payment, tokenAmount: fanTokenAmount }}
+            paymentWallet={paymentWallet}
+            setPaymentWallet={setPaymentWallet}
+            paymentToken={paymentToken}
+            setPaymentToken={setPaymentToken}
+            compatibleWallets={compatibleWallets}
+            enabledChainCurrencies={
+              paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
+            }
+            gasFee={gasFee}
+          />
+        </Box>
+      </Box>
+    </BasePaymentDialog>
   );
 }

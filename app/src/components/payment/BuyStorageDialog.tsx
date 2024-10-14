@@ -104,98 +104,93 @@ export default function BuyStorageDialog({
     numberOfUnits > 1 ? 's' : ''
   } of storage for @${recipientSocial.profileName}`;
 
-  return (
-    <>
-      {!paymentSuccessData && (
-        <BasePaymentDialog
-          alwaysShowBackButton={alwaysShowBackButton}
-          title={props.title ?? 'Farcaster Storage'}
-          closeStateCallback={closeStateCallback}
-          {...props}
-          footerContent={
-            <PayButton
-              paymentToken={paymentToken}
-              buttonText="Pay For Storage"
-              disabled={!hasPaymentOption}
-              paymentTx={paymentTx}
-              paymentWallet={paymentWallet!}
-              paymentOption={paymentOption!}
-              payment={payment}
-              senderFlow={senderFlow}
-              onSuccess={setPaymentSuccessData}
-              onError={(error) => {
-                toast.error(`Failed to pay for storage!`);
-                console.error('Failed to pay for storage with error', error);
-              }}
-            />
-          }>
-          <Box ml={1}>
-            <FarcasterRecipientField variant="text" social={recipientSocial} />
-          </Box>
-          <Stack flex={1} alignItems="center" justifyContent="center" spacing={1} overflow="auto">
-            <Typography fontSize={18} fontWeight="bold">
-              {numberOfUnits} Unit{numberOfUnits > 1 ? 's' : ''} of Storage
-            </Typography>
-
-            {isLoading ? (
-              <Skeleton
-                title="fetching price"
-                variant="rectangular"
-                sx={{ borderRadius: 3, height: 45, width: 100 }}
-              />
-            ) : hasPaymentOption ? (
-              <Typography fontSize={30} fontWeight="bold" textAlign="center">
-                {formatAmountWithSuffix(
-                  normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
-                )}{' '}
-                {paymentToken?.id.toUpperCase()}
-              </Typography>
-            ) : (
-              <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
-                {isPaymentOptionsError
-                  ? 'Failed to fetch payment options. Please try again.'
-                  : "You don't have any balance to cover storage cost. Switch to a different payment flow!"}
-              </Typography>
-            )}
-          </Stack>
-          <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
-            <Box width="50%">
-              <FlowSelector
-                variant="text"
-                sender={sender}
-                flows={flows!}
-                selectedFlow={selectedFlow!}
-                setSelectedFlow={setSelectedFlow!}
-              />
-            </Box>
-            <Box width="50%">
-              <NetworkTokenSelector
-                crossChainMode
-                payment={payment}
-                paymentWallet={paymentWallet}
-                setPaymentWallet={setPaymentWallet}
-                paymentToken={paymentToken}
-                setPaymentToken={setPaymentToken}
-                compatibleWallets={compatibleWallets}
-                enabledChainCurrencies={
-                  paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
-                }
-                gasFee={gasFee}
-              />
-            </Box>
-          </Box>
-        </BasePaymentDialog>
-      )}
-      {paymentSuccessData && (
-        <PaymentSuccessDialog
-          open={true}
-          onClose={() => {
-            window.location.href = '/';
+  return paymentSuccessData ? (
+    <PaymentSuccessDialog
+      open={true}
+      onClose={() => {
+        window.location.href = '/';
+      }}
+      message={successMessage}
+      receiptUrl={getReceiptUrl({ ...payment, hash: paymentSuccessData.txHash }, false)}
+    />
+  ) : (
+    <BasePaymentDialog
+      alwaysShowBackButton={alwaysShowBackButton}
+      title={props.title ?? 'Farcaster Storage'}
+      closeStateCallback={closeStateCallback}
+      {...props}
+      footerContent={
+        <PayButton
+          paymentToken={paymentToken}
+          buttonText="Pay For Storage"
+          disabled={!hasPaymentOption}
+          paymentTx={paymentTx}
+          paymentWallet={paymentWallet!}
+          paymentOption={paymentOption!}
+          payment={payment}
+          senderFlow={senderFlow}
+          onSuccess={setPaymentSuccessData}
+          onError={(error) => {
+            toast.error(`Failed to pay for storage!`);
+            console.error('Failed to pay for storage with error', error);
           }}
-          message={successMessage}
-          receiptUrl={getReceiptUrl({ ...payment, hash: paymentSuccessData.txHash }, false)}
         />
-      )}
-    </>
+      }>
+      <Box ml={1}>
+        <FarcasterRecipientField variant="text" social={recipientSocial} />
+      </Box>
+      <Stack flex={1} alignItems="center" justifyContent="center" spacing={1} overflow="auto">
+        <Typography fontSize={18} fontWeight="bold">
+          {numberOfUnits} Unit{numberOfUnits > 1 ? 's' : ''} of Storage
+        </Typography>
+
+        {isLoading ? (
+          <Skeleton
+            title="fetching price"
+            variant="rectangular"
+            sx={{ borderRadius: 3, height: 45, width: 100 }}
+          />
+        ) : hasPaymentOption ? (
+          <Typography fontSize={30} fontWeight="bold" textAlign="center">
+            {formatAmountWithSuffix(
+              normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
+            )}{' '}
+            {paymentToken?.id.toUpperCase()}
+          </Typography>
+        ) : (
+          <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
+            {isPaymentOptionsError
+              ? 'Failed to fetch payment options. Please try again.'
+              : "You don't have any balance to cover storage cost. Switch to a different payment flow!"}
+          </Typography>
+        )}
+      </Stack>
+      <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
+        <Box width="50%">
+          <FlowSelector
+            variant="text"
+            sender={sender}
+            flows={flows!}
+            selectedFlow={selectedFlow!}
+            setSelectedFlow={setSelectedFlow!}
+          />
+        </Box>
+        <Box width="50%">
+          <NetworkTokenSelector
+            crossChainMode
+            payment={payment}
+            paymentWallet={paymentWallet}
+            setPaymentWallet={setPaymentWallet}
+            paymentToken={paymentToken}
+            setPaymentToken={setPaymentToken}
+            compatibleWallets={compatibleWallets}
+            enabledChainCurrencies={
+              paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
+            }
+            gasFee={gasFee}
+          />
+        </Box>
+      </Box>
+    </BasePaymentDialog>
   );
 }

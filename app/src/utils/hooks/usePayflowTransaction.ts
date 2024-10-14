@@ -134,7 +134,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
         account: paymentWallet.address
       });
 
-      const { sponsoredTransactionHash: glideTxHash } = await executeSession(glideConfig, {
+      const glideExecutionResponse = await executeSession(glideConfig, {
         session,
         currentChainId: chainId as any,
         switchChainAsync,
@@ -188,7 +188,8 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
         }
       });
 
-      console.log('Glide txHash:', glideTxHash);
+      console.log('Glide response:', { glideExecutionResponse });
+      const glideTxHash = glideExecutionResponse.sponsoredTransactionHash;
 
       if (glideTxHash && payment.referenceId) {
         payment.hash = glideTxHash;
