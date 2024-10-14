@@ -14,7 +14,7 @@ import { rodeoMintAbi } from '../abi/rodeoMintAbi';
 import { HIGHLIGHT_MINT_MANAGER_ADDRS, RODEO_MINT_CONTRACT_ADDR } from '../contracts';
 import { MintMetadata } from '../mint';
 import { wagmiConfig } from '../wagmiConfig';
-import { GraphQLClient, gql } from 'graphql-request'; // Import GraphQL client
+import { GraphQLClient } from 'graphql-request';
 import { highlightMintManagerAbi } from '../abi/highlightMintManagerAbi';
 
 type MintPaymentTx = {

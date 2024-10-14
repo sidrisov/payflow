@@ -74,14 +74,11 @@ export default defineConfig({
           'privy-wagmi': ['@privy-io/wagmi'],
           // Data fetching and state management
           data: ['@tanstack/react-query', 'axios', 'graphql', 'graphql-request'],
-          // Utility libraries
-          utils: ['date-fns', 'lodash.merge', 'semver', 'use-debounce'],
           // Visualization and media
           media: ['react-blockies', 'react-qr-code', 'react-icons'],
           // Third-party services
           airstack: ['@airstack/airstack-react'],
-          glide: ['@paywithglide/glide-js'],
-          speedinsights: ['@vercel/speed-insights']
+          glide: ['@paywithglide/glide-js']
         }
       }
     },

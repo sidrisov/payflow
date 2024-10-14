@@ -15,7 +15,6 @@
     "@mui/icons-material": "^6.0.0",
     "@mui/material": "^6.0.0",
     "@typescript-eslint/parser": "^7.1.1",
-    "@vercel/speed-insights": "^1.0.1",
     "@vitejs/plugin-react": "^4.1.0",
     "buffer": "^6.0.3",
     "react": "^18.2.0",
