@@ -125,10 +125,6 @@ export default function BuyFanTokenDialog({
 
   return paymentSuccessData ? (
     <PaymentSuccessDialog
-      open={true}
-      onClose={() => {
-        window.location.href = '/';
-      }}
       message={successMessage}
       receiptUrl={getReceiptUrl({ ...payment, hash: paymentSuccessData.txHash }, false)}
     />

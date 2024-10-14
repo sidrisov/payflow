@@ -1,25 +1,27 @@
 import React from 'react';
 import ResponsiveDialog from './ResponsiveDialog';
-import { Box, Typography, Link } from '@mui/material';
+import { Box, Typography, Link, Button } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { green } from '@mui/material/colors';
 import { HiOutlineCheckCircle } from 'react-icons/hi2';
 
 interface PaymentSuccessDialogProps {
-  open: boolean;
-  onClose: () => void;
+  open?: boolean;
+  onClose?: () => void;
   message: string;
   receiptUrl: string;
   shareComponents?: React.ReactNode;
 }
 
-const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
-  open,
-  onClose,
+export default function PaymentSuccessDialog({
+  open = true,
+  onClose = () => {
+    window.location.href = '/';
+  },
   message,
   receiptUrl,
   shareComponents
-}) => {
+}: PaymentSuccessDialogProps) {
   return (
     <ResponsiveDialog open={open} onClose={onClose}>
       <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" p={1}>
@@ -48,6 +50,7 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
           </Box>
         )}
         <Typography
+          mb={2}
           variant="caption"
           textAlign="center"
           sx={{ color: 'text.secondary', whiteSpace: 'balance' }}>
@@ -60,9 +63,17 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
             click here <OpenInNewIcon sx={{ fontSize: 12, ml: 0.5 }} />
           </Link>
         </Typography>
+
+        <Button
+          fullWidth
+          size="large"
+          variant="outlined"
+          onClick={onClose}
+          color="inherit"
+          sx={{ borderRadius: 4 }}>
+          Return to home page
+        </Button>
       </Box>
     </ResponsiveDialog>
   );
-};
-
-export default PaymentSuccessDialog;
+}

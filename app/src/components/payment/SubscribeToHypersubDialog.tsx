@@ -137,10 +137,6 @@ export default function SubscribeToHypersubDialog({
 
   return paymentSuccessData ? (
     <PaymentSuccessDialog
-      open={true}
-      onClose={() => {
-        window.location.href = '/';
-      }}
       message={successMessage}
       receiptUrl={getReceiptUrl({ ...payment, hash: paymentSuccessData.txHash }, false)}
     />

@@ -46,6 +46,7 @@ import { QuantitySelector } from './QuantitySelector';
 import { BasePaymentDialog } from './BasePaymentDialog';
 import { FlowSelector } from './FlowSelector';
 import { Hash } from 'viem';
+import { delay } from '../../utils/delay';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {
@@ -315,10 +316,6 @@ export default function MintDialog({
 
   return paymentSuccessData ? (
     <PaymentSuccessDialog
-      open={true}
-      onClose={() => {
-        window.location.href = '/';
-      }}
       message={successMessage}
       receiptUrl={getReceiptUrl({ ...payment, hash: paymentSuccessData.txHash }, false)}
       shareComponents={shareComponents}
