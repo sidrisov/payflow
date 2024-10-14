@@ -187,7 +187,7 @@ export default function BuyFanTokenDialog({
               min={0.1}
               max={1000}
               decimals={1}
-              step={10}
+              step={1}
               setQuantity={setFanTokenAmount}
             />
 
