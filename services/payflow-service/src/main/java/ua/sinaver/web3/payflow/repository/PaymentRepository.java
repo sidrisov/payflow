@@ -26,21 +26,11 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 	List<Payment> findByHashIn(List<String> hashes, User senderOrReceiver);
 
 	@Query("SELECT p FROM Payment p WHERE (p.sender = :sender OR LOWER(p.senderAddress) IN :addresses) " +
-			"AND p.status IN :statuses AND p.type IN :types ORDER BY p.createdDate DESC")
+			"AND p.status IN :statuses ORDER BY p.createdDate DESC")
 	List<Payment> findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedDateDesc(
 			@Param("sender") User sender,
 			@Param("addresses") List<String> addresses,
-			@Param("statuses") List<Payment.PaymentStatus> statuses,
-			@Param("types") List<Payment.PaymentType> types);
-
-	@Query("SELECT p FROM Payment p WHERE p.status = COMPLETED  " +
-			"AND(p.sender = :user OR p.receiver = :user " +
-			"OR LOWER(p.senderAddress) IN :addresses " +
-			"OR LOWER(p.receiverAddress) IN :addresses) " +
-			"ORDER BY p.createdDate DESC")
-	List<Payment> findCompletedOrderByCompletedDateDesc(
-			@Param("user") User user,
-			@Param("addresses") List<String> addresses);
+			@Param("statuses") List<Payment.PaymentStatus> statuses);
 
 	Payment findByReferenceId(String referenceId);
 
@@ -68,8 +58,19 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 			"OR LOWER(p.senderAddress) IN :addresses " +
 			"OR LOWER(p.receiverAddress) IN :addresses) " +
 			"AND p.status = COMPLETED ORDER BY p.completedDate DESC")
-	Page<Payment> findCompletedOrderByCompletedDateDesc(
+	Page<Payment> findAllCompletedOrderByCompletedDateDesc(
 			@Param("user") User user,
 			@Param("addresses") List<String> addresses,
+			Pageable pageable);
+
+	@Query("SELECT p FROM Payment p " +
+			"WHERE (p.sender = :user OR LOWER(p.senderAddress) IN :addresses) " +
+			"AND p.status IN :statuses " +
+			"ORDER BY CASE WHEN p.completedDate IS NOT NULL " +
+			"THEN p.completedDate ELSE p.createdDate END DESC")
+	Page<Payment> findOutboundByStatusAndSenderOrderDesc(
+			@Param("user") User user,
+			@Param("addresses") List<String> addresses,
+			@Param("statuses") List<Payment.PaymentStatus> statuses,
 			Pageable pageable);
 }

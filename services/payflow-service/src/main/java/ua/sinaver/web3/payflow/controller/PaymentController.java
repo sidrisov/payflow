@@ -137,7 +137,7 @@ public class PaymentController {
 				.map(String::toLowerCase)
 				.toList();
 
-		val paymentsPage = paymentRepository.findCompletedOrderByCompletedDateDesc(user,
+		val paymentsPage = paymentRepository.findAllCompletedOrderByCompletedDateDesc(user,
 				verifications, PageRequest.of(page, size));
 
 		// Check if we should include comments (when logged user is viewing their own
@@ -161,13 +161,32 @@ public class PaymentController {
 		return paymentRepository.findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedDateDesc(
 						user, verifications, List.of(Payment.PaymentStatus.PENDING,
 								Payment.PaymentStatus.INPROGRESS,
-								Payment.PaymentStatus.COMPLETED, Payment.PaymentStatus.REFUNDED),
-						List.of(Payment.PaymentType.APP, Payment.PaymentType.INTENT,
-								Payment.PaymentType.INTENT_TOP_REPLY,
-								Payment.PaymentType.FRAME))
+								Payment.PaymentStatus.COMPLETED, Payment.PaymentStatus.REFUNDED))
 				.stream()
 				.map(payment -> PaymentMessage.convert(payment, true, true))
 				.toList();
+	}
+
+	@GetMapping("/outbound")
+	public Page<PaymentMessage> outbound(Principal principal,
+	                                     @RequestParam List<Payment.PaymentStatus> statuses,
+	                                     @RequestParam(defaultValue = "0") int page,
+	                                     @RequestParam(defaultValue = "5") int size) {
+		val username = principal != null ? principal.getName() : null;
+		log.debug("Fetching pending payments for {} ", username);
+
+		val user = userService.findByIdentity(username);
+		if (user == null) {
+			return Page.empty();
+		}
+		val verifications = identityService.getIdentityAddresses(user.getIdentity()).stream()
+				.map(String::toLowerCase).toList();
+
+		val paymentsPage = paymentRepository.findOutboundByStatusAndSenderOrderDesc(user,
+				verifications, statuses,
+				PageRequest.of(page, size));
+
+		return paymentsPage.map(payment -> PaymentMessage.convert(payment, true, true));
 	}
 
 	@GetMapping("/{referenceId}")

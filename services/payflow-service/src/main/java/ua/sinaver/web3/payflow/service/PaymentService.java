@@ -66,10 +66,7 @@ public class PaymentService {
 				.map(String::toLowerCase).toList();
 
 		return paymentRepository.findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedDateDesc(
-						user, verifications, List.of(Payment.PaymentStatus.COMPLETED),
-						List.of(Payment.PaymentType.APP, Payment.PaymentType.INTENT,
-								Payment.PaymentType.INTENT_TOP_REPLY,
-								Payment.PaymentType.FRAME))
+						user, verifications, List.of(Payment.PaymentStatus.COMPLETED))
 				.stream()
 				.map(payment -> payment.getReceiver() != null ?
 						payment.getReceiver().getIdentity() : payment.getReceiverAddress())
@@ -152,20 +149,21 @@ public class PaymentService {
 		return TokenService.BASE_CHAIN_NAME;
 	}
 
-	@Scheduled(fixedRate = 4 * 60 * 60 * 1000, initialDelay = 5 * 60 * 1000) // Run every 4 hours, with 5 minutes initial delay
+	@Scheduled(fixedRate = 4 * 60 * 60 * 1000, initialDelay = 5 * 60 * 1000)
+	// Run every 4 hours, with 5 minutes initial delay
 	@Transactional
 	public void expireOldPayments() {
 		log.info("Starting expiration of old payments");
 		val oneMonthAgo = new Date(System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000);
-		
+
 		try (Stream<Payment> oldPayments = paymentRepository.findOldPendingPaymentsWithLock(Payment.PaymentStatus.PENDING, oneMonthAgo)) {
 			val expiredPayments = oldPayments
-				.peek(payment -> {
-					payment.setStatus(Payment.PaymentStatus.EXPIRED);
-					payment.setCompletedDate(new Date());
-					log.debug("Expiring old payment: {}", payment.getId());
-				})
-				.toList();
+					.peek(payment -> {
+						payment.setStatus(Payment.PaymentStatus.EXPIRED);
+						payment.setCompletedDate(new Date());
+						log.debug("Expiring old payment: {}", payment.getId());
+					})
+					.toList();
 
 			if (!expiredPayments.isEmpty()) {
 				paymentRepository.saveAll(expiredPayments);

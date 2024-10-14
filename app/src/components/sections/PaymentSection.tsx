@@ -1,28 +1,58 @@
-import React, { useState } from 'react';
-import { Box, Chip, IconButton, Stack, StackProps, Button, Typography } from '@mui/material';
+import { useState, useRef, useEffect } from 'react';
+import {
+  Box,
+  Chip,
+  IconButton,
+  Stack,
+  StackProps,
+  CircularProgress,
+  Skeleton} from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import { MdOutlinePlaylistAdd, MdOutlinePlaylistAddCheck } from 'react-icons/md';
-import { PaymentType } from '../../types/PaymentType';
+import { PaymentStatus } from '../../types/PaymentType';
 import { useMobile } from '../../utils/hooks/useMobile';
-import calculateMaxPages from '../../utils/pagination';
+import { useOutboundPayments } from '../../utils/queries/payments';
 import { PaymentItem } from './PaymentTypes';
 
-const PAGE_SIZE = 5;
-
 interface PaymentSectionProps extends StackProps {
-  payments?: PaymentType[];
   type: 'intent' | 'receipt';
-  renderPayment: (payment: PaymentType, index: number) => React.ReactNode;
 }
 
-export function PaymentSection({ payments, type, renderPayment, ...props }: PaymentSectionProps) {
+const STATUS_MAP: Record<string, PaymentStatus[]> = {
+  intent: ['PENDING', 'INPROGRESS'],
+  receipt: ['COMPLETED']
+};
+
+const PaymentItemSkeleton = () => {
+  const isMobile = useMobile();
+  return (
+    <Box
+      sx={{
+        width: isMobile ? 145 : 155,
+        border: '1px solid',
+        borderColor: 'divider',
+        borderRadius: 5,
+        p: 1.5
+      }}>
+      <Stack spacing={1}>
+        <Skeleton variant="text" width="60%" height={24} />
+        <Skeleton variant="rounded" width="100%" height={80} />
+      </Stack>
+    </Box>
+  );
+};
+
+export function PaymentSection({ type, ...props }: PaymentSectionProps) {
   const isMobile = useMobile();
   const [expand, setExpand] = useState<boolean>(type === 'intent');
-  const [page, setPage] = useState<number>(1);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  if (!payments) return null;
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useOutboundPayments(
+    STATUS_MAP[type]
+  );
 
-  const maxPages = calculateMaxPages(payments.length, PAGE_SIZE);
+  const payments = data?.pages.flatMap((page) => page.content) || [];
+
   const icon =
     type === 'intent' ? (
       <MdOutlinePlaylistAdd color="inherit" fontSize="large" />
@@ -30,6 +60,82 @@ export function PaymentSection({ payments, type, renderPayment, ...props }: Paym
       <MdOutlinePlaylistAddCheck color="inherit" fontSize="large" />
     );
   const label = type === 'intent' ? 'Intents' : 'Receipts';
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (scrollContainerRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+        if (scrollLeft + clientWidth >= scrollWidth - 20 && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      }
+    };
+
+    const scrollContainer = scrollContainerRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll);
+    }
+
+    return () => {
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  const renderContent = () => {
+    const commonStackProps = {
+      ref: scrollContainerRef,
+      px: 1.5,
+      pb: 1,
+      pt: 0.5,
+      direction: 'row' as const,
+      spacing: 3,
+      sx: {
+        overflowX: 'scroll',
+        scrollbarWidth: 'auto',
+        '&::-webkit-scrollbar': {
+          display: 'none'
+        },
+        '&-ms-overflow-style:': {
+          display: 'none'
+        },
+        '-webkit-overflow-scrolling': 'touch'
+      }
+    };
+
+    if (isLoading) {
+      return (
+        <Stack {...commonStackProps}>
+          {[...Array(2)].map((_, index) => (
+            <PaymentItemSkeleton key={`skeleton_${index}`} />
+          ))}
+        </Stack>
+      );
+    }
+
+    if (!payments || payments.length === 0) return null;
+
+    return (
+      <Stack {...commonStackProps}>
+        {payments.map((payment, index) => (
+          <PaymentItem key={`${type}_payment_${index}`} payment={payment} />
+        ))}
+        {(hasNextPage || isFetchingNextPage) && (
+          <Box
+            sx={{
+              p: 3,
+              minWidth: isMobile ? 145 : 155,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+            <CircularProgress color="inherit" size={24} />
+          </Box>
+        )}
+      </Stack>
+    );
+  };
 
   return (
     <Stack {...props} px={1} spacing={1}>
@@ -41,7 +147,17 @@ export function PaymentSection({ payments, type, renderPayment, ...props }: Paym
         alignItems="center">
         <Chip
           icon={icon}
-          label={`${label} (${payments.length})`}
+          label={
+            <Box display="flex" alignItems="center">
+              {label} (
+              {isLoading ? (
+                <Skeleton width={20} sx={{ display: 'inline-block', mx: 0.5 }} />
+              ) : (
+                payments.length
+              )}
+              )
+            </Box>
+          }
           variant="outlined"
           sx={{ border: 0, fontSize: 14, fontWeight: 'bold' }}
         />
@@ -49,63 +165,7 @@ export function PaymentSection({ payments, type, renderPayment, ...props }: Paym
           {expand ? <ExpandLess /> : <ExpandMore />}
         </IconButton>
       </Box>
-      {expand && (
-        <Stack
-          px={1.5}
-          pb={1}
-          pt={0.5}
-          direction="row"
-          spacing={3}
-          sx={{
-            overflowX: 'scroll',
-            scrollbarWidth: 'auto',
-            '&::-webkit-scrollbar': {
-              display: 'none'
-            },
-            '&-ms-overflow-style:': {
-              display: 'none'
-            },
-            '-webkit-overflow-scrolling': 'touch'
-          }}>
-          {payments
-            .slice(0, page * PAGE_SIZE)
-            .map((payment, index) => renderPayment(payment, index))}
-          {page < maxPages && (
-            <Button
-              color="inherit"
-              size="small"
-              onClick={() => setPage(page + 1)}
-              sx={{
-                p: 3,
-                minWidth: isMobile ? 145 : 155,
-                textTransform: 'none',
-                borderRadius: 5
-              }}>
-              <Typography variant="subtitle2">More {label.toLowerCase()}</Typography>
-            </Button>
-          )}
-        </Stack>
-      )}
+      {expand && renderContent()}
     </Stack>
-  );
-}
-
-interface PaymentListSectionProps extends StackProps {
-  payments?: PaymentType[];
-  type: 'intent' | 'receipt';
-}
-
-export function PaymentListSection({ payments, type, ...props }: PaymentListSectionProps) {
-  return (
-    payments && (
-      <PaymentSection
-        payments={payments}
-        type={type}
-        {...props}
-        renderPayment={(payment: PaymentType, index: number) => (
-          <PaymentItem key={`${type}_payment_${index}`} payment={payment} />
-        )}
-      />
-    )
   );
 }

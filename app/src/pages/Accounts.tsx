@@ -8,12 +8,10 @@ import { AssetType } from '../types/AssetType';
 import { FlowType } from '../types/FlowType';
 import { useNavigate } from 'react-router-dom';
 import { useAssetBalances } from '../utils/queries/balances';
-import { usePendingPayments } from '../utils/queries/payments';
-import { PaymentIntentsSection } from '../components/PaymentIntentsSection';
-import { PaymentReceiptsSection } from '../components/PaymentReceiptsSection';
 import getFlowAssets from '../utils/assets';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 import { useMobile } from '../utils/hooks/useMobile';
+import { PaymentSection } from '../components/sections/PaymentSection';
 
 export default function Accounts() {
   const smallScreen = useMobile();
@@ -56,8 +54,6 @@ export default function Accounts() {
 
   const { isLoading, isFetched, data: balances } = useAssetBalances(assets);
 
-  const { isFetched: isPaymentFetched, data: payments } = usePendingPayments(Boolean(profile));
-
   return (
     <>
       <Helmet>
@@ -77,22 +73,8 @@ export default function Accounts() {
             />
 
             <Stack width={smallScreen ? 350 : 375} spacing={0.5} alignItems="center">
-              {isPaymentFetched && (
-                <>
-                  <PaymentIntentsSection
-                    payments={payments?.filter(
-                      (p) => p.status === 'PENDING' || p.status === 'INPROGRESS'
-                    )}
-                    width="100%"
-                  />
-                  <PaymentReceiptsSection
-                    payments={payments?.filter(
-                      (p) => p.status === 'COMPLETED' || p.status === 'REFUNDED'
-                    )}
-                    width="100%"
-                  />
-                </>
-              )}
+              <PaymentSection width="100%" type="intent" />
+              <PaymentSection width="100%" type="receipt" />
               <Assets
                 assetBalancesResult={{ isLoading, isFetched, balances }}
                 balanceVisible={balanceVisible}

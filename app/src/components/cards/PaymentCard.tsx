@@ -62,8 +62,7 @@ export function PaymentCard({ payment, title, children, ...props }: PaymentCardP
           color: 'inherit',
           '&:hover': {
             backgroundColor: 'inherit',
-            border: 1,
-            borderStyle: 'dashed'
+            border: 1
           }
         }}
         {...props}>
