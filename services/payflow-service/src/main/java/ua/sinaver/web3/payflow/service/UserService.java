@@ -113,7 +113,7 @@ public class UserService implements IUserService {
 			if (setDefaultReceivingAddress) {
 				profile.setDefaultReceivingAddress(identityToCreateProfile.address());
 			}
-			profile.setLastSeen(new Date());
+			updateLastSeen(profile);
 			saveUser(profile);
 		}
 		return profile;
@@ -130,6 +130,7 @@ public class UserService implements IUserService {
 						lastSeenTime.toInstant(), currentTime.toInstant())
 				.toHours() >= 1) {
 			user.setLastSeen(currentTime);
+			user.setAccessToken(UUID.randomUUID().toString());
 			userRepository.save(user);
 		}
 	}
@@ -248,10 +249,12 @@ public class UserService implements IUserService {
 	}
 
 	@Override
-	public String generateAccessToken(User user) {
-		String accessToken = UUID.randomUUID().toString();
-		user.setAccessToken(accessToken);
-		userRepository.save(user);
-		return accessToken;
+	public String getOrgenerateAccessToken(User user) {
+		if (user.getAccessToken() == null) {
+			val accessToken = UUID.randomUUID().toString();
+			user.setAccessToken(accessToken);
+			userRepository.save(user);
+		}
+		return user.getAccessToken();
 	}
 }

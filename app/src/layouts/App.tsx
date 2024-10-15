@@ -36,6 +36,8 @@ import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useMiniApp, useMobile, usePwa } from '../utils/hooks/useMobile';
 import Logo from '../components/Logo';
 
+import { isIOS } from 'react-device-detect';
+
 export default function AppLayout({
   profile,
   appSettings,
@@ -214,7 +216,12 @@ export default function AppLayout({
                   },
                   '& .MuiBottomNavigationAction-label': {
                     fontSize: 14
-                  }
+                  },
+                  ...(Boolean(isIOS) && {
+                    height: 'auto',
+                    paddingTop: '8px',
+                    paddingBottom: 'calc(env(safe-area-inset-bottom) * 0.65)'
+                  })
                 }}>
                 <BottomNavigationAction
                   disableRipple

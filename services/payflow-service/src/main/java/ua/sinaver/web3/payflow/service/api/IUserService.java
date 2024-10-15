@@ -38,5 +38,5 @@ public interface IUserService {
 
 	void clearAccessToken(User user);
 
-	String generateAccessToken(User user);
+	String getOrgenerateAccessToken(User user);
 }

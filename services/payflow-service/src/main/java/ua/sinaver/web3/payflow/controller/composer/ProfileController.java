@@ -96,7 +96,7 @@ public class ProfileController {
 			profile.setLastSeen(new Date());
 			userService.saveUser(profile);
 		}
-		accessToken = userService.generateAccessToken(profile);
+		accessToken = userService.getOrgenerateAccessToken(profile);
 		val decodedState = URLDecoder.decode(
 				validateMessage.action().state().serialized(), StandardCharsets.UTF_8);
 		log.debug("URL decoded form state: {}", decodedState);

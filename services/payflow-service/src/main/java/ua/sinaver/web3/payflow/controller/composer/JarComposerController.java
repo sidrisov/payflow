@@ -91,7 +91,7 @@ public class JarComposerController {
 		log.debug("URL decoded form state: {}", decodedState);
 
 		val title = GSON.fromJson(decodedState, ComposerActionState.class).cast().text();
-		val accessToken = userService.generateAccessToken(profile);
+		val accessToken = userService.getOrgenerateAccessToken(profile);
 
 		val jarFormUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 				.path("/composer")

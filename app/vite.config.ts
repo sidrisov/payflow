@@ -216,7 +216,10 @@ export default defineConfig({
         short_name: 'Payflow',
         description: 'Onchain Social Payments',
         theme_color: '#242424',
+        display_override: ['fullscreen', 'minimal-ui'],
         display: 'standalone',
+        start_url: '/',
+        handle_links: 'preferred',
         orientation: 'portrait',
         icons: [
           {

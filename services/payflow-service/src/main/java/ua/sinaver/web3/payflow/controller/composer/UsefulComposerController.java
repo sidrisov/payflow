@@ -85,7 +85,7 @@ public class UsefulComposerController {
 		val decodedState = URLDecoder.decode(
 				validateMessage.action().state().serialized(), StandardCharsets.UTF_8);
 		log.debug("URL decoded form state: {}", decodedState);
-		val accessToken = userService.generateAccessToken(profile);
+		val accessToken = userService.getOrgenerateAccessToken(profile);
 		val usefulFormUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 				.path("/composer")
 				.queryParam("access_token", accessToken)
