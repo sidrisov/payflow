@@ -432,6 +432,12 @@ public class NotificationService {
 			fanTokenName = "@" + fanTokenName;
 		}
 
+		val frameFanTokenUrl = UriComponentsBuilder.fromHttpUrl(framesServiceUrl)
+				.path("/fan")
+				.queryParam("names", fanTokenName)
+				.build()
+				.toUriString();
+
 		String castText;
 		if (isSelfPurchase) {
 			castText = String.format("""
@@ -450,6 +456,7 @@ public class NotificationService {
 					crossChainText);
 		}
 
+		embeds = List.of(new Cast.Embed(frameFanTokenUrl), new Cast.Embed(receiptService.getReceiptUrl(payment)));
 		sendCastReply(castText, payment.getSourceHash(), embeds);
 
 		if (payment.getReceiver() != null) {

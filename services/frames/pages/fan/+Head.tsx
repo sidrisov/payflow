@@ -68,14 +68,8 @@ export function Head() {
         <meta property="fc:frame" content="vNext" />
         <meta property="fc:frame:image" content={imageUrl} />
 
-        {names.length !== 0 ? (
+        {names.length !== 0 && (
           <meta property="fc:frame:input:text" content="Gift username (blank for self)" />
-        ) : (
-          <>
-            <meta property="fc:frame:button:1" content="Install Action" />
-            <meta property="fc:frame:button:1:action" content="link" />
-            <meta property="fc:frame:button:1:target" content={addActionUrl} />
-          </>
         )}
 
         {names.map((name, index) => (
@@ -88,6 +82,14 @@ export function Head() {
             />
           </>
         ))}
+
+        {names.length <= 1 && (
+          <>
+            <meta property={`fc:frame:button:${names.length + 1}`} content="Install Action" />
+            <meta property={`fc:frame:button:${names.length + 1}:action`} content="link" />
+            <meta property={`fc:frame:button:${names.length + 1}:target`} content={addActionUrl} />
+          </>
+        )}
       </head>
     </>
   );
