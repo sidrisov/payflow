@@ -22,7 +22,24 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
 
   return (
     <Card>
-      <p style={{ fontSize: 60, fontWeight: 'bold' }}>{title}</p>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+        <img
+          src={assetImageSrc('/assets/apps/farcaster.png')}
+          alt="Buy Fan Tokens"
+          style={{
+            width: 60,
+            height: 60,
+            marginRight: 20,
+            objectFit: 'contain'
+          }}
+        />
+        <p style={{ fontSize: 60, fontWeight: 'bold' }}>{title}</p>
+      </div>
       <div
         style={{
           display: 'flex',
@@ -105,9 +122,7 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
           })}
         </div>
       </div>
-      <p style={{ marginTop: 10, fontSize: 35, fontWeight: 'bold' }}>
-        with 25+ tokens cross-chain
-      </p>
+      <p style={{ marginTop: 10, fontSize: 35, fontWeight: 'bold' }}>with 25+ tokens cross-chain</p>
     </Card>
   );
 }
@@ -123,7 +138,24 @@ function BuyStorage({ identity, storage }: { identity: IdentityType; storage: St
 
   return (
     <Card>
-      <p style={{ fontSize: 60, fontWeight: 'bold', fontStyle: 'italic' }}>{title}</p>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+        <img
+          src={assetImageSrc('/assets/apps/farcaster.png')}
+          alt="Buy Fan Tokens"
+          style={{
+            width: 60,
+            height: 60,
+            marginRight: 20,
+            objectFit: 'contain'
+          }}
+        />
+        <p style={{ fontSize: 60, fontWeight: 'bold' }}>{title}</p>
+      </div>
       <div
         style={{
           marginTop: 15,

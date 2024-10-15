@@ -1,4 +1,14 @@
-import { Stack, Box, Typography, Skeleton, DialogProps, IconButton } from '@mui/material';
+import {
+  Stack,
+  Box,
+  Typography,
+  Skeleton,
+  DialogProps,
+  IconButton,
+  Button,
+  TextField,
+  Tooltip
+} from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { getPaymentOption } from '../../utils/glide';
 import { useChainId } from 'wagmi';
@@ -29,6 +39,12 @@ import { fanTokenUrl } from '../../utils/moxie';
 import MoxieAvatar from '../avatars/MoxieAvatar';
 
 import { IoMdLock, IoMdUnlock } from 'react-icons/io';
+import { SiFarcaster } from 'react-icons/si';
+import { TbCopy } from 'react-icons/tb';
+import { copyToClipboard } from '../../utils/copyToClipboard';
+import { createShareUrls } from '../../utils/moxie';
+import { createCastPostMessage, createComposeCastUrl } from '../../utils/warpcast';
+import { useSearchParams } from 'react-router-dom';
 
 export type BuyFanTokenDialogProps = DialogProps &
   CloseCallbackType & {
@@ -56,6 +72,8 @@ export default function BuyFanTokenDialog({
   setSelectedFlow,
   ...props
 }: BuyFanTokenDialogProps) {
+  const miniApp = useSearchParams()[0].get('view') === 'embedded';
+
   const senderFlow = sender.identity.profile?.defaultFlow as FlowType;
   const isNativeFlow = senderFlow.type !== 'FARCASTER_VERIFICATION' && senderFlow.type !== 'LINKED';
 
@@ -119,14 +137,86 @@ export default function BuyFanTokenDialog({
   const [paymentSuccessData, setPaymentSuccessData] = useState<PaymentSuccess | null>(
     payment.status === 'COMPLETED' ? { txHash: payment.hash as Hash } : null
   );
-  const successMessage = `Successfully bought ${fanTokenAmount} ${tokenName} fan token${
-    fanTokenAmount > 1 ? 's' : ''
-  } for @${recipientSocial.profileName}`;
+  const isGift = payment.receiverAddress !== profile?.identity;
+
+  const successMessage = `Successfully bought ${fanTokenAmount} ${tokenName} fan token(s) ${
+    isGift ? `for @${recipientSocial.profileName}` : ''
+  }`;
+
+  const { shareFrameUrl, text, channelKey } = createShareUrls({
+    tokenName,
+    recipientSocial,
+    isGift,
+    tokenAmount: fanTokenAmount
+  });
+
+  const handleCopyLink = () => {
+    copyToClipboard(shareFrameUrl);
+    toast.success('Fan token frame link copied!');
+  };
+
+  const shareComponents = (
+    <>
+      <Button
+        fullWidth
+        onClick={() => {
+          if (miniApp) {
+            window.parent.postMessage(createCastPostMessage(text, shareFrameUrl, channelKey), '*');
+          } else {
+            window.open(createComposeCastUrl(text, shareFrameUrl, channelKey), '_blank');
+          }
+        }}
+        startIcon={<SiFarcaster />}
+        variant="outlined"
+        size="small"
+        color="inherit"
+        sx={{
+          fontSize: 14,
+          fontWeight: 'normal',
+          height: 45,
+          '&:hover': {
+            backgroundColor: 'action.hover'
+          },
+          borderRadius: 3,
+          borderColor: 'divider',
+          textTransform: 'none',
+          justifyContent: 'flex-start',
+          px: 2
+        }}>
+        Share on Farcaster
+      </Button>
+      <TextField
+        fullWidth
+        variant="outlined"
+        size="small"
+        value={shareFrameUrl}
+        slotProps={{
+          input: {
+            sx: {
+              mt: 1,
+              borderRadius: 3,
+              fontSize: 14,
+              height: 45
+            },
+            readOnly: true,
+            endAdornment: (
+              <Tooltip title="Copy frame link">
+                <IconButton size="small" color="inherit" onClick={handleCopyLink} edge="end">
+                  <TbCopy />
+                </IconButton>
+              </Tooltip>
+            )
+          }
+        }}
+      />
+    </>
+  );
 
   return paymentSuccessData ? (
     <PaymentSuccessDialog
       message={successMessage}
       receiptUrl={getReceiptUrl({ ...payment, hash: paymentSuccessData.txHash }, false)}
+      shareComponents={shareComponents}
     />
   ) : (
     <BasePaymentDialog

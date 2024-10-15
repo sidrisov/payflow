@@ -14,7 +14,24 @@ function BuyHypersub({ chains, tokens }: { chains: Chain[]; tokens: string[] }) 
 
   return (
     <Card>
-      <p style={{ fontSize: 60, fontWeight: 'bold' }}>{title}</p>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+        <img
+          src={assetImageSrc('/assets/apps/fabric.png')}
+          alt="Buy Fan Tokens"
+          style={{
+            width: 60,
+            height: 60,
+            marginRight: 20,
+            objectFit: 'contain'
+          }}
+        />
+        <p style={{ fontSize: 60, fontWeight: 'bold' }}>{title}</p>
+      </div>
       <div
         style={{
           display: 'flex',
