@@ -222,30 +222,24 @@ export default function BuyFanTokenDialog({
         )}
       </Stack>
       <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
-        <Box width="50%">
-          <FlowSelector
-            variant="text"
-            sender={sender}
-            flows={flows!}
-            selectedFlow={selectedFlow!}
-            setSelectedFlow={setSelectedFlow!}
-          />
-        </Box>
-        <Box width="50%">
-          <NetworkTokenSelector
-            crossChainMode
-            payment={{ ...payment, tokenAmount: fanTokenAmount }}
-            paymentWallet={paymentWallet}
-            setPaymentWallet={setPaymentWallet}
-            paymentToken={paymentToken}
-            setPaymentToken={setPaymentToken}
-            compatibleWallets={compatibleWallets}
-            enabledChainCurrencies={
-              paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
-            }
-            gasFee={gasFee}
-          />
-        </Box>
+        <FlowSelector
+          variant="outlined"
+          sender={sender}
+          flows={flows!}
+          selectedFlow={selectedFlow!}
+          setSelectedFlow={setSelectedFlow!}
+        />
+        <NetworkTokenSelector
+          crossChainMode
+          payment={{ ...payment, tokenAmount: fanTokenAmount }}
+          paymentWallet={paymentWallet}
+          setPaymentWallet={setPaymentWallet}
+          paymentToken={paymentToken}
+          setPaymentToken={setPaymentToken}
+          compatibleWallets={compatibleWallets}
+          enabledChainCurrencies={paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []}
+          gasFee={gasFee}
+        />
       </Box>
     </BasePaymentDialog>
   );

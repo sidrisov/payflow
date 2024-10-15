@@ -3,8 +3,6 @@ import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { SelectedIdentityType } from '../../types/ProfileType';
 import { BackDialogTitle } from './BackDialogTitle';
 import { PaymentType } from '../../types/PaymentType';
-import { SenderField } from '../SenderField';
-import { KeyboardDoubleArrowDown } from '@mui/icons-material';
 import { RecipientField } from '../RecipientField';
 import { useMemo, useState } from 'react';
 import { TokenAmountSection } from './TokenAmountSection';
@@ -109,33 +107,33 @@ export default function PayComposerActionDialog({
           alignItems="center"
           justifyContent="space-between">
           {sender && (
-            <Stack spacing={1} alignItems="center" width="100%">
-              <SenderField sender={sender} displayFlow={false} />
-              <KeyboardDoubleArrowDown />
-              <RecipientField recipient={recipient} setOpenSearchIdentity={setOpenSearchIdentity} />
-            </Stack>
+            <RecipientField recipient={recipient} setOpenSearchIdentity={setOpenSearchIdentity} />
           )}
 
           {selectedWallet && (
             <>
-              <TokenAmountSection
-                selectedWallet={selectedWallet}
-                selectedToken={selectedToken}
-                paymentAmount={sendAmount}
-                setPaymentAmount={setSendAmount}
-                paymentAmountUSD={sendAmountUSD}
-                setPaymentAmountUSD={setSendAmountUSD}
-                balanceCheck={false}
-              />
-              <NetworkTokenSelector
-                paymentWallet={selectedWallet}
-                setPaymentWallet={setSelectedWallet}
-                paymentToken={selectedToken}
-                setPaymentToken={setSelectedToken}
-                compatibleWallets={compatibleWallets}
-                showBalance={false}
-                expandSection={true}
-              />
+              <Stack flex={1} alignItems="center" justifyContent="center" overflow="auto">
+                <TokenAmountSection
+                  selectedWallet={selectedWallet}
+                  selectedToken={selectedToken}
+                  paymentAmount={sendAmount}
+                  setPaymentAmount={setSendAmount}
+                  paymentAmountUSD={sendAmountUSD}
+                  setPaymentAmountUSD={setSendAmountUSD}
+                  balanceCheck={false}
+                />
+              </Stack>
+              <Box display="flex" justifyContent="flex-end" width="100%">
+                <NetworkTokenSelector
+                  paymentWallet={selectedWallet}
+                  setPaymentWallet={setSelectedWallet}
+                  paymentToken={selectedToken}
+                  setPaymentToken={setSelectedToken}
+                  compatibleWallets={compatibleWallets}
+                  showBalance={false}
+                  expandSection={true}
+                />
+              </Box>
               <CustomLoadingButton
                 title="Create Payment"
                 disabled={!paymentEnabled}

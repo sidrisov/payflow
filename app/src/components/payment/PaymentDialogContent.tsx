@@ -570,41 +570,43 @@ export default function PaymentDialogContent({
 
   return (
     <>
-      <Stack mt={1} alignItems="center">
-        {crossChainMode &&
-          (isPaymentOptionLoading || isPaymentOptionsLoading ? (
-            <Skeleton
-              title="fetching price"
-              variant="rectangular"
-              sx={{ borderRadius: 3, height: 45, width: 100 }}
-            />
-          ) : paymentOptions && paymentOption ? (
-            <Typography fontSize={30} fontWeight="bold" textAlign="center">
-              {formatAmountWithSuffix(
-                normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
-              )}{' '}
-              {paymentOption.currencySymbol}
-            </Typography>
-          ) : (
-            <Typography fontSize={14} fontWeight="bold" color={red.A400} textAlign="center">
-              You don't have any balance to cover cross-chain payment, switch to different payment
-              flow!
-            </Typography>
-          ))}
-      </Stack>
+      <Stack flex={1} alignItems="center" justifyContent="center" overflow="auto">
+        <Stack mt={1} alignItems="center">
+          {crossChainMode &&
+            (isPaymentOptionLoading || isPaymentOptionsLoading ? (
+              <Skeleton
+                title="fetching price"
+                variant="rectangular"
+                sx={{ borderRadius: 3, height: 45, width: 100 }}
+              />
+            ) : paymentOptions && paymentOption ? (
+              <Typography fontSize={30} fontWeight="bold" textAlign="center">
+                {formatAmountWithSuffix(
+                  normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
+                )}{' '}
+                {paymentOption.currencySymbol}
+              </Typography>
+            ) : (
+              <Typography fontSize={14} fontWeight="bold" color={red.A400} textAlign="center">
+                You don't have any balance to cover cross-chain payment, switch to different payment
+                flow!
+              </Typography>
+            ))}
+        </Stack>
 
-      <TokenAmountSection
-        payment={payment}
-        crossChainMode={crossChainMode}
-        setCrossChainMode={setCrossChainMode}
-        setPaymentEnabled={setPaymentEnabled}
-        selectedWallet={paymentWallet}
-        selectedToken={paymentToken}
-        paymentAmount={paymentAmount}
-        setPaymentAmount={setPaymentAmount}
-        paymentAmountUSD={paymentAmountUSD}
-        setPaymentAmountUSD={setPaymentAmountUSD}
-      />
+        <TokenAmountSection
+          payment={payment}
+          crossChainMode={crossChainMode}
+          setCrossChainMode={setCrossChainMode}
+          setPaymentEnabled={setPaymentEnabled}
+          selectedWallet={paymentWallet}
+          selectedToken={paymentToken}
+          paymentAmount={paymentAmount}
+          setPaymentAmount={setPaymentAmount}
+          paymentAmountUSD={paymentAmountUSD}
+          setPaymentAmountUSD={setPaymentAmountUSD}
+        />
+      </Stack>
 
       <Box width="100%" display="flex" flexDirection="row" justifyContent="flex-end">
         <NetworkTokenSelector

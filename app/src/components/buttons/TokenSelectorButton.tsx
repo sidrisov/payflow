@@ -1,4 +1,4 @@
-import { IconButton, IconButtonProps } from '@mui/material';
+import { Chip, ChipProps } from '@mui/material';
 import { useState } from 'react';
 import { Token } from '../../utils/erc20contracts';
 import TokenAvatar from '../avatars/TokenAvatar';
@@ -13,22 +13,30 @@ export function TokenSelectorButton({
   tokens: Token[];
   selectedToken: Token | undefined;
   setSelectedToken: React.Dispatch<React.SetStateAction<Token | undefined>>;
-} & IconButtonProps) {
+} & Omit<ChipProps, 'onClick'>) {
   const [openSelectToken, setOpenSelectToken] = useState(false);
-  const [tokenAnchorEl, setWalletAnchorEl] = useState<null | HTMLElement>(null);
+  const [tokenAnchorEl, setTokenAnchorEl] = useState<null | HTMLElement>(null);
 
   return (
     selectedToken && (
       <>
-        <IconButton
+        <Chip
           {...props}
-          sx={{ width: 40, height: 40, border: 1, borderStyle: 'dashed' }}
+          label={selectedToken.id}
+          avatar={<TokenAvatar token={selectedToken} sx={{ width: 24, height: 24 }} />}
           onClick={(event) => {
-            setWalletAnchorEl(event.currentTarget);
+            setTokenAnchorEl(event.currentTarget);
             setOpenSelectToken(true);
-          }}>
-          <TokenAvatar token={selectedToken} sx={{ width: 28, height: 28 }} />
-        </IconButton>
+          }}
+          variant="outlined"
+          sx={{
+            p: 0.1,
+            width: 110,
+            justifyContent: 'flex-start',
+            fontSize: 16,
+            textTransform: 'uppercase'
+          }}
+        />
         <ChooseTokenMenu
           anchorEl={tokenAnchorEl}
           open={openSelectToken}

@@ -146,7 +146,7 @@ export function TokenAmountSection({
   }, [balanceEnough, paymentAmount, paymentAmountUSD]);
 
   return (
-    <Stack height="100%" mt={1} alignItems="center" spacing={0}>
+    <Stack mt={1} alignItems="center" spacing={0}>
       {selectedToken ? (
         <>
           {!payment?.token ? (

@@ -1,21 +1,20 @@
-import { Stack, Box, Typography } from '@mui/material';
+import { Box, Typography, CircularProgress, Badge } from '@mui/material';
 import { useState, useMemo, useEffect } from 'react';
 import { formatUnits } from 'viem';
 import { FlowWalletType } from '../types/FlowType';
 import { Token, getSupportedTokens } from '../utils/erc20contracts';
-import { getNetworkDisplayName } from '../utils/networks';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../utils/formats';
 import { NetworkSelectorButton } from './buttons/NetworkSelectorButton';
 import { TokenSelectorButton } from './buttons/TokenSelectorButton';
 import { FeeSection } from './dialogs/GasFeeSection';
 import { PaymentType } from '../types/PaymentType';
 import { degen } from 'viem/chains';
-import { MdMultipleStop } from 'react-icons/md';
-import { TbSend } from 'react-icons/tb';
 import { useAssetBalances } from '../utils/queries/balances';
 import { getFlowWalletAssets } from '../utils/assets';
 import ResponsiveDialog from './dialogs/ResponsiveDialog';
 import NetworkAvatar from './avatars/NetworkAvatar';
+import TokenAvatar from './avatars/TokenAvatar';
+import { Chip } from '@mui/material';
 
 export function NetworkTokenSelector({
   payment,
@@ -130,53 +129,44 @@ export function NetworkTokenSelector({
   const paymentTokenSelectable = paymentToken && (!showBalance || isBalanceFetched);
   return (
     <>
-      <Box
-        maxWidth={200}
-        px={0.5}
-        display="flex"
-        flexDirection="row"
-        justifyContent="flex-start"
-        alignItems="center"
-        gap={1}
-        {...(paymentTokenSelectable && {
-          onClick: () => setExpand(true)
-        })}
+      <Chip
+        icon={
+          paymentTokenSelectable && paymentToken ? (
+            <Badge
+              overlap="circular"
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              badgeContent={
+                <NetworkAvatar chainId={paymentToken.chainId} sx={{ width: 12, height: 12 }} />
+              }>
+              <TokenAvatar token={paymentToken} sx={{ width: 24, height: 24 }} />
+            </Badge>
+          ) : (
+            <CircularProgress size={20} />
+          )
+        }
+        label={
+          paymentTokenSelectable && paymentToken ? (
+            <Typography variant="subtitle2" textTransform="uppercase">
+              {showBalance ? formatAmountWithSuffix(maxBalance) : ''} {paymentToken.id}
+            </Typography>
+          ) : (
+            <Typography variant="subtitle2">Loading</Typography>
+          )
+        }
+        onClick={paymentTokenSelectable ? () => setExpand(true) : undefined}
+        variant="outlined"
         sx={{
+          px: 0.5,
           height: 40,
           borderRadius: 5,
-          WebkitTapHighlightColor: 'transparent',
+          gap: 0.5,
+          '& .MuiChip-label': { px: 1 },
           ...(paymentTokenSelectable && {
             cursor: 'pointer',
-            '&:hover': {
-              backgroundColor: 'action.hover'
-            }
+            '&:hover': { backgroundColor: 'action.hover' }
           })
-        }}>
-        {crossChainMode ? (
-          <MdMultipleStop color="inherit" size={20} />
-        ) : (
-          <TbSend color="inherit" size={20} />
-        )}
-        <Typography fontSize={13} fontWeight="bold">
-          Token
-        </Typography>
-        {paymentTokenSelectable ? (
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <Typography
-              fontSize={13}
-              fontWeight="bold"
-              noWrap
-              maxWidth={80}
-              textOverflow="ellipsis"
-              overflow="hidden">
-              {`${formatAmountWithSuffix(maxBalance)} ${paymentToken?.name}`}
-            </Typography>
-            <NetworkAvatar chainId={paymentToken.chainId} sx={{ width: 15, height: 15 }} />
-          </Stack>
-        ) : (
-          <Typography variant="subtitle2">...</Typography>
-        )}
-      </Box>
+        }}
+      />
 
       {paymentToken && paymentWallet && compatibleTokens && (
         <ResponsiveDialog
@@ -202,16 +192,12 @@ export function NetworkTokenSelector({
               <Typography variant="caption" fontWeight={500}>
                 Network
               </Typography>
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <Typography variant="caption" fontWeight="bold">
-                  {getNetworkDisplayName(paymentWallet.network)}
-                </Typography>
-                <NetworkSelectorButton
-                  selectedWallet={paymentWallet}
-                  setSelectedWallet={setPaymentWallet}
-                  wallets={compatibleWallets}
-                />
-              </Stack>
+
+              <NetworkSelectorButton
+                selectedWallet={paymentWallet}
+                setSelectedWallet={setPaymentWallet}
+                wallets={compatibleWallets}
+              />
             </Box>
 
             <Box
@@ -222,16 +208,11 @@ export function NetworkTokenSelector({
               <Typography variant="caption" fontWeight={500}>
                 Token
               </Typography>
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <Typography variant="caption" fontWeight="bold">
-                  {paymentToken?.name}
-                </Typography>
-                <TokenSelectorButton
-                  selectedToken={paymentToken}
-                  setSelectedToken={setPaymentToken}
-                  tokens={compatibleTokens}
-                />
-              </Stack>
+              <TokenSelectorButton
+                selectedToken={paymentToken}
+                setSelectedToken={setPaymentToken}
+                tokens={compatibleTokens}
+              />
             </Box>
 
             {showBalance && (
