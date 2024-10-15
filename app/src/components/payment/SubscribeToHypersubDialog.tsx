@@ -1,4 +1,13 @@
-import { DialogProps, Stack, Box, Typography, Skeleton, Avatar, Tooltip } from '@mui/material';
+import {
+  DialogProps,
+  Stack,
+  Box,
+  Typography,
+  Skeleton,
+  Avatar,
+  Tooltip,
+  IconButton
+} from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { getPaymentOption } from '../../utils/glide';
 import { useChainId } from 'wagmi';
@@ -28,6 +37,8 @@ import { Address, Hash } from 'viem';
 import { useHypersubPaymentTx } from '../../utils/hooks/useHypersubPaymentTx';
 import ReactMarkdown from 'react-markdown';
 import { secondsToTimeUnit } from '../../utils/time';
+import { InfoOutlined } from '@mui/icons-material';
+import { useMobile } from '../../utils/hooks/useMobile';
 
 const payflowReferrer = '0x0dEe77c83cB8b14fA95497825dF93202AbF6ad83' as Address;
 
@@ -61,6 +72,15 @@ export default function SubscribeToHypersubDialog({
   const senderFlow = sender.identity.profile?.defaultFlow as FlowType;
 
   const isNativeFlow = senderFlow.type !== 'FARCASTER_VERIFICATION' && senderFlow.type !== 'LINKED';
+
+  const isMobile = useMobile();
+  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
+
+  const handleTooltipToggle = () => {
+    if (isMobile) {
+      setIsTooltipOpen(!isTooltipOpen);
+    }
+  };
 
   // force to display sponsored
   const [gasFee] = useState<bigint | undefined>(isNativeFlow ? BigInt(0) : undefined);
@@ -173,24 +193,23 @@ export default function SubscribeToHypersubDialog({
           title={<ReactMarkdown>{hypersub.metadata?.description ?? ''}</ReactMarkdown>}
           arrow
           disableFocusListener
-          sx={{ fontWeight: 'bold' }}
+          disableTouchListener={!isMobile}
+          open={isMobile ? isTooltipOpen : undefined}
+          onClose={() => isMobile && setIsTooltipOpen(false)}
           slotProps={{
             tooltip: {
               sx: {
-                p: 1,
+                p: 0.5,
+                maxWidth: 300,
+                fontWeight: 'bold',
+                textWrap: 'pretty',
                 borderRadius: 5,
                 '& p': { margin: 0 },
                 '& a': { color: 'inherit' }
               }
             }
           }}>
-          <Stack
-            p={1}
-            maxWidth={200}
-            direction="row"
-            alignItems="center"
-            justifyContent="center"
-            spacing={1}>
+          <Stack p={1} maxWidth={250} direction="row" alignItems="center" justifyContent="center">
             <Avatar
               variant="rounded"
               src={hypersub.metadata?.image ?? ''}
@@ -199,9 +218,23 @@ export default function SubscribeToHypersubDialog({
                 height: 64
               }}
             />
-            <Typography fontSize={18} fontWeight="bold">
+            <Typography
+              fontSize={18}
+              fontWeight="bold"
+              sx={{ textWrap: 'stable', textAlign: 'center' }}>
               {hypersub.state.name}
             </Typography>
+            <IconButton
+              size="small"
+              sx={{
+                ml: 0.5,
+                '&:hover': {
+                  backgroundColor: 'transparent'
+                }
+              }}
+              onClick={handleTooltipToggle}>
+              <InfoOutlined fontSize="small" />
+            </IconButton>
           </Stack>
         </Tooltip>
 

@@ -28,7 +28,7 @@ async function fetchFanTokenPaymentTx(
   console.log('tokenAmount', tokenAmount);
 
   const subjectTokenAmount = parseUnits(tokenAmount.toString(), 18);
-  const minSubjectTokenAmount = parseUnits((tokenAmount * 0.95).toString(), 18);
+  const minSubjectTokenAmount = parseUnits((tokenAmount * 0.9).toString(), 18);
 
   const [moxieAmount] = (await readContract(wagmiConfig, {
     chainId: base.id,

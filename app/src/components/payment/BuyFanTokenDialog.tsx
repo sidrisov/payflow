@@ -45,6 +45,8 @@ import { copyToClipboard } from '../../utils/copyToClipboard';
 import { createShareUrls } from '../../utils/moxie';
 import { createCastPostMessage, createComposeCastUrl } from '../../utils/warpcast';
 import { useSearchParams } from 'react-router-dom';
+import { InfoOutlined } from '@mui/icons-material';
+import { useMobile } from '../../utils/hooks/useMobile';
 
 export type BuyFanTokenDialogProps = DialogProps &
   CloseCallbackType & {
@@ -91,6 +93,15 @@ export default function BuyFanTokenDialog({
   const [tokenName, tokenAddress] = payment.token.split(';');
 
   const [locked, setLocked] = useState(false);
+
+  const isMobile = useMobile();
+  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
+
+  const handleTooltipToggle = () => {
+    if (isMobile) {
+      setIsTooltipOpen(!isTooltipOpen);
+    }
+  };
 
   const { isLoading: isPaymentTxLoading, data: paymentTx } = useFanTokenPaymentTx(
     tokenAddress as Address,
@@ -249,19 +260,52 @@ export default function BuyFanTokenDialog({
       </Box>
       <Stack flex={1} alignItems="center" justifyContent="center" spacing={1} overflow="auto">
         <Stack alignItems="center" spacing={0.3}>
-          <Chip
-            icon={<MoxieAvatar size={18} />}
-            label={tokenName}
-            clickable={true}
-            onClick={() => {
-              window.open(fanTokenUrl(tokenName), '_blank');
-            }}
-            sx={{
-              px: 0.5,
-              fontSize: 18,
-              fontWeight: 'bold'
-            }}
-          />
+          <Box display="flex" alignItems="center">
+            <Chip
+              icon={<MoxieAvatar size={18} />}
+              label={tokenName}
+              clickable={true}
+              onClick={() => {
+                window.open(fanTokenUrl(tokenName), '_blank');
+              }}
+              sx={{
+                px: 0.5,
+                fontSize: 18,
+                fontWeight: 'bold'
+              }}
+            />
+            <Tooltip
+              title="The fan token price is based on bonding curve. To ensure your transaction succeeds, 10% price slippage applies."
+              arrow
+              disableFocusListener
+              disableTouchListener={!isMobile}
+              open={isMobile ? isTooltipOpen : undefined}
+              onClose={() => isMobile && setIsTooltipOpen(false)}
+              slotProps={{
+                tooltip: {
+                  sx: {
+                    textAlign: 'center',
+                    fontWeight: 'bold',
+                    maxWidth: 200,
+                    textWrap: 'pretty',
+                    p: 1,
+                    borderRadius: 5
+                  }
+                }
+              }}>
+              <IconButton
+                size="small"
+                sx={{
+                  ml: 0.5,
+                  '&:hover': {
+                    backgroundColor: 'transparent'
+                  }
+                }}
+                onClick={handleTooltipToggle}>
+                <InfoOutlined fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
           <Box display="flex" alignItems="center">
             <IconButton
               size="small"
