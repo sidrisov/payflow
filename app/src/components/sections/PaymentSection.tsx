@@ -20,8 +20,8 @@ interface PaymentSectionProps extends StackProps {
 }
 
 const STATUS_MAP: Record<string, PaymentStatus[]> = {
-  intent: ['PENDING', 'INPROGRESS'],
-  receipt: ['COMPLETED']
+  intent: ['PENDING', 'INPROGRESS', 'PENDING_REFUND'],
+  receipt: ['COMPLETED', 'REFUNDED']
 };
 
 const PaymentItemSkeleton = () => {

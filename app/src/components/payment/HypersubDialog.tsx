@@ -56,7 +56,7 @@ export type HypersubDialogProps = DialogProps &
     setSelectedFlow?: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
   };
 
-export default function SubscribeToHypersubDialog({
+export default function HypersubDialog({
   alwaysShowBackButton = false,
   sender,
   payment,

@@ -11,11 +11,12 @@ import { Cancel, OpenInNew, Receipt, Paid } from '@mui/icons-material';
 import { cancelPayment } from '../../services/payments';
 import { PaymentType } from '../../types/PaymentType';
 import { toast } from 'react-toastify';
-import { green } from '@mui/material/colors';
+import { green, orange } from '@mui/material/colors';
 import { TbProgressCheck } from 'react-icons/tb';
 import { getReceiptUrl } from '../../utils/receipts';
 import { FaTag } from 'react-icons/fa6';
 import { fanTokenUrl } from '../../utils/moxie';
+import { HiReceiptRefund } from 'react-icons/hi2';
 
 function getDomainFromUrl(url: string): string {
   try {
@@ -94,7 +95,7 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
           </MenuItem>
         )}
 
-        {payment.status === 'COMPLETED' ? (
+        {payment.status === 'COMPLETED' || payment.status === 'REFUNDED' ? (
           <>
             <MenuItem
               component="a"
@@ -130,23 +131,46 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
                 <OpenInNew fontSize="small" sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
               </MenuItem>
             )}
-          </>
-        ) : (
-          <>
-            {payment.status === 'INPROGRESS' && payment.fulfillmentId && (
+            {payment.refundHash && (
               <MenuItem
                 component="a"
-                href={`https://explorer.paywithglide.xyz/?session_id=${payment.fulfillmentId}`}
-                target="_blank">
-                <ListItemIcon>
-                  <TbProgressCheck size={20} />
+                href={getReceiptUrl(payment, true)}
+                target="_blank"
+                sx={{ color: orange.A400 }}>
+                <ListItemIcon sx={{ color: orange.A400 }}>
+                  <HiReceiptRefund />
                 </ListItemIcon>
-                Progress
+                <Typography variant="body2">
+                  Refund Receipt
+                  <Typography variant="caption" display="block" color="text.secondary">
+                    Refund transaction for failed payment
+                  </Typography>
+                </Typography>
                 <OpenInNew fontSize="small" sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
               </MenuItem>
             )}
+          </>
+        ) : (
+          <>
+            {(payment.status === 'INPROGRESS' || payment.status === 'PENDING_REFUND') &&
+              payment.fulfillmentId && (
+                <MenuItem
+                  component="a"
+                  href={`https://explorer.paywithglide.xyz/?session_id=${payment.fulfillmentId}`}
+                  target="_blank">
+                  <ListItemIcon>
+                    {payment.status === 'INPROGRESS' ? (
+                      <TbProgressCheck size={20} />
+                    ) : (
+                      <HiReceiptRefund size={20} />
+                    )}
+                  </ListItemIcon>
+                  Progress
+                  <OpenInNew fontSize="small" sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
+                </MenuItem>
+              )}
             <MenuItem
-              disabled={payment.status === 'INPROGRESS'}
+              disabled={payment.status === 'INPROGRESS' || payment.status === 'PENDING_REFUND'}
               onClick={async () => {
                 const success = await cancelPayment(payment);
                 if (success) {

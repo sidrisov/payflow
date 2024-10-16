@@ -1,0 +1,2 @@
+ALTER TABLE payment
+ADD COLUMN refund_hash VARCHAR(255);

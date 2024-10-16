@@ -11,6 +11,8 @@ export const statusToToastType: Record<PaymentStatus, ToastOptions['type']> = {
   COMPLETED: 'success',
   INPROGRESS: 'info',
   CANCELLED: 'warning',
-  REFUNDED: 'info',
-  PENDING: 'info'
+  REFUNDED: 'warning',
+  PENDING: 'info',
+  PENDING_REFUND: 'info',
+  EXPIRED: 'warning'
 };

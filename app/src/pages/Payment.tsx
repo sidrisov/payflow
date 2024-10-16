@@ -26,7 +26,7 @@ import { fetchHypersubData, HypersubData } from '../utils/hooks/useHypersubData'
 const LazyMintDialog = lazy(() => import('../components/payment/MintDialog'));
 const LazyBuyFanTokenDialog = lazy(() => import('../components/payment/BuyFanTokenDialog'));
 const LazySubscribeToHypersubDialog = lazy(
-  () => import('../components/payment/SubscribeToHypersubDialog')
+  () => import('../components/payment/HypersubDialog')
 );
 const LazyGiftStorageDialog = lazy(() => import('../components/payment/BuyStorageDialog'));
 const LazyPaymentDialog = lazy(() => import('../components/payment/PaymentDialog'));

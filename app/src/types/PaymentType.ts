@@ -2,7 +2,14 @@ import { Address, Hash } from 'viem';
 import { ProfileType } from './ProfileType';
 import { FlowType } from './FlowType';
 
-export type PaymentStatus = 'PENDING' | 'INPROGRESS' | 'REFUNDED' | 'COMPLETED' | 'CANCELLED';
+export type PaymentStatus =
+  | 'PENDING'
+  | 'INPROGRESS'
+  | 'PENDING_REFUND'
+  | 'REFUNDED'
+  | 'COMPLETED'
+  | 'CANCELLED'
+  | 'EXPIRED';
 export type Type = 'FRAME' | 'INTENT' | 'APP' | 'INTENT_TOP_REPLY' | 'BATCH';
 export interface PaymentType {
   referenceId?: string;
@@ -23,6 +30,7 @@ export interface PaymentType {
   fulfillmentId?: string;
   fulfillmentChainId?: number;
   fulfillmentHash?: Hash;
+  refundHash?: Hash;
   source?: { app: string; ref?: string };
   comment?: string;
   target?: string;

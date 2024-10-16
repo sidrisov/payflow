@@ -6,13 +6,16 @@ import {
   IconButton,
   Tooltip,
   Typography,
-  CircularProgress
+  Stack
 } from '@mui/material';
 import { MoreHoriz } from '@mui/icons-material';
 import { PaymentType } from '../../types/PaymentType';
 import { PaymentMenu } from '../menu/PaymentMenu';
 import { useMobile } from '../../utils/hooks/useMobile';
 import { useNavigate } from 'react-router-dom';
+import { HiOutlineCheckCircle, HiReceiptRefund, HiQuestionMarkCircle } from 'react-icons/hi2';
+import { green, orange } from '@mui/material/colors';
+import { TbProgressCheck } from 'react-icons/tb';
 
 interface PaymentCardProps extends BoxProps {
   payment: PaymentType;
@@ -34,6 +37,40 @@ export function PaymentCard({ payment, title, children, ...props }: PaymentCardP
 
   const handleMenuClose = () => {
     setOpenPaymentMenu(false);
+  };
+
+  const renderStatusIcon = () => {
+    switch (payment.status) {
+      case 'PENDING':
+        return <></>;
+      case 'INPROGRESS':
+        return <TbProgressCheck size={20} />;
+      case 'PENDING_REFUND':
+        return <HiReceiptRefund size={20} />;
+      case 'REFUNDED':
+        return <HiReceiptRefund size={20} style={{ color: orange.A400 }} />;
+      case 'COMPLETED':
+        return <HiOutlineCheckCircle size={20} style={{ color: green.A700 }} />;
+      default:
+        return <HiQuestionMarkCircle size={20} />;
+    }
+  };
+
+  const getStatusTooltip = () => {
+    switch (payment.status) {
+      case 'COMPLETED':
+        return 'Completed';
+      case 'PENDING':
+        return 'Pending';
+      case 'INPROGRESS':
+        return 'In-progress';
+      case 'REFUNDED':
+        return 'Refunded';
+      case 'PENDING_REFUND':
+        return 'Pending refund';
+      default:
+        return 'Unknown status';
+    }
   };
 
   return (
@@ -72,14 +109,12 @@ export function PaymentCard({ payment, title, children, ...props }: PaymentCardP
           flexDirection="row"
           alignItems="center"
           justifyContent="space-between">
-          {payment.status === 'INPROGRESS' && (
-            <Tooltip title="Payment in-progress">
-              <CircularProgress color="inherit" size={20} />
-            </Tooltip>
-          )}
-          <Typography variant="subtitle2" fontWeight="bold" fontSize={14}>
-            {title}
-          </Typography>
+          <Stack direction="row" alignItems="center" justifyContent="flex-start" spacing={0.5}>
+            <Tooltip title={getStatusTooltip()}>{renderStatusIcon()}</Tooltip>
+            <Typography variant="subtitle2" fontWeight="bold" fontSize={14}>
+              {title}
+            </Typography>
+          </Stack>
           <IconButton size="small" onClick={handleMenuOpen}>
             <MoreHoriz fontSize="small" />
           </IconButton>
