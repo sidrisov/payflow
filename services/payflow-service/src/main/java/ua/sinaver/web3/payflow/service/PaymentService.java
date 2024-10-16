@@ -220,6 +220,22 @@ public class PaymentService {
 
 					log.info("Successfully updated payment as completed: {}",
 							payment.getReferenceId());
+				} else if (GlideSessionResponse.PaymentStatus.PENDING_REFUND.equals(sessionResponse.getPaymentStatus())) {
+					payment.setStatus(Payment.PaymentStatus.PENDING_REFUND);
+					paymentRepository.save(payment);
+					// TODO: don't notify for now
+					//notificationService.notifyPaymentCompletion(payment, payment.getSender());
+				}
+			} else if (payment.getStatus().equals(Payment.PaymentStatus.PENDING_REFUND)) {
+				if (GlideSessionResponse.PaymentStatus.REFUNDED.equals(sessionResponse.getPaymentStatus())) {
+					payment.setRefundHash(sessionResponse.getRefundTransactionHash());
+					payment.setStatus(Payment.PaymentStatus.REFUNDED);
+					payment.setCompletedDate(new Date());
+					paymentRepository.save(payment);
+					notificationService.notifyPaymentCompletion(payment, payment.getSender());
+
+					log.info("Successfully updated payment as completed: {}",
+							payment.getReferenceId());
 				}
 			}
 		} catch (Exception e) {

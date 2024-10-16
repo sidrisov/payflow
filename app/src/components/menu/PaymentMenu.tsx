@@ -134,7 +134,7 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
             {payment.refundHash && (
               <MenuItem
                 component="a"
-                href={getReceiptUrl(payment, true)}
+                href={getReceiptUrl(payment, false, true)}
                 target="_blank"
                 sx={{ color: orange.A400 }}>
                 <ListItemIcon sx={{ color: orange.A400 }}>

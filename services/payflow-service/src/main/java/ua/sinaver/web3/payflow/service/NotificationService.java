@@ -137,7 +137,7 @@ public class NotificationService {
 	}
 
 	public void notifyPaymentCompletion(Payment payment, User user) {
-		if (!StringUtils.isBlank(payment.getHash())) {
+		if (!StringUtils.isBlank(payment.getHash()) || !StringUtils.isBlank(payment.getRefundHash())) {
 			val receiverFname = identityService
 					.getIdentityFname(payment.getReceiver() != null ? payment.getReceiver().getIdentity()
 							: payment.getReceiverAddress() != null ? payment.getReceiverAddress()
@@ -148,11 +148,17 @@ public class NotificationService {
 			}
 
 			val senderFname = identityService.getIdentityFname(user.getIdentity());
-			val receiptUrl = receiptService.getReceiptUrl(payment);
+			val receiptUrl = receiptService.getReceiptUrl(payment, false,
+					payment.getRefundHash() != null);
 			var embeds = Collections.singletonList(new Cast.Embed(receiptUrl));
 			val sourceRefText = StringUtils.isNotBlank(payment.getSourceHash()) ? String.format(
 					"🔗 Source: https://warpcast.com/%s/%s",
 					receiverFname, payment.getSourceHash().substring(0, 10)) : "";
+
+			if (payment.getRefundHash() != null) {
+				handleRefundNotification(payment, senderFname, embeds, sourceRefText);
+				return;
+			}
 
 			val crossChainText = payment.getFulfillmentId() != null ? " (cross-chain)" : "";
 
@@ -488,6 +494,35 @@ public class NotificationService {
 			}
 
 			sendDirectMessage(messageText, payment.getReceiverFid().toString());
+		}
+	}
+
+	private void handleRefundNotification(Payment payment, String senderFname,
+			List<Cast.Embed> embeds, String sourceRefText) {
+		val category = StringUtils.isBlank(payment.getCategory()) ? "P2P" : payment.getCategory();
+
+		val castText = String.format("""
+				@%s, you've been refunded for "%s" payment initiated from the cast above 🔄""",
+				senderFname,
+				category);
+
+		sendCastReply(castText, payment.getSourceHash(), embeds);
+
+		if (payment.getSender() != null) {
+			val senderFid = identityService.getIdentityFid(payment.getSender().getIdentity());
+			if (StringUtils.isNotBlank(senderFid)) {
+				val messageText = String.format("""
+						@%s, you've been refunded for "%s" payment initiated from the cast above 🔄💸
+
+						%s
+						🧾 Receipt: %s""",
+						senderFname,
+						category,
+						sourceRefText,
+						receiptService.getReceiptUrl(payment));
+
+				sendDirectMessage(messageText, senderFid);
+			}
 		}
 	}
 }

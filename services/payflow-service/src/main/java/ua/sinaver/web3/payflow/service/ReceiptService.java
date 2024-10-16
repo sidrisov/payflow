@@ -10,14 +10,15 @@ import ua.sinaver.web3.payflow.data.Payment;
 public class ReceiptService {
 
 	public String getReceiptUrl(Payment payment) {
-		return getReceiptUrl(payment, false);
+		return getReceiptUrl(payment, false, false);
 	}
 
-	public String getReceiptUrl(Payment payment, boolean fulfillment) {
-		val receiptChainId = fulfillment ?
+	public String getReceiptUrl(Payment payment, boolean fulfillment, boolean refund) {
+		val receiptChainId = (fulfillment || refund) ?
 				payment.getFulfillmentChainId() : payment.getNetwork();
 		val receiptHash = fulfillment ?
-				payment.getFulfillmentHash() : payment.getHash();
+				payment.getFulfillmentHash() : (refund ? payment.getRefundHash() :
+				payment.getHash());
 		val baseUrl = switch (receiptChainId) {
 			case 8453 -> // Base Chain ID
 					"https://basescan.org";
