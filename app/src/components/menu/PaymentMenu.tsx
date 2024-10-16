@@ -16,7 +16,7 @@ import { TbProgressCheck } from 'react-icons/tb';
 import { getReceiptUrl } from '../../utils/receipts';
 import { FaTag } from 'react-icons/fa6';
 import { fanTokenUrl } from '../../utils/moxie';
-import { HiReceiptRefund } from 'react-icons/hi2';
+import { HiOutlineReceiptRefund } from 'react-icons/hi2';
 
 function getDomainFromUrl(url: string): string {
   try {
@@ -138,7 +138,7 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
                 target="_blank"
                 sx={{ color: orange.A400 }}>
                 <ListItemIcon sx={{ color: orange.A400 }}>
-                  <HiReceiptRefund />
+                  <HiOutlineReceiptRefund />
                 </ListItemIcon>
                 <Typography variant="body2">
                   Refund Receipt
@@ -162,10 +162,10 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
                     {payment.status === 'INPROGRESS' ? (
                       <TbProgressCheck size={20} />
                     ) : (
-                      <HiReceiptRefund size={20} />
+                      <HiOutlineReceiptRefund size={20} />
                     )}
                   </ListItemIcon>
-                  Progress
+                  {payment.status === 'INPROGRESS' ? 'Payment in progress' : 'Pending refund'}
                   <OpenInNew fontSize="small" sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
                 </MenuItem>
               )}

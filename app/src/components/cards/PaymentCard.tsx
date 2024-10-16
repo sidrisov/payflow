@@ -1,19 +1,15 @@
 import React, { useState } from 'react';
-import {
-  Box,
-  BoxProps,
-  Button,
-  IconButton,
-  Tooltip,
-  Typography,
-  Stack
-} from '@mui/material';
+import { Box, BoxProps, Button, IconButton, Tooltip, Typography, Stack } from '@mui/material';
 import { MoreHoriz } from '@mui/icons-material';
 import { PaymentType } from '../../types/PaymentType';
 import { PaymentMenu } from '../menu/PaymentMenu';
 import { useMobile } from '../../utils/hooks/useMobile';
 import { useNavigate } from 'react-router-dom';
-import { HiOutlineCheckCircle, HiReceiptRefund, HiQuestionMarkCircle } from 'react-icons/hi2';
+import {
+  HiOutlineCheckCircle,
+  HiQuestionMarkCircle,
+  HiOutlineReceiptRefund
+} from 'react-icons/hi2';
 import { green, orange } from '@mui/material/colors';
 import { TbProgressCheck } from 'react-icons/tb';
 
@@ -46,9 +42,9 @@ export function PaymentCard({ payment, title, children, ...props }: PaymentCardP
       case 'INPROGRESS':
         return <TbProgressCheck size={20} />;
       case 'PENDING_REFUND':
-        return <HiReceiptRefund size={20} />;
+        return <HiOutlineReceiptRefund size={20} />;
       case 'REFUNDED':
-        return <HiReceiptRefund size={20} style={{ color: orange.A400 }} />;
+        return <HiOutlineReceiptRefund size={20} style={{ color: orange.A400 }} />;
       case 'COMPLETED':
         return <HiOutlineCheckCircle size={20} style={{ color: green.A700 }} />;
       default:
