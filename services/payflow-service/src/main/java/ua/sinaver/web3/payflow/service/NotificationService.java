@@ -151,9 +151,10 @@ public class NotificationService {
 			val receiptUrl = receiptService.getReceiptUrl(payment, false,
 					payment.getRefundHash() != null);
 			var embeds = Collections.singletonList(new Cast.Embed(receiptUrl));
-			val sourceRefText = StringUtils.isNotBlank(payment.getSourceHash()) ? String.format(
-					"🔗 Source: https://warpcast.com/%s/%s",
-					receiverFname, payment.getSourceHash().substring(0, 10)) : "";
+			val sourceRefText = StringUtils.isNotBlank(payment.getSourceRef()) ? payment.getSourceRef()
+					: StringUtils.isNotBlank(payment.getSourceHash()) ? String.format(
+							"🔗 Source: https://warpcast.com/%s/%s",
+							receiverFname, payment.getSourceHash().substring(0, 10)) : "";
 
 			if (payment.getRefundHash() != null) {
 				handleRefundNotification(payment, senderFname, embeds, sourceRefText);
@@ -519,7 +520,7 @@ public class NotificationService {
 						senderFname,
 						category,
 						sourceRefText,
-						receiptService.getReceiptUrl(payment));
+						receiptService.getReceiptUrl(payment, false, true));
 
 				sendDirectMessage(messageText, senderFid);
 			}

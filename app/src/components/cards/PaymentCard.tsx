@@ -10,7 +10,7 @@ import {
   HiQuestionMarkCircle,
   HiOutlineReceiptRefund
 } from 'react-icons/hi2';
-import { green, orange } from '@mui/material/colors';
+import { green } from '@mui/material/colors';
 import { TbProgressCheck } from 'react-icons/tb';
 
 interface PaymentCardProps extends BoxProps {
@@ -44,7 +44,7 @@ export function PaymentCard({ payment, title, children, ...props }: PaymentCardP
       case 'PENDING_REFUND':
         return <HiOutlineReceiptRefund size={20} />;
       case 'REFUNDED':
-        return <HiOutlineReceiptRefund size={20} style={{ color: orange.A400 }} />;
+        return <HiOutlineReceiptRefund size={20} style={{ color: green.A700 }} />;
       case 'COMPLETED':
         return <HiOutlineCheckCircle size={20} style={{ color: green.A700 }} />;
       default:

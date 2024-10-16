@@ -11,7 +11,7 @@ import { Cancel, OpenInNew, Receipt, Paid } from '@mui/icons-material';
 import { cancelPayment } from '../../services/payments';
 import { PaymentType } from '../../types/PaymentType';
 import { toast } from 'react-toastify';
-import { green, orange } from '@mui/material/colors';
+import { green } from '@mui/material/colors';
 import { TbProgressCheck } from 'react-icons/tb';
 import { getReceiptUrl } from '../../utils/receipts';
 import { FaTag } from 'react-icons/fa6';
@@ -136,8 +136,8 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
                 component="a"
                 href={getReceiptUrl(payment, false, true)}
                 target="_blank"
-                sx={{ color: orange.A400 }}>
-                <ListItemIcon sx={{ color: orange.A400 }}>
+                sx={{ color: green.A700 }}>
+                <ListItemIcon sx={{ color: green.A700 }}>
                   <HiOutlineReceiptRefund />
                 </ListItemIcon>
                 <Typography variant="body2">
