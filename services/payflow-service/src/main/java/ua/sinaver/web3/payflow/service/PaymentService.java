@@ -1,15 +1,16 @@
 package ua.sinaver.web3.payflow.service;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.data.Wallet;
 import ua.sinaver.web3.payflow.message.Token;
+import ua.sinaver.web3.payflow.message.glide.GlideSessionResponse;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 
 import java.util.Arrays;
@@ -18,19 +19,21 @@ import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @Slf4j
+@Transactional
 public class PaymentService {
 	@Autowired
+	NotificationService notificationService;
+	@Autowired
 	private TokenService tokenService;
-
 	@Autowired
 	private PaymentRepository paymentRepository;
-
 	@Autowired
 	private IdentityService identityService;
+	@Autowired
+	private PayWithGlideService payWithGlideService;
 
 	public static String formatNumberWithSuffix(String numberStr) {
 		double number = Double.parseDouble(numberStr);
@@ -68,8 +71,8 @@ public class PaymentService {
 		return paymentRepository.findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedDateDesc(
 						user, verifications, List.of(Payment.PaymentStatus.COMPLETED))
 				.stream()
-				.map(payment -> payment.getReceiver() != null ?
-						payment.getReceiver().getIdentity() : payment.getReceiverAddress())
+				.map(payment -> payment.getReceiver() != null ? payment.getReceiver().getIdentity()
+						: payment.getReceiverAddress())
 				.filter(Objects::nonNull)
 				.map(String::toLowerCase)
 				.toList();
@@ -91,10 +94,10 @@ public class PaymentService {
 	public List<String> parsePreferredTokens(String text) {
 		val allTokenIds = tokenService.getTokens().stream().map(Token::id).distinct().toList();
 		return Arrays.stream(text
-						.replace(",", " ")  // Replace commas with spaces
-						.replace("$", "")    // Remove any $ symbols
-						.toLowerCase()       // Convert to lowercase
-						.split("\\s+"))      // Split by spaces
+						.replace(",", " ") // Replace commas with spaces
+						.replace("$", "") // Remove any $ symbols
+						.toLowerCase() // Convert to lowercase
+						.split("\\s+")) // Split by spaces
 				.filter(allTokenIds::contains).limit(5).toList();
 	}
 
@@ -121,11 +124,10 @@ public class PaymentService {
 	}
 
 	public String getUserReceiverAddress(User user, Integer chainId) {
-		return user.getDefaultFlow() != null ?
-				user.getDefaultFlow().getWallets().stream()
-						.filter(w -> w.getNetwork().equals(chainId))
-						.findFirst()
-						.map(Wallet::getAddress).orElse(null) : user.getDefaultReceivingAddress();
+		return user.getDefaultFlow() != null ? user.getDefaultFlow().getWallets().stream()
+				.filter(w -> w.getNetwork().equals(chainId))
+				.findFirst()
+				.map(Wallet::getAddress).orElse(null) : user.getDefaultReceivingAddress();
 	}
 
 	public String parseCommandChain(String text) {
@@ -151,12 +153,12 @@ public class PaymentService {
 
 	@Scheduled(fixedRate = 4 * 60 * 60 * 1000, initialDelay = 5 * 60 * 1000)
 	// Run every 4 hours, with 5 minutes initial delay
-	@Transactional
 	public void expireOldPayments() {
 		log.info("Starting expiration of old payments");
 		val oneMonthAgo = new Date(System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000);
 
-		try (Stream<Payment> oldPayments = paymentRepository.findOldPendingPaymentsWithLock(Payment.PaymentStatus.PENDING, oneMonthAgo)) {
+		try (val oldPayments = paymentRepository
+				.findOldPendingPaymentsWithLock(Payment.PaymentStatus.PENDING, oneMonthAgo)) {
 			val expiredPayments = oldPayments
 					.peek(payment -> {
 						payment.setStatus(Payment.PaymentStatus.EXPIRED);
@@ -174,5 +176,55 @@ public class PaymentService {
 		}
 
 		log.info("Finished expiration process");
+	}
+
+	@Scheduled(fixedRate = 60 * 1000, initialDelay = 15 * 1000)
+	public void processInProgressPayments() {
+		log.info("Starting to process in-progress and pending_refund payments");
+		val paymentsToProcess = paymentRepository.findTop5ByStatusInWithLock(
+				List.of(Payment.PaymentStatus.INPROGRESS, Payment.PaymentStatus.PENDING_REFUND));
+
+		paymentsToProcess.forEach(payment -> {
+			try {
+				updatedPaymentFulfillmentStatus(payment);
+			} catch (Exception e) {
+				log.error("Error processing payment {}", payment.getReferenceId(), e);
+			}
+		});
+
+		log.info("Finished processing in-progress and pending_refund payments");
+	}
+
+	@Transactional(Transactional.TxType.REQUIRES_NEW)
+	public void updatedPaymentFulfillmentStatus(Payment payment) {
+		log.debug("Processing payment: {}", payment.getReferenceId());
+		try {
+			val sessionResponse = payWithGlideService.getSessionInfo(payment.getFulfillmentId()).block();
+			log.info("Glide response for refId: {} - {}", payment.getReferenceId(),
+					sessionResponse);
+
+			if (sessionResponse == null) {
+				log.error("Session response is null for refId: {} & sessionId: {}", payment.getReferenceId(),
+						payment.getFulfillmentId());
+				return;
+			}
+
+			if (payment.getStatus().equals(Payment.PaymentStatus.INPROGRESS)) {
+				if (GlideSessionResponse.TransactionStatus.SUCCESS
+						.equals(sessionResponse.getSponsoredTransactionStatus())) {
+					payment.setHash(sessionResponse.getSponsoredTransactionHash());
+					payment.setStatus(Payment.PaymentStatus.COMPLETED);
+					payment.setCompletedDate(new Date());
+					paymentRepository.save(payment);
+					notificationService.notifyPaymentCompletion(payment, payment.getSender());
+
+					log.info("Successfully updated payment as completed: {}",
+							payment.getReferenceId());
+				}
+			}
+		} catch (Exception e) {
+			log.error("Error processing payment {}", payment.getReferenceId(), e);
+			throw new RuntimeException("Failed to process payment", e);
+		}
 	}
 }

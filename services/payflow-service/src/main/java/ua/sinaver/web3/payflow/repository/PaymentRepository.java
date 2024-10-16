@@ -43,7 +43,15 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 	@QueryHints(@QueryHint(name = AvailableSettings.JAKARTA_LOCK_TIMEOUT, value = "-2"))
 	@Query("SELECT p FROM Payment p WHERE p.status = :status AND p.createdDate < :date")
 	Stream<Payment> findOldPendingPaymentsWithLock(@Param("status") Payment.PaymentStatus status,
-	                                               @Param("date") Date date);
+			@Param("date") Date date);
+
+	// JPA: UPGRADE_SKIPLOCKED - PESSIMISTIC_WRITE with a
+	// javax.persistence.lock.timeout setting of -2
+	// https://docs.jboss.org/hibernate/orm/5.0/userguide/html_single/chapters/locking/Locking.html
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@QueryHints(@QueryHint(name = AvailableSettings.JAKARTA_LOCK_TIMEOUT, value = "-2"))
+	@Query("SELECT p FROM Payment p WHERE p.status IN :statuses")
+	Stream<Payment> findTop5ByStatusInWithLock(@Param("statuses") List<Payment.PaymentStatus> statuses);
 
 	@Query("SELECT count(p) FROM Payment p " +
 			"WHERE (p.sender IN :users " +
