@@ -3,6 +3,8 @@ import { Tabs, Tab, Box } from '@mui/material';
 import { green } from '@mui/material/colors';
 import { MoxieInfoCard } from '../cards/MoxieInfoCard';
 import { DegenInfoCard } from '../cards/DegenInfoCard';
+/* import { ZoraInfoCard } from '../cards/ZoraInfoCard';
+import { HypersubInfoCard } from '../cards/HypersubInfoCard'; */
 
 interface UsefulTabsProps {
   tab?: string;
@@ -14,6 +16,10 @@ const getTabIndex = (tab: string | undefined): number => {
       return 0;
     case 'degen':
       return 1;
+    case 'zora':
+      return 2;
+    case 'hypersub':
+      return 3;
     default:
       return 0;
   }
@@ -36,6 +42,8 @@ export function UsefulTabs({ tab }: UsefulTabsProps) {
       <Tabs
         value={activeTab}
         onChange={handleTabChange}
+        variant="scrollable"
+        scrollButtons="auto"
         sx={{
           mb: 2,
           '& .MuiTabs-flexContainer': {
@@ -65,11 +73,15 @@ export function UsefulTabs({ tab }: UsefulTabsProps) {
         }}>
         <Tab label="Moxie" disableRipple />
         <Tab label="Degen" disableRipple />
+        {/* <Tab label="Zora" disableRipple />
+        <Tab label="Hypersub" disableRipple /> */}
       </Tabs>
 
       <Box>
         {activeTab === 0 && <MoxieInfoCard />}
         {activeTab === 1 && <DegenInfoCard />}
+        {/* {activeTab === 2 && <ZoraInfoCard />}
+        {activeTab === 3 && <HypersubInfoCard />} */}
       </Box>
     </>
   );

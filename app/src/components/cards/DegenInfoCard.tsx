@@ -109,7 +109,8 @@ export function DegenInfoCard() {
             maxWidth={300}
             height={55}
             alignItems="center"
-            justifyContent="space-between">
+            justifyContent="space-between"
+            spacing={1}>
             <IconButton onClick={handlePrevSeason} disabled={currentSeasonIndex === 0}>
               <ArrowBackIos fontSize="small" />
             </IconButton>
@@ -121,27 +122,21 @@ export function DegenInfoCard() {
                 sx={{ borderRadius: '15px' }}
               />
             ) : degenPoints ? (
-              <Typography
-                m={1}
-                p={1}
-                variant="h4"
-                fontWeight="bold"
-                {...(isClaimingEnabled && {
-                  component: Button,
-                  onClick: () => setOpenClaimPointsDialog(true)
-                })}
-                sx={{
-                  ...(isClaimingEnabled && {
-                    color: 'inherit',
-                    borderRadius: 5,
-                    border: 2,
-                    borderColor: 'divider',
-                    textTransform: 'none',
-                    borderStyle: 'dotted'
-                  })
-                }}>
-                {formatAmountWithSuffix(degenPoints.points)}
-              </Typography>
+              <Stack m={1} direction="row" alignItems="center" spacing={1}>
+                <Typography variant="h4" fontWeight="bold" sx={{ color: 'inherit' }}>
+                  {formatAmountWithSuffix(degenPoints.points)}
+                </Typography>
+                {Boolean(isClaimingEnabled) && (
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="inherit"
+                    onClick={() => setOpenClaimPointsDialog(true)}
+                    sx={{ borderRadius: 3 }}>
+                    Claim
+                  </Button>
+                )}
+              </Stack>
             ) : (
               <Typography variant="subtitle2" color="inherit">
                 {!pointsError ? (

@@ -17,37 +17,51 @@ import { createConfig } from '@privy-io/wagmi';
 import { Config } from 'wagmi';
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
-/* const { wallets } = getDefaultWallets();
- */
-const commonWagmiConfig = {
+
+const createOptimizedTransport = (url: string) =>
+  http(url, {
+    batch: { batchSize: 1000 },
+    retryCount: 3,
+    retryDelay: 1000,
+    timeout: 30000
+  });
+
+export const commonWagmiConfig = {
   chains: SUPPORTED_CHAINS as any,
   transports: {
-    [mainnet.id]: http(
+    [mainnet.id]: createOptimizedTransport(
       `https://eth-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`
     ),
-    [sepolia.id]: http(
+    [sepolia.id]: createOptimizedTransport(
       `https://eth-sepolia.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`
     ),
     [base.id]: fallback([
-      http(
+      createOptimizedTransport(
         `https://api.developer.coinbase.com/rpc/v1/base/${import.meta.env.VITE_BASE_RPC_API_KEY}`
       ),
-      http(`https://base-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`)
+      createOptimizedTransport(
+        `https://base-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`
+      )
     ]),
     [optimism.id]: fallback([
-      http(`https://optimism-mainnet.infura.io/v3/${import.meta.env.VITE_INFURA_API_KEY}`),
-      http(`https://opt-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`)
+      createOptimizedTransport(
+        `https://optimism-mainnet.infura.io/v3/${import.meta.env.VITE_INFURA_API_KEY}`
+      ),
+      createOptimizedTransport(
+        `https://opt-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`
+      )
     ]),
-    [zora.id]: http('https://rpc.zora.energy'),
-    [baseSepolia.id]: http(
+    [zora.id]: createOptimizedTransport('https://rpc.zora.energy'),
+    [baseSepolia.id]: createOptimizedTransport(
       `https://base-sepolia.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`
     ),
-    [degen.id]: http(),
-    [arbitrum.id]: http(),
-    [mode.id]: http(),
-    [zksync.id]: http()
-  },
-  syncConnectedChain: true
+    [degen.id]: createOptimizedTransport(degen.rpcUrls.default.http[0]),
+    [arbitrum.id]: createOptimizedTransport(
+      `https://arbitrum-mainnet.infura.io/v3/${import.meta.env.VITE_INFURA_API_KEY}`
+    ),
+    [mode.id]: createOptimizedTransport(mode.rpcUrls.default.http[0]),
+    [zksync.id]: createOptimizedTransport(zksync.rpcUrls.default.http[0])
+  }
 };
 
 /* export const privyWagmiConfig = getDefaultConfig({

@@ -51,27 +51,27 @@ export function MoxieInfoCard() {
         {isFetchingRewards || !fid ? (
           <Skeleton variant="rectangular" height={55} width={100} sx={{ borderRadius: '15px' }} />
         ) : rewards ? (
-          <Typography
-            m={1}
-            variant="h4"
-            fontWeight="bold"
-            {...(rewards.availableClaimAmount > 0 && {
-              component: Button,
-              onClick: () => setOpenClaimRewardsDialog(true)
-            })}
-            sx={{
-              ...(rewards.availableClaimAmount > 0 && {
-                color: 'inherit',
-                borderRadius: 5,
-                border: 2,
-                borderColor: 'divider',
-                textTransform: 'none',
-                borderStyle: 'dotted'
-              })
-            }}>
-            {formatAmountWithSuffix(normalizeNumberPrecision(rewards.availableClaimAmount))} /{' '}
-            {formatAmountWithSuffix(normalizeNumberPrecision(rewards.claimedAmount))}
-          </Typography>
+          <Stack
+            height={55}
+            direction="row"
+            alignItems="center"
+            justifyContent="center"
+            spacing={1}>
+            <Typography variant="h4" fontWeight="bold" sx={{ color: 'inherit' }}>
+              {formatAmountWithSuffix(normalizeNumberPrecision(rewards.availableClaimAmount))} /{' '}
+              {formatAmountWithSuffix(normalizeNumberPrecision(rewards.claimedAmount))}
+            </Typography>
+            {rewards.availableClaimAmount > 0 && (
+              <Button
+                size="small"
+                variant="outlined"
+                color="inherit"
+                onClick={() => setOpenClaimRewardsDialog(true)}
+                sx={{ borderRadius: 3 }}>
+                Claim
+              </Button>
+            )}
+          </Stack>
         ) : (
           <Typography variant="subtitle2" color="inherit">
             {!rewardsError ? (
