@@ -26,7 +26,7 @@ export type ChooseFlowMenuProps = ResponsiveDialogProps &
     closeOnSelect?: boolean;
     flows: FlowType[];
     selectedFlow: FlowType;
-    setSelectedFlow: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
+    setSelectedFlow: React.Dispatch<React.SetStateAction<FlowType>>;
   };
 
 export function ChooseFlowDialog({

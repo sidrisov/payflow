@@ -16,11 +16,10 @@ import { FarcasterRecipientField } from '../FarcasterRecipientField';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { PaymentType } from '../../types/PaymentType';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
-import { useContext, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Token } from '../../utils/erc20contracts';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
-import { ProfileContext } from '../../contexts/UserContext';
 import { toast } from 'react-toastify';
 import { Social } from '../../generated/graphql/types';
 import { red } from '@mui/material/colors';
@@ -29,7 +28,6 @@ import { HypersubData } from '../../utils/hooks/useHypersubData';
 import { PayButton, PaymentSuccess } from '../buttons/PayButton';
 import PaymentSuccessDialog from '../dialogs/PaymentSuccessDialog';
 import { getReceiptUrl } from '../../utils/receipts';
-import React from 'react';
 import { QuantitySelector } from './QuantitySelector';
 import { BasePaymentDialog } from './BasePaymentDialog';
 import { FlowSelector } from './FlowSelector';
@@ -49,11 +47,7 @@ export type HypersubDialogProps = DialogProps &
     senderSocial: Social;
     recipientSocial: Social;
     hypersub: HypersubData;
-  } & {
     alwaysShowBackButton?: boolean;
-    flows?: FlowType[];
-    selectedFlow?: FlowType;
-    setSelectedFlow?: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
   };
 
 export default function HypersubDialog({
@@ -64,36 +58,33 @@ export default function HypersubDialog({
   recipientSocial,
   hypersub,
   closeStateCallback,
-  flows,
-  selectedFlow,
-  setSelectedFlow,
   ...props
 }: HypersubDialogProps) {
-  const senderFlow = sender.identity.profile?.defaultFlow as FlowType;
+  const [selectedFlow, setSelectedFlow] = useState<FlowType>(
+    sender.identity.profile?.defaultFlow as FlowType
+  );
 
-  const isNativeFlow = senderFlow.type !== 'FARCASTER_VERIFICATION' && senderFlow.type !== 'LINKED';
+  const isNativeFlow =
+    selectedFlow.type !== 'FARCASTER_VERIFICATION' && selectedFlow.type !== 'LINKED';
 
   const isMobile = useMobile();
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
+
+  const [gasFee] = useState<bigint | undefined>(isNativeFlow ? BigInt(0) : undefined);
+
+  const chainId = useChainId();
+
+  const [paymentWallet, setPaymentWallet] = useState<FlowWalletType>();
+  const [paymentToken, setPaymentToken] = useState<Token>();
+
+  const [periods, setPeriodsCount] = useState(1);
+  const isGift = payment.receiverAddress !== sender.identity.address;
 
   const handleTooltipToggle = () => {
     if (isMobile) {
       setIsTooltipOpen(!isTooltipOpen);
     }
   };
-
-  // force to display sponsored
-  const [gasFee] = useState<bigint | undefined>(isNativeFlow ? BigInt(0) : undefined);
-
-  const chainId = useChainId();
-
-  const { profile } = useContext(ProfileContext);
-
-  const [paymentWallet, setPaymentWallet] = useState<FlowWalletType>();
-  const [paymentToken, setPaymentToken] = useState<Token>();
-
-  const [periods, setPeriodsCount] = useState(1);
-  const isGift = payment.receiverAddress !== profile?.identity;
 
   const {
     isLoading: isPaymentTxLoading,
@@ -102,7 +93,7 @@ export default function HypersubDialog({
     data: paymentTx
   } = useHypersubPaymentTx(
     hypersub,
-    payment.receiverAddress ?? profile?.identity,
+    payment.receiverAddress ?? sender.identity.address,
     payflowReferrer,
     periods
   );
@@ -116,7 +107,7 @@ export default function HypersubDialog({
     error: paymentOptionsError
   } = useGlidePaymentOptions(Boolean(paymentTx), {
     ...(paymentTx as any),
-    account: senderFlow.wallets[0].address
+    account: selectedFlow.wallets[0].address
   });
 
   console.log('Payment Options: ', paymentOptions);
@@ -127,7 +118,7 @@ export default function HypersubDialog({
   );
 
   const compatibleWallets = useCompatibleWallets({
-    sender: senderFlow,
+    sender: selectedFlow,
     payment,
     paymentOptions: !isPaymentOptionsLoading ? paymentOptions : undefined
   });
@@ -175,7 +166,7 @@ export default function HypersubDialog({
           paymentWallet={paymentWallet!}
           paymentOption={paymentOption!}
           payment={{ ...payment, tokenAmount: periods }}
-          senderFlow={senderFlow}
+          senderFlow={selectedFlow}
           onSuccess={setPaymentSuccessData}
           onError={(error) => {
             toast.error(`Failed to subscribe to "${hypersub.metadata?.name}"`, {
@@ -279,12 +270,10 @@ export default function HypersubDialog({
       <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
         <FlowSelector
           variant="outlined"
-          sender={sender}
-          flows={flows!}
-          selectedFlow={selectedFlow!}
-          setSelectedFlow={setSelectedFlow!}
+          flows={sender.identity.profile?.flows ?? []}
+          selectedFlow={selectedFlow}
+          setSelectedFlow={setSelectedFlow}
         />
-
         <NetworkTokenSelector
           crossChainMode
           payment={payment}

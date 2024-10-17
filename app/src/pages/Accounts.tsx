@@ -21,8 +21,7 @@ export default function Accounts() {
   const navigate = useNavigate();
 
   const { flows } = profile ?? { flows: [] };
-
-  const [selectedFlow, setSelectedFlow] = useState<FlowType>();
+  const [selectedFlow, setSelectedFlow] = useState<FlowType>(profile?.defaultFlow!);
 
   const [balanceVisible, setBalanceVisible] = useState(true);
 
@@ -31,12 +30,6 @@ export default function Accounts() {
       navigate('/connect');
     }
   }, []);
-
-  useEffect(() => {
-    if (!selectedFlow && flows && flows.length > 0) {
-      setSelectedFlow(flows.find((f) => f.uuid === profile?.defaultFlow?.uuid));
-    }
-  }, [selectedFlow, flows]);
 
   const [assets, setAssets] = useState<AssetType[]>([]);
 

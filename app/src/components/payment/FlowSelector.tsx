@@ -6,25 +6,22 @@ import { PiTipJar } from 'react-icons/pi';
 import { IoIosWallet } from 'react-icons/io';
 
 import FarcasterAvatar from '../avatars/FarcasterAvatar';
-import { SelectedIdentityType } from '../../types/ProfileType';
 type FlowSelectorProps = {
   variant?: 'outlined' | 'text';
-  sender: SelectedIdentityType;
+  disabled?: boolean;
   flows: FlowType[];
   selectedFlow: FlowType;
-  setSelectedFlow: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
+  setSelectedFlow: React.Dispatch<React.SetStateAction<FlowType>>;
 };
 
 export const FlowSelector: React.FC<FlowSelectorProps> = ({
+  disabled = false,
   variant = 'outlined',
-  sender,
   flows,
   selectedFlow,
   setSelectedFlow
 }) => {
   const [openSelectFlow, setOpenSelectFlow] = useState(false);
-
-  const defaultFlow = sender.identity.profile?.defaultFlow;
 
   const getFlowIcon = (flow?: FlowType) => {
     if (!flow) {
@@ -49,10 +46,11 @@ export const FlowSelector: React.FC<FlowSelectorProps> = ({
     <>
       <Chip
         onClick={() => setOpenSelectFlow(true)}
-        icon={getFlowIcon(defaultFlow)}
+        icon={getFlowIcon(selectedFlow)}
+        disabled={disabled}
         label={
           <Typography variant="subtitle2" noWrap sx={{ maxWidth: 150 }}>
-            {defaultFlow ? defaultFlow.title : 'Pay with flow'}
+            {selectedFlow ? selectedFlow.title : 'Pay with flow'}
           </Typography>
         }
         variant="outlined"
@@ -71,15 +69,17 @@ export const FlowSelector: React.FC<FlowSelectorProps> = ({
         }}
       />
 
-      <ChooseFlowDialog
-        showOnlySigner
-        open={openSelectFlow}
-        onClose={() => setOpenSelectFlow(false)}
-        closeStateCallback={() => setOpenSelectFlow(false)}
-        flows={flows}
-        selectedFlow={selectedFlow}
-        setSelectedFlow={setSelectedFlow}
-      />
+      {flows && (
+        <ChooseFlowDialog
+          showOnlySigner
+          open={openSelectFlow}
+          onClose={() => setOpenSelectFlow(false)}
+          closeStateCallback={() => setOpenSelectFlow(false)}
+          flows={flows}
+          selectedFlow={selectedFlow}
+          setSelectedFlow={setSelectedFlow}
+        />
+      )}
     </>
   );
 };

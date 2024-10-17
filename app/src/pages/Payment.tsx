@@ -2,7 +2,6 @@ import { Container } from '@mui/material';
 import { lazy, useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ProfileContext } from '../contexts/UserContext';
-import { FlowType } from '../types/FlowType';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PaymentType } from '../types/PaymentType';
 import { fetchPayment } from '../services/payments';
@@ -25,9 +24,7 @@ import { fetchHypersubData, HypersubData } from '../utils/hooks/useHypersubData'
 
 const LazyMintDialog = lazy(() => import('../components/payment/MintDialog'));
 const LazyBuyFanTokenDialog = lazy(() => import('../components/payment/BuyFanTokenDialog'));
-const LazySubscribeToHypersubDialog = lazy(
-  () => import('../components/payment/HypersubDialog')
-);
+const LazySubscribeToHypersubDialog = lazy(() => import('../components/payment/HypersubDialog'));
 const LazyGiftStorageDialog = lazy(() => import('../components/payment/BuyStorageDialog'));
 const LazyPaymentDialog = lazy(() => import('../components/payment/PaymentDialog'));
 
@@ -37,26 +34,25 @@ export default function Payment() {
   const { refId } = useParams();
   const { profile } = useContext(ProfileContext);
 
-  const { flows } = profile ?? { flows: [] };
-  const [selectedFlow, setSelectedFlow] = useState<FlowType>();
-
   const [payment, setPayment] = useState<PaymentType>();
   const [senderSocial, setSenderSocial] = useState<Social>();
   const [recipientSocial, setRecipientSocial] = useState<Social>();
   const [mintData, setMintData] = useState<MintMetadata>();
   const [hypersubData, setHypersubData] = useState<HypersubData | null>(null);
 
+  const sender = {
+    identity: {
+      profile,
+      address: profile?.identity
+    },
+    type: 'profile'
+  } as SelectedIdentityType;
+
   useEffect(() => {
     if (!profile) {
       navigate(`/connect?redirect=/payment/${refId}`);
     }
   }, []);
-
-  useEffect(() => {
-    if (!selectedFlow && flows && flows.length > 0) {
-      setSelectedFlow(flows.find((f) => f.uuid === profile?.defaultFlow?.uuid) ?? flows[0]);
-    }
-  }, [selectedFlow, flows]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -137,8 +133,6 @@ export default function Payment() {
         <LoadingPayflowEntryLogo />
         {profile &&
           payment &&
-          flows &&
-          selectedFlow &&
           (!payment.category ? (
             <LazyPaymentDialog
               alwaysShowBackButton
@@ -148,7 +142,7 @@ export default function Payment() {
               payment={payment}
               sender={{
                 identity: {
-                  profile: { ...profile, defaultFlow: selectedFlow },
+                  profile,
                   address: profile.identity
                 },
                 type: 'profile'
@@ -173,9 +167,6 @@ export default function Payment() {
               closeStateCallback={async () => {
                 navigate('/');
               }}
-              flows={flows}
-              selectedFlow={selectedFlow}
-              setSelectedFlow={setSelectedFlow}
             />
           ) : (
             senderSocial &&
@@ -186,20 +177,11 @@ export default function Payment() {
                 title="Complete Storage Payment"
                 open={payment != null}
                 payment={payment}
-                sender={{
-                  identity: {
-                    profile: { ...profile, defaultFlow: selectedFlow },
-                    address: profile.identity
-                  },
-                  type: 'profile'
-                }}
+                sender={sender}
                 recipientSocial={recipientSocial}
                 closeStateCallback={async () => {
                   navigate('/');
                 }}
-                flows={flows}
-                selectedFlow={selectedFlow}
-                setSelectedFlow={setSelectedFlow}
               />
             )) ||
               (payment.category === 'mint' && mintData && (
@@ -208,22 +190,13 @@ export default function Payment() {
                   title="Complete Mint Payment"
                   open={payment != null}
                   payment={payment}
-                  sender={{
-                    identity: {
-                      profile: { ...profile, defaultFlow: selectedFlow },
-                      address: profile.identity
-                    },
-                    type: 'profile'
-                  }}
+                  sender={sender}
                   senderSocial={senderSocial}
                   recipientSocial={recipientSocial}
                   mint={mintData}
                   closeStateCallback={async () => {
                     navigate('/');
                   }}
-                  flows={flows}
-                  selectedFlow={selectedFlow}
-                  setSelectedFlow={setSelectedFlow}
                 />
               )) ||
               (payment.category === 'fan' && senderSocial && recipientSocial && (
@@ -232,21 +205,12 @@ export default function Payment() {
                   title="Complete Token Purchase"
                   open={payment != null}
                   payment={payment}
-                  sender={{
-                    identity: {
-                      profile: { ...profile, defaultFlow: selectedFlow },
-                      address: profile.identity
-                    },
-                    type: 'profile'
-                  }}
+                  sender={sender}
                   senderSocial={senderSocial}
                   recipientSocial={recipientSocial}
                   closeStateCallback={async () => {
                     navigate('/');
                   }}
-                  flows={flows}
-                  selectedFlow={selectedFlow}
-                  setSelectedFlow={setSelectedFlow}
                 />
               )) ||
               (payment.category === 'hypersub' &&
@@ -258,22 +222,13 @@ export default function Payment() {
                     title="Complete Subscription"
                     open={payment != null}
                     payment={payment}
-                    sender={{
-                      identity: {
-                        profile: { ...profile, defaultFlow: selectedFlow },
-                        address: profile.identity
-                      },
-                      type: 'profile'
-                    }}
+                    sender={sender}
                     senderSocial={senderSocial}
                     recipientSocial={recipientSocial}
                     hypersub={hypersubData}
                     closeStateCallback={async () => {
                       navigate('/');
                     }}
-                    flows={flows}
-                    selectedFlow={selectedFlow}
-                    setSelectedFlow={setSelectedFlow}
                   />
                 )))
           ))}

@@ -12,6 +12,7 @@ export type BasePaymentDialogProps = DialogProps &
     title?: string;
     children: React.ReactNode;
     footerContent?: React.ReactNode;
+    mode?: 'normal' | 'cross-chain';
   };
 
 export function BasePaymentDialog({
@@ -20,6 +21,7 @@ export function BasePaymentDialog({
   children,
   footerContent,
   closeStateCallback,
+  mode = 'cross-chain',
   ...props
 }: BasePaymentDialogProps) {
   const isMobile = useMobile();
@@ -60,7 +62,7 @@ export function BasePaymentDialog({
         {children}
         <Box display="flex" flexDirection="column" alignItems="center" width="100%">
           {footerContent}
-          <PoweredByGlideText />
+          {mode === 'cross-chain' && <PoweredByGlideText />}
         </Box>
       </DialogContent>
     </Dialog>

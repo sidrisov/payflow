@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useState, useCallback, useEffect } from 'react';
 import { useChainId, useSwitchChain, useWalletClient, useClient } from 'wagmi';
 import { createSession, executeSession, PaymentOption } from '@paywithglide/glide-js';
 import { ProfileContext } from '../../contexts/UserContext';
@@ -52,6 +52,174 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
     status: ''
   });
 
+  const checkDependencies = useCallback(() => {
+    if (!profile) throw new Error('Profile not found. Please ensure you are logged in.');
+    if (!client) throw new Error('Client not initialized. Please check your network connection.');
+    if (!signer) throw new Error('Signer not available. Please connect your wallet.');
+  }, [profile, client, signer]);
+
+  const createGlideSession = useCallback(
+    async (paymentTx: any, paymentWallet: FlowWalletType, paymentOption: PaymentOption) => {
+      checkDependencies();
+
+      setGlideStatus((prevStatus) => ({
+        ...prevStatus,
+        isPending: true,
+        status: 'Creating Glide session'
+      }));
+
+      try {
+        const session = await createSession(glideConfig, {
+          paymentCurrency: paymentOption.paymentCurrency,
+          currentChainId: chainId,
+          ...(paymentTx as any),
+          account: paymentWallet.address
+        });
+
+        setGlideStatus((prevStatus) => ({
+          ...prevStatus,
+          status: 'Glide session created'
+        }));
+
+        return session;
+      } catch (error) {
+        console.error('Error creating Glide session:', error);
+        setGlideStatus((prevStatus) => ({
+          ...prevStatus,
+          isPending: false,
+          error: true,
+          status: 'Failed to create Glide session'
+        }));
+        throw error;
+      }
+    },
+    [chainId, checkDependencies]
+  );
+
+  const handlePayment = async (
+    tx: any,
+    paymentWallet: FlowWalletType,
+    senderFlow: FlowType
+  ): Promise<Hash> => {
+    if (!profile) throw new Error('Profile not found. Please ensure you are logged in.');
+    if (!client) throw new Error('Client not initialized. Please check your network connection.');
+    if (!signer) throw new Error('Signer not available. Please connect your wallet.');
+
+    if (isNativeFlow) {
+      const owners: Address[] = [];
+      if (
+        senderFlow.signerProvider &&
+        senderFlow.signer.toLowerCase() !== profile.identity.toLowerCase()
+      ) {
+        owners.push(profile.identity);
+      }
+      owners.push(senderFlow.signer);
+
+      const safeAccountConfig: { owners: Address[]; threshold: number } = {
+        owners,
+        threshold: 1
+      };
+
+      const saltNonce = senderFlow.saltNonce as string;
+      const safeVersion = paymentWallet.version;
+
+      return (await transfer(
+        client,
+        signer,
+        {
+          from: paymentWallet.address,
+          to: tx.to,
+          data: tx.data && tx.data.length ? tx.data : undefined,
+          value: tx.value
+        },
+        safeAccountConfig,
+        safeVersion,
+        saltNonce
+      )) as Hash;
+    } else {
+      return (await sendTransactionAsync(tx)) as Hash;
+    }
+  };
+
+  const handleCrossChainPayment = async ({
+    paymentTx,
+    paymentWallet,
+    paymentOption,
+    payment,
+    senderFlow
+  }: {
+    paymentTx: any;
+    paymentWallet: FlowWalletType;
+    paymentOption: PaymentOption;
+    payment: PaymentType;
+    senderFlow: FlowType;
+  }) => {
+    try {
+      checkDependencies();
+
+      if (isNativeFlow) {
+        resetSafe();
+      } else {
+        resetRegular();
+      }
+
+      const session = await createGlideSession(paymentTx, paymentWallet, paymentOption);
+
+      const glideResponse = await executeSession(glideConfig, {
+        session,
+        currentChainId: chainId as any,
+        switchChainAsync,
+        sendTransactionAsync: async (tx) => {
+          console.log('Glide tnxs: ', tx);
+
+          const txHash = await handlePayment(tx, paymentWallet, senderFlow);
+
+          if (txHash) {
+            payment.fulfillmentId = session.sessionId;
+            payment.fulfillmentChainId = tx.chainId;
+            payment.fulfillmentHash = txHash;
+            updatePayment(payment);
+          }
+
+          return txHash as Hash;
+        }
+      });
+
+      console.log('Glide response:', { glideExecutionResponse: glideResponse });
+      const glideTxHash = glideResponse.sponsoredTransactionHash;
+
+      if (glideTxHash && payment.referenceId) {
+        payment.hash = glideTxHash;
+        updatePayment(payment);
+
+        setGlideStatus({
+          isPending: false,
+          isConfirmed: true,
+          error: false,
+          txHash: glideTxHash,
+          status: 'Fulfilled'
+        });
+
+        return { success: true, txHash: glideTxHash as Hash };
+      } else {
+        throw new Error('Transaction failed');
+      }
+    } catch (error) {
+      console.error('Glide transaction error:', error);
+      setGlideStatus({
+        isPending: false,
+        isConfirmed: false,
+        error: true,
+        txHash: null,
+        status: error instanceof Error ? error.message : 'An unknown error occurred'
+      });
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'An unknown error occurred'
+      };
+    }
+  };
+
   useEffect(() => {
     const transferStatus = isNativeFlow
       ? {
@@ -93,132 +261,5 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
     glideStatus
   ]);
 
-  const handleGlideTransaction = async ({
-    paymentTx,
-    paymentWallet,
-    paymentOption,
-    payment,
-    senderFlow
-  }: {
-    paymentTx: any;
-    paymentWallet: FlowWalletType;
-    paymentOption: PaymentOption;
-    payment: PaymentType;
-    senderFlow: FlowType;
-  }) => {
-    console.debug('Payment in handleGlideTransaction: ', payment);
-
-    if (!profile || !client || !signer) {
-      return { success: false };
-    }
-
-    if (isNativeFlow) {
-      resetSafe();
-    } else {
-      resetRegular();
-    }
-
-    setGlideStatus({
-      isPending: true,
-      isConfirmed: false,
-      error: false,
-      txHash: null,
-      status: 'Fulfilling'
-    });
-
-    try {
-      const session = await createSession(glideConfig, {
-        paymentCurrency: paymentOption.paymentCurrency,
-        currentChainId: chainId,
-        ...(paymentTx as any),
-        account: paymentWallet.address
-      });
-
-      const glideExecutionResponse = await executeSession(glideConfig, {
-        session,
-        currentChainId: chainId as any,
-        switchChainAsync,
-        sendTransactionAsync: async (tx) => {
-          console.log('Glide tnxs: ', tx);
-
-          let txHash;
-          if (isNativeFlow) {
-            const owners: Address[] = [];
-            if (
-              senderFlow.signerProvider &&
-              senderFlow.signer.toLowerCase() !== profile.identity.toLowerCase()
-            ) {
-              owners.push(profile.identity);
-            }
-            owners.push(senderFlow.signer);
-
-            const safeAccountConfig: { owners: Address[]; threshold: number } = {
-              owners,
-              threshold: 1
-            };
-
-            const saltNonce = senderFlow.saltNonce as string;
-            const safeVersion = paymentWallet.version;
-
-            txHash = await transfer(
-              client,
-              signer,
-              {
-                from: paymentWallet.address,
-                to: tx.to,
-                data: tx.data && tx.data.length ? tx.data : undefined,
-                value: tx.value
-              },
-              safeAccountConfig,
-              safeVersion,
-              saltNonce
-            );
-          } else {
-            txHash = (await sendTransactionAsync(tx)) as Hash;
-          }
-
-          if (txHash) {
-            payment.fulfillmentId = session.sessionId;
-            payment.fulfillmentChainId = tx.chainId;
-            payment.fulfillmentHash = txHash;
-            updatePayment(payment);
-          }
-
-          return txHash as Hash;
-        }
-      });
-
-      console.log('Glide response:', { glideExecutionResponse });
-      const glideTxHash = glideExecutionResponse.sponsoredTransactionHash;
-
-      if (glideTxHash && payment.referenceId) {
-        payment.hash = glideTxHash;
-        updatePayment(payment);
-
-        setGlideStatus({
-          isPending: false,
-          isConfirmed: true,
-          error: false,
-          txHash: glideTxHash,
-          status: 'Fulfilled'
-        });
-
-        return { success: true, txHash: glideTxHash as Hash };
-      } else {
-        throw new Error('Transaction failed');
-      }
-    } catch (error) {
-      console.error('Glide transaction error:', error);
-      setGlideStatus({
-        isPending: false,
-        isConfirmed: false,
-        error: true,
-        txHash: null,
-        status: 'Failed'
-      });
-      return { success: false };
-    }
-  };
-
-  return { handleGlideTransaction, paymentTxStatus };
+  return { handleGlideTransaction: handleCrossChainPayment, paymentTxStatus };
 };

@@ -3,7 +3,6 @@ import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { AccountBalanceWallet } from '@mui/icons-material';
 import { PaymentSenderType } from '../payment/PaymentDialog';
 import ResponsiveDialog from './ResponsiveDialog';
-import { useMobile } from '../../utils/hooks/useMobile';
 
 export type ChoosePaymentOptionDialogProps = DialogProps &
   CloseCallbackType & {
@@ -55,8 +54,6 @@ export default function ChoosePaymentOptionDialog({
   closeStateCallback,
   ...props
 }: ChoosePaymentOptionDialogProps) {
-  const isMobile = useMobile();
-
   return (
     <ResponsiveDialog
       open={props.open}

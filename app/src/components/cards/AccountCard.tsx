@@ -43,7 +43,7 @@ const nonSelectableText: SxProps = {
 export type AccountCardProps = CardProps & {
   flows: FlowType[];
   selectedFlow: FlowType;
-  setSelectedFlow: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
+  setSelectedFlow: React.Dispatch<React.SetStateAction<FlowType>>;
   assetBalancesResult: BalanceFetchResultType;
   balanceVisible: boolean;
   setBalanceVisible: React.Dispatch<React.SetStateAction<boolean>>;
@@ -239,7 +239,7 @@ export function AccountCard({
 
         <FlowNavigator orderedFlows={orderedFlows} currentIndex={currentIndex} />
 
-        {recipient && selectedFlow && (
+        {recipient && (
           <LazyPaymentDialog
             open={recipient != null}
             paymentType={paymentType}
@@ -251,15 +251,13 @@ export function AccountCard({
                     ? profile.identity
                     : (address?.toLowerCase() as Address),
                 ...(paymentType === 'payflow' && {
-                  profile: { ...profile, defaultFlow: selectedFlow }
+                  profile
                 })
               }
             }}
             recipient={recipient}
             setOpenSearchIdentity={setOpenSearchIdentity}
-            flows={flows}
-            selectedFlow={selectedFlow}
-            setSelectedFlow={setSelectedFlow}
+            flow={selectedFlow}
             closeStateCallback={async () => {
               setRecipient(undefined);
             }}

@@ -1,11 +1,11 @@
 import { Divider, Stack } from '@mui/material';
-import { useContext, useState, useRef } from 'react';
+import { useContext, useState, useRef, lazy } from 'react';
 import { IdentityType } from '../../types/ProfileType';
 import { useAccount } from 'wagmi';
 import { MoreVert } from '@mui/icons-material';
 import { ProfileSection } from '../ProfileSection';
 import { Address } from 'viem';
-import PaymentDialog, { PaymentSenderType } from '../payment/PaymentDialog';
+import { PaymentSenderType } from '../payment/PaymentDialog';
 import { ProfileContext } from '../../contexts/UserContext';
 import ChoosePaymentOptionDialog from './ChoosePaymentOptionDialog';
 import { AddressSection } from '../AddressSection';
@@ -13,6 +13,7 @@ import { ActionButton } from '../buttons/ActionButton';
 import { TbSend } from 'react-icons/tb';
 import { IdentityMenu } from '../menu/SearchIdenitityMenu';
 import { SocialLinksPopover } from './SocialLinksPopover';
+const LazyPaymentDialog = lazy(() => import('../payment/PaymentDialog'));
 
 export function PublicProfileDetails({
   openPayDialogParam = false,
@@ -33,6 +34,8 @@ export function PublicProfileDetails({
   const [paymentType, setPaymentType] = useState<PaymentSenderType>(
     !loggedProfile ? 'wallet' : 'none'
   );
+
+  console.log('loggedProfile', loggedProfile);
 
   const handlePayButtonClick = () => setOpenPayDialog(true);
   const handleMoreButtonClick = () => setOpenIdentityMenu(true);
@@ -74,10 +77,10 @@ export function PublicProfileDetails({
         </Stack>
       </Stack>
 
-      {openPayDialog && (
+      {openPayDialog && paymentType !== 'none' && (
         <>
-          <PaymentDialog
-            open={openPayDialog && (!loggedProfile || paymentType !== 'none')}
+          <LazyPaymentDialog
+            open={openPayDialog}
             paymentType={paymentType}
             sender={{
               type: paymentType === 'payflow' ? 'profile' : 'address',
@@ -86,7 +89,9 @@ export function PublicProfileDetails({
                   paymentType === 'payflow'
                     ? (loggedProfile?.identity as Address)
                     : (address?.toLowerCase() as Address),
-                ...(paymentType === 'payflow' && { profile: loggedProfile })
+                ...(paymentType === 'payflow' && {
+                  profile: loggedProfile
+                })
               }
             }}
             recipient={{
@@ -95,13 +100,15 @@ export function PublicProfileDetails({
             }}
             closeStateCallback={handlePayDialogClose}
           />
-
-          <ChoosePaymentOptionDialog
-            open={Boolean(loggedProfile) && paymentType === 'none'}
-            setPaymentType={setPaymentType}
-            closeStateCallback={handlePayDialogClose}
-          />
         </>
+      )}
+
+      {paymentType === 'none' && (
+        <ChoosePaymentOptionDialog
+          open={openPayDialog && Boolean(loggedProfile)}
+          setPaymentType={setPaymentType}
+          closeStateCallback={handlePayDialogClose}
+        />
       )}
 
       {openIdentityMenu && (

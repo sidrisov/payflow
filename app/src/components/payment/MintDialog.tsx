@@ -18,11 +18,10 @@ import { FarcasterRecipientField } from '../FarcasterRecipientField';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { PaymentType } from '../../types/PaymentType';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
-import { useContext, useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Token } from '../../utils/erc20contracts';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
-import { ProfileContext } from '../../contexts/UserContext';
 import { toast } from 'react-toastify';
 import { Social } from '../../generated/graphql/types';
 import { red } from '@mui/material/colors';
@@ -46,7 +45,6 @@ import { QuantitySelector } from './QuantitySelector';
 import { BasePaymentDialog } from './BasePaymentDialog';
 import { FlowSelector } from './FlowSelector';
 import { Hash } from 'viem';
-import { delay } from '../../utils/delay';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {
@@ -55,11 +53,7 @@ export type MintDialogProps = DialogProps &
     senderSocial: Social;
     recipientSocial: Social;
     mint: MintMetadata;
-  } & {
     alwaysShowBackButton?: boolean;
-    flows?: FlowType[];
-    selectedFlow?: FlowType;
-    setSelectedFlow?: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
   };
 
 type CommentFieldProps = {
@@ -140,31 +134,26 @@ export default function MintDialog({
   recipientSocial,
   mint,
   closeStateCallback,
-  flows,
-  selectedFlow,
-  setSelectedFlow,
   ...props
 }: MintDialogProps) {
   const miniApp = useSearchParams()[0].get('view') === 'embedded';
 
-  //const miniApp = useMiniApp();
+  const [selectedFlow, setSelectedFlow] = useState<FlowType>(
+    sender.identity.profile?.defaultFlow as FlowType
+  );
 
-  const senderFlow = sender.identity.profile?.defaultFlow as FlowType;
+  const isNativeFlow =
+    selectedFlow.type !== 'FARCASTER_VERIFICATION' && selectedFlow.type !== 'LINKED';
 
-  const isNativeFlow = senderFlow.type !== 'FARCASTER_VERIFICATION' && senderFlow.type !== 'LINKED';
-
-  // force to display sponsored
   const [gasFee] = useState<bigint | undefined>(isNativeFlow ? BigInt(0) : undefined);
 
   const chainId = useChainId();
-
-  const { profile } = useContext(ProfileContext);
 
   const [paymentWallet, setPaymentWallet] = useState<FlowWalletType>();
   const [paymentToken, setPaymentToken] = useState<Token>();
 
   const [mintCount, setMintCount] = useState(1);
-  const isGift = payment.receiverAddress !== profile?.identity;
+  const isGift = payment.receiverAddress !== sender.identity.address;
 
   const [zoraCommentEnabled, setTxCommentEnabled] = useState(false);
 
@@ -181,8 +170,8 @@ export default function MintDialog({
     error: mintPaymentTxError
   } = useMintPaymentTx({
     mint,
-    minter: senderFlow.wallets[0].address,
-    recipient: payment.receiverAddress ?? profile?.identity,
+    minter: selectedFlow.wallets[0].address,
+    recipient: payment.receiverAddress ?? sender.identity.address,
     comment: zoraCommentEnabled
       ? `${payflowCommentSection}${debouncedComment ? `:\n\n"${debouncedComment}"` : ''}`
       : undefined,
@@ -208,7 +197,7 @@ export default function MintDialog({
     error: paymentOptionsError
   } = useGlidePaymentOptions(Boolean(paymentTx) && mintStatus === 'live', {
     ...(paymentTx as any),
-    account: senderFlow.wallets[0].address
+    account: selectedFlow.wallets[0].address
   });
 
   console.log('Payment Options: ', paymentOptions);
@@ -219,7 +208,7 @@ export default function MintDialog({
   );
 
   const compatibleWallets = useCompatibleWallets({
-    sender: senderFlow,
+    sender: selectedFlow,
     payment,
     paymentOptions: !isPaymentOptionsLoading ? paymentOptions : undefined
   });
@@ -247,7 +236,7 @@ export default function MintDialog({
   const { shareFrameUrl, text, channelKey } = createShareUrls({
     mint,
     recipientSocial,
-    profile: profile!,
+    profile: sender.identity.profile!,
     isGift,
     tokenAmount: mintCount
   });
@@ -343,7 +332,7 @@ export default function MintDialog({
           paymentWallet={paymentWallet!}
           paymentOption={paymentOption!}
           payment={{ ...payment, tokenAmount: mintCount, comment }}
-          senderFlow={senderFlow}
+          senderFlow={selectedFlow}
           onSuccess={setPaymentSuccessData}
           onError={(error) => {
             toast.error(`Failed to mint "${mint.metadata.name}"`, { autoClose: 2000 });
@@ -436,10 +425,9 @@ export default function MintDialog({
       <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
         <FlowSelector
           variant="outlined"
-          sender={sender}
-          flows={flows!}
-          selectedFlow={selectedFlow!}
-          setSelectedFlow={setSelectedFlow!}
+          flows={sender.identity.profile?.flows ?? []}
+          selectedFlow={selectedFlow}
+          setSelectedFlow={setSelectedFlow}
         />
         <NetworkTokenSelector
           crossChainMode

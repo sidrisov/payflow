@@ -1,5 +1,5 @@
 import { Box, Stack, Typography } from '@mui/material';
-import { useContext, useState } from 'react';
+import { lazy, useContext, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
 import { SelectedIdentityType } from '../types/ProfileType';
@@ -9,13 +9,13 @@ import { PublicProfileCard } from '../components/cards/PublicProfileCard';
 import { useAccount } from 'wagmi';
 import { Address } from 'viem';
 
-import PaymentDialog from '../components/payment/PaymentDialog';
 import { PublicSearchPay } from './PublicSearchPay';
 import { ProfileContext } from '../contexts/UserContext';
 import { useIdentity } from '../utils/queries/profiles';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 import { useMobile } from '../utils/hooks/useMobile';
 import ActivityFeed from '../components/activity/ActivityFeed';
+const LazyPaymentDialog = lazy(() => import('../components/payment/PaymentDialog'));
 
 export default function PublicProfile() {
   const isMobile = useMobile();
@@ -96,7 +96,7 @@ export default function PublicProfile() {
         }}
       />
       {selectedRecipient && (
-        <PaymentDialog
+        <LazyPaymentDialog
           paymentType={loggedProfile ? 'payflow' : 'wallet'}
           open={selectedRecipient !== undefined}
           sender={{
@@ -106,7 +106,7 @@ export default function PublicProfile() {
                 loggedProfile && loggedProfile.defaultFlow
                   ? (loggedProfile?.identity as Address)
                   : (address?.toLowerCase() as Address),
-              ...(loggedProfile && loggedProfile.defaultFlow && { profile: loggedProfile })
+              ...(loggedProfile && { profile: loggedProfile })
             }
           }}
           recipient={selectedRecipient}

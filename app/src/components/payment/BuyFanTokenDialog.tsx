@@ -17,11 +17,10 @@ import { FarcasterRecipientField } from '../FarcasterRecipientField';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { PaymentType } from '../../types/PaymentType';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
-import { useContext, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ERC20_CONTRACTS, Token } from '../../utils/erc20contracts';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
-import { ProfileContext } from '../../contexts/UserContext';
 import { toast } from 'react-toastify';
 import { Social } from '../../generated/graphql/types';
 import { red } from '@mui/material/colors';
@@ -55,9 +54,6 @@ export type BuyFanTokenDialogProps = DialogProps &
     senderSocial: Social;
     recipientSocial: Social;
     alwaysShowBackButton?: boolean;
-    flows?: FlowType[];
-    selectedFlow?: FlowType;
-    setSelectedFlow?: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
   };
 
 const MOXIE_CONTRACT_ADDRESS = ERC20_CONTRACTS.find((t) => t.id === 'moxie')?.tokenAddress;
@@ -69,21 +65,20 @@ export default function BuyFanTokenDialog({
   senderSocial,
   recipientSocial,
   closeStateCallback,
-  flows,
-  selectedFlow,
-  setSelectedFlow,
   ...props
 }: BuyFanTokenDialogProps) {
   const miniApp = useSearchParams()[0].get('view') === 'embedded';
 
-  const senderFlow = sender.identity.profile?.defaultFlow as FlowType;
-  const isNativeFlow = senderFlow.type !== 'FARCASTER_VERIFICATION' && senderFlow.type !== 'LINKED';
+  const [selectedFlow, setSelectedFlow] = useState<FlowType>(
+    sender.identity.profile?.defaultFlow as FlowType
+  );
+
+  const isNativeFlow =
+    selectedFlow.type !== 'FARCASTER_VERIFICATION' && selectedFlow.type !== 'LINKED';
 
   const [gasFee] = useState<bigint | undefined>(isNativeFlow ? BigInt(0) : undefined);
 
   const chainId = useChainId();
-
-  const { profile } = useContext(ProfileContext);
 
   const [paymentWallet, setPaymentWallet] = useState<FlowWalletType>();
   const [paymentToken, setPaymentToken] = useState<Token>();
@@ -106,7 +101,7 @@ export default function BuyFanTokenDialog({
   const { isLoading: isPaymentTxLoading, data: paymentTx } = useFanTokenPaymentTx(
     tokenAddress as Address,
     fanTokenAmount,
-    payment.receiverAddress ?? profile?.identity,
+    payment.receiverAddress ?? sender.identity.address,
     locked
   );
 
@@ -120,7 +115,7 @@ export default function BuyFanTokenDialog({
       token: MOXIE_CONTRACT_ADDRESS,
       amount: paymentTx?.args?.[1] ?? 0n
     },
-    account: senderFlow.wallets[0].address
+    account: selectedFlow.wallets[0].address
   });
 
   const paymentOption = useMemo(
@@ -129,7 +124,7 @@ export default function BuyFanTokenDialog({
   );
 
   const compatibleWallets = useCompatibleWallets({
-    sender: senderFlow,
+    sender: selectedFlow,
     payment,
     paymentOptions: !isPaymentOptionsLoading ? paymentOptions : undefined
   });
@@ -148,7 +143,7 @@ export default function BuyFanTokenDialog({
   const [paymentSuccessData, setPaymentSuccessData] = useState<PaymentSuccess | null>(
     payment.status === 'COMPLETED' ? { txHash: payment.hash as Hash } : null
   );
-  const isGift = payment.receiverAddress !== profile?.identity;
+  const isGift = payment.receiverAddress !== sender.identity.address;
 
   const successMessage = `Successfully bought ${fanTokenAmount} ${tokenName} fan token(s) ${
     isGift ? `for @${recipientSocial.profileName}` : ''
@@ -247,7 +242,7 @@ export default function BuyFanTokenDialog({
           paymentWallet={paymentWallet!}
           paymentOption={paymentOption!}
           payment={{ ...payment, tokenAmount: fanTokenAmount }}
-          senderFlow={senderFlow}
+          senderFlow={selectedFlow}
           onSuccess={setPaymentSuccessData}
           onError={(error) => {
             toast.error(`Failed to buy fan tokens!`);
@@ -358,10 +353,9 @@ export default function BuyFanTokenDialog({
       <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
         <FlowSelector
           variant="outlined"
-          sender={sender}
-          flows={flows!}
-          selectedFlow={selectedFlow!}
-          setSelectedFlow={setSelectedFlow!}
+          flows={sender.identity.profile?.flows ?? []}
+          selectedFlow={selectedFlow}
+          setSelectedFlow={setSelectedFlow}
         />
         <NetworkTokenSelector
           crossChainMode

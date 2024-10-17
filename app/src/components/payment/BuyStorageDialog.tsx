@@ -29,9 +29,6 @@ export type BuyStorageDialogProps = DialogProps &
     payment: PaymentType;
     recipientSocial: Social;
     alwaysShowBackButton?: boolean;
-    flows?: FlowType[];
-    selectedFlow?: FlowType;
-    setSelectedFlow?: React.Dispatch<React.SetStateAction<FlowType | undefined>>;
   };
 
 export default function BuyStorageDialog({
@@ -40,14 +37,14 @@ export default function BuyStorageDialog({
   payment,
   recipientSocial,
   closeStateCallback,
-  flows,
-  selectedFlow,
-  setSelectedFlow,
   ...props
 }: BuyStorageDialogProps) {
-  const senderFlow = sender.identity.profile?.defaultFlow as FlowType;
+  const [selectedFlow, setSelectedFlow] = useState<FlowType>(
+    sender.identity.profile?.defaultFlow as FlowType
+  );
 
-  const isNativeFlow = senderFlow.type !== 'FARCASTER_VERIFICATION' && senderFlow.type !== 'LINKED';
+  const isNativeFlow =
+    selectedFlow.type !== 'FARCASTER_VERIFICATION' && selectedFlow.type !== 'LINKED';
 
   // force to display sponsored
   const [gasFee] = useState<bigint | undefined>(isNativeFlow ? BigInt(0) : undefined);
@@ -70,7 +67,7 @@ export default function BuyStorageDialog({
     isError: isPaymentOptionsError
   } = useGlidePaymentOptions(Boolean(paymentTx), {
     ...(paymentTx as any),
-    account: senderFlow.wallets[0].address
+    account: selectedFlow.wallets[0].address
   });
 
   const paymentOption = useMemo(
@@ -81,7 +78,7 @@ export default function BuyStorageDialog({
   console.log('Payment Options: ', paymentOptions);
 
   const compatibleWallets = useCompatibleWallets({
-    sender: senderFlow,
+    sender: selectedFlow,
     payment,
     paymentOptions: !isPaymentOptionsLoading ? paymentOptions : undefined
   });
@@ -124,7 +121,7 @@ export default function BuyStorageDialog({
           paymentWallet={paymentWallet!}
           paymentOption={paymentOption!}
           payment={payment}
-          senderFlow={senderFlow}
+          senderFlow={selectedFlow}
           onSuccess={setPaymentSuccessData}
           onError={(error) => {
             toast.error(`Failed to pay for storage!`);
@@ -164,10 +161,9 @@ export default function BuyStorageDialog({
       <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
         <FlowSelector
           variant="outlined"
-          sender={sender}
-          flows={flows!}
-          selectedFlow={selectedFlow!}
-          setSelectedFlow={setSelectedFlow!}
+          flows={sender.identity.profile?.flows ?? []}
+          selectedFlow={selectedFlow}
+          setSelectedFlow={setSelectedFlow}
         />
 
         <NetworkTokenSelector

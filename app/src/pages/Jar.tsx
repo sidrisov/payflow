@@ -3,14 +3,14 @@ import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
 import { useJar } from '../utils/queries/jars';
 import JarActivityFeed from '../components/JarActivityFeed';
-import { useContext, useMemo, useState } from 'react';
+import { lazy, useContext, useMemo, useState } from 'react';
 import { getSupportedTokens } from '../utils/erc20contracts';
 import { Address } from 'viem';
 import { AssetType } from '../types/AssetType';
 import { useAssetBalances } from '../utils/queries/balances';
 import { lightGreen } from '@mui/material/colors';
 import { Add, ArrowOutward } from '@mui/icons-material';
-import PaymentDialog, { PaymentSenderType } from '../components/payment/PaymentDialog';
+import { PaymentSenderType } from '../components/payment/PaymentDialog';
 import { useAccount } from 'wagmi';
 import { ProfileContext } from '../contexts/UserContext';
 import ChoosePaymentOptionDialog from '../components/dialogs/ChoosePaymentOptionDialog';
@@ -19,6 +19,8 @@ import ProfileAvatar from '../components/avatars/ProfileAvatar';
 import { ProfileDisplayNameWithLink } from '../components/activity/ProfileDisplayNameWithLink';
 import { PublicProfileDetailsPopover } from '../components/menu/PublicProfileDetailsPopover';
 import { useMobile } from '../utils/hooks/useMobile';
+
+const LazyPaymentDialog = lazy(() => import('../components/payment/PaymentDialog'));
 
 export default function Jar() {
   const isMobile = useMobile();
@@ -167,7 +169,7 @@ export default function Jar() {
         )}
         {openPayDialog && jar && (
           <>
-            <PaymentDialog
+            <LazyPaymentDialog
               open={openPayDialog && (!loggedProfile || paymentType !== 'none')}
               paymentType={paymentType}
               sender={{
@@ -177,7 +179,9 @@ export default function Jar() {
                     paymentType === 'payflow'
                       ? (loggedProfile?.identity as Address)
                       : (address?.toLowerCase() as Address),
-                  ...(paymentType === 'payflow' && { profile: loggedProfile })
+                  ...(paymentType === 'payflow' && {
+                    profile: loggedProfile
+                  })
                 }
               }}
               recipient={{

@@ -17,7 +17,6 @@ export function RecipientField({
     <Box
       display="flex"
       flexDirection="row"
-      width="100%"
       alignItems="center"
       justifyContent="space-between"
       color="inherit"
@@ -26,7 +25,6 @@ export function RecipientField({
         onClick: () => setOpenSearchIdentity(true)
       })}
       sx={{
-        border: 1,
         borderRadius: 5,
         borderColor: 'divider',
         p: isMobile ? 1.5 : 1,
