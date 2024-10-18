@@ -54,7 +54,7 @@ export function LoadingSwitchChainButton({
           await switchChainAsync?.({ chainId });
         }
       }}
-      sx={{ mt: 3, mb: 1, borderRadius: 5 }}>
+      sx={{ my: 1, borderRadius: 5 }}>
       Switch to {chainName}
     </LoadingButton>
   );

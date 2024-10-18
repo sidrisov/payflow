@@ -1,13 +1,8 @@
-import { useMemo, useState } from 'react';
-import { Address, Chain, Hash } from 'viem';
+import { useEffect, useState } from 'react';
+import { Hash } from 'viem';
 
 import { Config, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
 import { SendTransactionMutateAsync } from 'wagmi/query';
-
-export type SafeWallet = {
-  chain: Chain;
-  address: Address;
-};
 
 export const useRegularTransfer = (): {
   loading: boolean;
@@ -38,20 +33,14 @@ export const useRegularTransfer = (): {
     hash: txHash
   });
 
-  useMemo(async () => {
+  useEffect(() => {
     if (isTxConfirmationLoading) {
       setStatus('confirming');
-      return;
-    }
-
-    if (isTxError) {
+    } else if (isTxError) {
       if (txError?.message.includes('rejected')) {
         setStatus('rejected');
-        return;
       }
-    }
-
-    if (isTxLoading) {
+    } else if (isTxLoading) {
       setStatus('signing');
     } else if (isTxSuccess) {
       setStatus('submitted');
@@ -64,8 +53,8 @@ export const useRegularTransfer = (): {
     loading: isTxLoading || isTxConfirmationLoading,
     confirmed: isTxConfirmed,
     error: isTxError || isTxConfirmationError,
-    status: status,
-    txHash: txHash,
+    status,
+    txHash,
     sendTransactionAsync,
     reset
   };
