@@ -2,7 +2,7 @@ import { useContext, useState, useCallback, useEffect } from 'react';
 import { useChainId, useSwitchChain, useWalletClient, useClient } from 'wagmi';
 import { createSession, executeSession, PaymentOption } from '@paywithglide/glide-js';
 import { ProfileContext } from '../../contexts/UserContext';
-import { updatePayment } from '../../services/payments';
+import { submitPayment, updatePayment } from '../../services/payments';
 import { PaymentTxStatus, PaymentType } from '../../types/PaymentType';
 import { glideConfig } from '../glide';
 import { useRegularTransfer } from './useRegularTransfer';
@@ -78,7 +78,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
 
         setGlideStatus((prevStatus) => ({
           ...prevStatus,
-          status: 'Glide session created'
+          status: 'Fulfilling payment'
         }));
 
         return session;
@@ -88,7 +88,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
           ...prevStatus,
           isPending: false,
           error: true,
-          status: 'Failed to create Glide session'
+          status: 'Failed to fulfill payment'
         }));
         throw error;
       }
@@ -141,6 +141,25 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
     }
   };
 
+  const handleDirectPayment = async (
+    tx: any,
+    paymentWallet: FlowWalletType,
+    payment: PaymentType,
+    senderFlow: FlowType
+  ): Promise<{ success: boolean; txHash: Hash }> => {
+    const txHash = await handlePayment(tx, paymentWallet, senderFlow);
+
+    payment.hash = txHash;
+
+    if (payment.referenceId) {
+      await updatePayment(payment);
+    } else {
+      await submitPayment(payment);
+    }
+
+    return { success: true, txHash };
+  };
+
   const handleCrossChainPayment = async ({
     paymentTx,
     paymentWallet,
@@ -178,7 +197,8 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
             payment.fulfillmentId = session.sessionId;
             payment.fulfillmentChainId = tx.chainId;
             payment.fulfillmentHash = txHash;
-            updatePayment(payment);
+
+            await updatePayment(payment);
           }
 
           return txHash as Hash;
@@ -261,5 +281,5 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
     glideStatus
   ]);
 
-  return { handleGlideTransaction: handleCrossChainPayment, paymentTxStatus };
+  return { handleDirectPayment, handleCrossChainPayment, paymentTxStatus };
 };

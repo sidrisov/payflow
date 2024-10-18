@@ -62,7 +62,7 @@ export default function Payment() {
           const paymentData = await fetchPayment(refId);
 
           if (paymentData) {
-            if (paymentData.status !== 'PENDING' && !paymentData.category) {
+            if (paymentData.status !== 'PENDING' && paymentData.status !== 'COMPLETED') {
               toast(`Payment ${paymentData.status}!`, {
                 autoClose: 3000,
                 type: statusToToastType[paymentData.status] || 'default'

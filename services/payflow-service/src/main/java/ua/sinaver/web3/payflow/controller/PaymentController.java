@@ -97,18 +97,26 @@ public class PaymentController {
 		payment.setReceiverAddress(paymentMessage.receiverAddress());
 		payment.setSender(user);
 		payment.setTokenAmount(paymentMessage.tokenAmount().toString());
-		payment.setHash(paymentMessage.hash());
-		payment.setStatus(paymentMessage.status());
-		payment.setCompletedDate(new Date());
 
-		if (StringUtils.isNotBlank(paymentMessage.comment())) {
-			payment.setComment(paymentMessage.comment());
+		val isCompleted = Payment.PaymentStatus.COMPLETED.equals(paymentMessage.status())
+				&& paymentMessage.hash() != null;
+		if (isCompleted) {
+			payment.setHash(paymentMessage.hash());
+			payment.setStatus(paymentMessage.status());
+			payment.setCompletedDate(new Date());
+			if (StringUtils.isNotBlank(paymentMessage.comment())) {
+				payment.setComment(paymentMessage.comment());
+			}
+		} else {
+			payment.setStatus(Payment.PaymentStatus.PENDING);
 		}
-		paymentRepository.save(payment);
 
-		notificationService.notifyPaymentCompletion(payment, user);
-		// TODO: move to event system
-		contactBookService.cleanContactsCache(user);
+		paymentRepository.save(payment);
+		if (isCompleted) {
+			notificationService.notifyPaymentCompletion(payment, user);
+			// TODO: move to event system
+			contactBookService.cleanContactsCache(user);
+		}
 		log.debug("Saved payment: {}", payment);
 		return ResponseEntity.ok(new PaymentReferenceMessage(payment.getReferenceId()));
 	}
@@ -241,7 +249,8 @@ public class PaymentController {
 					payment.setFulfillmentChainId(paymentUpdateMessage.fulfillmentChainId());
 					payment.setFulfillmentHash(paymentUpdateMessage.fulfillmentHash());
 					payment.setStatus(Payment.PaymentStatus.INPROGRESS);
-					if (List.of("mint", "fan", "fc_storage", "hypersub").contains(payment.getCategory())) {
+					if (payment.getCategory() != null && List.of("mint", "fan", "fc_storage",
+							"hypersub").contains(payment.getCategory())) {
 						payment.setTokenAmount(paymentUpdateMessage.tokenAmount().toString());
 					}
 				}

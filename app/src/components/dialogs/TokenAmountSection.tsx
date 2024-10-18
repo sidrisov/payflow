@@ -6,7 +6,6 @@ import {
   InputAdornment,
   IconButton,
   styled,
-  useMediaQuery,
   Skeleton
 } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
@@ -149,7 +148,7 @@ export function TokenAmountSection({
     <Stack mt={1} alignItems="center" spacing={0}>
       {selectedToken ? (
         <>
-          {!payment?.token ? (
+          {!crossChainMode && !payment?.token && (
             <TokenAmountTextField
               // don't auto focus if it's pending payment
               {...(!paymentAmount && { autoFocus: true, focused: true })}
@@ -207,38 +206,25 @@ export function TokenAmountSection({
               }}
               sx={{ minWidth: 'auto' }}
             />
-          ) : (
-            !crossChainMode && (
-              <Typography fontSize={30} fontWeight="bold" textAlign="center">
-                {usdAmountMode
-                  ? `$ ${paymentAmountUSD}`
-                  : `${formatAmountWithSuffix(
-                      normalizeNumberPrecision(paymentAmount ?? 0)
-                    )} ${selectedToken.id.toUpperCase()}`}
-              </Typography>
-            )
           )}
 
-          {crossChainMode && (
-            <Typography fontSize={18} fontWeight="bold" textAlign="center">
-              for{' '}
-              <u>
-                {usdAmountMode
-                  ? `$ ${paymentAmountUSD}`
-                  : `${formatAmountWithSuffix(
-                      normalizeNumberPrecision(paymentAmount ?? 0)
-                    )} ${selectedToken.id.toUpperCase()}`}{' '}
-                ≈{' '}
-                {usdAmountMode
-                  ? `${formatAmountWithSuffix(
-                      normalizeNumberPrecision(paymentAmount ?? 0)
-                    )} ${selectedToken.id.toUpperCase()}`
-                  : `$ ${normalizeNumberPrecision(paymentAmountUSD ?? 0)}`}
-              </u>
+          {(crossChainMode || payment?.token) && (
+            <Typography fontSize={30} fontWeight="bold" textAlign="center">
+              {usdAmountMode
+                ? `$ ${paymentAmountUSD}`
+                : `${formatAmountWithSuffix(
+                    normalizeNumberPrecision(paymentAmount ?? 0)
+                  )} ${selectedToken.id.toUpperCase()}`}{' '}
+              ≈{' '}
+              {usdAmountMode
+                ? `${formatAmountWithSuffix(
+                    normalizeNumberPrecision(paymentAmount ?? 0)
+                  )} ${selectedToken.id.toUpperCase()}`
+                : `$ ${normalizeNumberPrecision(paymentAmountUSD ?? 0)}`}
             </Typography>
           )}
 
-          {!crossChainMode && (
+          {!crossChainMode && !payment?.token && (
             <Stack direction="row" alignItems="center" spacing={0.5}>
               {!payment?.token && (
                 <IconButton
@@ -310,7 +296,7 @@ export function TokenAmountSection({
                 {crossChainModeSupported &&
                   !crossChainMode &&
                   paymentAmountUSD &&
-                  paymentAmountUSD <= 10 && (
+                  paymentAmountUSD <= 100 && (
                     <Button
                       variant="outlined"
                       color="inherit"
@@ -326,7 +312,7 @@ export function TokenAmountSection({
                         setCrossChainMode?.(true);
                       }}
                       startIcon={<MdMultipleStop />}>
-                      Press to pay with different token
+                      Pay with different token
                     </Button>
                   )}
               </>

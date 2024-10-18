@@ -73,6 +73,7 @@ public class FanTokenAuctionService {
 					.collect(Collectors.toList());
 
 			log.debug("Contacts with auctions for {}: {}", contactWithAuctionList, user.getIdentity());
+			return contactWithAuctionList;
 		}
 		return Collections.emptyList();
 	}

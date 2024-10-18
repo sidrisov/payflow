@@ -10,12 +10,14 @@ import { PaymentType } from '../../types/PaymentType';
 import { PaymentOption } from '@paywithglide/glide-js';
 import { Hash } from 'viem';
 import { usePrivy } from '@privy-io/react-auth';
+import { submitPayment } from '../../services/payments';
 
 export type PaymentSuccess = {
   txHash: Hash;
 };
 
 type PayButtonProps = {
+  crossChainMode?: boolean;
   paymentToken: Token | undefined;
   buttonText: string;
   disabled: boolean;
@@ -29,6 +31,7 @@ type PayButtonProps = {
 };
 
 export const PayButton: React.FC<PayButtonProps> = ({
+  crossChainMode = true,
   paymentToken,
   buttonText,
   disabled,
@@ -49,20 +52,29 @@ export const PayButton: React.FC<PayButtonProps> = ({
   const [openConnectSignerDrawer, setOpenConnectSignerDrawer] = useState(false);
 
   const isNativeFlow = senderFlow.type !== 'FARCASTER_VERIFICATION' && senderFlow.type !== 'LINKED';
-  const { handleGlideTransaction, paymentTxStatus } = usePayflowTransaction(isNativeFlow);
+  const { handleDirectPayment, handleCrossChainPayment, paymentTxStatus } =
+    usePayflowTransaction(isNativeFlow);
 
   const handleClick = async () => {
     if (address?.toLowerCase() !== senderFlow.signer.toLowerCase()) {
       setOpenConnectSignerDrawer(true);
     } else {
       try {
-        const result = await handleGlideTransaction({
-          paymentTx,
-          paymentWallet,
-          paymentOption,
-          payment,
-          senderFlow
-        });
+        if (!payment?.referenceId) {
+          const refId = await submitPayment(payment);
+          payment.referenceId = refId;
+        }
+
+        const result = crossChainMode
+          ? await handleCrossChainPayment({
+              paymentTx,
+              paymentWallet,
+              paymentOption,
+              payment,
+              senderFlow
+            })
+          : await handleDirectPayment(paymentTx, paymentWallet, payment, senderFlow);
+
         if (result.success && result.txHash) {
           onSuccess({ txHash: result.txHash });
         } else {

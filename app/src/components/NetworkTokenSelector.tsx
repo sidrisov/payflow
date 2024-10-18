@@ -126,12 +126,13 @@ export function NetworkTokenSelector({
 
   const label = `${crossChainMode ? 'Cross-Chain ' : ''}Payment Token`;
 
-  const paymentTokenSelectable = paymentToken && (!showBalance || isBalanceFetched);
+  const paymentTokenSelectable =
+    (!payment?.token || crossChainMode) && paymentToken && (!showBalance || isBalanceFetched);
   return (
     <>
       <Chip
         icon={
-          paymentTokenSelectable && paymentToken ? (
+          paymentToken ? (
             <Badge
               overlap="circular"
               anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
@@ -145,7 +146,7 @@ export function NetworkTokenSelector({
           )
         }
         label={
-          paymentTokenSelectable && paymentToken ? (
+          paymentToken ? (
             <Typography variant="subtitle2" textTransform="uppercase">
               {showBalance ? formatAmountWithSuffix(maxBalance) : ''} {paymentToken.id}
             </Typography>
