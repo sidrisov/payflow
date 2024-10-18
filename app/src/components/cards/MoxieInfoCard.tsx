@@ -152,16 +152,16 @@ export function MoxieInfoCard() {
                         clickable
                         {...(miniApp
                           ? {
-                              component: 'a',
-                              href: `https://www.airstack.xyz/users/fc_fname:${contactWithAuction.auction.farcasterUsername}`,
-                              target: '_blank'
-                            }
-                          : {
                               onClick: () => {
                                 const link = `https://www.airstack.xyz/users/fc_fname:${contactWithAuction.auction.farcasterUsername}`;
                                 copyToClipboard(link);
                                 toast.success('Airstack auction link copied!', { autoClose: 2000 });
                               }
+                            }
+                          : {
+                              component: 'a',
+                              href: `https://www.airstack.xyz/users/fc_fname:${contactWithAuction.auction.farcasterUsername}`,
+                              target: '_blank'
                             })}
                         {...(new Date(contactWithAuction.auction.estimatedStartTimestamp) <=
                         currentTime
