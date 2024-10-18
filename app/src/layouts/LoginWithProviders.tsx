@@ -78,7 +78,7 @@ export default function LoginWithProviders() {
     <LoadingPayflowEntryLogo />
   ) : (
     <AuthKitProvider config={farcasterAuthConfig}>
-      <Login authStatus={authStatus} profile={profile} />;
+      <Login authStatus={authStatus} profile={profile} />
     </AuthKitProvider>
   );
 }
