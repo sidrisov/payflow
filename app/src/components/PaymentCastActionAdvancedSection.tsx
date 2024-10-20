@@ -59,6 +59,9 @@ export function PaymentCastActionAdvancedSection({
                 <option value="INTENT_TOP_REPLY">
                   <Typography>Top Comment</Typography>
                 </option>
+                <option value="INTENT_TOP_CASTERS">
+                  <Typography>Top Casters</Typography>
+                </option>
               </NativeSelect>
             </Box>
             <Typography
@@ -68,10 +71,10 @@ export function PaymentCastActionAdvancedSection({
               textAlign="center"
               sx={{ p: 2, borderColor: 'divider', color: grey[400] }}>
               {type === 'INTENT' ? (
-                "Payment intent will be submitted for cast's owner"
-              ) : (
+                'Rewards selected cast author'
+              ) : type === 'INTENT_TOP_REPLY' ? (
                 <>
-                  Payment intent will be submitted for the cast's top comment, based on{' '}
+                  Rewards the author of top comment in the selected cast, based on{' '}
                   <b>
                     <a
                       href="https://docs.airstack.xyz/airstack-docs-and-faqs/abstractions/trending-casts/social-capital-value-and-social-capital-scores"
@@ -81,6 +84,8 @@ export function PaymentCastActionAdvancedSection({
                     </a>
                   </b>
                 </>
+              ) : (
+                'Rewards top N casters in the channel based on configured criteria'
               )}
             </Typography>
           </Box>

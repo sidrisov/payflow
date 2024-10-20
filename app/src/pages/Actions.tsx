@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Container, Stack, Typography, Grid2, Box, Tooltip } from '@mui/material';
-import PaymentCastActionDialog from '../components/dialogs/PaymentCastActionDialog';
+import PaymentRewardCastActionDialog from '../components/dialogs/PaymentCastActionDialog';
 import { AutoAwesome, Interests, PersonAdd, Star } from '@mui/icons-material';
 import { PiTipJar } from 'react-icons/pi';
 import { GrStorage } from 'react-icons/gr';
@@ -12,7 +12,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { GoZap } from 'react-icons/go';
 
 const BASE_URL =
-  'https://warpcast.com/~/add-cast-action?url=https://api.alpha.payflow.me/api/farcaster/actions';
+  'https://warpcast.com/~/add-cast-action?url=https://api.payflow.me/api/farcaster/actions';
 
 interface Action {
   title: string;
@@ -91,8 +91,8 @@ export default function Actions() {
       startIcon: <PiTipJar size={25} />
     },
     {
-      title: 'Custom',
-      description: 'Submit custom intents',
+      title: 'Reward',
+      description: 'Submit custom rewards',
       onClick: () => setOpenPaymentActionDialog(true),
       startIcon: <Interests sx={{ width: 25, height: 25 }} />
     },
@@ -144,7 +144,7 @@ export default function Actions() {
           </Box>
         </Stack>
       </Container>
-      <PaymentCastActionDialog
+      <PaymentRewardCastActionDialog
         open={openPaymentActionDialog}
         closeStateCallback={() => setOpenPaymentActionDialog(false)}
         onClose={() => setOpenPaymentActionDialog(false)}

@@ -107,7 +107,9 @@ export default function PayComposerActionDialog({
           alignItems="center"
           justifyContent="space-between">
           {sender && (
-            <RecipientField recipient={recipient} setOpenSearchIdentity={setOpenSearchIdentity} />
+            <Box ml={1} width="100%">
+              <RecipientField recipient={recipient} setOpenSearchIdentity={setOpenSearchIdentity} />
+            </Box>
           )}
 
           {selectedWallet && (

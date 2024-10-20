@@ -1,200 +1,135 @@
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogProps,
-  Stack,
-  Typography,
-  Box,
-  Button,
-  TextField,
-  InputAdornment,
-  IconButton
-} from '@mui/material';
-import { useMemo, useState } from 'react';
-import NetworkAvatar from '../avatars/NetworkAvatar';
-import { Chain } from 'viem';
-import { arbitrum, base, degen, mode, optimism, zora } from 'viem/chains';
-import { ChooseChainMenu } from '../menu/ChooseChainMenu';
-import { TokenSelectorButton } from '../buttons/TokenSelectorButton';
-import { Token, getSupportedTokens } from '../../utils/erc20contracts';
+import { DialogProps, Stack, Button, TextField, InputAdornment, IconButton } from '@mui/material';
+import { useContext, useMemo, useState } from 'react';
 import { getNetworkShortName } from '../../utils/networks';
-import { ArrowBack, SwapVert } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { grey } from '@mui/material/colors';
 import { PaymentCastActionAdvancedSection } from '../PaymentCastActionAdvancedSection';
 import { Type } from '../../types/PaymentType';
-import { useMobile } from '../../utils/hooks/useMobile';
+import ResponsiveDialog from './ResponsiveDialog';
 
-export default function PaymentCastActionDialog({
+import { NetworkTokenSelector } from '../NetworkTokenSelector';
+import { ProfileContext } from '../../contexts/UserContext';
+import { FlowWalletType } from '../../types/FlowType';
+import { Token } from '../../utils/erc20contracts';
+import { useChainId } from 'wagmi';
+import { base } from 'viem/chains';
+import { FaCoins, FaDollarSign } from 'react-icons/fa';
+
+export default function PaymentRewardCastActionDialog({
   closeStateCallback,
   ...props
 }: DialogProps & CloseCallbackType) {
-  const isMobile = useMobile();
+  const { profile } = useContext(ProfileContext);
 
-  const [openSelectChain, setOpenSelectChain] = useState<boolean>(false);
-  const [chainAnchorEl, setChainAnchorEl] = useState<null | HTMLElement>(null);
-
+  const chainId = useChainId();
   const [usdAmount, setUsdAmount] = useState<number | undefined>(1);
   const [tokenAmount, setTokenAmount] = useState<number | undefined>(1);
-  const [token, setToken] = useState<Token | undefined>();
-  const [tokens, setTokens] = useState<Token[]>([]);
-  const [chain, setChain] = useState<Chain>(base);
   const [type, setType] = useState<Type>('INTENT');
 
-  const [usdAmountMode, setUsdAmountMode] = useState<boolean>(false);
+  const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
+  const [selectedToken, setSelectedToken] = useState<Token>();
 
+  const [isFiatMode, setIsFiatMode] = useState<boolean>(true);
+
+  const compatibleWallets = profile?.defaultFlow?.wallets ?? [];
   useMemo(async () => {
-    const supportedTokens = getSupportedTokens(chain.id);
-    setTokens(supportedTokens);
-    setToken(supportedTokens[0]);
-  }, [chain]);
+    if (compatibleWallets.length === 0) {
+      setSelectedWallet(undefined);
+      return;
+    }
+    setSelectedWallet(compatibleWallets.find((w) => w.network === chainId) ?? compatibleWallets[0]);
+  }, [compatibleWallets, chainId]);
+
+  const [inputValue, setInputValue] = useState<string>('');
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    // Allow empty input or any positive number (including decimals)
+    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+      setInputValue(value);
+      const numericValue = value === '' ? undefined : parseFloat(value);
+
+      if (isFiatMode) {
+        setUsdAmount(numericValue);
+      } else {
+        setTokenAmount(numericValue);
+      }
+    }
+  };
 
   return (
-    <Dialog
-      fullScreen={isMobile}
-      {...props}
-      PaperProps={{
-        sx: {
-          ...(!isMobile && {
-            borderRadius: 5
-          }),
-          minWidth: 350
-        }
-      }}
-      sx={{
-        backdropFilter: 'blur(3px)'
-      }}>
-      <DialogTitle>
-        {isMobile && (
-          <IconButton onClick={closeStateCallback}>
-            <ArrowBack />
-          </IconButton>
-        )}
-        <Box display="flex" justifyContent="center">
-          <Typography variant="h6" sx={{ overflow: 'auto' }}>
-            Compose Intent Action
-          </Typography>
-        </Box>
-      </DialogTitle>
-      <DialogContent
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: isMobile ? 'space-between' : 'flex-start'
-        }}>
-        <Stack my={3} p={1} direction="column" spacing={3} width="100%">
-          <Stack direction="row" alignItems="center" spacing={1}>
+    <ResponsiveDialog
+      title="Custom Reward Action"
+      open={props.open}
+      onClose={closeStateCallback}
+      zIndex={1450}>
+      <Stack p={1} direction="column" spacing={2} justifyContent="space-between" width="100%">
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <Stack alignItems="flex-start">
             <TextField
               variant="standard"
-              type="number"
-              value={usdAmountMode ? usdAmount : tokenAmount}
-              inputProps={{
-                style: {
-                  fontWeight: 'bold',
-                  fontSize: 25,
-                  alignSelf: 'center',
-                  textAlign: 'center'
+              autoFocus
+              focused
+              placeholder="0"
+              value={inputValue}
+              onChange={handleInputChange}
+              /* label={
+                <Typography color="text.secondary" pl={0.5}>
+                  {isFiatMode ? 'USD Amount' : 'Token Amount'}
+                </Typography>
+              } */
+              slotProps={{
+                input: {
+                  disableUnderline: true,
+                  style: {
+                    fontWeight: 'bold',
+                    fontSize: 30,
+                    padding: 0
+                  },
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <IconButton
+                        size="small"
+                        onClick={() => setIsFiatMode(!isFiatMode)}
+                        sx={{ color: 'text.secondary' }}>
+                        {isFiatMode ? <FaDollarSign /> : <FaCoins />}
+                      </IconButton>
+                    </InputAdornment>
+                  )
                 }
               }}
-              InputProps={{
-                ...(usdAmountMode
-                  ? {
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Typography fontSize={18} fontWeight="bold">
-                            $
-                          </Typography>
-                        </InputAdornment>
-                      )
-                    }
-                  : {
-                      endAdornment: (
-                        <InputAdornment position="start">
-                          <Typography fontSize={18} fontWeight="bold">
-                            {token?.id.toUpperCase()}
-                          </Typography>
-                        </InputAdornment>
-                      )
-                    }),
-                inputMode: 'decimal',
-                disableUnderline: true
-              }}
-              onChange={async (event) => {
-                if (event.target.value) {
-                  const amount = parseFloat(event.target.value);
-                  if (usdAmountMode) {
-                    setUsdAmount(amount);
-                  } else {
-                    setTokenAmount(amount);
-                  }
-                } else {
-                  setUsdAmount(undefined);
-                  setTokenAmount(undefined);
-                }
-              }}
-              sx={{ width: 200, border: 1, borderRadius: 10, borderColor: 'divider', px: 2 }}
             />
-            <IconButton
-              size="small"
-              sx={{ color: grey[400] }}
-              onClick={async () => {
-                setUsdAmountMode(!usdAmountMode);
-              }}>
-              <SwapVert fontSize="small" />
-            </IconButton>
           </Stack>
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <IconButton
-              sx={{ width: 40, height: 40, border: 1, borderStyle: 'dashed' }}
-              onClick={(event) => {
-                setChainAnchorEl(event.currentTarget);
-                setOpenSelectChain(true);
-              }}>
-              <NetworkAvatar tooltip chainId={chain.id} sx={{ width: 28, height: 28 }} />
-            </IconButton>
-            <Typography fontSize={16} fontWeight="bold">
-              {chain.name} Chain
-            </Typography>
-          </Stack>
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <TokenSelectorButton
-              selectedToken={token}
-              setSelectedToken={setToken}
-              tokens={tokens}
-            />
-            <Typography fontSize={16} fontWeight="bold">
-              {token?.id.toUpperCase()} Token
-            </Typography>
-          </Stack>
-          <PaymentCastActionAdvancedSection type={type} setType={setType} />
+
+          <NetworkTokenSelector
+            paymentWallet={selectedWallet}
+            setPaymentWallet={setSelectedWallet}
+            paymentToken={selectedToken}
+            setPaymentToken={setSelectedToken}
+            compatibleWallets={compatibleWallets}
+            showBalance={false}
+          />
         </Stack>
+
+        <PaymentCastActionAdvancedSection type={type} setType={setType} />
+
         <Button
           variant="outlined"
+          disabled={!selectedToken}
           color="inherit"
           fullWidth
           size="large"
           sx={{ borderRadius: 5 }}
-          href={`https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fpay%2Fintent%3Famount%3D${
-            usdAmountMode ? usdAmount ?? '' : ''
-          }%26tokenAmount%3D${!usdAmountMode ? tokenAmount ?? '' : ''}%26token%3D${
-            token?.id
-          }%26chain%3D${getNetworkShortName(chain.id)}%26type%3D${type ?? 'INTENT'}`}
+          href={`https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fpay%2Fintent%3Famount%3D${
+            isFiatMode ? usdAmount ?? '' : ''
+          }%26tokenAmount%3D${!isFiatMode ? tokenAmount ?? '' : ''}%26token%3D${
+            selectedToken?.id
+          }%26chain%3D${getNetworkShortName(selectedToken?.chainId ?? base.id)}%26type%3D${
+            type ?? 'INTENT'
+          }`}
           target="_blank">
-          Install Action
+          Add To Warpcast
         </Button>
-      </DialogContent>
-      <ChooseChainMenu
-        anchorEl={chainAnchorEl}
-        open={openSelectChain}
-        closeStateCallback={() => {
-          setOpenSelectChain(false);
-        }}
-        chains={[base, optimism, zora, arbitrum, mode, degen]}
-        selectedChain={chain}
-        setSelectedChain={setChain}
-      />
-    </Dialog>
+      </Stack>
+    </ResponsiveDialog>
   );
 }
