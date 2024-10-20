@@ -15,8 +15,8 @@ import java.util.Date;
 @NoArgsConstructor
 @Entity
 @Table(uniqueConstraints = {
-		@UniqueConstraint(name = "uc_payment_reference_id", columnNames = {"reference_id"}),
-		@UniqueConstraint(name = "uc_payment_hash", columnNames = {"hash"})
+		@UniqueConstraint(name = "uc_payment_reference_id", columnNames = { "reference_id" }),
+		@UniqueConstraint(name = "uc_payment_hash", columnNames = { "hash" })
 })
 public class Payment {
 	@Id
@@ -86,7 +86,7 @@ public class Payment {
 
 	@Column(columnDefinition = "VARCHAR(256)", nullable = false)
 	@Enumerated(EnumType.STRING)
-	private PaymentStatus status = PaymentStatus.PENDING;
+	private PaymentStatus status = PaymentStatus.CREATED;
 
 	@Column(name = "source_app")
 	private String sourceApp;
@@ -123,7 +123,7 @@ public class Payment {
 	}
 
 	public enum PaymentStatus {
-		PENDING,
+		CREATED,
 		INPROGRESS,
 		COMPLETED,
 		PENDING_REFUND,

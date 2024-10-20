@@ -3,7 +3,7 @@ import { ProfileType } from './ProfileType';
 import { FlowType } from './FlowType';
 
 export type PaymentStatus =
-  | 'PENDING'
+  | 'CREATED'
   | 'INPROGRESS'
   | 'PENDING_REFUND'
   | 'REFUNDED'

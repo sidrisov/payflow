@@ -274,7 +274,7 @@ export default function PaymentDialog({
             payment ??
             ({
               type: 'APP',
-              status: 'PENDING',
+              status: 'CREATED',
               receiver: recipient.identity.profile,
               receiverAddress: toAddress,
               chainId: paymentToken?.chainId,

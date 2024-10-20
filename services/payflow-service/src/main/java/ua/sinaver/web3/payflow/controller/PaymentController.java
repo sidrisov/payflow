@@ -52,7 +52,7 @@ public class PaymentController {
 
 	@GetMapping
 	public List<PaymentMessage> payments(@RequestParam(value = "hashes") List<String> hashes,
-	                                     Principal principal) {
+			Principal principal) {
 
 		val username = principal != null ? principal.getName() : null;
 		log.debug("{} fetching payments info for {}", username, hashes);
@@ -73,7 +73,7 @@ public class PaymentController {
 
 	@PostMapping
 	public ResponseEntity<PaymentReferenceMessage> submitPayment(@RequestBody PaymentMessage paymentMessage,
-	                                                             Principal principal) {
+			Principal principal) {
 		val username = principal != null ? principal.getName() : null;
 
 		log.debug("Saving completed payment {} for {}", paymentMessage, username);
@@ -108,7 +108,7 @@ public class PaymentController {
 				payment.setComment(paymentMessage.comment());
 			}
 		} else {
-			payment.setStatus(Payment.PaymentStatus.PENDING);
+			payment.setStatus(Payment.PaymentStatus.CREATED);
 		}
 
 		paymentRepository.save(payment);
@@ -123,9 +123,9 @@ public class PaymentController {
 
 	@GetMapping("/completed")
 	public Page<PaymentMessage> completedPayments(Principal principal,
-	                                              @RequestParam(required = false) String identity,
-	                                              @RequestParam(defaultValue = "0") int page,
-	                                              @RequestParam(defaultValue = "20") int size) {
+			@RequestParam(required = false) String identity,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int size) {
 		val loggedIdentity = principal != null ? principal.getName() : null;
 
 		log.debug("Fetching completed payments for identity: {}, logged user: {}", identity, loggedIdentity);
@@ -167,9 +167,9 @@ public class PaymentController {
 				.map(String::toLowerCase).toList();
 
 		return paymentRepository.findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedDateDesc(
-						user, verifications, List.of(Payment.PaymentStatus.PENDING,
-								Payment.PaymentStatus.INPROGRESS,
-								Payment.PaymentStatus.COMPLETED, Payment.PaymentStatus.REFUNDED))
+				user, verifications, List.of(Payment.PaymentStatus.CREATED,
+						Payment.PaymentStatus.INPROGRESS,
+						Payment.PaymentStatus.COMPLETED, Payment.PaymentStatus.REFUNDED))
 				.stream()
 				.map(payment -> PaymentMessage.convert(payment, true, true))
 				.toList();
@@ -177,9 +177,9 @@ public class PaymentController {
 
 	@GetMapping("/outbound")
 	public Page<PaymentMessage> outbound(Principal principal,
-	                                     @RequestParam List<Payment.PaymentStatus> statuses,
-	                                     @RequestParam(defaultValue = "0") int page,
-	                                     @RequestParam(defaultValue = "5") int size) {
+			@RequestParam List<Payment.PaymentStatus> statuses,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "5") int size) {
 		val username = principal != null ? principal.getName() : null;
 		log.debug("Fetching pending payments for {} ", username);
 
@@ -224,7 +224,7 @@ public class PaymentController {
 	@PutMapping("/{referenceId}")
 	@ResponseStatus(HttpStatus.OK)
 	public void updatePayment(@PathVariable String referenceId,
-	                          @RequestBody PaymentUpdateMessage paymentUpdateMessage, Principal principal) {
+			@RequestBody PaymentUpdateMessage paymentUpdateMessage, Principal principal) {
 		log.debug("Received update {} for payment {} by user {}",
 				paymentUpdateMessage,
 				referenceId,
@@ -241,7 +241,7 @@ public class PaymentController {
 				!payment.getStatus().equals(Payment.PaymentStatus.CANCELLED) &&
 				!payment.getStatus().equals(Payment.PaymentStatus.REFUNDED)) {
 
-			if (payment.getStatus().equals(Payment.PaymentStatus.PENDING)
+			if (payment.getStatus().equals(Payment.PaymentStatus.CREATED)
 					&& StringUtils.isNotBlank(paymentUpdateMessage.fulfillmentId())) {
 				payment.setFulfillmentId(paymentUpdateMessage.fulfillmentId());
 				if (paymentUpdateMessage.fulfillmentChainId() != null &&

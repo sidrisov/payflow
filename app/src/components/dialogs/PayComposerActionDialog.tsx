@@ -142,7 +142,7 @@ export default function PayComposerActionDialog({
                 onClick={async () => {
                   const newPayment = {
                     type: 'FRAME',
-                    status: 'PENDING',
+                    status: 'CREATED',
                     receiver: recipient.identity.profile,
                     receiverAddress: toAddress,
                     chainId: selectedToken?.chainId,

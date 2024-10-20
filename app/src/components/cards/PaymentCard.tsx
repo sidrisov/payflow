@@ -37,7 +37,7 @@ export function PaymentCard({ payment, title, children, ...props }: PaymentCardP
 
   const renderStatusIcon = () => {
     switch (payment.status) {
-      case 'PENDING':
+      case 'CREATED':
         return <></>;
       case 'INPROGRESS':
         return <TbProgressCheck size={20} />;
@@ -56,7 +56,7 @@ export function PaymentCard({ payment, title, children, ...props }: PaymentCardP
     switch (payment.status) {
       case 'COMPLETED':
         return 'Completed';
-      case 'PENDING':
+      case 'CREATED':
         return 'Pending';
       case 'INPROGRESS':
         return 'In-progress';
@@ -72,7 +72,7 @@ export function PaymentCard({ payment, title, children, ...props }: PaymentCardP
   return (
     <>
       <Box
-        {...((payment.status === 'PENDING' || payment.status === 'COMPLETED') && {
+        {...((payment.status === 'CREATED' || payment.status === 'COMPLETED') && {
           component: Button,
           variant: 'text',
           textTransform: 'none',

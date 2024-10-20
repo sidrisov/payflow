@@ -63,7 +63,7 @@ public class FarcasterPaymentBotService {
 		}
 
 		val jobs = paymentBotJobRepository.findTop10ByStatusOrderByCastedDateAsc(
-				PaymentBotJob.Status.PENDING);
+				PaymentBotJob.Status.CREATED);
 
 		jobs.forEach(job -> {
 			try {

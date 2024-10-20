@@ -12,7 +12,7 @@ export function Head() {
   const identity = payment.receiver?.identity ?? payment.receiverAddress;
 
   const imageUrl =
-    status === 'PENDING'
+    status === 'CREATED'
       ? type === 'INTENT'
         ? `${FRAMES_URL}/images/profile/${identity}/payment.png?step=execute&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount ?? ''}&tokenAmount=${payment.tokenAmount ?? ''}`
         : `${FRAMES_URL}/images/profile/${identity}/payment.png?step=confirm&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount ?? ''}&tokenAmount=${payment.tokenAmount ?? ''}`
@@ -64,7 +64,7 @@ export function Head() {
 
         <meta property="fc:frame:image" content={imageUrl} />
 
-        {status === 'PENDING' ? (
+        {status === 'CREATED' ? (
           type === 'INTENT' ? (
             <>
               <meta property="fc:frame:button:1" content="Complete in App" />

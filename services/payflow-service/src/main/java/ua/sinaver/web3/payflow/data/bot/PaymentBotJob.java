@@ -1,6 +1,5 @@
 package ua.sinaver.web3.payflow.data.bot;
 
-
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -18,13 +17,11 @@ import java.util.Date;
 @NoArgsConstructor
 @Entity
 @Table(indexes = {
-		@Index(name = "idx_payment_bot_job_status_casted_date_asc", columnList =
-				"status,casted_date ASC"),
+		@Index(name = "idx_payment_bot_job_status_casted_date_asc", columnList = "status,casted_date ASC"),
 		// needed to fetch the latest casted_date
-		@Index(name = "idx_payment_bot_job_casted_date_desc", columnList =
-				"casted_date DESC")
+		@Index(name = "idx_payment_bot_job_casted_date_desc", columnList = "casted_date DESC")
 }, uniqueConstraints = {
-		@UniqueConstraint(name = "uc_cast_hash", columnNames = {"cast_hash"})
+		@UniqueConstraint(name = "uc_cast_hash", columnNames = { "cast_hash" })
 })
 public class PaymentBotJob {
 	@Id
@@ -47,10 +44,10 @@ public class PaymentBotJob {
 
 	@Column(columnDefinition = "VARCHAR(256)", nullable = false)
 	@Enumerated(EnumType.STRING)
-	private Status status = Status.PENDING;
+	private Status status = Status.CREATED;
 
 	public PaymentBotJob(String castHash, Integer casterFid, Date castedDate,
-	                     Cast cast) {
+			Cast cast) {
 		this.castHash = castHash;
 		this.casterFid = casterFid;
 		this.castedDate = castedDate;
@@ -59,7 +56,7 @@ public class PaymentBotJob {
 	}
 
 	public enum Status {
-		PENDING,
+		CREATED,
 		REJECTED,
 		ERROR,
 		PROCESSED

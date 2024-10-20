@@ -69,7 +69,7 @@ public class PaymentService {
 				.map(String::toLowerCase).toList();
 
 		return paymentRepository.findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedDateDesc(
-						user, verifications, List.of(Payment.PaymentStatus.COMPLETED))
+				user, verifications, List.of(Payment.PaymentStatus.COMPLETED))
 				.stream()
 				.map(payment -> payment.getReceiver() != null ? payment.getReceiver().getIdentity()
 						: payment.getReceiverAddress())
@@ -94,10 +94,10 @@ public class PaymentService {
 	public List<String> parsePreferredTokens(String text) {
 		val allTokenIds = tokenService.getTokens().stream().map(Token::id).distinct().toList();
 		return Arrays.stream(text
-						.replace(",", " ") // Replace commas with spaces
-						.replace("$", "") // Remove any $ symbols
-						.toLowerCase() // Convert to lowercase
-						.split("\\s+")) // Split by spaces
+				.replace(",", " ") // Replace commas with spaces
+				.replace("$", "") // Remove any $ symbols
+				.toLowerCase() // Convert to lowercase
+				.split("\\s+")) // Split by spaces
 				.filter(allTokenIds::contains).limit(5).toList();
 	}
 
@@ -158,7 +158,7 @@ public class PaymentService {
 		val oneMonthAgo = new Date(System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000);
 
 		try (val oldPayments = paymentRepository
-				.findOldPendingPaymentsWithLock(Payment.PaymentStatus.PENDING, oneMonthAgo)) {
+				.findOldPendingPaymentsWithLock(Payment.PaymentStatus.CREATED, oneMonthAgo)) {
 			val expiredPayments = oldPayments
 					.peek(payment -> {
 						payment.setStatus(Payment.PaymentStatus.EXPIRED);
@@ -220,11 +220,12 @@ public class PaymentService {
 
 					log.info("Successfully updated payment as completed: {}",
 							payment.getReferenceId());
-				} else if (GlideSessionResponse.PaymentStatus.PENDING_REFUND.equals(sessionResponse.getPaymentStatus())) {
+				} else if (GlideSessionResponse.PaymentStatus.PENDING_REFUND
+						.equals(sessionResponse.getPaymentStatus())) {
 					payment.setStatus(Payment.PaymentStatus.PENDING_REFUND);
 					paymentRepository.save(payment);
 					// TODO: don't notify for now
-					//notificationService.notifyPaymentCompletion(payment, payment.getSender());
+					// notificationService.notifyPaymentCompletion(payment, payment.getSender());
 				}
 			} else if (payment.getStatus().equals(Payment.PaymentStatus.PENDING_REFUND)) {
 				if (GlideSessionResponse.PaymentStatus.REFUNDED.equals(sessionResponse.getPaymentStatus())) {

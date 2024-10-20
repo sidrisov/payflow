@@ -107,16 +107,16 @@ public class JarContributionController {
 	public ResponseEntity<?> tipPayflow(@RequestBody FrameMessage frameMessage) {
 		log.debug("Received tip Payflow in frame message request: {}", frameMessage);
 		return ResponseEntity.ok().body(
-				new FrameResponse.ActionFrame("frame", "https://frames.payflow.me/0x0dee77c83cb8b14fa95497825df93202abf6ad83?entryTitle=%25F0%259F%25AB%25B6%25F0%259F%258F%25BB%2520Support%2520Payflow"));
+				new FrameResponse.ActionFrame("frame",
+						"https://frames.payflow.me/0x0dee77c83cb8b14fa95497825df93202abf6ad83?entryTitle=%25F0%259F%25AB%25B6%25F0%259F%258F%25BB%2520Support%2520Payflow"));
 	}
 
 	@PostMapping("/create")
 	public ResponseEntity<?> create(@RequestBody FrameMessage frameMessage) {
 		log.debug("Received create contribute jar in frame message request: {}", frameMessage);
 
-		val validateMessage =
-				neynarService.validateFrameMessageWithNeynar(
-						frameMessage.trustedData().messageBytes());
+		val validateMessage = neynarService.validateFrameMessageWithNeynar(
+				frameMessage.trustedData().messageBytes());
 
 		log.debug("Validation farcaster frame message response {} received on url: {}  ",
 				validateMessage,
@@ -129,14 +129,13 @@ public class JarContributionController {
 		}
 
 		val castInteractor = validateMessage.action().interactor();
-		val castAuthor = validateMessage.action().cast().author() != null ?
-				validateMessage.action().cast().author() :
-				neynarService.fetchFarcasterUser(validateMessage.action().cast().fid());
+		val castAuthor = validateMessage.action().cast().author() != null ? validateMessage.action().cast().author()
+				: neynarService.fetchFarcasterUser(validateMessage.action().cast().fid());
 
-		val title = validateMessage.action().input() != null ?
-				validateMessage.action().input().text() : null;
+		val title = validateMessage.action().input() != null ? validateMessage.action().input().text() : null;
 
-		val clickedProfile = identityService.getProfiles(castInteractor.addressesWithoutCustodialIfAvailable()).stream().findFirst().orElse(null);
+		val clickedProfile = identityService.getProfiles(castInteractor.addressesWithoutCustodialIfAvailable()).stream()
+				.findFirst().orElse(null);
 		if (clickedProfile == null) {
 			log.error("Clicked fid {} is not on payflow", castInteractor);
 			return ResponseEntity.badRequest().body(
@@ -169,8 +168,9 @@ public class JarContributionController {
 		val description = cast.text();
 		val image = cast.embeds() != null ? cast.embeds().stream()
 				.filter(embed -> embed != null && embed.url() != null && (embed.url().endsWith(
-						".png") || embed.url().endsWith(".jpg") || embed.url().contains(
-						"imagedelivery.net")))
+						".png") || embed.url().endsWith(".jpg")
+						|| embed.url().contains(
+								"imagedelivery.net")))
 				.findFirst().map(Cast.Embed::url).orElse(null) : null;
 
 		log.debug("Executing jar creation with title `{}`, desc `{}` embeds {}, source {}",
@@ -198,7 +198,8 @@ public class JarContributionController {
 
 		val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s/image.png", uuid));
 
-		val castAboutDeepLink = "https://warpcast.com/~/compose?text=Hey%20hey%0A%0AI%27ve%20created%20a%20contribution%20jar%20to%20collect%20funds%20%F0%9F%92%9C%0ACheck%20the%20original%20cast%20below%20for%20more%20details%20%F0%9F%91%87%F0%9F%8F%BB%0A%0Acc%3A%20%40sinaver.eth%20%40payflow" +
+		val castAboutDeepLink = "https://warpcast.com/~/compose?text=Hey%20hey%0A%0AI%27ve%20created%20a%20contribution%20jar%20to%20collect%20funds%20%F0%9F%92%9C%0ACheck%20the%20original%20cast%20below%20for%20more%20details%20%F0%9F%91%87%F0%9F%8F%BB%0A%0Acc%3A%20%40sinaver.eth%20%40payflow"
+				+
 				"&embeds%5B%5D=" + frameUrl + "&embeds%5B%5D=" + source;
 
 		return FrameResponse.builder()
@@ -206,14 +207,15 @@ public class JarContributionController {
 				.button(new FrameButton(
 						"✍\uD83C\uDFFB Cast", FrameButton.ActionType.LINK, castAboutDeepLink))
 				.button(new FrameButton("\uD83D\uDCF1 " +
-						"App", FrameButton.ActionType.LINK, String.format("https://app.payflow.me/jar/%s",
-						jar.getFlow().getUuid())))
+						"App", FrameButton.ActionType.LINK,
+						String.format("https://app.payflow.me/jar/%s",
+								jar.getFlow().getUuid())))
 				.build().toHtmlResponse();
 	}
 
 	@PostMapping("/{uuid}/contribute")
 	public ResponseEntity<?> contribute(@PathVariable String uuid,
-	                                    @RequestBody FrameMessage frameMessage) {
+			@RequestBody FrameMessage frameMessage) {
 		log.debug("Received contribute jar {} in frame message request: {}",
 				uuid, frameMessage);
 
@@ -278,7 +280,7 @@ public class JarContributionController {
 
 	@PostMapping("/{uuid}/contribute/chain")
 	public ResponseEntity<?> chooseChain(@PathVariable String uuid,
-	                                     @RequestBody FrameMessage frameMessage) {
+			@RequestBody FrameMessage frameMessage) {
 		log.debug("Received contribute jar {} in frame message request: {}",
 				uuid, frameMessage);
 
@@ -368,7 +370,7 @@ public class JarContributionController {
 
 	@PostMapping("/{uuid}/contribute/amount")
 	public ResponseEntity<?> chooseAmount(@PathVariable String uuid,
-	                                      @RequestBody FrameMessage frameMessage) {
+			@RequestBody FrameMessage frameMessage) {
 		log.debug("Received enter contribution amount message request: {}", frameMessage);
 
 		int buttonIndex;
@@ -414,10 +416,12 @@ public class JarContributionController {
 				return DEFAULT_HTML_RESPONSE;
 			}
 
-			clickedProfileAddresses = validatedFarcasterMessage.action().interactor().addressesWithoutCustodialIfAvailable();
+			clickedProfileAddresses = validatedFarcasterMessage.action().interactor()
+					.addressesWithoutCustodialIfAvailable();
 			buttonIndex = validatedFarcasterMessage.action().tappedButton().index();
-			inputText = validatedFarcasterMessage.action().input() != null ?
-					validatedFarcasterMessage.action().input().text() : null;
+			inputText = validatedFarcasterMessage.action().input() != null
+					? validatedFarcasterMessage.action().input().text()
+					: null;
 
 			sourceApp = validatedFarcasterMessage.action().signer().client().displayName();
 			val casterFcName = validatedFarcasterMessage.action().cast().author().username();
@@ -435,7 +439,6 @@ public class JarContributionController {
 		val profiles = identityService.getProfiles(clickedProfileAddresses);
 
 		val jar = flowService.findJarByUUID(uuid);
-
 
 		if (jar == null) {
 			log.error("Jar doesn't exist: {}", uuid);
@@ -513,7 +516,7 @@ public class JarContributionController {
 		val updatedState = gson.toJson(new FramePaymentMessage(paymentState.address(),
 				paymentState.chainId(), token, usdAmount, tokenAmount, refId));
 		val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
-						"/image.png?step=confirm&chainId=%s&token=%s&usdAmount=%s&tokenAmount=%s",
+				"/image.png?step=confirm&chainId=%s&token=%s&usdAmount=%s&tokenAmount=%s",
 				uuid, paymentState.chainId(), token, usdAmount, roundTokenAmount(tokenAmount)));
 		val frameResponseBuilder = FrameResponse.builder()
 				.postUrl(apiServiceUrl.concat(String.format(CONFIRM_PATH, uuid)))
@@ -535,7 +538,7 @@ public class JarContributionController {
 
 	@PostMapping("/{uuid}/contribute/confirm")
 	public ResponseEntity<String> confirm(@PathVariable String uuid,
-	                                      @RequestBody FrameMessage frameMessage) {
+			@RequestBody FrameMessage frameMessage) {
 		log.debug("Received contribution confirm message request: {}", frameMessage);
 		int buttonIndex;
 		FramePaymentMessage paymentState;
@@ -574,11 +577,13 @@ public class JarContributionController {
 				return DEFAULT_HTML_RESPONSE;
 			}
 
-			clickedProfileAddresses = validatedFarcasterMessage.action().interactor().addressesWithoutCustodialIfAvailable();
+			clickedProfileAddresses = validatedFarcasterMessage.action().interactor()
+					.addressesWithoutCustodialIfAvailable();
 			buttonIndex = validatedFarcasterMessage.action().tappedButton().index();
 			state = validatedFarcasterMessage.action().state().serialized();
-			transactionId = validatedFarcasterMessage.action().transaction() != null ?
-					validatedFarcasterMessage.action().transaction().hash() : null;
+			transactionId = validatedFarcasterMessage.action().transaction() != null
+					? validatedFarcasterMessage.action().transaction().hash()
+					: null;
 		}
 
 		paymentState = gson.fromJson(
@@ -605,7 +610,7 @@ public class JarContributionController {
 				if (payment == null) {
 					log.error("Payment was not found for refId {}", refId);
 					return DEFAULT_HTML_RESPONSE;
-				} else if (!payment.getStatus().equals(Payment.PaymentStatus.PENDING)) {
+				} else if (!payment.getStatus().equals(Payment.PaymentStatus.CREATED)) {
 					log.error("Payment is not in pending state {} - {}", refId, payment);
 					return DEFAULT_HTML_RESPONSE;
 				}
@@ -627,8 +632,8 @@ public class JarContributionController {
 					val tokenAmount = roundTokenAmount(
 							paymentState.usdAmount() / tokenPriceService.getPrices().get(paymentState.token()));
 					val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
-									"/image.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
-									"&tokenAmount=%s&status=%s", uuid, paymentState.chainId(), paymentState.token(),
+							"/image.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
+							"&tokenAmount=%s&status=%s", uuid, paymentState.chainId(), paymentState.token(),
 							paymentState.usdAmount(), tokenAmount, "success"));
 					return FrameResponse.builder()
 							.imageUrl(jarImage)
@@ -657,8 +662,8 @@ public class JarContributionController {
 					val tokenAmount = roundTokenAmount(
 							paymentState.usdAmount() / tokenPriceService.getPrices().get(paymentState.token()));
 					val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
-									"/image.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
-									"&tokenAmount=%s",
+							"/image.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
+							"&tokenAmount=%s",
 							uuid, paymentState.chainId(), paymentState.token(),
 							paymentState.usdAmount(), tokenAmount));
 					return FrameResponse.builder()
@@ -677,11 +682,10 @@ public class JarContributionController {
 
 	@PostMapping("/{uuid}/contribute/comment")
 	public ResponseEntity<String> comment(@PathVariable String uuid,
-	                                      @RequestBody FrameMessage frameMessage) {
+			@RequestBody FrameMessage frameMessage) {
 		log.debug("Received contribution comment message request: {}", frameMessage);
-		val validateMessage =
-				neynarService.validateFrameMessageWithNeynar(
-						frameMessage.trustedData().messageBytes());
+		val validateMessage = neynarService.validateFrameMessageWithNeynar(
+				frameMessage.trustedData().messageBytes());
 
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
@@ -714,8 +718,8 @@ public class JarContributionController {
 					val tokenAmount = roundTokenAmount(
 							state.usdAmount() / tokenPriceService.getPrices().get(state.token()));
 					val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
-									"/image.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
-									"&tokenAmount=%s&status=%s",
+							"/image.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
+							"&tokenAmount=%s&status=%s",
 							uuid, state.chainId(), state.token(),
 							state.usdAmount(), tokenAmount, "success"));
 
