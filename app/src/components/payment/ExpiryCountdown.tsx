@@ -20,14 +20,24 @@ export function ExpiryCountdown({ expiresAt }: ExpiryCountdownProps) {
         const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-        let timeString = '';
-        if (days > 0) timeString += `${days}d `;
-        if (hours > 0 || days > 0) timeString += `${hours}h `;
-        timeString += `${minutes}m ${seconds}s`;
+        const units = [
+          { value: days, label: 'd' },
+          { value: hours, label: 'h' },
+          { value: minutes, label: 'm' },
+          { value: seconds, label: 's' }
+        ];
 
-        setTimeLeft(timeString.trim());
+        const nonZeroUnits = units.filter(unit => unit.value > 0);
+        const top2Units = nonZeroUnits.slice(0, 2);
+
+        const timeString = top2Units.length > 0
+          ? top2Units.map(unit => `${unit.value}${unit.label}`).join(' ')
+          : '0s';
+
+        setTimeLeft(timeString);
         return true;
       }
+      return false;
     };
 
     // Initial update
