@@ -174,7 +174,7 @@ export default function Payment() {
             ((payment.category === 'fc_storage' && (
               <LazyGiftStorageDialog
                 alwaysShowBackButton
-                title="Complete Storage Payment"
+                title="Complete Payment"
                 open={payment != null}
                 payment={payment}
                 sender={sender}
@@ -187,7 +187,7 @@ export default function Payment() {
               (payment.category === 'mint' && mintData && (
                 <LazyMintDialog
                   alwaysShowBackButton
-                  title="Complete Mint Payment"
+                  title="Complete Mint"
                   open={payment != null}
                   payment={payment}
                   sender={sender}
@@ -202,7 +202,7 @@ export default function Payment() {
               (payment.category === 'fan' && senderSocial && recipientSocial && (
                 <LazyBuyFanTokenDialog
                   alwaysShowBackButton
-                  title="Complete Token Purchase"
+                  title="Complete Purchase"
                   open={payment != null}
                   payment={payment}
                   sender={sender}

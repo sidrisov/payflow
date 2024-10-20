@@ -52,7 +52,10 @@ export function PaymentSection({ type, ...props }: PaymentSectionProps) {
     STATUS_MAP[type]
   );
 
-  const payments = data?.pages.flatMap((page) => page.content) || [];
+  // filter out expired payments
+  const payments =
+    data?.pages.flatMap((page) => page.content).filter((payment) => payment.status !== 'EXPIRED') ||
+    [];
   const totalCount = data?.pages[0]?.totalElements || 0;
 
   const icon =

@@ -156,27 +156,6 @@ public class PaymentController {
 		return paymentsPage.map(payment -> PaymentMessage.convert(payment, true, includeComments));
 	}
 
-	@GetMapping("/pending")
-	public List<PaymentMessage> pendingPayments(Principal principal) {
-		val username = principal != null ? principal.getName() : null;
-		log.debug("Fetching pending payments for {} ", username);
-
-		val user = userService.findByIdentity(username);
-		if (user == null) {
-			return Collections.emptyList();
-		}
-		val verifications = identityService.getIdentityAddresses(user.getIdentity()).stream()
-				.map(String::toLowerCase).toList();
-
-		return paymentRepository.findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedAtDesc(
-						user, verifications, List.of(Payment.PaymentStatus.CREATED,
-								Payment.PaymentStatus.INPROGRESS,
-								Payment.PaymentStatus.COMPLETED, Payment.PaymentStatus.REFUNDED))
-				.stream()
-				.map(payment -> PaymentMessage.convert(payment, true, true))
-				.toList();
-	}
-
 	@GetMapping("/outbound")
 	public Page<PaymentMessage> outbound(Principal principal,
 	                                     @RequestParam List<Payment.PaymentStatus> statuses,

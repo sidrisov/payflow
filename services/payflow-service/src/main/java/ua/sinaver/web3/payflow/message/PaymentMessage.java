@@ -33,12 +33,12 @@ public record PaymentMessage(
 		Instant expiresAt) {
 
 	public static PaymentMessage convert(Payment payment, boolean includeRef,
-			boolean includeComment) {
+	                                     boolean includeComment) {
 		return new PaymentMessage(
 				includeRef ? payment.getReferenceId() : null,
 				payment.getType(),
 				payment.getCategory(),
-				payment.getStatus(),
+				getStatusWithExpiryCheck(payment),
 				payment.getReceiver() != null ? ProfileMetaMessage.convert(payment.getReceiver(),
 						true) : null,
 				payment.getReceiverFlow() != null ? FlowMessage.convert(payment.getReceiverFlow(), null, false)
@@ -62,6 +62,11 @@ public record PaymentMessage(
 				payment.getCreatedAt(),
 				payment.getCompletedAt(),
 				payment.getExpiresAt());
+	}
+
+	public static Payment.PaymentStatus getStatusWithExpiryCheck(Payment payment) {
+		return Payment.PaymentStatus.CREATED.equals(payment.getStatus()) && payment.getExpiresAt() != null && payment.getExpiresAt().isBefore(Instant.now()) ?
+				Payment.PaymentStatus.EXPIRED : payment.getStatus();
 	}
 
 	public record PaymentSource(String app, String ref) {
