@@ -36,6 +36,7 @@ export interface PaymentType {
   target?: string;
   createdAt?: Date;
   completedAt?: Date;
+  expiresAt?: Date;
 }
 
 export type PaymentTxStatus = {

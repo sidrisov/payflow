@@ -13,8 +13,9 @@ import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.glide.GlideSessionResponse;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -68,8 +69,8 @@ public class PaymentService {
 		val verifications = identityService.getIdentityAddresses(user.getIdentity()).stream()
 				.map(String::toLowerCase).toList();
 
-		return paymentRepository.findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedDateDesc(
-				user, verifications, List.of(Payment.PaymentStatus.COMPLETED))
+		return paymentRepository.findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedAtDesc(
+						user, verifications, List.of(Payment.PaymentStatus.COMPLETED))
 				.stream()
 				.map(payment -> payment.getReceiver() != null ? payment.getReceiver().getIdentity()
 						: payment.getReceiverAddress())
@@ -94,10 +95,10 @@ public class PaymentService {
 	public List<String> parsePreferredTokens(String text) {
 		val allTokenIds = tokenService.getTokens().stream().map(Token::id).distinct().toList();
 		return Arrays.stream(text
-				.replace(",", " ") // Replace commas with spaces
-				.replace("$", "") // Remove any $ symbols
-				.toLowerCase() // Convert to lowercase
-				.split("\\s+")) // Split by spaces
+						.replace(",", " ") // Replace commas with spaces
+						.replace("$", "") // Remove any $ symbols
+						.toLowerCase() // Convert to lowercase
+						.split("\\s+")) // Split by spaces
 				.filter(allTokenIds::contains).limit(5).toList();
 	}
 
@@ -155,14 +156,14 @@ public class PaymentService {
 	// Run every 4 hours, with 5 minutes initial delay
 	public void expireOldPayments() {
 		log.info("Starting expiration of old payments");
-		val oneMonthAgo = new Date(System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000);
+		val oneMonthAgo = Instant.now().minus(7, ChronoUnit.DAYS);
 
 		try (val oldPayments = paymentRepository
-				.findOldPendingPaymentsWithLock(Payment.PaymentStatus.CREATED, oneMonthAgo)) {
+				.findExpiredPaymentsWithLock(Payment.PaymentStatus.CREATED, oneMonthAgo)) {
 			val expiredPayments = oldPayments
 					.peek(payment -> {
 						payment.setStatus(Payment.PaymentStatus.EXPIRED);
-						payment.setCompletedDate(new Date());
+						payment.setCompletedAt(Instant.now());
 						log.debug("Expiring old payment: {}", payment.getId());
 					})
 					.toList();
@@ -214,7 +215,7 @@ public class PaymentService {
 						.equals(sessionResponse.getSponsoredTransactionStatus())) {
 					payment.setHash(sessionResponse.getSponsoredTransactionHash());
 					payment.setStatus(Payment.PaymentStatus.COMPLETED);
-					payment.setCompletedDate(new Date());
+					payment.setCompletedAt(Instant.now());
 					paymentRepository.save(payment);
 					notificationService.notifyPaymentCompletion(payment, payment.getSender());
 
@@ -231,7 +232,7 @@ public class PaymentService {
 				if (GlideSessionResponse.PaymentStatus.REFUNDED.equals(sessionResponse.getPaymentStatus())) {
 					payment.setRefundHash(sessionResponse.getRefundTransactionHash());
 					payment.setStatus(Payment.PaymentStatus.REFUNDED);
-					payment.setCompletedDate(new Date());
+					payment.setCompletedAt(Instant.now());
 					paymentRepository.save(payment);
 					notificationService.notifyPaymentCompletion(payment, payment.getSender());
 

@@ -313,6 +313,7 @@ export default function MintDialog({
     <BasePaymentDialog
       alwaysShowBackButton={alwaysShowBackButton}
       title={props.title ?? 'Mint Payment'}
+      expiresAt={payment?.expiresAt}
       closeStateCallback={closeStateCallback}
       {...props}
       footerContent={

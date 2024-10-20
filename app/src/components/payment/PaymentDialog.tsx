@@ -13,7 +13,6 @@ import { ProfileContext } from '../../contexts/UserContext';
 import { ERC20_CONTRACTS, Token } from '../../utils/erc20contracts';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
-import { delay } from '../../utils/delay';
 import { red } from '@mui/material/colors';
 import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
 import { useTokenPrices } from '../../utils/queries/prices';
@@ -47,6 +46,7 @@ export default function PaymentDialog({
   closeStateCallback,
   setOpenSearchIdentity,
   flow,
+
   ...props
 }: PaymentDialogProps) {
   const senderAddress = sender.identity.address as Address;
@@ -260,6 +260,7 @@ export default function PaymentDialog({
       mode={crossChainMode ? 'cross-chain' : 'normal'}
       alwaysShowBackButton={alwaysShowBackButton}
       title={props.title ?? 'New Payment'}
+      expiresAt={payment?.expiresAt}
       closeStateCallback={closeStateCallback}
       footerContent={
         <PayButton

@@ -228,6 +228,7 @@ export default function BuyFanTokenDialog({
     <BasePaymentDialog
       alwaysShowBackButton={alwaysShowBackButton}
       title={props.title ?? 'Buy Fan Tokens'}
+      expiresAt={payment?.expiresAt}
       closeStateCallback={closeStateCallback}
       {...props}
       footerContent={

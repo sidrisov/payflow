@@ -7,7 +7,8 @@ import lombok.Setter;
 import lombok.ToString;
 import org.apache.commons.lang3.RandomStringUtils;
 
-import java.util.Date;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 @ToString
 @Setter
@@ -100,13 +101,17 @@ public class Payment {
 	@Column
 	private String comment;
 
-	@Column(name = "created_date")
+	@Column(name = "created_at")
 	@Temporal(TemporalType.TIMESTAMP)
-	private Date createdDate = new Date();
+	private Instant createdAt = Instant.now();
 
-	@Column(name = "completed_date")
+	@Column(name = "completed_at")
 	@Temporal(TemporalType.TIMESTAMP)
-	private Date completedDate;
+	private Instant completedAt;
+
+	@Column(name = "expires_at")
+	@Temporal(TemporalType.TIMESTAMP)
+	private Instant expiresAt = Instant.now().plus(7, ChronoUnit.DAYS);
 
 	@Version
 	private Long version;

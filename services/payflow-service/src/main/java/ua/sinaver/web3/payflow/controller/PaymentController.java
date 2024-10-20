@@ -22,8 +22,9 @@ import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
 
 import java.security.Principal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -52,7 +53,7 @@ public class PaymentController {
 
 	@GetMapping
 	public List<PaymentMessage> payments(@RequestParam(value = "hashes") List<String> hashes,
-			Principal principal) {
+	                                     Principal principal) {
 
 		val username = principal != null ? principal.getName() : null;
 		log.debug("{} fetching payments info for {}", username, hashes);
@@ -73,7 +74,7 @@ public class PaymentController {
 
 	@PostMapping
 	public ResponseEntity<PaymentReferenceMessage> submitPayment(@RequestBody PaymentMessage paymentMessage,
-			Principal principal) {
+	                                                             Principal principal) {
 		val username = principal != null ? principal.getName() : null;
 
 		log.debug("Saving completed payment {} for {}", paymentMessage, username);
@@ -103,12 +104,13 @@ public class PaymentController {
 		if (isCompleted) {
 			payment.setHash(paymentMessage.hash());
 			payment.setStatus(paymentMessage.status());
-			payment.setCompletedDate(new Date());
+			payment.setCompletedAt(Instant.now());
 			if (StringUtils.isNotBlank(paymentMessage.comment())) {
 				payment.setComment(paymentMessage.comment());
 			}
 		} else {
 			payment.setStatus(Payment.PaymentStatus.CREATED);
+			payment.setExpiresAt(Instant.now().plus(5, ChronoUnit.MINUTES));
 		}
 
 		paymentRepository.save(payment);
@@ -123,9 +125,9 @@ public class PaymentController {
 
 	@GetMapping("/completed")
 	public Page<PaymentMessage> completedPayments(Principal principal,
-			@RequestParam(required = false) String identity,
-			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+	                                              @RequestParam(required = false) String identity,
+	                                              @RequestParam(defaultValue = "0") int page,
+	                                              @RequestParam(defaultValue = "20") int size) {
 		val loggedIdentity = principal != null ? principal.getName() : null;
 
 		log.debug("Fetching completed payments for identity: {}, logged user: {}", identity, loggedIdentity);
@@ -145,7 +147,7 @@ public class PaymentController {
 				.map(String::toLowerCase)
 				.toList();
 
-		val paymentsPage = paymentRepository.findAllCompletedOrderByCompletedDateDesc(user,
+		val paymentsPage = paymentRepository.findAllCompletedOrderByCompletedAtDesc(user,
 				verifications, PageRequest.of(page, size));
 
 		// Check if we should include comments (when logged user is viewing their own
@@ -166,10 +168,10 @@ public class PaymentController {
 		val verifications = identityService.getIdentityAddresses(user.getIdentity()).stream()
 				.map(String::toLowerCase).toList();
 
-		return paymentRepository.findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedDateDesc(
-				user, verifications, List.of(Payment.PaymentStatus.CREATED,
-						Payment.PaymentStatus.INPROGRESS,
-						Payment.PaymentStatus.COMPLETED, Payment.PaymentStatus.REFUNDED))
+		return paymentRepository.findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedAtDesc(
+						user, verifications, List.of(Payment.PaymentStatus.CREATED,
+								Payment.PaymentStatus.INPROGRESS,
+								Payment.PaymentStatus.COMPLETED, Payment.PaymentStatus.REFUNDED))
 				.stream()
 				.map(payment -> PaymentMessage.convert(payment, true, true))
 				.toList();
@@ -177,9 +179,9 @@ public class PaymentController {
 
 	@GetMapping("/outbound")
 	public Page<PaymentMessage> outbound(Principal principal,
-			@RequestParam List<Payment.PaymentStatus> statuses,
-			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "5") int size) {
+	                                     @RequestParam List<Payment.PaymentStatus> statuses,
+	                                     @RequestParam(defaultValue = "0") int page,
+	                                     @RequestParam(defaultValue = "5") int size) {
 		val username = principal != null ? principal.getName() : null;
 		log.debug("Fetching pending payments for {} ", username);
 
@@ -224,7 +226,7 @@ public class PaymentController {
 	@PutMapping("/{referenceId}")
 	@ResponseStatus(HttpStatus.OK)
 	public void updatePayment(@PathVariable String referenceId,
-			@RequestBody PaymentUpdateMessage paymentUpdateMessage, Principal principal) {
+	                          @RequestBody PaymentUpdateMessage paymentUpdateMessage, Principal principal) {
 		log.debug("Received update {} for payment {} by user {}",
 				paymentUpdateMessage,
 				referenceId,
@@ -275,7 +277,7 @@ public class PaymentController {
 
 			payment.setHash(paymentUpdateMessage.hash());
 			payment.setStatus(Payment.PaymentStatus.COMPLETED);
-			payment.setCompletedDate(new Date());
+			payment.setCompletedAt(Instant.now());
 
 			notificationService.notifyPaymentCompletion(payment, user);
 			// TODO: move to event system
@@ -299,7 +301,7 @@ public class PaymentController {
 		val payment = paymentRepository.findByReferenceIdAndSender(referenceId, user);
 		if (payment != null) {
 			payment.setStatus(Payment.PaymentStatus.CANCELLED);
-			payment.setCompletedDate(new Date());
+			payment.setCompletedAt(Instant.now());
 			log.debug("Payment was marked as cancelled: {}", payment);
 		}
 	}

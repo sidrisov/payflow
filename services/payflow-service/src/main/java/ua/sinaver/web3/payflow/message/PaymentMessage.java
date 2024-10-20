@@ -3,7 +3,7 @@ package ua.sinaver.web3.payflow.message;
 import org.apache.commons.lang3.StringUtils;
 import ua.sinaver.web3.payflow.data.Payment;
 
-import java.util.Date;
+import java.time.Instant;
 
 public record PaymentMessage(
 		String referenceId,
@@ -28,11 +28,12 @@ public record PaymentMessage(
 		PaymentSource source,
 		String comment,
 		String target,
-		Date createdAt,
-		Date completedAt) {
+		Instant createdAt,
+		Instant completedAt,
+		Instant expiresAt) {
 
 	public static PaymentMessage convert(Payment payment, boolean includeRef,
-	                                     boolean includeComment) {
+			boolean includeComment) {
 		return new PaymentMessage(
 				includeRef ? payment.getReferenceId() : null,
 				payment.getType(),
@@ -58,8 +59,9 @@ public record PaymentMessage(
 				new PaymentMessage.PaymentSource(payment.getSourceApp(), payment.getSourceRef()),
 				includeComment ? payment.getComment() : null,
 				payment.getTarget(),
-				payment.getCreatedDate(),
-				payment.getCompletedDate());
+				payment.getCreatedAt(),
+				payment.getCompletedAt(),
+				payment.getExpiresAt());
 	}
 
 	public record PaymentSource(String app, String ref) {

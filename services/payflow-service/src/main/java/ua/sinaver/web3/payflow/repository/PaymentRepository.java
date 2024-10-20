@@ -13,7 +13,7 @@ import org.springframework.data.repository.query.Param;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.User;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -26,8 +26,8 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 	List<Payment> findByHashIn(List<String> hashes, User senderOrReceiver);
 
 	@Query("SELECT p FROM Payment p WHERE (p.sender = :sender OR LOWER(p.senderAddress) IN :addresses) " +
-			"AND p.status IN :statuses ORDER BY p.createdDate DESC")
-	List<Payment> findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedDateDesc(
+			"AND p.status IN :statuses ORDER BY p.createdAt DESC")
+	List<Payment> findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedAtDesc(
 			@Param("sender") User sender,
 			@Param("addresses") List<String> addresses,
 			@Param("statuses") List<Payment.PaymentStatus> statuses);
@@ -41,9 +41,11 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 	// https://docs.jboss.org/hibernate/orm/5.0/userguide/html_single/chapters/locking/Locking.html
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@QueryHints(@QueryHint(name = AvailableSettings.JAKARTA_LOCK_TIMEOUT, value = "-2"))
-	@Query("SELECT p FROM Payment p WHERE p.status = :status AND p.createdDate < :date")
-	Stream<Payment> findOldPendingPaymentsWithLock(@Param("status") Payment.PaymentStatus status,
-			@Param("date") Date date);
+	@Query("SELECT p FROM Payment p WHERE p.status = :status AND " +
+			"((p.expiresAt IS NULL AND p.createdAt < :expiresAt) OR " +
+			"(p.expiresAt IS NOT NULL AND p.expiresAt < CURRENT_TIMESTAMP))")
+	Stream<Payment> findExpiredPaymentsWithLock(@Param("status") Payment.PaymentStatus status,
+			@Param("expiresAt") Instant expiresAt);
 
 	// JPA: UPGRADE_SKIPLOCKED - PESSIMISTIC_WRITE with a
 	// javax.persistence.lock.timeout setting of -2
@@ -65,8 +67,8 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 			"WHERE (p.sender = :user OR p.receiver = :user " +
 			"OR LOWER(p.senderAddress) IN :addresses " +
 			"OR LOWER(p.receiverAddress) IN :addresses) " +
-			"AND p.status = COMPLETED ORDER BY p.completedDate DESC")
-	Page<Payment> findAllCompletedOrderByCompletedDateDesc(
+			"AND p.status = COMPLETED ORDER BY p.completedAt DESC")
+	Page<Payment> findAllCompletedOrderByCompletedAtDesc(
 			@Param("user") User user,
 			@Param("addresses") List<String> addresses,
 			Pageable pageable);
@@ -74,8 +76,8 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 	@Query("SELECT p FROM Payment p " +
 			"WHERE (p.sender = :user OR LOWER(p.senderAddress) IN :addresses) " +
 			"AND p.status IN :statuses " +
-			"ORDER BY CASE WHEN p.completedDate IS NOT NULL " +
-			"THEN p.completedDate ELSE p.createdDate END DESC")
+			"ORDER BY CASE WHEN p.completedAt IS NOT NULL " +
+			"THEN p.completedAt ELSE p.createdAt END DESC")
 	Page<Payment> findOutboundByStatusAndSenderOrderDesc(
 			@Param("user") User user,
 			@Param("addresses") List<String> addresses,

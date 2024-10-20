@@ -155,6 +155,7 @@ export default function HypersubDialog({
     <BasePaymentDialog
       alwaysShowBackButton={alwaysShowBackButton}
       title={props.title ?? 'Hypersub Payment'}
+      expiresAt={payment?.expiresAt}
       closeStateCallback={closeStateCallback}
       {...props}
       footerContent={
