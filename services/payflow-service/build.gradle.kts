@@ -30,7 +30,7 @@ if (project.hasProperty("gcp")) {
     extra["springCloudVersion"] = "2023.0.3"
 }
 
-extra["flywayVersion"] = "10.18.0"
+extra["flywayVersion"] = "10.20.0"
 
 dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
@@ -46,7 +46,7 @@ dependencies {
     implementation("org.springframework.session:spring-session-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-aop")
 
-    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.2")
+    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.3")
     implementation("io.jsonwebtoken:jjwt:0.12.6")
 
     if (project.hasProperty("gcp")) {
@@ -58,7 +58,7 @@ dependencies {
     } else {
         // local
         //runtimeOnly ("com.h2database:h2")
-        runtimeOnly("com.mysql:mysql-connector-j:9.0.0")
+        runtimeOnly("com.mysql:mysql-connector-j:9.1.0")
     }
 
     // caching
@@ -80,21 +80,26 @@ dependencies {
     implementation("com.google.code.gson:gson:2.11.0")
 
     // java.lang.NoSuchMethodError: 'reactor.core.publisher.Mono reactor.core.publisher.Mono.onErrorComplete()'
-    implementation("io.projectreactor:reactor-core:3.6.10")
+    implementation("io.projectreactor:reactor-core:3.6.11")
 
-    runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.113.Final:osx-aarch_64")
+    runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.114.Final:osx-aarch_64")
 
     // crypto
     implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
-    implementation("org.web3j:core:4.10.3")
-    implementation("org.web3j:contracts:4.10.3")
+    implementation("org.web3j:core:4.12.2")
+    implementation("org.web3j:contracts:4.12.2")
     //siwe
-    implementation("com.moonstoneid:siwe-java:1.0.2")
+    implementation("com.moonstoneid:siwe-java:1.0.6")
 
     //lombok
     compileOnly("org.projectlombok:lombok:1.18.34")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+    // Exclude slf4j-simple from all dependencies
+    configurations.all {
+        exclude(group = "org.slf4j", module = "slf4j-simple")
+    }
 }
 
 
@@ -224,4 +229,3 @@ tasks.named<BootBuildImage>("bootBuildImage") {
     pullPolicy.set(PullPolicy.IF_NOT_PRESENT)
     //publish.set(true)
 }
-
