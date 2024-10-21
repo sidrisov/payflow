@@ -2,7 +2,7 @@ import { DialogProps, Stack, Button, TextField, InputAdornment, IconButton } fro
 import { useContext, useMemo, useState } from 'react';
 import { getNetworkShortName } from '../../utils/networks';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { PaymentCastActionAdvancedSection } from '../PaymentCastActionAdvancedSection';
+import { RewardAdvancedSection, RewardCriteria } from '../RewardAdvancedSection';
 import { Type } from '../../types/PaymentType';
 import ResponsiveDialog from './ResponsiveDialog';
 
@@ -14,16 +14,18 @@ import { useChainId } from 'wagmi';
 import { base } from 'viem/chains';
 import { FaCoins, FaDollarSign } from 'react-icons/fa';
 
-export default function PaymentRewardCastActionDialog({
+export default function PaymentRewardCastActionComposerDialog({
   closeStateCallback,
   ...props
 }: DialogProps & CloseCallbackType) {
   const { profile } = useContext(ProfileContext);
 
   const chainId = useChainId();
-  const [usdAmount, setUsdAmount] = useState<number | undefined>(1);
-  const [tokenAmount, setTokenAmount] = useState<number | undefined>(1);
+  const [rewardUsdAmount, setRewardUsdAmount] = useState<number | undefined>(1);
+  const [rewardTokenAmount, setRewardTokenAmount] = useState<number | undefined>(1);
   const [type, setType] = useState<Type>('INTENT');
+  const [numberOfRewards, setNumberOfRewards] = useState<number>(1);
+  const [rewardCriterias, setRewardCriterias] = useState<Record<string, RewardCriteria>>({});
 
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
   const [selectedToken, setSelectedToken] = useState<Token>();
@@ -49,12 +51,50 @@ export default function PaymentRewardCastActionDialog({
       const numericValue = value === '' ? undefined : parseFloat(value);
 
       if (isFiatMode) {
-        setUsdAmount(numericValue);
+        setRewardUsdAmount(numericValue);
       } else {
-        setTokenAmount(numericValue);
+        setRewardTokenAmount(numericValue);
       }
     }
   };
+
+  const actionUrl = useMemo(() => {
+    const actionUrl = 'https://api.payflow.me/api/farcaster/actions/pay/reward';
+
+    const params = new URLSearchParams({
+      amount: isFiatMode ? rewardUsdAmount?.toString() ?? '' : '',
+      tokenAmount: !isFiatMode ? rewardTokenAmount?.toString() ?? '' : '',
+      token: selectedToken?.id ?? '',
+      chainId: (selectedToken?.chainId ?? base.id).toString(),
+      type: type ?? 'INTENT',
+      numberOfRewards: numberOfRewards.toString()
+    });
+
+    console.log('rewardCriterias', rewardCriterias);
+
+    // Add enabled criteria to params
+    Object.entries(rewardCriterias)
+      .filter(([_, criteria]) => criteria.required || criteria.enabled)
+      .forEach(([id, criteria]) => {
+        params.append(id, criteria.value);
+      });
+
+    return `${actionUrl}?${params.toString()}`;
+  }, [
+    isFiatMode,
+    rewardUsdAmount,
+    rewardTokenAmount,
+    selectedToken,
+    type,
+    numberOfRewards,
+    rewardCriterias
+  ]);
+
+  const warpcastInstallActionUrl = useMemo(() => {
+    const baseUrl = 'https://warpcast.com/~/add-cast-action';
+    const encodedActionUrl = encodeURIComponent(actionUrl);
+    return `${baseUrl}?url=${encodedActionUrl}`;
+  }, [actionUrl]);
 
   return (
     <ResponsiveDialog
@@ -110,7 +150,14 @@ export default function PaymentRewardCastActionDialog({
           />
         </Stack>
 
-        <PaymentCastActionAdvancedSection type={type} setType={setType} />
+        <RewardAdvancedSection
+          type={type}
+          setType={setType}
+          numberOfRewards={numberOfRewards}
+          setNumberOfRewards={setNumberOfRewards}
+          rewardCriterias={rewardCriterias}
+          setRewardCriterias={setRewardCriterias}
+        />
 
         <Button
           variant="outlined"
@@ -119,13 +166,7 @@ export default function PaymentRewardCastActionDialog({
           fullWidth
           size="large"
           sx={{ borderRadius: 5 }}
-          href={`https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fpay%2Fintent%3Famount%3D${
-            isFiatMode ? usdAmount ?? '' : ''
-          }%26tokenAmount%3D${!isFiatMode ? tokenAmount ?? '' : ''}%26token%3D${
-            selectedToken?.id
-          }%26chain%3D${getNetworkShortName(selectedToken?.chainId ?? base.id)}%26type%3D${
-            type ?? 'INTENT'
-          }`}
+          href={warpcastInstallActionUrl}
           target="_blank">
           Add To Warpcast
         </Button>

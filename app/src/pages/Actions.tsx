@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Container, Stack, Typography, Grid2, Box, Tooltip } from '@mui/material';
-import PaymentRewardCastActionDialog from '../components/dialogs/PaymentCastActionDialog';
+import PaymentRewardCastActionComposerDialog from '../components/dialogs/PaymentRewardCastActionComposerDialog';
 import { AutoAwesome, Interests, PersonAdd, Star } from '@mui/icons-material';
 import { PiTipJar } from 'react-icons/pi';
 import { GrStorage } from 'react-icons/gr';
@@ -92,6 +92,7 @@ export default function Actions() {
     },
     {
       title: 'Reward',
+      earlyFeature: true,
       description: 'Submit custom rewards',
       onClick: () => setOpenPaymentActionDialog(true),
       startIcon: <Interests sx={{ width: 25, height: 25 }} />
@@ -144,7 +145,7 @@ export default function Actions() {
           </Box>
         </Stack>
       </Container>
-      <PaymentRewardCastActionDialog
+      <PaymentRewardCastActionComposerDialog
         open={openPaymentActionDialog}
         closeStateCallback={() => setOpenPaymentActionDialog(false)}
         onClose={() => setOpenPaymentActionDialog(false)}

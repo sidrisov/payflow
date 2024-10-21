@@ -141,6 +141,9 @@ public class Payment {
 		APP,
 		INTENT,
 		FRAME,
-		INTENT_TOP_REPLY
+		INTENT_TOP_REPLY,
+		REWARD,
+		REWARD_TOP_CASTERS,
+		REWARD_TOP_REPLY
 	}
 }

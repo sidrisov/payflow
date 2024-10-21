@@ -10,7 +10,15 @@ export type PaymentStatus =
   | 'COMPLETED'
   | 'CANCELLED'
   | 'EXPIRED';
-export type Type = 'FRAME' | 'INTENT' | 'APP' | 'INTENT_TOP_REPLY' | 'BATCH';
+export type Type =
+  | 'FRAME'
+  | 'INTENT'
+  | 'APP'
+  | 'INTENT_TOP_REPLY'
+  | 'BATCH'
+  | 'REWARD'
+  | 'REWARD_TOP_REPLY'
+  | 'REWARD_TOP_CASTERS';
 export interface PaymentType {
   referenceId?: string;
   type: Type;
