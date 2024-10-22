@@ -1,0 +1,18 @@
+query GetFarcasterChannelForChannelId($channelId: String!) {
+    FarcasterChannels(
+        input: {
+            blockchain: ALL
+            filter: { channelId: { _eq: $channelId } }
+            order: { followerCount: DESC }
+            limit: 1
+        }
+    ) {
+        FarcasterChannel {
+            channelId
+            name
+            description
+            imageUrl
+            moderatorIds
+        }
+    }
+}

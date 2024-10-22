@@ -54,6 +54,9 @@ public class IntentsController {
 	@Autowired
 	private IdentitySubscriptionsService subscriptionsService;
 
+	@Autowired
+	private AirstackSocialGraphService airstackSocialGraphService;
+
 	public static String formatDouble(Double value) {
 		val df = new DecimalFormat("#.#####");
 		return df.format(value);
@@ -66,7 +69,7 @@ public class IntentsController {
 			@RequestParam(name = "tokenAmount", required = false) Double tokenAmount,
 			@RequestParam(name = "token", required = false, defaultValue = "degen") String token,
 			@RequestParam(name = "chainId", required = false, defaultValue = "8453") Integer chainId,
-			@RequestParam(name = "numberOfRewards", required = false, defaultValue = "1") Integer numberOfRewards,
+			@RequestParam(name = "rewards", required = false, defaultValue = "1") Integer numberOfRewards,
 			@RequestParam MultiValueMap<String, String> allParams) {
 
 		log.debug("Received metadata request for cast action: pay intent with params: " +
@@ -205,8 +208,22 @@ public class IntentsController {
 				val channelId = allParams.getFirst("channel");
 				val hypersubContractAddress = allParams.getFirst("hypersub");
 
+				var excludeFids = new ArrayList<String>();
+				if (StringUtils.isNotBlank(channelId)) {
+					val channel =
+							airstackSocialGraphService.getFarcasterChannelByChannelId(channelId);
+					if (channel == null) {
+						log.error("Failed to fetch channel: {}", channelId);
+						return ResponseEntity.badRequest().body(
+								new FrameResponse.FrameMessage("Failed to fetch channel info!"));
+					}
+
+					excludeFids.addAll(channel.getModeratorIds());
+				}
+				excludeFids.add(String.valueOf(clickedFid));
+
 				val fidToPayment = createUniquePayments(
-						List.of(clickedFid), // exclude the clicked user
+						excludeFids,
 						channelId,
 						hypersubContractAddress,
 						numberOfRewards,
@@ -249,7 +266,7 @@ public class IntentsController {
 		}
 	}
 
-	private Map<Integer, Payment> createUniquePayments(List<Integer> excludedFids,
+	private Map<Integer, Payment> createUniquePayments(List<String> excludedFids,
 	                                                   String channelId,
 	                                                   String subscriptionContract,
 	                                                   int numberOfRewards,
@@ -268,23 +285,25 @@ public class IntentsController {
 			}
 
 			for (val cast : response.getCasts()) {
-				if (excludedFids.contains(cast.fid()) || fidToPayment.containsKey(cast.author().fid())) {
+				if (excludedFids.contains(String.valueOf(cast.fid())) || fidToPayment.containsKey(cast.author().fid())) {
 					continue;
 				}
 
 				if (subscriptionContract != null) {
 					val verifications = cast.author().verifications();
-					val subscribers = subscriptionsService.fetchHypersubSubscribers(BASE_CHAIN_ID, subscriptionContract, verifications);
-					val validSubscription =
-							subscribers.stream().anyMatch(s -> Instant.now().isBefore(Instant.ofEpochSecond(s.expiresAt())));
+					val subscribers = subscriptionsService.fetchHypersubSubscribers(BASE_CHAIN_ID, subscriptionContract,
+							verifications);
+					val validSubscription = subscribers.stream()
+							.anyMatch(s -> Instant.now().isBefore(Instant.ofEpochSecond(s.purchaseExpiresAt())));
 					if (!validSubscription) {
 						continue;
 					}
 				}
-				
+
 				try {
 					val payment = createRewardPayment(clickedProfile, cast.author().fid(),
-							cast.hash(), Payment.PaymentType.REWARD_TOP_CASTERS, amount, tokenAmount, token, chainId, sourceApp);
+							cast.hash(), Payment.PaymentType.REWARD_TOP_CASTERS, amount, tokenAmount, token, chainId,
+							sourceApp);
 					if (payment != null) {
 						fidToPayment.put(cast.author().fid(), payment);
 						if (fidToPayment.size() == numberOfRewards) {

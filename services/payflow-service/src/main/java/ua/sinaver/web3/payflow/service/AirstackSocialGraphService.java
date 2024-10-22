@@ -398,4 +398,33 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 		}
 		return null;
 	}
+
+	@Override
+	public FarcasterChannel getFarcasterChannelByChannelId(String channelId) {
+		try {
+			val response = airstackGraphQlClient.documentName("getFarcasterChannelForChannelId")
+					.variable("channelId", channelId)
+					.execute()
+					.block();
+
+			if (response != null) {
+				val channels = response.field("FarcasterChannels.FarcasterChannel")
+						.toEntityList(FarcasterChannel.class);
+
+				if (!channels.isEmpty()) {
+					val channel = channels.get(0);
+					log.debug("Fetched Farcaster channel for channelId {}: {}", channelId, channel);
+					return channel;
+				}
+			}
+		} catch (Throwable t) {
+			log.error("Error during fetching Farcaster channel for channelId: {}, error: {} - {}",
+					channelId,
+					t.getMessage(),
+					log.isTraceEnabled() ? t : null);
+		}
+
+		log.warn("Failed to fetch Farcaster channel for channelId: {}", channelId);
+		return null;
+	}
 }

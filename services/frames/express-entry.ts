@@ -37,6 +37,9 @@ import { buyFanTokenEntryHtml } from './components/BuyFanToken';
 import { buyHypersubEntryHtml } from './components/Subsribe';
 import { toSafeSmartAccount } from './utils/pimlico/toSafeSmartAccount';
 import { entryPoint06Address } from 'viem/account-abstraction';
+import { fetchSubscribers } from '@withfabric/protocol-sdks/stpv2';
+import { configureFabricSDK } from '@withfabric/protocol-sdks';
+import { wagmiConfig } from './utils/wagmi';
 
 dotenv.config();
 
@@ -51,6 +54,8 @@ const balanceParams = ['eth', 'usdc', 'degen'];
 const oneDayInSeconds = 24 * 60 * 60;
 
 const chains: Chain[] = [base, optimism, zora, arbitrum, mode, degen];
+
+configureFabricSDK({ wagmiConfig });
 
 const SUPPORTED_TOKENS = [
   'eth',
@@ -159,6 +164,36 @@ async function startServer() {
     } catch (error) {
       console.error('Error calculating wallets:', error);
       res.status(500).send('Failed to calculate wallets');
+    }
+  });
+
+  app.get('/hypersub/subscribers/:chainId/:contractAddress', async (req, res) => {
+    const chainId = req.params.chainId;
+    const contractAddress = req.params.contractAddress;
+
+    const accounts = Array.isArray(req.query.accounts) ? req.query.accounts : [req.query.accounts];
+
+    try {
+      const subscribers = await fetchSubscribers({
+        contractAddress: contractAddress as Address,
+        chainId: Number(chainId),
+        accounts: accounts as Address[]
+      });
+
+      console.debug('Subscribers:', subscribers);
+
+      // Convert BigInt values to strings before sending the response
+      const serializedSubscribers = subscribers.map((sub) => ({
+        ...sub,
+        tokenId: sub.tokenId.toString(),
+        rewardShares: sub.rewardShares.toString(),
+        rewardBalance: sub.rewardBalance.toString()
+      }));
+
+      res.status(200).json(serializedSubscribers);
+    } catch (error) {
+      console.error('Error fetching subscribers:', error);
+      res.status(500).json({ error: 'Failed to fetch subscribers' });
     }
   });
 
