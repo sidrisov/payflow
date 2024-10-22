@@ -8,7 +8,8 @@ import {
   mainnet,
   baseSepolia,
   sepolia,
-  mode
+  mode,
+  worldchain
 } from 'viem/chains';
 
 const ENABLED_CHAINS = JSON.parse(import.meta.env.VITE_ENABLED_CHAINS) as string[];
@@ -21,6 +22,7 @@ export const SUPPORTED_CHAINS = [
   optimism,
   degen,
   mode,
+  worldchain,
   arbitrum,
   zora,
   zksync,
@@ -51,6 +53,9 @@ export function getNetworkShortName(chainId: number): string {
       break;
     case optimism.id:
       shortName = 'optimism';
+      break;
+    case worldchain.id:
+      shortName = 'world';
       break;
     case zksync.id:
       shortName = 'zksync-era';
@@ -90,6 +95,9 @@ export default function getNetworkImageSrc(chainId: number): string {
       break;
     case optimism.id:
       fileName = 'optimism';
+      break;
+    case worldchain.id:
+      fileName = 'world';
       break;
     case zksync.id:
       fileName = 'zksync-era';

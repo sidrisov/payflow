@@ -1,7 +1,17 @@
 import { http } from 'viem';
 import { entryPoint06Address } from 'viem/account-abstraction';
 import { createPimlicoClient } from 'permissionless/clients/pimlico';
-import { arbitrum, base, baseSepolia, degen, mode, optimism, zksync, zora } from 'viem/chains';
+import {
+  arbitrum,
+  base,
+  baseSepolia,
+  degen,
+  mode,
+  optimism,
+  worldchain,
+  zksync,
+  zora
+} from 'viem/chains';
 
 export const PIMLICO_SPONSORED_ENABLED = import.meta.env.VITE_PIMLICO_SPONSORED_ENABLED === 'true';
 
@@ -50,6 +60,9 @@ const pimlicoRpcNetworkName = (chainId: number) => {
     case mode.id:
       network = 'mode';
       break;
+    case worldchain.id:
+      network = 'world';
+      break;
   }
   return network;
 };
@@ -69,6 +82,7 @@ export const paymasterSponsorshipPolicyIds = (chainId: number) => {
     case optimism.id:
     case degen.id:
     case mode.id:
+    case worldchain.id:
       return MAINNET_POLICIES.slice(1, 2);
     case baseSepolia.id:
       return TESTNET_POLICIES;

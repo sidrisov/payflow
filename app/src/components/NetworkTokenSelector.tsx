@@ -15,7 +15,6 @@ import ResponsiveDialog from './dialogs/ResponsiveDialog';
 import NetworkAvatar from './avatars/NetworkAvatar';
 import TokenAvatar from './avatars/TokenAvatar';
 import { Chip } from '@mui/material';
-import { ArrowDownward } from '@mui/icons-material';
 import { IoIosArrowDown } from 'react-icons/io';
 
 export function NetworkTokenSelector({

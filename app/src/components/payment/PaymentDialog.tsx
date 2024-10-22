@@ -46,15 +46,12 @@ export default function PaymentDialog({
   closeStateCallback,
   setOpenSearchIdentity,
   flow,
-
   ...props
 }: PaymentDialogProps) {
   const senderAddress = sender.identity.address as Address;
   const [selectedFlow, setSelectedFlow] = useState<FlowType>(
     flow ?? (sender.identity.profile?.defaultFlow as FlowType)
   );
-
-  console.log('selectedFlow', selectedFlow);
 
   const { profile } = useContext(ProfileContext);
 
@@ -228,7 +225,9 @@ export default function PaymentDialog({
     payment?.status === 'COMPLETED' ? { txHash: payment.hash as Hash } : null
   );
   const successMessage = useMemo(() => {
-    const amount = paymentAmount ?? payment?.tokenAmount;
+    const amount = formatAmountWithSuffix(
+      normalizeNumberPrecision(paymentAmount ?? payment?.tokenAmount ?? 0)
+    );
     const tokenSymbol = paymentToken?.id.toUpperCase() ?? payment?.token;
     const recipientName =
       recipient.identity.profile?.username ??

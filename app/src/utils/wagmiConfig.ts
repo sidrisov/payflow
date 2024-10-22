@@ -10,7 +10,8 @@ import {
   sepolia,
   arbitrum,
   zksync,
-  mode
+  mode,
+  worldchain
 } from 'viem/chains';
 
 import { createConfig } from '@privy-io/wagmi';
@@ -60,7 +61,10 @@ export const commonWagmiConfig = {
       `https://arbitrum-mainnet.infura.io/v3/${import.meta.env.VITE_INFURA_API_KEY}`
     ),
     [mode.id]: createOptimizedTransport(mode.rpcUrls.default.http[0]),
-    [zksync.id]: createOptimizedTransport(zksync.rpcUrls.default.http[0])
+    [zksync.id]: createOptimizedTransport(zksync.rpcUrls.default.http[0]),
+    [worldchain.id]: createOptimizedTransport(
+      `https://worldchain-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`
+    )
   }
 };
 
