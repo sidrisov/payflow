@@ -9,19 +9,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.Payment;
+import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.farcaster.CastActionMeta;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
-import ua.sinaver.web3.payflow.service.AirstackSocialGraphService;
-import ua.sinaver.web3.payflow.service.IdentityService;
-import ua.sinaver.web3.payflow.service.PaymentService;
-import ua.sinaver.web3.payflow.service.TokenService;
+import ua.sinaver.web3.payflow.service.*;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.text.DecimalFormat;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static ua.sinaver.web3.payflow.service.TokenService.*;
 
@@ -49,6 +51,9 @@ public class IntentsController {
 	@Autowired
 	private TokenService tokenService;
 
+	@Autowired
+	private IdentitySubscriptionsService subscriptionsService;
+
 	public static String formatDouble(Double value) {
 		val df = new DecimalFormat("#.#####");
 		return df.format(value);
@@ -65,8 +70,8 @@ public class IntentsController {
 			@RequestParam MultiValueMap<String, String> allParams) {
 
 		log.debug("Received metadata request for cast action: pay intent with params: " +
-				"type = {}, amount = {}, tokenAmount = {}, token = {}, chainId = {}, " +
-				"numberOfRewards = {}, allParams = {}",
+						"type = {}, amount = {}, tokenAmount = {}, token = {}, chainId = {}, " +
+						"numberOfRewards = {}, allParams = {}",
 				type, amount, tokenAmount, token, chainId, numberOfRewards, allParams);
 
 		CastActionMeta castActionMeta;
@@ -133,11 +138,11 @@ public class IntentsController {
 			@RequestParam(name = "tokenAmount", required = false) Double tokenAmount,
 			@RequestParam(name = "token", required = false, defaultValue = "degen") String token,
 			@RequestParam(name = "chainId", required = false, defaultValue = "8453") Integer chainId,
-			@RequestParam(name = "numberOfRewards", required = false, defaultValue = "1") Integer numberOfRewards,
+			@RequestParam(name = "rewards", required = false, defaultValue = "1") Integer numberOfRewards,
 			@RequestParam MultiValueMap<String, String> allParams) {
 
 		log.debug("Received cast action: pay reward {} with params: type = {}, amount = {}, " +
-				"tokenAmount = {}, token = {}, chainId = {}, numberOfRewards = {}, allParams = {}",
+						"tokenAmount = {}, token = {}, chainId = {}, numberOfRewards = {}, allParams = {}",
 				castActionMessage, type, amount, tokenAmount, token, chainId, numberOfRewards, allParams);
 
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
@@ -160,9 +165,14 @@ public class IntentsController {
 		}
 
 		val clickedFid = validateMessage.action().interactor().fid();
+		val clickedProfile = identityService.getProfiles(clickedFid).stream().findFirst().orElse(null);
+		if (clickedProfile == null) {
+			log.error("Clicked fid {} is not on payflow", clickedFid);
+			return ResponseEntity.badRequest().body(
+					new FrameResponse.FrameMessage("Sign up on Payflow first!"));
+		}
 
-		int casterFid;
-		String castHash;
+		val sourceApp = validateMessage.action().signer().client().displayName();
 
 		switch (type) {
 			case REWARD_TOP_REPLY:
@@ -175,82 +185,147 @@ public class IntentsController {
 					return ResponseEntity.badRequest().body(
 							new FrameResponse.FrameMessage("Failed to identify top comment!"));
 				}
-				casterFid = Integer.parseInt(topReply.getFid());
-				castHash = topReply.getHash();
-				break;
+				int casterFid = Integer.parseInt(topReply.getFid());
+				val castHash = topReply.getHash();
+				val payment = createRewardPayment(clickedProfile, casterFid, castHash, type,
+						amount, tokenAmount, token, chainId, sourceApp);
+				if (payment == null) {
+					return ResponseEntity.badRequest().body(
+							new FrameResponse.FrameMessage("Failed to create reward intent. " +
+									"Contact @sinaver.eth"));
+				}
+				paymentRepository.save(payment);
+				String casterFcName = identityService.getFidFname(casterFid);
+				log.debug("Top reply reward intent saved: {}", payment);
+				return ResponseEntity.ok().body(new FrameResponse.FrameMessage(
+						String.format("Submitted reward for top comment from @%s. Pay in the app!",
+								casterFcName)));
+
 			case REWARD_TOP_CASTERS:
-				log.error("Unsupported reward type: {}", type);
-				return ResponseEntity.badRequest().body(
-						new FrameResponse.FrameMessage("Unsupported reward type!"));
+				val channelId = allParams.getFirst("channel");
+				val hypersubContractAddress = allParams.getFirst("hypersub");
+
+				val fidToPayment = createUniquePayments(
+						List.of(clickedFid), // exclude the clicked user
+						channelId,
+						hypersubContractAddress,
+						numberOfRewards,
+						clickedProfile,
+						amount, tokenAmount, token, chainId,
+						sourceApp
+				);
+
+				if (fidToPayment.isEmpty()) {
+					log.error("Failed to fetch trending casts");
+					return ResponseEntity.badRequest().body(
+							new FrameResponse.FrameMessage("Failed to find trending casts!"));
+				}
+
+				val payments = new ArrayList<>(fidToPayment.values());
+				paymentRepository.saveAll(payments);
+				log.debug("Trending casters reward intents saved: {}", payments);
+				return ResponseEntity.ok().body(new FrameResponse.FrameMessage(
+						String.format("Submitted rewards for top %d trending casters. Pay in the app!",
+								payments.size())));
+
 			case REWARD:
 			default:
-				casterFid = validateMessage.action().cast().author() != null
+				int authorFid = validateMessage.action().cast().author() != null
 						? validateMessage.action().cast().author().fid()
 						: validateMessage.action().cast().fid();
-				castHash = validateMessage.action().cast().hash();
-				break;
+				String authorCastHash = validateMessage.action().cast().hash();
+				Payment rewardPayment = createRewardPayment(clickedProfile, authorFid, authorCastHash, type,
+						amount, tokenAmount, token, chainId, sourceApp);
+				if (rewardPayment == null) {
+					return ResponseEntity.badRequest().body(
+							new FrameResponse.FrameMessage("Failed to create payment intent. Contact @sinaver.eth"));
+				}
+				paymentRepository.save(rewardPayment);
+				String authorFcName = identityService.getFidFname(authorFid);
+				log.debug("Reward intent saved: {}", rewardPayment);
+				return ResponseEntity.ok().body(new FrameResponse.FrameMessage(
+						String.format("Submitted reward for @%s. Pay in the app!",
+								authorFcName)));
+		}
+	}
+
+	private Map<Integer, Payment> createUniquePayments(List<Integer> excludedFids,
+	                                                   String channelId,
+	                                                   String subscriptionContract,
+	                                                   int numberOfRewards,
+	                                                   User clickedProfile,
+	                                                   Double amount, Double tokenAmount, String token, Integer chainId,
+	                                                   String sourceApp) {
+		val fidToPayment = new LinkedHashMap<Integer, Payment>();
+		var cursor = (String) null;
+
+		while (fidToPayment.size() < numberOfRewards) {
+			val response = neynarService.fetchTrendingCasts(channelId, "7d",
+					numberOfRewards - fidToPayment.size(), cursor);
+
+			if (response == null || response.getCasts() == null || response.getCasts().isEmpty()) {
+				break; // No more casts to process
+			}
+
+			for (val cast : response.getCasts()) {
+				if (excludedFids.contains(cast.fid()) || fidToPayment.containsKey(cast.author().fid())) {
+					continue;
+				}
+
+				if (subscriptionContract != null) {
+					val verifications = cast.author().verifications();
+					val subscribers = subscriptionsService.fetchHypersubSubscribers(BASE_CHAIN_ID, subscriptionContract, verifications);
+					val validSubscription =
+							subscribers.stream().anyMatch(s -> Instant.now().isBefore(Instant.ofEpochSecond(s.expiresAt())));
+					if (!validSubscription) {
+						continue;
+					}
+				}
+				
+				try {
+					val payment = createRewardPayment(clickedProfile, cast.author().fid(),
+							cast.hash(), Payment.PaymentType.REWARD_TOP_CASTERS, amount, tokenAmount, token, chainId, sourceApp);
+					if (payment != null) {
+						fidToPayment.put(cast.author().fid(), payment);
+						if (fidToPayment.size() == numberOfRewards) {
+							return fidToPayment;
+						}
+					}
+				} catch (Throwable t) {
+					log.error("Failed to create a payment for cast: {} - error: {}", cast, t.getMessage());
+				}
+			}
+
+			// Update cursor for next page
+			cursor = response.getNext() != null ? response.getNext().getCursor() : null;
+			if (cursor == null) {
+				break; // No more pages to fetch
+			}
 		}
 
-		val clickedProfile = identityService.getProfiles(clickedFid).stream().findFirst().orElse(null);
-		if (clickedProfile == null) {
-			log.error("Clicked fid {} is not on payflow", clickedFid);
-			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameMessage("Sign up on Payflow first!"));
-		}
+		return fidToPayment;
+	}
 
-		// TODO: refactor in similar way it's done in PayController, so there's no need
-		// to extra
-		// addresses fetch, and used existing verifications returned in FarcasterUser
-		// data
-		// check if profile exist
+	private Payment createRewardPayment(User clickedProfile, int casterFid, String castHash,
+	                                    Payment.PaymentType type,
+	                                    Double amount, Double tokenAmount, String token, Integer chainId, String sourceApp) {
 		val paymentProfile = identityService.getProfiles(casterFid).stream().findFirst().orElse(null);
 		String paymentAddress = null;
 		if (paymentProfile == null || (paymentProfile.getDefaultFlow() == null
 				&& paymentProfile.getDefaultReceivingAddress() == null)) {
 			val paymentAddresses = identityService.getFidAddresses(casterFid);
-			// pay first with higher social score now invite first
 			paymentAddress = identityService.getHighestScoredIdentity(paymentAddresses);
 			if (paymentAddress == null) {
-				return ResponseEntity.badRequest().body(
-						new FrameResponse.FrameMessage("Missing verified identity! Contact @sinaver.eth"));
+				log.error("Missing verified identity for caster FID: {}", casterFid);
+				return null;
 			}
 		}
 
-		if (tokenAmount != null) {
-			if (tokenAmount <= 0) {
-				return ResponseEntity.badRequest().body(
-						new FrameResponse.FrameMessage("Payment token amount should be more than 0"));
-			}
-		} else if (amount.isNaN() && amount <= 0 && amount >= 10) {
-			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameMessage("Payment amount should be between $0-10"));
-		}
-
-		if (!SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS.contains(chainId)) {
-			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameMessage("Chain not supported"));
-		}
-
-		// check if profile accepts payment on the chain
-		if (paymentProfile != null
-				&& (paymentProfile.getDefaultFlow() != null || paymentProfile.getDefaultReceivingAddress() != null)) {
-			val isWalletPresent = paymentService.getUserReceiverAddress(paymentProfile, chainId) != null;
-			if (!isWalletPresent) {
-				return ResponseEntity.badRequest().body(
-						new FrameResponse.FrameMessage("Chain not accepted!"));
-			}
-		}
-
-		val sourceApp = validateMessage.action().signer().client().displayName();
 		val casterFcName = identityService.getFidFname(casterFid);
-		// maybe would make sense to reference top cast instead (if it's a bot cast)
 		val sourceRef = String.format("https://warpcast.com/%s/%s",
-				casterFcName, castHash.substring(0,
-						10));
+				casterFcName, castHash.substring(0, 10));
 
-		val payment = new Payment(type != null ? type : Payment.PaymentType.INTENT,
-				paymentProfile,
-				chainId, token);
+		val payment = new Payment(type, paymentProfile, chainId, token);
 		payment.setReceiverAddress(paymentAddress);
 		payment.setSender(clickedProfile);
 		if (tokenAmount != null) {
@@ -262,16 +337,6 @@ public class IntentsController {
 		payment.setSourceRef(sourceRef);
 		payment.setSourceHash(castHash);
 
-		paymentRepository.save(payment);
-
-		log.debug("Payment intent saved: {}", payment);
-
-		val message = type != null && type.equals(Payment.PaymentType.INTENT_TOP_REPLY)
-				? String.format("Submitted payment intent for top comment from @%s. " +
-						"Pay in the app!", casterFcName)
-				: String.format("Submitted payment intent for @%s. Pay in the app!", casterFcName);
-
-		return ResponseEntity.ok().body(
-				new FrameResponse.FrameMessage(message));
+		return payment;
 	}
 }

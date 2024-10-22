@@ -1,8 +1,7 @@
 import { DialogProps, Stack, Button, TextField, InputAdornment, IconButton } from '@mui/material';
-import { useContext, useMemo, useState } from 'react';
-import { getNetworkShortName } from '../../utils/networks';
+import { useContext, useMemo, useState, useEffect, useRef } from 'react';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { RewardAdvancedSection, RewardCriteria } from '../RewardAdvancedSection';
+import { RewardAdvancedSection } from '../RewardAdvancedSection';
 import { Type } from '../../types/PaymentType';
 import ResponsiveDialog from './ResponsiveDialog';
 
@@ -25,7 +24,7 @@ export default function PaymentRewardCastActionComposerDialog({
   const [rewardTokenAmount, setRewardTokenAmount] = useState<number | undefined>(1);
   const [type, setType] = useState<Type>('INTENT');
   const [numberOfRewards, setNumberOfRewards] = useState<number>(1);
-  const [rewardCriterias, setRewardCriterias] = useState<Record<string, RewardCriteria>>({});
+  const [extraParams, setExtraParams] = useState<Record<string, string>>({});
 
   const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
   const [selectedToken, setSelectedToken] = useState<Token>();
@@ -42,6 +41,16 @@ export default function PaymentRewardCastActionComposerDialog({
   }, [compatibleWallets, chainId]);
 
   const [inputValue, setInputValue] = useState<string>('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (props.open) {
+      // Use setTimeout to ensure the input is rendered before focusing
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 0);
+    }
+  }, [props.open]);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -67,16 +76,16 @@ export default function PaymentRewardCastActionComposerDialog({
       token: selectedToken?.id ?? '',
       chainId: (selectedToken?.chainId ?? base.id).toString(),
       type: type ?? 'INTENT',
-      numberOfRewards: numberOfRewards.toString()
+      rewards: numberOfRewards.toString()
     });
 
-    console.log('rewardCriterias', rewardCriterias);
+    console.log('extraParams', extraParams);
 
     // Add enabled criteria to params
-    Object.entries(rewardCriterias)
-      .filter(([_, criteria]) => criteria.required || criteria.enabled)
-      .forEach(([id, criteria]) => {
-        params.append(id, criteria.value);
+    Object.entries(extraParams)
+      .filter(([_, value]) => value !== '')
+      .forEach(([id, value]) => {
+        params.append(id, value);
       });
 
     return `${actionUrl}?${params.toString()}`;
@@ -87,7 +96,7 @@ export default function PaymentRewardCastActionComposerDialog({
     selectedToken,
     type,
     numberOfRewards,
-    rewardCriterias
+    extraParams
   ]);
 
   const warpcastInstallActionUrl = useMemo(() => {
@@ -112,6 +121,7 @@ export default function PaymentRewardCastActionComposerDialog({
               placeholder="0"
               value={inputValue}
               onChange={handleInputChange}
+              inputRef={inputRef}
               /* label={
                 <Typography color="text.secondary" pl={0.5}>
                   {isFiatMode ? 'USD Amount' : 'Token Amount'}
@@ -155,8 +165,7 @@ export default function PaymentRewardCastActionComposerDialog({
           setType={setType}
           numberOfRewards={numberOfRewards}
           setNumberOfRewards={setNumberOfRewards}
-          rewardCriterias={rewardCriterias}
-          setRewardCriterias={setRewardCriterias}
+          setExtraParams={setExtraParams}
         />
 
         <Button

@@ -1,6 +1,7 @@
 package ua.sinaver.web3.payflow.service.api;
 
 import ua.sinaver.web3.payflow.message.farcaster.*;
+import ua.sinaver.web3.payflow.message.farcaster.neynar.TrendingCastsResponse;
 import ua.sinaver.web3.payflow.message.subscription.SubscribersMessage;
 import ua.sinaver.web3.payflow.message.subscription.SubscriptionsCreatedMessage;
 
@@ -31,4 +32,6 @@ public interface IFarcasterNeynarService {
 	List<SubscriptionsCreatedMessage.Subscription> subscriptionsCreated(int fid);
 
 	List<SubscribersMessage.Subscriber> subscribers(int fid, boolean fabric);
+
+	TrendingCastsResponse fetchTrendingCasts(String channelId, String timeWindow, Integer limit, String cursor);
 }

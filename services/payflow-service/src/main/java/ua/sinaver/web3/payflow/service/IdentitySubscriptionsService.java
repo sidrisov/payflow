@@ -7,13 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 import ua.sinaver.web3.payflow.message.ConnectedAddresses;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.message.alfafrens.ChannelSubscribersAndStakesResponseMessage;
 import ua.sinaver.web3.payflow.message.alfafrens.UserByFidResponseMessage;
+import ua.sinaver.web3.payflow.message.subscription.SubscriberMessage;
 import ua.sinaver.web3.payflow.message.subscription.SubscribersMessage;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
@@ -30,6 +33,8 @@ public class IdentitySubscriptionsService {
 
 	private final WebClient webClient;
 
+	private final WebClient onchainServiceClient;
+
 	@Autowired
 	private IIdentityService identityService;
 
@@ -45,16 +50,22 @@ public class IdentitySubscriptionsService {
 	@Value("${payflow.paragraph.contacts.limit:10}")
 	private int paragraphContactsLimit;
 
-	public IdentitySubscriptionsService(WebClient.Builder builder) {
+	public IdentitySubscriptionsService(WebClient.Builder builder,
+	                                    @Value("${payflow.frames.url}") String onchainServiceUrl) {
 		webClient = builder
 				.baseUrl("https://www.alfafrens.com/api/v0")
 				.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
 				.defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
 				.build();
+
+		onchainServiceClient = builder
+				.baseUrl(onchainServiceUrl)
+				.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+				.defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+				.build();
 	}
 
-	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'alfafrens-list:' + #identity", unless =
-			"#result.isEmpty()")
+	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'alfafrens-list:' + #identity", unless = "#result.isEmpty()")
 	public List<String> fetchAlfaFrensSubscribers(String identity) {
 		log.debug("Fetching alfa frens subscribers for identity: {}", identity);
 
@@ -99,24 +110,23 @@ public class IdentitySubscriptionsService {
 			val subscribers = channelResponse.members()
 					.stream().filter(s -> s.isSubscribed() || s.isStaked())
 					.map(s -> String.format(
-							"fc_fid:%s", s.fid())).toList();
+							"fc_fid:%s", s.fid()))
+					.toList();
 			log.debug("Fetched alfa frens subscribers: {} for identity: {}", subscribers, identity);
 
 			val subscribersVerifiedAddresses = subscribers.stream()
-					.map(s ->
-							identityService.getIdentitiesInfo(
-											verificationsWithoutCustodial(
-													socialGraphService.getIdentityVerifiedAddresses(s)
-											)
-									).stream()
-									.max(Comparator.comparingInt(IdentityMessage::score))
-									.map(IdentityMessage::address)
-									.orElse(null)
-					)
+					.map(s -> identityService.getIdentitiesInfo(
+									verificationsWithoutCustodial(
+											socialGraphService.getIdentityVerifiedAddresses(s)))
+							.stream()
+							.max(Comparator.comparingInt(IdentityMessage::score))
+							.map(IdentityMessage::address)
+							.orElse(null))
 					.filter(Objects::nonNull)
 					.collect(Collectors.toList());
 
-			log.debug("Fetched alfa frens subscribers subscribersVerifiedAddresses: {} for identity: {}", subscribersVerifiedAddresses,
+			log.debug("Fetched alfa frens subscribers subscribersVerifiedAddresses: {} for identity: {}",
+					subscribersVerifiedAddresses,
 					identity);
 
 			return subscribersVerifiedAddresses;
@@ -128,8 +138,7 @@ public class IdentitySubscriptionsService {
 		}
 	}
 
-	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'fabric-list:' + #identity", unless =
-			"#result.isEmpty()")
+	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'fabric-list:' + #identity", unless = "#result.isEmpty()")
 	public List<String> fetchFabricSubscribers(String identity) {
 		log.debug("Fetching fabric subscribers for identity: {}", identity);
 
@@ -142,12 +151,16 @@ public class IdentitySubscriptionsService {
 				return Collections.emptyList();
 			}
 
-	/*		val subscriptions = neynarService.subscriptionsCreated(Integer.parseInt(fid));
-			if (subscriptions.isEmpty()) {
-				log.error("No fabric subscriptions created by fid: {}", fid);
-				return Collections.emptyList();
-			}
-			log.debug("Fetched fabric subscriptions created: {} for fid: {}", subscriptions, fid);*/
+			/*
+			 * val subscriptions =
+			 * neynarService.subscriptionsCreated(Integer.parseInt(fid));
+			 * if (subscriptions.isEmpty()) {
+			 * log.error("No fabric subscriptions created by fid: {}", fid);
+			 * return Collections.emptyList();
+			 * }
+			 * log.debug("Fetched fabric subscriptions created: {} for fid: {}",
+			 * subscriptions, fid);
+			 */
 
 			val subscribers = neynarService.subscribers(Integer.parseInt(fid), true)
 					.stream()
@@ -183,8 +196,7 @@ public class IdentitySubscriptionsService {
 		}
 	}
 
-	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'paragraph-list:' + #identity", unless =
-			"#result.isEmpty()")
+	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'paragraph-list:' + #identity", unless = "#result.isEmpty()")
 	public List<String> fetchParagraphSubscribers(String identity) {
 		log.debug("Fetching paragraph subscribers for identity: {}", identity);
 
@@ -244,5 +256,28 @@ public class IdentitySubscriptionsService {
 		} else {
 			return addresses;
 		}
+	}
+
+	public List<SubscriberMessage> fetchHypersubSubscribers(int chainId, String contractAddress,
+	                                                        List<String> accounts) {
+		return onchainServiceClient.get()
+				.uri(uriBuilder -> uriBuilder
+						.path("/hypersub/subscribers")
+						.pathSegment("{chainId}", "{contractAddress}")
+						.queryParam("accounts", accounts.toArray())
+						.build(chainId, contractAddress))
+				.retrieve()
+				.onStatus(HttpStatusCode::isError, response -> {
+					log.error("Error fetching hypersub subscribers for contract: {} on chain: {} with status code: {}",
+							contractAddress, chainId, response.statusCode());
+					return Mono.error(new RuntimeException("Error fetching trending casts"));
+				})
+				.bodyToFlux(SubscriberMessage.class)
+				.collectList()
+				.onErrorResume(e -> {
+					log.error("Error fetching hypersub subscribers for contract: {} on chain: {}",
+							contractAddress, chainId, e);
+					return Mono.just(Collections.emptyList());
+				}).blockOptional().orElse(Collections.emptyList());
 	}
 }

@@ -7,12 +7,13 @@ import {
   IconButton,
   NativeSelect,
   TextField,
-  Switch
+  Switch,
+  FormControlLabel
 } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { Type } from '../types/PaymentType';
-import { grey } from '@mui/material/colors';
 import { QuantitySelector } from './payment/QuantitySelector';
+import { ChannelSelector } from './dialogs/ChannelSelector';
 
 export interface RewardCriteria {
   label: string;
@@ -27,42 +28,34 @@ export function RewardAdvancedSection({
   setType,
   numberOfRewards,
   setNumberOfRewards,
-  rewardCriterias,
-  setRewardCriterias
+  setExtraParams
 }: {
   type: Type;
   setType: React.Dispatch<React.SetStateAction<Type>>;
   numberOfRewards: number;
   setNumberOfRewards: React.Dispatch<React.SetStateAction<number>>;
-  rewardCriterias: Record<string, RewardCriteria>;
-  setRewardCriterias: React.Dispatch<React.SetStateAction<Record<string, RewardCriteria>>>;
+  setExtraParams: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 }) {
   const [expand, setExpand] = useState<boolean>(false);
 
+  const [rewardCriteria, setRewardCriteria] = useState<Record<string, RewardCriteria>>({
+    hypersub: {
+      label: 'Hypersub',
+      placeholder: 'Contract Address',
+      value: '',
+      enabled: false,
+      required: false
+    } as RewardCriteria
+  });
+
   useEffect(() => {
-    if (Object.keys(rewardCriterias).length === 0) {
-      setRewardCriterias({
-        channel: {
-          label: 'Channel',
-          placeholder: 'Channel Name',
-          value: '',
-          required: true
-        } as RewardCriteria
-        /*  hypersub: {
-          label: 'Hypersub',
-          placeholder: 'Subscription Address',
-          value: '',
-          enabled: false
-        } as RewardCriteria,
-        fan_token: {
-          label: 'Fan Token',
-          placeholder: 'Token Name',
-          value: '',
-          enabled: false
-        } as RewardCriteria */
-      });
-    }
-  }, []);
+    Object.entries(rewardCriteria).forEach(([key, criteria]) => {
+      setExtraParams((prev) => ({
+        ...prev,
+        [key]: criteria.enabled ? criteria.value : ''
+      }));
+    });
+  }, [rewardCriteria]);
 
   return (
     <Stack width="100%">
@@ -87,7 +80,7 @@ export function RewardAdvancedSection({
             flexDirection="column"
             alignItems="stretch"
             justifyContent="flex-start"
-            gap={0.5}
+            gap={1}
             sx={{ borderRadius: 5, border: 1, borderColor: 'divider' }}>
             <Box
               display="flex"
@@ -120,7 +113,7 @@ export function RewardAdvancedSection({
               fontWeight="bold"
               maxWidth={300}
               textAlign="center"
-              sx={{ p: 2, borderColor: 'divider', color: grey[400] }}>
+              sx={{ p: 2, borderColor: 'divider', color: 'text.secondary' }}>
               {type === 'REWARD' ? (
                 'Rewards selected cast author'
               ) : type === 'REWARD_TOP_REPLY' ? (
@@ -136,7 +129,7 @@ export function RewardAdvancedSection({
                   </b>
                 </>
               ) : (
-                'Rewards top N casters in the channel based on configured criteria'
+                'Rewards top N casters in the channel or globally based on configured criteria'
               )}
             </Typography>
 
@@ -148,7 +141,7 @@ export function RewardAdvancedSection({
                   justifyContent="space-between"
                   alignItems="center">
                   <Typography fontSize={13} fontWeight="bold">
-                    Number of Rewards
+                    Number of rewards
                   </Typography>
                   <QuantitySelector
                     quantity={numberOfRewards}
@@ -159,68 +152,105 @@ export function RewardAdvancedSection({
                 </Box>
                 <Box
                   display="flex"
+                  flexDirection="row"
+                  justifyContent="space-between"
+                  alignItems="center">
+                  <Typography fontSize={13} fontWeight="bold">
+                    Casts in
+                  </Typography>
+                  <ChannelSelector
+                    onChannelSelect={(channel) => {
+                      setExtraParams((prev) => ({
+                        ...prev,
+                        channel: channel?.channelId || ''
+                      }));
+                    }}
+                  />
+                </Box>
+                <Box
+                  display="flex"
                   flexDirection="column"
                   justifyContent="flex-start"
                   alignItems="stretch"
                   gap={1}>
-                  <Typography fontSize={13} fontWeight="bold">
-                    Reward Criteria
+                  <Typography fontSize={13} fontWeight="bold" mb={1}>
+                    User Criteria
                   </Typography>
-                  {Object.entries(rewardCriterias).map(([key, criteria]) => (
-                    <Box
-                      key={key}
-                      display="flex"
-                      justifyContent="space-between"
-                      alignItems="center"
-                      sx={{ mb: 1 }}>
-                      <Typography sx={{ width: '30%', fontSize: 13 }}>{criteria.label}</Typography>
-                      <TextField
-                        value={criteria.value}
-                        onChange={(e) => {
-                          setRewardCriterias((prev) => ({
-                            ...prev,
-                            [key]: { ...prev[key], value: e.target.value }
-                          }));
-                        }}
-                        disabled={!criteria.required && !criteria.enabled}
-                        sx={{
-                          width: '50%',
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: 3,
-                            height: 40
+                  <Box
+                    sx={{
+                      ml: 1,
+                      borderLeft: 2,
+                      borderColor: 'divider'
+                    }}>
+                    {Object.entries(rewardCriteria).map(([key, criteria]) => (
+                      <Box
+                        key={key}
+                        display="flex"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        sx={{ mb: 1 }}>
+                        <FormControlLabel
+                          labelPlacement="top"
+                          slotProps={{
+                            typography: {
+                              sx: { fontSize: 12, fontWeight: 'bold' }
+                            }
+                          }}
+                          control={
+                            criteria.required ? (
+                              <></>
+                            ) : (
+                              <Switch
+                                checked={criteria.enabled}
+                                onChange={(e) => {
+                                  setRewardCriteria((prev) => ({
+                                    ...prev,
+                                    [key]: {
+                                      ...prev[key],
+                                      enabled: e.target.checked,
+                                      value: e.target.checked ? prev[key].value : ''
+                                    }
+                                  }));
+                                }}
+                                size="small"
+                                color="default"
+                              />
+                            )
                           }
-                        }}
-                        size="small"
-                        placeholder={
-                          key === 'channel'
-                            ? 'Channel Name'
-                            : key === 'hypersub'
-                            ? 'Subscription Address'
-                            : key === 'fan_token'
-                            ? 'Token Name'
-                            : 'Enter value'
-                        }
-                        slotProps={{
-                          input: {
-                            sx: { fontSize: 13, fontWeight: 'bold' }
-                          }
-                        }}
-                      />
-
-                      {!criteria.required && (
-                        <Switch
-                          checked={criteria.enabled}
+                          label={criteria.label}
+                        />
+                        <TextField
+                          value={criteria.value}
                           onChange={(e) => {
-                            setRewardCriterias((prev) => ({
+                            setRewardCriteria((prev) => ({
                               ...prev,
-                              [key]: { ...prev[key], enabled: e.target.checked }
+                              [key]: { ...prev[key], value: e.target.value }
                             }));
                           }}
+                          disabled={!criteria.enabled}
+                          sx={{
+                            width: '50%',
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: 5,
+                              borderColor: 'divider',
+                              height: 40,
+                              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                borderColor: 'text.primary',
+                                borderWidth: 1
+                              }
+                            }
+                          }}
                           size="small"
+                          placeholder={criteria.placeholder}
+                          slotProps={{
+                            input: {
+                              sx: { fontSize: 12, fontWeight: 'bold' }
+                            }
+                          }}
                         />
-                      )}
-                    </Box>
-                  ))}
+                      </Box>
+                    ))}
+                  </Box>
                 </Box>
               </>
             )}

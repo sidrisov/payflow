@@ -1,7 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { Address } from 'viem';
 import { PaymentType } from '../../types/PaymentType';
-import { ContractState, fetchState } from '@withfabric/protocol-sdks/stpv2';
+import {
+  ContractState,
+  fetchState,
+} from '@withfabric/protocol-sdks/stpv2';
 import axios from 'axios';
 
 export interface ContractMetadata {

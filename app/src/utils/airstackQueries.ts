@@ -311,3 +311,22 @@ export const QUERY_CHECK_STATUS_CLAIM_MOXIE_REWARDS = `
     }
   }
 `;
+
+export const QUERY_FARCASTER_CHANNELS_FOR_USER = /* GraphQL */ `
+  query GetFarcasterChannelsForUser($identity: Identity!) {
+    FarcasterChannels(
+      input: {
+        blockchain: ALL
+        filter: { leadIdentity: { _eq: $identity }, moderatorIdentity: { _eq: $identity } }
+        limit: 10
+      }
+    ) {
+      FarcasterChannel {
+        channelId
+        name
+        description
+        imageUrl
+      }
+    }
+  }
+`;

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import ua.sinaver.web3.payflow.message.farcaster.*;
+import ua.sinaver.web3.payflow.message.farcaster.neynar.TrendingCastsResponse;
 import ua.sinaver.web3.payflow.message.subscription.SubscribersMessage;
 import ua.sinaver.web3.payflow.message.subscription.SubscriptionsCreatedMessage;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
@@ -288,7 +290,7 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 		log.debug("Calling Neynar Created Subscriptions API by fid {}", fid);
 		return neynarClient.get()
 				.uri(uriBuilder -> uriBuilder.path("/user/subscriptions_created")
-						.queryParam("fid",/* fid == 19129 ? 576 : */fid)
+						.queryParam("fid", /* fid == 19129 ? 576 : */fid)
 						.queryParam("subscription_provider", "fabric_stp")
 						.build())
 				.retrieve()
@@ -345,5 +347,39 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 				.blockOptional()
 				.map(SubscribersMessage::subscribers)
 				.orElse(Collections.emptyList());
+	}
+
+	@Override
+	public TrendingCastsResponse fetchTrendingCasts(String channelId, String timeWindow, Integer limit, String cursor) {
+		log.debug("Calling Neynar Trending Casts API with channelId: {}, timeWindow: {}, limit: {}, cursor: {}",
+				channelId, timeWindow, limit, cursor);
+
+		return neynarClient.get()
+				.uri(uriBuilder -> {
+					uriBuilder.path("/feed/trending");
+					if (channelId != null) {
+						uriBuilder.queryParam("channel_id", channelId);
+					}
+					if (timeWindow != null) {
+						uriBuilder.queryParam("time_window", timeWindow);
+					}
+					uriBuilder.queryParam("limit", limit != null ? limit : 10);
+					if (cursor != null) {
+						uriBuilder.queryParam("cursor", cursor);
+					}
+					return uriBuilder.build();
+				})
+				.retrieve()
+				.onStatus(HttpStatusCode::isError, response -> {
+					log.error("Error calling Neynar Trending Casts API: {}", response.statusCode());
+					return Mono.error(new RuntimeException("Error fetching trending casts"));
+				})
+				.bodyToMono(TrendingCastsResponse.class)
+				.onErrorResume(e -> {
+					log.error("Exception calling Neynar Trending Casts API: {}", e.getMessage());
+					return Mono.just(new TrendingCastsResponse());
+				})
+				.blockOptional()
+				.orElse(new TrendingCastsResponse());
 	}
 }

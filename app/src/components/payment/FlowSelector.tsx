@@ -3,7 +3,7 @@ import { Typography, Chip, Box, Avatar } from '@mui/material';
 import { FlowType } from '../../types/FlowType';
 import { ChooseFlowDialog } from '../dialogs/ChooseFlowDialog';
 import { PiTipJar } from 'react-icons/pi';
-import { IoIosWallet } from 'react-icons/io';
+import { IoIosArrowDown, IoIosWallet } from 'react-icons/io';
 
 import FarcasterAvatar from '../avatars/FarcasterAvatar';
 type FlowSelectorProps = {
@@ -54,6 +54,8 @@ export const FlowSelector: React.FC<FlowSelectorProps> = ({
           </Typography>
         }
         variant="outlined"
+        deleteIcon={<IoIosArrowDown />}
+        onDelete={() => setOpenSelectFlow(true)}
         sx={{
           height: 40,
           borderRadius: 5,

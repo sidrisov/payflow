@@ -15,6 +15,8 @@ import ResponsiveDialog from './dialogs/ResponsiveDialog';
 import NetworkAvatar from './avatars/NetworkAvatar';
 import TokenAvatar from './avatars/TokenAvatar';
 import { Chip } from '@mui/material';
+import { ArrowDownward } from '@mui/icons-material';
+import { IoIosArrowDown } from 'react-icons/io';
 
 export function NetworkTokenSelector({
   payment,
@@ -145,6 +147,8 @@ export function NetworkTokenSelector({
             <CircularProgress size={20} />
           )
         }
+        deleteIcon={<IoIosArrowDown />}
+        onDelete={paymentTokenSelectable ? () => setExpand(true) : undefined}
         label={
           paymentToken ? (
             <Typography variant="subtitle2" textTransform="uppercase">
