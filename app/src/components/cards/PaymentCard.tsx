@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, BoxProps, Button, IconButton, Tooltip, Typography, Stack } from '@mui/material';
-import { MoreHoriz } from '@mui/icons-material';
+import { MoreVert } from '@mui/icons-material';
 import { PaymentType } from '../../types/PaymentType';
 import { PaymentMenu } from '../menu/PaymentMenu';
 import { useMobile } from '../../utils/hooks/useMobile';
@@ -104,14 +104,37 @@ export function PaymentCard({ payment, title, children, ...props }: PaymentCardP
           flexDirection="row"
           alignItems="center"
           justifyContent="space-between">
-          <Stack direction="row" alignItems="center" justifyContent="flex-start" spacing={0.5}>
-            <Tooltip title={getStatusTooltip()}>{renderStatusIcon()}</Tooltip>
-            <Typography variant="subtitle2" fontWeight="bold" fontSize={14}>
-              {title}
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="flex-start"
+            spacing={0.5}
+            sx={{ flexGrow: 1, minWidth: 0 }}>
+            <Box
+              sx={{
+                flexShrink: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+              <Tooltip title={getStatusTooltip()}>{renderStatusIcon()}</Tooltip>
+            </Box>
+            <Typography
+              variant="subtitle2"
+              fontWeight="bold"
+              fontSize={14}
+              noWrap
+              sx={{
+                flexGrow: 1,
+                minWidth: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}>
+              fasdf asdf asd fasf
             </Typography>
           </Stack>
           <IconButton size="small" onClick={handleMenuOpen}>
-            <MoreHoriz fontSize="small" />
+            <MoreVert sx={{ fontSize: 18 }} />
           </IconButton>
         </Box>
         {children}

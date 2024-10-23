@@ -1,7 +1,7 @@
 import { Box, Stack, Typography, Skeleton, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { SelectedIdentityType } from '../../types/ProfileType';
-import { PaymentType } from '../../types/PaymentType';
+import { PaymentType, PaymentCategory } from '../../types/PaymentType';
 import { RecipientField } from '../RecipientField';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { useContext, useMemo, useState } from 'react';
@@ -236,6 +236,19 @@ export default function PaymentDialog({
     return `Successfully sent ${amount} ${tokenSymbol} to ${recipientName}`;
   }, [paymentAmount, paymentToken, payment, recipient]);
 
+  const getSubtitle = (category?: PaymentCategory) => {
+    switch (category) {
+      case 'reward':
+        return 'Reward';
+      case 'reward_top_reply':
+        return 'Reward for top reply';
+      case 'reward_top_casters':
+        return 'Reward for top casts';
+      default:
+        return undefined;
+    }
+  };
+
   return paymentSuccessData ? (
     <PaymentSuccessDialog
       message={successMessage}
@@ -259,6 +272,7 @@ export default function PaymentDialog({
       mode={crossChainMode ? 'cross-chain' : 'normal'}
       alwaysShowBackButton={alwaysShowBackButton}
       title={props.title ?? 'New Payment'}
+      subtitle={getSubtitle(payment?.category)}
       expiresAt={payment?.expiresAt}
       closeStateCallback={closeStateCallback}
       footerContent={

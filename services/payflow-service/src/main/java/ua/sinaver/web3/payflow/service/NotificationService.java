@@ -18,6 +18,7 @@ import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.utils.MintUrlUtils;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -62,7 +63,7 @@ public class NotificationService {
 				: payment.getSenderAddress();
 		val receiverIdentity = payment.getReceiver() != null ? payment.getReceiver().getIdentity()
 				: payment.getReceiverAddress() != null ? payment.getReceiverAddress()
-						: "fc_fid:" + payment.getReceiverFid();
+				: "fc_fid:" + payment.getReceiverFid();
 
 		if (StringUtils.isBlank(senderIdentity) || StringUtils.isBlank((receiverIdentity))) {
 			log.error("Sender or receiver can't be unknown for payment: {}", payment);
@@ -75,7 +76,7 @@ public class NotificationService {
 		val embeds = Collections.singletonList(new Cast.Embed(receiptUrl));
 
 		val castText = String.format("""
-				@%s, you've been paid %s %s by @%s 💸""",
+						@%s, you've been paid %s %s by @%s 💸""",
 				receiverFname,
 				StringUtils.isNotBlank(payment.getTokenAmount())
 						? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
@@ -93,12 +94,12 @@ public class NotificationService {
 	}
 
 	public boolean preferredTokensReply(String parentHash, FarcasterUser user,
-			List<String> preferredTokenIds) {
+	                                    List<String> preferredTokenIds) {
 
 		val formattedTokenIds = String.join(", ", preferredTokenIds).toUpperCase();
 		val castText = String.format("""
-				@%s, your preferred receiving tokens have been updated:
-				%s ✅""",
+						@%s, your preferred receiving tokens have been updated:
+						%s ✅""",
 				user.username(), formattedTokenIds);
 
 		val embeds = Collections.singletonList(new Cast.Embed(
@@ -141,7 +142,7 @@ public class NotificationService {
 			val receiverFname = identityService
 					.getIdentityFname(payment.getReceiver() != null ? payment.getReceiver().getIdentity()
 							: payment.getReceiverAddress() != null ? payment.getReceiverAddress()
-									: "fc_fid:" + payment.getReceiverFid());
+							: "fc_fid:" + payment.getReceiverFid());
 			if (StringUtils.isBlank(receiverFname)) {
 				log.warn("Can't notify user, since farcaster name wasn't found: {}", payment);
 				return;
@@ -150,14 +151,13 @@ public class NotificationService {
 			val senderFname = identityService.getIdentityFname(user.getIdentity());
 			val receiptUrl = receiptService.getReceiptUrl(payment, false,
 					payment.getRefundHash() != null);
-			var embeds = Collections.singletonList(new Cast.Embed(receiptUrl));
 			val sourceRefText = StringUtils.isNotBlank(payment.getSourceRef()) ? payment.getSourceRef()
 					: StringUtils.isNotBlank(payment.getSourceHash()) ? String.format(
-							"🔗 Source: https://warpcast.com/%s/%s",
-							receiverFname, payment.getSourceHash().substring(0, 10)) : "";
+					"🔗 Source: https://warpcast.com/%s/%s",
+					receiverFname, payment.getSourceHash().substring(0, 10)) : "";
 
 			if (payment.getRefundHash() != null) {
-				handleRefundNotification(payment, senderFname, embeds, sourceRefText);
+				handleRefundNotification(payment, senderFname, receiptUrl, sourceRefText);
 				return;
 			}
 
@@ -167,20 +167,20 @@ public class NotificationService {
 
 			if (StringUtils.isBlank(payment.getCategory())
 					|| List.of("reward", "reward_top_reply", "reward_top_casters").contains(payment.getCategory())) {
-				handleP2PPaymentNotification(payment, senderFname, receiverFname, embeds, crossChainText,
+				handleP2PPaymentNotification(payment, senderFname, receiverFname, receiptUrl, crossChainText,
 						sourceRefText);
 			} else if (payment.getCategory().equals("fc_storage")) {
-				handleStoragePaymentNotification(payment, senderFname, receiverFname, embeds, crossChainText,
+				handleStoragePaymentNotification(payment, senderFname, receiverFname, receiptUrl, crossChainText,
 						sourceRefText);
 			} else if (payment.getCategory().equals("mint")) {
-				handleMintPaymentNotification(payment, senderFname, receiverFname, embeds, sourceRefText,
+				handleMintPaymentNotification(payment, senderFname, receiverFname, receiptUrl, sourceRefText,
 						isSelfPurchase);
 			} else if (payment.getCategory().equals("fan")) {
-				handleFanTokenPaymentNotification(payment, senderFname, receiverFname, embeds, crossChainText,
+				handleFanTokenPaymentNotification(payment, senderFname, receiverFname, receiptUrl, crossChainText,
 						sourceRefText, isSelfPurchase);
 			} else if (payment.getCategory().equals("hypersub")) {
 				handleHypersubPaymentNotification(payment, senderFname, receiverFname,
-						embeds,
+						receiptUrl,
 						sourceRefText, isSelfPurchase);
 			}
 		}
@@ -207,12 +207,18 @@ public class NotificationService {
 	}
 
 	private void handleP2PPaymentNotification(Payment payment, String senderFname, String receiverFname,
-			List<Cast.Embed> embeds, String crossChainText, String sourceRefText) {
+	                                          String receiptUrl, String crossChainText,
+	                                          String sourceRefText) {
+		val embeds = new ArrayList<Cast.Embed>();
+		if (payment.getTarget() != null) {
+			embeds.add(new Cast.Embed(payment.getTarget()));
+		}
+		embeds.add(new Cast.Embed(receiptUrl));
 
 		switch (payment.getCategory()) {
 			case "reward":
 				val rewardCastText = String.format("""
-						@%s, you've been rewarded %s %s%s by @%s for being awesome 🏆""",
+								@%s, you've been rewarded %s %s%s by @%s for being awesome 🏆""",
 						receiverFname,
 						StringUtils.isNotBlank(payment.getTokenAmount())
 								? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
@@ -232,7 +238,7 @@ public class NotificationService {
 				}
 
 				val topReplyCastText = String.format("""
-						@%s, you've been paid %s %s%s by @%s for your top comment %s 🏆""",
+								@%s, you've been paid %s %s%s by @%s for your top comment %s 🏆""",
 						receiverFname,
 						StringUtils.isNotBlank(payment.getTokenAmount())
 								? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
@@ -243,12 +249,12 @@ public class NotificationService {
 						scvText);
 
 				sendCastReply(topReplyCastText, payment.getSourceHash(), embeds);
+
 				break;
 
 			case "reward_top_casters":
-
 				val topCasterCastText = String.format("""
-						@%s, you've been rewarded %s %s%s by @%s for your trending cast 🏆""",
+								@%s, you've been rewarded %s %s%s by @%s for your top cast 🏆""",
 						receiverFname,
 						StringUtils.isNotBlank(payment.getTokenAmount())
 								? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
@@ -257,12 +263,11 @@ public class NotificationService {
 						crossChainText,
 						senderFname);
 
-				// TODO: add a link to the trending cast
 				sendCastReply(topCasterCastText, payment.getSourceHash(), embeds);
 				break;
 			default:
 				val castText = String.format("""
-						@%s, you've been paid %s %s%s by @%s 💸""",
+								@%s, you've been paid %s %s%s by @%s 💸""",
 						receiverFname,
 						StringUtils.isNotBlank(payment.getTokenAmount())
 								? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
@@ -277,10 +282,10 @@ public class NotificationService {
 					val receiverFid = identityService.getIdentityFid(payment.getReceiver().getIdentity());
 					if (StringUtils.isNotBlank(receiverFid)) {
 						val messageText = String.format("""
-								@%s, you've been paid %s %s%s by @%s 💸
+										@%s, you've been paid %s %s%s by @%s 💸
 
-								%s
-								🧾 Receipt: %s""",
+										%s
+										🧾 Receipt: %s""",
 								receiverFname,
 								StringUtils.isNotBlank(payment.getTokenAmount())
 										? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
@@ -298,35 +303,36 @@ public class NotificationService {
 	}
 
 	private void handleStoragePaymentNotification(Payment payment, String senderFname, String receiverFname,
-			List<Cast.Embed> embeds, String crossChainText, String sourceRefText) {
+	                                              String receiptUrl, String crossChainText,
+	                                              String sourceRefText) {
 		val storageFrameUrl = UriComponentsBuilder.fromHttpUrl(framesServiceUrl)
 				.path("/fid/{fid}/storage?v3")
 				.buildAndExpand(payment.getReceiverFid())
 				.toUriString();
 
 		val castText = String.format("""
-				@%s, you've been paid %s unit(s) of storage%s by @%s 🗄""",
+						@%s, you've been paid %s unit(s) of storage%s by @%s 🗄""",
 				receiverFname,
 				payment.getTokenAmount(),
 				crossChainText,
 				senderFname);
 
-		embeds = List.of(new Cast.Embed(storageFrameUrl), new Cast.Embed(receiptService.getReceiptUrl(payment)));
+		val embeds = List.of(new Cast.Embed(storageFrameUrl), new Cast.Embed(receiptUrl));
 		sendCastReply(castText, payment.getSourceHash(), embeds);
 
 		if (payment.getReceiver() != null) {
 			val messageText = String.format("""
-					@%s, you've been paid %s units of storage%s by @%s 🗄
+							@%s, you've been paid %s units of storage%s by @%s 🗄
 
-					%s
-					🧾 Receipt: %s
-					📊 Your storage usage now: %s""",
+							%s
+							🧾 Receipt: %s
+							📊 Your storage usage now: %s""",
 					receiverFname,
 					payment.getTokenAmount(),
 					crossChainText,
 					senderFname,
 					sourceRefText,
-					receiptService.getReceiptUrl(payment),
+					receiptUrl,
 					storageFrameUrl);
 
 			sendDirectMessage(messageText, payment.getReceiverFid().toString());
@@ -334,7 +340,7 @@ public class NotificationService {
 	}
 
 	private void handleMintPaymentNotification(Payment payment, String senderFname, String receiverFname,
-			List<Cast.Embed> embeds, String sourceRefText, boolean isSelfPurchase) {
+	                                           String receiptUrl, String sourceRefText, boolean isSelfPurchase) {
 		val mintUrlMessage = ParsedMintUrlMessage.fromCompositeToken(payment.getToken(),
 				payment.getNetwork().toString());
 
@@ -358,47 +364,47 @@ public class NotificationService {
 		String castText;
 		if (isSelfPurchase) {
 			castText = String.format("""
-					@%s, you've successfully minted %s%scollectible from the cast above ✨""",
+							@%s, you've successfully minted %s%scollectible from the cast above ✨""",
 					senderFname,
 					tokenAmountText,
 					authorPart);
 		} else {
 			castText = String.format("""
-					@%s, you've been gifted %s%scollectible by @%s from the cast above  ✨""",
+							@%s, you've been gifted %s%scollectible by @%s from the cast above  ✨""",
 					receiverFname,
 					tokenAmountText,
 					authorPart,
 					senderFname);
 		}
 
-		embeds = List.of(new Cast.Embed(frameMintUrl), new Cast.Embed(receiptService.getReceiptUrl(payment)));
+		val embeds = List.of(new Cast.Embed(frameMintUrl), new Cast.Embed(receiptUrl));
 		sendCastReply(castText, payment.getSourceHash(), embeds);
 
 		if (payment.getReceiver() != null) {
 			String messageText;
 			if (isSelfPurchase) {
 				messageText = String.format("""
-						@%s, you've successfully minted %s%scollectible from the cast above ✨
+								@%s, you've successfully minted %s%scollectible from the cast above ✨
 
-						%s
-						🧾 Receipt: %s""",
+								%s
+								🧾 Receipt: %s""",
 						senderFname,
 						tokenAmountText,
 						authorPart,
 						sourceRefText,
-						receiptService.getReceiptUrl(payment));
+						receiptUrl);
 			} else {
 				messageText = String.format("""
-						@%s, you've been gifted %s%scollectible by @%s from the cast above ✨
+								@%s, you've been gifted %s%scollectible by @%s from the cast above ✨
 
-						%s
-						🧾 Receipt: %s""",
+								%s
+								🧾 Receipt: %s""",
 						receiverFname,
 						tokenAmountText,
 						authorPart,
 						senderFname,
 						sourceRefText,
-						receiptService.getReceiptUrl(payment));
+						receiptUrl);
 			}
 
 			sendDirectMessage(messageText, payment.getReceiverFid().toString());
@@ -406,8 +412,8 @@ public class NotificationService {
 	}
 
 	private void handleHypersubPaymentNotification(Payment payment, String senderFname,
-			String receiverFname,
-			List<Cast.Embed> embeds, String sourceRefText, boolean isSelfPurchase) {
+	                                               String receiverFname,
+	                                               String receiptUrl, String sourceRefText, boolean isSelfPurchase) {
 		val tokenAmount = Double.parseDouble(payment.getTokenAmount());
 		val tokenAmountText = tokenAmount + " month(s) ";
 
@@ -416,46 +422,47 @@ public class NotificationService {
 		String castText;
 		if (isSelfPurchase) {
 			castText = String.format("""
-					@%s, you've successfully subscribed to %s of %shypersub from the cast above 🕐""",
+							@%s, you've successfully subscribed to %s of %shypersub from the cast above 🕐""",
 					senderFname,
 					tokenAmountText,
 					authorPart);
 		} else {
 			castText = String.format("""
-					@%s, you've been gifted %s of %shypersub subscription by @%s from the cast above 🕐""",
+							@%s, you've been gifted %s of %shypersub subscription by @%s from the cast above 🕐""",
 					receiverFname,
 					tokenAmountText,
 					authorPart,
 					senderFname);
 		}
 
-		sendCastReply(castText, payment.getSourceHash(), embeds);
+		sendCastReply(castText, payment.getSourceHash(),
+				Collections.singletonList(new Cast.Embed(receiptUrl)));
 
 		if (payment.getReceiver() != null) {
 			String messageText;
 			if (isSelfPurchase) {
 				messageText = String.format("""
-						@%s, you've successfully subscribed to %s of %shypersub from the cast above 🕐
+								@%s, you've successfully subscribed to %s of %shypersub from the cast above 🕐
 
-						%s
-						🧾 Receipt: %s""",
+								%s
+								🧾 Receipt: %s""",
 						senderFname,
 						tokenAmountText,
 						authorPart,
 						sourceRefText,
-						receiptService.getReceiptUrl(payment));
+						receiptUrl);
 			} else {
 				messageText = String.format("""
-						@%s, you've been gifted %s of %shypersub subscription by @%s from the cast above 🕐
+								@%s, you've been gifted %s of %shypersub subscription by @%s from the cast above 🕐
 
-						%s
-						🧾 Receipt: %s""",
+								%s
+								🧾 Receipt: %s""",
 						receiverFname,
 						tokenAmountText,
 						authorPart,
 						senderFname,
 						sourceRefText,
-						receiptService.getReceiptUrl(payment));
+						receiptUrl);
 			}
 
 			sendDirectMessage(messageText, payment.getReceiverFid().toString());
@@ -463,7 +470,7 @@ public class NotificationService {
 	}
 
 	private void handleFanTokenPaymentNotification(Payment payment, String senderFname, String receiverFname,
-			List<Cast.Embed> embeds, String crossChainText, String sourceRefText, boolean isSelfPurchase) {
+	                                               String receiptUrl, String crossChainText, String sourceRefText, boolean isSelfPurchase) {
 		val fanTokenParts = payment.getToken().split(";");
 		var fanTokenName = fanTokenParts[0];
 
@@ -480,14 +487,14 @@ public class NotificationService {
 		String castText;
 		if (isSelfPurchase) {
 			castText = String.format("""
-					@%s, you've successfully purchased %s %s fan token(s)%s Ⓜ️""",
+							@%s, you've successfully purchased %s %s fan token(s)%s Ⓜ️""",
 					senderFname,
 					payment.getTokenAmount(),
 					fanTokenName,
 					crossChainText);
 		} else {
 			castText = String.format("""
-					@%s, you've been gifted %s %s fan token(s) by @%s%s Ⓜ️""",
+							@%s, you've been gifted %s %s fan token(s) by @%s%s Ⓜ️""",
 					receiverFname,
 					payment.getTokenAmount(),
 					fanTokenName,
@@ -495,36 +502,36 @@ public class NotificationService {
 					crossChainText);
 		}
 
-		embeds = List.of(new Cast.Embed(frameFanTokenUrl), new Cast.Embed(receiptService.getReceiptUrl(payment)));
+		val embeds = List.of(new Cast.Embed(frameFanTokenUrl), new Cast.Embed(receiptUrl));
 		sendCastReply(castText, payment.getSourceHash(), embeds);
 
 		if (payment.getReceiver() != null) {
 			String messageText;
 			if (isSelfPurchase) {
 				messageText = String.format("""
-						@%s, you've successfully purchased %s %s fan token(s)%s Ⓜ️
+								@%s, you've successfully purchased %s %s fan token(s)%s Ⓜ️
 
-						%s
-						🧾 Receipt: %s""",
+								%s
+								🧾 Receipt: %s""",
 						senderFname,
 						payment.getTokenAmount(),
 						fanTokenName,
 						crossChainText,
 						sourceRefText,
-						receiptService.getReceiptUrl(payment));
+						receiptUrl);
 			} else {
 				messageText = String.format("""
-						@%s, you've been gifted %s %s fan token(s) by @%s%s Ⓜ️
+								@%s, you've been gifted %s %s fan token(s) by @%s%s Ⓜ️
 
-						%s
-						🧾 Receipt: %s""",
+								%s
+								🧾 Receipt: %s""",
 						receiverFname,
 						payment.getTokenAmount(),
 						fanTokenName,
 						senderFname,
 						crossChainText,
 						sourceRefText,
-						receiptService.getReceiptUrl(payment));
+						receiptUrl);
 			}
 
 			sendDirectMessage(messageText, payment.getReceiverFid().toString());
@@ -532,28 +539,26 @@ public class NotificationService {
 	}
 
 	private void handleRefundNotification(Payment payment, String senderFname,
-			List<Cast.Embed> embeds, String sourceRefText) {
+	                                      String refundReceipt, String sourceRefText) {
 		val category = StringUtils.isBlank(payment.getCategory()) ? "P2P" : payment.getCategory();
-
 		val castText = String.format("""
-				@%s, you've been refunded for "%s" payment initiated from the cast above 🔄""",
+						@%s, you've been refunded for "%s" payment initiated from the cast above 🔄""",
 				senderFname,
 				category);
 
-		sendCastReply(castText, payment.getSourceHash(), embeds);
-
+		sendCastReply(castText, payment.getSourceHash(), Collections.singletonList(new Cast.Embed(refundReceipt)));
 		if (payment.getSender() != null) {
 			val senderFid = identityService.getIdentityFid(payment.getSender().getIdentity());
 			if (StringUtils.isNotBlank(senderFid)) {
 				val messageText = String.format("""
-						@%s, you've been refunded for "%s" payment initiated from the cast above 🔄💸
+								@%s, you've been refunded for "%s" payment initiated from the cast above 🔄💸
 
-						%s
-						🧾 Receipt: %s""",
+								%s
+								🧾 Receipt: %s""",
 						senderFname,
 						category,
 						sourceRefText,
-						receiptService.getReceiptUrl(payment, false, true));
+						refundReceipt);
 
 				sendDirectMessage(messageText, senderFid);
 			}

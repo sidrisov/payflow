@@ -12,6 +12,7 @@ export type BasePaymentDialogProps = DialogProps &
   CloseCallbackType & {
     alwaysShowBackButton?: boolean;
     title?: string;
+    subtitle?: string;
     expiresAt?: Date;
     createdAt?: Date;
     children: React.ReactNode;
@@ -22,6 +23,7 @@ export type BasePaymentDialogProps = DialogProps &
 export function BasePaymentDialog({
   alwaysShowBackButton = false,
   title,
+  subtitle,
   expiresAt,
   createdAt,
   children,
@@ -69,6 +71,7 @@ export function BasePaymentDialog({
       <BackDialogTitle
         showOnDesktop={alwaysShowBackButton}
         title={title ?? 'Payment'}
+        subtitle={subtitle}
         controlComponent={additionalTitleComponent}
         closeStateCallback={closeStateCallback}
       />

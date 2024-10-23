@@ -6,6 +6,7 @@ import { useMobile } from '../../utils/hooks/useMobile';
 
 export function BackDialogTitle({
   title,
+  subtitle,
   controlComponent: additionalTitleComponent,
   hidden = false,
   showOnDesktop = false,
@@ -13,6 +14,7 @@ export function BackDialogTitle({
   ...props
 }: {
   title: string;
+  subtitle?: string;
   controlComponent?: React.ReactNode;
   hidden?: boolean;
   showOnDesktop?: boolean;
@@ -40,9 +42,20 @@ export function BackDialogTitle({
                 <ArrowBack />
               </IconButton>
             )}
-            <Typography ml={showBackButton ? 2 : 0} variant="h6">
-              {title}
-            </Typography>
+            <Box ml={showBackButton ? 2 : 0}>
+              <Typography variant="h6" component="span">
+                {title}
+                {subtitle && (
+                  <Typography
+                    variant="caption"
+                    fontWeight="bold"
+                    display="block"
+                    color="text.secondary">
+                    {subtitle}
+                  </Typography>
+                )}
+              </Typography>
+            </Box>
           </Stack>
           {additionalTitleComponent && <Box ml={2}>{additionalTitleComponent}</Box>}
         </Box>

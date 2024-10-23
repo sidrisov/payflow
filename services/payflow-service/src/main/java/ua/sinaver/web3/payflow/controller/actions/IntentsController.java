@@ -73,8 +73,8 @@ public class IntentsController {
 			@RequestParam MultiValueMap<String, String> allParams) {
 
 		log.debug("Received metadata request for cast action: pay intent with params: " +
-				"type = {}, amount = {}, tokenAmount = {}, token = {}, chainId = {}, " +
-				"numberOfRewards = {}, allParams = {}",
+						"type = {}, amount = {}, tokenAmount = {}, token = {}, chainId = {}, " +
+						"numberOfRewards = {}, allParams = {}",
 				type, amount, tokenAmount, token, chainId, numberOfRewards, allParams);
 
 		CastActionMeta castActionMeta;
@@ -145,7 +145,7 @@ public class IntentsController {
 			@RequestParam MultiValueMap<String, String> allParams) {
 
 		log.debug("Received cast action: pay reward {} with params: type = {}, amount = {}, " +
-				"tokenAmount = {}, token = {}, chainId = {}, numberOfRewards = {}, allParams = {}",
+						"tokenAmount = {}, token = {}, chainId = {}, numberOfRewards = {}, allParams = {}",
 				castActionMessage, type, amount, tokenAmount, token, chainId, numberOfRewards, allParams);
 
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
@@ -191,7 +191,7 @@ public class IntentsController {
 				int casterFid = Integer.parseInt(topReply.getFid());
 				val castHash = topReply.getHash();
 				val payment = createRewardPayment(clickedProfile, casterFid, castHash, "reward_top_reply",
-						amount, tokenAmount, token, chainId, sourceApp);
+						amount, tokenAmount, token, chainId, sourceApp, topReply.getUrl());
 				if (payment == null) {
 					return ResponseEntity.badRequest().body(
 							new FrameResponse.FrameMessage("Failed to create reward intent. " +
@@ -221,7 +221,7 @@ public class IntentsController {
 				}
 				excludeFids.add(String.valueOf(clickedFid));
 
-				val fidToPayment = createUniquePayments(
+				val fidToPayment = fetchAndCreateTopCastPayments(
 						excludeFids,
 						channelId,
 						hypersubContractAddress,
@@ -249,8 +249,9 @@ public class IntentsController {
 						? validateMessage.action().cast().author().fid()
 						: validateMessage.action().cast().fid();
 				String authorCastHash = validateMessage.action().cast().hash();
-				Payment rewardPayment = createRewardPayment(clickedProfile, authorFid, authorCastHash, "reward",
-						amount, tokenAmount, token, chainId, sourceApp);
+				val rewardPayment = createRewardPayment(clickedProfile, authorFid, authorCastHash,
+						"reward",
+						amount, tokenAmount, token, chainId, sourceApp, null);
 				if (rewardPayment == null) {
 					return ResponseEntity.badRequest().body(
 							new FrameResponse.FrameMessage("Failed to create payment intent. Contact @sinaver.eth"));
@@ -264,13 +265,13 @@ public class IntentsController {
 		}
 	}
 
-	private Map<Integer, Payment> createUniquePayments(List<String> excludedFids,
-			String channelId,
-			String subscriptionContract,
-			int numberOfRewards,
-			User clickedProfile,
-			Double amount, Double tokenAmount, String token, Integer chainId,
-			String sourceApp) {
+	private Map<Integer, Payment> fetchAndCreateTopCastPayments(List<String> excludedFids,
+	                                                            String channelId,
+	                                                            String subscriptionContract,
+	                                                            int numberOfRewards,
+	                                                            User clickedProfile,
+	                                                            Double amount, Double tokenAmount, String token, Integer chainId,
+	                                                            String sourceApp) {
 		val fidToPayment = new LinkedHashMap<Integer, Payment>();
 		var cursor = (String) null;
 
@@ -300,9 +301,11 @@ public class IntentsController {
 				}
 
 				try {
+					val castLink = String.format("https://warpcast.com/%s/%s",
+							cast.author().username(), cast.hash().substring(0, 10));
 					val payment = createRewardPayment(clickedProfile, cast.author().fid(),
 							cast.hash(), "reward_top_casters", amount, tokenAmount, token, chainId,
-							sourceApp);
+							sourceApp, castLink);
 					if (payment != null) {
 						fidToPayment.put(cast.author().fid(), payment);
 						if (fidToPayment.size() == numberOfRewards) {
@@ -325,8 +328,10 @@ public class IntentsController {
 	}
 
 	private Payment createRewardPayment(User clickedProfile, int casterFid, String castHash,
-			String category,
-			Double amount, Double tokenAmount, String token, Integer chainId, String sourceApp) {
+	                                    String category,
+	                                    Double amount, Double tokenAmount, String token,
+	                                    Integer chainId, String sourceApp,
+	                                    String extraLink) {
 		val paymentProfile = identityService.getProfiles(casterFid).stream().findFirst().orElse(null);
 		String paymentAddress = null;
 		if (paymentProfile == null || (paymentProfile.getDefaultFlow() == null
@@ -355,6 +360,7 @@ public class IntentsController {
 		payment.setSourceApp(sourceApp);
 		payment.setSourceRef(sourceRef);
 		payment.setSourceHash(castHash);
+		payment.setTarget(extraLink);
 
 		return payment;
 	}

@@ -527,6 +527,7 @@ public class FramePaymentController {
 					}
 				}
 
+				// TODO: replace with payment completion notification API
 				notificationService.paymentReply(payment, interactor, null);
 
 				val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +

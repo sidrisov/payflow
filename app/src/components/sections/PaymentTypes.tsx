@@ -32,7 +32,7 @@ const PAYMENT_TITLES: { [key: string]: string } = {
   hypersub: 'Hypersub',
   reward: 'Reward',
   reward_top_reply: 'Top Reply Reward',
-  reward_top_casters: 'Trending Casts Reward',
+  reward_top_casters: 'Top Casts Reward',
   default: 'Payment'
 };
 

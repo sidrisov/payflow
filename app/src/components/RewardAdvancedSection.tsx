@@ -104,12 +104,12 @@ export function RewardAdvancedSection({
                     textAlign: 'right'
                   }
                 }}>
-                <option value="reward">Any cast</option>
+                <option value="reward">Any Cast</option>
                 <option value="reward_top_reply">
                   <Typography>Top Comment</Typography>
                 </option>
                 <option value="reward_top_casters">
-                  <Typography>Trending Casts</Typography>
+                  <Typography>Top Casts</Typography>
                 </option>
               </NativeSelect>
             </Box>
