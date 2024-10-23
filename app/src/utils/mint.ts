@@ -157,7 +157,10 @@ export async function fetchMintData(
       metadata: {
         name: metadata.name,
         description: metadata.description ?? '',
-        image: tokenId ? metadata.previews.image_small_url : metadata.collection.image_url
+        image:
+          tokenId || metadata.collection.image_properties.mime_type === 'image/gif'
+            ? metadata.previews.image_small_url
+            : metadata.collection.image_url
       },
       owner: identity,
       mintType

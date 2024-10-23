@@ -29,6 +29,11 @@ type SimpleHashNFTMetadata = {
     name: string;
     description: string;
     image_url: string;
+    image_properties: {
+      width: number;
+      height: number;
+      mime_type: string;
+    };
   };
   owners: Array<{
     owner_address: string;

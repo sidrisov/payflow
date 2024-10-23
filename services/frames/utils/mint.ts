@@ -89,7 +89,10 @@ export async function fetchMintData(
       collectionName: metadata.collection.name + (tokenId ? ` #${tokenId}` : ''),
       metadata: {
         name: metadata.name,
-        image: tokenId ? metadata.previews.image_medium_url : metadata.collection.image_url
+        image:
+          tokenId || metadata.collection.image_properties.mime_type === 'image/gif'
+            ? metadata.previews.image_medium_url
+            : metadata.collection.image_url
       },
       identity
     };

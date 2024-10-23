@@ -29,6 +29,11 @@ type SimpleHashNFTMetadata = {
     name: string;
     description: string;
     image_url: string;
+    image_properties: {
+      width: number;
+      height: number;
+      mime_type: string;
+    };
   };
   owners: Array<{
     owner_address: string;
@@ -63,7 +68,9 @@ export async function fetchNFTMetadataFromSimpleHash(
 
   try {
     const response = await axios.get<SimpleHashResponse>(
-      `https://api.simplehash.com/api/v0/nfts/${chain}/${contractAddress}${tokenId ? `/${tokenId}` : ''}`,
+      `https://api.simplehash.com/api/v0/nfts/${chain}/${contractAddress}${
+        tokenId ? `/${tokenId}` : ''
+      }`,
       {
         headers: {
           accept: 'application/json',
