@@ -71,6 +71,8 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
                 ? 'Mint Collection'
                 : payment.category === 'hypersub'
                 ? 'Hypersub Subscription'
+                : payment.category === 'reward'
+                ? 'Cast'
                 : payment.category === 'reward_top_casters'
                 ? 'Top Cast'
                 : payment.category === 'reward_top_reply'

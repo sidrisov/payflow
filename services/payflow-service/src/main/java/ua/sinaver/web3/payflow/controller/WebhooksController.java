@@ -13,10 +13,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.bot.PaymentBotJob;
 import ua.sinaver.web3.payflow.message.farcaster.CastCreatedMessage;
+import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.message.farcaster.modbot.MembershipRequestMessage;
 import ua.sinaver.web3.payflow.message.farcaster.modbot.MembershipResponseMessage;
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
+import ua.sinaver.web3.payflow.service.FarcasterMessagingService;
 import ua.sinaver.web3.payflow.service.IdentityService;
 
 import javax.crypto.Mac;
@@ -26,6 +28,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/farcaster/webhooks")
@@ -33,8 +36,11 @@ import java.util.Date;
 public class WebhooksController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(WebhooksController.class);
 
-	@Value("${payflow.farcaster.webhooks.secret}")
-	private String secret;
+	@Value("${payflow.farcaster.webhooks.neynar.secret}")
+	private String neynarSecret;
+
+	@Value("${payflow.farcaster.webhooks.membership.secret}")
+	private String membershipSecret;
 
 	@Autowired
 	private PaymentBotJobRepository paymentBotJobRepository;
@@ -47,6 +53,10 @@ public class WebhooksController {
 
 	@Autowired
 	private PaymentRepository paymentRepository;
+
+	@Autowired
+	private FarcasterMessagingService farcasterMessagingService;
+
 
 	private static String bytesToHex(byte[] bytes) {
 		StringBuilder hexString = new StringBuilder();
@@ -84,7 +94,7 @@ public class WebhooksController {
 		}
 
 		try {
-			val isValid = verifySignature(rawBody, signature, secret);
+			val isValid = verifySignature(rawBody, signature, neynarSecret);
 			if (!isValid) {
 				LOGGER.error("The provided signature is not valid");
 				return ResponseEntity.badRequest().body("Invalid webhook signature");
@@ -106,7 +116,13 @@ public class WebhooksController {
 	}
 
 	@PostMapping("/membership")
-	public ResponseEntity<MembershipResponseMessage> membership(@RequestBody MembershipRequestMessage request) {
+	public ResponseEntity<?> membership(/*@RequestParam String accessToken,*/
+			@RequestBody MembershipRequestMessage request) {
+
+	/*	if (membershipSecret.equals(accessToken)) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MembershipResponseMessage("Not authorized to access membership API"));
+		}*/
+
 		val fid = request.user().fid();
 		val verifications = request.user().verifications();
 		val channelId = request.channel().id();
@@ -148,6 +164,20 @@ public class WebhooksController {
 					"allowed with %s >= 5 payments", numberOfPayments)));
 		} else {
 			log.error("Membership not allowed for {}", fid);
+
+			farcasterMessagingService.message(new DirectCastMessage(fid.toString(),
+					"""
+							Thanks for requesting to join /payflow! 🙏
+
+							To join, you need to make at least 5 payments using @payflow:
+							• In the social feed
+							• Or in the app
+
+							Keep using Payflow, and you'll be eligible soon! 💪
+
+							Best regards,
+							@sinaver""", UUID.randomUUID()
+			));
 			return ResponseEntity.badRequest().body(new MembershipResponseMessage(String.format(
 					"Membership not allowed with %s < 5 payments", numberOfPayments)));
 		}

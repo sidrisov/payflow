@@ -245,13 +245,20 @@ public class IntentsController {
 
 			case "reward":
 			default:
-				int authorFid = validateMessage.action().cast().author() != null
-						? validateMessage.action().cast().author().fid()
+				val author = validateMessage.action().cast().author();
+				int authorFid = author != null
+						? author.fid()
 						: validateMessage.action().cast().fid();
-				String authorCastHash = validateMessage.action().cast().hash();
+				val authorCastHash = validateMessage.action().cast().hash();
+
+				var castLink = (String) null;
+				if (author != null) {
+					castLink = String.format("https://warpcast.com/%s/%s",
+							author.username(), authorCastHash.substring(0, 10));
+				}
 				val rewardPayment = createRewardPayment(clickedProfile, authorFid, authorCastHash,
 						"reward",
-						amount, tokenAmount, token, chainId, sourceApp, null);
+						amount, tokenAmount, token, chainId, sourceApp, castLink);
 				if (rewardPayment == null) {
 					return ResponseEntity.badRequest().body(
 							new FrameResponse.FrameMessage("Failed to create payment intent. Contact @sinaver.eth"));
