@@ -30,6 +30,9 @@ const PAYMENT_TITLES: { [key: string]: string } = {
   mint: 'Mint',
   fan: 'Buy Token',
   hypersub: 'Hypersub',
+  reward: 'Reward',
+  reward_top_reply: 'Top Reply Reward',
+  reward_top_casters: 'Trending Casts Reward',
   default: 'Payment'
 };
 
@@ -44,9 +47,7 @@ const PaymentContentWrapper: React.FC<PaymentContentWrapperProps> = ({
   children,
   loading
 }) => {
-  const title =
-    PAYMENT_TITLES[payment.category ?? 'default'] ||
-    (payment.type === 'INTENT_TOP_REPLY' ? 'Top Reply' : PAYMENT_TITLES.default);
+  const title = PAYMENT_TITLES[payment.category ?? 'default'] || PAYMENT_TITLES.default;
 
   return (
     <PaymentCard payment={payment} title={title}>

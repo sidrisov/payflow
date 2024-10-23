@@ -10,19 +10,20 @@ export type PaymentStatus =
   | 'COMPLETED'
   | 'CANCELLED'
   | 'EXPIRED';
-export type Type =
-  | 'FRAME'
-  | 'INTENT'
-  | 'APP'
-  | 'INTENT_TOP_REPLY'
-  | 'BATCH'
-  | 'REWARD'
-  | 'REWARD_TOP_REPLY'
-  | 'REWARD_TOP_CASTERS';
+export type Type = 'FRAME' | 'INTENT' | 'APP' | 'BATCH';
+
+export type PaymentCategory =
+  | 'fc_storage'
+  | 'mint'
+  | 'fan'
+  | 'hypersub'
+  | 'reward'
+  | 'reward_top_reply'
+  | 'reward_top_casters';
 export interface PaymentType {
   referenceId?: string;
   type: Type;
-  category?: 'fc_storage' | 'mint' | 'fan' | 'hypersub';
+  category?: PaymentCategory;
   status: PaymentStatus;
   sender: ProfileType;
   receiver: ProfileType;

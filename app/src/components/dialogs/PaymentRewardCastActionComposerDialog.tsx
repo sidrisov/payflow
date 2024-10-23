@@ -2,7 +2,7 @@ import { DialogProps, Stack, Button, TextField, InputAdornment, IconButton } fro
 import { useContext, useMemo, useState, useEffect, useRef } from 'react';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { RewardAdvancedSection } from '../RewardAdvancedSection';
-import { Type } from '../../types/PaymentType';
+import { PaymentCategory, Type } from '../../types/PaymentType';
 import ResponsiveDialog from './ResponsiveDialog';
 
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
@@ -22,7 +22,7 @@ export default function PaymentRewardCastActionComposerDialog({
   const chainId = useChainId();
   const [rewardUsdAmount, setRewardUsdAmount] = useState<number | undefined>(1);
   const [rewardTokenAmount, setRewardTokenAmount] = useState<number | undefined>(1);
-  const [type, setType] = useState<Type>('INTENT');
+  const [type, setType] = useState<PaymentCategory>('reward');
   const [numberOfRewards, setNumberOfRewards] = useState<number>(1);
   const [extraParams, setExtraParams] = useState<Record<string, string>>({});
 

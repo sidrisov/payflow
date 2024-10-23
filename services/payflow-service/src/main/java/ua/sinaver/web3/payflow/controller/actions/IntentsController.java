@@ -64,7 +64,7 @@ public class IntentsController {
 
 	@GetMapping("/reward")
 	public ResponseEntity<?> metadata(
-			@RequestParam(name = "type", required = false) Payment.PaymentType type,
+			@RequestParam(name = "type", required = false) String type,
 			@RequestParam(name = "amount", required = false, defaultValue = "1.0") Double amount,
 			@RequestParam(name = "tokenAmount", required = false) Double tokenAmount,
 			@RequestParam(name = "token", required = false, defaultValue = "degen") String token,
@@ -73,8 +73,8 @@ public class IntentsController {
 			@RequestParam MultiValueMap<String, String> allParams) {
 
 		log.debug("Received metadata request for cast action: pay intent with params: " +
-						"type = {}, amount = {}, tokenAmount = {}, token = {}, chainId = {}, " +
-						"numberOfRewards = {}, allParams = {}",
+				"type = {}, amount = {}, tokenAmount = {}, token = {}, chainId = {}, " +
+				"numberOfRewards = {}, allParams = {}",
 				type, amount, tokenAmount, token, chainId, numberOfRewards, allParams);
 
 		CastActionMeta castActionMeta;
@@ -85,7 +85,7 @@ public class IntentsController {
 		String chainStr = StringUtils.capitalize(chain);
 
 		switch (type) {
-			case REWARD_TOP_REPLY:
+			case "reward_top_reply":
 				castActionMeta = new CastActionMeta(
 						String.format("%s %s (%s) Top Comment", amountStr, tokenStr, chainStr),
 						"flame",
@@ -95,7 +95,7 @@ public class IntentsController {
 						new CastActionMeta.Action("post"));
 				break;
 
-			case REWARD:
+			case "reward":
 			default:
 				String title = String.format("%s %s (%s)", amountStr, tokenStr, chainStr);
 
@@ -117,7 +117,7 @@ public class IntentsController {
 						"https://app.payflow.me/actions",
 						new CastActionMeta.Action("post"));
 				break;
-			case REWARD_TOP_CASTERS:
+			case "reward_top_casters":
 				castActionMeta = new CastActionMeta(
 						String.format("%s %s x Top %s Casters", amountStr, tokenStr, numberOfRewards),
 						"gift",
@@ -136,7 +136,7 @@ public class IntentsController {
 	@PostMapping("/reward")
 	public ResponseEntity<FrameResponse.FrameMessage> intent(
 			@RequestBody FrameMessage castActionMessage,
-			@RequestParam(name = "type", required = false) Payment.PaymentType type,
+			@RequestParam(name = "type", required = false) String type,
 			@RequestParam(name = "amount", required = false, defaultValue = "1.0") Double amount,
 			@RequestParam(name = "tokenAmount", required = false) Double tokenAmount,
 			@RequestParam(name = "token", required = false, defaultValue = "degen") String token,
@@ -145,7 +145,7 @@ public class IntentsController {
 			@RequestParam MultiValueMap<String, String> allParams) {
 
 		log.debug("Received cast action: pay reward {} with params: type = {}, amount = {}, " +
-						"tokenAmount = {}, token = {}, chainId = {}, numberOfRewards = {}, allParams = {}",
+				"tokenAmount = {}, token = {}, chainId = {}, numberOfRewards = {}, allParams = {}",
 				castActionMessage, type, amount, tokenAmount, token, chainId, numberOfRewards, allParams);
 
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
@@ -178,7 +178,7 @@ public class IntentsController {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 
 		switch (type) {
-			case REWARD_TOP_REPLY:
+			case "reward_top_reply":
 				val parentHash = validateMessage.action().cast().hash();
 				val topReply = socialGraphService.getTopCastReply(parentHash,
 						List.of(String.valueOf(validateMessage.action().cast().author().fid()),
@@ -190,7 +190,7 @@ public class IntentsController {
 				}
 				int casterFid = Integer.parseInt(topReply.getFid());
 				val castHash = topReply.getHash();
-				val payment = createRewardPayment(clickedProfile, casterFid, castHash, type,
+				val payment = createRewardPayment(clickedProfile, casterFid, castHash, "reward_top_reply",
 						amount, tokenAmount, token, chainId, sourceApp);
 				if (payment == null) {
 					return ResponseEntity.badRequest().body(
@@ -204,14 +204,13 @@ public class IntentsController {
 						String.format("Submitted reward for top comment from @%s. Pay in the app!",
 								casterFcName)));
 
-			case REWARD_TOP_CASTERS:
+			case "reward_top_casters":
 				val channelId = allParams.getFirst("channel");
 				val hypersubContractAddress = allParams.getFirst("hypersub");
 
 				var excludeFids = new ArrayList<String>();
 				if (StringUtils.isNotBlank(channelId)) {
-					val channel =
-							airstackSocialGraphService.getFarcasterChannelByChannelId(channelId);
+					val channel = airstackSocialGraphService.getFarcasterChannelByChannelId(channelId);
 					if (channel == null) {
 						log.error("Failed to fetch channel: {}", channelId);
 						return ResponseEntity.badRequest().body(
@@ -229,8 +228,7 @@ public class IntentsController {
 						numberOfRewards,
 						clickedProfile,
 						amount, tokenAmount, token, chainId,
-						sourceApp
-				);
+						sourceApp);
 
 				if (fidToPayment.isEmpty()) {
 					log.error("Failed to fetch trending casts");
@@ -245,13 +243,13 @@ public class IntentsController {
 						String.format("Submitted rewards for top %d trending casters. Pay in the app!",
 								payments.size())));
 
-			case REWARD:
+			case "reward":
 			default:
 				int authorFid = validateMessage.action().cast().author() != null
 						? validateMessage.action().cast().author().fid()
 						: validateMessage.action().cast().fid();
 				String authorCastHash = validateMessage.action().cast().hash();
-				Payment rewardPayment = createRewardPayment(clickedProfile, authorFid, authorCastHash, type,
+				Payment rewardPayment = createRewardPayment(clickedProfile, authorFid, authorCastHash, "reward",
 						amount, tokenAmount, token, chainId, sourceApp);
 				if (rewardPayment == null) {
 					return ResponseEntity.badRequest().body(
@@ -267,25 +265,26 @@ public class IntentsController {
 	}
 
 	private Map<Integer, Payment> createUniquePayments(List<String> excludedFids,
-	                                                   String channelId,
-	                                                   String subscriptionContract,
-	                                                   int numberOfRewards,
-	                                                   User clickedProfile,
-	                                                   Double amount, Double tokenAmount, String token, Integer chainId,
-	                                                   String sourceApp) {
+			String channelId,
+			String subscriptionContract,
+			int numberOfRewards,
+			User clickedProfile,
+			Double amount, Double tokenAmount, String token, Integer chainId,
+			String sourceApp) {
 		val fidToPayment = new LinkedHashMap<Integer, Payment>();
 		var cursor = (String) null;
 
 		while (fidToPayment.size() < numberOfRewards) {
 			val response = neynarService.fetchTrendingCasts(channelId, "7d",
-					numberOfRewards - fidToPayment.size(), cursor);
+					10, cursor);
 
 			if (response == null || response.getCasts() == null || response.getCasts().isEmpty()) {
 				break; // No more casts to process
 			}
 
 			for (val cast : response.getCasts()) {
-				if (excludedFids.contains(String.valueOf(cast.fid())) || fidToPayment.containsKey(cast.author().fid())) {
+				if (excludedFids.contains(String.valueOf(cast.author().fid()))
+						|| fidToPayment.containsKey(cast.author().fid())) {
 					continue;
 				}
 
@@ -302,7 +301,7 @@ public class IntentsController {
 
 				try {
 					val payment = createRewardPayment(clickedProfile, cast.author().fid(),
-							cast.hash(), Payment.PaymentType.REWARD_TOP_CASTERS, amount, tokenAmount, token, chainId,
+							cast.hash(), "reward_top_casters", amount, tokenAmount, token, chainId,
 							sourceApp);
 					if (payment != null) {
 						fidToPayment.put(cast.author().fid(), payment);
@@ -326,8 +325,8 @@ public class IntentsController {
 	}
 
 	private Payment createRewardPayment(User clickedProfile, int casterFid, String castHash,
-	                                    Payment.PaymentType type,
-	                                    Double amount, Double tokenAmount, String token, Integer chainId, String sourceApp) {
+			String category,
+			Double amount, Double tokenAmount, String token, Integer chainId, String sourceApp) {
 		val paymentProfile = identityService.getProfiles(casterFid).stream().findFirst().orElse(null);
 		String paymentAddress = null;
 		if (paymentProfile == null || (paymentProfile.getDefaultFlow() == null
@@ -344,7 +343,8 @@ public class IntentsController {
 		val sourceRef = String.format("https://warpcast.com/%s/%s",
 				casterFcName, castHash.substring(0, 10));
 
-		val payment = new Payment(type, paymentProfile, chainId, token);
+		val payment = new Payment(Payment.PaymentType.INTENT, paymentProfile, chainId, token);
+		payment.setCategory(category);
 		payment.setReceiverAddress(paymentAddress);
 		payment.setSender(clickedProfile);
 		if (tokenAmount != null) {

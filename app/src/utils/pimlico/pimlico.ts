@@ -61,7 +61,7 @@ const pimlicoRpcNetworkName = (chainId: number) => {
       network = 'mode';
       break;
     case worldchain.id:
-      network = 'world';
+      network = 'worldchain';
       break;
   }
   return network;

@@ -133,7 +133,10 @@ export default function Payment() {
         <LoadingPayflowEntryLogo />
         {profile &&
           payment &&
-          (!payment.category ? (
+          (!payment.category ||
+          payment.category === 'reward' ||
+          payment.category === 'reward_top_reply' ||
+          payment.category === 'reward_top_casters' ? (
             <LazyPaymentDialog
               alwaysShowBackButton
               title="Complete Payment"

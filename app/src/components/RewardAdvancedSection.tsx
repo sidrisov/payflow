@@ -11,7 +11,7 @@ import {
   FormControlLabel
 } from '@mui/material';
 import { useState, useEffect } from 'react';
-import { Type } from '../types/PaymentType';
+import { PaymentCategory } from '../types/PaymentType';
 import { QuantitySelector } from './payment/QuantitySelector';
 import { ChannelSelector } from './dialogs/ChannelSelector';
 
@@ -30,8 +30,8 @@ export function RewardAdvancedSection({
   setNumberOfRewards,
   setExtraParams
 }: {
-  type: Type;
-  setType: React.Dispatch<React.SetStateAction<Type>>;
+  type: PaymentCategory;
+  setType: React.Dispatch<React.SetStateAction<PaymentCategory>>;
   numberOfRewards: number;
   setNumberOfRewards: React.Dispatch<React.SetStateAction<number>>;
   setExtraParams: React.Dispatch<React.SetStateAction<Record<string, string>>>;
@@ -78,7 +78,6 @@ export function RewardAdvancedSection({
             p={2}
             display="flex"
             flexDirection="column"
-            alignItems="stretch"
             justifyContent="flex-start"
             gap={1}
             sx={{ borderRadius: 5, border: 1, borderColor: 'divider' }}>
@@ -95,30 +94,39 @@ export function RewardAdvancedSection({
                 disableUnderline
                 value={type}
                 onChange={(event) => {
-                  setType(event.target.value as Type);
+                  setType(event.target.value as PaymentCategory);
                 }}
                 inputMode="text"
-                sx={{ fontSize: 13, fontWeight: 'bold' }}>
-                <option value="REWARD">Regular</option>
-                <option value="REWARD_TOP_REPLY">
+                sx={{
+                  fontSize: 13,
+                  fontWeight: 'bold',
+                  '& .MuiNativeSelect-select': {
+                    textAlign: 'right'
+                  }
+                }}>
+                <option value="reward">Any cast</option>
+                <option value="reward_top_reply">
                   <Typography>Top Comment</Typography>
                 </option>
-                <option value="REWARD_TOP_CASTERS">
-                  <Typography>Top Casters</Typography>
+                <option value="reward_top_casters">
+                  <Typography>Trending Casts</Typography>
                 </option>
               </NativeSelect>
             </Box>
             <Typography
               variant="caption"
               fontWeight="bold"
-              maxWidth={300}
               textAlign="center"
-              sx={{ p: 2, borderColor: 'divider', color: 'text.secondary' }}>
-              {type === 'REWARD' ? (
+              sx={{
+                p: 1,
+                color: 'text.secondary',
+                textWrap: 'balance'
+              }}>
+              {type === 'reward' ? (
                 'Rewards selected cast author'
-              ) : type === 'REWARD_TOP_REPLY' ? (
+              ) : type === 'reward_top_reply' ? (
                 <>
-                  Rewards the author of top comment in the selected cast, based on{' '}
+                  Rewards the author of top comment in the selected cast (based on{' '}
                   <b>
                     <a
                       href="https://docs.airstack.xyz/airstack-docs-and-faqs/abstractions/trending-casts/social-capital-value-and-social-capital-scores"
@@ -127,13 +135,14 @@ export function RewardAdvancedSection({
                       Airstack's Cast Scores
                     </a>
                   </b>
+                  )
                 </>
               ) : (
-                'Rewards top N casters in the channel or globally based on configured criteria'
+                'Rewards top trending casts in the channel or globally based on configured criteria'
               )}
             </Typography>
 
-            {type === 'REWARD_TOP_CASTERS' && (
+            {type === 'reward_top_casters' && (
               <>
                 <Box
                   display="flex"
