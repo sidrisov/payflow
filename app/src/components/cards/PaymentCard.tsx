@@ -130,7 +130,7 @@ export function PaymentCard({ payment, title, children, ...props }: PaymentCardP
                 overflow: 'hidden',
                 textOverflow: 'ellipsis'
               }}>
-              fasdf asdf asd fasf
+              {title}
             </Typography>
           </Stack>
           <IconButton size="small" onClick={handleMenuOpen}>
