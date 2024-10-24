@@ -375,6 +375,7 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 					return Mono.error(new RuntimeException("Error fetching trending casts"));
 				})
 				.bodyToMono(TrendingCastsResponse.class)
+				.retry(3)
 				.onErrorResume(e -> {
 					log.error("Exception calling Neynar Trending Casts API: {}", e.getMessage());
 					return Mono.just(new TrendingCastsResponse());

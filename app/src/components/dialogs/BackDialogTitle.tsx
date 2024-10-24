@@ -50,7 +50,8 @@ export function BackDialogTitle({
                     variant="caption"
                     fontWeight="bold"
                     display="block"
-                    color="text.secondary">
+                    color="text.secondary"
+                    align="center">
                     {subtitle}
                   </Typography>
                 )}

@@ -109,7 +109,7 @@ export function RewardAdvancedSection({
                   <Typography>Top Comment</Typography>
                 </option>
                 <option value="reward_top_casters">
-                  <Typography>Top Casts</Typography>
+                  <Typography>Top Casters</Typography>
                 </option>
               </NativeSelect>
             </Box>

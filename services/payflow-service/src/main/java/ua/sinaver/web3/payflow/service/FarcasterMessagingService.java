@@ -5,6 +5,7 @@ import lombok.val;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
@@ -27,7 +28,7 @@ public class FarcasterMessagingService implements IFarcasterMessagingService {
 	}
 
 	@Override
-	public DirectCastResponse message(DirectCastMessage message) {
+	public DirectCastResponse sendMessage(DirectCastMessage message) {
 		log.debug("Sending direct cast message: {}", message);
 
 		try {
@@ -42,5 +43,12 @@ public class FarcasterMessagingService implements IFarcasterMessagingService {
 					message, t.getMessage());
 			throw t;
 		}
+	}
+
+	@Async
+	@Override
+	public void sendMessageAsync(DirectCastMessage message) {
+		log.debug("Sending direct cast message asynchronously: {}", message);
+		sendMessage(message);
 	}
 }

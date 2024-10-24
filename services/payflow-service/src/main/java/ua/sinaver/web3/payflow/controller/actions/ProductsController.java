@@ -100,7 +100,7 @@ public class ProductsController {
 		val castAuthor = action.cast().author() != null ? action.cast().author()
 				: neynarService.fetchFarcasterUser(action.cast().fid());
 		val storageFrameUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getFramesServiceUrl())
-				.path("/fid/{fid}/storage?v3.4")
+				.path("/fid/{fid}/storage?v3.9")
 				.buildAndExpand(castAuthor.fid())
 				.toUriString();
 		return ResponseEntity.ok().body(

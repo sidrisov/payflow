@@ -58,41 +58,6 @@ public class NotificationService {
 		return df.format(value);
 	}
 
-	public void paymentReply(Payment payment, FarcasterUser sender, FarcasterUser receiver) {
-		val senderIdentity = payment.getSender() != null ? payment.getSender().getIdentity()
-				: payment.getSenderAddress();
-		val receiverIdentity = payment.getReceiver() != null ? payment.getReceiver().getIdentity()
-				: payment.getReceiverAddress() != null ? payment.getReceiverAddress()
-				: "fc_fid:" + payment.getReceiverFid();
-
-		if (StringUtils.isBlank(senderIdentity) || StringUtils.isBlank((receiverIdentity))) {
-			log.error("Sender or receiver can't be unknown for payment: {}", payment);
-			return;
-		}
-
-		val senderFname = sender != null ? sender.username() : identityService.getIdentityFname(senderIdentity);
-		val receiverFname = receiver != null ? receiver.username() : identityService.getIdentityFname(receiverIdentity);
-		val receiptUrl = receiptService.getReceiptUrl(payment);
-		val embeds = Collections.singletonList(new Cast.Embed(receiptUrl));
-
-		val castText = String.format("""
-						@%s, you've been paid %s %s by @%s 💸""",
-				receiverFname,
-				StringUtils.isNotBlank(payment.getTokenAmount())
-						? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
-						: String.format("$%s", payment.getUsdAmount()),
-				payment.getToken().toUpperCase(),
-				senderFname);
-
-		var processed = this.reply(castText,
-				payment.getSourceHash(),
-				embeds);
-
-		if (!processed) {
-			log.error("Failed to reply with {} for payment intent completion", castText);
-		}
-	}
-
 	public boolean preferredTokensReply(String parentHash, FarcasterUser user,
 	                                    List<String> preferredTokenIds) {
 
@@ -147,8 +112,11 @@ public class NotificationService {
 				log.warn("Can't notify user, since farcaster name wasn't found: {}", payment);
 				return;
 			}
+			val senderFname = identityService.getIdentityFname(user != null ?
+					user.getIdentity() :
+					payment.getSender() != null ? payment.getSender().getIdentity() :
+							payment.getSenderAddress());
 
-			val senderFname = identityService.getIdentityFname(user.getIdentity());
 			val receiptUrl = receiptService.getReceiptUrl(payment, false,
 					payment.getRefundHash() != null);
 			val sourceRefText = StringUtils.isNotBlank(payment.getSourceRef()) ? payment.getSourceRef()
@@ -195,7 +163,7 @@ public class NotificationService {
 
 	private void sendDirectMessage(String messageText, String receiverFid) {
 		try {
-			val response = farcasterMessagingService.message(
+			val response = farcasterMessagingService.sendMessage(
 					new DirectCastMessage(receiverFid, messageText, UUID.randomUUID()));
 
 			if (!response.result().success()) {
@@ -215,90 +183,93 @@ public class NotificationService {
 		}
 		embeds.add(new Cast.Embed(receiptUrl));
 
-		switch (payment.getCategory()) {
-			case "reward":
-				val rewardCastText = String.format("""
-								@%s, you've been rewarded %s %s%s by @%s for being awesome 🏆""",
-						receiverFname,
-						StringUtils.isNotBlank(payment.getTokenAmount())
-								? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
-								: String.format("$%s", payment.getUsdAmount()),
-						payment.getToken().toUpperCase(),
-						crossChainText,
-						senderFname);
+		if (payment.getCategory() == null) {
+			val castText = String.format("""
+							@%s, you've been paid %s %s%s by @%s 💸""",
+					receiverFname,
+					StringUtils.isNotBlank(payment.getTokenAmount())
+							? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
+							: String.format("$%s", payment.getUsdAmount()),
+					payment.getToken().toUpperCase(),
+					crossChainText,
+					senderFname);
 
-				sendCastReply(rewardCastText, payment.getSourceHash(), embeds);
-				break;
-			case "reward_top_reply":
-				var scvText = "";
-				val cast = socialGraphService.getReplySocialCapitalValue(payment.getSourceHash());
-				if (cast != null) {
-					scvText = String.format("with cast score: %s ",
-							formatDouble(cast.getSocialCapitalValue().getFormattedValue()));
+			sendCastReply(castText, payment.getSourceHash(), embeds);
+
+			if (payment.getReceiver() != null) {
+				val receiverFid = identityService.getIdentityFid(payment.getReceiver().getIdentity());
+				if (StringUtils.isNotBlank(receiverFid)) {
+					val messageText = String.format("""
+									@%s, you've been paid %s %s%s by @%s 💸
+
+									%s
+									🧾 Receipt: %s""",
+							receiverFname,
+							StringUtils.isNotBlank(payment.getTokenAmount())
+									? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
+									: String.format("$%s", payment.getUsdAmount()),
+							payment.getToken().toUpperCase(),
+							crossChainText,
+							senderFname,
+							sourceRefText,
+							receiptService.getReceiptUrl(payment));
+
+					sendDirectMessage(messageText, receiverFid);
 				}
+			}
+		} else {
+			switch (payment.getCategory()) {
+				case "reward":
+					val rewardCastText = String.format("""
+									@%s, you've been rewarded %s %s%s by @%s for being awesome 🎁""",
+							receiverFname,
+							StringUtils.isNotBlank(payment.getTokenAmount())
+									? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
+									: String.format("$%s", payment.getUsdAmount()),
+							payment.getToken().toUpperCase(),
+							crossChainText,
+							senderFname);
 
-				val topReplyCastText = String.format("""
-								@%s, you've been paid %s %s%s by @%s for your top comment %s 🏆""",
-						receiverFname,
-						StringUtils.isNotBlank(payment.getTokenAmount())
-								? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
-								: String.format("$%s", payment.getUsdAmount()),
-						payment.getToken().toUpperCase(),
-						crossChainText,
-						senderFname,
-						scvText);
-
-				sendCastReply(topReplyCastText, payment.getSourceHash(), embeds);
-
-				break;
-
-			case "reward_top_casters":
-				val topCasterCastText = String.format("""
-								@%s, you've been rewarded %s %s%s by @%s for your top cast 🏆""",
-						receiverFname,
-						StringUtils.isNotBlank(payment.getTokenAmount())
-								? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
-								: String.format("$%s", payment.getUsdAmount()),
-						payment.getToken().toUpperCase(),
-						crossChainText,
-						senderFname);
-
-				sendCastReply(topCasterCastText, payment.getSourceHash(), embeds);
-				break;
-			default:
-				val castText = String.format("""
-								@%s, you've been paid %s %s%s by @%s 💸""",
-						receiverFname,
-						StringUtils.isNotBlank(payment.getTokenAmount())
-								? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
-								: String.format("$%s", payment.getUsdAmount()),
-						payment.getToken().toUpperCase(),
-						crossChainText,
-						senderFname);
-
-				sendCastReply(castText, payment.getSourceHash(), embeds);
-
-				if (payment.getReceiver() != null) {
-					val receiverFid = identityService.getIdentityFid(payment.getReceiver().getIdentity());
-					if (StringUtils.isNotBlank(receiverFid)) {
-						val messageText = String.format("""
-										@%s, you've been paid %s %s%s by @%s 💸
-
-										%s
-										🧾 Receipt: %s""",
-								receiverFname,
-								StringUtils.isNotBlank(payment.getTokenAmount())
-										? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
-										: String.format("$%s", payment.getUsdAmount()),
-								payment.getToken().toUpperCase(),
-								crossChainText,
-								senderFname,
-								sourceRefText,
-								receiptService.getReceiptUrl(payment));
-
-						sendDirectMessage(messageText, receiverFid);
+					sendCastReply(rewardCastText, payment.getSourceHash(), embeds);
+					break;
+				case "reward_top_reply":
+					var scvText = "";
+					val cast = socialGraphService.getReplySocialCapitalValue(payment.getSourceHash());
+					if (cast != null) {
+						scvText = String.format("with cast score: %s ",
+								formatDouble(cast.getSocialCapitalValue().getFormattedValue()));
 					}
-				}
+
+					val topReplyCastText = String.format("""
+									@%s, you've been rewarded %s %s%s by @%s for casting top comment %s 🎁""",
+							receiverFname,
+							StringUtils.isNotBlank(payment.getTokenAmount())
+									? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
+									: String.format("$%s", payment.getUsdAmount()),
+							payment.getToken().toUpperCase(),
+							crossChainText,
+							senderFname,
+							scvText);
+
+					sendCastReply(topReplyCastText, payment.getSourceHash(), embeds);
+
+					break;
+
+				case "reward_top_casters":
+					val topCasterCastText = String.format("""
+									@%s, you've been rewarded %s %s%s by @%s for being top caster 🎁""",
+							receiverFname,
+							StringUtils.isNotBlank(payment.getTokenAmount())
+									? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
+									: String.format("$%s", payment.getUsdAmount()),
+							payment.getToken().toUpperCase(),
+							crossChainText,
+							senderFname);
+
+					sendCastReply(topCasterCastText, payment.getSourceHash(), embeds);
+					break;
+
+			}
 		}
 	}
 

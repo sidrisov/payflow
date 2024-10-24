@@ -44,4 +44,11 @@ public class LinkService {
 					.toUri();
 		}
 	}
+
+	public URI framePaymentLink(Payment payment) {
+		return UriComponentsBuilder.fromHttpUrl(payflowConfig.getFramesServiceUrl())
+				.path("/payment/{refId}")
+				.buildAndExpand(payment.getReferenceId())
+				.toUri();
+	}
 }

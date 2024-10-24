@@ -15,11 +15,11 @@ import ua.sinaver.web3.payflow.message.ProfileMetaMessage;
 import ua.sinaver.web3.payflow.message.SubmitInvitationMessage;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
+import ua.sinaver.web3.payflow.service.InvitationService;
 import ua.sinaver.web3.payflow.service.UserService;
 import ua.sinaver.web3.payflow.service.api.IContactBookService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterMessagingService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
-import ua.sinaver.web3.payflow.service.InvitationService;
 
 import java.security.Principal;
 import java.time.Period;
@@ -132,17 +132,17 @@ public class InvitationController {
 
 			try {
 				val messageText = String.format("""
-						Congratulations @%s 🎉 You've been invited to @payflow by @%s
-														\t
-						Proceed to app.payflow.me/connect for sign up!
-														\t
-						`Sign In With Farcaster` is recommended for better experience 🙌🏻
-														\t
-						p.s. join /payflow channel for updates 👀""",
+								Congratulations @%s 🎉 You've been invited to @payflow by @%s
+																\t
+								Proceed to app.payflow.me/connect for sign up!
+																\t
+								`Sign In With Farcaster` is recommended for better experience 🙌🏻
+																\t
+								p.s. join /payflow channel for updates 👀""",
 						receiverUsername,
 						inviterUsername);
 
-				val response = farcasterMessagingService.message(
+				val response = farcasterMessagingService.sendMessage(
 						new DirectCastMessage(receiverFid, messageText, UUID.randomUUID()));
 
 				if (!response.result().success()) {

@@ -8,24 +8,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-import ua.sinaver.web3.payflow.data.Payment;
-import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.farcaster.CastActionMeta;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
-import ua.sinaver.web3.payflow.service.*;
+import ua.sinaver.web3.payflow.service.AirstackSocialGraphService;
+import ua.sinaver.web3.payflow.service.IdentityService;
+import ua.sinaver.web3.payflow.service.RewardsService;
+import ua.sinaver.web3.payflow.service.TokenService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.text.DecimalFormat;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
-import static ua.sinaver.web3.payflow.service.TokenService.*;
+import static ua.sinaver.web3.payflow.service.TokenService.BASE_CHAIN_NAME;
+import static ua.sinaver.web3.payflow.service.TokenService.PAYMENT_CHAIN_NAMES;
 
 @RestController
 @RequestMapping("/farcaster/actions/pay")
@@ -46,16 +45,13 @@ public class IntentsController {
 	private AirstackSocialGraphService socialGraphService;
 
 	@Autowired
-	private PaymentService paymentService;
-
-	@Autowired
 	private TokenService tokenService;
 
 	@Autowired
-	private IdentitySubscriptionsService subscriptionsService;
+	private AirstackSocialGraphService airstackSocialGraphService;
 
 	@Autowired
-	private AirstackSocialGraphService airstackSocialGraphService;
+	private RewardsService rewardsService;
 
 	public static String formatDouble(Double value) {
 		val df = new DecimalFormat("#.#####");
@@ -190,7 +186,9 @@ public class IntentsController {
 				}
 				int casterFid = Integer.parseInt(topReply.getFid());
 				val castHash = topReply.getHash();
-				val payment = createRewardPayment(clickedProfile, casterFid, castHash, "reward_top_reply",
+				val payment = rewardsService.createRewardPayment(clickedProfile, casterFid,
+						castHash,
+						"reward_top_reply",
 						amount, tokenAmount, token, chainId, sourceApp, topReply.getUrl());
 				if (payment == null) {
 					return ResponseEntity.badRequest().body(
@@ -209,6 +207,7 @@ public class IntentsController {
 				val hypersubContractAddress = allParams.getFirst("hypersub");
 
 				var excludeFids = new ArrayList<String>();
+				excludeFids.add(String.valueOf(clickedFid));
 				if (StringUtils.isNotBlank(channelId)) {
 					val channel = airstackSocialGraphService.getFarcasterChannelByChannelId(channelId);
 					if (channel == null) {
@@ -216,12 +215,10 @@ public class IntentsController {
 						return ResponseEntity.badRequest().body(
 								new FrameResponse.FrameMessage("Failed to fetch channel info!"));
 					}
-
 					excludeFids.addAll(channel.getModeratorIds());
 				}
-				excludeFids.add(String.valueOf(clickedFid));
 
-				val fidToPayment = fetchAndCreateTopCastPayments(
+				rewardsService.processTopCastRewards(
 						excludeFids,
 						channelId,
 						hypersubContractAddress,
@@ -230,18 +227,10 @@ public class IntentsController {
 						amount, tokenAmount, token, chainId,
 						sourceApp);
 
-				if (fidToPayment.isEmpty()) {
-					log.error("Failed to fetch trending casts");
-					return ResponseEntity.badRequest().body(
-							new FrameResponse.FrameMessage("Failed to find trending casts!"));
-				}
-
-				val payments = new ArrayList<>(fidToPayment.values());
-				paymentRepository.saveAll(payments);
-				log.debug("Trending casters reward intents saved: {}", payments);
-				return ResponseEntity.ok().body(new FrameResponse.FrameMessage(
-						String.format("Submitted rewards for top %d trending casters. Pay in the app!",
-								payments.size())));
+				return ResponseEntity.ok().body(new FrameResponse.FrameMessage(String.format("""
+						🔎 Looking for %s Top Casters ...
+						Wait for @payflow DC notification!
+						""", channelId == null ? "Global" : "/" + channelId)));
 
 			case "reward":
 			default:
@@ -256,7 +245,8 @@ public class IntentsController {
 					castLink = String.format("https://warpcast.com/%s/%s",
 							author.username(), authorCastHash.substring(0, 10));
 				}
-				val rewardPayment = createRewardPayment(clickedProfile, authorFid, authorCastHash,
+				val rewardPayment = rewardsService.createRewardPayment(clickedProfile, authorFid,
+						authorCastHash,
 						"reward",
 						amount, tokenAmount, token, chainId, sourceApp, castLink);
 				if (rewardPayment == null) {
@@ -270,105 +260,5 @@ public class IntentsController {
 						String.format("Submitted reward for @%s. Pay in the app!",
 								authorFcName)));
 		}
-	}
-
-	private Map<Integer, Payment> fetchAndCreateTopCastPayments(List<String> excludedFids,
-	                                                            String channelId,
-	                                                            String subscriptionContract,
-	                                                            int numberOfRewards,
-	                                                            User clickedProfile,
-	                                                            Double amount, Double tokenAmount, String token, Integer chainId,
-	                                                            String sourceApp) {
-		val fidToPayment = new LinkedHashMap<Integer, Payment>();
-		var cursor = (String) null;
-
-		while (fidToPayment.size() < numberOfRewards) {
-			val response = neynarService.fetchTrendingCasts(channelId, "7d",
-					10, cursor);
-
-			if (response == null || response.getCasts() == null || response.getCasts().isEmpty()) {
-				break; // No more casts to process
-			}
-
-			for (val cast : response.getCasts()) {
-				if (excludedFids.contains(String.valueOf(cast.author().fid()))
-						|| fidToPayment.containsKey(cast.author().fid())) {
-					continue;
-				}
-
-				if (subscriptionContract != null) {
-					val verifications = cast.author().verifications();
-					val subscribers = subscriptionsService.fetchHypersubSubscribers(BASE_CHAIN_ID, subscriptionContract,
-							verifications);
-					val validSubscription = subscribers.stream()
-							.anyMatch(s -> Instant.now().isBefore(Instant.ofEpochSecond(s.purchaseExpiresAt())));
-					if (!validSubscription) {
-						continue;
-					}
-				}
-
-				try {
-					val castLink = String.format("https://warpcast.com/%s/%s",
-							cast.author().username(), cast.hash().substring(0, 10));
-					val payment = createRewardPayment(clickedProfile, cast.author().fid(),
-							cast.hash(), "reward_top_casters", amount, tokenAmount, token, chainId,
-							sourceApp, castLink);
-					if (payment != null) {
-						fidToPayment.put(cast.author().fid(), payment);
-						if (fidToPayment.size() == numberOfRewards) {
-							return fidToPayment;
-						}
-					}
-				} catch (Throwable t) {
-					log.error("Failed to create a payment for cast: {} - error: {}", cast, t.getMessage());
-				}
-			}
-
-			// Update cursor for next page
-			cursor = response.getNext() != null ? response.getNext().getCursor() : null;
-			if (cursor == null) {
-				break; // No more pages to fetch
-			}
-		}
-
-		return fidToPayment;
-	}
-
-	private Payment createRewardPayment(User clickedProfile, int casterFid, String castHash,
-	                                    String category,
-	                                    Double amount, Double tokenAmount, String token,
-	                                    Integer chainId, String sourceApp,
-	                                    String extraLink) {
-		val paymentProfile = identityService.getProfiles(casterFid).stream().findFirst().orElse(null);
-		String paymentAddress = null;
-		if (paymentProfile == null || (paymentProfile.getDefaultFlow() == null
-				&& paymentProfile.getDefaultReceivingAddress() == null)) {
-			val paymentAddresses = identityService.getFidAddresses(casterFid);
-			paymentAddress = identityService.getHighestScoredIdentity(paymentAddresses);
-			if (paymentAddress == null) {
-				log.error("Missing verified identity for caster FID: {}", casterFid);
-				return null;
-			}
-		}
-
-		val casterFcName = identityService.getFidFname(casterFid);
-		val sourceRef = String.format("https://warpcast.com/%s/%s",
-				casterFcName, castHash.substring(0, 10));
-
-		val payment = new Payment(Payment.PaymentType.INTENT, paymentProfile, chainId, token);
-		payment.setCategory(category);
-		payment.setReceiverAddress(paymentAddress);
-		payment.setSender(clickedProfile);
-		if (tokenAmount != null) {
-			payment.setTokenAmount(tokenAmount.toString());
-		} else {
-			payment.setUsdAmount(amount.toString());
-		}
-		payment.setSourceApp(sourceApp);
-		payment.setSourceRef(sourceRef);
-		payment.setSourceHash(castHash);
-		payment.setTarget(extraLink);
-
-		return payment;
 	}
 }

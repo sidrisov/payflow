@@ -41,7 +41,6 @@ import java.util.regex.Pattern;
 
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.BASE_PATH;
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.DEFAULT_HTML_RESPONSE;
-import static ua.sinaver.web3.payflow.controller.frames.JarContributionController.PAY_PAYFLOW_JAR;
 
 @RestController
 @RequestMapping("/farcaster/frames/pay")
@@ -527,9 +526,8 @@ public class FramePaymentController {
 					}
 				}
 
-				// TODO: replace with payment completion notification API
-				notificationService.paymentReply(payment, interactor, null);
-
+				notificationService.notifyPaymentCompletion(payment, null);
+				
 				val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
 								"/payment.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
 								"&tokenAmount=%s&status=%s",
@@ -551,9 +549,11 @@ public class FramePaymentController {
 						.button(new FrameButton("💸 History",
 								FrameButton.ActionType.LINK,
 								"https://warpcast.com/~/composer-action?url=https://api.alpha.payflow.me/api/farcaster/composer/pay?action=activity"))
-						.button(new FrameButton("\uD83C\uDF1F Tip",
-								FrameButton.ActionType.POST,
-								apiServiceUrl.concat(String.format(PAY_PAYFLOW_JAR))))
+						/*
+						 * .button(new FrameButton("\uD83C\uDF1F Tip",
+						 * FrameButton.ActionType.POST,
+						 * apiServiceUrl.concat(String.format(PAY_PAYFLOW_JAR))))
+						 */
 						.build().toHtmlResponse();
 			} else if (buttonIndex == 1) {
 				log.debug("Handling payment through frame tx: {}", payment);
@@ -627,9 +627,11 @@ public class FramePaymentController {
 						.button(new FrameButton("💸 History",
 								FrameButton.ActionType.LINK,
 								"https://warpcast.com/~/composer-action?url=https://api.alpha.payflow.me/api/farcaster/composer/pay?action=activity"))
-						.button(new FrameButton("\uD83C\uDF1F Tip",
-								FrameButton.ActionType.POST,
-								apiServiceUrl.concat(String.format(PAY_PAYFLOW_JAR))))
+						/*
+						 * .button(new FrameButton("\uD83C\uDF1F Tip",
+						 * FrameButton.ActionType.POST,
+						 * apiServiceUrl.concat(String.format(PAY_PAYFLOW_JAR))))
+						 */
 						.state(validateMessage.action().state().serialized());
 
 				val input = validateMessage.action().input();
@@ -662,7 +664,7 @@ public class FramePaymentController {
 								payment.getSourceRef() != null ? String.format("🔗 Source: %s",
 										payment.getSourceRef()) : "",
 								receiptUrl);
-						val response = farcasterMessagingService.message(
+						val response = farcasterMessagingService.sendMessage(
 								new DirectCastMessage(String.valueOf(receiverFid), messageText,
 										UUID.randomUUID()));
 

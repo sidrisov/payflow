@@ -49,7 +49,7 @@ public class PaymentController {
 
 	@GetMapping
 	public List<PaymentMessage> payments(@RequestParam(value = "hashes") List<String> hashes,
-			Principal principal) {
+	                                     Principal principal) {
 
 		val username = principal != null ? principal.getName() : null;
 		log.debug("{} fetching payments info for {}", username, hashes);
@@ -70,7 +70,7 @@ public class PaymentController {
 
 	@PostMapping
 	public ResponseEntity<PaymentReferenceMessage> submitPayment(@RequestBody PaymentMessage paymentMessage,
-			Principal principal) {
+	                                                             Principal principal) {
 		val username = principal != null ? principal.getName() : null;
 
 		log.debug("Saving completed payment {} for {}", paymentMessage, username);
@@ -121,9 +121,9 @@ public class PaymentController {
 
 	@GetMapping("/completed")
 	public Page<PaymentMessage> completedPayments(Principal principal,
-			@RequestParam(required = false) String identity,
-			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+	                                              @RequestParam(required = false) String identity,
+	                                              @RequestParam(defaultValue = "0") int page,
+	                                              @RequestParam(defaultValue = "20") int size) {
 		val loggedIdentity = principal != null ? principal.getName() : null;
 
 		log.debug("Fetching completed payments for identity: {}, logged user: {}", identity, loggedIdentity);
@@ -154,9 +154,9 @@ public class PaymentController {
 
 	@GetMapping("/outbound")
 	public Page<PaymentMessage> outbound(Principal principal,
-			@RequestParam List<Payment.PaymentStatus> statuses,
-			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "5") int size) {
+	                                     @RequestParam List<Payment.PaymentStatus> statuses,
+	                                     @RequestParam(defaultValue = "0") int page,
+	                                     @RequestParam(defaultValue = "5") int size) {
 		val username = principal != null ? principal.getName() : null;
 		log.debug("Fetching pending payments for {} ", username);
 
@@ -200,7 +200,7 @@ public class PaymentController {
 	@PutMapping("/{referenceId}")
 	@ResponseStatus(HttpStatus.OK)
 	public void updatePayment(@PathVariable String referenceId,
-			@RequestBody PaymentUpdateMessage paymentUpdateMessage, Principal principal) {
+	                          @RequestBody PaymentUpdateMessage paymentUpdateMessage, Principal principal) {
 		log.debug("Received update {} for payment {} by user {}",
 				paymentUpdateMessage,
 				referenceId,

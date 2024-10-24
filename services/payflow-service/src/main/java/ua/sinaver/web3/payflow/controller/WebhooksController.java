@@ -57,7 +57,6 @@ public class WebhooksController {
 	@Autowired
 	private FarcasterMessagingService farcasterMessagingService;
 
-
 	private static String bytesToHex(byte[] bytes) {
 		StringBuilder hexString = new StringBuilder();
 		for (byte b : bytes) {
@@ -116,12 +115,16 @@ public class WebhooksController {
 	}
 
 	@PostMapping("/membership")
-	public ResponseEntity<?> membership(/*@RequestParam String accessToken,*/
+	public ResponseEntity<?> membership(
+			@RequestHeader("x-webhook-secret") String secret,
 			@RequestBody MembershipRequestMessage request) {
 
-	/*	if (membershipSecret.equals(accessToken)) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MembershipResponseMessage("Not authorized to access membership API"));
-		}*/
+		if (!membershipSecret.equals(secret)) {
+			log.debug("membership: {}", Thread.currentThread().getName());
+			sendMembershipDeniedMessage(request.user().fid(), "Not authorized to access membership API");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body(new MembershipResponseMessage("Not authorized to access membership API"));
+		}
 
 		val fid = request.user().fid();
 		val verifications = request.user().verifications();
@@ -129,66 +132,69 @@ public class WebhooksController {
 
 		if (!StringUtils.equals("payflow", channelId)) {
 			log.error("Unsupported channelId: {}", channelId);
-			return ResponseEntity.badRequest().body(new MembershipResponseMessage("Channel not " +
-					"supported"));
+			return ResponseEntity.badRequest().body(new MembershipResponseMessage("Channel not supported"));
 		}
 
-		log.debug("Checking whether membership allowed for fid {} based on number of outbound " +
-				"completed " +
-				"payments", request.user().fid());
+		log.debug("Checking whether membership allowed for fid {} based on number of outbound completed payments", fid);
 
 		if (verifications.isEmpty()) {
 			log.error("No verifications for {}", fid);
-			return ResponseEntity.badRequest().body(new MembershipResponseMessage("No " +
-					"verifications provided"));
+			sendMembershipDeniedMessage(fid, "No verified address connected");
+			return ResponseEntity.badRequest().body(new MembershipResponseMessage("No verified address connected"));
 		}
 
 		val users = identityService.getProfiles(verifications);
 		if (users == null || users.isEmpty()) {
 			log.error("Profile not found for {}", fid);
-			return ResponseEntity.badRequest().body(new MembershipResponseMessage("Payflow " +
-					"profile not found"));
+			sendMembershipDeniedMessage(fid, "Payflow profile not found");
+			return ResponseEntity.badRequest().body(new MembershipResponseMessage("Payflow profile not found"));
 		}
 
-		val numberOfPayments = paymentRepository.findNumberOutboundCompleted(
-				users, verifications);
-
+		val numberOfPayments = paymentRepository.findNumberOutboundCompleted(users, verifications);
 		val isMembershipAllowed = numberOfPayments >= 5;
 
-		log.debug("Membership for fid {}: number of outbound completed - {} " +
-				"allowed - {}", request.user().fid(), numberOfPayments, isMembershipAllowed);
+		log.debug("Membership for fid {}: number of outbound completed - {} allowed - {}", fid, numberOfPayments,
+				isMembershipAllowed);
 
 		if (isMembershipAllowed) {
 			log.info("Membership allowed for {}", fid);
-			return ResponseEntity.ok(new MembershipResponseMessage(String.format("Membership " +
-					"allowed with %s >= 5 payments", numberOfPayments)));
+			return ResponseEntity.ok(new MembershipResponseMessage(
+					String.format("Membership allowed with %s >= 5 payments", numberOfPayments)));
 		} else {
 			log.error("Membership not allowed for {}", fid);
-
-			farcasterMessagingService.message(new DirectCastMessage(fid.toString(),
-					"""
-							Thanks for requesting to join /payflow! 🙏
-
-							To join, you need to make at least 5 payments using @payflow:
-							• In the social feed
-							• Or in the app
-
-							Keep using Payflow, and you'll be eligible soon! 💪
-
-							Best regards,
-							@sinaver""", UUID.randomUUID()
-			));
-			return ResponseEntity.badRequest().body(new MembershipResponseMessage(String.format(
-					"Membership not allowed with %s < 5 payments", numberOfPayments)));
+			sendMembershipDeniedMessage(fid,
+					String.format("Membership not allowed with %s < 5 payments", numberOfPayments));
+			return ResponseEntity.badRequest().body(new MembershipResponseMessage(
+					String.format("Membership not allowed with %s < 5 payments", numberOfPayments)));
 		}
 	}
 
-	private boolean verifySignature(String body, String sig, String secret) throws NoSuchAlgorithmException, InvalidKeyException {
+	private boolean verifySignature(String body, String sig, String secret)
+			throws NoSuchAlgorithmException, InvalidKeyException {
 		val hmacSha512 = Mac.getInstance("HmacSHA512");
 		val secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA512");
 		hmacSha512.init(secretKey);
 		val hmac = hmacSha512.doFinal(body.getBytes(StandardCharsets.UTF_8));
 		val generatedSignature = bytesToHex(hmac);
 		return generatedSignature.equals(sig);
+	}
+
+	public void sendMembershipDeniedMessage(int fid, String reason) {
+		farcasterMessagingService.sendMessageAsync(new DirectCastMessage(String.valueOf(fid),
+				String.format("""
+						Thanks for requesting to join /payflow! 🙏
+
+						Unfortunately, we couldn't approve your membership at this time.
+						Reason: %s
+
+						To join the channel, you need to:
+						• Have at least one verified address
+						• Sign up on app.payflow.me/connect
+						• Make at least 5 payments in social feed or in the app
+
+						Keep using Payflow, and you'll be eligible soon! 💪
+
+						Best regards,
+						@sinaver""", reason), UUID.randomUUID()));
 	}
 }

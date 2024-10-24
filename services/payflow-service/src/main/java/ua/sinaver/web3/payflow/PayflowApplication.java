@@ -13,6 +13,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.security.Security;
@@ -24,6 +25,7 @@ import java.security.Security;
 @EnableCaching
 @EnableScheduling
 @EnableRetry
+@EnableAsync(proxyTargetClass = true)
 public class PayflowApplication {
 
 	static {

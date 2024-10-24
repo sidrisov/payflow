@@ -241,9 +241,9 @@ export default function PaymentDialog({
       case 'reward':
         return 'Reward';
       case 'reward_top_reply':
-        return 'Reward for top reply';
+        return 'Top Reply Reward';
       case 'reward_top_casters':
-        return 'Reward for top casts';
+        return 'Top Caster Reward';
       default:
         return undefined;
     }

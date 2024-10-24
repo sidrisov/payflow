@@ -45,7 +45,9 @@ export function getActivityName(activity: ActivityType, payment: PaymentType): s
     return 'moved funds';
   }
 
-  if (payment.category) {
+  if (payment.category?.startsWith('reward')) {
+    return 'rewarded';
+  } else if (payment.category) {
     return 'gifted';
   } else {
     return 'paid';

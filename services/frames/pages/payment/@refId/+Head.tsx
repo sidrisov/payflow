@@ -13,9 +13,9 @@ export function Head() {
 
   const imageUrl =
     status === 'CREATED'
-      ? type === 'INTENT'
+      ? /* type === 'INTENT'
         ? `${FRAMES_URL}/images/profile/${identity}/payment.png?step=execute&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount ?? ''}&tokenAmount=${payment.tokenAmount ?? ''}`
-        : `${FRAMES_URL}/images/profile/${identity}/payment.png?step=confirm&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount ?? ''}&tokenAmount=${payment.tokenAmount ?? ''}`
+        : */ `${FRAMES_URL}/images/profile/${identity}/payment.png?step=confirm&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount ?? ''}&tokenAmount=${payment.tokenAmount ?? ''}`
       : `${FRAMES_URL}/images/profile/${identity}/payment.png?step=execute&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount ?? ''}&tokenAmount=${payment.tokenAmount ?? ''}&status=success`;
 
   const receiptUrl = getReceiptUrl(payment.chainId, payment.hash ?? payment.fulfillmentHash);
@@ -65,7 +65,7 @@ export function Head() {
         <meta property="fc:frame:image" content={imageUrl} />
 
         {status === 'CREATED' ? (
-          type === 'INTENT' ? (
+          /* type === 'INTENT' ? (
             <>
               <meta property="fc:frame:button:1" content="Complete in App" />
               <meta property="fc:frame:button:1:action" content="link" />
@@ -73,44 +73,40 @@ export function Head() {
                 property="fc:frame:button:1:target"
                 content={DAPP_URL.concat(`/payment/${refId}`)}
               />
-              {/*  <meta property="fc:frame:button:2" content="🌟 Tip" />
-              <meta property="fc:frame:button:2:action" content="post" />
-              <meta property="fc:frame:button:2:target" content={TIP_PAYFLOW_URL} /> */}
             </>
-          ) : (
-            <>
-              <meta
-                property="fc:frame:post_url"
-                content={`${API_URL}/api/farcaster/frames/pay/${refId}/frame/confirm`}
-              />
-              <meta property="fc:frame:button:1" content="💜 Pay" />
-              <meta property="fc:frame:button:1:action" content="tx" />
-              <meta
-                property="fc:frame:button:1:target"
-                content={`${API_URL}/api/farcaster/frames/pay/${refId}/frame/confirm`}
-              />
-              <meta property="fc:frame:button:2" content="Complete in App" />
-              <meta property="fc:frame:button:2:action" content="link" />
-              <meta
-                property="fc:frame:button:2:target"
-                content={DAPP_URL.concat(`/payment/${refId}`)}
-              />
+          ) : ( */
+          <>
+            <meta
+              property="fc:frame:post_url"
+              content={`${API_URL}/api/farcaster/frames/pay/${refId}/frame/confirm`}
+            />
+            <meta property="fc:frame:button:1" content="💜 Pay" />
+            <meta property="fc:frame:button:1:action" content="tx" />
+            <meta
+              property="fc:frame:button:1:target"
+              content={`${API_URL}/api/farcaster/frames/pay/${refId}/frame/confirm`}
+            />
+            <meta property="fc:frame:button:2" content="Complete in App" />
+            <meta property="fc:frame:button:2:action" content="link" />
+            <meta
+              property="fc:frame:button:2:target"
+              content={DAPP_URL.concat(`/payment/${refId}`)}
+            />
 
-              <meta property="fc:frame:button:3" content="Action" />
-              <meta property="fc:frame:button:3:action" content="link" />
-              <meta
-                property="fc:frame:button:3:target"
-                content={`https://warpcast.com/~/add-cast-action?url=${API_URL}/api/farcaster/actions/profile`}
-              />
+            <meta property="fc:frame:button:3" content="Action" />
+            <meta property="fc:frame:button:3:action" content="link" />
+            <meta
+              property="fc:frame:button:3:target"
+              content={`https://warpcast.com/~/add-cast-action?url=${API_URL}/api/farcaster/actions/profile`}
+            />
 
-              <meta property="fc:frame:button:4" content="FAQ" />
-              <meta property="fc:frame:button:4:action" content="link" />
-              <meta
-                property="fc:frame:button:4:target"
-                content="https://warpcast.com/~/composer-action?url=https://api.alpha.payflow.me/api/farcaster/composer/pay?action=faq&view=prompt"
-              />
-            </>
-          )
+            <meta property="fc:frame:button:4" content="FAQ" />
+            <meta property="fc:frame:button:4:action" content="link" />
+            <meta
+              property="fc:frame:button:4:target"
+              content="https://warpcast.com/~/composer-action?url=https://api.alpha.payflow.me/api/farcaster/composer/pay?action=faq&view=prompt"
+            />
+          </>
         ) : (
           <>
             <meta property="fc:frame:button:1" content="🧾 Receipt" />
