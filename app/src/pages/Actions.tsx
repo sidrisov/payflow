@@ -60,6 +60,12 @@ export default function Actions() {
       startIcon: <GoZap size={25} />
     },
     {
+      title: 'Reward',
+      description: 'Submit custom rewards',
+      onClick: () => setOpenPaymentActionDialog(true),
+      startIcon: <Interests sx={{ width: 25, height: 25 }} />
+    },
+    {
       title: 'Storage',
       description: 'Buy farcaster storage',
       installUrl: `${BASE_URL}/products/storage`,
@@ -89,12 +95,6 @@ export default function Actions() {
       description: 'Collect contributions',
       installUrl: `${BASE_URL}/jar`,
       startIcon: <PiTipJar size={25} />
-    },
-    {
-      title: 'Reward',
-      description: 'Submit custom rewards',
-      onClick: () => setOpenPaymentActionDialog(true),
-      startIcon: <Interests sx={{ width: 25, height: 25 }} />
     },
     {
       title: 'Invite',
