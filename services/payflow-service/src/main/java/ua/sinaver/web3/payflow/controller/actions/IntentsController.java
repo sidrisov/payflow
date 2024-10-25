@@ -227,7 +227,7 @@ public class IntentsController {
 						sourceApp);
 
 				return ResponseEntity.ok().body(new FrameResponse.FrameMessage(String.format("""
-						🔎 Identifying %s Top Casters, you'll receive notification once it's ready!
+						🔎 Identifying %s Top Casters, you'll receive notification!
 						""", channelId == null ? "Global" : "/" + channelId)));
 
 			case "reward":

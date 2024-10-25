@@ -139,7 +139,7 @@ export function RewardAdvancedSection({
                   )
                 </>
               ) : (
-                'Rewards top trending casts in the channel or globally based on configured criteria'
+                'Rewards top casters within 7d period in the channel or globally based on configured user criteria (e.g. hypersub subscriber)'
               )}
             </Typography>
 
@@ -235,9 +235,9 @@ export function RewardAdvancedSection({
                             onHypersubSelect={(hypersub) => {
                               setRewardCriteria((prev) => ({
                                 ...prev,
-                                [key]: { 
-                                  ...prev[key], 
-                                  value: hypersub?.hypersubId || '' 
+                                [key]: {
+                                  ...prev[key],
+                                  value: hypersub?.hypersubId || ''
                                 }
                               }));
                             }}

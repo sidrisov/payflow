@@ -73,7 +73,7 @@ public record ParsedMintUrlMessage(
 		String contract;
 		if (pathParts[2].contains(":")) {
 			val chainAndContract = pathParts[2].split(":");
-			chain = chainAndContract[0];
+			chain = chainAndContract[0].replace("oeth", "optimism");
 			contract = chainAndContract[1];
 		} else {
 			chain = "base";
