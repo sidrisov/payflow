@@ -12,7 +12,7 @@ import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/fo
 import { useMobile } from '../../utils/hooks/useMobile';
 import { PaymentCard } from '../cards/PaymentCard';
 import { useMintData } from '../../utils/hooks/useMintData';
-import { HypersubData, useHypersubData } from '../../utils/hooks/useHypersubData';
+import { HypersubData, useHypersubData } from '../../utils/hooks/useHypersub';
 
 const StyledTypography = styled(Typography)(() => ({
   textAlign: 'start',

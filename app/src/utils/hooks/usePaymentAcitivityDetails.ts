@@ -4,7 +4,7 @@ import { PaymentType } from '../../types/PaymentType';
 import { ERC20_CONTRACTS, Token } from '../../utils/erc20contracts';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { getNetworkDefaultBlockExplorerUrl } from '../../utils/networks';
-import { useHypersubData } from './useHypersubData';
+import { useHypersubData } from './useHypersub';
 
 export const usePaymentActivityDetails = (payment: PaymentType) => {
   const { data: tokenPrices } = useTokenPrices();

@@ -14,6 +14,7 @@ import { useState, useEffect } from 'react';
 import { PaymentCategory } from '../types/PaymentType';
 import { QuantitySelector } from './payment/QuantitySelector';
 import { ChannelSelector } from './dialogs/ChannelSelector';
+import { HypersubSelector } from './dialogs/HypersubSelector';
 
 export interface RewardCriteria {
   label: string;
@@ -228,35 +229,50 @@ export function RewardAdvancedSection({
                           }
                           label={criteria.label}
                         />
-                        <TextField
-                          value={criteria.value}
-                          onChange={(e) => {
-                            setRewardCriteria((prev) => ({
-                              ...prev,
-                              [key]: { ...prev[key], value: e.target.value }
-                            }));
-                          }}
-                          disabled={!criteria.enabled}
-                          sx={{
-                            width: '50%',
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: 5,
-                              borderColor: 'divider',
-                              height: 40,
-                              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                borderColor: 'text.primary',
-                                borderWidth: 1
+                        {key === 'hypersub' ? (
+                          <HypersubSelector
+                            disabled={!criteria.enabled}
+                            onHypersubSelect={(hypersub) => {
+                              setRewardCriteria((prev) => ({
+                                ...prev,
+                                [key]: { 
+                                  ...prev[key], 
+                                  value: hypersub?.hypersubId || '' 
+                                }
+                              }));
+                            }}
+                          />
+                        ) : (
+                          <TextField
+                            value={criteria.value}
+                            onChange={(e) => {
+                              setRewardCriteria((prev) => ({
+                                ...prev,
+                                [key]: { ...prev[key], value: e.target.value }
+                              }));
+                            }}
+                            disabled={!criteria.enabled}
+                            sx={{
+                              width: '50%',
+                              '& .MuiOutlinedInput-root': {
+                                borderRadius: 5,
+                                borderColor: 'divider',
+                                height: 40,
+                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                  borderColor: 'text.primary',
+                                  borderWidth: 1
+                                }
                               }
-                            }
-                          }}
-                          size="small"
-                          placeholder={criteria.placeholder}
-                          slotProps={{
-                            input: {
-                              sx: { fontSize: 12, fontWeight: 'bold' }
-                            }
-                          }}
-                        />
+                            }}
+                            size="small"
+                            placeholder={criteria.placeholder}
+                            slotProps={{
+                              input: {
+                                sx: { fontSize: 12, fontWeight: 'bold' }
+                              }
+                            }}
+                          />
+                        )}
                       </Box>
                     ))}
                   </Box>

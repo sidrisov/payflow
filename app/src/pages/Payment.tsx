@@ -20,7 +20,7 @@ import { toast } from 'react-toastify';
 import { statusToToastType } from '../components/Toasts';
 import { fetchMintData, MintMetadata, parseMintToken } from '../utils/mint';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
-import { fetchHypersubData, HypersubData } from '../utils/hooks/useHypersubData';
+import { fetchHypersubData, HypersubData } from '../utils/hooks/useHypersub';
 
 const LazyMintDialog = lazy(() => import('../components/payment/MintDialog'));
 const LazyBuyFanTokenDialog = lazy(() => import('../components/payment/BuyFanTokenDialog'));

@@ -221,7 +221,7 @@ public class NotificationService {
 			switch (payment.getCategory()) {
 				case "reward":
 					val rewardCastText = String.format("""
-									@%s, you've been rewarded %s %s%s by @%s for being awesome 🎁""",
+									@%s, you've been rewarded %s %s%s by @%s for your cast 🎁""",
 							receiverFname,
 							StringUtils.isNotBlank(payment.getTokenAmount())
 									? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())

@@ -40,11 +40,11 @@ export function Head() {
         <meta property="of:version" content="vNext" />
         <meta property="of:accepts:xmtp" content="2024-02-01" />
         <meta property="of:accepts:lens" content="1.1" />
-        
+
         <meta property="fc:frame" content="vNext" />
 
         <meta property="fc:frame:image" content={`${FRAMES_URL}/images/jar/${uuid}/image.png`} />
-        <meta property="fc:frame:button:1" content="💜 Contribute" />
+        <meta property="fc:frame:button:1" content="Contribute" />
         <meta property="fc:frame:button:1:action" content="post" />
         <meta
           property="fc:frame:button:1:target"

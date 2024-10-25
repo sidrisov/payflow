@@ -12,10 +12,7 @@ import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.farcaster.CastActionMeta;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
-import ua.sinaver.web3.payflow.service.AirstackSocialGraphService;
-import ua.sinaver.web3.payflow.service.IdentityService;
-import ua.sinaver.web3.payflow.service.RewardsService;
-import ua.sinaver.web3.payflow.service.TokenService;
+import ua.sinaver.web3.payflow.service.*;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
@@ -53,6 +50,9 @@ public class IntentsController {
 	@Autowired
 	private RewardsService rewardsService;
 
+	@Autowired
+	private LinkService linkService;
+
 	public static String formatDouble(Double value) {
 		val df = new DecimalFormat("#.#####");
 		return df.format(value);
@@ -83,24 +83,22 @@ public class IntentsController {
 		switch (type) {
 			case "reward_top_reply":
 				castActionMeta = new CastActionMeta(
-						String.format("%s %s (%s) Top Comment", amountStr, tokenStr, chainStr),
-						"flame",
-						"Use this action to submit payment intent to Payflow for cast's top comment " +
-								"based on Airstack's Social Capital Value score",
+						String.format("%s %s Top Comment Reward", amountStr, tokenStr),
+						"gift",
+						"Use this action to submit Top Comment Reward",
 						"https://payflow.me/actions",
 						new CastActionMeta.Action("post"));
 				break;
 
 			case "reward":
 			default:
-				String title = String.format("%s %s (%s)", amountStr, tokenStr, chainStr);
+				String title = String.format("%s %s Cast Reward", amountStr, tokenStr);
 
 				if (numberOfRewards > 1) {
 					title = String.format("%s x%d", title, numberOfRewards);
 				}
 
-				String description = "Use this action to submit payment intent to Payflow with pre-configured " +
-						"amount of a token on specific chain";
+				String description = "Use this action to submit Cast Reward";
 
 				if (!allParams.isEmpty()) {
 					description += " with criteria: " + String.join(", ", allParams.keySet());
@@ -108,17 +106,18 @@ public class IntentsController {
 
 				castActionMeta = new CastActionMeta(
 						title,
-						"plus",
+						"gift",
 						description,
 						"https://app.payflow.me/actions",
 						new CastActionMeta.Action("post"));
 				break;
 			case "reward_top_casters":
 				castActionMeta = new CastActionMeta(
-						String.format("%s %s x Top %s Casters", amountStr, tokenStr, numberOfRewards),
+						String.format("%s x %s %s Top Caster Rewards", numberOfRewards, amountStr,
+								tokenStr),
 						"gift",
-						"Use this action to submit rewards for the top casters based on " +
-								"configured criteria",
+						"Use this action to submit Top Caster Rewards based on configured " +
+								"user criteria",
 						"https://app.payflow.me/actions",
 						new CastActionMeta.Action("post"));
 				break;
@@ -130,7 +129,7 @@ public class IntentsController {
 	}
 
 	@PostMapping("/reward")
-	public ResponseEntity<FrameResponse.FrameMessage> intent(
+	public ResponseEntity<?> intent(
 			@RequestBody FrameMessage castActionMessage,
 			@RequestParam(name = "type", required = false) String type,
 			@RequestParam(name = "amount", required = false, defaultValue = "1.0") Double amount,
@@ -196,11 +195,11 @@ public class IntentsController {
 									"Contact @sinaver.eth"));
 				}
 				paymentRepository.save(payment);
-				String casterFcName = identityService.getFidFname(casterFid);
 				log.debug("Top reply reward intent saved: {}", payment);
-				return ResponseEntity.ok().body(new FrameResponse.FrameMessage(
-						String.format("Submitted reward for top comment from @%s. Pay in the app!",
-								casterFcName)));
+
+				return ResponseEntity.ok().body(
+						new FrameResponse.ActionFrame("frame",
+								linkService.framePaymentLink(payment).toString()));
 
 			case "reward_top_casters":
 				val channelId = allParams.getFirst("channel");
@@ -228,8 +227,7 @@ public class IntentsController {
 						sourceApp);
 
 				return ResponseEntity.ok().body(new FrameResponse.FrameMessage(String.format("""
-						🔎 Looking for %s Top Casters ...
-						Wait for @payflow DC notification!
+						🔎 Identifying %s Top Casters, you'll receive notification once it's ready!
 						""", channelId == null ? "Global" : "/" + channelId)));
 
 			case "reward":
@@ -254,11 +252,11 @@ public class IntentsController {
 							new FrameResponse.FrameMessage("Failed to create payment intent. Contact @sinaver.eth"));
 				}
 				paymentRepository.save(rewardPayment);
-				String authorFcName = identityService.getFidFname(authorFid);
 				log.debug("Reward intent saved: {}", rewardPayment);
-				return ResponseEntity.ok().body(new FrameResponse.FrameMessage(
-						String.format("Submitted reward for @%s. Pay in the app!",
-								authorFcName)));
+
+				return ResponseEntity.ok().body(
+						new FrameResponse.ActionFrame("frame",
+								linkService.framePaymentLink(rewardPayment).toString()));
 		}
 	}
 }

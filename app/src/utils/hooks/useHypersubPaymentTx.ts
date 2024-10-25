@@ -3,7 +3,7 @@ import { Address, zeroAddress } from 'viem';
 
 import { Abi, ContractFunctionArgs, ContractFunctionName } from 'viem';
 import { hypersubAbi } from '../abi/hypersubAbi';
-import { HypersubData } from './useHypersubData';
+import { HypersubData } from './useHypersub';
 
 type HypersubPaymentTx = {
   chainId: number;

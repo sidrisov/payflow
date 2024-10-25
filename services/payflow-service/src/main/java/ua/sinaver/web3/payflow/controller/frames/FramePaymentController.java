@@ -527,7 +527,7 @@ public class FramePaymentController {
 				}
 
 				notificationService.notifyPaymentCompletion(payment, null);
-				
+
 				val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
 								"/payment.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
 								"&tokenAmount=%s&status=%s",
@@ -538,7 +538,7 @@ public class FramePaymentController {
 				val receiptUrl = receiptService.getReceiptUrl(payment);
 				return FrameResponse.builder()
 						.imageUrl(profileImage)
-						.textInput("Enter comment (255 max)")
+						.textInput("Comment (255 max)")
 						.button(new FrameButton("\uD83D\uDCAC Comment",
 								FrameButton.ActionType.POST,
 								apiServiceUrl.concat(String.format(PAY_IN_FRAME_COMMENT,
@@ -648,7 +648,7 @@ public class FramePaymentController {
 						val senderFname = senderFarcasterUser.username();
 
 						val messageText = String.format("""
-										 @%s, you've been paid %s %s by @%s 💸
+										 @%s, you've received a comment attached to the %s %s payment by @%s 💸
 										💬 Comment: %s
 
 										%s
@@ -676,11 +676,8 @@ public class FramePaymentController {
 						log.error("Failed to send direct cast with exception: ", t);
 					}
 				} else {
-					frameResponseBuilder.textInput("Enter comment again (255 max)")
-							.button(new FrameButton("\uD83D\uDCAC Comment",
-									FrameButton.ActionType.POST,
-									apiServiceUrl.concat(String.format(PAY_IN_FRAME_COMMENT,
-											payment.getReferenceId()))));
+					return ResponseEntity.badRequest().body(
+							new FrameResponse.FrameMessage("Enter comment again (255 max)"));
 				}
 				return frameResponseBuilder.build().toHtmlResponse();
 			}

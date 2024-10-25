@@ -80,7 +80,7 @@ export function Head() {
               property="fc:frame:post_url"
               content={`${API_URL}/api/farcaster/frames/pay/${refId}/frame/confirm`}
             />
-            <meta property="fc:frame:button:1" content="💜 Pay" />
+            <meta property="fc:frame:button:1" content="Pay" />
             <meta property="fc:frame:button:1:action" content="tx" />
             <meta
               property="fc:frame:button:1:target"

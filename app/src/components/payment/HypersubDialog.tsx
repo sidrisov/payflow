@@ -24,7 +24,7 @@ import { toast } from 'react-toastify';
 import { Social } from '../../generated/graphql/types';
 import { red } from '@mui/material/colors';
 import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
-import { HypersubData } from '../../utils/hooks/useHypersubData';
+import { HypersubData } from '../../utils/hooks/useHypersub';
 import { PayButton, PaymentSuccess } from '../buttons/PayButton';
 import PaymentSuccessDialog from '../dialogs/PaymentSuccessDialog';
 import { getReceiptUrl } from '../../utils/receipts';
