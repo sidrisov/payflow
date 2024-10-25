@@ -92,7 +92,6 @@ export default function Actions() {
     },
     {
       title: 'Reward',
-      earlyFeature: true,
       description: 'Submit custom rewards',
       onClick: () => setOpenPaymentActionDialog(true),
       startIcon: <Interests sx={{ width: 25, height: 25 }} />
