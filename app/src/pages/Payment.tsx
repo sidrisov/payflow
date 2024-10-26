@@ -190,7 +190,7 @@ export default function Payment() {
               (payment.category === 'mint' && mintData && (
                 <LazyMintDialog
                   alwaysShowBackButton
-                  title="Complete Mint"
+                  title="Complete Payment"
                   open={payment != null}
                   payment={payment}
                   sender={sender}
@@ -205,7 +205,7 @@ export default function Payment() {
               (payment.category === 'fan' && senderSocial && recipientSocial && (
                 <LazyBuyFanTokenDialog
                   alwaysShowBackButton
-                  title="Complete Purchase"
+                  title="Complete Payment"
                   open={payment != null}
                   payment={payment}
                   sender={sender}
@@ -222,7 +222,7 @@ export default function Payment() {
                 recipientSocial && (
                   <LazySubscribeToHypersubDialog
                     alwaysShowBackButton
-                    title="Complete Subscription"
+                    title="Complete Payment"
                     open={payment != null}
                     payment={payment}
                     sender={sender}

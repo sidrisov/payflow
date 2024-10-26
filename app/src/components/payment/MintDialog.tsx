@@ -26,7 +26,7 @@ import { toast } from 'react-toastify';
 import { Social } from '../../generated/graphql/types';
 import { red } from '@mui/material/colors';
 import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
-import { MintMetadata } from '../../utils/mint';
+import { MintMetadata, mintProviderNameMap } from '../../utils/mint';
 import { useMintPaymentTx } from '../../utils/hooks/useMintPaymentTx';
 import { PayButton, PaymentSuccess } from '../buttons/PayButton';
 import { useMobile } from '../../utils/hooks/useMobile';
@@ -313,6 +313,7 @@ export default function MintDialog({
     <BasePaymentDialog
       alwaysShowBackButton={alwaysShowBackButton}
       title={props.title ?? 'Mint Payment'}
+      subtitle={`${mintProviderNameMap[mint.provider] ?? 'Mint'} Collectible`}
       expiresAt={payment?.expiresAt}
       closeStateCallback={closeStateCallback}
       {...props}

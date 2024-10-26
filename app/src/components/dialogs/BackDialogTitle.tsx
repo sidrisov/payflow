@@ -47,7 +47,7 @@ export function BackDialogTitle({
                 {title}
                 {subtitle && (
                   <Typography
-                    variant="caption"
+                    fontSize={14}
                     fontWeight="bold"
                     display="block"
                     color="text.secondary"

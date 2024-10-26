@@ -23,6 +23,14 @@ type ParsedMintData = {
 };
 export type MintProvider = 'zora.co' | 'rodeo.club' | 'highlight.xyz';
 
+export type MintProviderName = 'Zora' | 'Rodeo' | 'Highlight';
+
+export const mintProviderNameMap: { [key in MintProvider]: MintProviderName } = {
+  'zora.co': 'Zora',
+  'rodeo.club': 'Rodeo',
+  'highlight.xyz': 'Highlight'
+};
+
 export type MintMetadata = {
   provider: MintProvider;
   chainId: number;

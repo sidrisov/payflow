@@ -134,16 +134,21 @@ public class RewardsService {
 			for (int i = 0; i < payments.size(); i++) {
 				try {
 					// 1 second delay between messages
-					Thread.sleep(1000);
+					Thread.sleep(1500);
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
 					log.error("Thread was interrupted", e);
 				}
 
-				val paymentMessage = String.format("%d. %s",
-						i + 1, linkService.framePaymentLink(payments.get(i)));
+				val topCastMessage = String.format("""
+								Top Caster %d: %s
+								""",
+						i + 1, payments.get(i).getTarget());
 				farcasterMessagingService.sendMessage(new DirectCastMessage(
-						clickedFid, paymentMessage, UUID.randomUUID()));
+						clickedFid, topCastMessage, UUID.randomUUID()));
+				farcasterMessagingService.sendMessage(new DirectCastMessage(
+						clickedFid, linkService.framePaymentLink(payments.get(i)).toString(),
+						UUID.randomUUID()));
 			}
 		});
 	}

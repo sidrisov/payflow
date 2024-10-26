@@ -22,6 +22,7 @@ import { getReceiptUrl } from '../../utils/receipts';
 import { BasePaymentDialog } from './BasePaymentDialog';
 import { FlowSelector } from './FlowSelector';
 import { Hash } from 'viem';
+import { QuantitySelector } from './QuantitySelector';
 
 export type BuyStorageDialogProps = DialogProps &
   CloseCallbackType & {
@@ -54,7 +55,7 @@ export default function BuyStorageDialog({
   const [paymentWallet, setPaymentWallet] = useState<FlowWalletType>();
   const [paymentToken, setPaymentToken] = useState<Token>();
 
-  const numberOfUnits = payment.tokenAmount ?? 1;
+  const [numberOfUnits, setNumberOfUnits] = useState(payment.tokenAmount ?? 1);
 
   const { isLoading: isPaymentTxLoading, data: paymentTx } = useStoragePaymentTx(
     numberOfUnits,
@@ -110,6 +111,7 @@ export default function BuyStorageDialog({
     <BasePaymentDialog
       alwaysShowBackButton={alwaysShowBackButton}
       title={props.title ?? 'Farcaster Storage'}
+      subtitle="Farcaster Storage"
       expiresAt={payment?.expiresAt}
       closeStateCallback={closeStateCallback}
       {...props}
@@ -121,7 +123,7 @@ export default function BuyStorageDialog({
           paymentTx={paymentTx}
           paymentWallet={paymentWallet!}
           paymentOption={paymentOption!}
-          payment={payment}
+          payment={{ ...payment, tokenAmount: numberOfUnits }}
           senderFlow={selectedFlow}
           onSuccess={setPaymentSuccessData}
           onError={(error) => {
@@ -134,9 +136,13 @@ export default function BuyStorageDialog({
         <FarcasterRecipientField variant="text" social={recipientSocial} />
       </Box>
       <Stack flex={1} alignItems="center" justifyContent="center" spacing={1} overflow="auto">
-        <Typography fontSize={18} fontWeight="bold">
-          {numberOfUnits} Unit{numberOfUnits > 1 ? 's' : ''} of Storage
-        </Typography>
+        <QuantitySelector
+          quantity={numberOfUnits}
+          min={1}
+          max={10}
+          setQuantity={setNumberOfUnits}
+          unitText="units"
+        />
 
         {isLoading ? (
           <Skeleton
