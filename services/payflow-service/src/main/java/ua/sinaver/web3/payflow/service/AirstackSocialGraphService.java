@@ -303,7 +303,8 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 				.toEntityList(Social.class).stream()
 				.limit(1).findFirst()
 				.map(s -> new ConnectedAddresses(s.getUserAddress(),
-						s.getUserAssociatedAddresses().stream()
+						s.getConnectedAddresses().stream()
+								.map(ConnectedAddress::getAddress)
 								.filter(address -> address.startsWith("0x"))
 								.toList()))
 				.orElse(null);
