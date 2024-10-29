@@ -21,6 +21,7 @@ import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -140,13 +141,14 @@ public class RewardsService {
 	private void sendRewardMessages(String clickedFid, String channelId, List<Payment> payments,
 	                                boolean isScheduled) {
 		val message = String.format("""
-						✅ (Scheduler) %s %d x %s Top Caster Rewards identified%s.
+						✅%s %s %d x %s Top Caster Rewards identified.
 						Please, pay using the frame or the app:""",
+				isScheduled ? " (Scheduler)" : "",
 				channelId == null ? "Global" : "/" + channelId,
 				payments.size(),
 				StringUtils.isNotBlank(payments.getFirst().getTokenAmount())
 						? PaymentService.formatNumberWithSuffix(payments.getFirst().getTokenAmount())
-						: String.format("$%s", payments.getFirst().getUsdAmount()), isScheduled ? " (using rewards scheduler)" : "");
+						: String.format("$%s", payments.getFirst().getUsdAmount()));
 
 		scheduler.execute(() -> {
 			farcasterMessagingService.sendMessage(new DirectCastMessage(
@@ -238,7 +240,7 @@ public class RewardsService {
 	}
 
 	@Transactional
-	@Scheduled(cron = "*/30 * * * * *")
+	@Scheduled(cron = "0 */5 * * * *")
 	public void processSchedules() {
 		log.debug("Processing reward schedules...");
 		List<TopCasterRewardSchedule> schedules = rewardScheduleRepository
@@ -248,17 +250,23 @@ public class RewardsService {
 		val schedulesToProcess = schedules.stream()
 				.filter(s -> {
 					try {
-						// Skip if last attempt was less than 1 minute ago
-						if (s.getLastAttempt() != null && s.getLastAttempt().isAfter(now.minusSeconds(60))) {
+						// Skip if last attempt was less than 4 minutes ago (allowing for next 5-min check)
+						if (s.getLastAttempt() != null && s.getLastAttempt().isAfter(
+								now.minus(4, ChronoUnit.MINUTES))) {
+							log.debug("Schedule {}: Skipping, last attempt too recent: {}", s.getId(), s.getLastAttempt());
 							return false;
 						}
 
 						val cronExpression = CronExpression.parse(s.getCronExpression());
-						val lastExecutionTime = s.getLastSuccess() != null ?
+						val baseTime = s.getLastSuccess() != null ?
 								s.getLastSuccess().atZone(ZoneOffset.UTC).toLocalDateTime() :
-								now.minusSeconds(60).atZone(ZoneOffset.UTC).toLocalDateTime();
+								// If never succeeded, look from the start of the current day
+								now.atZone(ZoneOffset.UTC).toLocalDateTime().withHour(0).withMinute(0).withSecond(0);
 
-						val nextExecution = cronExpression.next(lastExecutionTime);
+						val nextExecution = cronExpression.next(baseTime);
+						log.debug("Schedule {}: lastSuccess={}, baseTime={}, nextExecution={}, currentTime={}",
+								s.getId(), s.getLastSuccess(), baseTime, nextExecution, now);
+
 						return nextExecution != null &&
 								nextExecution.atZone(ZoneOffset.UTC).toInstant().isBefore(now);
 					} catch (IllegalArgumentException e) {
