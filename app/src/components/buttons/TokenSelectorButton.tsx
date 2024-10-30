@@ -3,16 +3,19 @@ import { useState } from 'react';
 import { Token } from '../../utils/erc20contracts';
 import TokenAvatar from '../avatars/TokenAvatar';
 import { ChooseTokenMenu } from '../menu/ChooseTokeMenu';
+import { AssetBalanceType } from '../../types/AssetType';
 
 export function TokenSelectorButton({
   tokens,
   selectedToken,
   setSelectedToken,
+  balances,
   ...props
 }: {
   tokens: Token[];
   selectedToken: Token | undefined;
   setSelectedToken: React.Dispatch<React.SetStateAction<Token | undefined>>;
+  balances?: AssetBalanceType[];
 } & Omit<ChipProps, 'onClick'>) {
   const [openSelectToken, setOpenSelectToken] = useState(false);
   const [tokenAnchorEl, setTokenAnchorEl] = useState<null | HTMLElement>(null);
@@ -44,6 +47,7 @@ export function TokenSelectorButton({
             setOpenSelectToken(false);
           }}
           tokens={tokens}
+          balances={balances}
           selectedToken={selectedToken}
           setSelectedToken={setSelectedToken}
         />

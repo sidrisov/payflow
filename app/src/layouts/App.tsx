@@ -13,7 +13,7 @@ import {
   BottomNavigationAction
 } from '@mui/material';
 
-import { RiApps2Fill, RiApps2Line } from 'react-icons/ri';
+import { RiApps2Fill, RiApps2Line, RiCopperCoinFill } from 'react-icons/ri';
 import { CgProfile } from 'react-icons/cg';
 
 import { ProfileContext } from '../contexts/UserContext';
@@ -28,7 +28,12 @@ import PrimaryFlowOnboardingDialog from '../components/dialogs/PrimaryFlowOnboar
 import { DAPP_URL } from '../utils/urlConstants';
 import { useTokenPrices } from '../utils/queries/prices';
 import { IoHomeOutline, IoHomeSharp, IoSearch, IoSearchOutline } from 'react-icons/io5';
-import { PiPersonSimpleRun, PiPersonSimpleRunBold } from 'react-icons/pi';
+import {
+  PiMoneyWavy,
+  PiMoneyWavyBold,
+  PiPersonSimpleRun,
+  PiPersonSimpleRunBold
+} from 'react-icons/pi';
 import { UpdateVersionPrompt } from '../components/UpdateVersionPrompt';
 
 import PullToRefresh from 'react-simple-pull-to-refresh';
@@ -37,6 +42,8 @@ import { useMiniApp, useMobile, usePwa } from '../utils/hooks/useMobile';
 import Logo from '../components/Logo';
 
 import { isIOS } from 'react-device-detect';
+import { GrMoney } from 'react-icons/gr';
+import { GiReceiveMoney, GiTwoCoins } from 'react-icons/gi';
 
 export default function AppLayout({
   profile,
@@ -228,7 +235,7 @@ export default function AppLayout({
                   label="Home"
                   icon={
                     bottonToolbarActionValue === 0 ? (
-                      <IoHomeSharp size={20} />
+                      <IoHomeSharp size={22} />
                     ) : (
                       <IoHomeOutline size={20} />
                     )
@@ -243,7 +250,7 @@ export default function AppLayout({
                   label="Search"
                   icon={
                     bottonToolbarActionValue === 1 ? (
-                      <IoSearch size={20} />
+                      <IoSearch size={22} />
                     ) : (
                       <IoSearchOutline size={20} />
                     )
@@ -255,12 +262,12 @@ export default function AppLayout({
                 />
                 <BottomNavigationAction
                   disableRipple
-                  label="Useful"
+                  label="Earn"
                   icon={
                     bottonToolbarActionValue === 2 ? (
-                      <PiPersonSimpleRunBold size={20} />
+                      <GiTwoCoins size={22} />
                     ) : (
-                      <PiPersonSimpleRun size={20} />
+                      <GiTwoCoins size={20} />
                     )
                   }
                   onClick={async () => {
@@ -273,7 +280,7 @@ export default function AppLayout({
                   label="Actions"
                   icon={
                     bottonToolbarActionValue === 3 ? (
-                      <RiApps2Fill size={20} />
+                      <RiApps2Fill size={22} />
                     ) : (
                       <RiApps2Line size={20} />
                     )
@@ -287,7 +294,7 @@ export default function AppLayout({
                   <BottomNavigationAction
                     disableRipple
                     label="Activity"
-                    icon={<CgProfile size={20} />}
+                    icon={<CgProfile size={bottonToolbarActionValue === 4 ? 22 : 20} />}
                     onClick={async () => {
                       if (profile.username) {
                         navigate(`/${profile.username}`);

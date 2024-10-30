@@ -219,6 +219,7 @@ export function NetworkTokenSelector({
                 selectedToken={paymentToken}
                 setSelectedToken={setPaymentToken}
                 tokens={compatibleTokens}
+                balances={balances}
               />
             </Box>
 
