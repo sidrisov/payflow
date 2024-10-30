@@ -2,7 +2,7 @@ import { Address } from 'viem';
 
 import tokensData from './tokens.json';
 
-export const ERC20_CONTRACTS = tokensData as Token[];
+export const SUPPORTED_TOKENS = tokensData as Token[];
 
 export interface UnderlyingToken {
   id: string;
@@ -31,9 +31,9 @@ export function getSupportedTokens(chainId: number | undefined): Token[] {
     return [];
   }
 
-  return ERC20_CONTRACTS.filter((token) => token.chainId === chainId);
+  return SUPPORTED_TOKENS.filter((token) => token.chainId === chainId);
 }
 
 export default function getTokenName(id: string): string | undefined {
-  return ERC20_CONTRACTS.find((token) => token.id === id)?.name;
+  return SUPPORTED_TOKENS.find((token) => token.id === id)?.name;
 }

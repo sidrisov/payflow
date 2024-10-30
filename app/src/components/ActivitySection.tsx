@@ -9,7 +9,7 @@ import ProfileSectionButton from './buttons/ProfileSectionButton';
 import AddressSectionButton from './menu/AddressSectionButton';
 import { getNetworkDefaultBlockExplorerUrl } from '../utils/networks';
 import { timeAgo } from '../utils/time';
-import { ERC20_CONTRACTS, Token } from '../utils/erc20contracts';
+import { SUPPORTED_TOKENS, Token } from '../utils/erc20contracts';
 import { normalizeNumberPrecision } from '../utils/formats';
 import { useTokenPrices } from '../utils/queries/prices';
 import { useMobile } from '../utils/hooks/useMobile';
@@ -56,7 +56,7 @@ export default function ActivitySection(props: BoxProps & { txInfo: TxInfo }) {
 
   const blockExplorerUrl = getNetworkDefaultBlockExplorerUrl(txInfo.chainId);
 
-  const token = ERC20_CONTRACTS.find(
+  const token = SUPPORTED_TOKENS.find(
     (t) => t.chainId === txInfo.chainId && t.tokenAddress === txInfo.token?.address.toLowerCase()
   ) as Token;
 

@@ -6,7 +6,7 @@ import { TxInfo } from '../../types/ActivityFetchResultType';
 import { PaymentType } from '../../types/PaymentType';
 import axios from 'axios';
 import { baseSepolia, base, optimism, zora, degen, mode } from 'viem/chains';
-import { ERC20_CONTRACTS } from '../erc20contracts';
+import { SUPPORTED_TOKENS } from '../erc20contracts';
 
 export const useTransactions = (wallets: FlowWalletType[]) => {
   return useQuery({
@@ -234,7 +234,7 @@ function parseTxHistoryResponse(
         tx.value > 0 &&
         tx.success &&
         (tx.token
-          ? ERC20_CONTRACTS.find(
+          ? SUPPORTED_TOKENS.find(
               (t) => t.chainId === tx.chainId && t.tokenAddress === tx.token?.address.toLowerCase()
             )
           : true)

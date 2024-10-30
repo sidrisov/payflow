@@ -10,7 +10,7 @@ import { BasePaymentDialog, BasePaymentDialogProps } from './BasePaymentDialog';
 import { toast } from 'react-toastify';
 import { Address, parseUnits, encodeFunctionData, erc20Abi, Hash } from 'viem';
 import { ProfileContext } from '../../contexts/UserContext';
-import { ERC20_CONTRACTS, Token } from '../../utils/erc20contracts';
+import { SUPPORTED_TOKENS, Token } from '../../utils/erc20contracts';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { red } from '@mui/material/colors';
@@ -128,7 +128,7 @@ export default function PaymentDialog({
         if (payment.tokenAmount) {
           amount = payment.tokenAmount;
         } else if (payment.usdAmount && tokenPrices) {
-          const token = ERC20_CONTRACTS.find(
+          const token = SUPPORTED_TOKENS.find(
             (t) => t.chainId === paymentChainId && t.id === tokenId
           );
           if (token) {
@@ -148,7 +148,7 @@ export default function PaymentDialog({
       }
 
       if (paymentChainId && tokenId && amount && toAddress) {
-        const selectedToken = ERC20_CONTRACTS.find(
+        const selectedToken = SUPPORTED_TOKENS.find(
           (t) => t.chainId === paymentChainId && t.id === tokenId
         );
 

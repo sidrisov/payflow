@@ -11,6 +11,7 @@ export interface ProfileType {
   defaultFlow?: FlowType;
   flows?: FlowType[];
   identityInviteLimit: number;
+  preferredTokens?: string[];
 }
 
 export interface IdentityType {

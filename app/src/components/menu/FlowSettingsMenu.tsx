@@ -32,6 +32,7 @@ import { useWallets } from '@privy-io/react-auth';
 import { usePrivy } from '@privy-io/react-auth';
 import { useSetActiveWallet } from '@privy-io/wagmi';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
+import { HiOutlineDownload } from 'react-icons/hi';
 
 export function FlowSettingsMenu({
   showOnlySigner,
@@ -212,7 +213,7 @@ export function FlowSettingsMenu({
                     }
                   }}>
                   <ListItemIcon>
-                    <PlayForWork />
+                    <HiOutlineDownload size={20} />
                   </ListItemIcon>
                   Make default for receiving
                 </MenuItem>
