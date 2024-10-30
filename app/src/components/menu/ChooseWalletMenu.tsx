@@ -1,6 +1,5 @@
 import {
   Box,
-  Divider,
   Menu,
   MenuItem,
   MenuList,
@@ -38,13 +37,12 @@ export function ChooseWalletMenu({
         vertical: 'bottom',
         horizontal: 'left'
       }}>
-      <MenuList dense disablePadding>
-        <MenuItem disabled key="choose_wallet_menu_title" sx={{ justifyContent: 'center' }}>
-          <Typography fontWeight="bold" fontSize={15}>
+      <MenuList disablePadding>
+        <MenuItem disabled key="choose_wallet_menu_title">
+          <Typography fontWeight="bold" fontSize={16}>
             Choose Network
           </Typography>
         </MenuItem>
-        <Divider variant="middle" />
         <Stack mt={1}>
           {wallets &&
             wallets.map((wallet) => (

@@ -117,11 +117,13 @@ public class WebhooksController {
 	@PostMapping("/membership")
 	public ResponseEntity<?> membership(
 			@RequestHeader("x-webhook-secret") String secret,
+			@RequestParam(value = "minPayments", defaultValue = "5") Integer minNumberOfPayments,
 			@RequestBody MembershipRequestMessage request) {
 
 		if (!membershipSecret.equals(secret)) {
 			log.debug("membership: {}", Thread.currentThread().getName());
-			sendMembershipDeniedMessage(request.user().fid(), "Not authorized to access membership API");
+			sendMembershipDeniedMessage(request.user().fid(), "Not authorized to access " +
+					"membership API", minNumberOfPayments);
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 					.body(new MembershipResponseMessage("Not authorized to access membership API"));
 		}
@@ -139,19 +141,19 @@ public class WebhooksController {
 
 		if (verifications.isEmpty()) {
 			log.error("No verifications for {}", fid);
-			sendMembershipDeniedMessage(fid, "No verified address connected");
+			sendMembershipDeniedMessage(fid, "No verified address connected", minNumberOfPayments);
 			return ResponseEntity.badRequest().body(new MembershipResponseMessage("No verified address connected"));
 		}
 
 		val users = identityService.getProfiles(verifications);
 		if (users == null || users.isEmpty()) {
 			log.error("Profile not found for {}", fid);
-			sendMembershipDeniedMessage(fid, "Payflow profile not found");
+			sendMembershipDeniedMessage(fid, "Payflow profile not found", minNumberOfPayments);
 			return ResponseEntity.badRequest().body(new MembershipResponseMessage("Payflow profile not found"));
 		}
 
 		val numberOfPayments = paymentRepository.findNumberOutboundCompleted(users, verifications);
-		val isMembershipAllowed = numberOfPayments >= 5;
+		val isMembershipAllowed = numberOfPayments >= minNumberOfPayments;
 
 		log.debug("Membership for fid {}: number of outbound completed - {} allowed - {}", fid, numberOfPayments,
 				isMembershipAllowed);
@@ -159,13 +161,16 @@ public class WebhooksController {
 		if (isMembershipAllowed) {
 			log.info("Membership allowed for {}", fid);
 			return ResponseEntity.ok(new MembershipResponseMessage(
-					String.format("Membership allowed with %s >= 5 payments", numberOfPayments)));
+					String.format("Membership allowed with %s >= %s payments", numberOfPayments,
+							minNumberOfPayments)));
 		} else {
 			log.error("Membership not allowed for {}", fid);
 			sendMembershipDeniedMessage(fid,
-					String.format("Membership not allowed with %s < 5 payments", numberOfPayments));
+					String.format("Membership not allowed with %s < %s payments",
+							numberOfPayments, minNumberOfPayments), minNumberOfPayments);
 			return ResponseEntity.badRequest().body(new MembershipResponseMessage(
-					String.format("Membership not allowed with %s < 5 payments", numberOfPayments)));
+					String.format("Membership not allowed with %s < %s payments",
+							numberOfPayments, minNumberOfPayments)));
 		}
 	}
 
@@ -179,7 +184,7 @@ public class WebhooksController {
 		return generatedSignature.equals(sig);
 	}
 
-	public void sendMembershipDeniedMessage(int fid, String reason) {
+	public void sendMembershipDeniedMessage(int fid, String reason, Integer minNumberOfPayments) {
 		farcasterMessagingService.sendMessageAsync(new DirectCastMessage(String.valueOf(fid),
 				String.format("""
 						Thanks for requesting to join /payflow! 🙏
@@ -190,11 +195,11 @@ public class WebhooksController {
 						To join the channel, you need to:
 						• Have at least one verified address
 						• Sign up on app.payflow.me/connect
-						• Make at least 5 payments in social feed or in the app
+						• Make at least %s payments in social feed or in the app
 
 						Keep using Payflow, and you'll be eligible soon! 💪
 
 						Best regards,
-						@sinaver""", reason), UUID.randomUUID()));
+						@sinaver""", reason, minNumberOfPayments), UUID.randomUUID()));
 	}
 }
