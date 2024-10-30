@@ -23,6 +23,7 @@
     "@paywithglide/glide-js": "^0.9.25",
     "@privy-io/react-auth": "^1.88.0",
     "@privy-io/wagmi": "^0.2.6",
+    "@rhinestone/module-sdk": "^0.1.26",
     "@tanstack/react-query": "^5.36.2",
     "@withfabric/protocol-sdks": "^2.0.2",
     "@zoralabs/protocol-sdk": "^0.11.1",

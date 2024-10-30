@@ -18,7 +18,7 @@ import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { PaymentType } from '../../types/PaymentType';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { useMemo, useState } from 'react';
-import { ERC20_CONTRACTS, Token } from '../../utils/erc20contracts';
+import { SUPPORTED_TOKENS, Token } from '../../utils/erc20contracts';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
 import { toast } from 'react-toastify';
@@ -56,7 +56,7 @@ export type BuyFanTokenDialogProps = DialogProps &
     alwaysShowBackButton?: boolean;
   };
 
-const MOXIE_CONTRACT_ADDRESS = ERC20_CONTRACTS.find((t) => t.id === 'moxie')?.tokenAddress;
+const MOXIE_CONTRACT_ADDRESS = SUPPORTED_TOKENS.find((t) => t.id === 'moxie')?.tokenAddress;
 
 export default function BuyFanTokenDialog({
   alwaysShowBackButton = false,

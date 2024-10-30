@@ -11,7 +11,10 @@ query GetFarcasterVerifications($identity: Identity!) {
     ) {
         Social {
             userAddress
-            userAssociatedAddresses
+            connectedAddresses {
+                address
+                timestamp
+            }
         }
     }
 }

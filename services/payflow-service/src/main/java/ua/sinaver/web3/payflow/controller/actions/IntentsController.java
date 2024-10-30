@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import ua.sinaver.web3.payflow.graphql.generated.types.FarcasterChannel;
 import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.farcaster.CastActionMeta;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
@@ -17,7 +18,6 @@ import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 import static ua.sinaver.web3.payflow.service.TokenService.BASE_CHAIN_NAME;
@@ -205,26 +205,25 @@ public class IntentsController {
 				val channelId = allParams.getFirst("channel");
 				val hypersubContractAddress = allParams.getFirst("hypersub");
 
-				var excludeFids = new ArrayList<String>();
-				excludeFids.add(String.valueOf(clickedFid));
+				var channel = (FarcasterChannel) null;
 				if (StringUtils.isNotBlank(channelId)) {
-					val channel = airstackSocialGraphService.getFarcasterChannelByChannelId(channelId);
+					channel = airstackSocialGraphService.getFarcasterChannelByChannelId(channelId);
 					if (channel == null) {
 						log.error("Failed to fetch channel: {}", channelId);
 						return ResponseEntity.badRequest().body(
 								new FrameResponse.FrameMessage("Failed to fetch channel info!"));
 					}
-					excludeFids.addAll(channel.getModeratorIds());
 				}
 
 				rewardsService.processTopCastRewards(
-						excludeFids,
-						channelId,
+						String.valueOf(clickedFid),
+						channel,
 						hypersubContractAddress,
 						numberOfRewards,
 						clickedProfile,
 						amount, tokenAmount, token, chainId,
-						sourceApp);
+						sourceApp,
+						false);
 
 				return ResponseEntity.ok().body(new FrameResponse.FrameMessage(String.format("""
 						🔎 Identifying %s Top Casters, you'll receive notification!

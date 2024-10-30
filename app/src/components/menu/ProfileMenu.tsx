@@ -19,6 +19,9 @@ import {
   QuestionAnswer,
   Settings
 } from '@mui/icons-material';
+import { GiTwoCoins } from 'react-icons/gi';
+
+import { HiOutlineDownload } from 'react-icons/hi';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ProfileSection } from '../ProfileSection';
@@ -27,6 +30,8 @@ import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { usePrivy } from '@privy-io/react-auth';
 import { DeviceInfoDialog } from '../DeviceInfoDialog';
 import { useState } from 'react';
+import { FaCoins } from 'react-icons/fa6';
+import { TbCoins } from 'react-icons/tb';
 
 export function ProfileMenu({
   profile,
@@ -77,6 +82,26 @@ export function ProfileMenu({
               <PersonAdd fontSize="small" />
             </ListItemIcon>
             Invite
+          </MenuItem>
+          <MenuItem
+            onClick={async () => {
+              closeStateCallback();
+              navigate('/settings/preferred-flow');
+            }}>
+            <ListItemIcon>
+              <HiOutlineDownload size={20} />
+            </ListItemIcon>
+            Preferred Flow
+          </MenuItem>
+          <MenuItem
+            onClick={async () => {
+              closeStateCallback();
+              navigate('/settings/tokens');
+            }}>
+            <ListItemIcon>
+              <GiTwoCoins size={20} />
+            </ListItemIcon>
+            Preferred Tokens
           </MenuItem>
           <MenuItem
             onClick={async () => {
@@ -153,7 +178,9 @@ export function ProfileMenu({
         </MenuList>
       </Menu>
 
-      <DeviceInfoDialog open={openDeviceInfo} onClose={handleCloseDeviceInfo} />
+      {profile.username === 'sinaver' && (
+        <DeviceInfoDialog open={openDeviceInfo} onClose={handleCloseDeviceInfo} />
+      )}
     </>
   );
 }

@@ -18,6 +18,7 @@ import { FlowSettingsMenu } from '../menu/FlowSettingsMenu';
 import { PaymentFlowSection } from '../PaymentFlowSection';
 import ResponsiveDialog, { ResponsiveDialogProps } from './ResponsiveDialog';
 import { FaCheckCircle, FaRegCircle } from 'react-icons/fa';
+import { HiOutlineDownload } from 'react-icons/hi';
 
 export type ChooseFlowMenuProps = ResponsiveDialogProps &
   CloseCallbackType & {
@@ -111,8 +112,8 @@ export function ChooseFlowDialog({
           </Box>
           <Box display="inherit" width={30}>
             {flow.uuid === profile?.defaultFlow?.uuid && (
-              <Tooltip title="Default for receiving payments">
-                <PlayForWork />
+              <Tooltip title="Preferred for receiving payments">
+                <HiOutlineDownload size={20} />
               </Tooltip>
             )}
           </Box>

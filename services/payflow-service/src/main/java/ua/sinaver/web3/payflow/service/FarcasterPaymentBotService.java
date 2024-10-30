@@ -14,6 +14,8 @@ import ua.sinaver.web3.payflow.data.PreferredTokens;
 import ua.sinaver.web3.payflow.data.bot.PaymentBotJob;
 import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
+import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
+import ua.sinaver.web3.payflow.message.farcaster.FarcasterUser;
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.api.IFlowService;
@@ -21,6 +23,7 @@ import ua.sinaver.web3.payflow.service.api.IIdentityService;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -29,8 +32,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public class FarcasterPaymentBotService {
 
-	private static final List<String> SUPPORTED_COMMANDS = List.of("pay", "send", "intent",
+	private static final List<String> SUPPORTED_COMMANDS = List.of("auto", "pay", "send", "intent",
 			"batch", "intents", "jar", "receive", "config:tokens");
+
+	private static final List<String> WHITELISTED_AUTOPAY_BOTS = List.of("aethernet", "mfergpt", "payflow");
+
 	@Autowired
 	private PaymentBotJobRepository paymentBotJobRepository;
 	@Autowired
@@ -52,6 +58,9 @@ public class FarcasterPaymentBotService {
 
 	@Autowired
 	private NotificationService notificationService;
+
+	@Autowired
+	private FarcasterMessagingService directMessagingService;
 
 	@Autowired
 	private EntityManager entityManager;
@@ -82,8 +91,8 @@ public class FarcasterPaymentBotService {
 				.map(Pattern::quote)
 				.collect(Collectors.joining("|"));
 		val botCommandPattern = String.format("\\s*(?<beforeText>.*?)?@payflow%s\\s+" +
-				"(?<command>%s)" +
-				"(?:\\s+(?<remaining>.+))?",
+						"(?<command>%s)" +
+						"(?:\\s+(?<remaining>.+))?",
 				isTestBotEnabled ? "\\s+test" : "",
 				supportedCommands);
 
@@ -105,10 +114,174 @@ public class FarcasterPaymentBotService {
 
 			val casterProfile = userService.getOrCreateUserFromFarcasterProfile(cast.author(),
 					false, false);
+
 			val casterAddress = casterProfile != null ? casterProfile.getIdentity()
 					: identityService.getHighestScoredIdentity(cast.author().addressesWithoutCustodialIfAvailable());
 
 			switch (command) {
+				case "auto": {
+					log.debug("Processing {} bot command arguments {}", command, remainingText);
+
+					val autoPattern = "(?:@(?<payer>[a-zA-Z0-9_.-]+)\\s+)?pay\\s+" +
+							"(?:@(?<receiver>[a-zA-Z0-9_.-]+)\\s*)?\\s*(?<amount>\\$?[0-9]+(?:\\.[0-9]+)?[km]?)?\\s*(?<rest>.*)";
+					matcher = Pattern.compile(autoPattern, Pattern.CASE_INSENSITIVE).matcher(remainingText);
+					if (!matcher.find()) {
+						log.warn("Pattern not matched for command: {} in {}", command, cast);
+						job.setStatus(PaymentBotJob.Status.REJECTED);
+						return;
+					}
+
+					val payerName = matcher.group("payer");
+					var receiverName = matcher.group("receiver");
+					val amountStr = matcher.group("amount");
+					val restText = matcher.group("rest");
+
+					var payerFarcasterUser = (FarcasterUser) null;
+					// If payer is specified, find their profile from mentions
+					if (payerName != null) {
+						if (!WHITELISTED_AUTOPAY_BOTS.contains(cast.author().username())) {
+							log.warn("Bot is not whitelisted: {} in {}", cast.author().username(), cast);
+							job.setStatus(PaymentBotJob.Status.REJECTED);
+							return;
+						}
+
+						payerFarcasterUser = cast.mentionedProfiles().stream()
+								.filter(p -> p.username().equals(payerName))
+								.findFirst().orElse(null);
+
+						if (payerFarcasterUser == null) {
+							log.error("Payer farcaster user not found in mentions: {} - {}", payerName, cast);
+							job.setStatus(PaymentBotJob.Status.REJECTED);
+							return;
+						}
+
+
+					} else {
+						payerFarcasterUser = cast.author();
+					}
+
+					val payerProfile = userService.getOrCreateUserFromFarcasterProfile(payerFarcasterUser,
+							false, false);
+					if (payerProfile == null) {
+						log.error("Payer profile {} not found: {}", payerName, cast);
+						job.setStatus(PaymentBotJob.Status.REJECTED);
+						return;
+					}
+
+					Token token;
+					val tokens = paymentService.parseCommandTokens(restText);
+					if (tokens.size() == 1) {
+						token = tokens.getFirst();
+					} else {
+						val chain = paymentService.parseCommandChain(restText);
+						token = tokens.stream().filter(t -> t.chain().equals(chain)).findFirst().orElse(null);
+					}
+
+					if (token == null) {
+						log.error("Token not supported {}", restText);
+						job.setStatus(PaymentBotJob.Status.REJECTED);
+						return;
+					}
+
+					log.debug("Payer: {}, Receiver: {}, amount: {}, token: {}",
+							payerProfile.getUsername(), receiverName, amountStr, token);
+
+					List<String> receiverAddresses = null;
+					// if receiver passed fetch meta from mentions
+					if (!StringUtils.isBlank(receiverName)) {
+						String finalReceiverName = receiverName;
+						val fcProfile = cast
+								.mentionedProfiles().stream()
+								.filter(p -> p.username().equals(finalReceiverName)).findFirst().orElse(null);
+						if (fcProfile == null) {
+							log.error("Farcaster profile {} is not in the mentioned profiles list in {}", receiverName, cast);
+							job.setStatus(PaymentBotJob.Status.REJECTED);
+							return;
+						}
+						receiverAddresses = fcProfile.addressesWithoutCustodialIfAvailable();
+					} else {
+						// if a reply, fetch through airstack
+						if (cast.parentAuthor().fid() != null) {
+							receiverName = identityService.getFidFname(cast.parentAuthor().fid());
+							receiverAddresses = identityService.getFidAddresses(cast.parentAuthor().fid());
+						} else {
+							val mentionedReceiver = cast.mentionedProfiles().stream()
+									.filter(u -> !u.username().equals("payflow")).findFirst().orElse(null);
+							if (mentionedReceiver != null) {
+								receiverName = mentionedReceiver.username();
+								receiverAddresses = mentionedReceiver.addressesWithoutCustodialIfAvailable();
+							}
+						}
+					}
+
+					if (receiverName == null) {
+						log.error("Receiver must be specified for auto payments");
+						job.setStatus(PaymentBotJob.Status.REJECTED);
+						return;
+					}
+
+					val receiverProfile = identityService.getProfiles(receiverAddresses)
+							.stream().findFirst().orElse(null);
+					log.debug("Found receiver profile for receiver {} - {}",
+							receiverName, receiverProfile);
+
+					String receiverAddress = null;
+					if (receiverProfile != null) {
+						receiverAddress = paymentService.getUserReceiverAddress(receiverProfile, token.chainId());
+					}
+
+					if (receiverAddress == null) {
+						receiverAddress = identityService.getHighestScoredIdentity(receiverAddresses);
+					}
+
+					String refId = null;
+					if (amountStr != null) {
+						val sourceApp = "Warpcast";
+						val sourceRef = String.format("https://warpcast.com/%s/%s",
+								cast.author().username(),
+								cast.hash().substring(0, 10));
+						val sourceHash = cast.hash();
+						val payment = new Payment(Payment.PaymentType.FRAME,
+								receiverProfile,
+								token.chainId(), token.id());
+						payment.setReceiverAddress(receiverAddress);
+						payment.setSenderAddress(payerProfile.getIdentity());
+						payment.setSender(payerProfile);
+						if (amountStr.startsWith("$")) {
+							payment.setUsdAmount(amountStr.replace("$", ""));
+						} else {
+							val tokenAmount = paymentService.parseTokenAmount(amountStr.toLowerCase());
+							payment.setTokenAmount(tokenAmount.toString());
+						}
+						payment.setSourceApp(sourceApp);
+						payment.setSourceRef(sourceRef);
+						payment.setSourceHash(sourceHash);
+						paymentRepository.save(payment);
+						refId = payment.getReferenceId();
+					}
+
+					val frameUrl = refId == null ? String.format("https://frames.payflow.me/%s",
+							receiverProfile != null ? receiverProfile.getUsername() : receiverAddresses)
+							: String.format("https://frames.payflow.me/payment/%s", refId);
+
+					val castText =
+							String.format("""
+											@%s, confirm the payment initiated by @%s:
+											%s
+											""",
+									payerFarcasterUser.username(),
+									cast.author().username(),
+									frameUrl);
+
+					val processed = directMessagingService.sendMessage(new DirectCastMessage(
+							String.valueOf(payerFarcasterUser.fid()), castText, UUID.randomUUID()));
+
+					if (processed != null && processed.result().success()) {
+						job.setStatus(PaymentBotJob.Status.PROCESSED);
+						return;
+					}
+					break;
+				}
 				case "receive": {
 					String token = null;
 					String chain = null;
@@ -415,7 +588,7 @@ public class FarcasterPaymentBotService {
 									cast.author().username(),
 									cast.hash().substring(0, 10));
 							log.debug("Executing jar creation with title `{}`, desc `{}`, " +
-									"embeds {}, source {}",
+											"embeds {}, source {}",
 									title, beforeText, cast.embeds(),
 									source);
 
@@ -439,7 +612,7 @@ public class FarcasterPaymentBotService {
 									cast.author().username());
 							val embeds = Collections.singletonList(
 									new Cast.Embed(String.format("https://frames.payflow" +
-											".me/jar/%s",
+													".me/jar/%s",
 											jar.getFlow().getUuid())));
 							val processed = notificationService.reply(castText, cast.hash(), embeds);
 							if (processed) {

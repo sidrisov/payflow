@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { ERC20_CONTRACTS, TokenPrices } from '../erc20contracts';
+import { SUPPORTED_TOKENS, TokenPrices } from '../erc20contracts';
 import { degen, zora } from 'viem/chains';
 import { SUPPORTED_CHAINS } from '../networks';
 
@@ -38,7 +38,7 @@ export const useTokenPrices = () => {
         const chainId = chain.id;
 
         // Filter tokens for the current chain
-        const tokensForChain = ERC20_CONTRACTS.filter(
+        const tokensForChain = SUPPORTED_TOKENS.filter(
           (token) => token.chainId === chainId && token.tokenAddress
         );
 

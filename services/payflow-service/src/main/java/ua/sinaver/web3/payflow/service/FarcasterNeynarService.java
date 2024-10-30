@@ -357,6 +357,7 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 		return neynarClient.get()
 				.uri(uriBuilder -> {
 					uriBuilder.path("/feed/trending");
+					//uriBuilder.queryParam("provider", "openrank");
 					if (channelId != null) {
 						uriBuilder.queryParam("channel_id", channelId);
 					}

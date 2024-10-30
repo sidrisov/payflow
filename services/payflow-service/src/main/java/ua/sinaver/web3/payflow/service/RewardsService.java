@@ -7,14 +7,21 @@ import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Service;
 import ua.sinaver.web3.payflow.data.Payment;
+import ua.sinaver.web3.payflow.data.TopCasterRewardSchedule;
 import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.graphql.generated.types.FarcasterChannel;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
+import ua.sinaver.web3.payflow.repository.TopCasterRewardScheduleRepository;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -42,9 +49,15 @@ public class RewardsService {
 	@Autowired
 	private EntityManager entityManager;
 
+	@Autowired
+	private AirstackSocialGraphService airstackSocialGraphService;
+
+	@Autowired
+	private TopCasterRewardScheduleRepository rewardScheduleRepository;
+
 	public Payment createRewardPayment(User clickedProfile, int casterFid, String castHash,
 	                                   String category,
-	                                   Double amount, Double tokenAmount, String token,
+	                                   Double usdAmount, Double tokenAmount, String token,
 	                                   Integer chainId, String sourceApp,
 	                                   String extraLink) {
 		val paymentProfile = identityService.getProfiles(casterFid).stream().findFirst().orElse(null);
@@ -70,7 +83,7 @@ public class RewardsService {
 		if (tokenAmount != null) {
 			payment.setTokenAmount(tokenAmount.toString());
 		} else {
-			payment.setUsdAmount(amount.toString());
+			payment.setUsdAmount(usdAmount.toString());
 		}
 		payment.setSourceApp(sourceApp);
 		payment.setSourceRef(sourceRef);
@@ -81,15 +94,24 @@ public class RewardsService {
 	}
 
 	@Async
-	@Transactional
+	@Transactional(Transactional.TxType.REQUIRES_NEW)
 	public void processTopCastRewards(
-			List<String> excludeFids,
-			String channelId,
+			String clickedFid,
+			FarcasterChannel channel,
 			String hypersubContractAddress,
 			int numberOfRewards,
 			User clickedProfile,
 			Double amount, Double tokenAmount, String token, Integer chainId,
-			String sourceApp) {
+			String sourceApp,
+			boolean isScheduled) {
+
+		val excludeFids = new ArrayList<String>();
+		excludeFids.add(String.valueOf(clickedFid));
+		if (channel != null) {
+			excludeFids.addAll(channel.getModeratorIds());
+		}
+
+		val channelId = channel != null ? channel.getChannelId() : null;
 
 		val clickedProfileManaged = entityManager.merge(clickedProfile);
 		val fidToPayment = fetchAndCreateTopCastPayments(
@@ -101,7 +123,6 @@ public class RewardsService {
 				amount, tokenAmount, token, chainId,
 				sourceApp);
 
-		val clickedFid = excludeFids.get(0);
 		if (fidToPayment.isEmpty()) {
 			farcasterMessagingService.sendMessage(new DirectCastMessage(clickedFid,
 					"❌ Failed to process Top Caster Rewards!", UUID.randomUUID()));
@@ -112,15 +133,17 @@ public class RewardsService {
 			// make sure payments are actually stored in db
 			entityManager.flush();
 
-			sendRewardMessages(clickedFid, channelId, payments);
+			sendRewardMessages(clickedFid, channelId, payments, isScheduled);
 		}
 
 	}
 
-	private void sendRewardMessages(String clickedFid, String channelId, List<Payment> payments) {
+	private void sendRewardMessages(String clickedFid, String channelId, List<Payment> payments,
+	                                boolean isScheduled) {
 		val message = String.format("""
-						✅ %s %d x %s Top Caster Rewards identified.
+						✅%s %s %d x %s Top Caster Rewards identified.
 						Please, pay using the frame or the app:""",
+				isScheduled ? " (Scheduler)" : "",
 				channelId == null ? "Global" : "/" + channelId,
 				payments.size(),
 				StringUtils.isNotBlank(payments.getFirst().getTokenAmount())
@@ -158,7 +181,7 @@ public class RewardsService {
 	                                                            String subscriptionContract,
 	                                                            int numberOfRewards,
 	                                                            User clickedProfile,
-	                                                            Double amount, Double tokenAmount, String token, Integer chainId,
+	                                                            Double usdAmount, Double tokenAmount, String token, Integer chainId,
 	                                                            String sourceApp) {
 		val fidToPayment = new LinkedHashMap<Integer, Payment>();
 		var cursor = (String) null;
@@ -178,7 +201,7 @@ public class RewardsService {
 				}
 
 				if (subscriptionContract != null) {
-					val verifications = cast.author().verifications();
+					val verifications = cast.author().addressesWithoutCustodialIfAvailable();
 					val subscribers = subscriptionsService.fetchHypersubSubscribers(BASE_CHAIN_ID, subscriptionContract,
 							verifications);
 					val validSubscription = subscribers.stream()
@@ -193,7 +216,7 @@ public class RewardsService {
 					val castLink = String.format("https://warpcast.com/%s/%s",
 							cast.author().username(), cast.hash().substring(0, 10));
 					val payment = createRewardPayment(clickedProfile, cast.author().fid(),
-							cast.hash(), "reward_top_casters", amount, tokenAmount, token, chainId,
+							cast.hash(), "reward_top_casters", usdAmount, tokenAmount, token, chainId,
 							sourceApp, castLink);
 					if (payment != null) {
 						fidToPayment.put(cast.author().fid(), payment);
@@ -214,5 +237,84 @@ public class RewardsService {
 		}
 
 		return fidToPayment;
+	}
+
+	@Transactional
+	@Scheduled(cron = "0 */5 * * * *")
+	public void processSchedules() {
+		log.debug("Processing reward schedules...");
+		List<TopCasterRewardSchedule> schedules = rewardScheduleRepository
+				.findTop10ByStatus(TopCasterRewardSchedule.ScheduleStatus.ACTIVE);
+
+		val now = Instant.now();
+		val schedulesToProcess = schedules.stream()
+				.filter(s -> {
+					try {
+						// Skip if last attempt was less than 4 minutes ago (allowing for next 5-min check)
+						if (s.getLastAttempt() != null && s.getLastAttempt().isAfter(
+								now.minus(4, ChronoUnit.MINUTES))) {
+							log.debug("Schedule {}: Skipping, last attempt too recent: {}", s.getId(), s.getLastAttempt());
+							return false;
+						}
+
+						val cronExpression = CronExpression.parse(s.getCronExpression());
+						val baseTime = s.getLastSuccess() != null ?
+								s.getLastSuccess().atZone(ZoneOffset.UTC).toLocalDateTime() :
+								// If never succeeded, look from the start of the current day
+								now.atZone(ZoneOffset.UTC).toLocalDateTime().withHour(0).withMinute(0).withSecond(0);
+
+						val nextExecution = cronExpression.next(baseTime);
+						log.debug("Schedule {}: lastSuccess={}, baseTime={}, nextExecution={}, currentTime={}",
+								s.getId(), s.getLastSuccess(), baseTime, nextExecution, now);
+
+						return nextExecution != null &&
+								nextExecution.atZone(ZoneOffset.UTC).toInstant().isBefore(now);
+					} catch (IllegalArgumentException e) {
+						log.error("Invalid cron expression for schedule {}: {}", s.getId(), e.getMessage());
+						return false;
+					}
+				})
+				.toList();
+
+		log.info("Found {} schedules ready to process", schedulesToProcess.size());
+		schedulesToProcess.forEach(this::processRewardSchedule);
+	}
+
+	@Transactional(Transactional.TxType.REQUIRES_NEW)
+	public void processRewardSchedule(TopCasterRewardSchedule rewardSchedule) {
+		try {
+			val clickedFid = identityService.getIdentityFid(rewardSchedule.getUser().getIdentity());
+			val hypersub = rewardSchedule.getCriteria() != null ?
+					(String) rewardSchedule.getCriteria().get("hypersub") : null;
+
+			val channelId = rewardSchedule.getChannelId();
+			var channel = (FarcasterChannel) null;
+			if (StringUtils.isNotBlank(channelId)) {
+				channel = airstackSocialGraphService.getFarcasterChannelByChannelId(channelId);
+				if (channel == null) {
+					log.error("Failed to fetch channel: {}", channelId);
+					rewardSchedule.recordFailure("Channel doesn't exist!");
+
+				}
+			}
+
+			processTopCastRewards(
+					clickedFid,
+					channel,
+					hypersub,
+					rewardSchedule.getRewards(),
+					rewardSchedule.getUser(),
+					rewardSchedule.getUsdAmount(),
+					rewardSchedule.getTokenAmount(),
+					rewardSchedule.getToken(),
+					rewardSchedule.getChainId(),
+					"Warpcast",
+					true
+			);
+			rewardSchedule.recordSuccess();
+		} catch (Exception e) {
+			log.error("Failed to process schedule {}", rewardSchedule.getId(), e);
+			rewardSchedule.recordFailure(e.getMessage());
+		}
 	}
 }

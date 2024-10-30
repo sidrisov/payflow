@@ -7,7 +7,7 @@ import { ProfileSection } from '../ProfileSection';
 import { AddressSection } from '../AddressSection';
 import TokenAvatar from '../avatars/TokenAvatar';
 import NetworkAvatar from '../avatars/NetworkAvatar';
-import { ERC20_CONTRACTS, Token } from '../../utils/erc20contracts';
+import { SUPPORTED_TOKENS, Token } from '../../utils/erc20contracts';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useMobile } from '../../utils/hooks/useMobile';
 import { PaymentCard } from '../cards/PaymentCard';
@@ -83,7 +83,7 @@ const usePaymentData = (payment: PaymentType): UsePaymentDataResult => {
   const { mintData, loading: loadingMintData } = useMintData(payment);
   const { hypersubData, loading: loadingHypersubData } = useHypersubData(payment);
   const isMobile = useMobile();
-  const token = ERC20_CONTRACTS.find(
+  const token = SUPPORTED_TOKENS.find(
     (t) => t.chainId === payment.chainId && t.id === payment.token
   );
 

@@ -1,7 +1,7 @@
 import { useTokenPrices } from '../queries/prices';
 import { useMintData } from '../hooks/useMintData';
 import { PaymentType } from '../../types/PaymentType';
-import { ERC20_CONTRACTS, Token } from '../../utils/erc20contracts';
+import { SUPPORTED_TOKENS, Token } from '../../utils/erc20contracts';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { getNetworkDefaultBlockExplorerUrl } from '../../utils/networks';
 import { useHypersubData } from './useHypersub';
@@ -22,7 +22,7 @@ export const usePaymentActivityDetails = (payment: PaymentType) => {
   } else if (payment.category === 'hypersub') {
     formattedTokenAmount = formatAmountWithSuffix(payment.tokenAmount.toString());
   } else {
-    token = ERC20_CONTRACTS.find(
+    token = SUPPORTED_TOKENS.find(
       (t) => t.chainId === payment.chainId && t.id === payment.token
     ) as Token;
 

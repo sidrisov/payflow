@@ -17,6 +17,8 @@ const LazyComposer = lazy(() => import('./pages/Composer'));
 const LazyPayment = lazy(() => import('./pages/Payment'));
 const LazyUseful = lazy(() => import('./pages/Useful'));
 const LazyPage404 = lazy(() => import('./pages/Page404'));
+const LazyPreferredFlow = lazy(() => import('./pages/settings/PreferredFlowPage'));
+const LazyPreferredTokens = lazy(() => import('./pages/settings/PreferredTokensPage'));
 
 // Wrapper component for lazy-loaded components
 const LazyWrapper = ({
@@ -46,6 +48,13 @@ export const appRouter = createBrowserRouter([
       { element: <LazyWrapper component={LazyAccounts} />, index: true },
       { path: 'profile', element: <LazyWrapper component={LazyProfile} /> },
       { path: 'advanced', element: <LazyWrapper component={LazyAdvanced} /> },
+      {
+        path: 'settings',
+        children: [
+          { path: 'preferred-flow', element: <LazyWrapper component={LazyPreferredFlow} /> },
+          { path: 'tokens', element: <LazyWrapper component={LazyPreferredTokens} /> }
+        ]
+      },
       { path: 'actions', element: <LazyWrapper component={LazyActions} /> },
       { path: 'useful', element: <LazyWrapper component={LazyUseful} /> },
       { path: 'composer', element: <LazyWrapper component={LazyComposer} /> },

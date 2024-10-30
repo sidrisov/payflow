@@ -27,7 +27,7 @@ import { TransferToastContent } from '../toasts/TransferToastContent';
 import { LoadingSwitchChainButton } from '../buttons/LoadingSwitchNetworkButton';
 import { CustomLoadingButton } from '../buttons/LoadingPaymentButton';
 import { PaymentDialogProps } from './PaymentDialog';
-import { ERC20_CONTRACTS, Token } from '../../utils/erc20contracts';
+import { SUPPORTED_TOKENS, Token } from '../../utils/erc20contracts';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
 import { updatePayment, submitPayment } from '../../services/payments';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
@@ -119,7 +119,7 @@ export default function PaymentDialogContent({
     }
 
     const paymentChainId = payment.chainId;
-    const paymentToken = ERC20_CONTRACTS.find(
+    const paymentToken = SUPPORTED_TOKENS.find(
       (t) => t.chainId === paymentChainId && t.id === payment.token
     );
 
