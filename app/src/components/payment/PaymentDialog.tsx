@@ -406,8 +406,6 @@ export default function PaymentDialog({
           <NetworkTokenSelector
             payment={payment}
             crossChainMode={crossChainMode}
-            paymentWallet={paymentWallet}
-            setPaymentWallet={setPaymentWallet}
             paymentToken={crossChainMode ? crossChainPaymentToken : paymentToken}
             setPaymentToken={crossChainMode ? setCrossChainPaymentToken : setPaymentToken}
             compatibleWallets={compatibleWallets}
@@ -416,7 +414,6 @@ export default function PaymentDialog({
                 ? paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
                 : undefined
             }
-            gasFee={gasFee}
           />
         </Box>
       </Box>

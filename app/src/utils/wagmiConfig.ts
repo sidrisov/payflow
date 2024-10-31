@@ -62,9 +62,8 @@ export const commonWagmiConfig = {
     ),
     [mode.id]: createOptimizedTransport(mode.rpcUrls.default.http[0]),
     [zksync.id]: createOptimizedTransport(zksync.rpcUrls.default.http[0]),
-    [worldchain.id]: createOptimizedTransport(
-      `https://worldchain-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`
-    )
+    [worldchain.id]: createOptimizedTransport(worldchain.rpcUrls.default.http[0])
+    //`https://worldchain-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`
   }
 };
 

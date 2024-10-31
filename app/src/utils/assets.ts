@@ -22,3 +22,15 @@ export function getFlowWalletAssets(wallet: FlowWalletType) {
       }))
     : [];
 }
+
+export function getFlowWalletsAssets(wallets: FlowWalletType[]) {
+  return wallets.flatMap((wallet) =>
+    wallet.network
+      ? getSupportedTokens(wallet.network).map((token) => ({
+          address: wallet.address,
+          chainId: wallet.network,
+          token
+        }))
+      : []
+  );
+}

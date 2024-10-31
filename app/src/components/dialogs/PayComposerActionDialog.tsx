@@ -127,8 +127,6 @@ export default function PayComposerActionDialog({
               </Stack>
               <Box display="flex" justifyContent="flex-end" width="100%">
                 <NetworkTokenSelector
-                  paymentWallet={selectedWallet}
-                  setPaymentWallet={setSelectedWallet}
                   paymentToken={selectedToken}
                   setPaymentToken={setSelectedToken}
                   compatibleWallets={compatibleWallets}
