@@ -362,13 +362,10 @@ export default function BuyFanTokenDialog({
         <NetworkTokenSelector
           crossChainMode
           payment={{ ...payment, tokenAmount: fanTokenAmount }}
-          paymentWallet={paymentWallet}
-          setPaymentWallet={setPaymentWallet}
           paymentToken={paymentToken}
           setPaymentToken={setPaymentToken}
           compatibleWallets={compatibleWallets}
           enabledChainCurrencies={paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []}
-          gasFee={gasFee}
         />
       </Box>
     </BasePaymentDialog>

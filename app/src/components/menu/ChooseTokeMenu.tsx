@@ -9,7 +9,8 @@ import {
   Typography,
   TextField,
   InputAdornment,
-  IconButton
+  IconButton,
+  Badge
 } from '@mui/material';
 import { Search as SearchIcon, Clear as ClearIcon } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
@@ -22,6 +23,7 @@ import { ProfileContext } from '../../contexts/UserContext';
 import { AssetBalanceType } from '../../types/AssetType';
 import { formatUnits } from 'viem';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
+import NetworkAvatar from '../avatars/NetworkAvatar';
 
 export type ChooseTokenMenuProps = MenuProps &
   CloseCallbackType & {
@@ -103,10 +105,19 @@ export function ChooseTokenMenu({
             <Box width="100%" display="flex" alignItems="center" justifyContent="space-between">
               <Box display="flex" alignItems="center" gap={2}>
                 <Box width={18} height={18} display="flex" alignItems="center">
-                  {token.id === selectedToken?.id && <FaCheckCircle color={green[500]} size={18} />}
+                  {token.id === selectedToken?.id && token.chainId === selectedToken?.chainId && (
+                    <FaCheckCircle color={green[500]} size={18} />
+                  )}
                 </Box>
                 <Box display="flex" alignItems="center" gap={1}>
-                  <TokenAvatar token={token} sx={{ width: 30, height: 30 }} />
+                  <Badge
+                    overlap="circular"
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                    badgeContent={
+                      <NetworkAvatar chainId={token.chainId} sx={{ width: 16, height: 16 }} />
+                    }>
+                    <TokenAvatar token={token} sx={{ width: 30, height: 30 }} />
+                  </Badge>
                   <Typography textTransform="uppercase">
                     {token.id}
                     {balance && balance.usdValue > 0 && (

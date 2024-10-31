@@ -26,12 +26,20 @@ export interface TokenPrices {
   [name: string]: number;
 }
 
-export function getSupportedTokens(chainId: number | undefined): Token[] {
+export function getSupportedTokens(chainId?: number | undefined): Token[] {
   if (!chainId) {
-    return [];
+    return SUPPORTED_TOKENS;
   }
 
   return SUPPORTED_TOKENS.filter((token) => token.chainId === chainId);
+}
+
+export function getSupportedTokensByChainIds(chainIds: number[]): Token[] {
+  if (!chainIds) {
+    return SUPPORTED_TOKENS;
+  }
+
+  return SUPPORTED_TOKENS.filter((token) => chainIds.includes(token.chainId));
 }
 
 export default function getTokenName(id: string): string | undefined {

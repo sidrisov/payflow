@@ -2,14 +2,12 @@ import { DialogProps, Stack, Button, TextField, InputAdornment, IconButton } fro
 import { useContext, useMemo, useState, useEffect, useRef } from 'react';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { RewardAdvancedSection } from '../RewardAdvancedSection';
-import { PaymentCategory, Type } from '../../types/PaymentType';
+import { PaymentCategory } from '../../types/PaymentType';
 import ResponsiveDialog from './ResponsiveDialog';
 
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { ProfileContext } from '../../contexts/UserContext';
-import { FlowWalletType } from '../../types/FlowType';
 import { Token } from '../../utils/erc20contracts';
-import { useChainId } from 'wagmi';
 import { base } from 'viem/chains';
 import { FaCoins, FaDollarSign } from 'react-icons/fa';
 
@@ -19,26 +17,17 @@ export default function PaymentRewardCastActionComposerDialog({
 }: DialogProps & CloseCallbackType) {
   const { profile } = useContext(ProfileContext);
 
-  const chainId = useChainId();
   const [rewardUsdAmount, setRewardUsdAmount] = useState<number | undefined>(1);
   const [rewardTokenAmount, setRewardTokenAmount] = useState<number | undefined>(1);
   const [type, setType] = useState<PaymentCategory>('reward');
   const [numberOfRewards, setNumberOfRewards] = useState<number>(1);
   const [extraParams, setExtraParams] = useState<Record<string, string>>({});
 
-  const [selectedWallet, setSelectedWallet] = useState<FlowWalletType>();
   const [selectedToken, setSelectedToken] = useState<Token>();
 
   const [isFiatMode, setIsFiatMode] = useState<boolean>(true);
 
   const compatibleWallets = profile?.defaultFlow?.wallets ?? [];
-  useMemo(async () => {
-    if (compatibleWallets.length === 0) {
-      setSelectedWallet(undefined);
-      return;
-    }
-    setSelectedWallet(compatibleWallets.find((w) => w.network === chainId) ?? compatibleWallets[0]);
-  }, [compatibleWallets, chainId]);
 
   const [inputValue, setInputValue] = useState<string>('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -151,8 +140,6 @@ export default function PaymentRewardCastActionComposerDialog({
           </Stack>
 
           <NetworkTokenSelector
-            paymentWallet={selectedWallet}
-            setPaymentWallet={setSelectedWallet}
             paymentToken={selectedToken}
             setPaymentToken={setSelectedToken}
             compatibleWallets={compatibleWallets}
