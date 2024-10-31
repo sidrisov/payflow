@@ -13,18 +13,21 @@ import { useQuery } from '@tanstack/react-query';
 import { usePublicClient } from 'wagmi';
 import { erc20Abi, formatUnits } from 'viem';
 import tokens from '../../utils/tokens.json';
-import { degen } from 'viem/chains';
-
-const wdegenToken = tokens.find((token) => token.id === 'wdegen' && token.chain === 'degen');
+import { base } from 'viem/chains';
 
 export function DegenInfoCard() {
   const { profile } = useContext(ProfileContext);
   const { data: identity } = useIdentity(profile?.identity);
-  const publicClient = usePublicClient({ chainId: degen.id });
 
   const [currentSeasonIndex, setCurrentSeasonIndex] = useState<number>(
-    DEGEN_CLAIM_SEASONS.findIndex((season) => season.id === 'current')
+    DEGEN_CLAIM_SEASONS.findIndex((season) => season.id === 'season9')
   );
+
+  const season = DEGEN_CLAIM_SEASONS[currentSeasonIndex];
+
+  const publicClient = usePublicClient({
+    chainId: season.chainId
+  });
 
   const handleNextSeason = () => {
     setCurrentSeasonIndex((prevIndex) =>
@@ -36,30 +39,34 @@ export function DegenInfoCard() {
     setCurrentSeasonIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : prevIndex));
   };
 
-  const season = DEGEN_CLAIM_SEASONS[currentSeasonIndex];
+  const degenToken = tokens.find(
+    (token) =>
+      token.id === (season?.chainId === base.id ? 'degen' : 'wdegen') &&
+      token.chainId === season?.chainId
+  );
 
-  const { data: contractWDegenBalance, isLoading: isLoadingBalance } = useQuery({
-    queryKey: ['contractWDegenBalance', season?.contract],
+  const { data: contractDegenBalance, isLoading: isLoadingBalance } = useQuery({
+    queryKey: ['contractDegenBalance', season?.contract],
     queryFn: async () => {
-      if (!season?.contract || !wdegenToken) return 0n;
+      if (!season?.contract || !degenToken) return 0n;
 
       const balance = await publicClient?.readContract({
-        address: wdegenToken.tokenAddress as `0x${string}`,
+        address: degenToken.tokenAddress as `0x${string}`,
         abi: erc20Abi,
         functionName: 'balanceOf',
         args: [season.contract]
       });
 
-      return Number(formatUnits(balance ?? 0n, wdegenToken.decimals));
+      return Number(formatUnits(balance ?? 0n, degenToken.decimals));
     },
-    enabled: publicClient && !!season?.contract && !!wdegenToken
+    enabled: publicClient && !!season?.contract && !!degenToken
   });
 
   const isClaimingEnabled =
-    season?.contract && contractWDegenBalance && contractWDegenBalance >= 50_000;
+    season?.contract && contractDegenBalance && contractDegenBalance >= 50_000;
 
   const claimingOpenComponent =
-    !isLoadingBalance && contractWDegenBalance !== undefined ? (
+    !isLoadingBalance && contractDegenBalance !== undefined ? (
       <Chip
         label={isClaimingEnabled ? 'Claiming is live' : 'Claiming is not live'}
         size="small"
