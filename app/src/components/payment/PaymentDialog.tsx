@@ -50,7 +50,9 @@ export default function PaymentDialog({
 }: PaymentDialogProps) {
   const senderAddress = sender.identity.address as Address;
   const [selectedFlow, setSelectedFlow] = useState<FlowType>(
-    flow ?? (sender.identity.profile?.defaultFlow as FlowType)
+    flow ??
+      sender.identity.profile?.defaultFlow ??
+      (sender.identity.profile?.flows?.[0] as FlowType)
   );
 
   const { profile } = useContext(ProfileContext);
