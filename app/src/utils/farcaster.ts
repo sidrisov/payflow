@@ -38,3 +38,32 @@ export type EthSignTypedDataV4Action = {
     message: Record<string, unknown>;
   };
 };
+
+export type TransactionResponse = TransactionResponseSuccess | TransactionResponseFailure;
+
+type TransactionResponseSuccess = {
+  jsonrpc: '2.0';
+  id: string | number | null;
+  result: TransactionSuccessBody;
+};
+
+type TransactionSuccessBody = EthSendTransactionSuccessBody | EthSignTypedDataV4SuccessBody;
+
+export type EthSendTransactionSuccessBody = {
+  address: string;
+  transactionHash: string;
+};
+
+export type EthSignTypedDataV4SuccessBody = {
+  address: string;
+  signature: string;
+};
+
+export type TransactionResponseFailure = {
+  jsonrpc: '2.0';
+  id: string | number | null;
+  error: {
+    code: number;
+    message: string;
+  };
+};

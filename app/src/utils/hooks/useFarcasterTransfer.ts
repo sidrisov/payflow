@@ -1,7 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Hash, erc20Abi } from 'viem';
 import { v4 as uuid } from 'uuid';
-import { RequestWalletActionMessage, EthSendTransactionAction } from '../farcaster';
+import {
+  RequestWalletActionMessage,
+  EthSendTransactionAction,
+  TransactionResponse
+} from '../farcaster';
 import { useWaitForTransactionReceipt } from 'wagmi';
 
 export const useFarcasterTransfer = () => {
@@ -58,10 +62,10 @@ export const useFarcasterTransfer = () => {
             chainId: `eip155:${tx.chainId}`,
             method: 'eth_sendTransaction',
             params: {
-              abi: tx.value ? [] : erc20Abi,
+              abi: tx.value && tx.value !== 0n ? [] : erc20Abi,
               to: tx.to,
-              value: tx.value,
-              data: tx.data
+              data: tx.data,
+              value: tx.value
             }
           } as EthSendTransactionAction
         }
@@ -74,17 +78,21 @@ export const useFarcasterTransfer = () => {
 
       // Create promise to wait for response
       const hash: Hash = await new Promise((resolve, reject) => {
-        const handleMessage = (event: MessageEvent) => {
+        const handleMessage = (event: MessageEvent<TransactionResponse>) => {
+          console.log('Received message: ', event.data);
+
           const data = event.data;
 
           // Check if this is a JSON-RPC response matching our request
           if (data.jsonrpc === '2.0' && data.id === message.id) {
             window.removeEventListener('message', handleMessage);
 
-            if (data.error) {
+            if ('error' in data) {
               reject(new Error(data.error.message || 'Transaction failed'));
+            } else if ('transactionHash' in data.result) {
+              resolve(data.result.transactionHash as Hash);
             } else {
-              resolve(data.result as Hash);
+              reject(new Error('Invalid transaction response'));
             }
           }
         };
