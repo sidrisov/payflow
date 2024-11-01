@@ -89,7 +89,7 @@ export const useFarcasterTransfer = () => {
 
             if ('error' in data) {
               reject(new Error(data.error.message || 'Transaction failed'));
-            } else if ('transactionHash' in data.result) {
+            } else if ('result' in data && 'transactionHash' in data.result) {
               resolve(data.result.transactionHash as Hash);
             } else {
               reject(new Error('Invalid transaction response'));
