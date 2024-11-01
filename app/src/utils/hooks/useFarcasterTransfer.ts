@@ -39,14 +39,14 @@ export const useFarcasterTransfer = () => {
   }, [isTxConfirmationLoading, loading, error, txHash, isTxConfirmed]);
 
   const sendTransactionAsync = useCallback(
-    async (request: SendTransactionParameters): Promise<Hash> => {
+    async (tx: any): Promise<Hash> => {
       setLoading(true);
       setError(null);
       setTxHash(null);
 
       try {
         // Validate chain is set
-        if (!request.chain?.id) {
+        if (!tx.chainId) {
           throw new Error('Chain ID is required for Farcaster transactions');
         }
 
@@ -56,13 +56,13 @@ export const useFarcasterTransfer = () => {
           method: 'fc_requestWalletAction',
           params: {
             action: {
-              chainId: request.chain.id.toString(),
+              chainId: tx.chain.id.toString(),
               method: 'eth_sendTransaction',
               params: {
-                abi: request.value ? erc20Abi : [],
-                to: request.to,
-                value: request.value?.toString(),
-                data: request.data
+                abi: tx.value ? erc20Abi : [],
+                to: tx.to,
+                value: tx.value?.toString(),
+                data: tx.data
               }
             } as EthSendTransactionAction
           }
