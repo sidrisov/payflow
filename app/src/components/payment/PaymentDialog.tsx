@@ -303,7 +303,7 @@ export default function PaymentDialog({
           senderFlow={selectedFlow}
           onSuccess={setPaymentSuccessData}
           onError={(error: any) => {
-            toast.error(`Failed to pay!`);
+            toast.error(`Failed to pay: ${error.message}`);
             console.error('Failed to pay with error', error);
           }}
           {...props}
