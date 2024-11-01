@@ -95,6 +95,7 @@ public class JarComposerController {
 
 		val jarFormUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 				.path("/composer")
+				.queryParam("mini")
 				.queryParam("access_token", accessToken)
 				.queryParam("action", "jar")
 				.queryParam("title", title)
