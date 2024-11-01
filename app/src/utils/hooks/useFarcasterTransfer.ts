@@ -62,10 +62,17 @@ export const useFarcasterTransfer = () => {
             chainId: `eip155:${tx.chainId}`,
             method: 'eth_sendTransaction',
             params: {
-              abi: tx.value && tx.value !== 0n ? [] : erc20Abi,
-              to: tx.to,
-              data: tx.data && tx.data !== '' ? tx.data : undefined,
-              value: tx.value && tx.value !== 0n ? tx.value.toString() : undefined
+              ...(tx.value && tx.value !== 0n
+                ? {
+                    abi: [],
+                    to: tx.to,
+                    value: tx.value.toString()
+                  }
+                : {
+                    abi: erc20Abi,
+                    to: tx.to,
+                    data: tx.data
+                  })
             }
           } as EthSendTransactionAction
         }
