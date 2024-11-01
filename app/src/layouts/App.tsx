@@ -28,17 +28,12 @@ import PrimaryFlowOnboardingDialog from '../components/dialogs/PrimaryFlowOnboar
 import { DAPP_URL } from '../utils/urlConstants';
 import { useTokenPrices } from '../utils/queries/prices';
 import { IoHomeOutline, IoHomeSharp, IoSearch, IoSearchOutline } from 'react-icons/io5';
-import {
-  PiMoneyWavy,
-  PiMoneyWavyBold,
-  PiPersonSimpleRun,
-  PiPersonSimpleRunBold
-} from 'react-icons/pi';
+
 import { UpdateVersionPrompt } from '../components/UpdateVersionPrompt';
 
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { useMiniApp, useMobile, usePwa } from '../utils/hooks/useMobile';
+import { useMobile, usePwa } from '../utils/hooks/useMobile';
 import Logo from '../components/Logo';
 
 import { isIOS } from 'react-device-detect';
@@ -57,7 +52,7 @@ export default function AppLayout({
   const isMobile = useMobile();
   const navigate = useNavigate();
 
-  const isMiniApp = Boolean(useSearchParams()[0].get('mini'));
+  const isMiniApp = useSearchParams()[0].get('mini') !== null;
   const enablePullToRefresh = usePwa() || isMiniApp;
 
   const bottomToolbarEnabled =

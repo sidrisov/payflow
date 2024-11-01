@@ -39,6 +39,7 @@ import java.util.Comparator;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import static ua.sinaver.web3.payflow.config.PayflowConfig.MINIAPP_REDIRECT_ALLOWLIST;
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.BASE_PATH;
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.DEFAULT_HTML_RESPONSE;
 
@@ -422,25 +423,19 @@ public class FramePaymentController {
 					tokenAmount != null ? tokenAmount : ""));
 			val frameResponseBuilder = FrameResponse.builder()
 					.postUrl(apiServiceUrl.concat(String.format(PAY_IN_FRAME_CONFIRM, refId)))
-					.button(new FrameButton("\uD83D\uDC9C Pay", FrameButton.ActionType.TX,
+					.button(new FrameButton("Quick", FrameButton.ActionType.TX,
 							apiServiceUrl.concat(String.format(PAY_IN_FRAME_CONFIRM, refId))))
 					.imageUrl(profileImage)
 					.state(Base64.getEncoder().encodeToString(updatedState.getBytes()));
 
 			if (senderProfile != null) {
-				val miniApp = StringUtils.equals(validateMessage.action().signer().client().username(),
-						"warpcast");
-				val paymentLink = linkService.paymentLink(payment, miniApp).toString();
-				frameResponseBuilder.button(new FrameButton("Complete in App",
+				val miniAppRedirect = validateMessage.action().signer().client().username().equals("warpcast") &&
+						MINIAPP_REDIRECT_ALLOWLIST.contains(senderFarcasterUser.username());
+				val paymentLink = linkService.paymentLink(payment, miniAppRedirect).toString();
+				frameResponseBuilder.button(new FrameButton("Advanced",
 						FrameButton.ActionType.LINK,
 						paymentLink));
 			}
-
-			frameResponseBuilder.button(new FrameButton("FAQ",
-					FrameButton.ActionType.LINK,
-					"https://warpcast.com/~/composer-action?url=https://api.alpha.payflow" +
-							".me/api/farcaster/composer/pay?action=faq&view=prompt"));
-
 			return frameResponseBuilder.build().toHtmlResponse();
 		} catch (Throwable t) {
 			log.error("Something went wrong", t);

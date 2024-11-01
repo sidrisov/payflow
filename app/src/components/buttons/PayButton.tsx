@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useAccount, useChainId } from 'wagmi';
 import { CustomLoadingButton } from './LoadingPaymentButton';
 import { LoadingSwitchChainButton } from './LoadingSwitchNetworkButton';
@@ -11,6 +11,7 @@ import { PaymentOption } from '@paywithglide/glide-js';
 import { Hash } from 'viem';
 import { usePrivy } from '@privy-io/react-auth';
 import { submitPayment } from '../../services/payments';
+import { ProfileContext } from '../../contexts/UserContext';
 
 export type PaymentSuccess = {
   txHash: Hash;
@@ -45,6 +46,7 @@ export const PayButton: React.FC<PayButtonProps> = ({
 }) => {
   console.debug('Payment in PayButton: ', payment);
 
+  const { isMiniApp } = useContext(ProfileContext);
   const { ready } = usePrivy();
 
   const chainId = useChainId();
@@ -56,7 +58,10 @@ export const PayButton: React.FC<PayButtonProps> = ({
     usePayflowTransaction(isNativeFlow);
 
   const handleClick = async () => {
-    if (address?.toLowerCase() !== senderFlow.signer.toLowerCase()) {
+    if (
+      (isNativeFlow || !isMiniApp) &&
+      address?.toLowerCase() !== senderFlow.signer.toLowerCase()
+    ) {
       setOpenConnectSignerDrawer(true);
     } else {
       try {
@@ -88,7 +93,7 @@ export const PayButton: React.FC<PayButtonProps> = ({
 
   return (
     <>
-      {!paymentToken || chainId === paymentToken.chainId ? (
+      {!paymentToken || (!isNativeFlow && isMiniApp) || chainId === paymentToken?.chainId ? (
         <CustomLoadingButton
           title={buttonText}
           loading={paymentTxStatus.isPending}

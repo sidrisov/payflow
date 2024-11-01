@@ -101,6 +101,7 @@ export default function PaymentDialog({
 
       regularPaymentTx = paymentToken.tokenAddress
         ? {
+            chainId: paymentToken.chainId,
             from: paymentWallet.address,
             to: paymentToken.tokenAddress,
             data: encodeFunctionData({
@@ -110,6 +111,7 @@ export default function PaymentDialog({
             })
           }
         : {
+            chainId: paymentToken.chainId,
             from: paymentWallet.address,
             to: toAddress,
             value: amount
