@@ -19,12 +19,12 @@ const DEFAULT_FLOW_ENABLED_CHAINS = JSON.parse(
 
 export const SUPPORTED_CHAINS = [
   base,
-  optimism,
   degen,
-  mode,
-  worldchain,
+  optimism,
   arbitrum,
+  worldchain,
   zora,
+  mode,
   zksync,
   mainnet,
   sepolia,
