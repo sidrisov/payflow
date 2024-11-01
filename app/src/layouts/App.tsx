@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 import {
   AppBar,
@@ -42,8 +42,7 @@ import { useMiniApp, useMobile, usePwa } from '../utils/hooks/useMobile';
 import Logo from '../components/Logo';
 
 import { isIOS } from 'react-device-detect';
-import { GrMoney } from 'react-icons/gr';
-import { GiReceiveMoney, GiTwoCoins } from 'react-icons/gi';
+import { GiTwoCoins } from 'react-icons/gi';
 
 export default function AppLayout({
   profile,
@@ -58,7 +57,8 @@ export default function AppLayout({
   const isMobile = useMobile();
   const navigate = useNavigate();
 
-  const enablePullToRefresh = usePwa() || useMiniApp();
+  const isMiniApp = Boolean(useSearchParams()[0].get('mini'));
+  const enablePullToRefresh = usePwa() || isMiniApp;
 
   const bottomToolbarEnabled =
     location.pathname !== '/composer' &&
@@ -113,6 +113,7 @@ export default function AppLayout({
       value={{
         isAuthenticated: authorized,
         profile,
+        isMiniApp,
         appSettings,
         setAppSettings
       }}>

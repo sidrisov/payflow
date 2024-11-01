@@ -13,7 +13,6 @@ import { UpdateIdentityCallbackType } from './dialogs/SearchIdentityDialog';
 import { MoreVert } from '@mui/icons-material';
 import { IdentityMenu } from './menu/SearchIdenitityMenu';
 import { useSearchParams } from 'react-router-dom';
-import { useDarkMode } from '../utils/hooks/useDarkMode';
 import { SocialLinksPopover } from './dialogs/SocialLinksPopover';
 
 function addToFavourites(tags: string[]): string[] {

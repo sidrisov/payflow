@@ -61,8 +61,8 @@ public class PaymentComposerController {
 
 	@PostMapping
 	public ResponseEntity<?> form(@RequestBody FrameMessage composerActionMessage,
-	                              @RequestParam(required = false) String action,
-	                              @RequestParam(required = false) String refId) {
+			@RequestParam(required = false) String action,
+			@RequestParam(required = false) String refId) {
 		log.debug("Received composer action: payment form {} - action (optional): {}",
 				composerActionMessage, action);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
@@ -109,21 +109,24 @@ public class PaymentComposerController {
 		String miniAppUrl = StringUtils.isNotBlank(action) ? switch (action) {
 			case "app" -> UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 					.path("/")
+					.queryParam("mini")
 					.queryParam("access_token", accessToken)
 					.build()
 					.toUriString();
 			case "degen", "moxie" ->
-					UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
-							.path("/composer")
-							.queryParam("action", "useful")
-							.queryParam("tab", action)
-							.queryParam("access_token", accessToken)
-							.build()
-							.toUriString();
+				UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
+						.path("/composer")
+						.queryParam("mini")
+						.queryParam("action", "useful")
+						.queryParam("tab", action)
+						.queryParam("access_token", accessToken)
+						.build()
+						.toUriString();
 			case "payment" -> {
 				if (StringUtils.isNotBlank(refId)) {
 					yield UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 							.path("/payment/{refId}")
+							.queryParam("mini")
 							.queryParam("access_token", accessToken)
 							.queryParam("view", "embedded")
 							.buildAndExpand(refId)
@@ -133,30 +136,32 @@ public class PaymentComposerController {
 				}
 			}
 			case "faq" ->
-					"https://payflowlabs.notion.site/Payflow-FAQs-20593cf7734e4d78ad0dc91c8e8982e5";
+				"https://payflowlabs.notion.site/Payflow-FAQs-20593cf7734e4d78ad0dc91c8e8982e5";
 			default -> UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 					.path("/composer")
+					.queryParam("mini")
 					.queryParam("access_token", accessToken)
 					.queryParam("action",
 							StringUtils.isNotBlank(action) ? action
 									: StringUtils.isNotBlank(recipient)
-									? "pay"
-									: action)
+											? "pay"
+											: action)
 					.queryParam("recipient", recipient)
 					.build()
 					.toUriString();
 		}
 				: UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
-				.path("/composer")
-				.queryParam("access_token", accessToken)
-				.queryParam("action",
-						StringUtils.isNotBlank(action) ? action
-								: StringUtils.isNotBlank(recipient)
-								? "pay"
-								: action)
-				.queryParam("recipient", recipient)
-				.build()
-				.toUriString();
+						.path("/composer")
+						.queryParam("mini")
+						.queryParam("access_token", accessToken)
+						.queryParam("action",
+								StringUtils.isNotBlank(action) ? action
+										: StringUtils.isNotBlank(recipient)
+												? "pay"
+												: action)
+						.queryParam("recipient", recipient)
+						.build()
+						.toUriString();
 
 		if (miniAppUrl == null) {
 			log.error("Action not supported: {} by {}", validateMessage,

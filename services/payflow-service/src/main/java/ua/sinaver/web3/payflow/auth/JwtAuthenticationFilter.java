@@ -34,10 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			return;
 		}
 
-		var accessToken = request.getParameter("access_token");
-		if (accessToken == null) {
-			accessToken = request.getParameter("accessToken");
-		}
+		val accessToken = extractToken(request);
 		if (StringUtils.isNotBlank(accessToken)) {
 			val user = userService.findByAccessToken(accessToken);
 			if (user != null) {
@@ -47,9 +44,39 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 				authentication.setAuthenticated(true);
 				SecurityContextHolder.getContext().setAuthentication(authentication);
 				userService.updateLastSeen(user);
-				//userService.clearAccessToken(user);
+				// userService.clearAccessToken(user);
 			}
 		}
 		chain.doFilter(request, response);
+	}
+
+	/**
+	 * Extracts the JWT token or simple access token from the Authorization header
+	 * or query parameters.
+	 *
+	 * @param request the HTTP request
+	 * @return the JWT token if present, otherwise null
+	 */
+	private String extractToken(HttpServletRequest request) {
+		// 1. Attempt to extract from Authorization header
+		String header = request.getHeader("Authorization");
+		if (StringUtils.startsWithIgnoreCase(header, "Bearer ")) {
+			String token = header.substring(7).trim();
+			if (StringUtils.isNotBlank(token)) {
+				return token;
+			}
+		}
+
+		// 2. Fallback to access_token query parameter
+		String accessToken = request.getParameter("access_token");
+		if (StringUtils.isBlank(accessToken)) {
+			accessToken = request.getParameter("accessToken");
+		}
+		if (StringUtils.isNotBlank(accessToken)) {
+			log.debug("Using legacy access token from query parameter");
+			return accessToken;
+		}
+
+		return null;
 	}
 }

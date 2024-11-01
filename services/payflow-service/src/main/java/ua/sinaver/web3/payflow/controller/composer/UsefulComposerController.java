@@ -27,15 +27,14 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 public class UsefulComposerController {
 	private static final Gson GSON = new GsonBuilder().create();
-	private final static ComposerCastActionMeta USEFUL_COMPOSER_CAST_ACTION_META =
-			new ComposerCastActionMeta(
-					"composer",
-					"Payflow Useful",
-					"info",
-					"Information for you",
-					"https://payflow.me",
-					"https://payflow.me/apple-touch-icon.png",
-					new ComposerCastActionMeta.Action("post"));
+	private final static ComposerCastActionMeta USEFUL_COMPOSER_CAST_ACTION_META = new ComposerCastActionMeta(
+			"composer",
+			"Payflow Useful",
+			"info",
+			"Information for you",
+			"https://payflow.me",
+			"https://payflow.me/apple-touch-icon.png",
+			new ComposerCastActionMeta.Action("post"));
 	@Autowired
 	private IFarcasterNeynarService neynarService;
 	@Autowired
@@ -75,8 +74,7 @@ public class UsefulComposerController {
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage(
 							"Missing verified identity! Contact @sinaver.eth"));
-		} catch (
-				ConstraintViolationException exception) {
+		} catch (ConstraintViolationException exception) {
 			log.error("Failed to create a user for {}", interactor.username(), exception);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Identity conflict! Contact @sinaver.eth"));
@@ -88,6 +86,7 @@ public class UsefulComposerController {
 		val accessToken = userService.getOrgenerateAccessToken(profile);
 		val usefulFormUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 				.path("/composer")
+				.queryParam("mini")
 				.queryParam("access_token", accessToken)
 				.queryParam("action", "useful")
 				.build()
