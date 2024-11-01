@@ -34,6 +34,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Comparator;
 import java.util.UUID;
@@ -261,14 +262,17 @@ public class FramePaymentController {
 		val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
 				"/payment.png?step=command", identity));
 
-		val tokensSupported = "https://payflowlabs.notion" +
-				".site/Payflow-support-tokens-chains-e36f2c1e9f7e4bfd834baf604ce9a375";
+		/*
+		 * val tokensSupported = "https://payflowlabs.notion" +
+		 * ".site/Payflow-support-tokens-chains-e36f2c1e9f7e4bfd834baf604ce9a375";
+		 */
 		return FrameResponse.builder()
 				.imageUrl(profileImage)
 				.textInput("50 degen or 10 moxie")
 				.postUrl(apiServiceUrl.concat(String.format(PAY_IN_FRAME_COMMAND, identity)))
 				.button(new FrameButton("Confirm", FrameButton.ActionType.POST, null))
-				.button(new FrameButton("Tokens", FrameButton.ActionType.LINK, tokensSupported))
+				// .button(new FrameButton("Tokens", FrameButton.ActionType.LINK,
+				// tokensSupported))
 				.build().toHtmlResponse();
 	}
 
@@ -404,6 +408,7 @@ public class FramePaymentController {
 			} else {
 				payment.setUsdAmount(usdAmount.toString());
 			}
+			payment.setExpiresAt(Instant.now().plus(5, ChronoUnit.MINUTES));
 			payment.setSourceApp(sourceApp);
 			// handle frame in direct cast messaging
 			if (StringUtils.isNotBlank(sourceHash) && !sourceHash.equals(TokenService.ZERO_ADDRESS)) {
@@ -432,7 +437,7 @@ public class FramePaymentController {
 				val miniAppRedirect = validateMessage.action().signer().client().username().equals("warpcast") &&
 						MINIAPP_REDIRECT_ALLOWLIST.contains(senderFarcasterUser.username());
 				val paymentLink = linkService.paymentLink(payment, miniAppRedirect).toString();
-				frameResponseBuilder.button(new FrameButton("Advanced",
+				frameResponseBuilder.button(new FrameButton("Advanced ⚡",
 						FrameButton.ActionType.LINK,
 						paymentLink));
 			}

@@ -55,17 +55,19 @@ export const useFarcasterTransfer = () => {
         method: 'fc_requestWalletAction',
         params: {
           action: {
-            chainId: tx.chainId.toString(),
+            chainId: `eip155:${tx.chainId}`,
             method: 'eth_sendTransaction',
             params: {
-              abi: tx.value ? erc20Abi : [],
+              abi: tx.value ? [] : erc20Abi,
               to: tx.to,
-              value: tx.value?.toString(),
+              value: tx.value,
               data: tx.data
             }
           } as EthSendTransactionAction
         }
       };
+
+      console.log('posting tx message: ', message);
 
       // Send message to parent frame (Warpcast)
       window.parent.postMessage(message, '*');
