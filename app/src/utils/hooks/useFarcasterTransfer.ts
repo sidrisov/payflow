@@ -64,8 +64,8 @@ export const useFarcasterTransfer = () => {
             params: {
               abi: tx.value && tx.value !== 0n ? [] : erc20Abi,
               to: tx.to,
-              data: tx.data,
-              value: tx.value
+              data: tx.data && tx.data !== '' ? tx.data : undefined,
+              value: tx.value && tx.value !== 0n ? tx.value.toString() : undefined
             }
           } as EthSendTransactionAction
         }
