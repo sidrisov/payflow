@@ -61,6 +61,7 @@ export const useFarcasterTransfer = () => {
           action: {
             chainId: `eip155:${tx.chainId}`,
             method: 'eth_sendTransaction',
+            attribution: false,
             params: {
               ...(tx.value && tx.value !== 0n
                 ? {
@@ -86,9 +87,15 @@ export const useFarcasterTransfer = () => {
       // Create promise to wait for response
       const hash: Hash = await new Promise((resolve, reject) => {
         const handleMessage = (event: MessageEvent<TransactionResponse>) => {
-          console.log('Received message: ', event.data);
+          console.log('Received message: ', event.data, 'from origin:', event.origin);
 
-          const data = event.data;
+          // Ignore messages from our own window
+          if (event.source === window) {
+            console.log('Ignoring message from our own window');
+            return;
+          }
+
+          const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
 
           // Check if this is a JSON-RPC response matching our request
           if (data.jsonrpc === '2.0' && data.id === message.id) {
