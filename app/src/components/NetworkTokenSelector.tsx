@@ -26,6 +26,7 @@ import { Search as SearchIcon, Clear as ClearIcon } from '@mui/icons-material';
 import { green } from '@mui/material/colors';
 import { FaCheckCircle } from 'react-icons/fa';
 import { ProfileContext } from '../contexts/UserContext';
+import { SUPPORTED_CHAINS } from '../utils/networks';
 
 export function NetworkTokenSelector({
   payment,
@@ -46,8 +47,9 @@ export function NetworkTokenSelector({
   showBalance?: boolean;
   expandSection?: boolean;
 }) {
-  const [expand, setExpand] = useState<boolean>(expandSection);
+  const { profile } = useContext(ProfileContext);
 
+  const [expand, setExpand] = useState<boolean>(expandSection);
   const [maxBalance, setMaxBalance] = useState<string>('0.0');
 
   const { isFetched: isBalanceFetched, data: balances } = useAssetBalances(
@@ -131,7 +133,7 @@ export function NetworkTokenSelector({
     (!payment?.token || crossChainMode) && paymentToken && (!showBalance || isBalanceFetched);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const { profile } = useContext(ProfileContext);
+  const [selectedChainId, setSelectedChainId] = useState<number | 'all'>('all');
 
   const { preferredTokens, otherTokens, zeroBalanceTokens } = useMemo(() => {
     const preferred = new Set(profile?.preferredTokens || []);
@@ -139,8 +141,9 @@ export function NetworkTokenSelector({
     const filtered = compatibleTokens.filter((token) => {
       const searchLower = searchTerm.toLowerCase();
       return (
-        token.id.toLowerCase().includes(searchLower) ||
-        token.name.toLowerCase().includes(searchLower)
+        (selectedChainId === 'all' || token.chainId === selectedChainId) &&
+        (token.id.toLowerCase().includes(searchLower) ||
+          token.name.toLowerCase().includes(searchLower))
       );
     });
 
@@ -167,7 +170,7 @@ export function NetworkTokenSelector({
       otherTokens: withBalance.filter((token) => !preferred.has(token.id)),
       zeroBalanceTokens: withoutBalance
     };
-  }, [compatibleTokens, searchTerm, profile?.preferredTokens, balances]);
+  }, [compatibleTokens, searchTerm, profile?.preferredTokens, balances, selectedChainId]);
 
   function renderTokenList(tokenList: Token[], title?: string) {
     return (
@@ -242,6 +245,33 @@ export function NetworkTokenSelector({
       </>
     );
   }
+
+  // Get available networks from current filtered tokens
+  const availableNetworks = useMemo(() => {
+    const networksInSearch = compatibleTokens
+      .filter((token) => {
+        const searchLower = searchTerm.toLowerCase();
+        return (
+          token.id.toLowerCase().includes(searchLower) ||
+          token.name.toLowerCase().includes(searchLower)
+        );
+      })
+      .map((t) => t.chainId);
+
+    const uniqueNetworks = Array.from(new Set(networksInSearch));
+    return uniqueNetworks.sort((a, b) => {
+      const aIndex = SUPPORTED_CHAINS.findIndex((chain) => chain.id === a);
+      const bIndex = SUPPORTED_CHAINS.findIndex((chain) => chain.id === b);
+      return aIndex - bIndex;
+    });
+  }, [compatibleTokens, searchTerm]);
+
+  // Update selected network if it becomes unavailable
+  useEffect(() => {
+    if (selectedChainId !== 'all' && !availableNetworks.includes(selectedChainId)) {
+      setSelectedChainId('all');
+    }
+  }, [availableNetworks, selectedChainId]);
 
   return (
     <>
@@ -325,15 +355,47 @@ export function NetworkTokenSelector({
                 }
               }}
             />
+
+            {availableNetworks.length > 1 && (
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{
+                  mt: 1,
+                  pb: 1,
+                  overflowX: 'auto',
+                  '-webkit-overflow-scrolling': 'touch',
+                  '&::-webkit-scrollbar': { display: 'none' },
+                  scrollbarWidth: 'none'
+                }}>
+                <Chip
+                  label="All"
+                  onClick={() => setSelectedChainId('all')}
+                  variant={selectedChainId === 'all' ? 'filled' : 'outlined'}
+                  sx={{ borderRadius: 5, border: 'none' }}
+                />
+                {availableNetworks.map((chainId) => (
+                  <Chip
+                    key={chainId}
+                    avatar={<NetworkAvatar chainId={chainId} sx={{ width: 24, height: 24 }} />}
+                    label={SUPPORTED_CHAINS?.find((c) => c.id === chainId)?.name}
+                    onClick={() => setSelectedChainId(chainId)}
+                    variant={selectedChainId === chainId ? 'filled' : 'outlined'}
+                    sx={{ borderRadius: 4, border: 'none' }}
+                  />
+                ))}
+              </Stack>
+            )}
           </Box>
           <Stack
             width="100%"
-            maxHeight={400}
+            minHeight={350}
+            maxHeight={450}
             sx={{
               overflowY: 'scroll',
               '-webkit-overflow-scrolling': 'touch'
             }}>
-            <MenuList>
+            <MenuList dense disablePadding>
               {renderTokenList(preferredTokens, 'Preferred Tokens')}
               {otherTokens.length > 0 && preferredTokens.length > 0 && (
                 <Divider variant="middle" sx={{ my: 1 }} />
