@@ -54,7 +54,7 @@ export function Head() {
           property="fc:frame:button:1:target"
           content={`${API_URL}/api/farcaster/frames/pay/${username}/frame/command`}
         />
-        <meta property="fc:frame:button:2" content="App" />
+        {/* <meta property="fc:frame:button:2" content="App" />
         <meta property="fc:frame:button:2:action" content="link" />
         <meta property="fc:frame:button:2:target" content={`${DAPP_URL}/${username}?pay`} />
 
@@ -69,7 +69,7 @@ export function Head() {
         <meta
           property="fc:frame:button:4:target"
           content="https://payflowlabs.notion.site/Payflow-support-tokens-chains-e36f2c1e9f7e4bfd834baf604ce9a375"
-        />
+        /> */}
       </head>
     </>
   );
