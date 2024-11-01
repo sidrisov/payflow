@@ -9,13 +9,14 @@ import { useRegularTransfer } from './useRegularTransfer';
 import { useSafeTransfer } from './useSafeTransfer';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { Address, Hash } from 'viem';
+import { useFarcasterTransfer } from './useFarcasterTransfer';
 
 export const usePayflowTransaction = (isNativeFlow: boolean) => {
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
   const { data: signer } = useWalletClient();
   const client = useClient();
-  const { profile } = useContext(ProfileContext);
+  const { profile, isMiniApp } = useContext(ProfileContext);
 
   const {
     transfer,
@@ -36,6 +37,16 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
     txHash: txHashRegular
   } = useRegularTransfer();
 
+  const {
+    sendTransactionAsync: sendTransactionFarcaster,
+    reset: resetFarcaster,
+    loading: loadingFarcaster,
+    confirmed: confirmedFarcaster,
+    error: errorFarcaster,
+    status: statusFarcaster,
+    txHash: txHashFarcaster
+  } = useFarcasterTransfer();
+
   const [paymentTxStatus, setPaymentTxStatus] = useState<PaymentTxStatus>({
     isPending: false,
     isConfirmed: false,
@@ -54,9 +65,12 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
 
   const checkDependencies = useCallback(() => {
     if (!profile) throw new Error('Profile not found. Please ensure you are logged in.');
-    if (!client) throw new Error('Client not initialized. Please check your network connection.');
-    if (!signer) throw new Error('Signer not available. Please connect your wallet.');
-  }, [profile, client, signer]);
+
+    if (isNativeFlow || !isMiniApp) {
+      if (!client) throw new Error('Client not initialized. Please check your network connection.');
+      if (!signer) throw new Error('Signer not available. Please connect your wallet.');
+    }
+  }, [profile, client, signer, isMiniApp, isNativeFlow]);
 
   const createGlideSession = useCallback(
     async (paymentTx: any, paymentWallet: FlowWalletType, paymentOption: PaymentOption) => {
@@ -71,7 +85,6 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
       try {
         const session = await createSession(glideConfig, {
           paymentCurrency: paymentOption.paymentCurrency,
-          currentChainId: chainId,
           ...(paymentTx as any),
           account: paymentWallet.address
         });
@@ -93,7 +106,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
         throw error;
       }
     },
-    [chainId, checkDependencies]
+    [checkDependencies]
   );
 
   const handlePayment = async (
@@ -102,6 +115,11 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
     senderFlow: FlowType
   ): Promise<Hash> => {
     if (!profile) throw new Error('Profile not found. Please ensure you are logged in.');
+
+    if (!isNativeFlow && isMiniApp) {
+      return (await sendTransactionFarcaster(tx)) as Hash;
+    }
+
     if (!client) throw new Error('Client not initialized. Please check your network connection.');
     if (!signer) throw new Error('Signer not available. Please connect your wallet.');
 
@@ -178,6 +196,8 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
 
       if (isNativeFlow) {
         resetSafe();
+      } else if (isMiniApp) {
+        resetFarcaster();
       } else {
         resetRegular();
       }
@@ -186,7 +206,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
 
       const glideResponse = await executeSession(glideConfig, {
         session,
-        currentChainId: chainId as any,
+        currentChainId: isNativeFlow || !isMiniApp ? (chainId as any) : paymentTx.chainId,
         switchChainAsync,
         sendTransactionAsync: async (tx) => {
           console.log('Glide tnxs: ', tx);
@@ -241,23 +261,36 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
   };
 
   useEffect(() => {
-    const transferStatus = isNativeFlow
-      ? {
-          isPending: Boolean(loadingSafe || (txHashSafe && !confirmedSafe && !errorSafe)),
-          isConfirmed: Boolean(confirmedSafe),
-          error: Boolean(errorSafe),
-          txHash: txHashSafe,
-          status: statusSafe
-        }
-      : {
+    const transferStatus = (() => {
+      if (!isNativeFlow && isMiniApp) {
+        return {
           isPending: Boolean(
-            loadingRegular || (txHashRegular && !confirmedRegular && !errorRegular)
+            loadingFarcaster || (txHashFarcaster && !confirmedFarcaster && !errorFarcaster)
           ),
-          isConfirmed: Boolean(confirmedRegular),
-          error: Boolean(errorRegular),
-          txHash: txHashRegular,
-          status: statusRegular
+          isConfirmed: Boolean(confirmedFarcaster),
+          error: Boolean(errorFarcaster),
+          txHash: txHashFarcaster,
+          status: statusFarcaster
         };
+      }
+      return isNativeFlow
+        ? {
+            isPending: Boolean(loadingSafe || (txHashSafe && !confirmedSafe && !errorSafe)),
+            isConfirmed: Boolean(confirmedSafe),
+            error: Boolean(errorSafe),
+            txHash: txHashSafe,
+            status: statusSafe
+          }
+        : {
+            isPending: Boolean(
+              loadingRegular || (txHashRegular && !confirmedRegular && !errorRegular)
+            ),
+            isConfirmed: Boolean(confirmedRegular),
+            error: Boolean(errorRegular),
+            txHash: txHashRegular,
+            status: statusRegular
+          };
+    })();
 
     setPaymentTxStatus({
       isPending: transferStatus.isPending || glideStatus.isPending,
@@ -267,6 +300,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
       status: transferStatus.isConfirmed ? glideStatus.status : transferStatus.status || 'Loading'
     });
   }, [
+    isMiniApp,
     isNativeFlow,
     loadingSafe,
     txHashSafe,
@@ -278,6 +312,11 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
     confirmedRegular,
     errorRegular,
     statusRegular,
+    loadingFarcaster,
+    txHashFarcaster,
+    confirmedFarcaster,
+    errorFarcaster,
+    statusFarcaster,
     glideStatus
   ]);
 
