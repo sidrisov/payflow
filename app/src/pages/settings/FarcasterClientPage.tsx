@@ -34,11 +34,11 @@ export default function FarcasterClientPage() {
         p: 2
       }}>
       <Box display="flex" alignItems="center" justifyContent="space-between">
-        <Box display="flex" alignItems="center" gap={2}>
+        <Stack direction="row" alignItems="center" spacing={1} sx={{ flex: 1 }}>
           {selectedClient.toLowerCase() === client.id ? (
-            <FaCheckCircle color={green[500]} size={20} />
+            <FaCheckCircle color={green[500]} size={18} />
           ) : (
-            <FaRegCircle size={20} />
+            <FaRegCircle size={18} />
           )}
           <Box
             component="img"
@@ -48,23 +48,24 @@ export default function FarcasterClientPage() {
               width: 40,
               height: 40,
               borderRadius: 1,
-              objectFit: 'contain'
+              objectFit: 'contain',
+              flexShrink: 0
             }}
           />
-          <Box>
-            <Typography>{client.name}</Typography>
-            <Typography variant="body2" color="text.secondary">
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography fontWeight="bold">{client.name}</Typography>
+            <Typography variant="body1" color="text.secondary">
               {client.description}
             </Typography>
           </Box>
-        </Box>
+        </Stack>
         <IconButton
           size="small"
           onClick={(e) => {
             e.stopPropagation();
             window.open(client.url, '_blank');
           }}
-          sx={{ ml: 2 }}>
+          sx={{ ml: 2, flexShrink: 0 }}>
           <LaunchIcon fontSize="small" />
         </IconButton>
       </Box>
@@ -93,7 +94,7 @@ export default function FarcasterClientPage() {
     <Container maxWidth="sm">
       <Stack spacing={2} sx={{ my: 4 }}>
         <Stack direction="row" alignItems="center" spacing={1}>
-          <SiFarcaster size={24} />
+          <SiFarcaster size={30} />
           <Typography variant="h6">Preferred Farcaster Client</Typography>
         </Stack>
 
