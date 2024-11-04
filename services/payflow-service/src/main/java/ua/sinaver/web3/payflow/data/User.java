@@ -68,6 +68,10 @@ public class User {
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
 	private PreferredTokens preferredTokens;
 
+	@Column(name = "preferred_farcaster_client")
+	@Enumerated(EnumType.STRING)
+	private FarcasterClient preferredFarcasterClient = FarcasterClient.WARPCAST;
+
 	@Column
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createdDate = new Date();
@@ -89,5 +93,10 @@ public class User {
 
 	public User(String identity) {
 		this.identity = identity.toLowerCase();
+	}
+
+	public enum FarcasterClient {
+		WARPCAST,
+		RECASTER
 	}
 }

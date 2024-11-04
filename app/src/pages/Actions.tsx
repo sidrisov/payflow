@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Container, Stack, Typography, Grid2, Box, Tooltip } from '@mui/material';
+import { Container, Stack, Typography, Grid2, Box, Tooltip, IconButton } from '@mui/material';
 import PaymentRewardCastActionComposerDialog from '../components/dialogs/PaymentRewardCastActionComposerDialog';
 import { AutoAwesome, Interests, PersonAdd, Star } from '@mui/icons-material';
 import { PiTipJar } from 'react-icons/pi';
@@ -10,9 +10,10 @@ import FarcasterAvatar from '../components/avatars/FarcasterAvatar';
 import { FaRegClock } from 'react-icons/fa';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { GoZap } from 'react-icons/go';
-
-const BASE_URL =
-  'https://warpcast.com/~/add-cast-action?url=https://api.payflow.me/api/farcaster/actions';
+import SettingsIcon from '@mui/icons-material/Settings';
+import { useNavigate } from 'react-router-dom';
+import { ProfileContext } from '../contexts/UserContext';
+import { FARCASTER_CLIENTS } from '../types/ProfileType';
 
 interface Action {
   title: string;
@@ -29,28 +30,47 @@ interface ActionCategoryProps {
   actions: Action[];
 }
 
-const ActionCategory: React.FC<ActionCategoryProps> = ({ title, icon, actions }) => (
-  <Stack alignItems="center" spacing={2}>
-    <Stack direction="row" spacing={1} alignItems="center">
-      {icon}
-      <Typography variant="h6">{title}</Typography>
+const ActionCategory: React.FC<ActionCategoryProps> = ({ title, icon, actions }) => {
+  const navigate = useNavigate();
+  return (
+    <Stack alignItems="center" spacing={2}>
+      <Stack direction="row" spacing={1} alignItems="center">
+        {icon}
+        <Typography variant="h6">{title}</Typography>
+
+        <IconButton size="small" onClick={() => navigate('/settings/farcaster/client')}>
+          <SettingsIcon />
+        </IconButton>
+      </Stack>
+      <Grid2
+        container
+        rowSpacing={{ xs: 1, sm: 2 }}
+        columnSpacing={{ xs: 1, sm: 2 }}
+        justifyContent="center">
+        {actions.map((action, index) => (
+          <Grid2
+            component="span"
+            key={index}
+            size={{ xs: 6 }}
+            display="flex"
+            justifyContent="center">
+            <CastActionButton {...action} />
+          </Grid2>
+        ))}
+      </Grid2>
     </Stack>
-    <Grid2
-      container
-      rowSpacing={{ xs: 1, sm: 2 }}
-      columnSpacing={{ xs: 1, sm: 2 }}
-      justifyContent="center">
-      {actions.map((action, index) => (
-        <Grid2 component="span" key={index} size={{ xs: 6 }} display="flex" justifyContent="center">
-          <CastActionButton {...action} />
-        </Grid2>
-      ))}
-    </Grid2>
-  </Stack>
-);
+  );
+};
 
 export default function Actions() {
   const [openPaymentActionDialog, setOpenPaymentActionDialog] = useState<boolean>(false);
+
+  const { profile } = useContext(ProfileContext);
+
+  const preferredClient = profile?.preferredFarcasterClient?.toLowerCase() || 'warpcast';
+  const BASE_URL = `${
+    FARCASTER_CLIENTS.find((c) => c.id === preferredClient)?.url
+  }/~/add-cast-action?url=https://api.payflow.me/api/farcaster/actions`;
 
   const farcasterActions = [
     {
@@ -123,6 +143,7 @@ export default function Actions() {
             icon={<FarcasterAvatar size={30} />}
             actions={farcasterActions}
           />
+
           <Box display="flex" alignItems="center">
             <Box
               component="span"

@@ -12,7 +12,27 @@ export interface ProfileType {
   flows?: FlowType[];
   identityInviteLimit: number;
   preferredTokens?: string[];
+  preferredFarcasterClient?: FarcasterClient;
 }
+
+export type FarcasterClient = 'WARPCAST' | 'RECASTER';
+
+export const FARCASTER_CLIENTS = [
+  {
+    id: 'warpcast',
+    name: 'Warpcast',
+    description: 'Official client built by Faraster team',
+    url: 'https://warpcast.com',
+    image: '/clients/warpcast.png'
+  },
+  {
+    id: 'recaster',
+    name: 'Recaster',
+    description: 'Personalize your Farcaster journey',
+    url: 'https://recaster.org',
+    image: '/clients/recaster.png'
+  }
+];
 
 export interface IdentityType {
   address: Address;

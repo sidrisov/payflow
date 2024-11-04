@@ -28,7 +28,7 @@ public record ContactMessage(
 					FlowMessage.convertDefaultFlow(profile, false),
 					null,
 					-1,
-					preferredTokens);
+					preferredTokens, null);
 		} else {
 			return null;
 		}

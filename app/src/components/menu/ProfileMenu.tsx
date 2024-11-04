@@ -32,6 +32,7 @@ import { DeviceInfoDialog } from '../DeviceInfoDialog';
 import { useState } from 'react';
 import { FaCoins } from 'react-icons/fa6';
 import { TbCoins } from 'react-icons/tb';
+import { SiFarcaster } from 'react-icons/si';
 
 export function ProfileMenu({
   profile,
@@ -102,6 +103,16 @@ export function ProfileMenu({
               <GiTwoCoins size={20} />
             </ListItemIcon>
             Preferred Tokens
+          </MenuItem>
+          <MenuItem
+            onClick={async () => {
+              closeStateCallback();
+              navigate('/settings/farcaster/client');
+            }}>
+            <ListItemIcon>
+              <SiFarcaster size={20} />
+            </ListItemIcon>
+            Farcaster Client
           </MenuItem>
           <MenuItem
             onClick={async () => {

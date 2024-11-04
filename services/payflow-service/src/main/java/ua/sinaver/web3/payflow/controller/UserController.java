@@ -58,7 +58,8 @@ public class UserController {
 							user.getUserAllowance().getIdentityInviteLimit() : -1,
 					Optional.ofNullable(user.getPreferredTokens())
 							.map(PreferredTokens::getTokenList)
-							.orElse(Collections.emptyList()));
+							.orElse(Collections.emptyList()),
+					user.getPreferredFarcasterClient());
 		} else {
 			return null;
 		}
@@ -259,7 +260,8 @@ public class UserController {
 						-1,
 						Optional.ofNullable(user.getPreferredTokens())
 								.map(PreferredTokens::getTokenList)
-								.orElse(Collections.emptyList()))
+								.orElse(Collections.emptyList()),
+						null)
 				).toList();
 	}
 
@@ -278,7 +280,7 @@ public class UserController {
 					-1,
 					Optional.ofNullable(user.getPreferredTokens())
 							.map(PreferredTokens::getTokenList)
-							.orElse(Collections.emptyList()));
+							.orElse(Collections.emptyList()), null);
 		} else {
 			return null;
 		}
