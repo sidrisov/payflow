@@ -79,8 +79,7 @@ export default function Actions() {
   const preferredClient = FARCASTER_CLIENTS.find(
     (c) => c.id === (profile?.preferredFarcasterClient?.toLowerCase() || 'warpcast')
   );
-  const BASE_URL = `${preferredClient?.url}
-  }/~/add-cast-action?url=https://api.payflow.me/api/farcaster/actions`;
+  const BASE_URL = `${preferredClient?.url}/~/add-cast-action?url=https://api.payflow.me/api/farcaster/actions`;
 
   const farcasterActions = [
     {
