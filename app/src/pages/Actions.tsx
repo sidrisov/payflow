@@ -1,6 +1,15 @@
 import { useContext, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Container, Stack, Typography, Grid2, Box, Tooltip, IconButton } from '@mui/material';
+import {
+  Container,
+  Stack,
+  Typography,
+  Grid2,
+  Box,
+  Tooltip,
+  IconButton,
+  Avatar
+} from '@mui/material';
 import PaymentRewardCastActionComposerDialog from '../components/dialogs/PaymentRewardCastActionComposerDialog';
 import { AutoAwesome, Interests, PersonAdd, Star } from '@mui/icons-material';
 import { PiTipJar } from 'react-icons/pi';
@@ -67,9 +76,10 @@ export default function Actions() {
 
   const { profile } = useContext(ProfileContext);
 
-  const preferredClient = profile?.preferredFarcasterClient?.toLowerCase() || 'warpcast';
-  const BASE_URL = `${
-    FARCASTER_CLIENTS.find((c) => c.id === preferredClient)?.url
+  const preferredClient = FARCASTER_CLIENTS.find(
+    (c) => c.id === (profile?.preferredFarcasterClient?.toLowerCase() || 'warpcast')
+  );
+  const BASE_URL = `${preferredClient?.url}
   }/~/add-cast-action?url=https://api.payflow.me/api/farcaster/actions`;
 
   const farcasterActions = [
@@ -140,7 +150,17 @@ export default function Actions() {
           borderColor="divider">
           <ActionCategory
             title="Cast Actions"
-            icon={<FarcasterAvatar size={30} />}
+            icon={
+              preferredClient ? (
+                <Avatar
+                  variant="rounded"
+                  src={preferredClient.image}
+                  sx={{ width: 30, height: 30 }}
+                />
+              ) : (
+                <FarcasterAvatar size={30} />
+              )
+            }
             actions={farcasterActions}
           />
 
