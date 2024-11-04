@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Stack, Box, Typography, Button, IconButton } from '@mui/material';
+import { Container, Stack, Box, Typography, Button, IconButton, Avatar } from '@mui/material';
 import { Launch as LaunchIcon } from '@mui/icons-material';
 import { SiFarcaster } from 'react-icons/si';
 import { green } from '@mui/material/colors';
@@ -40,21 +40,18 @@ export default function FarcasterClientPage() {
           ) : (
             <FaRegCircle size={18} />
           )}
-          <Box
-            component="img"
+          <Avatar
             src={client.image}
             alt={`${client.name} logo`}
             sx={{
-              width: 40,
-              height: 40,
-              borderRadius: 1,
-              objectFit: 'contain',
-              flexShrink: 0
+              width: 36,
+              height: 36,
+              borderRadius: 1
             }}
           />
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography fontWeight="bold">{client.name}</Typography>
-            <Typography variant="body1" color="text.secondary">
+            <Typography fontSize={14} color="text.secondary">
               {client.description}
             </Typography>
           </Box>
