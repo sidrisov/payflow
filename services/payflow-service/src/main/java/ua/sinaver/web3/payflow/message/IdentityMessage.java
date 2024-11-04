@@ -36,7 +36,7 @@ public record IdentityMessage(
 					FlowMessage.convertDefaultFlow(profile, false),
 					null,
 					-1,
-					preferredTokens);
+					preferredTokens, null);
 		} else {
 			return null;
 		}

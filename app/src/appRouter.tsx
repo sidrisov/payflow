@@ -19,7 +19,7 @@ const LazyUseful = lazy(() => import('./pages/Useful'));
 const LazyPage404 = lazy(() => import('./pages/Page404'));
 const LazyPreferredFlow = lazy(() => import('./pages/settings/PreferredFlowPage'));
 const LazyPreferredTokens = lazy(() => import('./pages/settings/PreferredTokensPage'));
-
+const LazyFarcasterClientPage = lazy(() => import('./pages/settings/FarcasterClientPage'));
 // Wrapper component for lazy-loaded components
 const LazyWrapper = ({
   component: Component,
@@ -52,7 +52,8 @@ export const appRouter = createBrowserRouter([
         path: 'settings',
         children: [
           { path: 'preferred-flow', element: <LazyWrapper component={LazyPreferredFlow} /> },
-          { path: 'tokens', element: <LazyWrapper component={LazyPreferredTokens} /> }
+          { path: 'tokens', element: <LazyWrapper component={LazyPreferredTokens} /> },
+          { path: 'farcaster/client', element: <LazyWrapper component={LazyFarcasterClientPage} /> }
         ]
       },
       { path: 'actions', element: <LazyWrapper component={LazyActions} /> },

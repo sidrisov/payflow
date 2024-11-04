@@ -14,7 +14,8 @@ public record ProfileMessage(
 		String signer,
 		FlowMessage defaultFlow, List<FlowMessage> flows,
 		int identityInviteLimit,
-		List<String> preferredTokens) {
+		List<String> preferredTokens,
+		User.FarcasterClient preferredFarcasterClient) {
 
 	public static ProfileMessage convert(User user) {
 		val preferredTokens = Optional.ofNullable(user.getPreferredTokens())
@@ -23,6 +24,7 @@ public record ProfileMessage(
 		return new ProfileMessage(user.getDisplayName(), user.getUsername(),
 				user.getProfileImage(), user.getIdentity(),
 				null, null, null, -1,
-				preferredTokens);
+				preferredTokens,
+				user.getPreferredFarcasterClient());
 	}
 }
