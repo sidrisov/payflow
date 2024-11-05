@@ -231,11 +231,7 @@ export function NetworkTokenSelector({
                 </Box>
                 {balance && balance.usdValue > 0 && (
                   <Typography variant="body1">
-                    $
-                    {balance.usdValue.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2
-                    })}
+                    ${formatAmountWithSuffix(balance.usdValue.toFixed(1))}
                   </Typography>
                 )}
               </Box>

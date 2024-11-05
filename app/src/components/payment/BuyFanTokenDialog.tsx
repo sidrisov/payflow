@@ -17,7 +17,7 @@ import { FarcasterRecipientField } from '../FarcasterRecipientField';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { PaymentType } from '../../types/PaymentType';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { SUPPORTED_TOKENS, Token } from '../../utils/erc20contracts';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
@@ -43,9 +43,9 @@ import { TbCopy } from 'react-icons/tb';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { createShareUrls } from '../../utils/moxie';
 import { createCastPostMessage, createComposeCastUrl } from '../../utils/warpcast';
-import { useSearchParams } from 'react-router-dom';
 import { InfoOutlined } from '@mui/icons-material';
 import { useMobile } from '../../utils/hooks/useMobile';
+import { ProfileContext } from '../../contexts/UserContext';
 
 export type BuyFanTokenDialogProps = DialogProps &
   CloseCallbackType & {
@@ -67,7 +67,7 @@ export default function BuyFanTokenDialog({
   closeStateCallback,
   ...props
 }: BuyFanTokenDialogProps) {
-  const miniApp = useSearchParams()[0].get('view') === 'embedded';
+  const { isMiniApp } = useContext(ProfileContext);
 
   const [selectedFlow, setSelectedFlow] = useState<FlowType>(
     sender.identity.profile?.defaultFlow ?? (sender.identity.profile?.flows?.[0] as FlowType)
@@ -166,7 +166,7 @@ export default function BuyFanTokenDialog({
       <Button
         fullWidth
         onClick={() => {
-          if (miniApp) {
+          if (isMiniApp) {
             window.parent.postMessage(createCastPostMessage(text, shareFrameUrl, channelKey), '*');
           } else {
             window.open(createComposeCastUrl(text, shareFrameUrl, channelKey), '_blank');
