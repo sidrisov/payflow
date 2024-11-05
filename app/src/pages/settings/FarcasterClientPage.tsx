@@ -11,6 +11,7 @@ import axios from 'axios';
 import { API_URL } from '../../utils/urlConstants';
 import { toast } from 'react-toastify';
 import { delay } from '../../utils/delay';
+import { FarcasterClientAvatar } from '../../components/avatars/FarcasterClientAvatar';
 
 export default function FarcasterClientPage() {
   const { profile } = useContext(ProfileContext);
@@ -40,15 +41,7 @@ export default function FarcasterClientPage() {
           ) : (
             <FaRegCircle size={18} />
           )}
-          <Avatar
-            src={client.image}
-            alt={`${client.name} logo`}
-            sx={{
-              width: 36,
-              height: 36,
-              borderRadius: 1
-            }}
-          />
+          <FarcasterClientAvatar image={client.image} name={client.name} />
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography fontWeight="bold">{client.name}</Typography>
             <Typography fontSize={14} color="text.secondary">
