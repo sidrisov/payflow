@@ -97,6 +97,7 @@ public class User {
 
 	public enum FarcasterClient {
 		WARPCAST,
-		RECASTER
+		RECASTER,
+		FARQUEST
 	}
 }
