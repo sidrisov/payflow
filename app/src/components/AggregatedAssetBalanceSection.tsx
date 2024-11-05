@@ -94,7 +94,7 @@ export function AggregatedAssetBalanceSection({
       </Box>
 
       <Typography fontWeight={500}>
-        {balanceVisible ? `$${usdValue.toFixed(1)}` : '*****'}
+        {balanceVisible ? `$${formatAmountWithSuffix(usdValue.toFixed(1))}` : '*****'}
       </Typography>
     </Box>
   );
