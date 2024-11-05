@@ -190,7 +190,9 @@ public class MintController {
 		paymentRepository.saveAll(payments);
 		log.debug("Mint payment intents saved: {}", payments);
 
-		val miniAppRedirect = validateMessage.action().signer().client().username().equals("warpcast") &&
+		val miniAppRedirect = /*
+								 * validateMessage.action().signer().client().username().equals("warpcast") &&
+								 */
 				MINIAPP_REDIRECT_ALLOWLIST.contains(interactor.username());
 		val paymentLink = linkService.paymentLink(payments.getFirst(), miniAppRedirect);
 		log.debug("Redirecting to {}", paymentLink);

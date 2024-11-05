@@ -3,7 +3,7 @@ import { useContext, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { FARCASTER_DAPP } from '../../utils/dapps';
 import { useIdentity } from '../../utils/queries/profiles';
-import InfoCard, { InfoStack } from './InfoCard';
+import { InfoStack } from './InfoCard';
 import { DEGEN_CLAIM_SEASONS, useAllowance, usePoints } from '../../utils/queries/degen';
 import { ClaimDegenPointsDialog } from '../dialogs/ClaimDegenPointsDialog';
 import { ArrowBackIos, ArrowForwardIos } from '@mui/icons-material';
@@ -107,9 +107,9 @@ export function DegenInfoCard() {
   const [openClaimPointsDialog, setOpenClaimPointsDialog] = useState<boolean>(false);
 
   return (
-    <InfoCard title="🎩 Degen Center" rightComponent={claimingOpenComponent}>
+    <>
       {season && (
-        <InfoStack title={`${season.name} Points`}>
+        <InfoStack title={`Degen ${season.name} Points`}>
           <Stack
             direction="row"
             minWidth={200}
@@ -129,7 +129,7 @@ export function DegenInfoCard() {
                 sx={{ borderRadius: '15px' }}
               />
             ) : degenPoints ? (
-              <Stack m={1} direction="row" alignItems="center" spacing={1}>
+              <Stack m={1} direction="row" alignItems="center" justifyContent="center" spacing={1}>
                 <Typography variant="h4" fontWeight="bold" sx={{ color: 'inherit' }}>
                   {formatAmountWithSuffix(degenPoints.points)}
                 </Typography>
@@ -171,7 +171,7 @@ export function DegenInfoCard() {
           </Stack>
         </InfoStack>
       )}
-      <InfoStack title="Everyday Allowance">
+      <InfoStack title="Degen Everyday Allowance">
         {isFetchingAllowance || !fid ? (
           <Skeleton variant="rectangular" height={55} width={100} sx={{ borderRadius: '15px' }} />
         ) : allowance ? (
@@ -209,6 +209,6 @@ export function DegenInfoCard() {
           }}
         />
       )}
-    </InfoCard>
+    </>
   );
 }

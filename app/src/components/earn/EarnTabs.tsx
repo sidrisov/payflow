@@ -1,31 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { Tabs, Tab, Box } from '@mui/material';
+import { Tabs, Tab, Stack } from '@mui/material';
 import { green } from '@mui/material/colors';
 import { MoxieInfoCard } from '../cards/MoxieInfoCard';
 import { DegenInfoCard } from '../cards/DegenInfoCard';
 /* import { ZoraInfoCard } from '../cards/ZoraInfoCard';
 import { HypersubInfoCard } from '../cards/HypersubInfoCard'; */
 
-interface UsefulTabsProps {
+interface EarnTabsProps {
   tab?: string;
 }
 
 const getTabIndex = (tab: string | undefined): number => {
   switch (tab?.toLowerCase()) {
     case 'moxie':
-      return 0;
     case 'degen':
+      return 0;
+    case 'contributions':
       return 1;
-    case 'zora':
+    case 'paymentlinks':
       return 2;
-    case 'hypersub':
+    case 'subscriptions':
       return 3;
     default:
       return 0;
   }
 };
 
-export function UsefulTabs({ tab }: UsefulTabsProps) {
+export function EarnTabs({ tab }: EarnTabsProps) {
   const [activeTab, setActiveTab] = useState(getTabIndex(tab));
 
   useEffect(() => {
@@ -51,7 +52,7 @@ export function UsefulTabs({ tab }: UsefulTabsProps) {
           },
           '& .MuiTab-root': {
             fontWeight: 'bold',
-            fontSize: '1rem',
+            fontSize: 14,
             borderRadius: '16px',
             minHeight: '48px',
             '&:hover': {
@@ -71,18 +72,18 @@ export function UsefulTabs({ tab }: UsefulTabsProps) {
             borderRadius: '16px'
           }
         }}>
-        <Tab label="Moxie" disableRipple />
-        <Tab label="Degen" disableRipple />
-        {/* <Tab label="Zora" disableRipple />
-        <Tab label="Hypersub" disableRipple /> */}
+        <Tab label="Claimables" disableRipple />
+        <Tab disabled label="Contributions" disableRipple />
+        <Tab disabled label="Payment Links" disableRipple />
+        <Tab disabled label="Subscriptions" disableRipple />
       </Tabs>
 
-      <Box>
-        {activeTab === 0 && <MoxieInfoCard />}
-        {activeTab === 1 && <DegenInfoCard />}
-        {/* {activeTab === 2 && <ZoraInfoCard />}
-        {activeTab === 3 && <HypersubInfoCard />} */}
-      </Box>
+      {activeTab === 0 && (
+        <Stack spacing={1}>
+          <MoxieInfoCard />
+          <DegenInfoCard />
+        </Stack>
+      )}
     </>
   );
 }

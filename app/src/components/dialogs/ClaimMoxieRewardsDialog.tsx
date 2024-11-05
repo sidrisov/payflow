@@ -6,20 +6,18 @@ import { useClaimRewardsMutation, useMoxieRewardsClaimStatus } from '../../utils
 import { CustomLoadingButton } from '../buttons/LoadingPaymentButton';
 import { ProfileContext } from '../../contexts/UserContext';
 import { Check } from '@mui/icons-material';
-import { grey, green, red } from '@mui/material/colors';
+import { green, red } from '@mui/material/colors';
 import { FlowType } from '../../types/FlowType';
 import { PaymentFlowSection } from '../PaymentFlowSection';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { delay } from '../../utils/delay';
-import { useDarkMode } from '../../utils/hooks/useDarkMode';
 
 export function ClaimMoxieRewardsDialog({
   fid,
   claimableRewardsAmount,
   ...props
 }: { fid: number; claimableRewardsAmount: number } & ResponsiveDialogProps) {
-  const prefersDarkMode = useDarkMode();
   const navigate = useNavigate();
 
   const { profile } = useContext(ProfileContext);
@@ -161,10 +159,7 @@ export function ClaimMoxieRewardsDialog({
                 p={1}
                 alignItems="flex-start"
                 justifyContent="center">
-                <Typography
-                  fontSize={16}
-                  fontWeight="bold"
-                  color={grey[prefersDarkMode ? 400 : 700]}>
+                <Typography fontSize={16} fontWeight="bold" color="text.secondary">
                   Claim rewards with a verified wallet:
                 </Typography>
                 {flows?.map((verification) => (

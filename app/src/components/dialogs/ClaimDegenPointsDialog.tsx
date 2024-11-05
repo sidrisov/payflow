@@ -2,7 +2,7 @@ import ResponsiveDialog, { ResponsiveDialogProps } from './ResponsiveDialog';
 import { Box, Divider, Stack, Typography } from '@mui/material';
 import { useEffect } from 'react';
 import { CustomLoadingButton } from '../buttons/LoadingPaymentButton';
-import { grey, red } from '@mui/material/colors';
+import { red } from '@mui/material/colors';
 import { DegenClaimSeason, DegenPoints, useMerkleProofs } from '../../utils/queries/degen';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
 import { toast } from 'react-toastify';
@@ -14,14 +14,12 @@ import { degenClaimAbi } from '../../utils/abi/degenClaimAbi';
 import { delay } from '../../utils/delay';
 import { useNavigate } from 'react-router-dom';
 import { formatAmountWithSuffix } from '../../utils/formats';
-import { useDarkMode } from '../../utils/hooks/useDarkMode';
 
 export function ClaimDegenPointsDialog({
   degenPoints,
   season,
   ...props
 }: { degenPoints: DegenPoints; season: DegenClaimSeason } & ResponsiveDialogProps) {
-  const prefersDarkMode = useDarkMode();
   const { address, chainId } = useAccount();
   const navigate = useNavigate();
 
@@ -140,7 +138,7 @@ export function ClaimDegenPointsDialog({
               fontWeight="bold"
               display="inline-flex"
               alignItems="center"
-              color={grey[prefersDarkMode ? 400 : 700]}>
+              color="text.secondary">
               Claim rewards with:{' '}
               <IoIosWallet fontSize="large" style={{ marginLeft: 4, marginRight: 2 }} />
               {shortenWalletAddressLabel2(degenPoints.wallet_address)}

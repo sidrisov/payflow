@@ -15,7 +15,7 @@ const LazyJar = lazy(() => import('./pages/Jar'));
 const LazyActions = lazy(() => import('./pages/Actions'));
 const LazyComposer = lazy(() => import('./pages/Composer'));
 const LazyPayment = lazy(() => import('./pages/Payment'));
-const LazyUseful = lazy(() => import('./pages/Useful'));
+const LazyEarn = lazy(() => import('./pages/Earn'));
 const LazyPage404 = lazy(() => import('./pages/Page404'));
 const LazyPreferredFlow = lazy(() => import('./pages/settings/PreferredFlowPage'));
 const LazyPreferredTokens = lazy(() => import('./pages/settings/PreferredTokensPage'));
@@ -57,7 +57,7 @@ export const appRouter = createBrowserRouter([
         ]
       },
       { path: 'actions', element: <LazyWrapper component={LazyActions} /> },
-      { path: 'useful', element: <LazyWrapper component={LazyUseful} /> },
+      { path: 'earn', element: <LazyWrapper component={LazyEarn} /> },
       { path: 'composer', element: <LazyWrapper component={LazyComposer} /> },
       { path: 'invite', element: <LazyWrapper component={LazyInvite} /> },
       {

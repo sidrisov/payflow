@@ -59,8 +59,8 @@ public class StorageController {
 	private LinkService linkService;
 
 	private static Payment getPayment(ValidatedFrameResponseMessage validateMessage,
-	                                  FarcasterUser gifteeUser, User clickedProfile,
-	                                  int numberOfUnits) {
+			FarcasterUser gifteeUser, User clickedProfile,
+			int numberOfUnits) {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val castHash = validateMessage.action().cast().hash();
 		// maybe would make sense to reference top cast instead (if it's a bot cast)
@@ -84,7 +84,7 @@ public class StorageController {
 
 	@PostMapping("/{fid}/submit")
 	public ResponseEntity<?> submit(@RequestBody FrameMessage frameMessage,
-	                                @PathVariable Integer fid) {
+			@PathVariable Integer fid) {
 		log.debug("Received submit gift storage message request: {}", frameMessage);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
@@ -137,7 +137,9 @@ public class StorageController {
 
 		log.debug("Gift storage payment intent saved: {}", payment);
 
-		val miniAppRedirect = validateMessage.action().signer().client().username().equals("warpcast") &&
+		val miniAppRedirect = /*
+								 * validateMessage.action().signer().client().username().equals("warpcast") &&
+								 */
 				MINIAPP_REDIRECT_ALLOWLIST.contains(interactor.username());
 		val paymentLink = linkService.paymentLink(payment, miniAppRedirect);
 		log.debug("Redirecting to {}", paymentLink);
@@ -156,7 +158,6 @@ public class StorageController {
 		}
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
 				validateMessage.action().url());
-
 
 		var castInteractorFid = validateMessage.action().interactor().fid();
 		val recipientText = Optional.ofNullable(validateMessage.action().input())
@@ -214,8 +215,8 @@ public class StorageController {
 
 		val baseUrl = "https://warpcast.com/~/compose";
 		val castText = URLEncoder.encode("""
-						Buy Farcaster Storage via @payflow frame
-						cc: @sinaver.eth /payflow""",
+				Buy Farcaster Storage via @payflow frame
+				cc: @sinaver.eth /payflow""",
 				StandardCharsets.UTF_8);
 		val embedUrl = String.format("https://frames.payflow.me/fid/%s/storage?v3", castInteractorFid);
 		val shareComposeDeeplink = String.format("%s?text=%s&embeds[]=%s", baseUrl, castText, embedUrl);

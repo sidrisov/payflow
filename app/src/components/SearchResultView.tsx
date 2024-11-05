@@ -1,4 +1,4 @@
-import { Button, Divider, Stack, Typography, useMediaQuery } from '@mui/material';
+import { Button, Divider, Stack, Typography } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
 import { ContactType } from '../types/ProfileType';
 import { useNavigate } from 'react-router-dom';
@@ -9,8 +9,6 @@ import {
 } from './dialogs/SearchIdentityDialog';
 import { useState } from 'react';
 import calculateMaxPages from '../utils/pagination';
-import { grey } from '@mui/material/colors';
-import { useDarkMode } from '../utils/hooks/useDarkMode';
 
 const pageSize = 30;
 
@@ -42,7 +40,6 @@ export function SearchResultView({
   updateIdentityCallback,
   identities
 }: SearchResultViewProps) {
-  const prefersDarkMode = useDarkMode();
   const navigate = useNavigate();
 
   function SearchResultProfileListView({
@@ -88,7 +85,7 @@ export function SearchResultView({
               ml={1}
               variant="caption"
               fontWeight={500}
-              color={grey[prefersDarkMode ? 400 : 700]}
+              color="text.secondary"
               textTransform="uppercase">
               {title}
               {showContactsNumber && ` (${mergedIdentities.length})`}

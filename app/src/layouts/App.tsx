@@ -67,7 +67,7 @@ export default function AppLayout({
     switch (location.pathname) {
       case '/actions':
         return 3;
-      case '/useful':
+      case '/earn':
         return 2;
       case `/${profile?.username}`:
         return profile ? 4 : 3;
@@ -267,7 +267,7 @@ export default function AppLayout({
                     )
                   }
                   onClick={async () => {
-                    navigate('/useful');
+                    navigate('/earn');
                     setOpenSearchIdentity(false);
                   }}
                 />
