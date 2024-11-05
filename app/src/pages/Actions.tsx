@@ -23,6 +23,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import { useNavigate } from 'react-router-dom';
 import { ProfileContext } from '../contexts/UserContext';
 import { FARCASTER_CLIENTS } from '../types/ProfileType';
+import { FarcasterClientAvatar } from '../components/avatars/FarcasterClientAvatar';
 
 interface Action {
   title: string;
@@ -151,11 +152,7 @@ export default function Actions() {
             title="Cast Actions"
             icon={
               preferredClient ? (
-                <Avatar
-                  variant="rounded"
-                  src={preferredClient.image}
-                  sx={{ width: 30, height: 30 }}
-                />
+                <FarcasterClientAvatar image={preferredClient.image} name={preferredClient.name} />
               ) : (
                 <FarcasterAvatar size={30} />
               )

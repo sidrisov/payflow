@@ -205,7 +205,7 @@ public class RewardsService {
 					val subscribers = subscriptionsService.fetchHypersubSubscribers(BASE_CHAIN_ID, subscriptionContract,
 							verifications);
 					val validSubscription = subscribers.stream()
-							.anyMatch(s -> Instant.now().isBefore(Instant.ofEpochSecond(s.purchaseExpiresAt()).plus(30, ChronoUnit.DAYS)) /*||
+							.anyMatch(s -> Instant.now().isBefore(Instant.ofEpochSecond(s.purchaseExpiresAt()).plus(45, ChronoUnit.DAYS)) /*||
 									Instant.now().isBefore(Instant.ofEpochSecond(s.expiresAt()).minus(*//*3 * 30*//*0, ChronoUnit.DAYS))*/);
 					if (!validSubscription) {
 						excludedFids.add(String.valueOf(cast.author().fid()));
