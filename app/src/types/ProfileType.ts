@@ -15,7 +15,7 @@ export interface ProfileType {
   preferredFarcasterClient?: FarcasterClient;
 }
 
-export type FarcasterClient = 'WARPCAST' | 'RECASTER';
+export type FarcasterClient = 'WARPCAST' | 'RECASTER' | 'FARQUEST';
 
 export const FARCASTER_CLIENTS = [
   {
@@ -31,6 +31,13 @@ export const FARCASTER_CLIENTS = [
     description: 'Personalize your Farcaster journey',
     url: 'https://recaster.org',
     image: '/clients/recaster.png'
+  },
+  {
+    id: 'farquest',
+    name: 'Farquest',
+    description: 'The best way to explore Farcaster',
+    url: 'https://far.quest',
+    image: '/clients/farquest.png'
   }
 ];
 
