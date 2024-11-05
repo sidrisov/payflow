@@ -117,7 +117,7 @@ public class PaymentComposerController {
 				UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 						.path("/composer")
 						.queryParam("mini")
-						.queryParam("action", "useful")
+						.queryParam("action", "earn")
 						.queryParam("tab", action)
 						.queryParam("access_token", accessToken)
 						.build()

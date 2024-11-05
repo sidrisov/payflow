@@ -89,16 +89,15 @@ export const useFarcasterTransfer = () => {
       const hash: Hash = await new Promise((resolve, reject) => {
         const handleMessage = (event: MessageEvent<TransactionResponse>) => {
           console.log('Received message: ', event);
-          toast.info('Received message: ' + JSON.stringify(event));
 
           const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
 
           // Check if this is a JSON-RPC response matching our request
           if (data.jsonrpc === '2.0' && data.id === message.id && !('params' in data.result)) {
-            if (event.source === window || event.origin === window.location.origin) {
+            /*             if (event.source === window || event.origin === window.location.origin) {
               console.log('Ignoring message from our own window');
               return;
-            }
+            } */
 
             window.removeEventListener('message', handleMessage);
 

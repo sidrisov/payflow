@@ -3,10 +3,8 @@ import { FlowType } from '../../types/FlowType';
 import { shortenWalletAddressLabel } from '../../utils/address';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useSetActiveWallet } from '@privy-io/wagmi';
-import { grey } from '@mui/material/colors';
 import AddressAvatar from '../avatars/AddressAvatar';
 import { useEffect } from 'react';
-import { useDarkMode } from '../../utils/hooks/useDarkMode';
 
 export function SwitchFlowSignerSection({
   flow,
@@ -15,8 +13,6 @@ export function SwitchFlowSignerSection({
   onSwitch?: () => void;
   flow: FlowType;
 }) {
-  const prefersDarkMode = useDarkMode();
-
   const { authenticated, ready, connectWallet, login, logout } = usePrivy();
   const { wallets } = useWallets();
   const { setActiveWallet } = useSetActiveWallet();
@@ -74,7 +70,7 @@ export function SwitchFlowSignerSection({
         <Stack direction="row" spacing={1} alignItems="center">
           <Avatar src="/privy.png" sx={{ width: 40, height: 40 }} />
           <Stack spacing={0.1} alignItems="flex-start">
-            <Typography fontSize={15} color={grey[prefersDarkMode ? 400 : 700]}>
+            <Typography fontSize={15} color="text.secondary">
               Connect Social Signer (Privy)
             </Typography>
             <Typography fontSize={16} fontWeight="bold">
@@ -86,7 +82,7 @@ export function SwitchFlowSignerSection({
         <Stack direction="row" spacing={1} alignItems="center">
           <AddressAvatar address={flow.signer} />
           <Stack spacing={0.1} alignItems="flex-start">
-            <Typography fontSize={15} color={grey[prefersDarkMode ? 400 : 700]}>
+            <Typography fontSize={15} color="text.secondary">
               Connect Wallet Signer
             </Typography>
             <Typography fontSize={16} fontWeight="bold">

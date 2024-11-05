@@ -8,8 +8,6 @@ import {
   Typography,
   Box
 } from '@mui/material';
-import { grey } from '@mui/material/colors';
-import { useDarkMode } from '../../utils/hooks/useDarkMode';
 
 export default function InfoCard({
   title,
@@ -58,7 +56,6 @@ export default function InfoCard({
 }
 
 export function InfoStack({ title, children, ...props }: StackProps & { title: string }) {
-  const prefersDarkMode = useDarkMode();
   return (
     <Stack
       p={1}
@@ -71,11 +68,7 @@ export function InfoStack({ title, children, ...props }: StackProps & { title: s
         alignItems: 'center'
       }}
       {...props}>
-      <Typography
-        fontSize={12}
-        fontWeight="bold"
-        color={grey[prefersDarkMode ? 400 : 700]}
-        textTransform="uppercase">
+      <Typography fontSize={12} fontWeight="bold" color="text.secondary" textTransform="uppercase">
         {title}
       </Typography>
       {children}

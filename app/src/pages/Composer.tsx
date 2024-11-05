@@ -15,7 +15,6 @@ import UsefulComposerActionDialog from '../components/dialogs/UsefulComposerActi
 import ContributionJarComposerDialog from '../components/dialogs/ContributionJarComposerDialog';
 import { RiApps2Line } from 'react-icons/ri';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
-import { MdPayments } from 'react-icons/md';
 import ActivityComposerActionDialog from '../components/dialogs/ActivityComposerActionDialog';
 import { TbArrowsDoubleNeSw } from 'react-icons/tb';
 
@@ -83,10 +82,10 @@ export default function Composer() {
                 startIcon={<ElectricBolt sx={{ width: 25, height: 25 }} />}
               />
               <CastActionButton
-                title="Useful"
-                description="Moxie / Degen Claim"
+                title="Earn"
+                description="Claimables and other earnings"
                 onClick={async () => {
-                  setOpenComposerAction('useful');
+                  setOpenComposerAction('earn');
                 }}
                 startIcon={<PiPersonSimpleRunBold size={25} />}
               />
@@ -148,7 +147,7 @@ export default function Composer() {
             }}
           />
         )}
-        {openComposerAction === 'useful' && profile && (
+        {(openComposerAction === 'useful' || openComposerAction === 'earn') && profile && (
           <UsefulComposerActionDialog
             open={true}
             onClose={() => {
