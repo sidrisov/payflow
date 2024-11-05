@@ -93,7 +93,7 @@ export const useFarcasterTransfer = () => {
           const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
 
           // Check if this is a JSON-RPC response matching our request
-          if (data.jsonrpc === '2.0' && data.id === message.id && !('params' in data.result)) {
+          if (data.jsonrpc === '2.0' && data.id === message.id && !('params' in data)) {
             /*             if (event.source === window || event.origin === window.location.origin) {
               console.log('Ignoring message from our own window');
               return;
