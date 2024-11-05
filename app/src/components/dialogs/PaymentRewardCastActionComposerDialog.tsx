@@ -10,6 +10,7 @@ import { ProfileContext } from '../../contexts/UserContext';
 import { Token } from '../../utils/erc20contracts';
 import { base } from 'viem/chains';
 import { FaCoins, FaDollarSign } from 'react-icons/fa';
+import { FARCASTER_CLIENTS } from '../../types/ProfileType';
 
 export default function PaymentRewardCastActionComposerDialog({
   closeStateCallback,
@@ -88,8 +89,12 @@ export default function PaymentRewardCastActionComposerDialog({
     extraParams
   ]);
 
+  const preferredClient = FARCASTER_CLIENTS.find(
+    (c) => c.id === (profile?.preferredFarcasterClient?.toLowerCase() || 'warpcast')
+  );
+
   const warpcastInstallActionUrl = useMemo(() => {
-    const baseUrl = 'https://warpcast.com/~/add-cast-action';
+    const baseUrl = `${preferredClient?.url}/~/add-cast-action`;
     const encodedActionUrl = encodeURIComponent(actionUrl);
     return `${baseUrl}?url=${encodedActionUrl}`;
   }, [actionUrl]);
@@ -164,7 +169,7 @@ export default function PaymentRewardCastActionComposerDialog({
           sx={{ borderRadius: 5 }}
           href={warpcastInstallActionUrl}
           target="_blank">
-          Add To Warpcast
+          Add To {preferredClient?.name}
         </Button>
       </Stack>
     </ResponsiveDialog>
