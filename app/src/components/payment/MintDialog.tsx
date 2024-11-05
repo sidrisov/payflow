@@ -18,7 +18,7 @@ import { FarcasterRecipientField } from '../FarcasterRecipientField';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { PaymentType } from '../../types/PaymentType';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useContext } from 'react';
 import { Token } from '../../utils/erc20contracts';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
@@ -45,6 +45,7 @@ import { QuantitySelector } from './QuantitySelector';
 import { BasePaymentDialog } from './BasePaymentDialog';
 import { FlowSelector } from './FlowSelector';
 import { Hash } from 'viem';
+import { ProfileContext } from '../../contexts/UserContext';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {
@@ -136,7 +137,7 @@ export default function MintDialog({
   closeStateCallback,
   ...props
 }: MintDialogProps) {
-  const miniApp = useSearchParams()[0].get('view') === 'embedded';
+  const { isMiniApp } = useContext(ProfileContext);
 
   const [selectedFlow, setSelectedFlow] = useState<FlowType>(
     sender.identity.profile?.defaultFlow ?? (sender.identity.profile?.flows?.[0] as FlowType)
@@ -251,7 +252,7 @@ export default function MintDialog({
       <Button
         fullWidth
         onClick={() => {
-          if (miniApp) {
+          if (isMiniApp) {
             window.parent.postMessage(createCastPostMessage(text, shareFrameUrl, channelKey), '*');
           } else {
             window.open(createComposeCastUrl(text, shareFrameUrl, channelKey), '_blank');

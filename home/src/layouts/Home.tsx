@@ -85,7 +85,7 @@ export default function Home() {
           }}>
           Connect
           <ArrowForward fontSize="small" />
-          Discover
+          Earn
           <ArrowForward fontSize="small" />
           Pay
         </Typography>
