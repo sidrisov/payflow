@@ -120,8 +120,31 @@ export function NetworkTokenSelector({
       return;
     }
 
+    const recentlySelectedToken = localStorage.getItem('payflow:token:recent');
+    if (recentlySelectedToken) {
+      const parsedToken = JSON.parse(recentlySelectedToken);
+      const matchingToken = compatibleTokens.find(
+        (t) => t.id === parsedToken.id && t.chainId === parsedToken.chainId
+      );
+      if (matchingToken) {
+        setPaymentToken(matchingToken);
+        return;
+      }
+    }
     setPaymentToken(compatibleTokens[0]);
   }, [paymentToken, compatibleTokens]);
+
+  useEffect(() => {
+    if (paymentToken) {
+      localStorage.setItem(
+        'payflow:token:recent',
+        JSON.stringify({
+          id: paymentToken.id,
+          chainId: paymentToken.chainId
+        })
+      );
+    }
+  }, [paymentToken]);
 
   console.log('Compatible tokens: ', compatibleTokens);
   console.log('Selected token: ', paymentToken);
