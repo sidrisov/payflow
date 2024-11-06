@@ -50,7 +50,6 @@ export function NetworkTokenSelector({
   const { profile } = useContext(ProfileContext);
 
   const [expand, setExpand] = useState<boolean>(expandSection);
-  const [maxBalance, setMaxBalance] = useState<string>('0.0');
 
   const { isFetched: isBalanceFetched, data: balances } = useAssetBalances(
     showBalance && compatibleWallets ? getFlowWalletsAssets(compatibleWallets) : []
@@ -97,7 +96,7 @@ export function NetworkTokenSelector({
         })();
   }, [crossChainMode, compatibleWallets, enabledChainCurrencies, balances]);
 
-  useMemo(async () => {
+  const selectedTokenBalance = useMemo(() => {
     if (showBalance) {
       if (isBalanceFetched && balances) {
         const paymentTokenBalance = balances.find(
@@ -110,7 +109,7 @@ export function NetworkTokenSelector({
             )
           : 0;
 
-        setMaxBalance(normalizeNumberPrecision(maxBalance));
+        return normalizeNumberPrecision(maxBalance);
       }
     }
   }, [isBalanceFetched, paymentToken, balances]);
@@ -273,7 +272,7 @@ export function NetworkTokenSelector({
     <>
       <Chip
         icon={
-          paymentToken ? (
+          paymentToken && isBalanceFetched ? (
             <Badge
               overlap="circular"
               anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
@@ -289,9 +288,10 @@ export function NetworkTokenSelector({
         deleteIcon={<IoIosArrowDown />}
         onDelete={paymentTokenSelectable ? () => setExpand(true) : undefined}
         label={
-          paymentToken ? (
+          paymentToken && isBalanceFetched ? (
             <Typography variant="subtitle2" textTransform="uppercase">
-              {showBalance ? formatAmountWithSuffix(maxBalance) : ''} {paymentToken.id}
+              {showBalance ? formatAmountWithSuffix(selectedTokenBalance ?? '0') : ''}{' '}
+              {paymentToken.id}
             </Typography>
           ) : (
             <Typography variant="subtitle2">Loading</Typography>
