@@ -1,7 +1,9 @@
 import { Address } from 'viem';
 import { FlowType } from './FlowType';
 
-export interface ProfileType {
+export const DEFAULT_FARCASTER_CLIENT: FarcasterClient = 'WARPCAST';
+
+export type ProfileType = {
   identity: Address;
   signer?: Address;
   createdDate: string;
@@ -13,7 +15,7 @@ export interface ProfileType {
   identityInviteLimit: number;
   preferredTokens?: string[];
   preferredFarcasterClient?: FarcasterClient;
-}
+};
 
 export type FarcasterClient = 'WARPCAST' | 'RECASTER' | 'FARQUEST';
 

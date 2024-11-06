@@ -8,22 +8,22 @@ import {
   Box,
   Tooltip,
   IconButton,
-  Avatar
+  Badge
 } from '@mui/material';
 import PaymentRewardCastActionComposerDialog from '../components/dialogs/PaymentRewardCastActionComposerDialog';
 import { AutoAwesome, Interests, PersonAdd, Star } from '@mui/icons-material';
 import { PiTipJar } from 'react-icons/pi';
 import { GrStorage } from 'react-icons/gr';
 import CastActionButton from '../components/buttons/CastActionButton';
-import FarcasterAvatar from '../components/avatars/FarcasterAvatar';
 import { FaRegClock } from 'react-icons/fa';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { GoZap } from 'react-icons/go';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { useNavigate } from 'react-router-dom';
 import { ProfileContext } from '../contexts/UserContext';
-import { FARCASTER_CLIENTS } from '../types/ProfileType';
+import { DEFAULT_FARCASTER_CLIENT, FARCASTER_CLIENTS } from '../types/ProfileType';
 import { FarcasterClientAvatar } from '../components/avatars/FarcasterClientAvatar';
+import { SiFarcaster } from 'react-icons/si';
 
 interface Action {
   title: string;
@@ -42,15 +42,35 @@ interface ActionCategoryProps {
 
 const ActionCategory: React.FC<ActionCategoryProps> = ({ title, icon, actions }) => {
   const navigate = useNavigate();
+
+  const { profile } = useContext(ProfileContext);
+
+  const preferredClient = FARCASTER_CLIENTS.find(
+    (c) => c.id === (profile?.preferredFarcasterClient || DEFAULT_FARCASTER_CLIENT).toLowerCase()
+  );
+
   return (
     <Stack alignItems="center" spacing={2}>
       <Stack direction="row" spacing={1} alignItems="center">
         {icon}
         <Typography variant="h6">{title}</Typography>
 
-        <IconButton size="small" onClick={() => navigate('/settings/farcaster/client')}>
-          <SettingsIcon />
-        </IconButton>
+        <Badge
+          overlap="circular"
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          badgeContent={
+            preferredClient && (
+              <FarcasterClientAvatar
+                image={preferredClient.image}
+                name={preferredClient.name}
+                sx={{ width: 20, height: 20 }}
+              />
+            )
+          }>
+          <IconButton size="small" onClick={() => navigate('/settings/farcaster/client')}>
+            <SettingsIcon />
+          </IconButton>
+        </Badge>
       </Stack>
       <Grid2
         container
@@ -78,7 +98,7 @@ export default function Actions() {
   const { profile } = useContext(ProfileContext);
 
   const preferredClient = FARCASTER_CLIENTS.find(
-    (c) => c.id === (profile?.preferredFarcasterClient?.toLowerCase() || 'warpcast')
+    (c) => c.id === (profile?.preferredFarcasterClient || DEFAULT_FARCASTER_CLIENT).toLowerCase()
   );
   const BASE_URL = `${preferredClient?.url}/~/add-cast-action?url=https://api.payflow.me/api/farcaster/actions`;
 
@@ -150,13 +170,7 @@ export default function Actions() {
           borderColor="divider">
           <ActionCategory
             title="Cast Actions"
-            icon={
-              preferredClient ? (
-                <FarcasterClientAvatar image={preferredClient.image} name={preferredClient.name} />
-              ) : (
-                <FarcasterAvatar size={30} />
-              )
-            }
+            icon={<SiFarcaster size={30} />}
             actions={farcasterActions}
           />
 
