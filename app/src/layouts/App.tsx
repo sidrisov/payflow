@@ -52,7 +52,15 @@ export default function AppLayout({
   const isMobile = useMobile();
   const navigate = useNavigate();
 
-  const isMiniApp = useSearchParams()[0].get('mini') !== null;
+  const [searchParams] = useSearchParams();
+  const isMiniApp = (() => {
+    const miniParam = searchParams.get('mini');
+    if (miniParam !== null) {
+      localStorage.setItem('payflow.mini', 'true');
+      return true;
+    }
+    return localStorage.getItem('payflow.mini') === 'true';
+  })();
   const enablePullToRefresh = usePwa() || isMiniApp;
 
   const bottomToolbarEnabled =
