@@ -83,7 +83,7 @@ export const UpdateVersionPrompt = () => {
       sx={{
         borderStyle: 'dashed',
         borderColor: 'divider',
-        zIndex: 1600 // always display on top
+        zIndex: 1600
       }}>
       <NewVersionNotice />
       <UpdateVersionButton />

@@ -109,7 +109,7 @@ export function DegenInfoCard() {
   return (
     <>
       {season && (
-        <InfoStack title={`Degen ${season.name} Points`}>
+        <InfoStack title={`Degen - ${season.name} Points`}>
           <Stack
             direction="row"
             minWidth={200}
@@ -171,7 +171,7 @@ export function DegenInfoCard() {
           </Stack>
         </InfoStack>
       )}
-      <InfoStack title="Degen Everyday Allowance">
+      <InfoStack title="Degen - Everyday Allowance">
         {isFetchingAllowance || !fid ? (
           <Skeleton variant="rectangular" height={55} width={100} sx={{ borderRadius: '15px' }} />
         ) : allowance ? (

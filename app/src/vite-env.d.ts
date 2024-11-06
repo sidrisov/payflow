@@ -33,3 +33,11 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+declare const __BUILD_INFO__: {
+  version: string;
+  commitHash: string;
+  buildTime: string;
+  vercelEnv: string;
+  vercelGitCommitRef: string;
+};

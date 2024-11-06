@@ -126,47 +126,44 @@ export default function AppLayout({
           }}>
           <HideOnScroll>
             <AppBar position="sticky" color="transparent" elevation={0}>
-              {needRefresh ? (
-                <UpdateVersionPrompt />
-              ) : (
-                showToolbar && (
-                  <Toolbar sx={{ padding: 0 }}>
-                    <Box
-                      display="flex"
-                      flexDirection="row"
-                      alignItems="center"
-                      justifyContent="space-between"
-                      flexGrow={1}>
-                      <Logo p="5px" />
-                      {profile ? (
-                        <IconButton
-                          size="small"
-                          onClick={async (event) => {
-                            setProfileMenuAnchorEl(event.currentTarget);
-                            setOpenProfileMenu(true);
-                          }}>
-                          <ProfileAvatar
-                            profile={profile as ProfileType}
-                            sx={{ width: 36, height: 36 }}
-                          />
-                        </IconButton>
-                      ) : (
-                        <Button
-                          color="inherit"
-                          size="medium"
-                          href={`${DAPP_URL}/connect`}
-                          sx={{
-                            borderRadius: 5,
-                            fontWeight: 'bold',
-                            fontSize: 18,
-                            textTransform: 'none'
-                          }}>
-                          sign in
-                        </Button>
-                      )}
-                    </Box>
-                  </Toolbar>
-                )
+              {needRefresh && <UpdateVersionPrompt />}
+              {showToolbar && (
+                <Toolbar sx={{ padding: 0 }}>
+                  <Box
+                    display="flex"
+                    flexDirection="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    flexGrow={1}>
+                    <Logo p="5px" />
+                    {profile ? (
+                      <IconButton
+                        size="small"
+                        onClick={async (event) => {
+                          setProfileMenuAnchorEl(event.currentTarget);
+                          setOpenProfileMenu(true);
+                        }}>
+                        <ProfileAvatar
+                          profile={profile as ProfileType}
+                          sx={{ width: 36, height: 36 }}
+                        />
+                      </IconButton>
+                    ) : (
+                      <Button
+                        color="inherit"
+                        size="medium"
+                        href={`${DAPP_URL}/connect`}
+                        sx={{
+                          borderRadius: 5,
+                          fontWeight: 'bold',
+                          fontSize: 18,
+                          textTransform: 'none'
+                        }}>
+                        sign in
+                      </Button>
+                    )}
+                  </Box>
+                </Toolbar>
               )}
             </AppBar>
           </HideOnScroll>

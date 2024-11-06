@@ -5,7 +5,8 @@ import {
   Menu,
   MenuItem,
   MenuList,
-  MenuProps
+  MenuProps,
+  Typography
 } from '@mui/material';
 import { ProfileType } from '../../types/ProfileType';
 import { useNavigate } from 'react-router-dom';
@@ -30,9 +31,10 @@ import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { usePrivy } from '@privy-io/react-auth';
 import { DeviceInfoDialog } from '../DeviceInfoDialog';
 import { useState } from 'react';
-import { FaCoins } from 'react-icons/fa6';
-import { TbCoins } from 'react-icons/tb';
 import { SiFarcaster } from 'react-icons/si';
+import { MdSecurityUpdateGood, MdSecurityUpdate } from 'react-icons/md';
+import { useRegisterSW } from 'virtual:pwa-register/react';
+import { green } from '@mui/material/colors';
 
 export function ProfileMenu({
   profile,
@@ -47,6 +49,12 @@ export function ProfileMenu({
   const { logout } = usePrivy();
 
   const [openDeviceInfo, setOpenDeviceInfo] = useState(false);
+  const [needRefresh, setNeedRefresh] = useState(false);
+  const { updateServiceWorker } = useRegisterSW({
+    onNeedRefresh() {
+      setNeedRefresh(true);
+    }
+  });
 
   const handleShowDeviceInfo = () => {
     setOpenDeviceInfo(true);
@@ -156,11 +164,49 @@ export function ProfileMenu({
             </ListItemIcon>
             FAQ
           </MenuItem>
+          <Divider />
           <MenuItem onClick={handleShowDeviceInfo}>
             <ListItemIcon>
               <InfoOutlined fontSize="small" />
             </ListItemIcon>
             <ListItemText>Device Info</ListItemText>
+          </MenuItem>
+          <MenuItem
+            disableRipple={!needRefresh}
+            onClick={async () => {
+              if (needRefresh) {
+                await updateServiceWorker(true);
+              }
+            }}
+            sx={{
+              ...(needRefresh
+                ? {
+                    border: 1,
+                    borderColor: green.A700,
+                    borderStyle: 'dashed',
+                    m: 0.5,
+                    p: '4px 10px',
+                    borderRadius: 3
+                  }
+                : {
+                    cursor: 'default',
+                    '&:hover': {
+                      backgroundColor: 'transparent'
+                    }
+                  })
+            }}>
+            <ListItemIcon>
+              {needRefresh ? <MdSecurityUpdate size={20} /> : <MdSecurityUpdateGood size={20} />}
+            </ListItemIcon>
+            <ListItemText>
+              v{__BUILD_INFO__.version}{' '}
+              {__BUILD_INFO__.vercelEnv !== 'production' && ` • ${__BUILD_INFO__.vercelEnv}`}
+              <br />
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                {__BUILD_INFO__.commitHash} •{' '}
+                {new Date(__BUILD_INFO__.buildTime).toLocaleDateString()}
+              </Typography>
+            </ListItemText>
           </MenuItem>
           <Divider />
           <MenuItem

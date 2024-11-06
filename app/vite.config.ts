@@ -4,8 +4,9 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { RuntimeCaching } from 'workbox-build';
 import { defineConfig, loadEnv } from 'vite';
-import { addSeconds, addMinutes, addHours, addDays, addWeeks } from 'date-fns';
+import { addSeconds, addMinutes, addHours, addDays, addWeeks, format } from 'date-fns';
 import { WorkboxPlugin } from 'workbox-core/types';
+import { execSync } from 'child_process';
 
 // pass empty url if .env not available (for prodcution build should be poluted)
 const env = loadEnv('all', process.cwd());
@@ -44,6 +45,24 @@ function createCache(
     }
   };
 }
+
+const getGitCommitHash = () => {
+  try {
+    return execSync('git rev-parse --short HEAD').toString().trim();
+  } catch {
+    return 'unknown';
+  }
+};
+
+const getBuildTime = () => format(new Date(), 'dd/MM/yyyy');
+
+const getVersionInfo = () => ({
+  version: process.env.npm_package_version || '0.0.0',
+  commitHash: getGitCommitHash(),
+  buildTime: getBuildTime(),
+  vercelEnv: process.env.VERCEL_ENV || 'development',
+  vercelGitCommitRef: process.env.VERCEL_GIT_COMMIT_REF || ''
+});
 
 export default defineConfig({
   // specify same port for dev as for preview
@@ -237,5 +256,9 @@ export default defineConfig({
         ]
       }
     })
-  ]
+  ],
+
+  define: {
+    __BUILD_INFO__: JSON.stringify(getVersionInfo())
+  }
 });

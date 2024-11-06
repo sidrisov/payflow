@@ -27,7 +27,7 @@ export function MoxieInfoCard() {
 
   return (
     <>
-      <InfoStack title="Moxie Claimable / Total Rewards">
+      <InfoStack title="Moxie - Everyday / Total Rewards">
         {isFetchingRewards || !fid ? (
           <Skeleton variant="rectangular" height={55} width={100} sx={{ borderRadius: '15px' }} />
         ) : rewards ? (
