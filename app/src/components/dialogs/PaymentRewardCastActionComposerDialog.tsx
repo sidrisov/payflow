@@ -10,7 +10,7 @@ import { ProfileContext } from '../../contexts/UserContext';
 import { Token } from '../../utils/erc20contracts';
 import { base } from 'viem/chains';
 import { FaCoins, FaDollarSign } from 'react-icons/fa';
-import { FARCASTER_CLIENTS } from '../../types/ProfileType';
+import { DEFAULT_FARCASTER_CLIENT, FARCASTER_CLIENTS } from '../../types/ProfileType';
 
 export default function PaymentRewardCastActionComposerDialog({
   closeStateCallback,
@@ -90,7 +90,7 @@ export default function PaymentRewardCastActionComposerDialog({
   ]);
 
   const preferredClient = FARCASTER_CLIENTS.find(
-    (c) => c.id === (profile?.preferredFarcasterClient?.toLowerCase() || 'warpcast')
+    (c) => c.id === (profile?.preferredFarcasterClient || DEFAULT_FARCASTER_CLIENT).toLowerCase()
   );
 
   const warpcastInstallActionUrl = useMemo(() => {
