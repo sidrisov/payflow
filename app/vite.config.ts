@@ -48,7 +48,7 @@ function createCache(
 
 const getGitCommitHash = () => {
   try {
-    return execSync('git rev-parse --short HEAD').toString().trim();
+    return execSync('git rev-parse --short=6 HEAD').toString().trim();
   } catch {
     return 'unknown';
   }
