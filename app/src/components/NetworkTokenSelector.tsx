@@ -295,7 +295,7 @@ export function NetworkTokenSelector({
     <>
       <Chip
         icon={
-          paymentToken && isBalanceFetched ? (
+          paymentToken && (!showBalance || isBalanceFetched) ? (
             <Badge
               overlap="circular"
               anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
@@ -311,7 +311,7 @@ export function NetworkTokenSelector({
         deleteIcon={<IoIosArrowDown />}
         onDelete={paymentTokenSelectable ? () => setExpand(true) : undefined}
         label={
-          paymentToken && isBalanceFetched ? (
+          paymentToken && (!showBalance || isBalanceFetched) ? (
             <Typography variant="subtitle2" textTransform="uppercase">
               {showBalance ? formatAmountWithSuffix(selectedTokenBalance ?? '0') : ''}{' '}
               {paymentToken.id}
