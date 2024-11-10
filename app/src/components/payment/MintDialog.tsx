@@ -29,23 +29,20 @@ import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
 import { MintMetadata, mintProviderNameMap } from '../../utils/mint';
 import { useMintPaymentTx } from '../../utils/hooks/useMintPaymentTx';
 import { PayButton, PaymentSuccess } from '../buttons/PayButton';
-import { useMobile } from '../../utils/hooks/useMobile';
 import PaymentSuccessDialog from '../dialogs/PaymentSuccessDialog';
 import { getReceiptUrl } from '../../utils/receipts';
-import React from 'react';
 import { SiFarcaster } from 'react-icons/si';
 import { TbCopy } from 'react-icons/tb';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { createShareUrls } from '../../utils/mint';
 import { useDebounce } from 'use-debounce';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { createCastPostMessage, createComposeCastUrl } from '../../utils/warpcast';
-import { useSearchParams } from 'react-router-dom';
 import { QuantitySelector } from './QuantitySelector';
 import { BasePaymentDialog } from './BasePaymentDialog';
 import { FlowSelector } from './FlowSelector';
 import { Hash } from 'viem';
 import { ProfileContext } from '../../contexts/UserContext';
+import { CommentField } from './CommentField';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {
@@ -56,76 +53,6 @@ export type MintDialogProps = DialogProps &
     mint: MintMetadata;
     alwaysShowBackButton?: boolean;
   };
-
-type CommentFieldProps = {
-  disabled: boolean;
-  comment: string;
-  setComment: React.Dispatch<React.SetStateAction<string>>;
-  zoraCommentEnabled: boolean;
-};
-
-const CommentField: React.FC<CommentFieldProps> = ({
-  disabled,
-  comment,
-  setComment,
-  zoraCommentEnabled
-}) => {
-  const isMobile = useMobile();
-  const [showTooltip, setShowTooltip] = useState(false);
-
-  return (
-    <TextField
-      // TODO: also, check if not in pending payment state
-      disabled={disabled}
-      fullWidth
-      variant="outlined"
-      size="small"
-      placeholder="Add a comment..."
-      value={comment}
-      onChange={(e) => setComment(e.target.value)}
-      multiline
-      sx={{
-        mt: 1,
-        '& .MuiOutlinedInput-root': {
-          borderRadius: 5,
-          fontSize: 14,
-          height: 'auto',
-          '&.Mui-focused fieldset': {
-            border: 1,
-            borderColor: 'inherit'
-          }
-        },
-        '& .MuiInputBase-input': {
-          padding: '8px 12px'
-        }
-      }}
-      slotProps={{
-        input: {
-          endAdornment: (
-            <Tooltip
-              title={
-                zoraCommentEnabled
-                  ? 'Comment will be added to payflow and zora.co'
-                  : 'Comment will be added only to payflow'
-              }
-              arrow
-              open={isMobile ? showTooltip : undefined}
-              disableFocusListener={isMobile}
-              disableHoverListener={isMobile}
-              disableTouchListener={isMobile}>
-              <IconButton
-                disabled={disabled}
-                size="small"
-                onClick={() => isMobile && setShowTooltip(!showTooltip)}>
-                <InfoOutlinedIcon fontSize="inherit" />
-              </IconButton>
-            </Tooltip>
-          )
-        }
-      }}
-    />
-  );
-};
 
 export default function MintDialog({
   alwaysShowBackButton = false,
@@ -411,19 +338,21 @@ export default function MintDialog({
             {isMintPaymentTxError &&
               (mintPaymentTxError?.message ?? 'Failed to load payment transaction')}
             {(paymentOptions?.length === 0 || isPaymentOptionsError) &&
-              (paymentOptionsError?.message ??
-                "You don't have any balance to cover mint cost. Switch to a different payment flow!")}
+              (paymentOptionsError?.message ?? 'Balance not enough. Switch payment flow!')}
           </Typography>
         )}
 
-        <CommentField
-          disabled={
-            !mintStatus || mintStatus !== 'live' || isMintPaymentTxError || isPaymentOptionsError
-          }
-          comment={comment}
-          setComment={setComment}
-          zoraCommentEnabled={zoraCommentEnabled}
-        />
+        <Box width={150}>
+          <CommentField
+            disabled={
+              !mintStatus || mintStatus !== 'live' || isMintPaymentTxError || isPaymentOptionsError
+            }
+            comment={comment}
+            setComment={setComment}
+            /*             zoraCommentEnabled={zoraCommentEnabled}
+             */
+          />
+        </Box>
       </Stack>
       <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
         <FlowSelector

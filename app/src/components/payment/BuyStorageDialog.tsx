@@ -161,7 +161,7 @@ export default function BuyStorageDialog({
           <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
             {isPaymentOptionsError
               ? 'Failed to fetch payment options. Please try again.'
-              : "You don't have any balance to cover storage cost. Switch to a different payment flow!"}
+              : 'Balance not enough. Switch payment flow!'}
           </Typography>
         )}
       </Stack>

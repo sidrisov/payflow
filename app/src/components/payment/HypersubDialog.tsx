@@ -264,8 +264,7 @@ export default function HypersubDialog({
             {isHypersubPaymentTxError &&
               (hypersubPaymentTxError?.message ?? 'Failed to load payment transaction')}
             {(paymentOptions?.length === 0 || isPaymentOptionsError) &&
-              (paymentOptionsError?.message ??
-                "You don't have any balance to cover subscription cost. Switch to a different payment flow!")}
+              (paymentOptionsError?.message ?? 'Balance not enough. Switch payment flow!')}
           </Typography>
         )}
       </Stack>

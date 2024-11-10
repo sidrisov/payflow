@@ -29,7 +29,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
-import static ua.sinaver.web3.payflow.config.PayflowConfig.MINIAPP_REDIRECT_ALLOWLIST;
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.DEFAULT_HTML_RESPONSE;
 import static ua.sinaver.web3.payflow.service.TokenService.BASE_CHAIN_ID;
 
@@ -54,10 +53,10 @@ public class FanTokenController {
 	private FanTokenService fanTokenService;
 
 	private static Payment getFanTokenPayment(ValidatedFrameResponseMessage validateMessage,
-			User user,
-			Integer receiverFid,
-			String receiverAddress,
-			FanToken fanToken) {
+	                                          User user,
+	                                          Integer receiverFid,
+	                                          String receiverAddress,
+	                                          FanToken fanToken) {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val castHash = validateMessage.action().cast().hash();
 		val sourceRef = String.format("https://warpcast.com/%s/%s",
@@ -77,7 +76,7 @@ public class FanTokenController {
 
 	@PostMapping("/{name}/submit")
 	public ResponseEntity<?> submit(@RequestBody FrameMessage frameMessage,
-			@PathVariable String name) {
+	                                @PathVariable String name) {
 		log.debug("Received submit buy fan token {} message request: {}", name, frameMessage);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
@@ -193,11 +192,7 @@ public class FanTokenController {
 		paymentRepository.saveAll(payments);
 		log.debug("Mint payment intents saved: {}", payments);
 
-		val miniAppRedirect = /*
-								 * validateMessage.action().signer().client().username().equals("warpcast") &&
-								 */
-				MINIAPP_REDIRECT_ALLOWLIST.contains(interactor.username());
-		val paymentLink = linkService.paymentLink(payments.getFirst(), miniAppRedirect);
+		val paymentLink = linkService.paymentLink(payments.getFirst(), validateMessage, true);
 		log.debug("Redirecting to {}", paymentLink);
 		return ResponseEntity.status(HttpStatus.FOUND).location(paymentLink).build();
 	}

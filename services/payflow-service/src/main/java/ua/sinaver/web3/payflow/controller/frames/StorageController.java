@@ -29,7 +29,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-import static ua.sinaver.web3.payflow.config.PayflowConfig.MINIAPP_REDIRECT_ALLOWLIST;
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.DEFAULT_HTML_RESPONSE;
 import static ua.sinaver.web3.payflow.service.TokenService.ETH_TOKEN;
 import static ua.sinaver.web3.payflow.service.TokenService.OP_CHAIN_ID;
@@ -59,8 +58,8 @@ public class StorageController {
 	private LinkService linkService;
 
 	private static Payment getPayment(ValidatedFrameResponseMessage validateMessage,
-			FarcasterUser gifteeUser, User clickedProfile,
-			int numberOfUnits) {
+	                                  FarcasterUser gifteeUser, User clickedProfile,
+	                                  int numberOfUnits) {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val castHash = validateMessage.action().cast().hash();
 		// maybe would make sense to reference top cast instead (if it's a bot cast)
@@ -84,7 +83,7 @@ public class StorageController {
 
 	@PostMapping("/{fid}/submit")
 	public ResponseEntity<?> submit(@RequestBody FrameMessage frameMessage,
-			@PathVariable Integer fid) {
+	                                @PathVariable Integer fid) {
 		log.debug("Received submit gift storage message request: {}", frameMessage);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
@@ -137,11 +136,7 @@ public class StorageController {
 
 		log.debug("Gift storage payment intent saved: {}", payment);
 
-		val miniAppRedirect = /*
-								 * validateMessage.action().signer().client().username().equals("warpcast") &&
-								 */
-				MINIAPP_REDIRECT_ALLOWLIST.contains(interactor.username());
-		val paymentLink = linkService.paymentLink(payment, miniAppRedirect);
+		val paymentLink = linkService.paymentLink(payment, validateMessage, true);
 		log.debug("Redirecting to {}", paymentLink);
 		return ResponseEntity.status(HttpStatus.FOUND).location(paymentLink).build();
 	}
@@ -215,8 +210,8 @@ public class StorageController {
 
 		val baseUrl = "https://warpcast.com/~/compose";
 		val castText = URLEncoder.encode("""
-				Buy Farcaster Storage via @payflow frame
-				cc: @sinaver.eth /payflow""",
+						Buy Farcaster Storage via @payflow frame
+						cc: @sinaver.eth /payflow""",
 				StandardCharsets.UTF_8);
 		val embedUrl = String.format("https://frames.payflow.me/fid/%s/storage?v3", castInteractorFid);
 		val shareComposeDeeplink = String.format("%s?text=%s&embeds[]=%s", baseUrl, castText, embedUrl);

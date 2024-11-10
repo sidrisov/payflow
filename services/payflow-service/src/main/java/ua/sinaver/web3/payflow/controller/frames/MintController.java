@@ -28,7 +28,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
-import static ua.sinaver.web3.payflow.config.PayflowConfig.MINIAPP_REDIRECT_ALLOWLIST;
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.DEFAULT_HTML_RESPONSE;
 import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS;
 
@@ -52,12 +51,12 @@ public class MintController {
 	private LinkService linkService;
 
 	private static Payment getMintPayment(ValidatedFrameResponseMessage validateMessage,
-			User user,
-			Integer receiverFid,
-			String receiverAddress,
-			Integer chainId,
-			String token,
-			String originalMintUrl) {
+	                                      User user,
+	                                      Integer receiverFid,
+	                                      String receiverAddress,
+	                                      Integer chainId,
+	                                      String token,
+	                                      String originalMintUrl) {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val castHash = validateMessage.action().cast().hash();
 		val sourceRef = String.format("https://warpcast.com/%s/%s",
@@ -78,12 +77,12 @@ public class MintController {
 
 	@PostMapping("/submit")
 	public ResponseEntity<?> submit(@RequestBody FrameMessage frameMessage,
-			@RequestParam String provider,
-			@RequestParam Integer chainId,
-			@RequestParam String contract,
-			@RequestParam(required = false) String author,
-			@RequestParam(required = false) Integer tokenId,
-			@RequestParam(required = false) String referral) {
+	                                @RequestParam String provider,
+	                                @RequestParam Integer chainId,
+	                                @RequestParam String contract,
+	                                @RequestParam(required = false) String author,
+	                                @RequestParam(required = false) Integer tokenId,
+	                                @RequestParam(required = false) String referral) {
 
 		log.debug("Received submit mint message request: {}", frameMessage);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
@@ -190,11 +189,7 @@ public class MintController {
 		paymentRepository.saveAll(payments);
 		log.debug("Mint payment intents saved: {}", payments);
 
-		val miniAppRedirect = /*
-								 * validateMessage.action().signer().client().username().equals("warpcast") &&
-								 */
-				MINIAPP_REDIRECT_ALLOWLIST.contains(interactor.username());
-		val paymentLink = linkService.paymentLink(payments.getFirst(), miniAppRedirect);
+		val paymentLink = linkService.paymentLink(payments.getFirst(), validateMessage, true);
 		log.debug("Redirecting to {}", paymentLink);
 		return ResponseEntity.status(HttpStatus.FOUND).location(paymentLink).build();
 	}

@@ -194,7 +194,7 @@ public class IdentityService implements IIdentityService {
 
 	@Override
 	public IdentityMessage getIdentityInfo(String identity) {
-		List<IdentityMessage> results = getIdentitiesInfo(Collections.singletonList(identity));
+		val results = getIdentitiesInfo(Collections.singletonList(identity));
 		return results.isEmpty() ? null : results.get(0);
 	}
 
