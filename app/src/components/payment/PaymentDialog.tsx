@@ -24,6 +24,7 @@ import { PayButton, PaymentSuccess } from '../buttons/PayButton';
 import PaymentSuccessDialog from '../dialogs/PaymentSuccessDialog';
 import { getReceiptUrl } from '../../utils/receipts';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
+import { CommentField } from './CommentField';
 
 export type PaymentSenderType = 'payflow' | 'wallet' | 'none';
 
@@ -97,7 +98,13 @@ export default function PaymentDialog({
 
     // Prepare regular payment transaction
     if (paymentWallet && paymentToken && toAddress && paymentAmount) {
-      const amount = parseUnits(paymentAmount.toString(), paymentToken.decimals);
+      const amount = parseUnits(
+        paymentAmount.toLocaleString('fullwide', {
+          useGrouping: false,
+          maximumFractionDigits: paymentToken.decimals
+        }),
+        paymentToken.decimals
+      );
 
       regularPaymentTx = paymentToken.tokenAddress
         ? {
@@ -253,6 +260,8 @@ export default function PaymentDialog({
     }
   };
 
+  const [comment, setComment] = useState('');
+
   return paymentSuccessData ? (
     <PaymentSuccessDialog
       message={successMessage}
@@ -288,18 +297,19 @@ export default function PaymentDialog({
           paymentTx={crossChainMode ? glidePaymentTx : regularPaymentTx}
           paymentWallet={paymentWallet!}
           paymentOption={paymentOption!}
-          payment={
-            payment ??
-            ({
-              type: 'APP',
-              status: 'CREATED',
-              receiver: recipient.identity.profile,
-              receiverAddress: toAddress,
-              chainId: paymentToken?.chainId,
-              token: paymentToken?.id,
-              tokenAmount: paymentAmount
-            } as PaymentType)
-          }
+          payment={{
+            ...(payment ??
+              ({
+                type: 'APP',
+                status: 'CREATED',
+                receiver: recipient.identity.profile,
+                receiverAddress: toAddress,
+                chainId: paymentToken?.chainId,
+                token: paymentToken?.id,
+                tokenAmount: paymentAmount
+              } as PaymentType)),
+            comment
+          }}
           senderFlow={selectedFlow}
           onSuccess={setPaymentSuccessData}
           onError={(error: any) => {
@@ -346,7 +356,10 @@ export default function PaymentDialog({
                 Direct
               </Typography>
             </ToggleButton>
-            <ToggleButton size="small" value="cross-chain">
+            <ToggleButton
+              disabled={!paymentAmount || paymentAmount === 0}
+              size="small"
+              value="cross-chain">
               <Typography variant="caption" fontWeight="bold" textTransform="lowercase">
                 Cross-chain
               </Typography>
@@ -354,7 +367,14 @@ export default function PaymentDialog({
           </ToggleButtonGroup>
         </Box>
 
-        <Stack flex={1} alignItems="center" justifyContent="center" overflow="auto">
+        <Stack
+          width="100%"
+          flex={1}
+          alignItems="flex-start"
+          justifyContent="center"
+          overflow="auto"
+          mt={2}
+          px={2}>
           <TokenAmountSection
             payment={payment}
             crossChainMode={crossChainMode}
@@ -384,17 +404,15 @@ export default function PaymentDialog({
               </Typography>
             ) : (
               <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
-                {isPaymentOptionsError ? (
-                  'Failed to fetch payment options. Please try again.'
-                ) : (
-                  <>
-                    Balance not enough to cover the payment.
-                    <br />
-                    Switch to a different payment flow!
-                  </>
-                )}
+                {isPaymentOptionsError
+                  ? 'Failed to fetch payment options. Please try again.'
+                  : 'Balance not enough. Switch payment flow!'}
               </Typography>
             ))}
+
+          <Box ml={!crossChainMode ? 0.5 : 0}>
+            <CommentField comment={comment} setComment={setComment} />
+          </Box>
         </Stack>
 
         <Box width="100%" display="flex" flexDirection="row" justifyContent="space-between">

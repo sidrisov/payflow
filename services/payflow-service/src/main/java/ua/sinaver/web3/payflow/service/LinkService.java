@@ -8,8 +8,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 import ua.sinaver.web3.payflow.config.PayflowConfig;
 import ua.sinaver.web3.payflow.data.Payment;
+import ua.sinaver.web3.payflow.message.farcaster.ValidatedFrameResponseMessage;
 
 import java.net.URI;
+
+import static ua.sinaver.web3.payflow.config.PayflowConfig.MINIAPP_REDIRECT_ALLOWLIST;
 
 @Slf4j
 @Service
@@ -50,5 +53,12 @@ public class LinkService {
 				.path("/payment/{refId}")
 				.buildAndExpand(payment.getReferenceId())
 				.toUri();
+	}
+
+	public URI paymentLink(Payment payment, ValidatedFrameResponseMessage frameMessage,
+	                       boolean checkWhitelist) {
+		val miniApp = frameMessage.action().signer().client().username().equals("warpcast") && (!checkWhitelist ||
+				MINIAPP_REDIRECT_ALLOWLIST.contains(frameMessage.action().interactor().username()));
+		return paymentLink(payment, miniApp);
 	}
 }

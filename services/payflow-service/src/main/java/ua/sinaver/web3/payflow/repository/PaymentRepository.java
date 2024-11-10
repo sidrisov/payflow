@@ -45,7 +45,7 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 			"((p.expiresAt IS NULL AND p.createdAt < :expiresAt) OR " +
 			"(p.expiresAt IS NOT NULL AND p.expiresAt < CURRENT_TIMESTAMP))")
 	Stream<Payment> findExpiredPaymentsWithLock(@Param("status") Payment.PaymentStatus status,
-			@Param("expiresAt") Instant expiresAt);
+	                                            @Param("expiresAt") Instant expiresAt);
 
 	// JPA: UPGRADE_SKIPLOCKED - PESSIMISTIC_WRITE with a
 	// javax.persistence.lock.timeout setting of -2
@@ -54,6 +54,11 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 	@QueryHints(@QueryHint(name = AvailableSettings.JAKARTA_LOCK_TIMEOUT, value = "-2"))
 	@Query("SELECT p FROM Payment p WHERE p.status IN :statuses")
 	Stream<Payment> findTop5ByStatusInWithLock(@Param("statuses") List<Payment.PaymentStatus> statuses);
+
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@QueryHints(@QueryHint(name = AvailableSettings.JAKARTA_LOCK_TIMEOUT, value = "-2"))
+	@Query("SELECT p FROM Payment p WHERE p.status = 'COMPLETED' AND category = 'fc_storage'")
+	Stream<Payment> findCompletedStoragePayments();
 
 	@Query("SELECT count(p) FROM Payment p " +
 			"WHERE (p.sender IN :users " +

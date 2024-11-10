@@ -28,7 +28,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
-import static ua.sinaver.web3.payflow.config.PayflowConfig.MINIAPP_REDIRECT_ALLOWLIST;
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.DEFAULT_HTML_RESPONSE;
 import static ua.sinaver.web3.payflow.service.TokenService.BASE_CHAIN_ID;
 
@@ -53,10 +52,10 @@ public class HypersubController {
 	private FanTokenService fanTokenService;
 
 	private static Payment getHypersubPayment(ValidatedFrameResponseMessage validateMessage,
-			User user,
-			Integer receiverFid,
-			String receiverAddress,
-			String token) {
+	                                          User user,
+	                                          Integer receiverFid,
+	                                          String receiverAddress,
+	                                          String token) {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val castHash = validateMessage.action().cast().hash();
 		val sourceRef = String.format("https://warpcast.com/%s/%s",
@@ -76,7 +75,7 @@ public class HypersubController {
 
 	@PostMapping("/{id}/submit")
 	public ResponseEntity<?> submit(@RequestBody FrameMessage frameMessage,
-			@PathVariable String id) {
+	                                @PathVariable String id) {
 		log.debug("Received submit hypersub {} message request: {}", id, frameMessage);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
@@ -168,11 +167,7 @@ public class HypersubController {
 		paymentRepository.saveAll(payments);
 		log.debug("Mint payment intents saved: {}", payments);
 
-		val miniAppRedirect = /*
-								 * validateMessage.action().signer().client().username().equals("warpcast") &&
-								 */
-				MINIAPP_REDIRECT_ALLOWLIST.contains(interactor.username());
-		val paymentLink = linkService.paymentLink(payments.getFirst(), miniAppRedirect);
+		val paymentLink = linkService.paymentLink(payments.getFirst(), validateMessage, true);
 		log.debug("Redirecting to {}", paymentLink);
 		return ResponseEntity.status(HttpStatus.FOUND).location(paymentLink).build();
 	}
