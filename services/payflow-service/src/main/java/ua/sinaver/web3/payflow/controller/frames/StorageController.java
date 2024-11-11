@@ -136,7 +136,7 @@ public class StorageController {
 
 		log.debug("Gift storage payment intent saved: {}", payment);
 
-		val paymentLink = linkService.paymentLink(payment, validateMessage, true);
+		val paymentLink = linkService.paymentLink(payment, validateMessage, false);
 		log.debug("Redirecting to {}", paymentLink);
 		return ResponseEntity.status(HttpStatus.FOUND).location(paymentLink).build();
 	}

@@ -1,9 +1,14 @@
+import { usePageContext } from 'vike-react/usePageContext';
 import { API_URL, DAPP_URL, FRAMES_URL } from '../../../utils/constants';
 import { getReceiptUrl } from '../../../utils/networks';
 import { Data } from './+data';
 import { useData } from 'vike-react/useData';
 
 export function Head() {
+  const { urlParsed } = usePageContext();
+
+  const isMiniApp = urlParsed.search.mini !== undefined && urlParsed.search.mini !== 'false';
+
   const payment = useData<Data>();
   const refId = payment.referenceId;
   const status = payment.status;
@@ -21,6 +26,9 @@ export function Head() {
 
   const activityUrl =
     'https://warpcast.com/~/composer-action?url=https://api.alpha.payflow.me/api/farcaster/composer/pay?action=activity';
+
+  const composerUrl = `${API_URL}/api/farcaster/composer/pay?action=payment&refId=${refId}`;
+  const miniAppUrl = `https://warpcast.com/~/composer-action?url=${encodeURIComponent(composerUrl)}`;
 
   return (
     <>
@@ -79,7 +87,7 @@ export function Head() {
             <meta property="fc:frame:button:2:action" content="link" />
             <meta
               property="fc:frame:button:2:target"
-              content={DAPP_URL.concat(`/payment/${refId}`)}
+              content={isMiniApp ? miniAppUrl : DAPP_URL.concat(`/payment/${refId}`)}
             />
           </>
         ) : (
