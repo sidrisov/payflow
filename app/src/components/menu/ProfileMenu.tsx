@@ -17,8 +17,8 @@ import {
   LeaderboardRounded,
   Logout,
   PersonAdd,
-  QuestionAnswer,
-  Settings
+  Settings,
+  Notifications
 } from '@mui/icons-material';
 import { GiTwoCoins } from 'react-icons/gi';
 
@@ -35,6 +35,7 @@ import { SiFarcaster } from 'react-icons/si';
 import { MdSecurityUpdateGood, MdSecurityUpdate } from 'react-icons/md';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { green } from '@mui/material/colors';
+import { IoChatbubbleEllipses, IoChatbubbleEllipsesOutline, IoHelpBuoy } from 'react-icons/io5';
 
 export function ProfileMenu({
   profile,
@@ -65,6 +66,8 @@ export function ProfileMenu({
     setOpenDeviceInfo(false);
   };
 
+  const showHiddenMenuOptions = profile.username === 'sinaver1';
+
   return (
     <>
       <Menu
@@ -82,16 +85,18 @@ export function ProfileMenu({
             <ProfileSection maxWidth={150} profile={profile} />
           </MenuItem>
           <Divider />
-          <MenuItem
-            onClick={async () => {
-              closeStateCallback();
-              navigate('/invite');
-            }}>
-            <ListItemIcon>
-              <PersonAdd fontSize="small" />
-            </ListItemIcon>
-            Invite
-          </MenuItem>
+          {showHiddenMenuOptions && (
+            <MenuItem
+              onClick={async () => {
+                closeStateCallback();
+                navigate('/invite');
+              }}>
+              <ListItemIcon>
+                <PersonAdd fontSize="small" />
+              </ListItemIcon>
+              Invite
+            </MenuItem>
+          )}
           <MenuItem
             onClick={async () => {
               closeStateCallback();
@@ -122,38 +127,52 @@ export function ProfileMenu({
             </ListItemIcon>
             Farcaster Client
           </MenuItem>
+          {showHiddenMenuOptions && (
+            <MenuItem
+              onClick={async () => {
+                closeStateCallback();
+                navigate('/advanced');
+              }}>
+              <ListItemIcon>
+                <Settings fontSize="small" />
+              </ListItemIcon>
+              Advanced
+            </MenuItem>
+          )}
+          {showHiddenMenuOptions && (
+            <MenuItem
+              onClick={async () => {
+                closeStateCallback();
+                navigate('/leaderboard');
+              }}>
+              <ListItemIcon>
+                <LeaderboardRounded fontSize="small" />
+              </ListItemIcon>
+              Users
+            </MenuItem>
+          )}
           <MenuItem
             onClick={async () => {
               closeStateCallback();
-              navigate('/advanced');
+              navigate('/notifications');
             }}>
             <ListItemIcon>
-              <Settings fontSize="small" />
+              <Notifications fontSize="small" />
             </ListItemIcon>
-            Advanced
-          </MenuItem>
-          <MenuItem
-            onClick={async () => {
-              closeStateCallback();
-              navigate('/leaderboard');
-            }}>
-            <ListItemIcon>
-              <LeaderboardRounded fontSize="small" />
-            </ListItemIcon>
-            Users
+            Notifications
           </MenuItem>
           <Divider />
           <MenuItem component="a" href="https://warpcast.com/~/inbox/create/19129" target="_blank">
             <ListItemIcon>
-              <QuestionAnswer fontSize="small" />
+              <IoChatbubbleEllipses size={20} />
             </ListItemIcon>
-            Contact
+            Get Support
           </MenuItem>
           <MenuItem component="a" href="https://warpcast.com/~/channel/payflow" target="_blank">
             <ListItemIcon>
               <Groups fontSize="small" />
             </ListItemIcon>
-            Channel
+            Community
           </MenuItem>
           <MenuItem
             component="a"
@@ -165,12 +184,14 @@ export function ProfileMenu({
             FAQ
           </MenuItem>
           <Divider />
-          <MenuItem onClick={handleShowDeviceInfo}>
-            <ListItemIcon>
-              <InfoOutlined fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Device Info</ListItemText>
-          </MenuItem>
+          {showHiddenMenuOptions && (
+            <MenuItem onClick={handleShowDeviceInfo}>
+              <ListItemIcon>
+                <InfoOutlined fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Device Info</ListItemText>
+            </MenuItem>
+          )}
           <MenuItem
             disableRipple={!needRefresh}
             onClick={async () => {

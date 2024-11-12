@@ -58,7 +58,7 @@ export function TokenAmountSection({
 
   const crossChainModeSupported = Boolean(payment?.token);
 
-  // replace with balance as well
+  // TODO: replace with balance as well
   const { isFetching: isBalanceFetching, data: balance } = useBalance({
     address: selectedWallet?.address,
     chainId: selectedToken?.chainId,
@@ -77,8 +77,10 @@ export function TokenAmountSection({
       setSelectedTokenPrice(undefined);
     }
 
-    if (!payment) {
-      setUsdAmountMode(selectedToken?.id === 'eth' || selectedToken?.id === 'weth');
+    if (!payment?.token) {
+      setPaymentAmount(undefined);
+      setPaymentAmountUSD(undefined);
+      setInputValue('');
     }
   }, [selectedToken, tokenPrices, payment]);
 
@@ -220,7 +222,7 @@ export function TokenAmountSection({
 
           {!crossChainMode && !payment?.token && (
             <Stack mx="5px" direction="row" alignItems="center" spacing={0.5}>
-              {isBalanceFetching ? (
+              {isBalanceFetching && paymentAmount && paymentAmountUSD ? (
                 <Skeleton
                   title="fetching price"
                   variant="rectangular"
@@ -249,11 +251,19 @@ export function TokenAmountSection({
                         setPaymentAmountUSD(
                           parseFloat(normalizeNumberPrecision(maxAmount * selectedTokenPrice))
                         );
+
+                        setInputValue(
+                          formatAmountWithSuffix(
+                            normalizeNumberPrecision(maxAmount * selectedTokenPrice)
+                          )
+                        );
                       } else {
                         setPaymentAmount(parseFloat(normalizeNumberPrecision(maxAmount)));
+                        setInputValue(formatAmountWithSuffix(normalizeNumberPrecision(maxAmount)));
                       }
                     } else {
                       setPaymentAmount(undefined);
+                      setInputValue('');
                     }
                   }}
                   sx={{
