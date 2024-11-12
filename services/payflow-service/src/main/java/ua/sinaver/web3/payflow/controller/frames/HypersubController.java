@@ -167,7 +167,7 @@ public class HypersubController {
 		paymentRepository.saveAll(payments);
 		log.debug("Mint payment intents saved: {}", payments);
 
-		val paymentLink = linkService.paymentLink(payments.getFirst(), validateMessage, true);
+		val paymentLink = linkService.paymentLink(payments.getFirst(), validateMessage, false);
 		log.debug("Redirecting to {}", paymentLink);
 		return ResponseEntity.status(HttpStatus.FOUND).location(paymentLink).build();
 	}
