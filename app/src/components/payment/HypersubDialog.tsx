@@ -246,8 +246,6 @@ export default function HypersubDialog({
           unitText={timeUnit}
         />
 
-        <CommentField comment={comment} setComment={setComment} />
-
         {isLoading ? (
           <Skeleton
             title="fetching price"
@@ -276,6 +274,8 @@ export default function HypersubDialog({
               (paymentOptionsError?.message ?? 'Balance not enough. Switch payment flow!')}
           </Typography>
         )}
+
+        <CommentField comment={comment} setComment={setComment} />
       </Stack>
       <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
         <FlowSelector
