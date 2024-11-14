@@ -65,6 +65,9 @@ public class FarcasterPaymentBotService {
 	@Autowired
 	private EntityManager entityManager;
 
+	@Autowired
+	private LinkService linkService;
+
 	@Scheduled(fixedRate = 5 * 1000)
 	void castBotMessage() {
 		if (!isBotEnabled) {
@@ -234,14 +237,14 @@ public class FarcasterPaymentBotService {
 						receiverAddress = identityService.getHighestScoredIdentity(receiverAddresses);
 					}
 
-					String refId = null;
+					Payment payment = null;
 					if (amountStr != null) {
 						val sourceApp = "Warpcast";
 						val sourceRef = String.format("https://warpcast.com/%s/%s",
 								cast.author().username(),
 								cast.hash().substring(0, 10));
 						val sourceHash = cast.hash();
-						val payment = new Payment(Payment.PaymentType.FRAME,
+						payment = new Payment(Payment.PaymentType.FRAME,
 								receiverProfile,
 								token.chainId(), token.id());
 						payment.setReceiverAddress(receiverAddress);
@@ -257,12 +260,11 @@ public class FarcasterPaymentBotService {
 						payment.setSourceRef(sourceRef);
 						payment.setSourceHash(sourceHash);
 						paymentRepository.save(payment);
-						refId = payment.getReferenceId();
 					}
 
-					val frameUrl = refId == null ? String.format("https://frames.payflow.me/%s",
+					val frameUrl = payment == null ? String.format("https://frames.payflow.me/%s",
 							receiverProfile != null ? receiverProfile.getUsername() : receiverAddresses)
-							: String.format("https://frames.payflow.me/payment/%s", refId);
+							: linkService.framePaymentLink(payment, true).toString();
 
 					val castText =
 							String.format("""
@@ -410,7 +412,7 @@ public class FarcasterPaymentBotService {
 						receiverAddress = identityService.getHighestScoredIdentity(receiverAddresses);
 					}
 
-					String refId = null;
+					Payment payment = null;
 					if (amountStr != null) {
 						// TODO: hardcode for now, ask Neynar
 						val sourceApp = "Warpcast";
@@ -418,7 +420,7 @@ public class FarcasterPaymentBotService {
 								cast.author().username(),
 								cast.hash().substring(0, 10));
 						val sourceHash = cast.hash();
-						val payment = new Payment((command.equals("send") || command.equals(
+						payment = new Payment((command.equals("send") || command.equals(
 								"pay")) ? Payment.PaymentType.FRAME : Payment.PaymentType.INTENT,
 								receiverProfile,
 								token.chainId(), token.id());
@@ -435,7 +437,6 @@ public class FarcasterPaymentBotService {
 						payment.setSourceRef(sourceRef);
 						payment.setSourceHash(sourceHash);
 						paymentRepository.save(payment);
-						refId = payment.getReferenceId();
 					}
 
 					String castText;
@@ -449,9 +450,9 @@ public class FarcasterPaymentBotService {
 								receiverName);
 					}
 
-					val frameUrl = refId == null ? String.format("https://frames.payflow.me/%s",
+					val frameUrl = payment == null ? String.format("https://frames.payflow.me/%s",
 							receiverProfile != null ? receiverProfile.getUsername() : receiverAddresses)
-							: String.format("https://frames.payflow.me/payment/%s", refId);
+							: linkService.framePaymentLink(payment, true).toString();
 
 					val embeds = Collections.singletonList(
 							new Cast.Embed(frameUrl));
@@ -559,8 +560,7 @@ public class FarcasterPaymentBotService {
 										receiver);
 							}
 
-							val frameUrl = String.format("https://frames.payflow.me/payment/%s",
-									payment.getReferenceId());
+							val frameUrl = linkService.framePaymentLink(payment, true).toString();
 							val embeds = Collections.singletonList(
 									new Cast.Embed(frameUrl));
 							val processed = notificationService.reply(castText, cast.hash(), embeds);

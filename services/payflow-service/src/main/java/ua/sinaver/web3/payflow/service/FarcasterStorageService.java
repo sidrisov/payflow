@@ -20,9 +20,9 @@ import java.util.UUID;
 @Slf4j
 public class FarcasterStorageService {
 
-	private static final int STORAGE_CAST_CAPACITY = 5000;
-	private static final int STORAGE_REACTION_CAPACITY = 2500;
-	private static final int STORAGE_LINK_CAPACITY = 2500;
+	private static final int STORAGE_CAST_CAPACITY = 4000;
+	private static final int STORAGE_REACTION_CAPACITY = 2000;
+	private static final int STORAGE_LINK_CAPACITY = 2000;
 
 	@Autowired
 	private FarcasterMessagingService messagingService;
@@ -37,24 +37,22 @@ public class FarcasterStorageService {
 	private StorageNotificationRepository storageNotificationRepository;
 
 	private static boolean isShouldNotify(StorageNotification storageNotification,
-			StorageUsage storageUsageWithSoonExpireUnits) {
+	                                      StorageUsage storageUsageWithSoonExpireUnits) {
 		val threshold = storageNotification.getThreshold() / 100.0;
 
+		val remainingCasts = storageUsageWithSoonExpireUnits.casts().capacity() -
+				storageUsageWithSoonExpireUnits.casts().used();
 		if (storageNotification.getCapacityType() == StorageNotification.CapacityType.CASTS_ONLY) {
-			val remainingCasts = storageUsageWithSoonExpireUnits.casts().capacity() - 
-							   storageUsageWithSoonExpireUnits.casts().used();
 			return remainingCasts <= STORAGE_CAST_CAPACITY * threshold;
 		} else {
-			val remainingCasts = storageUsageWithSoonExpireUnits.casts().capacity() - 
-							   storageUsageWithSoonExpireUnits.casts().used();
-			val remainingReactions = storageUsageWithSoonExpireUnits.reactions().capacity() - 
-								   storageUsageWithSoonExpireUnits.reactions().used();
-			val remainingLinks = storageUsageWithSoonExpireUnits.links().capacity() - 
-							   storageUsageWithSoonExpireUnits.links().used();
+			val remainingReactions = storageUsageWithSoonExpireUnits.reactions().capacity() -
+					storageUsageWithSoonExpireUnits.reactions().used();
+			val remainingLinks = storageUsageWithSoonExpireUnits.links().capacity() -
+					storageUsageWithSoonExpireUnits.links().used();
 
 			return remainingCasts <= STORAGE_CAST_CAPACITY * threshold ||
-				   remainingReactions <= STORAGE_REACTION_CAPACITY * threshold ||
-				   remainingLinks <= STORAGE_LINK_CAPACITY * threshold;
+					remainingReactions <= STORAGE_REACTION_CAPACITY * threshold ||
+					remainingLinks <= STORAGE_LINK_CAPACITY * threshold;
 		}
 	}
 
@@ -96,6 +94,8 @@ public class FarcasterStorageService {
 								}
 
 								Thread.sleep(1000);
+							} else {
+								storageNotification.setLastCheckedAt(Instant.now());
 							}
 						}
 					} catch (Throwable t) {

@@ -69,27 +69,6 @@ public class FarcasterConfigController {
 		}
 
 		return ResponseEntity.ok(storageNotificationRepository.findByFid(Integer.parseInt(fid)).orElse(new StorageNotification(Integer.parseInt(fid))));
-
-
-
-		/*public ResponseEntity<StorageNotification> updateNotificationSettings(
-					Principal principal,
-					@RequestBody StorageNotification settings) {
-
-
-
-
-				if (user == null || user.getFid() == null) {
-					return ResponseEntity.notFound().build();
-				}
-
-
-					.orElseGet(() -> new StorageNotification(user.getFid()));
-
-
-				notification.setThreshold(settings.getThreshold());
-				notification.setCapacityType(settings.getCapacityType());
-			}*/
 	}
 
 	@PutMapping("/storage/notification")
@@ -118,6 +97,7 @@ public class FarcasterConfigController {
 		notification.setEnabled(settings.isEnabled());
 		notification.setThreshold(settings.getThreshold());
 		notification.setCapacityType(settings.getCapacityType());
+		notification.setLastCheckedAt(null);
 
 		return ResponseEntity.ok(storageNotificationRepository.save(notification));
 	}

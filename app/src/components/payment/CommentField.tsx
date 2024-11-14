@@ -21,8 +21,33 @@ export const CommentField: React.FC<CommentFieldProps> = ({
       value={comment}
       onChange={(e) => setComment(e.target.value)}
       multiline
-      maxRows={2}
+      maxRows={3}
+      helperText={comment.length > 0 ? `${comment.length}/32` : undefined}
+      slotProps={{
+        input: {
+          startAdornment: (
+            <TbMessagePlus
+              size={18}
+              style={{
+                marginRight: 4,
+                color: 'inherit',
+                opacity: 0.8
+              }}
+            />
+          )
+        },
+        htmlInput: {
+          maxLength: 32
+        },
+        formHelperText: {
+          sx: {
+            textAlign: 'right',
+            margin: 0
+          }
+        }
+      }}
       sx={{
+        maxWidth: comment.length > 0 ? 200 : 130,
         '& .MuiInput-root': {
           fontSize: 14,
           height: 'auto',
@@ -42,41 +67,6 @@ export const CommentField: React.FC<CommentFieldProps> = ({
             color: 'text.secondary',
             opacity: 0.8
           }
-        }
-      }}
-      slotProps={{
-        input: {
-          startAdornment: (
-            <TbMessagePlus
-              size={18}
-              style={{
-                marginRight: 4,
-                color: 'inherit',
-                opacity: 0.8
-              }}
-            />
-          )
-          /* endAdornment: (
-            <Tooltip
-              title={
-                zoraCommentEnabled
-                  ? 'Comment will be added to payflow and zora.co'
-                  : 'Comment will be added only to payflow'
-              }
-              arrow
-              open={isMobile ? showTooltip : undefined}
-              disableFocusListener={isMobile}
-              disableHoverListener={isMobile}
-              disableTouchListener={isMobile}>
-              <IconButton
-                disabled={disabled}
-                size="small"
-                onClick={() => isMobile && setShowTooltip(!showTooltip)}
-                sx={{ color: 'text.secondary' }}>
-                <InfoOutlined fontSize="inherit" />
-              </IconButton>
-            </Tooltip>
-          ) */
         }
       }}
     />

@@ -342,17 +342,15 @@ export default function MintDialog({
           </Typography>
         )}
 
-        <Box width={150}>
-          <CommentField
-            disabled={
-              !mintStatus || mintStatus !== 'live' || isMintPaymentTxError || isPaymentOptionsError
-            }
-            comment={comment}
-            setComment={setComment}
-            /*             zoraCommentEnabled={zoraCommentEnabled}
-             */
-          />
-        </Box>
+        <CommentField
+          disabled={
+            !mintStatus || mintStatus !== 'live' || isMintPaymentTxError || isPaymentOptionsError
+          }
+          comment={comment}
+          setComment={setComment}
+          /*             zoraCommentEnabled={zoraCommentEnabled}
+           */
+        />
       </Stack>
       <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
         <FlowSelector
