@@ -23,6 +23,7 @@ import { BasePaymentDialog } from './BasePaymentDialog';
 import { FlowSelector } from './FlowSelector';
 import { Hash } from 'viem';
 import { QuantitySelector } from './QuantitySelector';
+import { CommentField } from './CommentField';
 
 export type BuyStorageDialogProps = DialogProps &
   CloseCallbackType & {
@@ -102,6 +103,8 @@ export default function BuyStorageDialog({
     numberOfUnits > 1 ? 's' : ''
   } of storage for @${recipientSocial.profileName}`;
 
+  const [comment, setComment] = useState('');
+
   return paymentSuccessData ? (
     <PaymentSuccessDialog
       message={successMessage}
@@ -123,7 +126,7 @@ export default function BuyStorageDialog({
           paymentTx={paymentTx}
           paymentWallet={paymentWallet!}
           paymentOption={paymentOption!}
-          payment={{ ...payment, tokenAmount: numberOfUnits }}
+          payment={{ ...payment, tokenAmount: numberOfUnits, comment }}
           senderFlow={selectedFlow}
           onSuccess={setPaymentSuccessData}
           onError={(error) => {
@@ -164,6 +167,8 @@ export default function BuyStorageDialog({
               : 'Balance not enough. Switch payment flow!'}
           </Typography>
         )}
+
+        <CommentField comment={comment} setComment={setComment} />
       </Stack>
       <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
         <FlowSelector

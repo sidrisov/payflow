@@ -46,6 +46,7 @@ import { createCastPostMessage, createComposeCastUrl } from '../../utils/warpcas
 import { InfoOutlined } from '@mui/icons-material';
 import { useMobile } from '../../utils/hooks/useMobile';
 import { ProfileContext } from '../../contexts/UserContext';
+import { CommentField } from './CommentField';
 
 export type BuyFanTokenDialogProps = DialogProps &
   CloseCallbackType & {
@@ -218,6 +219,8 @@ export default function BuyFanTokenDialog({
     </>
   );
 
+  const [comment, setComment] = useState('');
+
   return paymentSuccessData ? (
     <PaymentSuccessDialog
       message={successMessage}
@@ -351,6 +354,8 @@ export default function BuyFanTokenDialog({
             )}
           </Typography>
         )}
+
+        <CommentField comment={comment} setComment={setComment} />
       </Stack>
       <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
         <FlowSelector

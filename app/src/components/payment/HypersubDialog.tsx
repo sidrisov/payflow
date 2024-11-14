@@ -37,6 +37,7 @@ import ReactMarkdown from 'react-markdown';
 import { secondsToTimeUnit } from '../../utils/time';
 import { InfoOutlined } from '@mui/icons-material';
 import { useMobile } from '../../utils/hooks/useMobile';
+import { CommentField } from './CommentField';
 
 const payflowReferrer = '0x0dEe77c83cB8b14fA95497825dF93202AbF6ad83' as Address;
 
@@ -79,6 +80,8 @@ export default function HypersubDialog({
 
   const [periods, setPeriodsCount] = useState(1);
   const isGift = payment.receiverAddress !== sender.identity.address;
+
+  const [comment, setComment] = useState('');
 
   const handleTooltipToggle = () => {
     if (isMobile) {
@@ -167,7 +170,11 @@ export default function HypersubDialog({
           paymentTx={paymentTx}
           paymentWallet={paymentWallet!}
           paymentOption={paymentOption!}
-          payment={{ ...payment, tokenAmount: periods }}
+          payment={{
+            ...payment,
+            tokenAmount: periods,
+            comment
+          }}
           senderFlow={selectedFlow}
           onSuccess={setPaymentSuccessData}
           onError={(error) => {
@@ -238,6 +245,8 @@ export default function HypersubDialog({
           setQuantity={setPeriodsCount}
           unitText={timeUnit}
         />
+
+        <CommentField comment={comment} setComment={setComment} />
 
         {isLoading ? (
           <Skeleton
