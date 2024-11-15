@@ -12,6 +12,8 @@ export function Head() {
   const embedUrl = `https://frames.payflow.me/storage?${BUY_STORAGE_FRAME_VERSION}`;
   const shareComposeDeeplink = `${baseUrl}?text=${castText}&embeds[]=${encodeURIComponent(embedUrl)}`;
 
+  const notifyMiniAppUrl = `${API_URL}/api/farcaster/composer/pay?action=notifications`;
+  const notifyMiniAppDeeplink = `https://warpcast.com/~/composer-action?url=${encodeURIComponent(notifyMiniAppUrl)}&view=prompt`;
   return (
     <>
       <head>
@@ -67,6 +69,10 @@ export function Head() {
         <meta property="fc:frame:button:3" content="Share" />
         <meta property="fc:frame:button:3:action" content="link" />
         <meta property="fc:frame:button:3:target" content={shareComposeDeeplink} />
+
+        <meta property="fc:frame:button:4" content="Notify" />
+        <meta property="fc:frame:button:4:action" content="link" />
+        <meta property="fc:frame:button:4:target" content={notifyMiniAppDeeplink} />
       </head>
     </>
   );

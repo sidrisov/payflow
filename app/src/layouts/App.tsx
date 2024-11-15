@@ -333,17 +333,14 @@ export default function AppLayout({
           }}
         />
       )}
-      {!location.pathname.startsWith('/payment/') &&
-        location.pathname !== '/actions' &&
-        profile &&
-        !profile.defaultFlow && (
-          <PrimaryFlowOnboardingDialog
-            fullScreen={isMobile}
-            open={!profile.defaultFlow}
-            profile={profile}
-            closeStateCallback={() => {}}
-          />
-        )}
+      {location.pathname === '/' && profile && !profile.defaultFlow && (
+        <PrimaryFlowOnboardingDialog
+          fullScreen={isMobile}
+          open={!profile.defaultFlow}
+          profile={profile}
+          closeStateCallback={() => {}}
+        />
+      )}
     </ProfileContext.Provider>
   );
 }

@@ -135,6 +135,13 @@ public class PaymentComposerController {
 					yield null;
 				}
 			}
+			case "notifications" ->
+					UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
+							.path("/notifications")
+							.queryParam("mini")
+							.queryParam("access_token", accessToken)
+							.build()
+							.toUriString();
 			case "faq" ->
 					"https://payflowlabs.notion.site/Payflow-FAQs-20593cf7734e4d78ad0dc91c8e8982e5";
 			default -> UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
