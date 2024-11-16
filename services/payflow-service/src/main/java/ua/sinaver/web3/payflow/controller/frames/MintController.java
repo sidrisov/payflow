@@ -169,7 +169,12 @@ public class MintController {
 				} else {
 					// Self-mint case
 					receiverFid = interactor.fid();
-					receiverAddress = clickedProfile.getIdentity();
+					val receiverIdentity = identityService.getHighestScoredIdentityInfo(interactor.verifications());
+					if (receiverIdentity == null) {
+						log.error("Farcaster user identity not found: {}", recipientText);
+						continue;
+					}
+					receiverAddress = receiverIdentity.address();
 				}
 
 				val payment = getMintPayment(validateMessage, clickedProfile, receiverFid,
