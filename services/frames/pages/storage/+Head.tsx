@@ -13,7 +13,7 @@ export function Head() {
   const shareComposeDeeplink = `${baseUrl}?text=${castText}&embeds[]=${encodeURIComponent(embedUrl)}`;
 
   const notifyMiniAppUrl = `${API_URL}/api/farcaster/composer/pay?action=notifications`;
-  const notifyMiniAppDeeplink = `https://warpcast.com/~/composer-action?url=${encodeURIComponent(notifyMiniAppUrl)}&view=prompt`;
+  const notifyMiniAppDeeplink = `https://warpcast.com/~/composer-action?url=${encodeURIComponent(notifyMiniAppUrl)}`;
   return (
     <>
       <head>

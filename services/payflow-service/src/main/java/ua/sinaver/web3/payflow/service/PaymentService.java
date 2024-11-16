@@ -13,6 +13,7 @@ import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.glide.GlideSessionResponse;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 
+import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -45,21 +46,9 @@ public class PaymentService {
 		} else if (number >= 1) {
 			return String.format("%.0f", number);
 		} else if (number > 0) {
-			return String.format("%.4f", number);
-		} else {
-			return "0.0";
-		}
-	}
-
-	public static String formatNumberWithSuffix(double number) {
-		if (number >= 1_000_000) {
-			return String.format("%.1fm", number / 1_000_000);
-		} else if (number >= 1_000) {
-			return String.format("%.1fk", number / 1_000);
-		} else if (number >= 1) {
-			return String.format("%.0f", number);
-		} else if (number > 0) {
-			return String.format("%.4f", number);
+			val df = new DecimalFormat("0.####");
+			df.setMinimumFractionDigits(1);
+			return df.format(number);
 		} else {
 			return "0.0";
 		}
@@ -70,7 +59,7 @@ public class PaymentService {
 				.map(String::toLowerCase).toList();
 
 		return paymentRepository.findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedAtDesc(
-						user, verifications, List.of(Payment.PaymentStatus.COMPLETED))
+				user, verifications, List.of(Payment.PaymentStatus.COMPLETED))
 				.stream()
 				.map(payment -> payment.getReceiver() != null ? payment.getReceiver().getIdentity()
 						: payment.getReceiverAddress())
@@ -95,10 +84,10 @@ public class PaymentService {
 	public List<String> parsePreferredTokens(String text) {
 		val allTokenIds = tokenService.getTokens().stream().map(Token::id).distinct().toList();
 		return Arrays.stream(text
-						.replace(",", " ") // Replace commas with spaces
-						.replace("$", "") // Remove any $ symbols
-						.toLowerCase() // Convert to lowercase
-						.split("\\s+")) // Split by spaces
+				.replace(",", " ") // Replace commas with spaces
+				.replace("$", "") // Remove any $ symbols
+				.toLowerCase() // Convert to lowercase
+				.split("\\s+")) // Split by spaces
 				.filter(allTokenIds::contains).limit(5).toList();
 	}
 
