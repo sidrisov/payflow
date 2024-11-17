@@ -353,7 +353,7 @@ export default function PaymentDialog({
             size="small">
             <ToggleButton size="small" value="direct">
               <Typography variant="caption" fontWeight="bold" textTransform="lowercase">
-                Direct
+                Regular
               </Typography>
             </ToggleButton>
             <ToggleButton
@@ -361,7 +361,7 @@ export default function PaymentDialog({
               size="small"
               value="cross-chain">
               <Typography variant="caption" fontWeight="bold" textTransform="lowercase">
-                Cross-chain
+                Pay with other token
               </Typography>
             </ToggleButton>
           </ToggleButtonGroup>

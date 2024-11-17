@@ -20,7 +20,7 @@ export function DegenInfoCard() {
   const { data: identity } = useIdentity(profile?.identity);
 
   const [currentSeasonIndex, setCurrentSeasonIndex] = useState<number>(
-    DEGEN_CLAIM_SEASONS.findIndex((season) => season.id === 'season9')
+    DEGEN_CLAIM_SEASONS.findIndex((season) => season.id === 'current')
   );
 
   const season = DEGEN_CLAIM_SEASONS[currentSeasonIndex];
