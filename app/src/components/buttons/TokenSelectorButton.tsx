@@ -1,6 +1,6 @@
 import { Chip, ChipProps } from '@mui/material';
 import { useState } from 'react';
-import { Token } from '../../utils/erc20contracts';
+import { Token } from '@payflow/common';
 import TokenAvatar from '../avatars/TokenAvatar';
 import { ChooseTokenMenu } from '../menu/ChooseTokeMenu';
 import { AssetBalanceType } from '../../types/AssetType';

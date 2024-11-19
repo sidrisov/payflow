@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import { useAccount, useChainId } from 'wagmi';
 import { CustomLoadingButton } from './LoadingPaymentButton';
 import { LoadingSwitchChainButton } from './LoadingSwitchNetworkButton';
-import { Token } from '../../utils/erc20contracts';
+import { Token } from '@payflow/common';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
 import { ConnectSignerDialog } from '../dialogs/ConnectSignerDialog';
 import { usePayflowTransaction } from '../../utils/hooks/usePayflowTransaction';

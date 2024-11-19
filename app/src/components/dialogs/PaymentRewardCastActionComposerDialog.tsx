@@ -7,7 +7,7 @@ import ResponsiveDialog from './ResponsiveDialog';
 
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { ProfileContext } from '../../contexts/UserContext';
-import { Token } from '../../utils/erc20contracts';
+import { Token } from '@payflow/common';
 import { base } from 'viem/chains';
 import { FaCoins, FaDollarSign } from 'react-icons/fa';
 import { DEFAULT_FARCASTER_CLIENT, FARCASTER_CLIENTS } from '../../types/ProfileType';

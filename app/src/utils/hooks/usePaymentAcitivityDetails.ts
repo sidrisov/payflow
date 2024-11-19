@@ -1,7 +1,7 @@
 import { useTokenPrices } from '../queries/prices';
 import { useMintData } from '../hooks/useMintData';
 import { PaymentType } from '../../types/PaymentType';
-import { SUPPORTED_TOKENS, Token } from '../../utils/erc20contracts';
+import { tokens as SUPPORTED_TOKENS, Token } from '@payflow/common';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { getNetworkDefaultBlockExplorerUrl } from '../../utils/networks';
 import { useHypersubData } from './useHypersub';

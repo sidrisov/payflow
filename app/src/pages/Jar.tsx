@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { useJar } from '../utils/queries/jars';
 import JarActivityFeed from '../components/JarActivityFeed';
 import { lazy, useContext, useMemo, useState } from 'react';
-import { getSupportedTokens } from '../utils/erc20contracts';
+import { getTokensByChainIds } from '@payflow/common';
 import { Address } from 'viem';
 import { AssetType } from '../types/AssetType';
 import { useAssetBalances } from '../utils/queries/balances';
@@ -52,7 +52,7 @@ export default function Jar() {
       jar.flow.wallets.forEach((wallet) => {
         const chainId = wallet.network;
         if (chainId) {
-          const tokens = getSupportedTokens(chainId);
+          const tokens = getTokensByChainIds([chainId]);
           tokens.forEach((token) => {
             assets.push({
               address: wallet.address,

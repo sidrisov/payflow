@@ -12,7 +12,7 @@ import { useBalance } from 'wagmi';
 import { formatUnits, parseUnits } from 'viem';
 import { FlowWalletType } from '../../types/FlowType';
 import { red } from '@mui/material/colors';
-import { Token } from '../../utils/erc20contracts';
+import { Token } from '@payflow/common';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useTokenPrices } from '../../utils/queries/prices';
 import { PaymentType } from '../../types/PaymentType';
@@ -313,7 +313,7 @@ export function TokenAmountSection({
                   setCrossChainMode?.(true);
                 }}
                 startIcon={<MdMultipleStop />}>
-                {'Balance not enough -> Pay with different token'}
+                {'Balance not enough -> Pay with other token'}
               </Button>
             )}
         </>

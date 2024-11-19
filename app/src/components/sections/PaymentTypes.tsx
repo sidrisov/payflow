@@ -7,7 +7,7 @@ import { ProfileSection } from '../ProfileSection';
 import { AddressSection } from '../AddressSection';
 import TokenAvatar from '../avatars/TokenAvatar';
 import NetworkAvatar from '../avatars/NetworkAvatar';
-import { SUPPORTED_TOKENS, Token } from '../../utils/erc20contracts';
+import { tokens as SUPPORTED_TOKENS, Token } from '@payflow/common';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useMobile } from '../../utils/hooks/useMobile';
 import { PaymentCard } from '../cards/PaymentCard';

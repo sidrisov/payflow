@@ -1,6 +1,6 @@
 import { createGlideConfig, PaymentOption } from '@paywithglide/glide-js';
 import { base, optimism, degen, arbitrum, mode, zora } from 'wagmi/chains';
-import { Token } from './erc20contracts';
+import { Token } from '@payflow/common';
 
 export const glideConfig = createGlideConfig({
   projectId: import.meta.env.VITE_GLIDE_API_KEY,
@@ -19,8 +19,8 @@ export const getPaymentOption = (
         paymentToken.tokenAddress
           ? `erc20:${paymentToken.tokenAddress}`
           : paymentToken.chainId === degen.id
-          ? 'slip44:33436'
-          : 'slip44:60'
+            ? 'slip44:33436'
+            : 'slip44:60'
       }`.toLowerCase()
   );
 };

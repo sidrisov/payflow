@@ -12,7 +12,7 @@ import { green, orange } from '@mui/material/colors';
 import { useQuery } from '@tanstack/react-query';
 import { usePublicClient } from 'wagmi';
 import { erc20Abi, formatUnits } from 'viem';
-import tokens from '../../utils/tokens.json';
+import { tokens } from '@payflow/common';
 import { base } from 'viem/chains';
 
 export function DegenInfoCard() {

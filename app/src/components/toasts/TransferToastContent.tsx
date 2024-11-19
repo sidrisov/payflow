@@ -5,7 +5,7 @@ import { SelectedIdentityType } from '../../types/ProfileType';
 import { ProfileSection } from '../ProfileSection';
 import { AddressSection } from '../AddressSection';
 import { normalizeNumberPrecision } from '../../utils/formats';
-import { Token } from '../../utils/erc20contracts';
+import { Token } from '@payflow/common';
 
 export function TransferToastContent({
   from,

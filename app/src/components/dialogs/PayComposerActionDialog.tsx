@@ -10,7 +10,7 @@ import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { CustomLoadingButton } from '../buttons/LoadingPaymentButton';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
-import { Token } from '../../utils/erc20contracts';
+import { Token } from '@payflow/common';
 import { useChainId } from 'wagmi';
 import { SUPPORTED_CHAINS } from '@privy-io/react-auth';
 import { submitPayment } from '../../services/payments';

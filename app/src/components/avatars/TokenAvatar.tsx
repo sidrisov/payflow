@@ -1,5 +1,5 @@
 import { Avatar, AvatarProps } from '@mui/material';
-import { Token } from '../../utils/erc20contracts';
+import { Token } from '@payflow/common';
 
 export default function TokenAvatar({
   token,

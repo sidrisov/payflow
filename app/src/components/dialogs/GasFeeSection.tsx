@@ -1,7 +1,7 @@
 import { Typography, Tooltip, Box } from '@mui/material';
 import { green } from '@mui/material/colors';
 import { getFeeText } from '../../types/gas';
-import { Token } from '../../utils/erc20contracts';
+import { Token } from '@payflow/common';
 import { useTokenPrices } from '../../utils/queries/prices';
 
 export function FeeSection({

@@ -7,7 +7,7 @@ import { FaCheckCircle, FaRegCircle } from 'react-icons/fa';
 import { ProfileContext } from '../../contexts/UserContext';
 import { delay } from '../../utils/delay';
 import { toast } from 'react-toastify';
-import { SUPPORTED_TOKENS, Token } from '../../utils/erc20contracts';
+import { tokens as SUPPORTED_TOKENS, Token } from '@payflow/common';
 import { getNetworkDisplayName } from '../../utils/networks';
 import NetworkAvatar from '../../components/avatars/NetworkAvatar';
 import TokenAvatar from '../../components/avatars/TokenAvatar';

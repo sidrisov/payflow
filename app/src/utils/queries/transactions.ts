@@ -6,7 +6,7 @@ import { TxInfo } from '../../types/ActivityFetchResultType';
 import { PaymentType } from '../../types/PaymentType';
 import axios from 'axios';
 import { baseSepolia, base, optimism, zora, degen, mode } from 'viem/chains';
-import { SUPPORTED_TOKENS } from '../erc20contracts';
+import { tokens as SUPPORTED_TOKENS } from '@payflow/common';
 
 export const useTransactions = (wallets: FlowWalletType[]) => {
   return useQuery({
@@ -159,8 +159,8 @@ function parseTxHistoryResponse(
           item.to?.hash === item.from?.hash
             ? 'self'
             : wallet.address === item.to?.hash
-            ? 'inbound'
-            : 'outbound'
+              ? 'inbound'
+              : 'outbound'
       };
       return txInfo;
     });
@@ -189,8 +189,8 @@ function parseTxHistoryResponse(
           item.to?.hash === item.from?.hash
             ? 'self'
             : wallet.address === item.to?.hash
-            ? 'inbound'
-            : 'outbound'
+              ? 'inbound'
+              : 'outbound'
       };
       return txInfo;
     });
@@ -218,8 +218,8 @@ function parseTxHistoryResponse(
           item.to?.hash === item.from?.hash
             ? 'self'
             : wallet.address === item.to?.hash
-            ? 'inbound'
-            : 'outbound'
+              ? 'inbound'
+              : 'outbound'
       };
       return txInfo;
     });

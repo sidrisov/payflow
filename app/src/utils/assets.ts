@@ -1,10 +1,10 @@
 import { FlowType, FlowWalletType } from '../types/FlowType';
-import { getSupportedTokens } from './erc20contracts';
+import { getTokensByChainIds } from '@payflow/common';
 
 export default function getFlowAssets(flow: FlowType) {
   return flow.wallets.flatMap((wallet) =>
     wallet.network
-      ? getSupportedTokens(wallet.network).map((token) => ({
+      ? getTokensByChainIds([wallet.network]).map((token) => ({
           address: wallet.address,
           chainId: wallet.network,
           token
@@ -15,7 +15,7 @@ export default function getFlowAssets(flow: FlowType) {
 
 export function getFlowWalletAssets(wallet: FlowWalletType) {
   return wallet.network
-    ? getSupportedTokens(wallet.network).map((token) => ({
+    ? getTokensByChainIds([wallet.network]).map((token) => ({
         address: wallet.address,
         chainId: wallet.network,
         token
@@ -26,7 +26,7 @@ export function getFlowWalletAssets(wallet: FlowWalletType) {
 export function getFlowWalletsAssets(wallets: FlowWalletType[]) {
   return wallets.flatMap((wallet) =>
     wallet.network
-      ? getSupportedTokens(wallet.network).map((token) => ({
+      ? getTokensByChainIds([wallet.network]).map((token) => ({
           address: wallet.address,
           chainId: wallet.network,
           token

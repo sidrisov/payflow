@@ -15,7 +15,7 @@ import {
 import { Search as SearchIcon, Clear as ClearIcon } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { green } from '@mui/material/colors';
-import { Token } from '../../utils/erc20contracts';
+import { Token } from '@payflow/common';
 import TokenAvatar from '../avatars/TokenAvatar';
 import { useState, useContext, useMemo } from 'react';
 import { FaCheckCircle } from 'react-icons/fa';

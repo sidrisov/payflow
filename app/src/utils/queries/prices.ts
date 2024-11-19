@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { SUPPORTED_TOKENS, TokenPrices } from '../erc20contracts';
+import { tokens as SUPPORTED_TOKENS, TokenPrices } from '@payflow/common';
 import { degen, zora } from 'viem/chains';
 import { SUPPORTED_CHAINS } from '../networks';
 

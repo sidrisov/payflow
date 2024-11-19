@@ -2,7 +2,7 @@ import { Box, Typography, CircularProgress, Badge } from '@mui/material';
 import { useState, useMemo, useEffect, useContext } from 'react';
 import { formatUnits } from 'viem';
 import { FlowWalletType } from '../types/FlowType';
-import { Token, getSupportedTokensByChainIds } from '../utils/erc20contracts';
+import { Token, getTokensByChainIds } from '@payflow/common';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../utils/formats';
 import { PaymentType } from '../types/PaymentType';
 import { degen } from 'viem/chains';
@@ -60,8 +60,8 @@ export function NetworkTokenSelector({
       return [];
     }
     // filter by passed token if available
-    const tokens = getSupportedTokensByChainIds(compatibleWallets.map((w) => w.network)).filter(
-      (t) => (!crossChainMode && payment?.token ? t.id === payment?.token : true)
+    const tokens = getTokensByChainIds(compatibleWallets.map((w) => w.network)).filter((t) =>
+      !crossChainMode && payment?.token ? t.id === payment?.token : true
     );
 
     const compatibleTokens = enabledChainCurrencies

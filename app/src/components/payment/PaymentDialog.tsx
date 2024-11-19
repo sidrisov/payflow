@@ -10,7 +10,7 @@ import { BasePaymentDialog, BasePaymentDialogProps } from './BasePaymentDialog';
 import { toast } from 'react-toastify';
 import { Address, parseUnits, encodeFunctionData, erc20Abi, Hash } from 'viem';
 import { ProfileContext } from '../../contexts/UserContext';
-import { SUPPORTED_TOKENS, Token } from '../../utils/erc20contracts';
+import { tokens as SUPPORTED_TOKENS, Token } from '@payflow/common';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { red } from '@mui/material/colors';
@@ -431,7 +431,7 @@ export default function PaymentDialog({
             compatibleWallets={compatibleWallets}
             enabledChainCurrencies={
               crossChainMode
-                ? paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? []
+                ? (paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? [])
                 : undefined
             }
           />
