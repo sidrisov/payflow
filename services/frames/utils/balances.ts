@@ -1,7 +1,7 @@
 import { Address, formatUnits, zeroAddress } from 'viem';
 import { wagmiConfig } from './wagmi';
 import { getBalance } from '@wagmi/core';
-import { TokenPrices, getSupportedTokens } from './erc20contracts';
+import { TokenPrices, getTokensByChainIds } from '@payflow/common';
 
 import { GetBalanceReturnType } from '@wagmi/core';
 import { FlowType } from '../types/FlowType';
@@ -38,7 +38,7 @@ export function getFlowAssets(flow: FlowType) {
   flow.wallets.forEach((wallet) => {
     const chainId = wallet.network;
     if (chainId) {
-      const tokens = getSupportedTokens(chainId);
+      const tokens = getTokensByChainIds([chainId]);
       tokens.forEach((token) => {
         assets.push({
           address: wallet.address,

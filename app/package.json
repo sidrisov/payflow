@@ -14,7 +14,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@payflow/common": "*",
+    "@payflow/common": "workspace:packages/common",
     "@airstack/airstack-react": "^0.6.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",

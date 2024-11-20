@@ -4,7 +4,7 @@ import { IdentityType } from '../types/ProfleType';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { assetImageSrc } from '../utils/image';
 import getNetworkImageSrc, { getNetworkDisplayName } from '../utils/networks';
-import { ERC20_CONTRACTS } from '../utils/erc20contracts';
+import { tokens as ERC20_CONTRACTS } from '@payflow/common';
 import { formatNumberWithSuffix } from '../utils/format';
 import Card from './Card';
 

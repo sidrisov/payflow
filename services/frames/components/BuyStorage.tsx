@@ -6,7 +6,7 @@ import { shortenWalletAddressLabel } from '../utils/address';
 import { formatNumberWithSuffix } from '../utils/format';
 import { assetImageSrc } from '../utils/image';
 import getNetworkImageSrc from '../utils/networks';
-import { ERC20_CONTRACTS } from '../utils/erc20contracts';
+import { tokens as ERC20_CONTRACTS } from '@payflow/common';
 import Card from './Card';
 
 export const buyStorageEntryHtml = (chains: Chain[], tokens: string[]) => (
@@ -110,6 +110,8 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
                 }}>
                 <img
                   src={tokenImgSrc}
+                  width={40}
+                  height={40}
                   style={{
                     width: 40,
                     height: 40,

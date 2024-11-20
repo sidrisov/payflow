@@ -1,7 +1,9 @@
 {
   "workspaces": [
-    "packages/*",
+    "packages/common",
     "app",
-    "services/*"
-  ]
-} 
+    "services/frames",
+    "services/onchain"
+  ],
+  "private": true
+}

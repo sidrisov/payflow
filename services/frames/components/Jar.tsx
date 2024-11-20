@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/alt-text */
 import { JarType } from '../types/FlowType';
 import { PaymentType } from '../types/PaymentType';
-import { ERC20_CONTRACTS } from '../utils/erc20contracts';
+import { tokens as ERC20_CONTRACTS } from '@payflow/common';
 import { assetImageSrc } from '../utils/image';
 import getNetworkImageSrc, { getNetworkDisplayName } from '../utils/networks';
 

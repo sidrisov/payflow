@@ -2,7 +2,7 @@
 import { Chain } from 'viem';
 import { assetImageSrc } from '../utils/image';
 import getNetworkImageSrc from '../utils/networks';
-import { ERC20_CONTRACTS } from '../utils/erc20contracts';
+import { tokens as ERC20_CONTRACTS } from '@payflow/common';
 import Card from './Card';
 
 export const buyFanTokenEntryHtml = (chains: Chain[], tokens: string[]) => (

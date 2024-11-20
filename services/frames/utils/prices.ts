@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ERC20_CONTRACTS, TokenPrices } from './erc20contracts';
+import { tokens as ERC20_CONTRACTS, TokenPrices } from '@payflow/common';
 import { degen, zora } from 'viem/chains';
 import { SUPPORTED_CHAINS } from './networks';
 

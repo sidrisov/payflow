@@ -1,4 +1,4 @@
-const DAPP_URL = import.meta.env.VITE_PAYFLOW_SERVICE_DAPP_URL;
+import { DAPP_URL } from '../utils/constants';
 
 export default function HeadDefault() {
   return (

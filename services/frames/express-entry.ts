@@ -24,7 +24,7 @@ import { isSmartAccountDeployed } from 'permissionless';
 import { FlowWalletType, JarType } from './types/FlowType';
 import { jarHtml } from './components/Jar';
 import { fetchTokenPrices } from './utils/prices';
-import { TokenPrices } from './utils/erc20contracts';
+import { TokenPrices } from '@payflow/common';
 import { getAssetBalances, getFlowAssets, getTotalBalance } from './utils/balances';
 import { XmtpOpenFramesRequest, validateFramesPost } from '@xmtp/frames-validator';
 import { normalizeNumberPrecision } from './utils/format';
@@ -40,6 +40,7 @@ import { entryPoint06Address } from 'viem/account-abstraction';
 import { fetchSubscribers } from '@withfabric/protocol-sdks/stpv2';
 import { configureFabricSDK } from '@withfabric/protocol-sdks';
 import { wagmiConfig } from './utils/wagmi';
+import { API_URL } from './utils/constants';
 
 dotenv.config();
 
@@ -47,8 +48,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const isProduction = process.env.NODE_ENV === 'production';
 const root = __dirname;
-
-const API_URL = process.env.VITE_PAYFLOW_SERVICE_API_URL;
 
 const balanceParams = ['eth', 'usdc', 'degen'];
 const oneDayInSeconds = 24 * 60 * 60;
