@@ -3,6 +3,7 @@ package ua.sinaver.web3.payflow;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
 import io.micrometer.core.instrument.logging.LoggingRegistryConfig;
+import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -24,6 +25,7 @@ import java.security.Security;
 @ComponentScan(basePackages = "ua.sinaver.web3.payflow")
 @EnableCaching
 @EnableScheduling
+@EnableSchedulerLock(defaultLockAtMostFor = "PT30S")
 @EnableRetry
 @EnableAsync(proxyTargetClass = true)
 public class PayflowApplication {

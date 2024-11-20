@@ -293,6 +293,10 @@ public class IdentityService implements IIdentityService {
 			return Collections.emptyList();
 		}
 
+		if (verifications.connectedAddresses().isEmpty()) {
+			return Collections.singletonList(verifications.userAddress());
+		}
+
 		return verifications.connectedAddresses();
 	}
 }

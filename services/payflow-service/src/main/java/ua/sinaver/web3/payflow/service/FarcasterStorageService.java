@@ -10,6 +10,7 @@ import ua.sinaver.web3.payflow.data.StorageNotification;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.message.farcaster.StorageUsage;
 import ua.sinaver.web3.payflow.repository.StorageNotificationRepository;
+import ua.sinaver.web3.payflow.repository.UserRepository;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -19,11 +20,11 @@ import java.util.UUID;
 @Transactional
 @Slf4j
 public class FarcasterStorageService {
-
-	private static final int STORAGE_CAST_CAPACITY = 4000;
-	private static final int STORAGE_REACTION_CAPACITY = 2000;
-	private static final int STORAGE_LINK_CAPACITY = 2000;
-
+	private static final int STORAGE_CAST_CAPACITY = 2000;
+	private static final int STORAGE_REACTION_CAPACITY = 1000;
+	private static final int STORAGE_LINK_CAPACITY = 1000;
+	@Autowired
+	private UserRepository userRepository;
 	@Autowired
 	private FarcasterMessagingService messagingService;
 
@@ -105,4 +106,18 @@ public class FarcasterStorageService {
 
 	}
 
+	//@Scheduled(initialDelay = 30 * 1000, fixedDelay = Long.MAX_VALUE)
+	//@SchedulerLock(name = "scheduleStorageNotification", lockAtLeastFor = "PT1M", lockAtMostFor
+	// = "PT5M")
+	void scheduleStorageNotification() {
+		userRepository.findAll().forEach(user -> {
+			if (user.isAllowed()) {
+				log.info("Storage notification for {}", user.getIdentity());
+				val fid = identityService.getIdentityFid(user.getIdentity());
+				if (fid != null && storageNotificationRepository.findByFid(Integer.parseInt(fid)).isEmpty()) {
+					storageNotificationRepository.save(new StorageNotification(Integer.parseInt(fid)));
+				}
+			}
+		});
+	}
 }
