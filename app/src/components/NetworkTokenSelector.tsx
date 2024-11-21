@@ -73,8 +73,8 @@ export function NetworkTokenSelector({
                 t.tokenAddress
                   ? `erc20:${t.tokenAddress}`
                   : t.chainId === degen.id
-                  ? 'slip44:33436'
-                  : 'slip44:60'
+                    ? 'slip44:33436'
+                    : 'slip44:60'
               }`
           )
         )

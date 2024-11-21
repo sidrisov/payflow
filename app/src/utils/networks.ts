@@ -9,7 +9,8 @@ import {
   baseSepolia,
   sepolia,
   mode,
-  worldchain
+  worldchain,
+  ham
 } from 'viem/chains';
 
 const ENABLED_CHAINS = JSON.parse(import.meta.env.VITE_ENABLED_CHAINS) as string[];
@@ -28,7 +29,8 @@ export const SUPPORTED_CHAINS = [
   zksync,
   mainnet,
   sepolia,
-  baseSepolia
+  baseSepolia,
+  ham
 ].filter((c) => ENABLED_CHAINS.includes(c.name));
 
 export const DEFAULT_FLOW_WALLET_CHAINS = SUPPORTED_CHAINS.filter((c) =>
@@ -72,6 +74,9 @@ export function getNetworkShortName(chainId: number): string {
     case degen.id:
       shortName = 'degen';
       break;
+    case ham.id:
+      shortName = 'ham';
+      break;
   }
 
   if (!shortName) {
@@ -113,6 +118,9 @@ export default function getNetworkImageSrc(chainId: number): string {
       break;
     case degen.id:
       fileName = 'degen';
+      break;
+    case ham.id:
+      fileName = 'ham';
       break;
   }
 

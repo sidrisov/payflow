@@ -233,3 +233,16 @@ tasks.named<BootBuildImage>("bootBuildImage") {
     pullPolicy.set(PullPolicy.IF_NOT_PRESENT)
     //publish.set(true)
 }
+
+tasks.register<Copy>("copyTokensJson") {
+    description = "Copies tokens.json from common package to resources"
+    from("../../packages/common/src/tokens/tokens.json")
+    into("src/main/resources/generated")
+}
+
+// Make all relevant tasks depend on copyTokensJson
+listOf("bootRun", "processResources", "bootBuildImage").forEach { taskName ->
+    tasks.named(taskName) {
+        dependsOn("copyTokensJson")
+    }
+}
