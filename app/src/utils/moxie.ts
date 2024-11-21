@@ -38,7 +38,7 @@ export function createShareUrls({
     text += `to @${recipientSocial.profileName} `;
   }
 
-  text += `\n\n@payflow cast action lets you buy or gift @moxie.eth fan tokens with 25+ tokens cross-chain! cc: @sinaver.eth /payflow`;
+  text += `\n\n@payflow cast action lets you buy or gift @moxie.eth fan tokens with 30+ tokens cross-chain! cc: @sinaver.eth /payflow`;
 
   const channelKey = tokenName.startsWith('/') ? tokenName.replace('/', '') : 'airstack';
 

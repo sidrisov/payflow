@@ -114,7 +114,7 @@ function BuyHypersub({ chains, tokens }: { chains: Chain[]; tokens: string[] }) 
           })}
         </div>
       </div>
-      <p style={{ marginTop: 10, fontSize: 35, fontWeight: 'bold' }}>with 25+ tokens cross-chain</p>
+      <p style={{ marginTop: 10, fontSize: 35, fontWeight: 'bold' }}>with 30+ tokens cross-chain</p>
     </Card>
   );
 }

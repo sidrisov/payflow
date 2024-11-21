@@ -66,7 +66,7 @@ export function Head() {
 
   const baseUrl = 'https://warpcast.com/~/compose';
   const castText = encodeURIComponent(
-    `Mint this collection\n\n@payflow cast action lets you mint or gift collectibles with 25+ tokens cross-chain! cc: @sinaver.eth /payflow`
+    `Mint this collection\n\n@payflow cast action lets you mint or gift collectibles with 30+ tokens cross-chain! cc: @sinaver.eth /payflow`
   );
 
   const currentFrameUrl = new URL(`${FRAMES_URL}/mint`);

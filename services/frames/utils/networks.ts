@@ -9,10 +9,11 @@ import {
   sepolia,
   zksync,
   mainnet,
-  ham
+  ham,
+  worldchain
 } from 'viem/chains';
 
-export const SUPPORTED_CHAINS = [base, optimism, degen, arbitrum, mode, zora, ham];
+export const SUPPORTED_CHAINS = [base, optimism, degen, arbitrum, mode, zora, ham, worldchain];
 
 export default function getNetworkImageSrc(chainId: number): string {
   let fileName;
@@ -38,6 +39,9 @@ export default function getNetworkImageSrc(chainId: number): string {
       break;
     case ham.id:
       fileName = 'ham';
+      break;
+    case worldchain.id:
+      fileName = 'world';
       break;
   }
 
@@ -85,6 +89,9 @@ export function getNetworkShortName(chainId: number): string {
     case ham.id:
       shortName = 'ham';
       break;
+    case worldchain.id:
+      shortName = 'world';
+      break;
   }
 
   if (!shortName) {
@@ -128,6 +135,9 @@ export function getReceiptUrl(chainId: number, hash: string): string {
       break;
     case ham.id:
       baseUrl = ham.blockExplorers.default.url;
+      break;
+    case worldchain.id:
+      baseUrl = worldchain.blockExplorers.default.url;
       break;
   }
 

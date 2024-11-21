@@ -19,7 +19,7 @@ import { BalanceType } from './types/BalanceType';
 import { PaymentType } from './types/PaymentType';
 import { paymentHtml } from './components/Payment';
 import { Address, Chain, createPublicClient, http, keccak256, LocalAccount, toBytes } from 'viem';
-import { arbitrum, base, degen, mode, optimism, zora } from 'viem/chains';
+import { arbitrum, base, degen, ham, mode, optimism, worldchain, zora } from 'viem/chains';
 import { isSmartAccountDeployed } from 'permissionless';
 import { FlowWalletType, JarType } from './types/FlowType';
 import { jarHtml } from './components/Jar';
@@ -52,7 +52,7 @@ const root = __dirname;
 const balanceParams = ['eth', 'usdc', 'degen'];
 const oneDayInSeconds = 24 * 60 * 60;
 
-const chains: Chain[] = [base, optimism, zora, arbitrum, mode, degen];
+const chains: Chain[] = [base, optimism, zora, arbitrum, mode, degen, ham, worldchain];
 
 configureFabricSDK({ wagmiConfig });
 
@@ -80,7 +80,10 @@ const SUPPORTED_TOKENS = [
   'hunt',
   'masks',
   'cbBTC',
-  'mfer'
+  'mfer',
+  'talent',
+  'clanker',
+  'lum'
 ];
 
 startServer();

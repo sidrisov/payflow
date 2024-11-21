@@ -30,7 +30,8 @@ export const SUPPORTED_CHAINS = [
   mainnet,
   sepolia,
   baseSepolia,
-  ham
+  ham,
+  worldchain
 ].filter((c) => ENABLED_CHAINS.includes(c.name));
 
 export const DEFAULT_FLOW_WALLET_CHAINS = SUPPORTED_CHAINS.filter((c) =>
@@ -77,6 +78,9 @@ export function getNetworkShortName(chainId: number): string {
     case ham.id:
       shortName = 'ham';
       break;
+    case worldchain.id:
+      shortName = 'world';
+      break;
   }
 
   if (!shortName) {
@@ -121,6 +125,9 @@ export default function getNetworkImageSrc(chainId: number): string {
       break;
     case ham.id:
       fileName = 'ham';
+      break;
+    case worldchain.id:
+      fileName = 'world';
       break;
   }
 

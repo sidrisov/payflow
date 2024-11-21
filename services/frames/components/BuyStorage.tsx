@@ -102,19 +102,17 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
               <div
                 key={token}
                 style={{
-                  width: 60,
-                  height: 60,
+                  width: 50,
+                  height: 50,
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center'
                 }}>
                 <img
                   src={tokenImgSrc}
-                  width={40}
-                  height={40}
                   style={{
-                    width: 40,
-                    height: 40,
+                    width: 35,
+                    height: 35,
                     borderRadius: '50%'
                   }}
                   alt="Supported Token"
@@ -124,7 +122,7 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
           })}
         </div>
       </div>
-      <p style={{ marginTop: 10, fontSize: 35, fontWeight: 'bold' }}>with 25+ tokens cross-chain</p>
+      <p style={{ marginTop: 10, fontSize: 35, fontWeight: 'bold' }}>with 30+ tokens cross-chain</p>
     </Card>
   );
 }
