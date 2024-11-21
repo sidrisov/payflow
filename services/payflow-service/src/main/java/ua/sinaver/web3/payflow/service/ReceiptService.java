@@ -14,27 +14,29 @@ public class ReceiptService {
 	}
 
 	public String getReceiptUrl(Payment payment, boolean fulfillment, boolean refund) {
-		val receiptChainId = (fulfillment || refund) ?
-				payment.getFulfillmentChainId() : payment.getNetwork();
-		val receiptHash = fulfillment ?
-				payment.getFulfillmentHash() : (refund ? payment.getRefundHash() :
-				payment.getHash());
+		val receiptChainId = (fulfillment || refund) ? payment.getFulfillmentChainId() : payment.getNetwork();
+		val receiptHash = fulfillment ? payment.getFulfillmentHash()
+				: (refund ? payment.getRefundHash() : payment.getHash());
 		val baseUrl = switch (receiptChainId) {
 			case 8453 -> // Base Chain ID
-					"https://basescan.org";
+				"https://basescan.org";
 			case 10 -> // Optimism Chain ID
-					"https://optimistic.etherscan.io";
+				"https://optimistic.etherscan.io";
 			case 7777777 -> // Zora Chain ID
-					"https://explorer.zora.energy";
+				"https://explorer.zora.energy";
 			case 666666666 -> // Degen Chain ID
-					"https://explorer.degen.tips";
+				"https://explorer.degen.tips";
 			case 42161 -> // Arbitrum Chain ID
-					"https://arbiscan.io";
+				"https://arbiscan.io";
 			case 34443 -> // Mode Chain ID
-					"https://modescan.io";
+				"https://modescan.io";
+			case 480 -> // World chain Chain ID
+				"https://worldscan.org";
+			case 5112 -> // Ham Chain ID
+				"https://explorer.ham.fun";
 			default ->
-					throw new IllegalArgumentException("Chain " + payment.getNetwork() + " not " +
-							"supported!");
+				throw new IllegalArgumentException("Chain " + payment.getNetwork() + " not " +
+						"supported!");
 		};
 
 		return baseUrl + "/tx/" + receiptHash;

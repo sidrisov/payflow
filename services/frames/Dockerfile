@@ -8,7 +8,7 @@ COPY packages/common/package*.json ./packages/common/
 COPY services/frames/package*.json ./services/frames/
 
 # Install dependencies
-RUN npm ci
+RUN npm install
 
 # Build stage
 FROM node:21-alpine AS builder
