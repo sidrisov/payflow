@@ -7,11 +7,12 @@ import {
   arbitrum,
   mode,
   sepolia,
-  zkSync,
-  mainnet
+  zksync,
+  mainnet,
+  ham
 } from 'viem/chains';
 
-export const SUPPORTED_CHAINS = [base, optimism, degen, arbitrum, mode, zora, baseSepolia];
+export const SUPPORTED_CHAINS = [base, optimism, degen, arbitrum, mode, zora, ham];
 
 export default function getNetworkImageSrc(chainId: number): string {
   let fileName;
@@ -34,6 +35,9 @@ export default function getNetworkImageSrc(chainId: number): string {
       break;
     case mode.id:
       fileName = 'mode';
+      break;
+    case ham.id:
+      fileName = 'ham';
       break;
   }
 
@@ -63,7 +67,7 @@ export function getNetworkShortName(chainId: number): string {
     case optimism.id:
       shortName = 'optimism';
       break;
-    case zkSync.id:
+    case zksync.id:
       shortName = 'zksync-era';
       break;
     case arbitrum.id:
@@ -77,6 +81,9 @@ export function getNetworkShortName(chainId: number): string {
       break;
     case degen.id:
       shortName = 'degen';
+      break;
+    case ham.id:
+      shortName = 'ham';
       break;
   }
 
@@ -118,6 +125,9 @@ export function getReceiptUrl(chainId: number, hash: string): string {
       break;
     case mode.id:
       baseUrl = mode.blockExplorers.default.url;
+      break;
+    case ham.id:
+      baseUrl = ham.blockExplorers.default.url;
       break;
   }
 

@@ -224,8 +224,7 @@ export function ProfileMenu({
               {__BUILD_INFO__.vercelEnv !== 'production' && ` • ${__BUILD_INFO__.vercelEnv}`}
               <br />
               <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                {__BUILD_INFO__.commitHash} •{' '}
-                {new Date(__BUILD_INFO__.buildTime).toLocaleDateString()}
+                {__BUILD_INFO__.commitHash} • {__BUILD_INFO__.buildTime}
               </Typography>
             </ListItemText>
           </MenuItem>

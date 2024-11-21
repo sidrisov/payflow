@@ -2,6 +2,7 @@
   "workspaces": [
     "packages/common",
     "app",
+    "home",
     "services/frames",
     "services/onchain"
   ],
