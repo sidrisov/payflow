@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 import {
   AppBar,
@@ -10,10 +11,12 @@ import {
   Container,
   Paper,
   BottomNavigation,
-  BottomNavigationAction
+  BottomNavigationAction,
+  Typography,
+  Stack
 } from '@mui/material';
 
-import { RiApps2Fill, RiApps2Line, RiCopperCoinFill } from 'react-icons/ri';
+import { RiApps2Fill, RiApps2Line } from 'react-icons/ri';
 import { CgProfile } from 'react-icons/cg';
 
 import { ProfileContext } from '../contexts/UserContext';
@@ -24,7 +27,7 @@ import { AppSettings } from '../types/AppSettingsType';
 import { ProfileMenu } from '../components/menu/ProfileMenu';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import ProfileAvatar from '../components/avatars/ProfileAvatar';
-import PrimaryFlowOnboardingDialog from '../components/dialogs/PrimaryFlowOnboardingDialog';
+import PayflowBalanceDialog from '../components/dialogs/PayflowBalanceDialog';
 import { DAPP_URL } from '../utils/urlConstants';
 import { useTokenPrices } from '../utils/queries/prices';
 import { IoHomeOutline, IoHomeSharp, IoSearch, IoSearchOutline } from 'react-icons/io5';
@@ -38,6 +41,8 @@ import Logo from '../components/Logo';
 
 import { isIOS } from 'react-device-detect';
 import { GiTwoCoins } from 'react-icons/gi';
+import { TbHandClick } from 'react-icons/tb';
+import { green } from '@mui/material/colors';
 
 export default function AppLayout({
   profile,
@@ -108,6 +113,67 @@ export default function AppLayout({
   const {
     needRefresh: [needRefresh]
   } = useRegisterSW();
+
+  const [showPayflowBalance, setShowPayflowBalance] = useState(false);
+
+  useEffect(() => {
+    if (!profile || location.pathname !== '/') {
+      return;
+    }
+
+    const hasUserDismissed = localStorage.getItem('payflow:balance:prompt:dismissed') === 'true';
+    if (
+      !hasUserDismissed &&
+      !profile.flows?.find((f) => !f.archived && (!f.type || f.type === 'REGULAR'))
+    ) {
+      toast(
+        <Stack spacing={1}>
+          <Typography textAlign="start" fontSize={14} fontWeight="bold">
+            Payflow Balance
+            <Typography variant="caption" display="block" color="text.secondary">
+              1-click gasless payments
+            </Typography>
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => {
+                setShowPayflowBalance(true);
+                toast.dismiss();
+              }}
+              color="inherit"
+              sx={{
+                borderRadius: 3,
+                border: 1,
+                '&:hover': {
+                  backgroundColor: green.A700,
+                  borderColor: green.A700,
+                  color: 'black'
+                }
+              }}>
+              Create
+            </Button>
+            <Button
+              variant="text"
+              size="small"
+              onClick={() => {
+                localStorage.setItem('payflow:balance:prompt:dismissed', 'true');
+                toast.dismiss();
+              }}
+              color="inherit"
+              sx={{ borderRadius: 3 }}>
+              Dismiss
+            </Button>
+          </Box>
+        </Stack>,
+        {
+          autoClose: false,
+          icon: <TbHandClick size={24} />
+        }
+      );
+    }
+  }, [location.pathname, profile]);
 
   // specify container height,
   // otherwise privy will have an issue displaying the dialog content
@@ -333,12 +399,12 @@ export default function AppLayout({
           }}
         />
       )}
-      {location.pathname === '/' && profile && !profile.defaultFlow && (
-        <PrimaryFlowOnboardingDialog
-          fullScreen={isMobile}
-          open={!profile.defaultFlow}
+
+      {profile && (
+        <PayflowBalanceDialog
+          open={showPayflowBalance}
           profile={profile}
-          closeStateCallback={() => {}}
+          closeStateCallback={() => setShowPayflowBalance(false)}
         />
       )}
     </ProfileContext.Provider>

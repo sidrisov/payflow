@@ -33,7 +33,7 @@ public class FarcasterMessagingService implements IFarcasterMessagingService {
 
 		try {
 			val response = webClient.put()
-					.uri("/v2/ext-send-direct-cast")
+					.uri("/fc/message")
 					.bodyValue(message)
 					.retrieve().bodyToMono(DirectCastResponse.class).block();
 			log.debug("Direct cast message response: {}", response);

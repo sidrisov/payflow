@@ -4,10 +4,7 @@ import {
   Dialog,
   DialogContent,
   DialogProps,
-  Typography,
-  useMediaQuery,
-  useTheme
-} from '@mui/material';
+  Typography} from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { ProfileType } from '../../types/ProfileType';
 import { BackDialogTitle } from './BackDialogTitle';

@@ -9,7 +9,7 @@ import {
   Collapse
 } from '@mui/material';
 import { FlowType } from '../../types/FlowType';
-import { PlayForWork, ExpandMore, ExpandLess, MoreVert } from '@mui/icons-material';
+import { ExpandMore, ExpandLess, MoreVert, Add } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { useContext, useEffect, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
@@ -19,6 +19,7 @@ import { PaymentFlowSection } from '../PaymentFlowSection';
 import ResponsiveDialog, { ResponsiveDialogProps } from './ResponsiveDialog';
 import { FaCheckCircle, FaRegCircle } from 'react-icons/fa';
 import { HiOutlineDownload } from 'react-icons/hi';
+import { CreateFlowDialog } from './CreateFlowDialog';
 
 export type ChooseFlowMenuProps = ResponsiveDialogProps &
   CloseCallbackType & {
@@ -46,6 +47,7 @@ export function ChooseFlowDialog({
   const [archivedExpanded, setArchivedExpanded] = useState<boolean>(false);
   const [selectedElement, setSelectedElement] = useState<HTMLLIElement | null>(null);
   const [menuFlow, setMenuFlow] = useState<FlowType | null>(null);
+  const [showCreateFlow, setShowCreateFlow] = useState(false);
 
   // Update this function to separate flows into four categories
   const separateFlows = (flows: FlowType[]) => {
@@ -130,7 +132,7 @@ export function ChooseFlowDialog({
               setOpenFlowSettingsMenu(true);
             }}
             sx={{
-              pointerEvents: 'auto' // This ensures the button is always clickable
+              pointerEvents: 'auto'
             }}>
             <MoreVert fontSize="small" />
           </IconButton>
@@ -156,9 +158,29 @@ export function ChooseFlowDialog({
                 overflowY: 'scroll',
                 '-webkit-overflow-scrolling': 'touch'
               }}>
-              <Typography variant="subtitle2" sx={{ px: 2, py: 1, color: 'text.secondary' }}>
-                Native
-              </Typography>
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+                sx={{ px: 2, py: 1 }}>
+                <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
+                  Native
+                </Typography>
+                <IconButton
+                  size="small"
+                  onClick={() => setShowCreateFlow(true)}
+                  sx={{
+                    border: 1,
+                    borderColor: 'divider',
+                    borderRadius: 3,
+                    '&:hover': {
+                      backgroundColor: 'action.hover',
+                      borderColor: green.A700
+                    }
+                  }}>
+                  <Add fontSize="small" />
+                </IconButton>
+              </Stack>
               {regular && regular.length > 0 ? (
                 regular.map(renderMenuItem)
               ) : (
@@ -209,6 +231,17 @@ export function ChooseFlowDialog({
             </Stack>
           </MenuList>
         </ResponsiveDialog>
+
+        <CreateFlowDialog
+          open={showCreateFlow}
+          profile={profile}
+          onClose={() => {}}
+          closeStateCallback={() => {
+            setShowCreateFlow(false);
+            closeStateCallback();
+          }}
+        />
+
         {openFlowSettingsMenu && menuFlow && (
           <FlowSettingsMenu
             open={openFlowSettingsMenu}

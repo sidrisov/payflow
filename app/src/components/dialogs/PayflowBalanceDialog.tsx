@@ -6,8 +6,6 @@ import {
   Typography,
   Box,
   CircularProgress,
-  useTheme,
-  useMediaQuery,
   Avatar,
   AvatarGroup,
   Tooltip
@@ -27,17 +25,16 @@ import { updateProfile } from '../../services/user';
 import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
 import { useAccount } from 'wagmi';
 import { grey } from '@mui/material/colors';
-import { shortenWalletAddressLabel } from '../../utils/address';
+import { shortenWalletAddressLabel2 } from '../../utils/address';
 import NetworkAvatar from '../avatars/NetworkAvatar';
-import { HistoryToggleOff, Info } from '@mui/icons-material';
+import { Info } from '@mui/icons-material';
 import ProfileAvatar from '../avatars/ProfileAvatar';
 import { usePrivy } from '@privy-io/react-auth';
 import { BackDialogTitle } from './BackDialogTitle';
-import axios from 'axios';
-import { API_URL } from '../../utils/urlConstants';
 import { useMobile } from '../../utils/hooks/useMobile';
+import { delay } from '../../utils/delay';
 
-export type PrimaryFlowOnboardingDialogProps = DialogProps &
+export type PayflowBalanceDialogProps = DialogProps &
   CloseCallbackType & {
     profile: ProfileType;
     username?: string | null;
@@ -46,11 +43,11 @@ export type PrimaryFlowOnboardingDialogProps = DialogProps &
 
 const SALT_NONCE = import.meta.env.VITE_DEFAULT_FLOW_CREATE2_SALT_NONCE;
 
-export default function PrimaryFlowOnboardingDialog({
+export default function PayflowBalanceDialog({
   closeStateCallback,
   profile,
   ...props
-}: PrimaryFlowOnboardingDialogProps) {
+}: PayflowBalanceDialogProps) {
   const isMobile = useMobile();
 
   const { loading: loadingWallets, error, wallets, create, reset } = usePreCreateSafeWallets();
@@ -111,10 +108,11 @@ export default function PrimaryFlowOnboardingDialog({
         const success = await updateProfile(updatedProfile);
 
         if (success) {
-          toast.success('Onboarding successfully completed');
+          toast.success('Successfully created');
+          await delay(1000);
           navigate(0);
         } else {
-          toast.error('Failed to update profile, try again!');
+          toast.error('Failed. Try again!');
         }
       } finally {
         setLoadingUpdateProfile(false);
@@ -125,6 +123,7 @@ export default function PrimaryFlowOnboardingDialog({
 
   return (
     <Dialog
+      fullScreen={isMobile}
       disableEnforceFocus
       onClose={handleCloseCampaignDialog}
       {...props}
@@ -141,17 +140,8 @@ export default function PrimaryFlowOnboardingDialog({
       }}>
       <BackDialogTitle
         showOnDesktop
-        title="Set Up Payflow Balance"
-        closeStateCallback={async () => {
-          try {
-            await axios.get(`${API_URL}/api/auth/logout`, {
-              withCredentials: true
-            });
-            navigate('/connect');
-          } catch (error) {
-            toast.error('Failed to logout!');
-          }
-        }}
+        title="Create Payflow Balance"
+        closeStateCallback={closeStateCallback}
       />
 
       <DialogContent>
@@ -237,7 +227,7 @@ export default function PrimaryFlowOnboardingDialog({
                       Identity
                     </Typography>
                     <Typography fontSize={15} fontWeight="bold">
-                      {shortenWalletAddressLabel(profile.identity)}
+                      {shortenWalletAddressLabel2(profile.identity)}
                     </Typography>
                   </Stack>
                 </Stack>
@@ -277,7 +267,7 @@ export default function PrimaryFlowOnboardingDialog({
                   <Info fontSize="small" />
                 </Tooltip>
               </Box>
-              <Box
+              {/* <Box
                 display="flex"
                 flexDirection="row"
                 alignItems="center"
@@ -303,7 +293,7 @@ export default function PrimaryFlowOnboardingDialog({
                     </Typography>
                   </Stack>
                 </Stack>
-              </Box>
+              </Box> */}
             </Stack>
           </Stack>
           {!extraSigner || (address && connector?.id === 'io.privy.wallet') ? (
@@ -323,7 +313,7 @@ export default function PrimaryFlowOnboardingDialog({
                     overflow="hidden"
                     whiteSpace="nowrap"
                     sx={{ maxWidth: 200 }}>
-                    {loadingWallets ? 'setting up' : loadingUpdateProfile ? 'updating' : ''}
+                    {loadingWallets ? 'initializing' : loadingUpdateProfile ? 'updating' : ''}
                   </Typography>
                 </Stack>
               }
