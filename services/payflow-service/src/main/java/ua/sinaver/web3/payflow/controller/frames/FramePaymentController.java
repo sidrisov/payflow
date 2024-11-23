@@ -666,7 +666,7 @@ public class FramePaymentController {
 								new DirectCastMessage(String.valueOf(receiverFid), messageText,
 										UUID.randomUUID()));
 
-						if (!response.result().success()) {
+						if (StringUtils.isBlank(response.result().messageId())) {
 							log.error("Failed to send direct cast with {} for frame payment  " +
 									"completion", messageText);
 						}

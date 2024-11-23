@@ -5,11 +5,11 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
     application
-    id("org.springframework.boot") version "3.3.5"
+    id("org.springframework.boot") version "3.4.0"
     id("io.spring.dependency-management") version "1.1.4"
     id("com.google.cloud.artifactregistry.gradle-plugin") version "2.2.1"
     id("io.freefair.lombok") version "8.4"
-    id("com.netflix.dgs.codegen") version "6.3.0"
+    id("com.netflix.dgs.codegen") version "7.0.2"
 }
 
 application {
@@ -30,7 +30,7 @@ if (project.hasProperty("gcp")) {
     extra["springCloudVersion"] = "2023.0.3"
 }
 
-extra["flywayVersion"] = "10.20.0"
+extra["flywayVersion"] = "11.0.0"
 
 dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
@@ -46,7 +46,7 @@ dependencies {
     implementation("org.springframework.session:spring-session-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-aop")
 
-    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.3")
+    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.9.0")
     implementation("io.jsonwebtoken:jjwt:0.12.6")
 
     if (project.hasProperty("gcp")) {
@@ -81,19 +81,19 @@ dependencies {
     implementation("com.google.code.gson:gson:2.11.0")
 
     // java.lang.NoSuchMethodError: 'reactor.core.publisher.Mono reactor.core.publisher.Mono.onErrorComplete()'
-    implementation("io.projectreactor:reactor-core:3.6.11")
+    implementation("io.projectreactor:reactor-core:3.7.0")
 
-    runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.114.Final:osx-aarch_64")
+    runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.115.Final:osx-aarch_64")
 
     // crypto
-    implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.79")
     implementation("org.web3j:core:4.12.2")
     implementation("org.web3j:contracts:4.12.2")
     //siwe
     implementation("com.moonstoneid:siwe-java:1.0.6")
 
     //lombok
-    compileOnly("org.projectlombok:lombok:1.18.34")
+    compileOnly("org.projectlombok:lombok:1.18.36")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
@@ -103,8 +103,8 @@ dependencies {
     }
 
     // Add these lines
-    implementation("net.javacrumbs.shedlock:shedlock-spring:5.10.2")
-    implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.10.2")
+    implementation("net.javacrumbs.shedlock:shedlock-spring:6.0.1")
+    implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:6.0.1")
 }
 
 

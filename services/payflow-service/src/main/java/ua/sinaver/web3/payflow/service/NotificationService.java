@@ -164,7 +164,7 @@ public class NotificationService {
 			val response = farcasterMessagingService.sendMessage(
 					new DirectCastMessage(receiverFid, messageText, UUID.randomUUID()));
 
-			if (!response.result().success()) {
+			if (StringUtils.isBlank(response.result().messageId())) {
 				log.error("Failed to send direct cast with {} for payment completion", messageText);
 			}
 		} catch (Throwable t) {

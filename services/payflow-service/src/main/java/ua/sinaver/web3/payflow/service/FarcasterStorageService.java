@@ -3,6 +3,7 @@ package ua.sinaver.web3.payflow.service;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -90,7 +91,7 @@ public class FarcasterStorageService {
 												username, fid),
 										UUID.randomUUID()));
 
-								if (response.result().success()) {
+								if (StringUtils.isNotBlank(response.result().messageId())) {
 									storageNotification.setLastCheckedAt(Instant.now());
 								} else {
 									// small hack to delay check by 1 day

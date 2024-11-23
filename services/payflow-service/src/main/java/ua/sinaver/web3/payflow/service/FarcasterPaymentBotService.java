@@ -278,7 +278,7 @@ public class FarcasterPaymentBotService {
 					val processed = directMessagingService.sendMessage(new DirectCastMessage(
 							String.valueOf(payerFarcasterUser.fid()), castText, UUID.randomUUID()));
 
-					if (processed != null && processed.result().success()) {
+					if (processed != null && StringUtils.isNotBlank(processed.result().messageId())) {
 						job.setStatus(PaymentBotJob.Status.PROCESSED);
 						return;
 					}
