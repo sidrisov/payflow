@@ -3,6 +3,7 @@ package ua.sinaver.web3.payflow.service;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -22,7 +23,7 @@ import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import java.util.Collections;
 import java.util.List;
 
-import static ua.sinaver.web3.payflow.config.CacheConfig.NEYNAR_FARCASTER_USER_CACHE;
+import static ua.sinaver.web3.payflow.config.CacheConfig.*;
 
 @Slf4j
 @Service
@@ -40,6 +41,7 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 	}
 
 	@Override
+	@Cacheable(value = NEYNAR_STORAGE_USAGE_CACHE, unless = "#result==null")
 	public StorageUsage fetchStorageUsage(int fid) {
 		log.debug("Calling Neynar Storage Usage API by fid {}", fid);
 		return neynarClient.get()
@@ -68,7 +70,7 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 				.orElse(null);
 	}
 
-	@Override
+	@Cacheable(value = NEYNAR_STORAGE_ALLOCATION_CACHE, unless = "#result==null")
 	public StorageAllocationsResponse fetchStorageAllocations(int fid) {
 		log.debug("Calling Neynar Storage Allocations API by fid {}", fid);
 		return neynarClient.get()
@@ -96,6 +98,11 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 				})
 				.blockOptional()
 				.orElse(null);
+	}
+
+	@CacheEvict(value = {NEYNAR_STORAGE_USAGE_CACHE, NEYNAR_STORAGE_ALLOCATION_CACHE})
+	public void clearStorageCache(int fid) {
+		log.debug("Clearing farcaster storage cache for: {}", fid);
 	}
 
 	@Override

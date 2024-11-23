@@ -3,13 +3,8 @@ import { Helmet } from 'react-helmet-async';
 import { Box, Card, Container, Stack, Tooltip, Typography } from '@mui/material';
 import { ElectricBolt, InfoOutlined } from '@mui/icons-material';
 import CastActionButton from '../components/buttons/CastActionButton';
-import { useSearchParams } from 'react-router-dom';
-import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ProfileContext } from '../contexts/UserContext';
-import { SelectedIdentityType } from '../types/ProfileType';
-import { Address } from 'viem';
-import PayComposerActionDialog from '../components/dialogs/PayComposerActionDialog';
-import { useIdentity } from '../utils/queries/profiles';
 import { PiPersonSimpleRunBold, PiTipJar } from 'react-icons/pi';
 import UsefulComposerActionDialog from '../components/dialogs/UsefulComposerActionDialog';
 import ContributionJarComposerDialog from '../components/dialogs/ContributionJarComposerDialog';
@@ -19,33 +14,23 @@ import ActivityComposerActionDialog from '../components/dialogs/ActivityComposer
 import { TbArrowsDoubleNeSw } from 'react-icons/tb';
 
 export default function Composer() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const recipientIdentity = searchParams.get('recipient');
+  const recipient = searchParams.get('recipient');
   const action = searchParams.get('action');
-
-  const { isLoading: isRecipientFetchingLoading, data: fetchedRecipientIdentity } = useIdentity(
-    recipientIdentity as string
-  );
 
   const [openComposerAction, setOpenComposerAction] = useState<string | undefined>(
     action as string
   );
 
   const { profile } = useContext(ProfileContext);
-  const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(
-    openComposerAction === 'pay' && !isRecipientFetchingLoading
-  );
-
-  const [recipient, setRecipient] = useState<SelectedIdentityType>();
 
   useEffect(() => {
-    if (fetchedRecipientIdentity) {
-      setRecipient({
-        identity: fetchedRecipientIdentity,
-        type: fetchedRecipientIdentity.profile ? 'profile' : 'address'
-      });
+    if (openComposerAction === 'pay') {
+      const paymentUrl = recipient ? `/payment/create?recipient=${recipient}` : '/payment/create';
+      navigate(paymentUrl);
     }
-  }, [isRecipientFetchingLoading, fetchedRecipientIdentity]);
+  }, [openComposerAction, recipient, navigate]);
 
   return (
     <>
@@ -76,8 +61,10 @@ export default function Composer() {
                 title="Pay"
                 description="New payment frame"
                 onClick={async () => {
-                  setOpenComposerAction('pay');
-                  setOpenSearchIdentity(true);
+                  const paymentUrl = recipient
+                    ? `/payment/create?recipient=${recipient}`
+                    : '/payment/create';
+                  navigate(paymentUrl);
                 }}
                 startIcon={<ElectricBolt sx={{ width: 25, height: 25 }} />}
               />
@@ -130,23 +117,7 @@ export default function Composer() {
         ) : (
           <LoadingPayflowEntryLogo />
         )}
-        {openComposerAction === 'pay' && recipient && profile && (
-          <PayComposerActionDialog
-            open={recipient != null}
-            sender={{
-              type: 'profile',
-              identity: {
-                address: profile.identity as Address,
-                profile: profile
-              }
-            }}
-            recipient={recipient}
-            setOpenSearchIdentity={setOpenSearchIdentity}
-            closeStateCallback={async () => {
-              setRecipient(undefined);
-            }}
-          />
-        )}
+
         {(openComposerAction === 'useful' || openComposerAction === 'earn') && profile && (
           <UsefulComposerActionDialog
             open={true}
@@ -171,21 +142,6 @@ export default function Composer() {
             open={true}
             onClose={() => {
               setOpenComposerAction(undefined);
-            }}
-          />
-        )}
-
-        {openSearchIdentity && profile && (
-          <SearchIdentityDialog
-            hideBackButton={!Boolean(recipient)}
-            title="Search Recipient"
-            address={profile.identity}
-            open={openSearchIdentity}
-            closeStateCallback={async () => {
-              setOpenSearchIdentity(false);
-            }}
-            selectIdentityCallback={async (recipient) => {
-              setRecipient(recipient);
             }}
           />
         )}

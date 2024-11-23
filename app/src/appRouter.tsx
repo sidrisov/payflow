@@ -14,6 +14,7 @@ const LazyPublicProfile = lazy(() => import('./layouts/PublicProfile'));
 const LazyJar = lazy(() => import('./pages/Jar'));
 const LazyActions = lazy(() => import('./pages/Actions'));
 const LazyComposer = lazy(() => import('./pages/Composer'));
+const LazyCreatePayment = lazy(() => import('./pages/CreatePayment'));
 const LazyPayment = lazy(() => import('./pages/Payment'));
 const LazyEarn = lazy(() => import('./pages/Earn'));
 const LazyPage404 = lazy(() => import('./pages/Page404'));
@@ -75,6 +76,11 @@ export const appRouter = createBrowserRouter([
       {
         path: '/payment/:refId',
         element: <LazyWrapper component={LazyPayment} />,
+        errorElement: <LazyWrapper component={LazyPage404} />
+      },
+      {
+        path: '/payment/create',
+        element: <LazyWrapper component={LazyCreatePayment} />,
         errorElement: <LazyWrapper component={LazyPage404} />
       },
       {

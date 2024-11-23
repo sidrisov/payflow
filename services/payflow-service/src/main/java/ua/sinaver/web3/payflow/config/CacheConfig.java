@@ -1,8 +1,10 @@
 package ua.sinaver.web3.payflow.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.val;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
@@ -13,7 +15,10 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
+import ua.sinaver.web3.payflow.message.farcaster.StorageAllocationsResponse;
+import ua.sinaver.web3.payflow.message.farcaster.StorageUsage;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -30,6 +35,9 @@ public class CacheConfig {
 	public static final String FARCASTER_VERIFICATIONS_CACHE_NAME = CACHE_PREFIX_VERSION + "1" +
 			"verifications";
 	public static final String NEYNAR_FARCASTER_USER_CACHE = CACHE_PREFIX_VERSION + "farcaster-users";
+	public static final String NEYNAR_STORAGE_USAGE_CACHE = CACHE_PREFIX_VERSION + "farcaster-storage-usage";
+	public static final String NEYNAR_STORAGE_ALLOCATION_CACHE = CACHE_PREFIX_VERSION + "farcaster-storage-allocation";
+
 	public static final String USERS_CACHE_NAME = CACHE_PREFIX_VERSION + "users";
 	public static final String INVITATIONS_CACHE_NAME = CACHE_PREFIX_VERSION + "invitations";
 
@@ -43,6 +51,11 @@ public class CacheConfig {
 	private Duration verificationsExpireAfterWriteDuration;
 	@Value("${spring.cache.socials.maxSize:1000}")
 	private int socialsMaxSize;
+	@Value("${spring.cache.storage.expireAfterWrite:4h}")
+	private Duration storageExpireAfterWriteDuration;
+
+	@Autowired
+	private ObjectMapper objectMapper;
 
 	// redis cache
 	@Bean
@@ -52,62 +65,40 @@ public class CacheConfig {
 				.disableCachingNullValues()
 				.entryTtl(Duration.ofMinutes(30))
 				.enableTimeToIdle()
-				.serializeValuesWith(RedisSerializationContext
-						.SerializationPair
+				.serializeValuesWith(RedisSerializationContext.SerializationPair
 						.fromSerializer(new GenericJackson2JsonRedisSerializer()));
 	}
 
 	@Bean
 	@Profile("redis")
 	CacheManager redisCacheManager(RedisConnectionFactory connectionFactory,
-	                               RedisCacheConfiguration configuration) {
-		val serializer = new GenericJackson2JsonRedisSerializer();
-		val contactsCacheConfigs = RedisCacheConfiguration.defaultCacheConfig()
-				.disableCachingNullValues()
-				.entryTtl(contactsExpireAfterWriteDuration)
-				.serializeValuesWith(RedisSerializationContext
-						.SerializationPair
-						.fromSerializer(serializer));
-
-		val contactsListCacheConfigs = RedisCacheConfiguration.defaultCacheConfig()
-				.disableCachingNullValues()
-				.entryTtl(contactsListExpireAfterWriteDuration)
-				.serializeValuesWith(RedisSerializationContext
-						.SerializationPair
-						.fromSerializer(serializer));
-
-		val fanTokenCacheConfigs = RedisCacheConfiguration.defaultCacheConfig()
-				.disableCachingNullValues()
-				.entryTtl(Duration.ofMinutes(5))
-				.serializeValuesWith(RedisSerializationContext
-						.SerializationPair
-						.fromSerializer(serializer));
-
-		val socialsCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
-				.disableCachingNullValues()
-				.entryTtl(socialsExpireAfterWriteDuration)
-				.serializeValuesWith(RedisSerializationContext
-						.SerializationPair
-						.fromSerializer(serializer));
-
-		val verificationsCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
-				.disableCachingNullValues()
-				.entryTtl(verificationsExpireAfterWriteDuration)
-				.serializeValuesWith(RedisSerializationContext
-						.SerializationPair
-						.fromSerializer(serializer));
-
+			RedisCacheConfiguration configuration) {
 		val cacheConfigurations = new HashMap<String, RedisCacheConfiguration>();
-		cacheConfigurations.put(CONTACTS_CACHE_NAME, contactsCacheConfigs);
-		cacheConfigurations.put(CONTACT_LIST_CACHE_NAME, contactsListCacheConfigs);
-		cacheConfigurations.put(FAN_TOKENS_CACHE_NAME, contactsCacheConfigs);
-		cacheConfigurations.put(FAN_TOKEN_CACHE_NAME, fanTokenCacheConfigs);
-		cacheConfigurations.put(SOCIALS_CACHE_NAME, socialsCacheConfig);
-		cacheConfigurations.put(SOCIALS_INSIGHTS_CACHE_NAME, socialsCacheConfig);
-		cacheConfigurations.put(NEYNAR_FARCASTER_USER_CACHE, verificationsCacheConfig);
-		cacheConfigurations.put(FARCASTER_VERIFICATIONS_CACHE_NAME, verificationsCacheConfig);
+
+		// Basic configs with different TTLs
+		cacheConfigurations.put(CONTACTS_CACHE_NAME, configuration.entryTtl(contactsExpireAfterWriteDuration));
+		cacheConfigurations.put(CONTACT_LIST_CACHE_NAME, configuration.entryTtl(contactsListExpireAfterWriteDuration));
+		cacheConfigurations.put(FAN_TOKENS_CACHE_NAME, configuration.entryTtl(contactsExpireAfterWriteDuration));
+		cacheConfigurations.put(FAN_TOKEN_CACHE_NAME, configuration.entryTtl(Duration.ofMinutes(5)));
+		cacheConfigurations.put(SOCIALS_CACHE_NAME, configuration.entryTtl(socialsExpireAfterWriteDuration));
+		cacheConfigurations.put(SOCIALS_INSIGHTS_CACHE_NAME, configuration.entryTtl(socialsExpireAfterWriteDuration));
+		cacheConfigurations.put(NEYNAR_FARCASTER_USER_CACHE,
+				configuration.entryTtl(verificationsExpireAfterWriteDuration));
+		cacheConfigurations.put(FARCASTER_VERIFICATIONS_CACHE_NAME,
+				configuration.entryTtl(verificationsExpireAfterWriteDuration));
 		cacheConfigurations.put(USERS_CACHE_NAME, configuration);
 		cacheConfigurations.put(INVITATIONS_CACHE_NAME, configuration);
+
+		// Special configs with custom serializers
+		cacheConfigurations.put(NEYNAR_STORAGE_USAGE_CACHE,
+				configuration.entryTtl(storageExpireAfterWriteDuration)
+						.serializeValuesWith(RedisSerializationContext.SerializationPair
+								.fromSerializer(new Jackson2JsonRedisSerializer<>(objectMapper, StorageUsage.class))));
+		cacheConfigurations.put(NEYNAR_STORAGE_ALLOCATION_CACHE,
+				configuration.entryTtl(storageExpireAfterWriteDuration)
+						.serializeValuesWith(RedisSerializationContext.SerializationPair
+								.fromSerializer(new Jackson2JsonRedisSerializer<>(objectMapper,
+										StorageAllocationsResponse.class))));
 
 		return RedisCacheManager
 				.builder(connectionFactory)
@@ -121,49 +112,36 @@ public class CacheConfig {
 	@Profile("caffeine")
 	CacheManager caffeineCacheManager() {
 		val cacheManager = new CaffeineCacheManager();
-
-		cacheManager.registerCustomCache(CONTACTS_CACHE_NAME,
-				buildCache(contactsExpireAfterWriteDuration));
-
-		cacheManager.registerCustomCache(CONTACT_LIST_CACHE_NAME,
-				buildCache(contactsListExpireAfterWriteDuration));
-
-		cacheManager.registerCustomCache(FAN_TOKENS_CACHE_NAME,
-				buildCache(contactsListExpireAfterWriteDuration));
-
-		cacheManager.registerCustomCache(FAN_TOKEN_CACHE_NAME,
-				buildCache(Duration.ofMinutes(5)));
-
-		cacheManager.registerCustomCache(SOCIALS_CACHE_NAME,
-				buildCache(socialsExpireAfterWriteDuration, socialsMaxSize));
-
-		cacheManager.registerCustomCache(SOCIALS_INSIGHTS_CACHE_NAME,
-				buildCache(socialsExpireAfterWriteDuration, socialsMaxSize));
-
-		cacheManager.registerCustomCache(FARCASTER_VERIFICATIONS_CACHE_NAME,
+		// Define cache specifications
+		val cacheSpecs = new HashMap<String, Cache<Object, Object>>();
+		cacheSpecs.put(CONTACTS_CACHE_NAME, buildCache(contactsExpireAfterWriteDuration));
+		cacheSpecs.put(CONTACT_LIST_CACHE_NAME, buildCache(contactsListExpireAfterWriteDuration));
+		cacheSpecs.put(FAN_TOKENS_CACHE_NAME, buildCache(contactsListExpireAfterWriteDuration));
+		cacheSpecs.put(FAN_TOKEN_CACHE_NAME, buildCache(Duration.ofMinutes(5)));
+		cacheSpecs.put(SOCIALS_CACHE_NAME, buildCache(socialsExpireAfterWriteDuration, socialsMaxSize));
+		cacheSpecs.put(SOCIALS_INSIGHTS_CACHE_NAME, buildCache(socialsExpireAfterWriteDuration, socialsMaxSize));
+		cacheSpecs.put(FARCASTER_VERIFICATIONS_CACHE_NAME,
 				buildCache(verificationsExpireAfterWriteDuration, socialsMaxSize));
+		cacheSpecs.put(NEYNAR_FARCASTER_USER_CACHE, buildCache(verificationsExpireAfterWriteDuration, socialsMaxSize));
+		cacheSpecs.put(USERS_CACHE_NAME, buildCache(Duration.ofHours(24)));
+		cacheSpecs.put(INVITATIONS_CACHE_NAME, buildCache(Duration.ofHours(24)));
+		cacheSpecs.put(NEYNAR_STORAGE_USAGE_CACHE, buildCache(storageExpireAfterWriteDuration));
+		cacheSpecs.put(NEYNAR_STORAGE_ALLOCATION_CACHE, buildCache(storageExpireAfterWriteDuration));
 
-		cacheManager.registerCustomCache(NEYNAR_FARCASTER_USER_CACHE,
-				buildCache(verificationsExpireAfterWriteDuration, socialsMaxSize));
-
-		cacheManager.registerCustomCache(USERS_CACHE_NAME,
-				buildCache(Duration.ofHours(24)));
-
-		cacheManager.registerCustomCache(INVITATIONS_CACHE_NAME,
-				buildCache(Duration.ofHours(24)));
-
+		// Register all caches
+		cacheSpecs.forEach(cacheManager::registerCustomCache);
 
 		return cacheManager;
 	}
 
-	private Cache buildCache(Duration expireAfterWrite, int maximumSize) {
+	private Cache<Object, Object> buildCache(Duration expireAfterWrite, int maximumSize) {
 		return Caffeine.newBuilder()
 				.expireAfterWrite(expireAfterWrite)
 				.maximumSize(maximumSize)
 				.build();
 	}
 
-	private Cache buildCache(Duration expireAfterWrite) {
+	private Cache<Object, Object> buildCache(Duration expireAfterWrite) {
 		return buildCache(expireAfterWrite, 200);
 	}
 }

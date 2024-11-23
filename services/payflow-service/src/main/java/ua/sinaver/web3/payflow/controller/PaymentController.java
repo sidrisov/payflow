@@ -16,6 +16,7 @@ import ua.sinaver.web3.payflow.message.PaymentReferenceMessage;
 import ua.sinaver.web3.payflow.message.PaymentUpdateMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.ContactBookService;
+import ua.sinaver.web3.payflow.service.FarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.NotificationService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
@@ -46,6 +47,9 @@ public class PaymentController {
 
 	@Autowired
 	private NotificationService notificationService;
+
+	@Autowired
+	private FarcasterNeynarService neynarService;
 
 	@GetMapping
 	public List<PaymentMessage> payments(@RequestParam(value = "hashes") List<String> hashes,
@@ -254,8 +258,13 @@ public class PaymentController {
 			payment.setCompletedAt(Instant.now());
 
 			notificationService.notifyPaymentCompletion(payment, user);
+
 			// TODO: move to event system
 			contactBookService.cleanContactsCache(user);
+			if (StringUtils.equals(payment.getCategory(), "fc_storage")) {
+				neynarService.clearStorageCache(payment.getReceiverFid());
+			}
+
 			log.debug("Payment was updated: {}", payment);
 		}
 	}
