@@ -9,6 +9,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.PreferredTokens;
+import ua.sinaver.web3.payflow.message.Token;
+import ua.sinaver.web3.payflow.service.TokenService;
 import ua.sinaver.web3.payflow.service.UserService;
 
 import java.security.Principal;
@@ -22,6 +24,14 @@ import java.util.List;
 public class TokenController {
 	@Autowired
 	private UserService userService;
+
+	@Autowired
+	private TokenService tokenService;
+
+	@GetMapping
+	public List<Token> getAllTokens() {
+		return tokenService.getTokens();
+	}
 
 	@PutMapping("/preferred")
 	@ResponseStatus(HttpStatus.OK)

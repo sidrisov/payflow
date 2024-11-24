@@ -12,9 +12,6 @@ import dotenv from 'dotenv';
 import { welcomeProfileHtml } from './components/WelcomeProfile';
 import { invitedHtml } from './components/Invited';
 import { notInvitedHtml } from './components/NotInvited';
-import { giftHtml } from './components/Gift';
-import { giftLeaderboardHtml } from './components/GiftLeaderboard';
-import { GiftProfileType } from './types/GiftType';
 import { BalanceType } from './types/BalanceType';
 import { PaymentType } from './types/PaymentType';
 import { paymentHtml } from './components/Payment';
@@ -364,55 +361,6 @@ async function startServer() {
       const response = await axios.get(`${API_URL}/api/user/${identity}`);
       const profileData = response.data as ProfileType;
       const image = await htmlToImage(profileHtml(profileData, balances), 'landscape');
-      res.type('png').send(image);
-    } catch (error) {
-      console.error(error);
-      res.status(500).send('Error retrieving profile data');
-    }
-  });
-
-  app.get('/images/profile/:identity/gift/image.png', async (req, res) => {
-    const gifter = req.params.identity;
-    const error = req.query.error?.toString();
-
-    try {
-      const gifterProfile = (await axios.get(`${API_URL}/api/user/${gifter}`)).data as ProfileType;
-
-      const image = await htmlToImage(giftHtml(gifterProfile, undefined, error), 'landscape');
-      res.type('png').send(image);
-    } catch (error) {
-      console.error(error);
-      res.status(500).send('Error retrieving profile data');
-    }
-  });
-
-  app.get('/images/profile/:identity/gift/:contact/image.png', async (req, res) => {
-    const gifter = req.params.identity;
-    const gifted = req.params.contact;
-
-    try {
-      const gifterProfile = (await axios.get(`${API_URL}/api/user/${gifter}`)).data as ProfileType;
-      const giftedProfile = (await axios.get(`${API_URL}/api/user/${gifted}`)).data as ProfileType;
-
-      const image = await htmlToImage(giftHtml(gifterProfile, giftedProfile), 'landscape');
-      res.type('png').send(image);
-    } catch (error) {
-      console.error(error);
-      res.status(500).send('Error retrieving profile data');
-    }
-  });
-
-  app.get('/images/profile/:identity/gift/leaderboard.png', async (req, res) => {
-    const identity = req.params.identity;
-
-    try {
-      const profile = (await axios.get(`${API_URL}/api/user/${identity}`)).data as ProfileType;
-
-      const giftLeaderboard = (
-        await axios.get(`${API_URL}/api/farcaster/frames/gift/${identity}/leaderboard`)
-      ).data as GiftProfileType[];
-
-      const image = await htmlToImage(giftLeaderboardHtml(profile, giftLeaderboard), 'landscape');
       res.type('png').send(image);
     } catch (error) {
       console.error(error);

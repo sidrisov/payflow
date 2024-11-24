@@ -5,7 +5,7 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
     application
-    id("org.springframework.boot") version "3.4.0"
+    id("org.springframework.boot") version "3.3.6"
     id("io.spring.dependency-management") version "1.1.4"
     id("com.google.cloud.artifactregistry.gradle-plugin") version "2.2.1"
     id("io.freefair.lombok") version "8.4"
@@ -26,7 +26,7 @@ repositories {
 }
 
 if (project.hasProperty("gcp")) {
-    extra["springCloudGcpVersion"] = "5.6.0"
+    extra["springCloudGcpVersion"] = "5.8.0"
     extra["springCloudVersion"] = "2023.0.3"
 }
 

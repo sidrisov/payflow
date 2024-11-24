@@ -96,6 +96,8 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.POST, "/farcaster/webhooks/**").permitAll()
 						// Channel membership
 						.requestMatchers(HttpMethod.GET, "/farcaster/membership/allowed").permitAll()
+						// Tokens API
+						.requestMatchers(HttpMethod.GET, "/tokens").permitAll()
 						// other authenticated
 						.anyRequest().authenticated())
 				.sessionManagement(session -> session
