@@ -3,12 +3,12 @@ FROM node:21-alpine AS deps
 WORKDIR /root
 
 # Copy package files
-COPY package*.json ./
-COPY packages/common/package*.json ./packages/common/
-COPY services/frames/package*.json ./services/frames/
+COPY package.json package-lock.json ./
+COPY packages/common/package.json ./packages/common/
+COPY services/frames/package.json ./services/frames/
 
 # Install dependencies
-RUN npm install
+RUN npm ci
 
 # Build stage
 FROM node:21-alpine AS builder
@@ -18,8 +18,8 @@ COPY --from=deps /root/node_modules ./node_modules
 
 # Copy package files directly from source
 COPY package*.json ./
-COPY packages/common/package*.json ./packages/common/
-COPY services/frames/package*.json ./services/frames/
+COPY packages/common/package.json ./packages/common/
+COPY services/frames/package.json ./services/frames/
 
 # Copy source
 COPY packages/common ./packages/common
