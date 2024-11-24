@@ -229,14 +229,23 @@ export function TokenAmountSection({
                   sx={{ borderRadius: 3, height: 35, width: 80 }}
                 />
               ) : (
-                <Typography fontSize={16} fontWeight="bold" noWrap>
+                <Typography 
+                  fontSize={16} 
+                  fontWeight="bold" 
+                  noWrap
+                  onClick={() => setUsdAmountMode(!usdAmountMode)}
+                  sx={{ 
+                    cursor: 'pointer',
+                    '&:hover': { opacity: 0.8 }
+                  }}
+                >
                   {usdAmountMode
                     ? `${formatAmountWithSuffix(
                         normalizeNumberPrecision(paymentAmount ?? 0)
                       )} ${selectedToken.id.toUpperCase()}`
                     : `$ ${formatAmountWithSuffix(
                         normalizeNumberPrecision(paymentAmountUSD ?? 0)
-                      )}`}
+                      )} USD`}
                 </Typography>
               )}
 

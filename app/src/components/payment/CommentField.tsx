@@ -22,7 +22,7 @@ export const CommentField: React.FC<CommentFieldProps> = ({
       onChange={(e) => setComment(e.target.value)}
       multiline
       maxRows={3}
-      helperText={comment.length > 0 ? `${comment.length}/32` : undefined}
+      helperText={comment.length > 0 ? `${comment.length}/64` : undefined}
       slotProps={{
         input: {
           startAdornment: (
@@ -37,7 +37,7 @@ export const CommentField: React.FC<CommentFieldProps> = ({
           )
         },
         htmlInput: {
-          maxLength: 32
+          maxLength: 64
         },
         formHelperText: {
           sx: {
