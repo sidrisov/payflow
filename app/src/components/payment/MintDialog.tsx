@@ -35,7 +35,6 @@ import { SiFarcaster } from 'react-icons/si';
 import { TbCopy } from 'react-icons/tb';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { createShareUrls } from '../../utils/mint';
-import { useDebounce } from 'use-debounce';
 import { createCastPostMessage, createComposeCastUrl } from '../../utils/warpcast';
 import { QuantitySelector } from './QuantitySelector';
 import { BasePaymentDialog } from './BasePaymentDialog';
@@ -70,7 +69,6 @@ export default function MintDialog({
     sender.identity.profile?.defaultFlow ?? (sender.identity.profile?.flows?.[0] as FlowType)
   );
 
-
   const chainId = useChainId();
 
   const [paymentWallet, setPaymentWallet] = useState<FlowWalletType>();
@@ -80,12 +78,7 @@ export default function MintDialog({
   const isGift = payment.receiverAddress !== sender.identity.address;
 
   const [zoraCommentEnabled, setTxCommentEnabled] = useState(false);
-
-  const payflowCommentSection = `${
-    isGift ? `Gifted to @${recipientSocial.profileName}` : 'Minted'
-  } by @${senderSocial.profileName} via @payflow`;
   const [comment, setComment] = useState('');
-  const [debouncedComment] = useDebounce(comment, 1000);
 
   const {
     data: mintData,
@@ -96,9 +89,6 @@ export default function MintDialog({
     mint,
     minter: selectedFlow.wallets[0].address,
     recipient: payment.receiverAddress ?? sender.identity.address,
-    comment: zoraCommentEnabled
-      ? `${payflowCommentSection}${debouncedComment ? `:\n\n"${debouncedComment}"` : ''}`
-      : undefined,
     amount: mintCount
   });
 
@@ -248,10 +238,10 @@ export default function MintDialog({
             mintStatus === 'ended'
               ? 'Mint Ended'
               : mintStatus === 'upcoming'
-              ? 'Mint Not Started'
-              : secondary
-              ? 'Buy On Secondary'
-              : 'Mint'
+                ? 'Mint Not Started'
+                : secondary
+                  ? 'Buy On Secondary'
+                  : 'Mint'
           }
           disabled={!hasPaymentOption}
           paymentTx={paymentTx}
@@ -344,8 +334,6 @@ export default function MintDialog({
           }
           comment={comment}
           setComment={setComment}
-          /*             zoraCommentEnabled={zoraCommentEnabled}
-           */
         />
       </Stack>
       <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">

@@ -107,7 +107,11 @@ const GET_COLLECTION_SALE_DETAILS = `
 `;
 
 class MintPaymentError extends Error {
-  constructor(message: string, public provider: string, public originalError?: any) {
+  constructor(
+    message: string,
+    public provider: string,
+    public originalError?: any
+  ) {
     super(message);
     this.name = 'MintPaymentError';
   }
@@ -200,13 +204,11 @@ async function fetchMintPaymentTx({
   mint,
   minter,
   recipient,
-  comment,
   amount
 }: {
   mint: MintMetadata;
   minter: Address;
   recipient: Address;
-  comment?: string;
   amount: number;
 }): Promise<MintPaymentResult> {
   try {
@@ -252,8 +254,7 @@ async function fetchMintPaymentTx({
             tokenContract: mint.contract,
             tokenId: mint.tokenId,
             mintReferral: mint.referral,
-            mintRecipient: recipient,
-            mintComment: comment
+            mintRecipient: recipient
           });
 
           return {
@@ -360,13 +361,11 @@ export function useMintPaymentTx({
   mint,
   minter,
   recipient,
-  comment,
   amount
 }: {
   mint: MintMetadata;
   minter: Address;
   recipient: Address | undefined;
-  comment?: string;
   amount: number;
 }) {
   return useQuery<MintPaymentResult, Error>({
@@ -374,10 +373,10 @@ export function useMintPaymentTx({
     staleTime: Infinity,
     refetchInterval: 30_000,
     retry: false,
-    queryKey: ['mintPaymentTx', mint, minter, recipient, comment, amount],
+    queryKey: ['mintPaymentTx', mint, minter, recipient, amount],
     queryFn: async () => {
       if (!recipient) throw new Error('Recipient not found');
-      return fetchMintPaymentTx({ mint, minter, recipient, comment, amount });
+      return fetchMintPaymentTx({ mint, minter, recipient, amount });
     }
   });
 }
