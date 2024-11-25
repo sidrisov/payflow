@@ -15,7 +15,7 @@ import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompati
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { red } from '@mui/material/colors';
 import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
-import { useTokenPrices } from '../../utils/queries/prices';
+import { useTokenPrice } from '../../utils/queries/prices';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { getPaymentOption } from '../../utils/glide';
 import { TokenAmountSection } from '../dialogs/TokenAmountSection';
@@ -80,7 +80,7 @@ export default function PaymentDialog({
     selectedFlow.type !== 'FARCASTER_VERIFICATION' &&
     selectedFlow.type !== 'LINKED';
 
-  const { data: tokenPrices } = useTokenPrices();
+  const { data: tokenPrice } = useTokenPrice(paymentToken);
 
   const recipientCompatibleFlows = profile?.flows?.filter(
     (flow) =>
@@ -138,12 +138,12 @@ export default function PaymentDialog({
 
         if (payment.tokenAmount) {
           amount = payment.tokenAmount;
-        } else if (payment.usdAmount && tokenPrices) {
+        } else if (payment.usdAmount && tokenPrice) {
           const token = SUPPORTED_TOKENS.find(
             (t) => t.chainId === paymentChainId && t.id === tokenId
           );
           if (token) {
-            amount = payment.usdAmount / tokenPrices[token.id];
+            amount = payment.usdAmount / tokenPrice;
           }
         }
       } else {
@@ -153,8 +153,8 @@ export default function PaymentDialog({
 
         if (paymentAmount) {
           amount = paymentAmount;
-        } else if (paymentAmountUSD && tokenPrices && paymentToken) {
-          amount = paymentAmountUSD / tokenPrices[paymentToken.id];
+        } else if (paymentAmountUSD && tokenPrice && paymentToken) {
+          amount = paymentAmountUSD / tokenPrice;
         }
       }
 
@@ -190,7 +190,7 @@ export default function PaymentDialog({
     paymentToken,
     paymentAmount,
     paymentAmountUSD,
-    tokenPrices,
+    tokenPrice,
     toAddress,
     paymentWallet
   ]);

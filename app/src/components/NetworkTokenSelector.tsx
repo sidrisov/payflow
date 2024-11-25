@@ -1,12 +1,12 @@
 import { Box, Typography, CircularProgress, Badge } from '@mui/material';
 import { useState, useMemo, useEffect, useContext } from 'react';
-import { formatUnits } from 'viem';
+import { Address, Client, formatUnits, isAddress } from 'viem';
 import { FlowWalletType } from '../types/FlowType';
 import { Token, getTokensByChainIds } from '@payflow/common';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../utils/formats';
 import { PaymentType } from '../types/PaymentType';
-import { degen } from 'viem/chains';
-import { useAssetBalances } from '../utils/queries/balances';
+import { base, degen } from 'viem/chains';
+import { useAssetBalance, useAssetBalances } from '../utils/queries/balances';
 import { getFlowWalletsAssets } from '../utils/assets';
 import ResponsiveDialog from './dialogs/ResponsiveDialog';
 import NetworkAvatar from './avatars/NetworkAvatar';
@@ -27,6 +27,10 @@ import { green } from '@mui/material/colors';
 import { FaCheckCircle } from 'react-icons/fa';
 import { ProfileContext } from '../contexts/UserContext';
 import { SUPPORTED_CHAINS } from '../utils/networks';
+import { usePublicClient } from 'wagmi';
+import { getContract } from 'viem';
+import { erc20Abi } from 'viem';
+import { AssetType } from '../types/AssetType';
 
 export function NetworkTokenSelector({
   payment,
@@ -50,6 +54,16 @@ export function NetworkTokenSelector({
   const { profile } = useContext(ProfileContext);
 
   const [expand, setExpand] = useState<boolean>(expandSection);
+
+  const { isFetched: isPaymentTokenBalanceFetched, data: paymentTokenBalance } = useAssetBalance(
+    showBalance && paymentToken
+      ? ({
+          address: compatibleWallets.find((w) => w.network === paymentToken.chainId)?.address,
+          chainId: paymentToken.chainId,
+          token: paymentToken
+        } as AssetType)
+      : undefined
+  );
 
   const { isFetched: isBalanceFetched, data: balances } = useAssetBalances(
     showBalance && compatibleWallets ? getFlowWalletsAssets(compatibleWallets) : []
@@ -99,24 +113,28 @@ export function NetworkTokenSelector({
   const selectedTokenBalance = useMemo(() => {
     if (showBalance) {
       if (isBalanceFetched && balances) {
-        const paymentTokenBalance = balances.find(
-          (balance) => balance.asset.token === paymentToken
+        let tokenBalance = balances.find(
+          (balance) =>
+            balance.asset.token.id === paymentToken?.id &&
+            balance.asset.chainId === paymentToken?.chainId
         );
 
-        const maxBalance = paymentTokenBalance?.balance
-          ? parseFloat(
-              formatUnits(paymentTokenBalance.balance.value, paymentTokenBalance.balance.decimals)
-            )
+        if (!tokenBalance) {
+          tokenBalance = paymentTokenBalance;
+        }
+
+        const maxBalance = tokenBalance?.balance
+          ? parseFloat(formatUnits(tokenBalance.balance.value, tokenBalance.balance.decimals))
           : 0;
 
         return normalizeNumberPrecision(maxBalance);
       }
     }
-  }, [isBalanceFetched, paymentToken, balances]);
+  }, [isBalanceFetched, isPaymentTokenBalanceFetched, paymentToken, paymentTokenBalance, balances]);
 
   useEffect(() => {
     // don't update if selected token was already selected
-    if (paymentToken && compatibleTokens.find((t) => t === paymentToken)) {
+    if (paymentToken) {
       return;
     }
 
@@ -157,16 +175,21 @@ export function NetworkTokenSelector({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedChainId, setSelectedChainId] = useState<number | 'all'>('all');
 
+  const publicClient = usePublicClient({ chainId: base.id });
+
+  const [foundOtherTokens, setFoundOtherTokens] = useState<Token[]>([]);
+
   const { preferredTokens, otherTokens, zeroBalanceTokens } = useMemo(() => {
     const preferred = new Set(profile?.preferredTokens || []);
+    const searchLower = searchTerm.toLowerCase();
 
-    const filtered = compatibleTokens.filter((token) => {
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        (selectedChainId === 'all' || token.chainId === selectedChainId) &&
-        (token.id.toLowerCase().includes(searchLower) ||
-          token.name.toLowerCase().includes(searchLower))
-      );
+    let filtered = [...compatibleTokens, ...foundOtherTokens].filter((token) => {
+      const matchesSearch =
+        token.id.toLowerCase().includes(searchLower) ||
+        token.name.toLowerCase().includes(searchLower) ||
+        token.tokenAddress?.toLowerCase() === searchLower;
+
+      return (selectedChainId === 'all' || token.chainId === selectedChainId) && matchesSearch;
     });
 
     if (!balances) {
@@ -192,7 +215,60 @@ export function NetworkTokenSelector({
       otherTokens: withBalance.filter((token) => !preferred.has(token.id)),
       zeroBalanceTokens: withoutBalance
     };
-  }, [compatibleTokens, searchTerm, profile?.preferredTokens, balances, selectedChainId]);
+  }, [
+    compatibleTokens,
+    foundOtherTokens,
+    searchTerm,
+    profile?.preferredTokens,
+    balances,
+    selectedChainId,
+    publicClient
+  ]);
+
+  useEffect(() => {
+    console.log('1');
+
+    const searchForOtherTokens = async (tokenAddress: Address) => {
+      console.log('2');
+
+      let foundTokens: Token[] = [];
+      try {
+        const contract = getContract({
+          address: searchTerm as `0x${string}`,
+          abi: erc20Abi,
+          client: publicClient as Client
+        });
+
+        const [symbol, name, decimals] = await Promise.all([
+          contract.read.symbol(),
+          contract.read.name(),
+          contract.read.decimals()
+        ]);
+
+        const tokenByAddress: Token = {
+          id: symbol.toLowerCase(),
+          name: name,
+          decimals: decimals,
+          chain: base.name.toLowerCase(),
+          chainId: base.id,
+          tokenAddress,
+          imageURL: `https://dd.dexscreener.com/ds-data/tokens/base/${tokenAddress.toLowerCase()}.png?size=sm&key=cb813c&w=48&q=75`
+        };
+
+        foundTokens = [tokenByAddress];
+
+        console.log('Found tokens: ', foundTokens);
+      } catch (error) {
+        console.error('Error fetching token:', error);
+      }
+      setFoundOtherTokens(foundTokens);
+    };
+    if (isAddress(searchTerm)) {
+      searchForOtherTokens(searchTerm.toLowerCase() as `0x${string}`);
+    } else {
+      setFoundOtherTokens([]);
+    }
+  }, [searchTerm, publicClient]);
 
   function renderTokenList(tokenList: Token[], title?: string) {
     return (
@@ -271,7 +347,8 @@ export function NetworkTokenSelector({
         const searchLower = searchTerm.toLowerCase();
         return (
           token.id.toLowerCase().includes(searchLower) ||
-          token.name.toLowerCase().includes(searchLower)
+          token.name.toLowerCase().includes(searchLower) ||
+          token.tokenAddress?.toLowerCase() === searchLower
         );
       })
       .map((t) => t.chainId);
@@ -295,7 +372,7 @@ export function NetworkTokenSelector({
     <>
       <Chip
         icon={
-          paymentToken && (!showBalance || isBalanceFetched) ? (
+          paymentToken && (!showBalance || isBalanceFetched || isPaymentTokenBalanceFetched) ? (
             <Badge
               overlap="circular"
               anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
@@ -311,7 +388,7 @@ export function NetworkTokenSelector({
         deleteIcon={<IoIosArrowDown />}
         onDelete={paymentTokenSelectable ? () => setExpand(true) : undefined}
         label={
-          paymentToken && (!showBalance || isBalanceFetched) ? (
+          paymentToken && (!showBalance || isBalanceFetched || isPaymentTokenBalanceFetched) ? (
             <Typography variant="subtitle2" textTransform="uppercase">
               {showBalance ? formatAmountWithSuffix(selectedTokenBalance ?? '0') : ''}{' '}
               {paymentToken.id}

@@ -4,7 +4,7 @@ import { wagmiConfig } from '../wagmiConfig';
 import { formatUnits } from 'viem';
 import { GetBalanceData } from 'wagmi/query';
 import { useQuery } from '@tanstack/react-query';
-import { useTokenPrices as useTokenPrices } from './prices';
+import { useTokenPrice, useTokenPrices as useTokenPrices } from './prices';
 
 function getAssetValue(assetBalance: GetBalanceData, price: number) {
   const value = formatUnits(assetBalance?.value ?? BigInt(0), assetBalance?.decimals ?? 0);
@@ -45,5 +45,32 @@ export const useAssetBalances = (assets: AssetType[]) => {
             : undefined
         ) as AssetBalanceType[];
       })
+  });
+};
+
+export const useAssetBalance = (asset?: AssetType) => {
+  const { data: tokenPrice } = useTokenPrice(asset?.token);
+
+  return useQuery({
+    enabled: Boolean(asset && tokenPrice),
+    queryKey: ['balance', { asset, tokenPrice }],
+    staleTime: Infinity,
+    refetchInterval: 120_000,
+    queryFn: async () => {
+      if (!asset) return undefined;
+
+      const balance = await getBalance(wagmiConfig, {
+        address: asset.address,
+        chainId: asset.chainId,
+        token: asset.token.tokenAddress
+      });
+
+      return {
+        asset,
+        balance,
+        usdPrice: tokenPrice ?? 0,
+        usdValue: getAssetValue(balance, tokenPrice ?? 0)
+      } as AssetBalanceType;
+    }
   });
 };

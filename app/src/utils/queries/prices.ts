@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { tokens as SUPPORTED_TOKENS, TokenPrices } from '@payflow/common';
+import { tokens as SUPPORTED_TOKENS, Token, TokenPrices } from '@payflow/common';
 import { degen, zora } from 'viem/chains';
 import { SUPPORTED_CHAINS } from '../networks';
 
@@ -73,6 +73,39 @@ export const useTokenPrices = () => {
       }
 
       return tokenPrices;
+    }
+  });
+};
+
+export const useTokenPrice = (token?: Token) => {
+  return useQuery<number | null>({
+    enabled: Boolean(token),
+    queryKey: ['tokenPrice', token],
+    staleTime: Infinity,
+    refetchInterval: 120_000,
+    queryFn: async () => {
+      if (!token) return null;
+
+      const chainId = token.chainId;
+      const tokenAddress = token.tokenAddress;
+
+      if (!tokenAddress) return null;
+
+      const chain = SUPPORTED_CHAINS.find((c) => c.id === token.chainId);
+      if (!chain) return null;
+
+      try {
+        const chainName = getPriceChainName(chainId, token.chain);
+        const response = await axios.get(
+          `${TOKEN_PRICE_API}/${chainName}/token_price/${tokenAddress}`
+        );
+
+        const tokenPricesData = response.data.data.attributes.token_prices;
+        return tokenPricesData[tokenAddress] || null;
+      } catch (error) {
+        console.error('Error fetching token price:', error);
+        return null;
+      }
     }
   });
 };

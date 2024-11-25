@@ -89,6 +89,7 @@ public class RewardsService {
 		payment.setSourceRef(sourceRef);
 		payment.setSourceHash(castHash);
 		payment.setTarget(extraLink);
+		payment.setExpiresAt(Instant.now().plus(30, ChronoUnit.DAYS));
 
 		return payment;
 	}

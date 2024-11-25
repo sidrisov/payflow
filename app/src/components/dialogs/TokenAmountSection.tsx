@@ -8,16 +8,17 @@ import {
   Skeleton
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useBalance } from 'wagmi';
+import { useAssetBalance } from '../../utils/queries/balances';
 import { formatUnits, parseUnits } from 'viem';
 import { FlowWalletType } from '../../types/FlowType';
 import { red } from '@mui/material/colors';
 import { Token } from '@payflow/common';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
-import { useTokenPrices } from '../../utils/queries/prices';
+import { useTokenPrice } from '../../utils/queries/prices';
 import { PaymentType } from '../../types/PaymentType';
 import { MdMultipleStop } from 'react-icons/md';
 import { FaCoins, FaDollarSign } from 'react-icons/fa6';
+import { AssetType } from '../../types/AssetType';
 
 export function TokenAmountSection({
   payment,
@@ -46,7 +47,7 @@ export function TokenAmountSection({
   setCrossChainPaymentAmount?: React.Dispatch<React.SetStateAction<number | undefined>>;
   balanceCheck?: boolean;
 }) {
-  const { data: tokenPrices } = useTokenPrices();
+  const { data: tokenPrice } = useTokenPrice(selectedToken);
 
   const [balanceEnough, setBalanceEnough] = useState<boolean>();
 
@@ -56,23 +57,19 @@ export function TokenAmountSection({
 
   const [inputValue, setInputValue] = useState<string>('');
 
-  const crossChainModeSupported = Boolean(payment?.token);
-
-  // TODO: replace with balance as well
-  const { isFetching: isBalanceFetching, data: balance } = useBalance({
-    address: selectedWallet?.address,
-    chainId: selectedToken?.chainId,
-    token: selectedToken?.tokenAddress,
-    query: {
-      enabled: balanceCheck && Boolean(selectedWallet && selectedToken),
-      staleTime: 60000
-    }
-  });
+  const { isFetched: isBalanceFetched, data: paymentTokenBalance } = useAssetBalance(
+    balanceCheck && selectedToken
+      ? ({
+          address: selectedWallet?.address,
+          chainId: selectedToken?.chainId,
+          token: selectedToken
+        } as AssetType)
+      : undefined
+  );
 
   useEffect(() => {
-    if (selectedToken && tokenPrices) {
-      const price = tokenPrices[selectedToken.id];
-      setSelectedTokenPrice(price);
+    if (selectedToken && tokenPrice) {
+      setSelectedTokenPrice(tokenPrice);
     } else {
       setSelectedTokenPrice(undefined);
     }
@@ -82,7 +79,7 @@ export function TokenAmountSection({
       setPaymentAmountUSD(undefined);
       setInputValue('');
     }
-  }, [selectedToken, tokenPrices, payment]);
+  }, [selectedToken, tokenPrice, payment]);
 
   useEffect(() => {
     if (crossChainMode) {
@@ -98,7 +95,7 @@ export function TokenAmountSection({
     );
 
     let balanceEnough: boolean | undefined;
-    if (selectedToken && selectedTokenPrice && (!balanceCheck || balance)) {
+    if (selectedToken && selectedTokenPrice && (!balanceCheck || paymentTokenBalance)) {
       if (usdAmountMode === true && paymentAmountUSD !== undefined) {
         const rawTokenAmount = paymentAmountUSD / selectedTokenPrice;
         const tokenAmount = rawTokenAmount.toLocaleString('fullwide', {
@@ -107,7 +104,10 @@ export function TokenAmountSection({
         });
         const amount = parseUnits(tokenAmount, selectedToken.decimals);
 
-        balanceEnough = !balanceCheck || crossChainMode ? true : amount <= (balance?.value ?? 0);
+        balanceEnough =
+          !balanceCheck || crossChainMode
+            ? true
+            : amount <= (paymentTokenBalance?.balance?.value ?? 0);
         setPaymentAmount(parseFloat(formatUnits(amount, selectedToken.decimals)));
       }
       if (usdAmountMode === false && paymentAmount !== undefined) {
@@ -121,7 +121,7 @@ export function TokenAmountSection({
                   maximumFractionDigits: selectedToken.decimals
                 }),
                 selectedToken.decimals
-              ) <= (balance?.value ?? 0);
+              ) <= (paymentTokenBalance?.balance?.value ?? 0);
 
         setPaymentAmountUSD(parseFloat(normalizeNumberPrecision(usdAmount)));
       }
@@ -134,7 +134,7 @@ export function TokenAmountSection({
     paymentAmountUSD,
     paymentAmount,
     selectedToken,
-    balance,
+    paymentTokenBalance,
     selectedTokenPrice
   ]);
 
@@ -222,23 +222,22 @@ export function TokenAmountSection({
 
           {!crossChainMode && !payment?.token && (
             <Stack mx="5px" direction="row" alignItems="center" spacing={0.5}>
-              {isBalanceFetching && paymentAmount && paymentAmountUSD ? (
+              {!isBalanceFetched && paymentAmount && paymentAmountUSD ? (
                 <Skeleton
                   title="fetching price"
                   variant="rectangular"
                   sx={{ borderRadius: 3, height: 35, width: 80 }}
                 />
               ) : (
-                <Typography 
-                  fontSize={16} 
-                  fontWeight="bold" 
+                <Typography
+                  fontSize={16}
+                  fontWeight="bold"
                   noWrap
                   onClick={() => setUsdAmountMode(!usdAmountMode)}
-                  sx={{ 
+                  sx={{
                     cursor: 'pointer',
                     '&:hover': { opacity: 0.8 }
-                  }}
-                >
+                  }}>
                   {usdAmountMode
                     ? `${formatAmountWithSuffix(
                         normalizeNumberPrecision(paymentAmount ?? 0)
@@ -252,9 +251,9 @@ export function TokenAmountSection({
               {!payment?.token && balanceCheck && (
                 <Button
                   onClick={async () => {
-                    if (balance && selectedTokenPrice) {
+                    if (paymentTokenBalance?.balance && selectedTokenPrice) {
                       const maxAmount = parseFloat(
-                        formatUnits(balance.value, selectedToken.decimals)
+                        formatUnits(paymentTokenBalance.balance.value, selectedToken.decimals)
                       );
                       if (usdAmountMode) {
                         setPaymentAmountUSD(
