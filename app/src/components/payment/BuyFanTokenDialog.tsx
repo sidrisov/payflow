@@ -74,11 +74,6 @@ export default function BuyFanTokenDialog({
     sender.identity.profile?.defaultFlow ?? (sender.identity.profile?.flows?.[0] as FlowType)
   );
 
-  const isNativeFlow =
-    selectedFlow.type !== 'FARCASTER_VERIFICATION' && selectedFlow.type !== 'LINKED';
-
-  const [gasFee] = useState<bigint | undefined>(isNativeFlow ? BigInt(0) : undefined);
-
   const chainId = useChainId();
 
   const [paymentWallet, setPaymentWallet] = useState<FlowWalletType>();
