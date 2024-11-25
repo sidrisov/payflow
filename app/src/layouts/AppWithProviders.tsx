@@ -10,6 +10,8 @@ import axios from 'axios';
 import { useSearchParams } from 'react-router-dom';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 
+import FrameSDK from '@farcaster/frame-sdk';
+
 const appSettingsStorageItem = localStorage.getItem('appSettings');
 const appSettingsStored = appSettingsStorageItem
   ? (JSON.parse(appSettingsStorageItem) as AppSettings)
@@ -49,6 +51,7 @@ export default function AppWithProviders() {
         console.error(error);
       } finally {
         setLoading(false);
+        FrameSDK.actions.ready();
         fetchingStatusRef.current = false;
       }
     };

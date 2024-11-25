@@ -16,8 +16,6 @@ import {
   Stack
 } from '@mui/material';
 
-import sdk from '@farcaster/frame-sdk';
-
 import { RiApps2Fill, RiApps2Line } from 'react-icons/ri';
 import { CgProfile } from 'react-icons/cg';
 
