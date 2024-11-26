@@ -54,9 +54,9 @@ export function Head() {
         <meta property="fc:frame" content="vNext" />
 
         <meta property="fc:frame:image" content={imageUrl} />
-        <meta property="fc:frame:input:text" content="Gift username (blank for self)" />
+        <meta property="fc:frame:input:text" content="Username (blank for self)" />
 
-        <meta property="fc:frame:button:1" content="Check usage" />
+        <meta property="fc:frame:button:1" content="Usage" />
         <meta
           property="fc:frame:button:1:target"
           content={`${API_URL}/api/farcaster/frames/storage/check`}

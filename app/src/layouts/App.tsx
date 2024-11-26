@@ -44,6 +44,8 @@ import { GiTwoCoins } from 'react-icons/gi';
 import { TbHandClick } from 'react-icons/tb';
 import { green } from '@mui/material/colors';
 
+import FrameSDK from '@farcaster/frame-sdk';
+
 export default function AppLayout({
   profile,
   appSettings,
@@ -66,6 +68,18 @@ export default function AppLayout({
     }
     return localStorage.getItem('payflow.mini') === 'true';
   })();
+
+  const [isFrameV2, setIsFrameV2] = useState(false);
+
+  useEffect(() => {
+    const checkFrameV2 = async () => {
+      if (await FrameSDK.context) {
+        setIsFrameV2(true);
+      }
+    };
+    checkFrameV2();
+  }, []);
+
   const enablePullToRefresh = usePwa() || isMiniApp;
 
   const bottomToolbarEnabled =
@@ -183,6 +197,7 @@ export default function AppLayout({
         isAuthenticated: authorized,
         profile,
         isMiniApp,
+        isFrameV2,
         appSettings,
         setAppSettings
       }}>

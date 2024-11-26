@@ -117,21 +117,7 @@ public class StorageController {
 					new FrameResponse.FrameMessage("Sign up on Payflow first!"));
 		}
 
-		val inputText = validateMessage.action().input() != null ? validateMessage.action().input().text().toLowerCase()
-				: null;
-
-		int numberOfUnits = 1;
-		if (StringUtils.isNotBlank(inputText)) {
-			try {
-				numberOfUnits = Integer.parseInt(inputText);
-			} catch (Throwable t) {
-				log.warn("Couldn't parse input text of storage units {} by {}", inputText, interactor);
-				return ResponseEntity.badRequest().body(
-						new FrameResponse.FrameMessage("Enter units in numeric format, e.g. 1-5"));
-			}
-		}
-
-		val payment = getPayment(validateMessage, gifteeUser, clickedProfile, numberOfUnits);
+		val payment = getPayment(validateMessage, gifteeUser, clickedProfile, 1);
 		paymentRepository.save(payment);
 
 		log.debug("Gift storage payment intent saved: {}", payment);
@@ -213,11 +199,10 @@ public class StorageController {
 						Buy Farcaster Storage via @payflow frame
 						cc: @sinaver.eth /payflow""",
 				StandardCharsets.UTF_8);
-		val embedUrl = String.format("https://frames.payflow.me/fid/%s/storage?v3", castInteractorFid);
+		val embedUrl = String.format("https://frames.payflow.me/fid/%s/storage?v4.1", castInteractorFid);
 		val shareComposeDeeplink = String.format("%s?text=%s&embeds[]=%s", baseUrl, castText, embedUrl);
 
 		return FrameResponse.builder().imageUrl(storageImage)
-				.textInput("Enter storage units, default: 1")
 				.button(new FrameButton(
 						"Buy",
 						FrameButton.ActionType.POST_REDIRECT,

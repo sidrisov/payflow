@@ -47,10 +47,10 @@ export const commonWagmiConfig = {
     ]),
     [optimism.id]: fallback([
       createOptimizedTransport(
-        `https://optimism-mainnet.infura.io/v3/${import.meta.env.VITE_INFURA_API_KEY}`
+        `https://opt-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`
       ),
       createOptimizedTransport(
-        `https://opt-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`
+        `https://optimism-mainnet.infura.io/v3/${import.meta.env.VITE_INFURA_API_KEY}`
       )
     ]),
     [zora.id]: createOptimizedTransport('https://rpc.zora.energy'),
@@ -58,9 +58,14 @@ export const commonWagmiConfig = {
       `https://base-sepolia.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`
     ),
     [degen.id]: createOptimizedTransport(degen.rpcUrls.default.http[0]),
-    [arbitrum.id]: createOptimizedTransport(
-      `https://arbitrum-mainnet.infura.io/v3/${import.meta.env.VITE_INFURA_API_KEY}`
-    ),
+    [arbitrum.id]: fallback([
+      createOptimizedTransport(
+        `https://arb-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`
+      ),
+      createOptimizedTransport(
+        `https://arbitrum-mainnet.infura.io/v3/${import.meta.env.VITE_INFURA_API_KEY}`
+      )
+    ]),
     [mode.id]: createOptimizedTransport(mode.rpcUrls.default.http[0]),
     [zksync.id]: createOptimizedTransport(zksync.rpcUrls.default.http[0]),
     [worldchain.id]: createOptimizedTransport(worldchain.rpcUrls.default.http[0]),

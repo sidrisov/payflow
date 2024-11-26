@@ -1,5 +1,5 @@
 import { QueryClientProvider } from '@tanstack/react-query';
-import { privyQueryClient } from './query';
+import { queryClient } from './query';
 import { AirstackProvider, init } from '@airstack/airstack-react';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import CustomToastContainer from '../components/toasts/CustomToastContainer';
@@ -22,40 +22,8 @@ export type WalletProviderType = 'privy' | 'rainbowkit';
 
 export default function AppProviders({ children }: { children: React.ReactNode }) {
   const prefersDarkMode = useDarkMode();
-
-  /* return WALLET_PROVIDER === 'privy' ? (
-    <PrivyAppProviders darkMode={darkMode ?? prefersDarkMode}>{children}</PrivyAppProviders>
-  ) : (
-    <RainbowKitAppProviders darkMode={darkMode ?? prefersDarkMode}>
-      {children}
-    </RainbowKitAppProviders>
-  ); */
   return <PrivyAppProviders darkMode={prefersDarkMode}>{children}</PrivyAppProviders>;
 }
-
-/* function RainbowKitAppProviders({
-  children,
-  darkMode
-}: {
-  children: React.ReactNode;
-  darkMode: boolean;
-}) {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <WagmiProvider config={privyWagmiConfig}>
-        <AirstackProvider apiKey={AIRSTACK_API_KEY}>
-          <RainbowKitProvider
-            theme={darkMode ? customDarkTheme : customLightTheme}
-            avatar={CustomAvatar}
-            modalSize="compact">
-            <CustomThemeProvider darkMode={darkMode}>{children}</CustomThemeProvider>
-          </RainbowKitProvider>
-        </AirstackProvider>
-        <CustomToastContainer />
-      </WagmiProvider>
-    </QueryClientProvider>
-  );
-} */
 
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 
@@ -91,7 +59,7 @@ function PrivyAppProviders({
       appId={PRIVY_API_KEY}
       clientId={PRIVY_CLIENT_ID_KEY}
       config={privyConfig(darkMode)}>
-      <QueryClientProvider client={privyQueryClient}>
+      <QueryClientProvider client={queryClient}>
         <PrivyWagmiProvider config={wagmiConfig}>
           <CommonProviders darkMode={darkMode}>{children}</CommonProviders>
           <CustomToastContainer />

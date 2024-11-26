@@ -226,11 +226,7 @@ export function NetworkTokenSelector({
   ]);
 
   useEffect(() => {
-    console.log('1');
-
     const searchForOtherTokens = async (tokenAddress: Address) => {
-      console.log('2');
-
       let foundTokens: Token[] = [];
       try {
         const contract = getContract({

@@ -52,6 +52,7 @@ export default function AppWithProviders() {
       } finally {
         setLoading(false);
         FrameSDK.actions.ready();
+
         fetchingStatusRef.current = false;
       }
     };

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { tokens as SUPPORTED_TOKENS, Token, TokenPrices } from '@payflow/common';
-import { degen, zora } from 'viem/chains';
+import { base, degen, zora } from 'viem/chains';
 import { SUPPORTED_CHAINS } from '../networks';
 
 const PRICE_API = 'https://api.coingecko.com/api/v3/simple/price';
@@ -86,16 +86,26 @@ export const useTokenPrice = (token?: Token) => {
     queryFn: async () => {
       if (!token) return null;
 
-      const chainId = token.chainId;
-      const tokenAddress = token.tokenAddress;
+      // Special handling for ETH
+      if (token.id === 'eth' || token.id === 'weth') {
+        const response = await axios.get(PRICE_API, {
+          params: { ids: 'ethereum', vs_currencies: 'usd' }
+        });
+        return response.data.ethereum.usd;
+      }
+
+      // little hack for degen
+      const chainId = token.id === 'degen' ? base.id : token.chainId;
+      const tokenAddress =
+        token.id === 'degen' ? '0x4ed4e862860bed51a9570b96d89af5e1b0efefed' : token.tokenAddress;
 
       if (!tokenAddress) return null;
 
-      const chain = SUPPORTED_CHAINS.find((c) => c.id === token.chainId);
+      const chain = SUPPORTED_CHAINS.find((c) => c.id === chainId);
       if (!chain) return null;
 
       try {
-        const chainName = getPriceChainName(chainId, token.chain);
+        const chainName = getPriceChainName(chainId, token.id === 'degen' ? 'base' : token.chain);
         const response = await axios.get(
           `${TOKEN_PRICE_API}/${chainName}/token_price/${tokenAddress}`
         );
