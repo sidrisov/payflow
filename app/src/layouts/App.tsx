@@ -79,8 +79,6 @@ export default function AppLayout({
         await FrameV2SDK.actions.ready();
         setIsFrameV2(true);
         toast.success(`Frame V2 ready for @${context.user.username}`);
-      } else {
-        toast.error('Frame V2 not ready');
       }
     };
     if (FrameV2SDK && !isFrameV2) {

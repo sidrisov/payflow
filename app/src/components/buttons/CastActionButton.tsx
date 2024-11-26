@@ -1,8 +1,9 @@
 import { Button, ButtonProps, Stack, Typography, Box } from '@mui/material';
-import { useContext } from 'react';
+import { useContext, useCallback } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 
-import FrameSDK from '@farcaster/frame-sdk';
+import FrameV2SDK from '@farcaster/frame-sdk';
+import { toast } from 'react-toastify';
 
 export default function CastActionButton({
   title,
@@ -17,6 +18,14 @@ export default function CastActionButton({
   earlyFeature?: boolean;
 }) {
   const { isFrameV2 } = useContext(ProfileContext);
+
+  const openCastInstallUrl = useCallback(() => {
+    if (isFrameV2 && installUrl) {
+      toast.success('Opening Cast install URL');
+
+      FrameV2SDK.actions.openUrl(installUrl);
+    }
+  }, [isFrameV2, installUrl]);
 
   return (
     <Button
@@ -33,10 +42,7 @@ export default function CastActionButton({
       {...(installUrl &&
         (isFrameV2
           ? {
-              onClick: () => {
-                FrameSDK.actions.openUrl(installUrl);
-                FrameSDK.actions.close();
-              }
+              onClick: openCastInstallUrl
             }
           : { href: installUrl, target: '_blank' }))}
       {...props}>
