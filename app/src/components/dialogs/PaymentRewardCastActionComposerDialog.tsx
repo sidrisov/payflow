@@ -12,11 +12,13 @@ import { base } from 'viem/chains';
 import { FaCoins, FaDollarSign } from 'react-icons/fa';
 import { DEFAULT_FARCASTER_CLIENT, FARCASTER_CLIENTS } from '../../types/ProfileType';
 
+import FrameSDK from '@farcaster/frame-sdk';
+
 export default function PaymentRewardCastActionComposerDialog({
   closeStateCallback,
   ...props
 }: DialogProps & CloseCallbackType) {
-  const { profile } = useContext(ProfileContext);
+  const { profile, isFrameV2 } = useContext(ProfileContext);
 
   const [rewardUsdAmount, setRewardUsdAmount] = useState<number | undefined>(1);
   const [rewardTokenAmount, setRewardTokenAmount] = useState<number | undefined>(1);
@@ -61,8 +63,8 @@ export default function PaymentRewardCastActionComposerDialog({
     const actionUrl = 'https://api.payflow.me/api/farcaster/actions/pay/reward';
 
     const params = new URLSearchParams({
-      amount: isFiatMode ? rewardUsdAmount?.toString() ?? '' : '',
-      tokenAmount: !isFiatMode ? rewardTokenAmount?.toString() ?? '' : '',
+      amount: isFiatMode ? (rewardUsdAmount?.toString() ?? '') : '',
+      tokenAmount: !isFiatMode ? (rewardTokenAmount?.toString() ?? '') : '',
       token: selectedToken?.id ?? '',
       chainId: (selectedToken?.chainId ?? base.id).toString(),
       type: type ?? 'INTENT',
@@ -167,8 +169,9 @@ export default function PaymentRewardCastActionComposerDialog({
           fullWidth
           size="large"
           sx={{ borderRadius: 5 }}
-          href={warpcastInstallActionUrl}
-          target="_blank">
+          {...(isFrameV2
+            ? { onClick: () => FrameSDK.actions.openUrl(warpcastInstallActionUrl) }
+            : { href: warpcastInstallActionUrl, target: '_blank' })}>
           Add To {preferredClient?.name}
         </Button>
       </Stack>
