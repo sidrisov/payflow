@@ -5,12 +5,11 @@ import { base, degen, zora } from 'viem/chains';
 import { SUPPORTED_CHAINS } from '../networks';
 
 const PRICE_API = 'https://api.coingecko.com/api/v3/simple/price';
-const tokens = ['ethereum'];
+const tokens = ['ethereum', 'degen-base'];
 
 const TOKEN_PRICE_API = 'https://api.geckoterminal.com/api/v2/simple/networks';
 
 const chainNameMap: { [key: number]: string } = {
-  [degen.id]: 'degenchain',
   [zora.id]: 'zora-network'
 };
 
@@ -23,6 +22,7 @@ export const useTokenPrices = () => {
     queryKey: ['prices', { tokens }],
     staleTime: Infinity,
     refetchInterval: 120_000,
+
     queryFn: async () => {
       const response = await axios.get(PRICE_API, {
         params: { ids: tokens.join(','), vs_currencies: 'usd' }
@@ -30,8 +30,11 @@ export const useTokenPrices = () => {
 
       // TODO: some hardcoding, fetch separately
       const tokenPrices: TokenPrices = {};
-      for (const [_, value] of Object.entries(response.data)) {
-        tokenPrices['eth'] = (value as any).usd;
+
+      if (response.data.hasOwnProperty('ethereum')) {
+        tokenPrices['eth'] = response.data.ethereum.usd;
+      } else if (response.data.hasOwnProperty('degen-base')) {
+        tokenPrices['degen'] = response.data['degen-base'].usd;
       }
 
       for (const chain of SUPPORTED_CHAINS) {
@@ -44,7 +47,9 @@ export const useTokenPrices = () => {
 
         // Filter tokens that are not already present in tokenPrices
         const tokensToFetch = tokensForChain.filter(
-          (token) => !tokenPrices.hasOwnProperty(token.id)
+          (token) =>
+            !tokenPrices.hasOwnProperty(token.id) &&
+            (!token.underlyingToken || !tokenPrices.hasOwnProperty(token.underlyingToken?.id))
         );
 
         if (tokensToFetch.length === 0) {
@@ -87,31 +92,34 @@ export const useTokenPrice = (token?: Token) => {
       if (!token) return null;
 
       // Special handling for ETH
-      if (token.id === 'eth' || token.id === 'weth') {
+      if (token.id === 'eth' || token.underlyingToken?.id === 'eth') {
         const response = await axios.get(PRICE_API, {
           params: { ids: 'ethereum', vs_currencies: 'usd' }
         });
         return response.data.ethereum.usd;
       }
 
-      // little hack for degen
-      const chainId = token.id === 'degen' ? base.id : token.chainId;
-      const tokenAddress =
-        token.id === 'degen' ? '0x4ed4e862860bed51a9570b96d89af5e1b0efefed' : token.tokenAddress;
+      // Special handling for DEGEN
+      if (token.id === 'degen' || token.underlyingToken?.id === 'degen') {
+        const response = await axios.get(PRICE_API, {
+          params: { ids: 'degen-base', vs_currencies: 'usd' }
+        });
+        return response.data['degen-base'].usd;
+      }
 
-      if (!tokenAddress) return null;
+      if (!token.tokenAddress) return null;
 
-      const chain = SUPPORTED_CHAINS.find((c) => c.id === chainId);
+      const chain = SUPPORTED_CHAINS.find((c) => c.id === token.chainId);
       if (!chain) return null;
 
       try {
-        const chainName = getPriceChainName(chainId, token.id === 'degen' ? 'base' : token.chain);
+        const chainName = getPriceChainName(token.chainId, token.chain);
         const response = await axios.get(
-          `${TOKEN_PRICE_API}/${chainName}/token_price/${tokenAddress}`
+          `${TOKEN_PRICE_API}/${chainName}/token_price/${token.tokenAddress}`
         );
 
         const tokenPricesData = response.data.data.attributes.token_prices;
-        return tokenPricesData[tokenAddress] || null;
+        return tokenPricesData[token.tokenAddress] || null;
       } catch (error) {
         console.error('Error fetching token price:', error);
         return null;
