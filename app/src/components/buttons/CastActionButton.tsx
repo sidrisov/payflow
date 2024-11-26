@@ -30,9 +30,10 @@ export default function CastActionButton({
         borderColor: 'divider',
         justifyContent: 'flex-start'
       }}
-      {...(installUrl && isFrameV2
-        ? { onClick: () => FrameSDK.actions.openUrl(installUrl) }
-        : { href: installUrl, target: '_blank' })}
+      {...(installUrl &&
+        (isFrameV2
+          ? { onClick: () => FrameSDK.actions.openUrl(installUrl) }
+          : { href: installUrl, target: '_blank' }))}
       {...props}>
       <Stack>
         <Box display="flex" alignItems="center">

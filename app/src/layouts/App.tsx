@@ -72,13 +72,14 @@ export default function AppLayout({
   const [isFrameV2, setIsFrameV2] = useState(false);
 
   useEffect(() => {
-    const checkFrameV2 = async () => {
-      if (await FrameSDK.context) {
-        setIsFrameV2(true);
-      }
+    const initiateFrameV2 = async () => {
+      FrameSDK.actions.ready();
+      setIsFrameV2(true);
     };
-    checkFrameV2();
-  }, []);
+    if (FrameSDK && !isFrameV2) {
+      initiateFrameV2();
+    }
+  }, [FrameSDK, isFrameV2]);
 
   const enablePullToRefresh = usePwa() || isMiniApp;
 
