@@ -1,4 +1,4 @@
-import { queryClient, queryPersister } from './query';
+import { queryClient } from './query';
 import { AirstackProvider, init } from '@airstack/airstack-react';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import CustomToastContainer from '../components/toasts/CustomToastContainer';
@@ -8,7 +8,7 @@ import { wagmiConfig } from './wagmiConfig';
 import { SUPPORTED_CHAINS } from './networks';
 import { useDarkMode } from './hooks/useDarkMode';
 import { configureFabricSDK } from '@withfabric/protocol-sdks';
-import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { QueryClientProvider } from '@tanstack/react-query';
 
 const AIRSTACK_API_KEY = import.meta.env.VITE_AIRSTACK_API_KEY;
 init(AIRSTACK_API_KEY);
@@ -57,23 +57,27 @@ function PrivyAppProviders({
       appId={PRIVY_API_KEY}
       clientId={PRIVY_CLIENT_ID_KEY}
       config={privyConfig(darkMode)}>
-      <PersistQueryClientProvider
-        client={queryClient}
-        persistOptions={{
-          persister: queryPersister,
-          dehydrateOptions: {
+      <QueryClientProvider client={queryClient}>
+        {/* <PersistQueryClientProvider
+          client={queryClient}
+          persistOptions={{
+            persister: queryPersister,
+            dehydrateOptions: {
             shouldDehydrateQuery: (query) => {
-              return !['listPaymentOptions', 'estimateGlidePayment'].includes(
-                query.queryKey[0] as string
-              );
+              return ![
+                'listPaymentOptions',
+                'estimateGlidePayment',
+                'prices',
+                'tokenPrice'
+              ].includes(query.queryKey[0] as string);
             }
           }
-        }}>
+        }} */}
         <PrivyWagmiProvider config={wagmiConfig}>
           <CommonProviders darkMode={darkMode}>{children}</CommonProviders>
           <CustomToastContainer />
         </PrivyWagmiProvider>
-      </PersistQueryClientProvider>
+      </QueryClientProvider>
     </PrivyProvider>
   );
 }
