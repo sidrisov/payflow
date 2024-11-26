@@ -173,8 +173,14 @@ export function TokenAmountSection({
 
       if (usdAmountMode) {
         setPaymentAmountUSD(numericValue);
+        if (value === '') {
+          setPaymentAmount(undefined);
+        }
       } else {
         setPaymentAmount(numericValue);
+        if (value === '') {
+          setPaymentAmountUSD(undefined);
+        }
       }
     }
   };

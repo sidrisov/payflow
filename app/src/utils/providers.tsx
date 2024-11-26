@@ -1,5 +1,4 @@
-import { QueryClientProvider } from '@tanstack/react-query';
-import { queryClient } from './query';
+import { queryClient, queryPersister } from './query';
 import { AirstackProvider, init } from '@airstack/airstack-react';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import CustomToastContainer from '../components/toasts/CustomToastContainer';
@@ -9,6 +8,7 @@ import { wagmiConfig } from './wagmiConfig';
 import { SUPPORTED_CHAINS } from './networks';
 import { useDarkMode } from './hooks/useDarkMode';
 import { configureFabricSDK } from '@withfabric/protocol-sdks';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 
 const AIRSTACK_API_KEY = import.meta.env.VITE_AIRSTACK_API_KEY;
 init(AIRSTACK_API_KEY);
@@ -17,8 +17,6 @@ configureFabricSDK({ wagmiConfig });
 
 const PRIVY_API_KEY = import.meta.env.VITE_PRIVY_API_KEY;
 const PRIVY_CLIENT_ID_KEY = import.meta.env.VITE_PRIVY_CLIENT_ID_KEY;
-
-export type WalletProviderType = 'privy' | 'rainbowkit';
 
 export default function AppProviders({ children }: { children: React.ReactNode }) {
   const prefersDarkMode = useDarkMode();
@@ -59,12 +57,23 @@ function PrivyAppProviders({
       appId={PRIVY_API_KEY}
       clientId={PRIVY_CLIENT_ID_KEY}
       config={privyConfig(darkMode)}>
-      <QueryClientProvider client={queryClient}>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{
+          persister: queryPersister,
+          dehydrateOptions: {
+            shouldDehydrateQuery: (query) => {
+              return !['listPaymentOptions', 'estimateGlidePayment'].includes(
+                query.queryKey[0] as string
+              );
+            }
+          }
+        }}>
         <PrivyWagmiProvider config={wagmiConfig}>
           <CommonProviders darkMode={darkMode}>{children}</CommonProviders>
           <CustomToastContainer />
         </PrivyWagmiProvider>
-      </QueryClientProvider>
+      </PersistQueryClientProvider>
     </PrivyProvider>
   );
 }

@@ -49,7 +49,7 @@ export function Head() {
 
         <meta property="fc:frame:image" content={`${imageUrl}`} />
         <meta property="fc:frame:input:text" content="50 degen or 100 moxie" />
-        <meta property="fc:frame:button:1" content="Confirm" />
+        <meta property="fc:frame:button:1" content="Pay" />
         <meta
           property="fc:frame:button:1:target"
           content={`${API_URL}/api/farcaster/frames/pay/${username}/frame/command`}

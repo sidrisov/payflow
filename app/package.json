@@ -28,6 +28,7 @@
     "@privy-io/react-auth": "^1.88.0",
     "@privy-io/wagmi": "^0.2.6",
     "@rhinestone/module-sdk": "^0.1.26",
+    "@tanstack/query-sync-storage-persister": "^5.60.6",
     "@tanstack/react-query": "^5.61.3",
     "@tanstack/react-query-persist-client": "^5.61.3",
     "@withfabric/protocol-sdks": "^2.0.2",
@@ -73,7 +74,7 @@
     "eslint-plugin-react-refresh": "^0.4.3",
     "rollup-plugin-visualizer": "^5.12.0",
     "typescript": "^5.1.6",
-    "vite": "^5.2.11",
+    "vite": "^5.4.11",
     "vite-plugin-node-polyfills": "^0.22.0",
     "vite-plugin-pwa": "^0.21.0",
     "workbox-window": "^7.1.0"

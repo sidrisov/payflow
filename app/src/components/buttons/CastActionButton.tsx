@@ -1,4 +1,8 @@
 import { Button, ButtonProps, Stack, Typography, Box } from '@mui/material';
+import { useContext } from 'react';
+import { ProfileContext } from '../../contexts/UserContext';
+
+import FrameSDK from '@farcaster/frame-sdk';
 
 export default function CastActionButton({
   title,
@@ -12,6 +16,8 @@ export default function CastActionButton({
   installUrl?: string;
   earlyFeature?: boolean;
 }) {
+  const { isFrameV2 } = useContext(ProfileContext);
+
   return (
     <Button
       variant="outlined"
@@ -24,7 +30,9 @@ export default function CastActionButton({
         borderColor: 'divider',
         justifyContent: 'flex-start'
       }}
-      {...(installUrl && { href: installUrl, target: '_blank' })}
+      {...(installUrl && isFrameV2
+        ? { onClick: () => FrameSDK.actions.openUrl(installUrl) }
+        : { href: installUrl, target: '_blank' })}
       {...props}>
       <Stack>
         <Box display="flex" alignItems="center">
