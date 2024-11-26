@@ -32,7 +32,12 @@ export default function CastActionButton({
       }}
       {...(installUrl &&
         (isFrameV2
-          ? { onClick: () => FrameSDK.actions.openUrl(installUrl) }
+          ? {
+              onClick: () => {
+                FrameSDK.actions.openUrl(installUrl);
+                FrameSDK.actions.close();
+              }
+            }
           : { href: installUrl, target: '_blank' }))}
       {...props}>
       <Stack>

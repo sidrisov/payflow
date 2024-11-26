@@ -17,8 +17,7 @@ import {
 
 import { createConfig } from '@privy-io/wagmi';
 import { Config } from 'wagmi';
-
-const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
+import { frameConnector } from './farcasterConnector';
 
 const createOptimizedTransport = (url: string) =>
   http(url, {
@@ -74,22 +73,7 @@ export const commonWagmiConfig = {
   }
 };
 
-/* export const privyWagmiConfig = getDefaultConfig({
-  ...commonWagmiConfig,
-  appName: 'Payflow',
-  projectId: WALLET_CONNECT_PROJECT_ID,
-  appDescription: 'Onchain Social Payments',
-  appUrl: 'https://payflow.me',
-  appIcon: 'https://payflow.me/favicon.ico',
-  wallets: [
-    ...wallets,
-    {
-      groupName: 'More',
-      wallets: [trustWallet, injectedWallet]
-    }
-  ]
-}); */
-
 export const wagmiConfig = createConfig({
-  ...commonWagmiConfig
+  ...commonWagmiConfig,
+  connectors: [frameConnector as any]
 }) as Config;
