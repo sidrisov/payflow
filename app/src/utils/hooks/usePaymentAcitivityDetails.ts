@@ -26,17 +26,19 @@ export const usePaymentActivityDetails = (payment: PaymentType) => {
       (t) => t.chainId === payment.chainId && t.id === payment.token
     ) as Token;
 
-    const price = tokenPrices ? tokenPrices[token.id] : 0;
+    if (token) {
+      const price = tokenPrices ? tokenPrices[token.id] : 0;
 
-    const tokenAmount =
-      payment.tokenAmount || (payment.usdAmount ? (payment.usdAmount / price).toString() : '0');
-    const usdAmount =
-      payment.usdAmount ||
-      (payment.tokenAmount ? parseFloat(payment.tokenAmount.toString()) * price : 0);
-    formattedTokenAmount = formatAmountWithSuffix(
-      normalizeNumberPrecision(parseFloat(tokenAmount.toString()))
-    );
-    formattedUsdAmount = formatAmountWithSuffix(normalizeNumberPrecision(usdAmount));
+      const tokenAmount =
+        payment.tokenAmount || (payment.usdAmount ? (payment.usdAmount / price).toString() : '0');
+      const usdAmount =
+        payment.usdAmount ||
+        (payment.tokenAmount ? parseFloat(payment.tokenAmount.toString()) * price : 0);
+      formattedTokenAmount = formatAmountWithSuffix(
+        normalizeNumberPrecision(parseFloat(tokenAmount.toString()))
+      );
+      formattedUsdAmount = formatAmountWithSuffix(normalizeNumberPrecision(usdAmount));
+    }
   }
 
   return {

@@ -182,19 +182,21 @@ export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
 
     // Default case (for regular payments)
     return (
-      <>
-        <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
-          {formattedTokenAmount} {token!.name}
-        </Typography>
-        <TokenAvatar token={token!} sx={{ width: 15, height: 15 }} />
-        <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
-          ${formattedUsdAmount}
-        </Typography>
-        <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
-          on
-        </Typography>
-        <NetworkAvatar chainId={payment.chainId} sx={{ width: 15, height: 15 }} />
-      </>
+      token && (
+        <>
+          <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
+            {formattedTokenAmount} {token!.name}
+          </Typography>
+          <TokenAvatar token={token!} sx={{ width: 15, height: 15 }} />
+          <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
+            ${formattedUsdAmount}
+          </Typography>
+          <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
+            on
+          </Typography>
+          <NetworkAvatar chainId={payment.chainId} sx={{ width: 15, height: 15 }} />
+        </>
+      )
     );
   };
 

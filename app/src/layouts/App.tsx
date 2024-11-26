@@ -44,7 +44,7 @@ import { GiTwoCoins } from 'react-icons/gi';
 import { TbHandClick } from 'react-icons/tb';
 import { green } from '@mui/material/colors';
 
-import FrameSDK from '@farcaster/frame-sdk';
+import FrameV2SDK from '@farcaster/frame-sdk';
 
 export default function AppLayout({
   profile,
@@ -73,13 +73,20 @@ export default function AppLayout({
 
   useEffect(() => {
     const initiateFrameV2 = async () => {
-      FrameSDK.actions.ready();
-      setIsFrameV2(true);
+      const context = await FrameV2SDK.context;
+
+      if (context) {
+        await FrameV2SDK.actions.ready();
+        setIsFrameV2(true);
+        toast.success(`Frame V2 ready for @${context.user.username}`);
+      } else {
+        toast.error('Frame V2 not ready');
+      }
     };
-    if (FrameSDK && !isFrameV2) {
+    if (FrameV2SDK && !isFrameV2) {
       initiateFrameV2();
     }
-  }, [FrameSDK, isFrameV2]);
+  }, [isFrameV2]);
 
   const enablePullToRefresh = usePwa() || isMiniApp;
 
