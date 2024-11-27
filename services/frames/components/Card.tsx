@@ -1,6 +1,11 @@
 import { assetImageSrc } from '../utils/image';
 
-export default function Card({ children }: { children: React.ReactNode }) {
+export default function Card({ children, theme }: { children: React.ReactNode; theme?: string }) {
+  const isDark = theme === 'dark';
+  const backgroundColor = isDark ? '#1a1a1a' : '#f8fafc';
+  const textColor = isDark ? '#ffffff' : '#000000';
+  const badgeBackground = isDark ? '#2d2d2d' : '#e0e0e0';
+
   return (
     <div
       style={{
@@ -8,14 +13,15 @@ export default function Card({ children }: { children: React.ReactNode }) {
         height: '100%',
         width: '100%',
         backgroundSize: '100% 100%',
-        backgroundColor: '#00000',
+        backgroundColor: '#000000',
         padding: 8
       }}>
       <div
         style={{
           height: '100%',
           width: '100%',
-          backgroundColor: '#f8fafc',
+          backgroundColor,
+          color: textColor,
           backgroundSize: '100% 100%',
           display: 'flex',
           flexDirection: 'column',
@@ -38,7 +44,7 @@ export default function Card({ children }: { children: React.ReactNode }) {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#e0e0e0',
+            backgroundColor: badgeBackground,
             borderRadius: 25,
             padding: 8
           }}>

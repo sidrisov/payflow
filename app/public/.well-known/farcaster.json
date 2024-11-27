@@ -1,0 +1,14 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjE5MTI5LCJ0eXBlIjoiY3VzdG9keSIsImtleSI6IjB4NTg3YkJjNmNkQzVCRDdmQ0E0RkM2YTU2ZjM1NGFjZTM2OTE1NTk2ZSJ9",
+    "payload": "eyJkb21haW4iOiJhcHAucGF5Zmxvdy5tZSJ9",
+    "signature": "MHg5YTZhNTM1MjA2NTJmNGZlODBlNzRiMGJmMWE1ZGNiNThkNjVmNTZiNTkzODllZGIzNDg3YjFkMDVhZmNiODJhNTFlYmFmYmQyMjkyMWQwNmRkY2VhZWE4ZTUyMjFhNDg4MjFkNjU1NzFhZTI4ODk5NTQwZTZiNTc4MzA1ZmE1NzFj"
+  },
+  "frame": {
+    "version": "0.0.1",
+    "name": "Payflow App",
+    "iconUrl": "https://app.payflow.me/apple-touch-icon.png",
+    "splashBackgroundColor": "#f7f7f7",
+    "homeUrl": "https://app.payflow.me"
+  }
+}

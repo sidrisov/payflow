@@ -14,8 +14,9 @@ export const paymentHtml = (
   identity: IdentityType,
   step: PaymentStep,
   payment: PaymentType,
-  entryTitle?: string
-) => <Payment identity={identity} step={step} payment={payment} entryTitle={entryTitle} />;
+  entryTitle?: string,
+  theme?: string
+) => <Payment identity={identity} step={step} payment={payment} entryTitle={entryTitle} theme={theme} />;
 
 const paymentStepTitle = (step: PaymentStep, entryTitle?: string) => {
   switch (step) {
@@ -36,12 +37,14 @@ function Payment({
   identity,
   step,
   payment,
-  entryTitle
+  entryTitle,
+  theme
 }: {
   identity: IdentityType;
   step: PaymentStep;
   payment: PaymentType;
   entryTitle?: string;
+  theme?: string;
 }) {
   const title = paymentStepTitle(step, entryTitle);
   const tokenImgSrc =
@@ -62,9 +65,13 @@ function Payment({
     identity.profile.preferredTokens.length > 0;
   const maxNameWidth = isPaymentInitiated || showPreferredTokens ? 450 : 600;
 
+  const isDark = theme === 'dark';
+  const backgroundColor = isDark ? '#2d2d2d' : '#e0e0e0';
+  const textColor = isDark ? '#ffffff' : '#000000';
+
   return (
-    <Card>
-      <p style={{ fontSize: 60, fontWeight: 'bold', fontStyle: 'italic' }}>{title}</p>
+    <Card theme={theme}>
+      <p style={{ fontSize: 60, fontWeight: 'bold', fontStyle: 'italic', color: textColor }}>{title}</p>
       <div
         style={{
           marginTop: 20,
@@ -126,9 +133,10 @@ function Payment({
               alignItems: 'flex-start',
               padding: 16,
               fontSize: 36,
-              backgroundColor: '#e0e0e0',
+              backgroundColor,
               borderRadius: 25,
-              gap: 10
+              gap: 10,
+              color: textColor,
             }}>
             {payment.chainId && (
               <div
@@ -201,9 +209,10 @@ function Payment({
               alignItems: 'flex-start',
               padding: 16,
               fontSize: 36,
-              backgroundColor: '#e0e0e0',
+              backgroundColor,
               borderRadius: '16px',
-              gap: 5
+              gap: 5,
+              color: textColor,
             }}>
             <span style={{ textAlign: 'center', fontSize: 30, fontWeight: 'bold' }}>Preferred</span>
             {identity.profile?.preferredTokens?.slice(0, 5).map((tokenId) => {

@@ -9,9 +9,6 @@ import { profileHtml } from './components/Profile';
 import { IdentityType, ProfileType } from './types/ProfleType';
 
 import dotenv from 'dotenv';
-import { welcomeProfileHtml } from './components/WelcomeProfile';
-import { invitedHtml } from './components/Invited';
-import { notInvitedHtml } from './components/NotInvited';
 import { BalanceType } from './types/BalanceType';
 import { PaymentType } from './types/PaymentType';
 import { paymentHtml } from './components/Payment';
@@ -196,23 +193,6 @@ async function startServer() {
     }
   });
 
-  app.get('/images/profile/:fname/welcome.png', async (req, res) => {
-    const fname = req.params.fname;
-
-    const image = await htmlToImage(welcomeProfileHtml(fname), 'landscape');
-    res.type('png').send(image);
-  });
-
-  app.get('/images/profile/invited.png', async (_, res) => {
-    const image = await htmlToImage(invitedHtml(), 'landscape');
-    res.type('png').send(image);
-  });
-
-  app.get('/images/profile/notinvited.png', async (_, res) => {
-    const image = await htmlToImage(notInvitedHtml(), 'landscape');
-    res.type('png').send(image);
-  });
-
   app.get('/images/profile/:identity/image.png', async (req, res) => {
     const identity = req.params.identity;
 
@@ -239,6 +219,7 @@ async function startServer() {
     } as PaymentType;
 
     const entryTitleBase64 = req.query.entryTitle;
+    const theme = req.query.theme ?? 'light';
 
     const entryTitle =
       entryTitleBase64 &&
@@ -263,7 +244,7 @@ async function startServer() {
       const response = await axios.get(`${API_URL}/api/user/identities/${identity}`);
       let identityData = (response.data !== '' ? response.data : { identity }) as IdentityType;
       const image = await htmlToImage(
-        paymentHtml(identityData, step as any, payment, entryTitle as any),
+        paymentHtml(identityData, step as any, payment, entryTitle as any, theme as any),
         'landscape'
       );
       res.setHeader('Cache-Control', 'max-age=60').type('png').send(image);

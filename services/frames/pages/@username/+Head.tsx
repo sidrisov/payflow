@@ -6,8 +6,9 @@ export function Head() {
   const username = routeParams?.username;
 
   const entryTitle = urlParsed.search.entryTitle;
+  const theme = urlParsed.search.theme;
 
-  const imageUrl = `${FRAMES_URL}/images/profile/${username}/payment.png?step=start${entryTitle ? `&entryTitle=${entryTitle}` : ''}`;
+  const imageUrl = `${FRAMES_URL}/images/profile/${username}/payment.png?step=start${entryTitle ? `&entryTitle=${entryTitle}` : ''}${theme ? `&theme=${theme}` : ''}`;
   return (
     <>
       <head>
@@ -52,7 +53,7 @@ export function Head() {
         <meta property="fc:frame:button:1" content="Pay" />
         <meta
           property="fc:frame:button:1:target"
-          content={`${API_URL}/api/farcaster/frames/pay/${username}/frame/command`}
+          content={`${API_URL}/api/farcaster/frames/pay/${username}/frame/command${theme ? `?theme=${theme}` : ''}`}
         />
       </head>
     </>
