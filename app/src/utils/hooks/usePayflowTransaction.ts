@@ -16,7 +16,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
   const { switchChainAsync } = useSwitchChain();
   const { data: signer } = useWalletClient();
   const client = useClient();
-  const { profile, isMiniApp } = useContext(ProfileContext);
+  const { profile, isMiniApp, isFrameV2 } = useContext(ProfileContext);
 
   const {
     transfer,
@@ -66,11 +66,11 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
   const checkDependencies = useCallback(() => {
     if (!profile) throw new Error('Profile not found. Please ensure you are logged in.');
 
-    if (isNativeFlow || !isMiniApp) {
+    if (isNativeFlow || !isMiniApp || isFrameV2) {
       if (!client) throw new Error('Client not initialized. Please check your network connection.');
       if (!signer) throw new Error('Signer not available. Please connect your wallet.');
     }
-  }, [profile, client, signer, isMiniApp, isNativeFlow]);
+  }, [profile, client, signer, isMiniApp, isFrameV2, isNativeFlow]);
 
   const createGlideSession = useCallback(
     async (paymentTx: any, paymentOption: PaymentOption) => {
@@ -115,7 +115,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
   ): Promise<Hash> => {
     if (!profile) throw new Error('Profile not found. Please ensure you are logged in.');
 
-    if (!isNativeFlow && isMiniApp) {
+    if (!isNativeFlow && isMiniApp && !isFrameV2) {
       return (await sendTransactionFarcaster(tx)) as Hash;
     }
 
@@ -195,7 +195,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
 
       if (isNativeFlow) {
         resetSafe();
-      } else if (isMiniApp) {
+      } else if (isMiniApp && !isFrameV2) {
         resetFarcaster();
       } else {
         resetRegular();
@@ -205,7 +205,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
 
       const glideResponse = await executeSession(glideConfig, {
         session,
-        currentChainId: isNativeFlow || !isMiniApp ? (chainId as any) : paymentTx.chainId,
+        currentChainId: isNativeFlow || !isMiniApp || isFrameV2 ? (chainId as any) : paymentTx.chainId,
         switchChainAsync,
         sendTransactionAsync: async (tx) => {
           console.log('Glide tnxs: ', tx);
@@ -261,7 +261,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
 
   useEffect(() => {
     const transferStatus = (() => {
-      if (!isNativeFlow && isMiniApp) {
+      if (!isNativeFlow && isMiniApp && !isFrameV2) {
         return {
           isPending: Boolean(
             loadingFarcaster || (txHashFarcaster && !confirmedFarcaster && !errorFarcaster)
@@ -300,6 +300,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
     });
   }, [
     isMiniApp,
+    isFrameV2,
     isNativeFlow,
     loadingSafe,
     txHashSafe,

@@ -86,7 +86,7 @@ export default function AppLayout({
     }
   }, [isFrameV2]);
 
-  const enablePullToRefresh = usePwa() || isMiniApp;
+  const enablePullToRefresh = usePwa() || isMiniApp || isFrameV2;
 
   const bottomToolbarEnabled =
     location.pathname !== '/composer' &&

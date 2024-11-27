@@ -46,7 +46,7 @@ export const PayButton: React.FC<PayButtonProps> = ({
 }) => {
   console.debug('Payment in PayButton: ', payment);
 
-  const { isMiniApp } = useContext(ProfileContext);
+  const { isMiniApp, isFrameV2 } = useContext(ProfileContext);
   const { ready } = usePrivy();
 
   const chainId = useChainId();
@@ -59,7 +59,7 @@ export const PayButton: React.FC<PayButtonProps> = ({
 
   const handleClick = async () => {
     if (
-      (isNativeFlow || !isMiniApp) &&
+      (isNativeFlow || !isMiniApp || isFrameV2) &&
       address?.toLowerCase() !== senderFlow.signer.toLowerCase()
     ) {
       setOpenConnectSignerDrawer(true);
@@ -93,7 +93,7 @@ export const PayButton: React.FC<PayButtonProps> = ({
 
   return (
     <>
-      {!paymentToken || (!isNativeFlow && isMiniApp) || chainId === paymentToken?.chainId ? (
+      {!paymentToken || (!isNativeFlow && isMiniApp && !isFrameV2) || chainId === paymentToken?.chainId ? (
         <CustomLoadingButton
           title={buttonText}
           loading={paymentTxStatus.isPending}
