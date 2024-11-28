@@ -46,7 +46,7 @@ public class StatsService {
 		log.info("Storage Units Purchased: {}", stats.storageUnitsPurchased());
 		log.info("Fan Tokens Purchased: {}", stats.fanTokensPurchased());
 		log.info("Mint Tokens Purchased: {}", stats.mintTokensPurchased());
-		log.info("Hyper Subscriptions: {}", stats.hyperSubscriptions());
+		log.info("Hyper Subscriptions: {}", stats.hypersubMonthsSubscribed());
 	}
 
 	@Cacheable(value = DAILY_STATS_CACHE, key = "'current'")

@@ -40,7 +40,7 @@ public class CacheConfig {
 
 	public static final String USERS_CACHE_NAME = CACHE_PREFIX_VERSION + "users";
 	public static final String INVITATIONS_CACHE_NAME = CACHE_PREFIX_VERSION + "invitations";
-	public static final String DAILY_STATS_CACHE = CACHE_PREFIX_VERSION + "stats";
+	public static final String DAILY_STATS_CACHE = CACHE_PREFIX_VERSION + "stats-1";
 
 	@Value("${spring.cache.contacts.all.expireAfterWrite:10m}")
 	private Duration contactsExpireAfterWriteDuration;

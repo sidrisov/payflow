@@ -14,7 +14,7 @@ interface DailyStats {
   mintTokensPurchased: number;
   storageUnitsPurchased: number;
   fanTokensPurchased: number;
-  hyperSubscriptions: number;
+  hypersubMonthsSubscribed: number;
 }
 
 export default function StatsPage() {
@@ -49,7 +49,7 @@ export default function StatsPage() {
         </Grid2>
         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
-            title="Payments"
+            title="All Payments"
             value={stats && `${stats.completedPayments}/${stats.totalPayments}`}
             subtitle="Completed/Total"
             isLoading={isLoading}
@@ -57,7 +57,7 @@ export default function StatsPage() {
         </Grid2>
         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
-            title="P2P Payments"
+            title="P2P + Rewards Payments"
             value={stats?.p2pPayments}
             subtitle="Completed"
             isLoading={isLoading}
@@ -90,7 +90,7 @@ export default function StatsPage() {
         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
             title="Hypersub"
-            value={stats?.hyperSubscriptions}
+            value={stats?.hypersubMonthsSubscribed}
             subtitle="Months Subscribed"
             isLoading={isLoading}
           />
