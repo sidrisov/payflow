@@ -10,7 +10,11 @@ interface DailyStats {
   monthlyActiveUsers: number;
   totalPayments: number;
   completedPayments: number;
+  p2pPayments: number;
+  mintTokensPurchased: number;
   storageUnitsPurchased: number;
+  fanTokensPurchased: number;
+  hyperSubscriptions: number;
 }
 
 export default function StatsPage() {
@@ -24,13 +28,13 @@ export default function StatsPage() {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Platform Stats Dashboard
+      <Typography variant="h5" fontWeight="bold" gutterBottom>
+        Payflow Stats Dashboard
       </Typography>
 
       <Grid2 container spacing={3}>
         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard title="Total Users" value={stats?.totalUsers} isLoading={isLoading} />
+          <StatCard title="Users" value={stats?.totalUsers} isLoading={isLoading} />
         </Grid2>
         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
@@ -53,9 +57,41 @@ export default function StatsPage() {
         </Grid2>
         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
+            title="P2P Payments"
+            value={stats?.p2pPayments}
+            subtitle="Completed"
+            isLoading={isLoading}
+          />
+        </Grid2>
+        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatCard
             title="Storage Units"
             value={stats?.storageUnitsPurchased}
-            subtitle="Total Purchased"
+            subtitle="Purchased"
+            isLoading={isLoading}
+          />
+        </Grid2>
+        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatCard
+            title="Fan Tokens"
+            value={stats?.fanTokensPurchased}
+            subtitle="Purchased"
+            isLoading={isLoading}
+          />
+        </Grid2>
+        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatCard
+            title="Collectibles"
+            value={stats?.mintTokensPurchased}
+            subtitle="Minted"
+            isLoading={isLoading}
+          />
+        </Grid2>
+        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatCard
+            title="Hypersub"
+            value={stats?.hyperSubscriptions}
+            subtitle="Months Subscribed"
             isLoading={isLoading}
           />
         </Grid2>

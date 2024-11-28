@@ -45,7 +45,7 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 			"((p.expiresAt IS NULL AND p.createdAt < :expiresAt) OR " +
 			"(p.expiresAt IS NOT NULL AND p.expiresAt < CURRENT_TIMESTAMP))")
 	Stream<Payment> findExpiredPaymentsWithLock(@Param("status") Payment.PaymentStatus status,
-			@Param("expiresAt") Instant expiresAt);
+	                                            @Param("expiresAt") Instant expiresAt);
 
 	// JPA: UPGRADE_SKIPLOCKED - PESSIMISTIC_WRITE with a
 	// javax.persistence.lock.timeout setting of -2
@@ -92,7 +92,16 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 	@Query("SELECT COUNT(p) FROM Payment p WHERE p.status IN ('COMPLETED', 'REFUNDED', 'CANCELLED')")
 	Long countAllCompletedPayments();
 
-	@Query("SELECT SUM(CASE WHEN p.tokenAmount IS NULL THEN 1 ELSE p.tokenAmount END) FROM Payment p WHERE p.category = 'fc_storage' AND p.status = 'COMPLETED'")
-	long countStorageUnitsPurchased();
+	@Query("SELECT COUNT(p) FROM Payment p WHERE p.status = 'COMPLETED' AND " +
+			"(p.category is NULL OR p.category IN :categories)")
+	Long countCompletedPaymentsByCategories(@Param("categories") List<String> categories);
+
+	@Query("SELECT COALESCE(ROUND(SUM(CASE " +
+			"WHEN p.tokenAmount IS NULL THEN 1 " +
+			"WHEN p.tokenAmount LIKE '%.%' AND p.tokenAmount NOT LIKE '%[^0-9.]%' THEN CAST(p.tokenAmount AS double) " +
+			"WHEN p.tokenAmount LIKE '%[^0-9]%' THEN 1 " +
+			"ELSE CAST(p.tokenAmount AS double) END)), 0) " +
+			"FROM Payment p WHERE p.category = :category AND p.status = 'COMPLETED'")
+	Long countPurchasedAmountByCategory(@Param("category") String category);
 
 }
