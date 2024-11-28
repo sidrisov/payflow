@@ -88,4 +88,8 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 			@Param("addresses") List<String> addresses,
 			@Param("statuses") List<Payment.PaymentStatus> statuses,
 			Pageable pageable);
+
+	@Query("SELECT COUNT(p) FROM Payment p WHERE p.status IN ('COMPLETED', 'REFUNDED', 'CANCELLED')")
+	Long countAllCompletedPayments();
+
 }

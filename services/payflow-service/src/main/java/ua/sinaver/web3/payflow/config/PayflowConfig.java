@@ -11,14 +11,14 @@ import java.util.List;
 @Component
 public class PayflowConfig {
 
-	public static final List<String> MINIAPP_REDIRECT_ALLOWLIST = Collections.singletonList("sinaver.eth");
+	public static final List<String> MINIAPP_REDIRECT_ALLOWLIST = Collections.emptyList();
 	@Value("${payflow.dapp.url}")
 	private String dAppServiceUrl;
 	@Value("${payflow.api.url}")
 	private String apiServiceUrl;
 	@Value("${payflow.frames.url}")
 	private String framesServiceUrl;
-	@Value("${payflow.invitation.whitelisted.fid:200000}")
+	@Value("${payflow.invitation.whitelisted.fid:500000}")
 	private int whitelistedFidUpperRange;
 
 }

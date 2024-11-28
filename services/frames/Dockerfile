@@ -1,5 +1,5 @@
 # Build dependencies
-FROM node:21-alpine AS deps
+FROM node:22-alpine AS deps
 WORKDIR /root
 
 # Copy package files
@@ -11,7 +11,7 @@ COPY services/frames/package.json ./services/frames/
 RUN npm ci
 
 # Build stage
-FROM node:21-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /root
 
 COPY --from=deps /root/node_modules ./node_modules
@@ -29,7 +29,7 @@ RUN npm run build --workspace=packages/common && \
     npm run build --workspace=services/frames
 
 # Runner stage
-FROM node:21-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /root
 
 COPY --from=builder /root/node_modules ./node_modules

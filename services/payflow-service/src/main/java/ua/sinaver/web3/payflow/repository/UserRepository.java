@@ -15,6 +15,8 @@ import ua.sinaver.web3.payflow.data.Flow;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.message.WalletProfileRequestMessage;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 
@@ -55,11 +57,11 @@ public interface UserRepository extends CrudRepository<User, Integer> {
 			"(u.lastUpdatedContacts < :updateDate" +
 			" OR u.lastUpdatedContacts IS NULL)")
 	Page<User> findByAllowedTrueAndLastUpdatedContactsBeforeAndLastSeenAfter(Date updateDate,
-			Date lastSeenDate,
-			Pageable pageable);
+	                                                                         Date lastSeenDate,
+	                                                                         Pageable pageable);
 
 	default List<User> findTop5ByAllowedTrueAndLastUpdatedContactsBeforeAndLastSeenAfter(Date updateDate,
-			Date lastSeenDate) {
+	                                                                                     Date lastSeenDate) {
 		return this.findByAllowedTrueAndLastUpdatedContactsBeforeAndLastSeenAfter(updateDate,
 				lastSeenDate, PageRequest.of(0, 5)).getContent();
 	}
@@ -71,4 +73,20 @@ public interface UserRepository extends CrudRepository<User, Integer> {
 			"AND f.archived = false " +
 			"AND w.walletVersion = :walletVersion")
 	List<Flow> findUsersWithNonDisabledFlowAndWalletVersion(@Param("walletVersion") String walletVersion);
+
+	@Query("SELECT COUNT(DISTINCT u) FROM User u WHERE u.lastSeen >= :startDate")
+	long countActiveUsersSince(@Param("startDate") Date startDate);
+
+	default long countDailyActiveUsers() {
+		return countActiveUsersSince(Date.from(Instant.now().minus(1, ChronoUnit.DAYS)));
+	}
+
+	default long countWeeklyActiveUsers() {
+		return countActiveUsersSince(Date.from(Instant.now().minus(7, ChronoUnit.DAYS)));
+	}
+
+	default long countMonthlyActiveUsers() {
+		return countActiveUsersSince(Date.from(Instant.now().minus(30, ChronoUnit.DAYS)));
+	}
+
 }
