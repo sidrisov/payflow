@@ -22,6 +22,7 @@ const LazyPreferredFlow = lazy(() => import('./pages/settings/PreferredFlowPage'
 const LazyPreferredTokens = lazy(() => import('./pages/settings/PreferredTokensPage'));
 const LazyFarcasterClientPage = lazy(() => import('./pages/settings/FarcasterClientPage'));
 const LazyNotifications = lazy(() => import('./pages/notifications'));
+const LazyStats = lazy(() => import('./pages/stats'));
 // Wrapper component for lazy-loaded components
 const LazyWrapper = ({
   component: Component,
@@ -101,5 +102,9 @@ export const appRouter = createBrowserRouter([
       { path: '404', element: <LazyWrapper component={LazyPage404} /> },
       { path: '*', element: <Navigate to="/404" replace /> }
     ]
+  },
+  {
+    path: '/~/stats',
+    element: <LazyWrapper component={LazyStats} />
   }
 ]);

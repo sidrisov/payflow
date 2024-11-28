@@ -40,6 +40,7 @@ public class CacheConfig {
 
 	public static final String USERS_CACHE_NAME = CACHE_PREFIX_VERSION + "users";
 	public static final String INVITATIONS_CACHE_NAME = CACHE_PREFIX_VERSION + "invitations";
+	public static final String DAILY_STATS_CACHE = CACHE_PREFIX_VERSION + "daily-stats";
 
 	@Value("${spring.cache.contacts.all.expireAfterWrite:10m}")
 	private Duration contactsExpireAfterWriteDuration;
@@ -53,6 +54,8 @@ public class CacheConfig {
 	private int socialsMaxSize;
 	@Value("${spring.cache.storage.expireAfterWrite:4h}")
 	private Duration storageExpireAfterWriteDuration;
+	@Value("${spring.cache.stats.expireAfterWrite:24h}")
+	private Duration statsExpireAfterWriteDuration;
 
 	@Autowired
 	private ObjectMapper objectMapper;
@@ -100,6 +103,9 @@ public class CacheConfig {
 								.fromSerializer(new Jackson2JsonRedisSerializer<>(objectMapper,
 										StorageAllocationsResponse.class))));
 
+		// Add daily stats cache configuration
+		cacheConfigurations.put(DAILY_STATS_CACHE, configuration.entryTtl(statsExpireAfterWriteDuration));
+
 		return RedisCacheManager
 				.builder(connectionFactory)
 				.cacheDefaults(configuration)
@@ -127,6 +133,7 @@ public class CacheConfig {
 		cacheSpecs.put(INVITATIONS_CACHE_NAME, buildCache(Duration.ofHours(24)));
 		cacheSpecs.put(NEYNAR_STORAGE_USAGE_CACHE, buildCache(storageExpireAfterWriteDuration));
 		cacheSpecs.put(NEYNAR_STORAGE_ALLOCATION_CACHE, buildCache(storageExpireAfterWriteDuration));
+		cacheSpecs.put(DAILY_STATS_CACHE, buildCache(statsExpireAfterWriteDuration));
 
 		// Register all caches
 		cacheSpecs.forEach(cacheManager::registerCustomCache);

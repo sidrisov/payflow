@@ -98,6 +98,8 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.GET, "/farcaster/membership/allowed").permitAll()
 						// Tokens API
 						.requestMatchers(HttpMethod.GET, "/tokens").permitAll()
+						// Stats API
+						.requestMatchers(HttpMethod.GET, "/stats/*").permitAll()
 						// other authenticated
 						.anyRequest().authenticated())
 				.sessionManagement(session -> session

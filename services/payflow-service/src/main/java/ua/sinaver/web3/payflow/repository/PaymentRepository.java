@@ -45,7 +45,7 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 			"((p.expiresAt IS NULL AND p.createdAt < :expiresAt) OR " +
 			"(p.expiresAt IS NOT NULL AND p.expiresAt < CURRENT_TIMESTAMP))")
 	Stream<Payment> findExpiredPaymentsWithLock(@Param("status") Payment.PaymentStatus status,
-	                                            @Param("expiresAt") Instant expiresAt);
+			@Param("expiresAt") Instant expiresAt);
 
 	// JPA: UPGRADE_SKIPLOCKED - PESSIMISTIC_WRITE with a
 	// javax.persistence.lock.timeout setting of -2
@@ -91,5 +91,8 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 
 	@Query("SELECT COUNT(p) FROM Payment p WHERE p.status IN ('COMPLETED', 'REFUNDED', 'CANCELLED')")
 	Long countAllCompletedPayments();
+
+	@Query("SELECT SUM(CASE WHEN p.tokenAmount IS NULL THEN 1 ELSE p.tokenAmount END) FROM Payment p WHERE p.category = 'fc_storage' AND p.status = 'COMPLETED'")
+	long countStorageUnitsPurchased();
 
 }
