@@ -99,6 +99,14 @@ export default function NotificationsPage() {
               onChange={() => {
                 setNotification({ ...notification, enabled: !notification.enabled });
               }}
+              sx={{
+                '& .MuiSwitch-switchBase.Mui-checked': {
+                  color: green.A700
+                },
+                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                  backgroundColor: green.A700
+                }
+              }}
             />
           </Stack>
 
@@ -162,8 +170,8 @@ export default function NotificationsPage() {
                         notification.threshold <= 10
                           ? red.A700
                           : notification.threshold <= 20
-                          ? orange.A700
-                          : green.A700
+                            ? orange.A700
+                            : green.A700
                     },
                     '& .MuiSlider-mark': {
                       backgroundColor: grey.A700
