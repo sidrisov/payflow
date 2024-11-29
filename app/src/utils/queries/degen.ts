@@ -35,20 +35,17 @@ export const DEGEN_CLAIM_SEASONS: DegenClaimSeason[] = [
   {
     id: 'season5',
     name: 'Season 5',
-    chainId: base.id,
-    contract: '0x81ac315d7baf7fae2e8278dc33ec91b752560166'
+    chainId: base.id
   },
   {
     id: 'season6',
     name: 'Season 6',
-    chainId: base.id,
-    contract: '0xdfeddda2bC2e75524f470991f46404eE90ae2eEa'
+    chainId: base.id
   },
   {
     id: 'season7',
     name: 'Season 7',
-    chainId: degen.id,
-    contract: '0x27E0784db443cbF5Cb1370cFE19b5E31f91f9828'
+    chainId: degen.id
   },
   {
     id: 'season8',
@@ -65,8 +62,7 @@ export const DEGEN_CLAIM_SEASONS: DegenClaimSeason[] = [
   {
     id: 'seasonx',
     name: 'Season X',
-    chainId: base.id,
-    contract: zeroAddress
+    chainId: base.id
   },
   { id: 'current', name: 'New Season 11', chainId: base.id }
 ];

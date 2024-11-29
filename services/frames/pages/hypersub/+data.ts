@@ -43,6 +43,11 @@ export const data = async (pageContext: PageContextServer) => {
     ids?: string[];
   };
 
+  if (!ids?.length) {
+    // Return empty array or handle the no-ids case as needed
+    return [];
+  }
+
   configureFabricSDK({ wagmiConfig });
 
   const fetchHypersubData = async (id: string) => {

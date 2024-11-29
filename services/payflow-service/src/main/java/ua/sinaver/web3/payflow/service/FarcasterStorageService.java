@@ -63,7 +63,7 @@ public class FarcasterStorageService {
 		}
 	}
 
-	@Scheduled(cron = "* */15 * * * *")
+	@Scheduled(cron = "* */10 * * * *")
 	void notifyWithStorageExpiring() {
 		storageNotificationRepository.findTop10StorageNotifications(Instant.now().minus(7, ChronoUnit.DAYS))
 				.forEach(storageNotification -> {

@@ -10,7 +10,7 @@ export const buyHypersubEntryHtml = (chains: Chain[], tokens: string[]) => (
 );
 
 function BuyHypersub({ chains, tokens }: { chains: Chain[]; tokens: string[] }) {
-  const title = 'Buy Hypersub Subscription';
+  const title = 'Buy Subscription';
 
   return (
     <Card>
@@ -94,8 +94,8 @@ function BuyHypersub({ chains, tokens }: { chains: Chain[]; tokens: string[] }) 
               <div
                 key={token}
                 style={{
-                  width: 60,
-                  height: 60,
+                  width: 50,
+                  height: 50,
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center'
@@ -103,8 +103,8 @@ function BuyHypersub({ chains, tokens }: { chains: Chain[]; tokens: string[] }) 
                 <img
                   src={tokenImgSrc}
                   style={{
-                    width: 40,
-                    height: 40,
+                    width: 35,
+                    height: 35,
                     borderRadius: '50%'
                   }}
                   alt="Supported Token"
