@@ -3,7 +3,7 @@ import { DAPP_URL } from '../../../utils/constants';
 export function Head() {
   const frame = {
     version: 'next',
-    imageUrl: 'https://imgur.com/PymCibp.png',
+    imageUrl: 'https://i.imgur.com/okcGTR2.png',
     button: {
       title: 'Open App',
       action: {
@@ -34,14 +34,14 @@ export function Head() {
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Payflow | App" />
         <meta property="og:description" content="Onchain Social Payments" />
-        <meta property="og:image" content="https://imgur.com/PymCibp.png" />
+        <meta property="og:image" content="https://i.imgur.com/okcGTR2.png" />
 
         <meta name="twitter:card" content="summary_large_image" />
         <meta property="twitter:domain" content="app.payflow.me" />
         <meta property="twitter:url" content={DAPP_URL} />
         <meta name="twitter:title" content="Payflow | App" />
         <meta name="twitter:description" content="Onchain Social Payments" />
-        <meta name="twitter:image" content="https://imgur.com/PymCibp.png" />
+        <meta name="twitter:image" content="https://i.imgur.com/okcGTR2.png" />
 
         <meta property="fc:frame" content={JSON.stringify(frame)} />
       </head>

@@ -1,6 +1,6 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import axios from 'axios';
-import { Address } from 'viem';
+import { Address, zeroAddress } from 'viem';
 import { base, degen } from 'viem/chains';
 
 const DEGEN_API = 'https://api.degen.tips/airdrop2';
@@ -62,7 +62,13 @@ export const DEGEN_CLAIM_SEASONS: DegenClaimSeason[] = [
     chainId: base.id,
     contract: '0xef9816e228Bb88a81178CD37C3fAB926BfC67517'
   },
-  { id: 'current', name: 'New Season', chainId: base.id }
+  {
+    id: 'seasonx',
+    name: 'Season X',
+    chainId: base.id,
+    contract: zeroAddress
+  },
+  { id: 'current', name: 'New Season 11', chainId: base.id }
 ];
 
 interface DegenAllowanceData {

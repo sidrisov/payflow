@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ua.sinaver.web3.payflow.data.StorageNotification;
+import ua.sinaver.web3.payflow.message.farcaster.Cast;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.message.farcaster.StorageUsage;
 import ua.sinaver.web3.payflow.repository.StorageNotificationRepository;
@@ -15,6 +16,7 @@ import ua.sinaver.web3.payflow.repository.UserRepository;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -34,6 +36,9 @@ public class FarcasterStorageService {
 
 	@Autowired
 	private IdentityService identityService;
+
+	@Autowired
+	private NotificationService notificationService;
 
 	@Autowired
 	private StorageNotificationRepository storageNotificationRepository;
@@ -75,6 +80,8 @@ public class FarcasterStorageService {
 
 							if (shouldNotify) {
 								val username = identityService.getFidFname(fid);
+								val storageEmbed = String.format("https://frames.payflow" +
+										".me/fid/%s/storage", fid);
 								val response = messagingService.sendMessage(new DirectCastMessage(
 										fid.toString(),
 										String.format(
@@ -83,16 +90,34 @@ public class FarcasterStorageService {
 
 														1 unit costs ~$2, you can purchase more with any token balance on @payflow 👇
 
-														https://frames.payflow.me/fid/%s/storage
+														%s
 
 														To disable or configure storage notifications, visit:
 														https://app.payflow.me/notifications
 														""",
-												username, fid),
+												username, storageEmbed),
 										UUID.randomUUID()));
 
 								if (StringUtils.isNotBlank(response.result().messageId())) {
 									storageNotification.setLastCheckedAt(Instant.now());
+
+									try {
+										notificationService.reply(String.format(
+														"""
+																@%s, you're reaching or over your storage capacity!
+																			
+																1 unit costs ~$2, you can purchase more with any token balance on @payflow 👇
+																			
+																To disable or configure storage notifications, visit:
+																https://app.payflow.me/notifications
+																""",
+														username), null,
+												List.of(new Cast.Embed(storageEmbed)));
+									} catch (Throwable t) {
+										log.error("Failed to cast storage notification for {}",
+												fid, t);
+									}
+
 								} else {
 									// small hack to delay check by 1 day
 									storageNotification.setLastCheckedAt(Instant.now().minus(6, ChronoUnit.DAYS));
