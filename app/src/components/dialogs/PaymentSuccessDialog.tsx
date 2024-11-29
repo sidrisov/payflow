@@ -4,6 +4,8 @@ import { Box, Typography, Link, Button } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { green } from '@mui/material/colors';
 import { HiOutlineCheckCircle } from 'react-icons/hi2';
+import { useNavigate } from 'react-router-dom';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 
 interface PaymentSuccessDialogProps {
   open?: boolean;
@@ -22,6 +24,8 @@ export default function PaymentSuccessDialog({
   receiptUrl,
   shareComponents
 }: PaymentSuccessDialogProps) {
+  const navigate = useNavigate();
+
   return (
     <ResponsiveDialog open={open} onClose={onClose}>
       <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" p={1}>
@@ -65,13 +69,13 @@ export default function PaymentSuccessDialog({
         </Typography>
 
         <Button
-          fullWidth
-          size="large"
           variant="outlined"
-          onClick={onClose}
+          onClick={() =>
+            navigate('/payment/create?recipient=0x0dEe77c83cB8b14fA95497825dF93202AbF6ad83')
+          }
           color="inherit"
-          sx={{ borderRadius: 4 }}>
-          Return to home page
+          sx={{ borderRadius: 4, px: 3 }}>
+          <FavoriteIcon fontSize="small" sx={{ mr: 1 }} /> Support Payflow
         </Button>
       </Box>
     </ResponsiveDialog>

@@ -35,7 +35,8 @@ import { SiFarcaster } from 'react-icons/si';
 import { MdSecurityUpdateGood, MdSecurityUpdate } from 'react-icons/md';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { green } from '@mui/material/colors';
-import { IoChatbubbleEllipses, IoChatbubbleEllipsesOutline, IoHelpBuoy } from 'react-icons/io5';
+import { IoChatbubbleEllipses } from 'react-icons/io5';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 
 export function ProfileMenu({
   profile,
@@ -227,6 +228,17 @@ export function ProfileMenu({
                 {__BUILD_INFO__.commitHash} • {__BUILD_INFO__.buildTime}
               </Typography>
             </ListItemText>
+          </MenuItem>
+          <Divider />
+          <MenuItem
+            onClick={() => {
+              closeStateCallback();
+              navigate('/payment/create?recipient=0x0dEe77c83cB8b14fA95497825dF93202AbF6ad83');
+            }}>
+            <ListItemIcon>
+              <FavoriteIcon fontSize="small" />
+            </ListItemIcon>
+            Support Payflow
           </MenuItem>
           <Divider />
           <MenuItem

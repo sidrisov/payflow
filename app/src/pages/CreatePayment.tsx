@@ -18,9 +18,7 @@ export default function Composer() {
   );
 
   const { profile } = useContext(ProfileContext);
-  const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(
-    !isRecipientFetchingLoading
-  );
+  const [openSearchIdentity, setOpenSearchIdentity] = useState<boolean>(!recipientIdentity);
 
   const [recipient, setRecipient] = useState<SelectedIdentityType>();
 
