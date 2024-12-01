@@ -59,7 +59,7 @@ public class PaymentService {
 				.map(String::toLowerCase).toList();
 
 		return paymentRepository.findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedAtDesc(
-				user, verifications, List.of(Payment.PaymentStatus.COMPLETED))
+						user, verifications, List.of(Payment.PaymentStatus.COMPLETED))
 				.stream()
 				.map(payment -> payment.getReceiver() != null ? payment.getReceiver().getIdentity()
 						: payment.getReceiverAddress())
@@ -84,10 +84,10 @@ public class PaymentService {
 	public List<String> parsePreferredTokens(String text) {
 		val allTokenIds = tokenService.getTokens().stream().map(Token::id).distinct().toList();
 		return Arrays.stream(text
-				.replace(",", " ") // Replace commas with spaces
-				.replace("$", "") // Remove any $ symbols
-				.toLowerCase() // Convert to lowercase
-				.split("\\s+")) // Split by spaces
+						.replace(",", " ") // Replace commas with spaces
+						.replace("$", "") // Remove any $ symbols
+						.toLowerCase() // Convert to lowercase
+						.split("\\s+")) // Split by spaces
 				.filter(allTokenIds::contains).limit(5).toList();
 	}
 
@@ -168,7 +168,7 @@ public class PaymentService {
 		log.info("Finished expiration process");
 	}
 
-	@Scheduled(fixedRate = 60 * 1000, initialDelay = 15 * 1000)
+	@Scheduled(fixedRate = 15 * 60 * 1000, initialDelay = 15 * 1000)
 	public void processInProgressPayments() {
 		log.info("Starting to process in-progress and pending_refund payments");
 		val paymentsToProcess = paymentRepository.findTop5ByStatusInWithLock(
@@ -205,6 +205,10 @@ public class PaymentService {
 					payment.setHash(sessionResponse.getSponsoredTransactionHash());
 					payment.setStatus(Payment.PaymentStatus.COMPLETED);
 					payment.setCompletedAt(Instant.now());
+					if (payment.getFulfillmentHash() == null || payment.getFulfillmentChainId() == null) {
+						payment.setFulfillmentHash(sessionResponse.getPaymentTransactionHash());
+						payment.setFulfillmentChainId(Integer.parseInt(sessionResponse.getPaymentChainId().split("eip155:")[1]));
+					}
 					paymentRepository.save(payment);
 					notificationService.notifyPaymentCompletion(payment, payment.getSender());
 

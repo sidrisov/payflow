@@ -3,6 +3,7 @@ package ua.sinaver.web3.payflow.service;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -80,49 +81,53 @@ public class FarcasterStorageService {
 
 							if (shouldNotify) {
 								val username = identityService.getFidFname(fid);
-								val storageEmbed = String.format("https://frames.payflow" +
-										".me/fid/%s/storage", fid);
-								val response = messagingService.sendMessage(new DirectCastMessage(
-										fid.toString(),
-										String.format(
-												"""
-														@%s, you're reaching or over your storage capacity!
+								val storageEmbed = String.format("https://frames.payflow.me/fid/%s/storage", fid);
 
-														1 unit costs ~$2, you can purchase more with any token balance on @payflow 👇
+								// Send direct message if enabled
+								if (storageNotification.isNotifyWithMessage()) {
+									val response = messagingService.sendMessage(new DirectCastMessage(
+											fid.toString(),
+											String.format(
+													"""
+															@%s, you're reaching or over your storage capacity!
 
-														%s
+															1 unit costs ~$2, you can purchase more with any token balance on @payflow 👇
 
-														To disable or configure storage notifications, visit:
-														https://app.payflow.me/notifications
-														""",
-												username, storageEmbed),
-										UUID.randomUUID()));
+															%s
 
-								if (StringUtils.isNotBlank(response.result().messageId())) {
-									storageNotification.setLastCheckedAt(Instant.now());
+															To disable or configure storage notifications, visit:
+															https://app.payflow.me/notifications
+															""",
+													username, storageEmbed),
+											UUID.randomUUID()));
 
+									if (StringUtils.isBlank(response.result().messageId())) {
+										// small hack to delay check by 1 day if message failed
+										storageNotification.setLastCheckedAt(Instant.now().minus(6, ChronoUnit.DAYS));
+										return;
+									}
+								}
+
+								// Send cast if enabled
+								if (storageNotification.isNotifyWithCast()) {
 									try {
 										notificationService.reply(String.format(
 														"""
 																@%s, you're reaching or over your storage capacity!
-																			
+
 																1 unit costs ~$2, you can purchase more with any token balance on @payflow 👇
-																			
+
 																To disable or configure storage notifications, visit:
 																https://app.payflow.me/notifications
 																""",
 														username), null,
 												List.of(new Cast.Embed(storageEmbed)));
 									} catch (Throwable t) {
-										log.error("Failed to cast storage notification for {}",
-												fid, t);
+										log.error("Failed to cast storage notification for {}", fid, t);
 									}
-
-								} else {
-									// small hack to delay check by 1 day
-									storageNotification.setLastCheckedAt(Instant.now().minus(6, ChronoUnit.DAYS));
 								}
 
+								storageNotification.setLastCheckedAt(Instant.now());
 								Thread.sleep(1000);
 							} else {
 								storageNotification.setLastCheckedAt(Instant.now());
@@ -136,9 +141,8 @@ public class FarcasterStorageService {
 				});
 	}
 
-	//@Scheduled(initialDelay = 30 * 1000, fixedDelay = Long.MAX_VALUE)
-	//@SchedulerLock(name = "scheduleStorageNotification", lockAtLeastFor = "PT1M", lockAtMostFor
-	// = "PT5M")
+	@Scheduled(cron = "0 0 0 * * SUN")
+	@SchedulerLock(name = "scheduleStorageNotification", lockAtLeastFor = "PT1M", lockAtMostFor = "PT5M")
 	void scheduleStorageNotification() {
 		userRepository.findAll().forEach(user -> {
 			if (user.isAllowed()) {

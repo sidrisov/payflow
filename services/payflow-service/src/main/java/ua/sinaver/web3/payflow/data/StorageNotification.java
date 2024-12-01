@@ -14,7 +14,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @Entity
 @Table(uniqueConstraints = {
-		@UniqueConstraint(name = "uc_storage_notification_fid", columnNames = {"fid"})
+		@UniqueConstraint(name = "uc_storage_notification_fid", columnNames = { "fid" })
 })
 public class StorageNotification {
 	@Id
@@ -32,7 +32,7 @@ public class StorageNotification {
 
 	@Column(name = "capacity_type")
 	@Enumerated(EnumType.STRING)
-	private CapacityType capacityType = CapacityType.ALL;
+	private CapacityType capacityType = CapacityType.CASTS_ONLY;
 
 	@Column(name = "last_checked_at")
 	@Temporal(TemporalType.TIMESTAMP)
@@ -40,6 +40,12 @@ public class StorageNotification {
 
 	@Version
 	private Long version;
+
+	@Column(name = "notify_with_message", columnDefinition = "boolean")
+	private boolean notifyWithMessage = true;
+
+	@Column(name = "notify_with_cast", columnDefinition = "boolean")
+	private boolean notifyWithCast = true;
 
 	public StorageNotification(Integer fid) {
 		this.fid = fid;

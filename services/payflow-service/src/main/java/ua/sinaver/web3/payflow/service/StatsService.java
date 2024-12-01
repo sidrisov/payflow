@@ -9,10 +9,13 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import ua.sinaver.web3.payflow.data.ActiveUsersStats;
 import ua.sinaver.web3.payflow.message.DailyStats;
+import ua.sinaver.web3.payflow.repository.ActiveUsersStatsRepository;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static ua.sinaver.web3.payflow.config.CacheConfig.DAILY_STATS_CACHE;
@@ -28,11 +31,21 @@ public class StatsService {
 	@Autowired
 	private PaymentRepository paymentRepository;
 
-	@Scheduled(cron = "0 0 0 * * *")
+	@Autowired
+	private ActiveUsersStatsRepository activeUsersStatsRepository;
+
+	@Scheduled(initialDelay = 1000, fixedRate = Long.MAX_VALUE)
 	@SchedulerLock(name = "StatsService_recordStats", lockAtLeastFor = "PT5M", lockAtMostFor = "PT10M")
 	@CacheEvict(value = DAILY_STATS_CACHE, allEntries = true)
 	void recordStats() {
 		val stats = fetchDailyStats();
+
+		val activeUsersStats = new ActiveUsersStats(
+				LocalDate.now(),
+				stats.dailyActiveUsers(),
+				stats.weeklyActiveUsers(),
+				stats.monthlyActiveUsers());
+		activeUsersStatsRepository.save(activeUsersStats);
 
 		log.info("Total Users: {}", stats.totalUsers());
 		log.info("Active Users - DAU/WAU/MAU: {}/{}/{}",

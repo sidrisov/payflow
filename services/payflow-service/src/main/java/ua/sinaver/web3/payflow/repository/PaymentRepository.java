@@ -47,6 +47,7 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 	Stream<Payment> findExpiredPaymentsWithLock(@Param("status") Payment.PaymentStatus status,
 	                                            @Param("expiresAt") Instant expiresAt);
 
+	// TODO: add a time check not to process recently submitted in 5 mins to avoid lock
 	// JPA: UPGRADE_SKIPLOCKED - PESSIMISTIC_WRITE with a
 	// javax.persistence.lock.timeout setting of -2
 	// https://docs.jboss.org/hibernate/orm/5.0/userguide/html_single/chapters/locking/Locking.html

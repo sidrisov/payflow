@@ -95,6 +95,8 @@ public class FarcasterConfigController {
 				.orElseGet(() -> new StorageNotification(Integer.parseInt(fid)));
 
 		notification.setEnabled(settings.isEnabled());
+		notification.setNotifyWithMessage(settings.isNotifyWithMessage());
+		notification.setNotifyWithCast(settings.isNotifyWithCast());
 		notification.setThreshold(settings.getThreshold());
 		notification.setCapacityType(settings.getCapacityType());
 		notification.setLastCheckedAt(null);

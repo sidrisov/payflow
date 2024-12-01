@@ -260,10 +260,11 @@ public class NotificationService {
 				.buildAndExpand(payment.getReceiverFid())
 				.toUriString();
 
+		val numberOfUnits = payment.getTokenAmount() != null ? payment.getTokenAmount() : 1;
 		val castText = String.format("""
 						@%s, you've been paid %s unit(s) of storage%s by @%s 🗄""",
 				receiverFname,
-				payment.getTokenAmount(),
+				numberOfUnits,
 				crossChainText,
 				senderFname);
 
@@ -283,7 +284,7 @@ public class NotificationService {
 							🧾 Receipt: %s
 							📊 Your storage usage now: %s""",
 					receiverFname,
-					payment.getTokenAmount(),
+					numberOfUnits,
 					crossChainText,
 					senderFname,
 					commentText,
@@ -314,7 +315,8 @@ public class NotificationService {
 			}
 		}
 
-		val tokenAmount = Double.parseDouble(payment.getTokenAmount());
+		val tokenAmount = payment.getTokenAmount() != null ?
+				Double.parseDouble(payment.getTokenAmount()) : 1;
 		val tokenAmountText = tokenAmount > 1 ? tokenAmount + "x " : "";
 
 		String castText;
@@ -376,7 +378,8 @@ public class NotificationService {
 	private void handleHypersubPaymentNotification(Payment payment, String senderFname,
 	                                               String receiverFname,
 	                                               String receiptUrl, String sourceRefText, boolean isSelfPurchase) {
-		val tokenAmount = Double.parseDouble(payment.getTokenAmount());
+		val tokenAmount = payment.getTokenAmount() != null ?
+				Double.parseDouble(payment.getTokenAmount()) : 1;
 		val tokenAmountText = tokenAmount + " month(s) ";
 
 		val authorPart = "";
@@ -452,19 +455,21 @@ public class NotificationService {
 			fanTokenName = "@" + fanTokenName;
 		}
 
+		val fanTokensAmount = payment.getTokenAmount() != null ?
+				Double.parseDouble(payment.getTokenAmount()) : "";
 		String castText;
 		if (isSelfPurchase) {
 			castText = String.format("""
 							@%s, you've successfully purchased %s %s fan token(s)%s Ⓜ️""",
 					senderFname,
-					payment.getTokenAmount(),
+					fanTokensAmount,
 					fanTokenName,
 					crossChainText);
 		} else {
 			castText = String.format("""
 							@%s, you've been gifted %s %s fan token(s) by @%s%s Ⓜ️""",
 					receiverFname,
-					payment.getTokenAmount(),
+					fanTokensAmount,
 					fanTokenName,
 					senderFname,
 					crossChainText);
@@ -486,7 +491,7 @@ public class NotificationService {
 							%s
 							🧾 Receipt: %s""",
 					senderFname,
-					payment.getTokenAmount(),
+					fanTokensAmount,
 					fanTokenName,
 					crossChainText,
 					commentText,
@@ -500,7 +505,7 @@ public class NotificationService {
 							%s
 							🧾 Receipt: %s""",
 					receiverFname,
-					payment.getTokenAmount(),
+					fanTokensAmount,
 					fanTokenName,
 					senderFname,
 					crossChainText,

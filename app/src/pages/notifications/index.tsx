@@ -25,13 +25,17 @@ export type StorageNotificationType = {
   enabled: boolean;
   threshold: number;
   capacityType: CapacityType;
+  notifyWithMessage: boolean;
+  notifyWithCast: boolean;
 };
 
 export default function NotificationsPage() {
   const [notification, setNotification] = useState<StorageNotificationType>({
     enabled: false,
     threshold: 20,
-    capacityType: 'ALL'
+    capacityType: 'ALL',
+    notifyWithMessage: true,
+    notifyWithCast: true
   });
 
   useEffect(() => {
@@ -116,7 +120,7 @@ export default function NotificationsPage() {
           </Typography>
 
           {notification.enabled && (
-            <>
+            <Stack direction="column" spacing={1}>
               <FormControl component="fieldset">
                 <FormLabel
                   component="legend"
@@ -190,7 +194,75 @@ export default function NotificationsPage() {
                   </Typography>
                 </Stack>
               </FormControl>
-            </>
+
+              <FormControl component="fieldset" sx={{ mb: 2 }}>
+                <FormLabel
+                  component="legend"
+                  sx={{
+                    '&.Mui-focused': {
+                      color: 'inherit'
+                    }
+                  }}>
+                  Notification methods
+                </FormLabel>
+                <Stack direction="column" spacing={1} sx={{ mt: 1 }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        size="small"
+                        color="default"
+                        checked={notification.notifyWithMessage}
+                        onChange={() => {
+                          if (notification.notifyWithMessage && !notification.notifyWithCast) {
+                            return;
+                          }
+                          setNotification({
+                            ...notification,
+                            notifyWithMessage: !notification.notifyWithMessage
+                          });
+                        }}
+                        sx={{
+                          '& .MuiSwitch-switchBase.Mui-checked': {
+                            color: green.A700
+                          },
+                          '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                            backgroundColor: green.A700
+                          }
+                        }}
+                      />
+                    }
+                    label="Notify with message"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        size="small"
+                        color="default"
+                        checked={notification.notifyWithCast}
+                        onChange={() => {
+                          if (notification.notifyWithCast && !notification.notifyWithMessage) {
+                            return;
+                          }
+                          setNotification({
+                            ...notification,
+                            notifyWithCast: !notification.notifyWithCast
+                          });
+                        }}
+                        sx={{
+                          '& .MuiSwitch-switchBase.Mui-checked': {
+                            color: green.A700
+                          },
+                          '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                            backgroundColor: green.A700
+                          }
+                        }}
+                      />
+                    }
+                    label="Notify with cast"
+                  />
+                </Stack>
+              </FormControl>
+            </Stack>
           )}
         </CardContent>
       </Card>
