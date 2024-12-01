@@ -29,6 +29,51 @@ export type StorageNotificationType = {
   notifyWithCast: boolean;
 };
 
+type UsageBarProps = {
+  label: string;
+  value: number;
+};
+
+const UsageBar = ({ label, value }: UsageBarProps) => {
+  return (
+    <Stack alignItems="center" spacing={1} sx={{ flex: 1 }}>
+      <Typography variant="subtitle2" color="text.secondary">
+        {label}
+      </Typography>
+      <Box sx={{ width: '100%', bgcolor: 'grey.800', borderRadius: 0.5, height: 5 }}>
+        <Box
+          sx={{
+            width: `${value}%`,
+            height: '100%',
+            bgcolor: value <= 75 ? green.A700 : value <= 85 ? orange.A700 : red.A700,
+            borderRadius: 0.5
+          }}
+        />
+      </Box>
+      <Typography variant="subtitle2" color="text.secondary">
+        {value}%
+      </Typography>
+    </Stack>
+  );
+};
+
+type StorageData = {
+  total_active_units: number;
+  soon_expire_units: number;
+  casts: {
+    used: number;
+    capacity: number;
+  };
+  reactions: {
+    used: number;
+    capacity: number;
+  };
+  links: {
+    used: number;
+    capacity: number;
+  };
+};
+
 export default function NotificationsPage() {
   const [notification, setNotification] = useState<StorageNotificationType>({
     enabled: false,
@@ -37,6 +82,7 @@ export default function NotificationsPage() {
     notifyWithMessage: true,
     notifyWithCast: true
   });
+  const [storageData, setStorageData] = useState<StorageData | null>(null);
 
   useEffect(() => {
     const fetchStorageNotification = async () => {
@@ -57,6 +103,22 @@ export default function NotificationsPage() {
     fetchStorageNotification();
   }, []);
 
+  useEffect(() => {
+    const fetchStorageData = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/api/user/me/storage`, {
+          withCredentials: true
+        });
+        setStorageData(response.data);
+      } catch (error) {
+        console.error('Failed to fetch storage data:', error);
+        toast.error('Failed to load storage data');
+      }
+    };
+
+    fetchStorageData();
+  }, []);
+
   const handleNotificationUpdate = async () => {
     try {
       await axios.put(`${API_URL}/api/farcaster/config/storage/notification`, notification, {
@@ -67,6 +129,11 @@ export default function NotificationsPage() {
       toast.error('Failed to update settings');
       console.error('Failed to update threshold:', error);
     }
+  };
+
+  // Calculate percentages
+  const getUsagePercentage = (used: number, capacity: number) => {
+    return Math.round((used / capacity) * 100);
   };
 
   return (
@@ -85,17 +152,48 @@ export default function NotificationsPage() {
 
       <Card elevation={5} sx={{ mb: 2, borderRadius: 5 }}>
         <CardContent>
+          <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+            <SiFarcaster size={20} />
+            <Typography fontSize={18} fontWeight="bold">
+              Farcaster Storage ({storageData?.total_active_units ?? 0} units)
+            </Typography>
+          </Stack>
+
+          <Stack direction="row" sx={{ mb: 2, width: '100%' }} spacing={1}>
+            <UsageBar
+              label="Casts"
+              value={
+                storageData
+                  ? getUsagePercentage(storageData.casts.used, storageData.casts.capacity)
+                  : 0
+              }
+            />
+            <UsageBar
+              label="Reactions"
+              value={
+                storageData
+                  ? getUsagePercentage(storageData.reactions.used, storageData.reactions.capacity)
+                  : 0
+              }
+            />
+            <UsageBar
+              label="Links"
+              value={
+                storageData
+                  ? getUsagePercentage(storageData.links.used, storageData.links.capacity)
+                  : 0
+              }
+            />
+          </Stack>
+
           <Stack
             direction="row"
             alignItems="center"
             spacing={1}
-            sx={{ justifyContent: 'space-between' }}>
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <SiFarcaster size={20} />
-              <Typography fontSize={18} fontWeight="bold">
-                Farcaster Storage
-              </Typography>
-            </Stack>
+            sx={{ justifyContent: 'space-between', mb: 2 }}>
+            <Typography variant="body1" color="text.secondary">
+              Enable notifications
+            </Typography>
             <Switch
               size="small"
               color="default"
@@ -114,9 +212,9 @@ export default function NotificationsPage() {
             />
           </Stack>
 
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: 2 }}>
-            Receive direct cast notification from @payflow when your farcaster storage is about to
-            expire or close to the capacity.
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Receive notification from @payflow when your farcaster storage is about to expire or
+            close to the capacity.
           </Typography>
 
           {notification.enabled && (
@@ -190,7 +288,7 @@ export default function NotificationsPage() {
                   sx={{ mt: 1 }}>
                   <Typography variant="body2" color="text.secondary">
                     You'll be notified when storage usage reaches <b>{notification.threshold}%</b>{' '}
-                    of last unit's capacity.
+                    of 1 unit's capacity.
                   </Typography>
                 </Stack>
               </FormControl>

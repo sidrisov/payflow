@@ -74,8 +74,8 @@ export default function PaymentSuccessDialog({
             navigate('/payment/create?recipient=0x0dEe77c83cB8b14fA95497825dF93202AbF6ad83')
           }
           color="inherit"
-          sx={{ borderRadius: 4, px: 3 }}>
-          <FavoriteIcon fontSize="small" sx={{ mr: 1 }} /> Support Payflow
+          sx={{ borderRadius: 4, px: 1 }}>
+          <FavoriteIcon fontSize="small" sx={{ mr: 1 }} /> Tip Payflow
         </Button>
       </Box>
     </ResponsiveDialog>

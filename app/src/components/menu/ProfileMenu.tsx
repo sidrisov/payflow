@@ -238,7 +238,7 @@ export function ProfileMenu({
             <ListItemIcon>
               <FavoriteIcon fontSize="small" />
             </ListItemIcon>
-            Support Payflow
+            Tip Payflow
           </MenuItem>
           <Divider />
           <MenuItem

@@ -217,7 +217,7 @@ public class UserController {
 	}
 
 	@GetMapping("/storage/fid/{fid}")
-	public ResponseEntity<StorageUsage> getStorageUsage(@PathVariable(value = "fid") Integer fid) {
+	public ResponseEntity<StorageUsage> getFidStorageUsage(@PathVariable(value = "fid") Integer fid) {
 		log.debug("Fetching storage usage for {}", fid);
 
 		if (fid == null) {
@@ -227,6 +227,46 @@ public class UserController {
 		try {
 			val storageUsage = neynarService.fetchStorageUsage(fid);
 			val storageAllocations = neynarService.fetchStorageAllocations(fid);
+			if (storageUsage != null && storageAllocations != null) {
+				val storageUsageWithSoonExpireUnits = storageUsage.withSoonExpireUnits(storageAllocations);
+				log.debug("Fetched storage usage & allocations for {}: {}", fid, storageUsageWithSoonExpireUnits);
+				return ResponseEntity.ok(storageUsage.withSoonExpireUnits(storageAllocations));
+			} else {
+				log.error("Storage usage not found for {}", fid);
+				return ResponseEntity.notFound().build();
+			}
+		} catch (Throwable t) {
+			log.error("Error fetching storage usage for {}", fid, t);
+			return ResponseEntity.internalServerError().build();
+		}
+	}
+
+	@GetMapping("/me/storage")
+	public ResponseEntity<StorageUsage> getStorageUsage(Principal principal) {
+		val username = principal != null ? principal.getName() : null;
+
+		if (StringUtils.isBlank(username)) {
+			log.error("User not authenticated!");
+			return ResponseEntity.badRequest().build();
+		}
+
+		val user = userService.findByUsername(username);
+		if (user == null) {
+			log.error("User not found!");
+			return ResponseEntity.badRequest().build();
+		}
+
+		log.debug("Fetching storage for {}", username);
+
+		val fid = identityService.getIdentityFid(user.getIdentity());
+		if (fid == null) {
+			return ResponseEntity.badRequest().build();
+		}
+
+
+		try {
+			val storageUsage = neynarService.fetchStorageUsage(Integer.parseInt(fid));
+			val storageAllocations = neynarService.fetchStorageAllocations(Integer.parseInt(fid));
 			if (storageUsage != null && storageAllocations != null) {
 				val storageUsageWithSoonExpireUnits = storageUsage.withSoonExpireUnits(storageAllocations);
 				log.debug("Fetched storage usage & allocations for {}: {}", fid, storageUsageWithSoonExpireUnits);
