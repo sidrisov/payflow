@@ -40,7 +40,7 @@ const UsageBar = ({ label, value }: UsageBarProps) => {
       <Typography variant="subtitle2" color="text.secondary">
         {label}
       </Typography>
-      <Box sx={{ width: '100%', bgcolor: 'grey.800', borderRadius: 0.5, height: 5 }}>
+      <Box sx={{ width: '100%', bgcolor: grey.A400, borderRadius: 0.5, height: 5 }}>
         <Box
           sx={{
             width: `${value}%`,
