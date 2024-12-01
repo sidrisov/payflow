@@ -179,11 +179,10 @@ export default function NotificationsPage() {
             alignItems="center"
             spacing={1}
             sx={{ justifyContent: 'space-between', mb: 2 }}>
-            <Typography variant="body1" color="text.secondary">
+            <Typography fontSize={16} fontWeight="bold" color="text.secondary">
               Enable notifications
             </Typography>
             <Switch
-              size="small"
               color="default"
               checked={notification.enabled}
               onChange={() => {
@@ -353,7 +352,6 @@ export default function NotificationsPage() {
 
           <Button
             fullWidth
-            size="small"
             variant="outlined"
             color="inherit"
             onClick={handleNotificationUpdate}
