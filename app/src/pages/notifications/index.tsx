@@ -138,18 +138,6 @@ export default function NotificationsPage() {
 
   return (
     <Box sx={{ p: 3, maxWidth: 600, mx: 'auto' }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-        <Typography variant="h6">Notification Settings</Typography>
-        <Button
-          size="small"
-          variant="outlined"
-          color="inherit"
-          onClick={handleNotificationUpdate}
-          sx={{ borderRadius: 5 }}>
-          Update
-        </Button>
-      </Stack>
-
       <Card elevation={5} sx={{ mb: 2, borderRadius: 5 }}>
         <CardContent>
           <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
@@ -362,6 +350,16 @@ export default function NotificationsPage() {
               </FormControl>
             </Stack>
           )}
+
+          <Button
+            fullWidth
+            size="small"
+            variant="outlined"
+            color="inherit"
+            onClick={handleNotificationUpdate}
+            sx={{ borderRadius: 5, mt: 2, ml: 'auto' }}>
+            Update
+          </Button>
         </CardContent>
       </Card>
     </Box>

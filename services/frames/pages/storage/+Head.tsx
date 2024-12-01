@@ -12,7 +12,7 @@ export function Head() {
   const embedUrl = `https://frames.payflow.me/storage?${BUY_STORAGE_FRAME_VERSION}`;
   const shareComposeDeeplink = `${baseUrl}?text=${castText}&embeds[]=${encodeURIComponent(embedUrl)}`;
 
-  const notifyMiniAppUrl = `${API_URL}/api/farcaster/composer/pay?action=notifications`;
+  const notifyMiniAppUrl = `${API_URL}/api/farcaster/composer/pay?action=storage`;
   const notifyMiniAppDeeplink = `https://warpcast.com/~/composer-action?url=${encodeURIComponent(notifyMiniAppUrl)}`;
   return (
     <>

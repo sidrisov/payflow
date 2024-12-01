@@ -51,6 +51,7 @@ export const appRouter = createBrowserRouter([
       { element: <LazyWrapper component={LazyAccounts} />, index: true },
       { path: 'profile', element: <LazyWrapper component={LazyProfile} /> },
       { path: 'notifications', element: <LazyWrapper component={LazyNotifications} /> },
+      { path: 'farcaster/storage', element: <LazyWrapper component={LazyNotifications} /> },
       { path: 'advanced', element: <LazyWrapper component={LazyAdvanced} /> },
       {
         path: 'settings',

@@ -18,7 +18,6 @@ import {
   Logout,
   PersonAdd,
   Settings,
-  Notifications
 } from '@mui/icons-material';
 import { GiTwoCoins } from 'react-icons/gi';
 
@@ -37,6 +36,7 @@ import { useRegisterSW } from 'virtual:pwa-register/react';
 import { green } from '@mui/material/colors';
 import { IoChatbubbleEllipses } from 'react-icons/io5';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import { GrStorage } from 'react-icons/gr';
 
 export function ProfileMenu({
   profile,
@@ -155,13 +155,23 @@ export function ProfileMenu({
           <MenuItem
             onClick={async () => {
               closeStateCallback();
+              navigate('/farcaster/storage');
+            }}>
+            <ListItemIcon>
+              <GrStorage size={20} />
+            </ListItemIcon>
+            Farcaster Storage
+          </MenuItem>
+          {/* <MenuItem
+            onClick={async () => {
+              closeStateCallback();
               navigate('/notifications');
             }}>
             <ListItemIcon>
               <Notifications fontSize="small" />
             </ListItemIcon>
             Notifications
-          </MenuItem>
+          </MenuItem> */}
           <Divider />
           <MenuItem component="a" href="https://warpcast.com/~/inbox/create/19129" target="_blank">
             <ListItemIcon>
