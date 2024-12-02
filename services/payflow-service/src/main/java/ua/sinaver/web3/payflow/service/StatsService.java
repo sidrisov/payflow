@@ -92,4 +92,8 @@ public class StatsService {
 				fanTokensPurchased,
 				hyperSubscriptions);
 	}
+
+	public List<ActiveUsersStats> fetchActiveUsersStats() {
+		return activeUsersStatsRepository.findAll();
+	}
 }

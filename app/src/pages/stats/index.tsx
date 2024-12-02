@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { Box, Card, CardContent, Container, Grid2, Typography, Skeleton } from '@mui/material';
+import { Box, Container, Grid2, Typography, Skeleton, CardContent, Card } from '@mui/material';
 import { API_URL } from '../../utils/urlConstants';
+import { LineChart } from '@mui/x-charts/LineChart';
 
 interface DailyStats {
   totalUsers: number;
@@ -17,11 +18,26 @@ interface DailyStats {
   hypersubMonthsSubscribed: number;
 }
 
+interface ActiveUsersStats {
+  date: string;
+  dailyActiveUsers: number;
+  weeklyActiveUsers: number;
+  monthlyActiveUsers: number;
+}
+
 export default function StatsPage() {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['stats'],
     queryFn: async () => {
       const { data } = await axios.get<DailyStats>(`${API_URL}/api/stats/daily`);
+      return data;
+    }
+  });
+
+  const { data: activeUsersStats, isLoading: isLoadingActiveUsers } = useQuery({
+    queryKey: ['activeUsersStats'],
+    queryFn: async () => {
+      const { data } = await axios.get<ActiveUsersStats[]>(`${API_URL}/api/stats/active-users`);
       return data;
     }
   });
@@ -96,6 +112,40 @@ export default function StatsPage() {
           />
         </Grid2>
       </Grid2>
+
+      <Box sx={{ mt: 4, height: 400 }}>
+        <Typography variant="h6" gutterBottom>
+          Active Users Over Time
+        </Typography>
+        {isLoadingActiveUsers ? (
+          <Skeleton variant="rectangular" height={400} />
+        ) : (
+          <LineChart
+            series={[
+              {
+                data: activeUsersStats?.map(stat => stat.dailyActiveUsers),
+                label: 'Daily Active Users',
+                color: '#8884d8'
+              },
+              {
+                data: activeUsersStats?.map(stat => stat.weeklyActiveUsers),
+                label: 'Weekly Active Users',
+                color: '#82ca9d'
+              },
+              {
+                data: activeUsersStats?.map(stat => stat.monthlyActiveUsers),
+                label: 'Monthly Active Users',
+                color: '#ffc658'
+              }
+            ]}
+            xAxis={[{
+              data: activeUsersStats?.map(stat => new Date(stat.date)),
+              scaleType: 'time'
+            }]}
+            height={400}
+          />
+        )}
+      </Box>
     </Container>
   );
 }
