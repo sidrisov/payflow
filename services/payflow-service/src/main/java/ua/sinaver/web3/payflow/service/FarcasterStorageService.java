@@ -14,6 +14,7 @@ import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.message.farcaster.StorageUsage;
 import ua.sinaver.web3.payflow.repository.StorageNotificationRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
+import ua.sinaver.web3.payflow.utils.FrameVersions;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -81,7 +82,7 @@ public class FarcasterStorageService {
 
 							if (shouldNotify) {
 								val username = identityService.getFidFname(fid);
-								val storageEmbed = String.format("https://frames.payflow.me/fid/%s/storage", fid);
+								val storageEmbed = String.format("https://frames.payflow.me/fid/%s/storage?%s", fid, FrameVersions.STORAGE_VERSION);
 
 								// Send direct message if enabled
 								if (storageNotification.isNotifyWithMessage()) {
@@ -141,15 +142,20 @@ public class FarcasterStorageService {
 				});
 	}
 
-	@Scheduled(cron = "0 0 0 * * SUN")
+	@Scheduled(cron = "0 0 0 * * MON")
 	@SchedulerLock(name = "scheduleStorageNotification", lockAtLeastFor = "PT1M", lockAtMostFor = "PT5M")
 	void scheduleStorageNotification() {
-		userRepository.findAll().forEach(user -> {
+		val twoWeeksAgo = Instant.now().minus(14, ChronoUnit.DAYS);
+		userRepository.findByCreatedDateAfter(twoWeeksAgo).forEach(user -> {
 			if (user.isAllowed()) {
 				log.info("Storage notification for {}", user.getIdentity());
-				val fid = identityService.getIdentityFid(user.getIdentity());
-				if (fid != null && storageNotificationRepository.findByFid(Integer.parseInt(fid)).isEmpty()) {
-					storageNotificationRepository.save(new StorageNotification(Integer.parseInt(fid)));
+				try {
+					val fid = identityService.getIdentityFid(user.getIdentity());
+					if (fid != null && storageNotificationRepository.findByFid(Integer.parseInt(fid)).isEmpty()) {
+						storageNotificationRepository.save(new StorageNotification(Integer.parseInt(fid)));
+					}
+				} catch (Throwable t) {
+					log.error("Failed to configure notification for {}", user.getIdentity(), t);
 				}
 			}
 		});

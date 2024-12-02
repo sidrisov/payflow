@@ -24,6 +24,7 @@ import ua.sinaver.web3.payflow.service.LinkService;
 import ua.sinaver.web3.payflow.service.UserService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
+import ua.sinaver.web3.payflow.utils.FrameVersions;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -58,8 +59,7 @@ public class StorageController {
 	private LinkService linkService;
 
 	private static Payment getPayment(ValidatedFrameResponseMessage validateMessage,
-	                                  FarcasterUser gifteeUser, User clickedProfile,
-	                                  int numberOfUnits) {
+	                                  FarcasterUser gifteeUser, User clickedProfile) {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val castHash = validateMessage.action().cast().hash();
 		// maybe would make sense to reference top cast instead (if it's a bot cast)
@@ -72,7 +72,7 @@ public class StorageController {
 				null, OP_CHAIN_ID, ETH_TOKEN);
 		payment.setCategory("fc_storage");
 		// use token amount as storage unit number
-		payment.setTokenAmount(String.valueOf(numberOfUnits));
+		payment.setTokenAmount("1");
 		payment.setReceiverFid(gifteeUser.fid());
 		payment.setSender(clickedProfile);
 		payment.setSourceApp(sourceApp);
@@ -117,7 +117,7 @@ public class StorageController {
 					new FrameResponse.FrameMessage("Sign up on Payflow first!"));
 		}
 
-		val payment = getPayment(validateMessage, gifteeUser, clickedProfile, 1);
+		val payment = getPayment(validateMessage, gifteeUser, clickedProfile);
 		paymentRepository.save(payment);
 
 		log.debug("Gift storage payment intent saved: {}", payment);
@@ -146,7 +146,7 @@ public class StorageController {
 				.orElse(null);
 
 		// TODO: refactor this!
-		Integer receiverFid;
+		var receiverFid = (Integer) null;
 		if (StringUtils.isNotBlank(recipientText)) {
 			val addresses = identityService.getFnameAddresses(recipientText);
 			val identity = identityService.getHighestScoredIdentityInfo(addresses);
@@ -177,17 +177,17 @@ public class StorageController {
 		}
 
 		val storageImage = UriComponentsBuilder.fromHttpUrl(payflowConfig.getFramesServiceUrl())
-				.path("images/profile/fid/{fid}/storage.png") // add your path variables here
+				.path("images/profile/fid/{fid}/storage.png?" + FrameVersions.STORAGE_VERSION)
 				.buildAndExpand(receiverFid)
 				.toUriString();
 
-		String submitUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getApiServiceUrl())
+		val submitUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getApiServiceUrl())
 				.path(STORAGE_FRAME_API_BASE)
 				.path("/{fid}/submit")
-				.buildAndExpand(castInteractorFid)
+				.buildAndExpand(receiverFid)
 				.toUriString();
 
-		String checkUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getApiServiceUrl())
+		val checkUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getApiServiceUrl())
 				.path(STORAGE_FRAME_API_BASE)
 				.path("/check")
 				.toUriString();
@@ -199,7 +199,8 @@ public class StorageController {
 						Buy Farcaster Storage via @payflow frame
 						cc: @sinaver.eth /payflow""",
 				StandardCharsets.UTF_8);
-		val embedUrl = String.format("https://frames.payflow.me/fid/%s/storage?v4.1", castInteractorFid);
+		val embedUrl = String.format("https://frames.payflow.me/fid/%s/storage?%s", castInteractorFid,
+				FrameVersions.STORAGE_VERSION);
 		val shareComposeDeeplink = String.format("%s?text=%s&embeds[]=%s", baseUrl, castText, embedUrl);
 
 		return FrameResponse.builder().imageUrl(storageImage)

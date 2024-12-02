@@ -147,8 +147,11 @@ public class PaymentController {
 				.map(String::toLowerCase)
 				.toList();
 
+		val fid = identityService.getIdentityFid(user.getIdentity());
+
 		val paymentsPage = paymentRepository.findAllCompletedOrderByCompletedAtDesc(user,
-				verifications, PageRequest.of(page, size));
+				verifications, fid != null ? Integer.parseInt(fid) : null, PageRequest.of(page,
+						size));
 
 		// Check if we should include comments (when logged user is viewing their own
 		// payments)

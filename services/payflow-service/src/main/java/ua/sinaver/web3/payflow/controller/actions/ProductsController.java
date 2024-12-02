@@ -17,6 +17,7 @@ import ua.sinaver.web3.payflow.message.nft.ParsedMintUrlMessage;
 import ua.sinaver.web3.payflow.service.FanTokenService;
 import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
+import ua.sinaver.web3.payflow.utils.FrameVersions;
 
 import java.util.Map;
 import java.util.Objects;
@@ -100,7 +101,7 @@ public class ProductsController {
 		val castAuthor = action.cast().author() != null ? action.cast().author()
 				: neynarService.fetchFarcasterUser(action.cast().fid());
 		val storageFrameUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getFramesServiceUrl())
-				.path("/fid/{fid}/storage?v3.9")
+				.path("/fid/{fid}/storage?" + FrameVersions.STORAGE_VERSION)
 				.buildAndExpand(castAuthor.fid())
 				.toUriString();
 		return ResponseEntity.ok().body(

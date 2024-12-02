@@ -89,4 +89,5 @@ public interface UserRepository extends CrudRepository<User, Integer> {
 		return countActiveUsersSince(Date.from(Instant.now().minus(30, ChronoUnit.DAYS)));
 	}
 
+	List<User> findByCreatedDateAfter(Instant createdAfter);
 }

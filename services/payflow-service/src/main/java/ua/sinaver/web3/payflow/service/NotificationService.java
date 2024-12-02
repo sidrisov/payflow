@@ -15,6 +15,7 @@ import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.message.farcaster.FarcasterUser;
 import ua.sinaver.web3.payflow.message.nft.ParsedMintUrlMessage;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
+import ua.sinaver.web3.payflow.utils.FrameVersions;
 import ua.sinaver.web3.payflow.utils.MintUrlUtils;
 
 import java.text.DecimalFormat;
@@ -256,7 +257,7 @@ public class NotificationService {
 				payment.getReceiver() != null ? payment.getReceiver().getIdentity() : payment.getReceiverAddress());
 
 		val storageFrameUrl = UriComponentsBuilder.fromHttpUrl(framesServiceUrl)
-				.path("/fid/{fid}/storage?v3")
+				.path("/fid/{fid}/storage?" + FrameVersions.STORAGE_VERSION)
 				.buildAndExpand(payment.getReceiverFid())
 				.toUriString();
 

@@ -25,6 +25,7 @@ import ua.sinaver.web3.payflow.repository.UserRepository;
 import ua.sinaver.web3.payflow.service.api.IUserService;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -188,7 +189,7 @@ public class UserService implements IUserService {
 
 	private void allowUser(User user, Invitation invitation) {
 		user.setAllowed(true);
-		user.setCreatedDate(new Date());
+		user.setCreatedDate(Instant.now());
 		if (invitation != null) {
 			invitation.setInvitee(user);
 			invitation.setExpiryDate(null);

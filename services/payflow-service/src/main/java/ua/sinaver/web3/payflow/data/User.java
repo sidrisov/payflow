@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
@@ -74,7 +75,7 @@ public class User {
 
 	@Column
 	@Temporal(TemporalType.TIMESTAMP)
-	private Date createdDate = new Date();
+	private Instant createdDate = Instant.now();
 
 	@Column
 	@Temporal(TemporalType.TIMESTAMP)
