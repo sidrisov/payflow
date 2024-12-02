@@ -72,8 +72,8 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 	@Query("SELECT p FROM Payment p " +
 			"WHERE (p.sender = :user OR p.receiver = :user " +
 			"OR LOWER(p.senderAddress) IN :addresses " +
-			"OR LOWER(p.receiverAddress) IN :addresses) " +
-			"OR (p.receiverFid IS NOT NULL AND p.receiverFid = :fid) " +
+			"OR LOWER(p.receiverAddress) IN :addresses " +
+			"OR (p.receiverFid IS NOT NULL AND p.receiverFid = :fid)) " +
 			"AND p.status = COMPLETED ORDER BY p.completedAt DESC")
 	Page<Payment> findAllCompletedOrderByCompletedAtDesc(
 			User user,
