@@ -17,7 +17,7 @@ import { red } from '@mui/material/colors';
 import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
 import { useTokenPrice } from '../../utils/queries/prices';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
-import { getPaymentOption } from '../../utils/glide';
+import { getCommissionUSD, getPaymentOption } from '../../utils/glide';
 import { TokenAmountSection } from '../dialogs/TokenAmountSection';
 import { FlowSelector } from './FlowSelector';
 import { PayButton, PaymentSuccess } from '../buttons/PayButton';
@@ -201,6 +201,7 @@ export default function PaymentDialog({
     error: isPaymentOptionsError
   } = useGlidePaymentOptions(crossChainMode, {
     account: selectedFlow?.wallets[0].address,
+    commissionUSD: getCommissionUSD(payment?.category),
     ...(glidePaymentTx as any)
   });
 
@@ -218,8 +219,6 @@ export default function PaymentDialog({
 
   const isLoading = isPaymentOptionsLoading;
   const hasPaymentOption = !isLoading && paymentOption && crossChainPaymentToken;
-
-  const [gasFee] = useState<bigint | undefined>(isNativeFlow ? BigInt(0) : undefined);
 
   useMemo(async () => {
     setPaymentWallet(compatibleWallets?.[0]);

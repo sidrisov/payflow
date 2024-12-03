@@ -65,7 +65,7 @@ public class FarcasterStorageService {
 		}
 	}
 
-	@Scheduled(cron = "* */10 * * * *")
+	@Scheduled(cron = "* */15 * * * *")
 	void notifyWithStorageExpiring() {
 		storageNotificationRepository.findTop10StorageNotifications(Instant.now().minus(7, ChronoUnit.DAYS))
 				.forEach(storageNotification -> {
@@ -116,10 +116,10 @@ public class FarcasterStorageService {
 														"""
 																@%s, you're reaching or over your storage capacity!
 
-																1 unit costs ~$2, you can purchase more with any token balance on @payflow 👇
+																1 unit costs ~$2, you can purchase more with any token balance using @payflow 👇
 
-																To disable or configure storage notifications, visit:
-																https://app.payflow.me/notifications
+																To disable or configure storage notification, visit:
+																https://app.payflow.me/farcaster/storage
 																""",
 														username), null,
 												List.of(new Cast.Embed(storageEmbed)));

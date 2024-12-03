@@ -1,6 +1,7 @@
 import { createGlideConfig, PaymentOption } from '@paywithglide/glide-js';
 import { base, optimism, degen, arbitrum, mode, zora, ham } from 'wagmi/chains';
 import { Token } from '@payflow/common';
+import { PaymentCategory, PaymentType } from '../types/PaymentType';
 
 export const glideConfig = createGlideConfig({
   projectId: import.meta.env.VITE_GLIDE_API_KEY,
@@ -23,4 +24,11 @@ export const getPaymentOption = (
             : 'slip44:60'
       }`.toLowerCase()
   );
+};
+
+export const getCommissionUSD = (paymentCategory?: PaymentCategory) => {
+  switch (paymentCategory) {
+    default:
+      return 0.05;
+  }
 };

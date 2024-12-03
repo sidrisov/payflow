@@ -10,7 +10,7 @@ import {
   Tooltip
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { getPaymentOption } from '../../utils/glide';
+import { getCommissionUSD, getPaymentOption } from '../../utils/glide';
 import { useChainId } from 'wagmi';
 import { SelectedIdentityType } from '../../types/ProfileType';
 import { FarcasterRecipientField } from '../FarcasterRecipientField';
@@ -106,6 +106,7 @@ export default function BuyFanTokenDialog({
     data: paymentOptions,
     isError: isPaymentOptionsError
   } = useGlidePaymentOptions(Boolean(paymentTx), {
+    commissionUSD: getCommissionUSD(payment.category),
     ...(paymentTx as any),
     approval: {
       token: MOXIE_CONTRACT_ADDRESS,

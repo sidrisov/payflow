@@ -9,7 +9,7 @@ import {
   IconButton
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { getPaymentOption } from '../../utils/glide';
+import { getCommissionUSD, getPaymentOption } from '../../utils/glide';
 import { useChainId } from 'wagmi';
 import { SelectedIdentityType } from '../../types/ProfileType';
 import { FarcasterRecipientField } from '../FarcasterRecipientField';
@@ -109,6 +109,7 @@ export default function HypersubDialog({
     isError: isPaymentOptionsError,
     error: paymentOptionsError
   } = useGlidePaymentOptions(Boolean(paymentTx), {
+    commissionUSD: getCommissionUSD(payment.category),
     ...(paymentTx as any),
     account: selectedFlow.wallets[0].address
   });

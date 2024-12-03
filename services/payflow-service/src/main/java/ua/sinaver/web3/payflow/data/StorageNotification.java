@@ -14,7 +14,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @Entity
 @Table(uniqueConstraints = {
-		@UniqueConstraint(name = "uc_storage_notification_fid", columnNames = { "fid" })
+		@UniqueConstraint(name = "uc_storage_notification_fid", columnNames = {"fid"})
 })
 public class StorageNotification {
 	@Id
@@ -25,7 +25,7 @@ public class StorageNotification {
 	private Integer fid;
 
 	@Column(columnDefinition = "boolean")
-	private boolean enabled = false;
+	private boolean enabled = true;
 
 	@Column
 	private Integer threshold = 20;

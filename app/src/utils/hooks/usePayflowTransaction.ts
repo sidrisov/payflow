@@ -4,7 +4,7 @@ import { createSession, executeSession, PaymentOption } from '@paywithglide/glid
 import { ProfileContext } from '../../contexts/UserContext';
 import { submitPayment, updatePayment } from '../../services/payments';
 import { PaymentTxStatus, PaymentType } from '../../types/PaymentType';
-import { glideConfig } from '../glide';
+import { getCommissionUSD, glideConfig } from '../glide';
 import { useRegularTransfer } from './useRegularTransfer';
 import { useSafeTransfer } from './useSafeTransfer';
 import { FlowType, FlowWalletType } from '../../types/FlowType';
@@ -85,6 +85,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
       try {
         const session = await createSession(glideConfig, {
           paymentCurrency: paymentOption.paymentCurrency,
+          commissionUSD: getCommissionUSD(),
           ...(paymentTx as any)
         });
 
@@ -205,7 +206,8 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
 
       const glideResponse = await executeSession(glideConfig, {
         session,
-        currentChainId: isNativeFlow || !isMiniApp || isFrameV2 ? (chainId as any) : paymentTx.chainId,
+        currentChainId:
+          isNativeFlow || !isMiniApp || isFrameV2 ? (chainId as any) : paymentTx.chainId,
         switchChainAsync,
         sendTransactionAsync: async (tx) => {
           console.log('Glide tnxs: ', tx);
