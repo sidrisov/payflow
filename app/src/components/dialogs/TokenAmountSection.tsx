@@ -196,6 +196,7 @@ export function TokenAmountSection({
               variant="standard"
               placeholder="0"
               value={inputValue}
+              inputMode="decimal"
               error={
                 Boolean(usdAmountMode ? paymentAmountUSD : paymentAmount) && balanceEnough === false
               }

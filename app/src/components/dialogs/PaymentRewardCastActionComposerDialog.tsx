@@ -118,6 +118,7 @@ export default function PaymentRewardCastActionComposerDialog({
               value={inputValue}
               onChange={handleInputChange}
               inputRef={inputRef}
+              inputMode="decimal"
               /* label={
                 <Typography color="text.secondary" pl={0.5}>
                   {isFiatMode ? 'USD Amount' : 'Token Amount'}

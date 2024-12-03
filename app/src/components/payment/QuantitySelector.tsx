@@ -100,6 +100,7 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
             onKeyDown={handleKeyDown}
             autoFocus
             variant="standard"
+            inputMode="decimal"
             slotProps={{
               input: {
                 disableUnderline: true,
