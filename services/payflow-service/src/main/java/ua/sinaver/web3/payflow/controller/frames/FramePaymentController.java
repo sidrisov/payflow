@@ -277,7 +277,11 @@ public class FramePaymentController {
 
 	@PostMapping("/{identity}/frame/command")
 	public ResponseEntity<?> command(@PathVariable String identity,
-	                                 @RequestBody FrameMessage frameMessage) {
+	                                 @RequestBody FrameMessage frameMessage,
+	                                 @RequestParam(required = false, defaultValue = "8453") Integer chainId,
+	                                 @RequestParam(required = false, defaultValue = "usdc") String tokenId,
+	                                 @RequestParam(required = false) Double tokenAmount,
+	                                 @RequestParam(required = false) Double usdAmount) {
 		log.debug("Received enter payment amount message request: {}", frameMessage);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
@@ -290,25 +294,6 @@ public class FramePaymentController {
 				validateMessage.action().url());
 
 		val senderFarcasterUser = validateMessage.action().interactor();
-		val inputText = validateMessage.action().input() != null ? validateMessage.action().input().text().toLowerCase()
-				: null;
-
-		if (StringUtils.isBlank(inputText)) {
-			log.warn("Nothing entered for payment amount by {}", senderFarcasterUser);
-			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameMessage("Nothing entered, try again!"));
-		}
-
-		val receiverFarcasterUser = validateMessage.action().cast().author() != null
-				? validateMessage.action().cast().author()
-				: neynarService.fetchFarcasterUser(validateMessage.action().cast().fid());
-
-		if (receiverFarcasterUser == null) {
-			log.error("Cast author information missing for: {}", validateMessage);
-			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameMessage("Hubs are not in sync! Missing cast author " +
-							"information :("));
-		}
 
 		User senderProfile;
 		try {
@@ -323,57 +308,89 @@ public class FramePaymentController {
 					new FrameResponse.FrameMessage("Identity conflict! Contact @sinaver.eth"));
 		}
 
-		val sourceApp = validateMessage.action().signer().client().displayName();
-		val sourceHash = validateMessage.action().cast().hash();
+		val receiverFarcasterUser = validateMessage.action().cast().author() != null
+				? validateMessage.action().cast().author()
+				: neynarService.fetchFarcasterUser(validateMessage.action().cast().fid());
 
-		val paymentPattern = "\\s*(?<amount>\\$?[0-9]+(?:\\.[0-9]+)?[km]?)?\\s*(?<rest>.*)";
-		val matcher = Pattern.compile(paymentPattern, Pattern.CASE_INSENSITIVE).matcher(inputText);
-
-		if (!matcher.find()) {
-			log.warn("Enter command not recognized: {} by fid: {}", inputText, senderFarcasterUser);
+		if (receiverFarcasterUser == null) {
+			log.error("Cast author information missing for: {}", validateMessage);
 			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameMessage("Entered input not recognized!"));
+					new FrameResponse.FrameMessage("Hubs are not in sync! Missing cast author " +
+							"information :("));
 		}
 
-		val amountStr = matcher.group("amount");
+		var token = (Token) null;
+		if (tokenAmount == null && usdAmount == null) {
+			val inputText = validateMessage.action().input() != null ? validateMessage.action().input().text().toLowerCase()
+					: null;
 
-		Double usdAmount = null;
-		Double tokenAmount = null;
-		if (amountStr.startsWith("$")) {
-			usdAmount = Double.parseDouble(amountStr.replace("$", ""));
-			if (usdAmount == 0) {
-				val zeroUsdAmountError = "$ amount shouldn't be ZERO!";
-				log.warn(zeroUsdAmountError);
+			if (StringUtils.isBlank(inputText)) {
+				log.warn("Nothing entered for payment amount by {}", senderFarcasterUser);
 				return ResponseEntity.badRequest().body(
-						new FrameResponse.FrameMessage(zeroUsdAmountError));
+						new FrameResponse.FrameMessage("Nothing entered, try again!"));
+			}
+
+			val paymentPattern = "\\s*(?<amount>\\$?[0-9]+(?:\\.[0-9]+)?[km]?)?\\s*(?<rest>.*)";
+			val matcher = Pattern.compile(paymentPattern, Pattern.CASE_INSENSITIVE).matcher(inputText);
+
+			if (!matcher.find()) {
+				log.warn("Enter command not recognized: {} by fid: {}", inputText, senderFarcasterUser);
+				return ResponseEntity.badRequest().body(
+						new FrameResponse.FrameMessage("Entered input not recognized!"));
+			}
+
+			val amountStr = matcher.group("amount");
+
+			if (amountStr.startsWith("$")) {
+				usdAmount = Double.parseDouble(amountStr.replace("$", ""));
+				if (usdAmount == 0) {
+					val zeroUsdAmountError = "$ amount shouldn't be ZERO!";
+					log.warn(zeroUsdAmountError);
+					return ResponseEntity.badRequest().body(
+							new FrameResponse.FrameMessage(zeroUsdAmountError));
+				}
+			} else {
+				tokenAmount = paymentService.parseTokenAmount(amountStr);
+				if (tokenAmount == 0) {
+					val zeroTokenAmountError = "Token amount shouldn't be ZERO!";
+					log.warn(zeroTokenAmountError);
+					return ResponseEntity.badRequest().body(
+							new FrameResponse.FrameMessage(zeroTokenAmountError));
+				}
+			}
+
+			val restText = matcher.group("rest");
+
+			val tokens = paymentService.parseCommandTokens(restText);
+			if (tokens.size() == 1) {
+				token = tokens.getFirst();
+			} else {
+				val chain = paymentService.parseCommandChain(restText);
+				token = tokens.stream().filter(t -> t.chain().equals(chain)).findFirst().orElse(null);
+			}
+
+			if (token == null) {
+				val chainNotSupportedError = String.format("Token not supported: %s!", restText);
+				log.warn(chainNotSupportedError);
+				return ResponseEntity.badRequest().body(
+						new FrameResponse.FrameMessage(chainNotSupportedError));
 			}
 		} else {
-			tokenAmount = paymentService.parseTokenAmount(amountStr);
-			if (tokenAmount == 0) {
-				val zeroTokenAmountError = "Token amount shouldn't be ZERO!";
-				log.warn(zeroTokenAmountError);
+			val tokens = paymentService.parseCommandTokens(tokenId);
+			if (tokens.size() == 1) {
+				token = tokens.getFirst();
+			} else {
+				token = tokens.stream().filter(t -> t.chainId().equals(chainId)).findFirst().orElse(null);
+			}
+
+			if (token == null) {
+				val chainNotSupportedError = String.format("Token not supported: %s!", tokenId);
+				log.warn(chainNotSupportedError);
 				return ResponseEntity.badRequest().body(
-						new FrameResponse.FrameMessage(zeroTokenAmountError));
+						new FrameResponse.FrameMessage(chainNotSupportedError));
 			}
 		}
 
-		val restText = matcher.group("rest");
-
-		Token token;
-		val tokens = paymentService.parseCommandTokens(restText);
-		if (tokens.size() == 1) {
-			token = tokens.getFirst();
-		} else {
-			val chain = paymentService.parseCommandChain(restText);
-			token = tokens.stream().filter(t -> t.chain().equals(chain)).findFirst().orElse(null);
-		}
-
-		if (token == null) {
-			val chainNotSupportedError = String.format("Token not supported: %s!", restText);
-			log.warn(chainNotSupportedError);
-			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameMessage(chainNotSupportedError));
-		}
 
 		String paymentAddress = null;
 		val paymentProfile = userService.findByUsernameOrIdentity(identity);
@@ -390,7 +407,11 @@ public class FramePaymentController {
 			}
 		}
 
-		log.debug("Receiver: {}, amount: {}, token: {}", paymentAddress, amountStr, token);
+		log.debug("Receiver: {}, tokenAmount: {}, usdAmount: {} , token: {}", paymentAddress,
+				tokenAmount, usdAmount, token);
+
+		val sourceApp = validateMessage.action().signer().client().displayName();
+		val sourceHash = validateMessage.action().cast().hash();
 
 		try {
 
@@ -433,8 +454,7 @@ public class FramePaymentController {
 					.state(Base64.getEncoder().encodeToString(updatedState.getBytes()));
 
 			if (senderProfile != null) {
-				val paymentLink =
-						linkService.paymentLink(payment, validateMessage, false).toString();
+				val paymentLink = linkService.paymentLink(payment, validateMessage, false).toString();
 				frameResponseBuilder.button(new FrameButton("Advanced ⚡",
 						FrameButton.ActionType.LINK,
 						paymentLink));

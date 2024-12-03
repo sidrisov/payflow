@@ -9,6 +9,35 @@ export function Head() {
   const theme = urlParsed.search.theme;
 
   const imageUrl = `${FRAMES_URL}/images/profile/${username}/payment.png?step=start${entryTitle ? `&entryTitle=${entryTitle}` : ''}${theme ? `&theme=${theme}` : ''}`;
+
+  const chainId = urlParsed.search.chainId;
+  const tokenId = urlParsed.search.tokenId;
+  const tokenAmount = urlParsed.search.tokenAmount;
+  const usdAmount = urlParsed.search.usdAmount;
+
+  const includeInputText = !tokenAmount && !usdAmount;
+
+  const commnandUrl = (includeInputText: boolean) => {
+    const baseUrl = `${API_URL}/api/farcaster/frames/pay/${username}/frame/command`;
+    const params = new URLSearchParams();
+
+    if (theme) params.append('theme', theme);
+    if (!includeInputText) {
+      if (chainId) params.append('chainId', chainId);
+      if (tokenId) params.append('tokenId', tokenId);
+      if (tokenAmount) params.append('tokenAmount', tokenAmount);
+      if (usdAmount) params.append('usdAmount', usdAmount);
+    }
+
+    const queryString = params.toString();
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+  };
+
+  const paymentButtonText = includeInputText
+    ? 'Pay'
+    : `Pay: ${tokenAmount ?? `$${usdAmount}`} ${tokenId?.toUpperCase() ?? 'USDC'}`;
+  const postTargetUrl = commnandUrl(includeInputText);
+
   return (
     <>
       <head>
@@ -49,12 +78,12 @@ export function Head() {
         <meta property="fc:frame" content="vNext" />
 
         <meta property="fc:frame:image" content={`${imageUrl}`} />
-        <meta property="fc:frame:input:text" content="50 degen or 100 moxie" />
-        <meta property="fc:frame:button:1" content="Pay" />
-        <meta
-          property="fc:frame:button:1:target"
-          content={`${API_URL}/api/farcaster/frames/pay/${username}/frame/command${theme ? `?theme=${theme}` : ''}`}
-        />
+
+        {includeInputText && (
+          <meta property="fc:frame:input:text" content="50 degen or 100 moxie" />
+        )}
+        <meta property="fc:frame:button:1" content={paymentButtonText} />
+        <meta property="fc:frame:button:1:target" content={postTargetUrl} />
       </head>
     </>
   );

@@ -118,31 +118,37 @@ export default function StatsPage() {
           Active Users Over Time
         </Typography>
         {isLoadingActiveUsers ? (
-          <Skeleton variant="rectangular" height={400} />
+          <Skeleton variant="rectangular" height={350} />
         ) : (
           <LineChart
             series={[
               {
-                data: activeUsersStats?.map(stat => stat.dailyActiveUsers),
-                label: 'Daily Active Users',
-                color: '#8884d8'
+                data: activeUsersStats?.map((stat) => stat.monthlyActiveUsers),
+                label: 'Monthly Active Users',
+                color: '#ffc658'
               },
               {
-                data: activeUsersStats?.map(stat => stat.weeklyActiveUsers),
+                data: activeUsersStats?.map((stat) => stat.weeklyActiveUsers),
                 label: 'Weekly Active Users',
                 color: '#82ca9d'
               },
               {
-                data: activeUsersStats?.map(stat => stat.monthlyActiveUsers),
-                label: 'Monthly Active Users',
-                color: '#ffc658'
+                data: activeUsersStats?.map((stat) => stat.dailyActiveUsers),
+                label: 'Daily Active Users',
+                color: '#8884d8'
               }
             ]}
-            xAxis={[{
-              data: activeUsersStats?.map(stat => new Date(stat.date)),
-              scaleType: 'time'
-            }]}
-            height={400}
+            xAxis={[
+              {
+                data: activeUsersStats?.map((stat) => new Date(stat.date)),
+                scaleType: 'point',
+                valueFormatter: (value: number) => {
+                  const date = new Date(value);
+                  return `${date.getDate()}/${date.getMonth() + 1}`;
+                }
+              }
+            ]}
+            height={375}
           />
         )}
       </Box>
