@@ -7,11 +7,12 @@ export interface FlowType {
   signerType?: string;
   signerCredential?: string;
   title: string;
-  type: 'JAR' | 'REGULAR' | 'LINKED' | 'FARCASTER_VERIFICATION' | undefined;
+  type: 'JAR' | 'REGULAR' | 'LINKED' | 'FARCASTER_VERIFICATION' | 'BANKR' | undefined;
   uuid: string;
   walletProvider: string;
   saltNonce: string;
   wallets: FlowWalletType[];
+  supportedTokens?: string[];
   archived: boolean;
 }
 

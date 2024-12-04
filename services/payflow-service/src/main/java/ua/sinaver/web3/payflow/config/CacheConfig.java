@@ -41,6 +41,7 @@ public class CacheConfig {
 	public static final String USERS_CACHE_NAME = CACHE_PREFIX_VERSION + "users";
 	public static final String INVITATIONS_CACHE_NAME = CACHE_PREFIX_VERSION + "invitations";
 	public static final String DAILY_STATS_CACHE = CACHE_PREFIX_VERSION + "stats-1";
+	public static final String BANKR_WALLETS_CACHE = CACHE_PREFIX_VERSION + "bankr-wallets";
 
 	@Value("${spring.cache.contacts.all.expireAfterWrite:10m}")
 	private Duration contactsExpireAfterWriteDuration;
@@ -56,6 +57,8 @@ public class CacheConfig {
 	private Duration storageExpireAfterWriteDuration;
 	@Value("${spring.cache.stats.expireAfterWrite:24h}")
 	private Duration statsExpireAfterWriteDuration;
+	@Value("${spring.cache.bankr.expireAfterWrite:30d}")
+	private Duration bankrExpireAfterWriteDuration;
 
 	@Autowired
 	private ObjectMapper objectMapper;
@@ -106,6 +109,9 @@ public class CacheConfig {
 		// Add daily stats cache configuration
 		cacheConfigurations.put(DAILY_STATS_CACHE, configuration.entryTtl(statsExpireAfterWriteDuration));
 
+		// Add Bankr wallets cache configuration
+		cacheConfigurations.put(BANKR_WALLETS_CACHE, configuration.entryTtl(bankrExpireAfterWriteDuration));
+
 		return RedisCacheManager
 				.builder(connectionFactory)
 				.cacheDefaults(configuration)
@@ -134,6 +140,7 @@ public class CacheConfig {
 		cacheSpecs.put(NEYNAR_STORAGE_USAGE_CACHE, buildCache(storageExpireAfterWriteDuration));
 		cacheSpecs.put(NEYNAR_STORAGE_ALLOCATION_CACHE, buildCache(storageExpireAfterWriteDuration));
 		cacheSpecs.put(DAILY_STATS_CACHE, buildCache(statsExpireAfterWriteDuration));
+		cacheSpecs.put(BANKR_WALLETS_CACHE, buildCache(bankrExpireAfterWriteDuration));
 
 		// Register all caches
 		cacheSpecs.forEach(cacheManager::registerCustomCache);

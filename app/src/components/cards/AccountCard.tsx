@@ -74,7 +74,7 @@ export function AccountCard({
   const [paymentType, setPaymentType] = useState<any>();
   const [recipient, setRecipient] = useState<SelectedIdentityType>();
 
-  const { chain, address } = useAccount();
+  const { address } = useAccount();
 
   const holdTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -231,8 +231,18 @@ export function AccountCard({
                 onClick={handleReceive}
                 icon={<CallReceived />}
               />
-              <ActionButton tooltip="Send" onClick={handleSend} icon={<TbSend />} />
-              <ActionButton tooltip="Share" onClick={handleShare} icon={<Share />} />
+              <ActionButton
+                tooltip="Send"
+                disabled={selectedFlow.type === 'BANKR'}
+                onClick={handleSend}
+                icon={<TbSend />}
+              />
+              <ActionButton
+                tooltip="Share"
+                disabled={selectedFlow.type === 'BANKR'}
+                onClick={handleShare}
+                icon={<Share />}
+              />
             </Stack>
           </Box>
         </Card>
@@ -257,7 +267,7 @@ export function AccountCard({
             }}
             recipient={recipient}
             setOpenSearchIdentity={setOpenSearchIdentity}
-            flow={selectedFlow}
+            flow={selectedFlow.type !== 'BANKR' ? selectedFlow : undefined}
             closeStateCallback={async () => {
               setRecipient(undefined);
             }}
@@ -291,8 +301,11 @@ export function AccountCard({
           anchorEl={topUpMenuAnchorEl}
           open={openTopUpMenu}
           depositClickCallback={() => {
-            setPaymentType('wallet');
-            setRecipient({ type: 'profile', identity: { profile } as IdentityType });
+            setPaymentType('payflow');
+            setRecipient({
+              type: 'profile',
+              identity: { profile: { ...profile, defaultFlow: selectedFlow } } as IdentityType
+            });
           }}
           qrClickCallback={() => setOpenFlowReceiveQRCode(true)}
           onClose={() => setOpenTopUpMenu(false)}
@@ -308,9 +321,6 @@ export function AccountCard({
         />
         <WalletQRCodeShareDialog
           open={openFlowReceiveQRCode}
-          wallet={
-            selectedFlow.wallets.find((w) => w.network === chain?.id) ?? selectedFlow.wallets[0]
-          }
           wallets={selectedFlow.wallets}
           closeStateCallback={() => setOpenFlowReceiveQRCode(false)}
         />

@@ -5,7 +5,9 @@ import ua.sinaver.web3.payflow.data.Flow;
 import ua.sinaver.web3.payflow.data.User;
 
 import java.util.List;
+import java.util.stream.Stream;
 
+import static ua.sinaver.web3.payflow.service.TokenService.BASE_CHAIN_ID;
 import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS;
 import static ua.sinaver.web3.payflow.service.WalletService.shortenWalletAddressLabel2;
 
@@ -16,6 +18,7 @@ public record FlowMessage(String signer, String signerProvider,
                           String uuid,
                           String walletProvider,
                           String saltNonce, List<WalletMessage> wallets,
+                          List<String> supportedTokens,
                           boolean archived) {
 	public static String getFlowSigner(Flow flow, User user) {
 		// required only because when we don't want to return flow signer info
@@ -85,6 +88,7 @@ public record FlowMessage(String signer, String signerProvider,
 				flow.getType() != null ? flow.getType().toString() : "",
 				flow.getUuid(),
 				flow.getWalletProvider(), flow.getSaltNonce(), wallets,
+				null,
 				flow.isArchived() || flow.isDisabled());
 	}
 
@@ -98,6 +102,22 @@ public record FlowMessage(String signer, String signerProvider,
 				Flow.FlowType.FARCASTER_VERIFICATION.toString(),
 				verificationAddress,
 				null, null, wallets,
+				null,
+				false);
+	}
+
+	public static FlowMessage convertBankrWallet(String bankrAddress, User user) {
+		// for now only base chain id
+		val wallets = Stream.of(BASE_CHAIN_ID)
+				.map(chainId -> new WalletMessage(bankrAddress, chainId, null, true))
+				.toList();
+		return new FlowMessage(bankrAddress, null,
+				null, null,
+				shortenWalletAddressLabel2(bankrAddress),
+				Flow.FlowType.BANKR.toString(),
+				bankrAddress,
+				null, null, wallets,
+				List.of("eth"),
 				false);
 	}
 

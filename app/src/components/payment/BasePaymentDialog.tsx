@@ -1,12 +1,11 @@
 import React, { useMemo } from 'react';
-import { Dialog, DialogContent, DialogProps, Box, Typography } from '@mui/material';
+import { Dialog, DialogContent, DialogProps, Box } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { BackDialogTitle } from '../dialogs/BackDialogTitle';
 import { UpSlideTransition } from '../dialogs/TransitionDownUpSlide';
 import PoweredByGlideText from '../text/PoweredByGlideText';
 import { useMobile } from '../../utils/hooks/useMobile';
 import { ExpiryCountdown } from './ExpiryCountdown';
-import { toast } from 'react-toastify';
 
 export type BasePaymentDialogProps = DialogProps &
   CloseCallbackType & {

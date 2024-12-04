@@ -33,7 +33,7 @@ export function RecipientField({
       {recipient &&
         (recipient.type === 'profile' ? (
           recipient.identity.profile && (
-            <ProfileSection maxWidth={200} profile={recipient.identity.profile} />
+            <ProfileSection maxWidth={200} profile={recipient.identity.profile} view="flow" />
           )
         ) : (
           <AddressSection maxWidth={200} identity={recipient.identity} />

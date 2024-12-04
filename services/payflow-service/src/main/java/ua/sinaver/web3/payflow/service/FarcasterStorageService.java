@@ -28,20 +28,17 @@ public class FarcasterStorageService {
 	private static final int STORAGE_CAST_CAPACITY = 2000;
 	private static final int STORAGE_REACTION_CAPACITY = 1000;
 	private static final int STORAGE_LINK_CAPACITY = 1000;
+	private static final String PARENT_CAST_HASH = "0xaf870a2d8c0e16500532abdfe14908b2f85d662c";
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
 	private FarcasterMessagingService messagingService;
-
 	@Autowired
 	private FarcasterNeynarService neynarService;
-
 	@Autowired
 	private IdentityService identityService;
-
 	@Autowired
 	private NotificationService notificationService;
-
 	@Autowired
 	private StorageNotificationRepository storageNotificationRepository;
 
@@ -90,7 +87,7 @@ public class FarcasterStorageService {
 											fid.toString(),
 											String.format(
 													"""
-															@%s, you're reaching or over your storage capacity!
+															@%s, you're reaching or over your farcaster storage capacity!
 
 															1 unit costs ~$2, you can purchase more with any token balance on @payflow 👇
 
@@ -114,14 +111,14 @@ public class FarcasterStorageService {
 									try {
 										notificationService.reply(String.format(
 														"""
-																@%s, you're reaching or over your storage capacity!
+																@%s, you're reaching or over your farcaster storage capacity!
 
 																1 unit costs ~$2, you can purchase more with any token balance using @payflow 👇
 
 																To disable or configure storage notification, visit:
 																https://app.payflow.me/farcaster/storage
 																""",
-														username), null,
+														username), PARENT_CAST_HASH,
 												List.of(new Cast.Embed(storageEmbed)));
 									} catch (Throwable t) {
 										log.error("Failed to cast storage notification for {}", fid, t);

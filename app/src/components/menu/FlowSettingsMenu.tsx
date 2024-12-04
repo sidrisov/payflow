@@ -127,98 +127,104 @@ export function FlowSettingsMenu({
         transformOrigin={{ horizontal: 'left', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
         <MenuList dense disablePadding>
-          <MenuItem onClick={handleConnectWallet}>
-            <ListItemIcon>
-              <AiFillSignature />
-            </ListItemIcon>
-            <Stack>
-              <Typography>{isConnected ? 'Re-connect Signer' : 'Connect Signer'}</Typography>
-              <Typography variant="caption" color="text.secondary">
-                {getSignerInfo()}
-              </Typography>
-            </Stack>
-          </MenuItem>
+          {flow.type !== 'BANKR' && (
+            <MenuItem onClick={handleConnectWallet}>
+              <ListItemIcon>
+                <AiFillSignature />
+              </ListItemIcon>
+              <Stack>
+                <Typography>{isConnected ? 'Re-connect Signer' : 'Connect Signer'}</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {getSignerInfo()}
+                </Typography>
+              </Stack>
+            </MenuItem>
+          )}
           {!showOnlySigner && (
             <>
-              {(flow.type === 'FARCASTER_VERIFICATION' || defaultFlow) && (
-                <MenuItem
-                  onClick={() => {
-                    const paymentFrameUrl = `${FRAMES_URL}/${
-                      defaultFlow ? profile?.identity : flow.wallets[0].address
-                    }`;
-                    copyToClipboard(paymentFrameUrl);
-                    toast.success('Pay Me frame URL copied!');
-                  }}>
-                  <ListItemIcon>
-                    <IoMdSquare />
-                  </ListItemIcon>
-                  <Stack>
-                    <Typography>Pay Me</Typography>
-                    <Typography variant="caption" color="text.secondary" noWrap>
-                      Copy & embed frame in socials
-                    </Typography>
-                  </Stack>
-                </MenuItem>
-              )}
-              <MenuItem
-                onClick={async (event) => {
-                  setWalletAnchorEl(event.currentTarget);
-                  setOpenWalletDetailsPopover(true);
-                }}>
-                <ListItemIcon>
-                  <IoIosWallet />
-                </ListItemIcon>
-                <Stack
-                  width="100%"
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center">
-                  {flow.type === 'FARCASTER_VERIFICATION' ? 'Wallets' : 'Smart Wallets'}
-                  <AvatarGroup
-                    max={4}
-                    color="inherit"
-                    total={flow.wallets.length}
-                    sx={{
-                      ml: 1,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      height: 30,
-                      minWidth: 30,
-                      '& .MuiAvatar-root': {
-                        borderStyle: 'none',
-                        border: 0,
-                        width: 18,
-                        height: 18,
-                        fontSize: 10
-                      }
+              {flow.type !== 'BANKR' && (
+                <>
+                  {(flow.type === 'FARCASTER_VERIFICATION' || defaultFlow) && (
+                    <MenuItem
+                      onClick={() => {
+                        const paymentFrameUrl = `${FRAMES_URL}/${
+                          defaultFlow ? profile?.identity : flow.wallets[0].address
+                        }`;
+                        copyToClipboard(paymentFrameUrl);
+                        toast.success('Pay Me frame URL copied!');
+                      }}>
+                      <ListItemIcon>
+                        <IoMdSquare />
+                      </ListItemIcon>
+                      <Stack>
+                        <Typography>Pay Me</Typography>
+                        <Typography variant="caption" color="text.secondary" noWrap>
+                          Copy & embed frame in socials
+                        </Typography>
+                      </Stack>
+                    </MenuItem>
+                  )}
+                  <MenuItem
+                    onClick={async (event) => {
+                      setWalletAnchorEl(event.currentTarget);
+                      setOpenWalletDetailsPopover(true);
                     }}>
-                    {[...Array(Math.min(4, flow.wallets.length))].map((_item, i) => (
-                      <NetworkAvatar
-                        key={`account_card_wallet_list_${flow.wallets[i].network}`}
-                        chainId={flow.wallets[i].network}
-                      />
-                    ))}
-                  </AvatarGroup>
-                </Stack>
-              </MenuItem>
-              {!defaultFlow && !flow.archived && (
-                <MenuItem
-                  onClick={async () => {
-                    if (await setReceivingFlow(flow.uuid)) {
-                      toast.success('Saved! Reloading page ...', { isLoading: true });
-                      await delay(1000);
-                      navigate(0);
-                    } else {
-                      toast.error('Something went wrong!');
-                    }
-                  }}>
-                  <ListItemIcon>
-                    <HiOutlineDownload size={20} />
-                  </ListItemIcon>
-                  Make default for receiving
-                </MenuItem>
+                    <ListItemIcon>
+                      <IoIosWallet />
+                    </ListItemIcon>
+                    <Stack
+                      width="100%"
+                      direction="row"
+                      justifyContent="space-between"
+                      alignItems="center">
+                      {flow.type === 'FARCASTER_VERIFICATION' ? 'Wallets' : 'Smart Wallets'}
+                      <AvatarGroup
+                        max={4}
+                        color="inherit"
+                        total={flow.wallets.length}
+                        sx={{
+                          ml: 1,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          height: 30,
+                          minWidth: 30,
+                          '& .MuiAvatar-root': {
+                            borderStyle: 'none',
+                            border: 0,
+                            width: 18,
+                            height: 18,
+                            fontSize: 10
+                          }
+                        }}>
+                        {[...Array(Math.min(4, flow.wallets.length))].map((_item, i) => (
+                          <NetworkAvatar
+                            key={`account_card_wallet_list_${flow.wallets[i].network}`}
+                            chainId={flow.wallets[i].network}
+                          />
+                        ))}
+                      </AvatarGroup>
+                    </Stack>
+                  </MenuItem>
+                  {!defaultFlow && !flow.archived && (
+                    <MenuItem
+                      onClick={async () => {
+                        if (await setReceivingFlow(flow.uuid)) {
+                          toast.success('Saved! Reloading page ...', { isLoading: true });
+                          await delay(1000);
+                          navigate(0);
+                        } else {
+                          toast.error('Something went wrong!');
+                        }
+                      }}>
+                      <ListItemIcon>
+                        <HiOutlineDownload size={20} />
+                      </ListItemIcon>
+                      Make default for receiving
+                    </MenuItem>
+                  )}
+                  <Divider />
+                </>
               )}
-              <Divider />
               <MenuItem
                 component="a"
                 href={socialLink(ZAPPER, flow.wallets[0].address)}

@@ -343,7 +343,7 @@ export default function NotificationsPage() {
                         }}
                       />
                     }
-                    label="Notify with cast"
+                    label="Notify with cast reply"
                   />
                 </Stack>
               </FormControl>

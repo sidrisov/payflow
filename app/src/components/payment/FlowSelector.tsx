@@ -73,7 +73,7 @@ export const FlowSelector: React.FC<FlowSelectorProps> = ({
 
       {flows && (
         <ChooseFlowDialog
-          showOnlySigner
+          paymentView
           open={openSelectFlow}
           onClose={() => setOpenSelectFlow(false)}
           closeStateCallback={() => setOpenSelectFlow(false)}

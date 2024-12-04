@@ -428,6 +428,7 @@ export default function PaymentDialog({
             paymentToken={crossChainMode ? crossChainPaymentToken : paymentToken}
             setPaymentToken={crossChainMode ? setCrossChainPaymentToken : setPaymentToken}
             compatibleWallets={compatibleWallets}
+            supportedTokens={recipient.identity.profile?.defaultFlow?.supportedTokens}
             enabledChainCurrencies={
               crossChainMode
                 ? (paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? [])

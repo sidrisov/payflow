@@ -6,7 +6,11 @@ import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -15,6 +19,7 @@ import ua.sinaver.web3.payflow.graphql.generated.types.Social;
 import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
 import ua.sinaver.web3.payflow.message.ConnectedAddresses;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
+import ua.sinaver.web3.payflow.message.farcaster.bankr.BankrWalletResponse;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
@@ -23,10 +28,13 @@ import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 import java.time.Duration;
 import java.util.*;
 
+import static ua.sinaver.web3.payflow.config.CacheConfig.BANKR_WALLETS_CACHE;
+
 @Slf4j
 @Service
 @Transactional
 public class IdentityService implements IIdentityService {
+	private final WebClient webClient;
 
 	@Autowired
 	private InvitationRepository invitationRepository;
@@ -39,6 +47,11 @@ public class IdentityService implements IIdentityService {
 	// reuse property to increase the contacts limit
 	@Value("${payflow.invitation.whitelisted.default.users}")
 	private Set<String> whitelistedUsers;
+
+	@Autowired
+	public IdentityService(WebClient.Builder webClientBuilder) {
+		this.webClient = webClientBuilder.build();
+	}
 
 	@Override
 	public User getFidProfile(int fid, String identity) {
@@ -287,6 +300,37 @@ public class IdentityService implements IIdentityService {
 			return Collections.emptyList();
 		}
 	}
+
+	@Cacheable(value = BANKR_WALLETS_CACHE, key = "#identity")
+	public String getBankrWalletByIdentity(String identity) {
+		val fid = getIdentityFid(identity);
+		if (fid != null) {
+			return getBankrWalletByFid(Integer.parseInt(fid));
+		}
+		return null;
+	}
+
+	@Cacheable(value = BANKR_WALLETS_CACHE, key = "#fid")
+	public String getBankrWalletByFid(Integer fid) {
+		log.debug("Calling Bankr API to fetch wallet for FID {}", fid);
+		return webClient
+				.get()
+				.uri("https://api.bankr.bot/trading-wallet/" + fid)
+				.retrieve()
+				.onStatus(HttpStatus.NOT_FOUND::equals, clientResponse -> {
+					log.debug("404 error when calling Bankr API for FID {}", fid);
+					return Mono.empty();
+				})
+				.bodyToMono(BankrWalletResponse.class)
+				.onErrorResume(WebClientResponseException.class, e -> {
+					log.warn("Failed to fetch Bankr wallet for FID {}: {}", fid, e.getMessage());
+					return Mono.empty();
+				})
+				.blockOptional()
+				.map(BankrWalletResponse::getTradingWallet)
+				.orElse(null);
+	}
+
 
 	private List<String> verificationsWithoutCustodial(ConnectedAddresses verifications) {
 		if (verifications == null) {

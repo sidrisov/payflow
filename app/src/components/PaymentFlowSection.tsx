@@ -40,19 +40,29 @@ export function PaymentFlowSection({
       {!flow.type &&
         !(flow.wallets.length > 0 && flow.wallets.find((w) => w.version === '1.3.0')) && (
           <Tooltip title="Payment flow created in Payflow">
-            <Avatar src="/payflow.png" sx={{ width: 20, height: 20 }} />
+            <Avatar variant="rounded" src="/payflow.png" sx={{ width: 20, height: 20 }} />
           </Tooltip>
         )}
 
       {flow.type === 'FARCASTER_VERIFICATION' && (
         <Tooltip title="Farcaster Verification">
-          <FarcasterAvatar size={20} />
+          <FarcasterAvatar variant="rounded" size={20} />
+        </Tooltip>
+      )}
+
+      {flow.type === 'BANKR' && (
+        <Tooltip title="Bankr Wallet">
+          <Avatar variant="rounded" src="/dapps/bankr.png" sx={{ width: 20, height: 20 }} />
         </Tooltip>
       )}
 
       {flow.type === 'LINKED' && (
         <Tooltip title="Linked Wallet">
-          <Box src="/coinbase_smart_wallet.svg" component="img" sx={{ width: 20, height: 20 }} />
+          <Avatar
+            variant="rounded"
+            src="/coinbase_smart_wallet.svg"
+            sx={{ width: 20, height: 20 }}
+          />
         </Tooltip>
       )}
 

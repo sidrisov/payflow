@@ -34,16 +34,12 @@ public class FlowService implements IFlowService {
 	private JarRepository jarRepository;
 	@Autowired
 	private FlowRepository flowRepository;
-
 	@Autowired
 	private UserRepository userRepository;
-
 	@Autowired
 	private WalletService walletService;
-
 	@Autowired
 	private IdentityService identityService;
-
 	@Autowired
 	private AirstackSocialGraphService socialGraphService;
 
@@ -109,6 +105,15 @@ public class FlowService implements IFlowService {
 					.toList();
 			flows.addAll(verificationFlows);
 		}
+
+
+		val bankrWalletAddress = identityService.getBankrWalletByIdentity(user.getIdentity());
+
+			if (bankrWalletAddress != null) {
+				flows.add(FlowMessage.convertBankrWallet(bankrWalletAddress, user));
+			}
+		
+
 		return flows;
 	}
 
@@ -228,16 +233,18 @@ public class FlowService implements IFlowService {
 				.toList();
 	}
 
-	//@Scheduled(initialDelay = 30 * 1000, fixedRate = 24 * 60 * 60 * 1000)
+	// @Scheduled(initialDelay = 30 * 1000, fixedRate = 24 * 60 * 60 * 1000)
 	public void printOwnersOfLegacyFlows() {
 		val legacyFlows = getOwnersOfLegacyFlows();
 		val ownersFarcaster = legacyFlows.stream()
 				.map(flow -> {
 					val user = userRepository.findById(flow.getUserId()).orElse(null);
-					if (user == null) return null;
+					if (user == null)
+						return null;
 
 					val identityInfo = identityService.getIdentityInfo(user.getIdentity());
-					if (identityInfo == null) return null;
+					if (identityInfo == null)
+						return null;
 
 					val socialEntry = identityInfo.meta().socials().stream()
 							.filter(s -> s.dappName().equals(SocialDappName.farcaster.name()))
@@ -245,7 +252,8 @@ public class FlowService implements IFlowService {
 							.map(s -> new SimpleEntry<>(s.profileName(), s.profileId()))
 							.orElse(null);
 
-					if (socialEntry == null) return null;
+					if (socialEntry == null)
+						return null;
 
 					val walletAddress = flow.getWallets().stream()
 							.filter(w -> w.getNetwork().equals(BASE_CHAIN_ID))
@@ -253,7 +261,8 @@ public class FlowService implements IFlowService {
 							.map(Wallet::getAddress)
 							.orElse(null);
 
-					if (walletAddress == null) return null;
+					if (walletAddress == null)
+						return null;
 
 					return new SimpleEntry<>(socialEntry, walletAddress);
 				})

@@ -36,6 +36,7 @@ export function NetworkTokenSelector({
   payment,
   crossChainMode = false,
   compatibleWallets,
+  supportedTokens,
   paymentToken,
   setPaymentToken,
   enabledChainCurrencies,
@@ -45,6 +46,7 @@ export function NetworkTokenSelector({
   payment?: PaymentType;
   crossChainMode?: boolean;
   compatibleWallets: FlowWalletType[];
+  supportedTokens?: string[];
   paymentToken?: Token;
   setPaymentToken: React.Dispatch<React.SetStateAction<Token | undefined>>;
   enabledChainCurrencies?: string[];
@@ -74,9 +76,12 @@ export function NetworkTokenSelector({
       return [];
     }
     // filter by passed token if available
-    const tokens = getTokensByChainIds(compatibleWallets.map((w) => w.network)).filter((t) =>
-      !crossChainMode && payment?.token ? t.id === payment?.token : true
-    );
+    const tokens = getTokensByChainIds(compatibleWallets.map((w) => w.network)).filter((t) => {
+      if (crossChainMode) return true;
+      if (payment?.token) return t.id === payment.token;
+      if (supportedTokens) return supportedTokens.includes(t.id);
+      return true;
+    });
 
     const compatibleTokens = enabledChainCurrencies
       ? tokens.filter((t) =>

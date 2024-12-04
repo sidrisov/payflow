@@ -15,34 +15,39 @@ import { ArrowBack, ContentCopy } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { shortenWalletAddressLabel } from '../../utils/address';
 import { copyToClipboard } from '../../utils/copyToClipboard';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChooseWalletMenu } from '../menu/ChooseWalletMenu';
 import { FlowWalletType } from '../../types/FlowType';
 import NetworkAvatar from '../avatars/NetworkAvatar';
-import { getNetworkDisplayName, shortNetworkName } from '../../utils/networks';
+import { getNetworkDisplayName } from '../../utils/networks';
 import { useMobile } from '../../utils/hooks/useMobile';
+import { useAccount } from 'wagmi';
 
 export type WalletQRCodeShareDialogProps = DialogProps &
   CloseCallbackType & {
-    wallet: FlowWalletType;
     wallets: FlowWalletType[];
   };
 
 export default function WalletQRCodeShareDialog({
-  wallet,
   wallets,
   closeStateCallback,
   ...props
 }: WalletQRCodeShareDialogProps) {
   const isMobile = useMobile();
 
+  const { chain } = useAccount();
+
   const [openSelectWallet, setOpenSelectWallet] = useState(false);
   const [walletAnchorEl, setWalletAnchorEl] = useState<null | HTMLElement>(null);
 
-  const [selectedWallet, setSelectedWallet] = useState<FlowWalletType | undefined>(wallet);
+  const [selectedWallet, setSelectedWallet] = useState<FlowWalletType | undefined>();
   function handleCloseCampaignDialog() {
     closeStateCallback();
   }
+
+  useEffect(() => {
+    setSelectedWallet(wallets.find((w) => w.network === chain?.id) ?? wallets[0]);
+  }, [wallets, chain]);
 
   return (
     selectedWallet && (

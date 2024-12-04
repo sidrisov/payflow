@@ -24,7 +24,7 @@ import { CreateFlowDialog } from './CreateFlowDialog';
 export type ChooseFlowMenuProps = ResponsiveDialogProps &
   CloseCallbackType & {
     configurable?: boolean;
-    showOnlySigner?: boolean;
+    paymentView?: boolean;
     closeOnSelect?: boolean;
     flows: FlowType[];
     selectedFlow: FlowType;
@@ -33,7 +33,7 @@ export type ChooseFlowMenuProps = ResponsiveDialogProps &
 
 export function ChooseFlowDialog({
   configurable = true,
-  showOnlySigner = false,
+  paymentView = false,
   closeOnSelect = true,
   flows,
   selectedFlow,
@@ -56,21 +56,23 @@ export function ChooseFlowDialog({
         !flow.archived &&
         flow.wallets.length > 0 &&
         !flow.wallets.some((w) => w.version === '1.3.0') &&
-        flow.type !== 'FARCASTER_VERIFICATION'
+        flow.type !== 'FARCASTER_VERIFICATION' &&
+        flow.type !== 'BANKR'
     );
     const farcaster = flows.filter(
       (flow) => !flow.archived && flow.type === 'FARCASTER_VERIFICATION'
     );
+    const bankr = !paymentView && flows.find((flow) => flow.type === 'BANKR');
     const legacy = flows.filter(
       (flow) =>
         !flow.archived && flow.wallets.length > 0 && flow.wallets.some((w) => w.version === '1.3.0')
     );
     const archived = flows.filter((flow) => flow.archived);
-    return { regular, farcaster, legacy, archived };
+    return { regular, farcaster, bankr, legacy, archived };
   };
 
   // Separate the flows
-  const { regular, farcaster, legacy, archived } = separateFlows(flows);
+  const { regular, farcaster, bankr, legacy, archived } = separateFlows(flows);
 
   useEffect(() => {
     if (props.open && selectedElement) {
@@ -198,6 +200,15 @@ export function ChooseFlowDialog({
                 </>
               )}
 
+              {bankr && (
+                <>
+                  <Typography variant="subtitle2" sx={{ px: 2, py: 1, color: 'text.secondary' }}>
+                    Bankr Wallet
+                  </Typography>
+                  {renderMenuItem(bankr)}
+                </>
+              )}
+
               {legacy && legacy.length > 0 && (
                 <>
                   <Typography variant="subtitle2" sx={{ px: 2, py: 1, color: 'text.secondary' }}>
@@ -250,7 +261,7 @@ export function ChooseFlowDialog({
               setOpenFlowSettingsMenu(false);
               setMenuFlow(null);
             }}
-            showOnlySigner={showOnlySigner}
+            showOnlySigner={paymentView}
             defaultFlow={menuFlow.uuid === profile.defaultFlow?.uuid}
             flow={menuFlow}
           />
