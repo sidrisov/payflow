@@ -16,7 +16,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(indexes = {@Index(columnList = "user_id"), @Index(columnList = "uuid")})
+@Table(indexes = { @Index(columnList = "user_id"), @Index(columnList = "uuid") })
 public class Flow {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -56,8 +56,7 @@ public class Flow {
 	@Column
 	private String saltNonce;
 
-	@OneToMany(mappedBy = "flow", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval =
-			true)
+	@OneToMany(mappedBy = "flow", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Wallet> wallets;
 
 	@Column(columnDefinition = "boolean")
@@ -74,10 +73,10 @@ public class Flow {
 	private Long version;
 
 	public Flow(Integer userId, String title, String signer,
-	            String signerProvider,
-	            String signerType, String signerCredential,
-	            String walletProvider,
-	            String saltNonce) {
+			String signerProvider,
+			String signerType, String signerCredential,
+			String walletProvider,
+			String saltNonce) {
 		this.userId = userId;
 		this.title = title;
 		this.uuid = RandomStringUtils.random(8, true, true);
@@ -98,6 +97,7 @@ public class Flow {
 		REGULAR,
 		FARCASTER_VERIFICATION,
 		BANKR,
+		RODEO,
 		LINKED,
 		JAR
 	}

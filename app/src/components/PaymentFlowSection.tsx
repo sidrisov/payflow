@@ -56,6 +56,12 @@ export function PaymentFlowSection({
         </Tooltip>
       )}
 
+      {flow.type === 'RODEO' && (
+        <Tooltip title="Rodeo Wallet">
+          <Avatar variant="rounded" src="/dapps/rodeo.png" sx={{ width: 20, height: 20 }} />
+        </Tooltip>
+      )}
+
       {flow.type === 'LINKED' && (
         <Tooltip title="Linked Wallet">
           <Avatar

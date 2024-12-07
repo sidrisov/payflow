@@ -20,6 +20,7 @@ import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
 import ua.sinaver.web3.payflow.message.ConnectedAddresses;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.message.farcaster.bankr.BankrWalletResponse;
+import ua.sinaver.web3.payflow.message.farcaster.rodeo.RodeoResponse;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
@@ -29,6 +30,7 @@ import java.time.Duration;
 import java.util.*;
 
 import static ua.sinaver.web3.payflow.config.CacheConfig.BANKR_WALLETS_CACHE;
+import static ua.sinaver.web3.payflow.config.CacheConfig.RODEO_WALLETS_CACHE;
 
 @Slf4j
 @Service
@@ -301,7 +303,7 @@ public class IdentityService implements IIdentityService {
 		}
 	}
 
-	@Cacheable(value = BANKR_WALLETS_CACHE, key = "#identity")
+	@Cacheable(value = BANKR_WALLETS_CACHE, key = "#identity", unless = "#result == null")
 	public String getBankrWalletByIdentity(String identity) {
 		val fid = getIdentityFid(identity);
 		if (fid != null) {
@@ -310,7 +312,7 @@ public class IdentityService implements IIdentityService {
 		return null;
 	}
 
-	@Cacheable(value = BANKR_WALLETS_CACHE, key = "#fid")
+	@Cacheable(value = BANKR_WALLETS_CACHE, key = "#fid", unless = "#result == null")
 	public String getBankrWalletByFid(Integer fid) {
 		log.debug("Calling Bankr API to fetch wallet for FID {}", fid);
 		return webClient
@@ -331,6 +333,57 @@ public class IdentityService implements IIdentityService {
 				.orElse(null);
 	}
 
+	@Cacheable(value = RODEO_WALLETS_CACHE, key = "#identity", unless = "#result == null")
+	public String getRodeoWalletByIdentity(String identity) {
+		val fid = getIdentityFid(identity);
+		if (fid != null) {
+			return getRodeoWalletByFid(Integer.parseInt(fid));
+		}
+		return null;
+	}
+
+	@Cacheable(value = RODEO_WALLETS_CACHE, key = "#fid", unless = "#result == null")
+	public String getRodeoWalletByFid(Integer fid) {
+		log.debug("Calling Rodeo API to fetch wallet for FID {}", fid);
+
+		String query = """
+				{
+				  userProfile(by: {fid: "%s"}) {
+					username
+					wallets{
+					  address
+					  connectorType
+					}
+				  }
+				}
+				""".formatted(fid);
+
+		return webClient
+				.post()
+				.uri("https://api-v2.foundation.app/electric/v2/graphql")
+				.bodyValue(Map.of("query", query))
+				.retrieve()
+				.bodyToMono(RodeoResponse.class)
+				.map(response -> {
+					if (response.getData() != null
+							&& response.getData().getUserProfile() != null
+							&& response.getData().getUserProfile().getWallets() != null) {
+						return response.getData().getUserProfile().getWallets().stream()
+								.filter(w -> w.getAddress() != null
+										&& "smart_wallet".equals(w.getConnectorType()))
+								.findFirst()
+								.map(RodeoResponse.Wallet::getAddress)
+								.map(String::toLowerCase)
+								.orElse(null);
+					}
+					return null;
+				})
+				.onErrorResume(e -> {
+					log.warn("Failed to fetch Rodeo wallet for FID {}: {}", fid, e.getMessage());
+					return Mono.empty();
+				})
+				.block();
+	}
 
 	private List<String> verificationsWithoutCustodial(ConnectedAddresses verifications) {
 		if (verifications == null) {

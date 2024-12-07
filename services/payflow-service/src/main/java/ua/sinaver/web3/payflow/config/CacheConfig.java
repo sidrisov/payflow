@@ -37,11 +37,13 @@ public class CacheConfig {
 	public static final String NEYNAR_FARCASTER_USER_CACHE = CACHE_PREFIX_VERSION + "farcaster-users";
 	public static final String NEYNAR_STORAGE_USAGE_CACHE = CACHE_PREFIX_VERSION + "farcaster-storage-usage";
 	public static final String NEYNAR_STORAGE_ALLOCATION_CACHE = CACHE_PREFIX_VERSION + "farcaster-storage-allocation";
+	public static final String RODEO_WALLETS_CACHE = CACHE_PREFIX_VERSION + "rodeo-wallets";
 
 	public static final String USERS_CACHE_NAME = CACHE_PREFIX_VERSION + "users";
 	public static final String INVITATIONS_CACHE_NAME = CACHE_PREFIX_VERSION + "invitations";
 	public static final String DAILY_STATS_CACHE = CACHE_PREFIX_VERSION + "stats-1";
 	public static final String BANKR_WALLETS_CACHE = CACHE_PREFIX_VERSION + "bankr-wallets";
+	public static final String USER_FLOWS_CACHE = CACHE_PREFIX_VERSION + "user-flows";
 
 	@Value("${spring.cache.contacts.all.expireAfterWrite:10m}")
 	private Duration contactsExpireAfterWriteDuration;
@@ -59,6 +61,10 @@ public class CacheConfig {
 	private Duration statsExpireAfterWriteDuration;
 	@Value("${spring.cache.bankr.expireAfterWrite:30d}")
 	private Duration bankrExpireAfterWriteDuration;
+	@Value("${spring.cache.flows.expireAfterWrite:1h}")
+	private Duration flowsExpireAfterWriteDuration;
+	@Value("${spring.cache.rodeo.expireAfterWrite:30d}")
+	private Duration rodeoExpireAfterWriteDuration;
 
 	@Autowired
 	private ObjectMapper objectMapper;
@@ -78,7 +84,7 @@ public class CacheConfig {
 	@Bean
 	@Profile("redis")
 	CacheManager redisCacheManager(RedisConnectionFactory connectionFactory,
-			RedisCacheConfiguration configuration) {
+	                               RedisCacheConfiguration configuration) {
 		val cacheConfigurations = new HashMap<String, RedisCacheConfiguration>();
 
 		// Basic configs with different TTLs
@@ -112,6 +118,12 @@ public class CacheConfig {
 		// Add Bankr wallets cache configuration
 		cacheConfigurations.put(BANKR_WALLETS_CACHE, configuration.entryTtl(bankrExpireAfterWriteDuration));
 
+		// Add user flows cache configuration
+		cacheConfigurations.put(USER_FLOWS_CACHE, configuration.entryTtl(flowsExpireAfterWriteDuration));
+
+		// Add Rodeo wallets cache configuration
+		cacheConfigurations.put(RODEO_WALLETS_CACHE, configuration.entryTtl(rodeoExpireAfterWriteDuration));
+
 		return RedisCacheManager
 				.builder(connectionFactory)
 				.cacheDefaults(configuration)
@@ -141,6 +153,8 @@ public class CacheConfig {
 		cacheSpecs.put(NEYNAR_STORAGE_ALLOCATION_CACHE, buildCache(storageExpireAfterWriteDuration));
 		cacheSpecs.put(DAILY_STATS_CACHE, buildCache(statsExpireAfterWriteDuration));
 		cacheSpecs.put(BANKR_WALLETS_CACHE, buildCache(bankrExpireAfterWriteDuration));
+		cacheSpecs.put(USER_FLOWS_CACHE, buildCache(flowsExpireAfterWriteDuration));
+		cacheSpecs.put(RODEO_WALLETS_CACHE, buildCache(rodeoExpireAfterWriteDuration));
 
 		// Register all caches
 		cacheSpecs.forEach(cacheManager::registerCustomCache);

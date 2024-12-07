@@ -127,7 +127,7 @@ export function FlowSettingsMenu({
         transformOrigin={{ horizontal: 'left', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
         <MenuList dense disablePadding>
-          {flow.type !== 'BANKR' && (
+          {flow.type !== 'BANKR' && flow.type !== 'RODEO' && (
             <MenuItem onClick={handleConnectWallet}>
               <ListItemIcon>
                 <AiFillSignature />
@@ -142,7 +142,7 @@ export function FlowSettingsMenu({
           )}
           {!showOnlySigner && (
             <>
-              {flow.type !== 'BANKR' && (
+              {flow.type !== 'BANKR' && flow.type !== 'RODEO' && (
                 <>
                   {(flow.type === 'FARCASTER_VERIFICATION' || defaultFlow) && (
                     <MenuItem

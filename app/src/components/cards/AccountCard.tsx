@@ -233,13 +233,13 @@ export function AccountCard({
               />
               <ActionButton
                 tooltip="Send"
-                disabled={selectedFlow.type === 'BANKR'}
+                disabled={selectedFlow.type === 'BANKR' || selectedFlow.type === 'RODEO'}
                 onClick={handleSend}
                 icon={<TbSend />}
               />
               <ActionButton
                 tooltip="Share"
-                disabled={selectedFlow.type === 'BANKR'}
+                disabled={selectedFlow.type === 'BANKR' || selectedFlow.type === 'RODEO'}
                 onClick={handleShare}
                 icon={<Share />}
               />
@@ -267,7 +267,11 @@ export function AccountCard({
             }}
             recipient={recipient}
             setOpenSearchIdentity={setOpenSearchIdentity}
-            flow={selectedFlow.type !== 'BANKR' ? selectedFlow : undefined}
+            flow={
+              selectedFlow.type !== 'BANKR' && selectedFlow.type !== 'RODEO'
+                ? selectedFlow
+                : undefined
+            }
             closeStateCallback={async () => {
               setRecipient(undefined);
             }}

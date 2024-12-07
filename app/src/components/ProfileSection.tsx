@@ -14,6 +14,8 @@ const getWalletTypeAvatar = (type: FlowType['type'], view: 'profile' | 'flow') =
   switch (type) {
     case 'BANKR':
       return <Avatar variant="rounded" src="/dapps/bankr.png" sx={{ width: 16, height: 16 }} />;
+    case 'RODEO':
+      return <Avatar variant="rounded" src="/dapps/rodeo.png" sx={{ width: 16, height: 16 }} />;
     case 'FARCASTER_VERIFICATION':
       return <FarcasterAvatar size={16} />;
     case 'LINKED':

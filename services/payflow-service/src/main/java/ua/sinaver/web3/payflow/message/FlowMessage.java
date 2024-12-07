@@ -77,9 +77,8 @@ public record FlowMessage(String signer, String signerProvider,
 		val flowSignerType = signerInfo && user != null ? flow.getSignerType() : null;
 		val flowSignerCredential = signerInfo && user != null ? flow.getSignerCredential() : null;
 
-
 		val wallets = flow.getWallets().stream()
-				//.filter(w -> !w.isDisabled())
+				// .filter(w -> !w.isDisabled())
 				.map(WalletMessage::convert)
 				.toList();
 		return new FlowMessage(flowSigner, flowSignerProvider,
@@ -124,10 +123,27 @@ public record FlowMessage(String signer, String signerProvider,
 	public static FlowMessage convertDefaultFlow(User user, boolean signerInfo) {
 		return user.getDefaultFlow() != null ? FlowMessage.convert(user.getDefaultFlow(),
 				user, signerInfo)
-				: (user.getDefaultReceivingAddress() != null ?
-				FlowMessage.convertFarcasterVerification(user.getDefaultReceivingAddress(), user) : null);
+				: (user.getDefaultReceivingAddress() != null
+				? FlowMessage.convertFarcasterVerification(user.getDefaultReceivingAddress(), user)
+				: null);
 	}
 
+	public static FlowMessage convertRodeoWallet(String address, User user) {
+		val wallets = Stream.of(BASE_CHAIN_ID)
+				.map(chainId -> new WalletMessage(
+						address, chainId, null, true))
+				.toList();
+		return new FlowMessage(
+				address, null,
+				null, null,
+				shortenWalletAddressLabel2(
+						address),
+				Flow.FlowType.RODEO.toString(),
+				address,
+				null, null, wallets,
+				List.of("eth"),
+				false);
+	}
 
 	public static Flow convert(FlowMessage flowMessage, User user) {
 		val flowSigner = getFlowSigner(flowMessage, user);

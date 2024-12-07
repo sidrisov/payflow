@@ -57,22 +57,24 @@ export function ChooseFlowDialog({
         flow.wallets.length > 0 &&
         !flow.wallets.some((w) => w.version === '1.3.0') &&
         flow.type !== 'FARCASTER_VERIFICATION' &&
-        flow.type !== 'BANKR'
+        flow.type !== 'BANKR' &&
+        flow.type !== 'RODEO'
     );
     const farcaster = flows.filter(
       (flow) => !flow.archived && flow.type === 'FARCASTER_VERIFICATION'
     );
     const bankr = !paymentView && flows.find((flow) => flow.type === 'BANKR');
+    const rodeo = !paymentView && flows.find((flow) => flow.type === 'RODEO');
     const legacy = flows.filter(
       (flow) =>
         !flow.archived && flow.wallets.length > 0 && flow.wallets.some((w) => w.version === '1.3.0')
     );
     const archived = flows.filter((flow) => flow.archived);
-    return { regular, farcaster, bankr, legacy, archived };
+    return { regular, farcaster, bankr, rodeo, legacy, archived };
   };
 
   // Separate the flows
-  const { regular, farcaster, bankr, legacy, archived } = separateFlows(flows);
+  const { regular, farcaster, bankr, rodeo, legacy, archived } = separateFlows(flows);
 
   useEffect(() => {
     if (props.open && selectedElement) {
@@ -206,6 +208,15 @@ export function ChooseFlowDialog({
                     Bankr Wallet
                   </Typography>
                   {renderMenuItem(bankr)}
+                </>
+              )}
+
+              {rodeo && (
+                <>
+                  <Typography variant="subtitle2" sx={{ px: 2, py: 1, color: 'text.secondary' }}>
+                    Rodeo Wallet
+                  </Typography>
+                  {renderMenuItem(rodeo)}
                 </>
               )}
 

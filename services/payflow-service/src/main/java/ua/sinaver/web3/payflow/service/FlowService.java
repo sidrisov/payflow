@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import ua.sinaver.web3.payflow.data.Flow;
 import ua.sinaver.web3.payflow.data.Jar;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static ua.sinaver.web3.payflow.config.CacheConfig.USER_FLOWS_CACHE;
 import static ua.sinaver.web3.payflow.service.TokenService.BASE_CHAIN_ID;
 
 @Slf4j
@@ -89,6 +91,7 @@ public class FlowService implements IFlowService {
 	}
 
 	@Override
+	@Cacheable(value = USER_FLOWS_CACHE, key = "#user.identity")
 	public List<FlowMessage> getAllFlows(User user) {
 		val flows = new ArrayList<FlowMessage>();
 		if (user.getFlows() != null) {
@@ -106,13 +109,15 @@ public class FlowService implements IFlowService {
 			flows.addAll(verificationFlows);
 		}
 
-
 		val bankrWalletAddress = identityService.getBankrWalletByIdentity(user.getIdentity());
+		if (bankrWalletAddress != null) {
+			flows.add(FlowMessage.convertBankrWallet(bankrWalletAddress, user));
+		}
 
-			if (bankrWalletAddress != null) {
-				flows.add(FlowMessage.convertBankrWallet(bankrWalletAddress, user));
-			}
-		
+		val rodeoWalletAddress = identityService.getRodeoWalletByIdentity(user.getIdentity());
+		if (rodeoWalletAddress != null) {
+			flows.add(FlowMessage.convertRodeoWallet(rodeoWalletAddress, user));
+		}
 
 		return flows;
 	}
