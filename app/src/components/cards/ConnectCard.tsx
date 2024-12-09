@@ -12,6 +12,7 @@ import { FarcasterAccountsCard } from './FarcasterAccountsCard';
 import { useSetActiveWallet } from '@privy-io/wagmi';
 import { createSiweMessage, parseSiweMessage } from 'viem/siwe';
 
+import FrameV2SDK from '@farcaster/frame-sdk';
 const FARCASTER_CONNECT_ENABLED = import.meta.env.VITE_FARCASTER_CONNECT_ENABLED === 'true';
 
 export type AuthenticationStatus = 'loading' | 'unauthenticated' | 'authenticated';
@@ -44,6 +45,22 @@ export default function ConnectCard() {
     };
     setWallet();
   }, [wallets, ready, setActiveWallet]);
+
+  const [isFrameV2, setIsFrameV2] = useState(false);
+
+  useEffect(() => {
+    const initiateFrameV2 = async () => {
+      const context = await FrameV2SDK.context;
+
+      if (context) {
+        await FrameV2SDK.actions.ready();
+        setIsFrameV2(true);
+      }
+    };
+    if (FrameV2SDK && !isFrameV2) {
+      initiateFrameV2();
+    }
+  }, [isFrameV2]);
 
   useEffect(() => {
     const fetchNonce = async () => {
@@ -137,7 +154,7 @@ export default function ConnectCard() {
         </Typography>
 
         <Stack spacing={1}>
-          {FARCASTER_CONNECT_ENABLED && siwfNonce && (
+          {!isFrameV2 && FARCASTER_CONNECT_ENABLED && siwfNonce && (
             <>
               <SignInButton
                 hideSignOut
