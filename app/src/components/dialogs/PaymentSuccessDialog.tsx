@@ -5,7 +5,8 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { green } from '@mui/material/colors';
 import { HiOutlineCheckCircle } from 'react-icons/hi2';
 import { useNavigate } from 'react-router-dom';
-import FavoriteIcon from '@mui/icons-material/Favorite';
+import { FcApproval } from 'react-icons/fc';
+import { FaRegHeart } from 'react-icons/fa6';
 
 interface PaymentSuccessDialogProps {
   open?: boolean;
@@ -68,15 +69,54 @@ export default function PaymentSuccessDialog({
           </Link>
         </Typography>
 
-        <Button
-          variant="outlined"
-          onClick={() =>
-            navigate('/payment/create?recipient=0x0dEe77c83cB8b14fA95497825dF93202AbF6ad83')
-          }
-          color="inherit"
-          sx={{ borderRadius: 4, px: 1 }}>
-          <FavoriteIcon fontSize="small" sx={{ mr: 1 }} /> Tip Payflow
-        </Button>
+        <Box
+          mb={2}
+          sx={{
+            border: '1px dashed',
+            borderColor: 'divider',
+            borderRadius: 5,
+            p: 2,
+            pt: 1.5,
+            width: '100%',
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center'
+          }}>
+          <Typography mb={1} variant="body2" color="text.secondary">
+            Support Payflow
+          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              width: '100%',
+              gap: 1
+            }}>
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<FaRegHeart size={16} />}
+              onClick={() =>
+                navigate('/payment/create?recipient=0x0dEe77c83cB8b14fA95497825dF93202AbF6ad83')
+              }
+              color="inherit"
+              sx={{ borderRadius: 4 }}>
+              Tip
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<FcApproval size={20} />}
+              onClick={() => {
+                window.open('https://hypersub.xyz/s/payflow-pro-17zbymgz59atc', '_blank');
+              }}
+              color="inherit"
+              sx={{ borderRadius: 4 }}>
+              Subscribe
+            </Button>
+          </Box>
+        </Box>
       </Box>
     </ResponsiveDialog>
   );

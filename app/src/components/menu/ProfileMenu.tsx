@@ -17,7 +17,7 @@ import {
   LeaderboardRounded,
   Logout,
   PersonAdd,
-  Settings,
+  Settings
 } from '@mui/icons-material';
 import { GiTwoCoins } from 'react-icons/gi';
 
@@ -37,6 +37,8 @@ import { green } from '@mui/material/colors';
 import { IoChatbubbleEllipses } from 'react-icons/io5';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { GrStorage } from 'react-icons/gr';
+import { FaRegHeart } from 'react-icons/fa';
+import { FcApproval } from 'react-icons/fc';
 
 export function ProfileMenu({
   profile,
@@ -194,7 +196,6 @@ export function ProfileMenu({
             </ListItemIcon>
             FAQ
           </MenuItem>
-          <Divider />
           {showHiddenMenuOptions && (
             <MenuItem onClick={handleShowDeviceInfo}>
               <ListItemIcon>
@@ -203,6 +204,28 @@ export function ProfileMenu({
               <ListItemText>Device Info</ListItemText>
             </MenuItem>
           )}
+          <Divider />
+          <MenuItem
+            onClick={() => {
+              closeStateCallback();
+              navigate('/payment/create?recipient=0x0dEe77c83cB8b14fA95497825dF93202AbF6ad83');
+            }}>
+            <ListItemIcon>
+              <FaRegHeart />
+            </ListItemIcon>
+            Tip
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              closeStateCallback();
+              window.open('https://hypersub.xyz/s/payflow-pro-17zbymgz59atc', '_blank');
+            }}>
+            <ListItemIcon>
+              <FcApproval size={18} />
+            </ListItemIcon>
+            Payflow Pro
+          </MenuItem>
+          <Divider />
           <MenuItem
             disableRipple={!needRefresh}
             onClick={async () => {
@@ -238,17 +261,6 @@ export function ProfileMenu({
                 {__BUILD_INFO__.commitHash} • {__BUILD_INFO__.buildTime}
               </Typography>
             </ListItemText>
-          </MenuItem>
-          <Divider />
-          <MenuItem
-            onClick={() => {
-              closeStateCallback();
-              navigate('/payment/create?recipient=0x0dEe77c83cB8b14fA95497825dF93202AbF6ad83');
-            }}>
-            <ListItemIcon>
-              <FavoriteIcon fontSize="small" />
-            </ListItemIcon>
-            Tip Payflow
           </MenuItem>
           <Divider />
           <MenuItem
