@@ -260,6 +260,7 @@ export function PayMeDialog({ open, onClose, profile, flow }: PayMeDialogProps) 
                 paymentToken={selectedToken}
                 setPaymentToken={setSelectedToken}
                 compatibleWallets={flow?.wallets}
+                supportedTokens={flow?.supportedTokens}
                 showBalance={false}
                 zIndex={1500}
               />
