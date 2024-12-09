@@ -42,6 +42,7 @@ import { FlowSelector } from './FlowSelector';
 import { Hash } from 'viem';
 import { ProfileContext } from '../../contexts/UserContext';
 import { CommentField } from './CommentField';
+import FrameV2SDK from '@farcaster/frame-sdk';
 
 export type MintDialogProps = DialogProps &
   CloseCallbackType & {
@@ -63,7 +64,7 @@ export default function MintDialog({
   closeStateCallback,
   ...props
 }: MintDialogProps) {
-  const { isMiniApp } = useContext(ProfileContext);
+  const { isMiniApp, isFrameV2 } = useContext(ProfileContext);
 
   const [selectedFlow, setSelectedFlow] = useState<FlowType>(
     sender.identity.profile?.defaultFlow ?? (sender.identity.profile?.flows?.[0] as FlowType)
@@ -163,58 +164,56 @@ export default function MintDialog({
 
   const shareComponents = (
     <>
-      <Button
-        fullWidth
-        onClick={() => {
-          if (isMiniApp) {
-            window.parent.postMessage(createCastPostMessage(text, shareFrameUrl, channelKey), '*');
-          } else {
-            window.open(createComposeCastUrl(text, shareFrameUrl, channelKey), '_blank');
-          }
-        }}
-        startIcon={<SiFarcaster />}
-        variant="outlined"
-        size="small"
-        color="inherit"
-        sx={{
-          fontSize: 14,
-          fontWeight: 'normal',
-          height: 45,
-          '&:hover': {
-            backgroundColor: 'action.hover'
-          },
-          borderRadius: 3,
-          borderColor: 'divider',
-          textTransform: 'none',
-          justifyContent: 'flex-start',
-          px: 2
-        }}>
-        Share on Farcaster
-      </Button>
-      <TextField
-        fullWidth
-        variant="outlined"
-        size="small"
-        value={shareFrameUrl}
-        slotProps={{
-          input: {
-            sx: {
-              mt: 1,
-              borderRadius: 3,
-              fontSize: 14,
-              height: 45
-            },
-            readOnly: true,
-            endAdornment: (
-              <Tooltip title="Copy frame link">
-                <IconButton size="small" color="inherit" onClick={handleCopyLink} edge="end">
-                  <TbCopy />
-                </IconButton>
-              </Tooltip>
-            )
-          }
-        }}
-      />
+      <Stack direction="row" spacing={1}>
+        <Button
+          fullWidth
+          onClick={() => {
+            if (isFrameV2) {
+              FrameV2SDK.actions.openUrl(createComposeCastUrl(text, shareFrameUrl, channelKey));
+            } else if (isMiniApp) {
+              window.parent.postMessage(
+                createCastPostMessage(text, shareFrameUrl, channelKey),
+                '*'
+              );
+            } else {
+              window.open(createComposeCastUrl(text, shareFrameUrl, channelKey), '_blank');
+            }
+          }}
+          startIcon={<SiFarcaster />}
+          variant="outlined"
+          size="small"
+          color="inherit"
+          sx={{
+            fontSize: 14,
+            fontWeight: 'normal',
+            height: 45,
+            '&:hover': { backgroundColor: 'action.hover' },
+            borderRadius: 3,
+            borderColor: 'divider',
+            textTransform: 'none'
+          }}>
+          Cast
+        </Button>
+
+        <Button
+          fullWidth
+          onClick={handleCopyLink}
+          startIcon={<TbCopy />}
+          variant="outlined"
+          size="small"
+          color="inherit"
+          sx={{
+            fontSize: 14,
+            fontWeight: 'normal',
+            height: 45,
+            '&:hover': { backgroundColor: 'action.hover' },
+            borderRadius: 3,
+            borderColor: 'divider',
+            textTransform: 'none'
+          }}>
+          Copy link
+        </Button>
+      </Stack>
     </>
   );
 

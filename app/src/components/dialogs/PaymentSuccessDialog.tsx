@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import ResponsiveDialog from './ResponsiveDialog';
-import { Box, Typography, Link, Button } from '@mui/material';
+import { Box, Typography, Link, Button, Stack, Divider } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { green } from '@mui/material/colors';
 import { HiOutlineCheckCircle } from 'react-icons/hi2';
 import { useNavigate } from 'react-router-dom';
 import { FcApproval } from 'react-icons/fc';
 import { FaRegHeart } from 'react-icons/fa6';
+import FrameV2SDK from '@farcaster/frame-sdk';
+import { ProfileContext } from '../../contexts/UserContext';
 
 interface PaymentSuccessDialogProps {
   open?: boolean;
@@ -15,6 +17,8 @@ interface PaymentSuccessDialogProps {
   receiptUrl: string;
   shareComponents?: React.ReactNode;
 }
+
+const hyperSubUrl = 'https://hypersub.xyz/s/payflow-pro-17zbymgz59atc';
 
 export default function PaymentSuccessDialog({
   open = true,
@@ -26,6 +30,7 @@ export default function PaymentSuccessDialog({
   shareComponents
 }: PaymentSuccessDialogProps) {
   const navigate = useNavigate();
+  const { isFrameV2 } = useContext(ProfileContext);
 
   return (
     <ResponsiveDialog open={open} onClose={onClose}>
@@ -77,45 +82,57 @@ export default function PaymentSuccessDialog({
             borderRadius: 5,
             p: 2,
             pt: 1.5,
-            width: '100%',
-            textAlign: 'center',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center'
+            width: '100%'
           }}>
-          <Typography mb={1} variant="body2" color="text.secondary">
-            Support Payflow
+          <Typography mb={1} textAlign="center" variant="body2" color="text.secondary">
+            How to support Payflow?
           </Typography>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              width: '100%',
-              gap: 1
-            }}>
+          <Stack direction="row" spacing={1}>
             <Button
               fullWidth
-              variant="outlined"
-              startIcon={<FaRegHeart size={16} />}
-              onClick={() =>
-                navigate('/payment/create?recipient=0x0dEe77c83cB8b14fA95497825dF93202AbF6ad83')
-              }
-              color="inherit"
-              sx={{ borderRadius: 4 }}>
-              Tip
-            </Button>
-            <Button
-              fullWidth
-              variant="outlined"
-              startIcon={<FcApproval size={20} />}
               onClick={() => {
-                window.open('https://hypersub.xyz/s/payflow-pro-17zbymgz59atc', '_blank');
+                navigate('/payment/create?recipient=0x0dEe77c83cB8b14fA95497825dF93202AbF6ad83');
               }}
+              startIcon={<FaRegHeart size={16} />}
+              variant="outlined"
+              size="small"
               color="inherit"
-              sx={{ borderRadius: 4 }}>
-              Subscribe
+              sx={{
+                fontSize: 14,
+                fontWeight: 'normal',
+                height: 45,
+                '&:hover': { backgroundColor: 'action.hover' },
+                borderRadius: 3,
+                borderColor: 'divider',
+                textTransform: 'none'
+              }}>
+              TIP
             </Button>
-          </Box>
+            <Button
+              fullWidth
+              onClick={() => {
+                if (isFrameV2) {
+                  FrameV2SDK.actions.openUrl(hyperSubUrl);
+                } else {
+                  window.open(hyperSubUrl, '_blank');
+                }
+              }}
+              startIcon={<FcApproval size={20} />}
+              variant="outlined"
+              size="small"
+              color="inherit"
+              sx={{
+                fontSize: 14,
+                fontWeight: 'normal',
+                height: 45,
+                '&:hover': { backgroundColor: 'action.hover' },
+                borderRadius: 3,
+                borderColor: 'divider',
+                textTransform: 'none'
+              }}>
+              SUBSCRIBE
+            </Button>
+          </Stack>
         </Box>
       </Box>
     </ResponsiveDialog>

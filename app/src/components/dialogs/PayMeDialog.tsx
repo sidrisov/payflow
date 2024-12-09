@@ -8,13 +8,12 @@ import {
   Tabs,
   Tab,
   Avatar,
-  Tooltip,
   Card,
   CardContent,
   Badge,
   Divider
 } from '@mui/material';
-import { useState, useRef, useContext } from 'react';
+import { useState, useRef, useContext, useMemo } from 'react';
 import { FaCoins, FaDollarSign } from 'react-icons/fa';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { Token } from '@payflow/common';
@@ -32,6 +31,7 @@ import NetworkAvatar from '../avatars/NetworkAvatar';
 import { HiMiniPencilSquare } from 'react-icons/hi2';
 import { green } from '@mui/material/colors';
 import { FlowType } from '../../types/FlowType';
+import FrameV2SDK from '@farcaster/frame-sdk';
 
 interface PayMeDialogProps {
   open: boolean;
@@ -49,10 +49,14 @@ export function PayMeDialog({ open, onClose, profile, flow }: PayMeDialogProps) 
   const [mode, setMode] = useState<'default' | 'custom'>('default');
   const [customTitle, setCustomTitle] = useState<string>();
 
+  const { isFrameV2 } = useContext(ProfileContext);
+
   const username = profile?.username;
   const profileImage = profile?.profileImage;
 
   const address = flow?.wallets[0].address ?? profile?.identity;
+
+  const shareFrameText = 'Send me payments using this frame 💰';
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -66,7 +70,7 @@ export function PayMeDialog({ open, onClose, profile, flow }: PayMeDialogProps) 
     setCustomTitle(newTitle);
   };
 
-  const generatePaymentUrl = () => {
+  const paymentFrameUrl = useMemo(() => {
     let paymentFrameUrl = `${FRAMES_URL}/${address}`;
 
     const params = new URLSearchParams();
@@ -89,7 +93,7 @@ export function PayMeDialog({ open, onClose, profile, flow }: PayMeDialogProps) 
     }
 
     return paymentFrameUrl;
-  };
+  }, [inputValue, selectedToken, customTitle, isFiatMode, address]);
 
   return (
     <ResponsiveDialog title="Payment Frame" open={open} onClose={onClose} zIndex={1500}>
@@ -271,75 +275,63 @@ export function PayMeDialog({ open, onClose, profile, flow }: PayMeDialogProps) 
         {mode !== 'default' && <Divider />}
 
         <Stack spacing={1} sx={{ mt: mode === 'default' ? 2 : 0 }}>
-          <Button
-            fullWidth
-            onClick={() => {
-              if (isMiniApp) {
-                window.parent.postMessage(
-                  createCastPostMessage(
-                    'Send me payments using this frame 💰',
-                    generatePaymentUrl()
-                  ),
-                  '*'
-                );
-              } else {
-                window.open(
-                  createComposeCastUrl(
-                    'Send me payments using this frame 💰',
-                    generatePaymentUrl()
-                  ),
-                  '_blank'
-                );
-              }
-            }}
-            startIcon={<HiMiniPencilSquare />}
-            variant="outlined"
-            size="small"
-            color="inherit"
-            sx={{
-              fontSize: 14,
-              fontWeight: 'normal',
-              height: 45,
-              '&:hover': { backgroundColor: 'action.hover' },
-              borderRadius: 3,
-              borderColor: 'divider',
-              textTransform: 'none',
-              justifyContent: 'flex-start',
-              px: 2
-            }}>
-            Cast frame on Farcaster
-          </Button>
+          <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
+            How would you like to share the payment frame?
+          </Typography>
 
-          <TextField
-            fullWidth
-            variant="outlined"
-            size="small"
-            value={generatePaymentUrl()}
-            slotProps={{
-              input: {
-                sx: {
-                  borderRadius: 3,
-                  fontSize: 14,
-                  height: 45
-                },
-                readOnly: true,
-                endAdornment: (
-                  <Tooltip title="Copy frame link">
-                    <IconButton
-                      size="small"
-                      color="inherit"
-                      onClick={() => {
-                        copyToClipboard(generatePaymentUrl());
-                        toast.success('Pay Me frame URL copied!');
-                      }}
-                      edge="end">
-                      <TbCopy />
-                    </IconButton>
-                  </Tooltip>
-                )
-              }
-            }}
-          />
+          <Stack direction="row" spacing={1}>
+            <Button
+              fullWidth
+              onClick={() => {
+                if (isFrameV2) {
+                  FrameV2SDK.actions.openUrl(createComposeCastUrl(shareFrameText, paymentFrameUrl));
+                } else if (isMiniApp) {
+                  window.parent.postMessage(
+                    createCastPostMessage(shareFrameText, paymentFrameUrl),
+                    '*'
+                  );
+                } else {
+                  window.open(createComposeCastUrl(shareFrameText, paymentFrameUrl), '_blank');
+                }
+              }}
+              startIcon={<HiMiniPencilSquare />}
+              variant="outlined"
+              size="small"
+              color="inherit"
+              sx={{
+                fontSize: 14,
+                fontWeight: 'normal',
+                height: 45,
+                '&:hover': { backgroundColor: 'action.hover' },
+                borderRadius: 3,
+                borderColor: 'divider',
+                textTransform: 'none'
+              }}>
+              Cast
+            </Button>
+
+            <Button
+              fullWidth
+              onClick={() => {
+                copyToClipboard(paymentFrameUrl);
+                toast.success('Frame link copied!');
+              }}
+              startIcon={<TbCopy />}
+              variant="outlined"
+              size="small"
+              color="inherit"
+              sx={{
+                fontSize: 14,
+                fontWeight: 'normal',
+                height: 45,
+                '&:hover': { backgroundColor: 'action.hover' },
+                borderRadius: 3,
+                borderColor: 'divider',
+                textTransform: 'none'
+              }}>
+              Copy link
+            </Button>
+          </Stack>
         </Stack>
       </Stack>
     </ResponsiveDialog>
