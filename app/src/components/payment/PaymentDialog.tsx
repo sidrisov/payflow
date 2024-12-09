@@ -75,11 +75,6 @@ export default function PaymentDialog({
   const [paymentAmount, setPaymentAmount] = useState<number | undefined>(payment?.tokenAmount);
   const [paymentAmountUSD, setPaymentAmountUSD] = useState<number | undefined>(payment?.usdAmount);
 
-  const isNativeFlow =
-    paymentType === 'payflow' &&
-    selectedFlow.type !== 'FARCASTER_VERIFICATION' &&
-    selectedFlow.type !== 'LINKED';
-
   const { data: tokenPrice } = useTokenPrice(paymentToken);
 
   const recipientCompatibleFlows = profile?.flows?.filter(
@@ -201,7 +196,7 @@ export default function PaymentDialog({
     error: isPaymentOptionsError
   } = useGlidePaymentOptions(crossChainMode, {
     account: selectedFlow?.wallets[0].address,
-    commissionUSD: getCommissionUSD(payment?.category),
+    commissionUSD: getCommissionUSD(payment),
     ...(glidePaymentTx as any)
   });
 
@@ -408,6 +403,13 @@ export default function PaymentDialog({
                   : 'Balance not enough. Switch payment flow!'}
               </Typography>
             ))}
+
+          {crossChainMode && (
+            <Typography fontSize={12} color="text.secondary">
+              fee:{' $'}
+              {getCommissionUSD(payment)}
+            </Typography>
+          )}
 
           <Box ml={!crossChainMode ? 0.5 : 0}>
             <CommentField comment={comment} setComment={setComment} />

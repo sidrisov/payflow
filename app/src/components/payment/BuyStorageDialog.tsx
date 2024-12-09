@@ -45,12 +45,6 @@ export default function BuyStorageDialog({
     sender.identity.profile?.defaultFlow ?? (sender.identity.profile?.flows?.[0] as FlowType)
   );
 
-  const isNativeFlow =
-    selectedFlow.type !== 'FARCASTER_VERIFICATION' && selectedFlow.type !== 'LINKED';
-
-  // force to display sponsored
-  const [gasFee] = useState<bigint | undefined>(isNativeFlow ? BigInt(0) : undefined);
-
   const chainId = useChainId();
 
   const [paymentWallet, setPaymentWallet] = useState<FlowWalletType>();
@@ -68,7 +62,7 @@ export default function BuyStorageDialog({
     data: paymentOptions,
     isError: isPaymentOptionsError
   } = useGlidePaymentOptions(Boolean(paymentTx), {
-    commissionUSD: getCommissionUSD(payment.category),
+    commissionUSD: getCommissionUSD({ ...payment, tokenAmount: numberOfUnits }),
     ...(paymentTx as any),
     account: selectedFlow.wallets[0].address
   });
@@ -168,6 +162,11 @@ export default function BuyStorageDialog({
               : 'Balance not enough. Switch payment flow!'}
           </Typography>
         )}
+
+        <Typography fontSize={12} color="text.secondary">
+          fee:{' $'}
+          {getCommissionUSD({ ...payment, tokenAmount: numberOfUnits })}
+        </Typography>
 
         <CommentField comment={comment} setComment={setComment} />
       </Stack>

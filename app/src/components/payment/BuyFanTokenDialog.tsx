@@ -106,7 +106,7 @@ export default function BuyFanTokenDialog({
     data: paymentOptions,
     isError: isPaymentOptionsError
   } = useGlidePaymentOptions(Boolean(paymentTx), {
-    commissionUSD: getCommissionUSD(payment.category),
+    commissionUSD: getCommissionUSD(payment),
     ...(paymentTx as any),
     approval: {
       token: MOXIE_CONTRACT_ADDRESS,
@@ -350,6 +350,11 @@ export default function BuyFanTokenDialog({
             )}
           </Typography>
         )}
+
+        <Typography fontSize={12} color="text.secondary">
+          fee:{' $'}
+          {getCommissionUSD(payment)}
+        </Typography>
 
         <CommentField comment={comment} setComment={setComment} />
       </Stack>

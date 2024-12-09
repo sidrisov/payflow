@@ -26,8 +26,10 @@ export const getPaymentOption = (
   );
 };
 
-export const getCommissionUSD = (paymentCategory?: PaymentCategory) => {
-  switch (paymentCategory) {
+export const getCommissionUSD = (payment?: PaymentType) => {
+  switch (payment?.category) {
+    case 'fc_storage':
+      return payment?.tokenAmount ? 0.5 + (payment.tokenAmount - 1) * 0.1 : 0.5;
     default:
       return 0.05;
   }

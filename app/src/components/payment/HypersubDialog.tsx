@@ -109,7 +109,7 @@ export default function HypersubDialog({
     isError: isPaymentOptionsError,
     error: paymentOptionsError
   } = useGlidePaymentOptions(Boolean(paymentTx), {
-    commissionUSD: getCommissionUSD(payment.category),
+    commissionUSD: getCommissionUSD(payment),
     ...(paymentTx as any),
     account: selectedFlow.wallets[0].address
   });
@@ -275,6 +275,11 @@ export default function HypersubDialog({
               (paymentOptionsError?.message ?? 'Balance not enough. Switch payment flow!')}
           </Typography>
         )}
+
+        <Typography fontSize={12} color="text.secondary">
+          fee:{' $'}
+          {getCommissionUSD(payment)}
+        </Typography>
 
         <CommentField comment={comment} setComment={setComment} />
       </Stack>

@@ -73,7 +73,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
   }, [profile, client, signer, isMiniApp, isFrameV2, isNativeFlow]);
 
   const createGlideSession = useCallback(
-    async (paymentTx: any, paymentOption: PaymentOption) => {
+    async (paymentTx: any, paymentOption: PaymentOption, commissionUSD: number) => {
       checkDependencies();
 
       setGlideStatus((prevStatus) => ({
@@ -85,7 +85,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
       try {
         const session = await createSession(glideConfig, {
           paymentCurrency: paymentOption.paymentCurrency,
-          commissionUSD: getCommissionUSD(),
+          commissionUSD,
           ...(paymentTx as any)
         });
 
@@ -202,7 +202,8 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
         resetRegular();
       }
 
-      const session = await createGlideSession(paymentTx, paymentOption);
+      const commissionUSD = getCommissionUSD(payment);
+      const session = await createGlideSession(paymentTx, paymentOption, commissionUSD);
 
       const glideResponse = await executeSession(glideConfig, {
         session,
