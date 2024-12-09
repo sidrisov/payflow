@@ -1,5 +1,5 @@
 import { DialogProps, Stack, Button, TextField, InputAdornment, IconButton } from '@mui/material';
-import { useContext, useMemo, useState, useEffect, useRef } from 'react';
+import { useContext, useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { RewardAdvancedSection } from '../RewardAdvancedSection';
 import { PaymentCategory } from '../../types/PaymentType';
@@ -12,7 +12,7 @@ import { base } from 'viem/chains';
 import { FaCoins, FaDollarSign } from 'react-icons/fa';
 import { DEFAULT_FARCASTER_CLIENT, FARCASTER_CLIENTS } from '../../types/ProfileType';
 
-import FrameSDK from '@farcaster/frame-sdk';
+import FrameV2SDK from '@farcaster/frame-sdk';
 
 export default function PaymentRewardCastActionComposerDialog({
   closeStateCallback,
@@ -101,6 +101,13 @@ export default function PaymentRewardCastActionComposerDialog({
     return `${baseUrl}?url=${encodedActionUrl}`;
   }, [actionUrl]);
 
+  const openCastInstallUrl = useCallback(async () => {
+    if (warpcastInstallActionUrl) {
+      FrameV2SDK.actions.openUrl(warpcastInstallActionUrl);
+      FrameV2SDK.actions.close();
+    }
+  }, [warpcastInstallActionUrl]);
+
   return (
     <ResponsiveDialog
       title="Custom Reward Action"
@@ -171,7 +178,7 @@ export default function PaymentRewardCastActionComposerDialog({
           size="large"
           sx={{ borderRadius: 5 }}
           {...(isFrameV2
-            ? { onClick: () => FrameSDK.actions.openUrl(warpcastInstallActionUrl) }
+            ? { onClick: openCastInstallUrl }
             : { href: warpcastInstallActionUrl, target: '_blank' })}>
           Add To {preferredClient?.name}
         </Button>
