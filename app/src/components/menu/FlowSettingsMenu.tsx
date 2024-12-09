@@ -10,7 +10,6 @@ import {
   MenuProps,
   Typography
 } from '@mui/material';
-import { PlayForWork } from '@mui/icons-material';
 import { AiFillSignature } from 'react-icons/ai';
 
 import { FlowType } from '../../types/FlowType';
@@ -25,14 +24,13 @@ import getFlowAssets from '../../utils/assets';
 import { useAssetBalances } from '../../utils/queries/balances';
 import { IoIosWallet, IoMdSquare } from 'react-icons/io';
 import { socialLink, ZAPPER } from '../../utils/dapps';
-import { FRAMES_URL } from '../../utils/urlConstants';
-import { copyToClipboard } from '../../utils/copyToClipboard';
 import { ProfileContext } from '../../contexts/UserContext';
 import { useWallets } from '@privy-io/react-auth';
 import { usePrivy } from '@privy-io/react-auth';
 import { useSetActiveWallet } from '@privy-io/wagmi';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
 import { HiOutlineDownload } from 'react-icons/hi';
+import { PayMeDialog } from '../dialogs/PayMeDialog';
 
 export function FlowSettingsMenu({
   showOnlySigner,
@@ -53,6 +51,8 @@ export function FlowSettingsMenu({
   const { setActiveWallet } = useSetActiveWallet();
 
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const [openPayMeDialog, setOpenPayMeDialog] = useState(false);
 
   useEffect(() => {
     if (ready && wallets.length !== 0) {
@@ -145,14 +145,7 @@ export function FlowSettingsMenu({
               {flow.type !== 'BANKR' && flow.type !== 'RODEO' && (
                 <>
                   {(flow.type === 'FARCASTER_VERIFICATION' || defaultFlow) && (
-                    <MenuItem
-                      onClick={() => {
-                        const paymentFrameUrl = `${FRAMES_URL}/${
-                          defaultFlow ? profile?.identity : flow.wallets[0].address
-                        }`;
-                        copyToClipboard(paymentFrameUrl);
-                        toast.success('Pay Me frame URL copied!');
-                      }}>
+                    <MenuItem onClick={() => setOpenPayMeDialog(true)}>
                       <ListItemIcon>
                         <IoMdSquare />
                       </ListItemIcon>
@@ -238,6 +231,14 @@ export function FlowSettingsMenu({
           )}
         </MenuList>
       </Menu>
+
+      <PayMeDialog
+        open={openPayMeDialog}
+        onClose={() => setOpenPayMeDialog(false)}
+        flow={flow}
+        profile={profile}
+      />
+
       <WalletsInfoPopover
         open={openWalletDetailsPopover}
         onClose={async () => setOpenWalletDetailsPopover(false)}

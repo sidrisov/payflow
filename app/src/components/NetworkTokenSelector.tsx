@@ -41,7 +41,8 @@ export function NetworkTokenSelector({
   setPaymentToken,
   enabledChainCurrencies,
   showBalance = true,
-  expandSection = false
+  expandSection = false,
+  zIndex = 1450
 }: {
   payment?: PaymentType;
   crossChainMode?: boolean;
@@ -52,6 +53,7 @@ export function NetworkTokenSelector({
   enabledChainCurrencies?: string[];
   showBalance?: boolean;
   expandSection?: boolean;
+  zIndex?: number;
 }) {
   const { profile } = useContext(ProfileContext);
 
@@ -421,7 +423,7 @@ export function NetworkTokenSelector({
             setSearchTerm('');
           }}
           title={label}
-          zIndex={1450}>
+          zIndex={zIndex}>
           <Box width="100%" sx={{ px: 1 }}>
             <TextField
               margin="dense"

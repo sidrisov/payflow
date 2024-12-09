@@ -1,13 +1,24 @@
-import { ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/material';
+import {
+  ListItemIcon,
+  Menu,
+  MenuItem,
+  MenuList,
+  MenuProps,
+  Typography,
+  Stack
+} from '@mui/material';
 import { AddCircle, QrCode } from '@mui/icons-material';
+import { IoMdSquare } from 'react-icons/io';
 
 export function FlowTopUpMenu({
   qrClickCallback,
   depositClickCallback,
+  frameClickCallback,
   ...props
 }: MenuProps & {
   qrClickCallback: () => void;
   depositClickCallback: () => void;
+  frameClickCallback: () => void;
 }) {
   return (
     <Menu
@@ -27,6 +38,17 @@ export function FlowTopUpMenu({
             <QrCode fontSize="small" />
           </ListItemIcon>
           QR code
+        </MenuItem>
+        <MenuItem onClick={frameClickCallback}>
+          <ListItemIcon>
+            <IoMdSquare />
+          </ListItemIcon>
+          <Stack>
+            Pay Me
+            <Typography variant="caption" color="text.secondary" noWrap>
+              Copy & embed frame
+            </Typography>
+          </Stack>
         </MenuItem>
       </MenuList>
     </Menu>

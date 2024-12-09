@@ -1,9 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
 
-export function createComposeCastUrl(text: string, frameEmbed: string, channelKey: string): string {
-  return `https://warpcast.com/~/compose?text=${encodeURIComponent(
+export function createComposeCastUrl(text: string, frameEmbed: string, channelKey?: string): string {
+  const baseUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(
     text
-  )}&embeds[]=${encodeURIComponent(frameEmbed)}&channelKey=${channelKey}`;
+  )}&embeds[]=${encodeURIComponent(frameEmbed)}`;
+  
+  return channelKey ? `${baseUrl}&channelKey=${channelKey}` : baseUrl;
 }
 
 export function createCastPostMessage(text: string, frameEmbed: string, channelKey?: string) {
