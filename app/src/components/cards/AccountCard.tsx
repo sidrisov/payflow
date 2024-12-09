@@ -10,7 +10,7 @@ import {
   SxProps
 } from '@mui/material';
 import { Share, CallReceived } from '@mui/icons-material';
-import { useContext, useMemo, useState, useCallback, useRef, lazy } from 'react';
+import { useContext, useMemo, useState, useCallback, useRef, lazy, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { Address } from 'viem';
 import { TbSelector, TbSend } from 'react-icons/tb';
@@ -80,11 +80,26 @@ export function AccountCard({
 
   const holdTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  useEffect(() => {
+    const savedVisibility = localStorage.getItem('payflow:balance:visible');
+    if (savedVisibility !== null) {
+      setBalanceVisible(savedVisibility === 'true');
+    }
+  }, [setBalanceVisible]);
+
+  const handleBalanceVisibilityToggle = useCallback(() => {
+    setBalanceVisible((prev) => {
+      const newValue = !prev;
+      localStorage.setItem('payflow:balance:visible', String(newValue));
+      return newValue;
+    });
+  }, [setBalanceVisible]);
+
   const handleBalanceMouseDown = useCallback(() => {
     holdTimerRef.current = setTimeout(() => {
-      setBalanceVisible((prev) => !prev);
+      handleBalanceVisibilityToggle();
     }, 500); // Hold for 500ms to toggle
-  }, [setBalanceVisible]);
+  }, [handleBalanceVisibilityToggle]);
 
   const handleBalanceMouseUp = useCallback(() => {
     if (holdTimerRef.current) {
@@ -190,7 +205,7 @@ export function AccountCard({
             <Stack direction="row" alignItems="center" spacing={0.5}>
               <PaymentFlowSection navigation flow={selectedFlow} />
               <Tooltip title={balanceVisible ? 'Hide Balance' : 'Show Balance'}>
-                <IconButton size="small" onClick={() => setBalanceVisible((prev) => !prev)}>
+                <IconButton size="small" onClick={handleBalanceVisibilityToggle}>
                   {balanceVisible ? (
                     <VisibilityOff sx={{ fontSize: 16 }} />
                   ) : (
