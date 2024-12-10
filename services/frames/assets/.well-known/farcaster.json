@@ -9,6 +9,7 @@
     "name": "Payflow App",
     "iconUrl": "https://app.payflow.me/apple-touch-icon.png",
     "splashBackgroundColor": "#f7f7f7",
-    "homeUrl": "https://app.payflow.me"
+    "homeUrl": "https://app.payflow.me",
+    "webhookUrl": "https://api.payflow.me/api/farcaster/webhooks/frames/v2"
   }
 }

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.bot.PaymentBotJob;
 import ua.sinaver.web3.payflow.message.farcaster.CastCreatedMessage;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
+import ua.sinaver.web3.payflow.message.farcaster.FarcasterSignedMessage;
 import ua.sinaver.web3.payflow.message.farcaster.modbot.MembershipRequestMessage;
 import ua.sinaver.web3.payflow.message.farcaster.modbot.MembershipResponseMessage;
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
@@ -67,6 +68,14 @@ public class WebhooksController {
 			hexString.append(hex);
 		}
 		return hexString.toString();
+	}
+
+	@PostMapping("/frames/v2")
+	public ResponseEntity<String> processFrameV2Message(
+			@RequestBody FarcasterSignedMessage frameV2Message
+	) {
+		log.debug("Frame V2 Webhook Message: {}", frameV2Message);
+		return ResponseEntity.ok().build();
 	}
 
 	@PostMapping("/bot")
