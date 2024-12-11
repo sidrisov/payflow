@@ -42,7 +42,7 @@ interface PayMeDialogProps {
 
 export function PayMeDialog({ open, onClose, profile, flow }: PayMeDialogProps) {
   const { isMiniApp } = useContext(ProfileContext);
-  const [isFiatMode, setIsFiatMode] = useState<boolean>(true);
+  const [isFiatMode, setIsFiatMode] = useState<boolean>(false);
   const [selectedToken, setSelectedToken] = useState<Token>();
   const [inputValue, setInputValue] = useState<string>('');
   const inputRef = useRef<HTMLInputElement>(null);
