@@ -162,7 +162,7 @@ export default function MintDialog({
     toast.success('Mint frame link copied!');
   };
 
-  const shareComponents = (
+  const shareComponents = useMemo(() => (
     <>
       <Stack direction="row" spacing={1}>
         <Button
@@ -215,7 +215,7 @@ export default function MintDialog({
         </Button>
       </Stack>
     </>
-  );
+  ), [text, shareFrameUrl, channelKey, isFrameV2, isMiniApp]);
 
   return paymentSuccessData ? (
     <PaymentSuccessDialog
