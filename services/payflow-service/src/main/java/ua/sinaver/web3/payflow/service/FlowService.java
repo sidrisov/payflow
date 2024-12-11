@@ -61,7 +61,7 @@ public class FlowService implements IFlowService {
 				signerProvider, signerType, signerCredential,
 				"safe", null);
 		val uuid = flow.getUuid();
-		val saltNonce = "payflow-wallet-v2-".concat(RandomStringUtils.random(8, true, true));
+		val saltNonce = "payflow-wallet-v1-".concat(RandomStringUtils.random(8, true, true));
 		flow.setType(Flow.FlowType.JAR);
 		flow.setSaltNonce(saltNonce);
 

@@ -76,7 +76,7 @@ export default function AppLayout({
       const context = await FrameV2SDK.context;
 
       if (context) {
-        FrameV2SDK.actions.ready({ disableNativeGestures: true });
+        FrameV2SDK.actions.ready();
         setIsFrameV2(true);
       }
     };

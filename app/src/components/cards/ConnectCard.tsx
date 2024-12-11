@@ -53,7 +53,7 @@ export default function ConnectCard() {
       const context = await FrameV2SDK.context;
 
       if (context) {
-        await FrameV2SDK.actions.ready();
+        FrameV2SDK.actions.ready();
         setIsFrameV2(true);
       }
     };

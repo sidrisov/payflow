@@ -16,7 +16,15 @@ export const paymentHtml = (
   payment: PaymentType,
   entryTitle?: string,
   theme?: string
-) => <Payment identity={identity} step={step} payment={payment} entryTitle={entryTitle} theme={theme} />;
+) => (
+  <Payment
+    identity={identity}
+    step={step}
+    payment={payment}
+    entryTitle={entryTitle}
+    theme={theme}
+  />
+);
 
 const paymentStepTitle = (step: PaymentStep, entryTitle?: string) => {
   switch (step) {
@@ -59,10 +67,10 @@ function Payment({
   const profileImage = identity?.profile?.profileImage ?? farcasterSocial?.profileImage;
 
   const isPaymentInitiated = step !== 'create' && step !== 'start' && step !== 'command';
-  const showPreferredTokens =
+  const showPreferredTokens = false; /* 
     (step === 'start' || step === 'command') &&
     identity.profile?.preferredTokens &&
-    identity.profile.preferredTokens.length > 0;
+    identity.profile.preferredTokens.length > 0; */
   const maxNameWidth = isPaymentInitiated || showPreferredTokens ? 450 : 600;
 
   const isDark = theme === 'dark';
@@ -71,7 +79,9 @@ function Payment({
 
   return (
     <Card theme={theme}>
-      <p style={{ fontSize: 60, fontWeight: 'bold', fontStyle: 'italic', color: textColor }}>{title}</p>
+      <p style={{ fontSize: 60, fontWeight: 'bold', fontStyle: 'italic', color: textColor }}>
+        {title}
+      </p>
       <div
         style={{
           marginTop: 20,
@@ -84,14 +94,14 @@ function Payment({
           <img
             src={profileImage}
             alt="profile"
-            style={{ height: 250, width: 250, margin: 10, borderRadius: 25 }}
+            style={{ height: 240, width: 240, margin: 10, borderRadius: '50%' }}
           />
         )}
         {profileUsername && profileDisplayName ? (
           <div style={{ margin: 10, display: 'flex', flexDirection: 'column' }}>
             <span
               style={{
-                fontSize: 64,
+                fontSize: 60,
                 fontWeight: 'bold',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
@@ -103,7 +113,7 @@ function Payment({
             <span
               style={{
                 marginTop: 10,
-                fontSize: 64,
+                fontSize: 60,
                 fontWeight: 'normal',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
@@ -134,9 +144,9 @@ function Payment({
               padding: 16,
               fontSize: 36,
               backgroundColor,
-              borderRadius: 25,
+              borderRadius: 30,
               gap: 10,
-              color: textColor,
+              color: textColor
             }}>
             {payment.chainId && (
               <div
@@ -212,7 +222,7 @@ function Payment({
               backgroundColor,
               borderRadius: '16px',
               gap: 5,
-              color: textColor,
+              color: textColor
             }}>
             <span style={{ textAlign: 'center', fontSize: 30, fontWeight: 'bold' }}>Preferred</span>
             {identity.profile?.preferredTokens?.slice(0, 5).map((tokenId) => {
