@@ -2,7 +2,7 @@ import axios from 'axios';
 import { API_URL } from '../utils/urlConstants';
 import { FlowType, FlowWalletType } from '../types/FlowType';
 
-export default async function saveFlow(flow: {}): Promise<boolean | undefined> {
+export default async function saveFlow(flow: FlowType): Promise<boolean | undefined> {
   try {
     const response = await axios.post(`${API_URL}/api/flows`, flow, { withCredentials: true });
     return response.status === 201;

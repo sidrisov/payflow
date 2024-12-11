@@ -3,7 +3,9 @@ package ua.sinaver.web3.payflow.service;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import ua.sinaver.web3.payflow.data.Flow;
@@ -46,6 +48,7 @@ public class FlowService implements IFlowService {
 	private AirstackSocialGraphService socialGraphService;
 
 	@Override
+	@CacheEvict(value = USER_FLOWS_CACHE, key = "#user.identity")
 	public Jar createJar(String title, String description, String image, String source, User user) {
 		// use same signer as default flow
 		// TODO: find Payflow Balance
@@ -58,7 +61,7 @@ public class FlowService implements IFlowService {
 				signerProvider, signerType, signerCredential,
 				"safe", null);
 		val uuid = flow.getUuid();
-		val saltNonce = "payflow-alpha-".concat(uuid);
+		val saltNonce = "payflow-wallet-v2-".concat(RandomStringUtils.random(8, true, true));
 		flow.setType(Flow.FlowType.JAR);
 		flow.setSaltNonce(saltNonce);
 
@@ -84,6 +87,7 @@ public class FlowService implements IFlowService {
 	}
 
 	@Override
+	@CacheEvict(value = USER_FLOWS_CACHE, key = "#user.identity")
 	public void saveFlow(FlowMessage flowDto, User user) {
 		val flow = FlowMessage.convert(flowDto, user);
 		flowRepository.save(flow);
@@ -196,6 +200,7 @@ public class FlowService implements IFlowService {
 	}
 
 	@Override
+	@CacheEvict(value = USER_FLOWS_CACHE, key = "#user.identity")
 	public void updateFlowWallet(String uuid, WalletMessage walletDto, User user) throws Exception {
 		val flow = flowRepository.findByUuid(uuid);
 		if (flow == null) {

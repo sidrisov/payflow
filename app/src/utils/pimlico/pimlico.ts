@@ -1,5 +1,5 @@
 import { http } from 'viem';
-import { entryPoint06Address } from 'viem/account-abstraction';
+import { entryPoint06Address, entryPoint07Address } from 'viem/account-abstraction';
 import { createPimlicoClient } from 'permissionless/clients/pimlico';
 import {
   arbitrum,
@@ -23,12 +23,12 @@ export const transport = (chainId: number) => {
   );
 };
 
-export const pimlicoClient = (chainId: number) => {
+export const pimlicoClient = (chainId: number, version: '0.6' | '0.7' = '0.6') => {
   return createPimlicoClient({
     transport: transport(chainId),
     entryPoint: {
-      address: entryPoint06Address,
-      version: '0.6'
+      address: version === '0.6' ? entryPoint06Address : entryPoint07Address,
+      version
     }
   });
 };

@@ -116,7 +116,7 @@ public class FarcasterPaymentBotService {
 			}
 
 			val casterProfile = userService.getOrCreateUserFromFarcasterProfile(cast.author(),
-					false, false);
+					false);
 
 			val casterAddress = casterProfile != null ? casterProfile.getIdentity()
 					: identityService.getHighestScoredIdentity(cast.author().addressesWithoutCustodialIfAvailable());
@@ -164,7 +164,7 @@ public class FarcasterPaymentBotService {
 					}
 
 					val payerProfile = userService.getOrCreateUserFromFarcasterProfile(payerFarcasterUser,
-							false, false);
+							false);
 					if (payerProfile == null) {
 						log.error("Payer profile {} not found: {}", payerName, cast);
 						job.setStatus(PaymentBotJob.Status.REJECTED);

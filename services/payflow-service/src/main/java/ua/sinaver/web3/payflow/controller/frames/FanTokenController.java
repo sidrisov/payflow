@@ -93,7 +93,7 @@ public class FanTokenController {
 		User clickedProfile;
 		try {
 			clickedProfile = userService.getOrCreateUserFromFarcasterProfile(interactor,
-					false, false);
+					false);
 		} catch (IllegalArgumentException exception) {
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Missing verified identity! Contact @sinaver.eth"));

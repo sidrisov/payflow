@@ -16,15 +16,18 @@ import {
 } from 'viem';
 import { useWaitForTransactionReceipt } from 'wagmi';
 
-import { entryPoint06Address } from 'viem/account-abstraction';
+import { entryPoint06Address, entryPoint07Address } from 'viem/account-abstraction';
 import { toSafeSmartAccount } from '../pimlico/toSafeSmartAccount';
 import { createSmartAccountClient, isSmartAccountDeployed } from 'permissionless';
+import { erc7579Actions } from 'permissionless/actions/erc7579';
+
 import {
   paymasterSponsorshipPolicyIds as pimlicoSponsorshipPolicyIds,
   pimlicoClient,
   transport,
   PIMLICO_SPONSORED_ENABLED
 } from '../pimlico/pimlico';
+import { SAFE_CONSTANTS } from '@payflow/common';
 
 export type ViemTransaction = {
   from: Address;
@@ -48,9 +51,10 @@ export const useSafeTransfer = (): {
     client: Client<Transport, Chain>,
     signer: WalletClient<Transport, Chain, Account>,
     tx: ViemTransaction,
-    safeAccountConfig: { owners: Address[]; threshold: number },
+    safeOwners: Address[],
     safeVersion: string,
-    saltNonce: string
+    saltNonce: string,
+    entryPointVersion: '0.6' | '0.7'
   ) => Promise<Hash | undefined>;
   reset: () => void;
 } => {
@@ -93,9 +97,10 @@ export const useSafeTransfer = (): {
     client: Client<Transport, Chain>,
     signer: WalletClient<Transport, Chain, Account>,
     tx: ViemTransaction,
-    safeAccountConfig: { owners: Address[]; threshold: number },
+    safeOwners: Address[],
     safeVersion: string,
-    saltNonce: string
+    saltNonce: string,
+    entryPointVersion: '0.6' | '0.7' = '0.6'
   ): Promise<Hash | undefined> {
     setLoading(true);
 
@@ -109,21 +114,22 @@ export const useSafeTransfer = (): {
       );
 
       // handle AA with pimlico, we only use to send tx once it was deployed
-      if (safeVersion === '1.4.1') {
+      if (safeVersion === SAFE_CONSTANTS.SAFE_SMART_ACCOUNT_VERSION) {
         const chain = signer.chain;
 
-        console.debug('safe set up: ', safeAccountConfig, signer);
+        console.debug('safe set up: ', safeOwners, signer);
 
         const safeAccount = await toSafeSmartAccount({
           address: tx.from,
           client,
           entryPoint: {
-            address: entryPoint06Address,
-            version: '0.6'
+            address: entryPointVersion === '0.6' ? entryPoint06Address : entryPoint07Address,
+            version: entryPointVersion
           },
-          version: '1.4.1',
+          version: safeVersion,
           saltNonce: BigInt(keccak256(toBytes(saltNonce))),
-          owners: safeAccountConfig.owners.map((owner) => {
+
+          owners: safeOwners.map((owner) => {
             // test test
             if (signer.account.address.toLowerCase() === owner.toLowerCase()) {
               return signer;
@@ -138,18 +144,31 @@ export const useSafeTransfer = (): {
               EIP1193Provider | WalletClient<Transport, Chain | undefined, Account> | LocalAccount
             >
           ]
+          /* ...(entryPointVersion === '0.7' && {
+            safe4337ModuleAddress: SAFE_CONSTANTS.SAFE_4337_MODULE,
+            erc7579LaunchpadAddress: SAFE_CONSTANTS.SAFE_ERC7579_LAUNCHPAD,
+            attesters: [RHINESTONE_ATTESTER_ADDRESS],
+            attestersThreshold: 1,
+            validators: [
+              {
+                address: ownableValidator.address,
+                context: ownableValidator.initData
+              }
+            ]
+          }) */
         });
 
         console.log(
           `Safe addresss: calculated with Pimlico - ${safeAccount.address} vs existing ${tx.from}`
         );
 
+        const paymaster = pimlicoClient(chain.id, entryPointVersion);
         const sponsorshipPolicyIds = pimlicoSponsorshipPolicyIds(chain.id);
-        const smartAccountClient = createSmartAccountClient({
+        var smartAccountClient = createSmartAccountClient({
           account: safeAccount,
           chain,
           bundlerTransport: transport(chain.id),
-          paymaster: pimlicoClient(chain.id),
+          paymaster: paymaster,
           ...(PIMLICO_SPONSORED_ENABLED && {
             paymasterContext: {
               sponsorshipPolicyId: sponsorshipPolicyIds?.[0]
@@ -157,10 +176,10 @@ export const useSafeTransfer = (): {
           }),
           userOperation: {
             estimateFeesPerGas: async () => {
-              return (await pimlicoClient(chain.id).getUserOperationGasPrice()).fast;
+              return (await paymaster.getUserOperationGasPrice()).fast;
             }
           }
-        });
+        }).extend(erc7579Actions());
 
         statusCallback?.('processing');
 
@@ -201,8 +220,7 @@ export const useSafeTransfer = (): {
     } finally {
       setLoading(false);
     }
-  },
-  []);
+  }, []);
 
   const reset = useCallback(async function () {
     setLoading(false);

@@ -133,13 +133,8 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
       }
       owners.push(senderFlow.signer);
 
-      const safeAccountConfig: { owners: Address[]; threshold: number } = {
-        owners,
-        threshold: 1
-      };
-
       const saltNonce = senderFlow.saltNonce as string;
-      const safeVersion = paymentWallet.version;
+      const [safeVersion, entryPointVersion = '0.6'] = paymentWallet.version.split('_');
 
       return (await transfer(
         client,
@@ -150,9 +145,10 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
           data: tx.data && tx.data.length ? tx.data : undefined,
           value: tx.value
         },
-        safeAccountConfig,
+        owners,
         safeVersion,
-        saltNonce
+        saltNonce,
+        entryPointVersion as '0.6' | '0.7'
       )) as Hash;
     } else {
       return (await sendTransactionAsync(tx)) as Hash;

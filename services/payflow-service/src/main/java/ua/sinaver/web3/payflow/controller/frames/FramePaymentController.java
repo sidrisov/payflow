@@ -298,7 +298,7 @@ public class FramePaymentController {
 		User senderProfile;
 		try {
 			senderProfile = userService.getOrCreateUserFromFarcasterProfile(senderFarcasterUser,
-					false, false);
+					false);
 		} catch (IllegalArgumentException exception) {
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Missing verified identity! Contact @sinaver.eth"));

@@ -79,7 +79,7 @@ public class PaymentComposerController {
 		val interactor = validateMessage.action().interactor();
 		User profile;
 		try {
-			profile = userService.getOrCreateUserFromFarcasterProfile(interactor, true, true);
+			profile = userService.getOrCreateUserFromFarcasterProfile(interactor, true);
 		} catch (IllegalArgumentException exception) {
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Missing verified identity! Contact @sinaver.eth"));
@@ -89,7 +89,7 @@ public class PaymentComposerController {
 					new FrameResponse.FrameMessage("Identity conflict! Contact @sinaver.eth"));
 		}
 
-		val accessToken = userService.getOrgenerateAccessToken(profile);
+		val accessToken = userService.getOrGenerateAccessToken(profile);
 		val decodedState = URLDecoder.decode(
 				validateMessage.action().state().serialized(), StandardCharsets.UTF_8);
 		log.debug("URL decoded form state: {}", decodedState);

@@ -94,6 +94,7 @@ public class User {
 
 	public User(String identity) {
 		this.identity = identity.toLowerCase();
+		this.defaultReceivingAddress = identity.toLowerCase();
 	}
 
 	public enum FarcasterClient {

@@ -66,7 +66,7 @@ public class EarnComposerController {
 		val interactor = validateMessage.action().interactor();
 		User profile;
 		try {
-			profile = userService.getOrCreateUserFromFarcasterProfile(interactor, true, true);
+			profile = userService.getOrCreateUserFromFarcasterProfile(interactor, true);
 		} catch (IllegalArgumentException exception) {
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage(
@@ -80,7 +80,7 @@ public class EarnComposerController {
 		val decodedState = URLDecoder.decode(
 				validateMessage.action().state().serialized(), StandardCharsets.UTF_8);
 		log.debug("URL decoded form state: {}", decodedState);
-		val accessToken = userService.getOrgenerateAccessToken(profile);
+		val accessToken = userService.getOrGenerateAccessToken(profile);
 		val earnFormUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 				.path("/composer")
 				.queryParam("mini")

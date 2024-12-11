@@ -30,6 +30,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import static ua.sinaver.web3.payflow.config.CacheConfig.USERS_CACHE_NAME;
+import static ua.sinaver.web3.payflow.config.CacheConfig.USER_FLOWS_CACHE;
 
 @Service
 @Transactional
@@ -55,6 +56,9 @@ public class UserService implements IUserService {
 	private EntityManager entityManager;
 
 	@Autowired
+	private FlowService flowService;
+
+	@Autowired
 	private InvitationService invitationService;
 
 	@Autowired
@@ -77,8 +81,7 @@ public class UserService implements IUserService {
 	@Override
 	@Transactional(value = Transactional.TxType.REQUIRES_NEW)
 	public User getOrCreateUserFromFarcasterProfile(FarcasterUser farcasterUser,
-	                                                boolean forceWhitelist,
-	                                                boolean setDefaultReceivingAddress) {
+	                                                boolean forceWhitelist) {
 		val verifications = farcasterUser.addressesWithoutCustodialIfAvailable();
 		var profile = identityService.getProfiles(verifications)
 				.stream().findFirst().orElse(null);
@@ -111,9 +114,7 @@ public class UserService implements IUserService {
 			profile.setUsername(username);
 			profile.setDisplayName(farcasterUser.displayName());
 			profile.setProfileImage(farcasterUser.pfpUrl());
-			if (setDefaultReceivingAddress) {
-				profile.setDefaultReceivingAddress(identityToCreateProfile.address());
-			}
+			profile.setDefaultReceivingAddress(identityToCreateProfile.address());
 			updateLastSeen(profile);
 			saveUser(profile);
 		}
@@ -137,7 +138,7 @@ public class UserService implements IUserService {
 	}
 
 	@Override
-	@CacheEvict(value = USERS_CACHE_NAME, key = "#identity")
+	@CacheEvict(cacheNames = {USERS_CACHE_NAME, USER_FLOWS_CACHE}, key = "#identity")
 	public void updateProfile(String identity, ProfileMessage profile, String invitationCode) {
 		User user = userRepository.findByIdentityIgnoreCase(identity);
 
@@ -176,8 +177,6 @@ public class UserService implements IUserService {
 				val defaultFlow = FlowMessage.convert(profile.defaultFlow(), user);
 				log.debug("Setting primary flow to: {}", defaultFlow);
 				user.setDefaultFlow(defaultFlow);
-			} else {
-				// check if any extra wallets need to be added
 			}
 
 			// for now, only allow to update if not set
@@ -250,7 +249,7 @@ public class UserService implements IUserService {
 	}
 
 	@Override
-	public String getOrgenerateAccessToken(User user) {
+	public String getOrGenerateAccessToken(User user) {
 		if (user.getAccessToken() == null) {
 			val accessToken = UUID.randomUUID().toString();
 			user.setAccessToken(accessToken);

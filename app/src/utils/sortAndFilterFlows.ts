@@ -1,7 +1,7 @@
 import { FlowType, FlowWalletType } from '../types/FlowType';
 import { SUPPORTED_CHAINS } from './networks';
 
-export default function sortAndFilterFlows(defaultFlow: FlowType, flows: FlowType[]): FlowType[] {
+export default function sortAndFilterFlows(flows: FlowType[], defaultFlow?: FlowType): FlowType[] {
   return flows
     .sort((a, b) => {
       if (a.uuid === defaultFlow?.uuid) {

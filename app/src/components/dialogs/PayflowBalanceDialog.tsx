@@ -21,7 +21,6 @@ import { useCreateSafeWallets as usePreCreateSafeWallets } from '../../utils/hoo
 import { FlowType } from '../../types/FlowType';
 import { useNavigate } from 'react-router-dom';
 import { DEFAULT_FLOW_WALLET_CHAINS } from '../../utils/networks';
-import { updateProfile } from '../../services/user';
 import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
 import { useAccount } from 'wagmi';
 import { grey } from '@mui/material/colors';
@@ -33,6 +32,7 @@ import { usePrivy } from '@privy-io/react-auth';
 import { BackDialogTitle } from './BackDialogTitle';
 import { useMobile } from '../../utils/hooks/useMobile';
 import { delay } from '../../utils/delay';
+import saveFlow from '../../services/flow';
 
 export type PayflowBalanceDialogProps = DialogProps &
   CloseCallbackType & {
@@ -52,6 +52,7 @@ export default function PayflowBalanceDialog({
 
   const { loading: loadingWallets, error, wallets, create, reset } = usePreCreateSafeWallets();
   const [loadingUpdateProfile, setLoadingUpdateProfile] = useState<boolean>(false);
+  const [saltNonce] = useState(() => SALT_NONCE + '-' + crypto.randomUUID().slice(0, 10));
 
   const [extraSigner] = useState<boolean>(true);
 
@@ -66,7 +67,7 @@ export default function PayflowBalanceDialog({
   }
 
   async function createMainFlow() {
-    console.debug(profile.identity, SALT_NONCE, DEFAULT_FLOW_WALLET_CHAINS);
+    console.debug(profile.identity, saltNonce, DEFAULT_FLOW_WALLET_CHAINS);
 
     let owners = [profile.identity];
     if (extraSigner) {
@@ -78,7 +79,7 @@ export default function PayflowBalanceDialog({
       }
     }
 
-    create(owners, SALT_NONCE, DEFAULT_FLOW_WALLET_CHAINS);
+    create(owners, saltNonce, DEFAULT_FLOW_WALLET_CHAINS);
   }
 
   useMemo(async () => {
@@ -86,7 +87,7 @@ export default function PayflowBalanceDialog({
       toast.error('Failed to prepare flow, try again!');
       await reset();
     } else if (wallets && wallets.length === DEFAULT_FLOW_WALLET_CHAINS.length) {
-      const primaryFlow = {
+      const newFlow = {
         // TODO: choose different one
         ...(extraSigner && {
           signer: address,
@@ -96,16 +97,12 @@ export default function PayflowBalanceDialog({
         }),
         title: 'Payflow Balance',
         walletProvider: 'safe',
-        saltNonce: SALT_NONCE,
+        saltNonce,
         wallets
       } as FlowType;
-      const updatedProfile = {
-        ...profile,
-        defaultFlow: primaryFlow
-      } as ProfileType;
       setLoadingUpdateProfile(true);
       try {
-        const success = await updateProfile(updatedProfile);
+        const success = await saveFlow(newFlow);
 
         if (success) {
           toast.success('Successfully created');

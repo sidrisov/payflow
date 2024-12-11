@@ -14,8 +14,7 @@ public interface IUserService {
 	void saveUser(User user);
 
 	User getOrCreateUserFromFarcasterProfile(FarcasterUser farcasterUser,
-	                                         boolean forceWhitelist,
-	                                         boolean setDefaultReceivingAddress);
+	                                         boolean forceWhitelist);
 
 	void updateLastSeen(User user);
 
@@ -38,5 +37,5 @@ public interface IUserService {
 
 	void clearAccessToken(User user);
 
-	String getOrgenerateAccessToken(User user);
+	String getOrGenerateAccessToken(User user);
 }

@@ -18,7 +18,7 @@ import { isSmartAccountDeployed } from 'permissionless';
 import { FlowWalletType, JarType } from './types/FlowType';
 import { jarHtml } from './components/Jar';
 import { fetchTokenPrices } from './utils/prices';
-import { TokenPrices } from '@payflow/common';
+import { SAFE_CONSTANTS, TokenPrices } from '@payflow/common';
 import { getAssetBalances, getFlowAssets, getTotalBalance } from './utils/balances';
 import { XmtpOpenFramesRequest, validateFramesPost } from '@xmtp/frames-validator';
 import { normalizeNumberPrecision } from './utils/format';
@@ -30,11 +30,12 @@ import { fetchMintData } from './utils/mint';
 import { buyFanTokenEntryHtml } from './components/BuyFanToken';
 import { buyHypersubEntryHtml } from './components/Subsribe';
 import { toSafeSmartAccount } from './utils/pimlico/toSafeSmartAccount';
-import { entryPoint06Address } from 'viem/account-abstraction';
+import { entryPoint07Address } from 'viem/account-abstraction';
 import { fetchSubscribers } from '@withfabric/protocol-sdks/stpv2';
 import { configureFabricSDK } from '@withfabric/protocol-sdks';
 import { wagmiConfig } from './utils/wagmi';
 import { API_URL } from './utils/constants';
+import { RHINESTONE_ATTESTER_ADDRESS } from '@rhinestone/module-sdk/module';
 
 dotenv.config();
 
@@ -111,7 +112,6 @@ async function startServer() {
       const owners = Array.isArray(req.query.owners) ? req.query.owners : [req.query.owners];
       const saltNonce = req.query.saltNonce as string;
       const chains = [base, optimism, degen, arbitrum];
-      const safeVersion = '1.4.1';
 
       const wallets: FlowWalletType[] = [];
 
@@ -125,15 +125,19 @@ async function startServer() {
           const safeAccount = await toSafeSmartAccount({
             client,
             entryPoint: {
-              address: entryPoint06Address,
-              version: '0.6'
+              address: entryPoint07Address,
+              version: SAFE_CONSTANTS.AA_ENTRY_POINT_VERSION
             },
-            version: '1.4.1',
+            version: SAFE_CONSTANTS.SAFE_SMART_ACCOUNT_VERSION,
             saltNonce: BigInt(keccak256(toBytes(saltNonce))),
             owners: owners.map((owner) => ({
               type: 'local',
               address: owner
             })) as [LocalAccount]
+            /* safe4337ModuleAddress: SAFE_CONSTANTS.SAFE_4337_MODULE,
+            erc7579LaunchpadAddress: SAFE_CONSTANTS.SAFE_ERC7579_LAUNCHPAD,
+            attesters: [RHINESTONE_ATTESTER_ADDRESS],
+            attestersThreshold: 1 */
           });
 
           const predictedAddress = safeAccount.address;
@@ -142,7 +146,10 @@ async function startServer() {
           wallets.push({
             address: predictedAddress,
             network: chain.id,
-            version: safeVersion,
+            version:
+              SAFE_CONSTANTS.SAFE_SMART_ACCOUNT_VERSION +
+              '_' +
+              SAFE_CONSTANTS.AA_ENTRY_POINT_VERSION,
             deployed: isSafeDeployed
           });
         }

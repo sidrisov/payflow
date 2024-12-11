@@ -74,7 +74,7 @@ public class JarComposerController {
 		val interactor = validateMessage.action().interactor();
 		User profile;
 		try {
-			profile = userService.getOrCreateUserFromFarcasterProfile(interactor, true, true);
+			profile = userService.getOrCreateUserFromFarcasterProfile(interactor, true);
 		} catch (IllegalArgumentException exception) {
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage(
@@ -91,7 +91,7 @@ public class JarComposerController {
 		log.debug("URL decoded form state: {}", decodedState);
 
 		val title = GSON.fromJson(decodedState, ComposerActionState.class).cast().text();
-		val accessToken = userService.getOrgenerateAccessToken(profile);
+		val accessToken = userService.getOrGenerateAccessToken(profile);
 
 		val jarFormUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 				.path("/composer")

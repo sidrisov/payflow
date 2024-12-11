@@ -37,8 +37,8 @@ export default function AppWithProviders() {
       try {
         const profile = await me(accessToken);
         if (profile) {
-          if (profile.defaultFlow && profile.flows) {
-            profile.flows = sortAndFilterFlows(profile.defaultFlow, profile.flows);
+          if (profile.flows) {
+            profile.flows = sortAndFilterFlows(profile.flows, profile.defaultFlow);
           }
           setProfile(profile);
         }

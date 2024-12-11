@@ -21,7 +21,7 @@ export default function Accounts() {
   const navigate = useNavigate();
 
   const { flows } = profile ?? { flows: [] };
-  const [selectedFlow, setSelectedFlow] = useState<FlowType>(profile?.defaultFlow!);
+  const [selectedFlow, setSelectedFlow] = useState<FlowType>(profile?.defaultFlow ?? flows?.[0]!);
 
   const [balanceVisible, setBalanceVisible] = useState(true);
 
