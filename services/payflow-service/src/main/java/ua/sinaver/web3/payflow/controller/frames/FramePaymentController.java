@@ -330,7 +330,7 @@ public class FramePaymentController {
 						new FrameResponse.FrameMessage("Nothing entered, try again!"));
 			}
 
-			val paymentPattern = "\\s*(?<amount>\\$?[0-9]+(?:\\.[0-9]+)?[km]?)?\\s*(?<rest>.*)";
+			val paymentPattern = "\\s*(?<amount>\\$?[0-9]+(?:\\.[0-9]+)?[km]?)\\s*(?<rest>.*)";
 			val matcher = Pattern.compile(paymentPattern, Pattern.CASE_INSENSITIVE).matcher(inputText);
 
 			if (!matcher.find()) {

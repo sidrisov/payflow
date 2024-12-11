@@ -14,6 +14,7 @@ import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.User;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -47,20 +48,19 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 	Stream<Payment> findExpiredPaymentsWithLock(@Param("status") Payment.PaymentStatus status,
 	                                            @Param("expiresAt") Instant expiresAt);
 
-	// TODO: add a time check not to process recently submitted in 5 mins to avoid lock
+	// TODO: add a time check not to process recently submitted in 5 mins to avoid
+	// lock
 	// JPA: UPGRADE_SKIPLOCKED - PESSIMISTIC_WRITE with a
 	// javax.persistence.lock.timeout setting of -2
 	// https://docs.jboss.org/hibernate/orm/5.0/userguide/html_single/chapters/locking/Locking.html
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@QueryHints(@QueryHint(name = AvailableSettings.JAKARTA_LOCK_TIMEOUT, value = "-2"))
-	@Query("SELECT p FROM Payment p WHERE p.status IN :statuses")
-	Stream<Payment> findTop5ByStatusInWithLock(@Param("statuses") List<Payment.PaymentStatus> statuses);
-
-	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	@QueryHints(@QueryHint(name = AvailableSettings.JAKARTA_LOCK_TIMEOUT, value = "-2"))
-	@Query("SELECT p FROM Payment p WHERE p.status = 'COMPLETED' AND category = 'fc_storage'")
-	Stream<Payment> findCompletedStoragePayments();
-
+	@Query("SELECT p FROM Payment p WHERE p.status IN :statuses " +
+			"AND p.createdAt <= :tenMinutesAgo " +
+			"ORDER BY p.createdAt ASC")
+	Stream<Payment> findTop5ByStatusInWithLock(@Param("statuses") List<Payment.PaymentStatus> statuses,
+	                                           @Param("tenMinutesAgo") Instant tenMinutesAgo);
+	
 	@Query("SELECT count(p) FROM Payment p " +
 			"WHERE (p.sender IN :users " +
 			"OR LOWER(p.senderAddress) IN :addresses) " +
@@ -106,5 +106,9 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 			"ELSE CAST(p.tokenAmount AS double) END)), 0) " +
 			"FROM Payment p WHERE p.category = :category AND p.status = 'COMPLETED'")
 	Long countPurchasedAmountByCategory(@Param("category") String category);
+
+	default Stream<Payment> findTop5ByStatusInWithLock(@Param("statuses") List<Payment.PaymentStatus> statuses) {
+		return findTop5ByStatusInWithLock(statuses, Instant.now().minus(10, ChronoUnit.MINUTES));
+	}
 
 }
