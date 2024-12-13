@@ -20,6 +20,7 @@ import { entryPoint06Address, entryPoint07Address } from 'viem/account-abstracti
 import { toSafeSmartAccount } from '../pimlico/toSafeSmartAccount';
 import { createSmartAccountClient, isSmartAccountDeployed } from 'permissionless';
 import { erc7579Actions } from 'permissionless/actions/erc7579';
+import { RHINESTONE_ATTESTER_ADDRESS } from '@rhinestone/module-sdk';
 
 import {
   paymasterSponsorshipPolicyIds as pimlicoSponsorshipPolicyIds,
@@ -143,19 +144,13 @@ export const useSafeTransfer = (): {
             OneOf<
               EIP1193Provider | WalletClient<Transport, Chain | undefined, Account> | LocalAccount
             >
-          ]
-          /* ...(entryPointVersion === '0.7' && {
+          ],
+          ...(entryPointVersion === '0.7' && {
             safe4337ModuleAddress: SAFE_CONSTANTS.SAFE_4337_MODULE,
             erc7579LaunchpadAddress: SAFE_CONSTANTS.SAFE_ERC7579_LAUNCHPAD,
             attesters: [RHINESTONE_ATTESTER_ADDRESS],
-            attestersThreshold: 1,
-            validators: [
-              {
-                address: ownableValidator.address,
-                context: ownableValidator.initData
-              }
-            ]
-          }) */
+            attestersThreshold: 1
+          })
         });
 
         console.log(

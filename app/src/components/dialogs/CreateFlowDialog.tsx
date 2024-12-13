@@ -42,7 +42,7 @@ export type CreateFlowDialogProps = ResponsiveDialogProps &
   };
 
 export function CreateFlowDialog({ closeStateCallback, profile, ...props }: CreateFlowDialogProps) {
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showCreatePayflowBalance, setCreateShowPayflowBalance] = useState(false);
 
   return (
     <>
@@ -53,7 +53,7 @@ export function CreateFlowDialog({ closeStateCallback, profile, ...props }: Crea
               key={type.value}
               onClick={() => {
                 if (type.value === 'balance') {
-                  setShowOnboarding(true);
+                  setCreateShowPayflowBalance(true);
                 } else {
                   comingSoonToast();
                 }
@@ -97,11 +97,13 @@ export function CreateFlowDialog({ closeStateCallback, profile, ...props }: Crea
         </Box>
       </ResponsiveDialog>
 
-      <PayflowBalanceDialog
-        open={showOnboarding}
-        profile={profile}
-        closeStateCallback={() => setShowOnboarding(false)}
-      />
+      {showCreatePayflowBalance && (
+        <PayflowBalanceDialog
+          open={true}
+          profile={profile}
+          closeStateCallback={() => setCreateShowPayflowBalance(false)}
+        />
+      )}
     </>
   );
 }

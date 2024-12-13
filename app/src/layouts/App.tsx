@@ -133,7 +133,7 @@ export default function AppLayout({
     needRefresh: [needRefresh]
   } = useRegisterSW();
 
-  const [showPayflowBalance, setShowPayflowBalance] = useState(false);
+  const [showCreatePayflowBalance, setCreateShowPayflowBalance] = useState(false);
 
   useEffect(() => {
     if (!profile || location.pathname !== '/') {
@@ -158,7 +158,7 @@ export default function AppLayout({
               variant="outlined"
               size="small"
               onClick={() => {
-                setShowPayflowBalance(true);
+                setCreateShowPayflowBalance(true);
                 toast.dismiss();
               }}
               color="inherit"
@@ -420,11 +420,11 @@ export default function AppLayout({
         />
       )}
 
-      {profile && (
+      {profile && showCreatePayflowBalance && (
         <PayflowBalanceDialog
-          open={showPayflowBalance}
+          open={true}
           profile={profile}
-          closeStateCallback={() => setShowPayflowBalance(false)}
+          closeStateCallback={() => setCreateShowPayflowBalance(false)}
         />
       )}
     </ProfileContext.Provider>

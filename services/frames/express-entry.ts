@@ -36,6 +36,7 @@ import { configureFabricSDK } from '@withfabric/protocol-sdks';
 import { wagmiConfig } from './utils/wagmi';
 import { API_URL } from './utils/constants';
 import cors from 'cors';
+import { RHINESTONE_ATTESTER_ADDRESS } from '@rhinestone/module-sdk';
 
 dotenv.config();
 
@@ -139,11 +140,11 @@ async function startServer() {
             owners: owners.map((owner) => ({
               type: 'local',
               address: owner
-            })) as [LocalAccount]
-            /* safe4337ModuleAddress: SAFE_CONSTANTS.SAFE_4337_MODULE,
+            })) as [LocalAccount],
+             safe4337ModuleAddress: SAFE_CONSTANTS.SAFE_4337_MODULE,
             erc7579LaunchpadAddress: SAFE_CONSTANTS.SAFE_ERC7579_LAUNCHPAD,
             attesters: [RHINESTONE_ATTESTER_ADDRESS],
-            attestersThreshold: 1 */
+            attestersThreshold: 1
           });
 
           const predictedAddress = safeAccount.address;

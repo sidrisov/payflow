@@ -1379,11 +1379,8 @@ export async function toSafeSmartAccount<
         entryPoint: entryPoint.address
       };
 
-      let isDeployed = false;
-
       if ('initCode' in userOperation) {
         message.paymasterAndData = userOperation.paymasterAndData ?? '0x';
-        isDeployed = userOperation.initCode === '0x';
       }
 
       if ('factory' in userOperation) {
@@ -1394,13 +1391,6 @@ export async function toSafeSmartAccount<
           ...userOperation,
           sender: userOperation.sender ?? (await this.getAddress())
         });
-        isDeployed = !userOperation.factory;
-      }
-
-      let verifyingContract = safe4337ModuleAddress;
-
-      if (erc7579LaunchpadAddress && !isDeployed) {
-        verifyingContract = userOperation.sender ?? (await this.getAddress());
       }
 
       const signatures = [
@@ -1410,7 +1400,7 @@ export async function toSafeSmartAccount<
             account: signer,
             domain: {
               chainId,
-              verifyingContract
+              verifyingContract: safe4337ModuleAddress
             },
             types:
               entryPoint.version === '0.6'

@@ -5,8 +5,9 @@ import { isSmartAccountDeployed } from 'permissionless';
 import { getClient } from 'wagmi/actions';
 import { wagmiConfig } from './wagmiConfig';
 import { entryPoint06Address, entryPoint07Address } from 'viem/account-abstraction';
-import { toSafeSmartAccount } from './pimlico/toSafeSmartAccount';
 import { SAFE_CONSTANTS } from '@payflow/common';
+import { RHINESTONE_ATTESTER_ADDRESS } from '@rhinestone/module-sdk';
+import { toSafeSmartAccount } from './pimlico/toSafeSmartAccount';
 
 export default async function createSafeWallets(
   owners: Address[],
@@ -31,11 +32,11 @@ export default async function createSafeWallets(
         owners: owners.map((owner) => ({
           type: 'local',
           address: owner
-        })) as [LocalAccount]
-        /* safe4337ModuleAddress: SAFE_CONSTANTS.SAFE_4337_MODULE,
+        })) as [LocalAccount],
+        safe4337ModuleAddress: SAFE_CONSTANTS.SAFE_4337_MODULE,
         erc7579LaunchpadAddress: SAFE_CONSTANTS.SAFE_ERC7579_LAUNCHPAD,
         attesters: [RHINESTONE_ATTESTER_ADDRESS],
-        attestersThreshold: 1 */
+        attestersThreshold: 1
       });
 
       const predictedAddress = safeAccount.address;

@@ -8,22 +8,24 @@ import {
   CircularProgress,
   Avatar,
   AvatarGroup,
-  Tooltip
+  Tooltip,
+  TextField,
+  Button
 } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { useMemo, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ProfileType } from '../../types/ProfileType';
 import { toast } from 'react-toastify';
-import { useCreateSafeWallets as usePreCreateSafeWallets } from '../../utils/hooks/useCreateSafeWallets';
+import { useCreateSafeWallets } from '../../utils/hooks/useCreateSafeWallets';
 
 import { FlowType } from '../../types/FlowType';
 import { useNavigate } from 'react-router-dom';
 import { DEFAULT_FLOW_WALLET_CHAINS } from '../../utils/networks';
 import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
 import { useAccount } from 'wagmi';
-import { grey } from '@mui/material/colors';
+import { green, grey } from '@mui/material/colors';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
 import NetworkAvatar from '../avatars/NetworkAvatar';
 import { Info } from '@mui/icons-material';
@@ -31,8 +33,8 @@ import ProfileAvatar from '../avatars/ProfileAvatar';
 import { usePrivy } from '@privy-io/react-auth';
 import { BackDialogTitle } from './BackDialogTitle';
 import { useMobile } from '../../utils/hooks/useMobile';
-import { delay } from '../../utils/delay';
 import saveFlow from '../../services/flow';
+import { HiOutlineCheckCircle } from 'react-icons/hi';
 
 export type PayflowBalanceDialogProps = DialogProps &
   CloseCallbackType & {
@@ -50,7 +52,7 @@ export default function PayflowBalanceDialog({
 }: PayflowBalanceDialogProps) {
   const isMobile = useMobile();
 
-  const { loading: loadingWallets, error, wallets, create, reset } = usePreCreateSafeWallets();
+  const { loading: loadingWallets, error, wallets, create, reset } = useCreateSafeWallets();
   const [loadingUpdateProfile, setLoadingUpdateProfile] = useState<boolean>(false);
   const [saltNonce] = useState(() => SALT_NONCE + '-' + crypto.randomUUID().slice(0, 10));
 
@@ -61,6 +63,11 @@ export default function PayflowBalanceDialog({
   const { user } = usePrivy();
 
   const navigate = useNavigate();
+
+  const [walletTitle, setWalletTitle] = useState<string>('Payflow Balance');
+
+  const [showSuccessDialog, setShowSuccessDialog] = useState<boolean>(false);
+  const [createdFlow, setCreatedFlow] = useState<FlowType | null>(null);
 
   function handleCloseCampaignDialog() {
     closeStateCallback();
@@ -82,43 +89,45 @@ export default function PayflowBalanceDialog({
     create(owners, saltNonce, DEFAULT_FLOW_WALLET_CHAINS);
   }
 
-  useMemo(async () => {
-    if (error) {
-      toast.error('Failed to prepare flow, try again!');
-      await reset();
-    } else if (wallets && wallets.length === DEFAULT_FLOW_WALLET_CHAINS.length) {
-      const newFlow = {
-        // TODO: choose different one
-        ...(extraSigner && {
-          signer: address,
-          signerProvider: 'privy',
-          signerType: 'email',
-          signerCredential: user?.email?.address
-        }),
-        title: 'Payflow Balance',
-        walletProvider: 'safe',
-        saltNonce,
-        wallets
-      } as FlowType;
-      setLoadingUpdateProfile(true);
-      try {
-        const success = await saveFlow(newFlow);
-
-        if (success) {
-          toast.success('Successfully created');
-          await delay(1000);
-          navigate(0);
-        } else {
-          toast.error('Failed. Try again!');
-        }
-      } finally {
-        setLoadingUpdateProfile(false);
+  useEffect(() => {
+    const handleWalletsChange = async () => {
+      if (error) {
+        toast.error('Failed to prepare flow, try again!');
         await reset();
+      } else if (wallets && wallets.length === DEFAULT_FLOW_WALLET_CHAINS.length) {
+        const newFlow = {
+          ...(extraSigner && {
+            signer: address,
+            signerProvider: 'privy',
+            signerType: 'email',
+            signerCredential: user?.email?.address
+          }),
+          title: walletTitle,
+          walletProvider: 'safe',
+          saltNonce,
+          wallets
+        } as FlowType;
+        setLoadingUpdateProfile(true);
+        try {
+          const success = await saveFlow(newFlow);
+
+          if (success) {
+            setShowSuccessDialog(true);
+            setCreatedFlow(newFlow);
+          } else {
+            toast.error('Failed. Try again!');
+          }
+        } finally {
+          setLoadingUpdateProfile(false);
+          await reset();
+        }
       }
-    }
+    };
+
+    handleWalletsChange();
   }, [wallets, error]);
 
-  return (
+  return !showSuccessDialog ? (
     <Dialog
       fullScreen={isMobile}
       disableEnforceFocus
@@ -152,7 +161,22 @@ export default function PayflowBalanceDialog({
           p={1}>
           <Stack spacing={1} alignItems="flex-start">
             <Typography fontWeight="bold" color={grey[400]}>
-              Smart Wallets
+              Title
+            </Typography>
+            <TextField
+              fullWidth
+              value={walletTitle}
+              onChange={(e) => setWalletTitle(e.target.value)}
+              placeholder="Payflow Balance"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 3
+                }
+              }}
+            />
+
+            <Typography fontWeight="bold" color={grey[400]}>
+              Smart Wallet Account
             </Typography>
             <Box
               display="flex"
@@ -175,7 +199,7 @@ export default function PayflowBalanceDialog({
                     Provider
                   </Typography>
                   <Typography fontSize={16} fontWeight="bold">
-                    Safe Smart Wallet
+                    Safe
                   </Typography>
                 </Stack>
               </Stack>
@@ -265,32 +289,32 @@ export default function PayflowBalanceDialog({
                 </Tooltip>
               </Box>
               {/* <Box
-                display="flex"
-                flexDirection="row"
-                alignItems="center"
-                justifyContent="space-between"
-                p={2}
-                sx={{
-                  height: 65,
-                  width: '100%',
-                  color: 'inherit',
-                  border: 2,
-                  borderRadius: 5,
-                  borderColor: 'divider',
-                  borderStyle: 'dashed'
-                }}>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <HistoryToggleOff sx={{ width: 40, height: 40 }} />
-                  <Stack spacing={0.1} alignItems="flex-start">
-                    <Typography fontSize={18} color={grey[400]}>
-                      Passkey Signer
-                    </Typography>
-                    <Typography fontSize={15} fontWeight="bold">
-                      Coming Soon
-                    </Typography>
+                  display="flex"
+                  flexDirection="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  p={2}
+                  sx={{
+                    height: 65,
+                    width: '100%',
+                    color: 'inherit',
+                    border: 2,
+                    borderRadius: 5,
+                    borderColor: 'divider',
+                    borderStyle: 'dashed'
+                  }}>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <HistoryToggleOff sx={{ width: 40, height: 40 }} />
+                    <Stack spacing={0.1} alignItems="flex-start">
+                      <Typography fontSize={18} color={grey[400]}>
+                        Passkey Signer
+                      </Typography>
+                      <Typography fontSize={15} fontWeight="bold">
+                        Coming Soon
+                      </Typography>
+                    </Stack>
                   </Stack>
-                </Stack>
-              </Box> */}
+                </Box> */}
             </Stack>
           </Stack>
           {!extraSigner || (address && connector?.id === 'io.privy.wallet') ? (
@@ -325,6 +349,77 @@ export default function PayflowBalanceDialog({
             <LoadingConnectWalletButton isEmbeddedSigner title="Next" />
           )}
         </Box>
+      </DialogContent>
+    </Dialog>
+  ) : (
+    <Dialog
+      open={showSuccessDialog}
+      onClose={() => {
+        setShowSuccessDialog(false);
+        navigate(0);
+      }}
+      PaperProps={{
+        sx: {
+          borderRadius: 5,
+          maxWidth: 350
+        }
+      }}
+      sx={{
+        zIndex: 1451,
+        backdropFilter: 'blur(3px)'
+      }}>
+      <DialogContent>
+        <Stack spacing={2} alignItems="center" py={3}>
+          <HiOutlineCheckCircle style={{ fontSize: 65, color: green.A700, marginBottom: 1 }} />
+          <Typography fontSize={18} fontWeight="bold" textAlign="center">
+            <i>
+              <b>{walletTitle}</b>
+            </i>{' '}
+            flow was successfully created!
+          </Typography>
+          <Stack direction="row" spacing={1} width="100%">
+            <Button
+              fullWidth
+              variant="outlined"
+              size="small"
+              color="inherit"
+              onClick={() => {
+                navigate('/payment/create?recipient=' + createdFlow?.wallets?.[0].address);
+              }}
+              sx={{
+                height: 45,
+                borderRadius: 3,
+                textTransform: 'none',
+                fontSize: 14,
+                fontWeight: 'normal',
+                '&:hover': { backgroundColor: 'action.hover' },
+                borderColor: 'divider'
+              }}>
+              Top Up
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              size="small"
+              color="inherit"
+              onClick={() => {
+                closeStateCallback();
+                setShowSuccessDialog(false);
+                navigate(0);
+              }}
+              sx={{
+                height: 45,
+                borderRadius: 3,
+                textTransform: 'none',
+                fontSize: 14,
+                fontWeight: 'normal',
+                '&:hover': { backgroundColor: 'action.hover' },
+                borderColor: 'divider'
+              }}>
+              Continue
+            </Button>
+          </Stack>
+        </Stack>
       </DialogContent>
     </Dialog>
   );
