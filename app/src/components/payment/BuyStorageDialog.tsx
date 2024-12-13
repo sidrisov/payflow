@@ -94,7 +94,7 @@ export default function BuyStorageDialog({
   const [paymentSuccessData, setPaymentSuccessData] = useState<PaymentSuccess | null>(
     payment.status === 'COMPLETED' ? { txHash: payment.hash as Hash } : null
   );
-  const successMessage = `Successfully bought ${numberOfUnits} unit${
+  const successMessage = `bought ${numberOfUnits} unit${
     numberOfUnits > 1 ? 's' : ''
   } of storage for @${recipientSocial.profileName}`;
 

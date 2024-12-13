@@ -142,7 +142,7 @@ export default function BuyFanTokenDialog({
   );
   const isGift = payment.receiverAddress !== sender.identity.address;
 
-  const successMessage = `Successfully bought ${fanTokenAmount} ${tokenName} fan token(s) ${
+  const successMessage = `bought ${fanTokenAmount} ${tokenName} fan token(s) ${
     isGift ? `for @${recipientSocial.profileName}` : ''
   }`;
 

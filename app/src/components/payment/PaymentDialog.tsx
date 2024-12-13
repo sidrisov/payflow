@@ -238,7 +238,7 @@ export default function PaymentDialog({
       recipient.identity.profile?.username ??
       shortenWalletAddressLabel2(recipient.identity.address);
 
-    return `Successfully sent ${amount} ${tokenSymbol} to @${recipientName}`;
+    return `paid ${amount} ${tokenSymbol} to @${recipientName}`;
   }, [paymentAmount, paymentToken, payment, recipient]);
 
   const getSubtitle = (category?: PaymentCategory) => {
