@@ -34,6 +34,7 @@ import static ua.sinaver.web3.payflow.service.TokenService.BASE_CHAIN_ID;
 
 @RestController
 @RequestMapping("/farcaster/frames/fan")
+@CrossOrigin(origins = "*", allowCredentials = "false")
 @Transactional
 @Slf4j
 public class FanTokenController {
@@ -53,10 +54,10 @@ public class FanTokenController {
 	private FanTokenService fanTokenService;
 
 	private static Payment getFanTokenPayment(ValidatedFrameResponseMessage validateMessage,
-	                                          User user,
-	                                          Integer receiverFid,
-	                                          String receiverAddress,
-	                                          FanToken fanToken) {
+			User user,
+			Integer receiverFid,
+			String receiverAddress,
+			FanToken fanToken) {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val castHash = validateMessage.action().cast().hash();
 		val sourceRef = String.format("https://warpcast.com/%s/%s",
@@ -76,7 +77,7 @@ public class FanTokenController {
 
 	@PostMapping("/{name}/submit")
 	public ResponseEntity<?> submit(@RequestBody FrameMessage frameMessage,
-	                                @PathVariable String name) {
+			@PathVariable String name) {
 		log.debug("Received submit buy fan token {} message request: {}", name, frameMessage);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());

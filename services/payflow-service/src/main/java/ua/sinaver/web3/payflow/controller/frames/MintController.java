@@ -33,6 +33,7 @@ import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYME
 
 @RestController
 @RequestMapping("/farcaster/frames/mint")
+@CrossOrigin(origins = "*", allowCredentials = "false")
 @Transactional
 @Slf4j
 public class MintController {

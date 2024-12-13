@@ -45,6 +45,7 @@ import static ua.sinaver.web3.payflow.controller.frames.FramesController.DEFAULT
 
 @RestController
 @RequestMapping("/farcaster/frames/pay")
+@CrossOrigin(origins = "*", allowCredentials = "false")
 @Transactional
 @Slf4j
 public class FramePaymentController {

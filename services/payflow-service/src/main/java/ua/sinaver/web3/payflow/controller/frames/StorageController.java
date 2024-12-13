@@ -36,6 +36,7 @@ import static ua.sinaver.web3.payflow.service.TokenService.OP_CHAIN_ID;
 
 @RestController
 @RequestMapping("/farcaster/frames/storage")
+@CrossOrigin(origins = "*", allowCredentials = "false")
 @Transactional
 @Slf4j
 public class StorageController {

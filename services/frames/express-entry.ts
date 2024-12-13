@@ -35,7 +35,7 @@ import { fetchSubscribers } from '@withfabric/protocol-sdks/stpv2';
 import { configureFabricSDK } from '@withfabric/protocol-sdks';
 import { wagmiConfig } from './utils/wagmi';
 import { API_URL } from './utils/constants';
-import { RHINESTONE_ATTESTER_ADDRESS } from '@rhinestone/module-sdk/module';
+import cors from 'cors';
 
 dotenv.config();
 
@@ -85,6 +85,12 @@ startServer();
 
 async function startServer() {
   const app = express();
+  app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }));
+
   app.use(express.static('assets'));
 
   if (isProduction) {

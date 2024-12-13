@@ -33,6 +33,7 @@ import static ua.sinaver.web3.payflow.service.TokenService.BASE_CHAIN_ID;
 
 @RestController
 @RequestMapping("/farcaster/frames/hypersub")
+@CrossOrigin(origins = "*", allowCredentials = "false")
 @Transactional
 @Slf4j
 public class HypersubController {

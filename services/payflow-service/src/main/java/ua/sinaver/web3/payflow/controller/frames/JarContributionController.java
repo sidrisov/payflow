@@ -39,6 +39,7 @@ import static ua.sinaver.web3.payflow.service.TransactionService.isFramePaymentM
 
 @RestController
 @RequestMapping("/farcaster/frames/jar")
+@CrossOrigin(origins = "*", allowCredentials = "false")
 @Transactional
 @Slf4j
 public class JarContributionController {
