@@ -20,7 +20,6 @@ export default function CastActionButton({
 
   const openCastInstallUrl = useCallback(async () => {
     if (installUrl) {
-      FrameV2SDK.actions.close();
       FrameV2SDK.actions.openUrl(installUrl);
     }
   }, [installUrl]);

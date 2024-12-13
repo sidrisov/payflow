@@ -103,7 +103,6 @@ export default function PaymentRewardCastActionComposerDialog({
 
   const openCastInstallUrl = useCallback(async () => {
     if (warpcastInstallActionUrl) {
-      FrameV2SDK.actions.close();
       FrameV2SDK.actions.openUrl(warpcastInstallActionUrl);
     }
   }, [warpcastInstallActionUrl]);

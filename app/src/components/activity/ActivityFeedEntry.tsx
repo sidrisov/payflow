@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Box, BoxProps, IconButton, Stack, Typography, Skeleton } from '@mui/material';
 import { MoreHoriz } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
 import { PaymentType } from '../../types/PaymentType';
 import { IdentityType, ProfileType } from '../../types/ProfileType';
@@ -42,6 +43,8 @@ export default function PublicProfileActivityFeedSection(
     payment.receiverFid?.toString(),
     payment.receiverAddress ?? payment.receiver?.identity
   );
+
+  const navigate = useNavigate();
 
   if (isLoadingSenderSocial || isLoadingReceiverSocial) {
     return (
@@ -96,7 +99,18 @@ export default function PublicProfileActivityFeedSection(
         p={1.5}
         direction="row"
         spacing={1}
-        sx={{ border: 1, borderRadius: 5, borderColor: 'divider' }}>
+        onClick={() => {
+          navigate(`/payment/${payment.referenceId}`);
+        }}
+        sx={{
+          border: 1,
+          borderRadius: 5,
+          borderColor: 'divider',
+          cursor: 'pointer',
+          '&:hover': {
+            backgroundColor: 'action.hover'
+          }
+        }}>
         <UserAvatar
           profile={payment.sender}
           address={payment.senderAddress}
@@ -113,14 +127,6 @@ export default function PublicProfileActivityFeedSection(
                 profile={payment.sender}
                 address={payment.senderAddress}
                 ens={ensNameFrom ?? undefined}
-                /*               onMouseEnter={(event) => {
-                setProfileDetailsPopoverAnchorEl(event.currentTarget);
-                setPopOverProfile(payment.sender);
-              }}
-              onMouseLeave={() => {
-                setProfileDetailsPopoverAnchorEl(null);
-                setPopOverProfile(undefined);
-              }} */
               />
 
               <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
@@ -140,14 +146,6 @@ export default function PublicProfileActivityFeedSection(
                     address={payment.receiverAddress}
                     ens={ensNameTo ?? undefined}
                     social={receiverSocial ?? undefined}
-                    /* onMouseEnter={(event) => {
-                    setProfileDetailsPopoverAnchorEl(event.currentTarget);
-                    setPopOverProfile(payment.receiver);
-                  }}
-                  onMouseLeave={() => {
-                    setProfileDetailsPopoverAnchorEl(null);
-                    setPopOverProfile(undefined);
-                  }} */
                   />
                 </Stack>
               )}
