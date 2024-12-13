@@ -162,66 +162,70 @@ export default function MintDialog({
     toast.success('Mint frame link copied!');
   };
 
-  const shareComponents = useMemo(() => (
-    <>
-      <Stack direction="row" spacing={1}>
-        <Button
-          fullWidth
-          onClick={() => {
-            if (isFrameV2) {
-              FrameV2SDK.actions.openUrl(createComposeCastUrl(text, shareFrameUrl, channelKey));
-            } else if (isMiniApp) {
-              window.parent.postMessage(
-                createCastPostMessage(text, shareFrameUrl, channelKey),
-                '*'
-              );
-            } else {
-              window.open(createComposeCastUrl(text, shareFrameUrl, channelKey), '_blank');
-            }
-          }}
-          startIcon={<SiFarcaster />}
-          variant="outlined"
-          size="small"
-          color="inherit"
-          sx={{
-            fontSize: 14,
-            fontWeight: 'normal',
-            height: 45,
-            '&:hover': { backgroundColor: 'action.hover' },
-            borderRadius: 3,
-            borderColor: 'divider',
-            textTransform: 'none'
-          }}>
-          Cast
-        </Button>
+  const shareComponents = useMemo(
+    () => (
+      <>
+        <Stack direction="row" spacing={1}>
+          <Button
+            fullWidth
+            onClick={() => {
+              if (isFrameV2) {
+                FrameV2SDK.actions.openUrl(createComposeCastUrl(text, shareFrameUrl, channelKey));
+              } else if (isMiniApp) {
+                window.parent.postMessage(
+                  createCastPostMessage(text, shareFrameUrl, channelKey),
+                  '*'
+                );
+              } else {
+                window.open(createComposeCastUrl(text, shareFrameUrl, channelKey), '_blank');
+              }
+            }}
+            startIcon={<SiFarcaster />}
+            variant="outlined"
+            size="small"
+            color="inherit"
+            sx={{
+              fontSize: 14,
+              fontWeight: 'normal',
+              height: 45,
+              '&:hover': { backgroundColor: 'action.hover' },
+              borderRadius: 3,
+              borderColor: 'divider',
+              textTransform: 'none'
+            }}>
+            Cast
+          </Button>
 
-        <Button
-          fullWidth
-          onClick={handleCopyLink}
-          startIcon={<TbCopy />}
-          variant="outlined"
-          size="small"
-          color="inherit"
-          sx={{
-            fontSize: 14,
-            fontWeight: 'normal',
-            height: 45,
-            '&:hover': { backgroundColor: 'action.hover' },
-            borderRadius: 3,
-            borderColor: 'divider',
-            textTransform: 'none'
-          }}>
-          Copy link
-        </Button>
-      </Stack>
-    </>
-  ), [text, shareFrameUrl, channelKey, isFrameV2, isMiniApp]);
+          <Button
+            fullWidth
+            onClick={handleCopyLink}
+            startIcon={<TbCopy />}
+            variant="outlined"
+            size="small"
+            color="inherit"
+            sx={{
+              fontSize: 14,
+              fontWeight: 'normal',
+              height: 45,
+              '&:hover': { backgroundColor: 'action.hover' },
+              borderRadius: 3,
+              borderColor: 'divider',
+              textTransform: 'none'
+            }}>
+            Copy link
+          </Button>
+        </Stack>
+      </>
+    ),
+    [text, shareFrameUrl, channelKey, isFrameV2, isMiniApp]
+  );
 
   return paymentSuccessData ? (
     <PaymentSuccessDialog
       message={successMessage}
       receiptUrl={getReceiptUrl({ ...payment, hash: paymentSuccessData.txHash }, false)}
       shareComponents={shareComponents}
+      completedAt={new Date(payment?.completedAt ?? Date.now())}
     />
   ) : (
     <BasePaymentDialog

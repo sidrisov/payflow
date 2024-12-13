@@ -16,6 +16,7 @@ interface PaymentSuccessDialogProps {
   message: string;
   receiptUrl: string;
   shareComponents?: React.ReactNode;
+  completedAt?: Date;
 }
 
 const hyperSubUrl = 'https://hypersub.xyz/s/payflow-pro-17zbymgz59atc';
@@ -27,7 +28,8 @@ export default function PaymentSuccessDialog({
   },
   message,
   receiptUrl,
-  shareComponents
+  shareComponents,
+  completedAt
 }: PaymentSuccessDialogProps) {
   const navigate = useNavigate();
   const { isFrameV2 } = useContext(ProfileContext);
@@ -36,10 +38,22 @@ export default function PaymentSuccessDialog({
     <ResponsiveDialog open={open} onClose={onClose}>
       <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" p={1}>
         <HiOutlineCheckCircle style={{ fontSize: 65, color: green.A700, marginBottom: 1 }} />
-        <Typography fontSize={18} fontWeight="bold" textAlign="center" mb={1}>
+        <Typography fontSize={18} fontWeight="bold" textAlign="center">
           Completed
         </Typography>
-        <Typography fontSize={18} textAlign="center" mb={2} sx={{ color: 'text.secondary' }}>
+        {completedAt && (
+          <Typography fontSize={14} textAlign="center" mb={1} sx={{ color: 'text.secondary' }}>
+            {completedAt.toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric'
+            }) +
+              ' ' +
+              completedAt.toLocaleTimeString()}
+          </Typography>
+        )}
+
+        <Typography fontSize={18} textAlign="center" my={1} sx={{ color: 'text.secondary' }}>
           {message}
         </Typography>
         {shareComponents && (

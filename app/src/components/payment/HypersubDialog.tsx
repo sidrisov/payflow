@@ -154,6 +154,7 @@ export default function HypersubDialog({
     <PaymentSuccessDialog
       message={successMessage}
       receiptUrl={getReceiptUrl({ ...payment, hash: paymentSuccessData.txHash }, false)}
+      completedAt={new Date(payment?.completedAt ?? Date.now())}
     />
   ) : (
     <BasePaymentDialog

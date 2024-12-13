@@ -273,6 +273,7 @@ export default function PaymentDialog({
         },
         false
       )}
+      completedAt={new Date(payment?.completedAt ?? Date.now())}
     />
   ) : (
     <BasePaymentDialog

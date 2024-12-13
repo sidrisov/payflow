@@ -222,6 +222,7 @@ export default function BuyFanTokenDialog({
       message={successMessage}
       receiptUrl={getReceiptUrl({ ...payment, hash: paymentSuccessData.txHash }, false)}
       shareComponents={shareComponents}
+      completedAt={new Date(payment?.completedAt ?? Date.now())}
     />
   ) : (
     <BasePaymentDialog
