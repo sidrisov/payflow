@@ -1,6 +1,5 @@
 import { IconButton, IconButtonProps, Tooltip } from '@mui/material';
 import { copyToClipboard } from '../../utils/copyToClipboard';
-import { toast } from 'react-toastify';
 import { ContentCopy } from '@mui/icons-material';
 
 export default function CopyToClipboardIconButton({
@@ -18,7 +17,6 @@ export default function CopyToClipboardIconButton({
         onClick={(event) => {
           event.stopPropagation();
           copyToClipboard(value);
-          toast.success('Copied!');
         }}>
         <ContentCopy sx={{ width: iconSize, height: iconSize }} />
       </IconButton>

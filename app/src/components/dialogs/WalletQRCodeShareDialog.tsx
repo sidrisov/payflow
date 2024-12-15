@@ -101,8 +101,7 @@ export default function WalletQRCodeShareDialog({
                 <IconButton
                   size="small"
                   onClick={() => {
-                    copyToClipboard(selectedWallet.address);
-                    toast.success('Address is copied!');
+                    copyToClipboard(selectedWallet.address, 'Address copied!');
                   }}>
                   <ContentCopy fontSize="small" />
                 </IconButton>

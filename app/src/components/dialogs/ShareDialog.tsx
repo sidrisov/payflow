@@ -61,8 +61,7 @@ export default function ShareDialog({
             label={link?.replace(/^https?:\/\//, '')}
             clickable
             onClick={() => {
-              copyToClipboard(link);
-              toast.success('Link is copied!');
+              copyToClipboard(link, 'Link copied!');
             }}
             sx={{
               alignSelf: 'center',

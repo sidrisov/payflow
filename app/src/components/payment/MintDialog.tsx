@@ -158,8 +158,7 @@ export default function MintDialog({
   });
 
   const handleCopyLink = () => {
-    copyToClipboard(shareFrameUrl);
-    toast.success('Mint frame link copied!');
+    copyToClipboard(shareFrameUrl, "Mint frame link copied!");
   };
 
   const shareComponents = useMemo(

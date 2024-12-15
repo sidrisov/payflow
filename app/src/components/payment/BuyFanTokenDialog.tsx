@@ -154,8 +154,7 @@ export default function BuyFanTokenDialog({
   });
 
   const handleCopyLink = () => {
-    copyToClipboard(shareFrameUrl);
-    toast.success('Fan token frame link copied!');
+    copyToClipboard(shareFrameUrl, 'Fan token frame link copied!');
   };
 
   const shareComponents = (

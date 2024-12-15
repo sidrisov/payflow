@@ -146,8 +146,7 @@ export function IdentityMenu({
         <MenuItem
           onClick={() => {
             const paymentFrameUrl = `${FRAMES_URL}/${address}`;
-            copyToClipboard(paymentFrameUrl);
-            toast.success('Pay Me frame URL copied!');
+            copyToClipboard(paymentFrameUrl, 'Pay Me frame URL copied!');
           }}>
           <ListItemIcon>
             <FaSquare />
@@ -163,8 +162,7 @@ export function IdentityMenu({
         {ens && (
           <MenuItem
             onClick={() => {
-              copyToClipboard(ens);
-              toast.success('ENS copied!');
+              copyToClipboard(ens, 'ENS copied!');
             }}>
             <ListItemIcon>
               <TbCopy />
@@ -174,8 +172,7 @@ export function IdentityMenu({
         )}
         <MenuItem
           onClick={() => {
-            copyToClipboard(address);
-            toast.success('Address copied!');
+            copyToClipboard(address, 'Address copied!');
           }}>
           <ListItemIcon>
             <TbCopy />

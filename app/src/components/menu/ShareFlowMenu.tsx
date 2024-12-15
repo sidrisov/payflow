@@ -24,8 +24,7 @@ export function ShareFlowMenu({
       <MenuList dense disablePadding>
         <MenuItem
           onClick={() => {
-            copyToClipboard(`${DAPP_URL}/${profile.username}`);
-            toast.success('Profile link copied!');
+            copyToClipboard(`${DAPP_URL}/${profile.username}`, 'Profile link copied!');
           }}>
           <ListItemIcon>
             <Person fontSize="small" />
@@ -35,8 +34,7 @@ export function ShareFlowMenu({
 
         <MenuItem
           onClick={() => {
-            copyToClipboard(`${FRAMES_URL}/${profile.username}`);
-            toast.success('Profile frame link copied!');
+            copyToClipboard(`${FRAMES_URL}/${profile.username}`, 'Profile frame link copied!');
           }}>
           <ListItemIcon>
             <FilterFrames fontSize="small" />
@@ -48,8 +46,7 @@ export function ShareFlowMenu({
           <MenuItem
             onClick={() => {
               const link = `${DAPP_URL}/jar/${selectedFlow.uuid}`;
-              copyToClipboard(link);
-              toast.success('Jar link copied!');
+              copyToClipboard(link, 'Jar link copied!');
             }}
             sx={{ fontSize: '10' }}>
             <ListItemIcon>
@@ -63,8 +60,7 @@ export function ShareFlowMenu({
           <MenuItem
             onClick={() => {
               const link = `${FRAMES_URL}/jar/${selectedFlow.uuid}`;
-              copyToClipboard(link);
-              toast.success('Jar frame link copied!');
+              copyToClipboard(link, 'Jar frame link copied!');
             }}>
             <ListItemIcon>
               <FilterFrames fontSize="small" />

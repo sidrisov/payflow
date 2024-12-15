@@ -9,6 +9,7 @@ import { FcApproval } from 'react-icons/fc';
 import { FaRegHeart } from 'react-icons/fa6';
 import FrameV2SDK from '@farcaster/frame-sdk';
 import { ProfileContext } from '../../contexts/UserContext';
+import { copyToClipboard } from '../../utils/copyToClipboard';
 
 interface PaymentSuccessDialogProps {
   open?: boolean;
@@ -32,7 +33,7 @@ export default function PaymentSuccessDialog({
   completedAt
 }: PaymentSuccessDialogProps) {
   const navigate = useNavigate();
-  const { isFrameV2 } = useContext(ProfileContext);
+  const { isFrameV2, isMiniApp } = useContext(ProfileContext);
 
   return (
     <ResponsiveDialog open={open} onClose={onClose}>
@@ -80,8 +81,18 @@ export default function PaymentSuccessDialog({
           sx={{ color: 'text.secondary', whiteSpace: 'balance' }}>
           You can view the payment details in the receipts section or{' '}
           <Link
-            href={receiptUrl}
-            target="_blank"
+            {...(isFrameV2
+              ? {
+                  onClick: () => FrameV2SDK.actions.openUrl(receiptUrl)
+                }
+              : isMiniApp
+                ? {
+                    onClick: () => copyToClipboard(receiptUrl)
+                  }
+                : {
+                    href: receiptUrl,
+                    target: '_blank'
+                  })}
             color="inherit"
             sx={{ display: 'inline-flex', alignItems: 'center' }}>
             click here <OpenInNewIcon sx={{ fontSize: 12, ml: 0.5 }} />
@@ -128,10 +139,14 @@ export default function PaymentSuccessDialog({
                 ? {
                     onClick: () => FrameV2SDK.actions.openUrl(hyperSubUrl)
                   }
-                : {
-                    href: hyperSubUrl,
-                    target: '_blank'
-                  })}
+                : isMiniApp
+                  ? {
+                      onClick: () => copyToClipboard(hyperSubUrl)
+                    }
+                  : {
+                      href: hyperSubUrl,
+                      target: '_blank'
+                    })}
               startIcon={<FcApproval size={20} />}
               variant="outlined"
               size="small"
