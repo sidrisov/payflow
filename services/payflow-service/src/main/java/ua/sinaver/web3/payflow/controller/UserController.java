@@ -6,6 +6,7 @@ import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.PreferredTokens;
 import ua.sinaver.web3.payflow.data.User;
@@ -14,7 +15,6 @@ import ua.sinaver.web3.payflow.message.*;
 import ua.sinaver.web3.payflow.message.farcaster.StorageUsage;
 import ua.sinaver.web3.payflow.service.api.*;
 
-import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -44,9 +44,9 @@ public class UserController {
 	private IFarcasterNeynarService neynarService;
 
 	@GetMapping("/me")
-	public ProfileMessage user(Principal principal) {
-		log.trace("{} fetching its profile info", principal.getName());
-		val user = userService.findByIdentity(principal.getName());
+	public ProfileMessage user(@AuthenticationPrincipal String identity) {
+		log.trace("{} fetching its profile info", identity);
+		val user = userService.findByIdentity(identity);
 		if (user != null) {
 			userService.updateLastSeen(user);
 			return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
@@ -66,11 +66,11 @@ public class UserController {
 	}
 
 	@GetMapping("/me/contacts")
-	public ContactsResponseMessage contacts(Principal principal,
-	                                        @RequestHeader(value = "Cache-Control", required = false)
-	                                        String cacheControl) {
-		log.debug("{} fetching contacts", principal.getName());
-		val user = userService.findByIdentity(principal.getName());
+	public ContactsResponseMessage allContacts(@AuthenticationPrincipal String identity,
+	                                           @RequestHeader(value = "Cache-Control", required = false)
+	                                           String cacheControl) {
+		log.debug("{} fetching contacts", identity);
+		val user = userService.findByIdentity(identity);
 		if (user != null) {
 			try {
 				if (StringUtils.equals(cacheControl, "no-cache")) {
@@ -78,14 +78,14 @@ public class UserController {
 				}
 				val response = contactBookService.getAllContacts(user);
 				if (log.isTraceEnabled()) {
-					log.trace("All contacts for {}: {}", principal.getName(), response.contacts());
+					log.trace("All contacts for {}: {}", identity, response.contacts());
 				} else {
-					log.debug("All contacts for {}: {}", principal.getName(),
+					log.debug("All contacts for {}: {}", identity,
 							response.contacts().size());
 				}
 				return response;
 			} catch (Throwable t) {
-				log.debug("Error fetching contacts for {}", user.getUsername(), t);
+				log.debug("Error fetching contacts for {}", identity, t);
 			}
 		}
 
@@ -93,9 +93,9 @@ public class UserController {
 	}
 
 	@GetMapping("/me/contacts/{identity}")
-	public Wallet contacts(@PathVariable String identity, Principal principal) {
-		log.trace("{} fetching contact identity {}", principal.getName(), identity);
-		val user = userService.findByIdentity(principal.getName());
+	public Wallet contact(@PathVariable String identity, @AuthenticationPrincipal String authenticatedIdentity) {
+		log.trace("{} fetching contact identity {}", authenticatedIdentity, identity);
+		val user = userService.findByIdentity(authenticatedIdentity);
 		if (user != null) {
 			val metadata = socialGraphService.getSocialMetadata(identity);
 			log.trace("Social Metadata for {}: {}", identity, metadata);
@@ -106,10 +106,10 @@ public class UserController {
 	}
 
 	@PostMapping("/me/favourites")
-	public void updateFavouriteContact(Principal principal,
+	public void updateFavouriteContact(@AuthenticationPrincipal String identity,
 	                                   @RequestBody ContactMessage contactMessage) {
-		log.trace("{} updates favourite contact {}", principal.getName(), contactMessage);
-		val user = userService.findByIdentity(principal.getName());
+		log.trace("{} updates favourite contact {}", identity, contactMessage);
+		val user = userService.findByIdentity(identity);
 		if (user != null) {
 			contactBookService.update(contactMessage, user);
 		} else {
@@ -118,11 +118,11 @@ public class UserController {
 	}
 
 	@PostMapping("/me")
-	public void updateProfile(Principal principal, @RequestBody ProfileMessage profile,
+	public void updateProfile(@AuthenticationPrincipal String identity, @RequestBody ProfileMessage profile,
 	                          @RequestParam(required = false, name = "code") String invitationCode) {
-		log.debug("Update profile: {} by {} with code {}", profile, principal.getName(), invitationCode);
+		log.debug("Update profile: {} by {} with code {}", profile, identity, invitationCode);
 
-		userService.updateProfile(principal.getName(), profile, invitationCode);
+		userService.updateProfile(identity, profile, invitationCode);
 
 	}
 
@@ -154,8 +154,9 @@ public class UserController {
 	}
 
 	@GetMapping({"/identities/{usernameOrAddress}", "/identities/fid/{fid}"})
-	public ResponseEntity<IdentityMessage> getIdentity(Principal principal, @PathVariable(value = "usernameOrAddress",
-			required = false) String usernameOrAddress, @PathVariable(value = "fid", required = false) Integer fid) {
+	public ResponseEntity<IdentityMessage> getIdentity(@AuthenticationPrincipal String identity,
+	                                                   @PathVariable(value = "usernameOrAddress", required = false) String usernameOrAddress,
+	                                                   @PathVariable(value = "fid", required = false) Integer fid) {
 		log.debug("Fetching identity info: {} or {}", usernameOrAddress, fid);
 
 		if (StringUtils.isBlank(usernameOrAddress) && fid == null) {
@@ -197,8 +198,8 @@ public class UserController {
 			}
 
 			String loggedIdentity = null;
-			if (principal != null) {
-				val user = userService.findByIdentity(principal.getName());
+			if (identity != null) {
+				val user = userService.findByIdentity(identity);
 				if (user != null) {
 					loggedIdentity = user.getIdentity();
 				}
@@ -242,21 +243,19 @@ public class UserController {
 	}
 
 	@GetMapping("/me/storage")
-	public ResponseEntity<StorageUsage> getStorageUsage(Principal principal) {
-		val username = principal != null ? principal.getName() : null;
-
-		if (StringUtils.isBlank(username)) {
+	public ResponseEntity<StorageUsage> getStorageUsage(@AuthenticationPrincipal String identity) {
+		if (StringUtils.isBlank(identity)) {
 			log.error("User not authenticated!");
 			return ResponseEntity.badRequest().build();
 		}
 
-		val user = userService.findByUsername(username);
+		val user = userService.findByUsername(identity);
 		if (user == null) {
 			log.error("User not found!");
 			return ResponseEntity.badRequest().build();
 		}
 
-		log.debug("Fetching storage for {}", username);
+		log.debug("Fetching storage for {}", identity);
 
 		val fid = identityService.getIdentityFid(user.getIdentity());
 		if (fid == null) {

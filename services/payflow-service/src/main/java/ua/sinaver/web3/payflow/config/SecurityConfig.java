@@ -2,9 +2,9 @@ package ua.sinaver.web3.payflow.config;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
@@ -17,15 +17,16 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import ua.sinaver.web3.payflow.auth.ClientApiKeyAuthFilter;
+import ua.sinaver.web3.payflow.auth.HandleExceptionAuthenticationEntryPoint;
 import ua.sinaver.web3.payflow.auth.JwtAuthenticationFilter;
-import ua.sinaver.web3.payflow.auth.Web3AuthenticationEntryPoint;
 import ua.sinaver.web3.payflow.auth.Web3AuthenticationProvider;
 
 @Configuration
 public class SecurityConfig {
 
 	@Autowired
-	private Web3AuthenticationEntryPoint web3EntryPoint;
+	private HandleExceptionAuthenticationEntryPoint exceptionAuthenticationEntryPoint;
 
 	@Autowired
 	private Web3AuthenticationProvider web3AuthProvider;
@@ -33,8 +34,8 @@ public class SecurityConfig {
 	@Autowired
 	private JwtAuthenticationFilter jwtAuthenticationFilter;
 
-	@Value("${payflow.dapp.url}")
-	private String payflowDappUrl;
+	@Autowired
+	private ClientApiKeyAuthFilter clientApiKeyAuthFilter;
 
 	/*@Bean
 	public WebMvcConfigurer corsConfigurer() {
@@ -49,9 +50,27 @@ public class SecurityConfig {
 	}*/
 
 	@Bean
-	SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager)
+	@Order(1)
+	SecurityFilterChain protocolFilterChain(HttpSecurity http) throws Exception {
+		return http
+				.securityMatcher("/protocol/**")
+				.csrf(AbstractHttpConfigurer::disable)
+				.sessionManagement(session -> session
+						.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.authorizeHttpRequests(requests -> requests
+						.anyRequest().authenticated())
+				.addFilterBefore(clientApiKeyAuthFilter, UsernamePasswordAuthenticationFilter.class)
+				.exceptionHandling(exception -> exception
+						.authenticationEntryPoint(exceptionAuthenticationEntryPoint))
+				.build();
+	}
+
+	@Bean
+	@Order(2)
+	SecurityFilterChain appFilterChain(HttpSecurity http, AuthenticationManager authenticationManager)
 			throws Exception {
 		return http
+				.securityMatcher("/**")
 				.csrf(AbstractHttpConfigurer::disable)
 				.cors(Customizer.withDefaults())
 				.requestCache(RequestCacheConfigurer::disable)
@@ -118,7 +137,7 @@ public class SecurityConfig {
 						}))
 				.addFilterAfter(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 				.exceptionHandling(exception -> exception
-						.authenticationEntryPoint(web3EntryPoint))
+						.authenticationEntryPoint(exceptionAuthenticationEntryPoint))
 				.build();
 	}
 

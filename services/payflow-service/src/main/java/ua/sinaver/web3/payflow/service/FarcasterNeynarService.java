@@ -297,7 +297,7 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 		log.debug("Calling Neynar Created Subscriptions API by fid {}", fid);
 		return neynarClient.get()
 				.uri(uriBuilder -> uriBuilder.path("/user/subscriptions_created")
-						.queryParam("fid", /* fid == 19129 ? 576 : */fid)
+						.queryParam("fid", fid)
 						.queryParam("subscription_provider", "fabric_stp")
 						.build())
 				.retrieve()
@@ -329,7 +329,7 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 		log.debug("Calling Neynar Subscribers[{}] API by fid {}", fabric ? "Hypersub" : "Paragraph", fid);
 		return neynarClient.get()
 				.uri(uriBuilder -> uriBuilder.path("/user/subscribers")
-						.queryParam("fid", fabric && fid == 19129 ? 576 : fid)
+						.queryParam("fid", fid)
 						.queryParam("subscription_provider", fabric ? "fabric_stp" : "paragraph")
 						.build())
 				.retrieve()

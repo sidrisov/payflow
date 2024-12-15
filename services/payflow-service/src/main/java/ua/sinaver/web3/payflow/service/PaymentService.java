@@ -220,6 +220,16 @@ public class PaymentService {
 					paymentRepository.save(payment);
 					// TODO: don't notify for now
 					// notificationService.notifyPaymentCompletion(payment, payment.getSender());
+				} else if (GlideSessionResponse.PaymentStatus.REFUNDED
+						.equals(sessionResponse.getPaymentStatus())) {
+					payment.setRefundHash(sessionResponse.getRefundTransactionHash());
+					payment.setStatus(Payment.PaymentStatus.REFUNDED);
+					payment.setCompletedAt(Instant.now());
+					paymentRepository.save(payment);
+					notificationService.notifyPaymentCompletion(payment, payment.getSender());
+
+					log.info("Successfully updated payment as completed: {}",
+							payment.getReferenceId());
 				}
 			} else if (payment.getStatus().equals(Payment.PaymentStatus.PENDING_REFUND)) {
 				if (GlideSessionResponse.PaymentStatus.REFUNDED.equals(sessionResponse.getPaymentStatus())) {

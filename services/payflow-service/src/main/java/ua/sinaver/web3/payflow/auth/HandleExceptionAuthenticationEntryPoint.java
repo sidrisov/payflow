@@ -13,7 +13,7 @@ import java.io.IOException;
 
 @Slf4j
 @ControllerAdvice
-public class Web3AuthenticationEntryPoint implements AuthenticationEntryPoint {
+public class HandleExceptionAuthenticationEntryPoint implements AuthenticationEntryPoint {
 	@Override
 	public void commence(HttpServletRequest request, HttpServletResponse response,
 	                     AuthenticationException authException)
