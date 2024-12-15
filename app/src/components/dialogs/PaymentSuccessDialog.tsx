@@ -124,13 +124,14 @@ export default function PaymentSuccessDialog({
             </Button>
             <Button
               fullWidth
-              onClick={() => {
-                if (isFrameV2) {
-                  FrameV2SDK.actions.openUrl(hyperSubUrl);
-                } else {
-                  window.open(hyperSubUrl, '_blank');
-                }
-              }}
+              {...(isFrameV2
+                ? {
+                    onClick: () => FrameV2SDK.actions.openUrl(hyperSubUrl)
+                  }
+                : {
+                    href: hyperSubUrl,
+                    target: '_blank'
+                  })}
               startIcon={<FcApproval size={20} />}
               variant="outlined"
               size="small"
