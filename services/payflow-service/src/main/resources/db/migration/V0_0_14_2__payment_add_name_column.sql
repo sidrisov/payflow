@@ -1,0 +1,2 @@
+ALTER TABLE payment
+ADD COLUMN name VARCHAR(256);

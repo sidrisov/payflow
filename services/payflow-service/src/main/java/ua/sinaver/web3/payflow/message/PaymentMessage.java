@@ -8,6 +8,7 @@ import java.time.Instant;
 public record PaymentMessage(
 		String referenceId,
 		Payment.PaymentType type,
+		String name,
 		String category,
 		Payment.PaymentStatus status,
 		ProfileMetaMessage receiver,
@@ -37,6 +38,7 @@ public record PaymentMessage(
 		return new PaymentMessage(
 				includeRef ? payment.getReferenceId() : null,
 				payment.getType(),
+				payment.getName(),
 				payment.getCategory(),
 				getStatusWithExpiryCheck(payment),
 				payment.getReceiver() != null ? ProfileMetaMessage.convert(payment.getReceiver(),

@@ -28,6 +28,9 @@ public class Payment {
 	@Enumerated(EnumType.STRING)
 	private PaymentType type;
 
+	@Column(name = "name", length = 256)
+	private String name;
+
 	@Column(name = "reference_id", nullable = false)
 	private String referenceId;
 

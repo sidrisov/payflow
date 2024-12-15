@@ -254,7 +254,7 @@ export default function PaymentDialog({
     }
   };
 
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState(payment?.comment ?? '');
 
   return paymentSuccessData ? (
     <PaymentSuccessDialog
@@ -280,7 +280,7 @@ export default function PaymentDialog({
       mode={crossChainMode ? 'cross-chain' : 'normal'}
       alwaysShowBackButton={alwaysShowBackButton}
       title={props.title ?? 'New Payment'}
-      subtitle={getSubtitle(payment?.category)}
+      subtitle={payment?.name ?? getSubtitle(payment?.category)}
       expiresAt={payment?.expiresAt}
       closeStateCallback={closeStateCallback}
       footerContent={

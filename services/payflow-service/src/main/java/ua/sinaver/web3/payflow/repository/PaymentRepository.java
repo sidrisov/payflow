@@ -35,7 +35,8 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 
 	Payment findByReferenceId(String referenceId);
 
-	Payment findByReferenceIdAndSender(String referenceId, User sender);
+	@Query("SELECT p FROM Payment p WHERE p.referenceId = :referenceId AND (p.sender IS NULL OR p.sender = :sender)")
+	Payment findByReferenceIdAndSender(@Param("referenceId") String referenceId, @Param("sender") User sender);
 
 	// JPA: UPGRADE_SKIPLOCKED - PESSIMISTIC_WRITE with a
 	// javax.persistence.lock.timeout setting of -2

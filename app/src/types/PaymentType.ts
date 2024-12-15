@@ -23,6 +23,7 @@ export type PaymentCategory =
 export interface PaymentType {
   referenceId?: string;
   type: Type;
+  name?: string;
   category?: PaymentCategory;
   status: PaymentStatus;
   sender: ProfileType;
