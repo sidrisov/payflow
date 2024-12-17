@@ -18,7 +18,6 @@ import ua.sinaver.web3.payflow.message.alfafrens.ChannelSubscribersAndStakesResp
 import ua.sinaver.web3.payflow.message.alfafrens.UserByFidResponseMessage;
 import ua.sinaver.web3.payflow.message.subscription.SubscriberMessage;
 import ua.sinaver.web3.payflow.message.subscription.SubscribersMessage;
-import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
@@ -42,7 +41,7 @@ public class IdentitySubscriptionsService {
 	private ISocialGraphService socialGraphService;
 
 	@Autowired
-	private IFarcasterNeynarService neynarService;
+	private FarcasterNeynarService neynarService;
 
 	@Value("${payflow.hypersub.contacts.limit:10}")
 	private int hypersubContactsLimit;

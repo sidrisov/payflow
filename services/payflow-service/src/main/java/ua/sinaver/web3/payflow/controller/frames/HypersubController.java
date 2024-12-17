@@ -16,11 +16,7 @@ import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.message.farcaster.ValidatedFrameResponseMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
-import ua.sinaver.web3.payflow.service.FanTokenService;
-import ua.sinaver.web3.payflow.service.IdentityService;
-import ua.sinaver.web3.payflow.service.LinkService;
-import ua.sinaver.web3.payflow.service.UserService;
-import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
+import ua.sinaver.web3.payflow.service.*;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.util.ArrayList;
@@ -38,7 +34,7 @@ import static ua.sinaver.web3.payflow.service.TokenService.BASE_CHAIN_ID;
 @Slf4j
 public class HypersubController {
 	@Autowired
-	private IFarcasterNeynarService neynarService;
+	private FarcasterNeynarService neynarService;
 	@Autowired
 	private PaymentRepository paymentRepository;
 	@Autowired

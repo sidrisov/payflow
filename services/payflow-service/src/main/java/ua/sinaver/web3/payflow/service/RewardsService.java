@@ -17,7 +17,6 @@ import ua.sinaver.web3.payflow.graphql.generated.types.FarcasterChannel;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.repository.TopCasterRewardScheduleRepository;
-import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -35,7 +34,7 @@ public class RewardsService {
 	private final ScheduledExecutorService scheduler = Executors
 			.newSingleThreadScheduledExecutor(Thread.ofVirtual().factory());
 	@Autowired
-	private IFarcasterNeynarService neynarService;
+	private FarcasterNeynarService neynarService;
 	@Autowired
 	private IdentityService identityService;
 	@Autowired

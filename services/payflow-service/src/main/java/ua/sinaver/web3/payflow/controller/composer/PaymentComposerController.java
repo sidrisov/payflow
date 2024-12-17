@@ -18,9 +18,9 @@ import ua.sinaver.web3.payflow.message.farcaster.ComposerActionState;
 import ua.sinaver.web3.payflow.message.farcaster.ComposerCastActionMeta;
 import ua.sinaver.web3.payflow.message.farcaster.FarcasterUser;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
+import ua.sinaver.web3.payflow.service.FarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.IdentityService;
 import ua.sinaver.web3.payflow.service.UserService;
-import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.net.URLDecoder;
@@ -43,7 +43,7 @@ public class PaymentComposerController {
 			new ComposerCastActionMeta.Action("post"));
 
 	@Autowired
-	private IFarcasterNeynarService neynarService;
+	private FarcasterNeynarService neynarService;
 	@Autowired
 	private IdentityService identityService;
 	@Autowired

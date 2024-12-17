@@ -11,13 +11,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import ua.sinaver.web3.payflow.message.SiweMessage;
-import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
+import ua.sinaver.web3.payflow.service.FarcasterNeynarService;
 
 @Slf4j
 @Component
 public class Web3AuthenticationProvider implements AuthenticationProvider {
 	@Autowired
-	private IFarcasterNeynarService neynarService;
+	private FarcasterNeynarService neynarService;
 
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {

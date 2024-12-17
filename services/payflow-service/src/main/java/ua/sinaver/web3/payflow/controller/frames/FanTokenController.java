@@ -17,11 +17,7 @@ import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.message.farcaster.ValidatedFrameResponseMessage;
 import ua.sinaver.web3.payflow.message.moxie.FanToken;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
-import ua.sinaver.web3.payflow.service.FanTokenService;
-import ua.sinaver.web3.payflow.service.IdentityService;
-import ua.sinaver.web3.payflow.service.LinkService;
-import ua.sinaver.web3.payflow.service.UserService;
-import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
+import ua.sinaver.web3.payflow.service.*;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.util.ArrayList;
@@ -39,7 +35,7 @@ import static ua.sinaver.web3.payflow.service.TokenService.BASE_CHAIN_ID;
 @Slf4j
 public class FanTokenController {
 	@Autowired
-	private IFarcasterNeynarService neynarService;
+	private FarcasterNeynarService neynarService;
 	@Autowired
 	private PaymentRepository paymentRepository;
 	@Autowired
@@ -54,10 +50,10 @@ public class FanTokenController {
 	private FanTokenService fanTokenService;
 
 	private static Payment getFanTokenPayment(ValidatedFrameResponseMessage validateMessage,
-			User user,
-			Integer receiverFid,
-			String receiverAddress,
-			FanToken fanToken) {
+	                                          User user,
+	                                          Integer receiverFid,
+	                                          String receiverAddress,
+	                                          FanToken fanToken) {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val castHash = validateMessage.action().cast().hash();
 		val sourceRef = String.format("https://warpcast.com/%s/%s",
@@ -77,7 +73,7 @@ public class FanTokenController {
 
 	@PostMapping("/{name}/submit")
 	public ResponseEntity<?> submit(@RequestBody FrameMessage frameMessage,
-			@PathVariable String name) {
+	                                @PathVariable String name) {
 		log.debug("Received submit buy fan token {} message request: {}", name, frameMessage);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());

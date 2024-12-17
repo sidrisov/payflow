@@ -15,7 +15,7 @@ import ua.sinaver.web3.payflow.message.farcaster.ValidatedFrameResponseMessage;
 import ua.sinaver.web3.payflow.message.moxie.FanToken;
 import ua.sinaver.web3.payflow.message.nft.ParsedMintUrlMessage;
 import ua.sinaver.web3.payflow.service.FanTokenService;
-import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
+import ua.sinaver.web3.payflow.service.FarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 import ua.sinaver.web3.payflow.utils.FrameVersions;
 
@@ -54,7 +54,7 @@ public class ProductsController {
 					"https://app.payflow.me/actions",
 					new CastActionMeta.Action("post")));
 	@Autowired
-	private IFarcasterNeynarService neynarService;
+	private FarcasterNeynarService neynarService;
 	@Autowired
 	private PayflowConfig payflowConfig;
 

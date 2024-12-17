@@ -16,10 +16,10 @@ import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.message.farcaster.ValidatedFrameResponseMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
+import ua.sinaver.web3.payflow.service.FarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.IdentityService;
 import ua.sinaver.web3.payflow.service.LinkService;
 import ua.sinaver.web3.payflow.service.UserService;
-import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 import ua.sinaver.web3.payflow.utils.MintUrlUtils;
 
@@ -38,7 +38,7 @@ import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYME
 @Slf4j
 public class MintController {
 	@Autowired
-	private IFarcasterNeynarService neynarService;
+	private FarcasterNeynarService neynarService;
 	@Autowired
 	private PaymentRepository paymentRepository;
 	@Autowired

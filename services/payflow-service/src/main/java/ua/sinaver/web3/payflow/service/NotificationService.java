@@ -13,6 +13,7 @@ import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.message.farcaster.FarcasterUser;
+import ua.sinaver.web3.payflow.message.farcaster.neynar.NotificationRequest;
 import ua.sinaver.web3.payflow.message.nft.ParsedMintUrlMessage;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.utils.FrameVersions;
@@ -134,7 +135,7 @@ public class NotificationService {
 
 			if (StringUtils.isBlank(payment.getCategory())
 					|| List.of("reward", "reward_top_reply", "reward_top_casters").contains(payment.getCategory())) {
-				handleP2PPaymentNotification(payment, senderFname, receiverFname, receiptUrl, crossChainText,
+				handleP2PPaymentNotification(payment, senderFname, receiverFname, receiptUrl,
 						sourceRefText);
 			} else if (payment.getCategory().equals("fc_storage")) {
 				handleStoragePaymentNotification(payment, senderFname, receiverFname, receiptUrl, crossChainText,
@@ -174,7 +175,7 @@ public class NotificationService {
 	}
 
 	private void handleP2PPaymentNotification(Payment payment, String senderFname, String receiverFname,
-	                                          String receiptUrl, String crossChainText,
+	                                          String receiptUrl,
 	                                          String sourceRefText) {
 		val embeds = new ArrayList<Cast.Embed>();
 		if (payment.getTarget() != null) {
@@ -183,18 +184,19 @@ public class NotificationService {
 		embeds.add(new Cast.Embed(receiptUrl));
 
 		val commentText = StringUtils.isNotBlank(payment.getComment())
-				? String.format("\n💬 Comment: %s", payment.getComment())
+				? String.format("""
+				with 💬 "%s"
+				""", payment.getComment())
 				: "";
 
 		if (payment.getCategory() == null) {
 			val castText = String.format("""
-							@%s, you've been paid %s %s%s by @%s 💸""",
+							@%s, you received %s %s from @%s 💸""",
 					receiverFname,
 					StringUtils.isNotBlank(payment.getTokenAmount())
 							? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 							: String.format("$%s", payment.getUsdAmount()),
 					payment.getToken().toUpperCase(),
-					crossChainText,
 					senderFname);
 
 			sendCastReply(castText, payment.getSourceHash(), embeds);
@@ -203,16 +205,14 @@ public class NotificationService {
 					payment.getReceiver() != null ? payment.getReceiver().getIdentity() : payment.getReceiverAddress());
 			if (StringUtils.isNotBlank(receiverFid)) {
 				val messageText = String.format("""
-								@%s, you've been paid %s %s%s by @%s 💸%s
+								You received %s %s from @%s %s
 
 								%s
 								🧾 Receipt: %s""",
-						receiverFname,
 						StringUtils.isNotBlank(payment.getTokenAmount())
 								? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 								: String.format("$%s", payment.getUsdAmount()),
 						payment.getToken().toUpperCase(),
-						crossChainText,
 						senderFname,
 						commentText,
 						sourceRefText,
@@ -220,11 +220,30 @@ public class NotificationService {
 
 				sendDirectMessage(messageText, receiverFid);
 
+				try {
+					val notificationText = String.format("""
+									You received %s %s from @%s %s""",
+							StringUtils.isNotBlank(payment.getTokenAmount())
+									? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
+									: String.format("$%s", payment.getUsdAmount()),
+							payment.getToken().toUpperCase(),
+							senderFname,
+							commentText);
+
+					val notification = NotificationRequest.Notification.create(
+							"Payment",
+							notificationText,
+							receiptUrl);
+
+					hubService.notify(notification, Collections.singletonList(Integer.parseInt(receiverFid)));
+				} catch (Throwable t) {
+					log.error("Failed to notify user with frame v2 notification: ", t);
+				}
 			}
 		} else {
 			switch (payment.getCategory()) {
 				case "reward":
-					sendRewardNotification(payment, senderFname, receiverFname, crossChainText, commentText,
+					sendRewardNotification(payment, senderFname, receiverFname, commentText,
 							sourceRefText,
 							"your cast", embeds);
 					break;
@@ -235,13 +254,13 @@ public class NotificationService {
 						scvText = String.format("with cast score: %s ",
 								formatDouble(cast.getSocialCapitalValue().getFormattedValue()));
 					}
-					sendRewardNotification(payment, senderFname, receiverFname, crossChainText, commentText,
+					sendRewardNotification(payment, senderFname, receiverFname, commentText,
 							sourceRefText,
 							"casting top comment " + scvText, embeds);
 					break;
 
 				case "reward_top_casters":
-					sendRewardNotification(payment, senderFname, receiverFname, crossChainText, commentText,
+					sendRewardNotification(payment, senderFname, receiverFname, commentText,
 							sourceRefText,
 							"being top caster", embeds);
 					break;
@@ -316,8 +335,7 @@ public class NotificationService {
 			}
 		}
 
-		val tokenAmount = payment.getTokenAmount() != null ?
-				Double.parseDouble(payment.getTokenAmount()) : 1;
+		val tokenAmount = payment.getTokenAmount() != null ? Double.parseDouble(payment.getTokenAmount()) : 1;
 		val tokenAmountText = tokenAmount > 1 ? tokenAmount + "x " : "";
 
 		String castText;
@@ -379,8 +397,7 @@ public class NotificationService {
 	private void handleHypersubPaymentNotification(Payment payment, String senderFname,
 	                                               String receiverFname,
 	                                               String receiptUrl, String sourceRefText, boolean isSelfPurchase) {
-		val tokenAmount = payment.getTokenAmount() != null ?
-				Double.parseDouble(payment.getTokenAmount()) : 1;
+		val tokenAmount = payment.getTokenAmount() != null ? Double.parseDouble(payment.getTokenAmount()) : 1;
 		val tokenAmountText = tokenAmount + " month(s) ";
 
 		val authorPart = "";
@@ -456,8 +473,7 @@ public class NotificationService {
 			fanTokenName = "@" + fanTokenName;
 		}
 
-		val fanTokensAmount = payment.getTokenAmount() != null ?
-				Double.parseDouble(payment.getTokenAmount()) : "";
+		val fanTokensAmount = payment.getTokenAmount() != null ? Double.parseDouble(payment.getTokenAmount()) : "";
 		String castText;
 		if (isSelfPurchase) {
 			castText = String.format("""
@@ -546,12 +562,12 @@ public class NotificationService {
 	}
 
 	private void sendRewardDirectMessage(Payment payment, String receiverFname, String senderFname,
-	                                     String crossChainText, String commentText, String sourceRefText, String rewardReason) {
+	                                     String commentText, String sourceRefText, String rewardReason) {
 		val receiverFid = identityService.getIdentityFid(
 				payment.getReceiver() != null ? payment.getReceiver().getIdentity() : payment.getReceiverAddress());
 		if (StringUtils.isNotBlank(receiverFid)) {
 			val messageText = String.format("""
-							@%s, you've been rewarded %s %s%s by @%s for %s 🎁%s
+							You received reward %s %s%s for %s from @%s %s 🎁
 
 							%s
 							🧾 Receipt: %s""",
@@ -560,7 +576,6 @@ public class NotificationService {
 							? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 							: String.format("$%s", payment.getUsdAmount()),
 					payment.getToken().toUpperCase(),
-					crossChainText,
 					senderFname,
 					rewardReason,
 					commentText,
@@ -572,21 +587,20 @@ public class NotificationService {
 	}
 
 	private void sendRewardNotification(Payment payment, String senderFname, String receiverFname,
-	                                    String crossChainText, String commentText, String sourceRefText, String rewardReason,
+	                                    String commentText, String sourceRefText, String rewardReason,
 	                                    List<Cast.Embed> embeds) {
 		val castText = String.format("""
-						@%s, you've been rewarded %s %s%s by @%s for %s 🎁""",
+						@%s, you received reward %s %s for %s from @%s 🎁""",
 				receiverFname,
 				StringUtils.isNotBlank(payment.getTokenAmount())
 						? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 						: String.format("$%s", payment.getUsdAmount()),
 				payment.getToken().toUpperCase(),
-				crossChainText,
 				senderFname,
 				rewardReason);
 
 		sendCastReply(castText, payment.getSourceHash(), embeds);
-		sendRewardDirectMessage(payment, receiverFname, senderFname, crossChainText, commentText, sourceRefText,
+		sendRewardDirectMessage(payment, receiverFname, senderFname, commentText, sourceRefText,
 				rewardReason);
 	}
 }

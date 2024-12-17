@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
-import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
@@ -30,7 +29,7 @@ public class IdentityFollowingsService {
 	private ISocialGraphService socialGraphService;
 
 	@Autowired
-	private IFarcasterNeynarService neynarService;
+	private FarcasterNeynarService neynarService;
 
 	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'farcaster-followings-list:' + #identity",
 			unless = "#result.isEmpty()")

@@ -19,10 +19,10 @@ import ua.sinaver.web3.payflow.message.farcaster.FarcasterUser;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.message.farcaster.ValidatedFrameResponseMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
+import ua.sinaver.web3.payflow.service.FarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.IdentityService;
 import ua.sinaver.web3.payflow.service.LinkService;
 import ua.sinaver.web3.payflow.service.UserService;
-import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 import ua.sinaver.web3.payflow.utils.FrameVersions;
 
@@ -43,7 +43,7 @@ public class StorageController {
 
 	private static final String STORAGE_FRAME_API_BASE = "/api/farcaster/frames/storage";
 	@Autowired
-	private IFarcasterNeynarService neynarService;
+	private FarcasterNeynarService neynarService;
 	@Autowired
 	private PaymentRepository paymentRepository;
 

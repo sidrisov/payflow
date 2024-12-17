@@ -15,10 +15,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import ua.sinaver.web3.payflow.message.farcaster.*;
+import ua.sinaver.web3.payflow.message.farcaster.neynar.NotificationRequest;
+import ua.sinaver.web3.payflow.message.farcaster.neynar.NotificationResponse;
 import ua.sinaver.web3.payflow.message.farcaster.neynar.TrendingCastsResponse;
 import ua.sinaver.web3.payflow.message.subscription.SubscribersMessage;
 import ua.sinaver.web3.payflow.message.subscription.SubscriptionsCreatedMessage;
-import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 
 import java.util.Collections;
 import java.util.List;
@@ -27,7 +28,7 @@ import static ua.sinaver.web3.payflow.config.CacheConfig.*;
 
 @Slf4j
 @Service
-public class FarcasterNeynarService implements IFarcasterNeynarService {
+public class FarcasterNeynarService {
 
 	private final WebClient neynarClient;
 
@@ -40,7 +41,6 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 				.build();
 	}
 
-	@Override
 	@Cacheable(value = NEYNAR_STORAGE_USAGE_CACHE, unless = "#result==null")
 	public StorageUsage fetchStorageUsage(int fid) {
 		log.debug("Calling Neynar Storage Usage API by fid {}", fid);
@@ -105,7 +105,6 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 		log.debug("Clearing farcaster storage cache for: {}", fid);
 	}
 
-	@Override
 	@Retryable
 	public ValidatedFrameResponseMessage validateFrameMessageWithNeynar(String frameMessageInHex,
 	                                                                    boolean includeChannelContext) {
@@ -123,12 +122,10 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 		}
 	}
 
-	@Override
 	public ValidatedFrameResponseMessage validateFrameMessageWithNeynar(String frameMessageInHex) {
 		return validateFrameMessageWithNeynar(frameMessageInHex, false);
 	}
 
-	@Override
 	public CastResponseMessage cast(String signer, String message, String parentHash,
 	                                List<Cast.Embed> embeds) {
 		log.debug("Calling Neynar Cast API with message {}",
@@ -167,7 +164,6 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 		return response;
 	}
 
-	@Override
 	public Cast fetchCastByHash(String hash) {
 		log.debug("Calling Neynar Cast API to fetch by hash {}", hash);
 		try {
@@ -185,7 +181,6 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 		}
 	}
 
-	@Override
 	public List<FarcasterUser> fetchTop100Followings(int fid) {
 		log.debug("Calling Neynar Fetch Followings API by fid {}", fid);
 		return neynarClient.get()
@@ -222,7 +217,6 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 				.orElse(Collections.emptyList());
 	}
 
-	@Override
 	@Cacheable(value = NEYNAR_FARCASTER_USER_CACHE, unless = "#result==null")
 	public FarcasterUser fetchFarcasterUser(int fid) {
 		log.debug("Calling Neynar User API to fetch by fid {}", fid);
@@ -258,7 +252,6 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 				.orElse(null);
 	}
 
-	@Override
 	@Cacheable(value = NEYNAR_FARCASTER_USER_CACHE, unless = "#result==null")
 	public FarcasterUser fetchFarcasterUser(String custodyAddress) {
 		log.debug("Calling Neynar User API to fetch by custodyAddress {}", custodyAddress);
@@ -292,7 +285,6 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 				.orElse(null);
 	}
 
-	@Override
 	public List<SubscriptionsCreatedMessage.Subscription> subscriptionsCreated(int fid) {
 		log.debug("Calling Neynar Created Subscriptions API by fid {}", fid);
 		return neynarClient.get()
@@ -324,7 +316,6 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 				.orElse(Collections.emptyList());
 	}
 
-	@Override
 	public List<SubscribersMessage.Subscriber> subscribers(int fid, boolean fabric) {
 		log.debug("Calling Neynar Subscribers[{}] API by fid {}", fabric ? "Hypersub" : "Paragraph", fid);
 		return neynarClient.get()
@@ -356,7 +347,6 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 				.orElse(Collections.emptyList());
 	}
 
-	@Override
 	public TrendingCastsResponse fetchTrendingCasts(String channelId, String timeWindow, Integer limit, String cursor) {
 		log.debug("Calling Neynar Trending Casts API with channelId: {}, timeWindow: {}, limit: {}, cursor: {}",
 				channelId, timeWindow, limit, cursor);
@@ -390,5 +380,25 @@ public class FarcasterNeynarService implements IFarcasterNeynarService {
 				})
 				.blockOptional()
 				.orElse(new TrendingCastsResponse());
+	}
+
+	public NotificationResponse notify(NotificationRequest.Notification notification, List<Integer> targetFids) {
+		log.debug("Calling Neynar Frame Notifications API for fids: {} with notification: {}", targetFids, notification);
+
+		return neynarClient.post()
+				.uri("/frame/notifications")
+				.bodyValue(new NotificationRequest(notification, targetFids))
+				.retrieve()
+				.onStatus(HttpStatusCode::isError, response -> {
+					log.error("Error calling Neynar Frame Notifications API: {}", response.statusCode());
+					return Mono.error(new RuntimeException("Error sending notifications"));
+				})
+				.bodyToMono(NotificationResponse.class)
+				.onErrorResume(e -> {
+					log.error("Exception calling Neynar Frame Notifications API: {}", e.getMessage());
+					return Mono.empty();
+				})
+				.blockOptional()
+				.orElse(null);
 	}
 }

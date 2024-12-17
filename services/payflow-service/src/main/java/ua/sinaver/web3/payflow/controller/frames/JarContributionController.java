@@ -22,7 +22,6 @@ import ua.sinaver.web3.payflow.message.farcaster.ValidatedFrameResponseMessage;
 import ua.sinaver.web3.payflow.repository.FlowRepository;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.*;
-import ua.sinaver.web3.payflow.service.api.IFarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
@@ -56,7 +55,7 @@ public class JarContributionController {
 			"/comment";
 	private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	@Autowired
-	private IFarcasterNeynarService neynarService;
+	private FarcasterNeynarService neynarService;
 	@Autowired
 	private IUserService userService;
 	@Value("${payflow.dapp.url}")
