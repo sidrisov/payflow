@@ -16,6 +16,7 @@ import ua.sinaver.web3.payflow.data.protocol.ClientApiKey;
 import ua.sinaver.web3.payflow.message.protocol.CreatePaymentRequest;
 import ua.sinaver.web3.payflow.message.protocol.CreatePaymentResponse;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
+import ua.sinaver.web3.payflow.service.IdentityService;
 import ua.sinaver.web3.payflow.service.LinkService;
 import ua.sinaver.web3.payflow.service.UserService;
 
@@ -31,6 +32,9 @@ public class ClientPaymentController {
 	private UserService userService;
 	@Autowired
 	private PaymentRepository paymentRepository;
+
+	@Autowired
+	private IdentityService identityService;
 
 	@Autowired
 	private LinkService linkService;

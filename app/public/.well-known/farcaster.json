@@ -10,6 +10,6 @@
     "iconUrl": "https://app.payflow.me/apple-touch-icon.png",
     "splashBackgroundColor": "#f7f7f7",
     "homeUrl": "https://app.payflow.me",
-    "webhookUrl": "https://api.payflow.me/api/farcaster/webhooks/frames/v2"
+    "webhookUrl": "https://api.neynar.com/f/app/c70143f7-4d75-48b5-b3cc-bdc4bb3314ba/event"
   }
 }
