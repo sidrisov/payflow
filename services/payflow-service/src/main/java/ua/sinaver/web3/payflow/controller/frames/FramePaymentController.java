@@ -556,7 +556,7 @@ public class FramePaymentController {
 				val receiptUrl = receiptService.getReceiptUrl(payment);
 				return FrameResponse.builder()
 						.imageUrl(profileImage)
-						.textInput("Comment (255 max)")
+						.textInput("Comment (64 max)")
 						.button(new FrameButton("\uD83D\uDCAC Comment",
 								FrameButton.ActionType.POST,
 								apiServiceUrl.concat(String.format(PAY_IN_FRAME_COMMENT,
@@ -655,7 +655,7 @@ public class FramePaymentController {
 				val input = validateMessage.action().input();
 
 				val comment = input != null ? input.text() : null;
-				if (!StringUtils.isBlank(comment) && comment.length() <= 255) {
+				if (!StringUtils.isBlank(comment) && comment.length() <= 64) {
 					payment.setComment(comment);
 
 					// send direct message with comment

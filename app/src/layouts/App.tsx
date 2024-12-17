@@ -77,9 +77,21 @@ export default function AppLayout({
 
       if (context) {
         FrameV2SDK.actions.ready();
+
+        if (!context.client.added) {
+          const lastChecked = localStorage.getItem('payflow:frame:checked');
+          const shouldCheck =
+            !lastChecked || Date.now() - parseInt(lastChecked) > 7 * 24 * 60 * 60 * 1000;
+
+          if (shouldCheck) {
+            localStorage.setItem('payflow:frame:checked', Date.now().toString());
+            await FrameV2SDK.actions.addFrame();
+          }
+        }
         setIsFrameV2(true);
       }
     };
+
     if (FrameV2SDK && !isFrameV2) {
       initiateFrameV2();
     }
