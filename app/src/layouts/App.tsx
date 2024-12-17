@@ -84,8 +84,8 @@ export default function AppLayout({
             !lastChecked || Date.now() - parseInt(lastChecked) > 7 * 24 * 60 * 60 * 1000;
 
           if (shouldCheck) {
-            localStorage.setItem('payflow:frame:checked', Date.now().toString());
             await FrameV2SDK.actions.addFrame();
+            localStorage.setItem('payflow:frame:checked', Date.now().toString());
           }
         }
         setIsFrameV2(true);

@@ -19,7 +19,7 @@
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@farcaster/auth-kit": "^0.6.0",
-    "@farcaster/frame-sdk": "^0.0.18",
+    "@farcaster/frame-sdk": "^0.0.19",
     "@mui/icons-material": "^6.0.0",
     "@mui/lab": "^6.0.0-beta.8",
     "@mui/material": "^6.0.0",
