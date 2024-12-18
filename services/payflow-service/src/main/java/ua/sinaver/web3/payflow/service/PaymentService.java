@@ -19,6 +19,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -104,20 +105,19 @@ public class PaymentService {
 	}
 
 	public String getPaymentReceiverAddress(Payment payment) {
-		if (payment.getReceiver() != null) {
-			String userReceiverAddress = getUserReceiverAddress(payment.getReceiver(), payment.getNetwork());
-			if (userReceiverAddress != null) {
-				return userReceiverAddress;
-			}
+		if (payment.getReceiverAddress() != null) {
+			return payment.getReceiverAddress();
+		} else if (payment.getReceiver() != null) {
+			return getUserReceiverAddress(payment.getReceiver(), payment.getNetwork());
 		}
-		return payment.getReceiverAddress();
+		return null;
 	}
 
 	public String getUserReceiverAddress(User user, Integer chainId) {
-		return user.getDefaultFlow() != null ? user.getDefaultFlow().getWallets().stream()
+		return Optional.ofNullable(user.getDefaultFlow() != null ? user.getDefaultFlow().getWallets().stream()
 				.filter(w -> w.getNetwork().equals(chainId))
 				.findFirst()
-				.map(Wallet::getAddress).orElse(null) : user.getDefaultReceivingAddress();
+				.map(Wallet::getAddress).orElse(null) : user.getDefaultReceivingAddress()).orElse(user.getIdentity());
 	}
 
 	public String parseCommandChain(String text) {
