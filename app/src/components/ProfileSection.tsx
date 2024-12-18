@@ -5,6 +5,7 @@ import { shortenWalletAddressLabel, shortenWalletAddressLabel2 } from '../utils/
 import { FlowType } from '../types/FlowType';
 import FarcasterAvatar from './avatars/FarcasterAvatar';
 import CopyToClipboardIconButton from './buttons/CopyToClipboardIconButton';
+import { Address } from 'viem';
 
 const getWalletTypeAvatar = (type: FlowType['type'], view: 'profile' | 'flow') => {
   if (view === 'profile') {
@@ -30,15 +31,17 @@ export function ProfileSection({
   avatarSize,
   fontSize,
   maxWidth,
-  view = 'profile'
+  view = 'profile',
+  address
 }: {
   profile: ProfileType;
   avatarSize?: number;
   fontSize?: number;
   maxWidth?: number;
   view?: 'profile' | 'flow';
+  address?: Address;
 }) {
-  const walletAddress = profile?.defaultFlow?.wallets[0].address;
+  const walletAddress = address ?? profile?.defaultFlow?.wallets[0].address;
   const walletType: FlowType['type'] = profile?.defaultFlow?.type;
   return (
     <Stack maxWidth={maxWidth ?? 130} direction="row" spacing={0.5} alignItems="center">

@@ -9,7 +9,6 @@ import { FcApproval } from 'react-icons/fc';
 import { FaRegHeart } from 'react-icons/fa6';
 import FrameV2SDK from '@farcaster/frame-sdk';
 import { ProfileContext } from '../../contexts/UserContext';
-import { copyToClipboard } from '../../utils/copyToClipboard';
 
 interface PaymentSuccessDialogProps {
   open?: boolean;
@@ -85,14 +84,10 @@ export default function PaymentSuccessDialog({
               ? {
                   onClick: () => FrameV2SDK.actions.openUrl(receiptUrl)
                 }
-              : isMiniApp
-                ? {
-                    onClick: () => copyToClipboard(receiptUrl)
-                  }
-                : {
-                    href: receiptUrl,
-                    target: '_blank'
-                  })}
+              : {
+                  href: receiptUrl,
+                  target: '_blank'
+                })}
             color="inherit"
             sx={{ display: 'inline-flex', alignItems: 'center' }}>
             click here <OpenInNewIcon sx={{ fontSize: 12, ml: 0.5 }} />
@@ -139,14 +134,10 @@ export default function PaymentSuccessDialog({
                 ? {
                     onClick: () => FrameV2SDK.actions.openUrl(hyperSubUrl)
                   }
-                : isMiniApp
-                  ? {
-                      onClick: () => copyToClipboard(hyperSubUrl)
-                    }
-                  : {
-                      href: hyperSubUrl,
-                      target: '_blank'
-                    })}
+                : {
+                    href: hyperSubUrl,
+                    target: '_blank'
+                  })}
               startIcon={<FcApproval size={20} />}
               variant="outlined"
               size="small"

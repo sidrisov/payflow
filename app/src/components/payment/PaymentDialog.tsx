@@ -68,6 +68,7 @@ export default function PaymentDialog({
   const [crossChainPaymentToken, setCrossChainPaymentToken] = useState<Token>();
 
   const toAddress = useToAddress({
+    payment,
     recipient,
     chainId: payment?.chainId ?? paymentToken?.chainId
   });
@@ -322,7 +323,11 @@ export default function PaymentDialog({
         alignItems="center"
         justifyContent="space-between">
         <Box ml={1} width="100%" display="flex" alignItems="center" justifyContent="space-between">
-          <RecipientField recipient={recipient} setOpenSearchIdentity={setOpenSearchIdentity} />
+          <RecipientField
+            recipient={recipient}
+            recipientAddress={toAddress}
+            setOpenSearchIdentity={setOpenSearchIdentity}
+          />
 
           <ToggleButtonGroup
             sx={{

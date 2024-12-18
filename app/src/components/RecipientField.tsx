@@ -3,12 +3,15 @@ import { SelectedIdentityType } from '../types/ProfileType';
 import { AddressSection } from './AddressSection';
 import { ProfileSection } from './ProfileSection';
 import { useMobile } from '../utils/hooks/useMobile';
+import { Address } from 'viem';
 
 export function RecipientField({
   recipient,
+  recipientAddress,
   setOpenSearchIdentity
 }: {
   recipient?: SelectedIdentityType;
+  recipientAddress?: Address;
   setOpenSearchIdentity?: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const isMobile = useMobile();
@@ -33,12 +36,16 @@ export function RecipientField({
       {recipient &&
         (recipient.type === 'profile' ? (
           recipient.identity.profile && (
-            <ProfileSection maxWidth={200} profile={recipient.identity.profile} view="flow" />
+            <ProfileSection
+              maxWidth={200}
+              profile={recipient.identity.profile}
+              address={recipientAddress}
+              view="flow"
+            />
           )
         ) : (
           <AddressSection maxWidth={200} identity={recipient.identity} />
         ))}
-
       {!recipient && (
         <Typography alignSelf="center" flexGrow={1}>
           Choose Recipient

@@ -39,12 +39,12 @@ export function useCompatibleWallets({
       compatibleSenderWallets =
         recipient.type === 'address' || !recipient.identity.profile?.defaultFlow
           ? SUPPORTED_CHAINS.map(
-              (c) => ({ address: sender as Address, network: c.id } as FlowWalletType)
+              (c) => ({ address: sender as Address, network: c.id }) as FlowWalletType
             )
-          : recipient.identity.profile?.defaultFlow?.wallets.map(
+          : (recipient.identity.profile?.defaultFlow?.wallets.map(
               (wallet) =>
-                ({ address: sender as Address, network: wallet.network } as FlowWalletType)
-            ) ?? [];
+                ({ address: sender as Address, network: wallet.network }) as FlowWalletType
+            ) ?? []);
     } else {
       // in case a new wallet chain added, not all users maybe be compatible, limit by chains recipient supports
       // if default flow available otherwise fallback to identity
@@ -72,15 +72,20 @@ export function useCompatibleWallets({
 }
 
 export function useToAddress({
+  payment,
   recipient,
   chainId
 }: {
+  payment?: PaymentType;
   recipient: SelectedIdentityType;
   chainId?: number;
 }) {
   return useMemo(() => {
     if (!chainId) {
       return;
+    }
+    if (payment?.receiverAddress) {
+      return payment.receiverAddress;
     }
 
     if (recipient.type === 'address' || !recipient.identity.profile?.defaultFlow) {
@@ -89,5 +94,5 @@ export function useToAddress({
       return recipient.identity.profile?.defaultFlow?.wallets.find((w) => w.network === chainId)
         ?.address;
     }
-  }, [chainId, recipient]);
+  }, [chainId, recipient, payment]);
 }

@@ -102,7 +102,7 @@ const RecipientInfo: React.FC<{ payment: PaymentType; social: any }> = ({ paymen
     if (payment.receiverFid && social) {
       return <FarcasterProfileSection social={social} />;
     } else if (payment.receiver) {
-      return <ProfileSection profile={payment.receiver} />;
+      return <ProfileSection profile={payment.receiver} address={payment.receiverAddress} />;
     } else {
       return <AddressSection identity={{ address: payment.receiverAddress }} />;
     }
