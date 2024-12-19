@@ -111,7 +111,8 @@ export default function ActivityFeed({ identity, selectedChain }: AssetsProps) {
                         zIndex: 2,
                         top: -1,
                         backgroundColor: theme.palette.mode === 'dark' ? '#242424' : '#f8fafc',
-                        py: 1
+                        py: 0.5,
+                        pb: 0.5
                       }}
                       data-date={date}>
                       {date}

@@ -50,7 +50,6 @@ export default function PublicProfileActivityFeedSection(
     return (
       <Stack
         m={1}
-        mt={2}
         p={1.5}
         direction="row"
         spacing={1}
@@ -95,7 +94,6 @@ export default function PublicProfileActivityFeedSection(
     <>
       <Stack
         m={1}
-        mt={2}
         p={1.5}
         direction="row"
         spacing={1}

@@ -148,7 +148,6 @@ export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
       }
 
       if (hypersubData) {
-        const mintCount = payment.tokenAmount || 1;
         return (
           <>
             <Avatar
@@ -200,13 +199,5 @@ export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
     );
   };
 
-  const content = <ActivityWrapper activity={activity}>{renderContent()}</ActivityWrapper>;
-
-  return defaultBlockExplorerUrl && payment.hash ? (
-    <BlockExplorerLink blockExplorerUrl={defaultBlockExplorerUrl} txHash={payment.hash}>
-      {content}
-    </BlockExplorerLink>
-  ) : (
-    content
-  );
+  return <ActivityWrapper activity={activity}>{renderContent()}</ActivityWrapper>;
 };
