@@ -49,6 +49,17 @@ export function ChooseFlowDialog({
   const [menuFlow, setMenuFlow] = useState<FlowType | null>(null);
   const [showCreateFlow, setShowCreateFlow] = useState(false);
 
+  // Load selected flow from localStorage on component mount
+  useEffect(() => {
+    const savedFlowUuid = localStorage.getItem('payflow:flow:selected:uuid');
+    if (savedFlowUuid) {
+      const savedFlow = flows.find(flow => flow.uuid === savedFlowUuid);
+      if (savedFlow) {
+        setSelectedFlow(savedFlow);
+      }
+    }
+  }, [flows]);
+
   // Update this function to separate flows into four categories
   const separateFlows = (flows: FlowType[]) => {
     const regular = flows.filter(
@@ -96,6 +107,7 @@ export function ChooseFlowDialog({
       onClick={async () => {
         if (!flow.archived) {
           setSelectedFlow(flow);
+          localStorage.setItem('payflow:flow:selected:uuid', flow.uuid);
           if (closeOnSelect) {
             closeStateCallback();
           }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, BoxProps, Button, IconButton, Tooltip, Typography, Stack } from '@mui/material';
-import { MoreVert } from '@mui/icons-material';
+import { MoreHoriz } from '@mui/icons-material';
 import { PaymentType } from '../../types/PaymentType';
 import { PaymentMenu } from '../menu/PaymentMenu';
 import { useMobile } from '../../utils/hooks/useMobile';
@@ -93,8 +93,7 @@ export function PaymentCard({ payment, title, children, ...props }: PaymentCardP
           gap: 1,
           color: 'inherit',
           '&:hover': {
-            backgroundColor: 'inherit',
-            border: 1
+            backgroundColor: 'action.hover'
           }
         }}
         {...props}>
@@ -109,7 +108,7 @@ export function PaymentCard({ payment, title, children, ...props }: PaymentCardP
             alignItems="center"
             justifyContent="flex-start"
             spacing={0.5}
-            sx={{ flexGrow: 1, minWidth: 0 }}>
+            sx={{ minWidth: 0 }}>
             <Box
               sx={{
                 flexShrink: 0,
@@ -125,8 +124,6 @@ export function PaymentCard({ payment, title, children, ...props }: PaymentCardP
               fontSize={14}
               noWrap
               sx={{
-                flexGrow: 1,
-                minWidth: 0,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis'
               }}>
@@ -134,7 +131,7 @@ export function PaymentCard({ payment, title, children, ...props }: PaymentCardP
             </Typography>
           </Stack>
           <IconButton size="small" onClick={handleMenuOpen}>
-            <MoreVert sx={{ fontSize: 18 }} />
+            <MoreHoriz sx={{ fontSize: 18 }} />
           </IconButton>
         </Box>
         {children}

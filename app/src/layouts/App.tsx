@@ -4,8 +4,6 @@ import { toast } from 'react-toastify';
 
 import {
   AppBar,
-  IconButton,
-  Toolbar,
   Box,
   Button,
   Container,
@@ -20,15 +18,12 @@ import { RiApps2Fill, RiApps2Line } from 'react-icons/ri';
 import { CgProfile } from 'react-icons/cg';
 
 import { ProfileContext } from '../contexts/UserContext';
-import HideOnScroll from '../components/HideOnScroll';
 
 import { ProfileType } from '../types/ProfileType';
 import { AppSettings } from '../types/AppSettingsType';
 import { ProfileMenu } from '../components/menu/ProfileMenu';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
-import ProfileAvatar from '../components/avatars/ProfileAvatar';
 import PayflowBalanceDialog from '../components/dialogs/PayflowBalanceDialog';
-import { DAPP_URL } from '../utils/urlConstants';
 import { useTokenPrices } from '../utils/queries/prices';
 import { IoHomeOutline, IoHomeSharp, IoSearch, IoSearchOutline } from 'react-icons/io5';
 
@@ -37,7 +32,6 @@ import { UpdateVersionPrompt } from '../components/UpdateVersionPrompt';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useMobile, usePwa } from '../utils/hooks/useMobile';
-import Logo from '../components/Logo';
 
 import { isIOS } from 'react-device-detect';
 import { GiTwoCoins } from 'react-icons/gi';
@@ -124,7 +118,6 @@ export default function AppLayout({
 
   const [authorized, setAuthorized] = useState<boolean>(false);
 
-  const [profileMenuAnchorEl, setProfileMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [openProfileMenu, setOpenProfileMenu] = useState(false);
   const [openSearchIdentity, setOpenSearchIdentity] = useState(false);
 
@@ -230,53 +223,14 @@ export default function AppLayout({
             display: 'flex',
             flexDirection: 'column'
           }}>
-          <HideOnScroll>
-            <AppBar position="sticky" color="transparent" elevation={0}>
-              {needRefresh && <UpdateVersionPrompt />}
-              {showToolbar && (
-                <Toolbar sx={{ padding: 0 }}>
-                  <Box
-                    display="flex"
-                    flexDirection="row"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    flexGrow={1}>
-                    <Logo p="5px" />
-                    {profile ? (
-                      <IconButton
-                        size="small"
-                        onClick={async (event) => {
-                          setProfileMenuAnchorEl(event.currentTarget);
-                          setOpenProfileMenu(true);
-                        }}>
-                        <ProfileAvatar
-                          profile={profile as ProfileType}
-                          sx={{ width: 36, height: 36 }}
-                        />
-                      </IconButton>
-                    ) : (
-                      <Button
-                        color="inherit"
-                        size="medium"
-                        href={`${DAPP_URL}/connect`}
-                        sx={{
-                          borderRadius: 5,
-                          fontWeight: 'bold',
-                          fontSize: 18,
-                          textTransform: 'none'
-                        }}>
-                        sign in
-                      </Button>
-                    )}
-                  </Box>
-                </Toolbar>
-              )}
-            </AppBar>
-          </HideOnScroll>
+          <AppBar position="sticky" color="transparent" elevation={0}>
+            {needRefresh && <UpdateVersionPrompt />}
+          </AppBar>
           <Box
             flexGrow={1}
             display="flex"
             flexDirection="column"
+            mt={2}
             mb={bottomToolbarEnabled ? 7.5 : 0}
             sx={{
               overflowX: 'hidden',
@@ -392,12 +346,10 @@ export default function AppLayout({
                 {profile && (
                   <BottomNavigationAction
                     disableRipple
-                    label="Activity"
+                    label="Profile"
                     icon={<CgProfile size={bottonToolbarActionValue === 4 ? 22 : 20} />}
                     onClick={async () => {
-                      if (profile.username) {
-                        navigate(`/${profile.username}`);
-                      }
+                      setOpenProfileMenu(true);
                       setOpenSearchIdentity(false);
                     }}
                   />
@@ -412,7 +364,6 @@ export default function AppLayout({
         <ProfileMenu
           profile={profile}
           loginRedirectOnLogout={false}
-          anchorEl={profileMenuAnchorEl}
           open={openProfileMenu}
           onClose={() => setOpenProfileMenu(false)}
           closeStateCallback={() => setOpenProfileMenu(false)}

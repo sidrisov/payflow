@@ -35,10 +35,10 @@ import { MdSecurityUpdateGood, MdSecurityUpdate } from 'react-icons/md';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { green } from '@mui/material/colors';
 import { IoChatbubbleEllipses } from 'react-icons/io5';
-import FavoriteIcon from '@mui/icons-material/Favorite';
 import { GrStorage } from 'react-icons/gr';
 import { FaRegHeart } from 'react-icons/fa';
 import { FcApproval } from 'react-icons/fc';
+import ResponsiveDialog from '../dialogs/ResponsiveDialog';
 
 export function ProfileMenu({
   profile,
@@ -73,11 +73,7 @@ export function ProfileMenu({
 
   return (
     <>
-      <Menu
-        {...props}
-        sx={{ mt: 1, '.MuiMenu-paper': { borderRadius: 5 } }}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}>
+      <ResponsiveDialog open={Boolean(props.open)} onClose={closeStateCallback} title="Profile">
         <MenuList disablePadding>
           <MenuItem
             sx={{ minWidth: 150 }}
@@ -287,7 +283,7 @@ export function ProfileMenu({
             Logout
           </MenuItem>
         </MenuList>
-      </Menu>
+      </ResponsiveDialog>
 
       {profile.username === 'sinaver' && (
         <DeviceInfoDialog open={openDeviceInfo} onClose={handleCloseDeviceInfo} />

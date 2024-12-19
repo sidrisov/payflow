@@ -1,4 +1,4 @@
-import { Box, Stack } from '@mui/material';
+import { Box, Stack, Tabs, Tab } from '@mui/material';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { AccountCard } from '../components/cards/AccountCard';
@@ -10,12 +10,14 @@ import { useNavigate } from 'react-router-dom';
 import { useAssetBalances } from '../utils/queries/balances';
 import getFlowAssets from '../utils/assets';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
-import { useMobile } from '../utils/hooks/useMobile';
 import { PaymentSection } from '../components/sections/PaymentSection';
+import { green } from '@mui/material/colors';
+import { MdOutlinePlaylistAdd } from 'react-icons/md';
+import { MdOutlinePlaylistAddCheck } from 'react-icons/md';
+import { GiTwoCoins } from 'react-icons/gi';
+import ActivityFeed from '../components/activity/ActivityFeed';
 
 export default function Accounts() {
-  const smallScreen = useMobile();
-
   const { isAuthenticated, profile } = useContext(ProfileContext);
 
   const navigate = useNavigate();
@@ -47,12 +49,14 @@ export default function Accounts() {
 
   const { isLoading, isFetched, data: balances } = useAssetBalances(assets);
 
+  const [activeTab, setActiveTab] = useState(0);
+
   return (
     <>
       <Helmet>
         <title> Payflow | Home </title>
       </Helmet>
-      <Box display="flex" flexDirection="column" height="100%" width="100%">
+      <Box display="flex" flexDirection="column" height="100%" width="100%" overflow="hidden">
         {isAuthenticated && flows && selectedFlow ? (
           <Stack p={1} alignItems="center" spacing={1}>
             <AccountCard
@@ -65,14 +69,43 @@ export default function Accounts() {
               setBalanceVisible={setBalanceVisible}
             />
 
-            <Stack width={smallScreen ? 350 : 375} spacing={0.5} alignItems="center">
-              <PaymentSection width="100%" type="intent" />
-              <PaymentSection width="100%" type="receipt" />
-              <Assets
-                assetBalancesResult={{ isLoading, isFetched, balances }}
-                balanceVisible={balanceVisible}
-              />
-            </Stack>
+            <Tabs
+              value={activeTab}
+              centered
+              textColor="inherit"
+              onChange={(_, newValue) => setActiveTab(newValue)}
+              TabIndicatorProps={{ sx: { display: 'none' } }}
+              sx={{
+                maxWidth: 375,
+                mb: 2,
+                '& .MuiTab-root': {
+                  fontSize: 14,
+                  fontWeight: 'bold',
+                  borderRadius: 5
+                },
+                '& .Mui-selected': {
+                  color: green.A700
+                }
+              }}>
+              <Tab icon={<GiTwoCoins size={20} />} label="Tokens" />
+              <Tab icon={<MdOutlinePlaylistAdd size={20} />} label="Intents" />
+              <Tab icon={<MdOutlinePlaylistAddCheck size={20} />} label="Activity" />
+            </Tabs>
+
+            <Box flexGrow={1} px={1} overflow="auto" width="100%" maxWidth={375}>
+              {activeTab === 0 && (
+                <Assets
+                  assetBalancesResult={{ isLoading, isFetched, balances }}
+                  balanceVisible={balanceVisible}
+                />
+              )}
+              {activeTab === 1 && <PaymentSection width="100%" type="receipt" />}
+              {activeTab === 2 && (
+                <Box sx={{ height: 'calc(100vh - 300px)', overflow: 'auto' }}>
+                  <ActivityFeed identity={{ address: profile?.identity! }} />
+                </Box>
+              )}
+            </Box>
           </Stack>
         ) : (
           <LoadingPayflowEntryLogo />

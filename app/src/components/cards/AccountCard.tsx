@@ -29,7 +29,6 @@ import { ShareFlowMenu } from '../menu/ShareFlowMenu';
 import { PaymentFlowSection } from '../PaymentFlowSection';
 import { formatAmountWithSuffix } from '../../utils/formats';
 import { ActionButton } from '../buttons/ActionButton';
-import { FlowNavigator } from '../navigation/FlowNavigator';
 import { PayMeDialog } from '../dialogs/PayMeDialog';
 
 const LazyPaymentDialog = lazy(() => import('../payment/PaymentDialog'));
@@ -263,8 +262,6 @@ export function AccountCard({
             </Stack>
           </Box>
         </Card>
-
-        <FlowNavigator orderedFlows={orderedFlows} currentIndex={currentIndex} />
 
         {recipient && (
           <LazyPaymentDialog

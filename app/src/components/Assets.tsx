@@ -54,13 +54,13 @@ export default function Assets({ assetBalancesResult, balanceVisible }: AssetsPr
   const nonZeroAggregatedBalances = balances && aggregateAssets(balances);
 
   return (
-    <Stack p={0.5} spacing={0.5} width="100%" height={230}>
-      <Stack px={1.5} spacing={1} height={180} sx={{ overflowY: 'scroll' }}>
+    <Stack p={0.5} spacing={0.5} width="100%" height={350}>
+      <Stack px={1.5} spacing={1} height={300} sx={{ overflowY: 'scroll' }}>
         {isLoading || !isFetched ? (
           <ActivitySkeletonSection />
         ) : isFetched && nonZeroAggregatedBalances ? (
           nonZeroAggregatedBalances
-            .slice(0, showAll ? nonZeroAggregatedBalances.length : 3)
+            .slice(0, showAll ? nonZeroAggregatedBalances.length : 5)
             .map((assetBalance) => {
               return (
                 <AggregatedAssetBalanceSection
@@ -81,7 +81,7 @@ export default function Assets({ assetBalancesResult, balanceVisible }: AssetsPr
           </Typography>
         )}
       </Stack>
-      {nonZeroAggregatedBalances && nonZeroAggregatedBalances.length > 3 && (
+      {nonZeroAggregatedBalances && nonZeroAggregatedBalances.length > 5 && (
         <Button
           color="inherit"
           size="small"

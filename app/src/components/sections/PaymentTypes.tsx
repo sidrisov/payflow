@@ -13,6 +13,7 @@ import { useMobile } from '../../utils/hooks/useMobile';
 import { PaymentCard } from '../cards/PaymentCard';
 import { useMintData } from '../../utils/hooks/useMintData';
 import { HypersubData, useHypersubData } from '../../utils/hooks/useHypersub';
+import { getNetworkDisplayName } from '../../utils/networks';
 
 const StyledTypography = styled(Typography)(() => ({
   textAlign: 'start',
@@ -65,7 +66,9 @@ const PaymentContent: React.FC<PaymentContentProps> = ({ children, loading }) =>
   return loading ? (
     <Skeleton variant="rounded" sx={{ width: '100%', height: '100%', minHeight: 80 }} />
   ) : (
-    <Stack spacing={1}>{children}</Stack>
+    <Stack width="100%" direction="row" spacing={1} justifyContent="space-between">
+      {children}
+    </Stack>
   );
 };
 
@@ -120,29 +123,31 @@ const PaymentDetails: React.FC<{
   token: Token | undefined;
   isMobile: boolean;
 }> = ({ payment, token, isMobile }) => (
-  <Stack
-    alignSelf="center"
-    direction="row"
-    alignItems="center"
-    justifyContent="flex-start"
-    spacing={0.5}
-    useFlexGap
-    flexWrap="wrap">
-    <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
-      <b>
-        {payment.tokenAmount
-          ? formatAmountWithSuffix(normalizeNumberPrecision(payment.tokenAmount))
-          : `$${payment.usdAmount}`}
-      </b>{' '}
-    </Typography>
-    <Typography variant="caption" fontSize={isMobile ? 12 : 13} textTransform="uppercase">
-      <b>{payment.token}</b>
-    </Typography>
-    <TokenAvatar token={token as Token} sx={{ width: 15, height: 15 }} />
-    <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
-      on
-    </Typography>
-    <NetworkAvatar chainId={payment.chainId} sx={{ width: 15, height: 15 }} />
+  <Stack alignItems="flex-start" spacing={0.5}>
+    <Stack
+      alignSelf="center"
+      direction="row"
+      alignItems="center"
+      justifyContent="flex-start"
+      spacing={0.5}>
+      <TokenAvatar token={token as Token} sx={{ width: 15, height: 15 }} />
+      <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
+        <b>
+          {payment.tokenAmount
+            ? formatAmountWithSuffix(normalizeNumberPrecision(payment.tokenAmount))
+            : `$${payment.usdAmount}`}
+        </b>{' '}
+      </Typography>
+      <Typography variant="caption" fontSize={isMobile ? 12 : 13} textTransform="uppercase">
+        <b>{payment.token}</b>
+      </Typography>
+    </Stack>
+    <Stack direction="row" alignItems="center" spacing={0.5}>
+      <NetworkAvatar chainId={payment.chainId} sx={{ width: 15, height: 15 }} />
+      <Typography variant="caption" fontSize={isMobile ? 12 : 13}>
+        {getNetworkDisplayName(payment.chainId)}
+      </Typography>
+    </Stack>
   </Stack>
 );
 

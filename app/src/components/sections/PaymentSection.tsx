@@ -1,15 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-import {
-  Box,
-  Chip,
-  IconButton,
-  Stack,
-  StackProps,
-  CircularProgress,
-  Skeleton
-} from '@mui/material';
-import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import { MdOutlinePlaylistAdd, MdOutlinePlaylistAddCheck } from 'react-icons/md';
+import { useRef, useEffect } from 'react';
+import { Box, Stack, StackProps, CircularProgress, Skeleton } from '@mui/material';
 import { PaymentStatus } from '../../types/PaymentType';
 import { useMobile } from '../../utils/hooks/useMobile';
 import { useOutboundPayments } from '../../utils/queries/payments';
@@ -43,9 +33,8 @@ const PaymentItemSkeleton = () => {
   );
 };
 
-export function PaymentSection({ type, ...props }: PaymentSectionProps) {
+export function PaymentSection({ type }: PaymentSectionProps) {
   const isMobile = useMobile();
-  const [expand, setExpand] = useState<boolean>(type === 'intent');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useOutboundPayments(
@@ -56,15 +45,6 @@ export function PaymentSection({ type, ...props }: PaymentSectionProps) {
   const payments =
     data?.pages.flatMap((page) => page.content).filter((payment) => payment.status !== 'EXPIRED') ||
     [];
-  const totalCount = data?.pages[0]?.totalElements || 0;
-
-  const icon =
-    type === 'intent' ? (
-      <MdOutlinePlaylistAdd color="inherit" fontSize="large" />
-    ) : (
-      <MdOutlinePlaylistAddCheck color="inherit" fontSize="large" />
-    );
-  const label = type === 'intent' ? 'Intents' : 'Receipts';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -77,7 +57,7 @@ export function PaymentSection({ type, ...props }: PaymentSectionProps) {
     };
 
     const scrollContainer = scrollContainerRef.current;
-    if (scrollContainer && expand) {
+    if (scrollContainer) {
       scrollContainer.addEventListener('scroll', handleScroll);
     }
 
@@ -86,7 +66,7 @@ export function PaymentSection({ type, ...props }: PaymentSectionProps) {
         scrollContainer.removeEventListener('scroll', handleScroll);
       }
     };
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage, STATUS_MAP[type], expand]);
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, STATUS_MAP[type]]);
 
   const renderContent = () => {
     const commonStackProps = {
@@ -94,10 +74,10 @@ export function PaymentSection({ type, ...props }: PaymentSectionProps) {
       px: 1.5,
       pb: 1,
       pt: 0.5,
-      direction: 'row' as const,
-      spacing: 3,
+      spacing: 1,
       sx: {
-        overflowX: 'scroll',
+        overflowY: 'scroll',
+        maxHeight: 'calc(100vh - 300px)',
         scrollbarWidth: 'auto',
         '&::-webkit-scrollbar': {
           display: 'none'
@@ -142,35 +122,5 @@ export function PaymentSection({ type, ...props }: PaymentSectionProps) {
     );
   };
 
-  return (
-    <Stack {...props} px={1} spacing={1}>
-      <Box
-        px={0.5}
-        display="flex"
-        flexDirection="row"
-        justifyContent="space-between"
-        alignItems="center">
-        <Chip
-          icon={icon}
-          label={
-            <Box display="flex" alignItems="center">
-              {label} (
-              {isLoading ? (
-                <Skeleton width={20} sx={{ display: 'inline-block', mx: 0.5 }} />
-              ) : (
-                totalCount
-              )}
-              )
-            </Box>
-          }
-          variant="outlined"
-          sx={{ border: 0, fontSize: 14, fontWeight: 'bold' }}
-        />
-        <IconButton size="small" color="inherit" onClick={() => setExpand(!expand)}>
-          {expand ? <ExpandLess /> : <ExpandMore />}
-        </IconButton>
-      </Box>
-      {expand && renderContent()}
-    </Stack>
-  );
+  return <>{renderContent()}</>;
 }
