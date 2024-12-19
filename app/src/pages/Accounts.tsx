@@ -99,7 +99,7 @@ export default function Accounts() {
                   balanceVisible={balanceVisible}
                 />
               )}
-              {activeTab === 1 && <PaymentSection width="100%" type="receipt" />}
+              {activeTab === 1 && <PaymentSection width="100%" type="intent" />}
               {activeTab === 2 && (
                 <Box sx={{ height: 'calc(100vh - 300px)', overflow: 'auto' }}>
                   <ActivityFeed identity={{ address: profile?.identity! }} />
