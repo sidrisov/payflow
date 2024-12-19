@@ -39,6 +39,7 @@ import { GrStorage } from 'react-icons/gr';
 import { FaRegHeart } from 'react-icons/fa';
 import { FcApproval } from 'react-icons/fc';
 import ResponsiveDialog from '../dialogs/ResponsiveDialog';
+import { useMobile } from '../../utils/hooks/useMobile';
 
 export function ProfileMenu({
   profile,
@@ -49,6 +50,7 @@ export function ProfileMenu({
   CloseCallbackType & {
     profile: ProfileType;
   }) {
+  const isMobile = useMobile();
   const navigate = useNavigate();
   const { logout } = usePrivy();
 
@@ -73,8 +75,22 @@ export function ProfileMenu({
 
   return (
     <>
-      <ResponsiveDialog open={Boolean(props.open)} onClose={closeStateCallback} title="Profile">
-        <MenuList disablePadding>
+      <ResponsiveDialog
+        {...(isMobile ? { height: 500 } : {})}
+        open={Boolean(props.open)}
+        onClose={closeStateCallback}
+        title="Profile">
+        <MenuList
+          disablePadding
+          sx={{
+            alignItems: 'flex-start',
+            '& .MuiMenuItem-root': {
+              '&:hover': {
+                borderRadius: 3
+              }
+            },
+            width: '100%'
+          }}>
           <MenuItem
             sx={{ minWidth: 150 }}
             onClick={async () => {

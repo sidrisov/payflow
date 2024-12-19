@@ -87,23 +87,23 @@ export default function Accounts() {
                   color: green.A700
                 }
               }}>
-              <Tab icon={<GiTwoCoins size={20} />} label="Tokens" />
+              <Tab icon={<GiTwoCoins size={20} />} label="Activity" />
               <Tab icon={<MdOutlinePlaylistAdd size={20} />} label="Intents" />
-              <Tab icon={<MdOutlinePlaylistAddCheck size={20} />} label="Activity" />
+              <Tab icon={<MdOutlinePlaylistAddCheck size={20} />} label="Tokens" />
             </Tabs>
 
             <Box flexGrow={1} px={1} overflow="auto" width="100%" maxWidth={375}>
               {activeTab === 0 && (
+                <Box sx={{ height: 'calc(100vh - 300px)', overflow: 'auto' }}>
+                  <ActivityFeed identity={{ address: profile?.identity! }} />
+                </Box>
+              )}
+              {activeTab === 1 && <PaymentSection width="100%" type="intent" />}
+              {activeTab === 2 && (
                 <Assets
                   assetBalancesResult={{ isLoading, isFetched, balances }}
                   balanceVisible={balanceVisible}
                 />
-              )}
-              {activeTab === 1 && <PaymentSection width="100%" type="intent" />}
-              {activeTab === 2 && (
-                <Box sx={{ height: 'calc(100vh - 300px)', overflow: 'auto' }}>
-                  <ActivityFeed identity={{ address: profile?.identity! }} />
-                </Box>
               )}
             </Box>
           </Stack>

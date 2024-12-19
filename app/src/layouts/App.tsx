@@ -365,8 +365,13 @@ export default function AppLayout({
           profile={profile}
           loginRedirectOnLogout={false}
           open={openProfileMenu}
-          onClose={() => setOpenProfileMenu(false)}
-          closeStateCallback={() => setOpenProfileMenu(false)}
+          onClose={() => {
+            setOpenProfileMenu(false);
+          }}
+          closeStateCallback={() => {
+            setOpenProfileMenu(false);
+            setBottonToolbarActionValue(0);
+          }}
         />
       )}
       {openSearchIdentity && (
