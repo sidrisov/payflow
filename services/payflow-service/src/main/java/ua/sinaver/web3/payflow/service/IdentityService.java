@@ -214,6 +214,12 @@ public class IdentityService implements IIdentityService {
 	}
 
 	@Override
+	public List<IdentityMessage> getIdentitiesInfo(int fid) {
+		val identities = getFidAddresses(fid);
+		return getIdentitiesInfo(identities, null);
+	}
+
+	@Override
 	public List<IdentityMessage> getIdentitiesInfo(List<String> identities) {
 		return getIdentitiesInfo(identities, null);
 	}

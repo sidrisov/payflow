@@ -1,5 +1,4 @@
 import { Box, Button, Card, CardProps, Stack, Typography } from '@mui/material';
-import { StatusAPIResponse } from '@farcaster/auth-kit';
 
 import { useMemo, useState } from 'react';
 import { API_URL } from '../../utils/urlConstants';
@@ -7,7 +6,7 @@ import { parseSiweMessage } from 'viem/siwe';
 import { toast } from 'react-toastify';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
-import { Address, isAddress } from 'viem';
+import { Address } from 'viem';
 import { sortBySocialScore } from '../../services/socials';
 import { ContactType, IdentityType } from '../../types/ProfileType';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -17,33 +16,35 @@ import { grey } from '@mui/material/colors';
 import FarcasterAvatar from '../avatars/FarcasterAvatar';
 
 export function FarcasterAccountsCard({
-  siwfResponse,
+  username,
+  fid,
+  message,
+  signature,
   ...props
 }: {
-  siwfResponse: StatusAPIResponse;
+  username?: string;
+  fid: number;
+  message: string;
+  signature: string;
 } & CardProps) {
-  const verifications: Address[] = (siwfResponse.verifications as Address[]).filter((v) =>
-    isAddress(v)
-  ) ?? [siwfResponse.custody as Address];
-
   const [loading, setLoading] = useState<boolean>();
   const [identities, setIdentities] = useState<IdentityType[]>();
   const [signUpIdentity, setSignUpIdentity] = useState<Address>();
   const [loadingVerify, setLoadingVerify] = useState<boolean>();
 
   useMemo(async () => {
-    if (verifications) {
+    if (fid) {
       try {
         setLoading(true);
         const response = await axios.get(`${API_URL}/api/user/identities`, {
-          params: { identities: verifications },
+          params: { fid },
           paramsSerializer: {
             indexes: null
           }
         });
         setIdentities(
           sortBySocialScore(
-            (response.data as IdentityType[]).map((i) => ({ data: i } as ContactType))
+            (response.data as IdentityType[]).map((i) => ({ data: i }) as ContactType)
           ).map((contact) => contact.data)
         );
       } catch (error) {
@@ -52,7 +53,7 @@ export function FarcasterAccountsCard({
         setLoading(false);
       }
     }
-  }, [verifications.length]);
+  }, [fid]);
 
   console.log(identities);
 
@@ -61,35 +62,28 @@ export function FarcasterAccountsCard({
   const redirect = searchParams.get('redirect');
 
   async function completeSignUp() {
-    if (siwfResponse != null) {
-      console.debug('onFarcasterSignInSuccess: ', siwfResponse);
-      if (siwfResponse.message && siwfResponse.signature && siwfResponse.state === 'completed') {
-        const parsedMessage = parseSiweMessage(siwfResponse.message);
-        const signature = siwfResponse.signature;
-        const verifications = siwfResponse.verifications;
-        console.debug(parsedMessage, signature, verifications);
+    console.debug('onFarcasterSignInSuccess: ', message, signature);
+    const parsedMessage = parseSiweMessage(message);
 
-        try {
-          setLoadingVerify(true);
-          const response = await axios.post(
-            `${API_URL}/api/auth/verify/${signUpIdentity}`,
-            { message: parsedMessage, signature },
-            { withCredentials: true }
-          );
+    try {
+      setLoadingVerify(true);
+      const response = await axios.post(
+        `${API_URL}/api/auth/verify/${signUpIdentity}`,
+        { message: parsedMessage, signature },
+        { withCredentials: true }
+      );
 
-          if (response.status === 200) {
-            console.debug('redirecting to: ', redirect ?? '/');
-            navigate(redirect ?? '/');
-          } else {
-            toast.error('Failed to sign in with Farcaster');
-          }
-        } catch (error) {
-          toast.error('Failed to sign in with Farcaster');
-          console.error(error);
-        } finally {
-          setLoadingVerify(false);
-        }
+      if (response.status === 200) {
+        console.debug('redirecting to: ', redirect ?? '/');
+        navigate(redirect ?? '/');
+      } else {
+        toast.error('Failed to sign in with Farcaster');
       }
+    } catch (error) {
+      toast.error('Failed to sign in with Farcaster');
+      console.error(error);
+    } finally {
+      setLoadingVerify(false);
     }
   }
 
@@ -113,7 +107,7 @@ export function FarcasterAccountsCard({
             Select Profile
           </Typography>
           <Typography variant="caption" textAlign="center" color={grey[400]}>
-            verified addresses linked to <b>@{siwfResponse.username}</b>
+            verified addresses linked to <b>@{username}</b>
           </Typography>
         </Stack>
       </Stack>

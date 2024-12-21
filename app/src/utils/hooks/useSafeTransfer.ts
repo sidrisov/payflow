@@ -23,7 +23,7 @@ import { erc7579Actions } from 'permissionless/actions/erc7579';
 import { RHINESTONE_ATTESTER_ADDRESS } from '@rhinestone/module-sdk';
 
 import {
-  paymasterSponsorshipPolicyIds as pimlicoSponsorshipPolicyIds,
+  pimlicoSponsorshipPolicyIds,
   pimlicoClient,
   transport,
   PIMLICO_SPONSORED_ENABLED

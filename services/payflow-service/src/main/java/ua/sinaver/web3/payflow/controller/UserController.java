@@ -143,11 +143,17 @@ public class UserController {
 		return Collections.emptyList();
 	}
 
-	// TODO: limit the info returned as it is public
+
 	@GetMapping("/identities")
-	public List<IdentityMessage> getIdentities(@RequestParam(value = "identities") List<String> identities) {
+	public List<IdentityMessage> getIdentities(@RequestParam(required = false) List<String> identities,
+	                                           @RequestParam(required = false) Integer fid) {
 		try {
-			return identityService.getIdentitiesInfo(identities);
+			if (identities != null) {
+				return identityService.getIdentitiesInfo(identities);
+
+			} else if (fid != null) {
+				return identityService.getIdentitiesInfo(fid);
+			}
 		} catch (Throwable t) {
 			log.error("Error fetching identities: {}", identities, t);
 		}

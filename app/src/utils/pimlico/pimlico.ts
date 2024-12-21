@@ -74,7 +74,7 @@ const TESTNET_POLICIES = JSON.parse(
   import.meta.env.VITE_PIMLICO_SPONSORED_POLICY_BASE_SEPOLIA
 ) as string[];
 
-export const paymasterSponsorshipPolicyIds = (chainId: number) => {
+export const pimlicoSponsorshipPolicyIds = (chainId: number) => {
   switch (chainId) {
     case base.id:
       return MAINNET_POLICIES.slice(0, 1);

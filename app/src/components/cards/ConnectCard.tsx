@@ -11,15 +11,20 @@ import { API_URL } from '../../utils/urlConstants';
 import { FarcasterAccountsCard } from './FarcasterAccountsCard';
 import { useSetActiveWallet } from '@privy-io/wagmi';
 import { createSiweMessage, parseSiweMessage } from 'viem/siwe';
+import { SignInResult } from '@farcaster/frame-core/dist/actions/signIn';
 
-import FrameV2SDK from '@farcaster/frame-sdk';
+import FrameV2SDK, { FrameContext } from '@farcaster/frame-sdk';
+import { FrameV2SignInButton, FrameV2SignInError } from '../buttons/FrameV2SignInButton';
+import { Address } from 'viem';
 const FARCASTER_CONNECT_ENABLED = import.meta.env.VITE_FARCASTER_CONNECT_ENABLED === 'true';
 
 export type AuthenticationStatus = 'loading' | 'unauthenticated' | 'authenticated';
 
 export default function ConnectCard() {
   const [siwfNonce, setSiwfNonce] = useState<string>();
-  const [sifwResponse, setSifeResponse] = useState<StatusAPIResponse>();
+  const [sifwResponse, setSifwResponse] = useState<StatusAPIResponse>();
+  const [sifwV2Response, setSifwV2Response] = useState<SignInResult>();
+
   const [authStatus, setAuthStatus] = useState<AuthenticationStatus>('unauthenticated');
   const [nonceFetched, setNonceFetched] = useState(false);
 
@@ -47,6 +52,7 @@ export default function ConnectCard() {
   }, [wallets, ready, setActiveWallet]);
 
   const [isFrameV2, setIsFrameV2] = useState(false);
+  const [frameV2Context, setFrameV2Context] = useState<FrameContext>();
 
   useEffect(() => {
     const initiateFrameV2 = async () => {
@@ -55,6 +61,7 @@ export default function ConnectCard() {
       if (context) {
         FrameV2SDK.actions.ready();
         setIsFrameV2(true);
+        setFrameV2Context(context);
       }
     };
     if (FrameV2SDK && !isFrameV2) {
@@ -125,20 +132,44 @@ export default function ConnectCard() {
     }
   }, [signer, connectWallet, signInWithEthereum]);
 
-  const onFarcasterSignInError = useCallback((error: AuthClientError | undefined) => {
-    setSiwfNonce(undefined);
-    if (error) {
-      console.error('Farcaster sign in error:', error);
-    }
-    toast.error('Failed to sign in with Farcaster. Try again!');
-  }, []);
+  const onFarcasterSignInError = useCallback(
+    (error: AuthClientError | FrameV2SignInError | undefined) => {
+      setSiwfNonce(undefined);
+      if (error) {
+        console.error('Farcaster sign in error:', error);
+      }
+      toast.error('Failed to Sign In. Try again!');
+    },
+    []
+  );
 
   const handleConnectAnotherWallet = useCallback(() => {
     connectWallet();
   }, [connectWallet]);
 
-  if (sifwResponse && sifwResponse.state === 'completed') {
-    return <FarcasterAccountsCard siwfResponse={sifwResponse} />;
+  if (sifwResponse && sifwResponse.state === 'completed' && sifwResponse.fid) {
+    return (
+      <FarcasterAccountsCard
+        username={sifwResponse.username}
+        fid={sifwResponse.fid}
+        message={sifwResponse.message ?? ''}
+        signature={sifwResponse.signature ?? ''}
+      />
+    );
+  } else if (
+    sifwV2Response &&
+    sifwV2Response.message &&
+    sifwV2Response.signature &&
+    frameV2Context
+  ) {
+    return (
+      <FarcasterAccountsCard
+        username={frameV2Context.user.username}
+        fid={frameV2Context.user.fid}
+        message={sifwV2Response.message}
+        signature={sifwV2Response.signature}
+      />
+    );
   }
 
   return (
@@ -154,14 +185,24 @@ export default function ConnectCard() {
         </Typography>
 
         <Stack spacing={1}>
-          {!isFrameV2 && FARCASTER_CONNECT_ENABLED && siwfNonce && (
+          {FARCASTER_CONNECT_ENABLED && siwfNonce && (
             <>
-              <SignInButton
-                hideSignOut
-                nonce={siwfNonce}
-                onSuccess={async (response) => setSifeResponse(response)}
-                onError={onFarcasterSignInError}
-              />
+              {isFrameV2 ? (
+                <FrameV2SignInButton
+                  nonce={siwfNonce}
+                  onSuccess={async (response) => setSifwV2Response(response)}
+                  onError={(error) => {
+                    onFarcasterSignInError(error);
+                  }}
+                />
+              ) : (
+                <SignInButton
+                  hideSignOut
+                  nonce={siwfNonce}
+                  onSuccess={async (response) => setSifwResponse(response)}
+                  onError={onFarcasterSignInError}
+                />
+              )}
               <Divider flexItem sx={{ color: 'text.secondary' }}>
                 or
               </Divider>
