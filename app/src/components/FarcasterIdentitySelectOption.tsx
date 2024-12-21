@@ -1,8 +1,7 @@
-import { Box, Stack } from '@mui/material';
+import { Box } from '@mui/material';
 import { IdentityType } from '../types/ProfileType';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
-import { PayflowChip, InvitedChip } from './chips/IdentityStatusChips';
 import { SocialPresenceStack } from './SocialPresenceStack';
 
 export function FarcasterIdentitySelectOption({ identity }: { identity: IdentityType }) {
@@ -23,7 +22,7 @@ export function FarcasterIdentitySelectOption({ identity }: { identity: Identity
           textTransform="none"
           sx={{ borderRadius: 5 }}>
           {type === 'profile' && identity.profile && (
-            <ProfileSection maxWidth={200} profile={identity.profile} />
+            <ProfileSection maxWidth={200} profile={identity.profile} copy={false} />
           )}
 
           {type === 'address' && identity.meta && (
@@ -31,16 +30,12 @@ export function FarcasterIdentitySelectOption({ identity }: { identity: Identity
           )}
         </Box>
 
-        <Stack direction="column" spacing={0.5} alignItems="center" sx={{ width: 100 }}>
-          {type === 'profile' ? <PayflowChip /> : identity.invited && <InvitedChip />}
-
-          {identity.meta && (
-            <SocialPresenceStack
-              key={`social_presence_stack_${identity.address}`}
-              meta={identity.meta}
-            />
-          )}
-        </Stack>
+        {identity.meta && (
+          <SocialPresenceStack
+            key={`social_presence_stack_${identity.address}`}
+            meta={identity.meta}
+          />
+        )}
       </Box>
     )
   );

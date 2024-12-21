@@ -32,7 +32,8 @@ export function ProfileSection({
   fontSize,
   maxWidth,
   view = 'profile',
-  address
+  address,
+  copy = true
 }: {
   profile: ProfileType;
   avatarSize?: number;
@@ -40,6 +41,7 @@ export function ProfileSection({
   maxWidth?: number;
   view?: 'profile' | 'flow';
   address?: Address;
+  copy?: boolean;
 }) {
   const walletAddress = address ?? profile?.defaultFlow?.wallets[0].address;
   const walletType: FlowType['type'] = profile?.defaultFlow?.type;
@@ -77,7 +79,7 @@ export function ProfileSection({
             <Typography noWrap variant="caption">
               {shortenWalletAddressLabel(walletAddress)}
             </Typography>
-            <CopyToClipboardIconButton tooltip="Copy address" value={walletAddress} />
+            {copy && <CopyToClipboardIconButton tooltip="Copy address" value={walletAddress} />}
           </Stack>
         )}
       </Stack>

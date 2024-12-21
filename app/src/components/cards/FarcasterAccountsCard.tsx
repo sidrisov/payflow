@@ -1,6 +1,6 @@
 import { Box, Button, Card, CardProps, Stack, Typography } from '@mui/material';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { API_URL } from '../../utils/urlConstants';
 import { parseSiweMessage } from 'viem/siwe';
 import { toast } from 'react-toastify';
@@ -31,35 +31,43 @@ export function FarcasterAccountsCard({
   const [identities, setIdentities] = useState<IdentityType[]>();
   const [signUpIdentity, setSignUpIdentity] = useState<Address>();
   const [loadingVerify, setLoadingVerify] = useState<boolean>();
-
-  useMemo(async () => {
-    if (fid) {
-      try {
-        setLoading(true);
-        const response = await axios.get(`${API_URL}/api/user/identities`, {
-          params: { fid },
-          paramsSerializer: {
-            indexes: null
-          }
-        });
-        setIdentities(
-          sortBySocialScore(
-            (response.data as IdentityType[]).map((i) => ({ data: i }) as ContactType)
-          ).map((contact) => contact.data)
-        );
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    }
-  }, [fid]);
-
-  console.log(identities);
-
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirect = searchParams.get('redirect');
+
+  useEffect(() => {
+    async function fetchIdentities() {
+      if (fid) {
+        try {
+          setLoading(true);
+          const response = await axios.get(`${API_URL}/api/user/identities`, {
+            params: { fid },
+            paramsSerializer: {
+              indexes: null
+            }
+          });
+          const sortedIdentities = sortBySocialScore(
+            (response.data as IdentityType[]).map((i) => ({ data: i }) as ContactType)
+          ).map((contact) => contact.data);
+
+          setIdentities(sortedIdentities);
+
+          const withProfile = sortedIdentities.find((identity) => identity.profile);
+          if (withProfile) {
+            setSignUpIdentity(withProfile.address);
+          }
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchIdentities();
+  }, [fid]);
+
+  console.log(identities);
 
   async function completeSignUp() {
     console.debug('onFarcasterSignInSuccess: ', message, signature);
@@ -141,8 +149,7 @@ export function FarcasterAccountsCard({
                       color: 'inherit',
                       border: 1.5,
                       borderRadius: 5,
-                      borderColor: identity.address === signUpIdentity ? 'inherit' : 'divider',
-                      borderStyle: identity.address === signUpIdentity ? 'dashed' : 'solid'
+                      borderColor: identity.address === signUpIdentity ? 'inherit' : 'divider'
                     }}>
                     <FarcasterIdentitySelectOption identity={identity} />
                   </Box>
