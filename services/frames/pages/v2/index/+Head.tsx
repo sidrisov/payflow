@@ -10,6 +10,7 @@ export function Head() {
         type: 'launch_frame',
         name: 'Payflow',
         url: DAPP_URL,
+        splashImageUrl: 'https://app.payflow.me/apple-touch-icon.png',
         splashBackgroundColor: '#f7f7f7'
       }
     }

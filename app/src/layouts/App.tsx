@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
@@ -39,16 +39,12 @@ import { TbHandClick } from 'react-icons/tb';
 import { green } from '@mui/material/colors';
 
 import FrameV2SDK from '@farcaster/frame-sdk';
+import axios from 'axios';
+import { me } from '../services/user';
+import sortAndFilterFlows from '../utils/sortAndFilterFlows';
+import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 
-export default function AppLayout({
-  profile,
-  appSettings,
-  setAppSettings
-}: {
-  profile: ProfileType | undefined;
-  appSettings: AppSettings;
-  setAppSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
-}) {
+export default function App() {
   const location = useLocation();
   const isMobile = useMobile();
   const navigate = useNavigate();
@@ -64,6 +60,47 @@ export default function AppLayout({
   })();
 
   const [isFrameV2, setIsFrameV2] = useState(false);
+
+  const fetchingStatusRef = useRef(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [profile, setProfile] = useState<ProfileType>();
+
+  const accessToken = useSearchParams()[0].get('access_token') ?? undefined;
+
+  // Fetch user when:
+  useEffect(() => {
+    const fetchStatus = async () => {
+      if (fetchingStatusRef.current) {
+        return;
+      }
+
+      fetchingStatusRef.current = true;
+      try {
+        const profile = await me(accessToken);
+        if (profile) {
+          if (profile.flows) {
+            profile.flows = sortAndFilterFlows(profile.flows, profile.defaultFlow);
+          }
+          setProfile(profile);
+        }
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          toast.error(`🤷🏻‍♂️ ${error.message}`);
+        }
+        console.error(error);
+      } finally {
+        setLoading(false);
+        fetchingStatusRef.current = false;
+      }
+    };
+
+    // 1. page loads
+    fetchStatus();
+
+    // 2. window is focused (in case user logs out of another window)
+    window.addEventListener('focus', fetchStatus);
+    return () => window.removeEventListener('focus', fetchStatus);
+  }, []);
 
   useEffect(() => {
     const initiateFrameV2 = async () => {
@@ -86,10 +123,10 @@ export default function AppLayout({
       }
     };
 
-    if (FrameV2SDK && !isFrameV2) {
+    if (FrameV2SDK && !isFrameV2 && !loading) {
       initiateFrameV2();
     }
-  }, [isFrameV2]);
+  }, [isFrameV2, loading]);
 
   const enablePullToRefresh = usePwa() || isMiniApp || isFrameV2;
 
@@ -97,9 +134,6 @@ export default function AppLayout({
     location.pathname !== '/composer' &&
     location.pathname !== '/search' &&
     !location.pathname.startsWith('/payment');
-
-  const showToolbar =
-    location.pathname !== '/composer' && !location.pathname.startsWith('/payment');
 
   const defaultToolbarAction = (() => {
     switch (location.pathname) {
@@ -201,15 +235,15 @@ export default function AppLayout({
 
   // specify container height,
   // otherwise privy will have an issue displaying the dialog content
-  return (
+  return loading ? (
+    <LoadingPayflowEntryLogo />
+  ) : (
     <ProfileContext.Provider
       value={{
         isAuthenticated: authorized,
         profile,
         isMiniApp,
-        isFrameV2,
-        appSettings,
-        setAppSettings
+        isFrameV2
       }}>
       <PullToRefresh
         isPullable={enablePullToRefresh}

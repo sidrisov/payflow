@@ -4,7 +4,7 @@ import LoadingPayflowEntryLogo from './components/LoadingPayflowEntryLogo';
 
 // Dynamically import all pages
 const LazyLoginWithProviders = lazy(() => import('./layouts/LoginWithProviders'));
-const LazyAppWithProviders = lazy(() => import('./layouts/AppWithProviders'));
+const LazyApp = lazy(() => import('./layouts/App'));
 const LazyAccounts = lazy(() => import('./pages/Accounts'));
 const LazyProfile = lazy(() => import('./pages/Profile'));
 const LazyInvite = lazy(() => import('./pages/Invite'));
@@ -45,7 +45,7 @@ export const appRouter = createBrowserRouter([
   },
   {
     path: '/',
-    element: <LazyWrapper component={LazyAppWithProviders} />,
+    element: <LazyWrapper component={LazyApp} />,
     errorElement: <LazyWrapper component={LazyPage404} />,
     children: [
       { element: <LazyWrapper component={LazyAccounts} />, index: true },

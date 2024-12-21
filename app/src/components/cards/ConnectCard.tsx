@@ -15,7 +15,6 @@ import { SignInResult } from '@farcaster/frame-core/dist/actions/signIn';
 
 import FrameV2SDK, { FrameContext } from '@farcaster/frame-sdk';
 import { FrameV2SignInButton, FrameV2SignInError } from '../buttons/FrameV2SignInButton';
-import { Address } from 'viem';
 const FARCASTER_CONNECT_ENABLED = import.meta.env.VITE_FARCASTER_CONNECT_ENABLED === 'true';
 
 export type AuthenticationStatus = 'loading' | 'unauthenticated' | 'authenticated';

@@ -8,6 +8,7 @@
     "version": "0.0.1",
     "name": "Payflow App",
     "iconUrl": "https://app.payflow.me/apple-touch-icon.png",
+    "splashImageUrl": "https://app.payflow.me/apple-touch-icon.png",
     "splashBackgroundColor": "#f7f7f7",
     "homeUrl": "https://app.payflow.me",
     "webhookUrl": "https://api.neynar.com/f/app/c70143f7-4d75-48b5-b3cc-bdc4bb3314ba/event"
