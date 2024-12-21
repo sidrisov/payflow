@@ -1,12 +1,5 @@
 import { Avatar, Box, Stack, Typography } from '@mui/material';
 import { green } from '@mui/material/colors';
-import { keyframes } from '@mui/system';
-
-const gradientChange = keyframes`
-  0% { border-color: transparent; }
-  50% { border-color: ${green.A700}; }
-  100% { border-color: transparent; }
-`;
 
 export default function LoadingPayflowEntryLogo() {
   return (
@@ -21,11 +14,9 @@ export default function LoadingPayflowEntryLogo() {
           src="/payflow.png"
           alt="Payflow Logo"
           sx={{
-            width: 60,
-            height: 60,
-            borderRadius: 4,
-            border: 3,
-            animation: `${gradientChange} 1s ease-in-out infinite`
+            width: 55,
+            height: 55,
+            borderRadius: 3
           }}
         />
         <Stack spacing={0.1} alignItems="flex-start">
