@@ -42,8 +42,8 @@ public class AuthController {
 
 	@PostMapping("/verify/{identity}")
 	public ResponseEntity<String> verify(@PathVariable String identity,
-	                                     @RequestBody SiweChallengeMessage siwe,
-	                                     HttpSession session) {
+			@RequestBody SiweChallengeMessage siwe,
+			HttpSession session) {
 		log.debug("SessionId: {} - siwe challenge request: {} for {}", session.getId(), siwe, identity);
 
 		val sessionNonce = (String) session.getAttribute("nonce");
@@ -61,16 +61,10 @@ public class AuthController {
 		}
 
 		// check if dapp uri match the one it's actually deployed
-		if (!siwe.message().uri().equals(dappUri)) {
-			log.error("URI mismatch - expected: {}, actual {}", dappUri, siwe.message().uri());
+		if (!siwe.message().uri().startsWith(dappUri)) {
+			log.error("URI mismatch - expected to start with: {}, actual: {}", dappUri, siwe.message().uri());
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 		}
-
-		// remove the check since SIWE verification implies using and EOA
-		/*if (siwe.message().chainId() != 1 && siwe.message().chainId() != 10) {
-			log.error("Wrong chainId  - expected: {} or {}, actual {}", 1, 10, siwe.message().chainId());
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-		}*/
 
 		val authentication = authManager.authenticate(
 				new Web3Authentication(identity.toLowerCase(), siwe.message(), siwe.signature()));

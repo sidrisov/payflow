@@ -1,9 +1,12 @@
-import { Button } from '@mui/material';
+import { Avatar, Button } from '@mui/material';
 import { ButtonProps } from '@mui/material';
 
 import FrameV2SDK from '@farcaster/frame-sdk';
 import { SignInResult } from '@farcaster/frame-core/dist/actions/signIn';
 import { Address } from 'viem';
+import FarcasterAvatar from '../avatars/FarcasterAvatar';
+import LoadingButton from '@mui/lab/LoadingButton';
+import { useCallback, useEffect, useState } from 'react';
 
 export type FrameV2SignInError = Error;
 
@@ -25,7 +28,10 @@ export function FrameV2SignInButton({
   onError,
   ...props
 }: FrameV2SignInButtonProps) {
-  const handleConnect = async () => {
+  const [loading, setLoading] = useState(false);
+
+  const signIn = useCallback(async () => {
+    setLoading(true);
     try {
       const result = await FrameV2SDK.actions.signIn({
         nonce
@@ -38,21 +44,39 @@ export function FrameV2SignInButton({
       });
     } catch (error) {
       onError(error as FrameV2SignInError);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [nonce, onError, onSuccess]);
+
+  useEffect(() => {
+    if (!loading) {
+      signIn();
+    }
+  }, [loading, signIn]);
 
   return (
-    <Button
-      onClick={handleConnect}
+    <LoadingButton
+      onClick={signIn}
+      loading={loading}
+      startIcon={!loading && <FarcasterAvatar size={28} />}
+      variant="text"
+      color="inherit"
       sx={{
-        backgroundColor: '#8A63D2',
         '&:hover': {
-          backgroundColor: '#7142D2'
+          backgroundColor: 'action.hover'
         },
-        borderRadius: 3
+        borderRadius: 3,
+        width: '100%',
+        height: 47,
+        textTransform: 'none',
+        fontWeight: 'bold',
+        fontSize: 18,
+        border: 1,
+        borderColor: 'divider'
       }}
       {...props}>
-      Sign In with Farcaster
-    </Button>
+      Farcaster
+    </LoadingButton>
   );
 }
