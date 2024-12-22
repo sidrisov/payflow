@@ -10,7 +10,6 @@ import { PaymentFlowSection } from '../../components/PaymentFlowSection';
 import { setReceivingFlow } from '../../services/flow';
 import { delay } from '../../utils/delay';
 import { toast } from 'react-toastify';
-import { PlayForWork } from '@mui/icons-material';
 
 export default function PreferredFlowPage() {
   const { profile } = useContext(ProfileContext);
@@ -122,12 +121,11 @@ export default function PreferredFlowPage() {
           </Stack>
 
           <Button
-            size="large"
             variant="outlined"
             color="inherit"
             onClick={updatePreferredFlow}
             disabled={!selectedFlow}
-            sx={{ borderRadius: 4, px: 3 }}>
+            sx={{ borderRadius: 3, px: 3 }}>
             Update
           </Button>
         </Stack>

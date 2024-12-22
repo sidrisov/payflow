@@ -225,12 +225,11 @@ export default function PreferredTokensPage() {
         </Stack>
 
         <Button
-          size="large"
           variant="outlined"
           color="inherit"
           onClick={updateTokens}
           disabled={selectedTokens.length === 0}
-          sx={{ borderRadius: 4 }}>
+          sx={{ borderRadius: 3 }}>
           Update
         </Button>
       </Stack>

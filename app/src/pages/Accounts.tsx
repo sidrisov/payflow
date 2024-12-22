@@ -87,9 +87,9 @@ export default function Accounts() {
                   color: green.A700
                 }
               }}>
-              <Tab icon={<GiTwoCoins size={20} />} label="Activity" />
+              <Tab icon={<MdOutlinePlaylistAddCheck size={20} />} label="Activity" />
               <Tab icon={<MdOutlinePlaylistAdd size={20} />} label="Intents" />
-              <Tab icon={<MdOutlinePlaylistAddCheck size={20} />} label="Tokens" />
+              <Tab icon={<GiTwoCoins size={20} />} label="Tokens" />
             </Tabs>
 
             <Box flexGrow={1} px={1} overflow="auto" width="100%" maxWidth={375}>

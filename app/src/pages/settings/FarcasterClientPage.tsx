@@ -98,11 +98,10 @@ export default function FarcasterClientPage() {
         </Stack>
 
         <Button
-          size="large"
           variant="outlined"
           color="inherit"
           onClick={() => updateClient(selectedClient)}
-          sx={{ borderRadius: 4 }}>
+          sx={{ borderRadius: 3 }}>
           Update
         </Button>
       </Stack>

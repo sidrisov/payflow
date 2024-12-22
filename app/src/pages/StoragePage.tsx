@@ -11,14 +11,18 @@ import {
   FormControl,
   FormLabel,
   Slider,
-  Button
+  Button,
+  Divider
 } from '@mui/material';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useContext } from 'react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
-import { API_URL } from '../../utils/urlConstants';
+import { API_URL } from '../utils/urlConstants';
 import { SiFarcaster } from 'react-icons/si';
 import { green, grey, orange, red } from '@mui/material/colors';
+import { BUY_STORAGE_FRAME_VERSION } from '@payflow/common';
+import FrameV2SDK from '@farcaster/frame-sdk';
+import { ProfileContext } from '../contexts/UserContext';
 
 export type CapacityType = 'ALL' | 'CASTS_ONLY';
 export type StorageNotificationType = {
@@ -58,6 +62,7 @@ const UsageBar = ({ label, value }: UsageBarProps) => {
 };
 
 type StorageData = {
+  user: { fid: number };
   total_active_units: number;
   soon_expire_units: number;
   casts: {
@@ -74,7 +79,9 @@ type StorageData = {
   };
 };
 
-export default function NotificationsPage() {
+export default function StoragePage() {
+  const { isFrameV2 } = useContext(ProfileContext);
+
   const [notification, setNotification] = useState<StorageNotificationType>({
     enabled: false,
     threshold: 20,
@@ -83,6 +90,20 @@ export default function NotificationsPage() {
     notifyWithCast: true
   });
   const [storageData, setStorageData] = useState<StorageData | null>(null);
+
+  const buyStorageCast = 'https://warpcast.com/sinaver.eth/0x5375b5c2';
+
+  const shareComposeDeeplink = useMemo(() => {
+    if (!storageData?.user?.fid) return '';
+
+    const baseUrl = 'https://warpcast.com/~/compose';
+    const castText = encodeURIComponent(
+      `Buy Farcaster Storage via @payflow frame\ncc: @sinaver.eth /payflow`
+    );
+    const embedUrl = `https://frames.payflow.me/fid/${storageData.user.fid}/storage?${BUY_STORAGE_FRAME_VERSION}`;
+
+    return `${baseUrl}?text=${castText}&embeds[]=${encodeURIComponent(embedUrl)}`;
+  }, [storageData?.user?.fid]);
 
   useEffect(() => {
     const fetchStorageNotification = async () => {
@@ -140,7 +161,7 @@ export default function NotificationsPage() {
     <Box sx={{ p: 3, maxWidth: 600, mx: 'auto' }}>
       <Card elevation={5} sx={{ mb: 2, borderRadius: 5 }}>
         <CardContent>
-          <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+          <Stack direction="row" alignItems="center" spacing={1}>
             <SiFarcaster size={20} />
             <Typography fontSize={18} fontWeight="bold">
               Farcaster Storage ({storageData?.total_active_units ?? 0} units)
@@ -173,6 +194,40 @@ export default function NotificationsPage() {
               }
             />
           </Stack>
+
+          <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+            <Button
+              fullWidth
+              variant="outlined"
+              color="inherit"
+              onClick={() => {
+                if (isFrameV2) {
+                  FrameV2SDK.actions.openUrl(buyStorageCast);
+                } else {
+                  window.open(buyStorageCast, '_blank');
+                }
+              }}
+              sx={{ borderRadius: 3, mb: 2, ml: 'auto' }}>
+              Buy storage
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              color="inherit"
+              disabled={!shareComposeDeeplink}
+              onClick={() => {
+                if (isFrameV2) {
+                  FrameV2SDK.actions.openUrl(shareComposeDeeplink);
+                } else {
+                  window.open(shareComposeDeeplink, '_blank');
+                }
+              }}
+              sx={{ borderRadius: 3, mb: 2, ml: 'auto' }}>
+              Share
+            </Button>
+          </Stack>
+
+          <Divider />
 
           <Stack
             direction="row"
@@ -355,7 +410,7 @@ export default function NotificationsPage() {
             variant="outlined"
             color="inherit"
             onClick={handleNotificationUpdate}
-            sx={{ borderRadius: 5, mt: 2, ml: 'auto' }}>
+            sx={{ borderRadius: 3, mt: 2, ml: 'auto' }}>
             Update
           </Button>
         </CardContent>
