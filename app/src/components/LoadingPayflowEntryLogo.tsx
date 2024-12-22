@@ -16,7 +16,9 @@ export default function LoadingPayflowEntryLogo() {
           sx={{
             width: 55,
             height: 55,
-            borderRadius: 3
+            borderRadius: 3,
+            border: 1,
+            borderColor: 'divider'
           }}
         />
         <Stack spacing={0.1} alignItems="flex-start">

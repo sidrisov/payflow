@@ -5,18 +5,14 @@ import {
   Stack,
   Typography,
   Grid2,
-  Box,
-  Tooltip,
   IconButton,
   Badge
 } from '@mui/material';
 import PaymentRewardCastActionComposerDialog from '../components/dialogs/PaymentRewardCastActionComposerDialog';
-import { AutoAwesome, Interests, PersonAdd, Star } from '@mui/icons-material';
-import { PiTipJar } from 'react-icons/pi';
+import { AutoAwesome, Interests, Star } from '@mui/icons-material';
 import { GrStorage } from 'react-icons/gr';
 import CastActionButton from '../components/buttons/CastActionButton';
 import { FaRegClock } from 'react-icons/fa';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { GoZap } from 'react-icons/go';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { useNavigate } from 'react-router-dom';
@@ -32,6 +28,7 @@ interface Action {
   onClick?: () => void;
   startIcon: React.ReactNode;
   earlyFeature?: boolean;
+  disabled?: boolean;
 }
 
 interface ActionCategoryProps {
@@ -138,9 +135,10 @@ export default function Actions() {
       description: 'Buy Hypersub subscription',
       installUrl: `${BASE_URL}/products/hypersub`,
       startIcon: <FaRegClock size={25} />
-    },
-    {
+    }
+    /* {
       earlyFeature: true,
+      disabled: true,
       title: 'Jar',
       description: 'Collect contributions',
       installUrl: `${BASE_URL}/jar`,
@@ -151,7 +149,7 @@ export default function Actions() {
       description: 'Invite to Payflow',
       installUrl: `${BASE_URL}/invite`,
       startIcon: <PersonAdd sx={{ width: 25, height: 25 }} />
-    }
+    } */
   ];
 
   return (
@@ -174,7 +172,7 @@ export default function Actions() {
             actions={farcasterActions}
           />
 
-          <Box display="flex" alignItems="center">
+          {/* <Box display="flex" alignItems="center">
             <Box
               component="span"
               sx={{
@@ -192,7 +190,7 @@ export default function Actions() {
             <Tooltip title="These features are in early development and may be subject to changes or limitations.">
               <InfoOutlinedIcon fontSize="small" sx={{ ml: 0.5, color: 'text.secondary' }} />
             </Tooltip>
-          </Box>
+          </Box> */}
         </Stack>
       </Container>
       <PaymentRewardCastActionComposerDialog

@@ -9,12 +9,14 @@ export default function CastActionButton({
   description,
   installUrl,
   earlyFeature = false,
+  disabled = false,
   ...props
 }: ButtonProps & {
   title: string;
   description?: string;
   installUrl?: string;
   earlyFeature?: boolean;
+  disabled?: boolean;
 }) {
   const { isFrameV2 } = useContext(ProfileContext);
 
@@ -26,6 +28,7 @@ export default function CastActionButton({
 
   return (
     <Button
+      disabled={disabled}
       variant="outlined"
       size="medium"
       color="inherit"
