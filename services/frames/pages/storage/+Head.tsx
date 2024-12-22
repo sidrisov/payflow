@@ -62,17 +62,9 @@ export function Head() {
           content={`${API_URL}/api/farcaster/frames/storage/check`}
         />
 
-        <meta property="fc:frame:button:2" content="Action" />
+        <meta property="fc:frame:button:2" content="Notify" />
         <meta property="fc:frame:button:2:action" content="link" />
-        <meta property="fc:frame:button:2:target" content={addActionUrl} />
-
-        <meta property="fc:frame:button:3" content="Share" />
-        <meta property="fc:frame:button:3:action" content="link" />
-        <meta property="fc:frame:button:3:target" content={shareComposeDeeplink} />
-
-        <meta property="fc:frame:button:4" content="Notify" />
-        <meta property="fc:frame:button:4:action" content="link" />
-        <meta property="fc:frame:button:4:target" content={notifyMiniAppDeeplink} />
+        <meta property="fc:frame:button:2:target" content={notifyMiniAppDeeplink} />
       </head>
     </>
   );

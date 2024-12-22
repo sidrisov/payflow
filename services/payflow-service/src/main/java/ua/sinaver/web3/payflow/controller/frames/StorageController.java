@@ -60,7 +60,7 @@ public class StorageController {
 	private LinkService linkService;
 
 	private static Payment getPayment(ValidatedFrameResponseMessage validateMessage,
-	                                  FarcasterUser gifteeUser, User clickedProfile) {
+			FarcasterUser gifteeUser, User clickedProfile) {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val castHash = validateMessage.action().cast().hash();
 		// maybe would make sense to reference top cast instead (if it's a bot cast)
@@ -84,7 +84,7 @@ public class StorageController {
 
 	@PostMapping("/{fid}/submit")
 	public ResponseEntity<?> submit(@RequestBody FrameMessage frameMessage,
-	                                @PathVariable Integer fid) {
+			@PathVariable Integer fid) {
 		log.debug("Received submit gift storage message request: {}", frameMessage);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
@@ -193,17 +193,6 @@ public class StorageController {
 				.path("/check")
 				.toUriString();
 
-		val addActionUrl = "https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fproducts%2Fstorage";
-
-		val baseUrl = "https://warpcast.com/~/compose";
-		val castText = URLEncoder.encode("""
-						Buy Farcaster Storage via @payflow frame
-						cc: @sinaver.eth /payflow""",
-				StandardCharsets.UTF_8);
-		val embedUrl = String.format("https://frames.payflow.me/fid/%s/storage?%s", castInteractorFid,
-				FrameVersions.STORAGE_VERSION);
-		val shareComposeDeeplink = String.format("%s?text=%s&embeds[]=%s", baseUrl, castText, embedUrl);
-
 		return FrameResponse.builder().imageUrl(storageImage)
 				.button(new FrameButton(
 						"Buy",
@@ -213,14 +202,6 @@ public class StorageController {
 						"My usage",
 						FrameButton.ActionType.POST,
 						checkUrl))
-				.button(new FrameButton(
-						"Action",
-						FrameButton.ActionType.LINK,
-						addActionUrl))
-				.button(new FrameButton(
-						"Share",
-						FrameButton.ActionType.LINK,
-						shareComposeDeeplink))
 				.build().toHtmlResponse();
 	}
 }

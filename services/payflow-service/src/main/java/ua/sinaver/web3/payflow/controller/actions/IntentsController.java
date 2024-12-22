@@ -254,7 +254,7 @@ public class IntentsController {
 
 				return ResponseEntity.ok().body(
 						new FrameResponse.ActionFrame("frame",
-								linkService.framePaymentLink(rewardPayment, true).toString()));
+								linkService.framePaymentLink(rewardPayment, false, true).toString()));
 		}
 	}
 }

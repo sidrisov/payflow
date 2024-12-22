@@ -5,7 +5,7 @@ export const SAFE_CONSTANTS = {
   SAFE_ERC7579_LAUNCHPAD: '0x7579011aB74c46090561ea277Ba79D510c6C00ff'
 } as const;
 
-export const BUY_STORAGE_FRAME_VERSION = 'v4.5';
+export const BUY_STORAGE_FRAME_VERSION = 'v4.6';
 export const MINT_FRAME_VERSION = 'v1.0';
 export const MINI_APP_LAUNCHER = 'v1.3';
 export const DEGEN_CLAIM_LAUNCHER = 'v1.0';

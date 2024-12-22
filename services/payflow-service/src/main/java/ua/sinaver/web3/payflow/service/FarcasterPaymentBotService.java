@@ -264,7 +264,7 @@ public class FarcasterPaymentBotService {
 
 					val frameUrl = payment == null ? String.format("https://frames.payflow.me/%s",
 							receiverProfile != null ? receiverProfile.getUsername() : receiverAddresses)
-							: linkService.framePaymentLink(payment, true).toString();
+							: linkService.framePaymentLink(payment, false, true).toString();
 
 					val castText =
 							String.format("""
@@ -452,7 +452,7 @@ public class FarcasterPaymentBotService {
 
 					val frameUrl = payment == null ? String.format("https://frames.payflow.me/%s",
 							receiverProfile != null ? receiverProfile.getUsername() : receiverAddresses)
-							: linkService.framePaymentLink(payment, true).toString();
+							: linkService.framePaymentLink(payment, false, true).toString();
 
 					val embeds = Collections.singletonList(
 							new Cast.Embed(frameUrl));
@@ -560,7 +560,8 @@ public class FarcasterPaymentBotService {
 										receiver);
 							}
 
-							val frameUrl = linkService.framePaymentLink(payment, true).toString();
+							val frameUrl =
+									linkService.framePaymentLink(payment, false, true).toString();
 							val embeds = Collections.singletonList(
 									new Cast.Embed(frameUrl));
 							val processed = notificationService.reply(castText, cast.hash(), embeds);

@@ -125,7 +125,7 @@ public class ClientPaymentController {
 			log.debug("Saved payment: {}", payment);
 
 			val paymentUrl = linkService.paymentLink(payment, false).toString();
-			val frameUrl = linkService.framePaymentLink(payment, false).toString();
+			val frameUrl = linkService.framePaymentLink(payment).toString();
 			return ResponseEntity.ok(new CreatePaymentResponse(
 					payment.getReferenceId(), paymentUrl, frameUrl));
 
