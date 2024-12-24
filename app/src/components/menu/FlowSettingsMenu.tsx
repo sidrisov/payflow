@@ -22,7 +22,7 @@ import NetworkAvatar from '../avatars/NetworkAvatar';
 import { WalletsInfoPopover } from './WalletsInfoPopover';
 import getFlowAssets from '../../utils/assets';
 import { useAssetBalances } from '../../utils/queries/balances';
-import { IoIosWallet, IoMdSquare } from 'react-icons/io';
+import { IoIosWallet, IoMdSquare, IoMdLock } from 'react-icons/io';
 import { socialLink, ZAPPER } from '../../utils/dapps';
 import { ProfileContext } from '../../contexts/UserContext';
 import { useWallets } from '@privy-io/react-auth';
@@ -31,6 +31,7 @@ import { useSetActiveWallet } from '@privy-io/wagmi';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
 import { HiOutlineDownload } from 'react-icons/hi';
 import { PayMeDialog } from '../dialogs/PayMeDialog';
+import { AutoMode } from '@mui/icons-material';
 
 export function FlowSettingsMenu({
   showOnlySigner,
@@ -157,6 +158,23 @@ export function FlowSettingsMenu({
                       </Stack>
                     </MenuItem>
                   )}
+                  {!defaultFlow && !flow.archived && (
+                    <MenuItem
+                      onClick={async () => {
+                        if (await setReceivingFlow(flow.uuid)) {
+                          toast.success('Saved! Reloading page ...', { isLoading: true });
+                          await delay(1000);
+                          navigate(0);
+                        } else {
+                          toast.error('Something went wrong!');
+                        }
+                      }}>
+                      <ListItemIcon>
+                        <HiOutlineDownload size={20} />
+                      </ListItemIcon>
+                      <Typography>Make default for receiving</Typography>
+                    </MenuItem>
+                  )}
                   <MenuItem
                     onClick={async (event) => {
                       setWalletAnchorEl(event.currentTarget);
@@ -170,7 +188,9 @@ export function FlowSettingsMenu({
                       direction="row"
                       justifyContent="space-between"
                       alignItems="center">
-                      {flow.type === 'FARCASTER_VERIFICATION' ? 'Wallets' : 'Smart Wallets'}
+                      <Typography>
+                        {flow.type === 'FARCASTER_VERIFICATION' ? 'Wallets' : 'Smart Wallets'}
+                      </Typography>
                       <AvatarGroup
                         max={4}
                         color="inherit"
@@ -198,21 +218,17 @@ export function FlowSettingsMenu({
                       </AvatarGroup>
                     </Stack>
                   </MenuItem>
-                  {!defaultFlow && !flow.archived && (
-                    <MenuItem
-                      onClick={async () => {
-                        if (await setReceivingFlow(flow.uuid)) {
-                          toast.success('Saved! Reloading page ...', { isLoading: true });
-                          await delay(1000);
-                          navigate(0);
-                        } else {
-                          toast.error('Something went wrong!');
-                        }
-                      }}>
+                  {flow.wallets[0].version.endsWith('_0.7') && (
+                    <MenuItem disabled>
                       <ListItemIcon>
-                        <HiOutlineDownload size={20} />
+                        <AutoMode sx={{ fontSize: 20 }} />
                       </ListItemIcon>
-                      Make default for receiving
+                      <Stack>
+                        <Typography>Permissions</Typography>
+                        <Typography variant="caption" color="text.secondary" noWrap>
+                          Spending limits & allowed tokens
+                        </Typography>
+                      </Stack>
                     </MenuItem>
                   )}
                   <Divider />
@@ -225,7 +241,7 @@ export function FlowSettingsMenu({
                 <ListItemIcon>
                   <Avatar src="/dapps/zapper.png" sx={{ width: 20, height: 20 }} />
                 </ListItemIcon>
-                More on Zapper
+                <Typography>More on Zapper</Typography>
               </MenuItem>
             </>
           )}

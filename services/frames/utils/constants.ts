@@ -12,7 +12,7 @@ console.log(API_URL, DAPP_URL, FRAMES_URL);
 
 export const TIP_PAYFLOW_URL = API_URL + '/api/farcaster/frames/jar/payflow';
 
-export const BUY_STORAGE_FRAME_VERSION = 'v4.4';
+export const BUY_STORAGE_FRAME_VERSION = 'v4.6';
 export const MINT_FRAME_VERSION = 'v1.0';
 export const MINI_APP_LAUNCHER = 'v1.3';
 export const DEGEN_CLAIM_LAUNCHER = 'v1.0';

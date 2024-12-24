@@ -53,8 +53,7 @@ artifacts
 
 temp
 application-local.properties
-deploy_cloud_run_api_service.sh
-deploy_cloud_run_frames_service.sh
+deploy_cloud_run_*
 generated
 
 stats.html
