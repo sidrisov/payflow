@@ -7,7 +7,7 @@ query GetSocialMetadataByIdentity($identity: Identity!) {
     domains(input: { limit: 1 }) {
       name
     }
-    socials(input: { limit: 5, filter: { followerCount: { _gt: 5 } } }) {
+    socials(input: { limit: 5, filter: { followerCount: { _gt: 0 } } }) {
       dappName
       profileName
       profileDisplayName

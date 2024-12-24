@@ -8,7 +8,7 @@ export const QUERY_SOCIALS_INSIGHTS = /* GraphQL */ `
       domains(input: { limit: 1 }) {
         name
       }
-      socials(input: { limit: 5, filter: { followerCount: { _gt: 5 } } }) {
+      socials(input: { limit: 5, filter: { followerCount: { _gt: 0 } } }) {
         dappName
         profileName
         profileDisplayName
@@ -46,7 +46,7 @@ export const QUERY_SOCIALS = /* GraphQL */ `
       domains(input: { limit: 1 }) {
         name
       }
-      socials(input: { limit: 5, filter: { followerCount: { _gt: 5 } } }) {
+      socials(input: { limit: 5, filter: { followerCount: { _gt: 0 } } }) {
         dappName
         profileName
         profileDisplayName
@@ -74,7 +74,7 @@ export const QUERY_SOCIALS_INSIGHTS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE
         filter: {
           dappName: { _eq: $dappName }
           profileName: { _regex: $profileName }
-          followerCount: { _gt: 5 }
+          followerCount: { _gt: 0 }
         }
         blockchain: ethereum
         order: { followerCount: DESC }
@@ -89,7 +89,7 @@ export const QUERY_SOCIALS_INSIGHTS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE
           domains(input: { limit: 1 }) {
             name
           }
-          socials(input: { limit: 5, filter: { followerCount: { _gt: 5 } } }) {
+          socials(input: { limit: 5, filter: { followerCount: { _gt: 0 } } }) {
             dappName
             profileName
             profileDisplayName
@@ -131,7 +131,7 @@ export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = /
         filter: {
           dappName: { _eq: $dappName }
           profileName: { _regex: $profileName }
-          followerCount: { _gt: 5 }
+          followerCount: { _gt: 0 }
         }
         blockchain: ethereum
         order: { followerCount: DESC }
@@ -146,7 +146,7 @@ export const QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME = /
           domains(input: { limit: 1 }) {
             name
           }
-          socials(input: { limit: 5, filter: { followerCount: { _gt: 5 } } }) {
+          socials(input: { limit: 5, filter: { followerCount: { _gt: 0 } } }) {
             dappName
             profileName
             profileDisplayName
@@ -175,7 +175,7 @@ export const QUERY_SOCIALS_INSIGHTS_LIGHT = /* GraphQL */ `
       domains(input: { limit: 1 }) {
         name
       }
-      socials(input: { limit: 5, filter: { followerCount: { _gt: 5 } } }) {
+      socials(input: { limit: 5, filter: { followerCount: { _gt: 0 } } }) {
         dappName
         profileName
         followerCount
@@ -205,7 +205,7 @@ export const QUERY_SOCIALS_LIGHT = /* GraphQL */ `
       domains(input: { limit: 1 }) {
         name
       }
-      socials(input: { limit: 5, filter: { followerCount: { _gt: 5 } } }) {
+      socials(input: { limit: 5, filter: { followerCount: { _gt: 0 } } }) {
         dappName
         profileName
         followerCount
