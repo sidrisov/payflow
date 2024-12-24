@@ -216,19 +216,19 @@ public class NotificationService {
 						senderFname,
 						commentText,
 						sourceRefText,
-						receiptService.getReceiptUrl(payment));
+						receiptUrl);
 
 				sendDirectMessage(messageText, receiverFid);
 
 				try {
-					val frameV2ReceiptUrl = receiptService.getFrameV2ReceiptUrl(payment);
+					//val frameV2ReceiptUrl = receiptService.getFrameV2ReceiptUrl(payment);
 					val notification = NotificationRequest.Notification.create(
 							String.format("Received %s %s", StringUtils.isNotBlank(payment.getTokenAmount())
 											? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 											: String.format("$%s", payment.getUsdAmount()),
 									payment.getToken().toUpperCase()),
 							String.format("from @%s %s", senderFname, commentText),
-							frameV2ReceiptUrl);
+							receiptUrl);
 
 					hubService.notify(notification, Collections.singletonList(Integer.parseInt(receiverFid)));
 				} catch (Throwable t) {

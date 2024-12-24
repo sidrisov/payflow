@@ -6,7 +6,7 @@
   },
   "frame": {
     "version": "0.0.1",
-    "name": "Payflow App",
+    "name": "Payflow",
     "iconUrl": "https://app.payflow.me/apple-touch-icon.png",
     "splashImageUrl": "https://app.payflow.me/apple-touch-icon.png",
     "splashBackgroundColor": "#f7f7f7",

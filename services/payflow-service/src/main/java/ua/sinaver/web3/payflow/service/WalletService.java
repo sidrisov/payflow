@@ -18,8 +18,9 @@ public class WalletService {
 	private final WebClient webClient;
 
 	public WalletService(WebClient.Builder builder,
-	                     @Value("${payflow.frames.url}") String walletApiUrl) {
+	                     @Value("${payflow.onchain.url}") String walletApiUrl) {
 		webClient = builder.baseUrl(walletApiUrl)
+				.baseUrl("/api/wallet")
 				.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
 				.defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
 				.build();
@@ -43,9 +44,9 @@ public class WalletService {
 
 	public List<WalletMessage> calculateWallets(List<String> owners, String saltNonce) {
 		val wallets = webClient.get()
-				.uri(uriBuilder -> uriBuilder.path("/wallets")
+				.uri(uriBuilder -> uriBuilder.path("/generate")
 						.queryParam("owners", owners.toArray())
-						.queryParam("saltNonce", saltNonce)
+						.queryParam("nonce", saltNonce)
 						.build())
 				.retrieve()
 				.bodyToFlux(WalletMessage.class)

@@ -385,7 +385,7 @@ public class FarcasterNeynarService {
 	public NotificationResponse notify(NotificationRequest.Notification notification, List<Integer> targetFids) {
 		log.debug("Calling Neynar Frame Notifications API for fids: {} with notification: {}", targetFids, notification);
 
-		return neynarClient.post()
+		val notificationResponse = neynarClient.post()
 				.uri("/frame/notifications")
 				.bodyValue(new NotificationRequest(notification, targetFids))
 				.retrieve()
@@ -400,5 +400,8 @@ public class FarcasterNeynarService {
 				})
 				.blockOptional()
 				.orElse(null);
+
+		log.debug("Received Neynar Frame Notification response: {}", notificationResponse);
+		return notificationResponse;
 	}
 }

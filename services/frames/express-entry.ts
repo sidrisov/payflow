@@ -12,13 +12,12 @@ import dotenv from 'dotenv';
 import { BalanceType } from './types/BalanceType';
 import { PaymentType } from './types/PaymentType';
 import { paymentHtml } from './components/Payment';
-import { Address, Chain, createPublicClient, http, keccak256, LocalAccount, toBytes } from 'viem';
+import { Address, Chain } from 'viem';
 import { arbitrum, base, degen, ham, mode, optimism, worldchain, zora } from 'viem/chains';
-import { isSmartAccountDeployed } from 'permissionless';
-import { FlowWalletType, JarType } from './types/FlowType';
+import { JarType } from './types/FlowType';
 import { jarHtml } from './components/Jar';
 import { fetchTokenPrices } from './utils/prices';
-import { SAFE_CONSTANTS, TokenPrices } from '@payflow/common';
+import { TokenPrices } from '@payflow/common';
 import { getAssetBalances, getFlowAssets, getTotalBalance } from './utils/balances';
 import { XmtpOpenFramesRequest, validateFramesPost } from '@xmtp/frames-validator';
 import { normalizeNumberPrecision } from './utils/format';
@@ -29,14 +28,11 @@ import { mintHtml } from './components/Mint';
 import { fetchMintData } from './utils/mint';
 import { buyFanTokenEntryHtml } from './components/BuyFanToken';
 import { buyHypersubEntryHtml } from './components/Subsribe';
-import { toSafeSmartAccount } from './utils/pimlico/toSafeSmartAccount';
-import { entryPoint07Address } from 'viem/account-abstraction';
 import { fetchSubscribers } from '@withfabric/protocol-sdks/stpv2';
 import { configureFabricSDK } from '@withfabric/protocol-sdks';
 import { wagmiConfig } from './utils/wagmi';
 import { API_URL } from './utils/constants';
 import cors from 'cors';
-import { RHINESTONE_ATTESTER_ADDRESS } from '@rhinestone/module-sdk';
 
 dotenv.config();
 
@@ -86,11 +82,13 @@ startServer();
 
 async function startServer() {
   const app = express();
-  app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-  }));
+  app.use(
+    cors({
+      origin: '*',
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization']
+    })
+  );
 
   app.use(express.static('assets'));
 
@@ -111,71 +109,6 @@ async function startServer() {
   }
 
   app.use(bodyParser.json());
-
-  // TODO: for now re-use frame service, move to separate onchain-service,
-  // once there are enough APIs to handle
-  app.get('/wallets', async (req, res) => {
-    try {
-      const owners = Array.isArray(req.query.owners) ? req.query.owners : [req.query.owners];
-      const saltNonce = req.query.saltNonce as string;
-      const chains = [base, optimism, degen, arbitrum];
-
-      const wallets: FlowWalletType[] = [];
-
-      const promises = chains.map(async (chain) => {
-        const client = createPublicClient({
-          chain,
-          transport: http()
-        });
-
-        if (client) {
-          const safeAccount = await toSafeSmartAccount({
-            client,
-            entryPoint: {
-              address: entryPoint07Address,
-              version: SAFE_CONSTANTS.AA_ENTRY_POINT_VERSION
-            },
-            version: SAFE_CONSTANTS.SAFE_SMART_ACCOUNT_VERSION,
-            saltNonce: BigInt(keccak256(toBytes(saltNonce))),
-            owners: owners.map((owner) => ({
-              type: 'local',
-              address: owner
-            })) as [LocalAccount],
-             safe4337ModuleAddress: SAFE_CONSTANTS.SAFE_4337_MODULE,
-            erc7579LaunchpadAddress: SAFE_CONSTANTS.SAFE_ERC7579_LAUNCHPAD,
-            attesters: [RHINESTONE_ATTESTER_ADDRESS],
-            attestersThreshold: 1
-          });
-
-          const predictedAddress = safeAccount.address;
-          const isSafeDeployed = await isSmartAccountDeployed(client, predictedAddress);
-
-          wallets.push({
-            address: predictedAddress,
-            network: chain.id,
-            version:
-              SAFE_CONSTANTS.SAFE_SMART_ACCOUNT_VERSION +
-              '_' +
-              SAFE_CONSTANTS.AA_ENTRY_POINT_VERSION,
-            deployed: isSafeDeployed
-          });
-        }
-      });
-
-      await Promise.all(promises);
-
-      console.log('Wallets: ', wallets);
-
-      if (wallets.length === chains.length) {
-        res.status(200).json(wallets);
-      } else {
-        res.status(500).send('Failed to calculate wallets');
-      }
-    } catch (error) {
-      console.error('Error calculating wallets:', error);
-      res.status(500).send('Failed to calculate wallets');
-    }
-  });
 
   app.get('/hypersub/subscribers/:chainId/:contractAddress', async (req, res) => {
     const chainId = req.params.chainId;
