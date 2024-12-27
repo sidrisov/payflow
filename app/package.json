@@ -12,7 +12,11 @@
     "build:deps": "npm run build --workspace @payflow/common",
     "watch:deps": "npm run build --workspace @payflow/common -- --watch",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:client": "vite build",
+    "build:server": "vite build --ssr",
+    "build:ssr": "npm run build:deps && npm run build:client && npm run build:server",
+    "serve": "NODE_ENV=production node server"
   },
   "dependencies": {
     "@airstack/airstack-react": "^0.6.0",
@@ -28,7 +32,7 @@
     "@paywithglide/glide-js": "^0.9.25",
     "@privy-io/react-auth": "^1.88.0",
     "@privy-io/wagmi": "^0.2.6",
-    "@rhinestone/module-sdk": "^0.1.26",
+    "@rhinestone/module-sdk": "^0.2.0",
     "@tanstack/query-sync-storage-persister": "^5.62.9",
     "@tanstack/react-query": "^5.61.3",
     "@tanstack/react-query-persist-client": "^5.62.9",
@@ -38,6 +42,7 @@
     "axios": "^1.4.0",
     "buffer": "^6.0.3",
     "date-fns": "^4.1.0",
+    "express": "^4.21.2",
     "graphql": "^16.9.0",
     "graphql-request": "^7.1.0",
     "javascript-time-ago": "^2.5.9",
@@ -64,6 +69,7 @@
     "@graphql-codegen/typescript": "^4.0.1",
     "@graphql-codegen/typescript-operations": "^4.0.1",
     "@parcel/watcher": "^2.4.0",
+    "@types/express": "^5.0.0",
     "@types/react": "^18.2.20",
     "@types/react-blockies": "^1.4.1",
     "@types/react-dom": "^18.2.7",

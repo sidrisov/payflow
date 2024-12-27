@@ -218,7 +218,7 @@ export function FlowSettingsMenu({
                       </AvatarGroup>
                     </Stack>
                   </MenuItem>
-                  {flow.wallets[0].version.endsWith('_0.7') && (
+                  {flow.wallets[0].version?.endsWith('_0.7') && (
                     <MenuItem disabled>
                       <ListItemIcon>
                         <AutoMode sx={{ fontSize: 20 }} />

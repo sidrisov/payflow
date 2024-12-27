@@ -47,7 +47,7 @@ public class PaymentService {
 		} else if (number >= 1) {
 			return String.format("%.0f", number);
 		} else if (number > 0) {
-			val df = new DecimalFormat("0.####");
+			val df = new DecimalFormat("0.#####");
 			df.setMinimumFractionDigits(1);
 			return df.format(number);
 		} else {
