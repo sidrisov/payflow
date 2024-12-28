@@ -16,6 +16,7 @@
     "build:client": "vite build",
     "build:server": "vite build --ssr",
     "build:ssr": "npm run build:deps && npm run build:client && npm run build:server",
+    "serve:dev": "NODE_ENV=development node server",
     "serve": "NODE_ENV=production node server"
   },
   "dependencies": {
@@ -41,6 +42,7 @@
     "apg-js": "github:runic-inc/apg-js#8bb92ff0780819170fee7e756d26e0562e442983",
     "axios": "^1.4.0",
     "buffer": "^6.0.3",
+    "compression": "^1.7.5",
     "date-fns": "^4.1.0",
     "express": "^4.21.2",
     "graphql": "^16.9.0",
@@ -59,6 +61,7 @@
     "react-swipeable": "^7.0.1",
     "react-toastify": "^10.0.4",
     "semver": "^7.6.2",
+    "sirv": "^3.0.0",
     "url": "^0.11.1",
     "use-debounce": "^10.0.0",
     "viem": "^2.21.18",
