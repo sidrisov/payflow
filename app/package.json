@@ -30,7 +30,7 @@
     "@mui/material": "^6.0.0",
     "@mui/x-charts": "^7.23.0",
     "@payflow/common": "file:../packages/common",
-    "@paywithglide/glide-js": "^0.9.25",
+    "@paywithglide/glide-js": "^0.11.0",
     "@privy-io/react-auth": "^1.88.0",
     "@privy-io/wagmi": "^0.2.6",
     "@rhinestone/module-sdk": "^0.2.0",
