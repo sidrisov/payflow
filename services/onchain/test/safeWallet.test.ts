@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
 import {
   parseEther,
   Address,
@@ -26,7 +26,8 @@ import {
   sendTransaction,
   sendTransactionWithSession,
   manageSessions,
-} from '../src/utils/wallet/safeWallet';
+  generateWallet
+} from '@payflow/common/src/wallet/safeWallet';
 import {
   encodeValidationData,
   getPermissionId,
@@ -39,6 +40,13 @@ import {
 } from '@rhinestone/module-sdk';
 
 import { UserOperationCall } from 'viem/account-abstraction';
+import { wagmiConfig } from 'src/utils/wagmi';
+import { initialize } from '@payflow/common/src/paymaster/pimlico';
+
+import { config } from 'dotenv';
+
+config({ path: '.env.local' });
+config();
 
 const zoraAdminMintAbi = [
   {
@@ -81,6 +89,20 @@ describe('Safe Wallet', () => {
   let walletClient: WalletClient<Transport, Chain, Account>;
   let session: Session;
   let sessionId: Hex;
+
+  beforeAll(() => {
+    initialize({
+      apiKey: process.env.PIMLICO_API_KEY!,
+      sponsoredEnabled: process.env.PIMLICO_SPONSORED_ENABLED === 'true',
+      mainnetPolicies: JSON.parse(
+        process.env.PIMLICO_SPONSORED_POLICY_MAINNET || '[]'
+      ),
+      testnetPolicies: JSON.parse(
+        process.env.PIMLICO_SPONSORED_POLICY_SEPOLIA || '[]'
+      )
+    });
+  });
+
   beforeEach(async () => {
     // Setup test accounts and clients
     account = privateKeyToAccount(TEST_OWNER_KEY);
@@ -100,9 +122,12 @@ describe('Safe Wallet', () => {
 
   describe('createSafeWallets', () => {
     it('should create a safe wallet on multiple chains', async () => {
-      const wallets = await generateSmartWallet([account.address], TEST_SALT, [
-        chain.id
-      ]);
+      const wallets = await generateWallet(
+        wagmiConfig,
+        [account.address],
+        TEST_SALT,
+        [chain.id]
+      );
 
       expect(wallets).toHaveLength(2);
 
@@ -118,7 +143,8 @@ describe('Safe Wallet', () => {
 
     it('should throw error with invalid client', async () => {
       await expect(
-        generateSmartWallet(
+        generateWallet(
+          wagmiConfig,
           [account.address],
           TEST_SALT,
           [{ id: 999999 } as any] // Invalid chain
@@ -130,9 +156,12 @@ describe('Safe Wallet', () => {
   describe('signTx', () => {
     beforeEach(async () => {
       // Create a safe wallet for testing
-      const wallets = await generateSmartWallet([account.address], TEST_SALT, [
-        chain.id
-      ]);
+      const wallets = await generateWallet(
+        wagmiConfig,
+        [account.address],
+        TEST_SALT,
+        [chain.id]
+      );
       safeAddress = wallets[0].address;
 
       const timeFramePolicy = getTimeFramePolicy({
@@ -271,8 +300,8 @@ describe('Safe Wallet', () => {
     it('should handle sponsorship failure', async () => {
       // Mock just for this test
       const originalPimlicoSponsorshipPolicyIds = vi.spyOn(
-        await import('../src/utils/paymaster/pimlico'),
-        'pimlicoSponsorshipPolicyIds'
+        await import('@payflow/common/src/paymaster/pimlico'),
+        'sponsorshipPolicyIds'
       );
       originalPimlicoSponsorshipPolicyIds.mockImplementation(() => [
         'invalid_policy_id'

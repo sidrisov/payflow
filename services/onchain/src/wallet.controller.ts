@@ -5,7 +5,8 @@ import {
   Post,
   Body,
   HttpException,
-  HttpStatus
+  HttpStatus,
+  OnModuleInit
 } from '@nestjs/common';
 import {
   Address,
@@ -29,10 +30,14 @@ import { privateKeyToAccount } from 'viem/accounts';
 import {
   generateWallet,
   sendTransactionWithSession
-} from './utils/wallet/safeWallet';
+} from '@payflow/common/src/wallet/safeWallet';
+
+import { wagmiConfig } from './utils/wagmi';
+import { getClient } from '@rhinestone/module-sdk/_types/common';
+import * as pimlico from '@payflow/common/src/paymaster/pimlico';
 
 @Controller('wallet')
-export class WalletController {
+export class WalletController implements OnModuleInit {
   private readonly clients: Record<number, PublicClient<Transport, Chain>>;
 
   constructor() {
@@ -67,6 +72,23 @@ export class WalletController {
       }) as PublicClient<Transport, Chain>
     };
   }
+
+  onModuleInit() {
+    // Initialize Pimlico when the module starts
+    pimlico.initialize({
+      apiKey: process.env.PIMLICO_API_KEY!,
+      sponsoredEnabled: process.env.PIMLICO_SPONSORED_ENABLED === 'true',
+      mainnetPolicies: JSON.parse(
+        process.env.PIMLICO_SPONSORED_POLICY_MAINNET || '[]'
+      ),
+      testnetPolicies: JSON.parse(
+        process.env.PIMLICO_SPONSORED_POLICY_SEPOLIA || '[]'
+      )
+    });
+
+    console.log('Pimlico paymaster initialized');
+  }
+
   @Get('generate')
   async generateWallet(
     @Query('owners') owners: Address | Address[],
@@ -76,6 +98,7 @@ export class WalletController {
     const ownersArray = Array.isArray(owners) ? owners : [owners];
 
     const wallets = await generateWallet(
+      wagmiConfig,
       ownersArray as Address[],
       nonce,
       chainIds

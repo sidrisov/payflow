@@ -13,21 +13,14 @@ import {
   OneOf,
   EIP1193Provider
 } from 'viem';
-import {
-  erc7579Actions,
-  isModuleInstalled
-} from 'permissionless/actions/erc7579';
-import {
-  isSmartAccountDeployed,
-  createSmartAccountClient
-} from 'permissionless';
+import { erc7579Actions, isModuleInstalled } from 'permissionless/actions/erc7579';
+import { isSmartAccountDeployed, createSmartAccountClient } from 'permissionless';
 import {
   entryPoint06Address,
   entryPoint07Address,
   getUserOperationHash,
   UserOperationCall
 } from 'viem/account-abstraction';
-import { SAFE_CONSTANTS } from '@payflow/common';
 import {
   RHINESTONE_ATTESTER_ADDRESS,
   getAccount,
@@ -42,23 +35,22 @@ import {
 } from '@rhinestone/module-sdk';
 
 import { toSafeSmartAccount } from '../permissionless/toSafeSmartAccount';
-import {
-  pimlicoClient,
-  pimlicoSponsorshipPolicyIds,
-  transport
-} from '../paymaster/pimlico';
 
-import { wagmiConfig } from '../wagmi';
+import { SAFE_CONSTANTS } from '../types/constants';
+import { client as pimlicoClient, sponsorshipPolicyIds, transport } from '../paymaster/pimlico';
+
 import { getClient } from '@wagmi/core/actions';
 import { getAccountNonce } from 'permissionless/actions';
+import { Config } from '@wagmi/core';
 
 export async function generateWallet(
+  wagmiConfig: Config,
   owners: Address[],
   nonce: string,
   chainIds: number[]
 ): Promise<any[]> {
   const deployPromises = chainIds.map(async (chainId) => {
-    const client = getClient(wagmiConfig, { chainId: chainId as any });
+    const client = getClient(wagmiConfig, { chainId });
 
     if (client) {
       const safeAccount = await toSafeSmartAccount({
@@ -83,10 +75,7 @@ export async function generateWallet(
       });
 
       const predictedAddress = safeAccount.address;
-      const isSafeDeployed = await isSmartAccountDeployed(
-        client,
-        predictedAddress
-      );
+      const isSafeDeployed = await isSmartAccountDeployed(client, predictedAddress);
 
       console.log(predictedAddress, chainId, isSafeDeployed);
 
@@ -95,9 +84,7 @@ export async function generateWallet(
         address: predictedAddress,
         deployed: isSafeDeployed,
         version:
-          SAFE_CONSTANTS.SAFE_SMART_ACCOUNT_VERSION +
-          '_' +
-          SAFE_CONSTANTS.AA_ENTRY_POINT_VERSION
+          SAFE_CONSTANTS.SAFE_SMART_ACCOUNT_VERSION + '_' + SAFE_CONSTANTS.AA_ENTRY_POINT_VERSION
       };
     } else {
       throw Error('Empty client');
@@ -120,11 +107,7 @@ export async function sendTransaction(
     onStatus?: (status: string) => void;
   }
 ): Promise<Hash> {
-  const {
-    entryPointVersion = '0.7',
-    sponsoredTx = false,
-    onStatus
-  } = options ?? {};
+  const { entryPointVersion = '0.7', sponsoredTx = false, onStatus } = options ?? {};
 
   try {
     onStatus?.('preparing');
@@ -133,10 +116,7 @@ export async function sendTransaction(
       address: walletAddress,
       client,
       entryPoint: {
-        address:
-          entryPointVersion === '0.6'
-            ? entryPoint06Address
-            : entryPoint07Address,
+        address: entryPointVersion === '0.6' ? entryPoint06Address : entryPoint07Address,
         version: entryPointVersion
       },
       version: SAFE_CONSTANTS.SAFE_SMART_ACCOUNT_VERSION,
@@ -145,9 +125,8 @@ export async function sendTransaction(
         if ('type' in signer && signer.type === 'local') {
           return signer;
         } else if (
-          (
-            signer as WalletClient<Transport, Chain, Account>
-          ).account.address.toLowerCase() === owner.toLowerCase()
+          (signer as WalletClient<Transport, Chain, Account>).account.address.toLowerCase() ===
+          owner.toLowerCase()
         ) {
           return signer;
         } else {
@@ -157,11 +136,7 @@ export async function sendTransaction(
           } as LocalAccount;
         }
       }) as [
-        OneOf<
-          | EIP1193Provider
-          | WalletClient<Transport, Chain | undefined, Account>
-          | LocalAccount
-        >
+        OneOf<EIP1193Provider | WalletClient<Transport, Chain | undefined, Account> | LocalAccount>
       ],
       ...(entryPointVersion === '0.7' && {
         safe4337ModuleAddress: SAFE_CONSTANTS.SAFE_4337_MODULE,
@@ -182,7 +157,7 @@ export async function sendTransaction(
       paymaster,
       ...(sponsoredTx && {
         paymasterContext: {
-          sponsorshipPolicyId: pimlicoSponsorshipPolicyIds(chain.id)?.[0]
+          sponsorshipPolicyId: sponsorshipPolicyIds(chain.id)?.[0]
         }
       }),
       userOperation: {
@@ -198,17 +173,15 @@ export async function sendTransaction(
       calls
     });
 
-    onStatus?.('submitted');
+    onStatus?.('confirming');
 
-    const userOpReceipt = await pimlicoClient(
-      chain.id
-    ).waitForUserOperationReceipt({
+    const userOpReceipt = await pimlicoClient(chain.id).waitForUserOperationReceipt({
       hash: userOpHash
     });
 
     console.log('userOpReceipt', userOpReceipt);
 
-    onStatus?.('submitted');
+    onStatus?.('confirmed');
 
     return userOpReceipt.receipt.transactionHash;
   } catch (error) {
@@ -282,7 +255,7 @@ export async function sendTransactionWithSession(
       paymaster,
       ...(sponsoredTx && {
         paymasterContext: {
-          sponsorshipPolicyId: pimlicoSponsorshipPolicyIds(chain.id)?.[0]
+          sponsorshipPolicyId: sponsorshipPolicyIds(chain.id)?.[0]
         }
       }),
       userOperation: {
@@ -349,15 +322,11 @@ export async function sendTransactionWithSession(
     console.log('signedUserOpHash', signedUserOpHash);
 
     console.log('userOperation', userOperation);
-    const userOpHash = await smartAccountClient.sendUserOperation(
-      userOperation as any
-    );
+    const userOpHash = await smartAccountClient.sendUserOperation(userOperation as any);
 
     console.log('userOpHash', userOpHash);
 
-    const userOpReceipt = await pimlicoClient(
-      chain.id
-    ).waitForUserOperationReceipt({
+    const userOpReceipt = await pimlicoClient(chain.id).waitForUserOperationReceipt({
       hash: userOpHash
     });
 
@@ -420,9 +389,8 @@ export async function manageSessions(
         if ('type' in signer && signer.type === 'local') {
           return signer;
         } else if (
-          (
-            signer as WalletClient<Transport, Chain, Account>
-          ).account.address.toLowerCase() === owner.toLowerCase()
+          (signer as WalletClient<Transport, Chain, Account>).account.address.toLowerCase() ===
+          owner.toLowerCase()
         ) {
           return signer;
         } else {
@@ -448,7 +416,7 @@ export async function manageSessions(
       paymaster,
       ...(sponsoredTx && {
         paymasterContext: {
-          sponsorshipPolicyId: pimlicoSponsorshipPolicyIds(chain.id)?.[0]
+          sponsorshipPolicyId: sponsorshipPolicyIds(chain.id)?.[0]
         }
       }),
       userOperation: {
@@ -458,10 +426,7 @@ export async function manageSessions(
       }
     }).extend(erc7579Actions());
 
-    const isDeployed = await isSmartAccountDeployed(
-      client,
-      safeAccount.address
-    );
+    const isDeployed = await isSmartAccountDeployed(client, safeAccount.address);
 
     const isInstalled =
       isDeployed &&
@@ -521,11 +486,9 @@ export async function manageSessions(
 
     let txHash: Hash | null = null;
     if (userOpHash) {
-      const receipt = await pimlicoClient(chain.id).waitForUserOperationReceipt(
-        {
-          hash: userOpHash
-        }
-      );
+      const receipt = await pimlicoClient(chain.id).waitForUserOperationReceipt({
+        hash: userOpHash
+      });
 
       txHash = receipt.receipt.transactionHash;
     }
@@ -566,9 +529,8 @@ export async function removeSessions(
         if ('type' in signer && signer.type === 'local') {
           return signer;
         } else if (
-          (
-            signer as WalletClient<Transport, Chain, Account>
-          ).account.address.toLowerCase() === owner.toLowerCase()
+          (signer as WalletClient<Transport, Chain, Account>).account.address.toLowerCase() ===
+          owner.toLowerCase()
         ) {
           return signer;
         } else {
@@ -591,7 +553,7 @@ export async function removeSessions(
       paymaster,
       ...(sponsoredTx && {
         paymasterContext: {
-          sponsorshipPolicyId: pimlicoSponsorshipPolicyIds(chain.id)?.[0]
+          sponsorshipPolicyId: sponsorshipPolicyIds(chain.id)?.[0]
         }
       }),
       userOperation: {

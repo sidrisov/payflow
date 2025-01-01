@@ -5,9 +5,7 @@ import {
   baseSepolia,
   degen,
   ham,
-  mainnet,
   optimism,
-  sepolia,
   zora
 } from 'viem/chains';
 

@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react';
 import { Address, Chain } from 'viem';
-import createSafeWallets from '../createSafeWallets';
+import { generateWallet } from '@payflow/common';
 import { FlowWalletType } from '../../types/FlowType';
+import { useConfig } from 'wagmi';
 
 export type SafeWallet = {
   chain: Chain;
@@ -12,17 +13,22 @@ export const useCreateSafeWallets = (): {
   loading: boolean;
   error: boolean;
   wallets: FlowWalletType[] | undefined;
-  create: (owners: Address[], saltNonce: string, chains: Chain[]) => Promise<void>;
+  generate: (owners: Address[], saltNonce: string, chainIds: number[]) => Promise<void>;
   reset: () => Promise<void>;
 } => {
+  const wagmiConfig = useConfig();
   const [error, setError] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [wallets, setWallets] = useState<FlowWalletType[]>();
 
-  const create = useCallback(async function (owners: Address[], saltNonce: string, chains: Chain[]) {
+  const generate = useCallback(async function (
+    owners: Address[],
+    saltNonce: string,
+    chainIds: number[]
+  ) {
     setLoading(true);
     try {
-      const wallets = await createSafeWallets(owners, saltNonce, chains);
+      const wallets = await generateWallet(wagmiConfig, owners, saltNonce, chainIds);
       setLoading(false);
       setWallets(wallets);
     } catch (error) {
@@ -37,5 +43,5 @@ export const useCreateSafeWallets = (): {
     setError(false);
     setWallets(undefined);
   }, []);
-  return { loading, error, wallets, create, reset };
+  return { loading, error, wallets, generate, reset };
 };

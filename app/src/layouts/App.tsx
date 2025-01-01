@@ -43,6 +43,7 @@ import axios from 'axios';
 import { me } from '../services/user';
 import sortAndFilterFlows from '../utils/sortAndFilterFlows';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
+import { usePimlicoInit } from '../utils/hooks/usePimlicoInit';
 
 export default function App() {
   const location = useLocation();
@@ -66,6 +67,8 @@ export default function App() {
   const [profile, setProfile] = useState<ProfileType>();
 
   const accessToken = useSearchParams()[0].get('access_token') ?? undefined;
+
+  usePimlicoInit();
 
   // Fetch user when:
   useEffect(() => {

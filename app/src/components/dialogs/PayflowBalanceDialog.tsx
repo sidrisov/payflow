@@ -52,7 +52,7 @@ export default function PayflowBalanceDialog({
 }: PayflowBalanceDialogProps) {
   const isMobile = useMobile();
 
-  const { loading: loadingWallets, error, wallets, create, reset } = useCreateSafeWallets();
+  const { loading: loadingWallets, error, wallets, generate, reset } = useCreateSafeWallets();
   const [loadingUpdateProfile, setLoadingUpdateProfile] = useState<boolean>(false);
   const [saltNonce] = useState(() => SALT_NONCE + '-' + crypto.randomUUID().slice(0, 10));
 
@@ -86,7 +86,11 @@ export default function PayflowBalanceDialog({
       }
     }
 
-    create(owners, saltNonce, DEFAULT_FLOW_WALLET_CHAINS);
+    generate(
+      owners,
+      saltNonce,
+      DEFAULT_FLOW_WALLET_CHAINS.map((chain) => chain.id)
+    );
   }
 
   useEffect(() => {
