@@ -68,8 +68,6 @@ export default function App() {
 
   const accessToken = useSearchParams()[0].get('access_token') ?? undefined;
 
-  usePimlicoInit();
-
   // Fetch user when:
   useEffect(() => {
     const fetchStatus = async () => {
@@ -104,6 +102,8 @@ export default function App() {
     window.addEventListener('focus', fetchStatus);
     return () => window.removeEventListener('focus', fetchStatus);
   }, []);
+
+  usePimlicoInit();
 
   useEffect(() => {
     const initiateFrameV2 = async () => {
