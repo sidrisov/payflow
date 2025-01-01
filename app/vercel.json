@@ -108,7 +108,7 @@
           "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot).*"
         }
       ],
-      "destination": "https://frames.payflow.me/@:username:path*"
+      "destination": "https://frames.payflow.me/:username:path*"
     },
     {
       "source": "/",
