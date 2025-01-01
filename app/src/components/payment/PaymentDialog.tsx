@@ -95,10 +95,7 @@ export default function PaymentDialog({
     // Prepare regular payment transaction
     if (paymentWallet && paymentToken && toAddress && paymentAmount) {
       const amount = parseUnits(
-        paymentAmount.toLocaleString('fullwide', {
-          useGrouping: false,
-          maximumFractionDigits: paymentToken.decimals
-        }),
+        paymentAmount.toFixed(paymentToken.decimals),
         paymentToken.decimals
       );
 

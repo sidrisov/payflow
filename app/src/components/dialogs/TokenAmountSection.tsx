@@ -98,11 +98,10 @@ export function TokenAmountSection({
     if (selectedToken && selectedTokenPrice && (!balanceCheck || paymentTokenBalance)) {
       if (usdAmountMode === true && paymentAmountUSD !== undefined) {
         const rawTokenAmount = paymentAmountUSD / selectedTokenPrice;
-        const tokenAmount = rawTokenAmount.toLocaleString('fullwide', {
-          useGrouping: false,
-          maximumFractionDigits: selectedToken.decimals
-        });
-        const amount = parseUnits(tokenAmount, selectedToken.decimals);
+        const amount = parseUnits(
+          rawTokenAmount.toFixed(selectedToken.decimals),
+          selectedToken.decimals
+        );
 
         balanceEnough =
           !balanceCheck || crossChainMode
@@ -115,13 +114,8 @@ export function TokenAmountSection({
         balanceEnough =
           !balanceCheck || crossChainMode
             ? true
-            : parseUnits(
-                paymentAmount.toLocaleString('fullwide', {
-                  useGrouping: false,
-                  maximumFractionDigits: selectedToken.decimals
-                }),
-                selectedToken.decimals
-              ) <= (paymentTokenBalance?.balance?.value ?? 0);
+            : parseUnits(paymentAmount.toFixed(selectedToken.decimals), selectedToken.decimals) <=
+              (paymentTokenBalance?.balance?.value ?? 0);
 
         setPaymentAmountUSD(parseFloat(normalizeNumberPrecision(usdAmount)));
       }
