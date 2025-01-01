@@ -1,5 +1,5 @@
 import { Social } from '../generated/graphql/types';
-import { FRAMES_URL } from './urlConstants';
+import { DAPP_URL } from './urlConstants';
 
 export const fanTokenUrl = (tokenName: string) => {
   return `https://airstack.xyz/${
@@ -12,7 +12,7 @@ export const fanTokenUrl = (tokenName: string) => {
 };
 
 export function createShareFrameUrl({ tokenName }: { tokenName: string }): string {
-  const shareFrameUrl = new URL(`${FRAMES_URL}/fan`);
+  const shareFrameUrl = new URL(`${DAPP_URL}/fan`);
   shareFrameUrl.searchParams.append('names', tokenName);
   return shareFrameUrl.toString();
 }

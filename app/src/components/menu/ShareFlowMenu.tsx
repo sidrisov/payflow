@@ -1,9 +1,8 @@
 import { ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/material';
 import { ProfileType } from '../../types/ProfileType';
-import { FilterFrames, Person } from '@mui/icons-material';
+import { Person } from '@mui/icons-material';
 import { copyToClipboard } from '../../utils/copyToClipboard';
-import { DAPP_URL, FRAMES_URL } from '../../utils/urlConstants';
-import { toast } from 'react-toastify';
+import { DAPP_URL } from '../../utils/urlConstants';
 import { FlowType } from '../../types/FlowType';
 import { PiTipJar } from 'react-icons/pi';
 
@@ -32,16 +31,6 @@ export function ShareFlowMenu({
           Profile link
         </MenuItem>
 
-        <MenuItem
-          onClick={() => {
-            copyToClipboard(`${FRAMES_URL}/${profile.username}`, 'Profile frame link copied!');
-          }}>
-          <ListItemIcon>
-            <FilterFrames fontSize="small" />
-          </ListItemIcon>
-          Profile frame
-        </MenuItem>
-
         {selectedFlow && selectedFlow.type === 'JAR' && (
           <MenuItem
             onClick={() => {
@@ -53,19 +42,6 @@ export function ShareFlowMenu({
               <PiTipJar size={20} />
             </ListItemIcon>
             Jar link
-          </MenuItem>
-        )}
-
-        {selectedFlow && selectedFlow.type === 'JAR' && (
-          <MenuItem
-            onClick={() => {
-              const link = `${FRAMES_URL}/jar/${selectedFlow.uuid}`;
-              copyToClipboard(link, 'Jar frame link copied!');
-            }}>
-            <ListItemIcon>
-              <FilterFrames fontSize="small" />
-            </ListItemIcon>
-            Jar frame
           </MenuItem>
         )}
       </MenuList>

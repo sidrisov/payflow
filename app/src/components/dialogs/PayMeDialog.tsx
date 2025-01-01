@@ -19,8 +19,7 @@ import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { Token } from '@payflow/common';
 import ResponsiveDialog from './ResponsiveDialog';
 import { copyToClipboard } from '../../utils/copyToClipboard';
-import { toast } from 'react-toastify';
-import { FRAMES_URL } from '../../utils/urlConstants';
+import { DAPP_URL } from '../../utils/urlConstants';
 import { TbCopy } from 'react-icons/tb';
 import { createCastPostMessage, createComposeCastUrl } from '../../utils/warpcast';
 import { ProfileContext } from '../../contexts/UserContext';
@@ -71,7 +70,7 @@ export function PayMeDialog({ open, onClose, profile, flow }: PayMeDialogProps) 
   };
 
   const paymentFrameUrl = useMemo(() => {
-    let paymentFrameUrl = `${FRAMES_URL}/${address}`;
+    let paymentFrameUrl = `${DAPP_URL}/${address}`;
 
     const params = new URLSearchParams();
 
@@ -314,7 +313,6 @@ export function PayMeDialog({ open, onClose, profile, flow }: PayMeDialogProps) 
               fullWidth
               onClick={() => {
                 copyToClipboard(paymentFrameUrl);
-                toast.success('Frame link copied!');
               }}
               startIcon={<TbCopy />}
               variant="outlined"

@@ -18,11 +18,10 @@ import { copyToClipboard } from '../../utils/copyToClipboard';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
 import { IoPeople } from 'react-icons/io5';
 import { BsFillPersonFill } from 'react-icons/bs';
-import { toast } from 'react-toastify';
 import { FARCASTER_DAPP, LENS_DAPP, socialLink, ZAPPER } from '../../utils/dapps';
 import { SiFarcaster } from 'react-icons/si';
 import { IoIosChatbubbles } from 'react-icons/io';
-import { FRAMES_URL } from '../../utils/urlConstants';
+import { DAPP_URL } from '../../utils/urlConstants';
 import { FaSquare } from 'react-icons/fa6';
 
 export function IdentityMenu({
@@ -145,7 +144,7 @@ export function IdentityMenu({
         <Divider sx={{ borderBottomWidth: 10, my: 0, '&.MuiDivider-root': { my: 0 } }} />
         <MenuItem
           onClick={() => {
-            const paymentFrameUrl = `${FRAMES_URL}/${address}`;
+            const paymentFrameUrl = `${DAPP_URL}/${address}`;
             copyToClipboard(paymentFrameUrl, 'Pay Me frame URL copied!');
           }}>
           <ListItemIcon>

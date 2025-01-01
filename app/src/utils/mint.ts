@@ -2,7 +2,7 @@ import { readContract } from '@wagmi/core';
 import axios from 'axios';
 import { Address, erc721Abi, PublicClient } from 'viem';
 import { IdentityType } from '../types/ProfileType';
-import { API_URL, FRAMES_URL } from './urlConstants';
+import { API_URL, DAPP_URL } from './urlConstants';
 import { wagmiConfig } from './wagmiConfig';
 import { zoraErc1155Abi } from './abi/zoraErc1155Abi';
 import { createCollectorClient } from '@zoralabs/protocol-sdk';
@@ -289,7 +289,7 @@ export function createShareFrameUrl({
   mint: MintMetadata;
   profile: ProfileType;
 }): string {
-  const shareFrameUrl = new URL(`${FRAMES_URL}/mint`);
+  const shareFrameUrl = new URL(`${DAPP_URL}/mint`);
   shareFrameUrl.searchParams.append('provider', mint.provider);
   shareFrameUrl.searchParams.append('chainId', mint.chainId.toString());
   shareFrameUrl.searchParams.append('contract', mint.contract);

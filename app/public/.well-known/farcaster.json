@@ -5,7 +5,7 @@
     "signature": "MHg5YTZhNTM1MjA2NTJmNGZlODBlNzRiMGJmMWE1ZGNiNThkNjVmNTZiNTkzODllZGIzNDg3YjFkMDVhZmNiODJhNTFlYmFmYmQyMjkyMWQwNmRkY2VhZWE4ZTUyMjFhNDg4MjFkNjU1NzFhZTI4ODk5NTQwZTZiNTc4MzA1ZmE1NzFj"
   },
   "frame": {
-    "version": "0.0.1",
+    "version": "0.0.2",
     "name": "Payflow",
     "iconUrl": "https://app.payflow.me/apple-touch-icon.png",
     "splashImageUrl": "https://app.payflow.me/apple-touch-icon.png",
