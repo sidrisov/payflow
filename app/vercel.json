@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/payment/:id",
+      "source": "/payment/:path*",
       "has": [
         {
           "type": "header",
@@ -9,7 +9,117 @@
           "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot).*"
         }
       ],
-      "destination": "https://frames.payflow.me/payment/:id"
+      "destination": "https://frames.payflow.me/payment/:path*"
+    },
+    {
+      "source": "/fan:path*",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot).*"
+        }
+      ],
+      "destination": "https://frames.payflow.me/fan:path*"
+    },
+    {
+      "source": "/degen:path*",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot).*"
+        }
+      ],
+      "destination": "https://frames.payflow.me/degen:path*"
+    },
+    {
+      "source": "/hypersub:path*",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot).*"
+        }
+      ],
+      "destination": "https://frames.payflow.me/hypersub:path*"
+    },
+    {
+      "source": "/jar/create:path*",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot).*"
+        }
+      ],
+      "destination": "https://frames.payflow.me/jar/create:path*"
+    },
+    {
+      "source": "/jar/:uuid:path*",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot).*"
+        }
+      ],
+      "destination": "https://frames.payflow.me/jar/:uuid:path*"
+    },
+    {
+      "source": "/fid/:fid/storage:path*",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot).*"
+        }
+      ],
+      "destination": "https://frames.payflow.me/fid/:fid/storage:path*"
+    },
+    {
+      "source": "/mint:path*",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot).*"
+        }
+      ],
+      "destination": "https://frames.payflow.me/mint:path*"
+    },
+    {
+      "source": "/moxie:path*",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot).*"
+        }
+      ],
+      "destination": "https://frames.payflow.me/moxie:path*"
+    },
+    {
+      "source": "/:username:path*",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot).*"
+        }
+      ],
+      "destination": "https://frames.payflow.me/@:username:path*"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot).*"
+        }
+      ],
+      "destination": "https://frames.payflow.me/v2/:path*"
     },
     {
       "source": "/(.*)",
