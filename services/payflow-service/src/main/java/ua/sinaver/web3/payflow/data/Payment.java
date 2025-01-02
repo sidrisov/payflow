@@ -1,11 +1,14 @@
 package ua.sinaver.web3.payflow.data;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.hibernate.annotations.Type;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -16,8 +19,8 @@ import java.time.temporal.ChronoUnit;
 @NoArgsConstructor
 @Entity
 @Table(uniqueConstraints = {
-		@UniqueConstraint(name = "uc_payment_reference_id", columnNames = { "reference_id" }),
-		@UniqueConstraint(name = "uc_payment_hash", columnNames = { "hash" })
+		@UniqueConstraint(name = "uc_payment_reference_id", columnNames = {"reference_id"}),
+		@UniqueConstraint(name = "uc_payment_hash", columnNames = {"hash"})
 })
 public class Payment {
 	@Id
@@ -73,6 +76,10 @@ public class Payment {
 	@Column(name = "token_amount")
 	private String tokenAmount;
 
+	@Type(JsonType.class)
+	@Column(columnDefinition = "json")
+	private JsonNode calls;
+
 	@Column
 	private String hash;
 
@@ -122,6 +129,17 @@ public class Payment {
 	@Column(name = "target", length = 512)
 	private String target;
 
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "wallet_session_id", referencedColumnName = "id")
+	@ToString.Exclude
+	private WalletSession walletSession;
+
+	@Column(length = 512)
+	private String error;
+
+	@Column
+	private Integer failures = 0;
+
 	public Payment(PaymentType type, User receiver, Integer network, String token) {
 		this.type = type;
 		this.receiver = receiver;
@@ -133,18 +151,31 @@ public class Payment {
 	public enum PaymentStatus {
 		CREATED,
 		INPROGRESS,
-		// backwards-compatability
-		PENDING,
 		COMPLETED,
 		PENDING_REFUND,
 		REFUNDED,
 		CANCELLED,
-		EXPIRED
+		EXPIRED,
+		FAILED
 	}
 
 	public enum PaymentType {
 		APP,
 		INTENT,
+		SESSION_INTENT,
 		FRAME
+	}
+
+	public void recordFailure(String error) {
+		this.failures = (this.failures != null ? this.failures : 0) + 1;
+		this.error = error;
+		if (this.failures >= 3) {
+			this.status = PaymentStatus.FAILED;
+		}
+	}
+
+	public void clearError() {
+		this.failures = 0;
+		this.error = null;
 	}
 }

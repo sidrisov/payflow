@@ -72,6 +72,6 @@ public class JarController {
 
 		// just responding with dummy frame
 		return ResponseEntity.ok().body(
-				new FrameResponse.ActionFrame("frame", "https://frames.payflow.me/jar/create"));
+				new FrameResponse.ActionFrame("frame", "https://app.payflow.me/jar/create"));
 	}
 }

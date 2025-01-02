@@ -159,7 +159,7 @@ export default function ContributionJarComposerDialog({
               window.parent.postMessage(
                 createCastPostMessage(
                   `Created contribution jar: "${jarTitle}" using @payflow composer action 💜💜💜`,
-                  `https://frames.payflow.me/${selectedFlow?.uuid}?entryTitle=${encodeURIComponent(
+                  `https://app.payflow.me/${selectedFlow?.uuid}?entryTitle=${encodeURIComponent(
                     jarTitle
                   )}`
                 ),

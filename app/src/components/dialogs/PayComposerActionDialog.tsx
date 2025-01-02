@@ -162,7 +162,7 @@ export default function PayComposerActionDialog({
                         recipient.identity.meta?.socials.find((s) => s.dappName === FARCASTER_DAPP)
                           ?.profileName
                       } paying you with the frame`,
-                      `https://frames.payflow.me/payment/${refId}`
+                      `https://app.payflow.me/payment/${refId}`
                     ),
                     '*'
                   );

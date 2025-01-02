@@ -100,10 +100,12 @@ public class ProductsController {
 	private ResponseEntity<?> processStorageAction(ValidatedFrameResponseMessage.Action action) {
 		val castAuthor = action.cast().author() != null ? action.cast().author()
 				: neynarService.fetchFarcasterUser(action.cast().fid());
-		val storageFrameUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getFramesServiceUrl())
+		val storageFrameUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 				.path("/fid/{fid}/storage?" + FrameVersions.STORAGE_VERSION)
 				.buildAndExpand(castAuthor.fid())
 				.toUriString();
+
+		log.debug("Returning storage frame url: {}", storageFrameUrl);
 		return ResponseEntity.ok().body(
 				new FrameResponse.ActionFrame("frame", storageFrameUrl));
 	}
@@ -135,7 +137,6 @@ public class ProductsController {
 		}
 
 		val mintFrameUrl = buildMintFrameUrl(parsedMintUrlMessage, chainId);
-
 		log.debug("Returning mintFrameUrl: {}", mintFrameUrl);
 		return ResponseEntity.ok().body(
 				new FrameResponse.ActionFrame("frame", mintFrameUrl));
@@ -159,7 +160,7 @@ public class ProductsController {
 					new FrameResponse.FrameMessage("No fan token found!"));
 		}
 
-		val fanTokenFrameUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getFramesServiceUrl())
+		val fanTokenFrameUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 				.path("/fan")
 				.queryParam("names", fanTokens.stream().map(FanToken::name).toArray())
 				.build()
@@ -167,7 +168,6 @@ public class ProductsController {
 				.toUriString();
 
 		log.debug("Returning fan token frame URL: {}", fanTokenFrameUrl);
-
 		return ResponseEntity.ok().body(
 				new FrameResponse.ActionFrame("frame", fanTokenFrameUrl));
 	}
@@ -183,7 +183,7 @@ public class ProductsController {
 					new FrameResponse.FrameMessage("No hypersub found!"));
 		}
 
-		val fanTokenFrameUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getFramesServiceUrl())
+		val fanTokenFrameUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 				.path("/hypersub")
 				.queryParam("ids",
 						subscriptions.stream().map(s -> s.chain() + ":" + s.contractAddress()).toArray())
@@ -191,7 +191,7 @@ public class ProductsController {
 				.encode()
 				.toUriString();
 
-		log.debug("Returning fan token frame URL: {}", fanTokenFrameUrl);
+		log.debug("Returning hypersub frame URL: {}", fanTokenFrameUrl);
 
 		return ResponseEntity.ok().body(
 				new FrameResponse.ActionFrame("frame", fanTokenFrameUrl));
@@ -210,7 +210,7 @@ public class ProductsController {
 	}
 
 	private String buildMintFrameUrl(ParsedMintUrlMessage parsedMintUrlMessage, Integer chainId) {
-		return UriComponentsBuilder.fromHttpUrl(payflowConfig.getFramesServiceUrl())
+		return UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 				.path("/mint?provider={provider}" +
 						"&chainId={chainId}" +
 						"&contract={contract}" +

@@ -68,8 +68,8 @@ public class IntentsController {
 			@RequestParam MultiValueMap<String, String> allParams) {
 
 		log.debug("Received metadata request for cast action: pay intent with params: " +
-						"type = {}, amount = {}, tokenAmount = {}, token = {}, chainId = {}, " +
-						"numberOfRewards = {}, allParams = {}",
+				"type = {}, amount = {}, tokenAmount = {}, token = {}, chainId = {}, " +
+				"numberOfRewards = {}, allParams = {}",
 				type, amount, tokenAmount, token, chainId, numberOfRewards, allParams);
 
 		CastActionMeta castActionMeta;
@@ -139,7 +139,7 @@ public class IntentsController {
 			@RequestParam MultiValueMap<String, String> allParams) {
 
 		log.debug("Received cast action: pay reward {} with params: type = {}, amount = {}, " +
-						"tokenAmount = {}, token = {}, chainId = {}, numberOfRewards = {}, allParams = {}",
+				"tokenAmount = {}, token = {}, chainId = {}, numberOfRewards = {}, allParams = {}",
 				castActionMessage, type, amount, tokenAmount, token, chainId, numberOfRewards, allParams);
 
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
@@ -254,7 +254,7 @@ public class IntentsController {
 
 				return ResponseEntity.ok().body(
 						new FrameResponse.ActionFrame("frame",
-								linkService.framePaymentLink(rewardPayment, false, true).toString()));
+								linkService.framePaymentLink(rewardPayment, true).toString()));
 		}
 	}
 }

@@ -207,6 +207,11 @@ public class UserService implements IUserService {
 	}
 
 	@Override
+	public User findById(Integer id) {
+		return userRepository.findById(id).orElse(null);
+	}
+
+	@Override
 	public User findByUsername(String username) {
 		return userRepository.findByUsernameOrIdentityIgnoreCase(username);
 	}

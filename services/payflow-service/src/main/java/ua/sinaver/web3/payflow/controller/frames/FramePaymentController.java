@@ -187,7 +187,7 @@ public class FramePaymentController {
 		try {
 			val baseUrl = "https://warpcast.com/~/compose";
 			val castText = URLEncoder.encode("Hey hey you can pay me here", StandardCharsets.UTF_8);
-			val embedUrl = String.format("https://frames.payflow" +
+			val embedUrl = String.format("https://app.payflow" +
 					".me/%s?entryTitle=%s", identity, entryTitle);
 
 			val castShareDeepLink = String.format("%s?text=%s&embeds[]=%s", baseUrl, castText,

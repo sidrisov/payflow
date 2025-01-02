@@ -2,15 +2,6 @@ import { DAPP_URL, FRAMES_URL, API_URL, BUY_STORAGE_FRAME_VERSION } from '../../
 
 export function Head() {
   const imageUrl = `${FRAMES_URL}/images/storage.png?${BUY_STORAGE_FRAME_VERSION}`;
-  const addActionUrl =
-    'https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fapi.alpha.payflow.me%2Fapi%2Ffarcaster%2Factions%2Fproducts%2Fstorage';
-
-  const baseUrl = 'https://warpcast.com/~/compose';
-  const castText = encodeURIComponent(
-    `Buy Farcaster Storage via @payflow frame\ncc: @sinaver.eth /payflow`
-  );
-  const embedUrl = `https://frames.payflow.me/storage?${BUY_STORAGE_FRAME_VERSION}`;
-  const shareComposeDeeplink = `${baseUrl}?text=${castText}&embeds[]=${encodeURIComponent(embedUrl)}`;
 
   const notifyMiniAppUrl = `${API_URL}/api/farcaster/composer/pay?action=storage`;
   const notifyMiniAppDeeplink = `https://warpcast.com/~/composer-action?url=${encodeURIComponent(notifyMiniAppUrl)}`;

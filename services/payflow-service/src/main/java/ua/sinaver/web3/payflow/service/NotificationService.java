@@ -29,9 +29,6 @@ import java.util.UUID;
 @Slf4j
 public class NotificationService {
 	@Autowired
-	private PayflowConfig payflowConfig;
-
-	@Autowired
 	private FarcasterNeynarService hubService;
 
 	@Value("${payflow.farcaster.bot.cast.signer}")
@@ -52,8 +49,11 @@ public class NotificationService {
 	@Autowired
 	private ReceiptService receiptService;
 
-	@Value("${payflow.frames.url}")
-	private String framesServiceUrl;
+	@Autowired
+	private PayflowConfig payflowConfig;
+
+	@Autowired
+	private LinkService linkService;
 
 	public static String formatDouble(Double value) {
 		val df = new DecimalFormat("#.#####");
@@ -71,7 +71,7 @@ public class NotificationService {
 
 		val embeds = Collections.singletonList(new Cast.Embed(
 				UriComponentsBuilder.fromHttpUrl(
-						payflowConfig.getFramesServiceUrl()).path(user.username()).build().toUriString()));
+						payflowConfig.getDAppServiceUrl()).path(user.username()).build().toUriString()));
 		var processed = this.reply(castText, parentHash, embeds);
 		if (!processed) {
 			log.error("Failed to reply with {} for preferredTokens configuration", castText);
@@ -191,13 +191,13 @@ public class NotificationService {
 
 		if (payment.getCategory() == null) {
 			val castText = String.format("""
-							@%s, you received %s %s from @%s 💸""",
+							@%s, you received %s %s%s 💸""",
 					receiverFname,
 					StringUtils.isNotBlank(payment.getTokenAmount())
 							? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 							: String.format("$%s", payment.getUsdAmount()),
 					payment.getToken().toUpperCase(),
-					senderFname);
+					formatFromPart(senderFname));
 
 			sendCastReply(castText, payment.getSourceHash(), embeds);
 
@@ -205,7 +205,7 @@ public class NotificationService {
 					payment.getReceiver() != null ? payment.getReceiver().getIdentity() : payment.getReceiverAddress());
 			if (StringUtils.isNotBlank(receiverFid)) {
 				val messageText = String.format("""
-								You received %s %s from @%s %s
+								You received %s %s%s %s
 
 								%s
 								🧾 Receipt: %s""",
@@ -213,7 +213,7 @@ public class NotificationService {
 								? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 								: String.format("$%s", payment.getUsdAmount()),
 						payment.getToken().toUpperCase(),
-						senderFname,
+						formatFromPart(senderFname),
 						commentText,
 						sourceRefText,
 						receiptUrl);
@@ -221,14 +221,16 @@ public class NotificationService {
 				sendDirectMessage(messageText, receiverFid);
 
 				try {
-					//val frameV2ReceiptUrl = receiptService.getFrameV2ReceiptUrl(payment);
+					val frameV2ReceiptUrl = linkService.paymentLink(payment, false).toString();
 					val notification = NotificationRequest.Notification.create(
 							String.format("Received %s %s", StringUtils.isNotBlank(payment.getTokenAmount())
 											? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 											: String.format("$%s", payment.getUsdAmount()),
 									payment.getToken().toUpperCase()),
-							String.format("from @%s %s", senderFname, commentText),
-							receiptUrl);
+							String.format("%s %s",
+									formatFromPart(senderFname),
+									commentText).trim(),
+							frameV2ReceiptUrl);
 
 					hubService.notify(notification, Collections.singletonList(Integer.parseInt(receiverFid)));
 				} catch (Throwable t) {
@@ -270,7 +272,7 @@ public class NotificationService {
 		val receiverFid = identityService.getIdentityFid(
 				payment.getReceiver() != null ? payment.getReceiver().getIdentity() : payment.getReceiverAddress());
 
-		val storageFrameUrl = UriComponentsBuilder.fromHttpUrl(framesServiceUrl)
+		val storageFrameUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 				.path("/fid/{fid}/storage?" + FrameVersions.STORAGE_VERSION)
 				.buildAndExpand(payment.getReceiverFid())
 				.toUriString();
@@ -317,7 +319,7 @@ public class NotificationService {
 				payment.getNetwork().toString());
 
 		val frameMintUrl = MintUrlUtils.calculateFrameMintUrlFromToken(
-				framesServiceUrl,
+				payflowConfig.getDAppServiceUrl(),
 				payment.getToken(),
 				payment.getNetwork().toString(),
 				payment.getSender().getIdentity());
@@ -458,7 +460,7 @@ public class NotificationService {
 		val fanTokenParts = payment.getToken().split(";");
 		var fanTokenName = fanTokenParts[0];
 
-		val frameFanTokenUrl = UriComponentsBuilder.fromHttpUrl(framesServiceUrl)
+		val frameFanTokenUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 				.path("/fan")
 				.queryParam("names", fanTokenName)
 				.build()
@@ -562,7 +564,7 @@ public class NotificationService {
 				payment.getReceiver() != null ? payment.getReceiver().getIdentity() : payment.getReceiverAddress());
 		if (StringUtils.isNotBlank(receiverFid)) {
 			val messageText = String.format("""
-							You received reward %s %s%s for %s from @%s %s 🎁
+							You received reward %s %s%s for %s%s 🎁
 
 							%s
 							🧾 Receipt: %s""",
@@ -571,7 +573,7 @@ public class NotificationService {
 							? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 							: String.format("$%s", payment.getUsdAmount()),
 					payment.getToken().toUpperCase(),
-					senderFname,
+					formatFromPart(senderFname),
 					rewardReason,
 					commentText,
 					sourceRefText,
@@ -585,17 +587,21 @@ public class NotificationService {
 	                                    String commentText, String sourceRefText, String rewardReason,
 	                                    List<Cast.Embed> embeds) {
 		val castText = String.format("""
-						@%s, you received reward %s %s for %s from @%s 🎁""",
+						@%s, you received reward %s %s for %s%s 🎁""",
 				receiverFname,
 				StringUtils.isNotBlank(payment.getTokenAmount())
 						? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 						: String.format("$%s", payment.getUsdAmount()),
 				payment.getToken().toUpperCase(),
-				senderFname,
+				formatFromPart(senderFname),
 				rewardReason);
 
 		sendCastReply(castText, payment.getSourceHash(), embeds);
 		sendRewardDirectMessage(payment, receiverFname, senderFname, commentText, sourceRefText,
 				rewardReason);
+	}
+
+	private String formatFromPart(String senderFname) {
+		return StringUtils.isNotBlank(senderFname) ? String.format(" from @%s", senderFname) : "";
 	}
 }

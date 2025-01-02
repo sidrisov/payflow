@@ -47,7 +47,7 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 			"((p.expiresAt IS NULL AND p.createdAt < :expiresAt) OR " +
 			"(p.expiresAt IS NOT NULL AND p.expiresAt < CURRENT_TIMESTAMP))")
 	Stream<Payment> findExpiredPaymentsWithLock(@Param("status") Payment.PaymentStatus status,
-	                                            @Param("expiresAt") Instant expiresAt);
+			@Param("expiresAt") Instant expiresAt);
 
 	// TODO: add a time check not to process recently submitted in 5 mins to avoid
 	// lock
@@ -60,8 +60,8 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 			"AND p.createdAt <= :tenMinutesAgo " +
 			"ORDER BY p.createdAt ASC")
 	Stream<Payment> findTop5ByStatusInWithLock(@Param("statuses") List<Payment.PaymentStatus> statuses,
-	                                           @Param("tenMinutesAgo") Instant tenMinutesAgo);
-	
+			@Param("tenMinutesAgo") Instant tenMinutesAgo);
+
 	@Query("SELECT count(p) FROM Payment p " +
 			"WHERE (p.sender IN :users " +
 			"OR LOWER(p.senderAddress) IN :addresses) " +
@@ -110,6 +110,23 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 
 	default Stream<Payment> findTop5ByStatusInWithLock(@Param("statuses") List<Payment.PaymentStatus> statuses) {
 		return findTop5ByStatusInWithLock(statuses, Instant.now().minus(10, ChronoUnit.MINUTES));
+	}
+
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@QueryHints(@QueryHint(name = AvailableSettings.JAKARTA_LOCK_TIMEOUT, value = "-2"))
+	@Query("SELECT p FROM Payment p WHERE p.status IN :statuses " +
+			"AND p.type IN :types " +
+			"ORDER BY p.createdAt ASC LIMIT :limit")
+	Stream<Payment> findSessionPaymentsWithLock(
+			@Param("statuses") List<Payment.PaymentStatus> statuses,
+			@Param("types") List<Payment.PaymentType> types,
+			@Param("limit") int limit);
+
+	default Stream<Payment> findSessionIntentPaymentsWithLock(int limit) {
+		return findSessionPaymentsWithLock(
+				List.of(Payment.PaymentStatus.CREATED),
+				List.of(Payment.PaymentType.SESSION_INTENT),
+				limit);
 	}
 
 }

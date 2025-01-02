@@ -2,6 +2,7 @@ package ua.sinaver.web3.payflow.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -25,9 +26,19 @@ public class PayWithGlideService {
 		return webClient.get()
 				.uri("/sessions/{sessionId}", sessionId)
 				.retrieve()
+				.onStatus(HttpStatus.NOT_FOUND::equals, clientResponse -> {
+					log.error("404 error when calling Glide API by sessionId {}", sessionId);
+					return Mono.empty();
+				})
 				.bodyToMono(GlideSessionResponse.class)
-				.switchIfEmpty(Mono.error(new RuntimeException("Session not found")))
-				.doOnSuccess(response -> log.debug("Fetched session info for sessionId: {}", sessionId))
+				.switchIfEmpty(Mono.empty())
+				.doOnSuccess(response -> {
+					if (response != null) {
+						log.debug("Fetched session info for sessionId: {}", sessionId);
+					} else {
+						log.debug("Session not found for sessionId: {}", sessionId);
+					}
+				})
 				.doOnError(error -> log.error("Error fetching session info for sessionId: {}", sessionId, error));
 	}
 }

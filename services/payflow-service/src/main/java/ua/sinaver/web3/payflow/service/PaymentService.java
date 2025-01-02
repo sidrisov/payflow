@@ -37,6 +37,8 @@ public class PaymentService {
 	private IdentityService identityService;
 	@Autowired
 	private PayWithGlideService payWithGlideService;
+	@Autowired
+	private WalletService walletService;
 
 	public static String formatNumberWithSuffix(String numberStr) {
 		double number = Double.parseDouble(numberStr);
@@ -196,6 +198,8 @@ public class PaymentService {
 			if (sessionResponse == null) {
 				log.error("Session response is null for refId: {} & sessionId: {}", payment.getReferenceId(),
 						payment.getFulfillmentId());
+				payment.setStatus(Payment.PaymentStatus.FAILED);
+				payment.setCompletedAt(Instant.now());
 				return;
 			}
 
@@ -207,7 +211,8 @@ public class PaymentService {
 					payment.setCompletedAt(Instant.now());
 					if (payment.getFulfillmentHash() == null || payment.getFulfillmentChainId() == null) {
 						payment.setFulfillmentHash(sessionResponse.getPaymentTransactionHash());
-						payment.setFulfillmentChainId(Integer.parseInt(sessionResponse.getPaymentChainId().split("eip155:")[1]));
+						payment.setFulfillmentChainId(
+								Integer.parseInt(sessionResponse.getPaymentChainId().split("eip155:")[1]));
 					}
 					paymentRepository.save(payment);
 					notificationService.notifyPaymentCompletion(payment, payment.getSender());
@@ -246,6 +251,47 @@ public class PaymentService {
 		} catch (Exception e) {
 			log.error("Error processing payment {}", payment.getReferenceId(), e);
 			throw new RuntimeException("Failed to process payment", e);
+		}
+	}
+
+	@Scheduled(fixedRate = 60 * 1000, initialDelay = 15 * 1000)
+	// Every 1 minute, with 15s initial delay
+	public void processSessionIntentPayments() {
+		log.info("Starting to process SESSION_INTENT payments");
+		val paymentsToProcess = paymentRepository.findSessionIntentPaymentsWithLock(10);
+
+		paymentsToProcess.forEach(payment -> {
+			try {
+				processSessionIntentPayment(payment);
+			} catch (Exception e) {
+				log.error("Error processing SESSION_INTENT payment {}", payment.getReferenceId(), e);
+			}
+		});
+
+		log.info("Finished processing SESSION_INTENT payments");
+	}
+
+	@Transactional(Transactional.TxType.REQUIRES_NEW)
+	public void processSessionIntentPayment(Payment payment) {
+		log.debug("Processing SESSION_INTENT payment: {}", payment.getReferenceId());
+		try {
+			log.debug("Processing SESSION_INTENT payment: {}", payment);
+			val response = walletService.processPayment(payment);
+			if (response != null && response.status().equals("success")) {
+				payment.setStatus(Payment.PaymentStatus.COMPLETED);
+				payment.setCompletedAt(Instant.now());
+				payment.setHash(response.txHash());
+				log.debug("Processed SESSION_INTENT payment: {}", response);
+				notificationService.notifyPaymentCompletion(payment, null);
+			} else {
+				payment.setStatus(Payment.PaymentStatus.FAILED);
+				payment.recordFailure("failed to process payment");
+			}
+		} catch (Exception e) {
+			payment.setStatus(Payment.PaymentStatus.FAILED);
+			payment.recordFailure(e.getMessage());
+
+			log.error("Error processing SESSION_INTENT payment {}", payment.getReferenceId(), e);
 		}
 	}
 }

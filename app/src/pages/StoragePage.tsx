@@ -100,7 +100,7 @@ export default function StoragePage() {
     const castText = encodeURIComponent(
       `Buy Farcaster Storage via @payflow frame\ncc: @sinaver.eth /payflow`
     );
-    const embedUrl = `https://frames.payflow.me/fid/${storageData.user.fid}/storage?${BUY_STORAGE_FRAME_VERSION}`;
+    const embedUrl = `https://app.payflow.me/fid/${storageData.user.fid}/storage?${BUY_STORAGE_FRAME_VERSION}`;
 
     return `${baseUrl}?text=${castText}&embeds[]=${encodeURIComponent(embedUrl)}`;
   }, [storageData?.user?.fid]);

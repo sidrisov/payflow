@@ -6,6 +6,8 @@ import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
+import ua.sinaver.web3.payflow.config.PayflowConfig;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.message.farcaster.CastActionMeta;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
@@ -31,6 +33,8 @@ public class PayController {
 	private FarcasterNeynarService neynarService;
 	@Autowired
 	private IIdentityService identityService;
+	@Autowired
+	private PayflowConfig payflowConfig;
 
 	@GetMapping
 	public CastActionMeta metadata() {
@@ -89,8 +93,13 @@ public class PayController {
 			paymentAddress = paymentProfile.getIdentity();
 		}
 
+		val paymentFrameUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
+				.path("/{address}")
+				.buildAndExpand(paymentAddress)
+				.toUriString();
+
+		log.debug("Returning payment frame url: {}", paymentFrameUrl);
 		return ResponseEntity.ok().body(
-				new FrameResponse.ActionFrame("frame", String.format("https://frames.payflow" +
-						".me/%s", paymentAddress)));
+				new FrameResponse.ActionFrame("frame", paymentFrameUrl));
 	}
 }

@@ -48,9 +48,10 @@ public class LinkService {
 		}
 	}
 
-	public URI framePaymentLink(Payment payment, boolean frameV2, boolean isMiniApp) {
-		val builder = UriComponentsBuilder.fromHttpUrl(payflowConfig.getFramesServiceUrl())
-				.path(String.format("%s/payment/{refId}", frameV2 ? "/v2" : ""));
+	public URI framePaymentLink(Payment payment, boolean isMiniApp) {
+		val builder = UriComponentsBuilder
+				.fromHttpUrl(payflowConfig.getDAppServiceUrl())
+				.path("/payment/{refId}");
 
 		if (isMiniApp) {
 			builder.queryParam("mini");
@@ -60,13 +61,8 @@ public class LinkService {
 				.toUri();
 	}
 
-	public URI frameV2PaymentLink(Payment payment) {
-		return framePaymentLink(payment, true, false);
-	}
-
-
 	public URI framePaymentLink(Payment payment) {
-		return framePaymentLink(payment, false, false);
+		return framePaymentLink(payment, false);
 	}
 
 	public URI paymentLink(Payment payment, ValidatedFrameResponseMessage frameMessage,

@@ -262,9 +262,9 @@ public class FarcasterPaymentBotService {
 						paymentRepository.save(payment);
 					}
 
-					val frameUrl = payment == null ? String.format("https://frames.payflow.me/%s",
+					val frameUrl = payment == null ? String.format("https://app.payflow.me/%s",
 							receiverProfile != null ? receiverProfile.getUsername() : receiverAddresses)
-							: linkService.framePaymentLink(payment, false, true).toString();
+							: linkService.framePaymentLink(payment, true).toString();
 
 					val castText =
 							String.format("""
@@ -315,7 +315,7 @@ public class FarcasterPaymentBotService {
 							cast.author().username());
 					val embeds = Collections.singletonList(
 							new Cast.Embed(
-									String.format("https://frames.payflow.me/%s",
+									String.format("https://app.payflow.me/%s",
 											casterProfile.getUsername())));
 
 					val processed = notificationService.reply(castText, cast.hash(), embeds);
@@ -450,9 +450,9 @@ public class FarcasterPaymentBotService {
 								receiverName);
 					}
 
-					val frameUrl = payment == null ? String.format("https://frames.payflow.me/%s",
+					val frameUrl = payment == null ? String.format("https://app.payflow.me/%s",
 							receiverProfile != null ? receiverProfile.getUsername() : receiverAddresses)
-							: linkService.framePaymentLink(payment, false, true).toString();
+							: linkService.framePaymentLink(payment, true).toString();
 
 					val embeds = Collections.singletonList(
 							new Cast.Embed(frameUrl));
@@ -561,7 +561,7 @@ public class FarcasterPaymentBotService {
 							}
 
 							val frameUrl =
-									linkService.framePaymentLink(payment, false, true).toString();
+									linkService.framePaymentLink(payment, true).toString();
 							val embeds = Collections.singletonList(
 									new Cast.Embed(frameUrl));
 							val processed = notificationService.reply(castText, cast.hash(), embeds);
@@ -612,7 +612,7 @@ public class FarcasterPaymentBotService {
 							val castText = String.format("@%s receive jar contributions with the frame",
 									cast.author().username());
 							val embeds = Collections.singletonList(
-									new Cast.Embed(String.format("https://frames.payflow" +
+									new Cast.Embed(String.format("https://app.payflow" +
 													".me/jar/%s",
 											jar.getFlow().getUuid())));
 							val processed = notificationService.reply(castText, cast.hash(), embeds);

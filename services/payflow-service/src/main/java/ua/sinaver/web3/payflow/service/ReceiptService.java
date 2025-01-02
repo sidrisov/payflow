@@ -13,10 +13,6 @@ public class ReceiptService {
 	@Autowired
 	private LinkService linkService;
 
-	public String getFrameV2ReceiptUrl(Payment payment) {
-		return linkService.frameV2PaymentLink(payment).toString();
-	}
-
 	public String getReceiptUrl(Payment payment) {
 		return getReceiptUrl(payment, false, false);
 	}

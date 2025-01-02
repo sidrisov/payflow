@@ -22,6 +22,8 @@ public interface IUserService {
 
 	User findByIdentity(String identity);
 
+	User findById(Integer id);
+
 	User findByUsername(String username);
 
 	User findByUsernameOrIdentity(String usernameOrIdentity);

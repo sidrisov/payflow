@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import ua.sinaver.web3.payflow.config.PayflowConfig;
 import ua.sinaver.web3.payflow.message.ConnectedAddresses;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.message.alfafrens.ChannelSubscribersAndStakesResponseMessage;
@@ -50,7 +51,7 @@ public class IdentitySubscriptionsService {
 	private int paragraphContactsLimit;
 
 	public IdentitySubscriptionsService(WebClient.Builder builder,
-	                                    @Value("${payflow.frames.url}") String onchainServiceUrl) {
+	                                    PayflowConfig payflowConfig) {
 		webClient = builder
 				.baseUrl("https://www.alfafrens.com/api/v0")
 				.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -58,7 +59,7 @@ public class IdentitySubscriptionsService {
 				.build();
 
 		onchainServiceClient = builder
-				.baseUrl(onchainServiceUrl)
+				.baseUrl(payflowConfig.getDAppServiceUrl())
 				.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
 				.defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
 				.build();

@@ -1,37 +1,40 @@
 package ua.sinaver.web3.payflow.message.protocol;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.time.Instant;
 
 public record CreatePaymentRequest(
-		String type,
+		ua.sinaver.web3.payflow.data.Payment.PaymentType type,
 		String name,
 		Source source,
 		Recipient recipient,
+		Payer payer,
 		Payment payment,
-		Instant expiresAt
-) {
+		Instant expiresAt) {
 	public record Source(
 			String type,
-			String url
-	) {
+			String url) {
 	}
 
 	public record Recipient(
 			Social social,
 			String address,
-			String comment
-	) {
+			String comment) {
 		public record Social(
 				String type,
-				String identifier
-		) {
+				String identifier) {
 		}
 	}
 
 	public record Payment(
 			String amount,
 			String token,
-			Integer chain
-	) {
+			Integer chain,
+			JsonNode calls) {
+	}
+
+	public record Payer(String sessionId) {
+
 	}
 }

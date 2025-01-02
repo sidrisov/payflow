@@ -108,7 +108,7 @@ public class JarContributionController {
 		log.debug("Received tip Payflow in frame message request: {}", frameMessage);
 		return ResponseEntity.ok().body(
 				new FrameResponse.ActionFrame("frame",
-						"https://frames.payflow.me/0x0dee77c83cb8b14fa95497825df93202abf6ad83?entryTitle=%25F0%259F%25AB%25B6%25F0%259F%258F%25BB%2520Support%2520Payflow"));
+						"https://app.payflow.me/0x0dee77c83cb8b14fa95497825df93202abf6ad83?entryTitle=%25F0%259F%25AB%25B6%25F0%259F%258F%25BB%2520Support%2520Payflow"));
 	}
 
 	@PostMapping("/create")
@@ -184,7 +184,7 @@ public class JarContributionController {
 		val castText = String.format("@%s receive jar contributions with the frame",
 				cast.author().username());
 
-		val frameUrl = String.format("https://frames.payflow.me/jar/%s", uuid);
+		val frameUrl = String.format("https://app.payflow.me/jar/%s", uuid);
 		val embeds = Collections.singletonList(
 				new Cast.Embed(frameUrl));
 
