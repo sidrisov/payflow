@@ -10,11 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastResponse;
-import ua.sinaver.web3.payflow.service.api.IFarcasterMessagingService;
 
 @Slf4j
 @Service
-public class FarcasterMessagingService implements IFarcasterMessagingService {
+public class FarcasterMessagingService {
 
 	private final WebClient webClient;
 
@@ -27,7 +26,6 @@ public class FarcasterMessagingService implements IFarcasterMessagingService {
 				.build();
 	}
 
-	@Override
 	public DirectCastResponse sendMessage(DirectCastMessage message) {
 		log.debug("Sending direct cast message: {}", message);
 
@@ -46,7 +44,6 @@ public class FarcasterMessagingService implements IFarcasterMessagingService {
 	}
 
 	@Async
-	@Override
 	public void sendMessageAsync(DirectCastMessage message) {
 		log.debug("Sending direct cast message asynchronously: {}", message);
 		sendMessage(message);

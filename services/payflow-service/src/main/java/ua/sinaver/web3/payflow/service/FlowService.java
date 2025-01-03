@@ -4,23 +4,24 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import ua.sinaver.web3.payflow.data.Flow;
-import ua.sinaver.web3.payflow.data.Jar;
-import ua.sinaver.web3.payflow.data.User;
-import ua.sinaver.web3.payflow.data.Wallet;
+import ua.sinaver.web3.payflow.data.*;
 import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
 import ua.sinaver.web3.payflow.message.FlowMessage;
 import ua.sinaver.web3.payflow.message.JarMessage;
 import ua.sinaver.web3.payflow.message.WalletMessage;
+import ua.sinaver.web3.payflow.message.WalletSessionMessage;
 import ua.sinaver.web3.payflow.repository.FlowRepository;
 import ua.sinaver.web3.payflow.repository.JarRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
-import ua.sinaver.web3.payflow.service.api.IFlowService;
+import ua.sinaver.web3.payflow.repository.WalletSessionRepository;
 
+import java.time.Instant;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +34,7 @@ import static ua.sinaver.web3.payflow.service.TokenService.BASE_CHAIN_ID;
 @Slf4j
 @Service
 @Transactional
-public class FlowService implements IFlowService {
+public class FlowService {
 	@Autowired
 	private JarRepository jarRepository;
 	@Autowired
@@ -46,8 +47,9 @@ public class FlowService implements IFlowService {
 	private IdentityService identityService;
 	@Autowired
 	private AirstackSocialGraphService socialGraphService;
+	@Autowired
+	private WalletSessionRepository walletSessionRepository;
 
-	@Override
 	@CacheEvict(value = USER_FLOWS_CACHE, key = "#user.identity")
 	public Jar createJar(String title, String description, String image, String source, User user) {
 		// use same signer as default flow
@@ -86,7 +88,6 @@ public class FlowService implements IFlowService {
 		return jar;
 	}
 
-	@Override
 	@CacheEvict(value = USER_FLOWS_CACHE, key = "#user.identity")
 	public void saveFlow(FlowMessage flowDto, User user) {
 		val flow = FlowMessage.convert(flowDto, user);
@@ -94,7 +95,6 @@ public class FlowService implements IFlowService {
 		log.debug("Saved flow {}", flow);
 	}
 
-	@Override
 	@Cacheable(value = USER_FLOWS_CACHE, key = "#user.identity")
 	public List<FlowMessage> getAllFlows(User user) {
 		val flows = new ArrayList<FlowMessage>();
@@ -126,7 +126,6 @@ public class FlowService implements IFlowService {
 		return flows;
 	}
 
-	@Override
 	public FlowMessage findByUUID(String uuid) {
 		val flow = flowRepository.findByUuid(uuid);
 		if (flow != null) {
@@ -138,7 +137,6 @@ public class FlowService implements IFlowService {
 		return null;
 	}
 
-	@Override
 	public JarMessage findJarByUUID(String uuid) {
 		val jar = jarRepository.findByFlowUuid(uuid);
 		if (jar != null) {
@@ -150,7 +148,6 @@ public class FlowService implements IFlowService {
 		return null;
 	}
 
-	@Override
 	public void deleteFlowWallet(String uuid, WalletMessage walletDto, User user) throws Exception {
 		val flow = flowRepository.findByUuid(uuid);
 		if (flow == null) {
@@ -182,7 +179,6 @@ public class FlowService implements IFlowService {
 		log.info("Removed wallet {} from flow {}", wallet, flow);
 	}
 
-	@Override
 	public void addFlowWallet(String uuid, WalletMessage walletDto, User user) throws Exception {
 		val flow = flowRepository.findByUuid(uuid);
 		if (flow == null) {
@@ -199,7 +195,6 @@ public class FlowService implements IFlowService {
 		log.info("Added wallet {} to flow {}", wallet, flow);
 	}
 
-	@Override
 	@CacheEvict(value = USER_FLOWS_CACHE, key = "#user.identity")
 	public void updateFlowWallet(String uuid, WalletMessage walletDto, User user) throws Exception {
 		val flow = flowRepository.findByUuid(uuid);
@@ -236,7 +231,6 @@ public class FlowService implements IFlowService {
 		log.info("Updated wallet {}", wallet);
 	}
 
-	@Override
 	public List<Flow> getOwnersOfLegacyFlows() {
 		return userRepository.findUsersWithNonDisabledFlowAndWalletVersion("1.3.0")
 				.stream()
@@ -279,5 +273,108 @@ public class FlowService implements IFlowService {
 				.filter(Objects::nonNull)
 				.toList();
 		log.info("Owners of legacy flows (wallet version 1.3.0): [{}] {}", ownersFarcaster.size(), ownersFarcaster);
+	}
+
+	public void createWalletSession(String uuid, String address, Integer chainId,
+			WalletSessionMessage session, User user) throws Exception {
+		val flow = flowRepository.findByUuid(uuid);
+		if (flow == null) {
+			throw new Exception("Flow doesn't exist");
+		} else if (!flow.getUserId().equals(user.getId())) {
+			throw new Exception("Authenticated user mismatch");
+		}
+
+		val wallet = flow.getWallets().stream()
+				.filter(w -> StringUtils.equalsIgnoreCase(w.getAddress(), address) &&
+						w.getNetwork().equals(chainId))
+				.findFirst()
+				.orElseThrow(() -> new Exception("Wallet not found"));
+
+		val walletSession = WalletSessionMessage.convert(session);
+		walletSession.setWallet(wallet);
+		wallet.getSessions().add(walletSession);
+
+		log.debug("Created session {} for wallet {}", session, wallet);
+	}
+
+	public List<WalletSessionMessage> getWalletSessions(String uuid, String address,
+			Integer chainId, User user) throws Exception {
+		val flow = flowRepository.findByUuid(uuid);
+		if (flow == null) {
+			throw new Exception("Flow doesn't exist");
+		} else if (!flow.getUserId().equals(user.getId())) {
+			throw new Exception("Authenticated user mismatch");
+		}
+
+		return flow.getWallets().stream()
+				.filter(w -> StringUtils.equalsIgnoreCase(w.getAddress(), address) &&
+						w.getNetwork().equals(chainId))
+				.findFirst()
+				.map(wallet -> wallet.getSessions().stream()
+						.filter(WalletSession::getActive)
+						.map(WalletSessionMessage::convert)
+						.toList())
+				.orElse(List.of());
+	}
+
+	public void updateWalletSession(String uuid, String address, Integer chainId,
+			String sessionId, WalletSessionMessage sessionUpdate, User user) throws Exception {
+		val flow = flowRepository.findByUuid(uuid);
+		if (flow == null) {
+			throw new Exception("Flow doesn't exist");
+		} else if (!flow.getUserId().equals(user.getId())) {
+			throw new Exception("Authenticated user mismatch");
+		}
+
+		val wallet = flow.getWallets().stream()
+				.filter(w -> StringUtils.equalsIgnoreCase(w.getAddress(), address) &&
+						w.getNetwork().equals(chainId))
+				.findFirst()
+				.orElseThrow(() -> new Exception("Wallet not found"));
+
+		val session = wallet.getSessions().stream()
+				.filter(s -> s.getSessionId().equals(sessionId))
+				.findFirst()
+				.orElseThrow(() -> new Exception("Session not found"));
+
+		// Update session fields
+		session.setActive(sessionUpdate.isActive());
+		session.setExpiresAt(sessionUpdate.getExpiresAt());
+		session.setActions(sessionUpdate.getActions());
+
+		log.debug("Updated session {} for wallet {}", session, wallet);
+	}
+
+	public void deactivateWalletSession(String uuid, String address, Integer chainId,
+			String sessionId, User user) throws Exception {
+		val flow = flowRepository.findByUuid(uuid);
+		if (flow == null) {
+			throw new Exception("Flow doesn't exist");
+		} else if (!flow.getUserId().equals(user.getId())) {
+			throw new Exception("Authenticated user mismatch");
+		}
+
+		val wallet = flow.getWallets().stream()
+				.filter(w -> StringUtils.equalsIgnoreCase(w.getAddress(), address) &&
+						w.getNetwork().equals(chainId))
+				.findFirst()
+				.orElseThrow(() -> new Exception("Wallet not found"));
+
+		val session = wallet.getSessions().stream()
+				.filter(s -> s.getSessionId().equals(sessionId))
+				.findFirst()
+				.orElseThrow(() -> new Exception("Session not found"));
+
+		session.setActive(false);
+		session.setSessionKey("0x0");
+
+		log.debug("Deactivated session {} for wallet {}", session, wallet);
+	}
+
+	@Scheduled(initialDelay = 60_000, fixedRate = 60_000)
+	public void checkAndDeactivateExpiredSessions() {
+		log.debug("Checking for expired wallet sessions...");
+		walletSessionRepository.deactivateExpiredSessions(Instant.now());
+		log.debug("Completed deactivating expired sessions");
 	}
 }

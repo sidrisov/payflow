@@ -1,5 +1,5 @@
 import { useContext, useState, useCallback, useEffect } from 'react';
-import { useChainId, useSwitchChain, useWalletClient, useClient } from 'wagmi';
+import { useChainId, useSwitchChain, useWalletClient, usePublicClient } from 'wagmi';
 import { createSession, executeSession, PaymentOption } from '@paywithglide/glide-js';
 import { ProfileContext } from '../../contexts/UserContext';
 import { submitPayment, updatePayment } from '../../services/payments';
@@ -15,7 +15,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
   const { data: signer } = useWalletClient();
-  const client = useClient();
+  const publicClient = usePublicClient();
   const { profile, isMiniApp, isFrameV2 } = useContext(ProfileContext);
 
   const {
@@ -67,10 +67,11 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
     if (!profile) throw new Error('Profile not found. Please ensure you are logged in.');
 
     if (isNativeFlow || !isMiniApp || isFrameV2) {
-      if (!client) throw new Error('Client not initialized. Please check your network connection.');
+      if (!publicClient)
+        throw new Error('Client not initialized. Please check your network connection.');
       if (!signer) throw new Error('Signer not available. Please connect your wallet.');
     }
-  }, [profile, client, signer, isMiniApp, isFrameV2, isNativeFlow]);
+  }, [profile, publicClient, signer, isMiniApp, isFrameV2, isNativeFlow]);
 
   const createGlideSession = useCallback(
     async (paymentTx: any, paymentOption: PaymentOption, commissionUSD: number) => {
@@ -120,7 +121,8 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
       return (await sendTransactionFarcaster(tx)) as Hash;
     }
 
-    if (!client) throw new Error('Client not initialized. Please check your network connection.');
+    if (!publicClient)
+      throw new Error('Client not initialized. Please check your network connection.');
     if (!signer) throw new Error('Signer not available. Please connect your wallet.');
 
     if (isNativeFlow) {
@@ -137,7 +139,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
       const [safeVersion, entryPointVersion = '0.6'] = paymentWallet.version.split('_');
 
       return (await transfer(
-        client,
+        publicClient,
         signer,
         {
           from: paymentWallet.address,

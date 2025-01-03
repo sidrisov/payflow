@@ -108,7 +108,7 @@ export const PayButton: React.FC<PayButtonProps> = ({
       <ConnectSignerDialog
         open={openConnectSignerDrawer}
         onClose={() => setOpenConnectSignerDrawer(false)}
-        senderFlow={senderFlow}
+        flow={senderFlow}
       />
     </>
   );

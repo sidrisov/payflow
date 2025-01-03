@@ -15,10 +15,10 @@ import ua.sinaver.web3.payflow.message.ProfileMetaMessage;
 import ua.sinaver.web3.payflow.message.SubmitInvitationMessage;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.repository.InvitationRepository;
+import ua.sinaver.web3.payflow.service.FarcasterMessagingService;
 import ua.sinaver.web3.payflow.service.InvitationService;
 import ua.sinaver.web3.payflow.service.UserService;
 import ua.sinaver.web3.payflow.service.api.IContactBookService;
-import ua.sinaver.web3.payflow.service.api.IFarcasterMessagingService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 
 import java.security.Principal;
@@ -54,7 +54,7 @@ public class InvitationController {
 	private IIdentityService identityService;
 
 	@Autowired
-	private IFarcasterMessagingService farcasterMessagingService;
+	private FarcasterMessagingService farcasterMessagingService;
 
 	@Autowired
 	private InvitationService invitationService;

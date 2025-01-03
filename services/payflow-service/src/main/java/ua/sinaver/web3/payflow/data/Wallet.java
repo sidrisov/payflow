@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.List;
 
 @Setter
 @Getter
@@ -32,6 +33,9 @@ public class Wallet {
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "flow_id", nullable = false)
 	private Flow flow;
+
+	@OneToMany(mappedBy = "wallet", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<WalletSession> sessions;
 
 	@Column
 	@Temporal(TemporalType.TIMESTAMP)

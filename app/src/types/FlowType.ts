@@ -29,7 +29,29 @@ export interface FlowWalletType {
   network: number;
   version: string;
   deployed: boolean;
+  sessions?: WalletSessionType[];
 }
+
+export interface WalletSessionType {
+  sessionId: string;
+  active: boolean;
+  createdAt: Date;
+  expiresAt: Date;
+  sessionKey?: string;
+  actions?: (SpendActionType | SudoActionType)[];
+}
+
+// Define the action types separately
+type SpendActionType = {
+  type: 'spend';
+  token: string;
+  limit: string;
+  spent: string;
+};
+
+type SudoActionType = {
+  type: 'sudo';
+};
 
 export interface WalletType {
   address: Address;

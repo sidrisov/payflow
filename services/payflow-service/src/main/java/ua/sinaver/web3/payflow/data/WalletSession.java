@@ -45,7 +45,7 @@ public class WalletSession {
     @Temporal(TemporalType.TIMESTAMP)
     private Instant expiresAt = Instant.now().plus(1, ChronoUnit.HOURS);
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "wallet_id", referencedColumnName = "id")
     @ToString.Exclude
     private Wallet wallet;

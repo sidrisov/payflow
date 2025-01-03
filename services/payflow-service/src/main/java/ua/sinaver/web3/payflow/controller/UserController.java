@@ -14,7 +14,11 @@ import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 import ua.sinaver.web3.payflow.message.*;
 import ua.sinaver.web3.payflow.message.farcaster.StorageUsage;
 import ua.sinaver.web3.payflow.service.FarcasterNeynarService;
-import ua.sinaver.web3.payflow.service.api.*;
+import ua.sinaver.web3.payflow.service.FlowService;
+import ua.sinaver.web3.payflow.service.api.IContactBookService;
+import ua.sinaver.web3.payflow.service.api.IIdentityService;
+import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
+import ua.sinaver.web3.payflow.service.api.IUserService;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -30,7 +34,7 @@ public class UserController {
 	private IUserService userService;
 
 	@Autowired
-	private IFlowService flowService;
+	private FlowService flowService;
 
 	@Autowired
 	private IContactBookService contactBookService;

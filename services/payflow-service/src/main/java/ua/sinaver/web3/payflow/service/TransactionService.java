@@ -92,8 +92,8 @@ public class TransactionService {
 
 		val isERC20Transfer = token.tokenAddress() != null;
 
-		var amount = paymentMessage.tokenAmount() != null ? paymentMessage.tokenAmount() :
-				paymentMessage.usdAmount() / tokenPriceService.getPrices().get(paymentMessage.token());
+		var amount = paymentMessage.tokenAmount() != null ? paymentMessage.tokenAmount()
+				: paymentMessage.usdAmount() / tokenPriceService.getPrices().get(paymentMessage.token());
 
 		if (isERC20Transfer) {
 			var value = BigInteger.valueOf(0);
@@ -115,15 +115,15 @@ public class TransactionService {
 					}));
 			val encodedFunction = FunctionEncoder.encode(function);
 			return String.format("""
-							{
-							  "chainId": "eip155:%s",
-							  "method": "eth_sendTransaction",
-							  "params": {
-							    "abi": %s,
-							    "to": "%s",
-							    "data": "%s"
-							  }
-							}""", paymentMessage.chainId(), ERC20_ABI_TRANSFER_JSON, token.tokenAddress(),
+					{
+					  "chainId": "eip155:%s",
+					  "method": "eth_sendTransaction",
+					  "params": {
+					    "abi": %s,
+					    "to": "%s",
+					    "data": "%s"
+					  }
+					}""", paymentMessage.chainId(), ERC20_ABI_TRANSFER_JSON, token.tokenAddress(),
 					encodedFunction);
 		} else {
 			val value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.ETHER)
@@ -145,7 +145,44 @@ public class TransactionService {
 	}
 
 	public String generateTxCallData(Payment payment) {
+		val txParams = generateTxParams(payment);
+		if (txParams == null)
+			return null;
 
+		val token = tokenService.getTokens().stream()
+				.filter(t -> t.chainId().equals(payment.getNetwork()) && t.id().equals(payment.getToken()))
+				.findFirst().orElse(null);
+
+		val isERC20Transfer = token != null && token.tokenAddress() != null;
+
+		if (isERC20Transfer) {
+			return String.format("""
+					{
+					  "chainId": "eip155:%s",
+					  "method": "eth_sendTransaction",
+					  "params": {
+					    "abi": %s,
+					    "to": "%s",
+					    "data": "%s"
+					  }
+					}""", payment.getNetwork(), ERC20_ABI_TRANSFER_JSON, txParams.get("to"), txParams.get("data"));
+		} else {
+			return String.format("""
+					{
+					  "chainId": "eip155:%s",
+					  "method": "eth_sendTransaction",
+					  "attribution": false,
+					  "params": {
+					    "abi": [],
+					    "to": "%s",
+					    "value": "%s",
+					    "data": "%s"
+					  }
+					}""", payment.getNetwork(), txParams.get("to"), txParams.get("value"), txParams.get("data"));
+		}
+	}
+
+	public Map<String, String> generateTxParams(Payment payment) {
 		val token = tokenService.getTokens().stream()
 				.filter(t -> t.chainId().equals(payment.getNetwork()) && t.id().equals(payment.getToken()))
 				.findFirst().orElse(null);
@@ -156,28 +193,17 @@ public class TransactionService {
 		}
 
 		val isERC20Transfer = token.tokenAddress() != null;
-
-		// TODO: align receiver logic everywhere:
-		// 1. if chain supported by profile + default flow + wallet
-		// otherwise fallback to verified address
 		val address = paymentService.getPaymentReceiverAddress(payment);
-		var amount = StringUtils.isNotBlank(payment.getTokenAmount()) ?
-				Double.parseDouble(payment.getTokenAmount()) :
-				Double.parseDouble(payment.getUsdAmount()) / tokenPriceService.getPrices().get(payment.getToken());
+		var amount = StringUtils.isNotBlank(payment.getTokenAmount()) ? Double.parseDouble(payment.getTokenAmount())
+				: Double.parseDouble(payment.getUsdAmount()) / tokenPriceService.getPrices().get(payment.getToken());
 
 		if (isERC20Transfer) {
 			var value = BigInteger.valueOf(0);
-
 			if (token.decimals().equals(6)) {
-				value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.MWEI)
-						.toBigInteger();
+				value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.MWEI).toBigInteger();
 			} else if (token.decimals().equals(18)) {
-				value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.ETHER)
-						.toBigInteger();
+				value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.ETHER).toBigInteger();
 			}
-
-			log.debug("Token amount {} value {} price {} for {}", amount, value,
-					tokenPriceService.getPrices().get(payment.getToken()), payment);
 
 			val function = new Function(
 					"transfer",
@@ -185,80 +211,18 @@ public class TransactionService {
 					List.of(new TypeReference<Bool>() {
 					}));
 			val encodedFunction = FunctionEncoder.encode(function);
-			return String.format("""
-					{
-					  "chainId": "eip155:%s",
-					  "method": "eth_sendTransaction",
-					  "params": {
-					    "abi": %s,
-					    "to": "%s",
-					    "data": "%s"
-					  }
-					}""", payment.getNetwork(), ERC20_ABI_TRANSFER_JSON, token.tokenAddress(), encodedFunction);
+
+			return Map.of(
+					"to", token.tokenAddress(),
+					"value", "0x0",
+					"data", encodedFunction);
 		} else {
-			val value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.ETHER)
-					.toBigInteger();
+			val value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.ETHER).toBigInteger();
 
-			return String.format("""
-					{
-					  "chainId": "eip155:%s",
-					  "method": "eth_sendTransaction",
-					  "attribution": false,
-					  "params": {
-					    "abi": [],
-					    "to": "%s",
-					    "value": "%s",
-					    "data": "0x"
-					  }
-					}""", payment.getNetwork(), address, value);
-		}
-	}
-
-
-	public Map<String, String> getWalletBalance(String address) {
-		/*val transactionManager = new ClientTransactionManager(web3j, address);
-		val balanceMap = new HashMap<String, String>();
-		try {
-			// fetch ether
-			val balanceEther = Convert.fromWei(web3j.ethGetBalance(address,
-							DefaultBlockParameterName.LATEST)
-					.send().getBalance().toString(), Convert.Unit.ETHER);
-			// Round to 5 decimal places using setScale
-			val roundedBalance = balanceEther.equals(new BigDecimal(0)) ? balanceEther
-					: balanceEther.setScale(5, RoundingMode.HALF_UP);
-
-			balanceMap.put(ETH_TOKEN, roundedBalance.toString());
-
-			// fetch ERC20
-			val usdcBalance = erc20Balance(BASE_ERC20_TOKEN_ADDRESSES.get(USDC_TOKEN), address,
-					transactionManager);
-			balanceMap.put(USDC_TOKEN, usdcBalance);
-
-			val degenBalance = erc20Balance(BASE_ERC20_TOKEN_ADDRESSES.get(DEGEN_TOKEN), address,
-					transactionManager);
-			balanceMap.put(DEGEN_TOKEN, degenBalance);
-
-		} catch (IOException e) {
-			System.err.println("Error fetching balance: " + e.getMessage());
-		}*/
-
-		return Map.of();
-	}
-
-	private String erc20Balance(String contractAddress, String walletAddress,
-	                            TransactionManager txManager) {
-		ERC20 contract = ERC20.load(contractAddress, web3j, txManager,
-				new DefaultGasProvider());
-		try {
-			val decimals = contract.decimals().sendAsync().get();
-			val balance = contract.balanceOf(walletAddress).sendAsync().get();
-			// Convert the balance to ether
-			val usdcBalance = new BigDecimal(balance
-					.divide(BigInteger.TEN.pow(decimals.intValue())));
-			return usdcBalance.equals(new BigDecimal(0)) ? usdcBalance.toString()
-					: usdcBalance.setScale(1, RoundingMode.HALF_UP).toString();
-		} catch (InterruptedException | ExecutionException e) {
-			throw new RuntimeException(e);
+			return Map.of(
+					"to", address,
+					"value", value.toString(),
+					"data", "0x");
 		}
 	}
 }

@@ -7,12 +7,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.message.FlowMessage;
 import ua.sinaver.web3.payflow.message.JarMessage;
 import ua.sinaver.web3.payflow.message.WalletMessage;
+import ua.sinaver.web3.payflow.message.WalletSessionMessage;
 import ua.sinaver.web3.payflow.repository.WalletRepository;
-import ua.sinaver.web3.payflow.service.api.IFlowService;
+import ua.sinaver.web3.payflow.service.FlowService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
 
@@ -32,25 +34,28 @@ class FlowController {
 	private IUserService userService;
 
 	@Autowired
-	private IFlowService flowService;
+	private FlowService flowService;
 
 	@Autowired
 	private IIdentityService identityService;
 
-	/*@GetMapping("/{walletAddress}/nonce")
-	public String nonce(@PathVariable String walletAddress) {
-		val nonce = RandomStringUtils.random(10, true, true);
-
-		log.debug("Wallet: {} - nonce: {} ", walletAddress, nonce);
-		return nonce;
-	}
-
-	@PostMapping("/{walletAddress}/{verify}")
-	public ResponseEntity<String> verify(@PathVariable String walletAddress,
-	                                     @RequestBody SiweChallengeMessage siwe,
-	                                     HttpSession session) {
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	}*/
+	/*
+	 * @GetMapping("/{walletAddress}/nonce")
+	 * public String nonce(@PathVariable String walletAddress) {
+	 * val nonce = RandomStringUtils.random(10, true, true);
+	 *
+	 * log.debug("Wallet: {} - nonce: {} ", walletAddress, nonce);
+	 * return nonce;
+	 * }
+	 *
+	 * @PostMapping("/{walletAddress}/{verify}")
+	 * public ResponseEntity<String> verify(@PathVariable String walletAddress,
+	 *
+	 * @RequestBody SiweChallengeMessage siwe,
+	 * HttpSession session) {
+	 * return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+	 * }
+	 */
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
@@ -127,42 +132,49 @@ class FlowController {
 		return ResponseEntity.ok().build();
 	}
 
-	/*@PostMapping("/{uuid}/wallet")
-	@ResponseStatus(HttpStatus.CREATED)
-	public void addFlowWallet(@PathVariable String uuid, @RequestBody WalletMessage wallet, Principal principal)
-			throws Exception {
-		val user = userService.findByIdentity(principal.getName());
-		if (user == null) {
-			throw new Exception("User doesn't exist: " + principal.getName());
-		}
-
-		log.debug("addFlowWallet() {} {}", uuid, wallet);
-		flowService.addFlowWallet(uuid, wallet, user);
-	}
-
-	@PutMapping("/{uuid}/wallet")
-	@ResponseStatus(HttpStatus.OK)
-	public void updateFlowWallet(@PathVariable String uuid, @RequestBody WalletMessage wallet, Principal principal)
-			throws Exception {
-		val user = userService.findByIdentity(principal.getName());
-		if (user == null) {
-			throw new Exception("User doesn't exist: " + principal.getName());
-		}
-
-		log.debug("updateFlowWallet() {} {}", uuid, wallet);
-		flowService.updateFlowWallet(uuid, wallet, user);
-	}
-
-	@DeleteMapping("/{uuid}/wallet")
-	public void deleteFLowWallet(@PathVariable String uuid, @RequestBody WalletMessage wallet, Principal principal)
-			throws Exception {
-		val user = userService.findByIdentity(principal.getName());
-		if (user == null) {
-			throw new Exception("User doesn't exist: " + principal.getName());
-		}
-
-		flowService.deleteFlowWallet(uuid, wallet, user);
-	}*/
+	/*
+	 * @PostMapping("/{uuid}/wallet")
+	 *
+	 * @ResponseStatus(HttpStatus.CREATED)
+	 * public void addFlowWallet(@PathVariable String uuid, @RequestBody
+	 * WalletMessage wallet, Principal principal)
+	 * throws Exception {
+	 * val user = userService.findByIdentity(principal.getName());
+	 * if (user == null) {
+	 * throw new Exception("User doesn't exist: " + principal.getName());
+	 * }
+	 *
+	 * log.debug("addFlowWallet() {} {}", uuid, wallet);
+	 * flowService.addFlowWallet(uuid, wallet, user);
+	 * }
+	 *
+	 * @PutMapping("/{uuid}/wallet")
+	 *
+	 * @ResponseStatus(HttpStatus.OK)
+	 * public void updateFlowWallet(@PathVariable String uuid, @RequestBody
+	 * WalletMessage wallet, Principal principal)
+	 * throws Exception {
+	 * val user = userService.findByIdentity(principal.getName());
+	 * if (user == null) {
+	 * throw new Exception("User doesn't exist: " + principal.getName());
+	 * }
+	 *
+	 * log.debug("updateFlowWallet() {} {}", uuid, wallet);
+	 * flowService.updateFlowWallet(uuid, wallet, user);
+	 * }
+	 *
+	 * @DeleteMapping("/{uuid}/wallet")
+	 * public void deleteFLowWallet(@PathVariable String uuid, @RequestBody
+	 * WalletMessage wallet, Principal principal)
+	 * throws Exception {
+	 * val user = userService.findByIdentity(principal.getName());
+	 * if (user == null) {
+	 * throw new Exception("User doesn't exist: " + principal.getName());
+	 * }
+	 *
+	 * flowService.deleteFlowWallet(uuid, wallet, user);
+	 * }
+	 */
 
 	@GetMapping("/wallets")
 	public List<WalletMessage> getAllWallets() {
@@ -170,5 +182,71 @@ class FlowController {
 				.filter(w -> !w.isDisabled())
 				.map(WalletMessage::convert)
 				.toList();
+	}
+
+	@PostMapping("/{uuid}/wallets/{address}/{chainId}/sessions")
+	@ResponseStatus(HttpStatus.CREATED)
+	public void createWalletSession(
+			@AuthenticationPrincipal String identity,
+			@PathVariable String uuid,
+			@PathVariable String address,
+			@PathVariable Integer chainId,
+			@RequestBody WalletSessionMessage session
+	) throws Exception {
+		val user = userService.findByIdentity(identity);
+		if (user == null) {
+			throw new Exception("User doesn't exist: " + identity);
+		}
+
+		log.debug("Creating session for flow {} wallet {} on chain {}: {}",
+				uuid, address, chainId, session);
+		flowService.createWalletSession(uuid, address, chainId, session, user);
+	}
+
+	@GetMapping("/{uuid}/wallets/{address}/{chainId}/sessions")
+	public List<WalletSessionMessage> getWalletSessions(
+			@PathVariable String uuid,
+			@PathVariable String address,
+			@PathVariable Integer chainId,
+			Principal principal) throws Exception {
+		val user = userService.findByIdentity(principal.getName());
+		if (user == null) {
+			throw new Exception("User doesn't exist: " + principal.getName());
+		}
+
+		return flowService.getWalletSessions(uuid, address, chainId, user);
+	}
+
+	@PatchMapping("/{uuid}/wallets/{address}/{chainId}/sessions/{sessionId}")
+	public ResponseEntity<String> updateWalletSession(
+			@PathVariable String uuid,
+			@PathVariable String address,
+			@PathVariable Integer chainId,
+			@PathVariable String sessionId,
+			@RequestBody WalletSessionMessage session,
+			Principal principal) throws Exception {
+		val user = userService.findByIdentity(principal.getName());
+		if (user == null) {
+			throw new Exception("User doesn't exist: " + principal.getName());
+		}
+
+		flowService.updateWalletSession(uuid, address, chainId, sessionId, session, user);
+		return ResponseEntity.ok().build();
+	}
+
+	@DeleteMapping("/{uuid}/wallets/{address}/{chainId}/sessions/{sessionId}")
+	public ResponseEntity<String> deactivateWalletSession(
+			@PathVariable String uuid,
+			@PathVariable String address,
+			@PathVariable Integer chainId,
+			@PathVariable String sessionId,
+			Principal principal) throws Exception {
+		val user = userService.findByIdentity(principal.getName());
+		if (user == null) {
+			throw new Exception("User doesn't exist: " + principal.getName());
+		}
+
+		flowService.deactivateWalletSession(uuid, address, chainId, sessionId, user);
+		return ResponseEntity.ok().build();
 	}
 }

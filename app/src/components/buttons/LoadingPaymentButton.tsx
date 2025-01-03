@@ -4,8 +4,9 @@ import LoadingButton, { LoadingButtonProps } from '@mui/lab/LoadingButton';
 export function CustomLoadingButton({
   title,
   status,
+  borderRadius = 5,
   ...props
-}: { title: string; status?: string } & LoadingButtonProps) {
+}: { title: string; status?: string; borderRadius?: number } & LoadingButtonProps) {
   return (
     <LoadingButton
       {...props}
@@ -27,7 +28,7 @@ export function CustomLoadingButton({
           </Typography>
         </Stack>
       }
-      sx={{ my: 1, borderRadius: 5 }}>
+      sx={{ my: 1, borderRadius: borderRadius }}>
       {title}
     </LoadingButton>
   );

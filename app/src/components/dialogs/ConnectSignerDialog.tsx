@@ -7,22 +7,22 @@ import { FlowType } from '../../types/FlowType';
 type ConnectSignerDialogProps = {
   open: boolean;
   onClose: () => void;
-  senderFlow: FlowType;
+  flow: FlowType;
 };
 
 export const ConnectSignerDialog: React.FC<ConnectSignerDialogProps> = ({
   open,
   onClose,
-  senderFlow
+  flow
 }) => {
   return (
     <ResponsiveDialog title="Connect Signer" open={open} onOpen={() => {}} onClose={onClose}>
       <Stack alignItems="flex-start" spacing={2}>
         <Typography variant="caption" color="text.secondary">
-          Selected payment flow `<b>{senderFlow.title}</b>` signer is not connected! Please, proceed
+          Selected payment flow `<b>{flow.title}</b>` signer is not connected! Please, proceed
           with connecting the signer mentioned below:
         </Typography>
-        <SwitchFlowSignerSection onSwitch={onClose} flow={senderFlow} />
+        <SwitchFlowSignerSection onSwitch={onClose} flow={flow} />
       </Stack>
     </ResponsiveDialog>
   );

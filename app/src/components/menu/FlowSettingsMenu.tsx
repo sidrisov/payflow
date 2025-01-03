@@ -32,6 +32,7 @@ import { shortenWalletAddressLabel2 } from '../../utils/address';
 import { HiOutlineDownload } from 'react-icons/hi';
 import { PayMeDialog } from '../dialogs/PayMeDialog';
 import { AutoMode } from '@mui/icons-material';
+import { WalletPermissionsDialog } from '../dialogs/WalletPermissionsDialog';
 
 export function FlowSettingsMenu({
   showOnlySigner,
@@ -54,6 +55,7 @@ export function FlowSettingsMenu({
   const menuRef = useRef<HTMLDivElement>(null);
 
   const [openPayMeDialog, setOpenPayMeDialog] = useState(false);
+  const [openPermissionsDialog, setOpenPermissionsDialog] = useState(false);
 
   useEffect(() => {
     if (ready && wallets.length !== 0) {
@@ -219,14 +221,16 @@ export function FlowSettingsMenu({
                     </Stack>
                   </MenuItem>
                   {flow.wallets[0].version?.endsWith('_0.7') && (
-                    <MenuItem disabled>
+                    <MenuItem
+                      disabled={profile?.username !== 'sinaver'}
+                      onClick={() => setOpenPermissionsDialog(true)}>
                       <ListItemIcon>
                         <AutoMode sx={{ fontSize: 20 }} />
                       </ListItemIcon>
                       <Stack>
                         <Typography>Permissions</Typography>
                         <Typography variant="caption" color="text.secondary" noWrap>
-                          Spending limits & allowed tokens
+                          Spending limits & access
                         </Typography>
                       </Stack>
                     </MenuItem>
@@ -261,6 +265,12 @@ export function FlowSettingsMenu({
         anchorEl={walletAnchorEl}
         flow={flow}
         balanceFetchResult={{ isLoading, isFetched, balances }}
+      />
+
+      <WalletPermissionsDialog
+        open={openPermissionsDialog}
+        onClose={() => setOpenPermissionsDialog(false)}
+        flow={flow}
       />
     </>
   );
