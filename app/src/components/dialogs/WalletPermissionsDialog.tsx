@@ -37,7 +37,7 @@ interface Props {
 // Mock data for testing
 const MOCK_SPEND_SESSIONS: WalletSessionType[] = [
   {
-    sessionId: 'spend_session_1',
+    sessionId: 'mock_spend_session_1',
     active: true,
     createdAt: new Date(),
     expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
@@ -52,7 +52,7 @@ const MOCK_SPEND_SESSIONS: WalletSessionType[] = [
     ]
   },
   {
-    sessionId: 'spend_session_2',
+    sessionId: 'mock_spend_session_2',
     active: true,
     createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
     expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),

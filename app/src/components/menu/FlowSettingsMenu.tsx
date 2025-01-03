@@ -57,6 +57,8 @@ export function FlowSettingsMenu({
   const [openPayMeDialog, setOpenPayMeDialog] = useState(false);
   const [openPermissionsDialog, setOpenPermissionsDialog] = useState(false);
 
+  const whitelistedUsers = ['sinaver', 'konrad', 'kurtlarsen'];
+
   useEffect(() => {
     if (ready && wallets.length !== 0) {
       const wallet = wallets.find((w) => w.address.toLowerCase() === flow.signer.toLowerCase());
@@ -222,7 +224,7 @@ export function FlowSettingsMenu({
                   </MenuItem>
                   {flow.wallets[0].version?.endsWith('_0.7') && (
                     <MenuItem
-                      disabled={profile?.username !== 'sinaver'}
+                      disabled={!profile?.username || !whitelistedUsers.includes(profile.username)}
                       onClick={() => setOpenPermissionsDialog(true)}>
                       <ListItemIcon>
                         <AutoMode sx={{ fontSize: 20 }} />
