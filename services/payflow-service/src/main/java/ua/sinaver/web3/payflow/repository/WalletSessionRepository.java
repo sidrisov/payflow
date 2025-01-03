@@ -25,7 +25,7 @@ public interface WalletSessionRepository extends JpaRepository<WalletSession, Lo
 			"JOIN w.flow f " +
 			"WHERE f.userId = :userId " +
 			"AND ws.active = TRUE " +
-			"AND ws.expiresAt <= :now")
+			"AND ws.expiresAt > :now")
 	List<WalletSession> findActiveSessionsByUser(Integer userId, Instant now);
 
 	default List<WalletSession> findActiveSessionsByUser(User user) {

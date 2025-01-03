@@ -1,5 +1,5 @@
 # Build dependencies
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 WORKDIR /root
 
 # Add python for node-gyp
@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/root/.npm \
     npm ci
 
 # Build stage
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /root
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
@@ -34,7 +34,7 @@ COPY app ./app
 RUN npm run build:ssr --workspace=app
 
 # Runner stage
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /root
 
 # Add python for node-gyp in production

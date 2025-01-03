@@ -27,14 +27,10 @@ import {
   baseSepolia
 } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
-import {
-  generateWallet,
-  sendTransactionWithSession
-} from '@payflow/common/src/wallet/safeWallet';
+import { generateWallet, sendTransactionWithSession } from '@payflow/common';
 
 import { wagmiConfig } from './utils/wagmi';
-import { getClient } from '@rhinestone/module-sdk/_types/common';
-import * as pimlico from '@payflow/common/src/paymaster/pimlico';
+import * as pimlico from '@payflow/common';
 
 @Controller('wallet')
 export class WalletController implements OnModuleInit {
@@ -78,12 +74,10 @@ export class WalletController implements OnModuleInit {
     pimlico.initialize({
       apiKey: process.env.PIMLICO_API_KEY!,
       sponsoredEnabled: process.env.PIMLICO_SPONSORED_ENABLED === 'true',
-      mainnetPolicies: JSON.parse(
-        process.env.PIMLICO_SPONSORED_POLICY_MAINNET || '[]'
-      ),
-      testnetPolicies: JSON.parse(
-        process.env.PIMLICO_SPONSORED_POLICY_SEPOLIA || '[]'
-      )
+      mainnetPolicies:
+        process.env.PIMLICO_SPONSORED_POLICY_MAINNET?.split(',') || [],
+      testnetPolicies:
+        process.env.PIMLICO_SPONSORED_POLICY_SEPOLIA?.split(',') || []
     });
 
     console.log('Pimlico paymaster initialized');

@@ -291,27 +291,40 @@ public class FarcasterPaymentBotService {
 						payment.setCalls(callsNode);
 
 						paymentRepository.save(payment);
-					}
 
-					val frameUrl = payment == null ? String.format("https://app.payflow.me/%s",
-							receiverProfile != null ? receiverProfile.getUsername() : receiverAddresses)
-							: linkService.framePaymentLink(payment, true).toString();
+						notificationService.reply(
+								"Payment is initiated, please wait for confirmation ...",
+								cast.hash(),
+								Collections.singletonList(
+										new Cast.Embed(linkService.paymentLink(payment, false).toString())));
 
-					val castText = String.format("""
-							@%s, confirm the payment initiated by @%s:
-							%s
-							""",
-							payerFarcasterUser.username(),
-							cast.author().username(),
-							frameUrl);
-
-					val processed = directMessagingService.sendMessage(new DirectCastMessage(
-							String.valueOf(payerFarcasterUser.fid()), castText, UUID.randomUUID()));
-
-					if (processed != null && StringUtils.isNotBlank(processed.result().messageId())) {
 						job.setStatus(PaymentBotJob.Status.PROCESSED);
 						return;
 					}
+
+					/*
+					 * val frameUrl = payment == null ? String.format("https://app.payflow.me/%s",
+					 * receiverProfile != null ? receiverProfile.getUsername() : receiverAddresses)
+					 * : linkService.framePaymentLink(payment, true).toString();
+					 * 
+					 * val castText = String.format("""
+					 * 
+					 * @%s, confirm the payment initiated by @%s:
+					 * %s
+					 * """,
+					 * payerFarcasterUser.username(),
+					 * cast.author().username(),
+					 * frameUrl);
+					 * 
+					 * val processed = directMessagingService.sendMessage(new DirectCastMessage(
+					 * String.valueOf(payerFarcasterUser.fid()), castText, UUID.randomUUID()));
+					 * 
+					 * if (processed != null &&
+					 * StringUtils.isNotBlank(processed.result().messageId())) {
+					 * job.setStatus(PaymentBotJob.Status.PROCESSED);
+					 * return;
+					 * }
+					 */
 					break;
 				}
 				case "receive": {

@@ -175,10 +175,9 @@ public class TransactionService {
 					  "params": {
 					    "abi": [],
 					    "to": "%s",
-					    "value": "%s",
-					    "data": "%s"
+					    "value": "%s"
 					  }
-					}""", payment.getNetwork(), txParams.get("to"), txParams.get("value"), txParams.get("data"));
+					}""", payment.getNetwork(), txParams.get("to"), txParams.get("value"));
 		}
 	}
 
@@ -214,15 +213,13 @@ public class TransactionService {
 
 			return Map.of(
 					"to", token.tokenAddress(),
-					"value", "0x0",
 					"data", encodedFunction);
 		} else {
 			val value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.ETHER).toBigInteger();
 
 			return Map.of(
 					"to", address,
-					"value", value.toString(),
-					"data", "0x");
+					"value", value.toString());
 		}
 	}
 }
