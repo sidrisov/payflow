@@ -16,13 +16,13 @@
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
-    "@types/node": "^22.9.0",
+    "@types/node": "^22.10.5",
     "typescript": "^5.0.0",
-    "vite": "^6.0.0",
+    "vite": "^6.0.7",
     "vite-plugin-dts": "^4.3.0"
   },
   "dependencies": {
     "permissionless": "^0.2.24",
-    "viem": "^2.21.48"
+    "viem": "2.21.57"
   }
 }

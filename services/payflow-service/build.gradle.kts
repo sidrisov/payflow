@@ -9,7 +9,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.4"
     id("com.google.cloud.artifactregistry.gradle-plugin") version "2.2.1"
     id("io.freefair.lombok") version "8.4"
-    id("com.netflix.dgs.codegen") version "7.0.2"
+    id("com.netflix.dgs.codegen") version "7.0.3"
 }
 
 application {
@@ -26,11 +26,11 @@ repositories {
 }
 
 if (project.hasProperty("gcp")) {
-    extra["springCloudGcpVersion"] = "5.8.0"
-    extra["springCloudVersion"] = "2023.0.3"
+    extra["springCloudGcpVersion"] = "5.9.0"
+    extra["springCloudVersion"] = "2024.0.0"
 }
 
-extra["flywayVersion"] = "11.0.0"
+extra["flywayVersion"] = "11.1.0"
 
 dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
@@ -77,20 +77,20 @@ dependencies {
 
     // utils
     implementation("org.apache.commons:commons-lang3:3.17.0")
-    implementation("com.google.guava:guava:33.3.0-jre")
+    implementation("com.google.guava:guava:33.4.0-jre")
     implementation("com.google.code.gson:gson:2.11.0")
 
     // java.lang.NoSuchMethodError: 'reactor.core.publisher.Mono reactor.core.publisher.Mono.onErrorComplete()'
-    implementation("io.projectreactor:reactor-core:3.7.0")
+    implementation("io.projectreactor:reactor-core:3.7.1")
 
-    runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.115.Final:osx-aarch_64")
+    runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.116.Final:osx-aarch_64")
 
     // crypto
     implementation("org.bouncycastle:bcprov-jdk18on:1.79")
-    implementation("org.web3j:core:4.12.2")
-    implementation("org.web3j:contracts:4.12.2")
+    implementation("org.web3j:core:4.12.3")
+    implementation("org.web3j:contracts:4.12.3")
     //siwe
-    implementation("com.moonstoneid:siwe-java:1.0.6")
+    implementation("com.moonstoneid:siwe-java:1.0.7")
 
     //lombok
     compileOnly("org.projectlombok:lombok:1.18.36")
@@ -103,8 +103,8 @@ dependencies {
     }
 
     // Add these lines
-    implementation("net.javacrumbs.shedlock:shedlock-spring:6.0.1")
-    implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:6.0.1")
+    implementation("net.javacrumbs.shedlock:shedlock-spring:6.0.2")
+    implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:6.0.2")
 }
 
 
