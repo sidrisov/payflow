@@ -57,7 +57,7 @@ export function FlowSettingsMenu({
   const [openPayMeDialog, setOpenPayMeDialog] = useState(false);
   const [openPermissionsDialog, setOpenPermissionsDialog] = useState(false);
 
-  const whitelistedUsers = ['sinaver', 'konrad', 'kurtlarsen'];
+  const whitelistedUsers = ['sinaver', 'konrad', 'kurtlarsen', 'pirosb3'];
 
   useEffect(() => {
     if (ready && wallets.length !== 0) {
