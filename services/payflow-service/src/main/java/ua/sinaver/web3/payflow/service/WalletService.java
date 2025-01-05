@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.message.WalletMessage;
 
@@ -63,7 +64,8 @@ public class WalletService {
 						.map(call -> new PaymentProcessingRequest.UserOperationCall(
 								call.path("to").asText(null),
 								call.path("data").asText(null),
-								call.path("value").asText(null))).toList());
+								call.path("value").asText(null)))
+						.toList());
 
 		return webClient.post()
 				.uri("/execute")
@@ -71,6 +73,34 @@ public class WalletService {
 				.retrieve()
 				.bodyToMono(PaymentProcessingResponse.class)
 				.block();
+	}
+
+	public TokenBalance getTokenBalance(String address, Integer chainId, String token) {
+		val uriBuilder = UriComponentsBuilder.fromPath("/token/balance")
+				.queryParam("address", address)
+				.queryParam("chainId", chainId);
+
+		if (token != null && !token.isEmpty()) {
+			uriBuilder.queryParam("token", token);
+		}
+
+		return webClient.get()
+				.uri(uriBuilder.toUriString())
+				.retrieve()
+				.bodyToMono(TokenBalance.class)
+				.block();
+	}
+
+	// Optional: Convenience method for native token balance
+	public TokenBalance getNativeBalance(String address, Integer chainId) {
+		return getTokenBalance(address, chainId, null);
+	}
+
+	public record TokenBalance(
+			String balance,
+			String formatted,
+			String symbol,
+			Integer decimals) {
 	}
 
 	public record PaymentProcessingRequest(

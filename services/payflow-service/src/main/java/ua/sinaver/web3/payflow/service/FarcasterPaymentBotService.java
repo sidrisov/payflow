@@ -10,22 +10,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 import ua.sinaver.web3.payflow.config.PayflowConfig;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.PreferredTokens;
 import ua.sinaver.web3.payflow.data.bot.PaymentBotJob;
 import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
-import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.message.farcaster.FarcasterUser;
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.repository.WalletSessionRepository;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -68,7 +68,7 @@ public class FarcasterPaymentBotService {
 	private NotificationService notificationService;
 
 	@Autowired
-	private FarcasterMessagingService directMessagingService;
+	private WalletService walletService;
 
 	@Autowired
 	private EntityManager entityManager;
@@ -105,8 +105,8 @@ public class FarcasterPaymentBotService {
 				.map(Pattern::quote)
 				.collect(Collectors.joining("|"));
 		val botCommandPattern = String.format("\\s*(?<beforeText>.*?)?@payflow%s\\s+" +
-				"(?<command>%s)" +
-				"(?:\\s+(?<remaining>.+))?",
+						"(?<command>%s)" +
+						"(?:\\s+(?<remaining>.+))?",
 				isTestBotEnabled ? "\\s+test" : "",
 				supportedCommands);
 
@@ -178,6 +178,11 @@ public class FarcasterPaymentBotService {
 					if (payerProfile == null) {
 						log.error("Payer profile {} not found: {}", payerName, cast);
 						job.setStatus(PaymentBotJob.Status.REJECTED);
+
+						notificationService.reply(
+								"Profile not found, please, create a new profile first through the app!",
+								cast.hash(),
+								Collections.singletonList(new Cast.Embed(payflowConfig.getDAppServiceUrl())));
 						return;
 					}
 
@@ -193,6 +198,10 @@ public class FarcasterPaymentBotService {
 					if (token == null) {
 						log.error("Token not supported {}", restText);
 						job.setStatus(PaymentBotJob.Status.REJECTED);
+
+						notificationService.reply(
+								"Token not supported!",
+								cast.hash());
 						return;
 					}
 
@@ -210,6 +219,9 @@ public class FarcasterPaymentBotService {
 							log.error("Farcaster profile {} is not in the mentioned profiles list in {}", receiverName,
 									cast);
 							job.setStatus(PaymentBotJob.Status.REJECTED);
+							notificationService.reply(
+									"Recipient not specified or mentioned!",
+									cast.hash());
 							return;
 						}
 						receiverAddresses = fcProfile.addressesWithoutCustodialIfAvailable();
@@ -231,6 +243,9 @@ public class FarcasterPaymentBotService {
 					if (receiverName == null) {
 						log.error("Receiver must be specified for auto payments");
 						job.setStatus(PaymentBotJob.Status.REJECTED);
+						notificationService.reply(
+								"Recipient not specified or mentioned!",
+								cast.hash());
 						return;
 					}
 
@@ -256,7 +271,7 @@ public class FarcasterPaymentBotService {
 								cast.hash().substring(0, 10));
 						val sourceHash = cast.hash();
 
-						// Check if user has any active sessions
+						// check if user has any active sessions
 						val sessions = walletSessionRepository.findActiveSessionsByUser(payerProfile);
 						if (sessions.isEmpty()) {
 							log.error("No active sessions found for payer {}", payerProfile.getUsername());
@@ -265,6 +280,32 @@ public class FarcasterPaymentBotService {
 									"No active session found. Please, create a new session first in the app!",
 									cast.hash(),
 									Collections.singletonList(new Cast.Embed(payflowConfig.getDAppServiceUrl())));
+							return;
+						}
+
+						// check if balance enough
+						val topUpWalletAddress = sessions.getFirst().getWallet().getAddress();
+						val balance = walletService.getTokenBalance(
+								topUpWalletAddress, token.chainId(),
+								token.tokenAddress());
+
+						if (balance == null
+								|| new BigDecimal(balance.formatted()).compareTo(new BigDecimal(amountStr)) < 0) {
+							log.error("Token balance not enough for {} on chain {}", token, token.chainId());
+							job.setStatus(PaymentBotJob.Status.REJECTED);
+
+							val topUpFrameUrl = UriComponentsBuilder.fromUriString(payflowConfig.getDAppServiceUrl())
+									.path("/{topUpWalletAddress}")
+									.queryParam("chainId", token.chainId())
+									.queryParam("tokenId", token.id())
+									.queryParam("tokenAmount", amountStr)
+									.queryParam("entryTitle", "💰 Top Up Balance")
+									.build(topUpWalletAddress).toString();
+
+							notificationService.reply(
+									"Token balance not enough, please, top up your wallet!",
+									cast.hash(),
+									Collections.singletonList(new Cast.Embed(topUpFrameUrl)));
 							return;
 						}
 
@@ -291,40 +332,14 @@ public class FarcasterPaymentBotService {
 						payment.setCalls(callsNode);
 
 						paymentRepository.save(payment);
-
 						notificationService.reply(
-								"Payment is initiated, please wait for confirmation ...",
+								"Payment is being processed, please, wait for confirmation ...",
 								cast.hash(),
-								Collections.singletonList(
-										new Cast.Embed(linkService.paymentLink(payment, false).toString())));
+								Collections.singletonList(new Cast.Embed(linkService.framePaymentLink(payment, true).toString())));
 
 						job.setStatus(PaymentBotJob.Status.PROCESSED);
 						return;
 					}
-
-					/*
-					 * val frameUrl = payment == null ? String.format("https://app.payflow.me/%s",
-					 * receiverProfile != null ? receiverProfile.getUsername() : receiverAddresses)
-					 * : linkService.framePaymentLink(payment, true).toString();
-					 * 
-					 * val castText = String.format("""
-					 * 
-					 * @%s, confirm the payment initiated by @%s:
-					 * %s
-					 * """,
-					 * payerFarcasterUser.username(),
-					 * cast.author().username(),
-					 * frameUrl);
-					 * 
-					 * val processed = directMessagingService.sendMessage(new DirectCastMessage(
-					 * String.valueOf(payerFarcasterUser.fid()), castText, UUID.randomUUID()));
-					 * 
-					 * if (processed != null &&
-					 * StringUtils.isNotBlank(processed.result().messageId())) {
-					 * job.setStatus(PaymentBotJob.Status.PROCESSED);
-					 * return;
-					 * }
-					 */
 					break;
 				}
 				case "receive": {
@@ -631,7 +646,7 @@ public class FarcasterPaymentBotService {
 									cast.author().username(),
 									cast.hash().substring(0, 10));
 							log.debug("Executing jar creation with title `{}`, desc `{}`, " +
-									"embeds {}, source {}",
+											"embeds {}, source {}",
 									title, beforeText, cast.embeds(),
 									source);
 
@@ -655,7 +670,7 @@ public class FarcasterPaymentBotService {
 									cast.author().username());
 							val embeds = Collections.singletonList(
 									new Cast.Embed(String.format("https://app.payflow" +
-											".me/jar/%s",
+													".me/jar/%s",
 											jar.getFlow().getUuid())));
 							val processed = notificationService.reply(castText, cast.hash(), embeds);
 							if (processed) {

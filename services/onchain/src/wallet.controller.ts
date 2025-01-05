@@ -10,65 +10,25 @@ import {
 } from '@nestjs/common';
 import {
   Address,
-  http,
   Hex,
   PublicClient,
-  createPublicClient,
   Chain,
-  Transport
-} from 'viem';
+  Transport} from 'viem';
 import { UserOperationCall } from 'viem/account-abstraction';
-import {
-  base,
-  optimism,
-  degen,
-  arbitrum,
-  mainnet,
-  baseSepolia
-} from 'viem/chains';
+import { base, optimism, degen, arbitrum } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
 import { generateWallet, sendTransactionWithSession } from '@payflow/common';
 
 import { wagmiConfig } from './utils/wagmi';
 import * as pimlico from '@payflow/common';
+import { getBalance, getPublicClient } from '@wagmi/core';
+
+import { config } from 'dotenv';
+
+config();
 
 @Controller('wallet')
 export class WalletController implements OnModuleInit {
-  private readonly clients: Record<number, PublicClient<Transport, Chain>>;
-
-  constructor() {
-    const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY;
-
-    this.clients = {
-      [mainnet.id as number]: createPublicClient({
-        chain: mainnet,
-        transport: http()
-      }) as PublicClient<Transport, Chain>,
-      [base.id as number]: createPublicClient({
-        chain: base,
-        transport: http()
-      }) as PublicClient<Transport, Chain>,
-      [baseSepolia.id as number]: createPublicClient({
-        chain: baseSepolia,
-        transport: http(
-          `https://base-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
-        )
-      }) as PublicClient<Transport, Chain>,
-      [optimism.id as number]: createPublicClient({
-        chain: optimism,
-        transport: http()
-      }) as PublicClient<Transport, Chain>,
-      [degen.id as number]: createPublicClient({
-        chain: degen,
-        transport: http()
-      }) as PublicClient<Transport, Chain>,
-      [arbitrum.id as number]: createPublicClient({
-        chain: arbitrum,
-        transport: http()
-      }) as PublicClient<Transport, Chain>
-    };
-  }
-
   onModuleInit() {
     // Initialize Pimlico when the module starts
     pimlico.initialize({
@@ -132,8 +92,7 @@ export class WalletController implements OnModuleInit {
       calls
     });
 
-    const client = this.clients[chainId];
-
+    const client = getPublicClient(wagmiConfig, { chainId: chainId as any });
     if (!client) {
       throw new HttpException(
         {
@@ -148,22 +107,66 @@ export class WalletController implements OnModuleInit {
 
     console.log(sessionKeyAccount, calls);
 
-    const txHash = await sendTransactionWithSession(
-      client,
-      address,
-      {
-        sessionId,
-        sessionKey: sessionKeyAccount
-      },
-      calls,
-      {
-        sponsoredTx: true
-      }
+    try {
+      const txHash = await sendTransactionWithSession(
+        client as PublicClient<Transport, Chain>,
+        address,
+        {
+          sessionId,
+          sessionKey: sessionKeyAccount
+        },
+        calls,
+        {
+          sponsoredTx: true
+        }
+      );
+
+      return {
+        status: 'success',
+        txHash
+      };
+    } catch (error) {
+      console.error('Error sending transaction with session', error);
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          error: 'Failed to process transaction'
+        },
+        HttpStatus.BAD_REQUEST
+      );
+    }
+  }
+
+  @Get('/token/balance')
+  async checkTokenBalance(
+    @Query('address') address: Address,
+    @Query('chainId') chainId: number,
+    @Query('token') token?: Address
+  ) {
+    const chain = wagmiConfig.chains.find(
+      (c) => Number(c.id) === Number(chainId)
     );
+    if (!chain) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          error: `Unsupported chainId: ${chainId}`
+        },
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    const balance = await getBalance(wagmiConfig, {
+      address,
+      chainId: chain.id,
+      token
+    });
 
     return {
-      status: 'success',
-      txHash
+      balance: balance.value.toString(),
+      formatted: balance.formatted,
+      symbol: balance.symbol,
+      decimals: balance.decimals
     };
   }
 }

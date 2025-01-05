@@ -10,7 +10,7 @@ export type PaymentStatus =
   | 'COMPLETED'
   | 'CANCELLED'
   | 'EXPIRED';
-export type Type = 'FRAME' | 'INTENT' | 'APP' | 'BATCH';
+export type Type = 'FRAME' | 'INTENT' | 'APP' | 'BATCH' | 'SESSION_INTENT';
 
 export type PaymentCategory =
   | 'fc_storage'

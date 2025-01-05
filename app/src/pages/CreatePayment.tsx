@@ -56,24 +56,7 @@ export default function Composer() {
             }}
           />
         )}
-        {/* {recipient && profile && (
-          <PayComposerActionDialog
-            open={recipient != null}
-            sender={{
-              type: 'profile',
-              identity: {
-                address: profile.identity as Address,
-                profile: profile
-              }
-            }}
-            recipient={recipient}
-            setOpenSearchIdentity={setOpenSearchIdentity}
-            closeStateCallback={async () => {
-              setRecipient(undefined);
-            }}
-          />
-        )}
- */}
+
         {openSearchIdentity && profile && (
           <SearchIdentityDialog
             hideBackButton={!Boolean(recipient)}

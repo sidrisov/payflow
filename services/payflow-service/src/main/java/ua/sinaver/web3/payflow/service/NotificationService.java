@@ -81,6 +81,10 @@ public class NotificationService {
 		return true;
 	}
 
+	public boolean reply(String text, String parentHash) {
+		return reply(text, parentHash, Collections.emptyList());
+	}
+
 	public boolean reply(String text, String parentHash, List<Cast.Embed> embeds) {
 		if (isBotReplyEnabled) {
 			var response = hubService.cast(botSignerUuid, text, parentHash, embeds);
