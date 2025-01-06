@@ -17,16 +17,16 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import ua.sinaver.web3.payflow.auth.ClientApiKeyAuthFilter;
-import ua.sinaver.web3.payflow.auth.HandleExceptionAuthenticationEntryPoint;
-import ua.sinaver.web3.payflow.auth.JwtAuthenticationFilter;
-import ua.sinaver.web3.payflow.auth.Web3AuthenticationProvider;
+import ua.sinaver.web3.payflow.auth.*;
 
 @Configuration
 public class SecurityConfig {
 
 	@Autowired
-	private HandleExceptionAuthenticationEntryPoint exceptionAuthenticationEntryPoint;
+	private HandleAuthenticationEntryPoint authenticationEntryPoint;
+
+	@Autowired
+	private CustomAccessDeniedHandler accessDeniedHandler;
 
 	@Autowired
 	private Web3AuthenticationProvider web3AuthProvider;
@@ -37,18 +37,6 @@ public class SecurityConfig {
 	@Autowired
 	private ClientApiKeyAuthFilter clientApiKeyAuthFilter;
 
-	/*@Bean
-	public WebMvcConfigurer corsConfigurer() {
-		return new WebMvcConfigurer() {
-			@Override
-			public void addCorsMappings(CorsRegistry registry) {
-				registry.addMapping("/**")
-						.allowedOrigins(payflowDappUrl, "https://warpcast.com")
-						.allowCredentials(true);
-			}
-		};
-	}*/
-
 	@Bean
 	@Order(1)
 	SecurityFilterChain protocolFilterChain(HttpSecurity http) throws Exception {
@@ -57,11 +45,13 @@ public class SecurityConfig {
 				.csrf(AbstractHttpConfigurer::disable)
 				.sessionManagement(session -> session
 						.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.requestCache(RequestCacheConfigurer::disable)
 				.authorizeHttpRequests(requests -> requests
 						.anyRequest().authenticated())
 				.addFilterBefore(clientApiKeyAuthFilter, UsernamePasswordAuthenticationFilter.class)
 				.exceptionHandling(exception -> exception
-						.authenticationEntryPoint(exceptionAuthenticationEntryPoint))
+						.authenticationEntryPoint(authenticationEntryPoint)
+						.accessDeniedHandler(accessDeniedHandler))
 				.build();
 	}
 
@@ -119,6 +109,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.GET, "/tokens").permitAll()
 						// Stats API
 						.requestMatchers(HttpMethod.GET, "/stats/*").permitAll()
+						.requestMatchers(HttpMethod.GET, "/error").permitAll()
 						// other authenticated
 						.anyRequest().authenticated())
 				.sessionManagement(session -> session
@@ -132,12 +123,13 @@ public class SecurityConfig {
 						.invalidateHttpSession(true)
 						.clearAuthentication(true)
 						.logoutSuccessHandler((httpServletRequest, httpServletResponse,
-						                       authentication) -> {
+								authentication) -> {
 							httpServletResponse.setStatus(HttpServletResponse.SC_OK);
 						}))
 				.addFilterAfter(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 				.exceptionHandling(exception -> exception
-						.authenticationEntryPoint(exceptionAuthenticationEntryPoint))
+						.authenticationEntryPoint(authenticationEntryPoint)
+						.accessDeniedHandler(accessDeniedHandler))
 				.build();
 	}
 

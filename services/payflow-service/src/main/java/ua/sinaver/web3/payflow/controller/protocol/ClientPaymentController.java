@@ -1,17 +1,19 @@
 package ua.sinaver.web3.payflow.controller.protocol;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.WalletSession;
 import ua.sinaver.web3.payflow.data.protocol.ClientApiKey;
@@ -19,13 +21,11 @@ import ua.sinaver.web3.payflow.message.protocol.CreatePaymentRequest;
 import ua.sinaver.web3.payflow.message.protocol.CreatePaymentResponse;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.repository.WalletSessionRepository;
-import ua.sinaver.web3.payflow.service.IdentityService;
-import ua.sinaver.web3.payflow.service.LinkService;
-import ua.sinaver.web3.payflow.service.PaymentService;
-import ua.sinaver.web3.payflow.service.UserService;
+import ua.sinaver.web3.payflow.service.*;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -48,10 +48,16 @@ public class ClientPaymentController {
 	private PaymentService paymentService;
 
 	@Autowired
+	private TransactionService transactionService;
+
+	@Autowired
 	private WalletSessionRepository walletSessionRepository;
 
+	@Autowired
+	private ObjectMapper objectMapper;
+
 	@PostMapping("/create")
-	public ResponseEntity<?> createPayment(
+	public CreatePaymentResponse createPayment(
 			@AuthenticationPrincipal ClientApiKey clientApiKey,
 			@RequestBody CreatePaymentRequest request) {
 
@@ -63,27 +69,28 @@ public class ClientPaymentController {
 		try {
 			// Validate request
 			if ((request.recipient() == null || request.payment() == null)) {
-				return ResponseEntity.badRequest().build();
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 			}
 
 			var recipientAddress = request.recipient().address();
 			val social = request.recipient().social();
 
 			if (social == null && recipientAddress == null) {
-				return ResponseEntity.badRequest().body("missing recipient");
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "missing recipient");
 			}
 
 			var walletSession = (WalletSession) null;
 			if (Payment.PaymentType.SESSION_INTENT.equals(request.type())) {
 				if (request.payer() == null || request.payer().sessionId() == null) {
-					return ResponseEntity.badRequest().body(
+					throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
 							"sessionId should be specified for type=session_intent");
 				}
 				// find sessionId exists
 				walletSession = walletSessionRepository.findOneBySessionIdAndActiveTrue(
 						request.payer().sessionId());
 				if (walletSession == null) {
-					return ResponseEntity.badRequest().body("sessionId not found");
+					throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+							"sessionId not found");
 				}
 			}
 
@@ -91,10 +98,19 @@ public class ClientPaymentController {
 			if (social != null && social.type() != null && social.identifier() != null) {
 				if (social.type().equals("ens")) {
 					recipientIdentity = identityService.getENSAddress(social.identifier());
+					if (recipientIdentity == null) {
+						throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+								"Couldn't resolve recipient by ENS");
+					}
 				} else if (social.type().equals("farcaster")) {
 					var addresses = social.identifier().startsWith(
 							"fid:") ? identityService.getFidAddresses(Integer.parseInt(social.identifier().replace(
 							"fid:", ""))) : identityService.getFnameAddresses(social.identifier());
+
+					if (addresses == null || addresses.isEmpty()) {
+						throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+								"Couldn't resolve recipient by Farcaster");
+					}
 					val identity = identityService.getHighestScoredIdentityInfo(addresses);
 					if (identity != null) {
 						recipientIdentity = identity.address();
@@ -104,23 +120,32 @@ public class ClientPaymentController {
 				recipientIdentity = recipientAddress;
 			}
 
-			var recipientFid = identityService.getIdentityFid(recipientIdentity);
+			if (recipientIdentity == null) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+						"Couldn't determine recipient identity");
+			}
 
+			var recipientFid = identityService.getIdentityFid(recipientIdentity);
 			val receiverProfile = userService.findByIdentity(recipientIdentity);
 
 			if (recipientAddress == null) {
 				if (receiverProfile != null && receiverProfile.isAllowed()) {
 					recipientAddress = paymentService.getUserReceiverAddress(receiverProfile,
-							request.payment().chain());
+							request.payment().chainId());
 				} else {
 					recipientAddress = recipientIdentity;
 				}
 			}
 
+			if (recipientAddress == null) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+						"Couldn't determine recipient address");
+			}
+
 			val payment = new Payment(
 					request.type(),
 					receiverProfile,
-					request.payment().chain(),
+					request.payment().chainId(),
 					request.payment().token());
 
 			payment.setName(request.name());
@@ -137,6 +162,10 @@ public class ClientPaymentController {
 
 			if (request.payment().calls() != null) {
 				payment.setCalls(request.payment().calls());
+			} else {
+				val txParams = transactionService.generateTxParams(payment);
+				val callsNode = objectMapper.valueToTree(List.of(txParams));
+				payment.setCalls(callsNode);
 			}
 
 			if (walletSession != null) {
@@ -154,17 +183,16 @@ public class ClientPaymentController {
 			}
 
 			paymentRepository.save(payment);
-
 			log.debug("Saved payment: {}", payment);
 
 			val paymentUrl = linkService.paymentLink(payment, false).toString();
-			val frameUrl = linkService.framePaymentLink(payment).toString();
-			return ResponseEntity.ok(new CreatePaymentResponse(
-					payment.getReferenceId(), paymentUrl, frameUrl));
+			return new CreatePaymentResponse(payment.getReferenceId(), paymentUrl);
 
+		} catch (ResponseStatusException e) {
+			throw e;
 		} catch (Throwable e) {
 			log.error("Error creating payment for client: {}", clientApiKey.getClientIdentifier(), e);
-			return ResponseEntity.badRequest().build();
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 }

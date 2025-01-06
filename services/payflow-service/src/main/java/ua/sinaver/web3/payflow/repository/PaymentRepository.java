@@ -5,10 +5,10 @@ import jakarta.persistence.QueryHint;
 import org.hibernate.cfg.AvailableSettings;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.User;
@@ -16,9 +16,15 @@ import ua.sinaver.web3.payflow.data.User;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
-public interface PaymentRepository extends CrudRepository<Payment, Integer> {
+public interface PaymentRepository extends JpaRepository<Payment, Integer> {
+	@QueryHints(@QueryHint(name = AvailableSettings.JAKARTA_LOCK_TIMEOUT, value = "-2"))
+	@Query("SELECT p FROM Payment p WHERE p.id = :id")
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	Optional<Payment> findWithLockById(Integer id);
+
 	@Query("SELECT p FROM Payment p LEFT JOIN p.receiverFlow rf " +
 			"WHERE p.hash IN :hashes AND " +
 			"((p.receiver IS NOT NULL AND p.receiver = :senderOrReceiver) " +
@@ -47,7 +53,7 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 			"((p.expiresAt IS NULL AND p.createdAt < :expiresAt) OR " +
 			"(p.expiresAt IS NOT NULL AND p.expiresAt < CURRENT_TIMESTAMP))")
 	Stream<Payment> findExpiredPaymentsWithLock(@Param("status") Payment.PaymentStatus status,
-			@Param("expiresAt") Instant expiresAt);
+	                                            @Param("expiresAt") Instant expiresAt);
 
 	// TODO: add a time check not to process recently submitted in 5 mins to avoid
 	// lock
@@ -60,7 +66,7 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 			"AND p.createdAt <= :tenMinutesAgo " +
 			"ORDER BY p.createdAt ASC")
 	Stream<Payment> findTop5ByStatusInWithLock(@Param("statuses") List<Payment.PaymentStatus> statuses,
-			@Param("tenMinutesAgo") Instant tenMinutesAgo);
+	                                           @Param("tenMinutesAgo") Instant tenMinutesAgo);
 
 	@Query("SELECT count(p) FROM Payment p " +
 			"WHERE (p.sender IN :users " +
@@ -128,5 +134,4 @@ public interface PaymentRepository extends CrudRepository<Payment, Integer> {
 				List.of(Payment.PaymentType.SESSION_INTENT),
 				limit);
 	}
-
 }

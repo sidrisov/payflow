@@ -30,7 +30,7 @@ public record CreatePaymentRequest(
 	public record Payment(
 			String amount,
 			String token,
-			Integer chain,
+			Integer chainId,
 			JsonNode calls) {
 	}
 

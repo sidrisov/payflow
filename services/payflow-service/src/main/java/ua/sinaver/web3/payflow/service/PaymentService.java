@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ua.sinaver.web3.payflow.data.Payment;
@@ -254,8 +255,8 @@ public class PaymentService {
 		}
 	}
 
-	@Scheduled(fixedRate = 60 * 1000, initialDelay = 15 * 1000)
-	// Every 1 minute, with 15s initial delay
+	@Scheduled(fixedRate = 30 * 1000, initialDelay = 15 * 1000)
+	// Every 30 seconds, with 15s initial delay
 	public void processSessionIntentPayments() {
 		log.info("Starting to process SESSION_INTENT payments");
 		val paymentsToProcess = paymentRepository.findSessionIntentPaymentsWithLock(10);
@@ -271,9 +272,16 @@ public class PaymentService {
 		log.info("Finished processing SESSION_INTENT payments");
 	}
 
+	@Async
+	@Transactional(Transactional.TxType.REQUIRES_NEW)
+	public void asyncProcessSessionIntentPayment(Integer paymentId) {
+		val job = paymentRepository.findWithLockById(paymentId);
+		job.ifPresent(this::processSessionIntentPayment);
+	}
+
 	@Transactional(Transactional.TxType.REQUIRES_NEW)
 	public void processSessionIntentPayment(Payment payment) {
-		log.debug("Processing SESSION_INTENT payment: {}", payment.getReferenceId());
+		log.debug("Processing session intent payment: {}", payment.getReferenceId());
 		try {
 			log.debug("Processing SESSION_INTENT payment: {}", payment);
 			val response = walletService.processPayment(payment);
@@ -291,7 +299,7 @@ public class PaymentService {
 			payment.setStatus(Payment.PaymentStatus.FAILED);
 			payment.recordFailure(e.getMessage());
 
-			log.error("Error processing SESSION_INTENT payment {}", payment.getReferenceId(), e);
+			log.error("Error processing session intent payment {}", payment.getReferenceId(), e);
 		}
 	}
 }

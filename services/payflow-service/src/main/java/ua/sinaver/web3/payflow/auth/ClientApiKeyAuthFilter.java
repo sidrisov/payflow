@@ -1,6 +1,5 @@
 package ua.sinaver.web3.payflow.auth;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,7 +12,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import ua.sinaver.web3.payflow.service.ApiKeyAuthenticationService;
-
 import java.io.IOException;
 
 @Slf4j
@@ -22,9 +20,6 @@ public class ClientApiKeyAuthFilter extends OncePerRequestFilter {
 
 	@Autowired
 	private ApiKeyAuthenticationService apiKeyAuthenticationService;
-
-	@Autowired
-	private ObjectMapper objectMapper;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -42,9 +37,7 @@ public class ClientApiKeyAuthFilter extends OncePerRequestFilter {
 			if (clientApiKey == null) {
 				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 				response.setContentType("application/json");
-				val errorResponse = new ErrorResponse();
-				errorResponse.setError("Invalid or missing API Key");
-				objectMapper.writeValue(response.getWriter(), errorResponse);
+				response.getWriter().write("{\"error\":\"Invalid or missing API Key\"}");
 				return;
 			}
 

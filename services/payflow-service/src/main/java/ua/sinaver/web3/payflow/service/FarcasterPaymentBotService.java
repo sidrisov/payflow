@@ -1,13 +1,13 @@
 package ua.sinaver.web3.payflow.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -71,15 +71,12 @@ public class FarcasterPaymentBotService {
 	private WalletService walletService;
 
 	@Autowired
-	private EntityManager entityManager;
-
-	@Autowired
 	private LinkService linkService;
 
 	@Autowired
 	private ObjectMapper objectMapper;
 
-	@Scheduled(fixedRate = 5 * 1000)
+	@Scheduled(fixedRate = 60 * 1000)
 	void castBotMessage() {
 		if (!isBotEnabled) {
 			return;
@@ -98,8 +95,19 @@ public class FarcasterPaymentBotService {
 		});
 	}
 
+	@Async
 	@Transactional(Transactional.TxType.REQUIRES_NEW)
-	void processBotJob(PaymentBotJob job) {
+	public void asyncProcessBotJob(Integer jobId) {
+		try {
+			val job = paymentBotJobRepository.findWithLockById(jobId);
+			job.ifPresent(this::processBotJob);
+		} catch (Exception e) {
+			log.error("Failed to process the job: {}", jobId, e);
+		}
+	}
+
+	@Transactional(Transactional.TxType.REQUIRES_NEW)
+	public void processBotJob(PaymentBotJob job) {
 		val cast = job.getCast();
 		val supportedCommands = SUPPORTED_COMMANDS.stream()
 				.map(Pattern::quote)
@@ -296,9 +304,9 @@ public class FarcasterPaymentBotService {
 
 							val topUpFrameUrl = UriComponentsBuilder.fromUriString(payflowConfig.getDAppServiceUrl())
 									.path("/{topUpWalletAddress}")
-									.queryParam("chainId", token.chainId())
-									.queryParam("tokenId", token.id())
-									.queryParam("tokenAmount", amountStr)
+									//.queryParam("chainId", token.chainId())
+									//.queryParam("tokenId", token.id())
+									//.queryParam("tokenAmount", amountStr)
 									.queryParam("entryTitle", "💰 Top Up Balance")
 									.build(topUpWalletAddress).toString();
 
@@ -331,13 +339,14 @@ public class FarcasterPaymentBotService {
 						val callsNode = objectMapper.valueToTree(List.of(txParams));
 						payment.setCalls(callsNode);
 
-						paymentRepository.save(payment);
+						paymentRepository.saveAndFlush(payment);
 						notificationService.reply(
-								"Payment is being processed, please, wait for confirmation ...",
+								"Processing, wait for confirmation ...",
 								cast.hash(),
 								Collections.singletonList(new Cast.Embed(linkService.framePaymentLink(payment, true).toString())));
 
 						job.setStatus(PaymentBotJob.Status.PROCESSED);
+						paymentService.asyncProcessSessionIntentPayment(payment.getId());
 						return;
 					}
 					break;
@@ -604,9 +613,7 @@ public class FarcasterPaymentBotService {
 							payment.setSourceApp(sourceApp);
 							payment.setSourceRef(sourceRef);
 							payment.setSourceHash(sourceHash);
-							paymentRepository.save(payment);
-							entityManager.flush();
-
+							paymentRepository.saveAndFlush(payment);
 							String castText;
 							if (command.equals("batch")) {
 								castText = String.format("@%s pay @%s with the frame",

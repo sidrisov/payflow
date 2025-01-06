@@ -20,6 +20,7 @@ import ua.sinaver.web3.payflow.message.farcaster.modbot.MembershipResponseMessag
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.FarcasterMessagingService;
+import ua.sinaver.web3.payflow.service.FarcasterPaymentBotService;
 import ua.sinaver.web3.payflow.service.IdentityService;
 
 import javax.crypto.Mac;
@@ -58,6 +59,9 @@ public class WebhooksController {
 	@Autowired
 	private FarcasterMessagingService farcasterMessagingService;
 
+	@Autowired
+	private FarcasterPaymentBotService farcasterPaymentBotService;
+
 	private static String bytesToHex(byte[] bytes) {
 		StringBuilder hexString = new StringBuilder();
 		for (byte b : bytes) {
@@ -72,8 +76,7 @@ public class WebhooksController {
 
 	@PostMapping("/frames/v2")
 	public ResponseEntity<String> processFrameV2Message(
-			@RequestBody FarcasterSignedMessage frameV2Message
-	) {
+			@RequestBody FarcasterSignedMessage frameV2Message) {
 		log.debug("Frame V2 Webhook Message: {}", frameV2Message);
 		return ResponseEntity.ok().build();
 	}
@@ -92,7 +95,6 @@ public class WebhooksController {
 				signature);
 
 		CastCreatedMessage castCreatedMessage;
-
 		try {
 			castCreatedMessage = objectMapper.readValue(rawBody, CastCreatedMessage.class);
 			log.debug("Parsed cast created message: {}", castCreatedMessage);
@@ -114,8 +116,11 @@ public class WebhooksController {
 					Date.from(Instant.parse(cast.timestamp())),
 					cast);
 
-			paymentBotJobRepository.save(job);
+			// Save and flush to ensure persistence before async processing
+			paymentBotJobRepository.saveAndFlush(job);
+			farcasterPaymentBotService.asyncProcessBotJob(job.getId());
 			LOGGER.info("Payment job command saved: {}", job);
+
 			return ResponseEntity.ok().body("Success");
 		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
 			LOGGER.error("Security exception", e);
@@ -176,7 +181,8 @@ public class WebhooksController {
 			log.error("Membership not allowed for {}", fid);
 			sendMembershipDeniedMessage(fid,
 					String.format("Membership not allowed with %s < %s payments",
-							numberOfPayments, minNumberOfPayments), minNumberOfPayments);
+							numberOfPayments, minNumberOfPayments),
+					minNumberOfPayments);
 			return ResponseEntity.badRequest().body(new MembershipResponseMessage(
 					String.format("Membership not allowed with %s < %s payments",
 							numberOfPayments, minNumberOfPayments)));
