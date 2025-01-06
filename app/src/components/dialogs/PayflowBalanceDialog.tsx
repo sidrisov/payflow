@@ -28,13 +28,14 @@ import { useAccount } from 'wagmi';
 import { green, grey } from '@mui/material/colors';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
 import NetworkAvatar from '../avatars/NetworkAvatar';
-import { Info } from '@mui/icons-material';
+import { HistoryToggleOff, Info } from '@mui/icons-material';
 import ProfileAvatar from '../avatars/ProfileAvatar';
 import { usePrivy } from '@privy-io/react-auth';
 import { BackDialogTitle } from './BackDialogTitle';
 import { useMobile } from '../../utils/hooks/useMobile';
 import saveFlow from '../../services/flow';
 import { HiOutlineCheckCircle } from 'react-icons/hi';
+import { IoMdKey } from 'react-icons/io';
 
 export type PayflowBalanceDialogProps = DialogProps &
   CloseCallbackType & {
@@ -60,7 +61,7 @@ export default function PayflowBalanceDialog({
 
   const { address, connector } = useAccount();
 
-  const { user } = usePrivy();
+  const { user, linkPasskey } = usePrivy();
 
   const navigate = useNavigate();
 
@@ -292,33 +293,6 @@ export default function PayflowBalanceDialog({
                   <Info fontSize="small" />
                 </Tooltip>
               </Box>
-              {/* <Box
-                  display="flex"
-                  flexDirection="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  p={2}
-                  sx={{
-                    height: 65,
-                    width: '100%',
-                    color: 'inherit',
-                    border: 2,
-                    borderRadius: 5,
-                    borderColor: 'divider',
-                    borderStyle: 'dashed'
-                  }}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <HistoryToggleOff sx={{ width: 40, height: 40 }} />
-                    <Stack spacing={0.1} alignItems="flex-start">
-                      <Typography fontSize={18} color={grey[400]}>
-                        Passkey Signer
-                      </Typography>
-                      <Typography fontSize={15} fontWeight="bold">
-                        Coming Soon
-                      </Typography>
-                    </Stack>
-                  </Stack>
-                </Box> */}
             </Stack>
           </Stack>
           {!extraSigner || (address && connector?.id === 'io.privy.wallet') ? (
@@ -381,6 +355,22 @@ export default function PayflowBalanceDialog({
             </i>{' '}
             flow was successfully created!
           </Typography>
+
+          {extraSigner && address && connector?.id === 'io.privy.wallet' && (
+            <Button
+              startIcon={<IoMdKey />}
+              onClick={() => linkPasskey()}
+              variant="text"
+              color="inherit"
+              sx={{
+                borderRadius: 3,
+                textTransform: 'none',
+                width: 150
+              }}>
+              Add Passkey
+            </Button>
+          )}
+
           <Stack direction="row" spacing={1} width="100%">
             <Button
               fullWidth

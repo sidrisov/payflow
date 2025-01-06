@@ -11,9 +11,10 @@ import { API_URL } from '../../utils/urlConstants';
 import { FarcasterAccountsCard } from './FarcasterAccountsCard';
 import { useSetActiveWallet } from '@privy-io/wagmi';
 import { createSiweMessage, parseSiweMessage } from 'viem/siwe';
-import { SignInResult } from '@farcaster/frame-core/dist/actions/signIn';
+import { SignInResult } from '@farcaster/frame-core/dist/actions/SignIn';
+import { FrameContext } from '@farcaster/frame-core/dist/context';
 
-import FrameV2SDK, { FrameContext } from '@farcaster/frame-sdk';
+import FrameV2SDK from '@farcaster/frame-sdk';
 import { FrameV2SignInButton, FrameV2SignInError } from '../buttons/FrameV2SignInButton';
 const FARCASTER_CONNECT_ENABLED = import.meta.env.VITE_FARCASTER_CONNECT_ENABLED === 'true';
 
