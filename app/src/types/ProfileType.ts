@@ -15,6 +15,8 @@ export type ProfileType = {
   identityInviteLimit: number;
   preferredTokens?: string[];
   preferredFarcasterClient?: FarcasterClient;
+  earlyFeatureAccess?: boolean;
+  proFeatureAccess?: boolean;
 };
 
 export type FarcasterClient = 'WARPCAST' | 'RECASTER' | 'FARQUEST';

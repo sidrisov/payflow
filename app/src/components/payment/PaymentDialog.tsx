@@ -194,7 +194,7 @@ export default function PaymentDialog({
     error: isPaymentOptionsError
   } = useGlidePaymentOptions(crossChainMode, {
     account: selectedFlow?.wallets[0].address,
-    commissionUSD: getCommissionUSD(payment),
+    commissionUSD: !profile?.proFeatureAccess ? getCommissionUSD(payment) : 0,
     ...(glidePaymentTx as any)
   });
 
@@ -407,7 +407,7 @@ export default function PaymentDialog({
               </Typography>
             ))}
 
-          {crossChainMode && (
+          {crossChainMode && !profile?.proFeatureAccess && (
             <Typography fontSize={12} color="text.secondary">
               fee:{' $'}
               {getCommissionUSD(payment)}

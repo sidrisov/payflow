@@ -33,6 +33,7 @@ import { HiOutlineDownload } from 'react-icons/hi';
 import { PayMeDialog } from '../dialogs/PayMeDialog';
 import { AutoMode } from '@mui/icons-material';
 import { WalletPermissionsDialog } from '../dialogs/WalletPermissionsDialog';
+import { useQuery } from '@tanstack/react-query';
 
 export function FlowSettingsMenu({
   showOnlySigner,
@@ -56,8 +57,6 @@ export function FlowSettingsMenu({
 
   const [openPayMeDialog, setOpenPayMeDialog] = useState(false);
   const [openPermissionsDialog, setOpenPermissionsDialog] = useState(false);
-
-  const whitelistedUsers = ['sinaver', 'konrad', 'kurtlarsen', 'pirosb3'];
 
   useEffect(() => {
     if (ready && wallets.length !== 0) {
@@ -246,7 +245,7 @@ export function FlowSettingsMenu({
                   </MenuItem>
                   {flow.wallets[0].version?.endsWith('_0.7') && (
                     <MenuItem
-                      disabled={!profile?.username || !whitelistedUsers.includes(profile.username)}
+                      disabled={!profile?.earlyFeatureAccess}
                       onClick={() => setOpenPermissionsDialog(true)}>
                       <ListItemIcon>
                         <AutoMode sx={{ fontSize: 20 }} />

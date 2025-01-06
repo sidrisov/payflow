@@ -6,8 +6,6 @@ import {
   Skeleton,
   Avatar,
   Tooltip,
-  IconButton,
-  TextField,
   Button
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
@@ -158,7 +156,7 @@ export default function MintDialog({
   });
 
   const handleCopyLink = () => {
-    copyToClipboard(shareFrameUrl, "Mint frame link copied!");
+    copyToClipboard(shareFrameUrl, 'Mint frame link copied!');
   };
 
   const shareComponents = useMemo(
@@ -296,9 +294,7 @@ export default function MintDialog({
             </Stack>
           </Stack>
         </Tooltip>
-
         <QuantitySelector quantity={mintCount} min={1} max={10} setQuantity={setMintCount} />
-
         {isLoading ? (
           <Skeleton
             title="fetching price"

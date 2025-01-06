@@ -30,6 +30,14 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UserController {
 
+	private static final List<String> EARLY_FEATURE_ACCESS_USERS = Arrays.asList(
+			"sinaver", "konrad", "kurtlarsen",
+			"pirosb3", "pembe", "haole");
+
+	private static final List<String> PRO_FEATURE_ACCESS_USERS = Arrays.asList(
+			"sinaver", "pembe", "haole");
+
+
 	@Autowired
 	private IUserService userService;
 
@@ -59,12 +67,13 @@ public class UserController {
 					user.getSigner(),
 					FlowMessage.convertDefaultFlow(user, true),
 					flowService.getAllFlows(user),
-					user.getUserAllowance() != null ?
-							user.getUserAllowance().getIdentityInviteLimit() : -1,
+					user.getUserAllowance() != null ? user.getUserAllowance().getIdentityInviteLimit() : -1,
 					Optional.ofNullable(user.getPreferredTokens())
 							.map(PreferredTokens::getTokenList)
 							.orElse(Collections.emptyList()),
-					user.getPreferredFarcasterClient());
+					user.getPreferredFarcasterClient(),
+					EARLY_FEATURE_ACCESS_USERS.contains(user.getUsername()),
+					PRO_FEATURE_ACCESS_USERS.contains(user.getUsername()));
 		} else {
 			return null;
 		}
@@ -72,8 +81,7 @@ public class UserController {
 
 	@GetMapping("/me/contacts")
 	public ContactsResponseMessage allContacts(@AuthenticationPrincipal String identity,
-	                                           @RequestHeader(value = "Cache-Control", required = false)
-	                                           String cacheControl) {
+	                                           @RequestHeader(value = "Cache-Control", required = false) String cacheControl) {
 		log.debug("{} fetching contacts", identity);
 		val user = userService.findByIdentity(identity);
 		if (user != null) {
@@ -132,7 +140,7 @@ public class UserController {
 	}
 
 	@GetMapping("/all")
-	//@Cacheable(cacheNames = USERS_CACHE_NAME, unless = "#result.isEmpty()")
+	// @Cacheable(cacheNames = USERS_CACHE_NAME, unless = "#result.isEmpty()")
 	public List<ProfileMetaMessage> getAllProfiles() {
 		try {
 			List<User> users = userService.findAll();
@@ -146,7 +154,6 @@ public class UserController {
 
 		return Collections.emptyList();
 	}
-
 
 	@GetMapping("/identities")
 	public List<IdentityMessage> getIdentities(@RequestParam(required = false) List<String> identities,
@@ -273,7 +280,6 @@ public class UserController {
 			return ResponseEntity.badRequest().build();
 		}
 
-
 		try {
 			val storageUsage = neynarService.fetchStorageUsage(Integer.parseInt(fid));
 			val storageAllocations = neynarService.fetchStorageAllocations(Integer.parseInt(fid));
@@ -301,7 +307,9 @@ public class UserController {
 		});
 
 		log.debug("User: {} for {}", users, usernames);
-		return users.stream().filter(user -> user.isAllowed() && (user.getDefaultFlow() != null || user.getDefaultReceivingAddress() != null))
+		return users.stream()
+				.filter(user -> user.isAllowed()
+						&& (user.getDefaultFlow() != null || user.getDefaultReceivingAddress() != null))
 				.map(user -> new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
 						user.getIdentity(),
 						null,
@@ -311,8 +319,9 @@ public class UserController {
 						Optional.ofNullable(user.getPreferredTokens())
 								.map(PreferredTokens::getTokenList)
 								.orElse(Collections.emptyList()),
-						null)
-				).toList();
+						null,
+						false, false))
+				.toList();
 	}
 
 	@CrossOrigin(origins = "*", allowCredentials = "false")
@@ -321,7 +330,8 @@ public class UserController {
 		val user = userService.findByUsername(username);
 
 		log.debug("User: {} for {}", user, username);
-		if (user != null && user.isAllowed() && (user.getDefaultFlow() != null || user.getDefaultReceivingAddress() != null)) {
+		if (user != null && user.isAllowed()
+				&& (user.getDefaultFlow() != null || user.getDefaultReceivingAddress() != null)) {
 			return new ProfileMessage(user.getDisplayName(), user.getUsername(), user.getProfileImage(),
 					user.getIdentity(),
 					null,
@@ -330,7 +340,9 @@ public class UserController {
 					-1,
 					Optional.ofNullable(user.getPreferredTokens())
 							.map(PreferredTokens::getTokenList)
-							.orElse(Collections.emptyList()), null);
+							.orElse(Collections.emptyList()),
+					null,
+					false, false);
 		} else {
 			return null;
 		}
