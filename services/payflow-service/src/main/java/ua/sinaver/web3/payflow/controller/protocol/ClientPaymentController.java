@@ -92,6 +92,13 @@ public class ClientPaymentController {
 					throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
 							"sessionId not found");
 				}
+
+				// Verify session belongs to API key's user if userId is set
+				if (clientApiKey.getUserId() == null ||
+						!clientApiKey.getUserId().equals(walletSession.getWallet().getFlow().getUserId())) {
+					throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+							"sessionId does not belong to API key's user");
+				}
 			}
 
 			var recipientIdentity = (String) null;
@@ -182,8 +189,10 @@ public class ClientPaymentController {
 				payment.setSourceRef(request.source().url());
 			}
 
-			paymentRepository.save(payment);
+			paymentRepository.saveAndFlush(payment);
+			paymentService.asyncProcessSessionIntentPayment(payment.getId());
 			log.debug("Saved payment: {}", payment);
+
 
 			val paymentUrl = linkService.paymentLink(payment, false).toString();
 			return new CreatePaymentResponse(payment.getReferenceId(), paymentUrl);

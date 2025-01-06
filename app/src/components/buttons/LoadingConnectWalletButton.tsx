@@ -20,6 +20,7 @@ export function LoadingConnectWalletButton({
   useEffect(() => {
     if (ready && wallets.length !== 0) {
       console.log('Trying to set a wallet: ', wallets, user);
+
       // filter out embedded wallets
       const wallet = wallets.find((w) =>
         isEmbeddedSigner ? w.walletClientType === 'privy' : w.walletClientType !== 'privy'
@@ -42,10 +43,14 @@ export function LoadingConnectWalletButton({
         if (isEmbeddedSigner) {
           const embeddedWallet = wallets.find((w) => w.walletClientType === 'privy');
           if (!embeddedWallet) {
-            login();
+            setTimeout(() => {
+              login();
+            }, 100);
           }
         } else {
-          connectWallet({ suggestedAddress: address });
+          setTimeout(() => {
+            connectWallet({ suggestedAddress: address });
+          }, 100);
         }
       }}
       sx={{ mt: 3, mb: 1, borderRadius: 5 }}>

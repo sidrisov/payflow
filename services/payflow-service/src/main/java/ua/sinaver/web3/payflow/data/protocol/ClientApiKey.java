@@ -13,8 +13,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "client_api_key", uniqueConstraints = {
-		@UniqueConstraint(name = "uc_client_identifier", columnNames = {"client_type", "client_identifier"}),
-		@UniqueConstraint(name = "uc_api_key", columnNames = {"api_key"})
+		@UniqueConstraint(name = "uc_client_identifier", columnNames = { "client_type", "client_identifier" }),
+		@UniqueConstraint(name = "uc_api_key", columnNames = { "api_key" })
 })
 public class ClientApiKey {
 
@@ -27,6 +27,9 @@ public class ClientApiKey {
 
 	@Column
 	private String description;
+
+	@Column(name = "user_id")
+	private Integer userId;
 
 	@Column(name = "client_type", nullable = false)
 	@Enumerated(EnumType.STRING)

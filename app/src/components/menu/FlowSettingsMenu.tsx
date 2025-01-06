@@ -22,7 +22,7 @@ import NetworkAvatar from '../avatars/NetworkAvatar';
 import { WalletsInfoPopover } from './WalletsInfoPopover';
 import getFlowAssets from '../../utils/assets';
 import { useAssetBalances } from '../../utils/queries/balances';
-import { IoIosWallet, IoMdSquare, IoMdLock } from 'react-icons/io';
+import { IoIosWallet, IoMdSquare, IoMdKey } from 'react-icons/io';
 import { socialLink, ZAPPER } from '../../utils/dapps';
 import { ProfileContext } from '../../contexts/UserContext';
 import { useWallets } from '@privy-io/react-auth';
@@ -49,7 +49,7 @@ export function FlowSettingsMenu({
   const { isLoading, isFetched, data: balances } = useAssetBalances(getFlowAssets(flow));
 
   const { wallets } = useWallets();
-  const { login, authenticated, ready, connectWallet } = usePrivy();
+  const { login, logout, authenticated, ready, connectWallet, linkPasskey } = usePrivy();
   const { setActiveWallet } = useSetActiveWallet();
 
   const menuRef = useRef<HTMLDivElement>(null);
@@ -92,17 +92,21 @@ export function FlowSettingsMenu({
             w.walletClientType === 'privy' && w.address.toLowerCase() === flow.signer.toLowerCase()
         );
         if (embeddedWallet) {
-          // If the wallet is already connected, set it as active
-          await setActiveWallet(embeddedWallet);
-        } else {
-          // If the wallet is not connected, connect it
-          connectWallet({ suggestedAddress: flow.signer });
+          await logout();
         }
+        setTimeout(() => {
+          login({
+            ...(flow.signerCredential && {
+              prefill: { type: 'email', value: flow.signerCredential },
+              defaultPrevented: true
+            })
+          });
+        }, 100);
       }
     } else {
       setTimeout(() => {
         connectWallet({ suggestedAddress: flow.signer });
-      }, 100); // 100ms delay
+      }, 100);
     }
   };
 
@@ -125,7 +129,9 @@ export function FlowSettingsMenu({
         ref={menuRef}
         sx={{
           mt: 1,
-          '.MuiMenu-paper': { borderRadius: 5 },
+          '.MuiMenu-paper': {
+            borderRadius: 5
+          },
           zIndex: 1500,
           '&:focus': { outline: 'none' }
         }}
@@ -133,17 +139,33 @@ export function FlowSettingsMenu({
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
         <MenuList dense disablePadding>
           {flow.type !== 'BANKR' && flow.type !== 'RODEO' && (
-            <MenuItem onClick={handleConnectWallet}>
-              <ListItemIcon>
-                <AiFillSignature />
-              </ListItemIcon>
-              <Stack>
-                <Typography>{isConnected ? 'Re-connect Signer' : 'Connect Signer'}</Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {getSignerInfo()}
-                </Typography>
-              </Stack>
-            </MenuItem>
+            <>
+              <MenuItem onClick={handleConnectWallet}>
+                <ListItemIcon>
+                  <AiFillSignature />
+                </ListItemIcon>
+                <Stack>
+                  <Typography>{isConnected ? 'Re-connect Signer' : 'Connect Signer'}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {getSignerInfo()}
+                  </Typography>
+                </Stack>
+              </MenuItem>
+              {isConnected && flow.signerProvider === 'privy' && (
+                <MenuItem onClick={() => linkPasskey()}>
+                  <ListItemIcon>
+                    <IoMdKey />
+                  </ListItemIcon>
+                  <Stack>
+                    <Typography>Manage Passkeys</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Secure flow with passkeys
+                    </Typography>
+                  </Stack>
+                </MenuItem>
+              )}
+              {!showOnlySigner && <Divider />}
+            </>
           )}
           {!showOnlySigner && (
             <>

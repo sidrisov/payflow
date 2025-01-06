@@ -36,12 +36,14 @@ export function SwitchFlowSignerSection({
       onClick={async () => {
         if (flow.signerProvider === 'privy') {
           if (!authenticated) {
-            login({
-              ...(flow.signerCredential && {
-                prefill: { type: 'email', value: flow.signerCredential },
-                defaultPrevented: true
-              })
-            });
+            setTimeout(() => {
+              login({
+                ...(flow.signerCredential && {
+                  prefill: { type: 'email', value: flow.signerCredential },
+                  defaultPrevented: true
+                })
+              });
+            }, 100);
           } else {
             const embeddedWallet = wallets.find(
               (w) =>
@@ -52,15 +54,19 @@ export function SwitchFlowSignerSection({
               // logout previously connected social wallet
               await logout();
               // login again
-              login({
-                ...(flow.signerCredential && {
-                  prefill: { type: 'email', value: flow.signerCredential }
-                })
-              });
+              setTimeout(() => {
+                login({
+                  ...(flow.signerCredential && {
+                    prefill: { type: 'email', value: flow.signerCredential }
+                  })
+                });
+              }, 100);
             }
           }
         } else {
-          connectWallet({ suggestedAddress: flow.signer });
+          setTimeout(() => {
+            connectWallet({ suggestedAddress: flow.signer });
+          }, 100);
         }
 
         onSwitch?.();

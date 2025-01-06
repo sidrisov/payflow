@@ -13,7 +13,7 @@ import {
   Avatar
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { ArrowBack, Clear, Menu } from '@mui/icons-material';
+import { ArrowBack, Clear } from '@mui/icons-material';
 import { useContext, useEffect, useState } from 'react';
 import { ContactType, SelectedIdentityType } from '../../types/ProfileType';
 
@@ -21,7 +21,6 @@ import { Address } from 'viem';
 import { searchIdentity, sortBySocialScore } from '../../services/socials';
 
 import { useDebounce } from 'use-debounce';
-import { WalletMenu } from '../menu/WalletMenu';
 import { SearchResultView } from '../SearchResultView';
 import { FARCASTER_DAPP, LENS_DAPP } from '../../utils/dapps';
 import { ProfileContext } from '../../contexts/UserContext';
@@ -75,9 +74,6 @@ export default function SearchIdentityDialog({
 
   const [foundIdentities, setFoundIdentities] = useState<ContactType[]>([]);
   const [isSearchingContacts, setSearchingContacts] = useState<boolean>(false);
-
-  const [walletMenuAnchorEl, setWalletMenuAnchorEl] = useState<null | HTMLElement>(null);
-  const [openWalletMenu, setOpenWalletMenu] = useState(false);
 
   const [addressBookView, setAddressBookView] = useState<AddressBookType>('all');
 
@@ -255,8 +251,8 @@ export default function SearchIdentityDialog({
               walletMenuEnabled
                 ? 'space-between'
                 : isMobile && !hideBackButton
-                ? 'flex-start'
-                : 'center'
+                  ? 'flex-start'
+                  : 'center'
             }>
             <Stack direction="row" alignItems="center" width="100%">
               {isMobile && !hideBackButton && (
@@ -310,17 +306,6 @@ export default function SearchIdentityDialog({
                 }}
               />
             </Stack>
-
-            {walletMenuEnabled && (
-              <IconButton
-                color="inherit"
-                onClick={async (event) => {
-                  setWalletMenuAnchorEl(event.currentTarget);
-                  setOpenWalletMenu(true);
-                }}>
-                <Menu />
-              </IconButton>
-            )}
           </Box>
 
           {isAuthenticated && contacts.length > 0 && (
@@ -381,14 +366,6 @@ export default function SearchIdentityDialog({
               ))}
         </Box>
       </DialogContent>
-      {walletMenuEnabled && (
-        <WalletMenu
-          anchorEl={walletMenuAnchorEl}
-          open={openWalletMenu}
-          onClose={() => setOpenWalletMenu(false)}
-          closeStateCallback={() => setOpenWalletMenu(false)}
-        />
-      )}
     </Dialog>
   );
 }

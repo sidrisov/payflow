@@ -63,7 +63,7 @@ public class PaymentService {
 				.map(String::toLowerCase).toList();
 
 		return paymentRepository.findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedAtDesc(
-						user, verifications, List.of(Payment.PaymentStatus.COMPLETED))
+				user, verifications, List.of(Payment.PaymentStatus.COMPLETED))
 				.stream()
 				.map(payment -> payment.getReceiver() != null ? payment.getReceiver().getIdentity()
 						: payment.getReceiverAddress())
@@ -88,10 +88,10 @@ public class PaymentService {
 	public List<String> parsePreferredTokens(String text) {
 		val allTokenIds = tokenService.getTokens().stream().map(Token::id).distinct().toList();
 		return Arrays.stream(text
-						.replace(",", " ") // Replace commas with spaces
-						.replace("$", "") // Remove any $ symbols
-						.toLowerCase() // Convert to lowercase
-						.split("\\s+")) // Split by spaces
+				.replace(",", " ") // Replace commas with spaces
+				.replace("$", "") // Remove any $ symbols
+				.toLowerCase() // Convert to lowercase
+				.split("\\s+")) // Split by spaces
 				.filter(allTokenIds::contains).limit(5).toList();
 	}
 
@@ -283,13 +283,12 @@ public class PaymentService {
 	public void processSessionIntentPayment(Payment payment) {
 		log.debug("Processing session intent payment: {}", payment.getReferenceId());
 		try {
-			log.debug("Processing SESSION_INTENT payment: {}", payment);
 			val response = walletService.processPayment(payment);
 			if (response != null && response.status().equals("success")) {
 				payment.setStatus(Payment.PaymentStatus.COMPLETED);
 				payment.setCompletedAt(Instant.now());
 				payment.setHash(response.txHash());
-				log.debug("Processed SESSION_INTENT payment: {}", response);
+				log.debug("Processed session intent payment: {}", response);
 				notificationService.notifyPaymentCompletion(payment, null);
 			} else {
 				payment.setStatus(Payment.PaymentStatus.FAILED);
