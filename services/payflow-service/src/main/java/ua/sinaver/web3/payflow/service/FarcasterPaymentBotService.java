@@ -144,6 +144,18 @@ public class FarcasterPaymentBotService {
 				case "auto": {
 					log.debug("Processing {} bot command arguments {}", command, remainingText);
 
+					if (casterProfile == null ||
+							!userService.getEarlyFeatureAccessUsers().contains(casterProfile.getUsername())) {
+						log.error("Cast author {} is not allowed to use automated " +
+								"payments for cast: {}", cast.author().username(), cast.text());
+						job.setStatus(PaymentBotJob.Status.REJECTED);
+						notificationService.reply(
+								"Automated payments are in closed alpha, thank " +
+										"you for your patience!",
+								cast.hash());
+						return;
+					}
+
 					val autoPattern = "(?:@(?<payer>[a-zA-Z0-9_.-]+)\\s+)?pay\\s+" +
 							"(?:@(?<receiver>[a-zA-Z0-9_.-]+)\\s*)?\\s*(?<amount>\\$?[0-9]+(?:\\.[0-9]+)?[km]?)?\\s*(?<rest>.*)";
 					matcher = Pattern.compile(autoPattern, Pattern.CASE_INSENSITIVE).matcher(remainingText);
@@ -188,9 +200,10 @@ public class FarcasterPaymentBotService {
 						job.setStatus(PaymentBotJob.Status.REJECTED);
 
 						notificationService.reply(
-								"Profile not found, please, create a new profile first through the app!",
+								"Profile not found, please, sign in into the app first!",
 								cast.hash(),
 								Collections.singletonList(new Cast.Embed(payflowConfig.getDAppServiceUrl())));
+						job.setStatus(PaymentBotJob.Status.REJECTED);
 						return;
 					}
 
@@ -271,7 +284,7 @@ public class FarcasterPaymentBotService {
 						receiverAddress = identityService.getHighestScoredIdentity(receiverAddresses);
 					}
 
-					Payment payment = null;
+					Payment payment;
 					if (amountStr != null) {
 						val sourceApp = "Warpcast";
 						val sourceRef = String.format("https://warpcast.com/%s/%s",
@@ -288,32 +301,6 @@ public class FarcasterPaymentBotService {
 									"No active session found. Please, create a new session first in the app!",
 									cast.hash(),
 									Collections.singletonList(new Cast.Embed(payflowConfig.getDAppServiceUrl())));
-							return;
-						}
-
-						// check if balance enough
-						val topUpWalletAddress = sessions.getFirst().getWallet().getAddress();
-						val balance = walletService.getTokenBalance(
-								topUpWalletAddress, token.chainId(),
-								token.tokenAddress());
-
-						if (balance == null
-								|| new BigDecimal(balance.formatted()).compareTo(new BigDecimal(amountStr)) < 0) {
-							log.error("Token balance not enough for {} on chain {}", token, token.chainId());
-							job.setStatus(PaymentBotJob.Status.REJECTED);
-
-							val topUpFrameUrl = UriComponentsBuilder.fromUriString(payflowConfig.getDAppServiceUrl())
-									.path("/{topUpWalletAddress}")
-									//.queryParam("chainId", token.chainId())
-									//.queryParam("tokenId", token.id())
-									//.queryParam("tokenAmount", amountStr)
-									.queryParam("entryTitle", "💰 Top Up Balance")
-									.build(topUpWalletAddress).toString();
-
-							notificationService.reply(
-									"Token balance not enough, please, top up your wallet!",
-									cast.hash(),
-									Collections.singletonList(new Cast.Embed(topUpFrameUrl)));
 							return;
 						}
 
@@ -335,13 +322,41 @@ public class FarcasterPaymentBotService {
 						payment.setSourceRef(sourceRef);
 						payment.setSourceHash(sourceHash);
 
+						// check if balance enough
+						val topUpWalletAddress = sessions.getFirst().getWallet().getAddress();
+						val balance = walletService.getTokenBalance(
+								topUpWalletAddress, token.chainId(),
+								token.tokenAddress());
+
+						val tokenAmount = paymentService.getTokenAmount(payment);
+
+						if (balance == null
+								|| new BigDecimal(balance.formatted()).compareTo(new BigDecimal(tokenAmount)) < 0) {
+							log.error("Token balance not enough for {} on chain {}", token, token.chainId());
+							job.setStatus(PaymentBotJob.Status.REJECTED);
+
+							val topUpFrameUrl = UriComponentsBuilder.fromUriString(payflowConfig.getDAppServiceUrl())
+									.path("/{topUpWalletAddress}")
+									//.queryParam("chainId", token.chainId())
+									//.queryParam("tokenAmount", amountStr)
+									.queryParam("tokenId", token.id())
+									.queryParam("title", "💰 Top Up Balance")
+									.queryParam("button", "Top Up")
+									.build(topUpWalletAddress).toString();
+							notificationService.reply(
+									"Token balance not enough, please, top up your wallet!",
+									cast.hash(),
+									Collections.singletonList(new Cast.Embed(topUpFrameUrl)));
+							return;
+						}
+
 						val txParams = transactionService.generateTxParams(payment);
 						val callsNode = objectMapper.valueToTree(List.of(txParams));
 						payment.setCalls(callsNode);
 
 						paymentRepository.saveAndFlush(payment);
 						notificationService.reply(
-								"Processing, wait for confirmation ...",
+								"Processing payment, wait for confirmation:",
 								cast.hash(),
 								Collections.singletonList(new Cast.Embed(linkService.framePaymentLink(payment, true).toString())));
 

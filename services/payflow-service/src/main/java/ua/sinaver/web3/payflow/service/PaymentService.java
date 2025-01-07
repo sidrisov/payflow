@@ -3,6 +3,7 @@ package ua.sinaver.web3.payflow.service;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.data.Wallet;
+import ua.sinaver.web3.payflow.message.FramePaymentMessage;
 import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.glide.GlideSessionResponse;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
@@ -40,6 +42,8 @@ public class PaymentService {
 	private PayWithGlideService payWithGlideService;
 	@Autowired
 	private WalletService walletService;
+	@Autowired
+	private TokenPriceService tokenPriceService;
 
 	public static String formatNumberWithSuffix(String numberStr) {
 		double number = Double.parseDouble(numberStr);
@@ -63,7 +67,7 @@ public class PaymentService {
 				.map(String::toLowerCase).toList();
 
 		return paymentRepository.findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedAtDesc(
-				user, verifications, List.of(Payment.PaymentStatus.COMPLETED))
+						user, verifications, List.of(Payment.PaymentStatus.COMPLETED))
 				.stream()
 				.map(payment -> payment.getReceiver() != null ? payment.getReceiver().getIdentity()
 						: payment.getReceiverAddress())
@@ -88,10 +92,10 @@ public class PaymentService {
 	public List<String> parsePreferredTokens(String text) {
 		val allTokenIds = tokenService.getTokens().stream().map(Token::id).distinct().toList();
 		return Arrays.stream(text
-				.replace(",", " ") // Replace commas with spaces
-				.replace("$", "") // Remove any $ symbols
-				.toLowerCase() // Convert to lowercase
-				.split("\\s+")) // Split by spaces
+						.replace(",", " ") // Replace commas with spaces
+						.replace("$", "") // Remove any $ symbols
+						.toLowerCase() // Convert to lowercase
+						.split("\\s+")) // Split by spaces
 				.filter(allTokenIds::contains).limit(5).toList();
 	}
 
@@ -300,5 +304,16 @@ public class PaymentService {
 
 			log.error("Error processing session intent payment {}", payment.getReferenceId(), e);
 		}
+	}
+
+	public double getTokenAmount(FramePaymentMessage paymentMessage, TransactionService transactionService) {
+		return paymentMessage.tokenAmount() != null ? paymentMessage.tokenAmount()
+				: paymentMessage.usdAmount() / tokenPriceService.getPrices().get(paymentMessage.token());
+	}
+
+	public double getTokenAmount(Payment payment) {
+		return StringUtils.isNotBlank(payment.getTokenAmount()) ?
+				Double.parseDouble(payment.getTokenAmount())
+				: Double.parseDouble(payment.getUsdAmount()) / tokenPriceService.getPrices().get(payment.getToken());
 	}
 }

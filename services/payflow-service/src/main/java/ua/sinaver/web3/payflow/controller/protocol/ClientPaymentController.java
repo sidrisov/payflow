@@ -167,7 +167,7 @@ public class ClientPaymentController {
 				payment.setComment(request.recipient().comment());
 			}
 
-			if (request.payment().calls() != null) {
+			if (request.payment().calls() != null && !request.payment().calls().isEmpty()) {
 				payment.setCalls(request.payment().calls());
 			} else {
 				val txParams = transactionService.generateTxParams(payment);
@@ -190,7 +190,9 @@ public class ClientPaymentController {
 			}
 
 			paymentRepository.saveAndFlush(payment);
-			paymentService.asyncProcessSessionIntentPayment(payment.getId());
+			if (walletSession != null) {
+				paymentService.asyncProcessSessionIntentPayment(payment.getId());
+			}
 			log.debug("Saved payment: {}", payment);
 
 

@@ -180,7 +180,7 @@ public class FramePaymentController {
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
 				validateMessage.action().url());
 
-		val entryTitle = validateMessage.action().input() != null
+		val title = validateMessage.action().input() != null
 				? URLEncoder.encode(validateMessage.action().input().text(), StandardCharsets.UTF_8)
 				: "";
 
@@ -188,7 +188,7 @@ public class FramePaymentController {
 			val baseUrl = "https://warpcast.com/~/compose";
 			val castText = URLEncoder.encode("Hey hey you can pay me here", StandardCharsets.UTF_8);
 			val embedUrl = String.format("https://app.payflow" +
-					".me/%s?entryTitle=%s", identity, entryTitle);
+					".me/%s?title=%s", identity, title);
 
 			val castShareDeepLink = String.format("%s?text=%s&embeds[]=%s", baseUrl, castText,
 					embedUrl);
@@ -503,9 +503,7 @@ public class FramePaymentController {
 
 		val paymentIdentity = payment.getReceiver() != null ? payment.getReceiver().getIdentity()
 				: payment.getReceiverAddress();
-		val tokenAmount = StringUtils.isNotBlank(payment.getTokenAmount())
-				? Double.parseDouble(payment.getTokenAmount())
-				: Double.parseDouble(payment.getUsdAmount()) / tokenPriceService.getPrices().get(payment.getToken());
+		val tokenAmount = paymentService.getTokenAmount(payment);
 		if (paymentIdentity != null) {
 			// handle transaction execution result
 			if (StringUtils.isNotBlank(transactionId)) {

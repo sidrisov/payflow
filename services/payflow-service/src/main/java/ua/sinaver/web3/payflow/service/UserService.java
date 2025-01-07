@@ -38,6 +38,11 @@ import static ua.sinaver.web3.payflow.config.CacheConfig.USER_FLOWS_CACHE;
 public class UserService implements IUserService {
 
 	private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_-]*$");
+	private static final List<String> EARLY_FEATURE_ACCESS_USERS = Arrays.asList(
+			"sinaver", "konrad", "kurtlarsen",
+			"pirosb3", "pembe", "haole", "cashlessman");
+	private static final List<String> PRO_FEATURE_ACCESS_USERS = Arrays.asList(
+			"sinaver", "pembe", "haole");
 	@Value("${payflow.invitation.allowance.enabled:false}")
 	private boolean invitationAllowanceEnabled;
 	@Value("${payflow.invitation.whitelisted.default.users}")
@@ -63,6 +68,14 @@ public class UserService implements IUserService {
 
 	@Autowired
 	private PayflowConfig payflowConfig;
+
+	public List<String> getEarlyFeatureAccessUsers() {
+		return EARLY_FEATURE_ACCESS_USERS;
+	}
+
+	public List<String> getProFeatureAccessUsers() {
+		return PRO_FEATURE_ACCESS_USERS;
+	}
 
 	@Override
 	@CacheEvict(value = USERS_CACHE_NAME)

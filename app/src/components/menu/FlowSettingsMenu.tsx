@@ -33,7 +33,6 @@ import { HiOutlineDownload } from 'react-icons/hi';
 import { PayMeDialog } from '../dialogs/PayMeDialog';
 import { AutoMode } from '@mui/icons-material';
 import { WalletPermissionsDialog } from '../dialogs/WalletPermissionsDialog';
-import { useQuery } from '@tanstack/react-query';
 
 export function FlowSettingsMenu({
   showOnlySigner,
@@ -96,8 +95,7 @@ export function FlowSettingsMenu({
         setTimeout(() => {
           login({
             ...(flow.signerCredential && {
-              prefill: { type: 'email', value: flow.signerCredential },
-              defaultPrevented: true
+              prefill: { type: 'email', value: flow.signerCredential }
             })
           });
         }, 100);
@@ -134,6 +132,7 @@ export function FlowSettingsMenu({
           zIndex: 1500,
           '&:focus': { outline: 'none' }
         }}
+        disableEnforceFocus={true}
         transformOrigin={{ horizontal: 'left', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
         <MenuList dense disablePadding>

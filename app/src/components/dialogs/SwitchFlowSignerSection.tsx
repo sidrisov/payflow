@@ -40,7 +40,6 @@ export function SwitchFlowSignerSection({
               login({
                 ...(flow.signerCredential && {
                   prefill: { type: 'email', value: flow.signerCredential },
-                  defaultPrevented: true
                 })
               });
             }, 100);

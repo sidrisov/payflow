@@ -12,22 +12,15 @@ import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Bool;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.generated.Uint256;
-import org.web3j.contracts.eip20.generated.ERC20;
-import org.web3j.protocol.Web3j;
-import org.web3j.protocol.http.HttpService;
-import org.web3j.tx.TransactionManager;
-import org.web3j.tx.gas.DefaultGasProvider;
 import org.web3j.utils.Convert;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.message.FramePaymentMessage;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 @Service
 @Slf4j
@@ -60,7 +53,7 @@ public class TransactionService {
 			    }
 			]
 			""";
-	private final Web3j web3j;
+
 	@Autowired
 	private PaymentService paymentService;
 	@Autowired
@@ -70,7 +63,6 @@ public class TransactionService {
 	private TokenPriceService tokenPriceService;
 
 	public TransactionService(@Value("${payflow.crypto.base.rpc:https://mainnet.base.org}") String baseRpc) {
-		web3j = Web3j.build(new HttpService(baseRpc));
 	}
 
 	public static boolean isFramePaymentMessageComplete(FramePaymentMessage paymentMessage) {
@@ -92,20 +84,19 @@ public class TransactionService {
 
 		val isERC20Transfer = token.tokenAddress() != null;
 
-		var amount = paymentMessage.tokenAmount() != null ? paymentMessage.tokenAmount()
-				: paymentMessage.usdAmount() / tokenPriceService.getPrices().get(paymentMessage.token());
+		var tokenAmount = paymentService.getTokenAmount(paymentMessage, this);
 
 		if (isERC20Transfer) {
 			var value = BigInteger.valueOf(0);
 			if (token.decimals().equals(6)) {
-				value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.MWEI)
+				value = Convert.toWei(BigDecimal.valueOf(tokenAmount), Convert.Unit.MWEI)
 						.toBigInteger();
 			} else if (token.decimals().equals(18)) {
-				value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.ETHER)
+				value = Convert.toWei(BigDecimal.valueOf(tokenAmount), Convert.Unit.ETHER)
 						.toBigInteger();
 			}
 
-			log.debug("Token amount {} value {} price {} for {}", amount, value,
+			log.debug("Token amount {} value {} price {} for {}", tokenAmount, value,
 					tokenPriceService.getPrices().get(paymentMessage.token()), paymentMessage);
 
 			val function = new Function(
@@ -115,18 +106,18 @@ public class TransactionService {
 					}));
 			val encodedFunction = FunctionEncoder.encode(function);
 			return String.format("""
-					{
-					  "chainId": "eip155:%s",
-					  "method": "eth_sendTransaction",
-					  "params": {
-					    "abi": %s,
-					    "to": "%s",
-					    "data": "%s"
-					  }
-					}""", paymentMessage.chainId(), ERC20_ABI_TRANSFER_JSON, token.tokenAddress(),
+							{
+							  "chainId": "eip155:%s",
+							  "method": "eth_sendTransaction",
+							  "params": {
+							    "abi": %s,
+							    "to": "%s",
+							    "data": "%s"
+							  }
+							}""", paymentMessage.chainId(), ERC20_ABI_TRANSFER_JSON, token.tokenAddress(),
 					encodedFunction);
 		} else {
-			val value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.ETHER)
+			val value = Convert.toWei(BigDecimal.valueOf(tokenAmount), Convert.Unit.ETHER)
 					.toBigInteger();
 
 			return String.format("""
@@ -193,15 +184,14 @@ public class TransactionService {
 
 		val isERC20Transfer = token.tokenAddress() != null;
 		val address = paymentService.getPaymentReceiverAddress(payment);
-		var amount = StringUtils.isNotBlank(payment.getTokenAmount()) ? Double.parseDouble(payment.getTokenAmount())
-				: Double.parseDouble(payment.getUsdAmount()) / tokenPriceService.getPrices().get(payment.getToken());
+		var tokenAmount = paymentService.getTokenAmount(payment);
 
 		if (isERC20Transfer) {
 			var value = BigInteger.valueOf(0);
 			if (token.decimals().equals(6)) {
-				value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.MWEI).toBigInteger();
+				value = Convert.toWei(BigDecimal.valueOf(tokenAmount), Convert.Unit.MWEI).toBigInteger();
 			} else if (token.decimals().equals(18)) {
-				value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.ETHER).toBigInteger();
+				value = Convert.toWei(BigDecimal.valueOf(tokenAmount), Convert.Unit.ETHER).toBigInteger();
 			}
 
 			val function = new Function(
@@ -215,7 +205,7 @@ public class TransactionService {
 					"to", token.tokenAddress(),
 					"data", encodedFunction);
 		} else {
-			val value = Convert.toWei(BigDecimal.valueOf(amount), Convert.Unit.ETHER).toBigInteger();
+			val value = Convert.toWei(BigDecimal.valueOf(tokenAmount), Convert.Unit.ETHER).toBigInteger();
 
 			return Map.of(
 					"to", address,

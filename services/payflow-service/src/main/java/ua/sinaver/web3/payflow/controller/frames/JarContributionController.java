@@ -108,7 +108,8 @@ public class JarContributionController {
 		log.debug("Received tip Payflow in frame message request: {}", frameMessage);
 		return ResponseEntity.ok().body(
 				new FrameResponse.ActionFrame("frame",
-						"https://app.payflow.me/0x0dee77c83cb8b14fa95497825df93202abf6ad83?entryTitle=%25F0%259F%25AB%25B6%25F0%259F%258F%25BB%2520Support%2520Payflow"));
+						"https://app.payflow.me/0x0dee77c83cb8b14fa95497825df93202abf6ad83?title" +
+								"=%25F0%259F%25AB%25B6%25F0%259F%258F%25BB%2520Support%2520Payflow"));
 	}
 
 	@PostMapping("/create")

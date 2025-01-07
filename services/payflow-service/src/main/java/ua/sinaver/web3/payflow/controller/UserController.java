@@ -15,10 +15,10 @@ import ua.sinaver.web3.payflow.message.*;
 import ua.sinaver.web3.payflow.message.farcaster.StorageUsage;
 import ua.sinaver.web3.payflow.service.FarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.FlowService;
+import ua.sinaver.web3.payflow.service.UserService;
 import ua.sinaver.web3.payflow.service.api.IContactBookService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
-import ua.sinaver.web3.payflow.service.api.IUserService;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -30,16 +30,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UserController {
 
-	private static final List<String> EARLY_FEATURE_ACCESS_USERS = Arrays.asList(
-			"sinaver", "konrad", "kurtlarsen",
-			"pirosb3", "pembe", "haole");
-
-	private static final List<String> PRO_FEATURE_ACCESS_USERS = Arrays.asList(
-			"sinaver", "pembe", "haole");
-
-
 	@Autowired
-	private IUserService userService;
+	private UserService userService;
 
 	@Autowired
 	private FlowService flowService;
@@ -72,8 +64,8 @@ public class UserController {
 							.map(PreferredTokens::getTokenList)
 							.orElse(Collections.emptyList()),
 					user.getPreferredFarcasterClient(),
-					EARLY_FEATURE_ACCESS_USERS.contains(user.getUsername()),
-					PRO_FEATURE_ACCESS_USERS.contains(user.getUsername()));
+					userService.getEarlyFeatureAccessUsers().contains(user.getUsername()),
+					userService.getProFeatureAccessUsers().contains(user.getUsername()));
 		} else {
 			return null;
 		}

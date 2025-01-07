@@ -83,7 +83,7 @@ export function PayMeDialog({ open, onClose, profile, flow }: PayMeDialogProps) 
     }
 
     if (customTitle) {
-      params.append('entryTitle', customTitle);
+      params.append('title', customTitle);
     }
 
     const queryString = params.toString();

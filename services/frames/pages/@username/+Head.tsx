@@ -5,10 +5,11 @@ export function Head() {
   const { routeParams, urlParsed } = usePageContext();
   const username = routeParams?.username;
 
-  const entryTitle = urlParsed.search.entryTitle;
+  const title = urlParsed.search.entryTitle || urlParsed.search.title;
+  const button = urlParsed.search.button;
   const theme = urlParsed.search.theme;
 
-  const imageUrl = `${FRAMES_URL}/images/profile/${username}/payment.png?step=start${entryTitle ? `&entryTitle=${entryTitle}` : ''}${theme ? `&theme=${theme}` : ''}`;
+  const imageUrl = `${FRAMES_URL}/images/profile/${username}/payment.png?step=start${title ? `&entryTitle=${title}` : ''}${theme ? `&theme=${theme}` : ''}`;
 
   const chainId = urlParsed.search.chainId;
   const tokenId = urlParsed.search.tokenId;
@@ -16,6 +17,7 @@ export function Head() {
   const usdAmount = urlParsed.search.usdAmount;
 
   const includeInputText = !tokenAmount && !usdAmount;
+  const inputText = tokenId ? `<amount> ${tokenId}` : '50 degen or 100 moxie';
 
   const commnandUrl = (includeInputText: boolean) => {
     const baseUrl = `${API_URL}/api/farcaster/frames/pay/${username}/frame/command`;
@@ -34,8 +36,8 @@ export function Head() {
   };
 
   const paymentButtonText = includeInputText
-    ? 'Pay'
-    : `Pay: ${tokenAmount ?? `$${usdAmount}`} ${tokenId?.toUpperCase() ?? 'USDC'}`;
+    ? button || 'Pay'
+    : `${button || 'Pay'}: ${tokenAmount ?? `$${usdAmount}`} ${tokenId?.toUpperCase() ?? 'USDC'}`;
   const postTargetUrl = commnandUrl(includeInputText);
 
   return (
@@ -77,11 +79,9 @@ export function Head() {
 
         <meta property="fc:frame" content="vNext" />
 
-        <meta property="fc:frame:image" content={`${imageUrl}`} />
+        <meta property="fc:frame:image" content={imageUrl} />
 
-        {includeInputText && (
-          <meta property="fc:frame:input:text" content="50 degen or 100 moxie" />
-        )}
+        {includeInputText && <meta property="fc:frame:input:text" content={inputText} />}
         <meta property="fc:frame:button:1" content={paymentButtonText} />
         <meta property="fc:frame:button:1:target" content={postTargetUrl} />
       </head>
