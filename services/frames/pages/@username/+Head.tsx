@@ -17,7 +17,7 @@ export function Head() {
   const usdAmount = urlParsed.search.usdAmount;
 
   const includeInputText = !tokenAmount && !usdAmount;
-  const inputText = tokenId ? `<amount> ${tokenId}` : '50 degen or 100 moxie';
+  const inputText = tokenId ? `Enter <amount> ${tokenId}` : '50 degen or 100 moxie';
 
   const commnandUrl = (includeInputText: boolean) => {
     const baseUrl = `${API_URL}/api/farcaster/frames/pay/${username}/frame/command`;

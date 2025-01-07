@@ -44,7 +44,7 @@ export function FlowSettingsMenu({
 
   const [openWalletDetailsPopover, setOpenWalletDetailsPopover] = useState(false);
   const [walletAnchorEl, setWalletAnchorEl] = useState<null | HTMLElement>(null);
-  const { profile } = useContext(ProfileContext);
+  const { profile, isFrameV2 } = useContext(ProfileContext);
 
   const { isLoading, isFetched, data: balances } = useAssetBalances(getFlowAssets(flow));
 
@@ -149,7 +149,7 @@ export function FlowSettingsMenu({
                   </Typography>
                 </Stack>
               </MenuItem>
-              {isConnected && flow.signerProvider === 'privy' && (
+              {isConnected && flow.signerProvider === 'privy' && !isFrameV2 && (
                 <MenuItem onClick={() => linkPasskey()}>
                   <ListItemIcon>
                     <IoMdKey />

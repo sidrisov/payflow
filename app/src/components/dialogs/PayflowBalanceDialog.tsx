@@ -15,7 +15,7 @@ import {
 import LoadingButton from '@mui/lab/LoadingButton';
 
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { ProfileType } from '../../types/ProfileType';
 import { toast } from 'react-toastify';
 import { useCreateSafeWallets } from '../../utils/hooks/useCreateSafeWallets';
@@ -36,6 +36,7 @@ import { useMobile } from '../../utils/hooks/useMobile';
 import saveFlow from '../../services/flow';
 import { HiOutlineCheckCircle } from 'react-icons/hi';
 import { IoMdKey } from 'react-icons/io';
+import { ProfileContext } from '../../contexts/UserContext';
 
 export type PayflowBalanceDialogProps = DialogProps &
   CloseCallbackType & {
@@ -52,6 +53,8 @@ export default function PayflowBalanceDialog({
   ...props
 }: PayflowBalanceDialogProps) {
   const isMobile = useMobile();
+
+  const { isFrameV2 } = useContext(ProfileContext);
 
   const { loading: loadingWallets, error, wallets, generate, reset } = useCreateSafeWallets();
   const [loadingUpdateProfile, setLoadingUpdateProfile] = useState<boolean>(false);
@@ -356,7 +359,7 @@ export default function PayflowBalanceDialog({
             flow was successfully created!
           </Typography>
 
-          {extraSigner && address && connector?.id === 'io.privy.wallet' && (
+          {!isFrameV2 && extraSigner && address && connector?.id === 'io.privy.wallet' && (
             <Button
               startIcon={<IoMdKey />}
               onClick={() => linkPasskey()}
