@@ -9,11 +9,11 @@ export function CustomLoadingButton({
 }: { title: string; status?: string; borderRadius?: number } & LoadingButtonProps) {
   return (
     <LoadingButton
-      {...props}
       fullWidth
       variant="outlined"
       size="large"
       color="inherit"
+      {...props}
       loadingIndicator={
         <Stack direction="row" spacing={1} alignItems="center">
           <CircularProgress color="inherit" size={16} />

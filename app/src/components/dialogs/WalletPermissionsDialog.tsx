@@ -303,17 +303,14 @@ export function WalletPermissionsDialog({ open, onClose, flow }: Props) {
           )}
 
           <Button
-            variant="outlined"
-            startIcon={<AddIcon />}
+            variant="contained"
             onClick={() => setShowAddPermission(true)}
             sx={{
               borderRadius: 3,
-              borderStyle: 'dashed',
-              py: 1,
-              color: green.A700,
-              borderColor: green.A700
+              bgcolor: green.A700,
+              textTransform: 'none'
             }}>
-            Add Permission
+            Add new session
           </Button>
         </Box>
       </ResponsiveDialog>

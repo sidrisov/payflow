@@ -28,6 +28,7 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import { API_URL } from '../../utils/urlConstants';
 import { CustomLoadingButton } from '../buttons/LoadingPaymentButton';
+import { addDays } from 'date-fns';
 /* import { TokenSelect } from '../inputs/TokenSelect';
 import { TokenAmountInput } from '../inputs/TokenAmountInput'; */
 
@@ -185,7 +186,7 @@ export function AddPermissionDialog({ flow, open, onClose, onSuccess }: Props) {
                 limit: limit.amount
               })),
         active: true,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+        expiresAt: addDays(new Date(), 7)
       };
 
       await axios.post(
@@ -330,9 +331,10 @@ export function AddPermissionDialog({ flow, open, onClose, onSuccess }: Props) {
         )}
 
         <CustomLoadingButton
-          title="Create Session"
+          size="medium"
+          title="Create"
           loading={isCreatingSession}
-          status={isCreatingSession ? 'Creating Session...' : ''}
+          status={isCreatingSession ? 'Creating ...' : ''}
           onClick={handleCreateSubmit}
           borderRadius={3}
         />
