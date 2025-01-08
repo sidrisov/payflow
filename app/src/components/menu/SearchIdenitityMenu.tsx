@@ -23,6 +23,7 @@ import { SiFarcaster } from 'react-icons/si';
 import { IoIosChatbubbles } from 'react-icons/io';
 import { DAPP_URL } from '../../utils/urlConstants';
 import { FaSquare } from 'react-icons/fa6';
+import FrameV2SDK from '@farcaster/frame-sdk';
 
 export function IdentityMenu({
   identity,
@@ -40,7 +41,7 @@ export function IdentityMenu({
   onSocilLinksClick?: () => void;
   currentIdentity?: boolean;
 } & MenuProps) {
-  const { isAuthenticated } = useContext(ProfileContext);
+  const { isAuthenticated, isFrameV2 } = useContext(ProfileContext);
   const ens = identity.meta?.ens;
   const address = identity.address;
   const socials = identity.meta?.socials || [];
@@ -64,9 +65,18 @@ export function IdentityMenu({
     return (
       <MenuItem
         key={`${social.dappName}-${social.profileName}`}
-        component="a"
-        href={socialLink(social.dappName, social.profileName)}
-        target="_blank"
+        {...(isFrameV2 && social.profileId
+          ? {
+              onClick: () =>
+                FrameV2SDK.actions.viewProfile({
+                  fid: Number(social.profileId)
+                })
+            }
+          : {
+              component: 'a',
+              href: socialLink(social.dappName, social.profileName),
+              target: '_blank'
+            })}
         sx={{ display: 'flex', alignItems: 'center', py: 1 }}>
         <ListItemIcon>{icon}</ListItemIcon>
         <Stack sx={{ flex: 1, minWidth: 0 }}>
