@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { API_URL } from '../urlConstants';
-import { JarType } from '../../types/FlowType';
+import { JarType } from '@payflow/common';
 
 export const useJar = (uuid: string | undefined) => {
   return useQuery({

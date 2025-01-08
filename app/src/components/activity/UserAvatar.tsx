@@ -1,5 +1,5 @@
 import { Avatar, AvatarProps } from '@mui/material';
-import { ProfileType } from '../../types/ProfileType';
+import { ProfileType } from '@payflow/common';
 import ProfileAvatar from '../avatars/ProfileAvatar';
 import AddressAvatar from '../avatars/AddressAvatar';
 import { Social } from '../../generated/graphql/types';

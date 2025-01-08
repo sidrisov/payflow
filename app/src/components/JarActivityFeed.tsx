@@ -3,7 +3,7 @@ import { ActivitySkeletonSection } from './skeletons/ActivitySkeletonSection';
 import { useState } from 'react';
 import { Chain } from 'viem';
 import { useTransactions } from '../utils/queries/transactions';
-import { FlowType } from '../types/FlowType';
+import { FlowType } from '@payflow/common';
 
 export type AssetsProps = {
   flow: FlowType | undefined;

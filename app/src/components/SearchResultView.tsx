@@ -1,6 +1,6 @@
 import { Button, Divider, Stack, Typography } from '@mui/material';
 import { CloseCallbackType } from '../types/CloseCallbackType';
-import { ContactType } from '../types/ProfileType';
+import { ContactType } from '@payflow/common';
 import { useNavigate } from 'react-router-dom';
 import { SearchIdentityListItem } from './SearchIdentityListItem';
 import {

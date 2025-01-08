@@ -8,7 +8,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { Address } from 'viem';
 import { sortBySocialScore } from '../../services/socials';
-import { ContactType, IdentityType } from '../../types/ProfileType';
+import { ContactType, IdentityType } from '@payflow/common';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { LoadingFarcasterAccountsSkeleton } from '../skeletons/LoadingFarcasterAccountsSkeleton';
 import { FarcasterIdentitySelectOption } from '../FarcasterIdentitySelectOption';

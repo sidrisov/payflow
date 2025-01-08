@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Address, isAddress } from 'viem';
-import { PaymentType } from '../../types/PaymentType';
+import { PaymentType } from '@payflow/common';
 import { ContractState, fetchState } from '@withfabric/protocol-sdks/stpv2';
 import axios from 'axios';
 import { base } from 'viem/chains';

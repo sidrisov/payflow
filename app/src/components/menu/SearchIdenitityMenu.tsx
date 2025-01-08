@@ -10,7 +10,7 @@ import {
   Typography
 } from '@mui/material';
 import { PersonAdd, OpenInNew } from '@mui/icons-material';
-import { IdentityType, SocialInfoType } from '../../types/ProfileType';
+import { IdentityType, SocialInfoType } from '@payflow/common';
 import { useContext } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { TbCopy, TbStar, TbStarOff } from 'react-icons/tb';

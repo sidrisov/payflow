@@ -1,12 +1,12 @@
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Stack, Box, Typography, Button, IconButton, Avatar } from '@mui/material';
+import { Container, Stack, Box, Typography, Button, IconButton } from '@mui/material';
 import { Launch as LaunchIcon } from '@mui/icons-material';
 import { SiFarcaster } from 'react-icons/si';
 import { green } from '@mui/material/colors';
 import { FaCheckCircle, FaRegCircle } from 'react-icons/fa';
 import { ProfileContext } from '../../contexts/UserContext';
-import { FARCASTER_CLIENTS, FarcasterClient } from '../../types/ProfileType';
+import { FARCASTER_CLIENTS, FarcasterClient } from '@payflow/common';
 import axios from 'axios';
 import { API_URL } from '../../utils/urlConstants';
 import { toast } from 'react-toastify';

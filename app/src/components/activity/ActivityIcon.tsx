@@ -1,8 +1,7 @@
-import { IdentityType } from '../../types/ProfileType';
+import { IdentityType, PaymentType } from '@payflow/common';
 import ArrowUpwardIcon from '@mui/icons-material/NorthEast';
 import ArrowDownwardIcon from '@mui/icons-material/SouthEast';
 import { green, red } from '@mui/material/colors';
-import { PaymentType } from '../../types/PaymentType';
 import { Social } from '../../generated/graphql/types';
 
 export type ActivityType = 'self' | 'inbound' | 'outbound';

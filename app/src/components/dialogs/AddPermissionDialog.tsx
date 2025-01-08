@@ -13,7 +13,7 @@ import {
 import { AdminPanelSettings, Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { IoIosWallet } from 'react-icons/io';
 import ResponsiveDialog from './ResponsiveDialog';
-import { FlowType } from '../../types/FlowType';
+import { FlowType } from '@payflow/common';
 import { usePublicClient, useWalletClient } from 'wagmi';
 import { ConnectSignerDialog } from './ConnectSignerDialog';
 import { getPermissionId, getSudoPolicy, Session } from '@rhinestone/module-sdk';

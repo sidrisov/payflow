@@ -11,11 +11,10 @@ import {
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { getCommissionUSD, getPaymentOption } from '../../utils/glide';
 import { useChainId } from 'wagmi';
-import { SelectedIdentityType } from '../../types/ProfileType';
+import { SelectedIdentityType } from '@payflow/common';
 import { FarcasterRecipientField } from '../FarcasterRecipientField';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
-import { PaymentType } from '../../types/PaymentType';
-import { FlowType, FlowWalletType } from '../../types/FlowType';
+import { PaymentType, FlowType, FlowWalletType } from '@payflow/common';
 import { useMemo, useState, useEffect, useContext } from 'react';
 import { Token } from '@payflow/common';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';

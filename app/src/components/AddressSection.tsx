@@ -1,5 +1,5 @@
 import { Avatar, Badge, Stack, Typography } from '@mui/material';
-import { IdentityType } from '../types/ProfileType';
+import { IdentityType } from '@payflow/common';
 import AddressAvatar from './avatars/AddressAvatar';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { useEnsAvatar, useEnsName } from 'wagmi';

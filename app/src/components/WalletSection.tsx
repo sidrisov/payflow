@@ -1,7 +1,7 @@
 import { Avatar, Box, Tooltip, Typography } from '@mui/material';
 import { FlagOutlined } from '@mui/icons-material';
 import { shortenWalletAddressLabel } from '../utils/address';
-import { FlowWalletType } from '../types/FlowType';
+import { FlowWalletType } from '@payflow/common';
 import { shortNetworkName } from '../utils/networks';
 import NetworkAvatar from './avatars/NetworkAvatar';
 import CopyToClipboardIconButton from './buttons/CopyToClipboardIconButton';

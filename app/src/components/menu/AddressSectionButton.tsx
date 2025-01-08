@@ -1,5 +1,5 @@
 import { Box, Button, ButtonProps } from '@mui/material';
-import { IdentityType } from '../../types/ProfileType';
+import { IdentityType } from '@payflow/common';
 import { AddressSection } from '../AddressSection';
 import { useMobile } from '../../utils/hooks/useMobile';
 

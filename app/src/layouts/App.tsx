@@ -19,8 +19,7 @@ import { CgProfile } from 'react-icons/cg';
 
 import { ProfileContext } from '../contexts/UserContext';
 
-import { ProfileType } from '../types/ProfileType';
-import { AppSettings } from '../types/AppSettingsType';
+import { ProfileType } from '@payflow/common';
 import { ProfileMenu } from '../components/menu/ProfileMenu';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import PayflowBalanceDialog from '../components/dialogs/PayflowBalanceDialog';

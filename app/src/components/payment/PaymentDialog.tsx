@@ -1,9 +1,14 @@
 import { Box, Stack, Typography, Skeleton, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { SelectedIdentityType } from '../../types/ProfileType';
-import { PaymentType, PaymentCategory } from '../../types/PaymentType';
+
 import { RecipientField } from '../RecipientField';
-import { FlowType, FlowWalletType } from '../../types/FlowType';
+import {
+  FlowType,
+  FlowWalletType,
+  SelectedIdentityType,
+  PaymentType,
+  PaymentCategory
+} from '@payflow/common';
 import { useContext, useMemo, useState } from 'react';
 import React from 'react';
 import { BasePaymentDialog, BasePaymentDialogProps } from './BasePaymentDialog';

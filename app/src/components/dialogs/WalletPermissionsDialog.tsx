@@ -11,7 +11,7 @@ import {
   Button
 } from '@mui/material';
 import { useState, useEffect } from 'react';
-import { FlowType, WalletSessionType } from '../../types/FlowType';
+import { FlowType, WalletSessionType } from '@payflow/common';
 import { formatUnits } from 'viem';
 import ResponsiveDialog from './ResponsiveDialog';
 import TokenAvatar from '../avatars/TokenAvatar';

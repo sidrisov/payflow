@@ -1,6 +1,6 @@
 import React from 'react';
 import { Avatar, BoxProps, Skeleton, Stack, Typography, styled } from '@mui/material';
-import { PaymentType } from '../../types/PaymentType';
+import { PaymentType } from '@payflow/common';
 import { useSocialData } from '../../utils/hooks/useSocials';
 import { FarcasterProfileSection } from '../FarcasterProfileSection';
 import { ProfileSection } from '../ProfileSection';

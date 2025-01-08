@@ -1,5 +1,5 @@
 import { Stack, Typography, Button, Avatar } from '@mui/material';
-import { FlowType } from '../../types/FlowType';
+import { FlowType } from '@payflow/common';
 import { shortenWalletAddressLabel } from '../../utils/address';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useSetActiveWallet } from '@privy-io/wagmi';
@@ -39,7 +39,7 @@ export function SwitchFlowSignerSection({
             setTimeout(() => {
               login({
                 ...(flow.signerCredential && {
-                  prefill: { type: 'email', value: flow.signerCredential },
+                  prefill: { type: 'email', value: flow.signerCredential }
                 })
               });
             }, 100);

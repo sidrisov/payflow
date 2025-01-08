@@ -8,7 +8,7 @@ import {
   Typography,
   Collapse
 } from '@mui/material';
-import { FlowType } from '../../types/FlowType';
+import { FlowType } from '@payflow/common';
 import { ExpandMore, ExpandLess, MoreVert, Add } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { useContext, useEffect, useState } from 'react';
@@ -53,7 +53,7 @@ export function ChooseFlowDialog({
   useEffect(() => {
     const savedFlowUuid = localStorage.getItem('payflow:flow:selected:uuid');
     if (savedFlowUuid) {
-      const savedFlow = flows.find(flow => flow.uuid === savedFlowUuid);
+      const savedFlow = flows.find((flow) => flow.uuid === savedFlowUuid);
       if (savedFlow) {
         setSelectedFlow(savedFlow);
       }

@@ -1,5 +1,5 @@
 import { Box } from '@mui/material';
-import { IdentityType } from '../types/ProfileType';
+import { IdentityType } from '@payflow/common';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
 import { SocialPresenceStack } from './SocialPresenceStack';

@@ -4,7 +4,7 @@ import { Container } from '@mui/material';
 import { useSearchParams } from 'react-router-dom';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import { ProfileContext } from '../contexts/UserContext';
-import { SelectedIdentityType } from '../types/ProfileType';
+import { SelectedIdentityType } from '@payflow/common';
 import { Address } from 'viem';
 import { useIdentity } from '../utils/queries/profiles';
 import PaymentDialog from '../components/payment/PaymentDialog';

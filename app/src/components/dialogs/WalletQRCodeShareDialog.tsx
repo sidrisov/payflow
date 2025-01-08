@@ -17,7 +17,7 @@ import { shortenWalletAddressLabel } from '../../utils/address';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { useEffect, useState } from 'react';
 import { ChooseWalletMenu } from '../menu/ChooseWalletMenu';
-import { FlowWalletType } from '../../types/FlowType';
+import { FlowWalletType } from '@payflow/common';
 import NetworkAvatar from '../avatars/NetworkAvatar';
 import { getNetworkDisplayName } from '../../utils/networks';
 import { useMobile } from '../../utils/hooks/useMobile';

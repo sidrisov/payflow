@@ -1,5 +1,4 @@
-import { AppSettings } from './AppSettingsType';
-import { ProfileType } from './ProfileType';
+import { ProfileType } from '@payflow/common';
 
 export interface ProfileContextType {
   isAuthenticated: boolean;

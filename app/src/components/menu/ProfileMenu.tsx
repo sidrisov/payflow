@@ -7,7 +7,7 @@ import {
   MenuProps,
   Typography
 } from '@mui/material';
-import { ProfileType } from '../../types/ProfileType';
+import { ProfileType } from '@payflow/common';
 import { useNavigate } from 'react-router-dom';
 import {
   Groups,

@@ -1,5 +1,5 @@
 import { Link, Typography } from '@mui/material';
-import { ProfileType } from '../../types/ProfileType';
+import { ProfileType } from '@payflow/common';
 import { ProfileDisplayNameWithLink } from './ProfileDisplayNameWithLink';
 import { AddressOrEnsWithLink } from './AddressOrEnsWithLink';
 import { Address } from 'viem';

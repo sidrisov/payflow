@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { API_URL } from '../urlConstants';
 import axios from 'axios';
-import { PaymentStatus, PaymentType } from '../../types/PaymentType';
+import { PaymentStatus, PaymentType } from '@payflow/common';
 
 interface PaginatedResponse<T> {
   content: T[];

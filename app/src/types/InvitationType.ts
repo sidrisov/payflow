@@ -1,5 +1,5 @@
 import { Address } from 'viem';
-import { ProfileType } from './ProfileType';
+import { ProfileType } from '@payflow/common';
 
 export interface InvitationType {
   invitedBy: ProfileType;

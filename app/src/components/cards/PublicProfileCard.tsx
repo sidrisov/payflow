@@ -1,5 +1,5 @@
 import { Card, CardProps } from '@mui/material';
-import { IdentityType } from '../../types/ProfileType';
+import { IdentityType } from '@payflow/common';
 import { PublicProfileDetails } from '../dialogs/PublicProfileDetails';
 import { useSearchParams } from 'react-router-dom';
 

@@ -1,7 +1,5 @@
 import { Address, Hash } from 'viem';
-import { FlowWalletType } from './FlowType';
-import { ProfileType } from './ProfileType';
-import { PaymentType } from './PaymentType';
+import { FlowWalletType, ProfileType, PaymentType } from '@payflow/common';
 
 export type ActivityFetchResultType = {
   isLoading: boolean;

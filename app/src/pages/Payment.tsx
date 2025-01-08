@@ -3,7 +3,7 @@ import { lazy, useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ProfileContext } from '../contexts/UserContext';
 import { useNavigate, useParams } from 'react-router-dom';
-import { PaymentType } from '../types/PaymentType';
+import { PaymentType } from '@payflow/common';
 import { fetchPayment } from '../services/payments';
 import { fetchQuery } from '@airstack/airstack-react';
 import {
@@ -15,7 +15,7 @@ import {
   GetFarcasterProfileQuery,
   Social
 } from '../generated/graphql/types';
-import { IdentityType, SelectedIdentityType } from '../types/ProfileType';
+import { IdentityType, SelectedIdentityType } from '@payflow/common';
 import { toast } from 'react-toastify';
 import { statusToToastType } from '../components/Toasts';
 import { fetchMintData, MintMetadata, parseMintToken } from '../utils/mint';

@@ -2,7 +2,7 @@ import { Avatar, ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/
 import { ChatAppType as ChatAppType, FARCASTER_DAPP } from '../../utils/dapps';
 import { useEnsAddress } from 'wagmi';
 import { isAddress } from 'viem';
-import { IdentityType } from '../../types/ProfileType';
+import { IdentityType } from '@payflow/common';
 
 function getChatAppDmLink(chatApp: ChatAppType, userId: string) {
   switch (chatApp) {
@@ -72,8 +72,8 @@ export function ChatActionMenu({
                 isAddress(addressOrEns)
                   ? addressOrEns
                   : isEnsSuccess && addressEns
-                  ? addressEns
-                  : ''
+                    ? addressEns
+                    : ''
               )}
               target="_blank">
               <ListItemIcon>

@@ -3,10 +3,9 @@ import { useAccount, useChainId } from 'wagmi';
 import { CustomLoadingButton } from './LoadingPaymentButton';
 import { LoadingSwitchChainButton } from './LoadingSwitchNetworkButton';
 import { Token } from '@payflow/common';
-import { FlowType, FlowWalletType } from '../../types/FlowType';
+import { FlowType, FlowWalletType, PaymentType } from '@payflow/common';
 import { ConnectSignerDialog } from '../dialogs/ConnectSignerDialog';
 import { usePayflowTransaction } from '../../utils/hooks/usePayflowTransaction';
-import { PaymentType } from '../../types/PaymentType';
 import { PaymentOption } from '@paywithglide/glide-js';
 import { Hash } from 'viem';
 import { usePrivy } from '@privy-io/react-auth';
@@ -93,7 +92,9 @@ export const PayButton: React.FC<PayButtonProps> = ({
 
   return (
     <>
-      {!paymentToken || (!isNativeFlow && isMiniApp && !isFrameV2) || chainId === paymentToken?.chainId ? (
+      {!paymentToken ||
+      (!isNativeFlow && isMiniApp && !isFrameV2) ||
+      chainId === paymentToken?.chainId ? (
         <CustomLoadingButton
           title={buttonText}
           loading={paymentTxStatus.isPending}

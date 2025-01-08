@@ -1,10 +1,10 @@
 import { Box, Typography, CircularProgress, Badge } from '@mui/material';
 import { useState, useMemo, useEffect, useContext } from 'react';
 import { Address, Client, formatUnits, isAddress } from 'viem';
-import { FlowWalletType } from '../types/FlowType';
+import { FlowWalletType } from '@payflow/common';
 import { Token, getTokensByChainIds } from '@payflow/common';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../utils/formats';
-import { PaymentType } from '../types/PaymentType';
+import { PaymentType } from '@payflow/common';
 import { base, degen } from 'viem/chains';
 import { useAssetBalance, useAssetBalances } from '../utils/queries/balances';
 import { getFlowWalletsAssets } from '../utils/assets';

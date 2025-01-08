@@ -1,15 +1,18 @@
 import { Box, Dialog, DialogContent, DialogProps, Stack } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { SelectedIdentityType } from '../../types/ProfileType';
 import { BackDialogTitle } from './BackDialogTitle';
-import { PaymentType } from '../../types/PaymentType';
 import { RecipientField } from '../RecipientField';
 import { useMemo, useState } from 'react';
 import { TokenAmountSection } from './TokenAmountSection';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { CustomLoadingButton } from '../buttons/LoadingPaymentButton';
 import { useCompatibleWallets, useToAddress } from '../../utils/hooks/useCompatibleWallets';
-import { FlowType, FlowWalletType } from '../../types/FlowType';
+import {
+  FlowType,
+  FlowWalletType,
+  SelectedIdentityType,
+  PaymentType
+} from '@payflow/common';
 import { Token } from '@payflow/common';
 import { useChainId } from 'wagmi';
 import { SUPPORTED_CHAINS } from '@privy-io/react-auth';

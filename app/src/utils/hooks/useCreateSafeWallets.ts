@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Address, Chain } from 'viem';
 import { generateWallet } from '@payflow/common';
-import { FlowWalletType } from '../../types/FlowType';
+import { FlowWalletType } from '@payflow/common';
 import { useConfig } from 'wagmi';
 
 export type SafeWallet = {

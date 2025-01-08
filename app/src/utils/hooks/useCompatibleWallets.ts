@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { toast } from 'react-toastify';
-import { FlowType, FlowWalletType } from '../../types/FlowType';
-import { SelectedIdentityType } from '../../types/ProfileType';
+import { FlowType, FlowWalletType } from '@payflow/common';
+import { SelectedIdentityType } from '@payflow/common';
 import { Address, isAddress } from 'viem';
 import { SUPPORTED_CHAINS } from '../networks';
-import { PaymentType } from '../../types/PaymentType';
+import { PaymentType } from '@payflow/common';
 import { PaymentOption } from '@paywithglide/glide-js';
 
 export function useCompatibleWallets({

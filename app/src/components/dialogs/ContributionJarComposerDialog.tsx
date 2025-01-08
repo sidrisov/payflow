@@ -16,7 +16,7 @@ import { green, grey, red } from '@mui/material/colors';
 import { BackDialogTitle } from './BackDialogTitle';
 import { ProfileContext } from '../../contexts/UserContext';
 import { PaymentFlowSection } from '../PaymentFlowSection';
-import { FlowType } from '../../types/FlowType';
+import { FlowType } from '@payflow/common';
 import { useMobile } from '../../utils/hooks/useMobile';
 import { createCastPostMessage } from '../../utils/warpcast';
 

@@ -3,11 +3,11 @@ import { useChainId, useSwitchChain, useWalletClient, usePublicClient } from 'wa
 import { createSession, executeSession, PaymentOption } from '@paywithglide/glide-js';
 import { ProfileContext } from '../../contexts/UserContext';
 import { submitPayment, updatePayment } from '../../services/payments';
-import { PaymentTxStatus, PaymentType } from '../../types/PaymentType';
+import { PaymentTxStatus, PaymentType } from '@payflow/common';
 import { getCommissionUSD, glideConfig } from '../glide';
 import { useRegularTransfer } from './useRegularTransfer';
 import { useSafeTransfer } from './useSafeTransfer';
-import { FlowType, FlowWalletType } from '../../types/FlowType';
+import { FlowType, FlowWalletType } from '@payflow/common';
 import { Address, Hash } from 'viem';
 import { useFarcasterTransfer } from './useFarcasterTransfer';
 

@@ -1,8 +1,8 @@
 import { Avatar, Badge, Stack, Typography } from '@mui/material';
-import { ProfileType } from '../types/ProfileType';
+import { ProfileType } from '@payflow/common';
 import ProfileAvatar from './avatars/ProfileAvatar';
-import { shortenWalletAddressLabel, shortenWalletAddressLabel2 } from '../utils/address';
-import { FlowType } from '../types/FlowType';
+import { shortenWalletAddressLabel } from '../utils/address';
+import { FlowType } from '@payflow/common';
 import FarcasterAvatar from './avatars/FarcasterAvatar';
 import CopyToClipboardIconButton from './buttons/CopyToClipboardIconButton';
 import { Address } from 'viem';

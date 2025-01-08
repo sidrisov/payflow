@@ -1,6 +1,6 @@
 import Typography from '@mui/material/Typography';
 import { toast, ToastOptions } from 'react-toastify';
-import { PaymentStatus } from '../types/PaymentType';
+import { PaymentStatus } from '@payflow/common';
 
 export const comingSoonText = 'Coming soon 👀';
 export const comingSoonToast = () => {

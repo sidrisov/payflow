@@ -5,7 +5,7 @@ import { AutoMode, Link } from '@mui/icons-material';
 import { TbHandClick } from 'react-icons/tb';
 import PayflowBalanceDialog from './PayflowBalanceDialog';
 import { useState } from 'react';
-import { ProfileType } from '../../types/ProfileType';
+import { ProfileType } from '@payflow/common';
 import { comingSoonToast } from '../Toasts';
 
 type FlowTypeOption = {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Popover, Box, Typography, Stack, Avatar } from '@mui/material';
 import { grey } from '@mui/material/colors';
-import { IdentityType } from '../../types/ProfileType';
+import { IdentityType } from '@payflow/common';
 import FarcasterAvatar from '../avatars/FarcasterAvatar';
 import LensAvatar from '../avatars/LensAvatar';
 import { useDarkMode } from '../../utils/hooks/useDarkMode';

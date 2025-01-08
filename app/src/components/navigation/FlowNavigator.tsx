@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box } from '@mui/material';
 import { green } from '@mui/material/colors';
-import { FlowType } from '../../types/FlowType';
+import { FlowType } from '@payflow/common';
 
 interface FlowNavigatorProps {
   orderedFlows: FlowType[];

@@ -19,8 +19,7 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 import { ProfileContext } from '../../contexts/UserContext';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
-import { FlowType } from '../../types/FlowType';
-import { IdentityType, SelectedIdentityType } from '../../types/ProfileType';
+import {FlowType, IdentityType, SelectedIdentityType } from '@payflow/common';
 import { ChooseFlowDialog } from '../dialogs/ChooseFlowDialog';
 import { FlowTopUpMenu } from '../menu/FlowTopUpMenu';
 import WalletQRCodeShareDialog from '../dialogs/WalletQRCodeShareDialog';

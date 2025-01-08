@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { API_URL } from '../urlConstants';
-import { ContactsResponseType } from '../../types/ProfileType';
+import { ContactsResponseType } from '@payflow/common';
 import { sortBySocialScore } from '../../services/socials';
 
 export const useContacts = ({

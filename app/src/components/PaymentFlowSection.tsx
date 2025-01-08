@@ -2,7 +2,7 @@ import { ArrowOutward, Warning } from '@mui/icons-material';
 import { StackProps, Stack, Tooltip, Avatar, Box, Typography, Button } from '@mui/material';
 import { red } from '@mui/material/colors';
 import { PiTipJar } from 'react-icons/pi';
-import { FlowType } from '../types/FlowType';
+import { FlowType } from '@payflow/common';
 import { useNavigate } from 'react-router-dom';
 import FarcasterAvatar from './avatars/FarcasterAvatar';
 

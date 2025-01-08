@@ -2,7 +2,7 @@ import React from 'react';
 import ResponsiveDialog from '../dialogs/ResponsiveDialog';
 import { Stack, Typography } from '@mui/material';
 import { SwitchFlowSignerSection } from '../dialogs/SwitchFlowSignerSection';
-import { FlowType } from '../../types/FlowType';
+import { FlowType } from '@payflow/common';
 
 type ConnectSignerDialogProps = {
   open: boolean;
@@ -19,8 +19,8 @@ export const ConnectSignerDialog: React.FC<ConnectSignerDialogProps> = ({
     <ResponsiveDialog title="Connect Signer" open={open} onOpen={() => {}} onClose={onClose}>
       <Stack alignItems="flex-start" spacing={2}>
         <Typography variant="caption" color="text.secondary">
-          Selected payment flow `<b>{flow.title}</b>` signer is not connected! Please, proceed
-          with connecting the signer mentioned below:
+          Selected payment flow `<b>{flow.title}</b>` signer is not connected! Please, proceed with
+          connecting the signer mentioned below:
         </Typography>
         <SwitchFlowSignerSection onSwitch={onClose} flow={flow} />
       </Stack>

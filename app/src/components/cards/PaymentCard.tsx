@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, BoxProps, Button, IconButton, Tooltip, Typography, Stack } from '@mui/material';
 import { MoreHoriz } from '@mui/icons-material';
-import { PaymentType } from '../../types/PaymentType';
+import { PaymentType } from '@payflow/common';
 import { PaymentMenu } from '../menu/PaymentMenu';
 import { useMobile } from '../../utils/hooks/useMobile';
 import { useNavigate } from 'react-router-dom';

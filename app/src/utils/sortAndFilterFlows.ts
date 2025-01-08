@@ -1,4 +1,4 @@
-import { FlowType, FlowWalletType } from '../types/FlowType';
+import { FlowType, FlowWalletType } from '@payflow/common';
 import { SUPPORTED_CHAINS } from './networks';
 
 export default function sortAndFilterFlows(flows: FlowType[], defaultFlow?: FlowType): FlowType[] {

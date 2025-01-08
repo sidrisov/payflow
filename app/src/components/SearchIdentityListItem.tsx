@@ -1,5 +1,5 @@
 import { Box, BoxProps, IconButton } from '@mui/material';
-import { ContactType } from '../types/ProfileType';
+import { ContactType } from '@payflow/common';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
 import { useContext, useState } from 'react';

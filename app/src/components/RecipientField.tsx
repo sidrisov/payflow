@@ -1,5 +1,5 @@
 import { Box, Button, Typography } from '@mui/material';
-import { SelectedIdentityType } from '../types/ProfileType';
+import { SelectedIdentityType } from '@payflow/common';
 import { AddressSection } from './AddressSection';
 import { ProfileSection } from './ProfileSection';
 import { useMobile } from '../utils/hooks/useMobile';

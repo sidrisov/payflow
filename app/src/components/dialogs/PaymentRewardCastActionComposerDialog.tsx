@@ -2,7 +2,6 @@ import { DialogProps, Stack, Button, TextField, InputAdornment, IconButton } fro
 import { useContext, useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { RewardAdvancedSection } from '../RewardAdvancedSection';
-import { PaymentCategory } from '../../types/PaymentType';
 import ResponsiveDialog from './ResponsiveDialog';
 
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
@@ -10,7 +9,11 @@ import { ProfileContext } from '../../contexts/UserContext';
 import { Token } from '@payflow/common';
 import { base } from 'viem/chains';
 import { FaCoins, FaDollarSign } from 'react-icons/fa';
-import { DEFAULT_FARCASTER_CLIENT, FARCASTER_CLIENTS } from '../../types/ProfileType';
+import {
+  DEFAULT_FARCASTER_CLIENT,
+  FARCASTER_CLIENTS,
+  PaymentCategory
+} from '@payflow/common';
 
 import FrameV2SDK from '@farcaster/frame-sdk';
 

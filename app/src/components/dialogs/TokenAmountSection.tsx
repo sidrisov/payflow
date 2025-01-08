@@ -10,12 +10,11 @@ import {
 import { useEffect, useState } from 'react';
 import { useAssetBalance } from '../../utils/queries/balances';
 import { formatUnits, parseUnits } from 'viem';
-import { FlowWalletType } from '../../types/FlowType';
+import { FlowWalletType, PaymentType } from '@payflow/common';
 import { red } from '@mui/material/colors';
 import { Token } from '@payflow/common';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useTokenPrice } from '../../utils/queries/prices';
-import { PaymentType } from '../../types/PaymentType';
 import { MdMultipleStop } from 'react-icons/md';
 import { FaCoins, FaDollarSign } from 'react-icons/fa6';
 import { AssetType } from '../../types/AssetType';

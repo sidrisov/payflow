@@ -1,6 +1,6 @@
 import { useTokenPrices } from '../queries/prices';
 import { useMintData } from '../hooks/useMintData';
-import { PaymentType } from '../../types/PaymentType';
+import { PaymentType } from '@payflow/common';
 import { tokens as SUPPORTED_TOKENS, Token } from '@payflow/common';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { getNetworkDefaultBlockExplorerUrl } from '../../utils/networks';

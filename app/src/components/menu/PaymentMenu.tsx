@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import { Cancel, OpenInNew, Receipt, Paid } from '@mui/icons-material';
 import { cancelPayment } from '../../services/payments';
-import { PaymentType } from '../../types/PaymentType';
+import { PaymentType } from '@payflow/common';
 import { toast } from 'react-toastify';
 import { green } from '@mui/material/colors';
 import { TbProgressCheck } from 'react-icons/tb';
@@ -70,14 +70,14 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
               {payment.category === 'mint'
                 ? 'Mint Collection'
                 : payment.category === 'hypersub'
-                ? 'Hypersub Subscription'
-                : payment.category === 'reward'
-                ? 'Cast'
-                : payment.category === 'reward_top_casters'
-                ? 'Top Cast'
-                : payment.category === 'reward_top_reply'
-                ? 'Top Reply Cast'
-                : `View on ${targetDomain}`}
+                  ? 'Hypersub Subscription'
+                  : payment.category === 'reward'
+                    ? 'Cast'
+                    : payment.category === 'reward_top_casters'
+                      ? 'Top Cast'
+                      : payment.category === 'reward_top_reply'
+                        ? 'Top Reply Cast'
+                        : `View on ${targetDomain}`}
               <Typography variant="caption" display="block" color="text.secondary">
                 {targetDomain}
               </Typography>

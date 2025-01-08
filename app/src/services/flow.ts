@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { API_URL } from '../utils/urlConstants';
-import { FlowType, FlowWalletType } from '../types/FlowType';
+import { FlowType, FlowWalletType } from '@payflow/common';
 
 export default async function saveFlow(flow: FlowType): Promise<boolean | undefined> {
   try {

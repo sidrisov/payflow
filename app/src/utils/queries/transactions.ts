@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { FlowWalletType, WalletWithProfileType } from '../../types/FlowType';
+import { FlowWalletType, WalletWithProfileType } from '@payflow/common';
 import { sortAndFilterFlowWallets } from '../sortAndFilterFlows';
 import { API_URL } from '../urlConstants';
 import { TxInfo } from '../../types/ActivityFetchResultType';
-import { PaymentType } from '../../types/PaymentType';
+import { PaymentType } from '@payflow/common';
 import axios from 'axios';
 import { baseSepolia, base, optimism, zora, degen, mode } from 'viem/chains';
 import { tokens as SUPPORTED_TOKENS } from '@payflow/common';

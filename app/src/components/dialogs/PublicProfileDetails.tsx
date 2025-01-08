@@ -1,6 +1,6 @@
 import { Divider, Stack } from '@mui/material';
 import { useContext, useState, useRef, lazy } from 'react';
-import { IdentityType } from '../../types/ProfileType';
+import { IdentityType } from '@payflow/common';
 import { useAccount } from 'wagmi';
 import { MoreVert } from '@mui/icons-material';
 import { ProfileSection } from '../ProfileSection';

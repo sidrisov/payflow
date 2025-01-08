@@ -1,5 +1,5 @@
 import { Box, BoxProps, Button, ButtonProps } from '@mui/material';
-import { ProfileType } from '../../types/ProfileType';
+import { ProfileType } from '@payflow/common';
 import { ProfileSection } from '../ProfileSection';
 import { useNavigate } from 'react-router-dom';
 import { useMobile } from '../../utils/hooks/useMobile';

@@ -15,7 +15,7 @@ import {
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { ArrowBack, Clear } from '@mui/icons-material';
 import { useContext, useEffect, useState } from 'react';
-import { ContactType, SelectedIdentityType } from '../../types/ProfileType';
+import { ContactType, SelectedIdentityType } from '@payflow/common';
 
 import { Address } from 'viem';
 import { searchIdentity, sortBySocialScore } from '../../services/socials';

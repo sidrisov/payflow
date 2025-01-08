@@ -2,7 +2,7 @@ import { Box, Stack, IconButton, Typography, Button } from '@mui/material';
 import { PaymentFlowSection } from './PaymentFlowSection';
 import { ProfileSection } from './ProfileSection';
 import { AddressSection } from './AddressSection';
-import { SelectedIdentityType } from '../types/ProfileType';
+import { SelectedIdentityType } from '@payflow/common';
 import { IoMdArrowDropdown } from 'react-icons/io';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useSetActiveWallet } from '@privy-io/wagmi';

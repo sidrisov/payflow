@@ -5,7 +5,7 @@ import { green } from '@mui/material/colors';
 import { HiOutlineDownload } from 'react-icons/hi';
 import { FaCheckCircle, FaRegCircle } from 'react-icons/fa';
 import { ProfileContext } from '../../contexts/UserContext';
-import { FlowType } from '../../types/FlowType';
+import { FlowType } from '@payflow/common';
 import { PaymentFlowSection } from '../../components/PaymentFlowSection';
 import { setReceivingFlow } from '../../services/flow';
 import { delay } from '../../utils/delay';

@@ -1,6 +1,6 @@
 import { useRef, useEffect } from 'react';
 import { Box, Stack, StackProps, CircularProgress, Skeleton } from '@mui/material';
-import { PaymentStatus } from '../../types/PaymentType';
+import { PaymentStatus } from '@payflow/common';
 import { useMobile } from '../../utils/hooks/useMobile';
 import { useOutboundPayments } from '../../utils/queries/payments';
 import { PaymentItem } from './PaymentTypes';

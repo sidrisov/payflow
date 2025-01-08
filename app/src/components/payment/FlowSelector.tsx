@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Typography, Chip, Box, Avatar } from '@mui/material';
-import { FlowType } from '../../types/FlowType';
+import { FlowType } from '@payflow/common';
 import { ChooseFlowDialog } from '../dialogs/ChooseFlowDialog';
 import { PiTipJar } from 'react-icons/pi';
 import { IoIosArrowDown, IoIosWallet } from 'react-icons/io';

@@ -1,6 +1,6 @@
 import { Stack, StackProps } from '@mui/material';
 import NetworkSelectorChip from './chips/NetworkSelectorChip';
-import { WalletType } from '../types/FlowType';
+import { WalletType } from '@payflow/common';
 import { Chain } from 'viem';
 
 export default function NetworkSelectorSection({

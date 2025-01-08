@@ -1,7 +1,7 @@
 import { SelectAll } from '@mui/icons-material';
 import { ChipProps, Chip, Typography } from '@mui/material';
 import { Chain } from 'viem';
-import { WalletType } from '../../types/FlowType';
+import { WalletType } from '@payflow/common';
 import { useConfig } from 'wagmi';
 import NetworkAvatar from '../avatars/NetworkAvatar';
 import { getNetworkDisplayName } from '../../utils/networks';

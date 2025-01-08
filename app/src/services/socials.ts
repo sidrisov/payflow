@@ -1,4 +1,4 @@
-import { MetaType, ContactType, SocialInfoType, InsightsType } from '../types/ProfileType';
+import { MetaType, ContactType, SocialInfoType, InsightsType } from '@payflow/common';
 import { fetchQuery } from '@airstack/airstack-react';
 import { Address, isAddress } from 'viem';
 import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';
@@ -253,8 +253,8 @@ export function convertSocialResults(wallet: Wallet): ContactType | undefined {
             profileName: s.profileName,
             profileDisplayName: s.profileDisplayName,
             profileImage: s.profileImageContentValue?.image?.small ?? s.profileImage,
-            followerCount: s.followerCount,
-          } as SocialInfoType)
+            followerCount: s.followerCount
+          }) as SocialInfoType
       )
       .sort((a, b) => b.followerCount - a.followerCount);
 
@@ -272,7 +272,7 @@ export function convertSocialResults(wallet: Wallet): ContactType | undefined {
             profileName: s.profileName,
             profileDisplayName: s.profileDisplayName,
             profileImage: s.profileImageContentValue?.image?.small ?? s.profileImage,
-            followerCount: s.followerCount,
+            followerCount: s.followerCount
           } as SocialInfoType);
         }
         return acc;

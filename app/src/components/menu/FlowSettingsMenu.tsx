@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { AiFillSignature } from 'react-icons/ai';
 
-import { FlowType } from '../../types/FlowType';
+import { FlowType } from '@payflow/common';
 import { setReceivingFlow } from '../../services/flow';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';

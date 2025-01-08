@@ -14,7 +14,7 @@ import { PaymentSenderType } from '../components/payment/PaymentDialog';
 import { useAccount } from 'wagmi';
 import { ProfileContext } from '../contexts/UserContext';
 import ChoosePaymentOptionDialog from '../components/dialogs/ChoosePaymentOptionDialog';
-import { IdentityType, ProfileType } from '../types/ProfileType';
+import { IdentityType, ProfileType } from '@payflow/common';
 import ProfileAvatar from '../components/avatars/ProfileAvatar';
 import { ProfileDisplayNameWithLink } from '../components/activity/ProfileDisplayNameWithLink';
 import { PublicProfileDetailsPopover } from '../components/menu/PublicProfileDetailsPopover';

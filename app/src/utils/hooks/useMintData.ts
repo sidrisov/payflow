@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Address } from 'viem';
-import { PaymentType } from '../../types/PaymentType';
+import { PaymentType } from '@payflow/common';
 import { fetchMintData, MintMetadata, MintProvider } from '../mint';
 
 type ParsedMintData = {

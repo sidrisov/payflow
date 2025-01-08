@@ -16,14 +16,6 @@ export interface FlowType {
   archived: boolean;
 }
 
-export interface JarType {
-  flow: FlowType;
-  profile: ProfileType;
-  description?: string;
-  image?: string;
-  link?: string;
-}
-
 export interface FlowWalletType {
   address: Address;
   network: number;

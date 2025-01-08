@@ -1,5 +1,5 @@
 import { Popover, PopoverProps } from '@mui/material';
-import { ProfileType } from '../../types/ProfileType';
+import { ProfileType } from '@payflow/common';
 import { PublicProfileDetails } from '../dialogs/PublicProfileDetails';
 
 export function PublicProfileDetailsPopover({

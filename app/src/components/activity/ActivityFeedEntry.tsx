@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { Box, BoxProps, IconButton, Stack, Typography, Skeleton, Badge } from '@mui/material';
-import { MoreHoriz, AutoMode, Payment } from '@mui/icons-material';
+import { Box, BoxProps, IconButton, Stack, Typography, Skeleton } from '@mui/material';
+import { MoreHoriz, AutoMode } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
-import { PaymentType } from '../../types/PaymentType';
-import { IdentityType, ProfileType } from '../../types/ProfileType';
+import { IdentityType, ProfileType, PaymentType } from '@payflow/common';
 
 import { useEnsData } from '../../utils/hooks/useEnsData';
 import { useMobile } from '../../utils/hooks/useMobile';
@@ -171,7 +170,7 @@ export default function PublicProfileActivityFeedSection(
                 alignItems: 'center',
                 gap: 0.5,
                 justifyContent: 'flex-end',
-                pr: "5px"
+                pr: '5px'
               }}>
               <AutoMode sx={{ fontSize: 14, color: 'text.secondary' }} />
               <Typography variant="caption" color="text.secondary">

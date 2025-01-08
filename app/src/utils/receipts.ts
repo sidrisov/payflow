@@ -1,4 +1,4 @@
-import { PaymentType } from '../types/PaymentType';
+import { PaymentType } from '@payflow/common';
 import { getNetworkDefaultBlockExplorerUrl } from './networks';
 
 export function getReceiptUrl(

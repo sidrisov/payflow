@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { API_URL } from '../urlConstants';
-import { ContactWithFanTokenAuction } from '../../types/ProfileType';
+import { ContactWithFanTokenAuction } from '@payflow/common';
 
 export const useFanTokens = ({
   enabled,

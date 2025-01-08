@@ -1,4 +1,4 @@
-import { FlowType, FlowWalletType } from '../types/FlowType';
+import { FlowType, FlowWalletType } from '@payflow/common';
 import { getTokensByChainIds } from '@payflow/common';
 
 export default function getFlowAssets(flow: FlowType) {

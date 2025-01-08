@@ -1,13 +1,5 @@
-import {
-  Box,
-  Menu,
-  MenuItem,
-  MenuList,
-  MenuProps,
-  Stack,
-  Typography
-} from '@mui/material';
-import { FlowWalletType } from '../../types/FlowType';
+import { Box, Menu, MenuItem, MenuList, MenuProps, Stack, Typography } from '@mui/material';
+import { FlowWalletType } from '@payflow/common';
 import { Check } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import NetworkAvatar from '../avatars/NetworkAvatar';

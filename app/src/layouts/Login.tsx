@@ -5,7 +5,7 @@ import CustomThemeProvider from '../theme/CustomThemeProvider';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import ProfileOnboardingDialog from '../components/dialogs/ProfileOnboardingDialog';
-import { ProfileType } from '../types/ProfileType';
+import { ProfileType } from '@payflow/common';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 import { useDarkMode } from '../utils/hooks/useDarkMode';
 import { useMiniApp, useMobile, usePwa } from '../utils/hooks/useMobile';

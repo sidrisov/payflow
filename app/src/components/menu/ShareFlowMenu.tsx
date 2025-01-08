@@ -1,9 +1,8 @@
 import { ListItemIcon, Menu, MenuItem, MenuList, MenuProps } from '@mui/material';
-import { ProfileType } from '../../types/ProfileType';
+import { ProfileType, FlowType } from '@payflow/common';
 import { Person } from '@mui/icons-material';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { DAPP_URL } from '../../utils/urlConstants';
-import { FlowType } from '../../types/FlowType';
 import { PiTipJar } from 'react-icons/pi';
 
 export function ShareFlowMenu({

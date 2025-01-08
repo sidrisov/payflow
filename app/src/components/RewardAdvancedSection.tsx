@@ -11,7 +11,7 @@ import {
   FormControlLabel
 } from '@mui/material';
 import { useState, useEffect } from 'react';
-import { PaymentCategory } from '../types/PaymentType';
+import { PaymentCategory } from '@payflow/common';
 import { QuantitySelector } from './payment/QuantitySelector';
 import { ChannelSelector } from './dialogs/ChannelSelector';
 import { HypersubSelector } from './dialogs/HypersubSelector';

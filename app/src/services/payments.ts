@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { PaymentType } from '../types/PaymentType';
+import { PaymentType } from '@payflow/common';
 import { API_URL } from '../utils/urlConstants';
 
 export async function updatePayment(payment: PaymentType): Promise<boolean | undefined> {

@@ -1,5 +1,5 @@
 import { Stack, StackProps, Box, Popover, Button } from '@mui/material';
-import { MetaType } from '../types/ProfileType';
+import { MetaType } from '@payflow/common';
 import SocialPresenceAvatar from './avatars/SocialPresenceAvatar';
 import { FARCASTER_DAPP, LENS_DAPP, dAppType } from '../utils/dapps';
 import SocialPresenceAvatarWithMeta from './avatars/SocialPresenceAvatarWithMeta';

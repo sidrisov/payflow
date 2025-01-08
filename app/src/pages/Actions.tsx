@@ -1,13 +1,6 @@
 import { useContext, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import {
-  Container,
-  Stack,
-  Typography,
-  Grid2,
-  IconButton,
-  Badge
-} from '@mui/material';
+import { Container, Stack, Typography, Grid2, IconButton, Badge } from '@mui/material';
 import PaymentRewardCastActionComposerDialog from '../components/dialogs/PaymentRewardCastActionComposerDialog';
 import { AutoAwesome, Interests, Star } from '@mui/icons-material';
 import { GrStorage } from 'react-icons/gr';
@@ -17,7 +10,7 @@ import { GoZap } from 'react-icons/go';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { useNavigate } from 'react-router-dom';
 import { ProfileContext } from '../contexts/UserContext';
-import { DEFAULT_FARCASTER_CLIENT, FARCASTER_CLIENTS } from '../types/ProfileType';
+import { DEFAULT_FARCASTER_CLIENT, FARCASTER_CLIENTS } from '@payflow/common';
 import { FarcasterClientAvatar } from '../components/avatars/FarcasterClientAvatar';
 import { SiFarcaster } from 'react-icons/si';
 

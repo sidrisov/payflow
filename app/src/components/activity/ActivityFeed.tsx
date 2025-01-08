@@ -6,8 +6,7 @@ import { ProfileContext } from '../../contexts/UserContext';
 import { Chain } from 'viem';
 import { useCompletedPayments } from '../../utils/queries/payments';
 import { format, parseISO, isToday, isYesterday } from 'date-fns';
-import { IdentityType } from '../../types/ProfileType';
-import { PaymentType } from '../../types/PaymentType';
+import { IdentityType, PaymentType } from '@payflow/common';
 import { useTheme } from '@mui/material/styles';
 import { useSearchParams } from 'react-router-dom';
 import { useTokenPrices } from '../../utils/queries/prices'; // Add this import

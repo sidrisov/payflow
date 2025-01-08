@@ -5,7 +5,7 @@ import TokenAvatar from '../avatars/TokenAvatar';
 import NetworkAvatar from '../avatars/NetworkAvatar';
 import { ActivityIcon, ActivityType } from './ActivityIcon';
 import { usePaymentActivityDetails } from '../../utils/hooks/usePaymentAcitivityDetails';
-import { PaymentType } from '../../types/PaymentType';
+import { PaymentType } from '@payflow/common';
 import FarcasterAvatar from '../avatars/FarcasterAvatar';
 import MoxieAvatar from '../avatars/MoxieAvatar';
 import { secondsToTimeUnit } from '../../utils/time';

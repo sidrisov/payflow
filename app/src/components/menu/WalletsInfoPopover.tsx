@@ -1,6 +1,6 @@
 import { Popover, PopoverProps, Stack, Typography } from '@mui/material';
 import { WalletSection } from '../WalletSection';
-import { FlowType, FlowWalletType } from '../../types/FlowType';
+import { FlowType, FlowWalletType } from '@payflow/common';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
 
 export function WalletsInfoPopover({

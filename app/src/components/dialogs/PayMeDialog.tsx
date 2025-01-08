@@ -23,13 +23,12 @@ import { DAPP_URL } from '../../utils/urlConstants';
 import { TbCopy } from 'react-icons/tb';
 import { createCastPostMessage, createComposeCastUrl } from '../../utils/warpcast';
 import { ProfileContext } from '../../contexts/UserContext';
-import { ProfileType } from '../../types/ProfileType';
+import { ProfileType, FlowType } from '@payflow/common';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
 import TokenAvatar from '../avatars/TokenAvatar';
 import NetworkAvatar from '../avatars/NetworkAvatar';
 import { HiMiniPencilSquare } from 'react-icons/hi2';
 import { green } from '@mui/material/colors';
-import { FlowType } from '../../types/FlowType';
 import FrameV2SDK from '@farcaster/frame-sdk';
 
 interface PayMeDialogProps {

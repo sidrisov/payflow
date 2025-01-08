@@ -3,7 +3,7 @@ import '@farcaster/auth-kit/styles.css';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Login from './Login';
 import axios, { AxiosError } from 'axios';
-import { ProfileType } from '../types/ProfileType';
+import { ProfileType } from '@payflow/common';
 import { me } from '../services/user';
 import { API_URL } from '../utils/urlConstants';
 import { toast } from 'react-toastify';

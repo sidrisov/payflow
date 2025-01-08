@@ -7,7 +7,7 @@ import { CustomLoadingButton } from '../buttons/LoadingPaymentButton';
 import { ProfileContext } from '../../contexts/UserContext';
 import { Check } from '@mui/icons-material';
 import { green, red } from '@mui/material/colors';
-import { FlowType } from '../../types/FlowType';
+import { FlowType } from '@payflow/common';
 import { PaymentFlowSection } from '../PaymentFlowSection';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';

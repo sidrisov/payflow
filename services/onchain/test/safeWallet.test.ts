@@ -22,12 +22,11 @@ import {
 import { privateKeyToAccount } from 'viem/accounts';
 import { base } from 'viem/chains';
 import {
-  generateWallet as generateSmartWallet,
   sendTransaction,
   sendTransactionWithSession,
   manageSessions,
   generateWallet
-} from '@payflow/common/src/wallet/safeWallet';
+} from '@payflow/common';
 import {
   encodeValidationData,
   getPermissionId,
@@ -41,7 +40,7 @@ import {
 
 import { UserOperationCall } from 'viem/account-abstraction';
 import { wagmiConfig } from 'src/utils/wagmi';
-import { initialize } from '@payflow/common/src/paymaster/pimlico';
+import { initialize } from '@payflow/common';
 
 import { config } from 'dotenv';
 
@@ -300,7 +299,7 @@ describe('Safe Wallet', () => {
     it('should handle sponsorship failure', async () => {
       // Mock just for this test
       const originalPimlicoSponsorshipPolicyIds = vi.spyOn(
-        await import('@payflow/common/src/paymaster/pimlico'),
+        await import('@payflow/common'),
         'sponsorshipPolicyIds'
       );
       originalPimlicoSponsorshipPolicyIds.mockImplementation(() => [

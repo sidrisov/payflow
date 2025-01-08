@@ -1,5 +1,5 @@
 import { Link, LinkProps, Typography } from '@mui/material';
-import { ProfileType } from '../../types/ProfileType';
+import { ProfileType } from '@payflow/common';
 import { useMobile } from '../../utils/hooks/useMobile';
 
 export function ProfileDisplayNameWithLink({

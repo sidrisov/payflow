@@ -1,5 +1,5 @@
 import { Avatar, AvatarProps } from '@mui/material';
-import { ProfileType } from '../../types/ProfileType';
+import { ProfileType } from '@payflow/common';
 import AddressAvatar from './AddressAvatar';
 
 export default function ProfileAvatar({
