@@ -2,7 +2,6 @@ import {
   Divider,
   ListItemIcon,
   ListItemText,
-  Menu,
   MenuItem,
   MenuList,
   MenuProps,
@@ -16,8 +15,7 @@ import {
   InfoOutlined,
   LeaderboardRounded,
   Logout,
-  PersonAdd,
-  Settings
+  PersonAdd
 } from '@mui/icons-material';
 import { GiTwoCoins } from 'react-icons/gi';
 
@@ -71,7 +69,7 @@ export function ProfileMenu({
     setOpenDeviceInfo(false);
   };
 
-  const showHiddenMenuOptions = profile.username === 'sinaver1';
+  const showHiddenMenuOptions = profile.username === 'sinaver';
 
   return (
     <>
@@ -146,18 +144,6 @@ export function ProfileMenu({
             <MenuItem
               onClick={async () => {
                 closeStateCallback();
-                navigate('/advanced');
-              }}>
-              <ListItemIcon>
-                <Settings fontSize="small" />
-              </ListItemIcon>
-              Advanced
-            </MenuItem>
-          )}
-          {showHiddenMenuOptions && (
-            <MenuItem
-              onClick={async () => {
-                closeStateCallback();
                 navigate('/leaderboard');
               }}>
               <ListItemIcon>
@@ -176,16 +162,6 @@ export function ProfileMenu({
             </ListItemIcon>
             Farcaster Storage
           </MenuItem>
-          {/* <MenuItem
-            onClick={async () => {
-              closeStateCallback();
-              navigate('/notifications');
-            }}>
-            <ListItemIcon>
-              <Notifications fontSize="small" />
-            </ListItemIcon>
-            Notifications
-          </MenuItem> */}
           <Divider />
           <MenuItem component="a" href="https://warpcast.com/~/inbox/create/19129" target="_blank">
             <ListItemIcon>
