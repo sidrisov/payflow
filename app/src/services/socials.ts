@@ -253,7 +253,8 @@ export function convertSocialResults(wallet: Wallet): ContactType | undefined {
             profileName: s.profileName,
             profileDisplayName: s.profileDisplayName,
             profileImage: s.profileImageContentValue?.image?.small ?? s.profileImage,
-            followerCount: s.followerCount
+            followerCount: s.followerCount,
+            profileId: s.userId
           }) as SocialInfoType
       )
       .sort((a, b) => b.followerCount - a.followerCount);
@@ -272,7 +273,8 @@ export function convertSocialResults(wallet: Wallet): ContactType | undefined {
             profileName: s.profileName,
             profileDisplayName: s.profileDisplayName,
             profileImage: s.profileImageContentValue?.image?.small ?? s.profileImage,
-            followerCount: s.followerCount
+            followerCount: s.followerCount,
+            profileId: s.userId
           } as SocialInfoType);
         }
         return acc;
