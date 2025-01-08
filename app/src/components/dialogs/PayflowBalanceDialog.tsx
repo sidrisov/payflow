@@ -37,6 +37,7 @@ import saveFlow from '../../services/flow';
 import { HiOutlineCheckCircle } from 'react-icons/hi';
 import { IoMdKey } from 'react-icons/io';
 import { ProfileContext } from '../../contexts/UserContext';
+import { isBrowser } from 'react-device-detect';
 
 export type PayflowBalanceDialogProps = DialogProps &
   CloseCallbackType & {
@@ -359,20 +360,23 @@ export default function PayflowBalanceDialog({
             flow was successfully created!
           </Typography>
 
-          {!isFrameV2 && extraSigner && address && connector?.id === 'io.privy.wallet' && (
-            <Button
-              startIcon={<IoMdKey />}
-              onClick={() => linkPasskey()}
-              variant="text"
-              color="inherit"
-              sx={{
-                borderRadius: 3,
-                textTransform: 'none',
-                width: 150
-              }}>
-              Add Passkey
-            </Button>
-          )}
+          {(!isFrameV2 || isBrowser) &&
+            extraSigner &&
+            address &&
+            connector?.id === 'io.privy.wallet' && (
+              <Button
+                startIcon={<IoMdKey />}
+                onClick={() => linkPasskey()}
+                variant="text"
+                color="inherit"
+                sx={{
+                  borderRadius: 3,
+                  textTransform: 'none',
+                  width: 150
+                }}>
+                Add Passkey
+              </Button>
+            )}
 
           <Stack direction="row" spacing={1} width="100%">
             <Button

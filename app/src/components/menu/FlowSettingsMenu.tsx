@@ -33,6 +33,7 @@ import { HiOutlineDownload } from 'react-icons/hi';
 import { PayMeDialog } from '../dialogs/PayMeDialog';
 import { AutoMode } from '@mui/icons-material';
 import { WalletPermissionsDialog } from '../dialogs/WalletPermissionsDialog';
+import { isBrowser } from 'react-device-detect';
 
 export function FlowSettingsMenu({
   showOnlySigner,
@@ -149,7 +150,7 @@ export function FlowSettingsMenu({
                   </Typography>
                 </Stack>
               </MenuItem>
-              {isConnected && flow.signerProvider === 'privy' && !isFrameV2 && (
+              {(!isFrameV2 || isBrowser) && flow.signerProvider === 'privy' && isConnected && (
                 <MenuItem onClick={() => linkPasskey()}>
                   <ListItemIcon>
                     <IoMdKey />
