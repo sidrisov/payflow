@@ -9,7 +9,11 @@ export function Head() {
   const button = urlParsed.search.button;
   const theme = urlParsed.search.theme;
 
-  const imageUrl = `${FRAMES_URL}/images/profile/${username}/payment.png?step=start${title ? `&entryTitle=${title}` : ''}${theme ? `&theme=${theme}` : ''}`;
+  const imageUrl = `${FRAMES_URL}/images/profile/${username}/payment.png?${
+    title ? `&title=${title}` : ''
+  }${theme ? `&theme=${theme}` : ''}${
+    urlParsed.search.refId ? `&refId=${urlParsed.search.refId}` : ''
+  }`;
 
   const chainId = urlParsed.search.chainId;
   const tokenId = urlParsed.search.tokenId;
@@ -19,7 +23,7 @@ export function Head() {
   const includeInputText = !tokenAmount && !usdAmount;
   const inputText = tokenId ? `Enter <amount> ${tokenId}` : '50 degen or 100 moxie';
 
-  const commnandUrl = (includeInputText: boolean) => {
+  const commandUrl = (includeInputText: boolean) => {
     const baseUrl = `${API_URL}/api/farcaster/frames/pay/${username}/frame/command`;
     const params = new URLSearchParams();
 
@@ -38,7 +42,7 @@ export function Head() {
   const paymentButtonText = includeInputText
     ? button || 'Pay'
     : `${button || 'Pay'}: ${tokenAmount ?? `$${usdAmount}`} ${tokenId?.toUpperCase() ?? 'USDC'}`;
-  const postTargetUrl = commnandUrl(includeInputText);
+  const postTargetUrl = commandUrl(includeInputText);
 
   return (
     <>

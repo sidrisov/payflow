@@ -5,20 +5,14 @@ import bodyParser from 'body-parser';
 import { renderPage } from 'vike/server';
 import { htmlToImage } from './utils/image';
 import axios from 'axios';
-import { profileHtml } from './components/Profile';
-import { IdentityType, ProfileType } from './types/ProfleType';
-
+import { IdentityType } from './types/ProfleType';
 import dotenv from 'dotenv';
-import { BalanceType } from './types/BalanceType';
-import { PaymentType } from './types/PaymentType';
+import { PaymentType } from '@payflow/common';
 import { paymentHtml } from './components/Payment';
 import { Address, Chain } from 'viem';
 import { arbitrum, base, degen, ham, mode, optimism, worldchain, zora } from 'viem/chains';
-import { JarType } from './types/FlowType';
-import { jarHtml } from './components/Jar';
 import { fetchTokenPrices } from './utils/prices';
 import { TokenPrices } from '@payflow/common';
-import { getAssetBalances, getFlowAssets, getTotalBalance } from './utils/balances';
 import { XmtpOpenFramesRequest, validateFramesPost } from '@xmtp/frames-validator';
 import { normalizeNumberPrecision } from './utils/format';
 import { createJarHtml } from './components/CreateJar';
@@ -140,64 +134,121 @@ async function startServer() {
     }
   });
 
-  app.get('/images/profile/:identity/image.png', async (req, res) => {
-    const identity = req.params.identity;
-
+  app.get('/images/payment/:refId/image.png', async (req, res) => {
     try {
-      const response = await axios.get(`${API_URL}/api/user/${identity}`);
-      const profileData = response.data as ProfileType;
-      const image = await htmlToImage(profileHtml(profileData), 'landscape');
-      res.type('png').send(image);
+      // Fetch payment from API
+      const paymentResponse = await axios.get(`${API_URL}/api/payment/${req.params.refId}`);
+      const payment = paymentResponse.data;
+
+      // Calculate token amount or USD amount if missing
+      if (payment.tokenAmount === undefined && payment.usdAmount !== undefined && payment.token) {
+        payment.tokenAmount = Number.parseFloat(
+          normalizeNumberPrecision(payment.usdAmount / TOKEN_PRICES[payment.token])
+        );
+      }
+
+      if (payment.usdAmount === undefined && payment.tokenAmount !== undefined && payment.token) {
+        payment.usdAmount = Number.parseFloat(
+          normalizeNumberPrecision(payment.tokenAmount * TOKEN_PRICES[payment.token])
+        );
+      }
+
+      const titleBase64 = req.query.title;
+      const theme = req.query.theme ?? 'light';
+      const title =
+        titleBase64 &&
+        (titleBase64 as string).length > 0 &&
+        decodeURIComponent(titleBase64 as string);
+
+      // Fetch identity data
+      const response = await axios.get(
+        `${API_URL}/api/user/identities/${payment.receiver?.identity || payment.receiverAddress}`
+      );
+      let identityData = (
+        response.data !== '' ? response.data : { identity: payment.receiverAddress }
+      ) as IdentityType;
+
+      console.debug('Payment: ', payment);
+
+      const image = await htmlToImage(
+        paymentHtml(identityData, payment, title as any, theme as any),
+        'landscape',
+        3 / 2
+      );
+      res.setHeader('Cache-Control', 'max-age=120').type('png').send(image);
     } catch (error) {
       console.error(error);
-      res.status(500).send('Error retrieving profile data');
+      res.status(500).send('Error retrieving payment or identity data');
     }
   });
 
   app.get('/images/profile/:identity/payment.png', async (req, res) => {
     const identity = req.params.identity as Address;
-    const step = req.query.step;
-    const payment = {
-      chainId: Number(req.query.chainId),
-      token: req.query.token,
-      usdAmount: req.query.usdAmount,
-      tokenAmount: req.query.tokenAmount,
-      status: req.query.status
-    } as PaymentType;
-
-    const entryTitleBase64 = req.query.entryTitle;
-    const theme = req.query.theme ?? 'light';
-
-    const entryTitle =
-      entryTitleBase64 &&
-      (entryTitleBase64 as string).length > 0 &&
-      decodeURIComponent(entryTitleBase64 as string);
-
-    if (!payment.tokenAmount && payment.usdAmount && payment.token) {
-      payment.tokenAmount = normalizeNumberPrecision(
-        Number.parseFloat(payment.usdAmount) / TOKEN_PRICES[payment.token]
-      ).toString();
-    }
-
-    if (!payment.usdAmount && payment.tokenAmount && payment.token) {
-      payment.usdAmount = normalizeNumberPrecision(
-        Number.parseFloat(payment.tokenAmount) * TOKEN_PRICES[payment.token]
-      ).toString();
-    }
-
-    console.debug('Payment: ', payment);
+    let payment: PaymentType;
 
     try {
+      if (req.query.refId) {
+        // Fetch payment from API
+        const response = await axios.get(`${API_URL}/api/payment/${req.query.refId}`);
+        payment = response.data;
+
+        // Calculate token amount or USD amount if missing
+        if (payment.tokenAmount === undefined && payment.usdAmount !== undefined && payment.token) {
+          payment.tokenAmount = Number.parseFloat(
+            normalizeNumberPrecision(payment.usdAmount / TOKEN_PRICES[payment.token])
+          );
+        }
+
+        if (payment.usdAmount === undefined && payment.tokenAmount !== undefined && payment.token) {
+          payment.usdAmount = Number.parseFloat(
+            normalizeNumberPrecision(payment.tokenAmount * TOKEN_PRICES[payment.token])
+          );
+        }
+      } else {
+        // Use query parameters if no referenceId
+        payment = {
+          chainId: Number(req.query.chainId),
+          token: req.query.token,
+          usdAmount: req.query.usdAmount,
+          tokenAmount: req.query.tokenAmount,
+          status: req.query.status
+        } as unknown as PaymentType;
+
+        // Calculate missing amounts
+        if (payment.tokenAmount === undefined && payment.usdAmount !== undefined && payment.token) {
+          payment.tokenAmount = Number.parseFloat(
+            normalizeNumberPrecision(payment.usdAmount / TOKEN_PRICES[payment.token])
+          );
+        }
+
+        if (payment.usdAmount === undefined && payment.tokenAmount !== undefined && payment.token) {
+          payment.usdAmount = Number.parseFloat(
+            normalizeNumberPrecision(payment.tokenAmount * TOKEN_PRICES[payment.token])
+          );
+        }
+      }
+
+      const titleBase64 = req.query.title;
+      const theme = req.query.theme ?? 'light';
+      const title =
+        titleBase64 &&
+        (titleBase64 as string).length > 0 &&
+        decodeURIComponent(titleBase64 as string);
+
+      // Fetch identity data
       const response = await axios.get(`${API_URL}/api/user/identities/${identity}`);
       let identityData = (response.data !== '' ? response.data : { identity }) as IdentityType;
+
+      console.debug('Payment: ', payment);
+
       const image = await htmlToImage(
-        paymentHtml(identityData, step as any, payment, entryTitle as any, theme as any),
+        paymentHtml(identityData, payment, title as any, theme as any),
         'landscape'
       );
-      res.setHeader('Cache-Control', 'max-age=60').type('png').send(image);
+      res.setHeader('Cache-Control', 'max-age=120').type('png').send(image);
     } catch (error) {
       console.error(error);
-      res.status(500).send('Error retrieving profile data');
+      res.status(500).send('Error retrieving payment or identity data');
     }
   });
 
@@ -276,26 +327,6 @@ async function startServer() {
     }
   });
 
-  app.get('/images/profile/:identity/balance.png', async (req, res) => {
-    const identity = req.params.identity;
-    const balances: BalanceType[] = [];
-    Object.keys(req.query).forEach((key) => {
-      if (balanceParams.includes(key)) {
-        balances.push({ token: key, balance: req.query[key] as string });
-      }
-    });
-
-    try {
-      const response = await axios.get(`${API_URL}/api/user/${identity}`);
-      const profileData = response.data as ProfileType;
-      const image = await htmlToImage(profileHtml(profileData, balances), 'landscape');
-      res.type('png').send(image);
-    } catch (error) {
-      console.error(error);
-      res.status(500).send('Error retrieving profile data');
-    }
-  });
-
   app.get('/images/jar/create/image.png', async (_, res) => {
     try {
       const image = await htmlToImage(createJarHtml(), 'landscape');
@@ -306,7 +337,7 @@ async function startServer() {
     }
   });
 
-  app.get('/images/jar/:uuid/image.png', async (req, res) => {
+  /* app.get('/images/jar/:uuid/image.png', async (req, res) => {
     const uuid = req.params.uuid;
     const step = req.query.step;
     const payment = {
@@ -347,7 +378,7 @@ async function startServer() {
       console.error(error);
       res.status(500).send('Error retrieving jar data');
     }
-  });
+  }); */
 
   app.post('/xmtp/validate', async (req, res) => {
     try {

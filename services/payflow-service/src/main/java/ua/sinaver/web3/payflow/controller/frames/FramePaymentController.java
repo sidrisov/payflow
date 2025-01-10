@@ -9,7 +9,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +16,6 @@ import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.message.FrameButton;
 import ua.sinaver.web3.payflow.message.FramePaymentMessage;
-import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
@@ -27,15 +25,9 @@ import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
-import java.util.Comparator;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -51,14 +43,6 @@ public class FramePaymentController {
 
 	public static final String PAY = BASE_PATH +
 			"/pay/%s";
-	public static final String PAY_CREATE = BASE_PATH +
-			"/pay/create";
-	private static final String PAY_SHARE = BASE_PATH +
-			"/pay/%s/share";
-	private static final String PAY_IN_FRAME = BASE_PATH +
-			"/pay/%s/frame";
-	private static final String PAY_IN_FRAME_COMMAND = BASE_PATH +
-			"/pay/%s/frame/command";
 	private static final String PAY_IN_FRAME_CONFIRM = BASE_PATH +
 			"/pay/%s/frame/confirm";
 	private static final String PAY_IN_FRAME_COMMENT = BASE_PATH +
@@ -83,9 +67,6 @@ public class FramePaymentController {
 	private TransactionService transactionService;
 
 	@Autowired
-	private TokenPriceService tokenPriceService;
-
-	@Autowired
 	private PaymentRepository paymentRepository;
 
 	@Autowired
@@ -106,182 +87,13 @@ public class FramePaymentController {
 	@Autowired
 	private LinkService linkService;
 
-	private static String roundTokenAmount(double amount) {
-		val scale = amount < 1.0 ? 5 : 1;
-		val amountInDecimals = BigDecimal.valueOf(amount);
-		val roundedAmount = amountInDecimals.setScale(scale, RoundingMode.HALF_UP).toString();
-		log.debug("roundTokenAmount: before {} after {} with scale {}", amountInDecimals, roundedAmount, scale);
-		return roundedAmount;
-	}
-
-	@PostMapping("/create")
-	public ResponseEntity<?> create(@RequestBody FrameMessage frameMessage) {
-		log.debug("Received create payment frame message request: {}", frameMessage);
-		val validateMessage = neynarService.validateFrameMessageWithNeynar(
-				frameMessage.trustedData().messageBytes());
-
-		if (!validateMessage.valid()) {
-			log.error("Frame message failed validation {}", validateMessage);
-			return DEFAULT_HTML_RESPONSE;
-		}
-		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
-				validateMessage.action().url());
-
-		val castInteractor = validateMessage.action().interactor();
-
-		// pay first with higher social score now invite first
-		val paymentAddresses = identityService.getIdentitiesInfo(castInteractor.addressesWithoutCustodialIfAvailable())
-				.stream().sorted(Comparator.comparingInt(IdentityMessage::score))
-				.map(IdentityMessage::address).toList();
-
-		// check if profile exist
-		val paymentProfile = identityService.getProfiles(paymentAddresses).stream().findFirst().orElse(null);
-		if (paymentProfile == null) {
-			log.warn("Interactor fid {} is not on Payflow", castInteractor);
-		}
-
-		String paymentIdentity;
-		if (paymentProfile == null || (paymentProfile.getDefaultFlow() == null
-				&& paymentProfile.getDefaultReceivingAddress() == null)) {
-			if (!paymentAddresses.isEmpty()) {
-				// return first associated address
-				paymentIdentity = paymentAddresses.getFirst();
-			} else {
-				return ResponseEntity.badRequest().body(
-						new FrameResponse.FrameMessage("Missing verified identity! Contact @sinaver.eth"));
-			}
-		} else {
-			// return profile identity
-			paymentIdentity = paymentProfile.getIdentity();
-		}
-
-		val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
-				"/payment.png?step=create", paymentIdentity));
-
-		return FrameResponse.builder()
-				.imageUrl(profileImage)
-				.textInput("Enter payment frame title")
-				.button(new FrameButton("\uD83D\uDCDD Cast", FrameButton.ActionType.POST_REDIRECT,
-						apiServiceUrl.concat(String.format(PAY_SHARE, paymentIdentity))))
-				.build().toHtmlResponse();
-	}
-
-	@PostMapping("/{identity}/share")
-	public ResponseEntity<?> share(@PathVariable String identity,
-	                               @RequestBody FrameMessage frameMessage) {
-		log.debug("Received share payment frame message request: {}", frameMessage);
-		val validateMessage = neynarService.validateFrameMessageWithNeynar(
-				frameMessage.trustedData().messageBytes());
-
-		if (!validateMessage.valid()) {
-			log.error("Frame message failed validation {}", validateMessage);
-			return DEFAULT_HTML_RESPONSE;
-		}
-		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
-				validateMessage.action().url());
-
-		val title = validateMessage.action().input() != null
-				? URLEncoder.encode(validateMessage.action().input().text(), StandardCharsets.UTF_8)
-				: "";
-
-		try {
-			val baseUrl = "https://warpcast.com/~/compose";
-			val castText = URLEncoder.encode("Hey hey you can pay me here", StandardCharsets.UTF_8);
-			val embedUrl = String.format("https://app.payflow" +
-					".me/%s?title=%s", identity, title);
-
-			val castShareDeepLink = String.format("%s?text=%s&embeds[]=%s", baseUrl, castText,
-					embedUrl);
-
-			val redirectURI = new URI(castShareDeepLink);
-			log.debug("Redirecting to {}", redirectURI);
-			return ResponseEntity.status(HttpStatus.FOUND).location(redirectURI).build();
-		} catch (Throwable t) {
-			log.debug("Failed to redirect:", t);
-			return ResponseEntity.badRequest().body(
-					new FrameResponse.FrameMessage("Failed to redirect!"));
-		}
-	}
-
-	@PostMapping("/{identity}")
-	public ResponseEntity<String> paymentOptions(@PathVariable String identity,
-	                                             @RequestBody FrameMessage frameMessage) {
-		log.debug("Received pay profile {} options frame message request: {}",
-				identity, frameMessage);
-		val validateMessage = neynarService.validateFrameMessageWithNeynar(
-				frameMessage.trustedData().messageBytes());
-
-		if (!validateMessage.valid()) {
-			log.error("Frame message failed validation {}", validateMessage);
-			return DEFAULT_HTML_RESPONSE;
-		}
-		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
-				validateMessage.action().url());
-
-		val paymentProfile = userService.findByUsernameOrIdentity(identity);
-		if (paymentProfile != null && paymentProfile.isAllowed()) {
-			val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
-							"/payment.png?step=start",
-					paymentProfile.getIdentity()));
-			val paymentLink = dAppServiceUrl.concat(String.format("/%s?pay",
-					paymentProfile.getUsername()));
-			val installCastActionLink = String.format(
-					"https://warpcast.com/~/add-cast-action?url=%s/api/farcaster/actions/profile",
-					apiServiceUrl);
-
-			return FrameResponse.builder()
-					.imageUrl(profileImage)
-					.button(new FrameButton("⚡\uFE0F Pay",
-							FrameButton.ActionType.POST,
-							apiServiceUrl.concat(String.format(PAY_IN_FRAME, paymentProfile.getIdentity()))))
-					.button(new FrameButton("App", FrameButton.ActionType.LINK,
-							paymentLink))
-					.button(new FrameButton("Action", FrameButton.ActionType.LINK,
-							installCastActionLink))
-					.build().toHtmlResponse();
-		}
-		return DEFAULT_HTML_RESPONSE;
-	}
-
-	@PostMapping("/{identity}/frame")
-	public ResponseEntity<String> pay(@PathVariable String identity,
-	                                  @RequestBody FrameMessage frameMessage) {
-		log.debug("Received pay profile {} in frame message request: {}",
-				identity, frameMessage);
-		val validateMessage = neynarService.validateFrameMessageWithNeynar(
-				frameMessage.trustedData().messageBytes());
-
-		if (!validateMessage.valid()) {
-			log.error("Frame message failed validation {}", validateMessage);
-			return DEFAULT_HTML_RESPONSE;
-		}
-		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
-				validateMessage.action().url());
-
-		val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
-				"/payment.png?step=command", identity));
-
-		/*
-		 * val tokensSupported = "https://payflowlabs.notion" +
-		 * ".site/Payflow-support-tokens-chains-e36f2c1e9f7e4bfd834baf604ce9a375";
-		 */
-		return FrameResponse.builder()
-				.imageUrl(profileImage)
-				.textInput("50 degen or 10 moxie")
-				.postUrl(apiServiceUrl.concat(String.format(PAY_IN_FRAME_COMMAND, identity)))
-				.button(new FrameButton("Confirm", FrameButton.ActionType.POST, null))
-				// .button(new FrameButton("Tokens", FrameButton.ActionType.LINK,
-				// tokensSupported))
-				.build().toHtmlResponse();
-	}
-
 	@PostMapping("/{identity}/frame/command")
 	public ResponseEntity<?> command(@PathVariable String identity,
-	                                 @RequestBody FrameMessage frameMessage,
-	                                 @RequestParam(required = false, defaultValue = "8453") Integer chainId,
-	                                 @RequestParam(required = false, defaultValue = "usdc") String tokenId,
-	                                 @RequestParam(required = false) Double tokenAmount,
-	                                 @RequestParam(required = false) Double usdAmount) {
+			@RequestBody FrameMessage frameMessage,
+			@RequestParam(required = false, defaultValue = "8453") Integer chainId,
+			@RequestParam(required = false, defaultValue = "usdc") String tokenId,
+			@RequestParam(required = false) Double tokenAmount,
+			@RequestParam(required = false) Double usdAmount) {
 		log.debug("Received enter payment amount message request: {}", frameMessage);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
@@ -321,7 +133,8 @@ public class FramePaymentController {
 
 		var token = (Token) null;
 		if (tokenAmount == null && usdAmount == null) {
-			val inputText = validateMessage.action().input() != null ? validateMessage.action().input().text().toLowerCase()
+			val inputText = validateMessage.action().input() != null
+					? validateMessage.action().input().text().toLowerCase()
 					: null;
 
 			if (StringUtils.isBlank(inputText)) {
@@ -391,7 +204,6 @@ public class FramePaymentController {
 			}
 		}
 
-
 		String paymentAddress = null;
 		val paymentProfile = userService.findByUsernameOrIdentity(identity);
 
@@ -421,7 +233,7 @@ public class FramePaymentController {
 			payment.setSender(senderProfile);
 			payment.setSenderAddress(senderProfile != null ? senderProfile.getIdentity()
 					: identityService
-					.getHighestScoredIdentity(senderFarcasterUser.addressesWithoutCustodialIfAvailable()));
+							.getHighestScoredIdentity(senderFarcasterUser.addressesWithoutCustodialIfAvailable()));
 			payment.setReceiverAddress(paymentAddress);
 			if (tokenAmount != null) {
 				payment.setTokenAmount(tokenAmount.toString());
@@ -437,15 +249,14 @@ public class FramePaymentController {
 				payment.setSourceHash(sourceHash);
 				payment.setSourceRef(sourceRef);
 			}
-			paymentRepository.save(payment);
+			paymentRepository.saveAndFlush(payment);
 
 			val refId = payment.getReferenceId();
 			val updatedState = gson.toJson(new FramePaymentMessage(paymentAddress,
 					token.chainId(), token.id(), usdAmount, tokenAmount, refId));
 			val profileImage = framesServiceUrl.concat(String.format(
-					"/images/profile/%s/payment.png?step=confirm&chainId=%s&token=%s&usdAmount=%s&tokenAmount=%s",
-					identity, token.chainId(), token.id(), usdAmount != null ? usdAmount : "",
-					tokenAmount != null ? tokenAmount : ""));
+					"/images/profile/%s/payment.png?refId=%s",
+					identity, refId));
 			val frameResponseBuilder = FrameResponse.builder()
 					.postUrl(apiServiceUrl.concat(String.format(PAY_IN_FRAME_CONFIRM, refId)))
 					.button(new FrameButton("Quick", FrameButton.ActionType.TX,
@@ -470,7 +281,7 @@ public class FramePaymentController {
 
 	@PostMapping("/{refId}/frame/confirm")
 	public ResponseEntity<?> confirm(@PathVariable String refId,
-	                                 @RequestBody FrameMessage frameMessage) {
+			@RequestBody FrameMessage frameMessage) {
 		log.debug("Received payment confirm message request: {}", frameMessage);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
@@ -481,8 +292,6 @@ public class FramePaymentController {
 		}
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
 				validateMessage.action().url());
-
-		val interactor = validateMessage.action().interactor();
 
 		val buttonIndex = validateMessage.action().tappedButton().index();
 		// TODO: pass, wallet as sender which was used to execute transaction
@@ -503,7 +312,6 @@ public class FramePaymentController {
 
 		val paymentIdentity = payment.getReceiver() != null ? payment.getReceiver().getIdentity()
 				: payment.getReceiverAddress();
-		val tokenAmount = paymentService.getTokenAmount(payment);
 		if (paymentIdentity != null) {
 			// handle transaction execution result
 			if (StringUtils.isNotBlank(transactionId)) {
@@ -535,8 +343,8 @@ public class FramePaymentController {
 						val sourceRef = validateMessage.action().cast().parentUrl() != null
 								? validateMessage.action().cast().parentUrl()
 								: String.format("https://warpcast.com/%s/%s",
-								validateMessage.action().cast().author().username(),
-								sourceHash.substring(0, 10));
+										validateMessage.action().cast().author().username(),
+										sourceHash.substring(0, 10));
 						payment.setSourceHash(sourceHash);
 						payment.setSourceRef(sourceRef);
 					}
@@ -545,11 +353,8 @@ public class FramePaymentController {
 				notificationService.notifyPaymentCompletion(payment, null);
 
 				val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
-								"/payment.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
-								"&tokenAmount=%s&status=%s",
-						paymentIdentity, payment.getNetwork(), payment.getToken(),
-						StringUtils.isNotBlank(payment.getUsdAmount()) ? payment.getUsdAmount() : "",
-						roundTokenAmount(tokenAmount), "success"));
+						"/payment.png?refId=%s",
+						paymentIdentity, refId));
 
 				val receiptUrl = receiptService.getReceiptUrl(payment);
 				return FrameResponse.builder()
@@ -565,11 +370,6 @@ public class FramePaymentController {
 						.button(new FrameButton("💸 History",
 								FrameButton.ActionType.LINK,
 								"https://warpcast.com/~/composer-action?url=https://api.alpha.payflow.me/api/farcaster/composer/pay?action=activity"))
-						/*
-						 * .button(new FrameButton("\uD83C\uDF1F Tip",
-						 * FrameButton.ActionType.POST,
-						 * apiServiceUrl.concat(String.format(PAY_PAYFLOW_JAR))))
-						 */
 						.build().toHtmlResponse();
 			} else if (buttonIndex == 1) {
 				log.debug("Handling payment through frame tx: {}", payment);
@@ -589,7 +389,7 @@ public class FramePaymentController {
 
 	@PostMapping("/{refId}/frame/comment")
 	public ResponseEntity<?> comment(@PathVariable String refId,
-	                                 @RequestBody FrameMessage frameMessage) {
+			@RequestBody FrameMessage frameMessage) {
 		log.debug("Received payment comment message request: {}", frameMessage);
 		val validateMessage = neynarService.validateFrameMessageWithNeynar(
 				frameMessage.trustedData().messageBytes());
@@ -618,21 +418,13 @@ public class FramePaymentController {
 
 		val paymentIdentity = payment.getReceiver() != null ? payment.getReceiver().getIdentity()
 				: payment.getReceiverAddress();
-		val tokenAmount = roundTokenAmount(
-				payment.getTokenAmount() != null ? Double.parseDouble(payment.getTokenAmount())
-						: Double.parseDouble(
-						payment.getUsdAmount()) / tokenPriceService.getPrices().get(payment.getToken()));
 		if (paymentIdentity != null) {
 			if (buttonIndex == 1) {
 				log.debug("Handling add comment for payment: {}", payment);
-				// TODO: optimize
 
 				val profileImage = framesServiceUrl.concat(String.format("/images/profile/%s" +
-								"/payment.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
-								"&tokenAmount=%s&status=%s",
-						paymentIdentity, payment.getNetwork(), payment.getToken(),
-						StringUtils.isNotBlank(payment.getUsdAmount()) ? payment.getUsdAmount() : "", tokenAmount,
-						"success"));
+						"/payment.png?refId=%s",
+						paymentIdentity, refId));
 
 				val receiptUrl = receiptService.getReceiptUrl(payment);
 				val frameResponseBuilder = FrameResponse.builder()
@@ -643,17 +435,12 @@ public class FramePaymentController {
 						.button(new FrameButton("💸 History",
 								FrameButton.ActionType.LINK,
 								"https://warpcast.com/~/composer-action?url=https://api.alpha.payflow.me/api/farcaster/composer/pay?action=activity"))
-						/*
-						 * .button(new FrameButton("\uD83C\uDF1F Tip",
-						 * FrameButton.ActionType.POST,
-						 * apiServiceUrl.concat(String.format(PAY_PAYFLOW_JAR))))
-						 */
 						.state(validateMessage.action().state().serialized());
 
 				val input = validateMessage.action().input();
 
 				val comment = input != null ? input.text() : null;
-				if (!StringUtils.isBlank(comment) && comment.length() <= 64) {
+				if (StringUtils.isNotBlank(comment) && comment.length() <= 64) {
 					payment.setComment(comment);
 
 					// send direct message with comment
@@ -664,11 +451,11 @@ public class FramePaymentController {
 						val senderFname = senderFarcasterUser.username();
 
 						val messageText = String.format("""
-										 @%s, you've received a comment attached to the %s %s payment by @%s 💸
-										💬 Comment: %s
+								 @%s, you've received a comment attached to the %s %s payment by @%s 💸
+								💬 Comment: %s
 
-										%s
-										🧾 Receipt: %s""",
+								%s
+								🧾 Receipt: %s""",
 
 								receiverFname,
 								StringUtils.isNotBlank(payment.getTokenAmount())

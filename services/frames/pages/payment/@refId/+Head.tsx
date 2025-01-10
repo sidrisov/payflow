@@ -8,27 +8,40 @@ export function Head() {
   const { urlParsed } = usePageContext();
 
   const isMiniApp = urlParsed.search.mini !== undefined && urlParsed.search.mini !== 'false';
+  const isFrameV2 = urlParsed.search.fv2 !== undefined && urlParsed.search.fv2 !== 'false';
 
   const payment = useData<Data>();
+
   const refId = payment.referenceId;
   const status = payment.status;
 
   const identity = payment.receiver?.identity ?? payment.receiverAddress;
 
-  const imageUrl =
-    status === 'CREATED'
-      ? /* type === 'INTENT'
-        ? `${FRAMES_URL}/images/profile/${identity}/payment.png?step=execute&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount ?? ''}&tokenAmount=${payment.tokenAmount ?? ''}`
-        : */ `${FRAMES_URL}/images/profile/${identity}/payment.png?step=confirm&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount ?? ''}&tokenAmount=${payment.tokenAmount ?? ''}`
-      : `${FRAMES_URL}/images/profile/${identity}/payment.png?step=execute&chainId=${payment.chainId}&token=${payment.token}&usdAmount=${payment.usdAmount ?? ''}&tokenAmount=${payment.tokenAmount ?? ''}&status=success`;
+  const imageUrl = isFrameV2
+    ? `${FRAMES_URL}/images/payment/${refId}/image.png`
+    : `${FRAMES_URL}/images/profile/${identity}/payment.png?refId=${refId}`;
 
   const receiptUrl = getReceiptUrl(payment.chainId, payment.hash ?? payment.fulfillmentHash);
 
-  const activityUrl =
-    'https://warpcast.com/~/composer-action?url=https://api.alpha.payflow.me/api/farcaster/composer/pay?action=activity';
-
   const composerUrl = `${API_URL}/api/farcaster/composer/pay?action=payment&refId=${refId}`;
   const miniAppUrl = `https://warpcast.com/~/composer-action?url=${encodeURIComponent(composerUrl)}`;
+
+  const frame = isFrameV2
+    ? {
+        version: 'next',
+        imageUrl,
+        button: {
+          title: payment.status === 'COMPLETED' ? 'Receipt' : 'Pay',
+          action: {
+            type: 'launch_frame',
+            name: 'Payflow Payment',
+            url: `${DAPP_URL}/payment/${refId}`,
+            splashImageUrl: 'https://app.payflow.me/apple-touch-icon.png',
+            splashBackgroundColor: '#f7f7f7'
+          }
+        }
+      }
+    : null;
 
   return (
     <>
@@ -67,40 +80,39 @@ export function Head() {
         <meta property="of:accepts:xmtp" content="2024-02-01" />
         <meta property="of:accepts:lens" content="1.1" />
 
-        <meta property="fc:frame" content="vNext" />
-
-        <meta property="fc:frame:image" content={imageUrl} />
-
-        {status === 'CREATED' ? (
-          <>
-            <meta
-              property="fc:frame:post_url"
-              content={`${API_URL}/api/farcaster/frames/pay/${refId}/frame/confirm`}
-            />
-            <meta property="fc:frame:button:1" content="Quick" />
-            <meta property="fc:frame:button:1:action" content="tx" />
-            <meta
-              property="fc:frame:button:1:target"
-              content={`${API_URL}/api/farcaster/frames/pay/${refId}/frame/confirm`}
-            />
-            <meta property="fc:frame:button:2" content="Advanced ⚡" />
-            <meta property="fc:frame:button:2:action" content="link" />
-            <meta
-              property="fc:frame:button:2:target"
-              content={isMiniApp ? miniAppUrl : DAPP_URL.concat(`/payment/${refId}`)}
-            />
-          </>
+        {isFrameV2 ? (
+          <meta property="fc:frame" content={JSON.stringify(frame)} />
         ) : (
           <>
-            <meta property="fc:frame:button:1" content="Receipt" />
-            <meta property="fc:frame:button:1:action" content="link" />
-            <meta property="fc:frame:button:1:target" content={receiptUrl} />
-            <meta property="fc:frame:button:2" content="History" />
-            <meta property="fc:frame:button:2:action" content="link" />
-            <meta property="fc:frame:button:2:target" content={activityUrl} />
-            {/*  <meta property="fc:frame:button:2" content="🌟 Tip" />
-            <meta property="fc:frame:button:2:action" content="post" />
-            <meta property="fc:frame:button:2:target" content={TIP_PAYFLOW_URL} /> */}
+            <meta property="fc:frame" content="vNext" />
+            <meta property="fc:frame:image" content={imageUrl} />
+
+            {status === 'CREATED' ? (
+              <>
+                <meta
+                  property="fc:frame:post_url"
+                  content={`${API_URL}/api/farcaster/frames/pay/${refId}/frame/confirm`}
+                />
+                <meta property="fc:frame:button:1" content="Quick" />
+                <meta property="fc:frame:button:1:action" content="tx" />
+                <meta
+                  property="fc:frame:button:1:target"
+                  content={`${API_URL}/api/farcaster/frames/pay/${refId}/frame/confirm`}
+                />
+                <meta property="fc:frame:button:2" content="Advanced ⚡" />
+                <meta property="fc:frame:button:2:action" content="link" />
+                <meta
+                  property="fc:frame:button:2:target"
+                  content={isMiniApp ? miniAppUrl : DAPP_URL.concat(`/payment/${refId}`)}
+                />
+              </>
+            ) : (
+              <>
+                <meta property="fc:frame:button:1" content="Receipt" />
+                <meta property="fc:frame:button:1:action" content="link" />
+                <meta property="fc:frame:button:1:target" content={receiptUrl} />
+              </>
+            )}
           </>
         )}
       </head>

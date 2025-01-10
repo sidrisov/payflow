@@ -61,6 +61,17 @@ public class LinkService {
 				.toUri();
 	}
 
+	public URI frameV2PaymentLink(Payment payment) {
+		val builder = UriComponentsBuilder
+				.fromHttpUrl(payflowConfig.getDAppServiceUrl())
+				.path("/payment/{refId}");
+
+		builder.queryParam("fv2");
+		
+		return builder.buildAndExpand(payment.getReferenceId())
+				.toUri();
+	}
+
 	public URI framePaymentLink(Payment payment) {
 		return framePaymentLink(payment, false);
 	}

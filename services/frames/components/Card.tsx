@@ -26,7 +26,7 @@ export default function Card({ children, theme }: { children: React.ReactNode; t
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'flex-start',
+          justifyContent: 'center',
           flexWrap: 'nowrap',
           fontFamily: 'Roboto',
           fontSize: 28,

@@ -10,9 +10,13 @@ const robotoFontItalic = fs.readFileSync(
   join(process.cwd(), '/assets/fonts/roboto/Roboto-Italic.ttf')
 );
 
-async function htmlToImage(html: React.ReactNode, ratio: 'landscape' | 'portrait') {
+async function htmlToImage(
+  html: React.ReactNode,
+  orientation: 'landscape' | 'portrait',
+  ratio: number = 1.91
+) {
   const width = 1080;
-  const height = ratio === 'landscape' ? width / 1.91 : width;
+  const height = orientation === 'landscape' ? width / ratio : width;
   const svg = await satori(html, {
     width,
     height,

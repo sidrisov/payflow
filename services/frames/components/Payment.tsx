@@ -1,60 +1,65 @@
 /* eslint-disable jsx-a11y/alt-text */
-import { PaymentType } from '../types/PaymentType';
 import { IdentityType } from '../types/ProfleType';
 import { shortenWalletAddressLabel } from '../utils/address';
 import { assetImageSrc } from '../utils/image';
 import getNetworkImageSrc, { getNetworkDisplayName } from '../utils/networks';
-import { tokens as ERC20_CONTRACTS } from '@payflow/common';
+import { tokens as ERC20_CONTRACTS, PaymentType } from '@payflow/common';
 import { formatNumberWithSuffix } from '../utils/format';
 import Card from './Card';
 
-type PaymentStep = 'create' | 'start' | 'command' | 'confirm' | 'execute';
-
 export const paymentHtml = (
   identity: IdentityType,
-  step: PaymentStep,
   payment: PaymentType,
-  entryTitle?: string,
+  title?: string,
   theme?: string
-) => (
-  <Payment
-    identity={identity}
-    step={step}
-    payment={payment}
-    entryTitle={entryTitle}
-    theme={theme}
-  />
-);
+) => <Payment identity={identity} payment={payment} title={title} theme={theme} />;
 
-const paymentStepTitle = (step: PaymentStep, entryTitle?: string) => {
-  switch (step) {
-    case 'create':
-      return '`Your payment title`';
-    case 'start':
-      return entryTitle ?? '👋🏻 Pay Me';
-    case 'command':
-      return 'Enter payment token details';
-    case 'confirm':
-      return 'Complete payment';
-    case 'execute':
-      return 'Payment details';
+const paymentTitle = (payment: PaymentType, title?: string) => {
+  return (
+    payment.name ||
+    title ||
+    (payment.referenceId
+      ? payment.status === 'CREATED'
+        ? 'Complete payment'
+        : 'Payment'
+      : '👋 Pay Me')
+  );
+};
+
+const paymentStatus = (payment: PaymentType) => {
+  switch (payment.status) {
+    case 'CREATED':
+      return '⏳ Pending';
+    case 'COMPLETED':
+      return '✅ Success';
+    case 'FAILED':
+      return '🚫 Failed';
+    case 'EXPIRED':
+      return '⏱ Expired';
+    case 'CANCELLED':
+      return '🔴 Cancelled';
+    case 'PENDING_REFUND':
+      return '↪️ Refunding';
+    case 'REFUNDED':
+      return '↪️ Refunded';
+    case 'INPROGRESS':
+      return '🔄 Processing';
   }
 };
 
 function Payment({
   identity,
-  step,
   payment,
-  entryTitle,
+  title: entryTitle,
   theme
 }: {
   identity: IdentityType;
-  step: PaymentStep;
   payment: PaymentType;
-  entryTitle?: string;
+  title?: string;
   theme?: string;
 }) {
-  const title = paymentStepTitle(step, entryTitle);
+  const title = paymentTitle(payment, entryTitle);
+  const status = paymentStatus(payment);
   const tokenImgSrc =
     payment.token &&
     (ERC20_CONTRACTS.find((t) => t.chainId === payment.chainId && t.id === payment.token)
@@ -66,7 +71,7 @@ function Payment({
   const profileUsername = identity?.profile?.username ?? farcasterSocial?.profileName;
   const profileImage = identity?.profile?.profileImage ?? farcasterSocial?.profileImage;
 
-  const isPaymentInitiated = step !== 'create' && step !== 'start' && step !== 'command';
+  const isPaymentInitiated = payment.referenceId;
   const showPreferredTokens = false; /* 
     (step === 'start' || step === 'command') &&
     identity.profile?.preferredTokens &&
@@ -179,7 +184,7 @@ function Payment({
                 </span>
               </div>
             )}
-            {payment.usdAmount && payment.tokenAmount && (
+            {payment.usdAmount !== undefined && payment.tokenAmount !== undefined && (
               <div
                 style={{
                   display: 'flex',
@@ -191,18 +196,12 @@ function Payment({
                   <b>${payment.usdAmount} ≈ </b>
                 </span>
                 <span>
-                  <b>{formatNumberWithSuffix(payment.tokenAmount)}</b>
+                  <b>{formatNumberWithSuffix(payment.tokenAmount.toString())}</b>
                 </span>
               </div>
             )}
             <span>
-              <b>
-                {payment.status
-                  ? payment.status === 'success'
-                    ? '✅ Success'
-                    : '❌ Failed'
-                  : '⏳ Pending'}
-              </b>
+              <b>{status}</b>
             </span>
           </div>
         )}

@@ -9,7 +9,9 @@ export type PaymentStatus =
   | 'REFUNDED'
   | 'COMPLETED'
   | 'CANCELLED'
-  | 'EXPIRED';
+  | 'EXPIRED'
+  | 'FAILED';
+
 export type Type = 'FRAME' | 'INTENT' | 'APP' | 'BATCH' | 'SESSION_INTENT';
 
 export type PaymentCategory =

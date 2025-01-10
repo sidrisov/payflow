@@ -29,7 +29,8 @@ const privyConfig = (darkMode: boolean): PrivyClientConfig => {
   return {
     embeddedWallets: {
       createOnLogin: 'users-without-wallets',
-      requireUserPasswordOnCreate: false
+      requireUserPasswordOnCreate: false,
+      showWalletUIs: false
     },
     appearance: {
       theme: darkMode ? 'dark' : 'light',
