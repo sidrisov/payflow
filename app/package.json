@@ -1,7 +1,7 @@
 {
   "name": "payflow-app",
   "private": true,
-  "version": "0.0.13",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "generate": "npx graphql-codegen",
@@ -32,8 +32,8 @@
     "@mui/x-charts": "^7.23.0",
     "@payflow/common": "file:../packages/common",
     "@paywithglide/glide-js": "^0.11.1",
-    "@privy-io/react-auth": "^1.99.0",
-    "@privy-io/wagmi": "^0.2.6",
+    "@privy-io/react-auth": "^2.0.0",
+    "@privy-io/wagmi": "^1.0.0",
     "@rhinestone/module-sdk": "^0.2.0",
     "@tanstack/query-sync-storage-persister": "^5.62.15",
     "@tanstack/react-query": "^5.62.15",

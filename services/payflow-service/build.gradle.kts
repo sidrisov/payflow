@@ -17,7 +17,7 @@ application {
 }
 
 group = "ua.sinaver.web3.payflow"
-version = "0.0.13"
+version = "0.1.0"
 
 java.sourceCompatibility = JavaVersion.VERSION_21
 

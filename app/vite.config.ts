@@ -103,7 +103,8 @@ export default defineConfig(({ isSsrBuild }) => {
               // Third-party services
               airstack: ['@airstack/airstack-react'],
               glide: ['@paywithglide/glide-js']
-            }
+            },
+            experimentalMinChunkSize: 30 * 1024 // 30kb
           })
         }
       },
