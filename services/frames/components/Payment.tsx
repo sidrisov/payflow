@@ -19,7 +19,7 @@ const paymentTitle = (payment: PaymentType, title?: string) => {
     payment.name ||
     title ||
     (payment.referenceId
-      ? payment.status === 'CREATED'
+      ? payment.status === 'CREATED' && payment.type !== 'SESSION_INTENT'
         ? 'Complete payment'
         : 'Payment'
       : '👋 Pay Me')
@@ -29,7 +29,7 @@ const paymentTitle = (payment: PaymentType, title?: string) => {
 const paymentStatus = (payment: PaymentType) => {
   switch (payment.status) {
     case 'CREATED':
-      return '⏳ Pending';
+      return payment.type === 'SESSION_INTENT' ? '🔄 Processing' : '⏳ Pending';
     case 'COMPLETED':
       return '✅ Success';
     case 'FAILED':

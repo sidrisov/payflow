@@ -35,7 +35,6 @@ const __dirname = dirname(__filename);
 const isProduction = process.env.NODE_ENV === 'production';
 const root = __dirname;
 
-const balanceParams = ['eth', 'usdc', 'degen'];
 const oneDayInSeconds = 24 * 60 * 60;
 
 const chains: Chain[] = [base, optimism, zora, arbitrum, mode, degen, ham, worldchain];
@@ -138,7 +137,7 @@ async function startServer() {
     try {
       // Fetch payment from API
       const paymentResponse = await axios.get(`${API_URL}/api/payment/${req.params.refId}`);
-      const payment = paymentResponse.data;
+      const payment = paymentResponse.data as PaymentType;
 
       // Calculate token amount or USD amount if missing
       if (payment.tokenAmount === undefined && payment.usdAmount !== undefined && payment.token) {
@@ -175,7 +174,14 @@ async function startServer() {
         'landscape',
         3 / 2
       );
-      res.setHeader('Cache-Control', 'max-age=120').type('png').send(image);
+      if (
+        payment.status === 'CREATED' ||
+        payment.status === 'INPROGRESS' ||
+        payment.status === 'PENDING_REFUND'
+      ) {
+        res.setHeader('Cache-Control', 'max-age=120');
+      }
+      res.type('png').send(image);
     } catch (error) {
       console.error(error);
       res.status(500).send('Error retrieving payment or identity data');
@@ -245,7 +251,14 @@ async function startServer() {
         paymentHtml(identityData, payment, title as any, theme as any),
         'landscape'
       );
-      res.setHeader('Cache-Control', 'max-age=120').type('png').send(image);
+      if (
+        payment.status === 'CREATED' ||
+        payment.status === 'INPROGRESS' ||
+        payment.status === 'PENDING_REFUND'
+      ) {
+        res.setHeader('Cache-Control', 'max-age=120');
+      }
+      res.type('png').send(image);
     } catch (error) {
       console.error(error);
       res.status(500).send('Error retrieving payment or identity data');

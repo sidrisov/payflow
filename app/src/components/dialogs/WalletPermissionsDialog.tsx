@@ -22,8 +22,7 @@ import { formatDistanceToNow } from 'date-fns';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import CopyToClipboardIconButton from '../buttons/CopyToClipboardIconButton';
 import { AddPermissionDialog } from '../dialogs/AddPermissionDialog';
-import AddIcon from '@mui/icons-material/Add';
-import { green } from '@mui/material/colors';
+import { green, red, orange } from '@mui/material/colors';
 import axios from 'axios';
 import { base } from 'viem/chains';
 import { API_URL } from '../../utils/urlConstants';
@@ -134,7 +133,13 @@ export function WalletPermissionsDialog({ open, onClose, flow }: Props) {
       <ResponsiveDialog title="Permission Sessions" open={open} onClose={onClose} width={400}>
         <Box display="flex" flexDirection="column" gap={2} p={2} width="100%">
           {loadingSessions ? (
-            <LinearProgress />
+            <LinearProgress
+              sx={{
+                '& .MuiLinearProgress-bar': {
+                  bgcolor: green.A700
+                }
+              }}
+            />
           ) : errorSessions ? (
             <Typography color="error">{errorSessions}</Typography>
           ) : sessions.length === 0 ? (
@@ -276,7 +281,10 @@ export function WalletPermissionsDialog({ open, onClose, flow }: Props) {
                                 borderRadius: 3,
                                 bgcolor: 'action.selected',
                                 '& .MuiLinearProgress-bar': {
-                                  bgcolor: spentProgress > 90 ? 'error.main' : 'success.main',
+                                  bgcolor:
+                                    (spentProgress > 90 && red.A700) ||
+                                    (spentProgress <= 20 && orange.A700) ||
+                                    green.A700,
                                   borderRadius: 3
                                 }
                               }}
