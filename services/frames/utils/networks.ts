@@ -1,3 +1,4 @@
+import { Hash } from 'viem';
 import {
   base,
   optimism,
@@ -111,7 +112,11 @@ export function getNetworkDisplayName(chainId: number): string {
   return displayName;
 }
 
-export function getReceiptUrl(chainId: number, hash: string): string {
+export function getReceiptUrl(chainId: number, hash: Hash | undefined): string {
+  if (!hash) {
+    throw new Error('Hash is required');
+  }
+
   let baseUrl;
 
   switch (chainId) {

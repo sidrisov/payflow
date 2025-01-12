@@ -42,8 +42,6 @@ public class MintController {
 	@Autowired
 	private PaymentRepository paymentRepository;
 	@Autowired
-	private PayflowConfig payflowConfig;
-	@Autowired
 	private UserService userService;
 	@Autowired
 	private IdentityService identityService;

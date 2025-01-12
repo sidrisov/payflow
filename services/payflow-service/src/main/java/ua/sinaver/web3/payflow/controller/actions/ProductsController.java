@@ -18,14 +18,13 @@ import ua.sinaver.web3.payflow.service.FanTokenService;
 import ua.sinaver.web3.payflow.service.FarcasterNeynarService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 import ua.sinaver.web3.payflow.utils.FrameVersions;
+import ua.sinaver.web3.payflow.utils.MintUrlUtils;
 
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static ua.sinaver.web3.payflow.service.TokenService.PAYMENT_CHAIN_IDS;
-import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS;
 
 @RestController
 @RequestMapping("/farcaster/actions/products")
@@ -60,7 +59,6 @@ public class ProductsController {
 
 	@Autowired
 	private FanTokenService fanTokenService;
-
 
 	@GetMapping("/{action}")
 	public ResponseEntity<CastActionMeta> getActionMetadata(@PathVariable String action) {
@@ -128,7 +126,7 @@ public class ProductsController {
 					new FrameResponse.FrameMessage("No supported collection found!"));
 		}
 
-		val chainId = getChainId(parsedMintUrlMessage);
+		val chainId = MintUrlUtils.getChainId(parsedMintUrlMessage);
 		if (chainId == null) {
 			log.error("Chain not supported for minting on payflow: {}", parsedMintUrlMessage);
 			return ResponseEntity.badRequest().body(
@@ -147,9 +145,9 @@ public class ProductsController {
 				: neynarService.fetchFarcasterUser(action.cast().fid());
 
 		val fanTokens = Stream.of(
-						castAuthor.username(),
-						Optional.ofNullable(action.cast().channel()).map(channel -> "/" + channel.id()).orElse(null),
-						"network:farcaster")
+				castAuthor.username(),
+				Optional.ofNullable(action.cast().channel()).map(channel -> "/" + channel.id()).orElse(null),
+				"network:farcaster")
 				.filter(Objects::nonNull)
 				.map(fanTokenService::getFanToken)
 				.filter(Objects::nonNull)
@@ -173,8 +171,7 @@ public class ProductsController {
 	}
 
 	private ResponseEntity<?> processHypersubAction(ValidatedFrameResponseMessage.Action action) {
-		val castAuthorFid = action.cast().author() != null ? action.cast().author().fid() :
-				action.cast().fid();
+		val castAuthorFid = action.cast().author() != null ? action.cast().author().fid() : action.cast().fid();
 
 		val subscriptions = neynarService.subscriptionsCreated(castAuthorFid);
 
@@ -195,18 +192,6 @@ public class ProductsController {
 
 		return ResponseEntity.ok().body(
 				new FrameResponse.ActionFrame("frame", fanTokenFrameUrl));
-	}
-
-	private Integer getChainId(ParsedMintUrlMessage parsedMintUrlMessage) {
-		try {
-			val parsedChainId = Integer.parseInt(parsedMintUrlMessage.chain());
-			if (SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS.contains(parsedChainId)) {
-				return parsedChainId;
-			}
-		} catch (NumberFormatException e) {
-			return PAYMENT_CHAIN_IDS.get(parsedMintUrlMessage.chain());
-		}
-		return null;
 	}
 
 	private String buildMintFrameUrl(ParsedMintUrlMessage parsedMintUrlMessage, Integer chainId) {

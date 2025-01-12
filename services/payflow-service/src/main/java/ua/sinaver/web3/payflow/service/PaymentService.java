@@ -262,18 +262,18 @@ public class PaymentService {
 	@Scheduled(fixedRate = 30 * 1000, initialDelay = 15 * 1000)
 	// Every 30 seconds, with 15s initial delay
 	public void processSessionIntentPayments() {
-		log.info("Starting to process SESSION_INTENT payments");
+		log.info("Starting to process session intent payments");
 		val paymentsToProcess = paymentRepository.findSessionIntentPaymentsWithLock(10);
 
 		paymentsToProcess.forEach(payment -> {
 			try {
 				processSessionIntentPayment(payment);
 			} catch (Exception e) {
-				log.error("Error processing SESSION_INTENT payment {}", payment.getReferenceId(), e);
+				log.error("Error processing session intent payment {}", payment.getReferenceId(), e);
 			}
 		});
 
-		log.info("Finished processing SESSION_INTENT payments");
+		log.info("Finished processing session intent payments");
 	}
 
 	@Async

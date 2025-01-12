@@ -18,7 +18,8 @@ public record ParsedMintUrlMessage(
 		String contract,
 		Integer tokenId,
 		String referral,
-		String author) {
+		String author,
+		String url) {
 
 	public static final String ZORA_PROVIDER = "zora.co";
 	public static final String RODEO_PROVIDER = "rodeo.club";
@@ -48,9 +49,9 @@ public record ParsedMintUrlMessage(
 		}
 
 		ParsedMintUrlMessage result = switch (provider) {
-			case ZORA_PROVIDER -> parseZora(uriComponents);
-			case RODEO_PROVIDER -> parseRodeo(uriComponents);
-			case HIGHLIGHTS_PROVIDER -> parseHighlight(uriComponents);
+			case ZORA_PROVIDER -> parseZora(uriComponents, url);
+			case RODEO_PROVIDER -> parseRodeo(uriComponents, url);
+			case HIGHLIGHTS_PROVIDER -> parseHighlight(uriComponents, url);
 			default -> null;
 		};
 
@@ -58,12 +59,12 @@ public record ParsedMintUrlMessage(
 			// Extract optional referral
 			val referral = uriComponents.getQueryParams().getFirst("referrer");
 			return new ParsedMintUrlMessage(result.provider(), result.chain(), result.contract(), result.tokenId(),
-					referral, result.author());
+					referral, result.author(), url);
 		}
 		return null;
 	}
 
-	private static ParsedMintUrlMessage parseZora(UriComponents uriComponents) {
+	private static ParsedMintUrlMessage parseZora(UriComponents uriComponents, String url) {
 		val pathParts = uriComponents.getPath().split("/");
 		if (pathParts.length < 4 || !pathParts[1].equals("collect")) {
 			return null;
@@ -80,10 +81,10 @@ public record ParsedMintUrlMessage(
 			contract = pathParts[2];
 		}
 		val tokenId = Integer.parseInt(pathParts[3]);
-		return new ParsedMintUrlMessage(ZORA_PROVIDER, chain, contract, tokenId, null, null);
+		return new ParsedMintUrlMessage(ZORA_PROVIDER, chain, contract, tokenId, null, null, url);
 	}
 
-	private static ParsedMintUrlMessage parseRodeo(UriComponents uriComponents) {
+	private static ParsedMintUrlMessage parseRodeo(UriComponents uriComponents, String url) {
 		val pathParts = uriComponents.getPath().split("/");
 		if (pathParts.length < 4 || !pathParts[1].equals("post")) {
 			return null;
@@ -100,10 +101,10 @@ public record ParsedMintUrlMessage(
 			contract = pathParts[2];
 		}
 		val tokenId = Integer.parseInt(pathParts[3]);
-		return new ParsedMintUrlMessage(RODEO_PROVIDER, chain, contract, tokenId, null, null);
+		return new ParsedMintUrlMessage(RODEO_PROVIDER, chain, contract, tokenId, null, null, url);
 	}
 
-	private static ParsedMintUrlMessage parseHighlight(UriComponents uriComponents) {
+	private static ParsedMintUrlMessage parseHighlight(UriComponents uriComponents, String url) {
 		val pathParts = uriComponents.getPath().split("/");
 		if (pathParts.length < 3 || !pathParts[1].equals("mint")) {
 			return null;
@@ -123,10 +124,10 @@ public record ParsedMintUrlMessage(
 				return null;
 			}
 			val redirectComponents = UriComponentsBuilder.fromUriString(redirectLocation).build();
-			return parseHighlight(redirectComponents);
+			return parseHighlight(redirectComponents, url);
 		}
 
-		return new ParsedMintUrlMessage(HIGHLIGHTS_PROVIDER, chain, contract, null, null, null);
+		return new ParsedMintUrlMessage(HIGHLIGHTS_PROVIDER, chain, contract, null, null, null, url);
 	}
 
 	public static String getRedirectLocation(String url) {
@@ -150,7 +151,7 @@ public record ParsedMintUrlMessage(
 		}
 	}
 
-	public static ParsedMintUrlMessage fromCompositeToken(String compositeToken, String chainId) {
+	public static ParsedMintUrlMessage fromCompositeToken(String compositeToken, String chainId, String url) {
 		val parts = compositeToken.split(":");
 		if (parts.length < 4) {
 			log.error("Invalid composite token format: {}", compositeToken);
@@ -166,6 +167,6 @@ public record ParsedMintUrlMessage(
 			author = parts[4];
 		}
 
-		return new ParsedMintUrlMessage(provider, String.valueOf(chainId), contract, tokenId, referral, author);
+		return new ParsedMintUrlMessage(provider, String.valueOf(chainId), contract, tokenId, referral, author, url);
 	}
 }

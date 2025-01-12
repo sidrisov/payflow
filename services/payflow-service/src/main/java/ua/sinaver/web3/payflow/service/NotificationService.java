@@ -320,7 +320,7 @@ public class NotificationService {
 	private void handleMintPaymentNotification(Payment payment, String senderFname, String receiverFname,
 	                                           String receiptUrl, String sourceRefText, boolean isSelfPurchase) {
 		val mintUrlMessage = ParsedMintUrlMessage.fromCompositeToken(payment.getToken(),
-				payment.getNetwork().toString());
+				payment.getNetwork().toString(), payment.getTarget());
 
 		val frameMintUrl = MintUrlUtils.calculateFrameMintUrlFromToken(
 				payflowConfig.getDAppServiceUrl(),

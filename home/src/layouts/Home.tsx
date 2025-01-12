@@ -153,7 +153,7 @@ export default function Home() {
           <Button
             variant="contained"
             size="large"
-            href="https://warpcast.com/~/composer-action?url=https://api.alpha.payflow.me/api/farcaster/composer/pay?action=app&view=prompt"
+            href="https://warpcast.com/~/frames/launch?domain=app.payflow.me"
             target="_blank"
             startIcon={<SiFarcaster size={20} />}
             sx={{

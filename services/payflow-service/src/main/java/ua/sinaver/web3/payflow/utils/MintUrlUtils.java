@@ -10,6 +10,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 
+import static ua.sinaver.web3.payflow.service.TokenService.PAYMENT_CHAIN_IDS;
+import static ua.sinaver.web3.payflow.service.TokenService.SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS;
+
 @Slf4j
 public class MintUrlUtils {
 
@@ -73,7 +76,7 @@ public class MintUrlUtils {
 
 	public static String calculateFrameMintUrlFromToken(String framesServiceUrl, String compositeToken, String chainId,
 	                                                    String newReferral) {
-		val parsedMintParams = ParsedMintUrlMessage.fromCompositeToken(compositeToken, chainId);
+		val parsedMintParams = ParsedMintUrlMessage.fromCompositeToken(compositeToken, chainId, null);
 		if (parsedMintParams == null) {
 			log.error("Failed to parse mint parameters from token: {}", compositeToken);
 			return "";
@@ -86,5 +89,34 @@ public class MintUrlUtils {
 				parsedMintParams.contract(),
 				parsedMintParams.tokenId(),
 				newReferral);
+	}
+
+	public static boolean isSupportedMintUrl(String url) {
+		if (StringUtils.isBlank(url)) {
+			return false;
+		}
+
+		try {
+			val uri = new URI(url);
+			val host = uri.getHost().toLowerCase();
+			return host.endsWith("zora.co") ||
+					host.endsWith("rodeo.club") ||
+					host.endsWith("highlight.xyz");
+		} catch (URISyntaxException e) {
+			log.error("Error parsing URL: {}", url, e);
+			return false;
+		}
+	}
+
+	public static Integer getChainId(ParsedMintUrlMessage parsedMintUrlMessage) {
+		try {
+			val parsedChainId = Integer.parseInt(parsedMintUrlMessage.chain());
+			if (SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS.contains(parsedChainId)) {
+				return parsedChainId;
+			}
+		} catch (NumberFormatException e) {
+			return PAYMENT_CHAIN_IDS.get(parsedMintUrlMessage.chain());
+		}
+		return null;
 	}
 }

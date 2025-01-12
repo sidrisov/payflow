@@ -3,6 +3,7 @@ import { API_URL, DAPP_URL, FRAMES_URL } from '../../../utils/constants';
 import { getReceiptUrl } from '../../../utils/networks';
 import { Data } from './+data';
 import { useData } from 'vike-react/useData';
+import { PaymentType } from '@payflow/common';
 
 export function Head() {
   const { urlParsed } = usePageContext();
@@ -10,28 +11,61 @@ export function Head() {
   const isMiniApp = urlParsed.search.mini !== undefined && urlParsed.search.mini !== 'false';
   const isFrameV2 = urlParsed.search.fv2 !== undefined && urlParsed.search.fv2 !== 'false';
 
-  const payment = useData<Data>();
+  const payment = useData<PaymentType>();
 
   const refId = payment.referenceId;
   const status = payment.status;
 
   const identity = payment.receiver?.identity ?? payment.receiverAddress;
 
-  const imageUrl = isFrameV2
-    ? `${FRAMES_URL}/images/payment/${refId}/image.png`
-    : `${FRAMES_URL}/images/profile/${identity}/payment.png?refId=${refId}`;
-
-  const receiptUrl = getReceiptUrl(payment.chainId, payment.hash ?? payment.fulfillmentHash);
+  const receiptUrl =
+    payment.status === 'COMPLETED' &&
+    getReceiptUrl(payment.chainId, payment.hash ?? payment.fulfillmentHash);
 
   const composerUrl = `${API_URL}/api/farcaster/composer/pay?action=payment&refId=${refId}`;
   const miniAppUrl = `https://warpcast.com/~/composer-action?url=${encodeURIComponent(composerUrl)}`;
+
+  const getButtonTitle = (payment: Data) => {
+    if (payment.status === 'COMPLETED') {
+      return 'Receipt';
+    }
+
+    switch (payment.category) {
+      case 'mint':
+        return 'Mint';
+      case 'storage':
+        return 'Buy Storage';
+      case 'fan':
+        return 'Buy Token';
+      case 'hypersub':
+        return 'Subscribe';
+      default:
+        return 'Pay';
+    }
+  };
+
+  const getFrameV2ImageUrl = (payment: PaymentType) => {
+    switch (payment.category) {
+      case 'mint':
+      case 'fc_storage':
+      case 'fan':
+      case 'hypersub':
+        return 'https://i.imgur.com/okcGTR2.png';
+      default:
+        return `${FRAMES_URL}/images/payment/${refId}/image.png`;
+    }
+  };
+
+  const imageUrl = isFrameV2
+    ? getFrameV2ImageUrl(payment)
+    : `${FRAMES_URL}/images/profile/${identity}/payment.png?refId=${refId}`;
 
   const frame = isFrameV2
     ? {
         version: 'next',
         imageUrl,
         button: {
-          title: payment.status === 'COMPLETED' ? 'Receipt' : 'Pay',
+          title: getButtonTitle(payment),
           action: {
             type: 'launch_frame',
             name: 'Payflow Payment',
@@ -110,7 +144,7 @@ export function Head() {
               <>
                 <meta property="fc:frame:button:1" content="Receipt" />
                 <meta property="fc:frame:button:1:action" content="link" />
-                <meta property="fc:frame:button:1:target" content={receiptUrl} />
+                <meta property="fc:frame:button:1:target" content={receiptUrl || ''} />
               </>
             )}
           </>

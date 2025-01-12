@@ -2,8 +2,6 @@ package ua.sinaver.web3.payflow.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
@@ -19,14 +17,18 @@ import ua.sinaver.web3.payflow.data.PreferredTokens;
 import ua.sinaver.web3.payflow.data.bot.PaymentBotJob;
 import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
+import ua.sinaver.web3.payflow.message.nft.ParsedMintUrlMessage;
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.repository.WalletSessionRepository;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
+import ua.sinaver.web3.payflow.utils.MintUrlUtils;
 
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -36,7 +38,7 @@ import java.util.stream.Collectors;
 public class FarcasterPaymentBotService {
 
 	private static final List<String> SUPPORTED_COMMANDS = List.of("pay", "send", "intent", "transfer",
-			"batch", "intents", "jar", "receive", "config:tokens");
+			"batch", "intents", "jar", "receive", "config:tokens", "mint", "collect");
 
 	private static final String BOT_COMMAND_PATTERN = "\\s*(?<beforeText>.*?)?@payflow%s\\s+(?<command>%s)(?:\\s+(?<remaining>.+))?";
 
@@ -58,6 +60,8 @@ public class FarcasterPaymentBotService {
 	private PayflowConfig payflowConfig;
 	@Autowired
 	private TransactionService transactionService;
+	@Autowired
+	private FarcasterNeynarService neynarService;
 
 	@Value("${payflow.farcaster.bot.enabled:false}")
 	private boolean isBotEnabled;
@@ -159,9 +163,9 @@ public class FarcasterPaymentBotService {
 		val command = matcher.group("command");
 		val remainingText = matcher.group("remaining");
 
-		if (StringUtils.isBlank(remainingText)) {
+		if (!command.equals("mint") && StringUtils.isBlank(remainingText)) {
 			rejectJob(job, "No other text included after command: " + command,
-					"Please include additional details after \"@payflow " + command + "\"");
+					"Please, include additional details after command: \"@payflow " + command + "\"");
 			return;
 		}
 
@@ -172,8 +176,14 @@ public class FarcasterPaymentBotService {
 		val casterProfile = userService.getOrCreateUserFromFarcasterProfile(cast.author(),
 				false);
 
-		val casterAddress = casterProfile != null ? casterProfile.getIdentity()
-				: identityService.getHighestScoredIdentity(cast.author().addressesWithoutCustodialIfAvailable());
+		if (casterProfile == null) {
+			rejectJob(job, "Caster doesn't have payflow profile",
+					"Please, sign up first!",
+					payflowConfig.getDAppServiceUrl());
+			return;
+		}
+
+		val casterAddress = casterProfile.getIdentity();
 
 		switch (command) {
 			case "receive": {
@@ -193,13 +203,6 @@ public class FarcasterPaymentBotService {
 				log.debug("Receiver: {}, token: {}, chain: {}",
 						cast.author().username(),
 						token, chain);
-
-				if (casterProfile == null) {
-					rejectJob(job, "Caster doesn't have payflow profile",
-							"Please sign in to the app first!",
-							payflowConfig.getDAppServiceUrl());
-					return;
-				}
 
 				log.debug("Executing bot receive command for cast: {}", cast);
 
@@ -226,8 +229,7 @@ public class FarcasterPaymentBotService {
 				// Check for auto-payment eligibility
 				boolean useSession = false;
 				val sessions = walletSessionRepository.findActiveSessionsByUser(casterProfile);
-				if (casterProfile != null &&
-						userService.getEarlyFeatureAccessUsers().contains(casterProfile.getUsername())) {
+				if (userService.getEarlyFeatureAccessUsers().contains(casterProfile.getUsername())) {
 					if (!sessions.isEmpty()) {
 						useSession = true;
 					}
@@ -532,7 +534,7 @@ public class FarcasterPaymentBotService {
 				}
 
 				log.debug("Executing jar creation with title `{}`, desc `{}`, " +
-						"embeds {}, source {}",
+								"embeds {}, source {}",
 						title, beforeText, cast.embeds(),
 						String.format("https://warpcast.com/%s/%s",
 								cast.author().username(),
@@ -549,7 +551,7 @@ public class FarcasterPaymentBotService {
 						cast.author().username());
 				val embeds = Collections.singletonList(
 						new Cast.Embed(String.format("https://app.payflow" +
-								".me/jar/%s",
+										".me/jar/%s",
 								jar.getFlow().getUuid())));
 				val processed = notificationService.reply(castText, cast.hash(), embeds);
 				if (processed) {
@@ -559,13 +561,6 @@ public class FarcasterPaymentBotService {
 				break;
 			}
 			case "config:tokens": {
-				if (casterProfile == null) {
-					rejectJob(job, "Caster profile not found",
-							"Please sign in to the app first!",
-							payflowConfig.getDAppServiceUrl());
-					return;
-				}
-
 				val preferredTokensIds = paymentService.parsePreferredTokens(remainingText);
 				if (preferredTokensIds.isEmpty()) {
 					rejectJob(job, "No valid tokens specified in config command",
@@ -588,19 +583,81 @@ public class FarcasterPaymentBotService {
 				}
 				break;
 			}
+			case "collect":
+			case "mint": {
+				log.debug("Processing mint command for cast: {}", cast);
+
+				// Get parent cast for mint URLs
+				val parentCast = cast.parentHash() != null ? neynarService.fetchCastByHash(cast.parentHash()) : null;
+
+				if (parentCast == null || parentCast.embeds() == null || parentCast.embeds().isEmpty()) {
+					rejectJob(job, "No links found in parent cast",
+							"Please reply to a cast containing a mint link");
+					return;
+				}
+
+				val embeds = parentCast.embeds().stream()
+						.map(Cast.Embed::url)
+						.filter(Objects::nonNull)
+						.toList();
+
+				log.debug("Potential collectible embeds: {}", embeds);
+				ParsedMintUrlMessage parsedMintUrlMessage = null;
+				for (val embed : embeds) {
+					parsedMintUrlMessage = ParsedMintUrlMessage.parse(embed);
+					if (parsedMintUrlMessage != null) {
+						break;
+					}
+				}
+
+				if (parsedMintUrlMessage == null) {
+					rejectJob(job, "No supported collection found",
+							"No supported collection found in parent cast");
+					return;
+				}
+
+				val chainId = MintUrlUtils.getChainId(parsedMintUrlMessage);
+				if (chainId == null) {
+					rejectJob(job, "Chain not supported",
+							String.format("Mints on `%s` not supported!", parsedMintUrlMessage.chain()));
+					return;
+				}
+
+				val token = String.format("%s:%s:%s:%s:%s",
+						parsedMintUrlMessage.provider(),
+						parsedMintUrlMessage.contract(),
+						Optional.ofNullable(parsedMintUrlMessage.tokenId()).map(String::valueOf).orElse(""),
+						Optional.ofNullable(parsedMintUrlMessage.referral()).orElse(""),
+						Optional.ofNullable(parsedMintUrlMessage.author()).orElse(""));
+
+				val payment = new Payment(Payment.PaymentType.INTENT, null, chainId, token);
+				payment.setCategory("mint");
+				payment.setToken(token);
+				payment.setReceiverFid(cast.author().fid());
+				payment.setReceiverAddress(casterAddress);
+				payment.setSender(casterProfile);
+				payment.setSourceApp("Warpcast");
+				payment.setSourceRef(String.format("https://warpcast.com/%s/%s",
+						cast.author().username(),
+						cast.hash().substring(0, 10)));
+				payment.setSourceHash(cast.hash());
+				payment.setTarget(parsedMintUrlMessage.url());
+
+				paymentRepository.saveAndFlush(payment);
+
+				val castText = String.format("@%s mint using frame below",
+						cast.author().username());
+				val frameEmbeds = Collections.singletonList(
+						new Cast.Embed(linkService.frameV2PaymentLink(payment).toString()));
+				notificationService.reply(castText, cast.hash(), frameEmbeds);
+
+				job.setStatus(PaymentBotJob.Status.PROCESSED);
+				break;
+			}
 
 			default: {
 				log.error("Command not supported: {}", command);
 			}
 		}
-	}
-
-	@Data
-	@AllArgsConstructor
-	private static class CommandContext {
-		Cast cast;
-		String command;
-		String remainingText;
-		String beforeText;
 	}
 }
