@@ -1,7 +1,7 @@
 import { Box, MenuItem, MenuList, Stack, Typography } from '@mui/material';
 import ResponsiveDialog, { ResponsiveDialogProps } from './ResponsiveDialog';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { AutoMode, Link } from '@mui/icons-material';
+import { Link } from '@mui/icons-material';
 import { TbHandClick } from 'react-icons/tb';
 import PayflowBalanceDialog from './PayflowBalanceDialog';
 import { useState } from 'react';

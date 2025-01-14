@@ -143,7 +143,8 @@ export default function PayflowBalanceDialog({
       PaperProps={{
         sx: {
           ...(!isMobile && {
-            borderRadius: 5
+            borderRadius: 5,
+            minWidth: 360
           })
         }
       }}
