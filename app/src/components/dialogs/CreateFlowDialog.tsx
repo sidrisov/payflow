@@ -13,26 +13,22 @@ type FlowTypeOption = {
   description: string;
   icon: React.ReactNode;
   value: 'balance' | 'auto' | 'linked';
+  disabled?: boolean;
 };
 
 const flowTypes: FlowTypeOption[] = [
   {
-    title: 'Payflow Balance',
-    description: '1-click gasless payments',
+    title: 'Payflow Balance v2',
+    description: '1-click gasless and automated payments with session keys',
     icon: <TbHandClick size={24} />,
     value: 'balance'
-  },
-  {
-    title: 'Payflow Auto (Coming Soon)',
-    description: 'Automated payments in feed or app',
-    icon: <AutoMode />,
-    value: 'auto'
   },
   {
     title: 'Linked Wallet (Coming Soon)',
     description: 'Connect an existing wallet',
     icon: <Link />,
-    value: 'linked'
+    value: 'linked',
+    disabled: true
   }
 ];
 
@@ -46,11 +42,12 @@ export function CreateFlowDialog({ closeStateCallback, profile, ...props }: Crea
 
   return (
     <>
-      <ResponsiveDialog title="Create Payment Flow" {...props} onClose={closeStateCallback}>
+      <ResponsiveDialog title="New Payment Flow" {...props} onClose={closeStateCallback}>
         <MenuList sx={{ width: '100%' }}>
           {flowTypes.map((type) => (
             <MenuItem
               key={type.value}
+              disabled={type.disabled}
               onClick={() => {
                 if (type.value === 'balance') {
                   setCreateShowPayflowBalance(true);
@@ -64,7 +61,7 @@ export function CreateFlowDialog({ closeStateCallback, profile, ...props }: Crea
                 py: 2
               }}>
               <Stack direction="row" spacing={2} alignItems="center" width="100%">
-                {type.icon}
+                <Box sx={{ flexShrink: 0 }}>{type.icon}</Box>
                 <Typography variant="subtitle1">
                   {type.title}
                   <Typography
@@ -92,7 +89,7 @@ export function CreateFlowDialog({ closeStateCallback, profile, ...props }: Crea
             fontSize={12}
             color="textSecondary"
             sx={{ textWrap: 'pretty' }}>
-            All accounts are non-custodial, except for scoped spending permissions in automations
+            All accounts are non-custodial, except for scoped permissions in Payflow Balance
           </Typography>
         </Box>
       </ResponsiveDialog>

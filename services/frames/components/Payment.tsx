@@ -89,7 +89,6 @@ function Payment({
       </p>
       <div
         style={{
-          marginTop: 20,
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',

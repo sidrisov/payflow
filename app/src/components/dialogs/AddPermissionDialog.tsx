@@ -225,7 +225,14 @@ export function AddPermissionDialog({ flow, open, onClose, onSuccess }: Props) {
               <AdminPanelSettings />
             </ListItemIcon>
             <Box>
-              <ListItemText primary="Sudo Access" />
+              <ListItemText
+                primary="Sudo Access"
+                slotProps={{
+                  primary: {
+                    variant: 'subtitle2'
+                  }
+                }}
+              />
               <ListItemText
                 secondary="Full wallet access"
                 slotProps={{
@@ -245,7 +252,14 @@ export function AddPermissionDialog({ flow, open, onClose, onSuccess }: Props) {
               <IoIosWallet size={24} />
             </ListItemIcon>
             <Box>
-              <ListItemText primary="Spending Limit" />
+              <ListItemText
+                primary="Spending Limits"
+                slotProps={{
+                  primary: {
+                    variant: 'subtitle2'
+                  }
+                }}
+              />
               <ListItemText
                 secondary="Set token allowances"
                 slotProps={{
@@ -264,7 +278,7 @@ export function AddPermissionDialog({ flow, open, onClose, onSuccess }: Props) {
 
   return (
     <ResponsiveDialog
-      title={selectedType === 'sudo' ? 'Create Sudo Access' : 'Create Spending Limits'}
+      title={selectedType === 'sudo' ? 'Sudo Access' : 'Spending Limits'}
       open={open}
       onClose={() => {
         setSelectedType(null);
@@ -275,15 +289,15 @@ export function AddPermissionDialog({ flow, open, onClose, onSuccess }: Props) {
         {selectedType === 'sudo' ? (
           <ListItemText
             secondary={
-              <Typography textAlign="center" variant="subtitle2" color="text.secondary">
-                This will grant full wallet access to the selected account.
+              <Typography textAlign="center" fontSize={14} color="text.secondary">
+                The session will be granted full wallet access!
               </Typography>
             }
           />
         ) : (
           <>
             <Stack spacing={2}>
-              {spendLimits.map((limit, index) => (
+              {spendLimits.map((_, index) => (
                 <Box
                   key={index}
                   sx={{

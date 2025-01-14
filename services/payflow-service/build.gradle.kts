@@ -105,6 +105,14 @@ dependencies {
     // Add these lines
     implementation("net.javacrumbs.shedlock:shedlock-spring:6.0.2")
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:6.0.2")
+
+    // Add Anthropic SDK
+    implementation("com.anthropic:anthropic-java-core:0.1.0-alpha.6")
+
+    // Add test dependencies if not already present
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
 
 
@@ -246,4 +254,34 @@ listOf("bootRun", "processResources", "bootBuildImage").forEach { taskName ->
     tasks.named(taskName) {
         dependsOn("copyTokensJson")
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
+    
+    testLogging {
+        events("passed", "skipped", "failed", "standardOut", "standardError")
+        showExceptions = true
+        showCauses = true
+        showStackTraces = true
+        
+        // Enable debug logging
+        debug {
+            events("started", "passed", "skipped", "failed", "standardOut", "standardError")
+            showExceptions = true
+            showCauses = true
+            showStackTraces = true
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        }
+    }
+
+    // Optional: Set system property for log level
+    systemProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug")
+    systemProperty("org.slf4j.simpleLogger.log.ua.sinaver.web3.payflow.anthropic", "debug")
+
+    // Add these JVM arguments to suppress ByteBuddy warnings
+    jvmArgs(
+        "-XX:+EnableDynamicAgentLoading",
+        "-Djdk.instrument.traceUsage=false"
+    )
 }

@@ -40,7 +40,7 @@ public class UserService implements IUserService {
 	private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_-]*$");
 	private static final List<String> EARLY_FEATURE_ACCESS_USERS = Arrays.asList(
 			"sinaver", "konrad", "kurtlarsen",
-			"pirosb3", "pembe", "haole", "cashlessman");
+			"pirosb3", "pembe", "haole", "cashlessman", "accountless", "deodad");
 	private static final List<String> PRO_FEATURE_ACCESS_USERS = Arrays.asList(
 			"sinaver", "pembe", "haole");
 	@Value("${payflow.invitation.allowance.enabled:false}")

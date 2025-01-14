@@ -28,7 +28,7 @@ export function CustomLoadingButton({
           </Typography>
         </Stack>
       }
-      sx={{ my: 1, borderRadius: borderRadius }}>
+      sx={{ my: 1, borderRadius }}>
       {title}
     </LoadingButton>
   );

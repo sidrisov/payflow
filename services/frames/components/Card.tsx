@@ -31,7 +31,6 @@ export default function Card({ children, theme }: { children: React.ReactNode; t
           fontFamily: 'Roboto',
           fontSize: 28,
           padding: 16,
-          gap: 10,
           borderRadius: 12
         }}>
         {children}

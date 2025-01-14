@@ -25,10 +25,7 @@ import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.utils.MintUrlUtils;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -38,7 +35,7 @@ import java.util.stream.Collectors;
 public class FarcasterPaymentBotService {
 
 	private static final List<String> SUPPORTED_COMMANDS = List.of("pay", "send", "intent", "transfer",
-			"batch", "intents", "jar", "receive", "config:tokens", "mint", "collect");
+			"batch", "intents", "jar", "receive", "config:tokens", "mint", "collect", "agent");
 
 	private static final String BOT_COMMAND_PATTERN = "\\s*(?<beforeText>.*?)?@payflow%s\\s+(?<command>%s)(?:\\s+(?<remaining>.+))?";
 
@@ -80,6 +77,9 @@ public class FarcasterPaymentBotService {
 
 	@Autowired
 	private ObjectMapper objectMapper;
+
+	@Autowired
+	private AnthropicAgentService anthropicAgentService;
 
 	private void rejectJob(PaymentBotJob job, String reason, String notifyMessage, String frameUrl) {
 		log.error("Rejecting job {} with reason: {}", job.getId(), reason);
@@ -185,6 +185,8 @@ public class FarcasterPaymentBotService {
 
 		val casterAddress = casterProfile.getIdentity();
 
+		val isEarlyAccessUser = userService.getEarlyFeatureAccessUsers().contains(casterProfile.getUsername());
+
 		switch (command) {
 			case "receive": {
 				String token = null;
@@ -220,35 +222,116 @@ public class FarcasterPaymentBotService {
 				}
 				break;
 			}
+			case "agent":
 			case "pay":
 			case "intent":
 			case "transfer":
 			case "send": {
 				log.debug("Processing {} bot command arguments {}", command, remainingText);
 
-				// Check for auto-payment eligibility
-				boolean useSession = false;
-				val sessions = walletSessionRepository.findActiveSessionsByUser(casterProfile);
-				if (userService.getEarlyFeatureAccessUsers().contains(casterProfile.getUsername())) {
-					if (!sessions.isEmpty()) {
-						useSession = true;
-					}
-				}
+				// Common variables
+				String receiverName = null;
+				String amountStr = null;
+				String restText = null;
+				Token token;
 
-				val paymentPattern = "(?:@(?<receiver>[a-zA-Z0-9_.-]+)\\s*)?\\s*(?<amount>\\$?[0-9]+(?:\\.[0-9]+)?[km]?)\\s*(?<rest>.*)";
-				matcher = Pattern.compile(paymentPattern, Pattern.CASE_INSENSITIVE).matcher(remainingText);
-				if (!matcher.find()) {
-					rejectJob(job, "Pattern not matched for command: " + command,
-							"Invalid format. Please use: \"@payflow " + command + " @user amount token\"");
+				val parentCast = cast.parentHash() != null ? neynarService.fetchCastByHash(cast.parentHash()) : null;
+
+				if (command.equals("agent") && !isEarlyAccessUser) {
+					rejectJob(job, "Early access users only", "Agent is in alpha, available for early users only!");
 					return;
 				}
 
-				var receiverName = matcher.group("receiver");
-				val amountStr = matcher.group("amount");
-				val restText = matcher.group("rest");
+				var textWithReply = (String) null;
+				if (isEarlyAccessUser) {
+					List<AnthropicAgentService.Message> inputMessages;
+					try {
+						inputMessages = List.of(
+								AnthropicAgentService.Message.builder()
+										.role("user")
+										.content(List.of(
+												AnthropicAgentService.Message.Content.builder()
+														.type("text")
+														.text("parent cast: " +
+																(parentCast != null ? String.format("@%s: %s",
+																		parentCast.author().username(),
+																		parentCast.text()) : "null"))
+														.build(),
+												AnthropicAgentService.Message.Content.builder()
+														.type("text")
+														.text("cast: " +
+																String.format("@%s: %s",
+																		cast.author().username(),
+																		cast.text()))
+														.build()))
+										.build());
+					} catch (Exception e) {
+						log.error("Failed to serialize casts", e);
+						rejectJob(job, "Failed to serialize casts", "Ooops, something went wrong!");
+						return;
+					}
 
-				Token token;
+					val response = anthropicAgentService.processPaymentInput(inputMessages);
+					if (response == null) {
+						rejectJob(job, "Failed to process payment command with AI",
+								"Ooops, something went wrong!");
+						return;
+					}
 
+					// Process AI response
+					for (val content : response.getContent()) {
+						if ("tool_use".equals(content.getType())) {
+							switch (content.getName()) {
+								case "get_granted_session" -> {
+									val sessions = walletSessionRepository.findActiveSessionsByUser(casterProfile);
+									if (sessions.isEmpty()) {
+										rejectJob(job, "No active session found",
+												"You need to create a session to grant access to one of your Payflow Balance wallets at app.payflow.me");
+										return;
+									}
+								}
+								case "get_wallet_token_balance" -> {
+									restText = (String) content.getInput().get("token");
+									log.debug("Balance check requested for token: {}", restText);
+								}
+								case "execute" -> {
+									val input = (Map<String, Object>) content.getInput();
+									receiverName = ((String) input.get("recipient")).replace("@",
+											"");
+									restText = (String) input.get("token");
+
+									if (input.containsKey("amount")) {
+										amountStr = String.valueOf(input.get("amount"));
+									} else if (input.containsKey("dollars")) {
+										amountStr = "$" + input.get("dollars");
+									}
+								}
+							}
+						} else if ("text".equals(content.getType())) {
+							textWithReply = content.getText();
+						}
+					}
+
+					if (!StringUtils.equals(response.getStopReason(), "tool_use")) {
+						rejectJob(job, "Ending chat", textWithReply);
+						return;
+					}
+				} else {
+					// Regular payment processing
+					val paymentPattern = "(?:@(?<receiver>[a-zA-Z0-9_.-]+)\\s*)?\\s*(?<amount>\\$?[0-9]+(?:\\.[0-9]+)?[km]?)\\s*(?<rest>.*)";
+					matcher = Pattern.compile(paymentPattern, Pattern.CASE_INSENSITIVE).matcher(remainingText);
+					if (!matcher.find()) {
+						rejectJob(job, "Pattern not matched for command: " + command,
+								"Invalid format. Please use: \"@payflow " + command + " @user amount token\"");
+						return;
+					}
+
+					receiverName = matcher.group("receiver");
+					amountStr = matcher.group("amount");
+					restText = matcher.group("rest");
+				}
+
+				// Common token processing
 				val tokens = paymentService.parseCommandTokens(restText);
 				if (tokens.size() == 1) {
 					token = tokens.getFirst();
@@ -259,8 +342,18 @@ public class FarcasterPaymentBotService {
 
 				if (token == null) {
 					log.error("Token not supported {}", restText);
-					job.setStatus(PaymentBotJob.Status.REJECTED);
+					rejectJob(job, "Token not supported: " + restText,
+							String.format("Token not supported: `%s`!", restText));
 					return;
+				}
+
+				// Check for auto-payment eligibility
+				boolean useSession = false;
+				val sessions = walletSessionRepository.findActiveSessionsByUser(casterProfile);
+				if (isEarlyAccessUser) {
+					if (!sessions.isEmpty()) {
+						useSession = true;
+					}
 				}
 
 				log.debug("Receiver: {}, amount: {}, token: {}", receiverName, amountStr, token);
@@ -269,13 +362,23 @@ public class FarcasterPaymentBotService {
 				// if receiver passed fetch meta from mentions
 				if (!StringUtils.isBlank(receiverName)) {
 					String finalReceiver = receiverName;
-					val fcProfile = cast
+					var fcProfile = cast
 							.mentionedProfiles().stream()
 							.filter(p -> p.username().equals(finalReceiver)).findFirst().orElse(null);
+
+					if (fcProfile == null && parentCast != null) {
+						fcProfile = parentCast.author().username().equals(finalReceiver) ? parentCast.author()
+								: parentCast.mentionedProfiles().stream()
+								.filter(p -> p.username().equals(finalReceiver)).findFirst().orElse(null);
+					}
+
 					if (fcProfile == null) {
-						log.error("Farcaster profile {} is not in the mentioned profiles list in {}",
-								receiverName, cast);
-						job.setStatus(PaymentBotJob.Status.REJECTED);
+						rejectJob(job,
+								String.format("Farcaster profile %s is not in the mentioned profiles list in %s",
+										receiverName, cast),
+								String.format(
+										"@%s, please, mention the user with @ symbol.",
+										cast.author().username()));
 						return;
 					}
 					receiverAddresses = fcProfile.addressesWithoutCustodialIfAvailable();
@@ -283,9 +386,9 @@ public class FarcasterPaymentBotService {
 
 				// if a reply, fetch through airstack
 				if (StringUtils.isBlank(receiverName)) {
-					if (cast.parentAuthor().fid() != null) {
-						receiverName = identityService.getFidFname(cast.parentAuthor().fid());
-						receiverAddresses = identityService.getFidAddresses(cast.parentAuthor().fid());
+					if (parentCast != null) {
+						receiverName = parentCast.author().username();
+						receiverAddresses = parentCast.author().addressesWithoutCustodialIfAvailable();
 					} else {
 						val mentionedReceiver = cast.mentionedProfiles().stream()
 								.filter(u -> !u.username().equals("payflow")).findFirst().orElse(null);
@@ -383,7 +486,8 @@ public class FarcasterPaymentBotService {
 				List<Cast.Embed> embeds;
 
 				if (payment.getType() == Payment.PaymentType.SESSION_INTENT) {
-					castText = "Processing automatic payment, wait for confirmation:";
+					castText = textWithReply != null ? textWithReply
+							: "I'm processing payment for you, wait for confirmation:";
 					embeds = Collections.singletonList(
 							new Cast.Embed(linkService.frameV2PaymentLink(payment).toString()));
 

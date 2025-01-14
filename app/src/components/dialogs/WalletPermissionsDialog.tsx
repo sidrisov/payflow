@@ -38,35 +38,20 @@ const MOCK_SPEND_SESSIONS: WalletSessionType[] = [
   {
     sessionId: 'mock_spend_session_1',
     active: true,
-    createdAt: new Date(),
-    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    sessionKey: '0xabc...',
-    actions: [
-      {
-        type: 'spend',
-        token: '0x8c9037d1ef5c6d1f6816278c7aaf5491d24cd527', // MOXIE (18 decimals)
-        limit: '1000000000000000000000', // 1000 MOXIE
-        spent: '250000000000000000000' // 250 MOXIE spent
-      }
-    ]
-  },
-  {
-    sessionId: 'mock_spend_session_2',
-    active: true,
     createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
     expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
     actions: [
       {
         type: 'spend',
         token: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', // USDC (6 decimals)
-        limit: '5000000000', // 5000 USDC
-        spent: '1000000000' // 1000 USDC spent
+        limit: '500000000', // 5000 USDC
+        spent: '400000000' // 1000 USDC spent
       },
       {
         type: 'spend',
         token: '0x4ed4e862860bed51a9570b96d89af5e1b0efefed', // Degen (18 decimals)
-        limit: '1000000000000000000', // 1 Degen
-        spent: '250000000000000000' // 0.25 Degen spent
+        limit: '1000000000000000000000', // 1 Degen
+        spent: '100000000000000000000' // 0.25 Degen spent
       }
     ]
   }
@@ -117,8 +102,10 @@ export function WalletPermissionsDialog({ open, onClose, flow }: Props) {
   }, [open, flow.uuid, wallet?.address, wallet?.network]);
 
   const calculateSpentProgress = (spent: string, limit: string) => {
+    if (limit === '0') return 0;
     const spentBig = BigInt(spent);
     const limitBig = BigInt(limit);
+    // Convert to number after calculation to avoid floating point issues
     return Number((spentBig * BigInt(100)) / limitBig);
   };
 
@@ -236,10 +223,7 @@ export function WalletPermissionsDialog({ open, onClose, flow }: Props) {
                       );
                       if (!token) return null;
 
-                      const spentProgress = calculateSpentProgress(
-                        action.spent || '0',
-                        action.limit || '0'
-                      );
+                      const spentProgress = calculateSpentProgress(action.spent, action.limit);
 
                       return (
                         <Box
@@ -283,8 +267,8 @@ export function WalletPermissionsDialog({ open, onClose, flow }: Props) {
                                 '& .MuiLinearProgress-bar': {
                                   bgcolor:
                                     (spentProgress > 90 && red.A700) ||
-                                    (spentProgress <= 20 && orange.A700) ||
-                                    green.A700,
+                                    (spentProgress <= 20 && green.A700) ||
+                                    orange.A700,
                                   borderRadius: 3
                                 }
                               }}

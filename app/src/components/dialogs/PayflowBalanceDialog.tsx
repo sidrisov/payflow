@@ -153,7 +153,7 @@ export default function PayflowBalanceDialog({
       }}>
       <BackDialogTitle
         showOnDesktop
-        title="Create Payflow Balance"
+        title="New Payflow Balance"
         closeStateCallback={closeStateCallback}
       />
 
@@ -174,7 +174,7 @@ export default function PayflowBalanceDialog({
               fullWidth
               value={walletTitle}
               onChange={(e) => setWalletTitle(e.target.value)}
-              placeholder="Payflow Balance"
+              placeholder="Payflow Balance v2"
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 3
