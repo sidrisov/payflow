@@ -39,7 +39,7 @@ public class JarController {
 	@PostMapping
 	public ResponseEntity<?> create(@RequestBody FrameMessage castActionMessage) {
 		log.debug("Received cast action: jar {}", castActionMessage);
-		val validateMessage = neynarService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validaFrameRequest(
 				castActionMessage.trustedData().messageBytes());
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);

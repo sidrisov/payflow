@@ -65,7 +65,7 @@ public class PaymentComposerController {
 	                              @RequestParam(required = false) String refId) {
 		log.debug("Received composer action: payment form {} - action (optional): {}",
 				composerActionMessage, action);
-		val validateMessage = neynarService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validaFrameRequest(
 				composerActionMessage.trustedData().messageBytes());
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);

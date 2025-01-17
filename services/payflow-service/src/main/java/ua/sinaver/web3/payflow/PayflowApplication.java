@@ -54,18 +54,4 @@ public class PayflowApplication {
 
 		return new LoggingMeterRegistry(config, Clock.SYSTEM);
 	}
-
-	// TODO: doesn't seem to work, check later
-	// @Bean
-	// public RuntimeWiringConfigurer runtimeWiringConfigurer() {
-	// return wiringBuilder -> wiringBuilder
-	// .scalar(ExtendedScalars.newAliasedScalar("Identity")
-	// .aliasedScalar(Scalars.GraphQLString)
-	// .build()
-	// )
-	// .scalar(ExtendedScalars.newAliasedScalar("Address")
-	// .aliasedScalar(Scalars.GraphQLString)
-	// .build()
-	// );
-	// }
 }

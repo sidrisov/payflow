@@ -74,7 +74,7 @@ public class ProductsController {
 	public ResponseEntity<?> processAction(@PathVariable String action, @RequestBody FrameMessage castActionMessage) {
 		log.debug("Received cast action: {} {}", action, castActionMessage);
 
-		val validateMessage = neynarService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validaFrameRequest(
 				castActionMessage.trustedData().messageBytes(), "fan".equals(action));
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
@@ -145,9 +145,9 @@ public class ProductsController {
 				: neynarService.fetchFarcasterUser(action.cast().fid());
 
 		val fanTokens = Stream.of(
-				castAuthor.username(),
-				Optional.ofNullable(action.cast().channel()).map(channel -> "/" + channel.id()).orElse(null),
-				"network:farcaster")
+						castAuthor.username(),
+						Optional.ofNullable(action.cast().channel()).map(channel -> "/" + channel.id()).orElse(null),
+						"network:farcaster")
 				.filter(Objects::nonNull)
 				.map(fanTokenService::getFanToken)
 				.filter(Objects::nonNull)

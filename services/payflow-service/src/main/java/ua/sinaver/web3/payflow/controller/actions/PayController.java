@@ -45,7 +45,7 @@ public class PayController {
 	@PostMapping
 	public ResponseEntity<?> create(@RequestBody FrameMessage castActionMessage) {
 		log.debug("Received cast action: pay profile {}", castActionMessage);
-		val validateMessage = neynarService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validaFrameRequest(
 				castActionMessage.trustedData().messageBytes());
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);

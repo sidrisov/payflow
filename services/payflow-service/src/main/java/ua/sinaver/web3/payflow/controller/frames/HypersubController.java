@@ -74,7 +74,7 @@ public class HypersubController {
 	public ResponseEntity<?> submit(@RequestBody FrameMessage frameMessage,
 	                                @PathVariable String id) {
 		log.debug("Received submit hypersub {} message request: {}", id, frameMessage);
-		val validateMessage = neynarService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validaFrameRequest(
 				frameMessage.trustedData().messageBytes());
 
 		if (!validateMessage.valid()) {

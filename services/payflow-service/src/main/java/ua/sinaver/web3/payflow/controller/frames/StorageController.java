@@ -26,8 +26,6 @@ import ua.sinaver.web3.payflow.service.UserService;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 import ua.sinaver.web3.payflow.utils.FrameVersions;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import static ua.sinaver.web3.payflow.controller.frames.FramesController.DEFAULT_HTML_RESPONSE;
@@ -60,7 +58,7 @@ public class StorageController {
 	private LinkService linkService;
 
 	private static Payment getPayment(ValidatedFrameResponseMessage validateMessage,
-			FarcasterUser gifteeUser, User clickedProfile) {
+	                                  FarcasterUser gifteeUser, User clickedProfile) {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val castHash = validateMessage.action().cast().hash();
 		// maybe would make sense to reference top cast instead (if it's a bot cast)
@@ -84,9 +82,9 @@ public class StorageController {
 
 	@PostMapping("/{fid}/submit")
 	public ResponseEntity<?> submit(@RequestBody FrameMessage frameMessage,
-			@PathVariable Integer fid) {
+	                                @PathVariable Integer fid) {
 		log.debug("Received submit gift storage message request: {}", frameMessage);
-		val validateMessage = neynarService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validaFrameRequest(
 				frameMessage.trustedData().messageBytes());
 
 		if (!validateMessage.valid()) {
@@ -131,7 +129,7 @@ public class StorageController {
 	@PostMapping("/check")
 	public ResponseEntity<?> check(@RequestBody FrameMessage frameMessage) {
 		log.debug("Received check storage message request: {}", frameMessage);
-		val validateMessage = neynarService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validaFrameRequest(
 				frameMessage.trustedData().messageBytes());
 
 		if (!validateMessage.valid()) {

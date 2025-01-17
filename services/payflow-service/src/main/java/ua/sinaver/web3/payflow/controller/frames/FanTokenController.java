@@ -75,7 +75,7 @@ public class FanTokenController {
 	public ResponseEntity<?> submit(@RequestBody FrameMessage frameMessage,
 	                                @PathVariable String name) {
 		log.debug("Received submit buy fan token {} message request: {}", name, frameMessage);
-		val validateMessage = neynarService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validaFrameRequest(
 				frameMessage.trustedData().messageBytes());
 
 		if (!validateMessage.valid()) {

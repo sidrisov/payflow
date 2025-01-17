@@ -92,19 +92,12 @@ public class NotificationService {
 				log.debug("Successfully processed bot cast with reply: {}",
 						response.cast());
 				return true;
-			} else {
-				response = hubService.cast(botSignerUuid, text, null, embeds);
-				if (response != null && response.success()) {
-					log.debug("Successfully processed bot cast without reply: {}",
-							response.cast());
-					return true;
-				}
 			}
+			
 		} else {
 			log.debug("Bot reply disabled, skipping casting the reply");
 			return true;
 		}
-
 		return false;
 	}
 

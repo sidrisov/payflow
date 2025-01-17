@@ -2,12 +2,16 @@ package ua.sinaver.web3.payflow.service;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.publisher.Mono;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.message.WalletMessage;
 
@@ -21,7 +25,7 @@ public class WalletService {
 	private final WebClient webClient;
 
 	public WalletService(WebClient.Builder builder,
-	                     @Value("${payflow.onchain.url}") String onchainApiUrl) {
+			@Value("${payflow.onchain.url}") String onchainApiUrl) {
 
 		log.debug("Onchain API url: {}", onchainApiUrl);
 		webClient = builder.baseUrl(String.format("%s/api/wallet", onchainApiUrl))
@@ -80,20 +84,23 @@ public class WalletService {
 				.queryParam("address", address)
 				.queryParam("chainId", chainId);
 
-		if (token != null && !token.isEmpty()) {
+		if (StringUtils.isNotEmpty(token)) {
 			uriBuilder.queryParam("token", token);
 		}
 
-		return webClient.get()
+		val tokenBalance = webClient.get()
 				.uri(uriBuilder.toUriString())
 				.retrieve()
+				.onStatus(status -> status.equals(HttpStatus.BAD_REQUEST), response -> {
+					log.error("Token not found for address: {} chainId: {} token: {}", address, chainId, token);
+					return Mono.error(new RuntimeException("Token not found"));
+				})
 				.bodyToMono(TokenBalance.class)
+				.onErrorResume(e -> Mono.justOrEmpty((TokenBalance) null))
 				.block();
-	}
 
-	// Optional: Convenience method for native token balance
-	public TokenBalance getNativeBalance(String address, Integer chainId) {
-		return getTokenBalance(address, chainId, null);
+		log.debug("Token balance: {}", tokenBalance);
+		return tokenBalance;
 	}
 
 	public record TokenBalance(

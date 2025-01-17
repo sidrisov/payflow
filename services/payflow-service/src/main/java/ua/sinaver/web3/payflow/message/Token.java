@@ -9,13 +9,14 @@ public record Token(
 		String tokenAddress,
 		String description,
 		String imageURL,
-		UnderlyingToken underlyingToken
-) {
+		UnderlyingToken underlyingToken) {
 	public record UnderlyingToken(
 			String id,
 			String name,
-			String tokenAddress
-	) {
+			String tokenAddress) {
+	}
+
+	public static Token of(String tokenAddress, String chain, Integer chainId) {
+		return new Token("unknown", "Unknown", chain, chainId, 18, tokenAddress, null, null, null);
 	}
 }
-

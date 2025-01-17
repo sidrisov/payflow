@@ -13,7 +13,10 @@ import {
   Hex,
   PublicClient,
   Chain,
-  Transport} from 'viem';
+  Transport,
+  BaseError,
+  ContractFunctionExecutionError
+} from 'viem';
 import { UserOperationCall } from 'viem/account-abstraction';
 import { base, optimism, degen, arbitrum } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
@@ -156,17 +159,45 @@ export class WalletController implements OnModuleInit {
       );
     }
 
-    const balance = await getBalance(wagmiConfig, {
-      address,
-      chainId: chain.id,
-      token
-    });
+    try {
+      const balance = await getBalance(wagmiConfig, {
+        address,
+        chainId: chain.id,
+        token
+      });
 
-    return {
-      balance: balance.value.toString(),
-      formatted: balance.formatted,
-      symbol: balance.symbol,
-      decimals: balance.decimals
-    };
+      return {
+        balance: balance.value.toString(),
+        formatted: balance.formatted,
+        symbol: balance.symbol,
+        decimals: balance.decimals
+      };
+    } catch (error: any) {
+      console.log('Error details:', {
+        name: error.name,
+        code: error.code,
+        message: error.message,
+        cause: error.cause,
+        stack: error.stack
+      });
+
+      if (error.name === 'ContractFunctionExecutionError') {
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            error: `Invalid token contract: ${token}. The contract may not implement ERC20 interface or does not exist.`
+          },
+          HttpStatus.BAD_REQUEST
+        );
+      }
+
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'Failed to check token balance'
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 }

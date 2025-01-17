@@ -9,11 +9,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 import ua.sinaver.web3.payflow.message.farcaster.*;
 import ua.sinaver.web3.payflow.message.farcaster.neynar.NotificationRequest;
 import ua.sinaver.web3.payflow.message.farcaster.neynar.NotificationResponse;
@@ -21,6 +21,7 @@ import ua.sinaver.web3.payflow.message.farcaster.neynar.TrendingCastsResponse;
 import ua.sinaver.web3.payflow.message.subscription.SubscribersMessage;
 import ua.sinaver.web3.payflow.message.subscription.SubscriptionsCreatedMessage;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 
@@ -105,9 +106,8 @@ public class FarcasterNeynarService {
 		log.debug("Clearing farcaster storage cache for: {}", fid);
 	}
 
-	@Retryable
-	public ValidatedFrameResponseMessage validateFrameMessageWithNeynar(String frameMessageInHex,
-	                                                                    boolean includeChannelContext) {
+	public ValidatedFrameResponseMessage validaFrameRequest(String frameMessageInHex,
+	                                                        boolean includeChannelContext) {
 		log.debug("Calling Neynar Frame Validate API for message {}",
 				frameMessageInHex);
 		try {
@@ -115,15 +115,25 @@ public class FarcasterNeynarService {
 					.uri("/frame/validate")
 					.bodyValue(new ValidateMessageRequest(true, false, true,
 							includeChannelContext, frameMessageInHex))
-					.retrieve().bodyToMono(ValidatedFrameResponseMessage.class).block();
+					.retrieve()
+					.onStatus(status -> status.value() == 502, response -> {
+						log.warn("Received 502 error from Neynar Frame Validate API - will retry");
+						return Mono.error(new RuntimeException("502 Bad Gateway"));
+					})
+					.bodyToMono(ValidatedFrameResponseMessage.class)
+					.retryWhen(Retry.backoff(3, Duration.ofSeconds(1))
+							.doBeforeRetry(retrySignal -> log.warn("Retrying Neynar frame " +
+											"validation request, attempt {} of 3",
+									retrySignal.totalRetries() + 1)))
+					.block();
 		} catch (Throwable t) {
 			log.debug("Exception calling Neynar Frame Validate API: {}", t.getMessage());
 			throw t;
 		}
 	}
 
-	public ValidatedFrameResponseMessage validateFrameMessageWithNeynar(String frameMessageInHex) {
-		return validateFrameMessageWithNeynar(frameMessageInHex, false);
+	public ValidatedFrameResponseMessage validaFrameRequest(String frameMessageInHex) {
+		return validaFrameRequest(frameMessageInHex, false);
 	}
 
 	public CastResponseMessage cast(String signer, String message, String parentHash,
@@ -354,7 +364,7 @@ public class FarcasterNeynarService {
 		return neynarClient.get()
 				.uri(uriBuilder -> {
 					uriBuilder.path("/feed/trending");
-					//uriBuilder.queryParam("provider", "openrank");
+					// uriBuilder.queryParam("provider", "openrank");
 					if (channelId != null) {
 						uriBuilder.queryParam("channel_id", channelId);
 					}
@@ -383,7 +393,8 @@ public class FarcasterNeynarService {
 	}
 
 	public NotificationResponse notify(NotificationRequest.Notification notification, List<Integer> targetFids) {
-		log.debug("Calling Neynar Frame Notifications API for fids: {} with notification: {}", targetFids, notification);
+		log.debug("Calling Neynar Frame Notifications API for fids: {} with notification: {}", targetFids,
+				notification);
 
 		val notificationResponse = neynarClient.post()
 				.uri("/frame/notifications")

@@ -78,15 +78,35 @@ public class PaymentService {
 
 	public List<Token> parseCommandTokens(String text) {
 		val tokens = tokenService.getTokens();
-		val patternStr = String.format("\\b(?<token>%s)\\b",
+
+		// Create pattern for both token IDs and addresses
+		val patternStr = String.format("\\b(?<token>%s|0x[a-fA-F0-9]{40})\\b",
 				tokens.stream()
 						.map(t -> Pattern.quote(t.id().toLowerCase()))
 						.distinct()
 						.collect(Collectors.joining("|")));
+
 		val pattern = Pattern.compile(patternStr, Pattern.CASE_INSENSITIVE);
 		val matcher = pattern.matcher(text);
-		val matchedToken = matcher.find() ? matcher.group("token").toLowerCase() : "usdc";
-		return tokens.stream().filter(t -> t.id().toLowerCase().equals(matchedToken)).toList();
+
+		if (matcher.find()) {
+			val matchedToken = matcher.group("token").toLowerCase();
+			// Check if it's an address or token ID
+			if (matchedToken.startsWith("0x")) {
+				return tokens.stream()
+						.filter(t -> matchedToken.equalsIgnoreCase(t.tokenAddress()))
+						.toList();
+			} else {
+				return tokens.stream()
+						.filter(t -> matchedToken.equalsIgnoreCase(t.id()))
+						.toList();
+			}
+		}
+
+		// Default to USDC if no match
+		return tokens.stream()
+				.filter(t -> "usdc".equalsIgnoreCase(t.id()))
+				.toList();
 	}
 
 	public List<String> parsePreferredTokens(String text) {
@@ -312,8 +332,7 @@ public class PaymentService {
 	}
 
 	public double getTokenAmount(Payment payment) {
-		return StringUtils.isNotBlank(payment.getTokenAmount()) ?
-				Double.parseDouble(payment.getTokenAmount())
+		return StringUtils.isNotBlank(payment.getTokenAmount()) ? Double.parseDouble(payment.getTokenAmount())
 				: Double.parseDouble(payment.getUsdAmount()) / tokenPriceService.getPrices().get(payment.getToken());
 	}
 }

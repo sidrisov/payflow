@@ -52,7 +52,7 @@ public class EarnComposerController {
 	@PostMapping
 	public ResponseEntity<?> form(@RequestBody FrameMessage composerActionMessage) {
 		log.debug("Received composer action: earn form {}", composerActionMessage);
-		val validateMessage = neynarService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validaFrameRequest(
 				composerActionMessage.trustedData().messageBytes());
 		if (!validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);

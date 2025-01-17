@@ -116,7 +116,7 @@ public class JarContributionController {
 	public ResponseEntity<?> create(@RequestBody FrameMessage frameMessage) {
 		log.debug("Received create contribute jar in frame message request: {}", frameMessage);
 
-		val validateMessage = neynarService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validaFrameRequest(
 				frameMessage.trustedData().messageBytes());
 
 		log.debug("Validation farcaster frame message response {} received on url: {}  ",
@@ -236,7 +236,7 @@ public class JarContributionController {
 				return DEFAULT_HTML_RESPONSE;
 			}
 		} else {
-			validatedFarcasterMessage = neynarService.validateFrameMessageWithNeynar(
+			validatedFarcasterMessage = neynarService.validaFrameRequest(
 					frameMessage.trustedData().messageBytes());
 
 			log.debug("Validation farcaster frame message response {} received on url: {}  ",
@@ -305,7 +305,7 @@ public class JarContributionController {
 
 			buttonIndex = validatedXmtpFrameMessage.actionBody().buttonIndex();
 		} else {
-			validatedFarcasterMessage = neynarService.validateFrameMessageWithNeynar(
+			validatedFarcasterMessage = neynarService.validaFrameRequest(
 					frameMessage.trustedData().messageBytes());
 
 			log.debug("Validation farcaster frame message response {} received on url: {}  ",
@@ -405,7 +405,7 @@ public class JarContributionController {
 			sourceRef = null; // maybe link the chat of the user who paid? or conversation?
 			state = validatedXmtpFrameMessage.actionBody().state();
 		} else {
-			validatedFarcasterMessage = neynarService.validateFrameMessageWithNeynar(
+			validatedFarcasterMessage = neynarService.validaFrameRequest(
 					frameMessage.trustedData().messageBytes());
 
 			log.debug("Validation farcaster frame message response {} received on url: {}  ",
@@ -566,7 +566,7 @@ public class JarContributionController {
 			buttonIndex = validatedXmtpFrameMessage.actionBody().buttonIndex();
 			state = validatedXmtpFrameMessage.actionBody().state();
 		} else {
-			validatedFarcasterMessage = neynarService.validateFrameMessageWithNeynar(
+			validatedFarcasterMessage = neynarService.validaFrameRequest(
 					frameMessage.trustedData().messageBytes());
 
 			log.debug("Validation farcaster frame message response {} received on url: {}  ",
@@ -685,7 +685,7 @@ public class JarContributionController {
 	public ResponseEntity<String> comment(@PathVariable String uuid,
 	                                      @RequestBody FrameMessage frameMessage) {
 		log.debug("Received contribution comment message request: {}", frameMessage);
-		val validateMessage = neynarService.validateFrameMessageWithNeynar(
+		val validateMessage = neynarService.validaFrameRequest(
 				frameMessage.trustedData().messageBytes());
 
 		if (!validateMessage.valid()) {
