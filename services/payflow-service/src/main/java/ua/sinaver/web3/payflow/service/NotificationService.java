@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.web.util.UriComponentsBuilder;
 import ua.sinaver.web3.payflow.config.PayflowConfig;
 import ua.sinaver.web3.payflow.data.Payment;
@@ -93,7 +94,7 @@ public class NotificationService {
 						response.cast());
 				return true;
 			}
-			
+
 		} else {
 			log.debug("Bot reply disabled, skipping casting the reply");
 			return true;
@@ -600,5 +601,16 @@ public class NotificationService {
 
 	private String formatFromPart(String senderFname) {
 		return StringUtils.isNotBlank(senderFname) ? String.format(" from @%s", senderFname) : "";
+	}
+
+	@TransactionalEventListener
+	public void handleCastEvent(CastEvent event) {
+		reply(event.message(), event.castHash(), event.embeds());
+	}
+
+	public record CastEvent(
+			String message,
+			String castHash,
+			List<Cast.Embed> embeds) {
 	}
 }

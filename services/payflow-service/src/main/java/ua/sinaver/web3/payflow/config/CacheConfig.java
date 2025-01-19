@@ -44,6 +44,7 @@ public class CacheConfig {
 	public static final String DAILY_STATS_CACHE = CACHE_PREFIX_VERSION + "stats-1";
 	public static final String BANKR_WALLETS_CACHE = CACHE_PREFIX_VERSION + "bankr-wallets";
 	public static final String USER_FLOWS_CACHE = CACHE_PREFIX_VERSION + "user-flows";
+	public static final String AGENT_ATTEMPTS_CACHE = CACHE_PREFIX_VERSION + "agent-attempts";
 
 	@Value("${spring.cache.contacts.all.expireAfterWrite:10m}")
 	private Duration contactsExpireAfterWriteDuration;
@@ -65,6 +66,8 @@ public class CacheConfig {
 	private Duration flowsExpireAfterWriteDuration;
 	@Value("${spring.cache.rodeo.expireAfterWrite:30d}")
 	private Duration rodeoExpireAfterWriteDuration;
+	@Value("${spring.cache.agent-attempts.expireAfterWrite:24h}")
+	private Duration agentAttemptsExpireAfterWriteDuration;
 
 	@Autowired
 	private ObjectMapper objectMapper;
@@ -84,7 +87,7 @@ public class CacheConfig {
 	@Bean
 	@Profile("redis")
 	CacheManager redisCacheManager(RedisConnectionFactory connectionFactory,
-	                               RedisCacheConfiguration configuration) {
+			RedisCacheConfiguration configuration) {
 		val cacheConfigurations = new HashMap<String, RedisCacheConfiguration>();
 
 		// Basic configs with different TTLs
@@ -124,6 +127,9 @@ public class CacheConfig {
 		// Add Rodeo wallets cache configuration
 		cacheConfigurations.put(RODEO_WALLETS_CACHE, configuration.entryTtl(rodeoExpireAfterWriteDuration));
 
+		// Add agent attempts cache configuration
+		cacheConfigurations.put(AGENT_ATTEMPTS_CACHE, configuration.entryTtl(agentAttemptsExpireAfterWriteDuration));
+
 		return RedisCacheManager
 				.builder(connectionFactory)
 				.cacheDefaults(configuration)
@@ -155,6 +161,7 @@ public class CacheConfig {
 		cacheSpecs.put(BANKR_WALLETS_CACHE, buildCache(bankrExpireAfterWriteDuration));
 		cacheSpecs.put(USER_FLOWS_CACHE, buildCache(flowsExpireAfterWriteDuration));
 		cacheSpecs.put(RODEO_WALLETS_CACHE, buildCache(rodeoExpireAfterWriteDuration));
+		cacheSpecs.put(AGENT_ATTEMPTS_CACHE, buildCache(agentAttemptsExpireAfterWriteDuration));
 
 		// Register all caches
 		cacheSpecs.forEach(cacheManager::registerCustomCache);

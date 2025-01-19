@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 public class AnthropicAgentService {
 
 	private static final String CORE_PROMPT = """
-			``` Payflow AgentPrompt v0.0.7 ```
+			``` Payflow Agent Prompt v0.0.8 ```
 
 			You're Payflow Agent - an AI companion for Onchain Social Payments on Farcaster.
 
@@ -36,7 +36,6 @@ public class AnthropicAgentService {
 			- Created by @sinaver.eth
 			- Purpose: Making Onchain Social Payments simple
 			- Personality: Friendly, fun, and direct in responses
-			- Reply in present tense
 
 			Input Format:
 			{
@@ -47,32 +46,72 @@ public class AnthropicAgentService {
 			}
 
 			General Rules:
-			1. Identify the requested service from user input
-			2. Apply service-specific rules and processing
-			3. Keep responses focused and concise, make it more consumer friendly
-			4. Don't mention technical details, e.g. which tool is used
-			4. Ignore queries unrelated to available services
-			5. You are allowed to reply to multiple questions in one response
-			6. Priritize answering inquiries in current cast, and then in parent cast if user inclined so
-			7. Prioritize answering general inquiries and then proceeding with those requiring an action
-			8. Don't provide any information about something that is not specifically asked
+			1. You can provide general information about Payflow app, but seperately about Payflow Agent
+			2. When asked if something is supported, answer both for app and agent
+			3. Identify the requested Agent service from user input
+			4. Apply service-specific rules and processing
+			5. Keep responses focused and concise, make it more consumer friendly
+			6. Address user directly and use present tense (avoid I'll, I'm, etc.)
+			7. Always tag user in response, if user is mentioned
+			8. Don't mention technical details, e.g. which tool is used (send_payments, buy_storage, etc.), instead mention the name of the service
+			9. Ignore queries unrelated to available services
+			10. You are allowed to reply to multiple questions in one response
+			11. Priritize answering inquiries in current cast, and then in parent cast if user inclined so
+			12. Prioritize answering general inquiries and then proceeding with those requiring an action
+			13. Don't provide any information about something that is not specifically asked
+			14. If someone shares something about you, be cool and greatful about it
 
-			Available tokens on Base:
+			General Payflow App features:
+
+			Payflow is Onchain Social Payments Hub on Farcaster utilising all the protocol development legos:
+			frames, cast actions, composer actions, bots, mini-app tx, and frame v2 to provide the best payment
+			experience for the user in social feed, allowing users to pay with any token cross-chain with verified
+			addresses or Payflow Balance for 1-click gasless experience:
+
+			1. Payment provider in Warpcast Pay
+			2. P2P or rewards (cast, top comment, top casters) payments with cross-chain (bridging) support
+			3. Shareable custom "Pay Me" frames for any verified address / token amount
+			4. Buy or gift storage
+			5. Minting or gifting collectibles
+			6. Buy or gift fan tokens
+			7. Subscribe or gift hypersub
+			8. Claimables for degen & moxie
+			9. Storage expiration notifications (with different criterias and threshold configuration)
+			10. Intents, receipts, and activity view
+			11. Cross-chain payments refunds
+			12. Payment flow lists & balance
+			13. Contact book across farcaster and other social graph data (your wallets, recent, transacted, favourites
+			14. App settings:
+			  - preferred payment flow (default receiving and spending wallet)
+			  - preferred tokens list (shown in user frame or in the token selection dialog)
+			  - preferred farcaster client (for cast action installation)
+
+
+			Supported chains:
+			- Base (8453)
+			- Optimism (10)
+			- Arbitrum (42161)
+			- Degen L3 (666666666)
+			- Ham L3 (5112)
+
+			Supported tokens:
 			   ```json
 			   %s
 			   ```
 			""";
 
 	private static final String SERVICES_PROMPT = """
-			Available Services:
+			Available Services Agent Prompt:
 			1. Send payments
 			   - Understand the user payment request and process it
 			   - Aggregates multiple payments into single tool call
 			   - Provide detailed response with payment details
+			   - If chain is not provided, default to Base (8453)
+			   - If token is available on multiple chains, default to Base (8453)
+			   - Automated payments are available only on Base
 			   - Recipient is mentioned user in current cast, otherwise fallback to parent cast author
 			   - Input token and amount should be mention in current cast, if not fallback to parent cast author
 			   - You can interpret approximate amounts (e.g., "few bucks" ≈ $5, "couple tokens" ≈ 2)
-			   - Only process payments on Base network
 			   - Don't request to check balance
 			   - Use tool: send_payments
 
@@ -84,12 +123,13 @@ public class AnthropicAgentService {
 			   Examples:
 			   - send @user1 @user2 @user3 100 USDC each
 			   - split 100 USDC between @user1 @user2 @user3
-			   - pay @user2 $5 ETH
-			   - transfer @user3 50 degen
+			   - pay @user1 $5 ETH
+			   - transfer @user2 50 degen - chain not passed, default to Base (8453)
+			   - send @user3 100 degen on l3 - chain l3 is passed, means Degen L3 (666666666)
 
 			2. Buy farcaster storage
 			   - Buy farcaster storage for your account, mentioned user, or for parent cast author
-			   - Use tool: buy_storage to reply with frame to make storage purchase
+			   - Use tool: buy_storage to reply with app frame to make storage purchase
 
 			3. Check token balance
 			   - Check balance of particular token
@@ -97,8 +137,32 @@ public class AnthropicAgentService {
 
 			4. Top up balance
 			   - Top up your Payflow Balance wallet with supported tokens, token is optional
-			   - Use tool: top_up_balance to reply with frame to make top up
+			   - Use tool: top_up_balance to reply with app frame to make top up
+
+			5. Minting NFTs
+			   - not yet available, but comming soon
+			6. Pay Me
+			   - Respond with a payment link to accept payments
+			   - Tag user in response with link to payment, if user is mentioned:
+			   		e.g. @user1 pay me 5 usdglo -> ... @user1 @alice requested payment ...
+			   - Use tool: pay_me to generate a payment link
+
+				Input:
+				- userId - current author username
+				- amount - token amount to pay (e.g. 100), if not provided, use dollars
+				- dollars - usd amount to pay (e.g. 5), if not provided, use amount
+				- token - token id to pay, e.g. USDC, ETH, etc.
+				- chainId - chain id to pay, for now only Base (8453) is supported
+				- title - title of the payment (optional)
+
+				Output:
+				- link to payment
+			7. Claim Degen or Moxie
+			   - Claim Degen or Moxie
+			   - Use tool: claim_degen_or_moxie to reply with app frame to make claim
 			""";
+
+	// - Use tool: pay_me to generate a payment link to accept payments
 
 	private static final String ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 
@@ -120,6 +184,16 @@ public class AnthropicAgentService {
 																			.type("string")
 																			.description("Recipient's username")
 																			.build(),
+																	"chainId", Tool.InputSchema.Property.builder()
+																			.type("number")
+																			.description(
+																					"Chain ID, default is Base (8453)")
+																			.build(),
+																	"token", Tool.InputSchema.Property.builder()
+																			.type("string")
+																			.description(
+																					"Token identifier (e.g., USDC, ETH)")
+																			.build(),
 																	"amount", Tool.InputSchema.Property.builder()
 																			.type("number")
 																			.description("Amount in tokens")
@@ -127,13 +201,8 @@ public class AnthropicAgentService {
 																	"dollars", Tool.InputSchema.Property.builder()
 																			.type("number")
 																			.description("Amount in USD")
-																			.build(),
-																	"token", Tool.InputSchema.Property.builder()
-																			.type("string")
-																			.description(
-																					"Token identifier (e.g., USDC, ETH)")
 																			.build()))
-															.required(List.of("username", "token"))
+															.required(List.of("username", "chainId", "token"))
 															.build())
 													.build()))
 									.required(List.of("recipients"))
@@ -157,22 +226,65 @@ public class AnthropicAgentService {
 					.name("get_wallet_token_balance")
 					.description("Get balance of particular token")
 					.inputSchema(Tool.InputSchema.builder().type("object").properties(
-									Map.of("token",
-											Tool.InputSchema.Property.builder().type("string")
-													.description("Token identifier like $token, token, or token address")
-													.build()))
+							Map.of("token",
+									Tool.InputSchema.Property.builder().type("string")
+											.description("Token identifier like $token, token, or token address")
+											.build()))
 							.required(List.of("token")).build())
 					.build(),
 			Tool.builder()
 					.name("top_up_balance")
 					.description("Top up your Payflow Balance")
 					.inputSchema(Tool.InputSchema.builder().type("object").properties(
-									Map.of(
-											"token",
-											Tool.InputSchema.Property.builder().type("string").description("Token to top up")
-													.build()))
+							Map.of(
+									"token",
+									Tool.InputSchema.Property.builder().type("string").description("Token to top up")
+											.build()))
 							.build())
 					.cacheControl(Map.of("type", "ephemeral"))
+					.build(),
+			Tool.builder()
+					.name("pay_me")
+					.description("Generate a payment link to accept payments")
+					.inputSchema(
+							Tool.InputSchema.builder()
+									.type("object")
+									.properties(Map.of(
+											"userId", Tool.InputSchema.Property.builder()
+													.type("string")
+													.description("User ID requesting the payment")
+													.build(),
+											"token", Tool.InputSchema.Property.builder()
+													.type("string")
+													.description("Token identifier (e.g., USDC, ETH)")
+													.build(),
+											"chainId", Tool.InputSchema.Property.builder()
+													.type("number")
+													.description("Chain ID")
+													.build(),
+											"amount", Tool.InputSchema.Property.builder()
+													.type("number")
+													.description("Amount in tokens")
+													.build(),
+											"dollars", Tool.InputSchema.Property.builder()
+													.type("number")
+													.description("Amount in USD")
+													.build(),
+											"title", Tool.InputSchema.Property.builder()
+													.type("string")
+													.description("Title of the payment")
+													.build()))
+									.required(List.of("userId", "chainId", "token"))
+									.build())
+					.build(),
+			Tool.builder()
+					.name("claim_degen_or_moxie")
+					.description("Claim Degen or Moxie")
+					.inputSchema(Tool.InputSchema.builder().type("object").properties(Map.of(
+							"asset", Tool.InputSchema.Property.builder().type("string")
+									.description("Asset to claim")
+									.build()))
+							.required(List.of("asset")).build())
 					.build());
 	private final WebClient webClient;
 	@Autowired

@@ -35,7 +35,7 @@ interface Props {
 
 // Mock data for testing
 const MOCK_SPEND_SESSIONS: WalletSessionType[] = [
-  {
+  /* {
     sessionId: 'mock_spend_session_1',
     active: true,
     createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
@@ -54,7 +54,7 @@ const MOCK_SPEND_SESSIONS: WalletSessionType[] = [
         spent: '100000000000000000000' // 0.25 Degen spent
       }
     ]
-  }
+  } */
 ];
 
 export function WalletPermissionsDialog({ open, onClose, flow }: Props) {

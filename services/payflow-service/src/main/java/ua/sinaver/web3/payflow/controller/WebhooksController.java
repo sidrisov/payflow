@@ -19,8 +19,8 @@ import ua.sinaver.web3.payflow.message.farcaster.modbot.MembershipRequestMessage
 import ua.sinaver.web3.payflow.message.farcaster.modbot.MembershipResponseMessage;
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
+import ua.sinaver.web3.payflow.service.FarcasterBotService;
 import ua.sinaver.web3.payflow.service.FarcasterMessagingService;
-import ua.sinaver.web3.payflow.service.FarcasterPaymentBotService;
 import ua.sinaver.web3.payflow.service.IdentityService;
 
 import javax.crypto.Mac;
@@ -31,6 +31,8 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
+
+import static ua.sinaver.web3.payflow.service.FarcasterBotService.BOT_FID;
 
 @RestController
 @RequestMapping("/farcaster/webhooks")
@@ -60,7 +62,7 @@ public class WebhooksController {
 	private FarcasterMessagingService farcasterMessagingService;
 
 	@Autowired
-	private FarcasterPaymentBotService farcasterPaymentBotService;
+	private FarcasterBotService farcasterPaymentBotService;
 
 	private static String bytesToHex(byte[] bytes) {
 		StringBuilder hexString = new StringBuilder();
@@ -111,15 +113,21 @@ public class WebhooksController {
 			}
 
 			val cast = castCreatedMessage.data();
-			val job = new PaymentBotJob(cast.hash(),
-					cast.author().fid(),
-					Date.from(Instant.parse(cast.timestamp())),
-					cast);
 
-			// Save and flush to ensure persistence before async processing
-			paymentBotJobRepository.saveAndFlush(job);
-			farcasterPaymentBotService.asyncProcessBotJob(job.getId());
-			LOGGER.info("Payment job command saved: {}", job);
+			// save if not its cast and not quoted
+			if (cast.author().fid() != BOT_FID ||
+					(StringUtils.isNotBlank(cast.text()) &&
+							!cast.text().matches("([\"'`])@payflow.*?\\1"))) {
+				val job = new PaymentBotJob(cast.hash(),
+						cast.author().fid(),
+						Date.from(Instant.parse(cast.timestamp())),
+						cast);
+
+				// Save and flush to ensure persistence before async processing
+				paymentBotJobRepository.saveAndFlush(job);
+				farcasterPaymentBotService.asyncProcessBotJob(job.getId());
+				LOGGER.info("Payment job command saved: {}", job);
+			}
 
 			return ResponseEntity.ok().body("Success");
 		} catch (NoSuchAlgorithmException | InvalidKeyException e) {

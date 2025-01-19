@@ -8,6 +8,9 @@ import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -31,11 +34,15 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static ua.sinaver.web3.payflow.config.CacheConfig.AGENT_ATTEMPTS_CACHE;
+import static ua.sinaver.web3.payflow.service.TokenService.BASE_CHAIN_ID;
+
 @Service
 @Transactional
 @Slf4j
-public class FarcasterPaymentBotService {
+public class FarcasterBotService {
 
+	public static final Integer BOT_FID = 211734;
 	private static final List<String> SUPPORTED_COMMANDS = List.of("pay", "send", "transfer",
 			"batch", "jar", "mint", "collect");
 
@@ -69,8 +76,8 @@ public class FarcasterPaymentBotService {
 	@Value("${payflow.farcaster.bot.enabled:false}")
 	private boolean isBotEnabled;
 
-	@Autowired
-	private NotificationService notificationService;
+	@Value("${payflow.farcaster.bot.max-agent-attempts:5}")
+	private int maxAgentAttempts;
 
 	@Autowired
 	private WalletService walletService;
@@ -84,14 +91,19 @@ public class FarcasterPaymentBotService {
 	@Autowired
 	private AnthropicAgentService anthropicAgentService;
 
+	@Autowired
+	private ApplicationEventPublisher eventPublisher;
+
 	private void rejectJob(PaymentBotJob job, String reason, String notifyMessage, String frameUrl) {
 		log.error("Rejecting job {} with reason: {}", job.getId(), reason);
 		job.setStatus(PaymentBotJob.Status.REJECTED);
 		paymentBotJobRepository.save(job);
 
 		if (notifyMessage != null && job.getCast() != null) {
-			notificationService.reply(notifyMessage, job.getCast().hash(),
-					frameUrl != null ? Collections.singletonList(new Cast.Embed(frameUrl)) : null);
+			eventPublisher.publishEvent(new NotificationService.CastEvent(
+					notifyMessage,
+					job.getCast().hash(),
+					frameUrl != null ? Collections.singletonList(new Cast.Embed(frameUrl)) : null));
 		}
 	}
 
@@ -142,6 +154,11 @@ public class FarcasterPaymentBotService {
 
 		log.debug("Processing bot job {}", text);
 
+		if (cast.author().fid() == BOT_FID) {
+			rejectJob(job, "Can't process its own commands", null);
+			return;
+		}
+
 		// Skip if text is empty or @payflow is in quotes
 		if (StringUtils.isBlank(text) ||
 				text.matches("([\"'`])@payflow.*?\\1")) {
@@ -161,9 +178,7 @@ public class FarcasterPaymentBotService {
 				return;
 			}
 
-			val isEarlyAccessUser = userService.getEarlyFeatureAccessUsers().contains(casterProfile.getUsername());
-
-			if (isEarlyAccessUser) {
+			if (canUseAgent(casterProfile)) {
 				processWithAgent(job, casterProfile);
 			} else {
 				processWithCommand(job, casterProfile);
@@ -229,7 +244,6 @@ public class FarcasterPaymentBotService {
 		}
 
 		List<Recipient> recipients = new ArrayList<>();
-
 		// Process AI response
 		for (val content : response.getContent()) {
 			if ("tool_use".equals(content.getType())) {
@@ -249,6 +263,7 @@ public class FarcasterPaymentBotService {
 						recipients = recipientsData.stream()
 								.map(data -> new Recipient(
 										((String) data.get("username")).replace("@", ""),
+										(Integer) data.get("chainId"),
 										(String) data.get("token"),
 										data.get("amount") instanceof Number
 												? ((Number) data.get("amount")).doubleValue()
@@ -268,10 +283,12 @@ public class FarcasterPaymentBotService {
 					case "buy_storage" -> {
 						val input = (Map<String, Object>) content.getInput();
 						val fid = ((Integer) input.get("fid"));
-						notificationService.reply(textWithReply, cast.hash(),
+						eventPublisher.publishEvent(new NotificationService.CastEvent(
+								textWithReply,
+								cast.hash(),
 								Collections.singletonList(new Cast.Embed(
 										payflowConfig.getDAppServiceUrl() + "/fid/" + fid
-												+ "/storage")));
+												+ "/storage"))));
 						job.setStatus(PaymentBotJob.Status.PROCESSED);
 						return;
 					}
@@ -289,12 +306,12 @@ public class FarcasterPaymentBotService {
 
 						val token = tokenOrAddress != null
 								? tokenOrAddress.matches("0x[a-fA-F0-9]{40}")
-								? paymentService.parseCommandTokens(tokenOrAddress).stream()
-								.findFirst()
-								.orElseGet(() -> Token.of(tokenOrAddress, "Base", 8453))
-								: paymentService.parseCommandTokens(tokenOrAddress).stream()
-								.findFirst()
-								.orElse(null)
+										? paymentService.parseCommandTokens(tokenOrAddress).stream()
+												.findFirst()
+												.orElseGet(() -> Token.of(tokenOrAddress, "Base", 8453))
+										: paymentService.parseCommandTokens(tokenOrAddress).stream()
+												.findFirst()
+												.orElse(null)
 								: null;
 
 						if (token == null) {
@@ -315,13 +332,15 @@ public class FarcasterPaymentBotService {
 											"Token does not exist `%s`. Please, provide a valid token ticker or address.",
 											tokenOrAddress));
 						} else {
-							notificationService.reply(String.format("""
-													%s
-													%s Balance: %s""",
+							eventPublisher.publishEvent(new NotificationService.CastEvent(
+									String.format("""
+											%s
+											%s Balance: %s""",
 											textWithReply != null ? textWithReply : "",
 											balance.symbol().toUpperCase(),
 											balance.formatted()),
-									cast.hash(), null);
+									cast.hash(),
+									null));
 
 							job.setStatus(PaymentBotJob.Status.PROCESSED);
 						}
@@ -353,27 +372,84 @@ public class FarcasterPaymentBotService {
 
 						val topUpFrameUrl = builder.build(sessionWalletAddress).toString();
 
-						notificationService.reply(
+						eventPublisher.publishEvent(new NotificationService.CastEvent(
 								textWithReply,
 								cast.hash(),
-								List.of(new Cast.Embed(topUpFrameUrl)));
+								List.of(new Cast.Embed(topUpFrameUrl))));
 
 						job.setStatus(PaymentBotJob.Status.PROCESSED);
 						return;
 					}
 
+					case "pay_me" -> {
+						val input = (Map<String, Object>) content.getInput();
+						val userId = (String) input.get("userId");
+						val chainId = (Number) input.get("chainId");
+						val token = (String) input.get("token");
+						val amount = (Number) input.get("amount");
+						val dollars = (Number) input.get("dollars");
+						val title = (String) input.get("title");
+
+						val builder = UriComponentsBuilder
+								.fromUriString(payflowConfig.getDAppServiceUrl())
+								.path("/{userId}");
+
+						if (amount != null) {
+							builder.queryParam("tokenAmount", amount);
+						}
+						if (dollars != null) {
+							builder.queryParam("usdAmount", dollars);
+						}
+						builder.queryParam("tokenId", token);
+						builder.queryParam("chainId", chainId);
+
+						if (title != null) {
+							builder.queryParam("title", title);
+						}
+
+						eventPublisher.publishEvent(new NotificationService.CastEvent(
+								textWithReply,
+								cast.hash(),
+								Collections.singletonList(new Cast.Embed(builder.build(userId).toString()))));
+
+						job.setStatus(PaymentBotJob.Status.PROCESSED);
+						return;
+					}
+					case "claim_degen_or_moxie" -> {
+						val input = (Map<String, Object>) content.getInput();
+						val asset = (String) input.get("asset");
+
+						val claimFrameUrl = UriComponentsBuilder
+								.fromUriString(payflowConfig.getDAppServiceUrl())
+								.path("/{asset}")
+								.build(asset).toString();
+
+						eventPublisher.publishEvent(new NotificationService.CastEvent(
+								textWithReply,
+								cast.hash(),
+								Collections.singletonList(new Cast.Embed(claimFrameUrl))));
+
+						job.setStatus(PaymentBotJob.Status.PROCESSED);
+						return;
+					}
 				}
 			} else if ("text".equals(content.getType())) {
 				textWithReply = content.getText();
-
-				if (textWithReply != null) {
-					notificationService.reply(textWithReply, cast.hash(), null);
-				}
 			}
 		}
 
-		if (!StringUtils.equals(response.getStopReason(), "tool_use")) {
-			rejectJob(job, "Ending chat", textWithReply);
+		if (textWithReply != null) {
+			eventPublisher.publishEvent(new NotificationService.CastEvent(
+					textWithReply,
+					cast.hash(),
+					null));
+		}
+
+		// if tools were used, decrement attempts, otherwise end chat
+		if (StringUtils.equals(response.getStopReason(), "tool_use")) {
+			decrementAttempts(casterProfile);
+		} else {
+			rejectJob(job, "Ending chat", null);
 			return;
 		}
 
@@ -384,17 +460,14 @@ public class FarcasterPaymentBotService {
 
 		for (val recipient : recipients) {
 			val tokens = paymentService.parseCommandTokens(recipient.token());
-			if (tokens.isEmpty()) {
+
+			val token = tokens.stream().filter(t -> t.chainId().equals(recipient.chainId())).findFirst().orElse(null);
+			if (token == null) {
 				log.error("Token not supported {}", recipient.token());
 				rejectJob(job, "Token not supported: " + recipient.token(),
 						String.format("Token not supported: `%s`!", recipient.token()));
 				return;
 			}
-
-			Token token = tokens.getFirst();
-
-			// Check for auto-payment eligibility
-			boolean useSession = session != null;
 
 			log.debug("Receiver: {}, amount: {}, token: {}", recipient.username(), recipient.amount(),
 					recipient.token());
@@ -409,7 +482,7 @@ public class FarcasterPaymentBotService {
 			if (fcProfile == null && parentCast != null) {
 				fcProfile = parentCast.author().username().equals(finalReceiver) ? parentCast.author()
 						: parentCast.mentionedProfiles().stream()
-						.filter(p -> p.username().equals(finalReceiver)).findFirst().orElse(null);
+								.filter(p -> p.username().equals(finalReceiver)).findFirst().orElse(null);
 			}
 
 			if (fcProfile == null) {
@@ -462,7 +535,7 @@ public class FarcasterPaymentBotService {
 			payment.setSourceRef(sourceRef);
 			payment.setSourceHash(sourceHash);
 
-			if (useSession && session != null) {
+			if (session != null && token.chainId().equals(BASE_CHAIN_ID)) {
 				// Check balance for session-based payments
 				val sessionWalletAddress = session.getWallet().getAddress();
 				val balance = walletService.getTokenBalance(
@@ -482,11 +555,11 @@ public class FarcasterPaymentBotService {
 							.queryParam("button", "Top Up")
 							.build(sessionWalletAddress).toString();
 
-					notificationService.reply(
+					eventPublisher.publishEvent(new NotificationService.CastEvent(
 							"Balance too low! Top up your wallet or pay manually:",
 							cast.hash(),
 							List.of(new Cast.Embed(topUpFrameUrl),
-									new Cast.Embed(linkService.frameV2PaymentLink(payment).toString())));
+									new Cast.Embed(linkService.frameV2PaymentLink(payment).toString()))));
 					job.setStatus(PaymentBotJob.Status.PROCESSED);
 					return;
 				}
@@ -512,14 +585,19 @@ public class FarcasterPaymentBotService {
 				paymentService.asyncProcessSessionIntentPayment(payment.getId());
 			} else {
 				castText = String.format(
-						"@%s, pay using frame below (no active session found to process automatically)",
+						"@%s, complete payment manually, or create wallet & session to process " +
+								"new payments automatically",
 						cast.author().username());
-				embeds = Collections.singletonList(
-						new Cast.Embed(linkService.frameV2PaymentLink(payment).toString()));
+				embeds = List.of(
+						new Cast.Embed(linkService.frameV2PaymentLink(payment).toString()),
+						new Cast.Embed(payflowConfig.getDAppServiceUrl()));
 			}
 
 			job.setStatus(PaymentBotJob.Status.PROCESSED);
-			notificationService.reply(castText, cast.hash(), embeds);
+			eventPublisher.publishEvent(new NotificationService.CastEvent(
+					castText,
+					cast.hash(),
+					embeds));
 		}
 	}
 
@@ -527,7 +605,7 @@ public class FarcasterPaymentBotService {
 		val cast = job.getCast();
 		val text = cast.text();
 		var matcher = Pattern.compile(
-						BOT_COMMAND_PATTERN, Pattern.DOTALL)
+				BOT_COMMAND_PATTERN, Pattern.DOTALL)
 				.matcher(text);
 
 		if (!matcher.find()) {
@@ -609,8 +687,8 @@ public class FarcasterPaymentBotService {
 					if (fcProfile == null && parentCast != null) {
 						fcProfile = parentCast.author().username().equals(finalReceiver) ? parentCast.author()
 								: parentCast.mentionedProfiles().stream()
-								.filter(p -> p.username().equals(finalReceiver)).findFirst()
-								.orElse(null);
+										.filter(p -> p.username().equals(finalReceiver)).findFirst()
+										.orElse(null);
 					}
 
 					if (fcProfile == null) {
@@ -706,11 +784,11 @@ public class FarcasterPaymentBotService {
 								.queryParam("button", "Top Up")
 								.build(sessionWalletAddress).toString();
 
-						notificationService.reply(
+						eventPublisher.publishEvent(new NotificationService.CastEvent(
 								"Balance too low! Top up your wallet or pay manually:",
 								cast.hash(),
 								List.of(new Cast.Embed(topUpFrameUrl),
-										new Cast.Embed(linkService.frameV2PaymentLink(payment).toString())));
+										new Cast.Embed(linkService.frameV2PaymentLink(payment).toString()))));
 						job.setStatus(PaymentBotJob.Status.PROCESSED);
 						return;
 					}
@@ -723,7 +801,7 @@ public class FarcasterPaymentBotService {
 					payment.setCalls(callsNode);
 				}
 
-				paymentRepository.saveAndFlush(payment);
+				paymentRepository.save(payment);
 
 				String castText;
 				List<Cast.Embed> embeds;
@@ -743,7 +821,10 @@ public class FarcasterPaymentBotService {
 				}
 
 				job.setStatus(PaymentBotJob.Status.PROCESSED);
-				notificationService.reply(castText, cast.hash(), embeds);
+				eventPublisher.publishEvent(new NotificationService.CastEvent(
+						castText,
+						cast.hash(),
+						embeds));
 				break;
 			}
 			case "batch":
@@ -830,17 +911,18 @@ public class FarcasterPaymentBotService {
 						payment.setSourceApp(sourceApp);
 						payment.setSourceRef(sourceRef);
 						payment.setSourceHash(sourceHash);
-						paymentRepository.saveAndFlush(payment);
-						String castText = String.format("@%s pay using frame below",
+						paymentRepository.save(payment);
+
+						val castText = String.format("@%s pay using frame below",
 								cast.author().username());
 
 						val frameUrl = linkService.frameV2PaymentLink(payment).toString();
 						val embeds = Collections.singletonList(
 								new Cast.Embed(frameUrl));
-						val processed = notificationService.reply(castText, cast.hash(), embeds);
-						if (processed) {
-							log.debug("Payment batch reply sent for {}", receiver);
-						}
+						eventPublisher.publishEvent(new NotificationService.CastEvent(
+								castText,
+								cast.hash(),
+								embeds));
 					} catch (Throwable t) {
 						log.error("Error in batch command processing: {}", job, t);
 					}
@@ -881,7 +963,7 @@ public class FarcasterPaymentBotService {
 				}
 
 				log.debug("Executing jar creation with title `{}`, desc `{}`, " +
-								"embeds {}, source {}",
+						"embeds {}, source {}",
 						title, beforeText, cast.embeds(),
 						String.format("https://warpcast.com/%s/%s",
 								cast.author().username(),
@@ -898,14 +980,14 @@ public class FarcasterPaymentBotService {
 						cast.author().username());
 				val embeds = Collections.singletonList(
 						new Cast.Embed(String.format("https://app.payflow" +
-										".me/jar/%s",
+								".me/jar/%s",
 								jar.getFlow().getUuid())));
-				val processed = notificationService.reply(castText, cast.hash(), embeds);
-				if (processed) {
-					job.setStatus(PaymentBotJob.Status.PROCESSED);
-					return;
-				}
-				break;
+				eventPublisher.publishEvent(new NotificationService.CastEvent(
+						castText,
+						cast.hash(),
+						embeds));
+				job.setStatus(PaymentBotJob.Status.PROCESSED);
+				return;
 			}
 			case "collect":
 			case "mint": {
@@ -974,7 +1056,10 @@ public class FarcasterPaymentBotService {
 						cast.author().username());
 				val frameEmbeds = Collections.singletonList(
 						new Cast.Embed(linkService.frameV2PaymentLink(payment).toString()));
-				notificationService.reply(castText, cast.hash(), frameEmbeds);
+				eventPublisher.publishEvent(new NotificationService.CastEvent(
+						castText,
+						cast.hash(),
+						frameEmbeds));
 
 				job.setStatus(PaymentBotJob.Status.PROCESSED);
 				break;
@@ -986,8 +1071,34 @@ public class FarcasterPaymentBotService {
 		}
 	}
 
+	@Cacheable(value = AGENT_ATTEMPTS_CACHE, key = "#user.identity", unless = "#result == null")
+	public Integer getRemainingAttempts(User user) {
+		if (userService.getEarlyFeatureAccessUsers().contains(user.getUsername())) {
+			return Integer.MAX_VALUE;
+		}
+		return maxAgentAttempts;
+	}
+
+	@CachePut(value = AGENT_ATTEMPTS_CACHE, key = "#user.identity")
+	public Integer decrementAttempts(User user) {
+		if (userService.getEarlyFeatureAccessUsers().contains(user.getUsername())) {
+			return Integer.MAX_VALUE;
+		}
+
+		Integer attempts = getRemainingAttempts(user);
+		return attempts > 0 ? attempts - 1 : 0;
+	}
+
+	private boolean canUseAgent(User user) {
+		if (userService.getEarlyFeatureAccessUsers().contains(user.getUsername())) {
+			return true;
+		}
+		return getRemainingAttempts(user) > 0;
+	}
+
 	private record Recipient(
 			String username,
+			Integer chainId,
 			String token,
 			Double amount,
 			Double dollars) {

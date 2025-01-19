@@ -55,6 +55,8 @@ dependencies {
         implementation("com.google.cloud:spring-cloud-gcp-starter")
         implementation("com.google.cloud:spring-cloud-gcp-starter-sql-mysql")
         implementation("com.google.cloud:google-cloud-redis")
+        implementation("com.google.cloud:spring-cloud-gcp-logging:5.10.0")
+
     } else {
         // local
         //runtimeOnly ("com.h2database:h2")
@@ -97,27 +99,15 @@ dependencies {
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
-    // Add Log4j2 dependency
-    implementation("org.springframework.boot:spring-boot-starter-log4j2")
-
-    // Update disruptor to latest version for async logging
-    implementation("com.lmax:disruptor:4.0.0")
-
-
     // Add these lines
     implementation("net.javacrumbs.shedlock:shedlock-spring:6.0.2")
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:6.0.2")
 
     // Add Anthropic SDK
-    implementation("com.anthropic:anthropic-java-core:0.1.0-alpha.6")
+    //implementation("com.anthropic:anthropic-java-core:0.1.0-alpha.6")
 
-    // exclude other logging implementations    
     configurations.all {
-        exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
         exclude(group = "org.slf4j", module = "slf4j-simple")
-        exclude(group = "org.projectlombok", module = "lombok-logging")
-        exclude(group = "ch.qos.logback", module = "logback-classic")
-        exclude(group = "ch.qos.logback", module = "logback-core")
     }
 
     // Add test dependencies if not already present
