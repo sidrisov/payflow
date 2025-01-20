@@ -5,12 +5,14 @@ import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.web.util.UriComponentsBuilder;
 import ua.sinaver.web3.payflow.config.PayflowConfig;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.events.CastEvent;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.message.farcaster.FarcasterUser;
@@ -61,7 +63,7 @@ public class NotificationService {
 		return df.format(value);
 	}
 
-	public boolean preferredTokensReply(String parentHash, FarcasterUser user,
+	public String preferredTokensReply(String parentHash, FarcasterUser user,
 	                                    List<String> preferredTokenIds) {
 
 		val formattedTokenIds = String.join(", ", preferredTokenIds).toUpperCase();
@@ -74,32 +76,32 @@ public class NotificationService {
 				UriComponentsBuilder.fromHttpUrl(
 						payflowConfig.getDAppServiceUrl()).path(user.username()).build().toUriString()));
 		var processed = this.reply(castText, parentHash, embeds);
-		if (!processed) {
+		if (processed == null) {
 			log.error("Failed to reply with {} for preferredTokens configuration", castText);
-			return false;
+			return null;
 
 		}
-		return true;
+		return processed;
 	}
 
-	public boolean reply(String text, String parentHash) {
+	public String reply(String text, String parentHash) {
 		return reply(text, parentHash, Collections.emptyList());
 	}
 
-	public boolean reply(String text, String parentHash, List<Cast.Embed> embeds) {
+	public String reply(String text, String parentHash, List<Cast.Embed> embeds) {
 		if (isBotReplyEnabled) {
 			var response = hubService.cast(botSignerUuid, text, parentHash, embeds);
-			if (response != null && response.success()) {
+			if (response != null && response.success() && response.cast() != null) {
 				log.debug("Successfully processed bot cast with reply: {}",
 						response.cast());
-				return true;
+				return response.cast().hash();
 			}
 
 		} else {
 			log.debug("Bot reply disabled, skipping casting the reply");
-			return true;
+			return null;
 		}
-		return false;
+		return null;
 	}
 
 	public void notifyPaymentCompletion(Payment payment, User user) {
@@ -154,7 +156,7 @@ public class NotificationService {
 
 	private void sendCastReply(String castText, String sourceHash, List<Cast.Embed> embeds) {
 		val processed = reply(castText, sourceHash, embeds);
-		if (!processed) {
+		if (processed == null) {
 			log.error("Failed to reply with {} for payment completion", castText);
 		}
 	}
@@ -603,14 +605,9 @@ public class NotificationService {
 		return StringUtils.isNotBlank(senderFname) ? String.format(" from @%s", senderFname) : "";
 	}
 
+	@Async
 	@TransactionalEventListener
 	public void handleCastEvent(CastEvent event) {
 		reply(event.message(), event.castHash(), event.embeds());
-	}
-
-	public record CastEvent(
-			String message,
-			String castHash,
-			List<Cast.Embed> embeds) {
 	}
 }

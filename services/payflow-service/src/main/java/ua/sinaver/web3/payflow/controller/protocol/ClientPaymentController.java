@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.WalletSession;
 import ua.sinaver.web3.payflow.data.protocol.ClientApiKey;
+import ua.sinaver.web3.payflow.events.CreatedPaymentEvent;
 import ua.sinaver.web3.payflow.message.protocol.CreatePaymentRequest;
 import ua.sinaver.web3.payflow.message.protocol.CreatePaymentResponse;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
@@ -55,6 +57,9 @@ public class ClientPaymentController {
 
 	@Autowired
 	private ObjectMapper objectMapper;
+
+	@Autowired
+	private ApplicationEventPublisher eventPublisher;
 
 	@PostMapping("/create")
 	public CreatePaymentResponse createPayment(
@@ -112,7 +117,7 @@ public class ClientPaymentController {
 				} else if (social.type().equals("farcaster")) {
 					var addresses = social.identifier().startsWith(
 							"fid:") ? identityService.getFidAddresses(Integer.parseInt(social.identifier().replace(
-							"fid:", ""))) : identityService.getFnameAddresses(social.identifier());
+									"fid:", ""))) : identityService.getFnameAddresses(social.identifier());
 
 					if (addresses == null || addresses.isEmpty()) {
 						throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -162,7 +167,7 @@ public class ClientPaymentController {
 			payment.setStatus(Payment.PaymentStatus.CREATED);
 			payment.setExpiresAt(request.expiresAt() != null ? request.expiresAt()
 					: Instant.now().plus(7,
-					ChronoUnit.DAYS));
+							ChronoUnit.DAYS));
 			if (StringUtils.isNotBlank(request.recipient().comment())) {
 				payment.setComment(request.recipient().comment());
 			}
@@ -191,10 +196,9 @@ public class ClientPaymentController {
 
 			paymentRepository.saveAndFlush(payment);
 			if (walletSession != null) {
-				paymentService.asyncProcessSessionIntentPayment(payment.getId());
+				eventPublisher.publishEvent(new CreatedPaymentEvent(payment.getId()));
 			}
 			log.debug("Saved payment: {}", payment);
-
 
 			val paymentUrl = linkService.paymentLink(payment, false).toString();
 			return new CreatePaymentResponse(payment.getReferenceId(), paymentUrl);

@@ -52,7 +52,6 @@ public class PaymentBotJob {
 		this.casterFid = casterFid;
 		this.castedDate = castedDate;
 		this.cast = cast;
-
 	}
 
 	public enum Status {

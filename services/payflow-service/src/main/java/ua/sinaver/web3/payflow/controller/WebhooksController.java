@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.data.bot.PaymentBotJob;
+import ua.sinaver.web3.payflow.events.PaymentBotJobEvent;
 import ua.sinaver.web3.payflow.message.farcaster.CastCreatedMessage;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.message.farcaster.FarcasterSignedMessage;
@@ -19,9 +20,10 @@ import ua.sinaver.web3.payflow.message.farcaster.modbot.MembershipRequestMessage
 import ua.sinaver.web3.payflow.message.farcaster.modbot.MembershipResponseMessage;
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
-import ua.sinaver.web3.payflow.service.FarcasterBotService;
 import ua.sinaver.web3.payflow.service.FarcasterMessagingService;
 import ua.sinaver.web3.payflow.service.IdentityService;
+
+import org.springframework.context.ApplicationEventPublisher;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -62,7 +64,7 @@ public class WebhooksController {
 	private FarcasterMessagingService farcasterMessagingService;
 
 	@Autowired
-	private FarcasterBotService farcasterPaymentBotService;
+	private ApplicationEventPublisher eventPublisher;
 
 	private static String bytesToHex(byte[] bytes) {
 		StringBuilder hexString = new StringBuilder();
@@ -123,9 +125,9 @@ public class WebhooksController {
 						Date.from(Instant.parse(cast.timestamp())),
 						cast);
 
-				// Save and flush to ensure persistence before async processing
-				paymentBotJobRepository.saveAndFlush(job);
-				farcasterPaymentBotService.asyncProcessBotJob(job.getId());
+				// Save without explicit flush since transaction will handle it
+				paymentBotJobRepository.save(job);
+				eventPublisher.publishEvent(new PaymentBotJobEvent(job.getId()));
 				LOGGER.info("Payment job command saved: {}", job);
 			}
 

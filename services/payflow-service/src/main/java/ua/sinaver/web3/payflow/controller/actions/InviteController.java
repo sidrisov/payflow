@@ -120,7 +120,7 @@ public class InviteController {
 					val processed = notificationService.reply(castText,
 							validateMessage.action().cast().hash(),
 							embeds);
-					if (!processed) {
+					if (processed == null) {
 						log.error("Failed to reply with {} for invitation", castText);
 					}
 

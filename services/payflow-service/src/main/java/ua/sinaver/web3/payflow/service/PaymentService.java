@@ -8,9 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.event.TransactionalEventListener;
 import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.data.User;
 import ua.sinaver.web3.payflow.data.Wallet;
+import ua.sinaver.web3.payflow.events.CreatedPaymentEvent;
 import ua.sinaver.web3.payflow.message.FramePaymentMessage;
 import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.glide.GlideSessionResponse;
@@ -45,6 +47,17 @@ public class PaymentService {
 	@Autowired
 	private TokenPriceService tokenPriceService;
 
+	@Async
+	@TransactionalEventListener
+	public void handleSessionIntentPayment(CreatedPaymentEvent event) {
+		try {
+			paymentRepository.findWithLockById(event.id())
+					.ifPresent(this::processSessionIntentPayment);
+		} catch (Exception e) {
+			log.error("Failed to process session intent payment {}", event.id(), e);
+		}
+	}
+
 	public static String formatNumberWithSuffix(String numberStr) {
 		double number = Double.parseDouble(numberStr);
 		if (number >= 1_000_000) {
@@ -67,7 +80,7 @@ public class PaymentService {
 				.map(String::toLowerCase).toList();
 
 		return paymentRepository.findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedAtDesc(
-						user, verifications, List.of(Payment.PaymentStatus.COMPLETED))
+				user, verifications, List.of(Payment.PaymentStatus.COMPLETED))
 				.stream()
 				.map(payment -> payment.getReceiver() != null ? payment.getReceiver().getIdentity()
 						: payment.getReceiverAddress())
@@ -112,10 +125,10 @@ public class PaymentService {
 	public List<String> parsePreferredTokens(String text) {
 		val allTokenIds = tokenService.getTokens().stream().map(Token::id).distinct().toList();
 		return Arrays.stream(text
-						.replace(",", " ") // Replace commas with spaces
-						.replace("$", "") // Remove any $ symbols
-						.toLowerCase() // Convert to lowercase
-						.split("\\s+")) // Split by spaces
+				.replace(",", " ") // Replace commas with spaces
+				.replace("$", "") // Remove any $ symbols
+				.toLowerCase() // Convert to lowercase
+				.split("\\s+")) // Split by spaces
 				.filter(allTokenIds::contains).limit(5).toList();
 	}
 
@@ -196,7 +209,7 @@ public class PaymentService {
 	}
 
 	@Scheduled(fixedRate = 15 * 60 * 1000, initialDelay = 15 * 1000)
-	public void processInProgressPayments() {
+	public void scheduledInProgressCheck() {
 		log.info("Starting to process in-progress and pending_refund payments");
 		val paymentsToProcess = paymentRepository.findTop5ByStatusInWithLock(
 				List.of(Payment.PaymentStatus.INPROGRESS, Payment.PaymentStatus.PENDING_REFUND));
@@ -281,7 +294,7 @@ public class PaymentService {
 
 	@Scheduled(fixedRate = 30 * 1000, initialDelay = 15 * 1000)
 	// Every 30 seconds, with 15s initial delay
-	public void processSessionIntentPayments() {
+	public void scheduledSessionIntentsProcessing() {
 		log.info("Starting to process session intent payments");
 		val paymentsToProcess = paymentRepository.findSessionIntentPaymentsWithLock(10);
 
@@ -294,13 +307,6 @@ public class PaymentService {
 		});
 
 		log.info("Finished processing session intent payments");
-	}
-
-	@Async
-	@Transactional(Transactional.TxType.REQUIRES_NEW)
-	public void asyncProcessSessionIntentPayment(Integer paymentId) {
-		val job = paymentRepository.findWithLockById(paymentId);
-		job.ifPresent(this::processSessionIntentPayment);
 	}
 
 	@Transactional(Transactional.TxType.REQUIRES_NEW)
