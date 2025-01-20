@@ -1,4 +1,4 @@
-import LoadingButton, { LoadingButtonProps } from '@mui/lab/LoadingButton';
+import LoadingButton, { ButtonProps } from '@mui/lab/LoadingButton';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useSetActiveWallet } from '@privy-io/wagmi';
 import { useEffect } from 'react';
@@ -8,7 +8,7 @@ export function LoadingConnectWalletButton({
   address,
   title,
   ...props
-}: LoadingButtonProps & {
+}: ButtonProps & {
   address?: string;
   isEmbeddedSigner?: boolean;
   title?: string;
@@ -33,12 +33,12 @@ export function LoadingConnectWalletButton({
   }, [isEmbeddedSigner, wallets, ready]);
   return (
     <LoadingButton
-      {...props}
       fullWidth
       variant="outlined"
       loading={isModalOpen}
       size="large"
       color="inherit"
+      {...props}
       onClick={async () => {
         if (isEmbeddedSigner) {
           const embeddedWallet = wallets.find((w) => w.walletClientType === 'privy');

@@ -212,7 +212,7 @@ export function AccountCard({
                 </IconButton>
               </Tooltip>
             </Stack>
-            <Tooltip title="Payment Flows">
+            <Tooltip title="Payment Wallets">
               <IconButton size="small" color="inherit" onClick={() => setOpenSelectFlow(true)}>
                 <TbSelector size={20} />
               </IconButton>

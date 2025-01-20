@@ -5,6 +5,7 @@ import { PiTipJar } from 'react-icons/pi';
 import { FlowType } from '@payflow/common';
 import { useNavigate } from 'react-router-dom';
 import FarcasterAvatar from './avatars/FarcasterAvatar';
+import { IoWallet } from 'react-icons/io5';
 
 export function PaymentFlowSection({
   navigation = false,
@@ -53,6 +54,16 @@ export function PaymentFlowSection({
       {flow.type === 'BANKR' && (
         <Tooltip title="Bankr Wallet">
           <Avatar variant="rounded" src="/dapps/bankr.png" sx={{ width: 20, height: 20 }} />
+        </Tooltip>
+      )}
+
+      {flow.type === 'CONNECTED' && (
+        <Tooltip title="Connected Wallet">
+          {flow.icon ? (
+            <Avatar variant="rounded" src={flow.icon} sx={{ width: 20, height: 20 }} />
+          ) : (
+            <IoWallet size={20} />
+          )}
         </Tooltip>
       )}
 

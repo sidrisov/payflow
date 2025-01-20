@@ -29,6 +29,12 @@ export const FlowSelector: React.FC<FlowSelectorProps> = ({
     }
 
     switch (flow.type) {
+      case 'CONNECTED':
+        return flow.icon ? (
+          <Avatar src={flow.icon} sx={{ width: 24, height: 24 }} />
+        ) : (
+          <IoIosWallet size={24} />
+        );
       case 'JAR':
         return <PiTipJar size={24} />;
       case 'FARCASTER_VERIFICATION':

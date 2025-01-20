@@ -64,13 +64,8 @@ export default function HypersubDialog({
     sender.identity.profile?.defaultFlow ?? (sender.identity.profile?.flows?.[0] as FlowType)
   );
 
-  const isNativeFlow =
-    selectedFlow.type !== 'FARCASTER_VERIFICATION' && selectedFlow.type !== 'LINKED';
-
   const isMobile = useMobile();
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
-
-  const [gasFee] = useState<bigint | undefined>(isNativeFlow ? BigInt(0) : undefined);
 
   const chainId = useChainId();
 

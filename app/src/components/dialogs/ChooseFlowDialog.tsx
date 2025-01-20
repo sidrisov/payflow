@@ -6,20 +6,26 @@ import {
   Stack,
   Tooltip,
   Typography,
-  Collapse
+  Collapse,
+  Button
 } from '@mui/material';
 import { FlowType } from '@payflow/common';
-import { ExpandMore, ExpandLess, MoreVert, Add } from '@mui/icons-material';
+import { ExpandMore, ExpandLess, MoreVert, Add, Wallet } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { green } from '@mui/material/colors';
 import { FlowSettingsMenu } from '../menu/FlowSettingsMenu';
 import { PaymentFlowSection } from '../PaymentFlowSection';
 import ResponsiveDialog, { ResponsiveDialogProps } from './ResponsiveDialog';
-import { FaCheckCircle, FaRegCircle } from 'react-icons/fa';
+import { FaCheckCircle, FaRegCircle, FaCircle } from 'react-icons/fa';
 import { HiOutlineDownload } from 'react-icons/hi';
 import { CreateFlowDialog } from './CreateFlowDialog';
+import { useAccount, useConnect } from 'wagmi';
+import { SUPPORTED_CHAINS } from '../../utils/networks';
+import { shortenWalletAddressLabel2 } from '../../utils/address';
+import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
+import { IoWallet } from 'react-icons/io5';
 
 export type ChooseFlowMenuProps = ResponsiveDialogProps &
   CloseCallbackType & {
@@ -42,6 +48,8 @@ export function ChooseFlowDialog({
   ...props
 }: ChooseFlowMenuProps) {
   const { profile } = useContext(ProfileContext);
+  const { address: connectedAddress, connector } = useAccount();
+  const { connect, connectors } = useConnect();
   const [openFlowSettingsMenu, setOpenFlowSettingsMenu] = useState<boolean>(false);
   const [flowAnchorEl, setFlowAnchorEl] = useState<null | HTMLElement>(null);
   const [archivedExpanded, setArchivedExpanded] = useState<boolean>(false);
@@ -87,6 +95,8 @@ export function ChooseFlowDialog({
   // Separate the flows
   const { regular, farcaster, bankr, rodeo, legacy, archived } = separateFlows(flows);
 
+  console.log('Connector', connector);
+
   useEffect(() => {
     if (props.open && selectedElement) {
       selectedElement.scrollIntoView({
@@ -95,6 +105,45 @@ export function ChooseFlowDialog({
       });
     }
   }, [props.open, selectedElement]);
+
+  const connectedFlow =
+    connectedAddress && connector?.id !== 'io.privy.wallet'
+      ? ({
+          uuid: 'connected-wallet',
+          title: connectedAddress ? shortenWalletAddressLabel2(connectedAddress) : '',
+          icon: connector?.icon,
+          type: 'CONNECTED',
+          wallets: connectedAddress
+            ? SUPPORTED_CHAINS.map((chain) => ({
+                address: connectedAddress.toLowerCase(),
+                network: chain.id as number
+              }))
+            : [],
+          signer: connectedAddress
+        } as FlowType)
+      : null;
+
+  const renderConnectedWalletItem = (connectedFlow: FlowType | null) => {
+    if (!connectedFlow) {
+      return (
+        <LoadingConnectWalletButton
+          size="medium"
+          variant="outlined"
+          title="Connect Wallet"
+          startIcon={<IoWallet />}
+        />
+      );
+    }
+
+    return (
+      <>
+        <Typography variant="subtitle2" sx={{ px: 2, py: 1, color: 'text.secondary' }}>
+          Connected Wallet
+        </Typography>
+        {renderMenuItem(connectedFlow)}
+      </>
+    );
+  };
 
   const renderMenuItem = (flow: FlowType) => (
     <MenuItem
@@ -161,7 +210,7 @@ export function ChooseFlowDialog({
     profile && (
       <>
         <ResponsiveDialog
-          title="Choose payment flow"
+          title="Choose Payment Wallet"
           open={props.open}
           onOpen={() => {}}
           onClose={closeStateCallback}>
@@ -174,13 +223,14 @@ export function ChooseFlowDialog({
                 overflowY: 'scroll',
                 '-webkit-overflow-scrolling': 'touch'
               }}>
+              {renderConnectedWalletItem(connectedFlow)}
               <Stack
                 direction="row"
                 justifyContent="space-between"
                 alignItems="center"
                 sx={{ px: 2, py: 1 }}>
                 <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
-                  Native
+                  Payflow Wallets
                 </Typography>
                 <IconButton
                   size="small"

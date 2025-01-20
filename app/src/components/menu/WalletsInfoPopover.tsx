@@ -31,7 +31,9 @@ export function WalletsInfoPopover({
       }}>
       <Stack m={1} spacing={0.5} direction="column">
         <Typography fontWeight="bold" fontSize={16} textAlign="center" color="grey">
-          {flow.type === 'FARCASTER_VERIFICATION' ? 'Wallets' : 'Smart Wallets'}
+          {flow.type === 'FARCASTER_VERIFICATION' || flow.type === 'CONNECTED'
+            ? 'Wallets'
+            : 'Smart Wallets'}
         </Typography>
         {flow.wallets.map((wallet) => (
           <WalletSection

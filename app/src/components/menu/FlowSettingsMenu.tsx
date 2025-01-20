@@ -60,7 +60,10 @@ export function FlowSettingsMenu({
 
   useEffect(() => {
     if (ready && wallets.length !== 0) {
-      const wallet = wallets.find((w) => w.address.toLowerCase() === flow.signer.toLowerCase());
+      const wallet =
+        flow.type != 'CONNECTED'
+          ? wallets.find((w) => w.address.toLowerCase() === flow.signer.toLowerCase())
+          : wallets[0];
       if (wallet) {
         setActiveWallet(wallet);
       }
@@ -144,12 +147,17 @@ export function FlowSettingsMenu({
                   <AiFillSignature />
                 </ListItemIcon>
                 <Stack>
-                  <Typography>{isConnected ? 'Re-connect Signer' : 'Connect Signer'}</Typography>
+                  <Typography>
+                    {isConnected && flow.type !== 'CONNECTED'
+                      ? `Re-connect ${flow.signerProvider === 'privy' ? 'Signer' : 'Wallet'}`
+                      : `Connect ${flow.signerProvider === 'privy' ? 'Signer' : 'Wallet'}`}
+                  </Typography>
                   <Typography variant="caption" color="text.secondary">
                     {getSignerInfo()}
                   </Typography>
                 </Stack>
               </MenuItem>
+
               {(!isFrameV2 || isBrowser) && flow.signerProvider === 'privy' && isConnected && (
                 <MenuItem onClick={() => linkPasskey()}>
                   <ListItemIcon>
@@ -183,7 +191,7 @@ export function FlowSettingsMenu({
                       </Stack>
                     </MenuItem>
                   )}
-                  {!defaultFlow && !flow.archived && (
+                  {flow.type !== 'CONNECTED' && !defaultFlow && !flow.archived && (
                     <MenuItem
                       onClick={async () => {
                         if (await setReceivingFlow(flow.uuid)) {
@@ -214,7 +222,9 @@ export function FlowSettingsMenu({
                       justifyContent="space-between"
                       alignItems="center">
                       <Typography>
-                        {flow.type === 'FARCASTER_VERIFICATION' ? 'Wallets' : 'Smart Wallets'}
+                        {flow.type === 'FARCASTER_VERIFICATION' || flow.type === 'CONNECTED'
+                          ? 'Wallets'
+                          : 'Smart Wallets'}
                       </Typography>
                       <AvatarGroup
                         max={4}
@@ -243,7 +253,7 @@ export function FlowSettingsMenu({
                       </AvatarGroup>
                     </Stack>
                   </MenuItem>
-                  {flow.wallets[0].version?.endsWith('_0.7') && (
+                  {flow.type !== 'CONNECTED' && flow.wallets[0].version?.endsWith('_0.7') && (
                     <MenuItem
                       disabled={!profile?.earlyFeatureAccess}
                       onClick={() => setOpenPermissionsDialog(true)}>

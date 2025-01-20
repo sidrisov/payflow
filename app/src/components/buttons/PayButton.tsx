@@ -52,7 +52,10 @@ export const PayButton: React.FC<PayButtonProps> = ({
   const { address } = useAccount();
   const [openConnectSignerDrawer, setOpenConnectSignerDrawer] = useState(false);
 
-  const isNativeFlow = senderFlow.type !== 'FARCASTER_VERIFICATION' && senderFlow.type !== 'LINKED';
+  const isNativeFlow =
+    senderFlow.type !== 'FARCASTER_VERIFICATION' &&
+    senderFlow.type !== 'LINKED' &&
+    senderFlow.type !== 'CONNECTED';
   const { handleDirectPayment, handleCrossChainPayment, paymentTxStatus } =
     usePayflowTransaction(isNativeFlow);
 
