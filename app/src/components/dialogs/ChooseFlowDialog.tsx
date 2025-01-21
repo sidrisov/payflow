@@ -128,6 +128,12 @@ export function ChooseFlowDialog({
     [connectedAddress, connector]
   );
 
+  useEffect(() => {
+    if (connectedFlow && connectedFlow.uuid === selectedFlow.uuid) {
+      setSelectedFlow(connectedFlow);
+    }
+  }, [connectedFlow]);
+
   const renderConnectedWalletItem = (connectedFlow: FlowType | null) => {
     return connectedFlow ? (
       <>
