@@ -12,7 +12,7 @@ import {
 import { FlowType } from '@payflow/common';
 import { ExpandMore, ExpandLess, MoreVert, Add, Wallet } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { green } from '@mui/material/colors';
 import { FlowSettingsMenu } from '../menu/FlowSettingsMenu';
@@ -49,7 +49,6 @@ export function ChooseFlowDialog({
 }: ChooseFlowMenuProps) {
   const { profile } = useContext(ProfileContext);
   const { address: connectedAddress, connector } = useAccount();
-  const { connect, connectors } = useConnect();
   const [openFlowSettingsMenu, setOpenFlowSettingsMenu] = useState<boolean>(false);
   const [flowAnchorEl, setFlowAnchorEl] = useState<null | HTMLElement>(null);
   const [archivedExpanded, setArchivedExpanded] = useState<boolean>(false);
@@ -93,7 +92,10 @@ export function ChooseFlowDialog({
   };
 
   // Separate the flows
-  const { regular, farcaster, bankr, rodeo, legacy, archived } = separateFlows(flows);
+  const { regular, farcaster, bankr, rodeo, legacy, archived } = useMemo(
+    () => separateFlows(flows),
+    [flows]
+  );
 
   console.log('Connector', connector);
 
@@ -106,104 +108,112 @@ export function ChooseFlowDialog({
     }
   }, [props.open, selectedElement]);
 
-  const connectedFlow =
-    connectedAddress && connector?.id !== 'io.privy.wallet'
-      ? ({
-          uuid: 'connected-wallet',
-          title: connectedAddress ? shortenWalletAddressLabel2(connectedAddress) : '',
-          icon: connector?.icon,
-          type: 'CONNECTED',
-          wallets: connectedAddress
-            ? SUPPORTED_CHAINS.map((chain) => ({
-                address: connectedAddress.toLowerCase(),
-                network: chain.id as number
-              }))
-            : [],
-          signer: connectedAddress
-        } as FlowType)
-      : null;
+  const connectedFlow = useMemo(
+    () =>
+      connectedAddress && connector?.id !== 'io.privy.wallet'
+        ? ({
+            uuid: 'connected-wallet',
+            title: connectedAddress ? shortenWalletAddressLabel2(connectedAddress) : '',
+            icon: connector?.icon,
+            type: 'CONNECTED',
+            wallets: connectedAddress
+              ? SUPPORTED_CHAINS.map((chain) => ({
+                  address: connectedAddress.toLowerCase(),
+                  network: chain.id as number
+                }))
+              : [],
+            signer: connectedAddress
+          } as FlowType)
+        : null,
+    [connectedAddress, connector]
+  );
 
   const renderConnectedWalletItem = (connectedFlow: FlowType | null) => {
-    if (!connectedFlow) {
-      return (
-        <LoadingConnectWalletButton
-          size="medium"
-          variant="outlined"
-          title="Connect Wallet"
-          startIcon={<IoWallet />}
-        />
-      );
-    }
-
-    return (
+    return connectedFlow ? (
       <>
-        <Typography variant="subtitle2" sx={{ px: 2, py: 1, color: 'text.secondary' }}>
+        <Typography variant="subtitle2" sx={{ px: 2, pt: 1, pb: 0, color: 'text.secondary' }}>
           Connected Wallet
         </Typography>
         {renderMenuItem(connectedFlow)}
       </>
+    ) : (
+      <LoadingConnectWalletButton
+        size="medium"
+        variant="outlined"
+        title="Connect Wallet"
+        startIcon={<IoWallet />}
+      />
     );
   };
 
-  const renderMenuItem = (flow: FlowType) => (
-    <MenuItem
-      key={flow.uuid}
-      selected={flow.uuid === selectedFlow.uuid}
-      {...(flow.uuid === selectedFlow.uuid && { ref: setSelectedElement })}
-      sx={{
-        borderRadius: 5
-      }}
-      onClick={async () => {
-        if (!flow.archived) {
-          setSelectedFlow(flow);
-          localStorage.setItem('payflow:flow:selected:uuid', flow.uuid);
-          if (closeOnSelect) {
-            closeStateCallback();
+  const renderMenuItem = useCallback(
+    (flow: FlowType) => (
+      <MenuItem
+        key={flow.uuid}
+        selected={flow.uuid === selectedFlow.uuid}
+        {...(flow.uuid === selectedFlow.uuid && { ref: setSelectedElement })}
+        sx={{ borderRadius: 5 }}
+        onClick={async () => {
+          if (!flow.archived) {
+            setSelectedFlow(flow);
+            if (flow.type !== 'RODEO' && flow.type !== 'BANKR') {
+              localStorage.setItem('payflow:flow:selected:uuid', flow.uuid);
+            }
+            if (closeOnSelect) {
+              closeStateCallback();
+            }
           }
-        }
-      }}>
-      <Box
-        width="100%"
-        display="flex"
-        flexDirection="row"
-        alignItems="center"
-        justifyContent="space-between">
-        <Stack direction="row" alignItems="center" justifyContent="flex-start">
-          <Box display="inherit" width={30}>
-            {!flow.archived &&
-              (flow.uuid === selectedFlow.uuid ? (
-                <FaCheckCircle color={green.A700} size={18} />
-              ) : (
-                <FaRegCircle size={18} />
-              ))}
-          </Box>
-          <Box display="inherit" width={30}>
-            {flow.uuid === profile?.defaultFlow?.uuid && (
-              <Tooltip title="Preferred for receiving payments">
-                <HiOutlineDownload size={20} />
-              </Tooltip>
-            )}
-          </Box>
-          <PaymentFlowSection flow={flow} />
-        </Stack>
+        }}>
+        <Box
+          width="100%"
+          display="flex"
+          flexDirection="row"
+          alignItems="center"
+          justifyContent="space-between">
+          <Stack direction="row" alignItems="center" justifyContent="flex-start">
+            <Box display="inherit" width={30}>
+              {!flow.archived &&
+                (flow.uuid === selectedFlow.uuid ? (
+                  <FaCheckCircle color={green.A700} size={18} />
+                ) : (
+                  <FaRegCircle size={18} />
+                ))}
+            </Box>
+            <Box display="inherit" width={30}>
+              {flow.uuid === profile?.defaultFlow?.uuid && (
+                <Tooltip title="Preferred for receiving payments">
+                  <HiOutlineDownload size={20} />
+                </Tooltip>
+              )}
+            </Box>
+            <PaymentFlowSection flow={flow} />
+          </Stack>
 
-        {configurable && (
-          <IconButton
-            size="small"
-            onClick={(event) => {
-              event.stopPropagation();
-              setFlowAnchorEl(event.currentTarget);
-              setMenuFlow(flow);
-              setOpenFlowSettingsMenu(true);
-            }}
-            sx={{
-              pointerEvents: 'auto'
-            }}>
-            <MoreVert fontSize="small" />
-          </IconButton>
-        )}
-      </Box>
-    </MenuItem>
+          {configurable && (
+            <IconButton
+              size="small"
+              onClick={(event) => {
+                event.stopPropagation();
+                setFlowAnchorEl(event.currentTarget);
+                setMenuFlow(flow);
+                setOpenFlowSettingsMenu(true);
+              }}
+              sx={{
+                pointerEvents: 'auto'
+              }}>
+              <MoreVert fontSize="small" />
+            </IconButton>
+          )}
+        </Box>
+      </MenuItem>
+    ),
+    [selectedFlow.uuid, closeOnSelect, closeStateCallback]
+  );
+
+  const WalletSectionHeader = ({ children }: { children: React.ReactNode }) => (
+    <Typography variant="subtitle2" sx={{ px: 2, pt: 1, pb: 0, color: 'text.secondary' }}>
+      {children}
+    </Typography>
   );
 
   return (
@@ -257,36 +267,22 @@ export function ChooseFlowDialog({
 
               {farcaster && farcaster.length > 0 && (
                 <>
-                  <Typography variant="subtitle2" sx={{ px: 2, py: 1, color: 'text.secondary' }}>
-                    Farcaster Verified
-                  </Typography>
+                  <WalletSectionHeader>Farcaster Verified</WalletSectionHeader>
                   {farcaster.map(renderMenuItem)}
                 </>
               )}
 
-              {bankr && (
+              {(bankr || rodeo) && (
                 <>
-                  <Typography variant="subtitle2" sx={{ px: 2, py: 1, color: 'text.secondary' }}>
-                    Bankr Wallet
-                  </Typography>
-                  {renderMenuItem(bankr)}
-                </>
-              )}
-
-              {rodeo && (
-                <>
-                  <Typography variant="subtitle2" sx={{ px: 2, py: 1, color: 'text.secondary' }}>
-                    Rodeo Wallet
-                  </Typography>
-                  {renderMenuItem(rodeo)}
+                  <WalletSectionHeader>Read-Only Wallets</WalletSectionHeader>
+                  {bankr && renderMenuItem(bankr)}
+                  {rodeo && renderMenuItem(rodeo)}
                 </>
               )}
 
               {legacy && legacy.length > 0 && (
                 <>
-                  <Typography variant="subtitle2" sx={{ px: 2, py: 1, color: 'text.secondary' }}>
-                    Legacy
-                  </Typography>
+                  <WalletSectionHeader>Legacy</WalletSectionHeader>
                   {legacy.map(renderMenuItem)}
                 </>
               )}

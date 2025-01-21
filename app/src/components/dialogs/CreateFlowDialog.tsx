@@ -42,7 +42,7 @@ export function CreateFlowDialog({ closeStateCallback, profile, ...props }: Crea
 
   return (
     <>
-      <ResponsiveDialog title="New Payment Flow" {...props} onClose={closeStateCallback}>
+      <ResponsiveDialog title="New Payment Wallet" {...props} onClose={closeStateCallback}>
         <MenuList sx={{ width: '100%' }}>
           {flowTypes.map((type) => (
             <MenuItem

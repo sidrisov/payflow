@@ -29,7 +29,7 @@ import { useWallets } from '@privy-io/react-auth';
 import { usePrivy } from '@privy-io/react-auth';
 import { useSetActiveWallet } from '@privy-io/wagmi';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
-import { HiOutlineDownload } from 'react-icons/hi';
+import { HiOutlineDownload, HiOutlineSwitchHorizontal } from 'react-icons/hi';
 import { PayMeDialog } from '../dialogs/PayMeDialog';
 import { AutoMode } from '@mui/icons-material';
 import { WalletPermissionsDialog } from '../dialogs/WalletPermissionsDialog';
@@ -61,9 +61,9 @@ export function FlowSettingsMenu({
   useEffect(() => {
     if (ready && wallets.length !== 0) {
       const wallet =
-        flow.type != 'CONNECTED'
+        flow.type !== 'CONNECTED'
           ? wallets.find((w) => w.address.toLowerCase() === flow.signer.toLowerCase())
-          : wallets[0];
+          : wallets.find((w) => w.walletClientType !== 'privy');
       if (wallet) {
         setActiveWallet(wallet);
       }
@@ -106,7 +106,10 @@ export function FlowSettingsMenu({
       }
     } else {
       setTimeout(() => {
-        connectWallet({ suggestedAddress: flow.signer });
+        connectWallet({
+          ...(flow.type !== 'CONNECTED' && { suggestedAddress: flow.signer })
+        });
+        props.onClose?.({}, 'backdropClick');
       }, 100);
     }
   };
@@ -144,13 +147,15 @@ export function FlowSettingsMenu({
             <>
               <MenuItem onClick={handleConnectWallet}>
                 <ListItemIcon>
-                  <AiFillSignature />
+                  {flow.type === 'CONNECTED' ? <HiOutlineSwitchHorizontal /> : <AiFillSignature />}
                 </ListItemIcon>
                 <Stack>
                   <Typography>
-                    {isConnected && flow.type !== 'CONNECTED'
-                      ? `Re-connect ${flow.signerProvider === 'privy' ? 'Signer' : 'Wallet'}`
-                      : `Connect ${flow.signerProvider === 'privy' ? 'Signer' : 'Wallet'}`}
+                    {flow.type === 'CONNECTED'
+                      ? 'Switch Wallet'
+                      : isConnected
+                        ? `Re-connect ${flow.signerProvider === 'privy' ? 'Signer' : 'Wallet'}`
+                        : `Connect ${flow.signerProvider === 'privy' ? 'Signer' : 'Wallet'}`}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     {getSignerInfo()}

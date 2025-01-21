@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import ResponsiveDialog from '../dialogs/ResponsiveDialog';
 import { Stack, Typography } from '@mui/material';
 import { SwitchFlowSignerSection } from '../dialogs/SwitchFlowSignerSection';
 import { FlowType } from '@payflow/common';
+import { shortenWalletAddressLabel2 } from '../../utils/address';
 
 type ConnectSignerDialogProps = {
   open: boolean;
@@ -15,12 +16,23 @@ export const ConnectSignerDialog: React.FC<ConnectSignerDialogProps> = ({
   onClose,
   flow
 }) => {
+  const addressOrEmail = useMemo(() => {
+    return flow.signerCredential || shortenWalletAddressLabel2(flow.signer);
+  }, [flow]);
+
   return (
-    <ResponsiveDialog title="Connect Signer" open={open} onOpen={() => {}} onClose={onClose}>
-      <Stack alignItems="flex-start" spacing={2}>
-        <Typography variant="caption" color="text.secondary">
-          Selected payment flow `<b>{flow.title}</b>` signer is not connected! Please, proceed with
-          connecting the signer mentioned below:
+    <ResponsiveDialog
+      title={
+        flow.type === 'CONNECTED' || flow.type === 'FARCASTER_VERIFICATION'
+          ? 'Connect Wallet'
+          : 'Connect Wallet Signer'
+      }
+      open={open}
+      onOpen={() => {}}
+      onClose={onClose}>
+      <Stack alignItems="center" spacing={2}>
+        <Typography textAlign="center" fontSize={20} color="text.secondary">
+          {addressOrEmail}
         </Typography>
         <SwitchFlowSignerSection onSwitch={onClose} flow={flow} />
       </Stack>

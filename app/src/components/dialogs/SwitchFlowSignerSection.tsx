@@ -1,9 +1,7 @@
-import { Stack, Typography, Button, Avatar } from '@mui/material';
+import { Button } from '@mui/material';
 import { FlowType } from '@payflow/common';
-import { shortenWalletAddressLabel } from '../../utils/address';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useSetActiveWallet } from '@privy-io/wagmi';
-import AddressAvatar from '../avatars/AddressAvatar';
 import { useEffect } from 'react';
 
 export function SwitchFlowSignerSection({
@@ -33,6 +31,7 @@ export function SwitchFlowSignerSection({
       fullWidth
       variant="outlined"
       color="inherit"
+      size="large"
       onClick={async () => {
         if (flow.signerProvider === 'privy') {
           if (!authenticated) {
@@ -70,32 +69,8 @@ export function SwitchFlowSignerSection({
 
         onSwitch?.();
       }}
-      sx={{ borderRadius: 5, textTransform: 'none', height: 50, justifyContent: 'flex-start' }}>
-      {flow.signerCredential ? (
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Avatar src="/privy.png" sx={{ width: 40, height: 40 }} />
-          <Stack spacing={0.1} alignItems="flex-start">
-            <Typography fontSize={15} color="text.secondary">
-              Connect Social Signer (Privy)
-            </Typography>
-            <Typography fontSize={16} fontWeight="bold">
-              {flow.signerCredential}
-            </Typography>
-          </Stack>
-        </Stack>
-      ) : (
-        <Stack direction="row" spacing={1} alignItems="center">
-          <AddressAvatar address={flow.signer} />
-          <Stack spacing={0.1} alignItems="flex-start">
-            <Typography fontSize={15} color="text.secondary">
-              Connect Wallet Signer
-            </Typography>
-            <Typography fontSize={16} fontWeight="bold">
-              {shortenWalletAddressLabel(flow.signer)}
-            </Typography>
-          </Stack>
-        </Stack>
-      )}
+      sx={{ borderRadius: 5 }}>
+      Connect
     </Button>
   );
 }
