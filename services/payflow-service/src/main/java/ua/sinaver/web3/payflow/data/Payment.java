@@ -129,7 +129,7 @@ public class Payment {
 	@Column(name = "target", length = 512)
 	private String target;
 
-	@OneToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "wallet_session_id", referencedColumnName = "id")
 	@ToString.Exclude
 	private WalletSession walletSession;

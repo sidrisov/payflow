@@ -104,10 +104,11 @@ public class AnthropicAgentService {
 			Available Services Agent Prompt:
 			1. Send payments
 			   - Understand the user payment request and process it
+			   - Make sure user explicitly asks to make a payment
 			   - Aggregates multiple payments into single tool call
 			   - Provide detailed response with payment details
-			   - If chain is not provided, default to Base (8453)
-			   - If token is available on multiple chains, default to Base (8453)
+			   - If chain not specified, default to Base (8453)
+			   - If token is available on multiple chains, default to Base (8453), e.g. for USDC, DEGEN, ETH, etc.
 			   - Automated payments are available only on Base
 			   - Recipient is mentioned user in current cast, otherwise fallback to parent cast author
 			   - Input token and amount should be mention in current cast, if not fallback to parent cast author

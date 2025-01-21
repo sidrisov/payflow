@@ -47,7 +47,8 @@ public class PaymentService {
 	@Autowired
 	private TokenPriceService tokenPriceService;
 
-	@Async
+	// don't use @Async here, because this will make to process session intents parellized
+	// and we need to process them sequentially to avoid safe wallet nonce collisions
 	@TransactionalEventListener
 	public void handleSessionIntentPayment(CreatedPaymentEvent event) {
 		try {

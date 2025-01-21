@@ -20,8 +20,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface PaymentRepository extends JpaRepository<Payment, Integer> {
-	@QueryHints(@QueryHint(name = AvailableSettings.JAKARTA_LOCK_TIMEOUT, value = "-2"))
-	@Query("SELECT p FROM Payment p WHERE p.id = :id")
+	@Query("SELECT p FROM Payment p JOIN FETCH p.walletSession WHERE p.id = :id")
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	Optional<Payment> findWithLockById(Integer id);
 
