@@ -8,8 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import ua.sinaver.web3.payflow.data.PreferredTokens;
-import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.dto.FlowMessage;
+import ua.sinaver.web3.payflow.dto.ProfileMessage;
+import ua.sinaver.web3.payflow.dto.ProfileMetaMessage;
+import ua.sinaver.web3.payflow.entity.PreferredTokens;
+import ua.sinaver.web3.payflow.entity.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 import ua.sinaver.web3.payflow.message.*;
 import ua.sinaver.web3.payflow.message.farcaster.StorageUsage;
@@ -79,7 +82,8 @@ public class UserController {
 		if (user != null) {
 			try {
 				if (StringUtils.equals(cacheControl, "no-cache")) {
-					contactBookService.cleanContactsCache(user);
+					log.debug("{} cleaning contacts cache", identity);
+					//contactBookService.cleanContactsCache(user);
 				}
 				val response = contactBookService.getAllContacts(user);
 				if (log.isTraceEnabled()) {

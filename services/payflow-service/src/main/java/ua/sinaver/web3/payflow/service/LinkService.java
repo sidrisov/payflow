@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 import ua.sinaver.web3.payflow.config.PayflowConfig;
-import ua.sinaver.web3.payflow.data.Payment;
+import ua.sinaver.web3.payflow.entity.Payment;
 import ua.sinaver.web3.payflow.message.farcaster.ValidatedFrameResponseMessage;
 
 import java.net.URI;
@@ -67,7 +67,7 @@ public class LinkService {
 				.path("/payment/{refId}");
 
 		builder.queryParam("fv2");
-		
+
 		return builder.buildAndExpand(payment.getReferenceId())
 				.toUri();
 	}

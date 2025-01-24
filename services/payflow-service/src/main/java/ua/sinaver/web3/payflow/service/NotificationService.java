@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.web.util.UriComponentsBuilder;
 import ua.sinaver.web3.payflow.config.PayflowConfig;
-import ua.sinaver.web3.payflow.data.Payment;
-import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.entity.Payment;
+import ua.sinaver.web3.payflow.entity.User;
 import ua.sinaver.web3.payflow.events.CastEvent;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
@@ -64,7 +64,7 @@ public class NotificationService {
 	}
 
 	public String preferredTokensReply(String parentHash, FarcasterUser user,
-	                                    List<String> preferredTokenIds) {
+	                                   List<String> preferredTokenIds) {
 
 		val formattedTokenIds = String.join(", ", preferredTokenIds).toUpperCase();
 		val castText = String.format("""

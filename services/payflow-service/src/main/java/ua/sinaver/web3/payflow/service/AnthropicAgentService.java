@@ -40,8 +40,22 @@ public class AnthropicAgentService {
 			Input Format:
 			{
 			  "conversation": {
-				"parent": { "author": string, "text": string },
-				"current": { "author": string, "text": string }
+			    "cast": {
+			      "author": {"username": string, "displayName": string, "fid": number},
+			      "text": string,
+			      "directReplies": [
+			        {
+			          "author": {"username": string, "displayName": string, "fid": number},
+			          "text": string
+			        }
+			      ]
+			    },
+			    "chronologicalParentCasts": [
+			      {
+			        "author": {"username": string, "displayName": string, "fid": number},
+			        "text": string
+			      }
+			    ]
 			  }
 			}
 
@@ -227,20 +241,20 @@ public class AnthropicAgentService {
 					.name("get_wallet_token_balance")
 					.description("Get balance of particular token")
 					.inputSchema(Tool.InputSchema.builder().type("object").properties(
-							Map.of("token",
-									Tool.InputSchema.Property.builder().type("string")
-											.description("Token identifier like $token, token, or token address")
-											.build()))
+									Map.of("token",
+											Tool.InputSchema.Property.builder().type("string")
+													.description("Token identifier like $token, token, or token address")
+													.build()))
 							.required(List.of("token")).build())
 					.build(),
 			Tool.builder()
 					.name("top_up_balance")
 					.description("Top up your Payflow Balance")
 					.inputSchema(Tool.InputSchema.builder().type("object").properties(
-							Map.of(
-									"token",
-									Tool.InputSchema.Property.builder().type("string").description("Token to top up")
-											.build()))
+									Map.of(
+											"token",
+											Tool.InputSchema.Property.builder().type("string").description("Token to top up")
+													.build()))
 							.build())
 					.cacheControl(Map.of("type", "ephemeral"))
 					.build(),
@@ -282,9 +296,9 @@ public class AnthropicAgentService {
 					.name("claim_degen_or_moxie")
 					.description("Claim Degen or Moxie")
 					.inputSchema(Tool.InputSchema.builder().type("object").properties(Map.of(
-							"asset", Tool.InputSchema.Property.builder().type("string")
-									.description("Asset to claim")
-									.build()))
+									"asset", Tool.InputSchema.Property.builder().type("string")
+											.description("Asset to claim")
+											.build()))
 							.required(List.of("asset")).build())
 					.build());
 	private final WebClient webClient;
@@ -298,8 +312,6 @@ public class AnthropicAgentService {
 	public AnthropicAgentService(
 			@org.springframework.beans.factory.annotation.Value("${anthropic.api.key}") String anthropicApiKey,
 			WebClient.Builder webClientBuilder) {
-
-		log.info("Anthropic API key: {}", anthropicApiKey);
 
 		this.webClient = webClientBuilder
 				.baseUrl(ANTHROPIC_API_URL)

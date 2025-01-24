@@ -10,12 +10,13 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import ua.sinaver.web3.payflow.data.*;
+import ua.sinaver.web3.payflow.dto.FlowMessage;
+import ua.sinaver.web3.payflow.dto.JarMessage;
+import ua.sinaver.web3.payflow.dto.WalletMessage;
+import ua.sinaver.web3.payflow.dto.WalletSessionMessage;
+import ua.sinaver.web3.payflow.entity.*;
 import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
-import ua.sinaver.web3.payflow.message.FlowMessage;
-import ua.sinaver.web3.payflow.message.JarMessage;
-import ua.sinaver.web3.payflow.message.WalletMessage;
-import ua.sinaver.web3.payflow.message.WalletSessionMessage;
+import ua.sinaver.web3.payflow.mapper.WalletSessionMapper;
 import ua.sinaver.web3.payflow.repository.FlowRepository;
 import ua.sinaver.web3.payflow.repository.JarRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
@@ -50,6 +51,9 @@ public class FlowService {
 	@Autowired
 	private WalletSessionRepository walletSessionRepository;
 
+	@Autowired
+	private WalletSessionMapper walletSessionMapper;
+
 	@CacheEvict(value = USER_FLOWS_CACHE, key = "#user.identity")
 	public Jar createJar(String title, String description, String image, String source, User user) {
 		// use same signer as default flow
@@ -76,7 +80,7 @@ public class FlowService {
 		val wallets = walletService.calculateWallets(owners, saltNonce)
 				.stream()
 				.map(w -> {
-					val wallet = WalletMessage.convert(w);
+					val wallet = w.toEntity();
 					wallet.setFlow(flow);
 					return wallet;
 				}).toList();
@@ -187,7 +191,7 @@ public class FlowService {
 			throw new Exception("Authenticated user mismatch");
 		}
 
-		val wallet = WalletMessage.convert(walletDto);
+		val wallet = walletDto.toEntity();
 
 		wallet.setFlow(flow);
 		flow.getWallets().add(wallet);
@@ -276,7 +280,7 @@ public class FlowService {
 	}
 
 	public void createWalletSession(String uuid, String address, Integer chainId,
-			WalletSessionMessage session, User user) throws Exception {
+	                                WalletSessionMessage session, User user) throws Exception {
 		val flow = flowRepository.findByUuid(uuid);
 		if (flow == null) {
 			throw new Exception("Flow doesn't exist");
@@ -290,7 +294,7 @@ public class FlowService {
 				.findFirst()
 				.orElseThrow(() -> new Exception("Wallet not found"));
 
-		val walletSession = WalletSessionMessage.convert(session);
+		val walletSession = walletSessionMapper.toEntity(session);
 		walletSession.setWallet(wallet);
 		wallet.getSessions().add(walletSession);
 
@@ -298,7 +302,7 @@ public class FlowService {
 	}
 
 	public List<WalletSessionMessage> getWalletSessions(String uuid, String address,
-			Integer chainId, User user) throws Exception {
+	                                                    Integer chainId, User user) throws Exception {
 		val flow = flowRepository.findByUuid(uuid);
 		if (flow == null) {
 			throw new Exception("Flow doesn't exist");
@@ -312,13 +316,13 @@ public class FlowService {
 				.findFirst()
 				.map(wallet -> wallet.getSessions().stream()
 						.filter(WalletSession::getActive)
-						.map(WalletSessionMessage::convert)
+						.map(walletSession -> walletSessionMapper.toDto(walletSession))
 						.toList())
 				.orElse(List.of());
 	}
 
 	public void updateWalletSession(String uuid, String address, Integer chainId,
-			String sessionId, WalletSessionMessage sessionUpdate, User user) throws Exception {
+	                                String sessionId, WalletSessionMessage sessionUpdate, User user) throws Exception {
 		val flow = flowRepository.findByUuid(uuid);
 		if (flow == null) {
 			throw new Exception("Flow doesn't exist");
@@ -346,7 +350,7 @@ public class FlowService {
 	}
 
 	public void deactivateWalletSession(String uuid, String address, Integer chainId,
-			String sessionId, User user) throws Exception {
+	                                    String sessionId, User user) throws Exception {
 		val flow = flowRepository.findByUuid(uuid);
 		if (flow == null) {
 			throw new Exception("Flow doesn't exist");

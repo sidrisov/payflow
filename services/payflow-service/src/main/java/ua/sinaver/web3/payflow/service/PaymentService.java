@@ -5,13 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionalEventListener;
-import ua.sinaver.web3.payflow.data.Payment;
-import ua.sinaver.web3.payflow.data.User;
-import ua.sinaver.web3.payflow.data.Wallet;
+import ua.sinaver.web3.payflow.entity.Payment;
+import ua.sinaver.web3.payflow.entity.User;
+import ua.sinaver.web3.payflow.entity.Wallet;
 import ua.sinaver.web3.payflow.events.CreatedPaymentEvent;
 import ua.sinaver.web3.payflow.message.FramePaymentMessage;
 import ua.sinaver.web3.payflow.message.Token;
@@ -47,18 +46,6 @@ public class PaymentService {
 	@Autowired
 	private TokenPriceService tokenPriceService;
 
-	// don't use @Async here, because this will make to process session intents parellized
-	// and we need to process them sequentially to avoid safe wallet nonce collisions
-	@TransactionalEventListener
-	public void handleSessionIntentPayment(CreatedPaymentEvent event) {
-		try {
-			paymentRepository.findWithLockById(event.id())
-					.ifPresent(this::processSessionIntentPayment);
-		} catch (Exception e) {
-			log.error("Failed to process session intent payment {}", event.id(), e);
-		}
-	}
-
 	public static String formatNumberWithSuffix(String numberStr) {
 		double number = Double.parseDouble(numberStr);
 		if (number >= 1_000_000) {
@@ -73,6 +60,20 @@ public class PaymentService {
 			return df.format(number);
 		} else {
 			return "0.0";
+		}
+	}
+
+	// don't use @Async here, because this will make to process session intents
+	// parellized
+	// and we need to process them sequentially to avoid safe wallet nonce
+	// collisions
+	@TransactionalEventListener
+	public void handleSessionIntentPayment(CreatedPaymentEvent event) {
+		try {
+			paymentRepository.findWithLockById(event.id())
+					.ifPresent(this::processSessionIntentPayment);
+		} catch (Exception e) {
+			log.error("Failed to process session intent payment {}", event.id(), e);
 		}
 	}
 
@@ -237,6 +238,14 @@ public class PaymentService {
 			if (sessionResponse == null) {
 				log.error("Session response is null for refId: {} & sessionId: {}", payment.getReferenceId(),
 						payment.getFulfillmentId());
+				payment.setStatus(Payment.PaymentStatus.FAILED);
+				payment.setCompletedAt(Instant.now());
+				return;
+			}
+
+			if (GlideSessionResponse.PaymentStatus.UNPAID.equals(sessionResponse.getPaymentStatus())) {
+				log.info("Payment wasn't paid: {}",
+						payment.getReferenceId());
 				payment.setStatus(Payment.PaymentStatus.FAILED);
 				payment.setCompletedAt(Instant.now());
 				return;

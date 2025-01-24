@@ -1,7 +1,7 @@
 package ua.sinaver.web3.payflow.auth;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
-import ua.sinaver.web3.payflow.data.protocol.ClientApiKey;
+import ua.sinaver.web3.payflow.entity.protocol.ClientApiKey;
 
 import java.util.Collections;
 

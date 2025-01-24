@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
-import ua.sinaver.web3.payflow.data.StorageNotification;
+import ua.sinaver.web3.payflow.entity.StorageNotification;
 
 import java.time.Instant;
 import java.util.Optional;

@@ -9,10 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import ua.sinaver.web3.payflow.message.FlowMessage;
-import ua.sinaver.web3.payflow.message.JarMessage;
-import ua.sinaver.web3.payflow.message.WalletMessage;
-import ua.sinaver.web3.payflow.message.WalletSessionMessage;
+import ua.sinaver.web3.payflow.dto.FlowMessage;
+import ua.sinaver.web3.payflow.dto.JarMessage;
+import ua.sinaver.web3.payflow.dto.WalletMessage;
+import ua.sinaver.web3.payflow.dto.WalletSessionMessage;
 import ua.sinaver.web3.payflow.repository.WalletRepository;
 import ua.sinaver.web3.payflow.service.FlowService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
@@ -180,7 +180,7 @@ class FlowController {
 	public List<WalletMessage> getAllWallets() {
 		return walletRepository.findAll().stream()
 				.filter(w -> !w.isDisabled())
-				.map(WalletMessage::convert)
+				.map(WalletMessage::from)
 				.toList();
 	}
 
@@ -191,8 +191,7 @@ class FlowController {
 			@PathVariable String uuid,
 			@PathVariable String address,
 			@PathVariable Integer chainId,
-			@RequestBody WalletSessionMessage session
-	) throws Exception {
+			@RequestBody WalletSessionMessage session) throws Exception {
 		val user = userService.findByIdentity(identity);
 		if (user == null) {
 			throw new Exception("User doesn't exist: " + identity);

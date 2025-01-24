@@ -14,7 +14,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.entity.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.Social;
 import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
 import ua.sinaver.web3.payflow.message.ConnectedAddresses;

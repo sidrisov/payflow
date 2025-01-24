@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ua.sinaver.web3.payflow.message.DailyStats;
 import ua.sinaver.web3.payflow.service.StatsService;
-import ua.sinaver.web3.payflow.data.ActiveUsersStats;
+import ua.sinaver.web3.payflow.entity.ActiveUsersStats;
+
 import java.util.List;
 
 @RestController

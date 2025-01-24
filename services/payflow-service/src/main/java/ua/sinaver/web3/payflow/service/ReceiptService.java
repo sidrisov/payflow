@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ua.sinaver.web3.payflow.data.Payment;
+import ua.sinaver.web3.payflow.entity.Payment;
 
 @Slf4j
 @Service

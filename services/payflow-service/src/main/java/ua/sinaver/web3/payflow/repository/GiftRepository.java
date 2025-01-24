@@ -1,8 +1,8 @@
 package ua.sinaver.web3.payflow.repository;
 
 import org.springframework.data.repository.CrudRepository;
-import ua.sinaver.web3.payflow.data.Gift;
-import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.entity.Gift;
+import ua.sinaver.web3.payflow.entity.User;
 
 import java.util.List;
 

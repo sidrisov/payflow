@@ -5,18 +5,37 @@
     <!-- Async GCP Appender -->
     <appender name="ASYNC_STACKDRIVER" class="ch.qos.logback.classic.AsyncAppender">
         <appender-ref ref="STACKDRIVER" />
-        <queueSize>1024</queueSize>
+        <queueSize>10240</queueSize>
         <discardingThreshold>0</discardingThreshold>
         <includeCallerData>true</includeCallerData>
     </appender>
 
     <!-- Modify Stackdriver Encoder for Custom Format -->
-    <appender name="STACKDRIVER" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="STACKDRIVER" class="ch.qos.logback.core.ConsoleAppender" maxLogEntrySize="1024000">
         <encoder>
             <!-- GCP-specific pattern -->
             <pattern>%d{HH:mm:ss.SSS, Asia/Dubai} [%thread] [%.-5level] %logger{1}:%M:%L - %msg%n</pattern>
         </encoder>
     </appender>
+
+
+<!--     <appender name="STACKDRIVER" class="ch.qos.logback.core.ConsoleAppender" maxLogEntrySize="1024000">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+        <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</timestampPattern>
+        <timeZone>Asia/Dubai</timeZone>
+        <includeMdcKeyName>true</includeMdcKeyName>
+        <includeCallerData>true</includeCallerData>
+
+
+        <customFields>{"logging.googleapis.com/labels": {"timezone": "Asia/Dubai"}}</customFields>
+        <fieldNames>
+            <timestamp>time</timestamp>
+            <level>severity</level>
+            <logger>logging.googleapis.com/sourceLocation.file</logger>
+            <line>logging.googleapis.com/sourceLocation.line</line>
+            <method>logging.googleapis.com/sourceLocation.function</method>
+        </fieldNames>
+    </encoder> -->
 
     <!-- Root Logger -->
     <root level="INFO">

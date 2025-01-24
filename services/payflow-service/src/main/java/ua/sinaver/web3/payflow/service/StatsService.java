@@ -9,7 +9,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import ua.sinaver.web3.payflow.data.ActiveUsersStats;
+import ua.sinaver.web3.payflow.entity.ActiveUsersStats;
 import ua.sinaver.web3.payflow.message.DailyStats;
 import ua.sinaver.web3.payflow.repository.ActiveUsersStatsRepository;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;

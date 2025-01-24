@@ -28,10 +28,13 @@ public class PayWithGlideService {
 				.retrieve()
 				.onStatus(HttpStatus.NOT_FOUND::equals, clientResponse -> {
 					log.error("404 error when calling Glide API by sessionId {}", sessionId);
-					return Mono.empty();
+					return Mono.error(new RuntimeException("Session not found"));
 				})
 				.bodyToMono(GlideSessionResponse.class)
-				.switchIfEmpty(Mono.empty())
+				.onErrorResume(error -> {
+					log.error("Error fetching session info for sessionId: {}", sessionId, error);
+					return Mono.justOrEmpty((GlideSessionResponse) null);
+				})
 				.doOnSuccess(response -> {
 					if (response != null) {
 						log.debug("Fetched session info for sessionId: {}", sessionId);

@@ -10,8 +10,8 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
-import ua.sinaver.web3.payflow.data.Payment;
-import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.entity.Payment;
+import ua.sinaver.web3.payflow.entity.User;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

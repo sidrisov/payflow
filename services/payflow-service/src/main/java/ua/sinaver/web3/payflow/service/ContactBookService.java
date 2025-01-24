@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-import ua.sinaver.web3.payflow.data.Contact;
-import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.entity.Contact;
+import ua.sinaver.web3.payflow.entity.User;
 import ua.sinaver.web3.payflow.message.ContactMessage;
 import ua.sinaver.web3.payflow.message.ContactsResponseMessage;
 import ua.sinaver.web3.payflow.repository.ContactRepository;
@@ -35,44 +35,39 @@ import static ua.sinaver.web3.payflow.config.CacheConfig.CONTACTS_CACHE_NAME;
 @Transactional
 public class ContactBookService implements IContactBookService {
 
+	static {
+		System.setProperty("reactor.schedulers.defaultBoundedElasticOnVirtualThreads", "true");
+	}
+
 	@Value("${payflow.airstack.contacts.update.duration:24h}")
 	private Duration contactsUpdateDuration;
 	@Value("${payflow.airstack.contacts.update.last-seen-period:3d}")
 	private Period contactsUpdateLastSeenPeriod;
 	@Value("${payflow.favourites.limit:0}")
 	private int defaultFavouriteContactLimit;
-
 	@Autowired
 	private ContactRepository contactRepository;
-
 	@Autowired
 	private InvitationRepository invitationRepository;
-
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
 	private ISocialGraphService socialGraphService;
 	@Autowired
 	private IdentitySubscriptionsService identitySubscriptionsService;
-
 	@Autowired
 	private IdentityFollowingsService identityFollowingsService;
-
 	@Autowired
 	private EthereumFollowProtocolService ethereumFollowProtocolService;
-
 	@Autowired
 	private IdentityService identityService;
-
-	@Autowired
-	private FlowService flowService;
 	@Autowired
 	private FanTokenService fanTokenService;
 	@Autowired
 	private PaymentService paymentService;
 	@Value("${payflow.airstack.contacts.limit:10}")
 	private int contactsLimit;
-	@Value("${payflow.airstack.contacts.fetch.timeout:30s}")
+	@Value("${payflow.airstack.contacts.fetch.timeout:60s}")
 	private Duration contactsFetchTimeout;
 	// reuse property to increase the contacts limit
 	@Value("${payflow.invitation.whitelisted.default.users}")
@@ -136,6 +131,7 @@ public class ContactBookService implements IContactBookService {
 				.limit(3)
 				.map(Map.Entry::getKey)
 				.toList();
+
 		log.debug("Fetched top 3 popular payment recipients: {}", popular);
 
 		val fanTokenContacts = fanTokenService.fetchFanTokenHolders(user.getIdentity());
@@ -194,19 +190,19 @@ public class ContactBookService implements IContactBookService {
 		}
 
 		val allContacts = Stream.of(
-				wallets.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity,
-						"verifications")),
-				popular.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "popular")),
-				recent.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "recent")),
-				allPaymentUniqueRecipients.stream()
-						.map(identity -> new AbstractMap.SimpleEntry<>(identity, "transacted")),
-				favourites.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(), "favourites")),
-				followings.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "friends")),
-				efpFollowings.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "efp")),
-				fanTokenContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "moxie")),
-				fabricContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "hypersub")),
-				paragraphContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "paragraph")),
-				alfaFrensContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "alfafrens")))
+						wallets.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity,
+								"verifications")),
+						popular.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "popular")),
+						recent.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "recent")),
+						allPaymentUniqueRecipients.stream()
+								.map(identity -> new AbstractMap.SimpleEntry<>(identity, "transacted")),
+						favourites.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(), "favourites")),
+						followings.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "friends")),
+						efpFollowings.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "efp")),
+						fanTokenContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "moxie")),
+						fabricContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "hypersub")),
+						paragraphContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "paragraph")),
+						alfaFrensContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "alfafrens")))
 				.flatMap(stream -> stream)
 				.collect(Collectors.groupingBy(
 						Map.Entry::getKey,
@@ -219,46 +215,60 @@ public class ContactBookService implements IContactBookService {
 		try {
 			val contactMessages = Flux
 					.fromIterable(allContacts.keySet())
-					.flatMap(contact -> Mono.zip(
-							Mono.just(contact),
-							Mono.justOrEmpty(userRepository.findByIdentityIgnoreCase(contact)).singleOptional(),
-							Mono.fromCallable(
-									() -> socialGraphService.getSocialMetadata(contact))
-									.subscribeOn(Schedulers.boundedElastic())
-									.onErrorResume(exception -> {
-										log.error("Error fetching social graph for {} - {}",
-												contact,
-												exception.getMessage());
-										return Mono.empty();
-									}),
-							Mono.fromCallable(
-									() -> socialGraphService.getSocialInsights(contact,
-											user.getIdentity()))
-									.subscribeOn(Schedulers.boundedElastic())
-									.onErrorResume(exception -> {
-										log.error("Error fetching social insights" +
-												" for {} - {}",
-												contact,
-												exception.getMessage());
-										return Mono.empty();
-									}),
-							Mono.fromCallable(
-									() -> invited.contains(contact))
-									.onErrorResume(exception -> {
-										log.error("Error checking invitation status for user {} - {}",
-												contact,
-												exception.getMessage());
-										return Mono.empty();
-									}))
-							.map(tuple -> ContactMessage.convert(
-									tuple.getT1(),
-									tuple.getT2().orElse(null),
-									tuple.getT3(),
-									tuple.getT4(),
-									tuple.getT5(),
-									allContacts.get(contact)))
+					.parallel()
+					.runOn(Schedulers.boundedElastic())
+					.flatMap(contact -> {
+						log.debug("Processing contact: {} on thread: {} isVirtual: {}",
+								contact,
+								Thread.currentThread().getName(),
+								Thread.currentThread().isVirtual());
+						return Mono.zip(
+										Mono.just(contact),
+										Mono.justOrEmpty(userRepository.findByIdentityIgnoreCase(contact))
+												.singleOptional(),
+										Mono.fromCallable(() -> {
+													long start = System.currentTimeMillis();
+													var result = socialGraphService.getSocialMetadata(contact);
+													long executionTime = System.currentTimeMillis() - start;
+													log.debug("Actual execution took {}ms for {}", executionTime, contact);
+													return result;
+												})
+												.subscribeOn(Schedulers.boundedElastic())
+												.elapsed()
+												.doOnNext(tuple -> log.debug("Total time (including queue) took {}ms for {}",
+														tuple.getT1(), contact))
+												.map(tuple -> tuple.getT2()),
+										Mono.fromCallable(
+														() -> socialGraphService.getSocialInsights(contact, user.getIdentity()))
+												.subscribeOn(Schedulers.boundedElastic())
+												.elapsed()
+												.doOnNext(tuple -> log.debug("Social insights took {}ms for {}", tuple.getT1(),
+														contact))
+												.map(tuple -> tuple.getT2())
+												.onErrorResume(exception -> {
+													log.error("Error fetching social insights" +
+																	" for {} - {}",
+															contact,
+															exception.getMessage());
+													return Mono.empty();
+												}),
+										Mono.fromCallable(() -> invited.contains(contact))
+												.onErrorResume(exception -> {
+													log.error("Error checking invitation status for user {} - {}",
+															contact,
+															exception.getMessage());
+													return Mono.empty();
+												}))
+								.map(tuple -> ContactMessage.convert(
+										tuple.getT1(),
+										tuple.getT2().orElse(null),
+										tuple.getT3(),
+										tuple.getT4(),
+										tuple.getT5(),
+										allContacts.get(contact)));
+					})
 					// TODO: fail fast, seems doesn't to work properly with threads
-					)
+					.sequential()
 					.timeout(contactsFetchTimeout, Mono.empty())
 					.collectList()
 					.block();
@@ -270,7 +280,9 @@ public class ContactBookService implements IContactBookService {
 				log.debug("Fetched {} contacts for {}", contactMessages.size(), user.getUsername());
 			}
 			return new ContactsResponseMessage(tags, contactMessages);
-		} catch (Throwable t) {
+		} catch (
+
+				Throwable t) {
 			log.error("Failed to fetch contacts", t);
 			return null;
 		}

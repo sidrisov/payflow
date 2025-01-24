@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.stereotype.Repository;
-import ua.sinaver.web3.payflow.data.bot.PaymentBotJob;
+import ua.sinaver.web3.payflow.entity.bot.PaymentBotJob;
 
 import java.util.Optional;
 import java.util.stream.Stream;

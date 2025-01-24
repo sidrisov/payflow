@@ -11,11 +11,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ua.sinaver.web3.payflow.data.Payment;
+import ua.sinaver.web3.payflow.entity.Payment;
 import ua.sinaver.web3.payflow.message.FrameButton;
 import ua.sinaver.web3.payflow.message.FramePaymentMessage;
 import ua.sinaver.web3.payflow.message.ValidatedXmtpFrameMessage;
-import ua.sinaver.web3.payflow.message.WalletMessage;
+import ua.sinaver.web3.payflow.dto.WalletMessage;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.message.farcaster.ValidatedFrameResponseMessage;
@@ -504,7 +504,7 @@ public class JarContributionController {
 		val payment = new Payment(Payment.PaymentType.FRAME, profile,
 				paymentState.chainId(), token);
 
-		// TODO: refactor to fetch jar data object instead of message
+		// TODO: refactor to fetch jar model object instead of message
 		val flow = flowRepository.findByUuid(uuid);
 		payment.setReceiverFlow(flow);
 		payment.setUsdAmount(usdAmount.toString());

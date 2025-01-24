@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ua.sinaver.web3.payflow.data.bot.PaymentBotJob;
+import ua.sinaver.web3.payflow.entity.bot.PaymentBotJob;
 import ua.sinaver.web3.payflow.events.PaymentBotJobEvent;
 import ua.sinaver.web3.payflow.message.farcaster.CastCreatedMessage;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;

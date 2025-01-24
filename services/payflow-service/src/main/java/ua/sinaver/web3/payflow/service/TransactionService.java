@@ -13,8 +13,8 @@ import org.web3j.abi.datatypes.Bool;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.utils.Convert;
-import ua.sinaver.web3.payflow.data.Payment;
 import ua.sinaver.web3.payflow.message.FramePaymentMessage;
+import ua.sinaver.web3.payflow.entity.Payment;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -148,15 +148,16 @@ public class TransactionService {
 
 		if (isERC20Transfer) {
 			return String.format("""
-					{
-					  "chainId": "eip155:%s",
-					  "method": "eth_sendTransaction",
-					  "params": {
-					    "abi": %s,
-					    "to": "%s",
-					    "data": "%s"
-					  }
-					}""", payment.getNetwork(), ERC20_ABI_TRANSFER_JSON, txParams.get("to"), txParams.get("data"));
+							{
+							  "chainId": "eip155:%s",
+							  "method": "eth_sendTransaction",
+							  "params": {
+							    "abi": %s,
+							    "to": "%s",
+							    "data": "%s"
+							  }
+							}""", payment.getNetwork(), ERC20_ABI_TRANSFER_JSON, txParams.get("to"),
+					txParams.get("data"));
 		} else {
 			return String.format("""
 					{

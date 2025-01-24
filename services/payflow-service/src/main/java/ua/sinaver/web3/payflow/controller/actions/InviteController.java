@@ -6,7 +6,7 @@ import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ua.sinaver.web3.payflow.data.Invitation;
+import ua.sinaver.web3.payflow.entity.Invitation;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
 import ua.sinaver.web3.payflow.message.farcaster.CastActionMeta;

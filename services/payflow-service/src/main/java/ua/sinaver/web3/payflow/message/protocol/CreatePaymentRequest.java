@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Instant;
 
 public record CreatePaymentRequest(
-		ua.sinaver.web3.payflow.data.Payment.PaymentType type,
+		ua.sinaver.web3.payflow.entity.Payment.PaymentType type,
 		String name,
 		Source source,
 		Recipient recipient,

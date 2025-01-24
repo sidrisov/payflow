@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.stereotype.Repository;
-import ua.sinaver.web3.payflow.data.TopCasterRewardSchedule;
-import ua.sinaver.web3.payflow.data.TopCasterRewardSchedule.ScheduleStatus;
+import ua.sinaver.web3.payflow.entity.TopCasterRewardSchedule;
+import ua.sinaver.web3.payflow.entity.TopCasterRewardSchedule.ScheduleStatus;
 
 import java.util.List;
 

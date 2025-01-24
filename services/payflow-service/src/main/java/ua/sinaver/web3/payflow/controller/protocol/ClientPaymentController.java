@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-import ua.sinaver.web3.payflow.data.Payment;
-import ua.sinaver.web3.payflow.data.WalletSession;
-import ua.sinaver.web3.payflow.data.protocol.ClientApiKey;
+import ua.sinaver.web3.payflow.entity.Payment;
+import ua.sinaver.web3.payflow.entity.WalletSession;
+import ua.sinaver.web3.payflow.entity.protocol.ClientApiKey;
 import ua.sinaver.web3.payflow.events.CreatedPaymentEvent;
 import ua.sinaver.web3.payflow.message.protocol.CreatePaymentRequest;
 import ua.sinaver.web3.payflow.message.protocol.CreatePaymentResponse;
@@ -117,7 +117,7 @@ public class ClientPaymentController {
 				} else if (social.type().equals("farcaster")) {
 					var addresses = social.identifier().startsWith(
 							"fid:") ? identityService.getFidAddresses(Integer.parseInt(social.identifier().replace(
-									"fid:", ""))) : identityService.getFnameAddresses(social.identifier());
+							"fid:", ""))) : identityService.getFnameAddresses(social.identifier());
 
 					if (addresses == null || addresses.isEmpty()) {
 						throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -167,7 +167,7 @@ public class ClientPaymentController {
 			payment.setStatus(Payment.PaymentStatus.CREATED);
 			payment.setExpiresAt(request.expiresAt() != null ? request.expiresAt()
 					: Instant.now().plus(7,
-							ChronoUnit.DAYS));
+					ChronoUnit.DAYS));
 			if (StringUtils.isNotBlank(request.recipient().comment())) {
 				payment.setComment(request.recipient().comment());
 			}

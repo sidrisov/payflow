@@ -1,7 +1,7 @@
 package ua.sinaver.web3.payflow.service.api;
 
-import ua.sinaver.web3.payflow.data.User;
-import ua.sinaver.web3.payflow.message.ProfileMessage;
+import ua.sinaver.web3.payflow.entity.User;
+import ua.sinaver.web3.payflow.dto.ProfileMessage;
 import ua.sinaver.web3.payflow.message.WalletProfileRequestMessage;
 import ua.sinaver.web3.payflow.message.farcaster.FarcasterUser;
 

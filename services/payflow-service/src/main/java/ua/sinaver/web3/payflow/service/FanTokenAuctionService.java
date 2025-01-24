@@ -6,7 +6,7 @@ import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.entity.User;
 import ua.sinaver.web3.payflow.message.ContactWithFanTokenAuction;
 import ua.sinaver.web3.payflow.message.SocialInfo;
 import ua.sinaver.web3.payflow.service.api.IContactBookService;

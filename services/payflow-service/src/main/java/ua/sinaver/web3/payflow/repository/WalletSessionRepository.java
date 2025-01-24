@@ -4,8 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-import ua.sinaver.web3.payflow.data.User;
-import ua.sinaver.web3.payflow.data.WalletSession;
+import ua.sinaver.web3.payflow.entity.User;
+import ua.sinaver.web3.payflow.entity.WalletSession;
 
 import java.time.Instant;
 import java.util.List;

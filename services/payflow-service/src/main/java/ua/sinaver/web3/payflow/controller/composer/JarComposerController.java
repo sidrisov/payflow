@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import ua.sinaver.web3.payflow.config.PayflowConfig;
-import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.entity.User;
 import ua.sinaver.web3.payflow.message.farcaster.ComposerActionState;
 import ua.sinaver.web3.payflow.message.farcaster.ComposerCastActionMeta;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;

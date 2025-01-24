@@ -17,16 +17,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.web.util.UriComponentsBuilder;
 import ua.sinaver.web3.payflow.config.PayflowConfig;
-import ua.sinaver.web3.payflow.data.Payment;
-import ua.sinaver.web3.payflow.data.User;
-import ua.sinaver.web3.payflow.data.bot.PaymentBotJob;
+import ua.sinaver.web3.payflow.entity.Payment;
+import ua.sinaver.web3.payflow.entity.User;
+import ua.sinaver.web3.payflow.entity.bot.PaymentBotJob;
 import ua.sinaver.web3.payflow.events.CastEvent;
 import ua.sinaver.web3.payflow.events.CreatedPaymentEvent;
 import ua.sinaver.web3.payflow.events.PaymentBotJobEvent;
 import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
-import ua.sinaver.web3.payflow.message.farcaster.Conversation;
+import ua.sinaver.web3.payflow.message.farcaster.ConversationData;
 import ua.sinaver.web3.payflow.message.nft.ParsedMintUrlMessage;
+import ua.sinaver.web3.payflow.repository.FlowRepository;
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.repository.WalletSessionRepository;
@@ -78,6 +79,8 @@ public class FarcasterBotService {
 	private FarcasterNeynarService neynarService;
 	@Autowired
 	private NotificationService notificationService;
+	@Autowired
+	private FlowRepository flowRepository;
 
 	@Value("${payflow.farcaster.bot.enabled:false}")
 	private boolean isBotEnabled;
@@ -208,21 +211,37 @@ public class FarcasterBotService {
 
 		List<AnthropicAgentService.Message> inputMessages = new ArrayList<>();
 
-		var parent = parentCast != null ? new Conversation.CastMessage(
-				new Conversation.User(parentCast.author().username(), parentCast.author().fid()),
-				parentCast.text(),
-				parentCast.mentionedProfiles().stream()
-						.map(p -> new Conversation.User(p.username(), p.fid())).toList())
-				: null;
-
-		var current = new Conversation.CastMessage(
-				new Conversation.User(cast.author().username(), cast.author().fid()),
+		var currentCast = new ConversationData.Cast(
+				new ConversationData.User(
+						cast.author().fid(),
+						cast.author().username(),
+						cast.author().displayName()),
 				cast.text(),
-				cast.mentionedProfiles().stream().map(p -> new Conversation.User(p.username(), p.fid()))
-						.toList());
+				cast.mentionedProfiles().stream()
+						.map(p -> new ConversationData.User(
+								p.fid(),
+								p.username(),
+								p.displayName()))
+						.toList(),
+				List.of());
 
-		var conversation = new Conversation(
-				new Conversation.ConversationData(parent, current));
+		val chronologicalParentCasts = parentCast != null ? List.of(
+				new ConversationData.Cast(
+						new ConversationData.User(
+								parentCast.author().fid(),
+								parentCast.author().username(),
+								parentCast.author().displayName()),
+						parentCast.text(),
+						parentCast.mentionedProfiles().stream()
+								.map(p -> new ConversationData.User(
+										p.fid(),
+										p.username(),
+										p.displayName()))
+								.toList(),
+						null))
+				: List.<ConversationData.Cast>of();
+
+		var conversation = new ConversationData.Conversation(currentCast, chronologicalParentCasts);
 
 		try {
 			inputMessages.add(AnthropicAgentService.Message.builder()
@@ -231,9 +250,10 @@ public class FarcasterBotService {
 							AnthropicAgentService.Message.Content.builder()
 									.type("text")
 									.text(String.format("""
-											```json
-											%s
-											```""", objectMapper.writeValueAsString(conversation)))
+													```json
+													%s
+													```""",
+											objectMapper.writeValueAsString(new ConversationData(conversation))))
 									.build()))
 					.build());
 		} catch (JsonProcessingException e) {
@@ -315,8 +335,8 @@ public class FarcasterBotService {
 							if (fcProfile == null && parentCast != null) {
 								fcProfile = parentCast.author().username().equals(finalReceiver) ? parentCast.author()
 										: parentCast.mentionedProfiles().stream()
-												.filter(p -> p.username().equals(finalReceiver)).findFirst()
-												.orElse(null);
+										.filter(p -> p.username().equals(finalReceiver)).findFirst()
+										.orElse(null);
 							}
 
 							if (fcProfile == null) {
@@ -383,7 +403,7 @@ public class FarcasterBotService {
 
 								if (balance == null
 										|| new BigDecimal(balance.formatted())
-												.compareTo(new BigDecimal(tokenAmount)) < 0) {
+										.compareTo(new BigDecimal(tokenAmount)) < 0) {
 
 									paymentRepository.save(payment);
 									val topUpFrameUrl = UriComponentsBuilder
@@ -396,12 +416,12 @@ public class FarcasterBotService {
 
 									eventPublisher.publishEvent(new CastEvent(
 											String.format("""
-													Balance too low!
+															Balance too low!
 
-													Current: %s %s
-													Required: %s %s
+															Current: %s %s
+															Required: %s %s
 
-													Top up your wallet or pay manually:""",
+															Top up your wallet or pay manually:""",
 													balance != null ? balance.formatted() : "0",
 													token.id().toUpperCase(),
 													tokenAmount,
@@ -434,10 +454,20 @@ public class FarcasterBotService {
 								eventPublisher.publishEvent(
 										new CreatedPaymentEvent(payment.getId()));
 							} else {
-								castText = String.format(
-										"@%s, complete payment manually, or create wallet & session to process " +
-												"new payments automatically",
-										cast.author().username());
+
+								val walletAvailable = flowRepository
+										.findPayflowBalanceV2ByUserId(casterProfile.getId(), "v2")
+										.isPresent();
+
+								castText = String.format("""
+													@%s, complete payment manually:
+													
+													If you want to process payments automatically, create a %s in the app!
+												""",
+										cast.author().username(),
+										walletAvailable ? "session for your existing Payflow Wallet"
+												: "Payflow Wallet with session");
+
 								embeds = List.of(
 										new Cast.Embed(linkService.frameV2PaymentLink(payment).toString()),
 										new Cast.Embed(payflowConfig.getDAppServiceUrl()));
@@ -476,12 +506,12 @@ public class FarcasterBotService {
 
 						val token = tokenOrAddress != null
 								? tokenOrAddress.matches("0x[a-fA-F0-9]{40}")
-										? paymentService.parseCommandTokens(tokenOrAddress).stream()
-												.findFirst()
-												.orElseGet(() -> Token.of(tokenOrAddress, "Base", 8453))
-										: paymentService.parseCommandTokens(tokenOrAddress).stream()
-												.findFirst()
-												.orElse(null)
+								? paymentService.parseCommandTokens(tokenOrAddress).stream()
+								.findFirst()
+								.orElseGet(() -> Token.of(tokenOrAddress, "Base", 8453))
+								: paymentService.parseCommandTokens(tokenOrAddress).stream()
+								.findFirst()
+								.orElse(null)
 								: null;
 
 						if (token == null) {
@@ -504,8 +534,8 @@ public class FarcasterBotService {
 						} else {
 							eventPublisher.publishEvent(new CastEvent(
 									String.format("""
-											%s
-											%s Balance: %s""",
+													%s
+													%s Balance: %s""",
 											textWithReply != null ? textWithReply : "",
 											balance.symbol().toUpperCase(),
 											balance.formatted()),
@@ -621,7 +651,7 @@ public class FarcasterBotService {
 		val cast = job.getCast();
 		val text = cast.text();
 		var matcher = Pattern.compile(
-				BOT_COMMAND_PATTERN, Pattern.DOTALL)
+						BOT_COMMAND_PATTERN, Pattern.DOTALL)
 				.matcher(text);
 
 		if (!matcher.find()) {
@@ -703,8 +733,8 @@ public class FarcasterBotService {
 					if (fcProfile == null && parentCast != null) {
 						fcProfile = parentCast.author().username().equals(finalReceiver) ? parentCast.author()
 								: parentCast.mentionedProfiles().stream()
-										.filter(p -> p.username().equals(finalReceiver)).findFirst()
-										.orElse(null);
+								.filter(p -> p.username().equals(finalReceiver)).findFirst()
+								.orElse(null);
 					}
 
 					if (fcProfile == null) {
@@ -802,11 +832,11 @@ public class FarcasterBotService {
 
 						eventPublisher.publishEvent(new CastEvent(
 								String.format("""
-										Balance too low!
+												Balance too low!
 
-										Current: %s %s
-										Required: %s %s
-										Top up your wallet or pay manually:""",
+												Current: %s %s
+												Required: %s %s
+												Top up your wallet or pay manually:""",
 										balance != null ? balance.formatted() : "0",
 										token.id().toUpperCase(),
 										tokenAmount,
@@ -988,7 +1018,7 @@ public class FarcasterBotService {
 				}
 
 				log.debug("Executing jar creation with title `{}`, desc `{}`, " +
-						"embeds {}, source {}",
+								"embeds {}, source {}",
 						title, beforeText, cast.embeds(),
 						String.format("https://warpcast.com/%s/%s",
 								cast.author().username(),
@@ -1005,7 +1035,7 @@ public class FarcasterBotService {
 						cast.author().username());
 				val embeds = Collections.singletonList(
 						new Cast.Embed(String.format("https://app.payflow" +
-								".me/jar/%s",
+										".me/jar/%s",
 								jar.getFlow().getUuid())));
 				eventPublisher.publishEvent(new CastEvent(
 						castText,

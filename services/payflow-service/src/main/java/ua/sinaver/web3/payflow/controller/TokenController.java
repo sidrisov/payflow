@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
-import ua.sinaver.web3.payflow.data.PreferredTokens;
+import ua.sinaver.web3.payflow.entity.PreferredTokens;
 import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.service.TokenService;
 import ua.sinaver.web3.payflow.service.UserService;
@@ -39,24 +39,24 @@ public class TokenController {
 		if (principal == null) {
 			throw new BadCredentialsException("No authentication provided!");
 		}
-		
+
 		if (tokens == null) {
 			throw new IllegalArgumentException("Tokens list cannot be null");
 		}
-		
+
 		log.debug("{} updating preferred tokens: {}", principal.getName(), tokens);
 		val user = userService.findByIdentity(principal.getName());
 		if (user == null) {
 			throw new UsernameNotFoundException("User not found!");
 		}
-		
+
 		var preferredTokens = (PreferredTokens) user.getPreferredTokens();
 		if (preferredTokens == null) {
 			preferredTokens = new PreferredTokens();
 			preferredTokens.setUser(user);
 			user.setPreferredTokens(preferredTokens);
 		}
-		
+
 		preferredTokens.setTokens(String.join(",", tokens));
 		userService.saveUser(user);
 	}

@@ -1,9 +1,11 @@
 package ua.sinaver.web3.payflow.message;
 
 import lombok.val;
-import ua.sinaver.web3.payflow.data.Contact;
-import ua.sinaver.web3.payflow.data.PreferredTokens;
-import ua.sinaver.web3.payflow.data.User;
+import ua.sinaver.web3.payflow.dto.FlowMessage;
+import ua.sinaver.web3.payflow.dto.ProfileMessage;
+import ua.sinaver.web3.payflow.entity.Contact;
+import ua.sinaver.web3.payflow.entity.PreferredTokens;
+import ua.sinaver.web3.payflow.entity.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 
 import java.util.Collections;

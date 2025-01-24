@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ua.sinaver.web3.payflow.data.protocol.ClientApiKey;
+import ua.sinaver.web3.payflow.entity.protocol.ClientApiKey;
 import ua.sinaver.web3.payflow.repository.ClientApiKeyRepository;
 
 import java.time.Instant;

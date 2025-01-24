@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import ua.sinaver.web3.payflow.data.StorageNotification;
+import ua.sinaver.web3.payflow.entity.StorageNotification;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
 import ua.sinaver.web3.payflow.message.farcaster.StorageUsage;
