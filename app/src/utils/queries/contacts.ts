@@ -6,14 +6,12 @@ import { sortBySocialScore } from '../../services/socials';
 
 export const useContacts = ({
   enabled,
-  bypassCache = false,
   accessToken
 }: {
   enabled: boolean;
-  bypassCache?: boolean;
   accessToken?: string;
 }) => {
-  return useQuery({
+  const query = useQuery({
     enabled,
     queryKey: ['contacts'],
     staleTime: Infinity,
@@ -22,7 +20,7 @@ export const useContacts = ({
         .get(
           `${API_URL}/api/user/me/contacts${accessToken ? '?access_token=' + accessToken : ''}`,
           {
-            headers: { ...(bypassCache && { 'Cache-Control': 'no-cache' }) },
+            headers: { 'Cache-Control': 'max-age=10' },
             withCredentials: true
           }
         )
@@ -36,4 +34,9 @@ export const useContacts = ({
           } as ContactsResponseType;
         })
   });
+
+  return {
+    ...query,
+    refetch: () => query.refetch()
+  };
 };

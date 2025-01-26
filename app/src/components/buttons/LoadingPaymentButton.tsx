@@ -1,18 +1,16 @@
 import { Typography, Stack, CircularProgress } from '@mui/material';
-import LoadingButton, { LoadingButtonProps } from '@mui/lab/LoadingButton';
+import LoadingButton, { ButtonProps } from '@mui/lab/LoadingButton';
 
 export function CustomLoadingButton({
   title,
   status,
-  borderRadius = 5,
   ...props
-}: { title: string; status?: string; borderRadius?: number } & LoadingButtonProps) {
+}: { title: string; status?: string; borderRadius?: number } & ButtonProps) {
   return (
     <LoadingButton
       fullWidth
       variant="outlined"
       size="large"
-      color="inherit"
       {...props}
       loadingIndicator={
         <Stack direction="row" spacing={1} alignItems="center">
@@ -28,7 +26,7 @@ export function CustomLoadingButton({
           </Typography>
         </Stack>
       }
-      sx={{ my: 1, borderRadius }}>
+      sx={{ my: 1, ...props.sx }}>
       {title}
     </LoadingButton>
   );

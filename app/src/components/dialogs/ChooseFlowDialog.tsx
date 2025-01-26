@@ -6,11 +6,10 @@ import {
   Stack,
   Tooltip,
   Typography,
-  Collapse,
-  Button
+  Collapse
 } from '@mui/material';
 import { FlowType } from '@payflow/common';
-import { ExpandMore, ExpandLess, MoreVert, Add, Wallet } from '@mui/icons-material';
+import { ExpandMore, ExpandLess, MoreVert, Add } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
@@ -18,14 +17,15 @@ import { green } from '@mui/material/colors';
 import { FlowSettingsMenu } from '../menu/FlowSettingsMenu';
 import { PaymentFlowSection } from '../PaymentFlowSection';
 import ResponsiveDialog, { ResponsiveDialogProps } from './ResponsiveDialog';
-import { FaCheckCircle, FaRegCircle, FaCircle } from 'react-icons/fa';
+import { FaCheckCircle, FaRegCircle } from 'react-icons/fa';
 import { HiOutlineDownload } from 'react-icons/hi';
 import { CreateFlowDialog } from './CreateFlowDialog';
-import { useAccount, useConnect } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { SUPPORTED_CHAINS } from '../../utils/networks';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
 import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
 import { IoWallet } from 'react-icons/io5';
+import { useWallets } from '@privy-io/react-auth';
 
 export type ChooseFlowMenuProps = ResponsiveDialogProps &
   CloseCallbackType & {
@@ -49,6 +49,7 @@ export function ChooseFlowDialog({
 }: ChooseFlowMenuProps) {
   const { profile } = useContext(ProfileContext);
   const { address: connectedAddress, connector } = useAccount();
+  const { wallets } = useWallets();
   const [openFlowSettingsMenu, setOpenFlowSettingsMenu] = useState<boolean>(false);
   const [flowAnchorEl, setFlowAnchorEl] = useState<null | HTMLElement>(null);
   const [archivedExpanded, setArchivedExpanded] = useState<boolean>(false);
@@ -97,8 +98,6 @@ export function ChooseFlowDialog({
     [flows]
   );
 
-  console.log('Connector', connector);
-
   useEffect(() => {
     if (props.open && selectedElement) {
       selectedElement.scrollIntoView({
@@ -107,50 +106,6 @@ export function ChooseFlowDialog({
       });
     }
   }, [props.open, selectedElement]);
-
-  const connectedFlow = useMemo(
-    () =>
-      connectedAddress && connector?.id !== 'io.privy.wallet'
-        ? ({
-            uuid: 'connected-wallet',
-            title: connectedAddress ? shortenWalletAddressLabel2(connectedAddress) : '',
-            icon: connector?.icon,
-            type: 'CONNECTED',
-            wallets: connectedAddress
-              ? SUPPORTED_CHAINS.map((chain) => ({
-                  address: connectedAddress.toLowerCase(),
-                  network: chain.id as number
-                }))
-              : [],
-            signer: connectedAddress
-          } as FlowType)
-        : null,
-    [connectedAddress, connector]
-  );
-
-  useEffect(() => {
-    if (connectedFlow && connectedFlow.uuid === selectedFlow.uuid) {
-      setSelectedFlow(connectedFlow);
-    }
-  }, [connectedFlow]);
-
-  const renderConnectedWalletItem = (connectedFlow: FlowType | null) => {
-    return connectedFlow ? (
-      <>
-        <Typography variant="subtitle2" sx={{ px: 2, pt: 1, pb: 0, color: 'text.secondary' }}>
-          Connected Wallet
-        </Typography>
-        {renderMenuItem(connectedFlow)}
-      </>
-    ) : (
-      <LoadingConnectWalletButton
-        size="medium"
-        variant="outlined"
-        title="Connect Wallet"
-        startIcon={<IoWallet />}
-      />
-    );
-  };
 
   const renderMenuItem = useCallback(
     (flow: FlowType) => (
@@ -216,6 +171,47 @@ export function ChooseFlowDialog({
     [selectedFlow.uuid, closeOnSelect, closeStateCallback]
   );
 
+  const connectedWallets = useMemo(() => {
+    return wallets
+      .filter((wallet) => wallet.walletClientType !== 'privy')
+      .map(
+        (wallet) =>
+          ({
+            uuid: `connected-wallet-${wallet.address}`,
+            title: shortenWalletAddressLabel2(wallet.address),
+            icon: wallet.meta.icon,
+            type: 'CONNECTED',
+            wallets: SUPPORTED_CHAINS.map((chain) => ({
+              address: wallet.address.toLowerCase(),
+              network: chain.id as number
+            })),
+            signer: wallet.address
+          }) as FlowType
+      );
+  }, [wallets]);
+
+  const renderConnectedWalletItems = useCallback(() => {
+    if (!connectedWallets.length) {
+      return (
+        <LoadingConnectWalletButton
+          size="medium"
+          variant="outlined"
+          title="Connect Wallet"
+          startIcon={<IoWallet />}
+        />
+      );
+    }
+
+    return (
+      <>
+        <Typography variant="subtitle2" sx={{ px: 2, pt: 1, pb: 0, color: 'text.secondary' }}>
+          Connected Wallets
+        </Typography>
+        {connectedWallets.map((wallet) => renderMenuItem(wallet))}
+      </>
+    );
+  }, [connectedWallets, renderMenuItem]);
+
   const WalletSectionHeader = ({ children }: { children: React.ReactNode }) => (
     <Typography variant="subtitle2" sx={{ px: 2, pt: 1, pb: 0, color: 'text.secondary' }}>
       {children}
@@ -228,7 +224,6 @@ export function ChooseFlowDialog({
         <ResponsiveDialog
           title="Choose Payment Wallet"
           open={props.open}
-          onOpen={() => {}}
           onClose={closeStateCallback}>
           <MenuList disablePadding sx={{ width: '100%' }}>
             <Stack
@@ -239,7 +234,7 @@ export function ChooseFlowDialog({
                 overflowY: 'scroll',
                 '-webkit-overflow-scrolling': 'touch'
               }}>
-              {renderConnectedWalletItem(connectedFlow)}
+              {renderConnectedWalletItems()}
               <Stack
                 direction="row"
                 justifyContent="space-between"
@@ -328,13 +323,12 @@ export function ChooseFlowDialog({
           }}
         />
 
-        {openFlowSettingsMenu && menuFlow && (
+        {menuFlow && (
           <FlowSettingsMenu
             open={openFlowSettingsMenu}
             anchorEl={flowAnchorEl}
-            onClose={async () => {
+            onClose={() => {
               setOpenFlowSettingsMenu(false);
-              setMenuFlow(null);
             }}
             showOnlySigner={paymentView}
             defaultFlow={menuFlow.uuid === profile.defaultFlow?.uuid}

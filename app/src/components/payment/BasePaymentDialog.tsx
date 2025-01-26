@@ -53,18 +53,16 @@ export function BasePaymentDialog({
       fullScreen={isMobile}
       onClose={closeStateCallback}
       {...props}
-      PaperProps={{
-        sx: {
+      slotProps={{
+        paper: {
           ...(!isMobile && {
             width: 375,
-            borderRadius: 5,
             height: 650
           })
         }
       }}
       sx={{
-        zIndex: 1450,
-        backdropFilter: 'blur(3px)'
+        zIndex: 1450
       }}
       {...(isMobile && { TransitionComponent: UpSlideTransition })}>
       <BackDialogTitle

@@ -247,10 +247,7 @@ export default function Profile() {
               disabled={!usernameAvailable || !usernameValid || !username}
               fullWidth
               variant="outlined"
-              size="large"
-              color="inherit"
-              onClick={save}
-              sx={{ borderRadius: 5 }}>
+              onClick={save}>
               Save
             </LoadingButton>
           </Box>

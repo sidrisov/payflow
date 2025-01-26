@@ -19,7 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { delay } from '../../utils/delay';
 import { useContext, useState, useEffect, useRef } from 'react';
 import NetworkAvatar from '../avatars/NetworkAvatar';
-import { WalletsInfoPopover } from './WalletsInfoPopover';
+import { WalletBalanceDialog } from './WalletInfoDialog';
 import getFlowAssets from '../../utils/assets';
 import { useAssetBalances } from '../../utils/queries/balances';
 import { IoIosWallet, IoMdSquare, IoMdKey } from 'react-icons/io';
@@ -35,6 +35,8 @@ import { AutoMode } from '@mui/icons-material';
 import { WalletPermissionsDialog } from '../dialogs/WalletPermissionsDialog';
 import { isBrowser } from 'react-device-detect';
 
+type DialogType = 'none' | 'payMe' | 'balanceInfo' | 'permissions';
+
 export function FlowSettingsMenu({
   showOnlySigner,
   flow,
@@ -43,8 +45,6 @@ export function FlowSettingsMenu({
 }: MenuProps & { showOnlySigner: boolean; defaultFlow: boolean; flow: FlowType }) {
   const navigate = useNavigate();
 
-  const [openWalletDetailsPopover, setOpenWalletDetailsPopover] = useState(false);
-  const [walletAnchorEl, setWalletAnchorEl] = useState<null | HTMLElement>(null);
   const { profile, isFrameV2 } = useContext(ProfileContext);
 
   const { isLoading, isFetched, data: balances } = useAssetBalances(getFlowAssets(flow));
@@ -55,8 +55,7 @@ export function FlowSettingsMenu({
 
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const [openPayMeDialog, setOpenPayMeDialog] = useState(false);
-  const [openPermissionsDialog, setOpenPermissionsDialog] = useState(false);
+  const [activeDialog, setActiveDialog] = useState<DialogType>('none');
 
   useEffect(() => {
     if (ready && wallets.length !== 0) {
@@ -80,7 +79,7 @@ export function FlowSettingsMenu({
   const handleConnectWallet = async () => {
     if (flow.signerProvider === 'privy') {
       if (!authenticated) {
-        setTimeout(() => {
+        setTimeout(() => {``
           login({
             ...(flow.signerCredential && {
               prefill: { type: 'email', value: flow.signerCredential },
@@ -126,6 +125,12 @@ export function FlowSettingsMenu({
     }
   };
 
+  // Helper to open a new dialog and close the menu
+  const openDialog = (dialog: DialogType) => {
+    props.onClose?.({}, 'backdropClick');
+    setActiveDialog(dialog);
+  };
+
   return (
     <>
       <Menu
@@ -164,7 +169,11 @@ export function FlowSettingsMenu({
               </MenuItem>
 
               {(!isFrameV2 || isBrowser) && flow.signerProvider === 'privy' && isConnected && (
-                <MenuItem onClick={() => linkPasskey()}>
+                <MenuItem
+                  onClick={() => {
+                    linkPasskey();
+                    props.onClose?.({}, 'backdropClick');
+                  }}>
                   <ListItemIcon>
                     <IoMdKey />
                   </ListItemIcon>
@@ -184,7 +193,7 @@ export function FlowSettingsMenu({
               {flow.type !== 'BANKR' && flow.type !== 'RODEO' && (
                 <>
                   {(flow.type === 'FARCASTER_VERIFICATION' || defaultFlow) && (
-                    <MenuItem onClick={() => setOpenPayMeDialog(true)}>
+                    <MenuItem onClick={() => openDialog('payMe')}>
                       <ListItemIcon>
                         <IoMdSquare />
                       </ListItemIcon>
@@ -213,11 +222,7 @@ export function FlowSettingsMenu({
                       <Typography>Make default for receiving</Typography>
                     </MenuItem>
                   )}
-                  <MenuItem
-                    onClick={async (event) => {
-                      setWalletAnchorEl(event.currentTarget);
-                      setOpenWalletDetailsPopover(true);
-                    }}>
+                  <MenuItem onClick={() => openDialog('balanceInfo')}>
                     <ListItemIcon>
                       <IoIosWallet />
                     </ListItemIcon>
@@ -228,8 +233,8 @@ export function FlowSettingsMenu({
                       alignItems="center">
                       <Typography>
                         {flow.type === 'FARCASTER_VERIFICATION' || flow.type === 'CONNECTED'
-                          ? 'Wallets'
-                          : 'Smart Wallets'}
+                          ? 'Wallets Balance'
+                          : 'Smart Wallets Balance'}
                       </Typography>
                       <AvatarGroup
                         max={4}
@@ -261,7 +266,7 @@ export function FlowSettingsMenu({
                   {flow.type !== 'CONNECTED' && flow.wallets[0].version?.endsWith('_0.7') && (
                     <MenuItem
                       disabled={!profile?.earlyFeatureAccess}
-                      onClick={() => setOpenPermissionsDialog(true)}>
+                      onClick={() => openDialog('permissions')}>
                       <ListItemIcon>
                         <AutoMode sx={{ fontSize: 20 }} />
                       </ListItemIcon>
@@ -291,23 +296,22 @@ export function FlowSettingsMenu({
       </Menu>
 
       <PayMeDialog
-        open={openPayMeDialog}
-        onClose={() => setOpenPayMeDialog(false)}
+        open={activeDialog === 'payMe'}
+        onClose={() => setActiveDialog('none')}
         flow={flow}
         profile={profile}
       />
 
-      <WalletsInfoPopover
-        open={openWalletDetailsPopover}
-        onClose={async () => setOpenWalletDetailsPopover(false)}
-        anchorEl={walletAnchorEl}
+      <WalletBalanceDialog
+        open={activeDialog === 'balanceInfo'}
+        onClose={() => setActiveDialog('none')}
         flow={flow}
         balanceFetchResult={{ isLoading, isFetched, balances }}
       />
 
       <WalletPermissionsDialog
-        open={openPermissionsDialog}
-        onClose={() => setOpenPermissionsDialog(false)}
+        open={activeDialog === 'permissions'}
+        onClose={() => setActiveDialog('none')}
         flow={flow}
       />
     </>

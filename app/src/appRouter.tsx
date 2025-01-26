@@ -23,6 +23,8 @@ const LazyPreferredTokens = lazy(() => import('./pages/settings/PreferredTokensP
 const LazyFarcasterClientPage = lazy(() => import('./pages/settings/FarcasterClientPage'));
 const LazyNotifications = lazy(() => import('./pages/StoragePage'));
 const LazyStats = lazy(() => import('./pages/stats'));
+const LazyCreatePayflowWallet = lazy(() => import('./pages/CreatePayflowWallet'));
+const LazyCreateWalletSession = lazy(() => import('./pages/CreateWalletSession'));
 // Wrapper component for lazy-loaded components
 const LazyWrapper = ({
   component: Component,
@@ -99,6 +101,14 @@ export const appRouter = createBrowserRouter([
         path: '/jar/:uuid',
         element: <LazyWrapper component={LazyJar} />,
         errorElement: <LazyWrapper component={LazyPage404} />
+      },
+      {
+        path: '/~/create-payflow-wallet',
+        element: <LazyWrapper component={LazyCreatePayflowWallet} />
+      },
+      {
+        path: '/~/create-wallet-session/:address',
+        element: <LazyWrapper component={LazyCreateWalletSession} />
       },
       { path: '404', element: <LazyWrapper component={LazyPage404} /> },
       { path: '*', element: <Navigate to="/404" replace /> }

@@ -1,4 +1,4 @@
-import LoadingButton, { LoadingButtonProps } from '@mui/lab/LoadingButton';
+import LoadingButton, { ButtonProps } from '@mui/lab/LoadingButton';
 import { CircularProgress, Stack, Typography } from '@mui/material';
 import { useSwitchChain } from 'wagmi';
 
@@ -7,7 +7,7 @@ export function LoadingSwitchChainButton({
   onSuccess,
   lazy = true,
   ...props
-}: { chainId: number; onSuccess?: () => void; lazy?: boolean } & LoadingButtonProps) {
+}: { chainId: number; onSuccess?: () => void; lazy?: boolean } & ButtonProps) {
   const { switchChainAsync, isPending, isError, chains } = useSwitchChain({
     mutation: { onSuccess }
   });

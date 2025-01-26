@@ -22,7 +22,6 @@ import { ProfileContext } from '../contexts/UserContext';
 import { ProfileType } from '@payflow/common';
 import { ProfileMenu } from '../components/menu/ProfileMenu';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
-import PayflowBalanceDialog from '../components/dialogs/PayflowBalanceDialog';
 import { useTokenPrices } from '../utils/queries/prices';
 import { IoHomeOutline, IoHomeSharp, IoSearch, IoSearchOutline } from 'react-icons/io5';
 
@@ -174,7 +173,7 @@ export default function App() {
     needRefresh: [needRefresh]
   } = useRegisterSW();
 
-  const [showCreatePayflowBalance, setCreateShowPayflowBalance] = useState(false);
+  const [showCreatePayflowBalance, setCreateShowPayflowBalance] = useState();
 
   useEffect(() => {
     if (!profile || location.pathname !== '/') {
@@ -199,8 +198,8 @@ export default function App() {
               variant="outlined"
               size="small"
               onClick={() => {
-                setCreateShowPayflowBalance(true);
                 toast.dismiss();
+                navigate('/~/create-payflow-wallet');
               }}
               color="inherit"
               sx={{
@@ -421,14 +420,6 @@ export default function App() {
             setOpenSearchIdentity(false);
             setBottonToolbarActionValue(0);
           }}
-        />
-      )}
-
-      {profile && showCreatePayflowBalance && (
-        <PayflowBalanceDialog
-          open={true}
-          profile={profile}
-          closeStateCallback={() => setCreateShowPayflowBalance(false)}
         />
       )}
     </ProfileContext.Provider>

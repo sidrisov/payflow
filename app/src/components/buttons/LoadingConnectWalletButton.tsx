@@ -37,7 +37,6 @@ export function LoadingConnectWalletButton({
       variant="outlined"
       loading={isModalOpen}
       size="large"
-      color="inherit"
       {...props}
       onClick={async () => {
         if (isEmbeddedSigner) {
@@ -53,7 +52,7 @@ export function LoadingConnectWalletButton({
           }, 100);
         }
       }}
-      sx={{ mt: 3, mb: 1, borderRadius: 5 }}>
+      sx={{ mt: 3, mb: 1 }}>
       {title ?? 'Connect Wallet'}
     </LoadingButton>
   );

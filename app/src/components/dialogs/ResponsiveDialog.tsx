@@ -51,16 +51,17 @@ const ResponsiveDialog: React.FC<ResponsiveDialogProps> = ({
       disableSwipeToOpen={true}
       PaperProps={{
         sx: {
-          borderTopLeftRadius: 25,
-          borderTopRightRadius: 25,
-          height
+          height,
+          m: 1,
+          p: 1,
+          pb: 0.5
         }
       }}
       ModalProps={{
-        sx: { zIndex, backdropFilter: 'blur(3px)' }
+        sx: { zIndex }
       }}>
       <Puller />
-      <Box p={2} pt={1} pb={3}>
+      <Box>
         <DialogTitle variant="h6" textAlign="center" sx={{ pb: 1 }}>
           {title}
         </DialogTitle>
@@ -79,16 +80,16 @@ const ResponsiveDialog: React.FC<ResponsiveDialogProps> = ({
       disableAutoFocus
       open={open}
       onClose={onClose}
-      PaperProps={{
-        sx: {
-          width,
-          height,
-          borderRadius: 5
+      slotProps={{
+        paper: {
+          sx: {
+            width,
+            height
+          }
         }
       }}
       sx={{
-        zIndex,
-        backdropFilter: 'blur(3px)'
+        zIndex
       }}>
       <DialogTitle variant="h6" textAlign="center" sx={{ pb: 1 }}>
         {title}

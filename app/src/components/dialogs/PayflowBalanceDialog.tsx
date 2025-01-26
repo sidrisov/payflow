@@ -36,6 +36,7 @@ import { HiOutlineCheckCircle } from 'react-icons/hi';
 import { IoMdKey } from 'react-icons/io';
 import { ProfileContext } from '../../contexts/UserContext';
 import { isBrowser } from 'react-device-detect';
+import ResponsiveDialog from './ResponsiveDialog';
 
 export type PayflowBalanceDialogProps = DialogProps &
   CloseCallbackType & {
@@ -67,7 +68,7 @@ export default function PayflowBalanceDialog({
 
   const navigate = useNavigate();
 
-  const [walletTitle, setWalletTitle] = useState<string>('Payflow Balance');
+  const [walletTitle, setWalletTitle] = useState<string>('Payflow Balance v2');
 
   const [showSuccessDialog, setShowSuccessDialog] = useState<boolean>(false);
   const [createdFlow, setCreatedFlow] = useState<FlowType | null>(null);
@@ -140,21 +141,12 @@ export default function PayflowBalanceDialog({
       disableEnforceFocus
       onClose={handleCloseCampaignDialog}
       {...props}
-      PaperProps={{
-        sx: {
-          ...(!isMobile && {
-            borderRadius: 5,
-            minWidth: 360
-          })
-        }
-      }}
       sx={{
-        zIndex: 1450,
-        backdropFilter: 'blur(3px)'
+        zIndex: 1450
       }}>
       <BackDialogTitle
         showOnDesktop
-        title="New Payflow Balance"
+        title="New Payflow Balance v2"
         closeStateCallback={closeStateCallback}
       />
 
@@ -176,11 +168,6 @@ export default function PayflowBalanceDialog({
               value={walletTitle}
               onChange={(e) => setWalletTitle(e.target.value)}
               placeholder="Payflow Balance v2"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 3
-                }
-              }}
             />
 
             <Typography fontWeight="bold" color={grey[400]}>
@@ -193,11 +180,11 @@ export default function PayflowBalanceDialog({
               justifyContent="space-between"
               p={2}
               sx={{
-                height: 75,
+                height: 60,
                 width: '100%',
                 color: 'inherit',
                 border: 1.5,
-                borderRadius: 5,
+                borderRadius: '16px',
                 borderColor: 'divider'
               }}>
               <Stack direction="row" spacing={1} alignItems="center">
@@ -242,11 +229,11 @@ export default function PayflowBalanceDialog({
                 justifyContent="space-between"
                 p={2}
                 sx={{
-                  height: 65,
+                  height: 60,
                   width: '100%',
                   color: 'inherit',
                   border: 1.5,
-                  borderRadius: 5,
+                  borderRadius: '16px',
                   borderColor: 'divider'
                 }}>
                 <Stack direction="row" width="100%" spacing={1} alignItems="center">
@@ -271,11 +258,11 @@ export default function PayflowBalanceDialog({
                 justifyContent="space-between"
                 p={2}
                 sx={{
-                  height: 65,
+                  height: 60,
                   width: '100%',
                   color: 'inherit',
                   border: 1.5,
-                  borderRadius: 5,
+                  borderRadius: '16px',
                   borderColor: 'divider'
                 }}>
                 <Stack direction="row" spacing={1} alignItems="center">
@@ -304,7 +291,6 @@ export default function PayflowBalanceDialog({
               disabled={extraSigner && address === profile.identity}
               fullWidth
               variant="outlined"
-              color="inherit"
               loadingIndicator={
                 <Stack direction="row" spacing={1} alignItems="center">
                   <CircularProgress color="inherit" size={16} />
@@ -323,7 +309,7 @@ export default function PayflowBalanceDialog({
               onClick={async () => {
                 await createMainFlow();
               }}
-              sx={{ mt: 3, mb: 1, borderRadius: 5 }}>
+              sx={{ mt: 3, mb: 1 }}>
               Complete
             </LoadingButton>
           ) : (
@@ -333,94 +319,74 @@ export default function PayflowBalanceDialog({
       </DialogContent>
     </Dialog>
   ) : (
-    <Dialog
+    <ResponsiveDialog
       open={showSuccessDialog}
       onClose={() => {
         setShowSuccessDialog(false);
         navigate(0);
-      }}
-      PaperProps={{
-        sx: {
-          borderRadius: 5,
-          maxWidth: 350
-        }
-      }}
-      sx={{
-        zIndex: 1451,
-        backdropFilter: 'blur(3px)'
       }}>
-      <DialogContent>
-        <Stack spacing={2} alignItems="center" py={3}>
-          <HiOutlineCheckCircle style={{ fontSize: 65, color: green.A700, marginBottom: 1 }} />
-          <Typography fontSize={18} fontWeight="bold" textAlign="center">
-            <i>
-              <b>{walletTitle}</b>
-            </i>{' '}
-            flow was successfully created!
-          </Typography>
+      <Stack spacing={2} alignItems="center" py={3}>
+        <HiOutlineCheckCircle style={{ fontSize: 65, color: green.A700, marginBottom: 1 }} />
+        <Typography fontSize={18} fontWeight="bold" textAlign="center">
+          <i>
+            <b>{walletTitle}</b>
+          </i>{' '}
+          was created!
+        </Typography>
 
-          {(!isFrameV2 || isBrowser) &&
-            extraSigner &&
-            address &&
-            connector?.id === 'io.privy.wallet' && (
-              <Button
-                startIcon={<IoMdKey />}
-                onClick={() => linkPasskey()}
-                variant="text"
-                color="inherit"
-                sx={{
-                  borderRadius: 3,
-                  textTransform: 'none',
-                  width: 150
-                }}>
-                Add Passkey
-              </Button>
-            )}
+        {(!isFrameV2 || isBrowser) &&
+          extraSigner &&
+          address &&
+          connector?.id === 'io.privy.wallet' && (
+            <Button
+              startIcon={<IoMdKey />}
+              onClick={() => linkPasskey()}
+              variant="text"
+              color="inherit"
+              sx={{
+                width: 150
+              }}>
+              Add Passkey
+            </Button>
+          )}
 
-          <Stack direction="row" spacing={1} width="100%">
-            <Button
-              fullWidth
-              variant="outlined"
-              size="small"
-              color="inherit"
-              onClick={() => {
-                navigate('/payment/create?recipient=' + createdFlow?.wallets?.[0].address);
-              }}
-              sx={{
-                height: 45,
-                borderRadius: 3,
-                textTransform: 'none',
-                fontSize: 14,
-                fontWeight: 'normal',
-                '&:hover': { backgroundColor: 'action.hover' },
-                borderColor: 'divider'
-              }}>
-              Top Up
-            </Button>
-            <Button
-              fullWidth
-              variant="outlined"
-              size="small"
-              color="inherit"
-              onClick={() => {
-                closeStateCallback();
-                setShowSuccessDialog(false);
-                navigate(0);
-              }}
-              sx={{
-                height: 45,
-                borderRadius: 3,
-                textTransform: 'none',
-                fontSize: 14,
-                fontWeight: 'normal',
-                '&:hover': { backgroundColor: 'action.hover' },
-                borderColor: 'divider'
-              }}>
-              Continue
-            </Button>
-          </Stack>
+        <Stack direction="row" spacing={1} width="100%">
+          <Button
+            fullWidth
+            variant="outlined"
+            size="small"
+            color="inherit"
+            onClick={() => {
+              navigate('/payment/create?recipient=' + createdFlow?.wallets?.[0].address);
+            }}
+            sx={{
+              height: 45,
+              fontSize: 14,
+              fontWeight: 'normal',
+              '&:hover': { backgroundColor: 'action.hover' },
+              borderColor: 'divider'
+            }}>
+            Top Up
+          </Button>
+          <Button
+            fullWidth
+            variant="outlined"
+            size="small"
+            color="inherit"
+            onClick={() => {
+              navigate('/~/create-wallet-session/' + createdFlow?.wallets?.[0].address);
+            }}
+            sx={{
+              height: 45,
+              fontSize: 14,
+              fontWeight: 'normal',
+              '&:hover': { backgroundColor: 'action.hover' },
+              borderColor: 'divider'
+            }}>
+            Permissions
+          </Button>
         </Stack>
-      </DialogContent>
-    </Dialog>
+      </Stack>
+    </ResponsiveDialog>
   );
 }

@@ -122,10 +122,9 @@ export default function PreferredFlowPage() {
 
           <Button
             variant="outlined"
-            color="inherit"
             onClick={updatePreferredFlow}
             disabled={!selectedFlow}
-            sx={{ borderRadius: 3, px: 3 }}>
+            sx={{ px: 3 }}>
             Update
           </Button>
         </Stack>

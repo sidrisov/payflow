@@ -19,7 +19,7 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 import { ProfileContext } from '../../contexts/UserContext';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
-import {FlowType, IdentityType, SelectedIdentityType } from '@payflow/common';
+import { FlowType, IdentityType, SelectedIdentityType } from '@payflow/common';
 import { ChooseFlowDialog } from '../dialogs/ChooseFlowDialog';
 import { FlowTopUpMenu } from '../menu/FlowTopUpMenu';
 import WalletQRCodeShareDialog from '../dialogs/WalletQRCodeShareDialog';
@@ -226,7 +226,7 @@ export function AccountCard({
             width="100%"
             height={50}>
             {isLoading || !totalBalance ? (
-              <Skeleton variant="rectangular" height={50} width={120} sx={{ borderRadius: 3 }} />
+              <Skeleton variant="rectangular" height={50} width={120} />
             ) : (
               <Typography
                 fontSize={40}

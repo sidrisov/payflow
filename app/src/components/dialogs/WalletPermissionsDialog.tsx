@@ -109,15 +109,9 @@ export function WalletPermissionsDialog({ open, onClose, flow }: Props) {
     return Number((spentBig * BigInt(100)) / limitBig);
   };
 
-  const handlePermissionSelect = (type: 'sudo' | 'spend') => {
-    setShowAddPermission(false);
-    // TODO: Handle creating new permission based on type
-    console.log('Selected permission type:', type);
-  };
-
   return (
     <>
-      <ResponsiveDialog title="Permission Sessions" open={open} onClose={onClose} width={400}>
+      <ResponsiveDialog title="Permission Sessions" open={open} onClose={onClose}>
         <Box display="flex" flexDirection="column" gap={2} p={2} width="100%">
           {loadingSessions ? (
             <LinearProgress
@@ -294,15 +288,8 @@ export function WalletPermissionsDialog({ open, onClose, flow }: Props) {
             ))
           )}
 
-          <Button
-            variant="contained"
-            onClick={() => setShowAddPermission(true)}
-            sx={{
-              borderRadius: 3,
-              bgcolor: green.A700,
-              textTransform: 'none'
-            }}>
-            Add new session
+          <Button variant="contained" onClick={() => setShowAddPermission(true)}>
+            New session
           </Button>
         </Box>
       </ResponsiveDialog>

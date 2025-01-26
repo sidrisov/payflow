@@ -1,8 +1,7 @@
-import { Avatar, Button } from '@mui/material';
 import { ButtonProps } from '@mui/material';
 
 import FrameV2SDK from '@farcaster/frame-sdk';
-import { SignInResult } from '@farcaster/frame-core/dist/actions/signIn';
+import { SignInResult } from '@farcaster/frame-core/dist/actions/SignIn';
 import { Address } from 'viem';
 import FarcasterAvatar from '../avatars/FarcasterAvatar';
 import LoadingButton from '@mui/lab/LoadingButton';

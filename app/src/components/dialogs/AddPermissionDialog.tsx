@@ -29,8 +29,6 @@ import axios from 'axios';
 import { API_URL } from '../../utils/urlConstants';
 import { CustomLoadingButton } from '../buttons/LoadingPaymentButton';
 import { addDays } from 'date-fns';
-/* import { TokenSelect } from '../inputs/TokenSelect';
-import { TokenAmountInput } from '../inputs/TokenAmountInput'; */
 
 type PermissionType = 'sudo' | 'spend';
 
@@ -48,7 +46,7 @@ interface Props {
 
 export function AddPermissionDialog({ flow, open, onClose, onSuccess }: Props) {
   const { profile } = useContext(ProfileContext);
-  const [selectedType, setSelectedType] = useState<PermissionType | null>(null);
+  const [selectedType, setSelectedType] = useState<PermissionType | null>('sudo');
   const [spendLimits, setSpendLimits] = useState<SpendLimit[]>([{ token: '', amount: '' }]);
 
   const [openConnectSignerDrawer, setOpenConnectSignerDrawer] = useState(false);
@@ -71,6 +69,7 @@ export function AddPermissionDialog({ flow, open, onClose, onSuccess }: Props) {
         // If no signer or addresses don't match, show connect drawer
         if (!signer || flow.signer.toLowerCase() !== signer.account.address.toLowerCase()) {
           setOpenConnectSignerDrawer(true);
+          console.log('openConnectSignerDrawer', openConnectSignerDrawer);
         }
       }
     }, 500);
@@ -217,8 +216,7 @@ export function AddPermissionDialog({ flow, open, onClose, onSuccess }: Props) {
         onClose={() => {
           setSelectedType(null);
           onClose();
-        }}
-        width={320}>
+        }}>
         <List disablePadding dense sx={{ p: 0.5, width: '100%', gap: 1 }}>
           <ListItemButton onClick={() => setSelectedType('sudo')} sx={{ borderRadius: 5 }}>
             <ListItemIcon>
@@ -278,19 +276,22 @@ export function AddPermissionDialog({ flow, open, onClose, onSuccess }: Props) {
 
   return (
     <ResponsiveDialog
-      title={selectedType === 'sudo' ? 'Sudo Access' : 'Spending Limits'}
+      title={selectedType === 'sudo' ? 'Sudo Access Session' : 'Spending Limits Session'}
       open={open}
       onClose={() => {
         setSelectedType(null);
         onClose();
-      }}
-      width={400}>
+      }}>
       <Box display="flex" flexDirection="column" gap={2} width="100%" p={2}>
         {selectedType === 'sudo' ? (
           <ListItemText
             secondary={
-              <Typography textAlign="center" fontSize={14} color="text.secondary">
-                The session will be granted full wallet access!
+              <Typography
+                textAlign="center"
+                fontSize={14}
+                color="text.secondary"
+                sx={{ textWrap: 'balance' }}>
+                The session will be granted <b>full wallet access for 7 days</b>!
               </Typography>
             }
           />
@@ -346,11 +347,13 @@ export function AddPermissionDialog({ flow, open, onClose, onSuccess }: Props) {
 
         <CustomLoadingButton
           size="medium"
+          variant="contained"
           title="Create"
           loading={isCreatingSession}
           status={isCreatingSession ? 'Creating ...' : ''}
           onClick={handleCreateSubmit}
           borderRadius={3}
+          sx={{ mb: 0 }}
         />
       </Box>
       <ConnectSignerDialog

@@ -1,13 +1,20 @@
-import { Popover, PopoverProps, Stack, Typography } from '@mui/material';
+import { Stack } from '@mui/material';
 import { WalletSection } from '../WalletSection';
 import { FlowType, FlowWalletType } from '@payflow/common';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
+import ResponsiveDialog from '../dialogs/ResponsiveDialog';
 
-export function WalletsInfoPopover({
+export function WalletBalanceDialog({
+  open,
+  onClose,
   flow,
-  balanceFetchResult,
-  ...props
-}: PopoverProps & { flow: FlowType; balanceFetchResult: BalanceFetchResultType }) {
+  balanceFetchResult
+}: {
+  open: boolean;
+  onClose: () => void;
+  flow: FlowType;
+  balanceFetchResult: BalanceFetchResultType;
+}) {
   function calculateBalance(wallet: FlowWalletType) {
     if (balanceFetchResult && balanceFetchResult.balances) {
       return balanceFetchResult.balances
@@ -20,21 +27,18 @@ export function WalletsInfoPopover({
       return 'N/A';
     }
   }
+
   return (
-    <Popover
-      elevation={15}
-      {...props}
-      sx={{ mt: 1, '.MuiPopover-paper': { borderRadius: 5 }, zIndex: 1500 }}
-      anchorOrigin={{
-        vertical: 'bottom',
-        horizontal: 'left'
-      }}>
-      <Stack m={1} spacing={0.5} direction="column">
-        <Typography fontWeight="bold" fontSize={16} textAlign="center" color="grey">
-          {flow.type === 'FARCASTER_VERIFICATION' || flow.type === 'CONNECTED'
-            ? 'Wallets'
-            : 'Smart Wallets'}
-        </Typography>
+    <ResponsiveDialog
+      open={open}
+      onClose={onClose}
+      title={
+        flow.type === 'FARCASTER_VERIFICATION' || flow.type === 'CONNECTED'
+          ? 'Wallets Balance'
+          : 'Smart Wallets Balance'
+      }
+      width={360}>
+      <Stack spacing={0.5} direction="column">
         {flow.wallets.map((wallet) => (
           <WalletSection
             key={`wallet_popover_list_${wallet.network}`}
@@ -43,6 +47,6 @@ export function WalletsInfoPopover({
           />
         ))}
       </Stack>
-    </Popover>
+    </ResponsiveDialog>
   );
 }

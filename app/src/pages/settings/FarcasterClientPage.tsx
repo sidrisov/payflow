@@ -97,11 +97,7 @@ export default function FarcasterClientPage() {
           {FARCASTER_CLIENTS.map((client) => renderClientOption(client, setSelectedClient))}
         </Stack>
 
-        <Button
-          variant="outlined"
-          color="inherit"
-          onClick={() => updateClient(selectedClient)}
-          sx={{ borderRadius: 3 }}>
+        <Button variant="outlined" onClick={() => updateClient(selectedClient)}>
           Update
         </Button>
       </Stack>
