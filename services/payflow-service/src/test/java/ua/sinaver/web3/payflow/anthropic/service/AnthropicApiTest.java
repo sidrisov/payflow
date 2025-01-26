@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Slf4j
-@SpringJUnitConfig(classes = {AnthropicAgentService.class, TokenService.class, AnthropicApiTest.TestConfig.class})
+@SpringJUnitConfig(classes = { AnthropicAgentService.class, TokenService.class, AnthropicApiTest.TestConfig.class })
 @TestPropertySource(locations = "classpath:application.properties")
 public class AnthropicApiTest {
 
@@ -565,6 +565,126 @@ public class AnthropicApiTest {
 		assertEquals(10, recipients.get(2).get("amount"));
 		assertEquals("tn100x", recipients.get(2).get("token"));
 		assertEquals(5112, recipients.get(2).get("chainId"));
+	}
+
+	@Test
+	public void testNoReplyForMintingInfo() throws JsonProcessingException {
+		String conversationJson = """
+				{
+				  "conversation": {
+					"cast": {
+					  "author": {
+						"fid": 1,
+						"username": "heyake",
+						"displayName": "Heyake"
+					  },
+					  "text": "I just minted @dante20's Chromatic souls: Rodeo posts #92 on @rodeodotclub\\n\\n@payflow cast action lets you mint or gift collectibles with 30+ tokens cross-chain! cc: @sinaver",
+					  "mentionedProfiles": [
+						{
+						  "fid": 2,
+						  "username": "dante20",
+						  "displayName": "Dante"
+						},
+						{
+						  "fid": 3,
+						  "username": "rodeodotclub",
+						  "displayName": "Rodeo"
+						},
+						{
+						  "fid": 4,
+						  "username": "sinaver",
+						  "displayName": "Sinaver"
+						}
+					  ],
+					  "directReplies": []
+					},
+					"chronologicalParentCasts": []
+				  }
+				}
+				""";
+
+		val response = anthropicAgentService.processPaymentInput(
+				List.of(AnthropicAgentService.Message.builder()
+						.role("user")
+						.content(List.of(
+								AnthropicAgentService.Message.Content.builder()
+										.type("text")
+										.text(String.format("""
+												```json
+												%s
+												```""", conversationJson))
+										.build()))
+						.build()));
+
+		assertNotNull(response);
+		assertEquals("tool_use", response.getStopReason());
+		assertNotNull(response.getContent());
+
+		// Verify no_reply tool was used
+		val noReplyContent = response.getContent().stream()
+				.filter(content -> "tool_use".equals(content.getType()) &&
+						"no_reply".equals(content.getName()))
+				.findFirst()
+				.orElse(null);
+
+		assertNotNull(noReplyContent, "Expected no_reply tool to be used");
+		val reason = (String) noReplyContent.getInput().get("reason");
+		assertNotNull(reason);
+	}
+
+	@Test
+	public void testNoReplyForRaffleAnnouncement() throws JsonProcessingException {
+		String conversationJson = """
+				{
+				  "conversation": {
+					"cast": {
+					  "author": {
+						"fid": 1,
+						"username": "bizarrebeast",
+						"displayName": "BizarreBeasts"
+					  },
+					  "text": "🎉 BizarreBeasts x dGEN1 Raffle! 🎉\\n\\nEnter the BizarreBeasts x dGEN1 Raffle for a chance to win:\\n1) OG Edition dGEN1 pre-order NFT (.1419 ETH)\\n2) BizarreBeasts Custom PFP 2-pack (.1 ETH)\\n\\nHow to Enter:\\n1) Follow @bizarrebeast and /bizarrebeasts\\n2) Join the raffle for 100 DEGEN per entry using one of the following methods:\\n- tip 100 DEGEN per entry in the comments\\n- use my @payflow frame to send 100 DEGEN per entry (check comments below)",
+					  "mentionedProfiles": [
+						{
+						  "fid": 2,
+						  "username": "payflow",
+						  "displayName": "Payflow"
+						}
+					  ],
+					  "directReplies": []
+					},
+					"chronologicalParentCasts": []
+				  }
+				}
+				""";
+
+		val response = anthropicAgentService.processPaymentInput(
+				List.of(AnthropicAgentService.Message.builder()
+						.role("user")
+						.content(List.of(
+								AnthropicAgentService.Message.Content.builder()
+										.type("text")
+										.text(String.format("""
+												```json
+												%s
+												```""", conversationJson))
+										.build()))
+						.build()));
+
+		assertNotNull(response);
+		assertEquals("tool_use", response.getStopReason());
+		assertNotNull(response.getContent());
+
+		// Verify no_reply tool was used
+		val noReplyContent = response.getContent().stream()
+				.filter(content -> "tool_use".equals(content.getType()) &&
+						"no_reply".equals(content.getName()))
+				.findFirst()
+				.orElse(null);
+
+		assertNotNull(noReplyContent, "Expected no_reply tool to be used");
+		val reason = (String) noReplyContent.getInput().get("reason");
+		assertNotNull(reason);
 	}
 
 	@Configuration

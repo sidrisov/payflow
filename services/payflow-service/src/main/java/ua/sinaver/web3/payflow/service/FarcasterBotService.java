@@ -275,6 +275,11 @@ public class FarcasterBotService {
 		for (val content : response.getContent()) {
 			if ("tool_use".equals(content.getType())) {
 				switch (content.getName()) {
+					case "no_reply" -> {
+						val reason = (String) content.getInput().get("reason");
+						rejectJob(job, "Agent chose not to reply: " + reason, null);
+						return;
+					}
 					case "get_granted_session" -> {
 						if (session == null) {
 							rejectJob(job, "No active session found",
@@ -461,7 +466,7 @@ public class FarcasterBotService {
 
 								castText = String.format("""
 													@%s, complete payment manually:
-													
+
 													If you want to process payments automatically, create a %s in the app!
 												""",
 										cast.author().username(),

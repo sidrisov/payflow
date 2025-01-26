@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 public class AnthropicAgentService {
 
 	private static final String CORE_PROMPT = """
-			``` Payflow Agent Prompt v0.0.8 ```
+			``` Payflow Agent Prompt v0.0.9 ```
 
 			You're Payflow Agent - an AI companion for Onchain Social Payments on Farcaster.
 
@@ -116,7 +116,17 @@ public class AnthropicAgentService {
 
 	private static final String SERVICES_PROMPT = """
 			Available Services Agent Prompt:
-			1. Send payments
+			1. No Reply
+			   - Use when no response should be given:
+			   		- when query is not related to available services
+					- nothing is inquired or asked from agent directly
+					- user mentions payflow app or agent on using it for something
+					- user shares that you can use payflow for something, e.g. to paticipate in raffle
+			   - Use tool: no_reply
+			   - Input: reason for not replying
+			   - Example: when query is not related to available services, or nothing is inquired or asked from agent
+
+			2. Send payments
 			   - Understand the user payment request and process it
 			   - Make sure user explicitly asks to make a payment
 			   - Aggregates multiple payments into single tool call
@@ -142,21 +152,21 @@ public class AnthropicAgentService {
 			   - transfer @user2 50 degen - chain not passed, default to Base (8453)
 			   - send @user3 100 degen on l3 - chain l3 is passed, means Degen L3 (666666666)
 
-			2. Buy farcaster storage
+			3. Buy farcaster storage
 			   - Buy farcaster storage for your account, mentioned user, or for parent cast author
 			   - Use tool: buy_storage to reply with app frame to make storage purchase
 
-			3. Check token balance
+			4. Check token balance
 			   - Check balance of particular token
 			   - Use tool: get_wallet_token_balance to check and reply with token balance
 
-			4. Top up balance
+			5. Top up balance
 			   - Top up your Payflow Balance wallet with supported tokens, token is optional
 			   - Use tool: top_up_balance to reply with app frame to make top up
 
-			5. Minting NFTs
+			6. Minting NFTs
 			   - not yet available, but comming soon
-			6. Pay Me
+			7. Pay Me
 			   - Respond with a payment link to accept payments
 			   - Tag user in response with link to payment, if user is mentioned:
 			   		e.g. @user1 pay me 5 usdglo -> ... @user1 @alice requested payment ...
@@ -172,7 +182,7 @@ public class AnthropicAgentService {
 
 				Output:
 				- link to payment
-			7. Claim Degen or Moxie
+			8. Claim Degen or Moxie
 			   - Claim Degen or Moxie
 			   - Use tool: claim_degen_or_moxie to reply with app frame to make claim
 			""";
@@ -182,6 +192,20 @@ public class AnthropicAgentService {
 	private static final String ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 
 	private static final List<Tool> DEFAULT_TOOLS = List.of(
+			Tool.builder()
+					.name("no_reply")
+					.description("Use this when no response should be given")
+					.inputSchema(
+							Tool.InputSchema.builder()
+									.type("object")
+									.properties(Map.of(
+											"reason", Tool.InputSchema.Property.builder()
+													.type("string")
+													.description("Reason for not replying")
+													.build()))
+									.required(List.of("reason"))
+									.build())
+					.build(),
 			Tool.builder()
 					.name("send_payments")
 					.description("Send payment to one or more users")
@@ -241,20 +265,20 @@ public class AnthropicAgentService {
 					.name("get_wallet_token_balance")
 					.description("Get balance of particular token")
 					.inputSchema(Tool.InputSchema.builder().type("object").properties(
-									Map.of("token",
-											Tool.InputSchema.Property.builder().type("string")
-													.description("Token identifier like $token, token, or token address")
-													.build()))
+							Map.of("token",
+									Tool.InputSchema.Property.builder().type("string")
+											.description("Token identifier like $token, token, or token address")
+											.build()))
 							.required(List.of("token")).build())
 					.build(),
 			Tool.builder()
 					.name("top_up_balance")
 					.description("Top up your Payflow Balance")
 					.inputSchema(Tool.InputSchema.builder().type("object").properties(
-									Map.of(
-											"token",
-											Tool.InputSchema.Property.builder().type("string").description("Token to top up")
-													.build()))
+							Map.of(
+									"token",
+									Tool.InputSchema.Property.builder().type("string").description("Token to top up")
+											.build()))
 							.build())
 					.cacheControl(Map.of("type", "ephemeral"))
 					.build(),
@@ -296,9 +320,9 @@ public class AnthropicAgentService {
 					.name("claim_degen_or_moxie")
 					.description("Claim Degen or Moxie")
 					.inputSchema(Tool.InputSchema.builder().type("object").properties(Map.of(
-									"asset", Tool.InputSchema.Property.builder().type("string")
-											.description("Asset to claim")
-											.build()))
+							"asset", Tool.InputSchema.Property.builder().type("string")
+									.description("Asset to claim")
+									.build()))
 							.required(List.of("asset")).build())
 					.build());
 	private final WebClient webClient;
@@ -371,7 +395,6 @@ public class AnthropicAgentService {
 			val request = AnthropicRequest.builder()
 					.model("claude-3-5-haiku-20241022")
 					.maxTokens(4096)
-					.temperature(0.5)
 					.tools(tools)
 					.system(systemPrompt)
 					.messages(messages).build();
@@ -469,7 +492,8 @@ public class AnthropicAgentService {
 		String model;
 		@JsonProperty("max_tokens")
 		int maxTokens;
-		Double temperature;
+		@Builder.Default
+		Double temperature = 1.0;
 		List<SystemMessage> system;
 		List<Tool> tools;
 		List<Message> messages;
