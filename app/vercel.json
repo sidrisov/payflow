@@ -122,6 +122,28 @@
       "destination": "https://frames.payflow.me/v2"
     },
     {
+      "source": "/~/create-payflow-wallet",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot|got).*"
+        }
+      ],
+      "destination": "https://frames.payflow.me/~/create-payflow-wallet"
+    },
+    {
+      "source": "/~/create-wallet-session/:address",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot|got).*"
+        }
+      ],
+      "destination": "https://frames.payflow.me/~/create-wallet-session/:address"
+    },
+    {
       "source": "/(.*)",
       "destination": "/"
     }
