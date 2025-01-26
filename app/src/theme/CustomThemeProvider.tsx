@@ -69,6 +69,13 @@ function newTheme(darkMode: boolean): Theme {
           }
         }
       },
+      MuiSkeleton: {
+        styleOverrides: {
+          root: {
+            borderRadius: '16px'
+          }
+        }
+      },
       ...(darkMode
         ? {
             MuiDrawer: {

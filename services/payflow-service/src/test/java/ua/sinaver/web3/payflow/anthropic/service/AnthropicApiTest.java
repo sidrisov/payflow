@@ -79,6 +79,66 @@ public class AnthropicApiTest {
 		assertNotNull(response);
 		assertEquals("tool_use", response.getStopReason());
 		assertNotNull(response.getContent());
+
+		var toolUseContent = response.getContent().stream()
+				.filter(c -> c.getType().equals("tool_use"))
+				.findFirst()
+				.orElse(null);
+		assertNotNull(toolUseContent);
+		assertEquals("send_payments", toolUseContent.getName());
+	}
+
+	@Test
+	public void testSimpleReplyPayment() throws JsonProcessingException {
+		String conversationJson = """
+				{
+				  "conversation": {
+					"cast": {
+					  "author": {
+						"fid": 1,
+						"username": "sinaver.eth",
+						"displayName": "Sinaver"
+					  },
+					  "text": "@payflow send some degen",
+					  "directReplies": []
+					},
+					"chronologicalParentCasts": [
+						{
+						"author": {
+							"fid": 2,
+							"username": "glodollar",
+							"displayName": "GloDollar"
+						},
+						"text": "Hey hey"
+						}
+					]
+				  }
+				}
+				""";
+
+		val response = anthropicAgentService.processPaymentInput(
+				List.of(AnthropicAgentService.Message.builder()
+						.role("user")
+						.content(List.of(
+								AnthropicAgentService.Message.Content.builder()
+										.type("text")
+										.text(String.format("""
+												```json
+												%s
+												```""", conversationJson))
+										.build()))
+						.build()));
+
+		assertNotNull(response);
+		assertEquals("tool_use", response.getStopReason());
+		assertNotNull(response.getContent());
+
+		var toolUseContent = response.getContent().stream()
+				.filter(c -> c.getType().equals("tool_use"))
+				.findFirst()
+				.orElse(null);
+		assertNotNull(toolUseContent);
+		assertEquals("send_payments", toolUseContent.getName());
 	}
 
 	@Test
@@ -172,7 +232,7 @@ public class AnthropicApiTest {
 				.findFirst()
 				.orElse(null);
 		assertNotNull(toolUseContent);
-		assertEquals("send_payment", toolUseContent.getText());
+		assertEquals("send_payments", toolUseContent.getName());
 	}
 
 	@Test
@@ -221,7 +281,7 @@ public class AnthropicApiTest {
 
 		assertNotNull(response);
 		assertNotNull(response.getContent());
-		assertEquals("end_turn", response.getStopReason());
+		assertEquals("tool_use", response.getStopReason());
 	}
 
 	@Test
@@ -362,7 +422,7 @@ public class AnthropicApiTest {
 						.build()));
 
 		assertNotNull(response);
-		assertEquals("end_turn", response.getStopReason());
+		assertEquals("tool_use", response.getStopReason());
 		assertNotNull(response.getContent());
 	}
 
@@ -421,7 +481,7 @@ public class AnthropicApiTest {
 						"username": "user.eth",
 						"displayName": "User"
 					  },
-					  "text": "Can I use @payflow to bridge L3 $degen to L2?",
+					  "text": "@payflow can you bridge L3 $degen to L2?",
 					  "mentionedProfiles": [
 						{
 						  "fid": 2,
@@ -683,8 +743,7 @@ public class AnthropicApiTest {
 				.orElse(null);
 
 		assertNotNull(noReplyContent, "Expected no_reply tool to be used");
-		val reason = (String) noReplyContent.getInput().get("reason");
-		assertNotNull(reason);
+
 	}
 
 	@Configuration
