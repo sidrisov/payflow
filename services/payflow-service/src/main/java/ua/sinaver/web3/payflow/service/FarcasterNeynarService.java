@@ -2,6 +2,8 @@ package ua.sinaver.web3.payflow.service;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -9,6 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -26,16 +29,20 @@ import java.util.Collections;
 import java.util.List;
 
 import static ua.sinaver.web3.payflow.config.CacheConfig.*;
+import ua.sinaver.web3.payflow.client.NeynarClient;
 
 @Slf4j
 @Service
 public class FarcasterNeynarService {
 
-	private final WebClient neynarClient;
+	private final WebClient webClient;
+
+	@Autowired
+	private NeynarClient neynarClient;
 
 	public FarcasterNeynarService(WebClient.Builder builder,
-	                              @Value("${payflow.hub.api.key}") String hubApiKey) {
-		neynarClient = builder.baseUrl("https://api.neynar.com/v2/farcaster")
+			@Value("${payflow.hub.api.key}") String hubApiKey) {
+		webClient = builder.baseUrl("https://api.neynar.com/v2/farcaster")
 				.defaultHeader("api_key", hubApiKey)
 				.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
 				.defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
@@ -45,7 +52,7 @@ public class FarcasterNeynarService {
 	@Cacheable(value = NEYNAR_STORAGE_USAGE_CACHE, unless = "#result==null")
 	public StorageUsage fetchStorageUsage(int fid) {
 		log.debug("Calling Neynar Storage Usage API by fid {}", fid);
-		return neynarClient.get()
+		return webClient.get()
 				.uri(uriBuilder -> uriBuilder.path("/storage/usage")
 						.queryParam("fid", fid)
 						.build())
@@ -74,7 +81,7 @@ public class FarcasterNeynarService {
 	@Cacheable(value = NEYNAR_STORAGE_ALLOCATION_CACHE, unless = "#result==null")
 	public StorageAllocationsResponse fetchStorageAllocations(int fid) {
 		log.debug("Calling Neynar Storage Allocations API by fid {}", fid);
-		return neynarClient.get()
+		return webClient.get()
 				.uri(uriBuilder -> uriBuilder.path("/storage/allocations")
 						.queryParam("fid", fid)
 						.build())
@@ -101,17 +108,17 @@ public class FarcasterNeynarService {
 				.orElse(null);
 	}
 
-	@CacheEvict(value = {NEYNAR_STORAGE_USAGE_CACHE, NEYNAR_STORAGE_ALLOCATION_CACHE})
+	@CacheEvict(value = { NEYNAR_STORAGE_USAGE_CACHE, NEYNAR_STORAGE_ALLOCATION_CACHE })
 	public void clearStorageCache(int fid) {
 		log.debug("Clearing farcaster storage cache for: {}", fid);
 	}
 
 	public ValidatedFrameResponseMessage validaFrameRequest(String frameMessageInHex,
-	                                                        boolean includeChannelContext) {
+			boolean includeChannelContext) {
 		log.debug("Calling Neynar Frame Validate API for message {}",
 				frameMessageInHex);
 		try {
-			return neynarClient.post()
+			return webClient.post()
 					.uri("/frame/validate")
 					.bodyValue(new ValidateMessageRequest(true, false, true,
 							includeChannelContext, frameMessageInHex))
@@ -123,7 +130,7 @@ public class FarcasterNeynarService {
 					.bodyToMono(ValidatedFrameResponseMessage.class)
 					.retryWhen(Retry.backoff(3, Duration.ofSeconds(1))
 							.doBeforeRetry(retrySignal -> log.warn("Retrying Neynar frame " +
-											"validation request, attempt {} of 3",
+									"validation request, attempt {} of 3",
 									retrySignal.totalRetries() + 1)))
 					.block();
 		} catch (Throwable t) {
@@ -137,11 +144,11 @@ public class FarcasterNeynarService {
 	}
 
 	public CastResponseMessage cast(String signer, String message, String parentHash,
-	                                List<Cast.Embed> embeds) {
+			List<Cast.Embed> embeds) {
 		log.debug("Calling Neynar Cast API with message {}",
 				message);
 
-		val response = neynarClient.post()
+		val response = webClient.post()
 				.uri("/cast")
 				.bodyValue(new CastRequestMessage(signer, message, parentHash,
 						embeds))
@@ -177,7 +184,7 @@ public class FarcasterNeynarService {
 	public Cast fetchCastByHash(String hash) {
 		log.debug("Calling Neynar Cast API to fetch by hash {}", hash);
 		try {
-			val response = neynarClient.get()
+			val response = webClient.get()
 					.uri(uriBuilder -> uriBuilder.path("/cast")
 							.queryParam("type", "hash")
 							.queryParam("identifier", hash)
@@ -193,7 +200,7 @@ public class FarcasterNeynarService {
 
 	public List<FarcasterUser> fetchTop100Followings(int fid) {
 		log.debug("Calling Neynar Fetch Followings API by fid {}", fid);
-		return neynarClient.get()
+		return webClient.get()
 				.uri(uriBuilder -> uriBuilder.path("/following")
 						.queryParam("fid", fid)
 						.queryParam("sort_type", "algorithmic")
@@ -230,7 +237,7 @@ public class FarcasterNeynarService {
 	@Cacheable(value = NEYNAR_FARCASTER_USER_CACHE, unless = "#result==null")
 	public FarcasterUser fetchFarcasterUser(int fid) {
 		log.debug("Calling Neynar User API to fetch by fid {}", fid);
-		return neynarClient.get()
+		return webClient.get()
 				.uri(uriBuilder -> uriBuilder.path("/user/bulk")
 						.queryParam("fids", fid)
 						.build())
@@ -265,7 +272,7 @@ public class FarcasterNeynarService {
 	@Cacheable(value = NEYNAR_FARCASTER_USER_CACHE, unless = "#result==null")
 	public FarcasterUser fetchFarcasterUser(String custodyAddress) {
 		log.debug("Calling Neynar User API to fetch by custodyAddress {}", custodyAddress);
-		return neynarClient.get()
+		return webClient.get()
 				.uri(uriBuilder -> uriBuilder.path("/user/custody-address")
 						.queryParam("custody_address", custodyAddress.toLowerCase())
 						.build())
@@ -297,7 +304,7 @@ public class FarcasterNeynarService {
 
 	public List<SubscriptionsCreatedMessage.Subscription> subscriptionsCreated(int fid) {
 		log.debug("Calling Neynar Created Subscriptions API by fid {}", fid);
-		return neynarClient.get()
+		return webClient.get()
 				.uri(uriBuilder -> uriBuilder.path("/user/subscriptions_created")
 						.queryParam("fid", fid)
 						.queryParam("subscription_provider", "fabric_stp")
@@ -328,7 +335,7 @@ public class FarcasterNeynarService {
 
 	public List<SubscribersMessage.Subscriber> subscribers(int fid, boolean fabric) {
 		log.debug("Calling Neynar Subscribers[{}] API by fid {}", fabric ? "Hypersub" : "Paragraph", fid);
-		return neynarClient.get()
+		return webClient.get()
 				.uri(uriBuilder -> uriBuilder.path("/user/subscribers")
 						.queryParam("fid", fid)
 						.queryParam("subscription_provider", fabric ? "fabric_stp" : "paragraph")
@@ -361,7 +368,7 @@ public class FarcasterNeynarService {
 		log.debug("Calling Neynar Trending Casts API with channelId: {}, timeWindow: {}, limit: {}, cursor: {}",
 				channelId, timeWindow, limit, cursor);
 
-		return neynarClient.get()
+		return webClient.get()
 				.uri(uriBuilder -> {
 					uriBuilder.path("/feed/trending");
 					// uriBuilder.queryParam("provider", "openrank");
@@ -396,7 +403,7 @@ public class FarcasterNeynarService {
 		log.debug("Calling Neynar Frame Notifications API for fids: {} with notification: {}", targetFids,
 				notification);
 
-		val notificationResponse = neynarClient.post()
+		val notificationResponse = webClient.post()
 				.uri("/frame/notifications")
 				.bodyValue(new NotificationRequest(notification, targetFids))
 				.retrieve()

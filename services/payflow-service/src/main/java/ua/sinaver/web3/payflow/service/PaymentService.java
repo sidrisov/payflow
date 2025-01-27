@@ -5,15 +5,18 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionalEventListener;
 import ua.sinaver.web3.payflow.entity.Payment;
 import ua.sinaver.web3.payflow.entity.User;
 import ua.sinaver.web3.payflow.entity.Wallet;
+import ua.sinaver.web3.payflow.events.CastEvent;
 import ua.sinaver.web3.payflow.events.CreatedPaymentEvent;
 import ua.sinaver.web3.payflow.message.FramePaymentMessage;
 import ua.sinaver.web3.payflow.message.Token;
+import ua.sinaver.web3.payflow.message.farcaster.Cast;
 import ua.sinaver.web3.payflow.message.glide.GlideSessionResponse;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 
@@ -45,6 +48,10 @@ public class PaymentService {
 	private WalletService walletService;
 	@Autowired
 	private TokenPriceService tokenPriceService;
+	@Autowired
+	private ApplicationEventPublisher eventPublisher;
+	@Autowired
+	private LinkService linkService;
 
 	public static String formatNumberWithSuffix(String numberStr) {
 		double number = Double.parseDouble(numberStr);
@@ -333,6 +340,11 @@ public class PaymentService {
 			} else {
 				payment.setStatus(Payment.PaymentStatus.FAILED);
 				payment.recordFailure("failed to process payment");
+				eventPublisher.publishEvent(new CastEvent(
+						"❌ Payment failed. Click below to pay manually.",
+						payment.getSourceHash(),
+						List.of(new Cast.Embed(linkService.frameV2PaymentLink(payment).toString()))));
+				notificationService.notifyPaymentCompletion(payment, null);
 			}
 		} catch (Exception e) {
 			payment.setStatus(Payment.PaymentStatus.FAILED);

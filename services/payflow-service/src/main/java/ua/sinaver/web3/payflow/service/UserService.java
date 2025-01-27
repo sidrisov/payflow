@@ -40,7 +40,7 @@ public class UserService implements IUserService {
 	private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_-]*$");
 	private static final List<String> EARLY_FEATURE_ACCESS_USERS = Arrays.asList(
 			"sinaver", "konrad", "kurtlarsen",
-			"pirosb3", "pembe", "haole", "cashlessman", "accountless", "deodad", "skllzrmy");
+			"pirosb3", "pembe", "haole", "cashlessman", "accountless", "deodad", "skllzrmy", "amet");
 	private static final List<String> PRO_FEATURE_ACCESS_USERS = Arrays.asList(
 			"sinaver", "pembe", "haole");
 	@Value("${payflow.invitation.allowance.enabled:false}")
@@ -94,7 +94,7 @@ public class UserService implements IUserService {
 	@Override
 	@Transactional(value = Transactional.TxType.REQUIRES_NEW)
 	public User getOrCreateUserFromFarcasterProfile(FarcasterUser farcasterUser,
-	                                                boolean forceWhitelist) {
+			boolean forceWhitelist) {
 		val verifications = farcasterUser.addressesWithoutCustodialIfAvailable();
 		var profile = identityService.getProfiles(verifications)
 				.stream().findFirst().orElse(null);
@@ -142,7 +142,7 @@ public class UserService implements IUserService {
 		Date lastSeenTime = user.getLastSeen();
 
 		if (lastSeenTime == null || Duration.between(
-						lastSeenTime.toInstant(), currentTime.toInstant())
+				lastSeenTime.toInstant(), currentTime.toInstant())
 				.toHours() >= 1) {
 			user.setLastSeen(currentTime);
 			user.setAccessToken(UUID.randomUUID().toString());
@@ -151,7 +151,7 @@ public class UserService implements IUserService {
 	}
 
 	@Override
-	@CacheEvict(cacheNames = {USERS_CACHE_NAME, USER_FLOWS_CACHE}, key = "#identity")
+	@CacheEvict(cacheNames = { USERS_CACHE_NAME, USER_FLOWS_CACHE }, key = "#identity")
 	public void updateProfile(String identity, ProfileMessage profile, String invitationCode) {
 		User user = userRepository.findByIdentityIgnoreCase(identity);
 

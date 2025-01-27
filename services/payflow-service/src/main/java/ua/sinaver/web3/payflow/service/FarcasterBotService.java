@@ -25,7 +25,7 @@ import ua.sinaver.web3.payflow.events.CreatedPaymentEvent;
 import ua.sinaver.web3.payflow.events.PaymentBotJobEvent;
 import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
-import ua.sinaver.web3.payflow.message.farcaster.ConversationData;
+import ua.sinaver.web3.payflow.message.farcaster.CastConversationData;
 import ua.sinaver.web3.payflow.message.nft.ParsedMintUrlMessage;
 import ua.sinaver.web3.payflow.repository.FlowRepository;
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
@@ -33,11 +33,13 @@ import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.repository.WalletSessionRepository;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.utils.MintUrlUtils;
+import ua.sinaver.web3.payflow.client.NeynarClient;
 
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static ua.sinaver.web3.payflow.config.CacheConfig.AGENT_ATTEMPTS_CACHE;
 import static ua.sinaver.web3.payflow.service.TokenService.BASE_CHAIN_ID;
@@ -81,6 +83,9 @@ public class FarcasterBotService {
 	private NotificationService notificationService;
 	@Autowired
 	private FlowRepository flowRepository;
+
+	@Autowired
+	private NeynarClient neynarClient;
 
 	@Value("${payflow.farcaster.bot.enabled:false}")
 	private boolean isBotEnabled;
@@ -183,7 +188,7 @@ public class FarcasterBotService {
 
 			if (casterProfile == null) {
 				rejectJob(job, "Caster doesn't have payflow profile",
-						"Please, sign up first!",
+						"Please sign up first! 🌟",
 						payflowConfig.getDAppServiceUrl());
 				return;
 			}
@@ -206,42 +211,24 @@ public class FarcasterBotService {
 				.stream().findFirst().orElse(null);
 
 		var textWithReply = (String) null;
-		val parentCast = cast.parentHash() != null ? neynarService.fetchCastByHash(cast.parentHash())
-				: null;
+
+		var conversation = (CastConversationData) null;
+		var parentCasts = (List<CastConversationData.Cast>) null;
+		if (cast.parentHash() != null) {
+			conversation = neynarClient.getCastConversationByHash(cast.hash());
+			parentCasts = conversation.conversation().chronologicalParentCasts().stream()
+					.sorted((a, b) -> -1)
+					.toList();
+		} else {
+			var currentCast = new CastConversationData.Cast(
+					cast.author(),
+					cast.text(),
+					cast.mentionedProfiles(),
+					List.of());
+			conversation = new CastConversationData(new CastConversationData.Conversation(currentCast, null));
+		}
 
 		List<AnthropicAgentService.Message> inputMessages = new ArrayList<>();
-
-		var currentCast = new ConversationData.Cast(
-				new ConversationData.User(
-						cast.author().fid(),
-						cast.author().username(),
-						cast.author().displayName()),
-				cast.text(),
-				cast.mentionedProfiles().stream()
-						.map(p -> new ConversationData.User(
-								p.fid(),
-								p.username(),
-								p.displayName()))
-						.toList(),
-				List.of());
-
-		val chronologicalParentCasts = parentCast != null ? List.of(
-				new ConversationData.Cast(
-						new ConversationData.User(
-								parentCast.author().fid(),
-								parentCast.author().username(),
-								parentCast.author().displayName()),
-						parentCast.text(),
-						parentCast.mentionedProfiles().stream()
-								.map(p -> new ConversationData.User(
-										p.fid(),
-										p.username(),
-										p.displayName()))
-								.toList(),
-						null))
-				: List.<ConversationData.Cast>of();
-
-		var conversation = new ConversationData.Conversation(currentCast, chronologicalParentCasts);
 
 		try {
 			inputMessages.add(AnthropicAgentService.Message.builder()
@@ -253,7 +240,7 @@ public class FarcasterBotService {
 											```json
 											%s
 											```""",
-											objectMapper.writeValueAsString(new ConversationData(conversation))))
+											objectMapper.writeValueAsString(conversation)))
 									.build()))
 					.build());
 		} catch (JsonProcessingException e) {
@@ -283,7 +270,7 @@ public class FarcasterBotService {
 					case "get_granted_session" -> {
 						if (session == null) {
 							rejectJob(job, "No active session found",
-									"You need to create a session to grant access to one of your Payflow Balance wallets at app.payflow.me");
+									"Please create a session to grant access to your Payflow Wallet");
 							return;
 						}
 					}
@@ -294,6 +281,9 @@ public class FarcasterBotService {
 
 						recipients = recipientsData.stream()
 								.map(data -> new Recipient(
+										data.get("name") != null
+												? (String) data.get("name")
+												: null,
 										((String) data.get("username")).replace("@", ""),
 										(Integer) data.get("chainId"),
 										(String) data.get("token"),
@@ -333,15 +323,18 @@ public class FarcasterBotService {
 							List<String> receiverAddresses = null;
 							// if receiver passed fetch meta from mentions
 							String finalReceiver = recipient.username();
-							var fcProfile = cast
-									.mentionedProfiles().stream()
+							var fcProfile = conversation.conversation().cast().mentionedProfiles().stream()
 									.filter(p -> p.username().equals(finalReceiver)).findFirst().orElse(null);
 
-							if (fcProfile == null && parentCast != null) {
-								fcProfile = parentCast.author().username().equals(finalReceiver) ? parentCast.author()
-										: parentCast.mentionedProfiles().stream()
-												.filter(p -> p.username().equals(finalReceiver)).findFirst()
-												.orElse(null);
+							if (fcProfile == null
+									&& parentCasts != null && !parentCasts.isEmpty()) {
+								fcProfile = parentCasts.stream()
+										.flatMap(p -> Stream.concat(
+												Stream.of(p.author()),
+												p.mentionedProfiles().stream()))
+										.filter(p -> p.username().equals(finalReceiver))
+										.findFirst()
+										.orElse(null);
 							}
 
 							if (fcProfile == null) {
@@ -383,6 +376,7 @@ public class FarcasterBotService {
 
 							val payment = new Payment(Payment.PaymentType.INTENT, receiverProfile, token.chainId(),
 									token.id());
+							payment.setName(recipient.name());
 							payment.setReceiverAddress(receiverAddress);
 							payment.setSenderAddress(casterProfile.getIdentity());
 							payment.setSender(casterProfile);
@@ -461,7 +455,7 @@ public class FarcasterBotService {
 							} else {
 
 								val wallet = flowRepository
-										.findPayflowBalanceV2ByUserId(casterProfile.getId(), "v2");
+										.findPayflowBalanceV2ByUserId(casterProfile.getId(), "1.4.1_0.7");
 
 								var walletAddress = wallet.isPresent() ? wallet.get().getWallets().stream()
 										.filter(w -> w.getNetwork().equals(BASE_CHAIN_ID))
@@ -470,14 +464,14 @@ public class FarcasterBotService {
 										.orElse(null) : null;
 
 								castText = String.format("""
-											@%s, complete payment manually:
+										@%s, complete payment manually:
 
-											If you want to process payments automatically, create a %s in the app!
-										""",
+										To enable automatic payments, %s!
+											""",
 										cast.author().username(),
 										walletAddress != null
-												? "session for your existing Payflow Wallet"
-												: "Payflow Wallet with session");
+												? "create a session for your existing Payflow Wallet"
+												: "create a Payflow Wallet with session");
 
 								embeds = List.of(
 										new Cast.Embed(linkService.frameV2PaymentLink(payment).toString()),
@@ -508,13 +502,28 @@ public class FarcasterBotService {
 						return;
 					}
 					case "get_wallet_token_balance" -> {
+						var walletAddress = (String) null;
 						if (session == null) {
-							rejectJob(job, "No active session found",
-									"No active session found. Create a new session to grant access to Payflow Balance at app.payflow.me");
-							return;
+							val wallet = flowRepository
+									.findPayflowBalanceV2ByUserId(casterProfile.getId(), "1.4.1_0.7");
+
+							walletAddress = wallet.isPresent() ? wallet.get().getWallets().stream()
+									.filter(w -> w.getNetwork().equals(BASE_CHAIN_ID))
+									.findFirst()
+									.map(w -> w.getAddress())
+									.orElse(null) : null;
+
+							if (walletAddress == null) {
+								rejectJob(job, "No wallet found",
+										"Create your Payflow Wallet to get started! 🚀",
+										String.format("%s/~/create-payflow-wallet",
+												payflowConfig.getDAppServiceUrl()));
+								return;
+							}
+						} else {
+							walletAddress = session.getWallet().getAddress();
 						}
 
-						val sessionWalletAddress = session.getWallet().getAddress();
 						val tokenOrAddress = (String) content.getInput().get("token");
 
 						log.debug("Balance check requested for token: {}", tokenOrAddress);
@@ -538,7 +547,7 @@ public class FarcasterBotService {
 						}
 
 						val balance = walletService.getTokenBalance(
-								sessionWalletAddress, token.chainId(),
+								walletAddress, token.chainId(),
 								token.tokenAddress());
 
 						if (balance == null) {
@@ -562,13 +571,28 @@ public class FarcasterBotService {
 						return;
 					}
 					case "top_up_balance" -> {
+						var walletAddress = (String) null;
 						if (session == null) {
-							rejectJob(job, "No active session found",
-									"No active session found. Create a new session to grant access to Payflow Balance at app.payflow.me");
-							return;
+							val wallet = flowRepository
+									.findPayflowBalanceV2ByUserId(casterProfile.getId(), "1.4.1_0.7");
+
+							walletAddress = wallet.isPresent() ? wallet.get().getWallets().stream()
+									.filter(w -> w.getNetwork().equals(BASE_CHAIN_ID))
+									.findFirst()
+									.map(w -> w.getAddress())
+									.orElse(null) : null;
+
+							if (walletAddress == null) {
+								rejectJob(job, "No wallet found",
+										"Create your Payflow Wallet to get started! 🚀",
+										String.format("%s/~/create-payflow-wallet",
+												payflowConfig.getDAppServiceUrl()));
+								return;
+							}
+						} else {
+							walletAddress = session.getWallet().getAddress();
 						}
 
-						val sessionWalletAddress = session.getWallet().getAddress();
 						val tokenOrAddress = (String) content.getInput().get("token");
 
 						log.debug("Top up balance for token: {}", tokenOrAddress);
@@ -585,7 +609,7 @@ public class FarcasterBotService {
 
 						builder.queryParam("title", "💰 Top Up Balance");
 
-						val topUpFrameUrl = builder.build(sessionWalletAddress).toString();
+						val topUpFrameUrl = builder.build(walletAddress).toString();
 
 						eventPublisher.publishEvent(new CastEvent(
 								textWithReply,
@@ -654,7 +678,9 @@ public class FarcasterBotService {
 		}
 
 		// if tools were used, decrement attempts, otherwise end chat
-		if (StringUtils.equals(response.getStopReason(), "tool_use")) {
+		if (StringUtils.equals(response.getStopReason(), "tool_use"))
+
+		{
 			decrementAttempts(casterProfile);
 		} else {
 			rejectJob(job, "Ending chat", textWithReply);
@@ -1167,6 +1193,7 @@ public class FarcasterBotService {
 	}
 
 	private record Recipient(
+			String name,
 			String username,
 			Integer chainId,
 			String token,

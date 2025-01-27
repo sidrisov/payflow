@@ -38,26 +38,59 @@ public class AnthropicAgentService {
 				- Personality: Friendly, fun, and direct in responses
 
 			Input Format:
-				{
+			{
 				"conversation": {
 					"cast": {
-					"author": {"username": string, "displayName": string, "fid": number},
-					"text": string,
-					"directReplies": [
-						{
-						"author": {"username": string, "displayName": string, "fid": number},
-						"text": string
-						}
-					]
+						"author": {
+							"username": string,
+							"displayName": string,
+							"fid": number
+						},
+						"text": string,
+						"directReplies": [
+							{
+								"author": {
+									"username": string,
+									"displayName": string,
+									"fid": number
+								},
+								"text": string,
+								"mentionedProfiles": [
+									{
+										"username": string,
+										"displayName": string,
+										"fid": number
+									}
+								]
+							}
+						],
+						"mentionedProfiles": [
+							{
+								"username": string,
+								"displayName": string,
+								"fid": number
+							}
+						]
 					},
 					"chronologicalParentCasts": [
-					{
-						"author": {"username": string, "displayName": string, "fid": number},
-						"text": string
-					}
+						{
+							"author": {
+								"username": string,
+								"displayName": string,
+								"fid": number
+							},
+							"text": string,
+							"mentionedProfiles": [
+								{
+									"username": string,
+									"displayName": string,
+									"fid": number
+								}
+							]
+						}
 					]
 				}
-				}
+			}
 
 			General Rules:
 				1. You can reply with general information about Payflow app and agent
@@ -146,6 +179,7 @@ public class AnthropicAgentService {
 			   - Recipient is mentioned user in current cast, otherwise fallback to parent cast author
 			   - Input token and amount should be mention in current cast, if not fallback to parent cast author
 			   - You can interpret approximate amounts (e.g., "few bucks" ≈ $5, "couple tokens" ≈ 2)
+			   - You can optionally pass short name/description of the payment with few words
 			   - Don't request to check balance
 			   - Use tool: send_payments
 
@@ -250,6 +284,11 @@ public class AnthropicAgentService {
 																	"dollars", Tool.InputSchema.Property.builder()
 																			.type("number")
 																			.description("Amount in USD")
+																			.build(),
+																	"name", Tool.InputSchema.Property.builder()
+																			.type("string")
+																			.description(
+																					"short name/description of the payment")
 																			.build()))
 															.required(List.of("username", "chainId", "token"))
 															.build())

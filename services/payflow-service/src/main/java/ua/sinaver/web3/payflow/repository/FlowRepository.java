@@ -13,11 +13,12 @@ public interface FlowRepository extends CrudRepository<Flow, Integer> {
 			    SELECT DISTINCT f FROM Flow f
 			    JOIN f.wallets w
 			    WHERE f.userId = :userId
+			    AND f.archived = false
+			    AND f.disabled = false
 			    AND w.walletVersion = :version
 				AND w.network = 8453
-			    AND f.disabled = false
 			    AND w.disabled = false
-			    AND (f.type = 'REGULAR' OR f.type is NULL)
+			    AND (f.type = 'REGULAR' OR f.type IS NULL)
 			    ORDER BY f.createdDate DESC
 				LIMIT 1
 			""")

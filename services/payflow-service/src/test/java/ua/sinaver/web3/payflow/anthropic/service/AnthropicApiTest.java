@@ -15,7 +15,6 @@ import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.web.reactive.function.client.WebClient;
-import ua.sinaver.web3.payflow.message.farcaster.ConversationData;
 import ua.sinaver.web3.payflow.service.AnthropicAgentService;
 import ua.sinaver.web3.payflow.service.TokenService;
 
@@ -34,8 +33,6 @@ public class AnthropicApiTest {
 	private String anthropicApiKey;
 	@Autowired
 	private AnthropicAgentService anthropicAgentService;
-	@Autowired
-	private ObjectMapper objectMapper;
 
 	@Test
 	public void testSimplePayment() throws JsonProcessingException {
@@ -566,18 +563,44 @@ public class AnthropicApiTest {
 
 	@Test
 	public void testMultiTokenPayment() throws JsonProcessingException {
-		var conversation = new ConversationData(
-				new ConversationData.Conversation(
-						new ConversationData.Cast(
-								new ConversationData.User(1, "user.eth", "User"),
-								"@payflow send 10 degen to @jacek, and 10 degen on degen l3 to @accountless.eth, and also 10 tn100x on Ham to @deployer",
-								List.of(
-										new ConversationData.User(2, "jacek", "Jacek"),
-										new ConversationData.User(3, "accountless.eth", "Accountless"),
-										new ConversationData.User(4, "deployer", "Deployer"),
-										new ConversationData.User(5, "payflow", "Payflow")),
-								List.of()),
-						List.of()));
+		String conversationJson = """
+				{
+				  "conversation": {
+					"cast": {
+					  "author": {
+						"fid": 1,
+						"username": "user.eth",
+						"displayName": "User"
+					  },
+					  "text": "@payflow send 10 degen to @jacek, and 10 degen on degen l3 to @accountless.eth, and also 10 tn100x on Ham to @deployer",
+					  "mentionedProfiles": [
+						{
+						  "fid": 2,
+						  "username": "jacek",
+						  "displayName": "Jacek"
+						},
+						{
+						  "fid": 3,
+						  "username": "accountless.eth",
+						  "displayName": "Accountless"
+						},
+						{
+						  "fid": 4,
+						  "username": "deployer",
+						  "displayName": "Deployer"
+						},
+						{
+						  "fid": 5,
+						  "username": "payflow",
+						  "displayName": "Payflow"
+						}
+					  ],
+					  "directReplies": []
+					},
+					"chronologicalParentCasts": []
+				  }
+				}
+				""";
 
 		val response = anthropicAgentService.processPaymentInput(
 				List.of(AnthropicAgentService.Message.builder()
@@ -588,7 +611,7 @@ public class AnthropicApiTest {
 										.text(String.format("""
 												```json
 												%s
-												```""", objectMapper.writeValueAsString(conversation)))
+												```""", conversationJson))
 										.build()))
 						.build()));
 

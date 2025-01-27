@@ -20,12 +20,16 @@ public interface WalletSessionRepository extends JpaRepository<WalletSession, Lo
 
 	WalletSession findOneBySessionIdAndActiveTrue(String sessionId);
 
-	@Query("SELECT ws FROM WalletSession ws " +
-			"JOIN ws.wallet w " +
-			"JOIN w.flow f " +
-			"WHERE f.userId = :userId " +
-			"AND ws.active = TRUE " +
-			"AND ws.expiresAt > :now")
+	@Query("""
+			SELECT ws FROM WalletSession ws
+			JOIN ws.wallet w
+			JOIN w.flow f
+			WHERE f.userId = :userId
+			AND ws.active = true
+			AND f.archived = false
+			AND f.disabled = false
+			AND ws.expiresAt > :now
+			""")
 	List<WalletSession> findActiveSessionsByUser(Integer userId, Instant now);
 
 	default List<WalletSession> findActiveSessionsByUser(User user) {

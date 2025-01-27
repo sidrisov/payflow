@@ -84,7 +84,14 @@ function Payment({
 
   return (
     <Card theme={theme}>
-      <p style={{ fontSize: 60, fontWeight: 'bold', fontStyle: 'italic', color: textColor }}>
+      <p
+        style={{
+          fontSize: 60,
+          fontWeight: 'bold',
+          color: textColor,
+          textAlign: 'center',
+          textWrap: 'balance'
+        }}>
         {title}
       </p>
       <div
