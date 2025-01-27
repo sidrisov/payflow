@@ -269,12 +269,7 @@ export default function App() {
             mb={bottomToolbarEnabled ? 7.5 : 0}
             sx={{
               overflowX: 'hidden',
-              overflowY: 'auto',
-              '&::-webkit-scrollbar': {
-                display: 'none'
-              },
-              msOverflowStyle: 'none', // IE and Edge
-              scrollbarWidth: 'none' // Firefox
+              overflowY: 'scroll'
             }}>
             <Outlet />
           </Box>
@@ -300,8 +295,8 @@ export default function App() {
                 }}
                 sx={{
                   ...(isMobile
-                    ? { width: '100%', borderTopLeftRadius: 25, borderTopRightRadius: 25 }
-                    : { maxWidth: 350, mx: 5, mb: 1, borderRadius: 10 }),
+                    ? { width: '100%', borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }
+                    : { maxWidth: 350, mx: 5, mb: 1 }),
                   '& .MuiBottomNavigationAction-root': {
                     minWidth: 'auto'
                   },

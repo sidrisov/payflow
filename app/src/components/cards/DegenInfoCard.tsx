@@ -122,12 +122,7 @@ export function DegenInfoCard() {
               <ArrowBackIos fontSize="small" />
             </IconButton>
             {isFetchingAllowance || isFetchingPoints ? (
-              <Skeleton
-                variant="rectangular"
-                width={100}
-                height={60}
-                sx={{ borderRadius: '15px' }}
-              />
+              <Skeleton variant="rectangular" width={100} height={60} />
             ) : degenPoints ? (
               <Stack m={1} direction="row" alignItems="center" justifyContent="center" spacing={1}>
                 <Typography variant="h4" fontWeight="bold" sx={{ color: 'inherit' }}>
@@ -138,8 +133,7 @@ export function DegenInfoCard() {
                     size="small"
                     variant="outlined"
                     color="inherit"
-                    onClick={() => setOpenClaimPointsDialog(true)}
-                    sx={{ borderRadius: 3 }}>
+                    onClick={() => setOpenClaimPointsDialog(true)}>
                     Claim
                   </Button>
                 )}

@@ -9,11 +9,11 @@ import {
   Typography,
   SxProps
 } from '@mui/material';
-import { Share, CallReceived } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
 import { useContext, useMemo, useState, useCallback, useRef, lazy, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { Address } from 'viem';
-import { TbSelector, TbSend } from 'react-icons/tb';
+import { TbSelector, TbSend, TbPlus, TbSwitch } from 'react-icons/tb';
 import { useSwipeable } from 'react-swipeable';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 
@@ -29,6 +29,8 @@ import { PaymentFlowSection } from '../PaymentFlowSection';
 import { formatAmountWithSuffix } from '../../utils/formats';
 import { ActionButton } from '../buttons/ActionButton';
 import { PayMeDialog } from '../dialogs/PayMeDialog';
+import { GoArrowSwitch } from 'react-icons/go';
+import { HiOutlineSwitchHorizontal } from 'react-icons/hi';
 
 const LazyPaymentDialog = lazy(() => import('../payment/PaymentDialog'));
 
@@ -194,30 +196,33 @@ export function AccountCard({
             }
           }}
           {...swipeHandlers}>
-          <Box
-            width="100%"
-            display="flex"
-            flexDirection="row"
-            justifyContent="space-between"
-            alignItems="center">
-            <Stack direction="row" alignItems="center" spacing={0.5}>
-              <PaymentFlowSection navigation flow={selectedFlow} />
-              <Tooltip title={balanceVisible ? 'Hide Balance' : 'Show Balance'}>
-                <IconButton size="small" onClick={handleBalanceVisibilityToggle}>
-                  {balanceVisible ? (
-                    <VisibilityOff sx={{ fontSize: 16 }} />
-                  ) : (
-                    <Visibility sx={{ fontSize: 16 }} />
-                  )}
-                </IconButton>
-              </Tooltip>
-            </Stack>
-            <Tooltip title="Payment Wallets">
-              <IconButton size="small" color="inherit" onClick={() => setOpenSelectFlow(true)}>
-                <TbSelector size={20} />
+          <Stack width="100%" direction="row" alignItems="center" spacing={0.5}>
+            <Tooltip title="Switch Payment Wallet">
+              <Box
+                onClick={() => setOpenSelectFlow(true)}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  cursor: 'pointer',
+                  '&:hover': {
+                    opacity: 0.8
+                  }
+                }}>
+                <GoArrowSwitch size={20} />
+                <PaymentFlowSection navigation flow={selectedFlow} />
+              </Box>
+            </Tooltip>
+            <Tooltip title={balanceVisible ? 'Hide Balance' : 'Show Balance'}>
+              <IconButton size="small" onClick={handleBalanceVisibilityToggle}>
+                {balanceVisible ? (
+                  <VisibilityOff sx={{ fontSize: 16 }} />
+                ) : (
+                  <Visibility sx={{ fontSize: 16 }} />
+                )}
               </IconButton>
             </Tooltip>
-          </Box>
+          </Stack>
 
           <Box
             display="flex"
@@ -242,21 +247,17 @@ export function AccountCard({
             )}
             <Stack direction="row" spacing={1}>
               <ActionButton
-                tooltip="Receive funds"
+                title="Add"
+                tooltip="Add crypto"
                 onClick={handleReceive}
-                icon={<CallReceived />}
+                icon={<TbPlus />}
               />
               <ActionButton
-                tooltip="Send"
+                title="Pay"
+                tooltip="Pay with crypto"
                 disabled={selectedFlow.type === 'BANKR' || selectedFlow.type === 'RODEO'}
                 onClick={handleSend}
                 icon={<TbSend />}
-              />
-              <ActionButton
-                tooltip="Share"
-                disabled={selectedFlow.type === 'BANKR' || selectedFlow.type === 'RODEO'}
-                onClick={handleShare}
-                icon={<Share />}
               />
             </Stack>
           </Box>

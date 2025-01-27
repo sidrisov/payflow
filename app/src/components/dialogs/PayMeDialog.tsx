@@ -102,7 +102,6 @@ export function PayMeDialog({ open, onClose, profile, flow }: PayMeDialogProps) 
             position: 'relative',
             width: '100%',
             paddingTop: '66.67%',
-            borderRadius: 3,
             border: '1px solid',
             borderColor: 'divider',
             overflow: 'hidden'

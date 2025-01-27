@@ -19,13 +19,12 @@ import { PaymentFlowSection } from '../PaymentFlowSection';
 import ResponsiveDialog, { ResponsiveDialogProps } from './ResponsiveDialog';
 import { FaCheckCircle, FaRegCircle } from 'react-icons/fa';
 import { HiOutlineDownload } from 'react-icons/hi';
-import { CreateFlowDialog } from './CreateFlowDialog';
-import { useAccount } from 'wagmi';
 import { SUPPORTED_CHAINS } from '../../utils/networks';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
 import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
 import { IoWallet } from 'react-icons/io5';
 import { useWallets } from '@privy-io/react-auth';
+import { useNavigate } from 'react-router-dom';
 
 export type ChooseFlowMenuProps = ResponsiveDialogProps &
   CloseCallbackType & {
@@ -48,14 +47,13 @@ export function ChooseFlowDialog({
   ...props
 }: ChooseFlowMenuProps) {
   const { profile } = useContext(ProfileContext);
-  const { address: connectedAddress, connector } = useAccount();
   const { wallets } = useWallets();
   const [openFlowSettingsMenu, setOpenFlowSettingsMenu] = useState<boolean>(false);
   const [flowAnchorEl, setFlowAnchorEl] = useState<null | HTMLElement>(null);
   const [archivedExpanded, setArchivedExpanded] = useState<boolean>(false);
   const [selectedElement, setSelectedElement] = useState<HTMLLIElement | null>(null);
   const [menuFlow, setMenuFlow] = useState<FlowType | null>(null);
-  const [showCreateFlow, setShowCreateFlow] = useState(false);
+  const navigate = useNavigate();
 
   // Load selected flow from localStorage on component mount
   useEffect(() => {
@@ -95,6 +93,11 @@ export function ChooseFlowDialog({
   // Separate the flows
   const { regular, farcaster, bankr, rodeo, legacy, archived } = useMemo(
     () => separateFlows(flows),
+    [flows]
+  );
+
+  const hasPayflowBalance = useMemo(
+    () => flows.some((flow) => flow.wallets.some((w) => w.version === '1.4.1_0.7')),
     [flows]
   );
 
@@ -232,7 +235,7 @@ export function ChooseFlowDialog({
               pr={1}
               sx={{
                 overflowY: 'scroll',
-                '-webkit-overflow-scrolling': 'touch'
+                scrollbarWidth: 'thin'
               }}>
               {renderConnectedWalletItems()}
               <Stack
@@ -243,20 +246,24 @@ export function ChooseFlowDialog({
                 <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
                   Payflow Wallets
                 </Typography>
-                <IconButton
-                  size="small"
-                  onClick={() => setShowCreateFlow(true)}
-                  sx={{
-                    border: 1,
-                    borderColor: 'divider',
-                    borderRadius: 3,
-                    '&:hover': {
-                      backgroundColor: 'action.hover',
-                      borderColor: green.A700
-                    }
-                  }}>
-                  <Add fontSize="small" />
-                </IconButton>
+                {configurable && !hasPayflowBalance && (
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      navigate('/~/create-payflow-wallet');
+                    }}
+                    sx={{
+                      border: 1,
+                      borderColor: 'divider',
+                      borderRadius: 3,
+                      '&:hover': {
+                        backgroundColor: 'action.hover',
+                        borderColor: green.A700
+                      }
+                    }}>
+                    <Add fontSize="small" />
+                  </IconButton>
+                )}
               </Stack>
               {regular && regular.length > 0 ? (
                 regular.map(renderMenuItem)
@@ -312,16 +319,6 @@ export function ChooseFlowDialog({
             </Stack>
           </MenuList>
         </ResponsiveDialog>
-
-        <CreateFlowDialog
-          open={showCreateFlow}
-          profile={profile}
-          onClose={() => {}}
-          closeStateCallback={() => {
-            setShowCreateFlow(false);
-            closeStateCallback();
-          }}
-        />
 
         {menuFlow && (
           <FlowSettingsMenu

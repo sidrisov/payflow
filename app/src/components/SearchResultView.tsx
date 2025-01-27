@@ -97,15 +97,7 @@ export function SearchResultView({
               justifyContent="flex-start"
               sx={{
                 ...(showHorizantally && {
-                  overflowX: 'scroll',
-                  scrollbarWidth: 'auto', // Hide the scrollbar for firefox
-                  '&::-webkit-scrollbar': {
-                    display: 'none' // Hide the scrollbar for WebKit browsers (Chrome, Safari, Edge, etc.)
-                  },
-                  '&-ms-overflow-style:': {
-                    display: 'none' // Hide the scrollbar for IE
-                  },
-                  '-webkit-overflow-scrolling': 'touch' // Improve scrolling on iOS
+                  overflowX: 'scroll'
                 })
               }}>
               {mergedIdentities.slice(0, page * pageSize).map(({ identity, view }) => (

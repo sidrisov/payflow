@@ -39,6 +39,7 @@ function newTheme(darkMode: boolean): Theme {
         styleOverrides: {
           root: {
             borderRadius: '16px',
+            backdropFilter: 'blur(2px)',
             m: 1
           }
         }
@@ -50,14 +51,22 @@ function newTheme(darkMode: boolean): Theme {
           },
           paperFullScreen: {
             borderRadius: '0px'
-          }
-        }
-      },
-      MuiModal: {
-        styleOverrides: {
+          },
           root: {
             backdropFilter: 'blur(2px)'
           }
+        }
+      },
+      MuiDrawer: {
+        styleOverrides: {
+          root: {
+            backdropFilter: 'blur(2px)'
+          },
+          paper: darkMode
+            ? {
+                backgroundColor: '#242424'
+              }
+            : {}
         }
       },
       MuiTextField: {
@@ -75,18 +84,7 @@ function newTheme(darkMode: boolean): Theme {
             borderRadius: '16px'
           }
         }
-      },
-      ...(darkMode
-        ? {
-            MuiDrawer: {
-              styleOverrides: {
-                paper: {
-                  backgroundColor: '#242424'
-                }
-              }
-            }
-          }
-        : {})
+      }
     }
   });
 }
@@ -97,7 +95,49 @@ export default function CustomThemeProvider(props: any) {
       <CssBaseline />
       <GlobalStyles
         styles={{
-          body: { backgroundColor: props.darkMode ? '#242424' : '#f8fafc' }
+          body: {
+            backgroundColor: props.darkMode ? '#242424' : '#f8fafc',
+            scrollbarWidth: 'thin',
+            scrollbarColor: `${props.darkMode ? green[500] : green[400]} transparent`,
+            WebkitOverflowScrolling: 'touch'
+          },
+          // mobile scrolling
+          '@media (max-width: 768px)': {
+            '*': {
+              msOverflowStyle: 'none',
+              WebkitOverflowScrolling: 'touch',
+              scrollSnapType: 'x proximity',
+              '& > *': {
+                scrollSnapAlign: 'start'
+              },
+              scrollbarWidth: 'none',
+              '&::-webkit-scrollbar': {
+                display: 'none'
+              },
+              '-webkit-overflow-scrolling': 'touch',
+              overscrollBehavior: 'none',
+              touchAction: 'pan-x pan-y'
+            }
+          },
+          // desktop scrolling
+          '@media (min-width: 769px)': {
+            '*::-webkit-scrollbar': {
+              width: '8px',
+              height: '8px'
+            },
+            '*::-webkit-scrollbar-track': {
+              background: 'transparent',
+              border: '4px solid transparent'
+            },
+            '*::-webkit-scrollbar-thumb': {
+              background: props.darkMode ? green[500] : green[400],
+              borderRadius: '4px',
+              border: '2px solid transparent'
+            },
+            '*::-webkit-scrollbar-thumb:hover': {
+              background: props.darkMode ? green[400] : green[300]
+            }
+          }
         }}
       />
       {props.children}

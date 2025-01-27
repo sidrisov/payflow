@@ -104,17 +104,7 @@ export default function PreferredFlowPage() {
             sx={{
               height: '400px',
               overflowY: 'scroll',
-              px: 0.5,
-              '&::-webkit-scrollbar': {
-                width: '5px'
-              },
-              '&::-webkit-scrollbar-track': {
-                background: 'transparent'
-              },
-              '&::-webkit-scrollbar-thumb': {
-                background: (theme) => theme.palette.divider,
-                borderRadius: '4px'
-              }
+              px: 0.5
             }}>
             {renderFlowSection(regular, 'Native')}
             {renderFlowSection(farcaster, 'Farcaster Verified')}

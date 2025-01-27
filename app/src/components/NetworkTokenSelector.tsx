@@ -462,10 +462,7 @@ export function NetworkTokenSelector({
                 sx={{
                   mt: 1,
                   pb: 1,
-                  overflowX: 'auto',
-                  '-webkit-overflow-scrolling': 'touch',
-                  '&::-webkit-scrollbar': { display: 'none' },
-                  scrollbarWidth: 'none'
+                  overflowX: 'scroll'
                 }}>
                 <Chip
                   label="All"
@@ -492,7 +489,7 @@ export function NetworkTokenSelector({
             maxHeight={450}
             sx={{
               overflowY: 'scroll',
-              '-webkit-overflow-scrolling': 'touch'
+              scrollbarWidth: 'thin'
             }}>
             <MenuList dense disablePadding>
               {renderTokenList(preferredTokens, 'Preferred Tokens')}

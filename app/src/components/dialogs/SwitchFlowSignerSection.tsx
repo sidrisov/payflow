@@ -30,8 +30,6 @@ export function SwitchFlowSignerSection({
     <Button
       fullWidth
       variant="outlined"
-      color="inherit"
-      size="large"
       onClick={async () => {
         if (flow.signerProvider === 'privy') {
           if (!authenticated) {
@@ -68,8 +66,7 @@ export function SwitchFlowSignerSection({
         }
 
         onSwitch?.();
-      }}
-      sx={{ borderRadius: 5 }}>
+      }}>
       Connect
     </Button>
   );

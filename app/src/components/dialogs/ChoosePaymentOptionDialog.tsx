@@ -23,9 +23,7 @@ const paymentOptionButton = (
     }}
     sx={{
       p: 1,
-      borderRadius: 5,
       border: 1.5,
-      textTransform: 'none',
       borderColor: 'divider',
       '&:hover': { borderStyle: 'dashed', borderColor: 'inherit' }
     }}>

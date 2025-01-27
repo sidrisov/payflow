@@ -204,8 +204,7 @@ export function ChooseTokenMenu({
         <Stack
           maxHeight={350}
           sx={{
-            overflowY: 'scroll',
-            '-webkit-overflow-scrolling': 'touch'
+            overflowY: 'scroll'
           }}>
           {preferredTokens.length > 0 && renderTokenList(preferredTokens, 'Preferred Tokens')}
           {otherTokens.length > 0 && (

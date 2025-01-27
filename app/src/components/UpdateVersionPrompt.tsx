@@ -54,7 +54,6 @@ export const UpdateVersionPrompt = () => {
       variant="contained"
       disabled={isUpdating}
       sx={{
-        borderRadius: 5,
         textTransform: 'none',
         fontSize: 12,
         color: 'black',

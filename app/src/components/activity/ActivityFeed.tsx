@@ -85,12 +85,7 @@ export default function ActivityFeed({ identity, selectedChain }: AssetsProps) {
         spacing={1}
         sx={{
           flexGrow: 1,
-          overflowY: 'auto',
-          '&::-webkit-scrollbar': {
-            display: 'none'
-          },
-          msOverflowStyle: 'none',
-          scrollbarWidth: 'none'
+          overflowY: 'scroll'
         }}>
         {isLoadingData ? (
           <Box display="flex" justifyContent="center" p={2}>

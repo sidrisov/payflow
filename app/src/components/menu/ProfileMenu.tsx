@@ -74,7 +74,7 @@ export function ProfileMenu({
   return (
     <>
       <ResponsiveDialog
-        {...(isMobile ? { height: 500 } : {})}
+        {...(isMobile && { height: 500 })}
         open={Boolean(props.open)}
         onClose={closeStateCallback}
         title="Profile">

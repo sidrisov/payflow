@@ -72,7 +72,6 @@ export default function Accounts() {
             <Tabs
               value={activeTab}
               centered
-              textColor="inherit"
               onChange={(_, newValue) => setActiveTab(newValue)}
               TabIndicatorProps={{ sx: { display: 'none' } }}
               sx={{
@@ -82,9 +81,6 @@ export default function Accounts() {
                   fontSize: 14,
                   fontWeight: 'bold',
                   borderRadius: 5
-                },
-                '& .Mui-selected': {
-                  color: green.A700
                 }
               }}>
               <Tab icon={<MdOutlinePlaylistAddCheck size={20} />} label="Activity" />

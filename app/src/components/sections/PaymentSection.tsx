@@ -77,15 +77,7 @@ export function PaymentSection({ type }: PaymentSectionProps) {
       spacing: 1,
       sx: {
         overflowY: 'scroll',
-        maxHeight: 'calc(100vh - 300px)',
-        scrollbarWidth: 'auto',
-        '&::-webkit-scrollbar': {
-          display: 'none'
-        },
-        '&-ms-overflow-style:': {
-          display: 'none'
-        },
-        '-webkit-overflow-scrolling': 'touch'
+        maxHeight: 'calc(100vh - 300px)'
       }
     };
 

@@ -127,15 +127,9 @@ export function AddressBookToolBar({
       justifyContent="flex-start"
       sx={{
         overflowX: 'scroll',
-        scrollbarWidth: 'auto', // Hide the scrollbar for firefox
         '&::-webkit-scrollbar': {
-          display: 'none' // Hide the scrollbar for WebKit browsers (Chrome, Safari, Edge, etc.)
-        },
-        '&-ms-overflow-style:': {
-          display: 'none' // Hide the scrollbar for IE
-        },
-        '-webkit-overflow-scrolling': 'touch', // Improve scrolling on iOS
-        borderRadius: 20
+          display: 'none'
+        }
       }}>
       <AddressBookChip
         key="all"

@@ -33,8 +33,6 @@ export function LoadingSwitchChainButton({
       fullWidth
       variant="outlined"
       loading={isPending && !isError}
-      size="large"
-      color="inherit"
       loadingIndicator={
         <Stack direction="row" spacing={1} alignItems="center">
           <CircularProgress color="inherit" size={16} />
@@ -54,7 +52,7 @@ export function LoadingSwitchChainButton({
           await switchChainAsync?.({ chainId });
         }
       }}
-      sx={{ my: 1, borderRadius: 5 }}>
+      sx={{ my: 1 }}>
       Switch to {chainName}
     </LoadingButton>
   );

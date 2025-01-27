@@ -61,15 +61,7 @@ export function ProfileSection({
         spacing={0.1}
         alignItems="flex-start"
         sx={{
-          overflowX: 'scroll',
-          scrollbarWidth: 'auto', // Hide the scrollbar for firefox
-          '&::-webkit-scrollbar': {
-            display: 'none' // Hide the scrollbar for WebKit browsers (Chrome, Safari, Edge, etc.)
-          },
-          '&-ms-overflow-style:': {
-            display: 'none' // Hide the scrollbar for IE
-          },
-          '-webkit-overflow-scrolling': 'touch' // Improve scrolling on iOS
+          overflowX: 'scroll'
         }}>
         <Typography noWrap variant="subtitle2" fontSize={fontSize}>
           {profile?.username}

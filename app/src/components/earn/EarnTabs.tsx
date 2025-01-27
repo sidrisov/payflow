@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, Tab, Stack } from '@mui/material';
-import { green } from '@mui/material/colors';
 import { MoxieInfoCard } from '../cards/MoxieInfoCard';
 import { DegenInfoCard } from '../cards/DegenInfoCard';
-/* import { ZoraInfoCard } from '../cards/ZoraInfoCard';
-import { HypersubInfoCard } from '../cards/HypersubInfoCard'; */
 
 interface EarnTabsProps {
   tab?: string;
@@ -59,12 +56,10 @@ export function EarnTabs({ tab }: EarnTabsProps) {
               backgroundColor: 'rgba(0, 0, 0, 0.04)'
             },
             '&.Mui-selected': {
-              color: green.A700,
               fontWeight: 'bolder'
             }
           },
           '& .MuiTabs-indicator': {
-            backgroundColor: green.A700,
             height: 3,
             borderRadius: '3px'
           },

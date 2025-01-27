@@ -126,7 +126,7 @@ export function FarcasterAccountsCard({
         flexDirection="column"
         alignItems="center"
         justifyContent="space-between">
-        <Stack spacing={1} sx={{ my: 3, py: 1, overflowY: 'auto', height: 275, width: '100%' }}>
+        <Stack spacing={1} sx={{ my: 3, py: 1, overflowY: 'scroll', height: 275, width: '100%' }}>
           {loading ? (
             <LoadingFarcasterAccountsSkeleton />
           ) : identities && identities.length > 0 ? (

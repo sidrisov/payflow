@@ -21,7 +21,6 @@ type ActionButtonProps = {
 export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
   ({ icon, title, border = true, tooltip, tooltipProps, onClick, ...props }, ref) => {
     const buttonStyle = {
-      borderRadius: 5,
       ...(border && { border: 1 })
     };
 
@@ -36,22 +35,17 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
         ref={ref}
         variant="text"
         color="inherit"
+        size="large"
         startIcon={icon}
         onClick={handleClick}
         sx={{
-          ...buttonStyle,
-          textTransform: 'none'
+          ...buttonStyle
         }}
         {...(props as ButtonProps)}>
         {title}
       </Button>
     ) : (
-      <IconButton
-        color="inherit"
-        ref={ref}
-        sx={buttonStyle}
-        onClick={handleClick}
-        {...(props as IconButtonProps)}>
+      <IconButton ref={ref} sx={buttonStyle} onClick={handleClick} {...(props as IconButtonProps)}>
         {icon}
       </IconButton>
     );
