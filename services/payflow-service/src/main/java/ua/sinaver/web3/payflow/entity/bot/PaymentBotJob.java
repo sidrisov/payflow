@@ -9,7 +9,7 @@ import lombok.ToString;
 import org.hibernate.annotations.Type;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
 
-import java.util.Date;
+import java.time.Instant;
 
 @ToString
 @Setter
@@ -38,19 +38,22 @@ public class PaymentBotJob {
 	@Column(columnDefinition = "json")
 	private Cast cast;
 
-	@Column(name = "casted_date", nullable = false)
+	@Column(name = "casted_at", nullable = false)
 	@Temporal(TemporalType.TIMESTAMP)
-	private Date castedDate;
+	private Instant castedAt;
+	
+	@Column(name = "created_at", nullable = false)
+	@Temporal(TemporalType.TIMESTAMP)
+	private Instant createdAt = Instant.now();
 
 	@Column(columnDefinition = "VARCHAR(256)", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Status status = Status.CREATED;
 
-	public PaymentBotJob(String castHash, Integer casterFid, Date castedDate,
-	                     Cast cast) {
+	public PaymentBotJob(String castHash, Integer casterFid, Instant castedAt, Cast cast) {
 		this.castHash = castHash;
 		this.casterFid = casterFid;
-		this.castedDate = castedDate;
+		this.castedAt = castedAt;
 		this.cast = cast;
 	}
 

@@ -128,7 +128,7 @@ public class AnthropicAgentService {
 				12. Payment flow lists & balance
 				13. Contact book across farcaster and other social graph data (your wallets, recent, transacted, favourites
 				14. App settings:
-				- preferred payment flow (default receiving and spending wallet)
+				- preferred payment wallet (default receiving and spending wallet)
 				- preferred tokens list (shown in user frame or in the token selection dialog)
 				- preferred farcaster client (for cast action installation)
 

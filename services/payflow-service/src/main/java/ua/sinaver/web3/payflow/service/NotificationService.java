@@ -564,18 +564,16 @@ public class NotificationService {
 				payment.getReceiver() != null ? payment.getReceiver().getIdentity() : payment.getReceiverAddress());
 		if (StringUtils.isNotBlank(receiverFid)) {
 			val messageText = String.format("""
-							You received reward %s %s%s for %s%s 🎁
+							You received %s %s reward%s for %s 🎁
 
 							%s
 							🧾 Receipt: %s""",
-					receiverFname,
 					StringUtils.isNotBlank(payment.getTokenAmount())
 							? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 							: String.format("$%s", payment.getUsdAmount()),
 					payment.getToken().toUpperCase(),
 					formatFromPart(senderFname),
 					rewardReason,
-					commentText,
 					sourceRefText,
 					receiptService.getReceiptUrl(payment));
 
@@ -587,7 +585,7 @@ public class NotificationService {
 	                                    String commentText, String sourceRefText, String rewardReason,
 	                                    List<Cast.Embed> embeds) {
 		val castText = String.format("""
-						@%s, you received reward %s %s for %s%s 🎁""",
+						@%s, you received %s %s reward%s for %s 🎁""",
 				receiverFname,
 				StringUtils.isNotBlank(payment.getTokenAmount())
 						? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())

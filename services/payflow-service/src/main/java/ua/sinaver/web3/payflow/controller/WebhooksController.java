@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,15 +24,12 @@ import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.service.FarcasterMessagingService;
 import ua.sinaver.web3.payflow.service.IdentityService;
 
-import org.springframework.context.ApplicationEventPublisher;
-
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
-import java.util.Date;
 import java.util.UUID;
 
 import static ua.sinaver.web3.payflow.service.FarcasterBotService.BOT_FID;
@@ -122,7 +120,7 @@ public class WebhooksController {
 							!cast.text().matches("([\"'`])@payflow.*?\\1"))) {
 				val job = new PaymentBotJob(cast.hash(),
 						cast.author().fid(),
-						Date.from(Instant.parse(cast.timestamp())),
+						Instant.parse(cast.timestamp()),
 						cast);
 
 				// Save without explicit flush since transaction will handle it

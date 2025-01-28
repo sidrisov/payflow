@@ -15,12 +15,10 @@ import java.util.stream.Stream;
 
 @Repository
 public interface PaymentBotJobRepository extends JpaRepository<PaymentBotJob, Long> {
-	Optional<PaymentBotJob> findFirstByOrderByCastedDateDesc();
-
 	// JPA: UPGRADE_SKIPLOCKED - PESSIMISTIC_WRITE
 	@QueryHints(@QueryHint(name = AvailableSettings.JAKARTA_LOCK_TIMEOUT, value = "-2"))
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	Stream<PaymentBotJob> findTop10ByStatusOrderByCastedDateAsc(PaymentBotJob.Status status);
+	Stream<PaymentBotJob> findTop10ByStatusOrderByCastedAtAsc(PaymentBotJob.Status status);
 
 	@QueryHints(@QueryHint(name = AvailableSettings.JAKARTA_LOCK_TIMEOUT, value = "-2"))
 	@Query("SELECT j FROM PaymentBotJob j WHERE j.id = :id")
