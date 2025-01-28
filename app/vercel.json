@@ -100,6 +100,17 @@
       "destination": "https://frames.payflow.me/moxie"
     },
     {
+      "source": "/farcaster/storage",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot|got).*"
+        }
+      ],
+      "destination": "https://frames.payflow.me/farcaster/storage"
+    },
+    {
       "source": "/:username",
       "has": [
         {
@@ -142,17 +153,6 @@
         }
       ],
       "destination": "https://frames.payflow.me/~/create-wallet-session/:address"
-    },
-    {
-      "source": "/farcaster/storage",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot|got).*"
-        }
-      ],
-      "destination": "https://frames.payflow.me/farcaster/storage"
     },
     {
       "source": "/(.*)",
