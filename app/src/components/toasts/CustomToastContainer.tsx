@@ -20,8 +20,7 @@ export default function CustomToastContainer() {
       }}
       bodyStyle={{
         textAlign: 'center',
-        textWrap: 'wrap',
-        whiteSpace: 'nowrap'
+        textWrap: 'balance'
       }}
       style={{
         minWidth: 200,

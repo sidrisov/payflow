@@ -245,7 +245,10 @@ export default function BuyFanTokenDialog({
           senderFlow={selectedFlow}
           onSuccess={setPaymentSuccessData}
           onError={(error) => {
-            toast.error(`Failed to buy fan tokens!`);
+            toast.error(`Failed to buy fan tokens:\n"${error.message}"`, {
+              autoClose: false,
+              closeButton: true
+            });
             console.error('Failed to buy fan tokens with error', error);
           }}
         />

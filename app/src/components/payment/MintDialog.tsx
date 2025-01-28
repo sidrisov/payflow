@@ -251,7 +251,10 @@ export default function MintDialog({
           senderFlow={selectedFlow}
           onSuccess={setPaymentSuccessData}
           onError={(error) => {
-            toast.error(`Failed to mint "${mint.metadata.name}"`, { autoClose: 2000 });
+            toast.error(`Failed to mint "${mint.metadata.name}":\n"${error.message}"`, {
+              autoClose: false,
+              closeButton: true
+            });
             console.error(`Failed to mint with error`, error);
           }}
         />
