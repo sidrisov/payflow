@@ -124,7 +124,10 @@ export default function BuyStorageDialog({
           senderFlow={selectedFlow}
           onSuccess={setPaymentSuccessData}
           onError={(error) => {
-            toast.error(`Failed to pay for storage!`);
+            toast.error(`Failed to pay for storage:\n"${error.message}"`, {
+              autoClose: false,
+              closeButton: true
+            });
             console.error('Failed to pay for storage with error', error);
           }}
         />

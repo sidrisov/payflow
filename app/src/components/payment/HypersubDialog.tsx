@@ -174,9 +174,13 @@ export default function HypersubDialog({
           senderFlow={selectedFlow}
           onSuccess={setPaymentSuccessData}
           onError={(error) => {
-            toast.error(`Failed to subscribe to "${hypersub.metadata?.name}"`, {
-              autoClose: 2000
-            });
+            toast.error(
+              `Failed to subscribe to "${hypersub.metadata?.name}":\n"${error.message}"`,
+              {
+                autoClose: false,
+                closeButton: true
+              }
+            );
             console.error(`Failed to subscribe with error`, error);
           }}
         />
