@@ -84,6 +84,20 @@ function newTheme(darkMode: boolean): Theme {
             borderRadius: '16px'
           }
         }
+      },
+      MuiChip: {
+        styleOverrides: {
+          root: ({ ownerState }) => ({
+            borderRadius: ownerState.size === 'small' ? '8px' : '12px'
+          })
+        }
+      },
+      MuiMenuItem: {
+        styleOverrides: {
+          root: {
+            borderRadius: '14px'
+          }
+        }
       }
     }
   });

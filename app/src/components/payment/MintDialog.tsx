@@ -322,7 +322,7 @@ export default function MintDialog({
             {isMintPaymentTxError &&
               (mintPaymentTxError?.message ?? 'Failed to load payment transaction')}
             {(paymentOptions?.length === 0 || isPaymentOptionsError) &&
-              (paymentOptionsError?.message ?? 'Balance not enough. Switch payment flow!')}
+              (paymentOptionsError?.message ?? 'Balance not enough. Switch payment wallet!')}
           </Typography>
         )}
 

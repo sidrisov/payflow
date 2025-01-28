@@ -113,7 +113,6 @@ export function IdentityMenu({
       {...props}
       sx={{
         '& .MuiMenu-paper': {
-          borderRadius: 5,
           mt: 0.5
         },
         '& .MuiList-root': {

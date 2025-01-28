@@ -63,11 +63,8 @@ export const FlowSelector: React.FC<FlowSelectorProps> = ({
         deleteIcon={<IoIosArrowDown />}
         onDelete={() => setOpenSelectFlow(true)}
         sx={{
-          height: 40,
-          borderRadius: 5,
-          px: 0.5,
+          p: 0.5,
           gap: 0.5,
-          '& .MuiChip-label': { px: 1 },
           cursor: 'pointer',
           '&:hover': { backgroundColor: 'action.hover' },
           ...(variant === 'outlined' && {

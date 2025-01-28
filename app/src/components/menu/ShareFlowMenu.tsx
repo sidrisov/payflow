@@ -16,7 +16,7 @@ export function ShareFlowMenu({
   return (
     <Menu
       {...props}
-      sx={{ mt: 1, '.MuiMenu-paper': { borderRadius: 5 } }}
+      sx={{ mt: 1 }}
       transformOrigin={{ horizontal: 'left', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
       <MenuList dense disablePadding>

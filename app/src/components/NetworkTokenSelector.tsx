@@ -294,13 +294,12 @@ export function NetworkTokenSelector({
               onClick={() => {
                 setPaymentToken(token);
                 setExpand(false);
-              }}
-              sx={{ borderRadius: 5 }}>
+              }}>
               <Box width="100%" display="flex" alignItems="center" justifyContent="space-between">
                 <Box display="flex" alignItems="center" gap={2}>
                   <Box width={18} height={18} display="flex" alignItems="center">
                     {token.id === paymentToken?.id && token.chainId === paymentToken?.chainId && (
-                      <FaCheckCircle color={green[500]} size={18} />
+                      <FaCheckCircle color={green.A700} size={18} />
                     )}
                   </Box>
                   <Box display="flex" alignItems="center" gap={1}>
@@ -403,11 +402,8 @@ export function NetworkTokenSelector({
         onClick={paymentTokenSelectable ? () => setExpand(true) : undefined}
         variant="outlined"
         sx={{
-          px: 0.5,
-          height: 40,
-          borderRadius: 5,
+          p: 0.5,
           gap: 0.5,
-          '& .MuiChip-label': { px: 1 },
           ...(paymentTokenSelectable && {
             cursor: 'pointer',
             '&:hover': { backgroundColor: 'action.hover' }
@@ -468,7 +464,7 @@ export function NetworkTokenSelector({
                   label="All"
                   onClick={() => setSelectedChainId('all')}
                   variant={selectedChainId === 'all' ? 'filled' : 'outlined'}
-                  sx={{ borderRadius: 5, border: 'none' }}
+                  sx={{ border: 'none' }}
                 />
                 {availableNetworks.map((chainId) => (
                   <Chip
@@ -477,7 +473,7 @@ export function NetworkTokenSelector({
                     label={SUPPORTED_CHAINS?.find((c) => c.id === chainId)?.name}
                     onClick={() => setSelectedChainId(chainId)}
                     variant={selectedChainId === chainId ? 'filled' : 'outlined'}
-                    sx={{ borderRadius: 4, border: 'none' }}
+                    sx={{ border: 'none' }}
                   />
                 ))}
               </Stack>

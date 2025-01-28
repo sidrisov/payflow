@@ -159,7 +159,7 @@ export function ChooseTokenMenu({
         setSearchTerm('');
         closeStateCallback();
       }}
-      sx={{ mt: 1.5, '.MuiMenu-paper': { borderRadius: 5, minWidth: 280 }, zIndex: 1450 }}
+      sx={{ mt: 1.5, '.MuiMenu-paper': { minWidth: 280 }, zIndex: 1450 }}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'left'

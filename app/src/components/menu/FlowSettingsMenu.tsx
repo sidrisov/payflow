@@ -79,7 +79,8 @@ export function FlowSettingsMenu({
   const handleConnectWallet = async () => {
     if (flow.signerProvider === 'privy') {
       if (!authenticated) {
-        setTimeout(() => {``
+        setTimeout(() => {
+          ``;
           login({
             ...(flow.signerCredential && {
               prefill: { type: 'email', value: flow.signerCredential },
@@ -138,9 +139,6 @@ export function FlowSettingsMenu({
         ref={menuRef}
         sx={{
           mt: 1,
-          '.MuiMenu-paper': {
-            borderRadius: 5
-          },
           zIndex: 1500,
           '&:focus': { outline: 'none' }
         }}

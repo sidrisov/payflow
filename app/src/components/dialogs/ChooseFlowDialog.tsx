@@ -116,7 +116,6 @@ export function ChooseFlowDialog({
         key={flow.uuid}
         selected={flow.uuid === selectedFlow.uuid}
         {...(flow.uuid === selectedFlow.uuid && { ref: setSelectedElement })}
-        sx={{ borderRadius: 5 }}
         onClick={async () => {
           if (!flow.archived) {
             setSelectedFlow(flow);
@@ -297,9 +296,7 @@ export function ChooseFlowDialog({
 
               {archived && archived.length > 0 && (
                 <>
-                  <MenuItem
-                    onClick={() => setArchivedExpanded(!archivedExpanded)}
-                    sx={{ borderRadius: 5 }}>
+                  <MenuItem onClick={() => setArchivedExpanded(!archivedExpanded)}>
                     <Stack
                       direction="row"
                       alignItems="center"

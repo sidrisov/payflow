@@ -336,12 +336,12 @@ export default function PaymentDialog({
               borderRadius: 3,
               '& .MuiToggleButton-root': {
                 '&:first-of-type': {
-                  borderTopLeftRadius: 15,
-                  borderBottomLeftRadius: 15
+                  borderTopLeftRadius: '10px',
+                  borderBottomLeftRadius: '10px'
                 },
                 '&:last-of-type': {
-                  borderTopRightRadius: 15,
-                  borderBottomRightRadius: 15
+                  borderTopRightRadius: '10px',
+                  borderBottomRightRadius: '10px'
                 }
               }
             }}
@@ -354,16 +354,16 @@ export default function PaymentDialog({
             }}
             size="small">
             <ToggleButton size="small" value="direct">
-              <Typography variant="caption" fontWeight="bold" textTransform="lowercase">
-                Regular
+              <Typography variant="caption" fontWeight="bold" textTransform="none">
+                regular
               </Typography>
             </ToggleButton>
             <ToggleButton
               disabled={!paymentAmount || paymentAmount === 0}
               size="small"
               value="cross-chain">
-              <Typography variant="caption" fontWeight="bold" textTransform="lowercase">
-                Pay with other token
+              <Typography variant="caption" fontWeight="bold" textTransform="none">
+                pay with other token
               </Typography>
             </ToggleButton>
           </ToggleButtonGroup>
@@ -408,7 +408,7 @@ export default function PaymentDialog({
               <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
                 {isPaymentOptionsError
                   ? 'Failed to fetch payment options. Please try again.'
-                  : 'Balance not enough. Switch payment flow!'}
+                  : 'Balance not enough. Switch payment wallet!'}
               </Typography>
             ))}
 

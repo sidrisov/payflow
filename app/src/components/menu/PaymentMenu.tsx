@@ -35,7 +35,6 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
   return (
     <Menu
       {...props}
-      sx={{ '.MuiMenu-paper': { borderRadius: 5 } }}
       transformOrigin={{ horizontal: 'left', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
       <MenuList dense disablePadding>

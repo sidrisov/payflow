@@ -48,7 +48,7 @@ export default function PreferredFlowPage() {
         toast.error('Something went wrong!');
       }
     } catch (error) {
-      toast.error('Failed to save preferred flow');
+      toast.error('Failed to save preferred wallet');
     }
   };
 
@@ -92,11 +92,11 @@ export default function PreferredFlowPage() {
         <Stack spacing={2}>
           <Stack direction="row" alignItems="center" spacing={1}>
             <HiOutlineDownload size={30} />
-            <Typography variant="h6">Preferred Payment Flow</Typography>
+            <Typography variant="h6">Preferred Payment Wallet</Typography>
           </Stack>
 
           <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-            Choose your preferred payment flow for receiving and completing payments
+            Choose your preferred payment wallet for receiving and completing payments
           </Typography>
 
           <Stack

@@ -118,7 +118,7 @@ export function ProfileMenu({
             <ListItemIcon>
               <HiOutlineDownload size={20} />
             </ListItemIcon>
-            Preferred Flow
+            Preferred Wallet
           </MenuItem>
           <MenuItem
             onClick={async () => {

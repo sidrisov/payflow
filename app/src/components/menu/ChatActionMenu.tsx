@@ -42,7 +42,7 @@ export function ChatActionMenu({
   return (
     <Menu
       {...props}
-      sx={{ mt: 1, '.MuiMenu-paper': { borderRadius: 5, border: 1, borderColor: 'divider' } }}
+      sx={{ mt: 1, '.MuiMenu-paper': { border: 1, borderColor: 'divider' } }}
       transformOrigin={{ horizontal: 'left', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
       <MenuList dense disablePadding>
