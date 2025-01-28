@@ -25,7 +25,7 @@ export const FARCASTER_CLIENTS = [
   {
     id: 'warpcast',
     name: 'Warpcast',
-    description: 'Official client built by Faraster team',
+    description: 'Official client built by Farcaster team',
     url: 'https://warpcast.com',
     image: '/clients/warpcast.png'
   },

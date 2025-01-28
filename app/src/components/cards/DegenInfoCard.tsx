@@ -8,7 +8,6 @@ import { DEGEN_CLAIM_SEASONS, useAllowance, usePoints } from '../../utils/querie
 import { ClaimDegenPointsDialog } from '../dialogs/ClaimDegenPointsDialog';
 import { ArrowBackIos, ArrowForwardIos } from '@mui/icons-material';
 import { formatAmountWithSuffix } from '../../utils/formats';
-import { green } from '@mui/material/colors';
 import { useQuery } from '@tanstack/react-query';
 import { usePublicClient } from 'wagmi';
 import { erc20Abi, formatUnits } from 'viem';
