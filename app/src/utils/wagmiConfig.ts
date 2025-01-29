@@ -17,7 +17,6 @@ import {
 
 import { createConfig } from '@privy-io/wagmi';
 import { Config } from 'wagmi';
-import frameConnector from '@farcaster/frame-wagmi-connector';
 
 const createOptimizedTransport = (url: string) =>
   http(url, {
@@ -71,6 +70,5 @@ export const commonWagmiConfig = {
 };
 
 export const wagmiConfig = createConfig({
-  ...commonWagmiConfig,
-  connectors: [frameConnector as any]
+  ...commonWagmiConfig
 }) as Config;

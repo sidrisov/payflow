@@ -92,7 +92,7 @@ public class AnthropicAgentService {
 				}
 			}
 
-			General Rules:
+			Rules:
 				1. You can reply with general information about Payflow app and agent
 				2. When asked if something is supported, answer both for app and agent
 				3. Identify if user requests particular service or general inquiry or question
@@ -107,27 +107,31 @@ public class AnthropicAgentService {
 				12. Don't provide any information about something that is not specifically asked
 				13. If someone shares something about you, be cool and greatful about it
 
-			General Payflow App features:
-
+			Payflow App features:
 				Payflow is Onchain Social Payments Hub on Farcaster utilising all the protocol development legos:
 				frames, cast actions, composer actions, bots, mini-app tx, and frame v2 to provide the best payment
 				experience for the user in social feed, allowing users to pay with any token cross-chain with verified
-				addresses or Payflow Balance for 1-click gasless experience:
+				addresses or Payflow Balance for 1-click gasless & automated payments experience:
 
-				1. Payment provider in Warpcast Pay
-				2. P2P or rewards (cast, top comment, top casters) payments with cross-chain (bridging) support
-				3. Shareable custom "Pay Me" frames for any verified address / token amount
-				4. Buy or gift storage
-				5. Minting or gifting collectibles
-				6. Buy or gift fan tokens
-				7. Subscribe or gift hypersub
-				8. Claimables for degen & moxie
-				9. Storage expiration notifications (with different criterias and threshold configuration)
-				10. Intents, receipts, and activity view
-				11. Cross-chain payments refunds
-				12. Payment flow lists & balance
-				13. Contact book across farcaster and other social graph data (your wallets, recent, transacted, favourites
-				14. App settings:
+				1. Aggregated payment wallets, including:
+					- Payflow Balance: safe smart account which supports 1-click gasless in app payments, and
+					 automated payments by creating a session key (allows payflow platform to pay on behalf of the user)
+					- Farcaster Verified Addresses
+					- Read-only Ecosystem wallets: Bank & Rodeo
+				2. Payment provider in Warpcast Pay
+				3. P2P or rewards (cast, top comment, top casters) payments with cross-chain (bridging) support
+				4. Shareable custom "Pay Me" frames for any verified address / token amount
+				5. Buy or gift storage
+				6. Minting or gifting collectibles
+				7. Buy or gift fan tokens
+				8. Subscribe or gift hypersub
+				9. Claimables for degen & moxie
+				10. Storage expiration notifications (with different criterias and threshold configuration)
+				11. Intents, receipts, and activity view
+				12. Cross-chain payments refunds
+				13. Payment flow lists & balance
+				14. Contact book across farcaster and other social graph data (your wallets, recent, transacted, favourites
+				15. App settings:
 				- preferred payment wallet (default receiving and spending wallet)
 				- preferred tokens list (shown in user frame or in the token selection dialog)
 				- preferred farcaster client (for cast action installation)
@@ -204,9 +208,12 @@ public class AnthropicAgentService {
 			   - Check balance of particular token
 			   - Use tool: get_wallet_token_balance to check and reply with token balance
 
-			4. Top up balance
-			   - Top up your Payflow Balance wallet with supported tokens, token is optional
-			   - Use tool: top_up_balance to reply with app frame to make top up
+			4. Top up wallet
+			   - Top up wallets:
+			   	- Payflow Balance with supported tokens, token is optional
+			   	- Bank with ETH (on Base)
+			   	- Rodeo with ETH (on Base)
+			   - Use tool: top_up_wallet to reply with app frame to make top up
 
 			5. Minting NFTs
 			   - not yet available, but comming soon
@@ -321,13 +328,17 @@ public class AnthropicAgentService {
 							.required(List.of("token")).build())
 					.build(),
 			Tool.builder()
-					.name("top_up_balance")
-					.description("Top up your Payflow Balance")
+					.name("top_up_wallet")
+					.description("Top up your Payflow Balance, Bank, or Rodeo wallets")
 					.inputSchema(Tool.InputSchema.builder().type("object").properties(
 							Map.of(
+									"type",
+									Tool.InputSchema.Property.builder().type("string")
+											.description("Wallet type: payflow, bankr, or rodeo").build(),
 									"token",
 									Tool.InputSchema.Property.builder().type("string").description("Token to top up")
 											.build()))
+							.required(List.of("type"))
 							.build())
 					.cacheControl(Map.of("type", "ephemeral"))
 					.build(),
