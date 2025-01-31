@@ -173,8 +173,6 @@ export default function App() {
     needRefresh: [needRefresh]
   } = useRegisterSW();
 
-  const [showCreatePayflowBalance, setCreateShowPayflowBalance] = useState();
-
   useEffect(() => {
     if (!profile || location.pathname !== '/') {
       return;

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, Tab, Stack } from '@mui/material';
-import { MoxieInfoCard } from '../cards/MoxieInfoCard';
 import { DegenInfoCard } from '../cards/DegenInfoCard';
 
 interface EarnTabsProps {
@@ -75,7 +74,6 @@ export function EarnTabs({ tab }: EarnTabsProps) {
 
       {activeTab === 0 && (
         <Stack spacing={1}>
-          <MoxieInfoCard />
           <DegenInfoCard />
         </Stack>
       )}
