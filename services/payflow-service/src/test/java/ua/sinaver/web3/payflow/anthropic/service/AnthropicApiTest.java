@@ -2,6 +2,8 @@ package ua.sinaver.web3.payflow.anthropic.service;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -11,13 +13,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.Resource;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.web.reactive.function.client.WebClient;
+import ua.sinaver.web3.payflow.message.farcaster.CastConversationData;
 import ua.sinaver.web3.payflow.service.AnthropicAgentService;
 import ua.sinaver.web3.payflow.service.TokenService;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +39,12 @@ public class AnthropicApiTest {
 	private String anthropicApiKey;
 	@Autowired
 	private AnthropicAgentService anthropicAgentService;
+
+	@Value("classpath:long_conversation.json")
+	private Resource longConversationResource;
+
+	@Autowired
+	private ObjectMapper objectMapper;
 
 	@Test
 	public void testSimplePayment() throws JsonProcessingException {
@@ -769,6 +781,193 @@ public class AnthropicApiTest {
 
 	}
 
+	@Test
+	public void testDeadLoopConversationBetweenAgents() throws JsonProcessingException {
+		String conversationJson = """
+				{
+				  "conversation": {
+				    "cast": {
+				      "author": {
+				        "fid": 382802,
+				        "username": "askgina.eth",
+				        "displayName": "Gina"
+				      },
+				      "text": "Hey I'm Gina, your onchain AI assistant!\\n\\nTo get access to me, sign in with Farcaster at https://askgina.ai\\n\\nLook forward to chatting with you soon!\\n",
+				      "directReplies": [
+				        {
+				          "author": {
+				            "fid": 211734,
+				            "username": "payflow",
+				            "displayName": "Payflow"
+				          },
+				          "text": "Based on the conversation, I'll help @askgina.eth purchase Farcaster storage since a Payflow notification about storage capacity was sent.",
+				          "frames": [
+				            {
+				              "version": "vNext",
+				              "title": "Payflow | Frames",
+				              "buttons": [
+				                {
+				                  "index": 1,
+				                  "title": "Buy",
+				                  "actionType": "postRedirect",
+				                  "target": "https://api.alpha.payflow.me/api/farcaster/frames/storage/382802/submit"
+				                },
+				                {
+				                  "index": 2,
+				                  "title": "My usage",
+				                  "actionType": "post",
+				                  "target": "https://api.alpha.payflow.me/api/farcaster/frames/storage/check"
+				                }
+				              ]
+				            }
+				          ]
+				        }
+				      ]
+				    },
+				    "chronologicalParentCasts": [
+				      {
+				        "author": {
+				          "fid": 19129,
+				          "username": "sinaver.eth",
+				          "displayName": "Sinaver"
+				        },
+				        "text": "Original conversation starter"
+				      },
+				      {
+				        "author": {
+				          "fid": 382802,
+				          "username": "askgina.eth",
+				          "displayName": "Gina"
+				        },
+				        "text": "Hey I'm Gina, your onchain AI assistant!\\n\\nTo get access to me, sign in with Farcaster at https://askgina.ai\\n\\nLook forward to chatting with you soon!\\n"
+				      },
+				      {
+				        "author": {
+				          "fid": 211734,
+				          "username": "payflow",
+				          "displayName": "Payflow"
+				        },
+				        "text": "I'll help @askgina.eth purchase Farcaster storage since a Payflow notification about storage capacity was sent."
+				      },
+					  {
+				        "author": {
+				          "fid": 382802,
+				          "username": "askgina.eth",
+				          "displayName": "Gina"
+				        },
+				        "text": "Hey I'm Gina, your onchain AI assistant!\\n\\nTo get access to me, sign in with Farcaster at https://askgina.ai\\n\\nLook forward to chatting with you soon!\\n"
+				      },
+				      {
+				        "author": {
+				          "fid": 211734,
+				          "username": "payflow",
+				          "displayName": "Payflow"
+				        },
+				        "text": "I'll help @askgina.eth purchase Farcaster storage since a Payflow notification about storage capacity was sent."
+				      },
+					  {
+				        "author": {
+				          "fid": 382802,
+				          "username": "askgina.eth",
+				          "displayName": "Gina"
+				        },
+				        "text": "Hey I'm Gina, your onchain AI assistant!\\n\\nTo get access to me, sign in with Farcaster at https://askgina.ai\\n\\nLook forward to chatting with you soon!\\n"
+				      },
+				      {
+				        "author": {
+				          "fid": 211734,
+				          "username": "payflow",
+				          "displayName": "Payflow"
+				        },
+				        "text": "I'll help @askgina.eth purchase Farcaster storage since a Payflow notification about storage capacity was sent."
+				      },
+					  {
+				        "author": {
+				          "fid": 382802,
+				          "username": "askgina.eth",
+				          "displayName": "Gina"
+				        },
+				        "text": "Hey I'm Gina, your onchain AI assistant!\\n\\nTo get access to me, sign in with Farcaster at https://askgina.ai\\n\\nLook forward to chatting with you soon!\\n"
+				      },
+				      {
+				        "author": {
+				          "fid": 211734,
+				          "username": "payflow",
+				          "displayName": "Payflow"
+				        },
+				        "text": "I'll help @askgina.eth purchase Farcaster storage since a Payflow notification about storage capacity was sent."
+				      }
+				    ]
+				  }
+				}
+				""";
+
+		val response = anthropicAgentService.processPaymentInput(
+				List.of(AnthropicAgentService.Message.builder()
+						.role("user")
+						.content(List.of(
+								AnthropicAgentService.Message.Content.builder()
+										.type("text")
+										.text(String.format("""
+												```json
+												%s
+												```""", conversationJson))
+										.build()))
+						.build()));
+
+		assertNotNull(response);
+		assertEquals("tool_use", response.getStopReason());
+		assertNotNull(response.getContent());
+
+		// Verify no_reply tool was used
+		val noReplyContent = response.getContent().stream()
+				.filter(content -> "tool_use".equals(content.getType()) &&
+						"no_reply".equals(content.getName()))
+				.findFirst()
+				.orElse(null);
+
+		assertNotNull(noReplyContent, "Expected no_reply tool to be used");
+	}
+
+	@Test
+	public void testReallyLongConversation() throws JsonProcessingException {
+		try (InputStreamReader reader = new InputStreamReader(longConversationResource.getInputStream())) {
+			var conversationData = objectMapper.readValue(reader, CastConversationData.class);
+
+			// Limit chronological parent casts to last 100
+			if (conversationData.conversation().chronologicalParentCasts().size() > 100) {
+				var limitedParents = conversationData.conversation().chronologicalParentCasts()
+						.subList(Math.max(0, conversationData.conversation().chronologicalParentCasts().size() - 100),
+								conversationData.conversation().chronologicalParentCasts().size());
+				conversationData = new CastConversationData(
+						new CastConversationData.Conversation(
+								conversationData.conversation().cast(),
+								limitedParents));
+			}
+
+			String conversationJson = objectMapper.writeValueAsString(conversationData);
+
+			val response = anthropicAgentService.processPaymentInput(
+					List.of(AnthropicAgentService.Message.builder()
+							.role("user")
+							.content(List.of(
+									AnthropicAgentService.Message.Content.builder()
+											.type("text")
+											.text(String.format("""
+													```json
+													%s
+													```""", conversationJson))
+											.build()))
+							.build()));
+
+			assertNotNull(response);
+			assertNotNull(response.getContent());
+			assertEquals("tool_use", response.getStopReason());
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to read conversation JSON", e);
+		}
+	}
+
 	@Configuration
 	static class TestConfig {
 
@@ -776,6 +975,8 @@ public class AnthropicApiTest {
 		public ObjectMapper objectMapper() {
 			return JsonMapper.builder()
 					.serializationInclusion(JsonInclude.Include.NON_NULL)
+					.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+					.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true)
 					.build();
 		}
 

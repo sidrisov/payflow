@@ -41,7 +41,7 @@ public class JarController {
 		log.debug("Received cast action: jar {}", castActionMessage);
 		val validateMessage = neynarService.validaFrameRequest(
 				castActionMessage.trustedData().messageBytes());
-		if (!validateMessage.valid()) {
+		if (validateMessage == null || !validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Cast action not verified!"));
@@ -51,9 +51,8 @@ public class JarController {
 				validateMessage.action().url());
 
 		val castInteractor = validateMessage.action().interactor();
-		val castAuthor = validateMessage.action().cast().author() != null ?
-				validateMessage.action().cast().author() :
-				neynarService.fetchFarcasterUser(validateMessage.action().cast().fid());
+		val castAuthor = validateMessage.action().cast().author() != null ? validateMessage.action().cast().author()
+				: neynarService.fetchFarcasterUser(validateMessage.action().cast().fid());
 
 		if (castInteractor.fid() != castAuthor.fid()) {
 			log.error("Only the author of the cast is allowed to create the contribution " +
@@ -62,8 +61,8 @@ public class JarController {
 					new FrameResponse.FrameMessage("Use only for your casts!"));
 		}
 
-		val clickedProfile =
-				identityService.getProfiles(castInteractor.addressesWithoutCustodialIfAvailable()).stream().findFirst().orElse(null);
+		val clickedProfile = identityService.getProfiles(castInteractor.addressesWithoutCustodialIfAvailable()).stream()
+				.findFirst().orElse(null);
 		if (clickedProfile == null) {
 			log.error("Clicked fid {} is not on payflow", castInteractor);
 			return ResponseEntity.badRequest().body(

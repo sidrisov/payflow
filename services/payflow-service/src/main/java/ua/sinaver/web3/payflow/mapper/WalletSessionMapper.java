@@ -3,6 +3,7 @@ package ua.sinaver.web3.payflow.mapper;
 import lombok.val;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import ua.sinaver.web3.payflow.dto.WalletSessionMessage;
 import ua.sinaver.web3.payflow.entity.WalletSession;
@@ -16,6 +17,9 @@ import static ua.sinaver.web3.payflow.entity.WalletSession.EXPIRES_AFTER_HOURS;
 public interface WalletSessionMapper {
 	WalletSessionMessage toDto(WalletSession session);
 
+	@Mapping(target = "id", ignore = true)
+	@Mapping(target = "version", ignore = true)
+	@Mapping(target = "wallet", ignore = true)
 	WalletSession toEntity(WalletSessionMessage message);
 
 	@AfterMapping

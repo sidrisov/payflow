@@ -58,7 +58,7 @@ public class StorageController {
 	private LinkService linkService;
 
 	private static Payment getPayment(ValidatedFrameResponseMessage validateMessage,
-	                                  FarcasterUser gifteeUser, User clickedProfile) {
+			FarcasterUser gifteeUser, User clickedProfile) {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val castHash = validateMessage.action().cast().hash();
 		// maybe would make sense to reference top cast instead (if it's a bot cast)
@@ -82,12 +82,12 @@ public class StorageController {
 
 	@PostMapping("/{fid}/submit")
 	public ResponseEntity<?> submit(@RequestBody FrameMessage frameMessage,
-	                                @PathVariable Integer fid) {
+			@PathVariable Integer fid) {
 		log.debug("Received submit gift storage message request: {}", frameMessage);
 		val validateMessage = neynarService.validaFrameRequest(
 				frameMessage.trustedData().messageBytes());
 
-		if (!validateMessage.valid()) {
+		if (validateMessage == null || !validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
 			return DEFAULT_HTML_RESPONSE;
 		}
@@ -132,14 +132,13 @@ public class StorageController {
 		val validateMessage = neynarService.validaFrameRequest(
 				frameMessage.trustedData().messageBytes());
 
-		if (!validateMessage.valid()) {
+		if (validateMessage == null || !validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
 			return DEFAULT_HTML_RESPONSE;
 		}
 		log.debug("Validation frame message response {} received on url: {}  ", validateMessage,
 				validateMessage.action().url());
 
-		var castInteractorFid = validateMessage.action().interactor().fid();
 		val recipientText = Optional.ofNullable(validateMessage.action().input())
 				.map(input -> input.text().trim().toLowerCase())
 				.orElse(null);

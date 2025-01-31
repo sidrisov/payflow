@@ -34,7 +34,7 @@ public class AuthController {
 
 	@GetMapping("/nonce")
 	public String nonce(HttpSession session) {
-		val nonce = RandomStringUtils.random(10, true, true);
+		val nonce = RandomStringUtils.secure().nextAlphanumeric(10);
 		session.setAttribute("nonce", nonce);
 		log.debug("SessionId: {} - nonce: {} ", session.getId(), nonce);
 		return nonce;

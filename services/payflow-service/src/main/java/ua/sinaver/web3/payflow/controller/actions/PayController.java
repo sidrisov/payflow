@@ -47,7 +47,7 @@ public class PayController {
 		log.debug("Received cast action: pay profile {}", castActionMessage);
 		val validateMessage = neynarService.validaFrameRequest(
 				castActionMessage.trustedData().messageBytes());
-		if (!validateMessage.valid()) {
+		if (validateMessage == null || !validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Cast action not verified!"));
@@ -57,10 +57,8 @@ public class PayController {
 				validateMessage.action().url());
 
 		// todo: temp hack
-		val castAuthor = validateMessage.action().cast().author() != null ?
-				validateMessage.action().cast().author() :
-				neynarService.fetchFarcasterUser(validateMessage.action().cast().fid());
-
+		val castAuthor = validateMessage.action().cast().author() != null ? validateMessage.action().cast().author()
+				: neynarService.fetchFarcasterUser(validateMessage.action().cast().fid());
 
 		// pay first with higher social score
 		val paymentAddresses = identityService.getIdentitiesInfo(castAuthor.addressesWithoutCustodialIfAvailable())
@@ -78,12 +76,10 @@ public class PayController {
 				&& paymentProfile.getDefaultReceivingAddress() == null)) {
 			if (!paymentAddresses.isEmpty()) {
 				// return first associated address without custodial
-				paymentAddress = paymentAddresses.size() > 1 ?
-						paymentAddresses.stream()
-								.filter(e -> !e.equals(castAuthor.custodyAddress()))
-								.findFirst()
-								.orElse(null) :
-						paymentAddresses.getFirst();
+				paymentAddress = paymentAddresses.size() > 1 ? paymentAddresses.stream()
+						.filter(e -> !e.equals(castAuthor.custodyAddress()))
+						.findFirst()
+						.orElse(null) : paymentAddresses.getFirst();
 			} else {
 				return ResponseEntity.badRequest().body(
 						new FrameResponse.FrameMessage("Missing verified identity! Contact @sinaver.eth"));

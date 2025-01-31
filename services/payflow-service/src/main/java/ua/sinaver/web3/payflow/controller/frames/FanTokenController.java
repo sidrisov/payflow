@@ -50,10 +50,10 @@ public class FanTokenController {
 	private FanTokenService fanTokenService;
 
 	private static Payment getFanTokenPayment(ValidatedFrameResponseMessage validateMessage,
-	                                          User user,
-	                                          Integer receiverFid,
-	                                          String receiverAddress,
-	                                          FanToken fanToken) {
+			User user,
+			Integer receiverFid,
+			String receiverAddress,
+			FanToken fanToken) {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val castHash = validateMessage.action().cast().hash();
 		val sourceRef = String.format("https://warpcast.com/%s/%s",
@@ -73,12 +73,12 @@ public class FanTokenController {
 
 	@PostMapping("/{name}/submit")
 	public ResponseEntity<?> submit(@RequestBody FrameMessage frameMessage,
-	                                @PathVariable String name) {
+			@PathVariable String name) {
 		log.debug("Received submit buy fan token {} message request: {}", name, frameMessage);
 		val validateMessage = neynarService.validaFrameRequest(
 				frameMessage.trustedData().messageBytes());
 
-		if (!validateMessage.valid()) {
+		if (validateMessage == null || !validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
 			return DEFAULT_HTML_RESPONSE;
 		}

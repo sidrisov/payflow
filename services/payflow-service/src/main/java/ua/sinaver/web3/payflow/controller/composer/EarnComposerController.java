@@ -20,7 +20,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
 @RestController
-@RequestMapping({"/farcaster/composer/earn", "/farcaster/composer/useful"})
+@RequestMapping({ "/farcaster/composer/earn", "/farcaster/composer/useful" })
 @Transactional
 @Slf4j
 public class EarnComposerController {
@@ -54,7 +54,7 @@ public class EarnComposerController {
 		log.debug("Received composer action: earn form {}", composerActionMessage);
 		val validateMessage = neynarService.validaFrameRequest(
 				composerActionMessage.trustedData().messageBytes());
-		if (!validateMessage.valid()) {
+		if (validateMessage == null || !validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Cast action not verified!"));

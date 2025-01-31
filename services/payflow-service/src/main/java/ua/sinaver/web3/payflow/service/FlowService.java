@@ -342,9 +342,9 @@ public class FlowService {
 				.orElseThrow(() -> new Exception("Session not found"));
 
 		// Update session fields
-		session.setActive(sessionUpdate.isActive());
-		session.setExpiresAt(sessionUpdate.getExpiresAt());
-		session.setActions(sessionUpdate.getActions());
+		session.setActive(sessionUpdate.active());
+		session.setExpiresAt(sessionUpdate.expiresAt());
+		session.setActions(sessionUpdate.actions());
 
 		log.debug("Updated session {} for wallet {}", session, wallet);
 	}
