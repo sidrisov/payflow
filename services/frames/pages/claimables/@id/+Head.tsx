@@ -4,17 +4,14 @@ import { usePageContext } from 'vike-react/usePageContext';
 export function Head() {
   const { routeParams } = usePageContext();
 
-  const buttonTitle = routeParams.id === 'degen' ? 'Claim Degen' : 'Claimables';
-  const frameTitle = `Payflow | ${buttonTitle}`;
-
   const frame = {
     version: 'next',
     imageUrl: 'https://i.imgur.com/okcGTR2.png',
     button: {
-      title: buttonTitle,
+      title: routeParams.id === 'degen' ? 'Claim Degen' : 'Claimables',
       action: {
         type: 'launch_frame',
-        name: frameTitle,
+        name: 'Payflow',
         url: `${DAPP_URL}/earn`,
         splashImageUrl: 'https://app.payflow.me/apple-touch-icon.png',
         splashBackgroundColor: '#f7f7f7'
