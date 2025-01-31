@@ -21,7 +21,7 @@ const LazyPage404 = lazy(() => import('./pages/Page404'));
 const LazyPreferredFlow = lazy(() => import('./pages/settings/PreferredFlowPage'));
 const LazyPreferredTokens = lazy(() => import('./pages/settings/PreferredTokensPage'));
 const LazyFarcasterClientPage = lazy(() => import('./pages/settings/FarcasterClientPage'));
-const LazyNotifications = lazy(() => import('./pages/StoragePage'));
+const LazyStorage = lazy(() => import('./pages/Storage'));
 const LazyStats = lazy(() => import('./pages/stats'));
 const LazyCreatePayflowWallet = lazy(() => import('./pages/CreatePayflowWallet'));
 const LazyCreateWalletSession = lazy(() => import('./pages/CreateWalletSession'));
@@ -52,8 +52,8 @@ export const appRouter = createBrowserRouter([
     children: [
       { element: <LazyWrapper component={LazyAccounts} />, index: true },
       { path: 'profile', element: <LazyWrapper component={LazyProfile} /> },
-      { path: 'notifications', element: <LazyWrapper component={LazyNotifications} /> },
-      { path: 'farcaster/storage', element: <LazyWrapper component={LazyNotifications} /> },
+      { path: 'notifications', element: <LazyWrapper component={LazyStorage} /> },
+      { path: 'farcaster/storage', element: <LazyWrapper component={LazyStorage} /> },
       { path: 'advanced', element: <LazyWrapper component={LazyAdvanced} /> },
       {
         path: 'settings',
