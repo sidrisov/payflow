@@ -79,7 +79,7 @@ public class Flow {
 	            String saltNonce) {
 		this.userId = userId;
 		this.title = title;
-		this.uuid = RandomStringUtils.random(8, true, true);
+		this.uuid = RandomStringUtils.secure().nextAlphanumeric(8);
 
 		this.signer = signer != null ? signer.toLowerCase() : null;
 		this.signerProvider = signerProvider;

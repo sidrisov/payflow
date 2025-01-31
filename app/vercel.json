@@ -34,6 +34,17 @@
       "destination": "https://frames.payflow.me/degen"
     },
     {
+      "source": "/claimables/:id",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot|got).*"
+        }
+      ],
+      "destination": "https://frames.payflow.me/claimables/:id"
+    },
+    {
       "source": "/hypersub",
       "has": [
         {

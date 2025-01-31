@@ -15,6 +15,7 @@ public record CastConversationData(Conversation conversation) {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static record Cast(
             FarcasterUser author,
+            String timestamp,
             String text,
             List<FarcasterUser> mentionedProfiles,
             List<Cast> directReplies) {

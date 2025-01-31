@@ -123,7 +123,7 @@ public class JarContributionController {
 				validateMessage,
 				validateMessage.action().url());
 
-		if (!validateMessage.valid()) {
+		if (validateMessage == null || !validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Something went wrong!"));
@@ -171,7 +171,7 @@ public class JarContributionController {
 				.filter(embed -> embed != null && embed.url() != null && (embed.url().endsWith(
 						".png") || embed.url().endsWith(".jpg")
 						|| embed.url().contains(
-						"imagedelivery.net")))
+								"imagedelivery.net")))
 				.findFirst().map(Cast.Embed::url).orElse(null) : null;
 
 		log.debug("Executing jar creation with title `{}`, desc `{}` embeds {}, source {}",
@@ -216,7 +216,7 @@ public class JarContributionController {
 
 	@PostMapping("/{uuid}/contribute")
 	public ResponseEntity<?> contribute(@PathVariable String uuid,
-	                                    @RequestBody FrameMessage frameMessage) {
+			@RequestBody FrameMessage frameMessage) {
 		log.debug("Received contribute jar {} in frame message request: {}",
 				uuid, frameMessage);
 
@@ -281,7 +281,7 @@ public class JarContributionController {
 
 	@PostMapping("/{uuid}/contribute/chain")
 	public ResponseEntity<?> chooseChain(@PathVariable String uuid,
-	                                     @RequestBody FrameMessage frameMessage) {
+			@RequestBody FrameMessage frameMessage) {
 		log.debug("Received contribute jar {} in frame message request: {}",
 				uuid, frameMessage);
 
@@ -371,7 +371,7 @@ public class JarContributionController {
 
 	@PostMapping("/{uuid}/contribute/amount")
 	public ResponseEntity<?> chooseAmount(@PathVariable String uuid,
-	                                      @RequestBody FrameMessage frameMessage) {
+			@RequestBody FrameMessage frameMessage) {
 		log.debug("Received enter contribution amount message request: {}", frameMessage);
 
 		int buttonIndex;
@@ -517,7 +517,7 @@ public class JarContributionController {
 		val updatedState = gson.toJson(new FramePaymentMessage(paymentState.address(),
 				paymentState.chainId(), token, usdAmount, tokenAmount, refId));
 		val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
-						"/image.png?step=confirm&chainId=%s&token=%s&usdAmount=%s&tokenAmount=%s",
+				"/image.png?step=confirm&chainId=%s&token=%s&usdAmount=%s&tokenAmount=%s",
 				uuid, paymentState.chainId(), token, usdAmount, roundTokenAmount(tokenAmount)));
 		val frameResponseBuilder = FrameResponse.builder()
 				.postUrl(apiServiceUrl.concat(String.format(CONFIRM_PATH, uuid)))
@@ -539,7 +539,7 @@ public class JarContributionController {
 
 	@PostMapping("/{uuid}/contribute/confirm")
 	public ResponseEntity<String> confirm(@PathVariable String uuid,
-	                                      @RequestBody FrameMessage frameMessage) {
+			@RequestBody FrameMessage frameMessage) {
 		log.debug("Received contribution confirm message request: {}", frameMessage);
 		int buttonIndex;
 		FramePaymentMessage paymentState;
@@ -633,8 +633,8 @@ public class JarContributionController {
 					val tokenAmount = roundTokenAmount(
 							paymentState.usdAmount() / tokenPriceService.getPrices().get(paymentState.token()));
 					val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
-									"/image.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
-									"&tokenAmount=%s&status=%s", uuid, paymentState.chainId(), paymentState.token(),
+							"/image.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
+							"&tokenAmount=%s&status=%s", uuid, paymentState.chainId(), paymentState.token(),
 							paymentState.usdAmount(), tokenAmount, "success"));
 					return FrameResponse.builder()
 							.imageUrl(jarImage)
@@ -663,8 +663,8 @@ public class JarContributionController {
 					val tokenAmount = roundTokenAmount(
 							paymentState.usdAmount() / tokenPriceService.getPrices().get(paymentState.token()));
 					val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
-									"/image.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
-									"&tokenAmount=%s",
+							"/image.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
+							"&tokenAmount=%s",
 							uuid, paymentState.chainId(), paymentState.token(),
 							paymentState.usdAmount(), tokenAmount));
 					return FrameResponse.builder()
@@ -683,12 +683,12 @@ public class JarContributionController {
 
 	@PostMapping("/{uuid}/contribute/comment")
 	public ResponseEntity<String> comment(@PathVariable String uuid,
-	                                      @RequestBody FrameMessage frameMessage) {
+			@RequestBody FrameMessage frameMessage) {
 		log.debug("Received contribution comment message request: {}", frameMessage);
 		val validateMessage = neynarService.validaFrameRequest(
 				frameMessage.trustedData().messageBytes());
 
-		if (!validateMessage.valid()) {
+		if (validateMessage == null || !validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
 			return DEFAULT_HTML_RESPONSE;
 		}
@@ -719,8 +719,8 @@ public class JarContributionController {
 					val tokenAmount = roundTokenAmount(
 							state.usdAmount() / tokenPriceService.getPrices().get(state.token()));
 					val jarImage = framesServiceUrl.concat(String.format("/images/jar/%s" +
-									"/image.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
-									"&tokenAmount=%s&status=%s",
+							"/image.png?step=execute&chainId=%s&token=%s&usdAmount=%s" +
+							"&tokenAmount=%s&status=%s",
 							uuid, state.chainId(), state.token(),
 							state.usdAmount(), tokenAmount, "success"));
 

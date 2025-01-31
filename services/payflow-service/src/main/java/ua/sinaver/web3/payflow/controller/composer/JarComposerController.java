@@ -29,15 +29,14 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 public class JarComposerController {
 	private static final Gson GSON = new GsonBuilder().create();
-	private final static ComposerCastActionMeta JAR_COMPOSER_CAST_ACTION_META =
-			new ComposerCastActionMeta(
-					"composer",
-					"Payflow Jar",
-					"zap",
-					"Collect contributions",
-					"https://payflow.me",
-					"https://raw.githubusercontent.com/phosphor-icons/core/7790ae563ef83ac36094b15b5e109d89fef09337/raw/regular/tip-jar.svg",
-					new ComposerCastActionMeta.Action("post"));
+	private final static ComposerCastActionMeta JAR_COMPOSER_CAST_ACTION_META = new ComposerCastActionMeta(
+			"composer",
+			"Payflow Jar",
+			"zap",
+			"Collect contributions",
+			"https://payflow.me",
+			"https://raw.githubusercontent.com/phosphor-icons/core/7790ae563ef83ac36094b15b5e109d89fef09337/raw/regular/tip-jar.svg",
+			new ComposerCastActionMeta.Action("post"));
 	@Autowired
 	private FarcasterNeynarService neynarService;
 	@Autowired
@@ -62,7 +61,7 @@ public class JarComposerController {
 		log.debug("Received composer action: payment form {}", composerActionMessage);
 		val validateMessage = neynarService.validaFrameRequest(
 				composerActionMessage.trustedData().messageBytes());
-		if (!validateMessage.valid()) {
+		if (validateMessage == null || !validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Cast action not verified!"));
@@ -79,8 +78,7 @@ public class JarComposerController {
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage(
 							"Missing verified identity! Contact @sinaver.eth"));
-		} catch (
-				ConstraintViolationException exception) {
+		} catch (ConstraintViolationException exception) {
 			log.error("Failed to create a user for {}", interactor.username(), exception);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Identity conflict! Contact @sinaver.eth"));

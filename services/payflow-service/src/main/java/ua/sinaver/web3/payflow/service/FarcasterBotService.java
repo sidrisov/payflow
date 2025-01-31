@@ -32,7 +32,6 @@ import ua.sinaver.web3.payflow.repository.FlowRepository;
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.repository.WalletSessionRepository;
-import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.utils.MintUrlUtils;
 
 import java.math.BigDecimal;
@@ -90,7 +89,7 @@ public class FarcasterBotService {
 	@Value("${payflow.farcaster.bot.enabled:false}")
 	private boolean isBotEnabled;
 
-	@Value("${payflow.farcaster.bot.max-agent-attempts:5}")
+	@Value("${payflow.farcaster.bot.max-agent-attempts:10}")
 	private int maxAgentAttempts;
 
 	@Autowired
@@ -216,16 +215,25 @@ public class FarcasterBotService {
 		var parentCasts = (List<CastConversationData.Cast>) null;
 		if (cast.parentHash() != null) {
 			conversation = neynarClient.getCastConversationByHash(cast.hash());
+			var limitedParents = conversation.conversation().chronologicalParentCasts()
+					.subList(Math.max(0, conversation.conversation().chronologicalParentCasts().size() - 100),
+							conversation.conversation().chronologicalParentCasts().size());
+			conversation = new CastConversationData(
+					new CastConversationData.Conversation(
+							conversation.conversation().cast(),
+							limitedParents));
 			parentCasts = conversation.conversation().chronologicalParentCasts().stream()
 					.sorted((a, b) -> -1)
 					.toList();
 		} else {
-			var currentCast = new CastConversationData.Cast(
-					cast.author(),
-					cast.text(),
-					cast.mentionedProfiles(),
-					List.of());
-			conversation = new CastConversationData(new CastConversationData.Conversation(currentCast, null));
+
+			conversation = new CastConversationData(
+					new CastConversationData.Conversation(new CastConversationData.Cast(
+							cast.author(),
+							cast.timestamp(),
+							cast.text(),
+							cast.mentionedProfiles(),
+							List.of()), null));
 		}
 
 		List<AnthropicAgentService.Message> inputMessages = new ArrayList<>();
@@ -453,7 +461,6 @@ public class FarcasterBotService {
 								eventPublisher.publishEvent(
 										new CreatedPaymentEvent(payment.getId()));
 							} else {
-
 								val wallet = flowRepository
 										.findPayflowBalanceV2ByUserId(casterProfile.getId(), "1.4.1_0.7");
 
@@ -463,23 +470,28 @@ public class FarcasterBotService {
 										.map(w -> w.getAddress())
 										.orElse(null) : null;
 
+								val isBaseChain = payment.getNetwork().equals(BASE_CHAIN_ID);
 								castText = String.format("""
-										@%s, complete payment manually:
-
-										To enable automatic payments, %s!
-											""",
+										@%s, complete payment manually%s
+										""",
 										cast.author().username(),
-										walletAddress != null
-												? "create a session for your existing Payflow Wallet"
-												: "create a Payflow Wallet with session");
+										isBaseChain ? String.format("""
 
-								embeds = List.of(
-										new Cast.Embed(linkService.frameV2PaymentLink(payment).toString()),
-										new Cast.Embed(walletAddress != null
-												? String.format("%s/~/create-wallet-session/%s",
-														payflowConfig.getDAppServiceUrl(), walletAddress)
-												: String.format("%s/~/create-payflow-wallet",
-														payflowConfig.getDAppServiceUrl())));
+												To enable automatic payments, %s!""",
+												walletAddress != null
+														? "create a session for your existing Payflow Wallet"
+														: "create a Payflow Wallet with session")
+												: "");
+
+								embeds = isBaseChain
+										? List.of(
+												new Cast.Embed(linkService.frameV2PaymentLink(payment).toString()),
+												new Cast.Embed(walletAddress != null
+														? String.format("%s/~/create-wallet-session/%s",
+																payflowConfig.getDAppServiceUrl(), walletAddress)
+														: String.format("%s/~/create-payflow-wallet",
+																payflowConfig.getDAppServiceUrl())))
+										: List.of(new Cast.Embed(linkService.frameV2PaymentLink(payment).toString()));
 							}
 
 							eventPublisher.publishEvent(new CastEvent(
@@ -714,9 +726,7 @@ public class FarcasterBotService {
 		}
 
 		// if tools were used, decrement attempts, otherwise end chat
-		if (StringUtils.equals(response.getStopReason(), "tool_use"))
-
-		{
+		if (StringUtils.equals(response.getStopReason(), "tool_use")) {
 			decrementAttempts(casterProfile);
 		} else {
 			rejectJob(job, "Ending chat", textWithReply);

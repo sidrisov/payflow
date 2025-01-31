@@ -12,8 +12,6 @@ import ua.sinaver.web3.payflow.message.farcaster.ValidatedFrameResponseMessage;
 
 import java.net.URI;
 
-import static ua.sinaver.web3.payflow.config.PayflowConfig.MINIAPP_REDIRECT_ALLOWLIST;
-
 @Slf4j
 @Service
 @Transactional
@@ -78,8 +76,7 @@ public class LinkService {
 
 	public URI paymentLink(Payment payment, ValidatedFrameResponseMessage frameMessage,
 	                       boolean checkWhitelist) {
-		val miniApp = frameMessage.action().signer().client().username().equals("warpcast") && (!checkWhitelist ||
-				MINIAPP_REDIRECT_ALLOWLIST.contains(frameMessage.action().interactor().username()));
+		val miniApp = frameMessage.action().signer().client().username().equals("warpcast") && (!checkWhitelist);
 		return paymentLink(payment, miniApp);
 	}
 }

@@ -161,7 +161,7 @@ public class InvitationController {
 
 				val invitations = IntStream.range(0, numberOfCodes).boxed().map(n -> {
 					val code = StringUtils.isBlank(invitationMessage.codeBased().code())
-							? "pf-".concat(RandomStringUtils.random(8, true, true).toLowerCase())
+							? "pf-".concat(RandomStringUtils.secure().nextAlphanumeric(8).toLowerCase())
 							: invitationMessage.codeBased().code();
 
 					val invitation = new Invitation(null, code);

@@ -57,7 +57,7 @@ public class InviteController {
 		log.debug("Received cast action: invite {}", castActionMessage);
 		val validateMessage = neynarService.validaFrameRequest(
 				castActionMessage.trustedData().messageBytes());
-		if (!validateMessage.valid()) {
+		if (validateMessage == null || !validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Cast action not verified!"));
@@ -67,12 +67,11 @@ public class InviteController {
 				validateMessage.action().url());
 
 		val castInteractor = validateMessage.action().interactor();
-		val castAuthor = validateMessage.action().cast().author() != null ?
-				validateMessage.action().cast().author() :
-				neynarService.fetchFarcasterUser(validateMessage.action().cast().fid());
+		val castAuthor = validateMessage.action().cast().author() != null ? validateMessage.action().cast().author()
+				: neynarService.fetchFarcasterUser(validateMessage.action().cast().fid());
 
-		val clickedProfile =
-				identityService.getProfiles(castInteractor.addressesWithoutCustodialIfAvailable()).stream().findFirst().orElse(null);
+		val clickedProfile = identityService.getProfiles(castInteractor.addressesWithoutCustodialIfAvailable()).stream()
+				.findFirst().orElse(null);
 		if (clickedProfile == null) {
 			log.error("Clicked fid {} is not on payflow", castInteractor);
 			return ResponseEntity.badRequest().body(
@@ -107,11 +106,11 @@ public class InviteController {
 					// TODO: fetch fname from validated message
 					val casterUsername = castAuthor.username();
 					val castText = String.format("""
-									Congratulations @%s 🎉 You've been invited to @payflow by @%s
-																	\t
-									Proceed to app.payflow.me/connect for sign up!
-																	\t
-									p.s. `Sign In With Farcaster` is recommended for better experience 🙌🏻""",
+							Congratulations @%s 🎉 You've been invited to @payflow by @%s
+															\t
+							Proceed to app.payflow.me/connect for sign up!
+															\t
+							p.s. `Sign In With Farcaster` is recommended for better experience 🙌🏻""",
 							casterUsername,
 							validateMessage.action().interactor().username());
 					val embeds = Collections.singletonList(new Cast.Embed("https://app.payflow" +

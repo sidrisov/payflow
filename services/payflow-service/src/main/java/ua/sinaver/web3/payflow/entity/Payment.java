@@ -145,7 +145,7 @@ public class Payment {
 		this.receiver = receiver;
 		this.network = network;
 		this.token = token;
-		this.referenceId = RandomStringUtils.random(8, true, true);
+		this.referenceId = RandomStringUtils.secure().nextAlphanumeric(8);
 	}
 
 	public void recordFailure(String error) {

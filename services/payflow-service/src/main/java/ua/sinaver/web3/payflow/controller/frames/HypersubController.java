@@ -49,10 +49,10 @@ public class HypersubController {
 	private FanTokenService fanTokenService;
 
 	private static Payment getHypersubPayment(ValidatedFrameResponseMessage validateMessage,
-	                                          User user,
-	                                          Integer receiverFid,
-	                                          String receiverAddress,
-	                                          String token) {
+			User user,
+			Integer receiverFid,
+			String receiverAddress,
+			String token) {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val castHash = validateMessage.action().cast().hash();
 		val sourceRef = String.format("https://warpcast.com/%s/%s",
@@ -72,12 +72,12 @@ public class HypersubController {
 
 	@PostMapping("/{id}/submit")
 	public ResponseEntity<?> submit(@RequestBody FrameMessage frameMessage,
-	                                @PathVariable String id) {
+			@PathVariable String id) {
 		log.debug("Received submit hypersub {} message request: {}", id, frameMessage);
 		val validateMessage = neynarService.validaFrameRequest(
 				frameMessage.trustedData().messageBytes());
 
-		if (!validateMessage.valid()) {
+		if (validateMessage == null || !validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
 			return DEFAULT_HTML_RESPONSE;
 		}

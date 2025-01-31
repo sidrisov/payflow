@@ -18,6 +18,6 @@ public interface NeynarClient {
 
     @GetMapping("/cast/conversation")
     default CastConversationData getCastConversationByHash(String identifier) {
-        return getCastConversation(identifier, "hash", 1, true, 5);
+        return getCastConversation(identifier, "hash", 0, true, 20);
     }
 }

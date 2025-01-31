@@ -49,12 +49,12 @@ public class MintController {
 	private LinkService linkService;
 
 	private static Payment getMintPayment(ValidatedFrameResponseMessage validateMessage,
-	                                      User user,
-	                                      Integer receiverFid,
-	                                      String receiverAddress,
-	                                      Integer chainId,
-	                                      String token,
-	                                      String originalMintUrl) {
+			User user,
+			Integer receiverFid,
+			String receiverAddress,
+			Integer chainId,
+			String token,
+			String originalMintUrl) {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 		val castHash = validateMessage.action().cast().hash();
 		val sourceRef = String.format("https://warpcast.com/%s/%s",
@@ -75,18 +75,18 @@ public class MintController {
 
 	@PostMapping("/submit")
 	public ResponseEntity<?> submit(@RequestBody FrameMessage frameMessage,
-	                                @RequestParam String provider,
-	                                @RequestParam Integer chainId,
-	                                @RequestParam String contract,
-	                                @RequestParam(required = false) String author,
-	                                @RequestParam(required = false) Integer tokenId,
-	                                @RequestParam(required = false) String referral) {
+			@RequestParam String provider,
+			@RequestParam Integer chainId,
+			@RequestParam String contract,
+			@RequestParam(required = false) String author,
+			@RequestParam(required = false) Integer tokenId,
+			@RequestParam(required = false) String referral) {
 
 		log.debug("Received submit mint message request: {}", frameMessage);
 		val validateMessage = neynarService.validaFrameRequest(
 				frameMessage.trustedData().messageBytes());
 
-		if (!validateMessage.valid()) {
+		if (validateMessage == null || !validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
 			return DEFAULT_HTML_RESPONSE;
 		}

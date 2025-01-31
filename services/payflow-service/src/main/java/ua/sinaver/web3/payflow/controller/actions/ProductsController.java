@@ -25,7 +25,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-
 @RestController
 @RequestMapping("/farcaster/actions/products")
 @Transactional
@@ -76,7 +75,7 @@ public class ProductsController {
 
 		val validateMessage = neynarService.validaFrameRequest(
 				castActionMessage.trustedData().messageBytes(), "fan".equals(action));
-		if (!validateMessage.valid()) {
+		if (validateMessage == null || !validateMessage.valid()) {
 			log.error("Frame message failed validation {}", validateMessage);
 			return ResponseEntity.badRequest().body(
 					new FrameResponse.FrameMessage("Cast action not verified!"));
@@ -145,9 +144,9 @@ public class ProductsController {
 				: neynarService.fetchFarcasterUser(action.cast().fid());
 
 		val fanTokens = Stream.of(
-						castAuthor.username(),
-						Optional.ofNullable(action.cast().channel()).map(channel -> "/" + channel.id()).orElse(null),
-						"network:farcaster")
+				castAuthor.username(),
+				Optional.ofNullable(action.cast().channel()).map(channel -> "/" + channel.id()).orElse(null),
+				"network:farcaster")
 				.filter(Objects::nonNull)
 				.map(fanTokenService::getFanToken)
 				.filter(Objects::nonNull)
