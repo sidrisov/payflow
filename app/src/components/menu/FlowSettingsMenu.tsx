@@ -263,7 +263,6 @@ export function FlowSettingsMenu({
                   </MenuItem>
                   {flow.type !== 'CONNECTED' && flow.wallets[0].version?.endsWith('_0.7') && (
                     <MenuItem
-                      disabled={!profile?.earlyFeatureAccess}
                       onClick={() => openDialog('permissions')}>
                       <ListItemIcon>
                         <AutoMode sx={{ fontSize: 20 }} />
