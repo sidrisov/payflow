@@ -1,12 +1,9 @@
 package ua.sinaver.web3.payflow.service;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.ChannelOption;
 import jakarta.annotation.PostConstruct;
-import lombok.Builder;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +15,8 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.util.retry.Retry;
 import ua.sinaver.web3.payflow.message.Token;
+import ua.sinaver.web3.payflow.config.AnthropicAgentPrompt;
+import ua.sinaver.web3.payflow.message.agent.*;
 
 import java.time.Duration;
 import java.util.List;
@@ -28,328 +27,59 @@ import java.util.stream.Collectors;
 @Service
 public class AnthropicAgentService {
 
-	private static final String CORE_PROMPT = """
-			``` Payflow Agent Prompt v0.0.11 ```
-
-			You're Payflow Agent - an AI companion for Onchain Social Payments on Farcaster.
-
-			Core Information:
-				- Created by @sinaver.eth
-				- Purpose: Making Onchain Social Payments simple
-				- Personality: Friendly, fun, and direct in responses
-				- Response Style: Clear, concise, and action-oriented
-
-			Key Behaviors:
-				1. Always tag users in responses
-				2. Use present tense, avoid "I'll", "I'm", etc.
-				3. Prioritize current cast inquiries before parent casts
-				4. Keep responses focused and consumer-friendly
-				5. Don't share unrequested information
-
-			Farcaster Social Conversation JSON Format (fields might come in snake case as well):
-				{
-					"conversation": {
-						"cast": {
-							"author": {
-								"username": string,
-								"displayName": string,
-								"fid": number
-							},
-							"timestamp": string,
-							"text": string,
-							"directReplies": [
-								{
-									"author": {
-										"username": string,
-										"displayName": string,
-										"fid": number
-									},
-									"timestamp": string,
-									"text": string,
-									"mentionedProfiles": [
-										{
-											"username": string,
-											"displayName": string,
-											"fid": number
-										}
-									]
-								}
-							],
-							"mentionedProfiles": [
-								{
-									"username": string,
-									"displayName": string,
-									"fid": number
-								}
-							]
-						},
-						"chronologicalParentCasts": [
-							{
-								"author": {
-									"username": string,
-									"displayName": string,
-									"fid": number
-								},
-								"timestamp": string,
-								"text": string,
-								"mentionedProfiles": [
-									{
-										"username": string,
-										"displayName": string,
-										"fid": number
-									}
-								]
-							}
-						]
-					}
-				}
-
-			Rules:
-				1. You can reply with general information about Payflow app and agent
-				2. When asked if something is supported, answer both for app and agent
-				3. Identify if user requests particular service or general inquiry or question
-				4. Check if you need to reply or not, follow "Reply vs Not Reply Prompt"
-				5. Apply service-specific rules and processing if you identify the request as service request
-				6. Keep responses focused and concise, make it more consumer friendly
-				7. Address user directly and use present tense (avoid I'll, I'm, etc.)
-				8. Always tag user in response, if user is mentioned
-				9. Don't mention technical details, e.g. which tool is used (send_payments, buy_storage, etc.), instead mention the name of the service
-				10. You are allowed to reply to multiple questions in one response
-				11. Priritize answering inquiries in current cast of conversation, and then in parent cast if user inclined so
-				12. Prioritize answering general inquiries and then proceeding with those requiring an action
-				13. Don't provide any information about something that is not specifically asked
-				13. If someone shares something about you, be cool and greatful about it
-
-			Payflow App features:
-				Payflow is Onchain Social Payments Hub on Farcaster utilising all the protocol development legos:
-				frames, cast actions, composer actions, bots, mini-app tx, and frame v2 to provide the best payment
-				experience for the user in social feed, allowing users to pay with any token cross-chain with verified
-				addresses or Payflow Balance for 1-click gasless & automated payments experience:
-
-				1. Aggregated payment wallets, including:
-					- Payflow Balance: safe smart account which supports 1-click gasless in app payments, and
-					 automated payments by creating a session key (allows payflow platform to pay on behalf of the user)
-					- Farcaster Verified Addresses
-					- Read-only Ecosystem wallets: Bank & Rodeo
-				2. Payment provider in Warpcast Pay
-				3. P2P or rewards (cast, top comment, top casters) payments with cross-chain (bridging) support
-				4. Shareable custom "Pay Me" frames for any verified address / token amount
-				5. Buy or gift storage
-				6. Minting or gifting collectibles
-				7. Buy or gift fan tokens
-				8. Subscribe or gift hypersub
-				9. Claimables for degen & moxie
-				10. Storage expiration notifications (with different criterias and threshold configuration)
-				11. Intents, receipts, and activity view
-				12. Cross-chain payments refunds
-				13. Payment flow lists & balance
-				14. Contact book across farcaster and other social graph data (your wallets, recent, transacted, favourites
-				15. App settings:
-				- preferred payment wallet (default receiving and spending wallet)
-				- preferred tokens list (shown in user frame or in the token selection dialog)
-				- preferred farcaster client (for cast action installation)
-
-			How to support Payflow:
-				- make more payments
-				- tip @sinaver.eth or agent
-				- spread the word & share your feedback
-				- subscribe to Payflow Pro subscription:
-					https://hypersub.xyz/s/payflow-pro-17zbymgz59atc
-
-			Payflow Pro (0.0025 ETH/month):
-				- access to upcoming pro features
-				- zero fees across all types of payments
-				- priority support and feature requests
-				- private payflow groupies chat
-				- /payflow channel membership		
-
-			Supported chains:
-				- Base (8453)
-				- Optimism (10)
-				- Arbitrum (42161)
-				- Degen L3 (666666666)
-				- Ham L3 (5112)
-
-			Supported tokens:
-			   ```json
-			   %s
-			   ```
-			""";
-
-	private static final String NO_REPLY_PROMPT = """
-			Reply vs Not Reply Guide:
-
-			IMPORTANT: Always check conversation length first!
-			- If thread has >5 parent casts: use no_reply tool with reason "conversation too long"
-			- If circular bot conversation detected: use no_reply tool with reason "bot conversation"
-
-			Reply When:
-			1. Direct questions about features/capabilities
-			2. Direct mentions (@payflow)
-			3. Clear service requests with required parameters
-			4. Help with error resolution
-			5. Service misuse or incorrect usage - provide guidance
-			6. Invalid parameters or wrong format - explain correct usage
-
-			Skip Reply When:
-			1. Thread >3 parent casts deep
-			2. Casual mentions without clear intent
-			3. Bot-to-bot conversations
-			4. User specifies no_reply
-			5. General chat without questions
-
-			Service Misuse Handling:
-			- Always reply to explain correct usage
-			- Provide examples of proper format
-			- Point to relevant service documentation
-			- Don't use no_reply tool for service misuse cases
-			""";
-
-	private static final String SERVICES_PROMPT = """
-			Available Services Agent Prompt:
-
-			IMPORTANT: For all service requests:
-			- Verify user explicitly requested the service
-			- Don't process requests from long threads (>5 parent casts)
-			- Don't assume intent - user must clearly state what they want
-			- Default chain handling is critical:
-			  * Base (8453) is default chain for most tokens if not specified
-
-
-
-			1. Send payments
-			   - Understand the user payment request and process it
-			   - Make sure user explicitly asks to make a payment
-			   - Aggregates multiple payments into single tool call
-			   - Provide detailed response with payment details
-			   - If chain not specified, default to Base (8453)
-			   - If token is available on multiple chains, default to Base (8453), e.g. for USDC, DEGEN, ETH, etc.
-			   - Automated payments are available only on Base
-			   - Recipient is mentioned user in current cast, otherwise fallback to parent cast author (can't be @payflow, unless specified)
-			   - Input token and amount should be mentioned in current cast, unless it's a conversation follow up
-			   - You can interpret approximate amounts (e.g., "few bucks" ≈ $5, "couple tokens" ≈ 2)
-			   - You can optionally pass short name/description of the payment with few words
-			   - Don't request to check balance
-			   - Use tool: send_payments
-
-			   Valid Payment Commands:
-			   - pay @user <amount> <token> <chain>
-			   - send @user <amount> <token> <chain>
-			   - transfer @user <amount> <token> <chain>
-
-			   Examples:
-			   Single payments:
-			   - send @user1 100 USDC
-			   - pay @user2 $5 ETH
-			   - transfer @user3 50 degen on l3
-
-			   Multiple payments:
-			   - send @user1 100 USDC, @user2 $50 ETH, @user3 200 degen
-			   - pay @user1 5 ETH and @user2 10 USDC
-			   - transfer 50 degen to @user1 on base, 100 USDC to @user2 on op
-
-			   Split payments:
-			   - split 100 USDC between @user1 @user2 @user3
-			   - split $50 ETH equally between @user1 @user2
-			   - send @user1 @user2 @user3 100 USDC each
-
-			   Context-aware:
-			   - send some degen (recipient in parent cast)
-			   - split this between us (splits with users in thread)
-
-			2. Buy farcaster storage
-			   - Buy farcaster storage for your account, mentioned user, or for parent cast author
-			   - Use tool: buy_storage to reply with app frame to make storage purchase
-
-			3. Check token balance
-			   - Check balance of particular token
-			   - Use tool: get_wallet_token_balance to check and reply with token balance
-
-			4. Top up wallet
-			   - Top up wallets:
-			   	- Payflow Balance with supported tokens, token is optional
-			   	- Bank with ETH (on Base)
-			   	- Rodeo with ETH (on Base)
-			   - Use tool: top_up_wallet to reply with app frame to make top up
-
-			5. Minting NFTs
-			   - not yet available, but comming soon
-			6. Pay Me
-			   - Respond with a payment link to accept payments
-			   - Tag user in response with link to payment, if user is mentioned:
-			   		e.g. @user1 pay me 5 usdglo -> ... @user1 @alice requested payment ...
-			   - Use tool: pay_me to generate a payment link
-
-				Input:
-				- userId - current author username
-				- amount - token amount to pay (e.g. 100), if not provided, use dollars
-				- dollars - usd amount to pay (e.g. 5), if not provided, use amount
-				- token - token id to pay, e.g. USDC, ETH, etc.
-				- chainId - chain id to pay, for now only Base (8453) is supported
-				- title - title of the payment (optional)
-
-				Output:
-				- link to payment
-			7. Claim Degen or Moxie
-			   - Claim Degen or Moxie
-			   - Use tool: claim_degen_or_moxie to reply with app frame to make claim
-			""";
-
-	// - Use tool: pay_me to generate a payment link to accept payments
-
 	private static final String ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 
-	private static final List<Tool> DEFAULT_TOOLS = List.of(
-			Tool.builder()
+	private static final List<AgentTool> DEFAULT_TOOLS = List.of(
+			AgentTool.builder()
 					.name("no_reply")
 					.description("Use this when no response should be given")
 					.inputSchema(
-							Tool.InputSchema.builder()
+							AgentTool.InputSchema.builder()
 									.type("object")
 									.properties(Map.of(
-											"reason", Tool.InputSchema.Property.builder()
+											"reason", AgentTool.InputSchema.Property.builder()
 													.type("string")
 													.description("Reason for not replying")
 													.build()))
 									.required(List.of("reason"))
 									.build())
 					.build(),
-			Tool.builder()
+			AgentTool.builder()
 					.name("send_payments")
 					.description("Send payment to one or more users")
 					.inputSchema(
-							Tool.InputSchema.builder()
+							AgentTool.InputSchema.builder()
 									.type("object")
 									.properties(Map.of(
-											"recipients", Tool.InputSchema.Property.builder()
+											"recipients", AgentTool.InputSchema.Property.builder()
 													.type("array")
 													.description("List of payment recipients")
-													.items(Tool.InputSchema.Items.builder()
+													.items(AgentTool.InputSchema.Items.builder()
 															.type("object")
 															.properties(Map.of(
-																	"username", Tool.InputSchema.Property.builder()
+																	"username", AgentTool.InputSchema.Property.builder()
 																			.type("string")
 																			.description("Recipient's username")
 																			.build(),
-																	"chainId", Tool.InputSchema.Property.builder()
+																	"chainId", AgentTool.InputSchema.Property.builder()
 																			.type("number")
 																			.description(
 																					"Chain ID, default is Base (8453)")
 																			.build(),
-																	"token", Tool.InputSchema.Property.builder()
+																	"token", AgentTool.InputSchema.Property.builder()
 																			.type("string")
 																			.description(
 																					"Token identifier (e.g., USDC, ETH)")
 																			.build(),
-																	"amount", Tool.InputSchema.Property.builder()
+																	"amount", AgentTool.InputSchema.Property.builder()
 																			.type("number")
 																			.description("Amount in tokens")
 																			.build(),
-																	"dollars", Tool.InputSchema.Property.builder()
+																	"dollars", AgentTool.InputSchema.Property.builder()
 																			.type("number")
 																			.description("Amount in USD")
 																			.build(),
-																	"name", Tool.InputSchema.Property.builder()
+																	"name", AgentTool.InputSchema.Property.builder()
 																			.type("string")
 																			.description(
 																					"short name/description of the payment")
@@ -360,84 +90,85 @@ public class AnthropicAgentService {
 									.required(List.of("recipients"))
 									.build())
 					.build(),
-			Tool.builder()
+			AgentTool.builder()
 					.name("buy_storage")
 					.description("Buy storage for your account, mentioned user, or for parent cast author")
 					.inputSchema(
-							Tool.InputSchema.builder()
+							AgentTool.InputSchema.builder()
 									.type("object")
 									.properties(Map.of(
-											"fid", Tool.InputSchema.Property.builder()
+											"fid", AgentTool.InputSchema.Property.builder()
 													.type("number")
 													.description("User fid to buy storage for")
 													.build()))
 									.required(List.of("fid"))
 									.build())
 					.build(),
-			Tool.builder()
+			AgentTool.builder()
 					.name("get_wallet_token_balance")
 					.description("Get balance of particular token")
-					.inputSchema(Tool.InputSchema.builder().type("object").properties(
+					.inputSchema(AgentTool.InputSchema.builder().type("object").properties(
 							Map.of("token",
-									Tool.InputSchema.Property.builder().type("string")
+									AgentTool.InputSchema.Property.builder().type("string")
 											.description("Token identifier like $token, token, or token address")
 											.build()))
 							.required(List.of("token")).build())
 					.build(),
-			Tool.builder()
+			AgentTool.builder()
 					.name("top_up_wallet")
 					.description("Top up your Payflow Balance, Bank, or Rodeo wallets")
-					.inputSchema(Tool.InputSchema.builder().type("object").properties(
+					.inputSchema(AgentTool.InputSchema.builder().type("object").properties(
 							Map.of(
 									"type",
-									Tool.InputSchema.Property.builder().type("string")
+									AgentTool.InputSchema.Property.builder().type("string")
 											.description("Wallet type: payflow, bankr, or rodeo").build(),
 									"token",
-									Tool.InputSchema.Property.builder().type("string").description("Token to top up")
+									AgentTool.InputSchema.Property.builder().type("string")
+											.description("Token to top up")
 											.build()))
 							.required(List.of("type"))
 							.build())
 					.cacheControl(Map.of("type", "ephemeral"))
 					.build(),
-			Tool.builder()
+			AgentTool.builder()
 					.name("pay_me")
 					.description("Generate a payment link to accept payments")
 					.inputSchema(
-							Tool.InputSchema.builder()
+							AgentTool.InputSchema.builder()
 									.type("object")
 									.properties(Map.of(
-											"userId", Tool.InputSchema.Property.builder()
+											"userId", AgentTool.InputSchema.Property.builder()
 													.type("string")
 													.description("User ID requesting the payment")
 													.build(),
-											"token", Tool.InputSchema.Property.builder()
+											"token", AgentTool.InputSchema.Property.builder()
 													.type("string")
 													.description("Token identifier (e.g., USDC, ETH)")
 													.build(),
-											"chainId", Tool.InputSchema.Property.builder()
+											"chainId", AgentTool.InputSchema.Property.builder()
 													.type("number")
 													.description("Chain ID")
 													.build(),
-											"amount", Tool.InputSchema.Property.builder()
+											"amount", AgentTool.InputSchema.Property.builder()
 													.type("number")
 													.description("Amount in tokens")
 													.build(),
-											"dollars", Tool.InputSchema.Property.builder()
+											"dollars", AgentTool.InputSchema.Property.builder()
 													.type("number")
 													.description("Amount in USD")
 													.build(),
-											"title", Tool.InputSchema.Property.builder()
+											"title", AgentTool.InputSchema.Property.builder()
 													.type("string")
 													.description("Title of the payment")
 													.build()))
 									.required(List.of("userId", "chainId", "token"))
 									.build())
 					.build(),
-			Tool.builder()
+			AgentTool.builder()
 					.name("claim_degen_or_moxie")
 					.description("Claim Degen or Moxie")
-					.inputSchema(Tool.InputSchema.builder().type("object").properties(Map.of(
-							"asset", Tool.InputSchema.Property.builder().type("string")
+					.inputSchema(AgentTool.InputSchema.builder().type("object").properties(Map.of(
+							"asset", AgentTool.InputSchema.Property.builder().type("string")
 									.description("Asset to claim")
 									.build()))
 							.required(List.of("asset")).build())
@@ -447,8 +178,8 @@ public class AnthropicAgentService {
 	private TokenService tokenService;
 	@Autowired
 	private ObjectMapper objectMapper;
-	private List<SystemMessage> systemPrompt;
-	private List<Tool> tools;
+	private List<AgentSystemMessage> systemPrompt;
+	private List<AgentTool> tools;
 
 	public AnthropicAgentService(
 			@org.springframework.beans.factory.annotation.Value("${anthropic.api.key}") String anthropicApiKey,
@@ -470,27 +201,32 @@ public class AnthropicAgentService {
 	private void initialize() {
 		try {
 			val tokenAddresses = tokenService.getTokens().stream()
-					.collect(Collectors.toMap(
+					.collect(Collectors.groupingBy(
 							Token::id,
-							token -> token.tokenAddress() != null ? token.tokenAddress() : TokenService.ZERO_ADDRESS,
-							(a, b) -> a));
+							Collectors.mapping(
+									token -> Map.of(
+											"address",
+											token.tokenAddress() != null ? token.tokenAddress()
+													: TokenService.ZERO_ADDRESS,
+											"chainId", String.valueOf(token.chainId())),
+									Collectors.toList())));
 
 			val tokenMapJson = objectMapper
 					.writerWithDefaultPrettyPrinter()
 					.writeValueAsString(tokenAddresses);
 
 			this.systemPrompt = List.of(
-					SystemMessage.builder()
+					AgentSystemMessage.builder()
 							.type("text")
-							.text(CORE_PROMPT.formatted(tokenMapJson))
+							.text(AnthropicAgentPrompt.CORE_PROMPT.formatted(tokenMapJson))
 							.build(),
-					SystemMessage.builder()
+					AgentSystemMessage.builder()
 							.type("text")
-							.text(SERVICES_PROMPT)
+							.text(AnthropicAgentPrompt.SERVICES_PROMPT)
 							.build(),
-					SystemMessage.builder()
+					AgentSystemMessage.builder()
 							.type("text")
-							.text(NO_REPLY_PROMPT)
+							.text(AnthropicAgentPrompt.NO_REPLY_PROMPT)
 							.build());
 
 			this.tools = DEFAULT_TOOLS;
@@ -502,24 +238,16 @@ public class AnthropicAgentService {
 		}
 	}
 
-	/**
-	 * Before executing a payment use tools to check if the user has created a
-	 * session key to grant access to his wallet, and if amount is enough.
-	 * <p>
-	 * Use tools to check balance and valid session, if session not available,
-	 * prompt user to create a session by replying You need to create a session to
-	 * grant access to one of your Payflow Balance wallets at app.payflow.me
-	 */
-
-	public AnthropicResponse processPaymentInput(List<Message> messages) {
+	public AgentResponse processPaymentInput(List<AgentMessage> messages) {
 		try {
-			val request = AnthropicRequest.builder()
+			val request = AgentRequest.builder()
 					.model("claude-3-5-haiku-20241022")
 					.maxTokens(4096)
 					.temperature(0.85)
 					.tools(tools)
 					.system(systemPrompt)
-					.messages(messages).build();
+					.messages(messages)
+					.build();
 
 			log.info("Anthropic API request: {}",
 					objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(request));
@@ -533,7 +261,7 @@ public class AnthropicAgentService {
 										log.error("Anthropic API request failed: {}", errorBody);
 										return Mono.error(new RuntimeException("Anthropic API error: " + errorBody));
 									}))
-					.bodyToMono(AnthropicResponse.class)
+					.bodyToMono(AgentResponse.class)
 					.retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
 							.maxBackoff(Duration.ofSeconds(10))
 							.doBeforeRetry(signal -> log.warn("Retry attempt {} after error: {}",
@@ -549,119 +277,5 @@ public class AnthropicAgentService {
 		}
 
 		return null;
-	}
-
-	@Builder
-	@Value
-	public static class Message {
-		String role;
-		List<Content> content;
-
-		@Builder
-		@Value
-		public static class Content {
-			String type;
-			String text;
-		}
-	}
-
-	@Builder
-	@Value
-	static class SystemMessage {
-		String type;
-		String text;
-		@JsonProperty("cache_control")
-		@Builder.Default
-		Map<String, String> cacheControl = Map.of("type", "ephemeral");
-	}
-
-	@Builder
-	@Value
-	static class Tool {
-		String name;
-		String description;
-		@JsonProperty("input_schema")
-		InputSchema inputSchema;
-		@JsonProperty("cache_control")
-		Map<String, String> cacheControl;
-
-		@Builder
-		@Value
-		static class InputSchema {
-			String type;
-			@Builder.Default
-			Map<String, Property> properties = Map.of();
-			@Builder.Default
-			List<String> required = List.of();
-
-			@Builder
-			@Value
-			static class Property {
-				String type;
-				String description;
-				Items items;
-			}
-
-			@Builder
-			@Value
-			static class Items {
-				String type;
-				@Builder.Default
-				Map<String, Property> properties = Map.of();
-				@Builder.Default
-				List<String> required = List.of();
-			}
-		}
-	}
-
-	@Builder
-	@Value
-	static class AnthropicRequest {
-		String model;
-		@JsonProperty("max_tokens")
-		int maxTokens;
-		@Builder.Default
-		Double temperature = 1.0;
-		List<SystemMessage> system;
-		List<Tool> tools;
-		List<Message> messages;
-	}
-
-	@Builder
-	@Value
-	public static class AnthropicResponse {
-		String id; // message ID (e.g., msg_018fbL1nnasS31AK8iKK2X7C)
-		String type; // message type
-		String role; // assistant
-		String model; // claude-3-5-sonnet-20241022
-		List<Content> content;
-		@JsonProperty("stop_reason")
-		String stopReason; // tool_use, end_turn, etc.
-		@JsonProperty("stop_sequence")
-		String stopSequence;
-		Usage usage;
-
-		@Builder
-		@Value
-		public static class Content {
-			String type; // text or tool_use
-			String text; // for text type
-			String id; // tool ID for tool_use type (e.g., toolu_013Ank1xhbedLnYvaEQ3HzGD)
-			String name; // tool name for tool_use type
-			Map<String, Object> input; // tool input parameters
-		}
-
-		@Builder
-		@Value
-		static class Usage {
-			@JsonProperty("input_tokens")
-			int inputTokens;
-			@JsonProperty("cache_creation_input_tokens")
-			int cacheCreationInputTokens;
-			@JsonProperty("cache_read_input_tokens")
-			int cacheReadInputTokens;
-			@JsonProperty("output_tokens")
-			int outputTokens;
-		}
 	}
 }

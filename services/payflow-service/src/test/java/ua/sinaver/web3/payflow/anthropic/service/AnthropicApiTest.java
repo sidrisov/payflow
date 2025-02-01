@@ -18,6 +18,7 @@ import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.web.reactive.function.client.WebClient;
+import ua.sinaver.web3.payflow.message.agent.AgentMessage;
 import ua.sinaver.web3.payflow.message.farcaster.CastConversationData;
 import ua.sinaver.web3.payflow.service.AnthropicAgentService;
 import ua.sinaver.web3.payflow.service.TokenService;
@@ -73,10 +74,10 @@ public class AnthropicApiTest {
 				""";
 
 		val response = anthropicAgentService.processPaymentInput(
-				List.of(AnthropicAgentService.Message.builder()
+				List.of(AgentMessage.builder()
 						.role("user")
 						.content(List.of(
-								AnthropicAgentService.Message.Content.builder()
+								AgentMessage.Content.builder()
 										.type("text")
 										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
@@ -123,10 +124,10 @@ public class AnthropicApiTest {
 				""";
 
 		val response = anthropicAgentService.processPaymentInput(
-				List.of(AnthropicAgentService.Message.builder()
+				List.of(AgentMessage.builder()
 						.role("user")
 						.content(List.of(
-								AnthropicAgentService.Message.Content.builder()
+								AgentMessage.Content.builder()
 										.type("text")
 										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
@@ -171,10 +172,10 @@ public class AnthropicApiTest {
 				""";
 
 		val response = anthropicAgentService.processPaymentInput(
-				List.of(AnthropicAgentService.Message.builder()
+				List.of(AgentMessage.builder()
 						.role("user")
 						.content(List.of(
-								AnthropicAgentService.Message.Content.builder()
+								AgentMessage.Content.builder()
 										.type("text")
 										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
@@ -212,10 +213,10 @@ public class AnthropicApiTest {
 				""";
 
 		val response = anthropicAgentService.processPaymentInput(
-				List.of(AnthropicAgentService.Message.builder()
+				List.of(AgentMessage.builder()
 						.role("user")
 						.content(List.of(
-								AnthropicAgentService.Message.Content.builder()
+								AgentMessage.Content.builder()
 										.type("text")
 										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
@@ -264,10 +265,10 @@ public class AnthropicApiTest {
 				""";
 
 		val response = anthropicAgentService.processPaymentInput(
-				List.of(AnthropicAgentService.Message.builder()
+				List.of(AgentMessage.builder()
 						.role("user")
 						.content(List.of(
-								AnthropicAgentService.Message.Content.builder()
+								AgentMessage.Content.builder()
 										.type("text")
 										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
@@ -299,10 +300,10 @@ public class AnthropicApiTest {
 				""";
 
 		val response = anthropicAgentService.processPaymentInput(
-				List.of(AnthropicAgentService.Message.builder()
+				List.of(AgentMessage.builder()
 						.role("user")
 						.content(List.of(
-								AnthropicAgentService.Message.Content.builder()
+								AgentMessage.Content.builder()
 										.type("text")
 										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
@@ -340,10 +341,10 @@ public class AnthropicApiTest {
 				""";
 
 		val response = anthropicAgentService.processPaymentInput(
-				List.of(AnthropicAgentService.Message.builder()
+				List.of(AgentMessage.builder()
 						.role("user")
 						.content(List.of(
-								AnthropicAgentService.Message.Content.builder()
+								AgentMessage.Content.builder()
 										.type("text")
 										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
@@ -397,10 +398,10 @@ public class AnthropicApiTest {
 				""";
 
 		val response = anthropicAgentService.processPaymentInput(
-				List.of(AnthropicAgentService.Message.builder()
+				List.of(AgentMessage.builder()
 						.role("user")
 						.content(List.of(
-								AnthropicAgentService.Message.Content.builder()
+								AgentMessage.Content.builder()
 										.type("text")
 										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
@@ -438,10 +439,10 @@ public class AnthropicApiTest {
 				""";
 
 		val response = anthropicAgentService.processPaymentInput(
-				List.of(AnthropicAgentService.Message.builder()
+				List.of(AgentMessage.builder()
 						.role("user")
 						.content(List.of(
-								AnthropicAgentService.Message.Content.builder()
+								AgentMessage.Content.builder()
 										.type("text")
 										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
@@ -479,10 +480,10 @@ public class AnthropicApiTest {
 				""";
 
 		val response = anthropicAgentService.processPaymentInput(
-				List.of(AnthropicAgentService.Message.builder()
+				List.of(AgentMessage.builder()
 						.role("user")
 						.content(List.of(
-								AnthropicAgentService.Message.Content.builder()
+								AgentMessage.Content.builder()
 										.type("text")
 										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
@@ -520,10 +521,10 @@ public class AnthropicApiTest {
 				""";
 
 		val response = anthropicAgentService.processPaymentInput(
-				List.of(AnthropicAgentService.Message.builder()
+				List.of(AgentMessage.builder()
 						.role("user")
 						.content(List.of(
-								AnthropicAgentService.Message.Content.builder()
+								AgentMessage.Content.builder()
 										.type("text")
 										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
@@ -582,10 +583,10 @@ public class AnthropicApiTest {
 				""";
 
 		val response = anthropicAgentService.processPaymentInput(
-				List.of(AnthropicAgentService.Message.builder()
+				List.of(AgentMessage.builder()
 						.role("user")
 						.content(List.of(
-								AnthropicAgentService.Message.Content.builder()
+								AgentMessage.Content.builder()
 										.type("text")
 										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
@@ -663,10 +664,10 @@ public class AnthropicApiTest {
 				""";
 
 		val response = anthropicAgentService.processPaymentInput(
-				List.of(AnthropicAgentService.Message.builder()
+				List.of(AgentMessage.builder()
 						.role("user")
 						.content(List.of(
-								AnthropicAgentService.Message.Content.builder()
+								AgentMessage.Content.builder()
 										.type("text")
 										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
@@ -715,10 +716,10 @@ public class AnthropicApiTest {
 				""";
 
 		val response = anthropicAgentService.processPaymentInput(
-				List.of(AnthropicAgentService.Message.builder()
+				List.of(AgentMessage.builder()
 						.role("user")
 						.content(List.of(
-								AnthropicAgentService.Message.Content.builder()
+								AgentMessage.Content.builder()
 										.type("text")
 										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
@@ -861,10 +862,10 @@ public class AnthropicApiTest {
 				""";
 
 		val response = anthropicAgentService.processPaymentInput(
-				List.of(AnthropicAgentService.Message.builder()
+				List.of(AgentMessage.builder()
 						.role("user")
 						.content(List.of(
-								AnthropicAgentService.Message.Content.builder()
+								AgentMessage.Content.builder()
 										.type("text")
 										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
@@ -903,10 +904,10 @@ public class AnthropicApiTest {
 			String conversationJson = objectMapper.writeValueAsString(conversationData);
 
 			val response = anthropicAgentService.processPaymentInput(
-					List.of(AnthropicAgentService.Message.builder()
+					List.of(AgentMessage.builder()
 							.role("user")
 							.content(List.of(
-									AnthropicAgentService.Message.Content.builder()
+									AgentMessage.Content.builder()
 											.type("text")
 											.text("Conversation in JSON:\n" + conversationJson)
 											.build()))
@@ -940,9 +941,9 @@ public class AnthropicApiTest {
 				""";
 
 		val response = anthropicAgentService.processPaymentInput(
-				List.of(AnthropicAgentService.Message.builder()
+				List.of(AgentMessage.builder()
 						.role("user")
-						.content(List.of(AnthropicAgentService.Message.Content.builder()
+						.content(List.of(AgentMessage.Content.builder()
 								.type("text")
 								.text("Conversation in JSON:\n" + conversationJson)
 								.build()))
