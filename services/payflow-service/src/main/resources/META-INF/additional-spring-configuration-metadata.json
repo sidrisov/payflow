@@ -6,21 +6,6 @@
       "description": "dApp Client Url"
     },
     {
-      "name": "payflow.invitation.allowance.enabled",
-      "type": "java.lang.String",
-      "description": "A description for 'payflow.invitation.allowance.enabled'"
-    },
-    {
-      "name": "payflow.invitation.whitelisted.default.users",
-      "type": "java.lang.String",
-      "description": "A description for 'payflow.invitation.whitelisted.default.users'"
-    },
-    {
-      "name": "payflow.invitation.whitelisted.default.allowance",
-      "type": "java.lang.String",
-      "description": "A description for 'payflow.invitation.whitelisted.default.allowance'"
-    },
-    {
       "name": "logging.step",
       "type": "java.lang.String",
       "description": "A description for 'logging.step'"
@@ -51,11 +36,6 @@
       "description": "A description for 'payflow.airstack.contacts.update.duration'"
     },
     {
-      "name": "payflow.airstack.contacts.limit",
-      "type": "java.lang.String",
-      "description": "A description for 'payflow.airstack.contacts.limit'"
-    },
-    {
       "name": "payflow.invitation.expiry",
       "type": "java.lang.String",
       "description": "A description for 'payflow.invitation.expiry'"
@@ -64,11 +44,6 @@
       "name": "payflow.airstack.contacts.update.last-seen-period",
       "type": "java.lang.String",
       "description": "A description for 'payflow.airstack.contacts.update.last-seen-period'"
-    },
-    {
-      "name": "payflow.favourites.limit",
-      "type": "java.lang.String",
-      "description": "A description for 'payflow.favourites.limit'"
     },
     {
       "name": "spring.cache.caffeine.contacts.expireAfterWrite",

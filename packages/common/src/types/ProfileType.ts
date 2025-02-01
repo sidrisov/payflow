@@ -12,7 +12,6 @@ export type ProfileType = {
   profileImage?: string;
   defaultFlow?: FlowType;
   flows?: FlowType[];
-  identityInviteLimit: number;
   preferredTokens?: string[];
   preferredFarcasterClient?: FarcasterClient;
   earlyFeatureAccess?: boolean;
@@ -47,7 +46,6 @@ export const FARCASTER_CLIENTS = [
 
 export interface IdentityType {
   address: Address;
-  invited?: boolean;
   profile?: ProfileType;
   meta?: MetaType;
 }

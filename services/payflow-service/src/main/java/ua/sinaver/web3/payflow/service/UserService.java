@@ -5,7 +5,6 @@ import jakarta.transaction.Transactional;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.retry.annotation.Retryable;
@@ -14,7 +13,6 @@ import org.web3j.crypto.WalletUtils;
 import ua.sinaver.web3.payflow.config.PayflowConfig;
 import ua.sinaver.web3.payflow.entity.Invitation;
 import ua.sinaver.web3.payflow.entity.User;
-import ua.sinaver.web3.payflow.entity.UserAllowance;
 import ua.sinaver.web3.payflow.dto.FlowMessage;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.dto.ProfileMessage;
@@ -43,14 +41,6 @@ public class UserService implements IUserService {
 			"pirosb3", "pembe", "haole", "cashlessman", "accountless", "deodad", "skllzrmy", "amet");
 	private static final List<String> PRO_FEATURE_ACCESS_USERS = Arrays.asList(
 			"sinaver", "pembe", "haole");
-	@Value("${payflow.invitation.allowance.enabled:false}")
-	private boolean invitationAllowanceEnabled;
-	@Value("${payflow.invitation.whitelisted.default.users}")
-	private Set<String> defaultWhitelistedUsers;
-	@Value("${payflow.invitation.default.allowance:10}")
-	private int defaultInvitationAllowance;
-	@Value("${payflow.favourites.limit:10}")
-	private int defaultFavouriteContactLimit;
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
@@ -59,9 +49,6 @@ public class UserService implements IUserService {
 	private IdentityService identityService;
 	@Autowired
 	private EntityManager entityManager;
-
-	@Autowired
-	private FlowService flowService;
 
 	@Autowired
 	private InvitationService invitationService;
@@ -205,12 +192,6 @@ public class UserService implements IUserService {
 		if (invitation != null) {
 			invitation.setInvitee(user);
 			invitation.setExpiryDate(null);
-		}
-		if (invitationAllowanceEnabled) {
-			val defaultUserAllowance = new UserAllowance(defaultInvitationAllowance,
-					defaultInvitationAllowance, defaultFavouriteContactLimit);
-			defaultUserAllowance.setUser(user);
-			user.setUserAllowance(defaultUserAllowance);
 		}
 	}
 

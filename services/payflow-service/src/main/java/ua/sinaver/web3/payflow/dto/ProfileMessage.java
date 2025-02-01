@@ -13,7 +13,6 @@ public record ProfileMessage(
 		String profileImage, String identity,
 		String signer,
 		FlowMessage defaultFlow, List<FlowMessage> flows,
-		int identityInviteLimit,
 		List<String> preferredTokens,
 		User.FarcasterClient preferredFarcasterClient,
 		boolean earlyFeatureAccess,
@@ -25,7 +24,7 @@ public record ProfileMessage(
 				.orElse(Collections.emptyList());
 		return new ProfileMessage(user.getDisplayName(), user.getUsername(),
 				user.getProfileImage(), user.getIdentity(),
-				null, null, null, -1,
+				null, null, null,
 				preferredTokens,
 				user.getPreferredFarcasterClient(), false,
 				false);

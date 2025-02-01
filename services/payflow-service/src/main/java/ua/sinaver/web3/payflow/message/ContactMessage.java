@@ -29,25 +29,20 @@ public record ContactMessage(
 					null,
 					FlowMessage.convertDefaultFlow(profile, false),
 					null,
-					-1,
 					preferredTokens, null, false, false);
 		} else {
 			return null;
 		}
 	}
 
-	public static ContactMessage convert(Contact contact, Wallet socials, Wallet insights,
-	                                     Boolean invited, List<String> tags) {
-		val data = IdentityMessage.convert(contact.getIdentity(), contact.getProfile(), socials,
-				insights, invited);
+	public static ContactMessage convert(Contact contact, Wallet socials, Wallet insights, List<String> tags) {
+		val data = IdentityMessage.convert(contact.getIdentity(), contact.getProfile(), socials, insights);
 		return new ContactMessage(data, tags);
 	}
 
 	public static ContactMessage convert(String identity, User profile, Wallet socials,
-	                                     Wallet insights,
-	                                     Boolean invited, List<String> tags) {
-		val data = IdentityMessage.convert(identity, profile, socials,
-				insights, invited);
+			Wallet insights, List<String> tags) {
+		val data = IdentityMessage.convert(identity, profile, socials, insights);
 		return new ContactMessage(data, tags);
 	}
 }

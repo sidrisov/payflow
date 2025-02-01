@@ -64,9 +64,6 @@ public class User {
 	private List<Flow> flows;
 
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-	private UserAllowance userAllowance;
-
-	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
 	private PreferredTokens preferredTokens;
 
 	@Column(name = "preferred_farcaster_client")

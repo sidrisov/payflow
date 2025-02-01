@@ -22,7 +22,6 @@ import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static ua.sinaver.web3.payflow.config.CacheConfig.*;
@@ -36,19 +35,12 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 	private final GraphQlClient moxieVestingGraphQlClient;
 	private final GraphQlClient moxieProtocolGraphQlClient;
 
-
-	@Value("${payflow.airstack.contacts.limit:10}")
-	private int contactsLimit;
-
-	@Value("${payflow.invitation.whitelisted.default.users}")
-	private Set<String> whitelistedUsers;
-
 	public AirstackSocialGraphService(WebClient.Builder builder,
-	                                  @Value("${payflow.airstack.api.url}") String airstackUrl,
-	                                  @Value("${payflow.airstack.api.key}") String airstackApiKey,
-	                                  @Value("${payflow.moxie.subgraph.url}") String moxieSubgraphUrl,
-	                                  @Value("${payflow.moxie.api.url}") String moxieUrl,
-	                                  @Value("${payflow.moxie.api.key}") String moxieApiKey) {
+			@Value("${payflow.airstack.api.url}") String airstackUrl,
+			@Value("${payflow.airstack.api.key}") String airstackApiKey,
+			@Value("${payflow.moxie.subgraph.url}") String moxieSubgraphUrl,
+			@Value("${payflow.moxie.api.url}") String moxieUrl,
+			@Value("${payflow.moxie.api.key}") String moxieApiKey) {
 		val airstackWebClient = builder
 				.baseUrl(airstackUrl)
 				.build();
@@ -72,32 +64,6 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 				.url(moxieUrl)
 				.header("x-airstack-protocol", moxieApiKey)
 				.build();
-	}
-
-	@Override
-	public List<String> getSocialFollowings(String identity) {
-		val identityLimitAdjusted = contactsLimit * (whitelistedUsers.contains(identity) ? 3 : 1);
-
-		val addressesLimitAdjusted = contactsLimit * (whitelistedUsers.contains(identity) ? 5 : 2);
-
-		val topFollowingsResponse = airstackGraphQlClient.documentName("getSocialFollowings")
-				.variable("identity", identity)
-				.variable("limit", identityLimitAdjusted)
-				.execute().block();
-
-		if (topFollowingsResponse != null) {
-			return topFollowingsResponse.field("SocialFollowings.Following")
-					.toEntityList(SocialFollowing.class).stream()
-					// remove Solana addresses
-					.filter(f -> f.getFollowingAddress() != null && f.getFollowingAddress().getAddresses() != null)
-					.map(f -> f.getFollowingAddress().getAddresses())
-					.flatMap(List::stream)
-					.filter(address -> address.startsWith("0x"))
-					.distinct().limit(addressesLimitAdjusted)
-					.toList();
-		} else {
-			return Collections.emptyList();
-		}
 	}
 
 	@Override
@@ -224,7 +190,7 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 						fanTokenName);
 
 				val lockWalletsResponse = moxieVestingGraphQlClient.documentName(
-								"getFanTokenVestingContractBeneficiary")
+						"getFanTokenVestingContractBeneficiary")
 						.variable("addresses", holders)
 						.execute().block();
 
@@ -241,7 +207,7 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 			}
 		} catch (Throwable t) {
 			log.error("Error during fetching fan token holders for token name: {}, " +
-							"error: {} - {}",
+					"error: {} - {}",
 					fanTokenName,
 					t.getMessage(),
 					log.isTraceEnabled() ? t : null);
@@ -323,7 +289,7 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 	public Wallet getSocialMetadata(String identity) {
 		try {
 			ClientGraphQlResponse socialMetadataResponse = airstackGraphQlClient.documentName(
-							"getSocialMetadata")
+					"getSocialMetadata")
 					.variable("identity", identity)
 					.execute()
 					.onErrorResume(exception -> {
@@ -355,7 +321,7 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 	public Wallet getSocialInsights(String identity, String me) {
 		try {
 			val socialMetadataResponse = airstackGraphQlClient.documentName(
-							"getSocialInsights")
+					"getSocialInsights")
 					.variable("identity", identity)
 					.variable("me", me)
 					.execute()

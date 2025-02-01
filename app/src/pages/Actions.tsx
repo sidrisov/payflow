@@ -136,12 +136,6 @@ export default function Actions() {
       description: 'Collect contributions',
       installUrl: `${BASE_URL}/jar`,
       startIcon: <PiTipJar size={25} />
-    },
-    {
-      title: 'Invite',
-      description: 'Invite to Payflow',
-      installUrl: `${BASE_URL}/invite`,
-      startIcon: <PersonAdd sx={{ width: 25, height: 25 }} />
     } */
   ];
 

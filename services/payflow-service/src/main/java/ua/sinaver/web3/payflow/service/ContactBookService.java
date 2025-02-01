@@ -16,7 +16,6 @@ import ua.sinaver.web3.payflow.entity.User;
 import ua.sinaver.web3.payflow.message.ContactMessage;
 import ua.sinaver.web3.payflow.message.ContactsResponseMessage;
 import ua.sinaver.web3.payflow.repository.ContactRepository;
-import ua.sinaver.web3.payflow.repository.InvitationRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
 import ua.sinaver.web3.payflow.service.api.IContactBookService;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
@@ -24,7 +23,6 @@ import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 import java.time.Duration;
 import java.time.Period;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,12 +41,8 @@ public class ContactBookService implements IContactBookService {
 	private Duration contactsUpdateDuration;
 	@Value("${payflow.airstack.contacts.update.last-seen-period:3d}")
 	private Period contactsUpdateLastSeenPeriod;
-	@Value("${payflow.favourites.limit:0}")
-	private int defaultFavouriteContactLimit;
 	@Autowired
 	private ContactRepository contactRepository;
-	@Autowired
-	private InvitationRepository invitationRepository;
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
@@ -65,13 +59,8 @@ public class ContactBookService implements IContactBookService {
 	private FanTokenService fanTokenService;
 	@Autowired
 	private PaymentService paymentService;
-	@Value("${payflow.airstack.contacts.limit:10}")
-	private int contactsLimit;
 	@Value("${payflow.airstack.contacts.fetch.timeout:60s}")
 	private Duration contactsFetchTimeout;
-	// reuse property to increase the contacts limit
-	@Value("${payflow.invitation.whitelisted.default.users}")
-	private Set<String> whitelistedUsers;
 
 	@Override
 	@CacheEvict(value = CONTACTS_CACHE_NAME, key = "#user.identity")
@@ -190,27 +179,25 @@ public class ContactBookService implements IContactBookService {
 		}
 
 		val allContacts = Stream.of(
-						wallets.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity,
-								"verifications")),
-						popular.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "popular")),
-						recent.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "recent")),
-						allPaymentUniqueRecipients.stream()
-								.map(identity -> new AbstractMap.SimpleEntry<>(identity, "transacted")),
-						favourites.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(), "favourites")),
-						followings.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "friends")),
-						efpFollowings.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "efp")),
-						fanTokenContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "moxie")),
-						fabricContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "hypersub")),
-						paragraphContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "paragraph")),
-						alfaFrensContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "alfafrens")))
+				wallets.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity,
+						"verifications")),
+				popular.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "popular")),
+				recent.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "recent")),
+				allPaymentUniqueRecipients.stream()
+						.map(identity -> new AbstractMap.SimpleEntry<>(identity, "transacted")),
+				favourites.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(), "favourites")),
+				followings.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "friends")),
+				efpFollowings.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "efp")),
+				fanTokenContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "moxie")),
+				fabricContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "hypersub")),
+				paragraphContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "paragraph")),
+				alfaFrensContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "alfafrens")))
 				.flatMap(stream -> stream)
 				.collect(Collectors.groupingBy(
 						Map.Entry::getKey,
 						Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
 
 		log.debug("All contacts[{}]: {}", allContacts.size(), allContacts);
-
-		val invited = filterByInvited(allContacts.keySet().stream().toList());
 
 		try {
 			val contactMessages = Flux
@@ -223,48 +210,40 @@ public class ContactBookService implements IContactBookService {
 								Thread.currentThread().getName(),
 								Thread.currentThread().isVirtual());
 						return Mono.zip(
-										Mono.just(contact),
-										Mono.justOrEmpty(userRepository.findByIdentityIgnoreCase(contact))
-												.singleOptional(),
-										Mono.fromCallable(() -> {
-													long start = System.currentTimeMillis();
-													var result = socialGraphService.getSocialMetadata(contact);
-													long executionTime = System.currentTimeMillis() - start;
-													log.debug("Actual execution took {}ms for {}", executionTime, contact);
-													return result;
-												})
-												.subscribeOn(Schedulers.boundedElastic())
-												.elapsed()
-												.doOnNext(tuple -> log.debug("Total time (including queue) took {}ms for {}",
-														tuple.getT1(), contact))
-												.map(tuple -> tuple.getT2()),
-										Mono.fromCallable(
-														() -> socialGraphService.getSocialInsights(contact, user.getIdentity()))
-												.subscribeOn(Schedulers.boundedElastic())
-												.elapsed()
-												.doOnNext(tuple -> log.debug("Social insights took {}ms for {}", tuple.getT1(),
-														contact))
-												.map(tuple -> tuple.getT2())
-												.onErrorResume(exception -> {
-													log.error("Error fetching social insights" +
-																	" for {} - {}",
-															contact,
-															exception.getMessage());
-													return Mono.empty();
-												}),
-										Mono.fromCallable(() -> invited.contains(contact))
-												.onErrorResume(exception -> {
-													log.error("Error checking invitation status for user {} - {}",
-															contact,
-															exception.getMessage());
-													return Mono.empty();
-												}))
+								Mono.just(contact),
+								Mono.justOrEmpty(userRepository.findByIdentityIgnoreCase(contact))
+										.singleOptional(),
+								Mono.fromCallable(() -> {
+									long start = System.currentTimeMillis();
+									var result = socialGraphService.getSocialMetadata(contact);
+									long executionTime = System.currentTimeMillis() - start;
+									log.debug("Actual execution took {}ms for {}", executionTime, contact);
+									return result;
+								})
+										.subscribeOn(Schedulers.boundedElastic())
+										.elapsed()
+										.doOnNext(tuple -> log.debug("Total time (including queue) took {}ms for {}",
+												tuple.getT1(), contact))
+										.map(tuple -> tuple.getT2()),
+								Mono.fromCallable(
+										() -> socialGraphService.getSocialInsights(contact, user.getIdentity()))
+										.subscribeOn(Schedulers.boundedElastic())
+										.elapsed()
+										.doOnNext(tuple -> log.debug("Social insights took {}ms for {}", tuple.getT1(),
+												contact))
+										.map(tuple -> tuple.getT2())
+										.onErrorResume(exception -> {
+											log.error("Error fetching social insights" +
+													" for {} - {}",
+													contact,
+													exception.getMessage());
+											return Mono.empty();
+										}))
 								.map(tuple -> ContactMessage.convert(
 										tuple.getT1(),
 										tuple.getT2().orElse(null),
 										tuple.getT3(),
 										tuple.getT4(),
-										tuple.getT5(),
 										allContacts.get(contact)));
 					})
 					// TODO: fail fast, seems doesn't to work properly with threads
@@ -282,73 +261,9 @@ public class ContactBookService implements IContactBookService {
 			return new ContactsResponseMessage(tags, contactMessages);
 		} catch (
 
-				Throwable t) {
+		Throwable t) {
 			log.error("Failed to fetch contacts", t);
 			return null;
 		}
-	}
-
-	// @Scheduled(fixedRate = 60 * 1000)
-	public void updateContactsAtFixedRate() {
-		val lastUpdateDate = new Date(System.currentTimeMillis() - contactsUpdateDuration.toMillis());
-		val lastSeenDate = new Date(
-				System.currentTimeMillis() - TimeUnit.DAYS.toMillis(contactsUpdateLastSeenPeriod.getDays()));
-		// find all allowed users which were active after some date
-		// and contacts weren't updated since another date
-		val users = userRepository.findTop5ByAllowedTrueAndLastUpdatedContactsBeforeAndLastSeenAfter(lastUpdateDate,
-				lastSeenDate);
-
-		if (log.isDebugEnabled()) {
-			log.debug("Updating contacts list for profiles: {}",
-					users.stream().map(User::getUsername).toList());
-		}
-
-		// TODO: for now update all, in future spin off a separate thread, batch, or via
-		// events
-		for (val user : users) {
-			try {
-				val existingContactIdentities = contactRepository.findAllIdentitiesByUser(user);
-				val followContacts = socialGraphService.getSocialFollowings(user.getIdentity()).stream()
-						.filter(address -> !existingContactIdentities.contains(address))
-						.map(address -> new Contact(user, address)).toList();
-				contactRepository.saveAll(followContacts);
-
-				if (log.isDebugEnabled()) {
-					log.debug("Updated {} contacts for profile: {}",
-							followContacts.size(), user.getUsername());
-				}
-
-			} catch (Throwable t) {
-				if (log.isTraceEnabled()) {
-					log.error("Couldn't fetch following contacts for {}, error: {}",
-							user.getUsername(),
-							t.getMessage(), t);
-				} else {
-					log.error("Couldn't fetch following contacts for {}, error: {}",
-							user.getUsername(),
-							t.getMessage());
-				}
-			}
-
-			// TODO: temp hack to stop fetching, add fetch status
-			user.setLastUpdatedContacts(new Date());
-		}
-	}
-
-	@Override
-	public List<String> filterByInvited(List<String> addresses) {
-		log.debug("Whitelisted {}", whitelistedUsers);
-		var whitelistedAddresses = addresses.stream()
-				.filter(address -> whitelistedUsers.contains(address.toLowerCase()))
-				.toList();
-		log.debug("Whitelisted addresses {} {}", addresses, whitelistedUsers);
-
-		val notWhitelisted = addresses.stream()
-				.filter(address -> !whitelistedAddresses.contains(address.toLowerCase()))
-				.toList();
-		val invitations = invitationRepository.existsByIdentityInAndValid(
-				notWhitelisted);
-		return Stream.concat(whitelistedAddresses.stream(),
-				invitations.keySet().stream()).collect(Collectors.toList());
 	}
 }
