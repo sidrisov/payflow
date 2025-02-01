@@ -99,7 +99,7 @@ public class UserService implements IUserService {
 		var profile = identityService.getProfiles(verifications)
 				.stream().findFirst().orElse(null);
 		if (profile == null && (forceWhitelist || farcasterUser.fid() <= payflowConfig.getWhitelistedFidUpperRange()
-				|| farcasterUser.powerBadge() || farcasterUser.username().endsWith(".eth"))) {
+				|| farcasterUser.username().endsWith(".eth"))) {
 			val identityToCreateProfile = identityService.getIdentitiesInfo(verifications)
 					.stream().max(Comparator.comparingInt(IdentityMessage::score))
 					.orElse(null);

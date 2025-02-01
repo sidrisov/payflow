@@ -245,9 +245,9 @@ public class FarcasterBotService {
 							AnthropicAgentService.Message.Content.builder()
 									.type("text")
 									.text(String.format("""
-											```json
+											Conversation in JSON:
 											%s
-											```""",
+											""",
 											objectMapper.writeValueAsString(conversation)))
 									.build()))
 					.build());

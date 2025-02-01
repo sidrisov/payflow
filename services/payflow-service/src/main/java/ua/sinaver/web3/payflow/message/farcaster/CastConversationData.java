@@ -20,5 +20,4 @@ public record CastConversationData(Conversation conversation) {
             List<FarcasterUser> mentionedProfiles,
             List<Cast> directReplies) {
     }
-
 }

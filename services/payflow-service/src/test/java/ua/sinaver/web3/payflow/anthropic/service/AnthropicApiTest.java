@@ -78,10 +78,7 @@ public class AnthropicApiTest {
 						.content(List.of(
 								AnthropicAgentService.Message.Content.builder()
 										.type("text")
-										.text(String.format("""
-												```json
-												%s
-												```""", conversationJson))
+										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
 						.build()));
 
@@ -131,10 +128,7 @@ public class AnthropicApiTest {
 						.content(List.of(
 								AnthropicAgentService.Message.Content.builder()
 										.type("text")
-										.text(String.format("""
-												```json
-												%s
-												```""", conversationJson))
+										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
 						.build()));
 
@@ -182,10 +176,7 @@ public class AnthropicApiTest {
 						.content(List.of(
 								AnthropicAgentService.Message.Content.builder()
 										.type("text")
-										.text(String.format("""
-												```json
-												%s
-												```""", conversationJson))
+										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
 						.build()));
 
@@ -226,10 +217,7 @@ public class AnthropicApiTest {
 						.content(List.of(
 								AnthropicAgentService.Message.Content.builder()
 										.type("text")
-										.text(String.format("""
-												```json
-												%s
-												```""", conversationJson))
+										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
 						.build()));
 
@@ -281,10 +269,7 @@ public class AnthropicApiTest {
 						.content(List.of(
 								AnthropicAgentService.Message.Content.builder()
 										.type("text")
-										.text(String.format("""
-												```json
-												%s
-												```""", conversationJson))
+										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
 						.build()));
 
@@ -319,10 +304,7 @@ public class AnthropicApiTest {
 						.content(List.of(
 								AnthropicAgentService.Message.Content.builder()
 										.type("text")
-										.text(String.format("""
-												```json
-												%s
-												```""", conversationJson))
+										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
 						.build()));
 
@@ -363,10 +345,7 @@ public class AnthropicApiTest {
 						.content(List.of(
 								AnthropicAgentService.Message.Content.builder()
 										.type("text")
-										.text(String.format("""
-												```json
-												%s
-												```""", conversationJson))
+										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
 						.build()));
 
@@ -423,10 +402,7 @@ public class AnthropicApiTest {
 						.content(List.of(
 								AnthropicAgentService.Message.Content.builder()
 										.type("text")
-										.text(String.format("""
-												```json
-												%s
-												```""", conversationJson))
+										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
 						.build()));
 
@@ -467,10 +443,7 @@ public class AnthropicApiTest {
 						.content(List.of(
 								AnthropicAgentService.Message.Content.builder()
 										.type("text")
-										.text(String.format("""
-												```json
-												%s
-												```""", conversationJson))
+										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
 						.build()));
 
@@ -511,10 +484,7 @@ public class AnthropicApiTest {
 						.content(List.of(
 								AnthropicAgentService.Message.Content.builder()
 										.type("text")
-										.text(String.format("""
-												```json
-												%s
-												```""", conversationJson))
+										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
 						.build()));
 
@@ -555,10 +525,7 @@ public class AnthropicApiTest {
 						.content(List.of(
 								AnthropicAgentService.Message.Content.builder()
 										.type("text")
-										.text(String.format("""
-												```json
-												%s
-												```""", conversationJson))
+										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
 						.build()));
 
@@ -620,10 +587,7 @@ public class AnthropicApiTest {
 						.content(List.of(
 								AnthropicAgentService.Message.Content.builder()
 										.type("text")
-										.text(String.format("""
-												```json
-												%s
-												```""", conversationJson))
+										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
 						.build()));
 
@@ -704,10 +668,7 @@ public class AnthropicApiTest {
 						.content(List.of(
 								AnthropicAgentService.Message.Content.builder()
 										.type("text")
-										.text(String.format("""
-												```json
-												%s
-												```""", conversationJson))
+										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
 						.build()));
 
@@ -759,10 +720,7 @@ public class AnthropicApiTest {
 						.content(List.of(
 								AnthropicAgentService.Message.Content.builder()
 										.type("text")
-										.text(String.format("""
-												```json
-												%s
-												```""", conversationJson))
+										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
 						.build()));
 
@@ -908,10 +866,7 @@ public class AnthropicApiTest {
 						.content(List.of(
 								AnthropicAgentService.Message.Content.builder()
 										.type("text")
-										.text(String.format("""
-												```json
-												%s
-												```""", conversationJson))
+										.text("Conversation in JSON:\n" + conversationJson)
 										.build()))
 						.build()));
 
@@ -953,10 +908,7 @@ public class AnthropicApiTest {
 							.content(List.of(
 									AnthropicAgentService.Message.Content.builder()
 											.type("text")
-											.text(String.format("""
-													```json
-													%s
-													```""", conversationJson))
+											.text("Conversation in JSON:\n" + conversationJson)
 											.build()))
 							.build()));
 
@@ -966,6 +918,39 @@ public class AnthropicApiTest {
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to read conversation JSON", e);
 		}
+	}
+
+	@Test
+	public void testHowToSupportPayflow() throws JsonProcessingException {
+		String conversationJson = """
+				{
+				  "conversation": {
+					"cast": {
+					  "author": {
+						"fid": 1,
+						"username": "user.eth",
+						"displayName": "User"
+					  },
+					  "text": "how can I support Payflow? is there any subscription?",
+					  "directRe	plies": []
+					},
+					"chronologicalParentCasts": []
+				  }
+				}
+				""";
+
+		val response = anthropicAgentService.processPaymentInput(
+				List.of(AnthropicAgentService.Message.builder()
+						.role("user")
+						.content(List.of(AnthropicAgentService.Message.Content.builder()
+								.type("text")
+								.text("Conversation in JSON:\n" + conversationJson)
+								.build()))
+						.build()));
+
+		assertNotNull(response);
+		assertEquals("end_turn", response.getStopReason());
+		assertNotNull(response.getContent());
 	}
 
 	@Configuration
