@@ -24,6 +24,7 @@ import ua.sinaver.web3.payflow.entity.bot.PaymentBotJob;
 import ua.sinaver.web3.payflow.events.CastEvent;
 import ua.sinaver.web3.payflow.events.CreatedPaymentEvent;
 import ua.sinaver.web3.payflow.events.PaymentBotJobEvent;
+import ua.sinaver.web3.payflow.message.agent.AgentMessage;
 import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
 import ua.sinaver.web3.payflow.message.farcaster.CastConversationData;
@@ -236,18 +237,18 @@ public class FarcasterBotService {
 							List.of()), null));
 		}
 
-		List<AnthropicAgentService.Message> inputMessages = new ArrayList<>();
+		List<AgentMessage> inputMessages = new ArrayList<>();
 
 		try {
-			inputMessages.add(AnthropicAgentService.Message.builder()
+			inputMessages.add(AgentMessage.builder()
 					.role("user")
 					.content(List.of(
-							AnthropicAgentService.Message.Content.builder()
+							AgentMessage.Content.builder()
 									.type("text")
 									.text(String.format("""
-											```json
+											Conversation in JSON:
 											%s
-											```""",
+											""",
 											objectMapper.writeValueAsString(conversation)))
 									.build()))
 					.build());

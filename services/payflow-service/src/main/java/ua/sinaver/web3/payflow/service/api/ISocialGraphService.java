@@ -10,8 +10,6 @@ import ua.sinaver.web3.payflow.message.moxie.FanToken;
 import java.util.List;
 
 public interface ISocialGraphService {
-	List<String> getSocialFollowings(String identity);
-
 	FarcasterCast getTopCastReply(String parentHash, List<String> ignoredFids);
 
 	List<FarcasterFanTokenAuction> getFanTokenAuctions(List<String> farcasterUsernames);

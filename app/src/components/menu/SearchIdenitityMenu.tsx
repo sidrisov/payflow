@@ -9,7 +9,7 @@ import {
   Stack,
   Typography
 } from '@mui/material';
-import { PersonAdd, OpenInNew } from '@mui/icons-material';
+import { OpenInNew } from '@mui/icons-material';
 import { IdentityType, SocialInfoType } from '@payflow/common';
 import { useContext } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
@@ -28,7 +28,6 @@ import FrameV2SDK from '@farcaster/frame-sdk';
 export function IdentityMenu({
   identity,
   favourite,
-  onInviteClick,
   onFavouriteClick,
   onSocilLinksClick,
   currentIdentity = false,
@@ -36,7 +35,6 @@ export function IdentityMenu({
 }: {
   identity: IdentityType;
   favourite?: boolean;
-  onInviteClick?: () => void;
   onFavouriteClick?: () => void;
   onSocilLinksClick?: () => void;
   currentIdentity?: boolean;
@@ -104,9 +102,7 @@ export function IdentityMenu({
     }
   };
 
-  const showAuthenticatedSection =
-    isAuthenticated &&
-    (onFavouriteClick || (onInviteClick && !identity.invited && !identity.profile));
+  const showAuthenticatedSection = isAuthenticated && (onFavouriteClick || !identity.profile);
 
   return (
     <Menu
@@ -194,14 +190,6 @@ export function IdentityMenu({
               <MenuItem onClick={onFavouriteClick}>
                 <ListItemIcon>{favourite ? <TbStarOff /> : <TbStar />}</ListItemIcon>
                 {favourite ? 'Remove from favourites' : 'Add to favourites'}
-              </MenuItem>
-            )}
-            {onInviteClick && !identity.invited && !identity.profile && (
-              <MenuItem onClick={onInviteClick}>
-                <ListItemIcon>
-                  <PersonAdd />
-                </ListItemIcon>
-                Invite
               </MenuItem>
             )}
           </>

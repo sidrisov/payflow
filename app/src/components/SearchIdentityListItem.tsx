@@ -7,7 +7,6 @@ import { ProfileContext } from '../contexts/UserContext';
 import axios from 'axios';
 import { API_URL } from '../utils/urlConstants';
 import { toast } from 'react-toastify';
-import { shortenWalletAddressLabel } from '../utils/address';
 import { useAccount } from 'wagmi';
 import { UpdateIdentityCallbackType } from './dialogs/SearchIdentityDialog';
 import { MoreVert } from '@mui/icons-material';
@@ -53,35 +52,6 @@ export function SearchIdentityListItem(
   const [identityMenuAnchorEl, setIdentityMenuAnchorEl] = useState<null | HTMLElement>(null);
 
   const [isHoveringMenu, setIsHoveringMenu] = useState(false);
-
-  const inviteClickHandler = async () => {
-    if (profile?.identityInviteLimit === 0 || profile?.identityInviteLimit === 1) {
-      toast.warn("You don't have any invites");
-      return;
-    }
-
-    try {
-      await axios.post(
-        `${API_URL}/api/invitations${accessToken ? '?access_token=' + accessToken : ''}`,
-        {
-          identityBased: identity.address
-        },
-        { withCredentials: true }
-      );
-
-      toast.success(
-        `${
-          identity.meta?.ens ? identity.meta?.ens : shortenWalletAddressLabel(identity.address)
-        } is invited!`
-      );
-
-      updateIdentityCallback?.({
-        contact: { ...contact, data: { ...contact.data, invited: true } }
-      });
-    } catch (error) {
-      toast.error('Invitation failed!');
-    }
-  };
 
   const favouriteClickHandler = async () => {
     try {
@@ -168,9 +138,6 @@ export function SearchIdentityListItem(
         <IdentityMenu
           open={true}
           identity={identity}
-          {...((profile?.identityInviteLimit ?? 0 > 0) && {
-            onInviteClick: inviteClickHandler
-          })}
           onFavouriteClick={favouriteClickHandler}
           onSocilLinksClick={socialLinksClickHandler}
           favourite={favourite}

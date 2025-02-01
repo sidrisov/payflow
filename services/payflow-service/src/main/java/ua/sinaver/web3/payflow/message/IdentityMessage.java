@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public record IdentityMessage(
-		String address, Boolean invited,
+		String address,
 		ProfileMessage profile,
 		SocialMetadata meta) {
 
@@ -37,7 +37,6 @@ public record IdentityMessage(
 					null,
 					FlowMessage.convertDefaultFlow(profile, false),
 					null,
-					-1,
 					preferredTokens, null, false, false);
 		} else {
 			return null;
@@ -45,8 +44,7 @@ public record IdentityMessage(
 	}
 
 	public static IdentityMessage convert(String identity, User profile, Wallet walletSocials,
-	                                      Wallet walletInsights,
-	                                      Boolean invited) {
+			Wallet walletInsights) {
 		val profileMessage = convert(profile);
 
 		var xmtp = false;
@@ -56,22 +54,26 @@ public record IdentityMessage(
 		SocialInsights insights = null;
 
 		if (walletSocials != null) {
-			//xmtp =
-			//walletSocials.getXmtp() != null && !walletSocials.getXmtp().isEmpty() &&
+			// xmtp =
+			// walletSocials.getXmtp() != null && !walletSocials.getXmtp().isEmpty() &&
 			// walletSocials.getXmtp().getFirst().getIsXMTPEnabled();
 
 			if (walletSocials.getPrimaryDomain() != null) {
 				ens = walletSocials.getPrimaryDomain().getName();
-				/*if (walletSocials.getPrimaryDomain().getTokenNft() != null) {
-					if (walletSocials.getPrimaryDomain().getTokenNft().getContentValue() != null
-							&& walletSocials.getPrimaryDomain().getTokenNft().getContentValue().getImage() != null)
-						ensAvatar =
-								walletSocials.getPrimaryDomain().getTokenNft().getContentValue().getImage().getSmall();
-				}*/
+				/*
+				 * if (walletSocials.getPrimaryDomain().getTokenNft() != null) {
+				 * if (walletSocials.getPrimaryDomain().getTokenNft().getContentValue() != null
+				 * &&
+				 * walletSocials.getPrimaryDomain().getTokenNft().getContentValue().getImage()
+				 * != null)
+				 * ensAvatar =
+				 * walletSocials.getPrimaryDomain().getTokenNft().getContentValue().getImage().
+				 * getSmall();
+				 * }
+				 */
 			} else if (walletSocials.getDomains() != null && !walletSocials.getDomains().isEmpty()) {
 				ens = walletSocials.getDomains().getFirst().getName();
 			}
-
 
 			socials = getSocials(walletSocials);
 			insights = walletInsights != null ? getWalletInsights(walletInsights) : null;
@@ -83,7 +85,7 @@ public record IdentityMessage(
 
 		val meta = new SocialMetadata(xmtp, ens, ensAvatar, socials, insights);
 
-		return new IdentityMessage(identity, invited, profileMessage, meta);
+		return new IdentityMessage(identity, profileMessage, meta);
 	}
 
 	public static SocialInsights getWalletInsights(Wallet wallet) {
@@ -91,9 +93,12 @@ public record IdentityMessage(
 		String farcasterFollow = null;
 		String lensFollow = null;
 
-		/*if (wallet.getTokenTransfers() != null && !wallet.getTokenTransfers().isEmpty()) {
-			sentTxs = wallet.getTokenTransfers().size();
-		}*/
+		/*
+		 * if (wallet.getTokenTransfers() != null &&
+		 * !wallet.getTokenTransfers().isEmpty()) {
+		 * sentTxs = wallet.getTokenTransfers().size();
+		 * }
+		 */
 
 		val socialFollowers = wallet.getSocialFollowers();
 		val socialFollowings = wallet.getSocialFollowings();
@@ -111,16 +116,19 @@ public record IdentityMessage(
 				}
 			}
 
-			/*if (socialFollowings.getFollowing().stream()
-					.anyMatch(f -> f.getDappName().equals(SocialDappName.lens.toString()))) {
-
-				if (socialFollowers.getFollower() != null && socialFollowers.getFollower().stream()
-						.anyMatch(f -> f.getDappName().equals(SocialDappName.lens.toString()))) {
-					lensFollow = "mutual";
-				} else {
-					lensFollow = "following";
-				}
-			}*/
+			/*
+			 * if (socialFollowings.getFollowing().stream()
+			 * .anyMatch(f -> f.getDappName().equals(SocialDappName.lens.toString()))) {
+			 * 
+			 * if (socialFollowers.getFollower() != null &&
+			 * socialFollowers.getFollower().stream()
+			 * .anyMatch(f -> f.getDappName().equals(SocialDappName.lens.toString()))) {
+			 * lensFollow = "mutual";
+			 * } else {
+			 * lensFollow = "following";
+			 * }
+			 * }
+			 */
 		}
 
 		return new SocialInsights(farcasterFollow, lensFollow, sentTxs);
@@ -133,7 +141,9 @@ public record IdentityMessage(
 					.map(s -> {
 
 						String profileImage;
-						if (s.getProfileImageContentValue() != null && s.getProfileImageContentValue().getImage() != null && s.getProfileImageContentValue().getImage().getSmall() != null) {
+						if (s.getProfileImageContentValue() != null
+								&& s.getProfileImageContentValue().getImage() != null
+								&& s.getProfileImageContentValue().getImage().getSmall() != null) {
 							profileImage = s.getProfileImageContentValue().getImage().getSmall();
 						} else {
 							profileImage = s.getProfileImage();
@@ -142,7 +152,7 @@ public record IdentityMessage(
 						return new SocialInfo(s.getDappName().name(), s.getProfileName(),
 								s.getProfileDisplayName(), s.getUserId(),
 								profileImage, s.getFollowerCount(),
-								/*BooleanUtils.isTrue(s.getIsFarcasterPowerUser()*/false);
+								/* BooleanUtils.isTrue(s.getIsFarcasterPowerUser() */false);
 					}).collect(Collectors.toList());
 		} else {
 			return Collections.emptyList();

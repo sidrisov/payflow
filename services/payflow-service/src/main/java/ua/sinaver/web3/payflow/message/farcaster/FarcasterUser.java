@@ -21,9 +21,7 @@ public record FarcasterUser(
 		List<String> verifications,
 		VerifiedAddresses verifiedAddresses,
 		String activeStatus,
-		boolean powerBadge,
-		ViewerContext viewerContext
-) {
+		ViewerContext viewerContext) {
 	public List<String> addresses() {
 		return Stream.concat(verifications.stream(), Stream.of(custodyAddress))
 				.toList();
@@ -38,26 +36,22 @@ public record FarcasterUser(
 	}
 
 	@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-	public record Profile(Bio bio
-	) {
+	public record Profile(Bio bio) {
 	}
 
 	@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 	public record Bio(
 			String text,
-			List<String> mentionedProfiles
-	) {
+			List<String> mentionedProfiles) {
 	}
 
 	@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 	public record VerifiedAddresses(
 			List<String> ethAddresses,
-			List<String> solAddresses
-	) {
+			List<String> solAddresses) {
 	}
 
 	@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-	public record ViewerContext(boolean following, boolean followedBy
-	) {
+	public record ViewerContext(boolean following, boolean followedBy) {
 	}
 }

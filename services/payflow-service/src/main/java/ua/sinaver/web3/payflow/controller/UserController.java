@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/user")
-@CrossOrigin(origins = {"${payflow.dapp.url}"}, allowCredentials = "true")
+@CrossOrigin(origins = { "${payflow.dapp.url}" }, allowCredentials = "true")
 @Transactional
 @Slf4j
 public class UserController {
@@ -62,7 +62,6 @@ public class UserController {
 					user.getSigner(),
 					FlowMessage.convertDefaultFlow(user, true),
 					flowService.getAllFlows(user),
-					user.getUserAllowance() != null ? user.getUserAllowance().getIdentityInviteLimit() : -1,
 					Optional.ofNullable(user.getPreferredTokens())
 							.map(PreferredTokens::getTokenList)
 							.orElse(Collections.emptyList()),
@@ -76,14 +75,14 @@ public class UserController {
 
 	@GetMapping("/me/contacts")
 	public ContactsResponseMessage allContacts(@AuthenticationPrincipal String identity,
-	                                           @RequestHeader(value = "Cache-Control", required = false) String cacheControl) {
+			@RequestHeader(value = "Cache-Control", required = false) String cacheControl) {
 		log.debug("{} fetching contacts", identity);
 		val user = userService.findByIdentity(identity);
 		if (user != null) {
 			try {
 				if (StringUtils.equals(cacheControl, "no-cache")) {
 					log.debug("{} cleaning contacts cache", identity);
-					//contactBookService.cleanContactsCache(user);
+					// contactBookService.cleanContactsCache(user);
 				}
 				val response = contactBookService.getAllContacts(user);
 				if (log.isTraceEnabled()) {
@@ -116,7 +115,7 @@ public class UserController {
 
 	@PostMapping("/me/favourites")
 	public void updateFavouriteContact(@AuthenticationPrincipal String identity,
-	                                   @RequestBody ContactMessage contactMessage) {
+			@RequestBody ContactMessage contactMessage) {
 		log.trace("{} updates favourite contact {}", identity, contactMessage);
 		val user = userService.findByIdentity(identity);
 		if (user != null) {
@@ -128,7 +127,7 @@ public class UserController {
 
 	@PostMapping("/me")
 	public void updateProfile(@AuthenticationPrincipal String identity, @RequestBody ProfileMessage profile,
-	                          @RequestParam(required = false, name = "code") String invitationCode) {
+			@RequestParam(required = false, name = "code") String invitationCode) {
 		log.debug("Update profile: {} by {} with code {}", profile, identity, invitationCode);
 
 		userService.updateProfile(identity, profile, invitationCode);
@@ -153,7 +152,7 @@ public class UserController {
 
 	@GetMapping("/identities")
 	public List<IdentityMessage> getIdentities(@RequestParam(required = false) List<String> identities,
-	                                           @RequestParam(required = false) Integer fid) {
+			@RequestParam(required = false) Integer fid) {
 		try {
 			if (identities != null) {
 				return identityService.getIdentitiesInfo(identities);
@@ -167,10 +166,10 @@ public class UserController {
 		return Collections.emptyList();
 	}
 
-	@GetMapping({"/identities/{usernameOrAddress}", "/identities/fid/{fid}"})
+	@GetMapping({ "/identities/{usernameOrAddress}", "/identities/fid/{fid}" })
 	public ResponseEntity<IdentityMessage> getIdentity(@AuthenticationPrincipal String identity,
-	                                                   @PathVariable(value = "usernameOrAddress", required = false) String usernameOrAddress,
-	                                                   @PathVariable(value = "fid", required = false) Integer fid) {
+			@PathVariable(value = "usernameOrAddress", required = false) String usernameOrAddress,
+			@PathVariable(value = "fid", required = false) Integer fid) {
 		log.debug("Fetching identity info: {} or {}", usernameOrAddress, fid);
 
 		if (StringUtils.isBlank(usernameOrAddress) && fid == null) {
@@ -311,7 +310,6 @@ public class UserController {
 						null,
 						FlowMessage.convertDefaultFlow(user, false),
 						null,
-						-1,
 						Optional.ofNullable(user.getPreferredTokens())
 								.map(PreferredTokens::getTokenList)
 								.orElse(Collections.emptyList()),
@@ -333,7 +331,6 @@ public class UserController {
 					null,
 					FlowMessage.convertDefaultFlow(user, false),
 					null,
-					-1,
 					Optional.ofNullable(user.getPreferredTokens())
 							.map(PreferredTokens::getTokenList)
 							.orElse(Collections.emptyList()),

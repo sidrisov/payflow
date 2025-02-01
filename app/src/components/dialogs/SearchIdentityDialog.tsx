@@ -25,7 +25,6 @@ import { SearchResultView } from '../SearchResultView';
 import { FARCASTER_DAPP, LENS_DAPP } from '../../utils/dapps';
 import { ProfileContext } from '../../contexts/UserContext';
 import { AddressBookType } from '../../types/ContactType';
-import { identitiesInvited } from '../../services/invitation';
 import { AddressBookToolBar } from '../chips/AddressBookChip';
 import { useContacts } from '../../utils/queries/contacts';
 import { useSearchParams } from 'react-router-dom';
@@ -158,18 +157,6 @@ export default function SearchIdentityDialog({
         const identities = (await searchIdentity(debouncedSearchString, address)).filter(
           (fi) => !addresses.includes(fi.data.address)
         );
-
-        if (identities.length > 0 && isAuthenticated) {
-          const inviteStatuses = await identitiesInvited(
-            identities.map((identity) => identity.data.address),
-            accessToken
-          );
-
-          // Update identities in a single pass:
-          identities.forEach((identity) => {
-            identity.data.invited = inviteStatuses[identity.data.address];
-          });
-        }
 
         const allFoundProfiles = sortBySocialScore(foundAmongContacts.concat(identities));
         console.debug('All found profiles:', allFoundProfiles);

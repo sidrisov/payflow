@@ -97,7 +97,7 @@ export function DegenInfoCard() {
   });
 
   const isClaimingEnabled =
-    season?.contract && contractDegenBalance && contractDegenBalance >= 1_000;
+    season?.contract && contractDegenBalance && contractDegenBalance >= 50_000;
 
   const handleNextSeason = () => {
     setCurrentSeasonIndex((prevIndex) =>
