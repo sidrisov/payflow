@@ -16,8 +16,7 @@ public interface NeynarClient {
             @RequestParam(value = "include_chronological_parent_casts") Boolean includeParentCasts,
             @RequestParam Integer limit);
 
-    @GetMapping("/cast/conversation")
-    default CastConversationData getCastConversationByHash(String identifier) {
-        return getCastConversation(identifier, "hash", 0, true, 20);
+    default CastConversationData getCastConversationByHash(String hash) {
+        return getCastConversation(hash, "hash", 0, true, 20);
     }
 }

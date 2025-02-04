@@ -1,4 +1,4 @@
-import { ToastContainer } from 'react-toastify';
+import { Flip, ToastContainer } from 'react-toastify';
 import { useMobile } from '../../utils/hooks/useMobile';
 
 export default function CustomToastContainer() {
@@ -9,24 +9,22 @@ export default function CustomToastContainer() {
       position={isMobile ? 'top-center' : 'top-right'}
       hideProgressBar
       autoClose={1000}
+      icon={false}
       limit={3}
-      newestOnTop={true}
+      newestOnTop
       theme="colored"
       closeButton={false}
+      transition={Flip}
       toastStyle={{
+        width: 'auto',
+        minWidth: 120,
+        maxWidth: 300,
         marginTop: 10,
         minHeight: 30,
-        borderRadius: 15
-      }}
-      bodyStyle={{
+        borderRadius: '16px',
         textAlign: 'center',
-        textWrap: 'balance'
-      }}
-      style={{
-        minWidth: 200,
-        maxWidth: 375,
-        width: 'auto',
-        ...(isMobile && { left: '50%', transform: 'translateX(-50%)' })
+        textWrap: 'balance',
+        justifyContent: 'center'
       }}
     />
   );
