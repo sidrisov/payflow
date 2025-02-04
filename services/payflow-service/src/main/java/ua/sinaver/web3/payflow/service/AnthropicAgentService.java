@@ -2,6 +2,10 @@ package ua.sinaver.web3.payflow.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.victools.jsonschema.generator.OptionPreset;
+import com.github.victools.jsonschema.generator.SchemaGenerator;
+import com.github.victools.jsonschema.generator.SchemaGeneratorConfigBuilder;
+import com.github.victools.jsonschema.generator.SchemaVersion;
 import io.netty.channel.ChannelOption;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -14,9 +18,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.util.retry.Retry;
-import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.config.AnthropicAgentPrompt;
+import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.agent.*;
+import ua.sinaver.web3.payflow.message.farcaster.CastConversationData;
 
 import java.time.Duration;
 import java.util.List;
@@ -211,6 +216,13 @@ public class AnthropicAgentService {
 											"chainId", String.valueOf(token.chainId())),
 									Collectors.toList())));
 
+			val schemaGeneratorConfig = new SchemaGeneratorConfigBuilder(
+					SchemaVersion.DRAFT_2020_12,
+					OptionPreset.PLAIN_JSON).build();
+
+			val conversationSchemaPlainJson = objectMapper.writeValueAsString(
+					new SchemaGenerator(schemaGeneratorConfig).generateSchema(CastConversationData.class));
+
 			val tokenMapJson = objectMapper
 					.writerWithDefaultPrettyPrinter()
 					.writeValueAsString(tokenAddresses);
@@ -218,17 +230,11 @@ public class AnthropicAgentService {
 			this.systemPrompt = List.of(
 					AgentSystemMessage.builder()
 							.type("text")
-							.text(AnthropicAgentPrompt.CORE_PROMPT.formatted(tokenMapJson))
-							.build(),
-					AgentSystemMessage.builder()
-							.type("text")
-							.text(AnthropicAgentPrompt.SERVICES_PROMPT)
-							.build(),
-					AgentSystemMessage.builder()
-							.type("text")
-							.text(AnthropicAgentPrompt.NO_REPLY_PROMPT)
+							.text(AnthropicAgentPrompt.CORE_PROMPT.formatted(conversationSchemaPlainJson,
+											tokenMapJson)
+									.concat(AnthropicAgentPrompt.NO_REPLY_PROMPT)
+									.concat(AnthropicAgentPrompt.SERVICES_PROMPT))
 							.build());
-
 			this.tools = DEFAULT_TOOLS;
 
 			log.info("Initialized AnthropicAgentService with {} tokens", tokenAddresses.size());
@@ -262,8 +268,8 @@ public class AnthropicAgentService {
 										return Mono.error(new RuntimeException("Anthropic API error: " + errorBody));
 									}))
 					.bodyToMono(AgentResponse.class)
-					.retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
-							.maxBackoff(Duration.ofSeconds(10))
+					.retryWhen(Retry.backoff(3, Duration.ofSeconds(3))
+							.maxBackoff(Duration.ofSeconds(15))
 							.doBeforeRetry(signal -> log.warn("Retry attempt {} after error: {}",
 									signal.totalRetries() + 1,
 									signal.failure().getMessage())))

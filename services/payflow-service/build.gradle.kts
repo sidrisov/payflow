@@ -93,6 +93,8 @@ dependencies {
     implementation("com.google.guava:guava:${property("guavaVersion")}")
     implementation("com.google.code.gson:gson:${property("gsonVersion")}")
 
+    implementation("com.github.victools:jsonschema-generator:4.34.0")
+
     // java.lang.NoSuchMethodError: 'reactor.core.publisher.Mono reactor.core.publisher.Mono.onErrorComplete()'
     implementation("io.projectreactor:reactor-core:${property("reactorCoreVersion")}")
 

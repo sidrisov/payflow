@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,14 @@ import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.cloud.openfeign.FeignAutoConfiguration;
+import org.springframework.cloud.openfeign.FeignClientsConfiguration;
+import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+
+import ua.sinaver.web3.payflow.client.NeynarClient;
+import ua.sinaver.web3.payflow.client.NeynarClientConfig;
 import ua.sinaver.web3.payflow.message.agent.AgentMessage;
 import ua.sinaver.web3.payflow.message.farcaster.CastConversationData;
 import ua.sinaver.web3.payflow.service.AnthropicAgentService;
@@ -32,12 +41,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Slf4j
-@SpringJUnitConfig(classes = { AnthropicAgentService.class, TokenService.class, AnthropicApiTest.TestConfig.class })
+@SpringJUnitConfig(classes = {
+		AnthropicAgentService.class,
+		TokenService.class,
+		AnthropicApiTest.TestConfig.class,
+		NeynarClientConfig.class,
+		FeignAutoConfiguration.class,
+		FeignClientsConfiguration.class
+})
 @TestPropertySource(locations = "classpath:application.properties")
+@EnableFeignClients(basePackages = "ua.sinaver.web3.payflow.client")
 public class AnthropicApiTest {
 
 	@Value("${anthropic.api.key}")
 	private String anthropicApiKey;
+
 	@Autowired
 	private AnthropicAgentService anthropicAgentService;
 
@@ -46,6 +64,9 @@ public class AnthropicApiTest {
 
 	@Autowired
 	private ObjectMapper objectMapper;
+
+	@Autowired
+	private NeynarClient neynarClient;
 
 	@Test
 	public void testSimplePayment() throws JsonProcessingException {
@@ -495,53 +516,6 @@ public class AnthropicApiTest {
 	}
 
 	@Test
-	public void testAppreciationAndDegenPayment() throws JsonProcessingException {
-		String conversationJson = """
-				{
-				  "conversation": {
-					"cast": {
-					  "author": {
-						"fid": 2,
-						"username": "sinaver.eth",
-						"displayName": "Sinaver"
-					  },
-						"text": "@payflow let's also send 100 degen",
-						"mentionedProfiles": [
-							{
-								"fid": 3,
-								"username": "payflow",
-								"displayName": "Payflow"
-							}
-						],
-						"directReplies": []
-					},
-					"chronologicalParentCasts": []
-				  }
-				}
-				""";
-
-		val response = anthropicAgentService.processPaymentInput(
-				List.of(AgentMessage.builder()
-						.role("user")
-						.content(List.of(
-								AgentMessage.Content.builder()
-										.type("text")
-										.text("Conversation in JSON:\n" + conversationJson)
-										.build()))
-						.build()));
-
-		assertNotNull(response);
-		assertEquals("tool_use", response.getStopReason());
-		assertNotNull(response.getContent());
-
-		var toolUseContent = response.getContent().stream()
-				.filter(c -> c.getType().equals("tool_use"))
-				.findFirst()
-				.orElse(null);
-		assertNotNull(toolUseContent);
-	}
-
-	@Test
 	public void testMultiTokenPayment() throws JsonProcessingException {
 		String conversationJson = """
 				{
@@ -954,6 +928,47 @@ public class AnthropicApiTest {
 		assertNotNull(response.getContent());
 	}
 
+	@Test
+	public void testIrrelevantReplyTriggeringDuplicateRequest() throws JsonProcessingException {
+		var conversationData = neynarClient
+				.getCastConversationByHash("0x37b6777b1e6bf72ecf78c33ed91fa6fdb1167032");
+
+		var limitedParents = conversationData.conversation().chronologicalParentCasts()
+				.subList(Math.max(0, conversationData.conversation().chronologicalParentCasts().size() - 10),
+						conversationData.conversation().chronologicalParentCasts().size())
+				.stream()
+				.toList();
+
+		conversationData = new CastConversationData(
+				new CastConversationData.Conversation(
+						conversationData.conversation().cast(),
+						limitedParents));
+
+		val response = anthropicAgentService.processPaymentInput(
+				List.of(AgentMessage.builder()
+						.role("user")
+						.content(List.of(
+								AgentMessage.Content.builder()
+										.type("text")
+										.text("Conversation in JSON:\n"
+												+ objectMapper.writeValueAsString(conversationData))
+										.build()))
+						.build()));
+
+		assertNotNull(response);
+		assertEquals("tool_use", response.getStopReason());
+		assertNotNull(response.getContent());
+
+		// Verify no_reply tool was used
+		val noReplyContent = response.getContent().stream()
+				.filter(content -> "tool_use".equals(content.getType()) &&
+						"no_reply".equals(content.getName()))
+				.findFirst()
+				.orElse(null);
+
+		assertNotNull(noReplyContent, "Expected no_reply tool to be used");
+	}
+
 	@Configuration
 	static class TestConfig {
 
@@ -973,5 +988,9 @@ public class AnthropicApiTest {
 							.jackson2JsonEncoder(new Jackson2JsonEncoder(objectMapper)));
 		}
 
+		@Bean
+		public HttpMessageConverters messageConverters(ObjectMapper objectMapper) {
+			return new HttpMessageConverters(new MappingJackson2HttpMessageConverter(objectMapper));
+		}
 	}
 }

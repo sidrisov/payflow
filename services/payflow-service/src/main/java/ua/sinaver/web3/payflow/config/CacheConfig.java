@@ -26,7 +26,7 @@ import java.util.HashMap;
 @Configuration
 public class CacheConfig {
 	public static final String CACHE_PREFIX_VERSION = "v0.0.11_0:";
-	public static final String CONTACTS_CACHE_NAME = CACHE_PREFIX_VERSION + "contacts";
+	public static final String CONTACTS_CACHE_NAME = CACHE_PREFIX_VERSION + "contacts-1";
 	public static final String CONTACT_LIST_CACHE_NAME = CACHE_PREFIX_VERSION + "contact-list";
 	public static final String FAN_TOKENS_CACHE_NAME = CACHE_PREFIX_VERSION + "moxie-fan-tokens";
 	public static final String FAN_TOKEN_CACHE_NAME = CACHE_PREFIX_VERSION + "moxie-fan-token";
@@ -41,7 +41,7 @@ public class CacheConfig {
 
 	public static final String USERS_CACHE_NAME = CACHE_PREFIX_VERSION + "users";
 	public static final String INVITATIONS_CACHE_NAME = CACHE_PREFIX_VERSION + "invitations";
-	public static final String DAILY_STATS_CACHE = CACHE_PREFIX_VERSION + "stats-1";
+	public static final String DAILY_STATS_CACHE = CACHE_PREFIX_VERSION + "stats";
 	public static final String BANKR_WALLETS_CACHE = CACHE_PREFIX_VERSION + "bankr-wallets";
 	public static final String USER_FLOWS_CACHE = CACHE_PREFIX_VERSION + "user-flows";
 	public static final String AGENT_ATTEMPTS_CACHE = CACHE_PREFIX_VERSION + "agent-attempts";

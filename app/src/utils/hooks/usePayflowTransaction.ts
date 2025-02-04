@@ -1,6 +1,6 @@
 import { useContext, useState, useCallback, useEffect } from 'react';
 import { useChainId, useSwitchChain, useWalletClient, usePublicClient } from 'wagmi';
-import { createSession, executeSession, PaymentOption } from '@paywithglide/glide-js';
+import { createSession, executeEVMSession, PaymentOption } from '@paywithglide/glide-js';
 import { ProfileContext } from '../../contexts/UserContext';
 import { submitPayment, updatePayment } from '../../services/payments';
 import { PaymentTxStatus, PaymentType } from '@payflow/common';
@@ -203,7 +203,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
       const commissionUSD = getCommissionUSD(payment);
       const session = await createGlideSession(paymentTx, paymentOption, commissionUSD);
 
-      const glideResponse = await executeSession(glideConfig, {
+      const glideResponse = await executeEVMSession(glideConfig, {
         session,
         currentChainId:
           isNativeFlow || !isMiniApp || isFrameV2 ? (chainId as any) : paymentTx.chainId,
