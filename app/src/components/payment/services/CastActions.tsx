@@ -1,17 +1,16 @@
 import { useContext, useState } from 'react';
-import { Helmet } from 'react-helmet-async';
-import { Container, Stack, Typography, Grid2, IconButton, Badge } from '@mui/material';
-import PaymentRewardCastActionComposerDialog from '../components/dialogs/PaymentRewardCastActionComposerDialog';
+import { Stack, Typography, Grid2, IconButton, Badge } from '@mui/material';
+import PaymentRewardCastActionComposerDialog from '../../dialogs/PaymentRewardCastActionComposerDialog';
 import { AutoAwesome, Interests, Star } from '@mui/icons-material';
 import { GrStorage } from 'react-icons/gr';
-import CastActionButton from '../components/buttons/CastActionButton';
+import CastActionButton from '../../buttons/CastActionButton';
 import { FaRegClock } from 'react-icons/fa';
 import { GoZap } from 'react-icons/go';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { useNavigate } from 'react-router-dom';
-import { ProfileContext } from '../contexts/UserContext';
+import { ProfileContext } from '../../../contexts/UserContext';
 import { DEFAULT_FARCASTER_CLIENT, FARCASTER_CLIENTS } from '@payflow/common';
-import { FarcasterClientAvatar } from '../components/avatars/FarcasterClientAvatar';
+import { FarcasterClientAvatar } from '../../avatars/FarcasterClientAvatar';
 import { SiFarcaster } from 'react-icons/si';
 
 interface Action {
@@ -82,7 +81,7 @@ const ActionCategory: React.FC<ActionCategoryProps> = ({ title, icon, actions })
   );
 };
 
-export default function Actions() {
+export default function CastActions() {
   const [openPaymentActionDialog, setOpenPaymentActionDialog] = useState<boolean>(false);
 
   const { profile } = useContext(ProfileContext);
@@ -141,25 +140,21 @@ export default function Actions() {
 
   return (
     <>
-      <Helmet>
-        <title> Payflow | Actions </title>
-      </Helmet>
-      <Container maxWidth="xs" sx={{ height: '100%' }}>
-        <Stack
-          alignItems="center"
-          mt={3}
-          mb={2}
-          p={2}
-          spacing={3}
-          borderRadius={5}
-          borderColor="divider">
-          <ActionCategory
-            title="Cast Actions"
-            icon={<SiFarcaster size={30} />}
-            actions={farcasterActions}
-          />
+      <Stack
+        alignItems="center"
+        mt={3}
+        mb={2}
+        p={2}
+        spacing={3}
+        borderRadius={5}
+        borderColor="divider">
+        <ActionCategory
+          title="Cast Actions"
+          icon={<SiFarcaster size={30} />}
+          actions={farcasterActions}
+        />
 
-          {/* <Box display="flex" alignItems="center">
+        {/* <Box display="flex" alignItems="center">
             <Box
               component="span"
               sx={{
@@ -178,8 +173,7 @@ export default function Actions() {
               <InfoOutlinedIcon fontSize="small" sx={{ ml: 0.5, color: 'text.secondary' }} />
             </Tooltip>
           </Box> */}
-        </Stack>
-      </Container>
+      </Stack>
       <PaymentRewardCastActionComposerDialog
         open={openPaymentActionDialog}
         closeStateCallback={() => setOpenPaymentActionDialog(false)}

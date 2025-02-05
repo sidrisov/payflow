@@ -88,13 +88,7 @@ public class ContactBookService implements IContactBookService {
 				Schedulers.DEFAULT_BOUNDED_ELASTIC_QUEUESIZE);
 
 		val wallets = new ArrayList<>(identityService.getIdentityAddresses(user.getIdentity()));
-		/*
-		 * val bankrWallet =
-		 * identityService.getBankrWalletByIdentity(user.getIdentity());
-		 * if (bankrWallet != null) {
-		 * wallets.add(bankrWallet);
-		 * }
-		 */
+
 		log.debug("Fetched user's wallets: {}", wallets);
 
 		val followings = identityFollowingsService.fetchFarcasterFollowings(user.getIdentity());
@@ -142,10 +136,6 @@ public class ContactBookService implements IContactBookService {
 			tags.add("efp");
 		}
 
-		if (!wallets.isEmpty()) {
-			tags.add("verifications");
-		}
-
 		if (!popular.isEmpty()) {
 			tags.add("popular");
 		}
@@ -179,8 +169,6 @@ public class ContactBookService implements IContactBookService {
 		}
 
 		val allContacts = Stream.of(
-				wallets.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity,
-						"verifications")),
 				popular.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "popular")),
 				recent.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "recent")),
 				allPaymentUniqueRecipients.stream()

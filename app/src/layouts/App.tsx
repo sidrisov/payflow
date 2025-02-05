@@ -14,7 +14,6 @@ import {
   Stack
 } from '@mui/material';
 
-import { RiApps2Fill, RiApps2Line } from 'react-icons/ri';
 import { CgProfile } from 'react-icons/cg';
 
 import { ProfileContext } from '../contexts/UserContext';
@@ -23,7 +22,7 @@ import { ProfileType } from '@payflow/common';
 import { ProfileMenu } from '../components/menu/ProfileMenu';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import { useTokenPrices } from '../utils/queries/prices';
-import { IoHomeOutline, IoHomeSharp, IoSearch, IoSearchOutline } from 'react-icons/io5';
+import { IoHomeOutline, IoHomeSharp } from 'react-icons/io5';
 
 import { UpdateVersionPrompt } from '../components/UpdateVersionPrompt';
 
@@ -32,7 +31,6 @@ import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useMobile, usePwa } from '../utils/hooks/useMobile';
 
 import { isIOS } from 'react-device-detect';
-import { GiTwoCoins } from 'react-icons/gi';
 import { TbHandClick } from 'react-icons/tb';
 import { green } from '@mui/material/colors';
 
@@ -42,6 +40,8 @@ import { me } from '../services/user';
 import sortAndFilterFlows from '../utils/sortAndFilterFlows';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 import { usePimlicoInit } from '../utils/hooks/usePimlicoInit';
+import { FaCubesStacked } from 'react-icons/fa6';
+import { MdContacts } from 'react-icons/md';
 
 export default function App() {
   const location = useLocation();
@@ -133,17 +133,15 @@ export default function App() {
 
   const bottomToolbarEnabled =
     location.pathname !== '/composer' &&
-    location.pathname !== '/search' &&
+    location.pathname !== '/contacts' &&
     !location.pathname.startsWith('/payment');
 
   const defaultToolbarAction = (() => {
     switch (location.pathname) {
-      case '/actions':
-        return 3;
-      case '/earn':
+      case '/services':
         return 2;
       case `/${profile?.username}`:
-        return profile ? 4 : 3;
+        return profile ? 3 : 2;
       default:
         return 0;
     }
@@ -328,12 +326,12 @@ export default function App() {
                 />
                 <BottomNavigationAction
                   disableRipple
-                  label="Search"
+                  label="Contacts"
                   icon={
                     bottonToolbarActionValue === 1 ? (
-                      <IoSearch size={22} />
+                      <MdContacts size={22} />
                     ) : (
-                      <IoSearchOutline size={20} />
+                      <MdContacts size={20} />
                     )
                   }
                   onClick={async () => {
@@ -343,31 +341,16 @@ export default function App() {
                 />
                 <BottomNavigationAction
                   disableRipple
-                  label="Earn"
+                  label="Services"
                   icon={
                     bottonToolbarActionValue === 2 ? (
-                      <GiTwoCoins size={22} />
+                      <FaCubesStacked size={22} />
                     ) : (
-                      <GiTwoCoins size={20} />
+                      <FaCubesStacked size={20} />
                     )
                   }
                   onClick={async () => {
-                    navigate('/earn');
-                    setOpenSearchIdentity(false);
-                  }}
-                />
-                <BottomNavigationAction
-                  disableRipple
-                  label="Actions"
-                  icon={
-                    bottonToolbarActionValue === 3 ? (
-                      <RiApps2Fill size={22} />
-                    ) : (
-                      <RiApps2Line size={20} />
-                    )
-                  }
-                  onClick={async () => {
-                    navigate('/actions');
+                    navigate('/services');
                     setOpenSearchIdentity(false);
                   }}
                 />

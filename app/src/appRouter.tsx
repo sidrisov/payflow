@@ -12,11 +12,11 @@ const LazyLeaderboard = lazy(() => import('./layouts/Leadearboard'));
 const LazyAdvanced = lazy(() => import('./pages/Advanced'));
 const LazyPublicProfile = lazy(() => import('./layouts/PublicProfile'));
 const LazyJar = lazy(() => import('./pages/Jar'));
-const LazyActions = lazy(() => import('./pages/Actions'));
+const LazyActions = lazy(() => import('./components/payment/services/CastActions'));
 const LazyComposer = lazy(() => import('./pages/Composer'));
 const LazyCreatePayment = lazy(() => import('./pages/CreatePayment'));
 const LazyPayment = lazy(() => import('./pages/Payment'));
-const LazyEarn = lazy(() => import('./pages/Earn'));
+const LazyServices = lazy(() => import('./pages/PaymentServices'));
 const LazyPage404 = lazy(() => import('./pages/Page404'));
 const LazyPreferredFlow = lazy(() => import('./pages/settings/PreferredFlowPage'));
 const LazyPreferredTokens = lazy(() => import('./pages/settings/PreferredTokensPage'));
@@ -63,8 +63,7 @@ export const appRouter = createBrowserRouter([
           { path: 'farcaster/client', element: <LazyWrapper component={LazyFarcasterClientPage} /> }
         ]
       },
-      { path: 'actions', element: <LazyWrapper component={LazyActions} /> },
-      { path: 'earn', element: <LazyWrapper component={LazyEarn} /> },
+      { path: 'services', element: <LazyWrapper component={LazyServices} /> },
       { path: 'composer', element: <LazyWrapper component={LazyComposer} /> },
       { path: 'invite', element: <LazyWrapper component={LazyInvite} /> },
       {

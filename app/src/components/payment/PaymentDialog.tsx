@@ -336,7 +336,7 @@ export default function PaymentDialog({
 
           <Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-              Cross-chain Mode:
+              Cross-chain mode:
             </Typography>
             <ToggleButtonGroup
               sx={{
