@@ -36,8 +36,7 @@ interface SearchResultProfileListViewProps {
 const formatFlowType = (type: string) => {
   return type
     .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())[0];
 };
 
 export function SearchResultView({
@@ -154,7 +153,9 @@ export function SearchResultView({
             profile: {
               ...profile,
               username:
-                !flow.type || flow.type === 'REGULAR' ? flow.title : formatFlowType(flow.type),
+                !flow.type || flow.type === 'REGULAR' || flow.type === 'JAR'
+                  ? flow.title
+                  : formatFlowType(flow.type),
               defaultFlow: flow
             }
           },
