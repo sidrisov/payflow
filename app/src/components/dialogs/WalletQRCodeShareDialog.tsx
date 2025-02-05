@@ -13,7 +13,7 @@ import { CloseCallbackType } from '../../types/CloseCallbackType';
 import QRCode from 'react-qr-code';
 import { ArrowBack, ContentCopy } from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import { shortenWalletAddressLabel } from '../../utils/address';
+import { shortenWalletAddressLabel2 } from '../../utils/address';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { useEffect, useState } from 'react';
 import { ChooseWalletMenu } from '../menu/ChooseWalletMenu';
@@ -95,7 +95,7 @@ export default function WalletQRCodeShareDialog({
                 />
               </IconButton>
               <Typography ml={1} variant="subtitle2">
-                {shortenWalletAddressLabel(selectedWallet.address)}
+                {shortenWalletAddressLabel2(selectedWallet.address)}
               </Typography>
               <Tooltip title="Copy Address">
                 <IconButton

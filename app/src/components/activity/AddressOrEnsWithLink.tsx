@@ -1,7 +1,7 @@
 import { Link, LinkProps, Typography } from '@mui/material';
 import { socialLink } from '../../utils/dapps';
 import { Address } from 'viem';
-import { shortenWalletAddressLabel } from '../../utils/address';
+import { shortenWalletAddressLabel2 } from '../../utils/address';
 import { useMobile } from '../../utils/hooks/useMobile';
 
 export function AddressOrEnsWithLink({
@@ -27,7 +27,7 @@ export function AddressOrEnsWithLink({
       textOverflow="ellipsis"
       {...props}>
       <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
-        {ens ? ens : shortenWalletAddressLabel(address)}
+        {ens ? ens : shortenWalletAddressLabel2(address)}
       </Typography>
     </Link>
   );

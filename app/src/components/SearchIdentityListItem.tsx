@@ -115,7 +115,7 @@ export function SearchIdentityListItem(
             WebkitTapHighlightColor: 'transparent'
           }}>
           {view === 'profile' && identity.profile && (
-            <ProfileSection maxWidth={300} profile={identity.profile} />
+            <ProfileSection maxWidth={300} profile={identity.profile} view="flow" />
           )}
           {view === 'address' && identity.meta && (
             <AddressSection maxWidth={300} identity={identity} />

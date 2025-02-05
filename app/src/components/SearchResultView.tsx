@@ -7,8 +7,9 @@ import {
   SelectIdentityCallbackType,
   UpdateIdentityCallbackType
 } from './dialogs/SearchIdentityDialog';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import calculateMaxPages from '../utils/pagination';
+import { ProfileContext } from '../contexts/UserContext';
 
 const pageSize = 30;
 
@@ -32,6 +33,13 @@ interface SearchResultProfileListViewProps {
   closeStateCallback: CloseCallbackType['closeStateCallback'];
 }
 
+const formatFlowType = (type: string) => {
+  return type
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
 export function SearchResultView({
   profileRedirect,
   showExtra,
@@ -41,6 +49,7 @@ export function SearchResultView({
   identities
 }: SearchResultViewProps) {
   const navigate = useNavigate();
+  const { profile } = useContext(ProfileContext);
 
   function SearchResultProfileListView({
     showContactsNumber = true,
@@ -136,9 +145,23 @@ export function SearchResultView({
     ? identities.filter((identity) => identity.tags?.includes('recent'))
     : [];
 
-  const verifications = showExtra
-    ? identities.filter((identity) => identity.tags?.includes('verifications'))
+  const myWallets = showExtra
+    ? (profile?.flows
+        ?.filter((flow) => !flow.archived)
+        ?.map((flow) => ({
+          data: {
+            address: profile?.identity,
+            profile: {
+              ...profile,
+              username:
+                !flow.type || flow.type === 'REGULAR' ? flow.title : formatFlowType(flow.type),
+              defaultFlow: flow
+            }
+          },
+          tags: ['wallets']
+        })) ?? [])
     : [];
+
   const popular = showExtra
     ? identities.filter((identity) => identity.tags?.includes('popular'))
     : [];
@@ -160,7 +183,7 @@ export function SearchResultView({
           <SearchResultProfileListView
             showContactsNumber={false}
             title="My wallets"
-            identities={verifications}
+            identities={myWallets}
             profileRedirect={profileRedirect}
             selectIdentityCallback={selectIdentityCallback}
             updateIdentityCallback={updateIdentityCallback}
@@ -176,7 +199,7 @@ export function SearchResultView({
             closeStateCallback={closeStateCallback}
           />
 
-          {(verifications.length > 0 || recent.length > 0 || popular.length > 0) && (
+          {(myWallets.length > 0 || recent.length > 0 || popular.length > 0) && (
             <Divider flexItem variant="middle" sx={{ mb: 1.5 }} />
           )}
         </>

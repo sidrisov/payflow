@@ -2,7 +2,7 @@
 import { Chain } from 'viem';
 import { IdentityType } from '../types/ProfleType';
 import { StorageUsage } from '../types/StorageUsageType';
-import { shortenWalletAddressLabel } from '../utils/address';
+import { shortenWalletAddressLabel2 } from '../utils/address';
 import { formatNumberWithSuffix } from '../utils/format';
 import { assetImageSrc } from '../utils/image';
 import getNetworkImageSrc from '../utils/networks';
@@ -200,7 +200,7 @@ function BuyStorage({ identity, storage }: { identity: IdentityType; storage: St
         ) : (
           <div style={{ margin: 10, display: 'flex', flexDirection: 'column' }}>
             <span style={{ marginTop: 10, fontSize: 64, fontWeight: 'normal' }}>
-              {shortenWalletAddressLabel(identity?.address)}
+              {shortenWalletAddressLabel2(identity?.address)}
             </span>
           </div>
         )}

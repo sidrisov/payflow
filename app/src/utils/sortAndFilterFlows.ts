@@ -4,28 +4,32 @@ import { SUPPORTED_CHAINS } from './networks';
 export default function sortAndFilterFlows(flows: FlowType[], defaultFlow?: FlowType): FlowType[] {
   return flows
     .sort((a, b) => {
-      if (a.uuid === defaultFlow?.uuid) {
-        return -1;
-      }
+      // Default flow always first
+      if (a.uuid === defaultFlow?.uuid) return -1;
+      if (b.uuid === defaultFlow?.uuid) return 1;
 
-      if (a.type === 'FARCASTER_VERIFICATION') {
+      // Rodeo and Bankr types go last
+      if (a.type === 'RODEO' || a.type === 'BANKR') {
+        if (b.type === 'RODEO' || b.type === 'BANKR') {
+          // If both are Rodeo/Bankr, sort alphabetically
+          return a.title.toLowerCase().localeCompare(b.title.toLowerCase());
+        }
+        return 1; // a goes after b
+      }
+      if (b.type === 'RODEO' || b.type === 'BANKR') return -1; // b goes after a
+
+      // Special types after regular flows but before Rodeo/Bankr
+      if (a.type === 'FARCASTER_VERIFICATION' || a.type === 'LINKED') {
+        if (b.type === 'FARCASTER_VERIFICATION' || b.type === 'LINKED') {
+          // If both are special types, sort alphabetically
+          return a.title.toLowerCase().localeCompare(b.title.toLowerCase());
+        }
         return 1;
       }
+      if (b.type === 'FARCASTER_VERIFICATION' || b.type === 'LINKED') return -1;
 
-      if (a.type === 'LINKED') {
-        return 1;
-      }
-
-      let fa = a.title.toLowerCase(),
-        fb = b.title.toLowerCase();
-
-      if (fa < fb) {
-        return -1;
-      }
-      if (fa > fb) {
-        return 1;
-      }
-      return 0;
+      // Regular flows sorted alphabetically
+      return a.title.toLowerCase().localeCompare(b.title.toLowerCase());
     })
     .map((f) => sortAndFilterFlowWallets(f));
 }
