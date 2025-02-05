@@ -327,49 +327,54 @@ export default function PaymentDialog({
         flexDirection="column"
         alignItems="center"
         justifyContent="space-between">
-        <Box ml={1} width="100%" display="flex" alignItems="center" justifyContent="space-between">
+        <Box ml={1} width="100%" display="flex" alignItems="start" justifyContent="space-between">
           <RecipientField
             recipient={recipient}
             recipientAddress={toAddress}
             setOpenSearchIdentity={setOpenSearchIdentity}
           />
 
-          <ToggleButtonGroup
-            sx={{
-              borderRadius: 3,
-              '& .MuiToggleButton-root': {
-                '&:first-of-type': {
-                  borderTopLeftRadius: '10px',
-                  borderBottomLeftRadius: '10px'
-                },
-                '&:last-of-type': {
-                  borderTopRightRadius: '10px',
-                  borderBottomRightRadius: '10px'
+          <Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+              Cross-chain Mode:
+            </Typography>
+            <ToggleButtonGroup
+              sx={{
+                borderRadius: 3,
+                '& .MuiToggleButton-root': {
+                  '&:first-of-type': {
+                    borderTopLeftRadius: '10px',
+                    borderBottomLeftRadius: '10px'
+                  },
+                  '&:last-of-type': {
+                    borderTopRightRadius: '10px',
+                    borderBottomRightRadius: '10px'
+                  }
                 }
-              }
-            }}
-            value={crossChainMode ? 'cross-chain' : 'direct'}
-            exclusive
-            onChange={(_, newMode) => {
-              if (newMode !== null) {
-                setCrossChainMode(newMode === 'cross-chain');
-              }
-            }}
-            size="small">
-            <ToggleButton size="small" value="direct">
-              <Typography variant="caption" fontWeight="bold" textTransform="none">
-                regular
-              </Typography>
-            </ToggleButton>
-            <ToggleButton
-              disabled={!paymentAmount || paymentAmount === 0}
-              size="small"
-              value="cross-chain">
-              <Typography variant="caption" fontWeight="bold" textTransform="none">
-                pay with other token
-              </Typography>
-            </ToggleButton>
-          </ToggleButtonGroup>
+              }}
+              value={crossChainMode ? 'cross-chain' : 'direct'}
+              exclusive
+              onChange={(_, newMode) => {
+                if (newMode !== null) {
+                  setCrossChainMode(newMode === 'cross-chain');
+                }
+              }}
+              size="small">
+              <ToggleButton size="small" value="direct">
+                <Typography variant="caption" fontWeight="bold" textTransform="none">
+                  regular
+                </Typography>
+              </ToggleButton>
+              <ToggleButton
+                disabled={!paymentAmount || paymentAmount === 0}
+                size="small"
+                value="cross-chain">
+                <Typography variant="caption" fontWeight="bold" textTransform="none">
+                  pay with other token
+                </Typography>
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
         </Box>
 
         <Stack

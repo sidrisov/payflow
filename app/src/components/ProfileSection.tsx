@@ -1,7 +1,7 @@
 import { Avatar, Badge, Stack, Typography } from '@mui/material';
 import { ProfileType } from '@payflow/common';
 import ProfileAvatar from './avatars/ProfileAvatar';
-import { shortenWalletAddressLabel } from '../utils/address';
+import { shortenWalletAddressLabel2 } from '../utils/address';
 import { FlowType } from '@payflow/common';
 import FarcasterAvatar from './avatars/FarcasterAvatar';
 import CopyToClipboardIconButton from './buttons/CopyToClipboardIconButton';
@@ -69,7 +69,7 @@ export function ProfileSection({
         {walletAddress && (
           <Stack direction="row" spacing={0.1} alignItems="center">
             <Typography noWrap variant="caption">
-              {shortenWalletAddressLabel(walletAddress)}
+              {shortenWalletAddressLabel2(walletAddress)}
             </Typography>
             {copy && <CopyToClipboardIconButton tooltip="Copy address" value={walletAddress} />}
           </Stack>

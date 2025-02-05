@@ -1,6 +1,6 @@
 import { Avatar, Chip, ChipProps, IconButton, Tooltip } from '@mui/material';
 import { dAppType, socialLink } from '../../utils/dapps';
-import { shortenWalletAddressLabel } from '../../utils/address';
+import { shortenWalletAddressLabel2 } from '../../utils/address';
 import { ChatActionMenu } from '../menu/ChatActionMenu';
 import { useState } from 'react';
 import { Chat } from '@mui/icons-material';
@@ -47,7 +47,7 @@ export default function SocialPresenceChipWithLink(props: SocialPresenceChipWith
     <Chip
       variant="outlined"
       avatar={<Avatar src={avatarSrc} />}
-      label={type === 'address' ? shortenWalletAddressLabel(name) : name}
+      label={type === 'address' ? shortenWalletAddressLabel2(name) : name}
       clickable
       component="a"
       href={socialLinkRef}

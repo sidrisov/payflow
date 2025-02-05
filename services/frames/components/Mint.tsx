@@ -34,11 +34,13 @@ function Mint({
     identity.meta?.ens ??
     shortenWalletAddressLabel2(identity.address);
   const profileImage = identity.profile?.profileImage ?? farcasterSocial?.profileImage;
-  
-  const providerImage = 
-    provider === 'zora.co' ? 'zora.png' :
-    provider === 'highlight.xyz' ? 'highlight.png' :
-    'rodeo.png';
+
+  const providerImage =
+    provider === 'zora.co'
+      ? 'zora.png'
+      : provider === 'highlight.xyz'
+        ? 'highlight.png'
+        : 'rodeo.png';
 
   return (
     <Card>

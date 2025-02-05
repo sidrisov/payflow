@@ -250,43 +250,45 @@ export default function SearchIdentityDialog({
               <TextField
                 fullWidth
                 margin="dense"
-                label="search by name, @fname, lens:, .eth, 0x"
+                label="search by name, ens, or address"
                 type="text"
                 value={searchString ?? ''}
-                InputProps={{
-                  startAdornment: shrink && (
-                    <InputAdornment position="start">
-                      <Avatar src="payflow.png" sx={{ ml: 1, width: 28, height: 28 }} />
-                    </InputAdornment>
-                  ),
-                  endAdornment: searchString && (
-                    <InputAdornment position="end">
-                      <IconButton
-                        size="small"
-                        onClick={async () => {
-                          setFoundIdentities([]);
-                          setSearchString(undefined);
-                          setShrink(false);
-                        }}>
-                        <Clear fontSize="small" />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                  inputProps: { maxLength: 42 },
-                  sx: {
-                    borderRadius: 5,
-                    maxHeight: 50
+                slotProps={{
+                  input: {
+                    startAdornment: shrink && (
+                      <InputAdornment position="start">
+                        <Avatar src="payflow.png" sx={{ ml: 1, width: 28, height: 28 }} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: searchString && (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          onClick={async () => {
+                            setFoundIdentities([]);
+                            setSearchString(undefined);
+                            setShrink(false);
+                          }}>
+                          <Clear fontSize="small" />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                    inputProps: { maxLength: 42 },
+                    sx: {
+                      borderRadius: 5,
+                      maxHeight: 50
+                    }
+                  },
+                  inputLabel: {
+                    shrink,
+                    margin: 'dense',
+                    sx: {
+                      lineHeight: '1.1'
+                    }
                   }
                 }}
                 onFocus={() => setShrink(true)}
                 onBlur={(e) => setShrink(!!e.target.value)}
-                InputLabelProps={{
-                  shrink,
-                  margin: 'dense',
-                  sx: {
-                    lineHeight: '1.1'
-                  }
-                }}
                 onChange={async (event) => {
                   setFoundIdentities([]);
                   setSearchString(event.target.value);

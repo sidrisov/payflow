@@ -1,7 +1,7 @@
 import { Avatar, Badge, Stack, Typography } from '@mui/material';
 import { IdentityType } from '@payflow/common';
 import AddressAvatar from './avatars/AddressAvatar';
-import { shortenWalletAddressLabel } from '../utils/address';
+import { shortenWalletAddressLabel2 } from '../utils/address';
 import { useEnsAvatar, useEnsName } from 'wagmi';
 import CopyToClipboardIconButton from './buttons/CopyToClipboardIconButton';
 import { useDegenName } from '../utils/queries/domainNames';
@@ -90,7 +90,7 @@ export function AddressSection(props: {
             noWrap
             variant={username ? 'caption' : 'subtitle2'}
             {...(!username && { fontSize })}>
-            {shortenWalletAddressLabel(identity.address)}
+            {shortenWalletAddressLabel2(identity.address)}
           </Typography>
           {copy && <CopyToClipboardIconButton tooltip="Copy address" value={identity.address} />}
         </Stack>

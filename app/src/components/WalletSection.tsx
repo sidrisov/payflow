@@ -1,6 +1,6 @@
 import { Avatar, Box, Tooltip, Typography } from '@mui/material';
 import { FlagOutlined } from '@mui/icons-material';
-import { shortenWalletAddressLabel } from '../utils/address';
+import { shortenWalletAddressLabel2 } from '../utils/address';
 import { FlowWalletType } from '@payflow/common';
 import { shortNetworkName } from '../utils/networks';
 import NetworkAvatar from './avatars/NetworkAvatar';
@@ -20,7 +20,7 @@ export function WalletSection(props: { wallet: FlowWalletType; balance?: string 
       sx={{ border: 1, borderRadius: 4, borderColor: 'divider', p: 1 }}>
       <Box display="flex" flexDirection="row" alignItems="center">
         <NetworkAvatar tooltip chainId={wallet.network} sx={{ width: 24, height: 24 }} />
-        <Typography ml={1}>{shortenWalletAddressLabel(wallet.address)}</Typography>
+        <Typography ml={1}>{shortenWalletAddressLabel2(wallet.address)}</Typography>
         <CopyToClipboardIconButton iconSize={16} tooltip="Copy address" value={wallet.address} />
         {wallet.version && (
           <>
