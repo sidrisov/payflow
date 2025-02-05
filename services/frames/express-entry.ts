@@ -7,7 +7,7 @@ import { htmlToImage } from './utils/image';
 import axios from 'axios';
 import { IdentityType } from './types/ProfleType';
 import dotenv from 'dotenv';
-import { PaymentType } from '@payflow/common';
+import { PaymentType, tokens } from '@payflow/common';
 import { paymentHtml } from './components/Payment';
 import { Address, Chain } from 'viem';
 import { arbitrum, base, degen, ham, mode, optimism, worldchain, zora } from 'viem/chains';
@@ -139,16 +139,19 @@ async function startServer() {
       const paymentResponse = await axios.get(`${API_URL}/api/payment/${req.params.refId}`);
       const payment = paymentResponse.data as PaymentType;
 
+      const token = tokens.find((t) => t.id === payment.token);
+      const tokenPrice = token ? TOKEN_PRICES[token.underlyingToken?.id || token.id] : 0;
+
       // Calculate token amount or USD amount if missing
-      if (payment.tokenAmount === undefined && payment.usdAmount !== undefined && payment.token) {
+      if (payment.tokenAmount === undefined && payment.usdAmount !== undefined && token) {
         payment.tokenAmount = Number.parseFloat(
-          normalizeNumberPrecision(payment.usdAmount / TOKEN_PRICES[payment.token])
+          normalizeNumberPrecision(payment.usdAmount / tokenPrice)
         );
       }
 
-      if (payment.usdAmount === undefined && payment.tokenAmount !== undefined && payment.token) {
+      if (payment.usdAmount === undefined && payment.tokenAmount !== undefined && token) {
         payment.usdAmount = Number.parseFloat(
-          normalizeNumberPrecision(payment.tokenAmount * TOKEN_PRICES[payment.token])
+          normalizeNumberPrecision(payment.tokenAmount * tokenPrice)
         );
       }
 

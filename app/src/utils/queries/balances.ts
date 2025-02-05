@@ -35,10 +35,10 @@ export const useAssetBalances = (assets: AssetType[]) => {
                 .map((result, index) => ({
                   asset: assets[index],
                   balance: result.status === 'fulfilled' ? result.value : undefined,
-                  usdPrice: result.status === 'fulfilled' ? tokenPrices[assets[index].token.id] : 0,
+                  usdPrice: result.status === 'fulfilled' ? tokenPrices[assets[index].token.underlyingToken?.id || assets[index].token.id] : 0,
                   usdValue:
                     result.status === 'fulfilled'
-                      ? getAssetValue(result.value, tokenPrices[assets[index].token.id])
+                      ? getAssetValue(result.value, tokenPrices[assets[index].token.underlyingToken?.id || assets[index].token.id])
                       : 0
                 }))
                 .sort((left, right) => Number(right.usdValue - left.usdValue))

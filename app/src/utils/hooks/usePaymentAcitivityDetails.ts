@@ -27,7 +27,7 @@ export const usePaymentActivityDetails = (payment: PaymentType) => {
     ) as Token;
 
     if (token) {
-      const price = tokenPrices ? tokenPrices[token.id] : 0;
+      const price = tokenPrices ? tokenPrices[token.underlyingToken?.id || token.id] : 0;
 
       const tokenAmount =
         payment.tokenAmount || (payment.usdAmount ? (payment.usdAmount / price).toString() : '0');
