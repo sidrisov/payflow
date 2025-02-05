@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogProps } from '@mui/material';
-import { EarnTabs } from '../earn/EarnTabs';
+import { ServiceTabs } from '../payment/services/ServiceTabs';
 import { useMobile } from '../../utils/hooks/useMobile';
 import { useSearchParams } from 'react-router-dom';
 
@@ -27,7 +27,7 @@ export default function UsefulComposerActionDialog({ ...props }: UsefulComposerA
         backdropFilter: 'blur(3px)'
       }}>
       <DialogContent>
-        <EarnTabs tab={tab} />
+        <ServiceTabs tab={tab} />
       </DialogContent>
     </Dialog>
   );

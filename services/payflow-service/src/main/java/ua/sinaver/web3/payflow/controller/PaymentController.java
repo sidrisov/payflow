@@ -207,7 +207,8 @@ public class PaymentController {
 			return;
 		}
 
-		val payment = paymentRepository.findByReferenceIdAndSender(referenceId, user);
+		// allow anyone to update the payment
+		val payment = paymentRepository.findByReferenceId(referenceId);
 		if (payment != null && !payment.getStatus().equals(Payment.PaymentStatus.COMPLETED) &&
 				!payment.getStatus().equals(Payment.PaymentStatus.CANCELLED) &&
 				!payment.getStatus().equals(Payment.PaymentStatus.REFUNDED)) {
