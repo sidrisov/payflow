@@ -28,7 +28,11 @@ export function FeeSection({
           variant="caption"
           fontWeight="bold"
           color={fee === BigInt(0) ? green.A700 : 'inherit'}>
-          {getFeeText(type, fee, tokenPrices?.[token?.id as string])}
+          {getFeeText(
+            type,
+            fee,
+            tokenPrices?.[(token?.underlyingToken?.id || token?.id) as string]
+          )}
         </Typography>
       </Box>
     </Tooltip>

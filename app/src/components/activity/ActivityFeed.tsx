@@ -147,7 +147,7 @@ export default function ActivityFeed({ identity, selectedChain }: AssetsProps) {
               </>
             ) : (
               <Typography variant="subtitle2" textAlign="center">
-                No transactions found.
+                No activity found.
               </Typography>
             )}
           </>
