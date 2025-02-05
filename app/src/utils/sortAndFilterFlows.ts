@@ -1,13 +1,9 @@
 import { FlowType, FlowWalletType } from '@payflow/common';
 import { SUPPORTED_CHAINS } from './networks';
 
-export default function sortAndFilterFlows(flows: FlowType[], defaultFlow?: FlowType): FlowType[] {
+export default function sortAndFilterFlows(flows: FlowType[]): FlowType[] {
   return flows
     .sort((a, b) => {
-      // Default flow always first
-      if (a.uuid === defaultFlow?.uuid) return -1;
-      if (b.uuid === defaultFlow?.uuid) return 1;
-
       // Rodeo and Bankr types go last
       if (a.type === 'RODEO' || a.type === 'BANKR') {
         if (b.type === 'RODEO' || b.type === 'BANKR') {

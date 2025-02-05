@@ -78,7 +78,7 @@ export default function App() {
         const profile = await me(accessToken);
         if (profile) {
           if (profile.flows) {
-            profile.flows = sortAndFilterFlows(profile.flows, profile.defaultFlow);
+            profile.flows = sortAndFilterFlows(profile.flows);
           }
           setProfile(profile);
         }
