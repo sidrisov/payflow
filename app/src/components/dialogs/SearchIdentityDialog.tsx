@@ -10,7 +10,6 @@ import {
   Typography,
   CircularProgress,
   IconButton,
-  Avatar
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { ArrowBack, Clear } from '@mui/icons-material';
@@ -250,16 +249,11 @@ export default function SearchIdentityDialog({
               <TextField
                 fullWidth
                 margin="dense"
-                label="search by name, ens, or address"
+                label="Search by profile, @username, ens, or address"
                 type="text"
                 value={searchString ?? ''}
                 slotProps={{
                   input: {
-                    startAdornment: shrink && (
-                      <InputAdornment position="start">
-                        <Avatar src="payflow.png" sx={{ ml: 1, width: 28, height: 28 }} />
-                      </InputAdornment>
-                    ),
                     endAdornment: searchString && (
                       <InputAdornment position="end">
                         <IconButton
