@@ -40,8 +40,8 @@ import { me } from '../services/user';
 import sortAndFilterFlows from '../utils/sortAndFilterFlows';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 import { usePimlicoInit } from '../utils/hooks/usePimlicoInit';
-import { FaCubesStacked } from 'react-icons/fa6';
 import { MdContacts } from 'react-icons/md';
+import { SiLightning } from 'react-icons/si';
 
 export default function App() {
   const location = useLocation();
@@ -344,9 +344,9 @@ export default function App() {
                   label="Services"
                   icon={
                     bottonToolbarActionValue === 2 ? (
-                      <FaCubesStacked size={22} />
+                      <SiLightning size={22} />
                     ) : (
-                      <FaCubesStacked size={20} />
+                      <SiLightning size={20} />
                     )
                   }
                   onClick={async () => {
