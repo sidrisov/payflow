@@ -120,7 +120,7 @@ export function SearchIdentityListItem(
           {view === 'address' && identity.meta && (
             <AddressSection maxWidth={300} identity={identity} />
           )}
-          {!minimized && (
+          {!minimized && updateIdentityCallback && (
             <IconButton
               onClick={(e) => {
                 e.stopPropagation();
