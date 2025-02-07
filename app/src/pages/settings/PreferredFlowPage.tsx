@@ -41,7 +41,7 @@ export default function PreferredFlowPage() {
     if (!selectedFlow) return;
     try {
       if (await setReceivingFlow(selectedFlow.uuid)) {
-        toast.success('Updated! Reloading', { isLoading: true });
+        toast.success('Updated! Refreshing', { isLoading: true });
         await delay(1000);
         navigate(0);
       } else {

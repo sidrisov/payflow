@@ -47,8 +47,6 @@ public class FlowService {
 	@Autowired
 	private IdentityService identityService;
 	@Autowired
-	private AirstackSocialGraphService socialGraphService;
-	@Autowired
 	private WalletSessionRepository walletSessionRepository;
 
 	@Autowired

@@ -1,6 +1,6 @@
 import { ThemeProvider } from '@emotion/react';
 import { CssBaseline, GlobalStyles } from '@mui/material';
-import { green, teal } from '@mui/material/colors';
+import { green, red, teal } from '@mui/material/colors';
 import { createTheme, Theme } from '@mui/material/styles';
 
 function newTheme(darkMode: boolean): Theme {
@@ -16,6 +16,11 @@ function newTheme(darkMode: boolean): Theme {
         main: teal[500],
         light: teal[300],
         dark: teal[700]
+      },
+      error: {
+        main: red.A700,
+        light: red.A400,
+        dark: red[800]
       }
     },
     components: {

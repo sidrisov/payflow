@@ -16,12 +16,13 @@ export default function CustomToastContainer() {
       closeButton={false}
       transition={Flip}
       toastStyle={{
+        padding: '8px 12px',
         width: 'auto',
         minWidth: 120,
         maxWidth: 300,
         marginTop: 10,
         minHeight: 30,
-        borderRadius: '16px',
+        borderRadius: '12px',
         textAlign: 'center',
         textWrap: 'balance',
         justifyContent: 'center'
