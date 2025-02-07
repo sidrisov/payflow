@@ -9,7 +9,7 @@ import {
   Stack,
   Typography,
   CircularProgress,
-  IconButton,
+  IconButton
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { ArrowBack, Clear } from '@mui/icons-material';
@@ -315,7 +315,10 @@ export default function SearchIdentityDialog({
               profileRedirect={profileRedirect}
               closeStateCallback={closeStateCallback}
               selectIdentityCallback={selectIdentityCallback}
-              updateIdentityCallback={updateIdentityCallback}
+              // pass only if this is not used in selecting contacts
+              {...(!selectIdentityCallback && {
+                updateIdentityCallback
+              })}
               showExtra={addressBookView === 'all'}
               identities={
                 addressBookView === 'all'
@@ -335,7 +338,9 @@ export default function SearchIdentityDialog({
             closeStateCallback={closeStateCallback}
             selectIdentityCallback={selectIdentityCallback}
             identities={foundIdentities}
-            updateIdentityCallback={updateIdentityCallback}
+            {...(!selectIdentityCallback && {
+              updateIdentityCallback
+            })}
           />
 
           {(isAuthenticated && contacts.length === 0 && !isFetchingContacts) ||
