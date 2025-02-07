@@ -11,18 +11,19 @@ import {
   Typography
 } from '@mui/material';
 import { AiFillSignature } from 'react-icons/ai';
+import { MdEdit } from 'react-icons/md';
 
 import { FlowType } from '@payflow/common';
 import { setReceivingFlow } from '../../services/flow';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { delay } from '../../utils/delay';
-import { useContext, useState, useEffect, useRef } from 'react';
+import { useContext, useState, useEffect, useRef, useMemo } from 'react';
 import NetworkAvatar from '../avatars/NetworkAvatar';
 import { WalletBalanceDialog } from './WalletInfoDialog';
 import getFlowAssets from '../../utils/assets';
 import { useAssetBalances } from '../../utils/queries/balances';
-import { IoIosWallet, IoMdSquare, IoMdKey } from 'react-icons/io';
+import { IoMdSquare, IoMdKey } from 'react-icons/io';
 import { socialLink, ZAPPER } from '../../utils/dapps';
 import { ProfileContext } from '../../contexts/UserContext';
 import { useWallets } from '@privy-io/react-auth';
@@ -34,8 +35,11 @@ import { PayMeDialog } from '../dialogs/PayMeDialog';
 import { AutoMode } from '@mui/icons-material';
 import { WalletPermissionsDialog } from '../dialogs/WalletPermissionsDialog';
 import { isBrowser } from 'react-device-detect';
+import { formatAmountWithSuffix } from '../../utils/formats';
+import { IoWallet } from 'react-icons/io5';
+import { EditFlowDialog } from '../dialogs/EditFlowDialog';
 
-type DialogType = 'none' | 'payMe' | 'balanceInfo' | 'permissions';
+type DialogType = 'none' | 'payMe' | 'balanceInfo' | 'permissions' | 'edit';
 
 export function FlowSettingsMenu({
   showOnlySigner,
@@ -56,6 +60,21 @@ export function FlowSettingsMenu({
   const menuRef = useRef<HTMLDivElement>(null);
 
   const [activeDialog, setActiveDialog] = useState<DialogType>('none');
+
+  const formattedTotalBalance = useMemo(() => {
+    if (isFetched && balances && balances.length > 0) {
+      const total = balances
+        .filter((balance) => balance.balance)
+        .reduce((sum, current) => sum + current.usdValue, 0)
+        .toFixed(1);
+      return formatAmountWithSuffix(total);
+    }
+    return '0.00';
+  }, [isFetched, balances]);
+
+  const walletAddress = useMemo(() => {
+    return flow.wallets[0].address;
+  }, [flow.wallets]);
 
   useEffect(() => {
     if (ready && wallets.length !== 0) {
@@ -135,16 +154,22 @@ export function FlowSettingsMenu({
   return (
     <>
       <Menu
-        {...props}
         ref={menuRef}
         sx={{
           mt: 1,
           zIndex: 1500,
-          '&:focus': { outline: 'none' }
+          '&:focus': { outline: 'none' },
+          '& .MuiList-root': {
+            p: 0
+          },
+          '& .MuiMenuItem-root': {
+            borderRadius: 0
+          }
         }}
         disableEnforceFocus={true}
         transformOrigin={{ horizontal: 'left', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
+        anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+        {...props}>
         <MenuList dense disablePadding>
           {flow.type !== 'BANKR' && flow.type !== 'RODEO' && (
             <>
@@ -186,6 +211,39 @@ export function FlowSettingsMenu({
               {!showOnlySigner && <Divider />}
             </>
           )}
+          <MenuItem onClick={() => openDialog('balanceInfo')}>
+            <ListItemIcon>
+              <IoWallet />
+            </ListItemIcon>
+            <Stack width="100%" direction="row" justifyContent="space-between" alignItems="center">
+              <Typography>{shortenWalletAddressLabel2(walletAddress)}</Typography>
+              <AvatarGroup
+                max={4}
+                color="inherit"
+                total={flow.wallets.length}
+                sx={{
+                  ml: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: 30,
+                  minWidth: 30,
+                  '& .MuiAvatar-root': {
+                    borderStyle: 'none',
+                    border: 0,
+                    width: 18,
+                    height: 18,
+                    fontSize: 10
+                  }
+                }}>
+                {[...Array(Math.min(4, flow.wallets.length))].map((_item, i) => (
+                  <NetworkAvatar
+                    key={`account_card_wallet_list_${flow.wallets[i].network}`}
+                    chainId={flow.wallets[i].network}
+                  />
+                ))}
+              </AvatarGroup>
+            </Stack>
+          </MenuItem>
           {!showOnlySigner && (
             <>
               {flow.type !== 'BANKR' && flow.type !== 'RODEO' && (
@@ -207,7 +265,7 @@ export function FlowSettingsMenu({
                     <MenuItem
                       onClick={async () => {
                         if (await setReceivingFlow(flow.uuid)) {
-                          toast.success('Saved! Reloading page ...', { isLoading: true });
+                          toast.success('Saved! Refreshing', { isLoading: true });
                           await delay(1000);
                           navigate(0);
                         } else {
@@ -220,47 +278,6 @@ export function FlowSettingsMenu({
                       <Typography>Make default for receiving</Typography>
                     </MenuItem>
                   )}
-                  <MenuItem onClick={() => openDialog('balanceInfo')}>
-                    <ListItemIcon>
-                      <IoIosWallet />
-                    </ListItemIcon>
-                    <Stack
-                      width="100%"
-                      direction="row"
-                      justifyContent="space-between"
-                      alignItems="center">
-                      <Typography>
-                        {flow.type === 'FARCASTER_VERIFICATION' || flow.type === 'CONNECTED'
-                          ? 'Wallets Balance'
-                          : 'Smart Wallets Balance'}
-                      </Typography>
-                      <AvatarGroup
-                        max={4}
-                        color="inherit"
-                        total={flow.wallets.length}
-                        sx={{
-                          ml: 1,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          height: 30,
-                          minWidth: 30,
-                          '& .MuiAvatar-root': {
-                            borderStyle: 'none',
-                            border: 0,
-                            width: 18,
-                            height: 18,
-                            fontSize: 10
-                          }
-                        }}>
-                        {[...Array(Math.min(4, flow.wallets.length))].map((_item, i) => (
-                          <NetworkAvatar
-                            key={`account_card_wallet_list_${flow.wallets[i].network}`}
-                            chainId={flow.wallets[i].network}
-                          />
-                        ))}
-                      </AvatarGroup>
-                    </Stack>
-                  </MenuItem>
                   {flow.type !== 'CONNECTED' && flow.wallets[0].version?.endsWith('_0.7') && (
                     <MenuItem onClick={() => openDialog('permissions')}>
                       <ListItemIcon>
@@ -286,6 +303,22 @@ export function FlowSettingsMenu({
                 </ListItemIcon>
                 <Typography>More on Zapper</Typography>
               </MenuItem>
+              {!showOnlySigner && (!flow.type || flow.type === 'REGULAR') && !flow.archived && (
+                <>
+                  <Divider />
+                  <MenuItem onClick={() => openDialog('edit')}>
+                    <ListItemIcon>
+                      <MdEdit />
+                    </ListItemIcon>
+                    <Stack>
+                      <Typography>Edit</Typography>
+                      <Typography variant="caption" color="text.secondary" noWrap>
+                        Rename, archive, etc.
+                      </Typography>
+                    </Stack>
+                  </MenuItem>
+                </>
+              )}
             </>
           )}
         </MenuList>
@@ -309,6 +342,13 @@ export function FlowSettingsMenu({
         open={activeDialog === 'permissions'}
         onClose={() => setActiveDialog('none')}
         flow={flow}
+      />
+
+      <EditFlowDialog
+        open={activeDialog === 'edit'}
+        onClose={() => setActiveDialog('none')}
+        flow={flow}
+        totalBalance={formattedTotalBalance}
       />
     </>
   );

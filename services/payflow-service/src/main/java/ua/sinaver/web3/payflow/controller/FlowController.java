@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,15 +14,16 @@ import ua.sinaver.web3.payflow.dto.FlowMessage;
 import ua.sinaver.web3.payflow.dto.JarMessage;
 import ua.sinaver.web3.payflow.dto.WalletMessage;
 import ua.sinaver.web3.payflow.dto.WalletSessionMessage;
+import ua.sinaver.web3.payflow.repository.FlowRepository;
 import ua.sinaver.web3.payflow.repository.WalletRepository;
 import ua.sinaver.web3.payflow.service.FlowService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.IUserService;
 
-import java.security.Principal;
+import static ua.sinaver.web3.payflow.config.CacheConfig.USER_FLOWS_CACHE;
+
 import java.util.List;
 
-// TODO: inject Authenticated user directly instead of fetching it with principal on every request
 @RestController
 @RequestMapping("/flows")
 @CrossOrigin(origins = "${payflow.dapp.url}", allowCredentials = "true")
@@ -39,40 +41,28 @@ class FlowController {
 	@Autowired
 	private IIdentityService identityService;
 
-	/*
-	 * @GetMapping("/{walletAddress}/nonce")
-	 * public String nonce(@PathVariable String walletAddress) {
-	 * val nonce = RandomStringUtils.random(10, true, true);
-	 *
-	 * log.debug("Wallet: {} - nonce: {} ", walletAddress, nonce);
-	 * return nonce;
-	 * }
-	 *
-	 * @PostMapping("/{walletAddress}/{verify}")
-	 * public ResponseEntity<String> verify(@PathVariable String walletAddress,
-	 *
-	 * @RequestBody SiweChallengeMessage siwe,
-	 * HttpSession session) {
-	 * return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	 * }
-	 */
+	@Autowired
+	private FlowRepository flowRepository;
+
+	@Autowired
+	private CacheManager cacheManager;
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public void createFlow(@RequestBody FlowMessage flow, Principal principal) throws Exception {
-		val user = userService.findByIdentity(principal.getName());
+	public void createFlow(@RequestBody FlowMessage flow, @AuthenticationPrincipal String identity) throws Exception {
+		val user = userService.findByIdentity(identity);
 		if (user == null) {
-			throw new Exception("User doesn't exist: " + principal.getName());
+			throw new Exception("User doesn't exist: " + identity);
 		}
 
 		flowService.saveFlow(flow, user);
 	}
 
 	@GetMapping
-	public List<FlowMessage> getAllFlows(Principal principal) throws Exception {
-		val user = userService.findByIdentity(principal.getName());
+	public List<FlowMessage> getAllFlows(@AuthenticationPrincipal String identity) throws Exception {
+		val user = userService.findByIdentity(identity);
 		if (user == null) {
-			throw new Exception("User doesn't exist: " + principal.getName());
+			throw new Exception("User doesn't exist: " + identity);
 		}
 		return flowService.getAllFlows(user);
 	}
@@ -92,13 +82,14 @@ class FlowController {
 	}
 
 	@PutMapping("/receiving/{uuid}")
-	public ResponseEntity<String> setReceivingFlow(@PathVariable String uuid,
-	                                               Principal principal) {
-		log.debug("Setting a new receiving flow: {} for {}", uuid, principal);
+	public ResponseEntity<String> setReceivingFlow(
+			@PathVariable String uuid,
+			@AuthenticationPrincipal String identity) {
+		log.debug("Setting a new receiving flow: {} for {}", uuid, identity);
 
-		val user = userService.findByIdentity(principal.getName());
+		val user = userService.findByIdentity(identity);
 		if (user == null) {
-			log.error("User doesn't exist: {} ", principal.getName());
+			log.error("User doesn't exist: {} ", identity);
 			return ResponseEntity.badRequest().build();
 		}
 
@@ -108,11 +99,11 @@ class FlowController {
 					.findFirst().orElse(null);
 
 			if (flow == null) {
-				log.error("Flow not found: {} for {}", uuid, principal.getName());
+				log.error("Flow not found: {} for {}", uuid, identity);
 				return ResponseEntity.badRequest().build();
 			}
 
-			log.debug("Setting flow as receiving flow: {} for {}", flow, principal.getName());
+			log.debug("Setting flow as receiving flow: {} for {}", flow, identity);
 			user.setDefaultFlow(flow);
 			user.setDefaultReceivingAddress(null);
 		} else {
@@ -131,50 +122,6 @@ class FlowController {
 		}
 		return ResponseEntity.ok().build();
 	}
-
-	/*
-	 * @PostMapping("/{uuid}/wallet")
-	 *
-	 * @ResponseStatus(HttpStatus.CREATED)
-	 * public void addFlowWallet(@PathVariable String uuid, @RequestBody
-	 * WalletMessage wallet, Principal principal)
-	 * throws Exception {
-	 * val user = userService.findByIdentity(principal.getName());
-	 * if (user == null) {
-	 * throw new Exception("User doesn't exist: " + principal.getName());
-	 * }
-	 *
-	 * log.debug("addFlowWallet() {} {}", uuid, wallet);
-	 * flowService.addFlowWallet(uuid, wallet, user);
-	 * }
-	 *
-	 * @PutMapping("/{uuid}/wallet")
-	 *
-	 * @ResponseStatus(HttpStatus.OK)
-	 * public void updateFlowWallet(@PathVariable String uuid, @RequestBody
-	 * WalletMessage wallet, Principal principal)
-	 * throws Exception {
-	 * val user = userService.findByIdentity(principal.getName());
-	 * if (user == null) {
-	 * throw new Exception("User doesn't exist: " + principal.getName());
-	 * }
-	 *
-	 * log.debug("updateFlowWallet() {} {}", uuid, wallet);
-	 * flowService.updateFlowWallet(uuid, wallet, user);
-	 * }
-	 *
-	 * @DeleteMapping("/{uuid}/wallet")
-	 * public void deleteFLowWallet(@PathVariable String uuid, @RequestBody
-	 * WalletMessage wallet, Principal principal)
-	 * throws Exception {
-	 * val user = userService.findByIdentity(principal.getName());
-	 * if (user == null) {
-	 * throw new Exception("User doesn't exist: " + principal.getName());
-	 * }
-	 *
-	 * flowService.deleteFlowWallet(uuid, wallet, user);
-	 * }
-	 */
 
 	@GetMapping("/wallets")
 	public List<WalletMessage> getAllWallets() {
@@ -207,10 +154,10 @@ class FlowController {
 			@PathVariable String uuid,
 			@PathVariable String address,
 			@PathVariable Integer chainId,
-			Principal principal) throws Exception {
-		val user = userService.findByIdentity(principal.getName());
+			@AuthenticationPrincipal String identity) throws Exception {
+		val user = userService.findByIdentity(identity);
 		if (user == null) {
-			throw new Exception("User doesn't exist: " + principal.getName());
+			throw new Exception("User doesn't exist: " + identity);
 		}
 
 		return flowService.getWalletSessions(uuid, address, chainId, user);
@@ -223,10 +170,10 @@ class FlowController {
 			@PathVariable Integer chainId,
 			@PathVariable String sessionId,
 			@RequestBody WalletSessionMessage session,
-			Principal principal) throws Exception {
-		val user = userService.findByIdentity(principal.getName());
+			@AuthenticationPrincipal String identity) throws Exception {
+		val user = userService.findByIdentity(identity);
 		if (user == null) {
-			throw new Exception("User doesn't exist: " + principal.getName());
+			throw new Exception("User doesn't exist: " + identity);
 		}
 
 		flowService.updateWalletSession(uuid, address, chainId, sessionId, session, user);
@@ -239,13 +186,82 @@ class FlowController {
 			@PathVariable String address,
 			@PathVariable Integer chainId,
 			@PathVariable String sessionId,
-			Principal principal) throws Exception {
-		val user = userService.findByIdentity(principal.getName());
+			@AuthenticationPrincipal String identity) throws Exception {
+		val user = userService.findByIdentity(identity);
 		if (user == null) {
-			throw new Exception("User doesn't exist: " + principal.getName());
+			throw new Exception("User doesn't exist: " + identity);
 		}
 
 		flowService.deactivateWalletSession(uuid, address, chainId, sessionId, user);
+		return ResponseEntity.ok().build();
+	}
+
+	@PatchMapping("/{uuid}/archive")
+	public ResponseEntity<String> archiveFlow(
+			@PathVariable String uuid,
+			@AuthenticationPrincipal String identity) {
+		log.debug("Archiving flow: {} for {}", uuid, identity);
+
+		val user = userService.findByIdentity(identity);
+		if (user == null) {
+			log.error("User doesn't exist: {} ", identity);
+			return ResponseEntity.badRequest().build();
+		}
+
+		val flow = flowRepository.findByUuid(uuid);
+
+		if (flow == null) {
+			log.error("Flow not found: {} for {}", uuid, identity);
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
+		}
+
+		if (!flow.getUserId().equals(user.getId())) {
+			log.error("Flow not found: {} for {}", uuid, identity);
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Not allowed");
+		}
+
+		if (!flow.isArchived()) {
+			log.debug("Setting flow as archived: {} for {}", flow, identity);
+			flow.setArchived(true);
+
+			cacheManager.getCache(USER_FLOWS_CACHE).evict(user.getIdentity());
+		}
+
+		return ResponseEntity.ok().build();
+	}
+
+	@PatchMapping("/{uuid}/title")
+	public ResponseEntity<String> updateFlowTitle(
+			@PathVariable String uuid,
+			@RequestBody String title,
+			@AuthenticationPrincipal String identity) {
+		log.debug("Updating flow title: {} for {} to {}", uuid, identity, title);
+
+		val user = userService.findByIdentity(identity);
+		if (user == null) {
+			log.error("User doesn't exist: {} ", identity);
+			return ResponseEntity.badRequest().build();
+		}
+
+		val flow = user.getFlows().stream()
+				.filter(f -> StringUtils.equals(f.getUuid(), uuid))
+				.findFirst().orElse(null);
+
+		if (flow == null) {
+			log.error("Flow not found: {} for {}", uuid, identity);
+			return ResponseEntity.badRequest().build();
+		}
+
+		if (StringUtils.isBlank(title)) {
+			log.error("Title cannot be empty for flow: {}", uuid);
+			return ResponseEntity.badRequest().body("Title cannot be empty");
+		}
+
+		log.debug("Setting flow title: {} for {} to {}", flow, identity, title);
+		flow.setTitle(title);
+
+		cacheManager.getCache(USER_FLOWS_CACHE).evict(user.getIdentity());
+
 		return ResponseEntity.ok().build();
 	}
 }

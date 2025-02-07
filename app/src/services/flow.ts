@@ -41,3 +41,36 @@ export async function updateWallet(
     console.error(error);
   }
 }
+
+export async function archiveFlow(flowUuid: string): Promise<boolean | undefined> {
+  try {
+    const response = await axios.patch(
+      `${API_URL}/api/flows/${flowUuid}/archive`,
+      {},
+      {
+        withCredentials: true
+      }
+    );
+    console.debug(response.status);
+
+    return response.status === 200;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export async function renameFlow(flowUuid: string, title: string): Promise<boolean | undefined> {
+  try {
+    const response = await axios.patch(`${API_URL}/api/flows/${flowUuid}/title`, title, {
+      withCredentials: true,
+      headers: {
+        'Content-Type': 'text/plain'
+      }
+    });
+    console.debug(response.status);
+
+    return response.status === 200;
+  } catch (error) {
+    console.error(error);
+  }
+}

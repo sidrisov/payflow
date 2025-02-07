@@ -111,10 +111,16 @@ export function IdentityMenu({
         '& .MuiMenu-paper': {
           mt: 0.5
         },
+        zIndex: 1450,
         '& .MuiList-root': {
-          p: 0
+          padding: 0
         },
-        zIndex: 1450
+        '& .MuiMenuItem-root': {
+          borderRadius: 0
+        },
+        '& .MuiDivider-root': {
+          margin: 0
+        }
       }}
       anchorOrigin={{
         vertical: 'bottom',

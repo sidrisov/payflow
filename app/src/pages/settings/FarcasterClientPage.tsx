@@ -69,7 +69,7 @@ export default function FarcasterClientPage() {
         headers: { 'Content-Type': 'application/json' }
       });
       if (response.status === 200) {
-        toast.success('Updated! Reloading', { isLoading: true });
+        toast.success('Updated! Refreshing', { isLoading: true });
         await delay(1000);
         navigate(0);
       } else {
