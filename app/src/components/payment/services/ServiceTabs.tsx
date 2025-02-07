@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Tabs, Tab, Stack } from '@mui/material';
+import React, { useState } from 'react';
+import { Stack, Typography, Paper, Grid2, Card, Divider } from '@mui/material';
 import { DegenInfoCard } from '../../cards/DegenInfoCard';
 import CastActions from './CastActions';
-import { TbGiftFilled } from 'react-icons/tb';
+import { TbGiftFilled, TbSend } from 'react-icons/tb';
 import { HiOutlineSquares2X2 } from 'react-icons/hi2';
+import { GrStorage } from 'react-icons/gr';
+import { useNavigate } from 'react-router-dom';
+
 interface ServiceTabsProps {
   tab?: string;
 }
@@ -27,66 +30,102 @@ const getTabIndex = (tab: string | undefined): number => {
   }
 };
 
+interface Service {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+}
+
+interface ServiceCategoryProps {
+  title: string;
+  icon: React.ReactNode;
+  services: Service[];
+}
+
+const ServiceCategory: React.FC<ServiceCategoryProps> = ({ services }) => {
+  return (
+    <Grid2
+      width="100%"
+      container
+      spacing={2}
+      columns={{ xs: 2, sm: 2, md: 2 }}
+      justifyContent="center">
+      {services.map((service, index) => (
+        <Grid2
+          key={index}
+          component={Card}
+          elevation={5}
+          size={{ xs: 1, sm: 1, md: 1 }}
+          sx={{
+            p: 2,
+            cursor: service.disabled ? 'default' : 'pointer',
+            opacity: service.disabled ? 0.5 : 1,
+            '&:hover': {
+              bgcolor: service.disabled ? 'inherit' : 'action.hover'
+            }
+          }}
+          onClick={service.onClick}
+          display="flex"
+          justifyContent="center"
+          alignItems="center">
+          <Stack spacing={1} alignItems="center" justifyContent="center">
+            {service.icon}
+            <Typography textAlign="center" variant="subtitle2" fontWeight="medium">
+              {service.title}
+            </Typography>
+          </Stack>
+        </Grid2>
+      ))}
+    </Grid2>
+  );
+};
+
 export function ServiceTabs({ tab }: ServiceTabsProps) {
   const [activeTab, setActiveTab] = useState(getTabIndex(tab));
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const tabIndex = getTabIndex(tab);
-    setActiveTab(tabIndex);
-  }, [tab]);
-
-  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue);
-  };
+  const services = [
+    {
+      title: 'New Payment',
+      description: 'Create a new payment',
+      icon: <TbSend size={24} />,
+      onClick: () => navigate('/payment/create')
+    },
+    {
+      title: 'Claimables',
+      description: 'View your claimables',
+      icon: <TbGiftFilled size={24} />,
+      onClick: () => setActiveTab(0)
+    },
+    {
+      title: 'Cast Actions',
+      description: 'Manage cast actions',
+      icon: <HiOutlineSquares2X2 size={24} />,
+      onClick: () => setActiveTab(1)
+    },
+    {
+      title: 'Farcaster Storage',
+      description: 'Manage farcaster storage',
+      icon: <GrStorage size={24} />,
+      onClick: () => navigate('/farcaster/storage')
+    }
+  ];
 
   return (
     <>
-      <Tabs
-        value={activeTab}
-        onChange={handleTabChange}
-        variant="scrollable"
-        scrollButtons="auto"
-        sx={{
-          mb: 2,
-          '& .MuiTabs-flexContainer': {
-            gap: 1
-          },
-          '& .MuiTab-root': {
-            fontWeight: 'bold',
-            fontSize: 14,
-            borderRadius: '16px',
-            minHeight: '48px',
-            '&:hover': {
-              backgroundColor: 'rgba(0, 0, 0, 0.04)'
-            },
-            '&.Mui-selected': {
-              fontWeight: 'bolder'
-            }
-          },
-          '& .MuiTabs-indicator': {
-            height: 3,
-            borderRadius: '3px'
-          },
-          '& .MuiTouchRipple-root': {
-            borderRadius: '16px'
-          }
-        }}>
-        <Tab icon={<TbGiftFilled size={20} />} label="Claimables" disableRipple />
-        <Tab icon={<HiOutlineSquares2X2 size={20} />} label="Cast Actions" disableRipple />
-        <Tab disabled label="Contributions" disableRipple />
-        <Tab disabled label="Payment Links" disableRipple />
-        <Tab disabled label="Subscriptions" disableRipple />
-      </Tabs>
+      <Stack alignItems="center" mt={3} mb={2} p={2} spacing={3}>
+        <ServiceCategory
+          title="Services"
+          icon={<HiOutlineSquares2X2 size={30} />}
+          services={services}
+        />
 
-      {activeTab === 0 ? (
-        <Stack spacing={1}>
-          <DegenInfoCard />
-        </Stack>
-      ) : activeTab === 1 ? (
-        <Stack spacing={1}>
-          <CastActions />
-        </Stack>
-      ) : null}
+        <Divider flexItem />
+
+        {activeTab === 0 ? <DegenInfoCard /> : activeTab === 1 ? <CastActions /> : null}
+      </Stack>
     </>
   );
 }

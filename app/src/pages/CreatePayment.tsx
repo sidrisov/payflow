@@ -1,7 +1,7 @@
-import { useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Container } from '@mui/material';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import { ProfileContext } from '../contexts/UserContext';
 import { SelectedIdentityType } from '@payflow/common';
@@ -10,6 +10,7 @@ import { useIdentity } from '../utils/queries/profiles';
 import PaymentDialog from '../components/payment/PaymentDialog';
 
 export default function Composer() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const recipientIdentity = searchParams.get('recipient');
 
@@ -53,6 +54,7 @@ export default function Composer() {
             setOpenSearchIdentity={setOpenSearchIdentity}
             closeStateCallback={async () => {
               setRecipient(undefined);
+              navigate(-1);
             }}
           />
         )}
@@ -63,7 +65,7 @@ export default function Composer() {
             title="Search Recipient"
             address={profile.identity}
             open={openSearchIdentity}
-            closeStateCallback={async () => {
+            closeStateCallback={() => {
               setOpenSearchIdentity(false);
             }}
             selectIdentityCallback={async (recipient) => {
