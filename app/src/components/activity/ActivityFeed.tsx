@@ -1,7 +1,7 @@
 import { Box, Typography, Stack, CircularProgress } from '@mui/material';
 import ActivityFeedEntry from './ActivityFeedEntry';
 import { useAccount } from 'wagmi';
-import { useContext, useMemo, useCallback, useRef, useState } from 'react';
+import { useContext, useMemo, useCallback, useRef } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { Chain } from 'viem';
 import { useCompletedPayments } from '../../utils/queries/payments';
@@ -51,33 +51,36 @@ export default function ActivityFeed({ identity, selectedChain }: AssetsProps) {
     [isFetchingNextPage, fetchNextPage, hasNextPage]
   );
 
-  const [feedOption, setFeedOption] = useState<number>(1);
-
-  // Ensure feedOption is set correctly based on user authentication
-  useMemo(() => {
-    if (!address && !loggedProfile) {
-      setFeedOption(1);
-    }
+  const feedOption = useMemo(() => {
+    return !address && !loggedProfile ? 1 : 1;
   }, [address, loggedProfile]);
 
-  // Update the transactions useMemo
-  const transactions: PaymentType[] = useMemo(() => {
-    return data?.pages.flatMap((page) => page.content) || [];
-  }, [data]);
-
-  // Update the groupedTransactions useMemo
   const groupedTransactions = useMemo(() => {
-    if (!transactions) return {};
+    if (!data?.pages) return {};
 
-    return transactions.reduce((groups: { [key: string]: PaymentType[] }, payment) => {
-      const date = formatDate(parseISO(new Date(payment.completedAt!).toISOString()));
-      if (!groups[date]) {
-        groups[date] = [];
-      }
-      groups[date].push(payment);
-      return groups;
-    }, {});
-  }, [transactions]);
+    // Process everything in one pass
+    return data.pages
+      .flatMap((page) => page.content)
+      .filter((payment) => {
+        const chainMatch = selectedChain ? payment.chainId === selectedChain.id : true;
+        const feedMatch =
+          feedOption === 1 ||
+          payment.receiverAddress === address ||
+          payment.senderAddress === address ||
+          (loggedProfile &&
+            (payment.sender?.identity === loggedProfile.identity ||
+              payment.receiver?.identity === loggedProfile.identity));
+        return chainMatch && feedMatch;
+      })
+      .reduce((groups: { [key: string]: PaymentType[] }, payment) => {
+        const date = formatDate(parseISO(new Date(payment.completedAt!).toISOString()));
+        if (!groups[date]) {
+          groups[date] = [];
+        }
+        groups[date].push(payment);
+        return groups;
+      }, {});
+  }, [data, selectedChain, feedOption, address, loggedProfile]);
 
   return (
     <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -111,32 +114,17 @@ export default function ActivityFeed({ identity, selectedChain }: AssetsProps) {
                       data-date={date}>
                       {date}
                     </Typography>
-                    {payments
-                      .filter((payment) => {
-                        const chainMatch = selectedChain
-                          ? payment.chainId === selectedChain.id
-                          : true;
-                        const feedMatch =
-                          feedOption === 1 ||
-                          payment.receiverAddress === address ||
-                          payment.senderAddress === address ||
-                          (loggedProfile &&
-                            (payment.sender?.identity === loggedProfile.identity ||
-                              payment.receiver?.identity === loggedProfile.identity));
-                        return chainMatch && feedMatch;
-                      })
-                      .map((payment, paymentIndex, filteredPayments) => (
-                        <div
-                          key={`activity_section_${payment.chainId}_${payment.hash}`}
-                          ref={
-                            index === array.length - 1 &&
-                            paymentIndex === filteredPayments.length - 1
-                              ? lastElementRef
-                              : null
-                          }>
-                          <ActivityFeedEntry identity={identity} payment={payment} />
-                        </div>
-                      ))}
+                    {payments.map((payment, paymentIndex) => (
+                      <div
+                        key={`activity_section_${payment.chainId}_${payment.hash}`}
+                        ref={
+                          index === array.length - 1 && paymentIndex === payments.length - 1
+                            ? lastElementRef
+                            : null
+                        }>
+                        <ActivityFeedEntry identity={identity} payment={payment} />
+                      </div>
+                    ))}
                   </Box>
                 ))}
                 {isFetchingNextPage && (

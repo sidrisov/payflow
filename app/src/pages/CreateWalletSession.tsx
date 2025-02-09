@@ -25,7 +25,9 @@ export default function CreatePayflowWallet() {
     const flow = profile.flows.find((flow) => {
       const isRegularFlow = flow.type === 'REGULAR' || !flow.type;
       const hasBaseWallet = flow.wallets.some((wallet) => wallet.network === base.id);
-      const hasMatchingAddress = flow.wallets.some((wallet) => wallet.address === address);
+      const hasMatchingAddress = flow.wallets.some(
+        (wallet) => wallet.address.toLowerCase() === address?.toLowerCase()
+      );
 
       return isRegularFlow && hasBaseWallet && hasMatchingAddress;
     });

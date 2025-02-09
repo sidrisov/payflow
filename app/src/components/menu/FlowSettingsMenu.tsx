@@ -39,7 +39,7 @@ import { formatAmountWithSuffix } from '../../utils/formats';
 import { IoWallet } from 'react-icons/io5';
 import { EditFlowDialog } from '../dialogs/EditFlowDialog';
 
-type DialogType = 'none' | 'payMe' | 'balanceInfo' | 'permissions' | 'edit';
+type DialogType = 'none' | 'payMe' | 'balanceInfo' | 'sessions' | 'edit';
 
 export function FlowSettingsMenu({
   showOnlySigner,
@@ -279,14 +279,14 @@ export function FlowSettingsMenu({
                     </MenuItem>
                   )}
                   {flow.type !== 'CONNECTED' && flow.wallets[0].version?.endsWith('_0.7') && (
-                    <MenuItem onClick={() => openDialog('permissions')}>
+                    <MenuItem onClick={() => openDialog('sessions')}>
                       <ListItemIcon>
                         <AutoMode sx={{ fontSize: 20 }} />
                       </ListItemIcon>
                       <Stack>
-                        <Typography>Permissions</Typography>
+                        <Typography>Session Keys</Typography>
                         <Typography variant="caption" color="text.secondary" noWrap>
-                          Spending limits & access
+                          Spending limits, access, and automation
                         </Typography>
                       </Stack>
                     </MenuItem>
@@ -339,7 +339,7 @@ export function FlowSettingsMenu({
       />
 
       <WalletPermissionsDialog
-        open={activeDialog === 'permissions'}
+        open={activeDialog === 'sessions'}
         onClose={() => setActiveDialog('none')}
         flow={flow}
       />

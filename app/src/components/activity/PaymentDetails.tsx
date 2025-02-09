@@ -175,11 +175,11 @@ export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
     // Default case (for regular payments)
     return (
       token && (
-        <>
-          <TokenNetworkAvatar token={token} size={20} />
+        <Stack direction="row" spacing={0.5} alignItems="center">
           <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
             {formattedTokenAmount} {token.name}
           </Typography>
+          <TokenNetworkAvatar token={token} size={18} />
           <Typography
             variant="caption"
             fontWeight="bold"
@@ -187,7 +187,7 @@ export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
             fontSize={isMobile ? 12 : 14}>
             ${formattedUsdAmount}
           </Typography>
-        </>
+        </Stack>
       )
     );
   };

@@ -1,4 +1,4 @@
-import { Box, Stack, Tabs, Tab } from '@mui/material';
+import { Box, Stack, Tabs, Tab, Typography, Button } from '@mui/material';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { AccountCard } from '../components/cards/AccountCard';
@@ -24,6 +24,26 @@ export default function Accounts() {
   const { flows } = profile ?? { flows: [] };
   const [selectedFlow, setSelectedFlow] = useState<FlowType>(profile?.defaultFlow ?? flows?.[0]!);
 
+  const [showZeroBalance, setShowZeroBalance] = useState(() => {
+    if (!selectedFlow?.uuid) return true;
+    const stored = localStorage.getItem(`payflow:topup:${selectedFlow.uuid}:dismissed`);
+    return stored ? false : true;
+  });
+
+  useEffect(() => {
+    if (selectedFlow?.uuid) {
+      const stored = localStorage.getItem(`payflow:topup:${selectedFlow.uuid}:dismissed`);
+      setShowZeroBalance(stored ? false : true);
+    }
+  }, [selectedFlow?.uuid]);
+
+  const handleHideZeroBalance = () => {
+    if (selectedFlow?.uuid) {
+      localStorage.setItem(`payflow:topup:${selectedFlow.uuid}:dismissed`, 'true');
+      setShowZeroBalance(false);
+    }
+  };
+
   const [balanceVisible, setBalanceVisible] = useState(true);
 
   useEffect(() => {
@@ -47,6 +67,8 @@ export default function Accounts() {
   }, [selectedFlow]);
 
   const { isLoading, isFetched, data: balances } = useAssetBalances(assets);
+  const hasZeroBalance =
+    isFetched && balances && Object.values(balances).every((balance) => balance.usdValue === 0);
 
   const [activeTab, setActiveTab] = useState(0);
 
@@ -68,6 +90,47 @@ export default function Accounts() {
               setBalanceVisible={setBalanceVisible}
             />
 
+            {hasZeroBalance && showZeroBalance && (
+              <Box
+                sx={{
+                  textAlign: 'center',
+                  maxWidth: 375,
+                  border: 0.5,
+                  borderColor: 'divider',
+                  borderRadius: '16px',
+                  p: 2
+                }}>
+                <Typography
+                  color="text.secondary"
+                  sx={{
+                    fontSize: 14,
+                    mb: 1
+                  }}>
+                  Empty balance. Top up your account to get started!
+                </Typography>
+                <Stack direction="row" spacing={1} justifyContent="center">
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => {
+                      window.location.href =
+                        '/payment/create?recipient=' + selectedFlow?.wallets?.[0].address;
+                    }}
+                    sx={{ minWidth: 100 }}>
+                    Top Up
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    color="inherit"
+                    onClick={handleHideZeroBalance}
+                    sx={{ minWidth: 100 }}>
+                    Close
+                  </Button>
+                </Stack>
+              </Box>
+            )}
+
             <Tabs
               value={activeTab}
               centered
@@ -75,7 +138,6 @@ export default function Accounts() {
               TabIndicatorProps={{ sx: { display: 'none' } }}
               sx={{
                 maxWidth: 375,
-                mb: 2,
                 '& .MuiTab-root': {
                   fontSize: 14,
                   fontWeight: 'bold',

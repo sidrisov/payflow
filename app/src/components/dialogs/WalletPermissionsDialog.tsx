@@ -111,7 +111,7 @@ export function WalletPermissionsDialog({ open, onClose, flow }: Props) {
 
   return (
     <>
-      <ResponsiveDialog title="Permission Sessions" open={open} onClose={onClose}>
+      <ResponsiveDialog title="Session Keys" open={open} onClose={onClose}>
         <Box display="flex" flexDirection="column" gap={2} p={2} width="100%">
           {loadingSessions ? (
             <LinearProgress
@@ -125,7 +125,7 @@ export function WalletPermissionsDialog({ open, onClose, flow }: Props) {
             <Typography color="error">{errorSessions}</Typography>
           ) : sessions.length === 0 ? (
             <Typography color="textSecondary" align="center">
-              No active sessions found
+              No active session found
             </Typography>
           ) : (
             [...sessions, ...MOCK_SPEND_SESSIONS]?.map((session, index) => (

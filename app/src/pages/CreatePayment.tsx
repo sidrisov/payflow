@@ -11,6 +11,7 @@ import PaymentDialog from '../components/payment/PaymentDialog';
 
 export default function Composer() {
   const navigate = useNavigate();
+
   const [searchParams] = useSearchParams();
   const recipientIdentity = searchParams.get('recipient');
 
@@ -24,13 +25,34 @@ export default function Composer() {
   const [recipient, setRecipient] = useState<SelectedIdentityType>();
 
   useEffect(() => {
-    if (fetchedRecipientIdentity) {
-      setRecipient({
-        identity: fetchedRecipientIdentity,
-        type: fetchedRecipientIdentity.profile ? 'profile' : 'address'
-      });
+    if (recipientIdentity && !recipient) {
+      if (profile) {
+        const ownWallet = profile.flows?.find((flow) =>
+          flow.wallets?.find(
+            (wallet) => wallet.address.toLowerCase() === recipientIdentity.toLowerCase()
+          )
+        );
+
+        if (ownWallet) {
+          setRecipient({
+            identity: {
+              address: profile.identity,
+              profile: { ...profile, defaultFlow: ownWallet }
+            },
+            type: 'profile'
+          });
+          return;
+        }
+      }
+
+      if (fetchedRecipientIdentity) {
+        setRecipient({
+          identity: fetchedRecipientIdentity,
+          type: fetchedRecipientIdentity.profile ? 'profile' : 'address'
+        });
+      }
     }
-  }, [isRecipientFetchingLoading, fetchedRecipientIdentity]);
+  }, [recipient, isRecipientFetchingLoading, recipientIdentity, fetchedRecipientIdentity, profile]);
 
   return (
     <>
