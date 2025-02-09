@@ -17,7 +17,7 @@ import { GiTwoCoins } from 'react-icons/gi';
 import ActivityFeed from '../components/activity/ActivityFeed';
 
 export default function Accounts() {
-  const { isAuthenticated, profile } = useContext(ProfileContext);
+  const { isAuthenticated, profile, isFrameV2 } = useContext(ProfileContext);
 
   const navigate = useNavigate();
 
@@ -79,7 +79,7 @@ export default function Accounts() {
       </Helmet>
       <Box display="flex" flexDirection="column" height="100%" width="100%" overflow="hidden">
         {isAuthenticated && flows && selectedFlow ? (
-          <Stack p={1} alignItems="center" spacing={1}>
+          <Stack alignItems="center" spacing={1} sx={{ mt: isFrameV2 ? 0 : 1 }}>
             <AccountCard
               key={`account_card`}
               flows={flows ?? []}
@@ -94,11 +94,11 @@ export default function Accounts() {
               <Box
                 sx={{
                   textAlign: 'center',
-                  maxWidth: 375,
+                  maxWidth: 350,
                   border: 0.5,
                   borderColor: 'divider',
                   borderRadius: '16px',
-                  p: 2
+                  p: 1.5
                 }}>
                 <Typography
                   color="text.secondary"
