@@ -1,4 +1,4 @@
-import { Box, Typography, CircularProgress, Badge } from '@mui/material';
+import { Box, Typography, CircularProgress } from '@mui/material';
 import { useState, useMemo, useEffect, useContext } from 'react';
 import { Address, Client, formatUnits, isAddress } from 'viem';
 import { FlowWalletType } from '@payflow/common';
@@ -10,7 +10,6 @@ import { useAssetBalance, useAssetBalances } from '../utils/queries/balances';
 import { getFlowWalletsAssets } from '../utils/assets';
 import ResponsiveDialog from './dialogs/ResponsiveDialog';
 import NetworkAvatar from './avatars/NetworkAvatar';
-import TokenAvatar from './avatars/TokenAvatar';
 import { Chip } from '@mui/material';
 import { IoIosArrowDown } from 'react-icons/io';
 import {
@@ -31,6 +30,7 @@ import { usePublicClient } from 'wagmi';
 import { getContract } from 'viem';
 import { erc20Abi } from 'viem';
 import { AssetType } from '../types/AssetType';
+import TokenNetworkAvatar from './avatars/TokenNetworkAvatar';
 
 export function NetworkTokenSelector({
   payment,
@@ -303,14 +303,7 @@ export function NetworkTokenSelector({
                     )}
                   </Box>
                   <Box display="flex" alignItems="center" gap={1}>
-                    <Badge
-                      overlap="circular"
-                      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                      badgeContent={
-                        <NetworkAvatar chainId={token.chainId} sx={{ width: 16, height: 16 }} />
-                      }>
-                      <TokenAvatar token={token} sx={{ width: 30, height: 30 }} />
-                    </Badge>
+                    <TokenNetworkAvatar token={token} size={30} />
                     <Typography textTransform="uppercase">
                       {token.id}
                       {balance && balance.usdValue > 0 && (
@@ -375,14 +368,7 @@ export function NetworkTokenSelector({
       <Chip
         icon={
           paymentToken && (!showBalance || isBalanceFetched || isPaymentTokenBalanceFetched) ? (
-            <Badge
-              overlap="circular"
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-              badgeContent={
-                <NetworkAvatar chainId={paymentToken.chainId} sx={{ width: 12, height: 12 }} />
-              }>
-              <TokenAvatar token={paymentToken} sx={{ width: 24, height: 24 }} />
-            </Badge>
+            <TokenNetworkAvatar token={paymentToken} />
           ) : (
             <CircularProgress size={20} />
           )

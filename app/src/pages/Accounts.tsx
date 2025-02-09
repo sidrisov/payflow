@@ -11,7 +11,6 @@ import { useAssetBalances } from '../utils/queries/balances';
 import getFlowAssets from '../utils/assets';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 import { PaymentSection } from '../components/sections/PaymentSection';
-import { green } from '@mui/material/colors';
 import { MdOutlinePlaylistAdd } from 'react-icons/md';
 import { MdOutlinePlaylistAddCheck } from 'react-icons/md';
 import { GiTwoCoins } from 'react-icons/gi';
