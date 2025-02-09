@@ -25,6 +25,7 @@ const LazyStorage = lazy(() => import('./pages/Storage'));
 const LazyStats = lazy(() => import('./pages/stats'));
 const LazyCreatePayflowWallet = lazy(() => import('./pages/CreatePayflowWallet'));
 const LazyCreateWalletSession = lazy(() => import('./pages/CreateWalletSession'));
+const LazySubscriptionsPage = lazy(() => import('./pages/SubscriptionsPage'));
 // Wrapper component for lazy-loaded components
 const LazyWrapper = ({
   component: Component,
@@ -108,6 +109,10 @@ export const appRouter = createBrowserRouter([
       {
         path: '/~/create-wallet-session/:address',
         element: <LazyWrapper component={LazyCreateWalletSession} />
+      },
+      {
+        path: '/~/subscriptions',
+        element: <LazyWrapper component={LazySubscriptionsPage} />
       },
       { path: '404', element: <LazyWrapper component={LazyPage404} /> },
       { path: '*', element: <Navigate to="/404" replace /> }

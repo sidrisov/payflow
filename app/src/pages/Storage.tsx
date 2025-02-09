@@ -25,6 +25,7 @@ import { BUY_STORAGE_FRAME_VERSION } from '@payflow/common';
 import FrameV2SDK from '@farcaster/frame-sdk';
 import { ProfileContext } from '../contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
+import CenteredCircularProgress from '../components/CenteredCircularProgress';
 
 export type CapacityType = 'ALL' | 'CASTS_ONLY';
 export type StorageNotificationType = {
@@ -168,9 +169,7 @@ export default function Storage() {
   return (
     <Box sx={{ p: 3, maxWidth: 600, mx: 'auto' }}>
       {isLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress />
-        </Box>
+        <CenteredCircularProgress />
       ) : (
         <Card elevation={5} sx={{ mb: 2, borderRadius: 5 }}>
           <CardContent>

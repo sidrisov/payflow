@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import ua.sinaver.web3.payflow.client.NeynarClient;
 import ua.sinaver.web3.payflow.dto.FlowMessage;
 import ua.sinaver.web3.payflow.dto.ProfileMessage;
 import ua.sinaver.web3.payflow.dto.ProfileMetaMessage;
@@ -16,6 +18,8 @@ import ua.sinaver.web3.payflow.entity.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 import ua.sinaver.web3.payflow.message.*;
 import ua.sinaver.web3.payflow.message.farcaster.StorageUsage;
+import ua.sinaver.web3.payflow.message.subscription.Subscription;
+import ua.sinaver.web3.payflow.message.subscription.SubscribersMessage.SubscribedTo;
 import ua.sinaver.web3.payflow.service.FarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.FlowService;
 import ua.sinaver.web3.payflow.service.UserService;
@@ -50,6 +54,9 @@ public class UserController {
 
 	@Autowired
 	private FarcasterNeynarService neynarService;
+
+	@Autowired
+	private NeynarClient neynarClient;
 
 	@GetMapping("/me")
 	public ProfileMessage user(@AuthenticationPrincipal String identity) {
@@ -132,6 +139,28 @@ public class UserController {
 
 		userService.updateProfile(identity, profile, invitationCode);
 
+	}
+
+	@GetMapping("/me/subscribedTo")
+	public ResponseEntity<List<Subscription>> getSubscriptions(@AuthenticationPrincipal String identity) {
+		val user = userService.findByIdentity(identity);
+		if (user == null) {
+			throw new Error("User doesn't exist");
+		}
+
+		val fid = identityService.getIdentityFid(user.getIdentity());
+		if (fid == null) {
+			throw new Error("User doesn't have a FID");
+		}
+
+		try {
+			val subscribedTo = neynarClient.getSubscribedTo(fid);
+			log.debug("Subscribed to for {}: {}", fid, subscribedTo);
+			return ResponseEntity.ok(subscribedTo.subscribedTo());
+		} catch (Throwable t) {
+			log.error("Error fetching subscribedTo for {}", fid, t);
+			return ResponseEntity.internalServerError().build();
+		}
 	}
 
 	@GetMapping("/all")

@@ -6,6 +6,7 @@ import { TbGiftFilled, TbSend } from 'react-icons/tb';
 import { HiOutlineSquares2X2 } from 'react-icons/hi2';
 import { GrStorage } from 'react-icons/gr';
 import { useNavigate } from 'react-router-dom';
+import { FaRegClock } from 'react-icons/fa';
 
 interface ServiceTabsProps {
   tab?: string;
@@ -100,16 +101,22 @@ export function ServiceTabs({ tab }: ServiceTabsProps) {
       onClick: () => setActiveTab(0)
     },
     {
-      title: 'Cast Actions',
-      description: 'Manage cast actions',
-      icon: <HiOutlineSquares2X2 size={24} />,
-      onClick: () => setActiveTab(1)
-    },
-    {
       title: 'Farcaster Storage',
       description: 'Manage farcaster storage',
       icon: <GrStorage size={24} />,
       onClick: () => navigate('/farcaster/storage')
+    },
+    {
+      title: 'Subscriptions',
+      description: 'Manage subscriptions',
+      icon: <FaRegClock size={24} />,
+      onClick: () => navigate('/~/subscriptions')
+    },
+    {
+      title: 'Cast Actions',
+      description: 'Manage cast actions',
+      icon: <HiOutlineSquares2X2 size={24} />,
+      onClick: () => setActiveTab(1)
     }
   ];
 

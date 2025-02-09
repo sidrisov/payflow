@@ -3,6 +3,7 @@ package ua.sinaver.web3.payflow.service;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -15,11 +16,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
+import ua.sinaver.web3.payflow.client.NeynarClient;
 import ua.sinaver.web3.payflow.message.farcaster.*;
 import ua.sinaver.web3.payflow.message.farcaster.neynar.NotificationRequest;
 import ua.sinaver.web3.payflow.message.farcaster.neynar.NotificationResponse;
 import ua.sinaver.web3.payflow.message.farcaster.neynar.TrendingCastsResponse;
 import ua.sinaver.web3.payflow.message.subscription.SubscribersMessage;
+import ua.sinaver.web3.payflow.message.subscription.Subscription;
 import ua.sinaver.web3.payflow.message.subscription.SubscriptionsCreatedMessage;
 
 import java.time.Duration;
@@ -35,7 +38,7 @@ public class FarcasterNeynarService {
 	private final WebClient webClient;
 
 	public FarcasterNeynarService(WebClient.Builder builder,
-	                              @Value("${payflow.hub.api.key}") String hubApiKey) {
+			@Value("${payflow.hub.api.key}") String hubApiKey) {
 		webClient = builder.baseUrl("https://api.neynar.com/v2/farcaster")
 				.defaultHeader("api_key", hubApiKey)
 				.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -102,13 +105,13 @@ public class FarcasterNeynarService {
 				.orElse(null);
 	}
 
-	@CacheEvict(value = {NEYNAR_STORAGE_USAGE_CACHE, NEYNAR_STORAGE_ALLOCATION_CACHE})
+	@CacheEvict(value = { NEYNAR_STORAGE_USAGE_CACHE, NEYNAR_STORAGE_ALLOCATION_CACHE })
 	public void clearStorageCache(int fid) {
 		log.debug("Clearing farcaster storage cache for: {}", fid);
 	}
 
 	public ValidatedFrameResponseMessage validaFrameRequest(String frameMessageInHex,
-	                                                        boolean includeChannelContext) {
+			boolean includeChannelContext) {
 		log.debug("Calling Neynar Frame Validate API for message {}",
 				frameMessageInHex);
 
@@ -129,7 +132,7 @@ public class FarcasterNeynarService {
 					.bodyToMono(ValidatedFrameResponseMessage.class)
 					.retryWhen(Retry.backoff(3, Duration.ofSeconds(1))
 							.doBeforeRetry(retrySignal -> log.warn("Retrying Neynar frame " +
-											"validation request, attempt {} of 3",
+									"validation request, attempt {} of 3",
 									retrySignal.totalRetries() + 1)))
 					.block();
 		} catch (Throwable t) {
@@ -143,7 +146,7 @@ public class FarcasterNeynarService {
 	}
 
 	public CastResponseMessage cast(String signer, String message, String parentHash,
-	                                List<Cast.Embed> embeds) {
+			List<Cast.Embed> embeds) {
 		log.debug("Calling Neynar Cast API with message {}",
 				message);
 
@@ -301,7 +304,7 @@ public class FarcasterNeynarService {
 				.orElse(null);
 	}
 
-	public List<SubscriptionsCreatedMessage.Subscription> subscriptionsCreated(int fid) {
+	public List<Subscription> subscriptionsCreated(int fid) {
 		log.debug("Calling Neynar Created Subscriptions API by fid {}", fid);
 		return webClient.get()
 				.uri(uriBuilder -> uriBuilder.path("/user/subscriptions_created")
