@@ -3,10 +3,10 @@ import tokenList from './tokens.json';
 
 export const tokens: Token[] = tokenList as Token[];
 
-export const getTokenByAddress = (address: string, chainId: number): Token | undefined => {
+export const getTokenByAddress = (chainId: number, address?: string): Token | undefined => {
   return tokens.find(
     (token) =>
-      token.tokenAddress?.toLowerCase() === address.toLowerCase() && token.chainId === chainId
+      token.tokenAddress?.toLowerCase() === address?.toLowerCase() && token.chainId === chainId
   );
 };
 

@@ -94,33 +94,6 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 	}
 
 	@Override
-	public List<FarcasterFanTokenAuction> getFanTokenAuctions(List<String> farcasterUsernames) {
-		try {
-			val auctionsResponse = airstackGraphQlClient.documentName("getFanTokenAuctionsForContacts")
-					.variable("statuses", List.of("UPCOMING", "ACTIVE"))
-					.variable("entityNames", farcasterUsernames)
-					.execute().block();
-			if (auctionsResponse != null) {
-
-				log.debug("Response: {}", auctionsResponse);
-				val auctions = auctionsResponse.field("FarcasterFanTokenAuctions.FarcasterFanTokenAuction")
-						.toEntityList(FarcasterFanTokenAuction.class).stream().toList();
-				log.debug("Fetched fan tokens {} for farcaster usernames: {}", auctions,
-						farcasterUsernames);
-				return auctions;
-			}
-		} catch (Throwable t) {
-			log.error("Error during fetching fan tokens for farcaster usernames: {}, error: {} - {}",
-					farcasterUsernames,
-					t.getMessage(),
-					log.isTraceEnabled() ? t : null);
-		}
-
-		log.warn("Failed to fetch fan tokens for farcaster usernames: {}", farcasterUsernames);
-		return Collections.emptyList();
-	}
-
-	@Override
 	public FanToken getFanToken(String name) {
 		try {
 			val response = moxieStatsGraphQlClient.documentName("getFanToken")
