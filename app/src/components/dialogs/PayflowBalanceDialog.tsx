@@ -26,7 +26,7 @@ import { useAccount } from 'wagmi';
 import { green, grey } from '@mui/material/colors';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
 import NetworkAvatar from '../avatars/NetworkAvatar';
-import { Info } from '@mui/icons-material';
+import { Add, AutoMode, Info } from '@mui/icons-material';
 import ProfileAvatar from '../avatars/ProfileAvatar';
 import { usePrivy } from '@privy-io/react-auth';
 import { BackDialogTitle } from './BackDialogTitle';
@@ -356,8 +356,10 @@ export default function PayflowBalanceDialog({
             variant="outlined"
             size="small"
             color="inherit"
+            startIcon={<Add />}
             onClick={() => {
-              navigate('/payment/create?recipient=' + createdFlow?.wallets?.[0].address);
+              window.location.href =
+                '/payment/create?recipient=' + createdFlow?.wallets?.[0].address;
             }}
             sx={{
               height: 45,
@@ -373,8 +375,10 @@ export default function PayflowBalanceDialog({
             variant="outlined"
             size="small"
             color="inherit"
+            startIcon={<AutoMode />}
             onClick={() => {
-              navigate('/~/create-wallet-session/' + createdFlow?.wallets?.[0].address);
+              window.location.href =
+                '/~/create-wallet-session/' + createdFlow?.wallets?.[0].address;
             }}
             sx={{
               height: 45,
@@ -383,7 +387,7 @@ export default function PayflowBalanceDialog({
               '&:hover': { backgroundColor: 'action.hover' },
               borderColor: 'divider'
             }}>
-            Permissions
+            Session Key
           </Button>
         </Stack>
       </Stack>

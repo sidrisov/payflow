@@ -1,14 +1,13 @@
 import React from 'react';
 import { Avatar, Link, LinkProps, Skeleton, Stack, Typography } from '@mui/material';
 import { useMobile } from '../../utils/hooks/useMobile';
-import TokenAvatar from '../avatars/TokenAvatar';
-import NetworkAvatar from '../avatars/NetworkAvatar';
 import { ActivityIcon, ActivityType } from './ActivityIcon';
 import { usePaymentActivityDetails } from '../../utils/hooks/usePaymentAcitivityDetails';
 import { PaymentType } from '@payflow/common';
 import FarcasterAvatar from '../avatars/FarcasterAvatar';
 import MoxieAvatar from '../avatars/MoxieAvatar';
 import { secondsToTimeUnit } from '../../utils/time';
+import TokenNetworkAvatar from '../avatars/TokenNetworkAvatar';
 
 interface PaymentDetailsProps {
   activity: ActivityType;
@@ -58,14 +57,8 @@ const ActivityWrapper: React.FC<{
 
 export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
   const isMobile = useMobile();
-  const {
-    token,
-    formattedTokenAmount,
-    formattedUsdAmount,
-    defaultBlockExplorerUrl,
-    mintData,
-    hypersubData
-  } = usePaymentActivityDetails(payment);
+  const { token, formattedTokenAmount, formattedUsdAmount, mintData, hypersubData } =
+    usePaymentActivityDetails(payment);
 
   const renderContent = () => {
     if (payment.category === 'fc_storage') {
@@ -182,19 +175,19 @@ export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
     // Default case (for regular payments)
     return (
       token && (
-        <>
+        <Stack direction="row" spacing={0.5} alignItems="center">
           <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
-            {formattedTokenAmount} {token!.name}
+            {formattedTokenAmount} {token.name}
           </Typography>
-          <TokenAvatar token={token!} sx={{ width: 15, height: 15 }} />
-          <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
+          <TokenNetworkAvatar token={token} size={18} />
+          <Typography
+            variant="caption"
+            fontWeight="bold"
+            color="text.secondary"
+            fontSize={isMobile ? 12 : 14}>
             ${formattedUsdAmount}
           </Typography>
-          <Typography variant="caption" fontSize={isMobile ? 12 : 14}>
-            on
-          </Typography>
-          <NetworkAvatar chainId={payment.chainId} sx={{ width: 15, height: 15 }} />
-        </>
+        </Stack>
       )
     );
   };

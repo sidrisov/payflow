@@ -9,11 +9,10 @@ import {
   Typography,
   SxProps
 } from '@mui/material';
-import { Add } from '@mui/icons-material';
 import { useContext, useMemo, useState, useCallback, useRef, lazy, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { Address } from 'viem';
-import { TbSelector, TbSend, TbPlus, TbSwitch } from 'react-icons/tb';
+import { TbSend, TbPlus } from 'react-icons/tb';
 import { useSwipeable } from 'react-swipeable';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 
@@ -30,7 +29,6 @@ import { formatAmountWithSuffix } from '../../utils/formats';
 import { ActionButton } from '../buttons/ActionButton';
 import { PayMeDialog } from '../dialogs/PayMeDialog';
 import { GoArrowSwitch } from 'react-icons/go';
-import { HiOutlineSwitchHorizontal } from 'react-icons/hi';
 
 const LazyPaymentDialog = lazy(() => import('../payment/PaymentDialog'));
 
@@ -176,7 +174,6 @@ export function AccountCard({
         <Card
           elevation={5}
           sx={{
-            m: 2,
             pt: 2,
             pb: 2.5,
             px: 2.5,

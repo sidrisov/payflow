@@ -78,7 +78,7 @@ export function AggregatedAssetBalanceSection({
                 ))}
               </AvatarGroup>
             }>
-            <TokenAvatar token={uniqueAssets[0].token} sx={{ width: 30, height: 30 }} />
+            <TokenAvatar token={uniqueAssets[0].token} sx={{ width: 35, height: 35 }} />
           </Badge>
         </Tooltip>
         <Stack ml={2} direction="column" spacing={0.2}>
