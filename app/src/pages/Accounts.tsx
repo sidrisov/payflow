@@ -149,7 +149,7 @@ export default function Accounts() {
               <Tab icon={<GiTwoCoins size={20} />} label="Tokens" />
             </Tabs>
 
-            <Box width="100%" maxWidth={375} overflow="auto" sx={{ height: `calc(100vh - 300px)` }}>
+            <Box width="100%" maxWidth={375} overflow="auto" height="100%">
               {activeTab === 0 && <ActivityFeed identity={{ address: profile?.identity! }} />}
               {activeTab === 1 && <PaymentSection width="100%" type="intent" />}
               {activeTab === 2 && (
