@@ -10,10 +10,9 @@ import dotenv from 'dotenv';
 import { PaymentType, tokens } from '@payflow/common';
 import { paymentHtml } from './components/Payment';
 import { Address, Chain } from 'viem';
-import { arbitrum, base, degen, ham, mode, optimism, worldchain, zora } from 'viem/chains';
+import { arbitrum, base, degen, polygon, optimism, worldchain, zora } from 'viem/chains';
 import { fetchTokenPrices } from './utils/prices';
 import { TokenPrices } from '@payflow/common';
-import { XmtpOpenFramesRequest, validateFramesPost } from '@xmtp/frames-validator';
 import { normalizeNumberPrecision } from './utils/format';
 import { createJarHtml } from './components/CreateJar';
 import { buyStorageEntryHtml, buyStorageHtml } from './components/BuyStorage';
@@ -37,7 +36,7 @@ const root = __dirname;
 
 const oneDayInSeconds = 24 * 60 * 60;
 
-const chains: Chain[] = [base, optimism, zora, arbitrum, mode, degen, ham, worldchain];
+const chains: Chain[] = [base, optimism, zora, arbitrum, /* polygon, */ degen, worldchain];
 
 configureFabricSDK({ wagmiConfig });
 
@@ -68,7 +67,8 @@ const SUPPORTED_TOKENS = [
   'mfer',
   'talent',
   'clanker',
-  'lum'
+  'lum',
+  'bnkr'
 ];
 
 startServer();
@@ -395,25 +395,6 @@ async function startServer() {
       res.status(500).send('Error retrieving jar data');
     }
   }); */
-
-  app.post('/xmtp/validate', async (req, res) => {
-    try {
-      const xmtpFrameRequest = req.body as XmtpOpenFramesRequest;
-
-      console.debug('Verifying xmtp request message: ', xmtpFrameRequest);
-
-      if (xmtpFrameRequest.clientProtocol.startsWith('xmtp')) {
-        const xmtpFrameResponse = await validateFramesPost(xmtpFrameRequest);
-        console.debug('Validated xmtp response message: ', xmtpFrameResponse);
-        res.status(200).send(xmtpFrameResponse);
-      } else {
-        res.status(400).send('Frame Request not supported');
-      }
-    } catch (error) {
-      console.error(error);
-      res.status(500).send('Error processing xmtp request message');
-    }
-  });
 
   /**
    * Vike route

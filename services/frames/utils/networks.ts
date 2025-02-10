@@ -6,15 +6,14 @@ import {
   baseSepolia,
   degen,
   arbitrum,
-  mode,
+  polygon,
   sepolia,
   zksync,
   mainnet,
-  ham,
   worldchain
 } from 'viem/chains';
 
-export const SUPPORTED_CHAINS = [base, optimism, degen, arbitrum, mode, zora, ham, worldchain];
+export const SUPPORTED_CHAINS = [base, optimism, degen, arbitrum, polygon, zora, worldchain];
 
 export default function getNetworkImageSrc(chainId: number): string {
   let fileName;
@@ -35,11 +34,8 @@ export default function getNetworkImageSrc(chainId: number): string {
     case arbitrum.id:
       fileName = 'arbitrum';
       break;
-    case mode.id:
-      fileName = 'mode';
-      break;
-    case ham.id:
-      fileName = 'ham';
+    case polygon.id:
+      fileName = 'polygon';
       break;
     case worldchain.id:
       fileName = 'world';
@@ -81,14 +77,11 @@ export function getNetworkShortName(chainId: number): string {
     case zora.id:
       shortName = 'zora';
       break;
-    case mode.id:
-      shortName = 'mode';
+    case polygon.id:
+      shortName = 'polygon';
       break;
     case degen.id:
       shortName = 'degen';
-      break;
-    case ham.id:
-      shortName = 'ham';
       break;
     case worldchain.id:
       shortName = 'world';
@@ -135,11 +128,8 @@ export function getReceiptUrl(chainId: number, hash: Hash | undefined): string {
     case arbitrum.id:
       baseUrl = arbitrum.blockExplorers.default.url;
       break;
-    case mode.id:
-      baseUrl = mode.blockExplorers.default.url;
-      break;
-    case ham.id:
-      baseUrl = ham.blockExplorers.default.url;
+    case polygon.id:
+      baseUrl = polygon.blockExplorers.default.url;
       break;
     case worldchain.id:
       baseUrl = worldchain.blockExplorers.default.url;

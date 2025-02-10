@@ -6,7 +6,7 @@ import {
   base,
   baseSepolia,
   degen,
-  mode,
+  polygon,
   optimism,
   worldchain,
   zksync,
@@ -57,8 +57,8 @@ const pimlicoRpcNetworkName = (chainId: number) => {
     case degen.id:
       network = 'degen';
       break;
-    case mode.id:
-      network = 'mode';
+    case polygon.id:
+      network = 'polygon';
       break;
     case worldchain.id:
       network = 'worldchain';
@@ -81,7 +81,7 @@ export const pimlicoSponsorshipPolicyIds = (chainId: number) => {
     case arbitrum.id:
     case optimism.id:
     case degen.id:
-    case mode.id:
+    case polygon.id:
     case worldchain.id:
       return MAINNET_POLICIES.slice(1, 2);
     case baseSepolia.id:

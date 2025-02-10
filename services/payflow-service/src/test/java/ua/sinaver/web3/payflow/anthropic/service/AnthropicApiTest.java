@@ -526,7 +526,7 @@ public class AnthropicApiTest {
 						"username": "user.eth",
 						"displayName": "User"
 					  },
-					  "text": "@payflow send 10 degen to @jacek, and 10 degen on degen l3 to @accountless.eth, and also 10 tn100x on Ham to @deployer",
+					  "text": "@payflow send 10 degen to @jacek, and 10 degen on degen l3 to @accountless.eth, and also 10 tn100x to @deployer",
 					  "mentionedProfiles": [
 						{
 						  "fid": 2,
@@ -594,11 +594,10 @@ public class AnthropicApiTest {
 		assertEquals("degen", recipients.get(1).get("token"));
 		assertEquals(666666666, recipients.get(1).get("chainId"));
 
-		// Verify third recipient (deployer - TN100X on Ham)
 		assertEquals("deployer", recipients.get(2).get("username"));
 		assertEquals(10, recipients.get(2).get("amount"));
 		assertEquals("tn100x", recipients.get(2).get("token"));
-		assertEquals(5112, recipients.get(2).get("chainId"));
+		assertEquals(8453, recipients.get(2).get("chainId"));
 	}
 
 	@Test

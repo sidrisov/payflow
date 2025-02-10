@@ -22,7 +22,6 @@
     "@vitejs/plugin-react": "^4.2.1",
     "@wagmi/core": "^2.16.3",
     "@withfabric/protocol-sdks": "^2.0.2",
-    "@xmtp/frames-validator": "^0.5.2",
     "axios": "^1.6.7",
     "cors": "^2.8.5",
     "cross-fetch": "^4.0.0",

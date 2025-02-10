@@ -1,11 +1,11 @@
 import { createGlideConfig, PaymentOption } from '@paywithglide/glide-js';
-import { base, optimism, degen, arbitrum, mode, zora, ham } from 'wagmi/chains';
+import { base, optimism, degen, arbitrum, polygon, zora } from 'wagmi/chains';
 import { Token } from '@payflow/common';
 import { PaymentType } from '@payflow/common';
 
 export const glideConfig = createGlideConfig({
   projectId: import.meta.env.VITE_GLIDE_API_KEY,
-  chains: [base, optimism, zora, degen, arbitrum, mode, ham]
+  chains: [base, optimism, zora, degen, arbitrum, polygon]
 });
 
 export const getPaymentOption = (

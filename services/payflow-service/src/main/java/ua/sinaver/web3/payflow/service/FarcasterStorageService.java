@@ -43,7 +43,7 @@ public class FarcasterStorageService {
 	private StorageNotificationRepository storageNotificationRepository;
 
 	private static boolean isShouldNotify(StorageNotification storageNotification,
-	                                      StorageUsage storageUsageWithSoonExpireUnits) {
+			StorageUsage storageUsageWithSoonExpireUnits) {
 		val threshold = storageNotification.getThreshold() / 100.0;
 
 		val remainingCasts = storageUsageWithSoonExpireUnits.casts().capacity() -
@@ -64,7 +64,7 @@ public class FarcasterStorageService {
 
 	@Scheduled(cron = "* */15 * * * *")
 	void notifyWithStorageExpiring() {
-		storageNotificationRepository.findTop10StorageNotifications(Instant.now().minus(7, ChronoUnit.DAYS))
+		storageNotificationRepository.findTop10StorageNotifications(Instant.now().minus(14, ChronoUnit.DAYS))
 				.forEach(storageNotification -> {
 					val fid = storageNotification.getFid();
 					try {
@@ -79,7 +79,8 @@ public class FarcasterStorageService {
 
 							if (shouldNotify) {
 								val username = identityService.getFidFname(fid);
-								val storageEmbed = String.format("https://app.payflow.me/fid/%s/storage?%s", fid, FrameVersions.STORAGE_VERSION);
+								val storageEmbed = String.format("https://app.payflow.me/fid/%s/storage?%s", fid,
+										FrameVersions.STORAGE_VERSION);
 
 								// Send direct message if enabled
 								if (storageNotification.isNotifyWithMessage()) {
@@ -110,15 +111,15 @@ public class FarcasterStorageService {
 								if (storageNotification.isNotifyWithCast()) {
 									try {
 										notificationService.reply(String.format(
-														"""
-																@%s, you're reaching or over your farcaster storage capacity!
+												"""
+														@%s, you're reaching or over your farcaster storage capacity!
 
-																1 unit costs ~$2, you can purchase more with any token balance using @payflow 👇
+														1 unit costs ~$2, you can purchase more with any token balance using @payflow 👇
 
-																To disable or configure storage notification, visit:
-																https://app.payflow.me/farcaster/storage
-																""",
-														username), PARENT_CAST_HASH,
+														To disable or configure storage notification, visit:
+														https://app.payflow.me/farcaster/storage
+														""",
+												username), PARENT_CAST_HASH,
 												List.of(new Cast.Embed(storageEmbed)));
 									} catch (Throwable t) {
 										log.error("Failed to cast storage notification for {}", fid, t);

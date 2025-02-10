@@ -121,8 +121,8 @@ public class AnthropicAgentPrompt {
 				- Base (8453)
 				- Optimism (10)
 				- Arbitrum (42161)
+				- Polygon (137)
 				- Degen L3 (666666666)
-				- Ham L3 (5112)
 
 			Supported tokens in JSON:
 			%s
