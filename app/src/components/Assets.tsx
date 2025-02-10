@@ -1,4 +1,4 @@
-import { Avatar, AvatarGroup, Box, Button, Stack, Typography } from '@mui/material';
+import { AvatarGroup, Box, Stack, Typography } from '@mui/material';
 
 import { formatUnits } from 'viem';
 import { AggregatedAssetBalanceSection } from './AggregatedAssetBalanceSection';
@@ -6,7 +6,6 @@ import { BalanceFetchResultType } from '../types/BalanceFetchResultType';
 import { ActivitySkeletonSection } from './skeletons/ActivitySkeletonSection';
 import { useState } from 'react';
 import { AssetBalanceType } from '../types/AssetType';
-import { MdExpandLess, MdExpandMore } from 'react-icons/md';
 import { AiFillEyeInvisible } from 'react-icons/ai';
 import TokenAvatar from './avatars/TokenAvatar';
 

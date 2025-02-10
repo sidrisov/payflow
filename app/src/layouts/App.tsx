@@ -261,7 +261,7 @@ export default function App() {
             display="flex"
             flexDirection="column"
             mt={2}
-            mb={bottomToolbarEnabled ? (isMobile ? 7 : 7.5) : 0}
+            mb={bottomToolbarEnabled ? (isMobile ? 6 : 7) : 0}
             sx={{
               overflowX: 'hidden',
               overflowY: 'scroll'
