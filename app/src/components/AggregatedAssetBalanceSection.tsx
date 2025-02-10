@@ -96,7 +96,8 @@ export function AggregatedAssetBalanceSection({
               borderTop: 0,
               borderRadius: '0 0 16px 16px',
               borderColor: 'divider',
-              p: 1
+              p: 1,
+              pl: 1.5
             }}>
             {assetBalances.map((assetBalance, _) => (
               <Box
@@ -108,7 +109,7 @@ export function AggregatedAssetBalanceSection({
                 <Box display="flex" alignItems="center">
                   <NetworkAvatar
                     chainId={assetBalance.asset.chainId}
-                    sx={{ width: 35, height: 35 }}
+                    sx={{ width: 35, height: 35}}
                   />
                   <Stack direction="column" spacing={0.2} ml={1}>
                     <Typography variant="body2">
