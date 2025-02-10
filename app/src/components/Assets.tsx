@@ -103,8 +103,8 @@ export default function Assets({ assetBalancesResult, balanceVisible }: AssetsPr
               onClick={() => setShowAll(!showAll)}>
               {showAll ? (
                 <>
-                  <AiFillEyeInvisible size={35} />
-                  <Typography ml={2} variant="subtitle2" fontWeight="bold">
+                  <AiFillEyeInvisible size={32} />
+                  <Typography ml={1} variant="subtitle2" fontWeight="bold">
                     Hide tokens
                   </Typography>
                 </>
@@ -120,7 +120,7 @@ export default function Assets({ assetBalancesResult, balanceVisible }: AssetsPr
                         <TokenAvatar
                           key={asset.tokenId}
                           token={asset.assets[0].asset.token}
-                          sx={{ width: 35, height: 35 }}
+                          sx={{ width: 32, height: 32 }}
                         />
                       ))}
                   </AvatarGroup>
