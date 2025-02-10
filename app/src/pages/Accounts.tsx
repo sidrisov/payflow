@@ -15,9 +15,11 @@ import { MdOutlinePlaylistAdd } from 'react-icons/md';
 import { MdOutlinePlaylistAddCheck } from 'react-icons/md';
 import { GiTwoCoins } from 'react-icons/gi';
 import ActivityFeed from '../components/activity/ActivityFeed';
+import { useMobile } from '../utils/hooks/useMobile';
 
 export default function Accounts() {
   const { isAuthenticated, profile, isFrameV2 } = useContext(ProfileContext);
+  const isMobile = useMobile();
 
   const navigate = useNavigate();
 
@@ -149,7 +151,7 @@ export default function Accounts() {
               <Tab icon={<GiTwoCoins size={20} />} label="Tokens" />
             </Tabs>
 
-            <Box width="100%" maxWidth={375} overflow="auto" height="100%">
+            <Box width="100%" maxWidth={375} overflow="auto" height={`calc(100vh - ${isMobile ? 290 : 300}px)`}>
               {activeTab === 0 && <ActivityFeed identity={{ address: profile?.identity! }} />}
               {activeTab === 1 && <PaymentSection width="100%" type="intent" />}
               {activeTab === 2 && (
