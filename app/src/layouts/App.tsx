@@ -291,7 +291,7 @@ export default function App() {
                 sx={{
                   ...(isMobile
                     ? { width: '100%', borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }
-                    : { maxWidth: 350, mx: 5, mb: 1 }),
+                    : { minWidth: 350, mb: 1 }),
                   '& .MuiBottomNavigationAction-root': {
                     minWidth: 'auto'
                   },

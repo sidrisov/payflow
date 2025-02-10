@@ -32,33 +32,29 @@ public class TokenService {
 	public static final Integer DEGEN_CHAIN_ID = 666666666;
 	public static final String ARB_CHAIN_NAME = "arbitrum";
 	public static final Integer ARB_CHAIN_ID = 42161;
-	public static final String MODE_CHAIN_NAME = "mode";
-	public static final Integer MODE_CHAIN_ID = 34443;
 	public static final String WORLD_CHAIN_NAME = "world";
 	public static final Integer WORLD_CHAIN_ID = 480;
-	public static final String HAM_CHAIN_NAME = "ham";
-	public static final Integer HAM_CHAIN_ID = 5112;
+	public static final String POLYGON_CHAIN_NAME = "polygon";
+	public static final Integer POLYGON_CHAIN_ID = 137;
 	public static final Map<Integer, String> PAYMENT_CHAIN_NAMES = Map.of(
 			BASE_CHAIN_ID, BASE_CHAIN_NAME,
 			OP_CHAIN_ID, OP_CHAIN_NAME,
 			ZORA_CHAIN_ID, ZORA_CHAIN_NAME,
 			DEGEN_CHAIN_ID, DEGEN_CHAIN_NAME,
 			ARB_CHAIN_ID, ARB_CHAIN_NAME,
-			MODE_CHAIN_ID, MODE_CHAIN_NAME,
 			WORLD_CHAIN_ID, WORLD_CHAIN_NAME,
-			HAM_CHAIN_ID, HAM_CHAIN_NAME);
+			POLYGON_CHAIN_ID, POLYGON_CHAIN_NAME);
 	public static final Map<String, Integer> PAYMENT_CHAIN_IDS = Map.of(
 			BASE_CHAIN_NAME, BASE_CHAIN_ID,
 			OP_CHAIN_NAME, OP_CHAIN_ID,
 			ZORA_CHAIN_NAME, ZORA_CHAIN_ID,
 			DEGEN_CHAIN_NAME, DEGEN_CHAIN_ID,
 			ARB_CHAIN_NAME, ARB_CHAIN_ID,
-			MODE_CHAIN_NAME, MODE_CHAIN_ID,
 			WORLD_CHAIN_NAME, WORLD_CHAIN_ID,
-			HAM_CHAIN_NAME, HAM_CHAIN_ID);
+			POLYGON_CHAIN_NAME, POLYGON_CHAIN_ID);
 	public static final List<Integer> SUPPORTED_FRAME_PAYMENTS_CHAIN_IDS = Arrays.asList(BASE_CHAIN_ID, OP_CHAIN_ID,
 			ZORA_CHAIN_ID, DEGEN_CHAIN_ID, ARB_CHAIN_ID,
-			MODE_CHAIN_ID, WORLD_CHAIN_ID, HAM_CHAIN_ID);
+			POLYGON_CHAIN_ID, WORLD_CHAIN_ID);
 	public static final String ETH_TOKEN = "eth";
 	public static final String USDC_TOKEN = "usdc";
 	public static final List<String> PAYMENTS_OP_TOKENS = Arrays.asList(ETH_TOKEN, USDC_TOKEN);

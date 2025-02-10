@@ -8,9 +8,8 @@ import {
   mainnet,
   baseSepolia,
   sepolia,
-  mode,
+  polygon,
   worldchain,
-  ham
 } from 'viem/chains';
 
 const ENABLED_CHAINS = JSON.parse(import.meta.env.VITE_ENABLED_CHAINS) as string[];
@@ -25,12 +24,11 @@ export const SUPPORTED_CHAINS = [
   arbitrum,
   worldchain,
   zora,
-  mode,
   zksync,
   mainnet,
   sepolia,
   baseSepolia,
-  ham,
+  polygon,
   worldchain
 ].filter((c) => ENABLED_CHAINS.includes(c.name));
 
@@ -69,14 +67,11 @@ export function getNetworkShortName(chainId: number): string {
     case zora.id:
       shortName = 'zora';
       break;
-    case mode.id:
-      shortName = 'mode';
-      break;
     case degen.id:
       shortName = 'degen';
       break;
-    case ham.id:
-      shortName = 'ham';
+    case polygon.id:
+      shortName = 'polygon';
       break;
     case worldchain.id:
       shortName = 'world';
@@ -117,14 +112,11 @@ export default function getNetworkImageSrc(chainId: number): string {
     case zora.id:
       fileName = 'zora';
       break;
-    case mode.id:
-      fileName = 'mode';
+    case polygon.id:
+      fileName = 'polygon';
       break;
     case degen.id:
       fileName = 'degen';
-      break;
-    case ham.id:
-      fileName = 'ham';
       break;
     case worldchain.id:
       fileName = 'world';
