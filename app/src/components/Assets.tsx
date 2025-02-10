@@ -1,4 +1,4 @@
-import { Button, Stack, Typography } from '@mui/material';
+import { Avatar, AvatarGroup, Box, Button, Stack, Typography } from '@mui/material';
 
 import { formatUnits } from 'viem';
 import { AggregatedAssetBalanceSection } from './AggregatedAssetBalanceSection';
@@ -6,7 +6,11 @@ import { BalanceFetchResultType } from '../types/BalanceFetchResultType';
 import { ActivitySkeletonSection } from './skeletons/ActivitySkeletonSection';
 import { useState } from 'react';
 import { AssetBalanceType } from '../types/AssetType';
+import { MdExpandLess, MdExpandMore } from 'react-icons/md';
+import { AiFillEyeInvisible } from 'react-icons/ai';
+import TokenAvatar from './avatars/TokenAvatar';
 
+const MAX_ASSETS_TO_SHOW = 6;
 interface AggregatedAssetBalances {
   tokenId: string;
   assets: AssetBalanceType[];
@@ -54,18 +58,24 @@ export default function Assets({ assetBalancesResult, balanceVisible }: AssetsPr
   const nonZeroAggregatedBalances = balances && aggregateAssets(balances);
 
   return (
-    <Stack p={0.5} spacing={0.5} width="100%" height={350}>
-      <Stack px={1.5} spacing={1} height={300} sx={{ overflowY: 'scroll' }}>
-        {isLoading || !isFetched ? (
-          <ActivitySkeletonSection />
-        ) : isFetched && nonZeroAggregatedBalances ? (
-          nonZeroAggregatedBalances
-            .slice(0, showAll ? nonZeroAggregatedBalances.length : 5)
+    <Stack
+      spacing={1}
+      sx={{
+        pb: 1.5,
+        px: 1.5,
+        overflowY: 'scroll'
+      }}>
+      {isLoading || !isFetched ? (
+        <ActivitySkeletonSection />
+      ) : isFetched && nonZeroAggregatedBalances ? (
+        <>
+          {nonZeroAggregatedBalances
+            .slice(0, showAll ? nonZeroAggregatedBalances.length : MAX_ASSETS_TO_SHOW)
             .map((assetBalance) => {
               return (
                 <AggregatedAssetBalanceSection
                   key={`network_asset_balance_${assetBalance.tokenId}`}
-                  assets={assetBalance.assets.map((asset) => asset.asset)}
+                  assetBalances={assetBalance.assets}
                   balance={formatUnits(
                     assetBalance.totalBalance,
                     assetBalance.assets[0]?.asset.token.decimals ?? 0
@@ -74,21 +84,59 @@ export default function Assets({ assetBalancesResult, balanceVisible }: AssetsPr
                   balanceVisible={balanceVisible}
                 />
               );
-            })
-        ) : (
-          <Typography variant="subtitle2" textAlign="center">
-            Couldn't fetch. Try again!
-          </Typography>
-        )}
-      </Stack>
-      {nonZeroAggregatedBalances && nonZeroAggregatedBalances.length > 5 && (
-        <Button
-          color="inherit"
-          size="small"
-          onClick={() => setShowAll(!showAll)}
-          sx={{ alignSelf: 'center', textTransform: 'none', borderRadius: 10, fontSize: 14 }}>
-          {showAll ? 'Show less tokens' : 'Show more tokens'}
-        </Button>
+            })}
+
+          {nonZeroAggregatedBalances && nonZeroAggregatedBalances.length > MAX_ASSETS_TO_SHOW && (
+            <Box
+              py={0.5}
+              px={1}
+              height={55}
+              display="flex"
+              flexDirection="row"
+              alignItems="center"
+              justifyContent="flex-start"
+              sx={{
+                border: 1,
+                borderRadius: 5,
+                borderColor: 'divider',
+                cursor: 'pointer'
+              }}
+              onClick={() => setShowAll(!showAll)}>
+              {showAll ? (
+                <>
+                  <AiFillEyeInvisible size={35} />
+                  <Typography ml={2} variant="subtitle2" fontWeight="bold">
+                    Hide tokens
+                  </Typography>
+                </>
+              ) : (
+                <>
+                  <AvatarGroup
+                    max={3}
+                    spacing="small"
+                    sx={{ '& .MuiAvatar-root': { borderStyle: 'none' } }}>
+                    {nonZeroAggregatedBalances
+                      .slice(MAX_ASSETS_TO_SHOW, MAX_ASSETS_TO_SHOW + 3)
+                      .map((asset) => (
+                        <TokenAvatar
+                          key={asset.tokenId}
+                          token={asset.assets[0].asset.token}
+                          sx={{ width: 35, height: 35 }}
+                        />
+                      ))}
+                  </AvatarGroup>
+                  <Typography ml={1} variant="subtitle2" fontWeight="bold">
+                    More tokens
+                  </Typography>
+                </>
+              )}
+            </Box>
+          )}
+        </>
+      ) : (
+        <Typography variant="subtitle2" textAlign="center">
+          Couldn't fetch. Try again!
+        </Typography>
       )}
     </Stack>
   );

@@ -77,7 +77,7 @@ export default function Accounts() {
       <Helmet>
         <title> Payflow | Home </title>
       </Helmet>
-      <Box display="flex" flexDirection="column" height="100%" width="100%" overflow="hidden">
+      <Box display="flex" flexDirection="column" height="100%" width="100%" p={1}>
         {isAuthenticated && flows && selectedFlow ? (
           <Stack alignItems="center" spacing={1} sx={{ mt: isFrameV2 ? 0 : 1 }}>
             <AccountCard
@@ -149,12 +149,8 @@ export default function Accounts() {
               <Tab icon={<GiTwoCoins size={20} />} label="Tokens" />
             </Tabs>
 
-            <Box flexGrow={1} px={1} overflow="auto" width="100%" maxWidth={375}>
-              {activeTab === 0 && (
-                <Box sx={{ height: 'calc(100vh - 300px)', overflow: 'auto' }}>
-                  <ActivityFeed identity={{ address: profile?.identity! }} />
-                </Box>
-              )}
+            <Box width="100%" maxWidth={375} overflow="auto" sx={{ height: `calc(100vh - 300px)` }}>
+              {activeTab === 0 && <ActivityFeed identity={{ address: profile?.identity! }} />}
               {activeTab === 1 && <PaymentSection width="100%" type="intent" />}
               {activeTab === 2 && (
                 <Assets
