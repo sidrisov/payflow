@@ -258,11 +258,10 @@ export default function App() {
             {needRefresh && <UpdateVersionPrompt />}
           </AppBar>
           <Box
-            flexGrow={1}
             display="flex"
             flexDirection="column"
             mt={2}
-            mb={bottomToolbarEnabled ? 7.5 : 0}
+            mb={bottomToolbarEnabled ? (isMobile ? 7 : 7.5) : 0}
             sx={{
               overflowX: 'hidden',
               overflowY: 'scroll'
