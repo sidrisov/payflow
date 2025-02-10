@@ -115,7 +115,7 @@ export function AggregatedAssetBalanceSection({
                       {getNetworkDisplayName(assetBalance.asset.chainId)}
                     </Typography>
                     <Typography variant="caption" fontWeight={500} color="text.secondary" textTransform="uppercase">
-                      {formatAmountWithSuffix(
+                      {balanceVisible ? formatAmountWithSuffix(
                         normalizeNumberPrecision(
                           parseFloat(
                             formatUnits(
@@ -124,7 +124,8 @@ export function AggregatedAssetBalanceSection({
                             )
                           )
                         )
-                      )}{' '}
+                      ) : '*****'}
+                      {' '}
                       {assetBalance.asset.token.id}
                     </Typography>
                   </Stack>
