@@ -6,7 +6,6 @@ import CastActionButton from '../components/buttons/CastActionButton';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ProfileContext } from '../contexts/UserContext';
 import { PiPersonSimpleRunBold, PiTipJar } from 'react-icons/pi';
-import UsefulComposerActionDialog from '../components/dialogs/UsefulComposerActionDialog';
 import ContributionJarComposerDialog from '../components/dialogs/ContributionJarComposerDialog';
 import { RiApps2Line } from 'react-icons/ri';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
@@ -29,6 +28,8 @@ export default function Composer() {
     if (openComposerAction === 'pay') {
       const paymentUrl = recipient ? `/payment/create?recipient=${recipient}` : '/payment/create';
       navigate(paymentUrl);
+    } else if (openComposerAction === 'earn' || openComposerAction === 'useful') {
+      navigate('/~/claimables');
     }
   }, [openComposerAction, recipient, navigate]);
 
@@ -118,14 +119,6 @@ export default function Composer() {
           <LoadingPayflowEntryLogo />
         )}
 
-        {(openComposerAction === 'useful' || openComposerAction === 'earn') && profile && (
-          <UsefulComposerActionDialog
-            open={true}
-            onClose={() => {
-              setOpenComposerAction(undefined);
-            }}
-          />
-        )}
         {openComposerAction === 'jar' && profile && (
           <ContributionJarComposerDialog
             open={true}

@@ -12,7 +12,7 @@ const LazyLeaderboard = lazy(() => import('./layouts/Leadearboard'));
 const LazyAdvanced = lazy(() => import('./pages/Advanced'));
 const LazyPublicProfile = lazy(() => import('./layouts/PublicProfile'));
 const LazyJar = lazy(() => import('./pages/Jar'));
-const LazyActions = lazy(() => import('./components/payment/services/CastActions'));
+const LazyCastActionsPage = lazy(() => import('./pages/CastActionsPage'));
 const LazyComposer = lazy(() => import('./pages/Composer'));
 const LazyCreatePayment = lazy(() => import('./pages/CreatePayment'));
 const LazyPayment = lazy(() => import('./pages/Payment'));
@@ -26,6 +26,7 @@ const LazyStats = lazy(() => import('./pages/stats'));
 const LazyCreatePayflowWallet = lazy(() => import('./pages/CreatePayflowWallet'));
 const LazyCreateWalletSession = lazy(() => import('./pages/CreateWalletSession'));
 const LazySubscriptionsPage = lazy(() => import('./pages/SubscriptionsPage'));
+const LazyClaimablesPage = lazy(() => import('./pages/ClaimablesPage'));
 // Wrapper component for lazy-loaded components
 const LazyWrapper = ({
   component: Component,
@@ -54,7 +55,6 @@ export const appRouter = createBrowserRouter([
       { element: <LazyWrapper component={LazyAccounts} />, index: true },
       { path: 'profile', element: <LazyWrapper component={LazyProfile} /> },
       { path: 'notifications', element: <LazyWrapper component={LazyStorage} /> },
-      { path: 'farcaster/storage', element: <LazyWrapper component={LazyStorage} /> },
       { path: 'advanced', element: <LazyWrapper component={LazyAdvanced} /> },
       {
         path: 'settings',
@@ -110,6 +110,16 @@ export const appRouter = createBrowserRouter([
         path: '/~/create-wallet-session/:address',
         element: <LazyWrapper component={LazyCreateWalletSession} />
       },
+      {
+        path: '/~/claimables',
+        element: <LazyWrapper component={LazyClaimablesPage} />
+      },
+      {
+        path: '/~/cast-actions',
+        element: <LazyWrapper component={LazyCastActionsPage} />
+      },
+      { path: '/farcaster/storage', element: <LazyWrapper component={LazyStorage} /> },
+      { path: '/~/farcaster/storage', element: <LazyWrapper component={LazyStorage} /> },
       {
         path: '/~/subscriptions',
         element: <LazyWrapper component={LazySubscriptionsPage} />

@@ -153,26 +153,6 @@ export default function CastActions() {
           icon={<SiFarcaster size={30} />}
           actions={farcasterActions}
         />
-
-        {/* <Box display="flex" alignItems="center">
-            <Box
-              component="span"
-              sx={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                backgroundColor: 'error.main',
-                display: 'inline-block',
-                mr: 1
-              }}
-            />
-            <Typography variant="caption" fontWeight="bold" color="text.secondary">
-              Early feature
-            </Typography>
-            <Tooltip title="These features are in early development and may be subject to changes or limitations.">
-              <InfoOutlinedIcon fontSize="small" sx={{ ml: 0.5, color: 'text.secondary' }} />
-            </Tooltip>
-          </Box> */}
       </Stack>
       <PaymentRewardCastActionComposerDialog
         open={openPaymentActionDialog}
