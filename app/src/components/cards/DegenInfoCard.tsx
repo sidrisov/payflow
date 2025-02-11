@@ -110,7 +110,7 @@ export function DegenInfoCard() {
   };
 
   return (
-    <>
+    <Stack spacing={2}>
       {season && (
         <InfoStack title={`Degen - ${season.name} Points`}>
           <Stack
@@ -216,6 +216,6 @@ export function DegenInfoCard() {
           }}
         />
       )}
-    </>
+    </Stack>
   );
 }
