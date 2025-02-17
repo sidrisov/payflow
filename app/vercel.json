@@ -31,10 +31,10 @@
           "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot|got).*"
         }
       ],
-      "destination": "https://frames.payflow.me/degen"
+      "destination": "https://frames.payflow.me/~/claimables"
     },
     {
-      "source": "/claimables/:id",
+      "source": "/~/claimables",
       "has": [
         {
           "type": "header",
@@ -42,7 +42,7 @@
           "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot|got).*"
         }
       ],
-      "destination": "https://frames.payflow.me/claimables/:id"
+      "destination": "https://frames.payflow.me/~/claimables"
     },
     {
       "source": "/hypersub",
@@ -98,17 +98,6 @@
         }
       ],
       "destination": "https://frames.payflow.me/mint"
-    },
-    {
-      "source": "/moxie",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot|got).*"
-        }
-      ],
-      "destination": "https://frames.payflow.me/moxie"
     },
     {
       "source": "/farcaster/storage",
