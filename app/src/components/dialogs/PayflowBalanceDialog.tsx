@@ -68,7 +68,7 @@ export default function PayflowBalanceDialog({
 
   const navigate = useNavigate();
 
-  const [walletTitle, setWalletTitle] = useState<string>('Payflow Balance v2');
+  const [walletTitle, setWalletTitle] = useState<string>('Payflow Wallet v2');
 
   const [showSuccessDialog, setShowSuccessDialog] = useState<boolean>(false);
   const [createdFlow, setCreatedFlow] = useState<FlowType | null>(null);
@@ -146,7 +146,7 @@ export default function PayflowBalanceDialog({
       }}>
       <BackDialogTitle
         showOnDesktop
-        title="New Payflow Balance v2"
+        title="New Payflow Wallet v2"
         closeStateCallback={closeStateCallback}
       />
 
@@ -167,7 +167,7 @@ export default function PayflowBalanceDialog({
               fullWidth
               value={walletTitle}
               onChange={(e) => setWalletTitle(e.target.value)}
-              placeholder="Payflow Balance v2"
+              placeholder="Payflow Wallet v2"
             />
 
             <Typography fontWeight="bold" color={grey[400]}>

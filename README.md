@@ -54,7 +54,7 @@
 - **Mode**
 - **Degen L3**
 - **Worldchain**
-- **Ham**
+- **Polygon**
 
 ## Useful Links
 

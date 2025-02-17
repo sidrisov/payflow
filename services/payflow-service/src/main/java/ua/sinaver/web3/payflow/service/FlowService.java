@@ -64,8 +64,7 @@ public class FlowService {
 		val flow = new Flow(user.getId(), title, signer,
 				signerProvider, signerType, signerCredential,
 				"safe", null);
-		val uuid = flow.getUuid();
-		val saltNonce = "payflow-wallet-v1-".concat(RandomStringUtils.random(8, true, true));
+		val saltNonce = "payflow-wallet-v1-".concat(RandomStringUtils.secure().nextAlphanumeric(8));
 		flow.setType(Flow.FlowType.JAR);
 		flow.setSaltNonce(saltNonce);
 

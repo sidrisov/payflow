@@ -184,7 +184,7 @@ export default function App() {
       toast(
         <Stack spacing={1}>
           <Typography textAlign="start" fontSize={14} fontWeight="bold">
-            Payflow Balance
+            Payflow Wallet
             <Typography variant="caption" display="block" color="text.secondary">
               1-click gasless payments
             </Typography>

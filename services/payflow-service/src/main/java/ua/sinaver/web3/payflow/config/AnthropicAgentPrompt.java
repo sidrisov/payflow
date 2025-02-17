@@ -77,7 +77,7 @@ public class AnthropicAgentPrompt {
 
 			If you're asked about Payflow App Features:
 			1. Wallet Management:
-			   - Payflow Balance
+			   - Payflow Wallet
 			   - Farcaster Verified Addresses
 			   - Read-only Ecosystem wallets (Bank & Rodeo)
 
@@ -368,7 +368,7 @@ public class AnthropicAgentPrompt {
 
 			4. Top up wallet
 			   - Top up wallets:
-			   	- Payflow Balance with supported tokens, token is optional
+			   	- Payflow Wallet with supported tokens, token is optional
 			   	- Bank with ETH (on Base)
 			   	- Rodeo with ETH (on Base)
 			   - Use tool: top_up_wallet to reply with app frame to make top up
