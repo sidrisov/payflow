@@ -121,7 +121,7 @@ public class AnthropicAgentService {
 					.build(),
 			AgentTool.builder()
 					.name("top_up_wallet")
-					.description("Top up your Payflow Balance, Bank, or Rodeo wallets")
+					.description("Top up your Payflow, Bank, or Rodeo wallets")
 					.inputSchema(AgentTool.InputSchema.builder().type("object").properties(
 							Map.of(
 									"type",

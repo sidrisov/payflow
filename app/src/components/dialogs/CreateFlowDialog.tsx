@@ -18,7 +18,7 @@ type FlowTypeOption = {
 
 const flowTypes: FlowTypeOption[] = [
   {
-    title: 'Payflow Balance v2',
+    title: 'Payflow Wallet v2',
     description: '1-click gasless and automated payments with session keys',
     icon: <TbHandClick size={24} />,
     value: 'balance'
@@ -89,7 +89,7 @@ export function CreateFlowDialog({ closeStateCallback, profile, ...props }: Crea
             fontSize={12}
             color="textSecondary"
             sx={{ textWrap: 'pretty' }}>
-            All accounts are non-custodial, except for scoped permissions in Payflow Balance
+            All accounts are non-custodial, except for scoped permissions in Payflow Wallet
           </Typography>
         </Box>
       </ResponsiveDialog>
