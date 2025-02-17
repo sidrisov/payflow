@@ -115,7 +115,9 @@ export function SearchResultView({
                   view={view}
                   contact={identity}
                   updateIdentityCallback={updateIdentityCallback}
-                  onClick={() => onIdentityClick(identity, view)}
+                  {...((profileRedirect || selectIdentityCallback) && {
+                    onClick: () => onIdentityClick(identity, view)
+                  })}
                 />
               ))}
               {page < maxPages && (
@@ -185,7 +187,6 @@ export function SearchResultView({
             showContactsNumber={false}
             title="My wallets"
             identities={myWallets}
-            profileRedirect={profileRedirect}
             selectIdentityCallback={selectIdentityCallback}
             updateIdentityCallback={updateIdentityCallback}
             closeStateCallback={closeStateCallback}

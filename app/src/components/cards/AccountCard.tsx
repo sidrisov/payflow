@@ -29,6 +29,7 @@ import { formatAmountWithSuffix } from '../../utils/formats';
 import { ActionButton } from '../buttons/ActionButton';
 import { PayMeDialog } from '../dialogs/PayMeDialog';
 import { GoArrowSwitch } from 'react-icons/go';
+import CopyToClipboardIconButton from '../buttons/CopyToClipboardIconButton';
 
 const LazyPaymentDialog = lazy(() => import('../payment/PaymentDialog'));
 
@@ -174,9 +175,7 @@ export function AccountCard({
         <Card
           elevation={5}
           sx={{
-            pt: 2,
-            pb: 2.5,
-            px: 2.5,
+            p: 2,
             maxWidth: 350,
             width: '100%',
             height: 'auto',
@@ -184,7 +183,7 @@ export function AccountCard({
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: 1.5,
+            gap: 1,
             transition: 'transform 0.3s ease-out',
             cursor: 'grab',
             '&:active': {
@@ -193,7 +192,7 @@ export function AccountCard({
             }
           }}
           {...swipeHandlers}>
-          <Stack width="100%" direction="row" alignItems="center" spacing={0.5}>
+          <Stack width="100%" direction="row" alignItems="center" justifyContent="space-between">
             <Tooltip title="Switch Payment Wallet">
               <Box
                 onClick={() => setOpenSelectFlow(true)}
@@ -206,19 +205,26 @@ export function AccountCard({
                     opacity: 0.8
                   }
                 }}>
-                <GoArrowSwitch size={20} />
+                <GoArrowSwitch size={18} />
                 <PaymentFlowSection navigation flow={selectedFlow} />
               </Box>
             </Tooltip>
-            <Tooltip title={balanceVisible ? 'Hide Balance' : 'Show Balance'}>
-              <IconButton size="small" onClick={handleBalanceVisibilityToggle}>
-                {balanceVisible ? (
-                  <VisibilityOff sx={{ fontSize: 16 }} />
-                ) : (
-                  <Visibility sx={{ fontSize: 16 }} />
-                )}
-              </IconButton>
-            </Tooltip>
+            <Stack direction="row" alignItems="center">
+              <CopyToClipboardIconButton
+                iconSize={16}
+                value={selectedFlow.wallets[0]?.address}
+                tooltip="Copy Wallet Address"
+              />
+              <Tooltip title={balanceVisible ? 'Hide Balance' : 'Show Balance'}>
+                <IconButton size="small" onClick={handleBalanceVisibilityToggle}>
+                  {balanceVisible ? (
+                    <VisibilityOff sx={{ fontSize: 16 }} />
+                  ) : (
+                    <Visibility sx={{ fontSize: 16 }} />
+                  )}
+                </IconButton>
+              </Tooltip>
+            </Stack>
           </Stack>
 
           <Box
@@ -226,12 +232,12 @@ export function AccountCard({
             justifyContent="space-between"
             alignItems="center"
             width="100%"
-            height={50}>
+            height={40}>
             {isLoading || !totalBalance ? (
-              <Skeleton variant="rectangular" height={50} width={120} />
+              <Skeleton variant="rectangular" height={40} width={120} />
             ) : (
               <Typography
-                fontSize={40}
+                fontSize={36}
                 fontWeight="bold"
                 onMouseDown={handleBalanceMouseDown}
                 onMouseUp={handleBalanceMouseUp}
@@ -249,13 +255,14 @@ export function AccountCard({
                 onClick={handleReceive}
                 icon={<TbPlus />}
               />
-              <ActionButton
-                title="Pay"
-                tooltip="Pay with crypto"
-                disabled={selectedFlow.type === 'BANKR' || selectedFlow.type === 'RODEO'}
-                onClick={handleSend}
-                icon={<TbSend />}
-              />
+              {selectedFlow.type !== 'BANKR' && selectedFlow.type !== 'RODEO' && (
+                <ActionButton
+                  title="Pay"
+                  tooltip="Pay with crypto"
+                  onClick={handleSend}
+                  icon={<TbSend />}
+                />
+              )}
             </Stack>
           </Box>
         </Card>

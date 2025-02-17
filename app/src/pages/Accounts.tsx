@@ -11,9 +11,6 @@ import { useAssetBalances } from '../utils/queries/balances';
 import getFlowAssets from '../utils/assets';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 import { PaymentSection } from '../components/sections/PaymentSection';
-import { MdOutlinePlaylistAdd } from 'react-icons/md';
-import { MdOutlinePlaylistAddCheck } from 'react-icons/md';
-import { GiTwoCoins } from 'react-icons/gi';
 import ActivityFeed from '../components/activity/ActivityFeed';
 import { useMobile } from '../utils/hooks/useMobile';
 
@@ -74,6 +71,10 @@ export default function Accounts() {
 
   const [activeTab, setActiveTab] = useState(0);
 
+  const handleFabClick = () => {
+    navigate('/payment/create');
+  };
+
   return (
     <>
       <Helmet>
@@ -81,87 +82,93 @@ export default function Accounts() {
       </Helmet>
       <Box display="flex" flexDirection="column" height="100%" width="100%" p={1}>
         {isAuthenticated && flows && selectedFlow ? (
-          <Stack alignItems="center" spacing={1} sx={{ mt: isFrameV2 ? 0 : 1 }}>
-            <AccountCard
-              key={`account_card`}
-              flows={flows ?? []}
-              selectedFlow={selectedFlow}
-              setSelectedFlow={setSelectedFlow}
-              assetBalancesResult={{ isLoading, isFetched, balances }}
-              balanceVisible={balanceVisible}
-              setBalanceVisible={setBalanceVisible}
-            />
+          <>
+            <Stack alignItems="center" spacing={1} sx={{ mt: isFrameV2 ? 0 : 1 }}>
+              <AccountCard
+                key={`account_card`}
+                flows={flows ?? []}
+                selectedFlow={selectedFlow}
+                setSelectedFlow={setSelectedFlow}
+                assetBalancesResult={{ isLoading, isFetched, balances }}
+                balanceVisible={balanceVisible}
+                setBalanceVisible={setBalanceVisible}
+              />
 
-            {hasZeroBalance && showZeroBalance && (
-              <Box
-                sx={{
-                  textAlign: 'center',
-                  maxWidth: 350,
-                  border: 0.5,
-                  borderColor: 'divider',
-                  borderRadius: '16px',
-                  p: 1.5
-                }}>
-                <Typography
-                  color="text.secondary"
+              {hasZeroBalance && showZeroBalance && (
+                <Box
                   sx={{
-                    fontSize: 14,
-                    mb: 1
+                    textAlign: 'center',
+                    maxWidth: 350,
+                    border: 0.5,
+                    borderColor: 'divider',
+                    borderRadius: '16px',
+                    p: 1.5
                   }}>
-                  Empty balance. Top up your account to get started!
-                </Typography>
-                <Stack direction="row" spacing={1} justifyContent="center">
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => {
-                      window.location.href =
-                        '/payment/create?recipient=' + selectedFlow?.wallets?.[0].address;
-                    }}
-                    sx={{ minWidth: 100 }}>
-                    Top Up
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    color="inherit"
-                    onClick={handleHideZeroBalance}
-                    sx={{ minWidth: 100 }}>
-                    Close
-                  </Button>
-                </Stack>
-              </Box>
-            )}
-
-            <Tabs
-              value={activeTab}
-              centered
-              onChange={(_, newValue) => setActiveTab(newValue)}
-              TabIndicatorProps={{ sx: { display: 'none' } }}
-              sx={{
-                maxWidth: 375,
-                '& .MuiTab-root': {
-                  fontSize: 14,
-                  fontWeight: 'bold',
-                  borderRadius: 5
-                }
-              }}>
-              <Tab icon={<MdOutlinePlaylistAddCheck size={20} />} label="Activity" />
-              <Tab icon={<MdOutlinePlaylistAdd size={20} />} label="Intents" />
-              <Tab icon={<GiTwoCoins size={20} />} label="Tokens" />
-            </Tabs>
-
-            <Box width="100%" maxWidth={375} overflow="auto" height={`calc(100vh - ${isMobile ? 290 : 300}px)`}>
-              {activeTab === 0 && <ActivityFeed identity={{ address: profile?.identity! }} />}
-              {activeTab === 1 && <PaymentSection width="100%" type="intent" />}
-              {activeTab === 2 && (
-                <Assets
-                  assetBalancesResult={{ isLoading, isFetched, balances }}
-                  balanceVisible={balanceVisible}
-                />
+                  <Typography
+                    color="text.secondary"
+                    sx={{
+                      fontSize: 14,
+                      mb: 1
+                    }}>
+                    Empty balance. Top up your account to get started!
+                  </Typography>
+                  <Stack direction="row" spacing={1} justifyContent="center">
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => {
+                        window.location.href =
+                          '/payment/create?recipient=' + selectedFlow?.wallets?.[0].address;
+                      }}
+                      sx={{ minWidth: 100 }}>
+                      Top Up
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      color="inherit"
+                      onClick={handleHideZeroBalance}
+                      sx={{ minWidth: 100 }}>
+                      Close
+                    </Button>
+                  </Stack>
+                </Box>
               )}
-            </Box>
-          </Stack>
+
+              <Tabs
+                value={activeTab}
+                centered
+                onChange={(_, newValue) => setActiveTab(newValue)}
+                TabIndicatorProps={{ sx: { display: 'none' } }}
+                sx={{
+                  maxWidth: 375,
+                  '& .MuiTab-root': {
+                    fontSize: 14,
+                    fontWeight: 'bold',
+                    borderRadius: 5
+                  }
+                }}>
+                <Tab label="Activity" />
+                <Tab label="Intents" />
+                <Tab label="Tokens" />
+              </Tabs>
+
+              <Box
+                width="100%"
+                maxWidth={375}
+                overflow="auto"
+                height={`calc(100vh - ${isMobile ? 255 : 265}px)`}>
+                {activeTab === 0 && <ActivityFeed identity={{ address: profile?.identity! }} />}
+                {activeTab === 1 && <PaymentSection width="100%" type="intent" />}
+                {activeTab === 2 && (
+                  <Assets
+                    assetBalancesResult={{ isLoading, isFetched, balances }}
+                    balanceVisible={balanceVisible}
+                  />
+                )}
+              </Box>
+            </Stack>
+          </>
         ) : (
           <LoadingPayflowEntryLogo />
         )}

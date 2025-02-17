@@ -112,7 +112,9 @@ export function FarcasterAccountsCard({
         flexDirection: 'column'
       }}>
       <Typography variant="h6" textAlign="center">
-        Welcome, @{username}
+        {identities?.some((identity) => identity.profile)
+          ? `Welcome back, @${username}`
+          : `Welcome, @${username}`}
       </Typography>
 
       {!loading && (
