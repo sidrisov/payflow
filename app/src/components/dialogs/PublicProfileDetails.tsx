@@ -65,14 +65,12 @@ export function PublicProfileDetails({
             icon={<TbSend />}
             title="Pay"
             onClick={handlePayButtonClick}
-            border={false}
           />
           <Divider variant="middle" flexItem orientation="vertical" />
           <ActionButton
             ref={identityMenuAnchorRef}
             icon={<MoreVert />}
             onClick={handleMoreButtonClick}
-            border={false}
           />
         </Stack>
       </Stack>

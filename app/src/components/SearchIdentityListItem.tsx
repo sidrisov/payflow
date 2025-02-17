@@ -88,11 +88,7 @@ export function SearchIdentityListItem(
     setIdentityMenuAnchorEl(event.currentTarget);
   };
 
-  const handleBoxClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (props.onClick) {
-      props?.onClick(event);
-    }
-  };
+  const handleBoxClick = props?.onClick;
 
   return (
     <>
@@ -104,12 +100,14 @@ export function SearchIdentityListItem(
           alignItems="center"
           width="100%"
           height={55}
-          {...(!isHoveringMenu && { onClick: handleBoxClick })}
+          {...(handleBoxClick && !isHoveringMenu && { onClick: handleBoxClick })}
           sx={{
-            cursor: 'pointer',
-            '&:hover': {
-              backgroundColor: isHoveringMenu ? 'inherit' : 'action.hover'
-            },
+            ...(handleBoxClick && !isHoveringMenu && {
+              cursor: 'pointer',
+              '&:hover': {
+                backgroundColor: isHoveringMenu ? 'inherit' : 'action.hover'
+              }
+            }),
             borderRadius: 4,
             padding: 1,
             WebkitTapHighlightColor: 'transparent'
