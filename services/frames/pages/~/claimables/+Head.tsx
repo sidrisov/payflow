@@ -2,17 +2,19 @@ import { DAPP_URL } from '../../../utils/constants';
 import { usePageContext } from 'vike-react/usePageContext';
 
 export function Head() {
-  const { routeParams } = usePageContext();
+  const { urlParsed } = usePageContext();
+
+  const claimableId = urlParsed.search.id || 'degen';
 
   const frame = {
     version: 'next',
     imageUrl: 'https://i.imgur.com/okcGTR2.png',
     button: {
-      title: routeParams.id === 'degen' ? 'Claim Degen' : 'Claimables',
+      title: claimableId === 'degen' ? 'Claim Degen' : 'Claimables',
       action: {
         type: 'launch_frame',
         name: 'Payflow',
-        url: `${DAPP_URL}/earn`,
+        url: `${DAPP_URL}/~/claimables?id=${claimableId}`,
         splashImageUrl: 'https://app.payflow.me/apple-touch-icon.png',
         splashBackgroundColor: '#f7f7f7'
       }
