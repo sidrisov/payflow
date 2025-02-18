@@ -7,8 +7,9 @@ import {
   Typography,
   Stack
 } from '@mui/material';
-import { AddCircle, QrCode } from '@mui/icons-material';
+import { QrCode } from '@mui/icons-material';
 import { IoMdSquare } from 'react-icons/io';
+import { IoWallet } from 'react-icons/io5';
 
 export function FundWalletMenu({
   qrClickCallback,
@@ -37,15 +38,15 @@ export function FundWalletMenu({
       <MenuList dense disablePadding>
         <MenuItem onClick={depositClickCallback}>
           <ListItemIcon>
-            <AddCircle fontSize="small" />
+            <IoWallet />
           </ListItemIcon>
-          Top up
+          With Wallet
         </MenuItem>
         <MenuItem onClick={qrClickCallback}>
           <ListItemIcon>
-            <QrCode fontSize="small" />
+            <QrCode />
           </ListItemIcon>
-          QR code
+          QR Code
         </MenuItem>
         <MenuItem onClick={frameClickCallback}>
           <ListItemIcon>
