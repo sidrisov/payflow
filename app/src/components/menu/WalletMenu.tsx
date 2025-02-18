@@ -41,7 +41,7 @@ import { EditFlowDialog } from '../dialogs/EditFlowDialog';
 
 type DialogType = 'none' | 'payMe' | 'balanceInfo' | 'sessions' | 'edit';
 
-export function FlowSettingsMenu({
+export function WalletMenu({
   showOnlySigner,
   flow,
   defaultFlow,

@@ -20,7 +20,7 @@ import { ProfileContext } from '../../contexts/UserContext';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
 import { FlowType, IdentityType, SelectedIdentityType } from '@payflow/common';
 import { ChooseFlowDialog } from '../dialogs/ChooseFlowDialog';
-import { FlowTopUpMenu } from '../menu/FlowTopUpMenu';
+import { FundWalletMenu } from '../menu/FundWalletMenu';
 import WalletQRCodeShareDialog from '../dialogs/WalletQRCodeShareDialog';
 import SearchIdentityDialog from '../dialogs/SearchIdentityDialog';
 import { ShareFlowMenu } from '../menu/ShareFlowMenu';
@@ -250,15 +250,15 @@ export function AccountCard({
             )}
             <Stack direction="row" spacing={1}>
               <ActionButton
-                title="Add"
-                tooltip="Add crypto"
+                title="Fund"
+                tooltip="Fund wallet"
                 onClick={handleReceive}
                 icon={<TbPlus />}
               />
               {selectedFlow.type !== 'BANKR' && selectedFlow.type !== 'RODEO' && (
                 <ActionButton
                   title="Pay"
-                  tooltip="Pay with crypto"
+                  tooltip="Pay with wallet"
                   onClick={handleSend}
                   icon={<TbSend />}
                 />
@@ -319,7 +319,7 @@ export function AccountCard({
           selectedFlow={selectedFlow}
           setSelectedFlow={setSelectedFlow}
         />
-        <FlowTopUpMenu
+        <FundWalletMenu
           anchorEl={topUpMenuAnchorEl}
           open={openTopUpMenu}
           depositClickCallback={() => {

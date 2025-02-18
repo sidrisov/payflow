@@ -14,7 +14,7 @@ import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
 import { green } from '@mui/material/colors';
-import { FlowSettingsMenu } from '../menu/FlowSettingsMenu';
+import { WalletMenu } from '../menu/WalletMenu';
 import { PaymentFlowSection } from '../PaymentFlowSection';
 import ResponsiveDialog, { ResponsiveDialogProps } from './ResponsiveDialog';
 import { FaCheckCircle, FaRegCircle } from 'react-icons/fa';
@@ -318,7 +318,7 @@ export function ChooseFlowDialog({
         </ResponsiveDialog>
 
         {menuFlow && (
-          <FlowSettingsMenu
+          <WalletMenu
             open={openFlowSettingsMenu}
             anchorEl={flowAnchorEl}
             onClose={() => {

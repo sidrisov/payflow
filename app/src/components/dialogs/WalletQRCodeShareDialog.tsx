@@ -1,129 +1,71 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogProps,
-  DialogTitle,
-  Stack,
-  Typography,
-  Box,
-  IconButton,
-  Tooltip
-} from '@mui/material';
+import { Stack, Typography, Box } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import QRCode from 'react-qr-code';
-import { ArrowBack, ContentCopy } from '@mui/icons-material';
-import { toast } from 'react-toastify';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
-import { copyToClipboard } from '../../utils/copyToClipboard';
-import { useEffect, useState } from 'react';
-import { ChooseWalletMenu } from '../menu/ChooseWalletMenu';
 import { FlowWalletType } from '@payflow/common';
 import NetworkAvatar from '../avatars/NetworkAvatar';
 import { getNetworkDisplayName } from '../../utils/networks';
-import { useMobile } from '../../utils/hooks/useMobile';
-import { useAccount } from 'wagmi';
+import CopyToClipboardIconButton from '../buttons/CopyToClipboardIconButton';
+import ResponsiveDialog from './ResponsiveDialog';
 
-export type WalletQRCodeShareDialogProps = DialogProps &
-  CloseCallbackType & {
-    wallets: FlowWalletType[];
-  };
+export type WalletQRCodeShareDialogProps = CloseCallbackType & {
+  open: boolean;
+  wallets: FlowWalletType[];
+};
 
 export default function WalletQRCodeShareDialog({
+  open,
   wallets,
-  closeStateCallback,
-  ...props
+  closeStateCallback
 }: WalletQRCodeShareDialogProps) {
-  const isMobile = useMobile();
-
-  const { chain } = useAccount();
-
-  const [openSelectWallet, setOpenSelectWallet] = useState(false);
-  const [walletAnchorEl, setWalletAnchorEl] = useState<null | HTMLElement>(null);
-
-  const [selectedWallet, setSelectedWallet] = useState<FlowWalletType | undefined>();
-  function handleCloseCampaignDialog() {
-    closeStateCallback();
-  }
-
-  useEffect(() => {
-    setSelectedWallet(wallets.find((w) => w.network === chain?.id) ?? wallets[0]);
-  }, [wallets, chain]);
-
   return (
-    selectedWallet && (
-      <Dialog
-        fullScreen={isMobile}
-        onClose={handleCloseCampaignDialog}
-        {...props}
-        PaperProps={{
-          sx: {
-            ...(!isMobile && {
-              borderRadius: 5
-            })
-          }
-        }}
-        sx={{
-          backdropFilter: 'blur(3px)'
-        }}>
-        <DialogTitle>
-          {isMobile && (
-            <IconButton onClick={closeStateCallback}>
-              <ArrowBack />
-            </IconButton>
-          )}
-          <Typography textAlign="center" variant="subtitle2">
-            Send only on{' '}
-            <b>
-              <u>{getNetworkDisplayName(selectedWallet.network)}</u>
-            </b>{' '}
-            network
-          </Typography>
-        </DialogTitle>
-        <DialogContent>
-          <Stack alignItems="center" spacing={2}>
-            <Box display="flex" flexDirection="row" alignItems="center">
-              <IconButton
-                sx={{ width: 40, height: 40, border: 1, borderStyle: 'dashed' }}
-                onClick={(event) => {
-                  setWalletAnchorEl(event.currentTarget);
-                  setOpenSelectWallet(true);
-                }}>
-                <NetworkAvatar
-                  tooltip
-                  chainId={selectedWallet.network}
-                  sx={{ width: 28, height: 28 }}
-                />
-              </IconButton>
-              <Typography ml={1} variant="subtitle2">
-                {shortenWalletAddressLabel2(selectedWallet.address)}
-              </Typography>
-              <Tooltip title="Copy Address">
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    copyToClipboard(selectedWallet.address, 'Address copied!');
-                  }}>
-                  <ContentCopy fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Box>
-            <QRCode
-              value={`${selectedWallet.address}`}
-              style={{ borderRadius: 10, border: 5, borderStyle: 'double' }}
-            />
-          </Stack>
-        </DialogContent>
-        <ChooseWalletMenu
-          anchorEl={walletAnchorEl}
-          open={openSelectWallet}
-          closeStateCallback={() => {
-            setOpenSelectWallet(false);
-          }}
-          wallets={wallets}
-          selectedWallet={selectedWallet}
-          setSelectedWallet={setSelectedWallet}
+    <ResponsiveDialog open={open} onClose={closeStateCallback} title="Deposit with QR or Address">
+      <Stack alignItems="center" spacing={1} p={1}>
+        <QRCode
+          value={`${wallets[0].address}`}
+          style={{ borderRadius: 10, border: 5, borderStyle: 'double' }}
         />
-      </Dialog>
-    )
+        <Box
+          display="flex"
+          flexDirection="row"
+          alignItems="center"
+          justifyContent="center"
+          width="100%">
+          <Typography variant="subtitle2">
+            Copy Address: {shortenWalletAddressLabel2(wallets[0].address)}
+          </Typography>
+          <CopyToClipboardIconButton
+            iconSize={18}
+            value={wallets[0].address}
+            tooltip="Copy Address"
+          />
+        </Box>
+        <Typography
+          p={1}
+          variant="subtitle2"
+          fontWeight="bold"
+          textAlign="center"
+          sx={{ color: 'warning.main', border: 1, borderRadius: '16px' }}>
+          Note: Deposit only on the following networks!
+        </Typography>
+        <Stack direction="row" flexWrap="wrap" alignItems="center" justifyContent="center" gap={1}>
+          {wallets.map((wallet) => (
+            <Box
+              key={wallet.network}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 0.5,
+                p: 1,
+                minWidth: 80
+              }}>
+              <NetworkAvatar chainId={wallet.network} sx={{ width: 32, height: 32 }} />
+              <Typography variant="caption">{getNetworkDisplayName(wallet.network)}</Typography>
+            </Box>
+          ))}
+        </Stack>
+      </Stack>
+    </ResponsiveDialog>
   );
 }
