@@ -10,7 +10,7 @@ import {
 import { AddCircle, QrCode } from '@mui/icons-material';
 import { IoMdSquare } from 'react-icons/io';
 
-export function FlowTopUpMenu({
+export function FundWalletMenu({
   qrClickCallback,
   depositClickCallback,
   frameClickCallback,
@@ -23,7 +23,15 @@ export function FlowTopUpMenu({
   return (
     <Menu
       {...props}
-      sx={{ mt: 1 }}
+      sx={{
+        mt: 1,
+        '& .MuiList-root': {
+          p: 0
+        },
+        '& .MuiMenuItem-root': {
+          borderRadius: 0
+        }
+      }}
       transformOrigin={{ horizontal: 'left', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
       <MenuList dense disablePadding>
