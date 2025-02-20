@@ -295,9 +295,33 @@ async function startServer() {
   });
 
   app.get('/images/storage.png', async (req, res) => {
+    const fid = req.query.fid as Address;
+
+    const isFrameV2 = req.query.fv2 !== undefined && req.query.fv2 !== 'false';
+
     try {
-      const image = await htmlToImage(buyStorageEntryHtml(chains, SUPPORTED_TOKENS), 'landscape');
-      res.setHeader('Cache-Control', `max-age=${oneDayInSeconds}`).type('png').send(image);
+      if (fid) {
+        const identityResponse = await axios.get(`${API_URL}/api/user/identities/fid/${fid}`);
+        const identityData = (
+          identityResponse.data !== '' ? identityResponse.data : { identity: `fid/${fid}` }
+        ) as IdentityType;
+
+        const storageResponse = await axios.get(`${API_URL}/api/user/storage/fid/${fid}`);
+        const storageData = storageResponse.data as StorageUsage;
+        const image = await htmlToImage(
+          buyStorageHtml(identityData, storageData),
+          'landscape',
+          isFrameV2 ? 3 / 2 : 1.91
+        );
+        res.setHeader('Cache-Control', 'max-age=120').type('png').send(image);
+      } else {
+        const image = await htmlToImage(
+          buyStorageEntryHtml(chains, SUPPORTED_TOKENS),
+          'landscape',
+          isFrameV2 ? 3 / 2 : 1.91
+        );
+        res.setHeader('Cache-Control', `max-age=${oneDayInSeconds}`).type('png').send(image);
+      }
     } catch (error) {
       console.error(error);
       res.status(500).send('Error retrieving profile data');
@@ -326,6 +350,7 @@ async function startServer() {
 
   app.get('/images/profile/fid/:fid/storage.png', async (req, res) => {
     const fid = req.params.fid as Address;
+    const isFrameV2 = req.query.fv2 !== undefined && req.query.fv2 !== 'false';
 
     try {
       const identityResponse = await axios.get(`${API_URL}/api/user/identities/fid/${fid}`);
@@ -335,8 +360,12 @@ async function startServer() {
 
       const storageResponse = await axios.get(`${API_URL}/api/user/storage/fid/${fid}`);
       const storageData = storageResponse.data as StorageUsage;
-      const image = await htmlToImage(buyStorageHtml(identityData, storageData), 'landscape');
-      res.setHeader('Cache-Control', 'max-age=60').type('png').send(image);
+      const image = await htmlToImage(
+        buyStorageHtml(identityData, storageData),
+        'landscape',
+        isFrameV2 ? 3 / 2 : 1.91
+      );
+      res.setHeader('Cache-Control', 'max-age=120').type('png').send(image);
     } catch (error) {
       console.error(error);
       res.status(500).send('Error retrieving profile data');

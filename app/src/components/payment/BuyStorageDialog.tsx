@@ -107,7 +107,7 @@ export default function BuyStorageDialog({
   ) : (
     <BasePaymentDialog
       alwaysShowBackButton={alwaysShowBackButton}
-      title={props.title ?? 'Farcaster Storage'}
+      title={props.title ?? 'New Payment'}
       subtitle="Farcaster Storage"
       expiresAt={payment?.expiresAt}
       closeStateCallback={closeStateCallback}

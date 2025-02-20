@@ -1,15 +1,23 @@
-import { DAPP_URL } from '../../../utils/constants';
+import { usePageContext } from 'vike-react/usePageContext';
+import { BUY_STORAGE_FRAME_VERSION, DAPP_URL, FRAMES_URL } from '../../../../utils/constants';
 
 export function Head() {
+  const { urlParsed } = usePageContext();
+  const fid = urlParsed.search.fid;
+
+  const imageUrl = fid
+    ? `${FRAMES_URL}/images/storage.png?fid=${fid}&fv2&${BUY_STORAGE_FRAME_VERSION}`
+    : `${FRAMES_URL}/images/storage.png?fv2&${BUY_STORAGE_FRAME_VERSION}`;
+
   const frame = {
     version: 'next',
-    imageUrl: 'https://i.imgur.com/okcGTR2.png',
+    imageUrl,
     button: {
       title: 'Farcaster Storage',
       action: {
         type: 'launch_frame',
         name: 'Payflow',
-        url: `${DAPP_URL}/farcaster/storage`,
+        url: `${DAPP_URL}/~/farcaster/storage${fid ? `?fid=${fid}` : ''}`,
         splashImageUrl: 'https://app.payflow.me/apple-touch-icon.png',
         splashBackgroundColor: '#f7f7f7'
       }

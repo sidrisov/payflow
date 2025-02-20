@@ -55,10 +55,12 @@ export function BasePaymentDialog({
       {...props}
       slotProps={{
         paper: {
-          ...(!isMobile && {
-            width: 375,
-            height: 650
-          })
+          sx: {
+            ...(!isMobile && {
+              minWidth: 375,
+              minHeight: 500
+            })
+          }
         }
       }}
       sx={{

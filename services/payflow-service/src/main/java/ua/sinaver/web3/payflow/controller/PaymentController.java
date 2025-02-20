@@ -98,6 +98,9 @@ public class PaymentController {
 		payment.setReceiverAddress(paymentMessage.receiverAddress());
 		payment.setSender(user);
 		payment.setTokenAmount(paymentMessage.tokenAmount().toString());
+		
+		payment.setCategory(paymentMessage.category());
+		payment.setReceiverFid(paymentMessage.receiverFid());
 
 		val isCompleted = Payment.PaymentStatus.COMPLETED.equals(paymentMessage.status())
 				&& paymentMessage.hash() != null;

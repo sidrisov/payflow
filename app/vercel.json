@@ -100,7 +100,7 @@
       "destination": "https://frames.payflow.me/mint"
     },
     {
-      "source": "/farcaster/storage",
+      "source": "/~/farcaster/storage",
       "has": [
         {
           "type": "header",
@@ -108,7 +108,7 @@
           "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot|got).*"
         }
       ],
-      "destination": "https://frames.payflow.me/farcaster/storage"
+      "destination": "https://frames.payflow.me/~/farcaster/storage"
     },
     {
       "source": "/:username",
