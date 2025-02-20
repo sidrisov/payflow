@@ -1,5 +1,5 @@
 import { usePageContext } from 'vike-react/usePageContext';
-import { BUY_STORAGE_FRAME_VERSION, DAPP_URL, FRAMES_URL } from '../../../utils/constants';
+import { BUY_STORAGE_FRAME_VERSION, DAPP_URL, FRAMES_URL } from '../../../../utils/constants';
 
 export function Head() {
   const { urlParsed } = usePageContext();
@@ -17,7 +17,7 @@ export function Head() {
       action: {
         type: 'launch_frame',
         name: 'Payflow',
-        url: `${DAPP_URL}/farcaster/storage${fid ? `?fid=${fid}` : ''}`,
+        url: `${DAPP_URL}/~/farcaster/storage${fid ? `?fid=${fid}` : ''}`,
         splashImageUrl: 'https://app.payflow.me/apple-touch-icon.png',
         splashBackgroundColor: '#f7f7f7'
       }

@@ -79,7 +79,7 @@ public class FarcasterStorageService {
 
 							if (shouldNotify) {
 								val username = identityService.getFidFname(fid);
-								val storageEmbed = String.format("https://app.payflow.me/fid/%s/storage?%s", fid,
+								val storageEmbed = String.format("https://app.payflow.me/~/farcaster/storage?fid=%s&%s", fid,
 										FrameVersions.STORAGE_VERSION);
 
 								// Send direct message if enabled
@@ -94,8 +94,7 @@ public class FarcasterStorageService {
 
 															%s
 
-															To disable or configure storage notifications, visit:
-															https://app.payflow.me/farcaster/storage
+															If you can also disable or configure notification in the frame
 															""",
 													username, storageEmbed),
 											UUID.randomUUID()));
