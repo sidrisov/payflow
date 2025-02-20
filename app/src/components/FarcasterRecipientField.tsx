@@ -15,33 +15,38 @@ export function FarcasterRecipientField({
   const isMobile = useMobile();
 
   return (
-    <Box
-      display="flex"
-      flexDirection="row"
-      width="100%"
-      alignItems="center"
-      justifyContent="space-between"
-      color="inherit"
-      {...(setOpenSearchIdentity && {
-        component: Button,
-        onClick: () => setOpenSearchIdentity(true)
-      })}
-      sx={{
-        ...(variant === 'outlined' && {
-          border: 1,
-          borderRadius: 5,
-          borderColor: 'divider',
-          p: isMobile ? 1.5 : 1
-        }),
-        textTransform: 'none'
-      }}>
-      <FarcasterProfileSection maxWidth={200} social={social} />
+    <Box>
+      <Typography variant="body2" color="text.secondary">
+        Recipient:
+      </Typography>
+      <Box
+        display="flex"
+        flexDirection="row"
+        width="100%"
+        alignItems="center"
+        justifyContent="space-between"
+        color="inherit"
+        {...(setOpenSearchIdentity && {
+          component: Button,
+          onClick: () => setOpenSearchIdentity(true)
+        })}
+        sx={{
+          ...(variant === 'outlined' && {
+            border: 1,
+            borderRadius: 5,
+            borderColor: 'divider',
+            p: isMobile ? 1.5 : 1
+          }),
+          textTransform: 'none'
+        }}>
+        <FarcasterProfileSection maxWidth={200} social={social} />
 
-      {!social && (
-        <Typography alignSelf="center" flexGrow={1}>
-          Choose Farcaster Recipient
-        </Typography>
-      )}
+        {!social && (
+          <Typography alignSelf="center" flexGrow={1}>
+            Choose Farcaster Recipient
+          </Typography>
+        )}
+      </Box>
     </Box>
   );
 }

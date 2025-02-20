@@ -321,139 +321,132 @@ export default function PaymentDialog({
         />
       }
       {...props}>
-      <Box
-        height="100%"
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="space-between">
-        <Box ml={1} width="100%" display="flex" alignItems="start" justifyContent="space-between">
-          <RecipientField
-            recipient={recipient}
-            recipientAddress={toAddress}
-            setOpenSearchIdentity={setOpenSearchIdentity}
-          />
+      <Box ml={1} width="100%" display="flex" alignItems="start" justifyContent="space-between">
+        <RecipientField
+          recipient={recipient}
+          recipientAddress={toAddress}
+          setOpenSearchIdentity={setOpenSearchIdentity}
+        />
 
-          <Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-              Cross-chain mode:
-            </Typography>
-            <ToggleButtonGroup
-              sx={{
-                borderRadius: 3,
-                '& .MuiToggleButton-root': {
-                  '&:first-of-type': {
-                    borderTopLeftRadius: '10px',
-                    borderBottomLeftRadius: '10px'
-                  },
-                  '&:last-of-type': {
-                    borderTopRightRadius: '10px',
-                    borderBottomRightRadius: '10px'
-                  }
+        <Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+            Cross-chain mode:
+          </Typography>
+          <ToggleButtonGroup
+            sx={{
+              borderRadius: 3,
+              '& .MuiToggleButton-root': {
+                '&:first-of-type': {
+                  borderTopLeftRadius: '10px',
+                  borderBottomLeftRadius: '10px'
+                },
+                '&:last-of-type': {
+                  borderTopRightRadius: '10px',
+                  borderBottomRightRadius: '10px'
                 }
-              }}
-              value={crossChainMode ? 'cross-chain' : 'direct'}
-              exclusive
-              onChange={(_, newMode) => {
-                if (newMode !== null) {
-                  setCrossChainMode(newMode === 'cross-chain');
-                }
-              }}
-              size="small">
-              <ToggleButton size="small" value="direct">
-                <Typography variant="caption" fontWeight="bold" textTransform="none">
-                  regular
-                </Typography>
-              </ToggleButton>
-              <ToggleButton
-                disabled={!paymentAmount || paymentAmount === 0}
-                size="small"
-                value="cross-chain">
-                <Typography variant="caption" fontWeight="bold" textTransform="none">
-                  pay with other token
-                </Typography>
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </Box>
+              }
+            }}
+            value={crossChainMode ? 'cross-chain' : 'direct'}
+            exclusive
+            onChange={(_, newMode) => {
+              if (newMode !== null) {
+                setCrossChainMode(newMode === 'cross-chain');
+              }
+            }}
+            size="small">
+            <ToggleButton size="small" value="direct">
+              <Typography variant="caption" fontWeight="bold" textTransform="none">
+                regular
+              </Typography>
+            </ToggleButton>
+            <ToggleButton
+              disabled={!paymentAmount || paymentAmount === 0}
+              size="small"
+              value="cross-chain">
+              <Typography variant="caption" fontWeight="bold" textTransform="none">
+                pay with other token
+              </Typography>
+            </ToggleButton>
+          </ToggleButtonGroup>
         </Box>
+      </Box>
 
-        <Stack
-          width="100%"
-          flex={1}
-          alignItems="flex-start"
-          justifyContent="center"
-          overflow="auto"
-          mt={2}
-          px={2}>
-          <TokenAmountSection
-            payment={payment}
-            crossChainMode={crossChainMode}
-            setCrossChainMode={setCrossChainMode}
-            setPaymentEnabled={setPaymentEnabled}
-            selectedWallet={paymentWallet}
-            selectedToken={paymentToken}
-            paymentAmount={paymentAmount}
-            setPaymentAmount={setPaymentAmount}
-            paymentAmountUSD={paymentAmountUSD}
-            setPaymentAmountUSD={setPaymentAmountUSD}
-          />
+      <Stack
+        width="100%"
+        flex={1}
+        alignItems="flex-start"
+        justifyContent="center"
+        overflow="auto"
+        mt={2}
+        px={2}>
+        <TokenAmountSection
+          payment={payment}
+          crossChainMode={crossChainMode}
+          setCrossChainMode={setCrossChainMode}
+          setPaymentEnabled={setPaymentEnabled}
+          selectedWallet={paymentWallet}
+          selectedToken={paymentToken}
+          paymentAmount={paymentAmount}
+          setPaymentAmount={setPaymentAmount}
+          paymentAmountUSD={paymentAmountUSD}
+          setPaymentAmountUSD={setPaymentAmountUSD}
+        />
 
-          {crossChainMode &&
-            (isLoading ? (
-              <Skeleton
-                title="fetching price"
-                variant="rectangular"
-                sx={{ borderRadius: 3, height: 45, width: 100 }}
-              />
-            ) : hasPaymentOption ? (
-              <Typography fontSize={30} fontWeight="bold" textAlign="center">
-                {formatAmountWithSuffix(
-                  normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
-                )}{' '}
-                {paymentOption.currencySymbol.toUpperCase()}
-              </Typography>
-            ) : (
-              <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
-                {isPaymentOptionsError
-                  ? 'Failed to fetch payment options. Please try again.'
-                  : 'Balance not enough. Switch payment wallet!'}
-              </Typography>
-            ))}
-
-          {crossChainMode && !profile?.proFeatureAccess && (
-            <Typography fontSize={12} color="text.secondary">
-              fee:{' $'}
-              {getCommissionUSD(payment)}
+        {crossChainMode &&
+          (isLoading ? (
+            <Skeleton
+              title="fetching price"
+              variant="rectangular"
+              sx={{ borderRadius: 3, height: 45, width: 100 }}
+            />
+          ) : hasPaymentOption ? (
+            <Typography fontSize={30} fontWeight="bold" textAlign="center">
+              {formatAmountWithSuffix(
+                normalizeNumberPrecision(parseFloat(paymentOption.paymentAmount))
+              )}{' '}
+              {paymentOption.currencySymbol.toUpperCase()}
             </Typography>
-          )}
+          ) : (
+            <Typography textAlign="center" fontSize={14} fontWeight="bold" color={red.A400}>
+              {isPaymentOptionsError
+                ? 'Failed to fetch payment options. Please try again.'
+                : 'Balance not enough. Switch payment wallet!'}
+            </Typography>
+          ))}
 
-          <Box ml={!crossChainMode ? 0.5 : 0}>
-            <CommentField comment={comment} setComment={setComment} />
-          </Box>
-        </Stack>
+        {crossChainMode && !profile?.proFeatureAccess && (
+          <Typography fontSize={12} color="text.secondary">
+            fee:{' $'}
+            {getCommissionUSD(payment)}
+          </Typography>
+        )}
 
-        <Box width="100%" display="flex" flexDirection="row" justifyContent="space-between">
-          <FlowSelector
-            disabled={!recipientCompatibleFlows}
-            variant="outlined"
-            flows={recipientCompatibleFlows!}
-            selectedFlow={selectedFlow}
-            setSelectedFlow={setSelectedFlow}
-          />
-          <NetworkTokenSelector
-            payment={payment}
-            crossChainMode={crossChainMode}
-            paymentToken={crossChainMode ? crossChainPaymentToken : paymentToken}
-            setPaymentToken={crossChainMode ? setCrossChainPaymentToken : setPaymentToken}
-            compatibleWallets={compatibleWallets}
-            supportedTokens={recipient.identity.profile?.defaultFlow?.supportedTokens}
-            enabledChainCurrencies={
-              crossChainMode
-                ? (paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? [])
-                : undefined
-            }
-          />
+        <Box ml={!crossChainMode ? 0.5 : 0}>
+          <CommentField comment={comment} setComment={setComment} />
         </Box>
+      </Stack>
+
+      <Box width="100%" display="flex" flexDirection="row" justifyContent="space-between">
+        <FlowSelector
+          disabled={!recipientCompatibleFlows}
+          variant="outlined"
+          flows={recipientCompatibleFlows!}
+          selectedFlow={selectedFlow}
+          setSelectedFlow={setSelectedFlow}
+        />
+        <NetworkTokenSelector
+          payment={payment}
+          crossChainMode={crossChainMode}
+          paymentToken={crossChainMode ? crossChainPaymentToken : paymentToken}
+          setPaymentToken={crossChainMode ? setCrossChainPaymentToken : setPaymentToken}
+          compatibleWallets={compatibleWallets}
+          supportedTokens={recipient.identity.profile?.defaultFlow?.supportedTokens}
+          enabledChainCurrencies={
+            crossChainMode
+              ? (paymentOptions?.map((c) => c.paymentCurrency.toLowerCase()) ?? [])
+              : undefined
+          }
+        />
       </Box>
     </BasePaymentDialog>
   );
