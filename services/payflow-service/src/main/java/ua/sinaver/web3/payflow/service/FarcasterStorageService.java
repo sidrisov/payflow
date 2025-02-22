@@ -8,6 +8,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import ua.sinaver.web3.payflow.config.PayflowConfig;
 import ua.sinaver.web3.payflow.entity.StorageNotification;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
 import ua.sinaver.web3.payflow.message.farcaster.DirectCastMessage;
@@ -29,6 +32,9 @@ public class FarcasterStorageService {
 	private static final int STORAGE_REACTION_CAPACITY = 1000;
 	private static final int STORAGE_LINK_CAPACITY = 1000;
 	private static final String PARENT_CAST_HASH = "0xaf870a2d8c0e16500532abdfe14908b2f85d662c";
+
+	@Autowired
+	private PayflowConfig payflowConfig;
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
@@ -79,8 +85,11 @@ public class FarcasterStorageService {
 
 							if (shouldNotify) {
 								val username = identityService.getFidFname(fid);
-								val storageEmbed = String.format("https://app.payflow.me/~/farcaster/storage?fid=%s&%s", fid,
-										FrameVersions.STORAGE_VERSION);
+								val storageFrameUrl = UriComponentsBuilder
+										.fromHttpUrl(payflowConfig.getDAppServiceUrl())
+										.path("/~/farcaster/storage?fid={fid}&{version}")
+										.buildAndExpand(fid, FrameVersions.STORAGE_VERSION)
+										.toUriString();
 
 								// Send direct message if enabled
 								if (storageNotification.isNotifyWithMessage()) {
@@ -94,9 +103,10 @@ public class FarcasterStorageService {
 
 															%s
 
-															If you can also disable or configure notification in the frame
+															You can also disable or change notification settings in the frame.
 															""",
-													username, storageEmbed),
+													username, 
+													storageFrameUrl),
 											UUID.randomUUID()));
 
 									if (StringUtils.isBlank(response.result().messageId())) {
@@ -115,11 +125,10 @@ public class FarcasterStorageService {
 
 														1 unit costs ~$2, you can purchase more with any token balance using @payflow 👇
 
-														To disable or configure storage notification, visit:
-														https://app.payflow.me/farcaster/storage
+														You can also disable or change notification settings in the frame.
 														""",
 												username), PARENT_CAST_HASH,
-												List.of(new Cast.Embed(storageEmbed)));
+												List.of(new Cast.Embed(storageFrameUrl)));
 									} catch (Throwable t) {
 										log.error("Failed to cast storage notification for {}", fid, t);
 									}
