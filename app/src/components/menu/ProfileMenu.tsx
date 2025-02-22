@@ -8,7 +8,7 @@ import {
   Typography
 } from '@mui/material';
 import { ProfileType } from '@payflow/common';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import {
   Groups,
   Help,

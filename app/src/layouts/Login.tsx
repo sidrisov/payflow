@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Box, Container } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useEffect } from 'react';
 import ProfileOnboardingDialog from '../components/dialogs/ProfileOnboardingDialog';
 import { ProfileType } from '@payflow/common';

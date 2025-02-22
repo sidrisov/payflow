@@ -2,7 +2,7 @@ import { Container } from '@mui/material';
 import { lazy, useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ProfileContext } from '../contexts/UserContext';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { PaymentType } from '@payflow/common';
 import { fetchPayment } from '../services/payments';
 import { fetchQuery } from '@airstack/airstack-react';

@@ -19,7 +19,7 @@ import { useState, useEffect, useContext } from 'react';
 import { ProfileType, FlowType } from '@payflow/common';
 import { toast } from 'react-toastify';
 import { useCreateSafeWallets } from '../../utils/hooks/useCreateSafeWallets';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { DEFAULT_FLOW_WALLET_CHAINS } from '../../utils/networks';
 import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
 import { useAccount } from 'wagmi';

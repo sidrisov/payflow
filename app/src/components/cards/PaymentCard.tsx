@@ -4,7 +4,7 @@ import { MoreHoriz } from '@mui/icons-material';
 import { PaymentType } from '@payflow/common';
 import { PaymentMenu } from '../menu/PaymentMenu';
 import { useMobile } from '../../utils/hooks/useMobile';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import {
   HiOutlineCheckCircle,
   HiQuestionMarkCircle,

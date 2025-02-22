@@ -12,7 +12,7 @@ import { LoadingSwitchChainButton } from '../buttons/LoadingSwitchNetworkButton'
 import { IoIosWallet } from 'react-icons/io';
 import { degenClaimAbi } from '../../utils/abi/degenClaimAbi';
 import { delay } from '../../utils/delay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { formatAmountWithSuffix } from '../../utils/formats';
 
 export function ClaimDegenPointsDialog({

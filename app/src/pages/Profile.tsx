@@ -20,7 +20,7 @@ import { API_URL } from '../utils/urlConstants';
 import { ProfileType } from '@payflow/common';
 import { updateProfile } from '../services/user';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { isAlphanumericPlusFewSpecialChars } from '../utils/regex';
 import { green } from '@mui/material/colors';
 import { QUERY_SOCIALS } from '../utils/airstackQueries';

@@ -1,7 +1,7 @@
 import { Card, CardProps } from '@mui/material';
 import { IdentityType } from '@payflow/common';
 import { PublicProfileDetails } from '../dialogs/PublicProfileDetails';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 
 export function PublicProfileCard({ identity, ...props }: { identity: IdentityType } & CardProps) {
   const [searchParams] = useSearchParams();

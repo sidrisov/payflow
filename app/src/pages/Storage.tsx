@@ -23,7 +23,7 @@ import { green, grey, orange, red } from '@mui/material/colors';
 import { BUY_STORAGE_FRAME_VERSION, PaymentType } from '@payflow/common';
 import FrameV2SDK from '@farcaster/frame-sdk';
 import { ProfileContext } from '../contexts/UserContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import CenteredCircularProgress from '../components/CenteredCircularProgress';
 import BuyStorageDialog from '../components/payment/BuyStorageDialog';
 import { GetFarcasterProfileByIdentityQuery, Social } from '../generated/graphql/types';

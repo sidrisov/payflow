@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Container, Stack, Box, Typography, Button, IconButton } from '@mui/material';
 import { Launch as LaunchIcon } from '@mui/icons-material';
 import { SiFarcaster } from 'react-icons/si';

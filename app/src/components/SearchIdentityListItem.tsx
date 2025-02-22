@@ -11,7 +11,7 @@ import { useAccount } from 'wagmi';
 import { UpdateIdentityCallbackType } from './dialogs/SearchIdentityDialog';
 import { MoreVert } from '@mui/icons-material';
 import { IdentityMenu } from './menu/SearchIdenitityMenu';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { SocialLinksPopover } from './dialogs/SocialLinksPopover';
 
 function addToFavourites(tags: string[]): string[] {
@@ -102,12 +102,13 @@ export function SearchIdentityListItem(
           height={55}
           {...(handleBoxClick && !isHoveringMenu && { onClick: handleBoxClick })}
           sx={{
-            ...(handleBoxClick && !isHoveringMenu && {
-              cursor: 'pointer',
-              '&:hover': {
-                backgroundColor: isHoveringMenu ? 'inherit' : 'action.hover'
-              }
-            }),
+            ...(handleBoxClick &&
+              !isHoveringMenu && {
+                cursor: 'pointer',
+                '&:hover': {
+                  backgroundColor: isHoveringMenu ? 'inherit' : 'action.hover'
+                }
+              }),
             borderRadius: 4,
             padding: 1,
             WebkitTapHighlightColor: 'transparent'

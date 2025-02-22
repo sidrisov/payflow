@@ -33,6 +33,7 @@ import ua.sinaver.web3.payflow.repository.FlowRepository;
 import ua.sinaver.web3.payflow.repository.PaymentBotJobRepository;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
 import ua.sinaver.web3.payflow.repository.WalletSessionRepository;
+import ua.sinaver.web3.payflow.utils.FrameVersions;
 import ua.sinaver.web3.payflow.utils.MintUrlUtils;
 
 import java.math.BigDecimal;
@@ -505,12 +506,14 @@ public class FarcasterBotService {
 					case "buy_storage" -> {
 						val input = (Map<String, Object>) content.getInput();
 						val fid = ((Integer) input.get("fid"));
+						val storageFrameUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
+								.path("/~/farcaster/storage?fid={fid}&{version}")
+								.buildAndExpand(fid, FrameVersions.STORAGE_VERSION)
+								.toUriString();
 						eventPublisher.publishEvent(new CastEvent(
 								textWithReply,
 								cast.hash(),
-								Collections.singletonList(new Cast.Embed(
-										payflowConfig.getDAppServiceUrl() + "/fid/" + fid
-												+ "/storage"))));
+								Collections.singletonList(new Cast.Embed(storageFrameUrl))));
 						job.setStatus(PaymentBotJob.Status.PROCESSED);
 						return;
 					}

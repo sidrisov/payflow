@@ -81,7 +81,7 @@ export default defineConfig(({ isSsrBuild }) => {
           ...(!isSsrBuild && {
             manualChunks: {
               // Core React dependencies
-              'react-core': ['react', 'react-dom', 'react-router-dom', 'react-helmet-async'],
+              'react-core': ['react', 'react-dom', 'react-router', 'react-helmet-async'],
               // UI and styling related
               ui: [
                 '@emotion/react',
@@ -121,7 +121,18 @@ export default defineConfig(({ isSsrBuild }) => {
     },
 
     plugins: [
-      react(),
+      react({
+        babel: {
+          plugins: [
+            [
+              'babel-plugin-react-compiler',
+              {
+                target: '18'
+              }
+            ]
+          ]
+        }
+      }),
       nodePolyfills(),
       visualizer({ gzipSize: true, brotliSize: true }),
       VitePWA({

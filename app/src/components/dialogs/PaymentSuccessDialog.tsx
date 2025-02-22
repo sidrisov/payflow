@@ -4,7 +4,7 @@ import { Box, Typography, Link, Button, Stack, Divider } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { green } from '@mui/material/colors';
 import { HiOutlineCheckCircle } from 'react-icons/hi2';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { FcApproval } from 'react-icons/fc';
 import { FaRegHeart } from 'react-icons/fa6';
 import FrameV2SDK from '@farcaster/frame-sdk';

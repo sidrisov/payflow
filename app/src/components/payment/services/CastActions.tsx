@@ -7,7 +7,7 @@ import CastActionButton from '../../buttons/CastActionButton';
 import { FaRegClock } from 'react-icons/fa';
 import { GoZap } from 'react-icons/go';
 import SettingsIcon from '@mui/icons-material/Settings';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { ProfileContext } from '../../../contexts/UserContext';
 import { DEFAULT_FARCASTER_CLIENT, FARCASTER_CLIENTS } from '@payflow/common';
 import { FarcasterClientAvatar } from '../../avatars/FarcasterClientAvatar';

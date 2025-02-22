@@ -64,12 +64,12 @@ public class NotificationService {
 	}
 
 	public String preferredTokensReply(String parentHash, FarcasterUser user,
-	                                   List<String> preferredTokenIds) {
+			List<String> preferredTokenIds) {
 
 		val formattedTokenIds = String.join(", ", preferredTokenIds).toUpperCase();
 		val castText = String.format("""
-						@%s, your preferred receiving tokens have been updated:
-						%s ✅""",
+				@%s, your preferred receiving tokens have been updated:
+				%s ✅""",
 				user.username(), formattedTokenIds);
 
 		val embeds = Collections.singletonList(new Cast.Embed(
@@ -109,7 +109,7 @@ public class NotificationService {
 			val receiverFname = identityService
 					.getIdentityFname(payment.getReceiver() != null ? payment.getReceiver().getIdentity()
 							: payment.getReceiverAddress() != null ? payment.getReceiverAddress()
-							: "fc_fid:" + payment.getReceiverFid());
+									: "fc_fid:" + payment.getReceiverFid());
 			if (StringUtils.isBlank(receiverFname)) {
 				log.warn("Can't notify user, since farcaster name wasn't found: {}", payment);
 				return;
@@ -121,8 +121,8 @@ public class NotificationService {
 					payment.getRefundHash() != null);
 			val sourceRefText = StringUtils.isNotBlank(payment.getSourceRef()) ? payment.getSourceRef()
 					: StringUtils.isNotBlank(payment.getSourceHash()) ? String.format(
-					"🔗 Source: https://warpcast.com/%s/%s",
-					receiverFname, payment.getSourceHash().substring(0, 10)) : "";
+							"🔗 Source: https://warpcast.com/%s/%s",
+							receiverFname, payment.getSourceHash().substring(0, 10)) : "";
 
 			if (payment.getRefundHash() != null) {
 				handleRefundNotification(payment, senderFname, receiptUrl, sourceRefText);
@@ -175,8 +175,8 @@ public class NotificationService {
 	}
 
 	private void handleP2PPaymentNotification(Payment payment, String senderFname, String receiverFname,
-	                                          String receiptUrl,
-	                                          String sourceRefText) {
+			String receiptUrl,
+			String sourceRefText) {
 		val embeds = new ArrayList<Cast.Embed>();
 		if (payment.getTarget() != null) {
 			embeds.add(new Cast.Embed(payment.getTarget()));
@@ -185,13 +185,13 @@ public class NotificationService {
 
 		val commentText = StringUtils.isNotBlank(payment.getComment())
 				? String.format("""
-				with 💬 "%s"
-				""", payment.getComment())
+						with 💬 "%s"
+						""", payment.getComment())
 				: "";
 
 		if (payment.getCategory() == null) {
 			val castText = String.format("""
-							@%s, you received %s %s%s 💸""",
+					@%s, you received %s %s%s 💸""",
 					receiverFname,
 					StringUtils.isNotBlank(payment.getTokenAmount())
 							? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
@@ -205,10 +205,10 @@ public class NotificationService {
 					payment.getReceiver() != null ? payment.getReceiver().getIdentity() : payment.getReceiverAddress());
 			if (StringUtils.isNotBlank(receiverFid)) {
 				val messageText = String.format("""
-								You received %s %s%s %s
+						You received %s %s%s %s
 
-								%s
-								🧾 Receipt: %s""",
+						%s
+						🧾 Receipt: %s""",
 						StringUtils.isNotBlank(payment.getTokenAmount())
 								? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 								: String.format("$%s", payment.getUsdAmount()),
@@ -224,8 +224,8 @@ public class NotificationService {
 					val frameV2ReceiptUrl = linkService.paymentLink(payment, false).toString();
 					val notification = NotificationRequest.Notification.create(
 							String.format("Received %s %s", StringUtils.isNotBlank(payment.getTokenAmount())
-											? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
-											: String.format("$%s", payment.getUsdAmount()),
+									? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
+									: String.format("$%s", payment.getUsdAmount()),
 									payment.getToken().toUpperCase()),
 							String.format("%s %s",
 									formatFromPart(senderFname),
@@ -267,19 +267,19 @@ public class NotificationService {
 	}
 
 	private void handleStoragePaymentNotification(Payment payment, String senderFname, String receiverFname,
-	                                              String receiptUrl, String crossChainText,
-	                                              String sourceRefText) {
+			String receiptUrl, String crossChainText,
+			String sourceRefText) {
 		val receiverFid = identityService.getIdentityFid(
 				payment.getReceiver() != null ? payment.getReceiver().getIdentity() : payment.getReceiverAddress());
 
 		val storageFrameUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
-				.path("/fid/{fid}/storage?" + FrameVersions.STORAGE_VERSION)
-				.buildAndExpand(payment.getReceiverFid())
+				.path("/~/farcaster/storage?fid={fid}&{version}")
+				.buildAndExpand(payment.getReceiverFid(), FrameVersions.STORAGE_VERSION)
 				.toUriString();
 
 		val numberOfUnits = payment.getTokenAmount() != null ? payment.getTokenAmount() : 1;
 		val castText = String.format("""
-						@%s, you've been paid %s unit(s) of storage%s by @%s 🗄""",
+				@%s, you've been paid %s unit(s) of storage%s by @%s 🗄""",
 				receiverFname,
 				numberOfUnits,
 				crossChainText,
@@ -294,12 +294,12 @@ public class NotificationService {
 					: "";
 
 			val messageText = String.format("""
-							@%s, you've been paid %s units of storage%s by @%s 🗄
+					@%s, you've been paid %s units of storage%s by @%s 🗄
 
-							%s
-							%s
-							🧾 Receipt: %s
-							📊 Your storage usage now: %s""",
+					%s
+					%s
+					🧾 Receipt: %s
+					📊 Your storage usage now: %s""",
 					receiverFname,
 					numberOfUnits,
 					crossChainText,
@@ -314,7 +314,7 @@ public class NotificationService {
 	}
 
 	private void handleMintPaymentNotification(Payment payment, String senderFname, String receiverFname,
-	                                           String receiptUrl, String sourceRefText, boolean isSelfPurchase) {
+			String receiptUrl, String sourceRefText, boolean isSelfPurchase) {
 		val mintUrlMessage = ParsedMintUrlMessage.fromCompositeToken(payment.getToken(),
 				payment.getNetwork().toString(), payment.getTarget());
 
@@ -338,13 +338,13 @@ public class NotificationService {
 		String castText;
 		if (isSelfPurchase) {
 			castText = String.format("""
-							@%s, you've successfully minted %s%scollectible from the cast above ✨""",
+					@%s, you've successfully minted %s%scollectible from the cast above ✨""",
 					senderFname,
 					tokenAmountText,
 					authorPart);
 		} else {
 			castText = String.format("""
-							@%s, you've been gifted %s%scollectible by @%s from the cast above  ✨""",
+					@%s, you've been gifted %s%scollectible by @%s from the cast above  ✨""",
 					receiverFname,
 					tokenAmountText,
 					authorPart,
@@ -361,11 +361,11 @@ public class NotificationService {
 		String messageText;
 		if (isSelfPurchase) {
 			messageText = String.format("""
-							@%s, you've successfully minted %s%scollectible from the cast above ✨
+					@%s, you've successfully minted %s%scollectible from the cast above ✨
 
-							%s
-							%s
-							🧾 Receipt: %s""",
+					%s
+					%s
+					🧾 Receipt: %s""",
 					senderFname,
 					tokenAmountText,
 					authorPart,
@@ -374,11 +374,11 @@ public class NotificationService {
 					receiptUrl);
 		} else {
 			messageText = String.format("""
-							@%s, you've been gifted %s%scollectible by @%s from the cast above ✨
+					@%s, you've been gifted %s%scollectible by @%s from the cast above ✨
 
-							%s
-							%s
-							🧾 Receipt: %s""",
+					%s
+					%s
+					🧾 Receipt: %s""",
 					receiverFname,
 					tokenAmountText,
 					authorPart,
@@ -392,8 +392,8 @@ public class NotificationService {
 	}
 
 	private void handleHypersubPaymentNotification(Payment payment, String senderFname,
-	                                               String receiverFname,
-	                                               String receiptUrl, String sourceRefText, boolean isSelfPurchase) {
+			String receiverFname,
+			String receiptUrl, String sourceRefText, boolean isSelfPurchase) {
 		val tokenAmount = payment.getTokenAmount() != null ? Double.parseDouble(payment.getTokenAmount()) : 1;
 		val tokenAmountText = tokenAmount + " month(s) ";
 
@@ -402,13 +402,13 @@ public class NotificationService {
 		String castText;
 		if (isSelfPurchase) {
 			castText = String.format("""
-							@%s, you've successfully subscribed to %s of %shypersub from the cast above 🕐""",
+					@%s, you've successfully subscribed to %s of %shypersub from the cast above 🕐""",
 					senderFname,
 					tokenAmountText,
 					authorPart);
 		} else {
 			castText = String.format("""
-							@%s, you've been gifted %s of %shypersub subscription by @%s from the cast above 🕐""",
+					@%s, you've been gifted %s of %shypersub subscription by @%s from the cast above 🕐""",
 					receiverFname,
 					tokenAmountText,
 					authorPart,
@@ -425,11 +425,11 @@ public class NotificationService {
 		String messageText;
 		if (isSelfPurchase) {
 			messageText = String.format("""
-							@%s, you've successfully subscribed to %s of %shypersub from the cast above 🕐
+					@%s, you've successfully subscribed to %s of %shypersub from the cast above 🕐
 
-							%s
-							%s
-							🧾 Receipt: %s""",
+					%s
+					%s
+					🧾 Receipt: %s""",
 					senderFname,
 					tokenAmountText,
 					authorPart,
@@ -438,11 +438,11 @@ public class NotificationService {
 					receiptUrl);
 		} else {
 			messageText = String.format("""
-							@%s, you've been gifted %s of %shypersub subscription by @%s from the cast above 🕐
+					@%s, you've been gifted %s of %shypersub subscription by @%s from the cast above 🕐
 
-							%s
-							%s
-							🧾 Receipt: %s""",
+					%s
+					%s
+					🧾 Receipt: %s""",
 					receiverFname,
 					tokenAmountText,
 					authorPart,
@@ -456,7 +456,7 @@ public class NotificationService {
 	}
 
 	private void handleFanTokenPaymentNotification(Payment payment, String senderFname, String receiverFname,
-	                                               String receiptUrl, String crossChainText, String sourceRefText, boolean isSelfPurchase) {
+			String receiptUrl, String crossChainText, String sourceRefText, boolean isSelfPurchase) {
 		val fanTokenParts = payment.getToken().split(";");
 		var fanTokenName = fanTokenParts[0];
 
@@ -474,14 +474,14 @@ public class NotificationService {
 		String castText;
 		if (isSelfPurchase) {
 			castText = String.format("""
-							@%s, you've successfully purchased %s %s fan token(s)%s Ⓜ️""",
+					@%s, you've successfully purchased %s %s fan token(s)%s Ⓜ️""",
 					senderFname,
 					fanTokensAmount,
 					fanTokenName,
 					crossChainText);
 		} else {
 			castText = String.format("""
-							@%s, you've been gifted %s %s fan token(s) by @%s%s Ⓜ️""",
+					@%s, you've been gifted %s %s fan token(s) by @%s%s Ⓜ️""",
 					receiverFname,
 					fanTokensAmount,
 					fanTokenName,
@@ -499,11 +499,11 @@ public class NotificationService {
 		String messageText;
 		if (isSelfPurchase) {
 			messageText = String.format("""
-							@%s, you've successfully purchased %s %s fan token(s)%s Ⓜ️
+					@%s, you've successfully purchased %s %s fan token(s)%s Ⓜ️
 
-							%s
-							%s
-							🧾 Receipt: %s""",
+					%s
+					%s
+					🧾 Receipt: %s""",
 					senderFname,
 					fanTokensAmount,
 					fanTokenName,
@@ -513,11 +513,11 @@ public class NotificationService {
 					receiptUrl);
 		} else {
 			messageText = String.format("""
-							@%s, you've been gifted %s %s fan token(s) by @%s%s Ⓜ️
+					@%s, you've been gifted %s %s fan token(s) by @%s%s Ⓜ️
 
-							%s
-							%s
-							🧾 Receipt: %s""",
+					%s
+					%s
+					🧾 Receipt: %s""",
 					receiverFname,
 					fanTokensAmount,
 					fanTokenName,
@@ -532,10 +532,10 @@ public class NotificationService {
 	}
 
 	private void handleRefundNotification(Payment payment, String senderFname,
-	                                      String refundReceipt, String sourceRefText) {
+			String refundReceipt, String sourceRefText) {
 		val category = StringUtils.isBlank(payment.getCategory()) ? "P2P" : payment.getCategory();
 		val castText = String.format("""
-						@%s, you've been refunded for "%s" payment initiated from the cast above 🔄""",
+				@%s, you've been refunded for "%s" payment initiated from the cast above 🔄""",
 				senderFname,
 				category);
 
@@ -544,10 +544,10 @@ public class NotificationService {
 			val senderFid = identityService.getIdentityFid(payment.getSender().getIdentity());
 			if (StringUtils.isNotBlank(senderFid)) {
 				val messageText = String.format("""
-								@%s, you've been refunded for "%s" payment initiated from the cast above 🔄💸
+						@%s, you've been refunded for "%s" payment initiated from the cast above 🔄💸
 
-								%s
-								🧾 Receipt: %s""",
+						%s
+						🧾 Receipt: %s""",
 						senderFname,
 						category,
 						sourceRefText,
@@ -559,15 +559,15 @@ public class NotificationService {
 	}
 
 	private void sendRewardDirectMessage(Payment payment, String receiverFname, String senderFname,
-	                                     String commentText, String sourceRefText, String rewardReason) {
+			String commentText, String sourceRefText, String rewardReason) {
 		val receiverFid = identityService.getIdentityFid(
 				payment.getReceiver() != null ? payment.getReceiver().getIdentity() : payment.getReceiverAddress());
 		if (StringUtils.isNotBlank(receiverFid)) {
 			val messageText = String.format("""
-							You received %s %s reward%s for %s 🎁
+					You received %s %s reward%s for %s 🎁
 
-							%s
-							🧾 Receipt: %s""",
+					%s
+					🧾 Receipt: %s""",
 					StringUtils.isNotBlank(payment.getTokenAmount())
 							? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
 							: String.format("$%s", payment.getUsdAmount()),
@@ -582,10 +582,10 @@ public class NotificationService {
 	}
 
 	private void sendRewardNotification(Payment payment, String senderFname, String receiverFname,
-	                                    String commentText, String sourceRefText, String rewardReason,
-	                                    List<Cast.Embed> embeds) {
+			String commentText, String sourceRefText, String rewardReason,
+			List<Cast.Embed> embeds) {
 		val castText = String.format("""
-						@%s, you received %s %s reward%s for %s 🎁""",
+				@%s, you received %s %s reward%s for %s 🎁""",
 				receiverFname,
 				StringUtils.isNotBlank(payment.getTokenAmount())
 						? PaymentService.formatNumberWithSuffix(payment.getTokenAmount())
