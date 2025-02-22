@@ -6,7 +6,7 @@ import { InvitationType } from '../types/InvitationType';
 import { getAllInvitations } from '../services/invitation';
 import CodeOrAddressInvitationSection from '../components/CodeOrAddressInvitationSection';
 import { ProfileSection } from '../components/ProfileSection';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 export default function Invite() {
   const { profile } = useContext(ProfileContext);

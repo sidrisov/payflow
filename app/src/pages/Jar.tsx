@@ -1,6 +1,6 @@
 import { Box, Button, Chip, Container, Skeleton, Stack, Typography } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { useJar } from '../utils/queries/jars';
 import JarActivityFeed from '../components/JarActivityFeed';
 import { lazy, useContext, useMemo, useState } from 'react';

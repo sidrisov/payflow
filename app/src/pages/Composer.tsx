@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Box, Card, Container, Stack, Tooltip, Typography } from '@mui/material';
 import { ElectricBolt, InfoOutlined } from '@mui/icons-material';
 import CastActionButton from '../components/buttons/CastActionButton';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router';
 import { ProfileContext } from '../contexts/UserContext';
 import { PiPersonSimpleRunBold, PiTipJar } from 'react-icons/pi';
 import ContributionJarComposerDialog from '../components/dialogs/ContributionJarComposerDialog';

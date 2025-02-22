@@ -3,7 +3,7 @@ import { Avatar, Card, Divider, Stack, Typography } from '@mui/material';
 import { AuthClientError, SignInButton, StatusAPIResponse } from '@farcaster/auth-kit';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useWalletClient } from 'wagmi';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router';
 import LoadingButton from '@mui/lab/LoadingButton';
 import axios from 'axios';
 import { toast } from 'react-toastify';

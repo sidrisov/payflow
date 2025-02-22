@@ -20,7 +20,7 @@ import { ProfileType } from '@payflow/common';
 import { toast } from 'react-toastify';
 
 import { updateProfile } from '../../services/user';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { API_URL } from '../../utils/urlConstants';
 import { convertSocialResults, normalizeUsername } from '../../services/socials';
 import { useQuery } from '@airstack/airstack-react';

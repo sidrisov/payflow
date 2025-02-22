@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Box, Button, Container, Stack, Typography } from '@mui/material';
 import { green } from '@mui/material/colors';
 import { HiOutlineDownload } from 'react-icons/hi';

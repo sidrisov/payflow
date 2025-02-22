@@ -3,7 +3,7 @@ import { Stack, Typography, Grid2, Card } from '@mui/material';
 import { TbGiftFilled, TbSend } from 'react-icons/tb';
 import { HiOutlineSquares2X2 } from 'react-icons/hi2';
 import { GrStorage } from 'react-icons/gr';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { FaRegClock } from 'react-icons/fa';
 import PayflowPage from '../components/PayflowPage';
 

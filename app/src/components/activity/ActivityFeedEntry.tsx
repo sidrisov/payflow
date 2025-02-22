@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Box, BoxProps, IconButton, Stack, Typography, Skeleton } from '@mui/material';
 import { MoreHoriz, AutoMode } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { IdentityType, ProfileType, PaymentType } from '@payflow/common';
 

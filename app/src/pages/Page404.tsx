@@ -1,6 +1,6 @@
 import { Container, Typography, Paper, Button } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { useRouteError, isRouteErrorResponse } from 'react-router-dom';
+import { useRouteError, isRouteErrorResponse } from 'react-router';
 
 export default function Page404() {
   const error: any = useRouteError();

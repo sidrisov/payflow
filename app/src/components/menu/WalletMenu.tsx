@@ -16,7 +16,7 @@ import { MdEdit } from 'react-icons/md';
 import { FlowType } from '@payflow/common';
 import { setReceivingFlow } from '../../services/flow';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { delay } from '../../utils/delay';
 import { useContext, useState, useEffect, useRef, useMemo } from 'react';
 import NetworkAvatar from '../avatars/NetworkAvatar';

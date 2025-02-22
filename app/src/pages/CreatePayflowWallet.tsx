@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { ProfileContext } from '../contexts/UserContext';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 import PayflowBalanceDialog from '../components/dialogs/PayflowBalanceDialog';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 export default function CreatePayflowWallet() {
   const { profile } = useContext(ProfileContext);

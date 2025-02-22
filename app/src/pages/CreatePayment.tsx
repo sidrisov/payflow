@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Container } from '@mui/material';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import { ProfileContext } from '../contexts/UserContext';
 import { SelectedIdentityType } from '@payflow/common';

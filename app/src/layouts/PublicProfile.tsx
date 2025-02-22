@@ -1,7 +1,7 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { lazy, useContext, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { SelectedIdentityType } from '@payflow/common';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import { orange } from '@mui/material/colors';

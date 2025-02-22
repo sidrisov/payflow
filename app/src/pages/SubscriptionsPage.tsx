@@ -13,7 +13,7 @@ import { useState, useEffect, useContext, useMemo } from 'react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { API_URL } from '../utils/urlConstants';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { ProfileContext } from '../contexts/UserContext';
 import FrameV2SDK from '@farcaster/frame-sdk';
 import { formatEther } from 'viem';

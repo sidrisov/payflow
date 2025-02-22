@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ProfileContext } from '../contexts/UserContext';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { WalletPermissionsDialog } from '../components/dialogs/WalletPermissionsDialog';
 import { toast } from 'react-toastify';
 import { base } from 'viem/chains';

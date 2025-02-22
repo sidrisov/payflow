@@ -26,7 +26,7 @@ import { ProfileContext } from '../../contexts/UserContext';
 import { AddressBookType } from '../../types/ContactType';
 import { AddressBookToolBar } from '../chips/AddressBookChip';
 import { useContacts } from '../../utils/queries/contacts';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { useMobile } from '../../utils/hooks/useMobile';
 
 export type SelectIdentityCallbackType = {
@@ -221,9 +221,11 @@ export default function SearchIdentityDialog({
         ...(showOnTopOfNavigation && { zIndex: 1450 }),
         backdropFilter: 'blur(3px)'
       }}
-      PaperProps={{
-        sx: {
-          ...(!isMobile && { width: 425, height: 650, borderRadius: 5 })
+      slotProps={{
+        paper: {
+          sx: {
+            ...(!isMobile && { width: 425, height: 650, borderRadius: 5 })
+          }
         }
       }}
       {...props}>

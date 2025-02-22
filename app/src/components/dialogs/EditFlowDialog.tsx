@@ -4,7 +4,7 @@ import ResponsiveDialog from './ResponsiveDialog';
 import { FlowType } from '@payflow/common';
 import { archiveFlow, renameFlow } from '../../services/flow';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { delay } from '../../utils/delay';
 
 interface EditFlowDialogProps {

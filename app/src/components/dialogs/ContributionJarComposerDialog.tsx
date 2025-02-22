@@ -9,7 +9,7 @@ import {
   TextField
 } from '@mui/material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { useContext, useState } from 'react';
 import { ArrowRight, Check } from '@mui/icons-material';
 import { green, grey, red } from '@mui/material/colors';

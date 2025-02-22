@@ -24,7 +24,7 @@ import { shortenWalletAddressLabel2 } from '../../utils/address';
 import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
 import { IoWallet } from 'react-icons/io5';
 import { useWallets } from '@privy-io/react-auth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 export type ChooseFlowMenuProps = ResponsiveDialogProps &
   CloseCallbackType & {

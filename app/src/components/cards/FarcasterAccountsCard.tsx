@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { API_URL } from '../../utils/urlConstants';
 import { parseSiweMessage } from 'viem/siwe';
 import { toast } from 'react-toastify';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router';
 import axios from 'axios';
 import { Address } from 'viem';
 import { sortBySocialScore } from '../../services/socials';

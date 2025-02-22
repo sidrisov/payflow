@@ -2,8 +2,8 @@ import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 import AppProviders from './utils/providers';
 import AsyncHelmet from 'react-helmet-async';
-import { appRouter } from './appRouter';
-import { RouterProvider } from 'react-router-dom';
+import { routes } from './routes';
+import { RouterProvider } from 'react-router';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 
@@ -15,7 +15,7 @@ export function render() {
       <CacheProvider value={emotionCache}>
         <AsyncHelmet.HelmetProvider>
           <AppProviders>
-            <RouterProvider router={appRouter} />
+            <RouterProvider router={routes} />
           </AppProviders>
         </AsyncHelmet.HelmetProvider>
       </CacheProvider>

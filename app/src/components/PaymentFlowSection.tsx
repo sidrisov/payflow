@@ -3,7 +3,7 @@ import { StackProps, Stack, Tooltip, Avatar, Box, Typography, Button } from '@mu
 import { red } from '@mui/material/colors';
 import { PiTipJar } from 'react-icons/pi';
 import { FlowType } from '@payflow/common';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import FarcasterAvatar from './avatars/FarcasterAvatar';
 import { IoWallet } from 'react-icons/io5';
 
