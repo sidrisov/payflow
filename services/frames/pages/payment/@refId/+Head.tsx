@@ -8,7 +8,6 @@ import { PaymentType } from '@payflow/common';
 export function Head() {
   const { urlParsed } = usePageContext();
 
-  const isMiniApp = urlParsed.search.mini !== undefined && urlParsed.search.mini !== 'false';
   const isFrameV2 = urlParsed.search.fv2 !== undefined && urlParsed.search.fv2 !== 'false';
 
   const payment = useData<PaymentType>();
@@ -22,8 +21,8 @@ export function Head() {
     payment.status === 'COMPLETED' &&
     getReceiptUrl(payment.chainId, payment.hash ?? payment.fulfillmentHash);
 
-  const composerUrl = `${API_URL}/api/farcaster/composer/pay?action=payment&refId=${refId}`;
-  const miniAppUrl = `https://warpcast.com/~/composer-action?url=${encodeURIComponent(composerUrl)}`;
+  const paymentUrl = `${DAPP_URL}/payment/${refId}`;
+  const launchFrameLink = `https://warpcast.com/~/frames/launch?url=${encodeURIComponent(paymentUrl)}`;
 
   const getButtonTitle = (payment: Data) => {
     if (payment.status === 'COMPLETED') {
@@ -135,10 +134,7 @@ export function Head() {
                 />
                 <meta property="fc:frame:button:2" content="Advanced ⚡" />
                 <meta property="fc:frame:button:2:action" content="link" />
-                <meta
-                  property="fc:frame:button:2:target"
-                  content={isMiniApp ? miniAppUrl : DAPP_URL.concat(`/payment/${refId}`)}
-                />
+                <meta property="fc:frame:button:2:target" content={launchFrameLink} />
               </>
             ) : (
               <>
