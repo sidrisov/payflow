@@ -21,7 +21,6 @@ import { searchIdentity, sortBySocialScore } from '../../services/socials';
 
 import { useDebounce } from 'use-debounce';
 import { SearchResultView } from '../SearchResultView';
-import { FARCASTER_DAPP, LENS_DAPP } from '../../utils/dapps';
 import { ProfileContext } from '../../contexts/UserContext';
 import { AddressBookType } from '../../types/ContactType';
 import { AddressBookToolBar } from '../chips/AddressBookChip';
@@ -127,18 +126,9 @@ export default function SearchIdentityDialog({
               c.data.profile?.displayName?.toLowerCase().includes(debouncedSearchString) ||
               c.data.meta?.ens?.includes(debouncedSearchString) ||
               c.data.meta?.socials?.find((s) => {
-                let socialSearchStr = debouncedSearchString;
-
-                if (
-                  (s.dappName === FARCASTER_DAPP && debouncedSearchString.startsWith('@fname')) ||
-                  (s.dappName === LENS_DAPP && debouncedSearchString.startsWith('lens:'))
-                ) {
-                  socialSearchStr = socialSearchStr.substring(socialSearchStr.indexOf(':') + 1);
-                }
-
                 return (
-                  s.profileDisplayName.toLowerCase().includes(socialSearchStr) ||
-                  s.profileName.includes(socialSearchStr)
+                  s.profileDisplayName.toLowerCase().includes(debouncedSearchString) ||
+                  s.profileName.includes(debouncedSearchString)
                 );
               }) ||
               c.tags?.find((tag) => tag.includes(debouncedSearchString)))
@@ -251,7 +241,7 @@ export default function SearchIdentityDialog({
               <TextField
                 fullWidth
                 margin="dense"
-                label="Search by profile, @username, ens, or address"
+                label="Search by username, ens, or address"
                 type="text"
                 value={searchString ?? ''}
                 slotProps={{

@@ -81,150 +81,146 @@ function calculateScore(identity: ContactType): number {
 }
 
 export async function searchIdentity(searchValue: string, me?: string): Promise<ContactType[]> {
-  let foundProfiles: ContactType[] = [];
+  const searchPromises: Promise<ContactType[]>[] = [];
 
-  if (!searchValue.includes('@') && !searchValue.includes('.') && !isAddress(searchValue)) {
-    const profiles = await searchByListOfAddressesOrUsernames([searchValue]);
-    if (profiles) {
-      foundProfiles = foundProfiles.concat(
-        ...(await Promise.all(
-          profiles.filter((p) => p.defaultFlow).map((p) => searchIdentity(p.identity, me))
-        ))
-      );
-    }
-  } else if (searchValue.startsWith('@') || searchValue.startsWith('lens:')) {
-    const dappName = searchValue.startsWith('@') ? FARCASTER_DAPP : LENS_DAPP;
-    const profileName = searchValue.startsWith('@')
-      ? searchValue.substring(searchValue.indexOf('@') + 1)
-      : 'lens/@'.concat(searchValue.substring(searchValue.indexOf(':') + 1));
+  // First search option: direct profile name search
+  if (!searchValue.includes('.') && !isAddress(searchValue)) {
+    searchPromises.push(searchByUsername(searchValue, me));
+  }
 
-    if (profileName.length > 0) {
-      const { data: dataInBatch } = me
-        ? await fetchQuery<GetSocialsInsightsForAssociatedAddressesQuery>(
-            QUERY_SOCIALS_INSIGHTS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME,
-            {
-              dappName,
-              profileName: '^'.concat(profileName.toLowerCase()),
-              me
-            },
-            {
-              cache: true
-            }
-          )
-        : await fetchQuery<GetSocialsForAssociatedAddressesQuery>(
-            QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME,
-            {
-              dappName,
-              profileName: '^'.concat(profileName.toLowerCase())
-            },
-            {
-              cache: true
-            }
-          );
+  // Second search option: social username search
+  searchPromises.push(searchBySocialHandle(searchValue, me));
 
-      if (
-        dataInBatch &&
-        dataInBatch.Socials &&
-        dataInBatch.Socials.Social &&
-        dataInBatch.Socials.Social.length > 0
-      ) {
-        let userAssociatedIdentities: ContactType[] = [];
+  // Execute parallel searches first
+  const searchResults = await Promise.all(searchPromises);
+  let foundProfiles: ContactType[] = searchResults.flat();
 
-        dataInBatch.Socials.Social.forEach((social: any) => {
-          console.log(social);
-          social.userAssociatedAddressDetails
-            // remove solana addresses
-            .filter((userAssociatedAddress: any) => isAddress(userAssociatedAddress.addresses[0]))
-            .forEach((userAssociatedAddress: any) => {
-              const identity = convertSocialResults(userAssociatedAddress);
-              if (identity) {
-                userAssociatedIdentities.push(identity);
-              }
-            });
-        });
-
-        console.log('userAssociatedIdentities', userAssociatedIdentities);
-
-        const addresses = userAssociatedIdentities.map((identity) => identity.data.address);
-
-        // TODO, make meta not nullable
-        const profiles = await searchByListOfAddressesOrUsernames(addresses as string[]);
-        userAssociatedIdentities.forEach((identity) => {
-          const profile = profiles.find(
-            (p) => p.identity.toLowerCase() === identity.data.address.toLowerCase()
-          );
-          identity.data.profile = profile;
-          foundProfiles.push(identity);
-        });
-      }
-    }
-  } else if (
+  // Third search option: domain/address search (keep sequential due to conditional logic)
+  if (
     searchValue.endsWith('.eth') ||
     isAddress(searchValue) ||
     searchValue.endsWith('.xyz') ||
     searchValue.endsWith('.id') ||
-    searchValue.endsWith('.base') ||
     searchValue.endsWith('.degen')
   ) {
-    let identity = searchValue;
-
-    if (searchValue.endsWith('.degen')) {
-      const publicClient = getPublicClient(wagmiConfig, { chainId: degen.id });
-
-      if (publicClient) {
-        const degenDomainHolderAddress = await publicClient.readContract({
-          address: '0x4087fb91A1fBdef05761C02714335D232a2Bf3a1',
-          abi: [
-            {
-              inputs: [{ name: '_domainName', type: 'string' }],
-              name: 'getDomainHolder',
-              outputs: [{ name: '', type: 'address' }],
-              stateMutability: 'view',
-              type: 'function'
-            }
-          ],
-          functionName: 'getDomainHolder',
-          args: [searchValue.replace('.degen', '')]
-        });
-
-        if (degenDomainHolderAddress) {
-          identity = degenDomainHolderAddress as Address;
-        } else {
-          return foundProfiles;
-        }
-      }
-    }
-
-    const { data } = me
-      ? await fetchQuery<GetSocialsInsightsQuery>(
-          QUERY_SOCIALS_INSIGHTS,
-          { identity, me },
-          {
-            cache: true
-          }
-        )
-      : await fetchQuery<GetSocialsQuery>(
-          QUERY_SOCIALS,
-          { identity },
-          {
-            cache: true
-          }
-        );
-
-    if (data && data.Wallet) {
-      const identity = convertSocialResults(data.Wallet as unknown as Wallet);
-
-      if (identity) {
-        const profile = await getProfileByAddressOrName(identity.data.address);
-        identity.data.profile = profile;
-        foundProfiles.push(identity);
-      }
-    }
+    const domainResults = await searchByDomainOrAddress(searchValue, me);
+    foundProfiles = foundProfiles.concat(domainResults);
   }
 
   console.debug('Found profiles:', foundProfiles);
-
   return foundProfiles;
+}
+
+// Helper function for username search
+async function searchByUsername(searchValue: string, me?: string): Promise<ContactType[]> {
+  const profiles = await searchByListOfAddressesOrUsernames([searchValue]);
+  if (!profiles) return [];
+
+  const searchPromises = profiles
+    .filter((p) => p.defaultFlow)
+    .map((p) => searchIdentity(p.identity, me));
+
+  const results = await Promise.all(searchPromises);
+  return results.flat();
+}
+
+// Helper function for social handle search
+async function searchBySocialHandle(searchValue: string, me?: string): Promise<ContactType[]> {
+  const dappName = FARCASTER_DAPP;
+  const profileName = searchValue;
+
+  if (profileName.length === 0) return [];
+
+  const { data: dataInBatch } = me
+    ? await fetchQuery<GetSocialsInsightsForAssociatedAddressesQuery>(
+        QUERY_SOCIALS_INSIGHTS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME,
+        {
+          dappName,
+          profileName: '^'.concat(profileName.toLowerCase()),
+          me
+        },
+        { cache: true }
+      )
+    : await fetchQuery<GetSocialsForAssociatedAddressesQuery>(
+        QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME,
+        {
+          dappName,
+          profileName: '^'.concat(profileName.toLowerCase())
+        },
+        { cache: true }
+      );
+
+  if (!dataInBatch?.Socials?.Social?.length) return [];
+
+  const userAssociatedIdentities: ContactType[] = [];
+
+  dataInBatch.Socials.Social.forEach((social: any) => {
+    social.userAssociatedAddressDetails
+      .filter((userAssociatedAddress: any) => isAddress(userAssociatedAddress.addresses[0]))
+      .forEach((userAssociatedAddress: any) => {
+        const identity = convertSocialResults(userAssociatedAddress);
+        if (identity) {
+          userAssociatedIdentities.push(identity);
+        }
+      });
+  });
+
+  const addresses = userAssociatedIdentities.map((identity) => identity.data.address);
+  const profiles = await searchByListOfAddressesOrUsernames(addresses as string[]);
+
+  userAssociatedIdentities.forEach((identity) => {
+    const profile = profiles.find(
+      (p) => p.identity.toLowerCase() === identity.data.address.toLowerCase()
+    );
+    identity.data.profile = profile;
+  });
+
+  return userAssociatedIdentities;
+}
+
+// Helper function for domain/address search
+async function searchByDomainOrAddress(searchValue: string, me?: string): Promise<ContactType[]> {
+  let identity = searchValue;
+
+  if (searchValue.endsWith('.degen')) {
+    const publicClient = getPublicClient(wagmiConfig, { chainId: degen.id });
+    if (!publicClient) return [];
+
+    const degenDomainHolderAddress = await publicClient.readContract({
+      address: '0x4087fb91A1fBdef05761C02714335D232a2Bf3a1',
+      abi: [
+        {
+          inputs: [{ name: '_domainName', type: 'string' }],
+          name: 'getDomainHolder',
+          outputs: [{ name: '', type: 'address' }],
+          stateMutability: 'view',
+          type: 'function'
+        }
+      ],
+      functionName: 'getDomainHolder',
+      args: [searchValue.replace('.degen', '')]
+    });
+
+    if (!degenDomainHolderAddress) return [];
+    identity = degenDomainHolderAddress as Address;
+  }
+
+  const { data } = me
+    ? await fetchQuery<GetSocialsInsightsQuery>(
+        QUERY_SOCIALS_INSIGHTS,
+        { identity, me },
+        { cache: true }
+      )
+    : await fetchQuery<GetSocialsQuery>(QUERY_SOCIALS, { identity }, { cache: true });
+
+  if (!data?.Wallet) return [];
+
+  const identityResult = convertSocialResults(data.Wallet as unknown as Wallet);
+  if (!identityResult) return [];
+
+  const profile = await getProfileByAddressOrName(identityResult.data.address);
+  identityResult.data.profile = profile;
+  return [identityResult];
 }
 
 export function convertSocialResults(wallet: Wallet): ContactType | undefined {
