@@ -20,43 +20,27 @@ public class LinkService {
 	@Autowired
 	private PayflowConfig payflowConfig;
 
-	public URI paymentLink(Payment payment, boolean miniApp) {
-		if (miniApp) {
-			val composerLink = UriComponentsBuilder.fromHttpUrl(payflowConfig.getApiServiceUrl())
-					.path("/api/farcaster/composer/pay")
-					.queryParam("action", "payment")
-					.queryParam("refId", payment.getReferenceId())
-					.build().toUriString();
+	public URI paymentLink(Payment payment, boolean frameV2Launcher) {
+		if (frameV2Launcher) {
+			val paymentUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
+					.path("/payment/{refId}")
+					.buildAndExpand(payment.getReferenceId())
+					.toUriString();
 
-			log.debug("Composer link: {}", composerLink);
-
-			val paymentLink = UriComponentsBuilder.fromHttpUrl("https://warpcast.com")
-					.path("/~/composer-action")
-					.queryParam("url", composerLink)
+			val paymentFrameLauncherUri = UriComponentsBuilder.fromHttpUrl("https://warpcast.com")
+					.path("/~/frames/launch")
+					.queryParam("url", paymentUrl)
 					.encode()
 					.build().toUri();
 
-			log.debug("paymentLink link: {}", composerLink);
-			return paymentLink;
+			log.debug("paymentFrameLauncherUri link: {}", paymentFrameLauncherUri);
+			return paymentFrameLauncherUri;
 		} else {
 			return UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 					.path("/payment/{refId}")
 					.buildAndExpand(payment.getReferenceId())
 					.toUri();
 		}
-	}
-
-	public URI framePaymentLink(Payment payment, boolean isMiniApp) {
-		val builder = UriComponentsBuilder
-				.fromHttpUrl(payflowConfig.getDAppServiceUrl())
-				.path("/payment/{refId}");
-
-		if (isMiniApp) {
-			builder.queryParam("mini");
-		}
-
-		return builder.buildAndExpand(payment.getReferenceId())
-				.toUri();
 	}
 
 	public URI frameV2PaymentLink(Payment payment) {
@@ -70,13 +54,10 @@ public class LinkService {
 				.toUri();
 	}
 
-	public URI framePaymentLink(Payment payment) {
-		return framePaymentLink(payment, false);
-	}
-
 	public URI paymentLink(Payment payment, ValidatedFrameResponseMessage frameMessage,
-	                       boolean checkWhitelist) {
-		val miniApp = frameMessage.action().signer().client().username().equals("warpcast") && (!checkWhitelist);
-		return paymentLink(payment, miniApp);
+			boolean checkWhitelist) {
+		val frameV2Launcher = frameMessage.action().signer().client().username().equals("warpcast")
+				&& (!checkWhitelist);
+		return paymentLink(payment, frameV2Launcher);
 	}
 }

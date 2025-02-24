@@ -1,6 +1,8 @@
 package ua.sinaver.web3.payflow.repository;
 
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
+
 import ua.sinaver.web3.payflow.entity.Invitation;
 import ua.sinaver.web3.payflow.entity.User;
 
@@ -10,6 +12,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Repository
 public interface InvitationRepository extends CrudRepository<Invitation, Integer> {
 
 	boolean existsByIdentityAndInviteeNull(String identity);

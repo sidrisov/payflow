@@ -26,7 +26,7 @@ public class WalletService {
 	private WalletClient walletClient;
 
 	public WalletService(WebClient.Builder builder,
-	                     @Value("${payflow.onchain.url}") String onchainApiUrl) {
+			@Value("${payflow.onchain.url}") String onchainApiUrl) {
 
 		log.debug("Onchain API url: {}", onchainApiUrl);
 		webClient = builder.baseUrl(String.format("%s/api/wallet", onchainApiUrl))
@@ -53,20 +53,41 @@ public class WalletService {
 		return wallets;
 	}
 
-	public PaymentProcessingResponse processPayment(Payment payment) {
-		val request = new PaymentProcessingRequest(
-				payment.getWalletSession().getWallet().getNetwork(),
-				payment.getWalletSession().getWallet().getAddress(),
+	// Helper to create combined request from multiple payments
+	public static PaymentProcessingRequest createBatchPaymentRequest(List<Payment> payments) {
+		if (payments.isEmpty()) {
+			throw new IllegalArgumentException("Payments list cannot be empty");
+		}
+
+		val firstPayment = payments.get(0);
+		// Validate that all payments share the same wallet session
+		val sameSession = payments.stream().allMatch(payment -> payment.getWalletSession()
+				.getSessionId().equals(firstPayment.getWalletSession().getSessionId()));
+
+		if (!sameSession) {
+			throw new IllegalArgumentException("All payments in batch must share the same wallet session");
+		}
+
+		return new PaymentProcessingRequest(
+				firstPayment.getWalletSession().getWallet().getNetwork(),
+				firstPayment.getWalletSession().getWallet().getAddress(),
 				new PaymentProcessingRequest.SessionData(
-						payment.getWalletSession().getSessionId(),
-						payment.getWalletSession().getSessionKey()),
-				StreamSupport.stream(payment.getCalls().spliterator(), false)
+						firstPayment.getWalletSession().getSessionId(),
+						firstPayment.getWalletSession().getSessionKey()),
+				payments.stream()
+						.flatMap(payment -> StreamSupport.stream(payment.getCalls().spliterator(), false))
 						.map(call -> new PaymentProcessingRequest.UserOperationCall(
 								call.path("to").asText(null),
 								call.path("data").asText(null),
 								call.path("value").asText(null)))
 						.toList());
+	}
 
+	public static PaymentProcessingRequest createPaymentRequest(Payment payment) {
+		return createBatchPaymentRequest(List.of(payment));
+	}
+
+	public PaymentProcessingResponse processPayment(PaymentProcessingRequest request) {
 		try {
 			return walletClient.processPayment(request);
 		} catch (FeignException.BadRequest e) {
@@ -76,15 +97,14 @@ public class WalletService {
 			log.error("Payment processing failed: {} - {}", e.status(), request, e);
 			throw e;
 		}
+	}
 
-		/*
-		 * return webClient.post()
-		 * .uri("/execute")
-		 * .bodyValue(request)
-		 * .retrieve()
-		 * .bodyToMono(PaymentProcessingResponse.class)
-		 * .block();
-		 */
+	public PaymentProcessingResponse processBatchPayment(List<Payment> payments) {
+		return processPayment(createBatchPaymentRequest(payments));
+	}
+
+	public PaymentProcessingResponse processPayment(Payment payment) {
+		return processPayment(createPaymentRequest(payment));
 	}
 
 	public TokenBalance getTokenBalance(String address, Integer chainId, String token) {

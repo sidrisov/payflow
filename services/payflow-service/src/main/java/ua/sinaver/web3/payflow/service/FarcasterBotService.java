@@ -22,7 +22,7 @@ import ua.sinaver.web3.payflow.entity.Payment;
 import ua.sinaver.web3.payflow.entity.User;
 import ua.sinaver.web3.payflow.entity.bot.PaymentBotJob;
 import ua.sinaver.web3.payflow.events.CastEvent;
-import ua.sinaver.web3.payflow.events.CreatedPaymentEvent;
+import ua.sinaver.web3.payflow.events.CreatedPaymentsEvent;
 import ua.sinaver.web3.payflow.events.PaymentBotJobEvent;
 import ua.sinaver.web3.payflow.message.agent.AgentMessage;
 import ua.sinaver.web3.payflow.message.Token;
@@ -146,6 +146,7 @@ public class FarcasterBotService {
 	}
 
 	@Async
+	@Transactional(Transactional.TxType.REQUIRES_NEW)
 	@TransactionalEventListener
 	public void handleBotJob(PaymentBotJobEvent event) {
 		val optionalJob = paymentBotJobRepository.findWithLockById(event.id());
@@ -315,6 +316,8 @@ public class FarcasterBotService {
 							botPromptReplyHash = notificationService.reply(textWithReply, cast.hash(), null);
 						}
 
+						List<Payment> sessionIntentPayments = new ArrayList<>();
+
 						for (val recipient : recipients) {
 							val tokens = paymentService.parseCommandTokens(recipient.token());
 
@@ -460,8 +463,7 @@ public class FarcasterBotService {
 								embeds = Collections.singletonList(
 										new Cast.Embed(linkService.frameV2PaymentLink(payment).toString()));
 
-								eventPublisher.publishEvent(
-										new CreatedPaymentEvent(payment.getId()));
+								sessionIntentPayments.add(payment);
 							} else {
 								val wallet = flowRepository
 										.findPayflowBalanceV2ByUserId(casterProfile.getId(), "1.4.1_0.7");
@@ -501,6 +503,12 @@ public class FarcasterBotService {
 									botPromptReplyHash != null ? botPromptReplyHash : cast.hash(),
 									embeds));
 						}
+
+						if (!sessionIntentPayments.isEmpty()) {
+							eventPublisher.publishEvent(new CreatedPaymentsEvent(
+									sessionIntentPayments.stream().map(Payment::getId).toList()));
+						}
+
 						job.setStatus(PaymentBotJob.Status.PROCESSED);
 					}
 					case "buy_storage" -> {
@@ -957,7 +965,7 @@ public class FarcasterBotService {
 					embeds = Collections.singletonList(
 							new Cast.Embed(linkService.frameV2PaymentLink(payment).toString()));
 
-					eventPublisher.publishEvent(new CreatedPaymentEvent(payment.getId()));
+					eventPublisher.publishEvent(new CreatedPaymentsEvent(List.of(payment.getId())));
 				} else {
 					castText = String.format(
 							"@%s, pay using frame below (no active session found to process automatically)",
@@ -971,109 +979,6 @@ public class FarcasterBotService {
 						castText,
 						cast.hash(),
 						embeds));
-				break;
-			}
-			case "batch":
-			case "intents": {
-				log.debug("Processing {} bot command arguments {}", command, remainingText);
-
-				val batchPattern = "\\s*(?<amount>\\$?[0-9]+(?:\\.[0-9]+)?[km]?)?\\s*(?<rest>.*)";
-				matcher = Pattern.compile(batchPattern, Pattern.CASE_INSENSITIVE).matcher(remainingText);
-				if (!matcher.find()) {
-					rejectJob(job, "Pattern not matched for command: " + command,
-							"Invalid format. Please use: \"@payflow " + command
-									+ " amount [eth|usdc] @user1 @user2\"");
-					return;
-				}
-
-				val restText = matcher.group("rest");
-				val mentions = cast.mentionedProfiles().stream()
-						.filter(u -> !u.username().equals("payflow")
-								&& !u.username().equals("bountybot"))
-						.distinct().toList();
-
-				if (mentions.isEmpty()) {
-					rejectJob(job, "At least one mention should be specified in batch command",
-							"Please mention at least one recipient. Example: \"@payflow " + command
-									+ " amount [eth|usdc] @user1 @user2\"");
-					return;
-				}
-
-				Token token = null;
-				val tokens = paymentService.parseCommandTokens(restText);
-				if (tokens.size() == 1) {
-					token = tokens.getFirst();
-				} else {
-					val chain = paymentService.parseCommandChain(restText);
-					token = tokens.stream().filter(t -> t.chain().equals(chain)).findFirst().orElse(null);
-				}
-
-				if (token == null) {
-					rejectJob(job, "Token not supported: " + restText,
-							"Token not supported! Please use: \"@payflow " + command
-									+ " amount [eth|usdc] @user1 @user2\"");
-					return;
-				}
-
-				log.debug("Receivers: {}, amount: {}, token: {}",
-						mentions, restText, token);
-
-				for (val mention : mentions) {
-					try {
-						val receiver = mention.username();
-						val receiverAddresses = mention.addressesWithoutCustodialIfAvailable();
-
-						val receiverProfile = identityService.getProfiles(receiverAddresses)
-								.stream().findFirst().orElse(null);
-
-						log.debug("Found receiver profile for receiver {} - {}", receiver, receiverProfile);
-
-						String receiverAddress = null;
-						if (receiverProfile != null) {
-							receiverAddress = paymentService.getUserReceiverAddress(receiverProfile,
-									token.chainId());
-						}
-
-						if (receiverAddress == null) {
-							receiverAddress = identityService.getHighestScoredIdentity(receiverAddresses);
-						}
-
-						val sourceApp = "Warpcast";
-						val sourceRef = String.format("https://warpcast.com/%s/%s",
-								cast.author().username(),
-								cast.hash().substring(0, 10));
-						val sourceHash = cast.hash();
-						val payment = new Payment(Payment.PaymentType.INTENT,
-								receiverProfile,
-								token.chainId(), token.id());
-						payment.setReceiverAddress(receiverAddress);
-						payment.setSender(casterProfile);
-						if (restText.startsWith("$")) {
-							payment.setUsdAmount(restText.replace("$", ""));
-						} else {
-							val tokenAmount = paymentService.parseTokenAmount(restText.toLowerCase());
-							payment.setTokenAmount(tokenAmount.toString());
-						}
-						payment.setSourceApp(sourceApp);
-						payment.setSourceRef(sourceRef);
-						payment.setSourceHash(sourceHash);
-						paymentRepository.save(payment);
-
-						val castText = String.format("@%s pay using frame below",
-								cast.author().username());
-
-						val frameUrl = linkService.frameV2PaymentLink(payment).toString();
-						val embeds = Collections.singletonList(
-								new Cast.Embed(frameUrl));
-						eventPublisher.publishEvent(new CastEvent(
-								castText,
-								cast.hash(),
-								embeds));
-					} catch (Throwable t) {
-						log.error("Error in batch command processing: {}", job, t);
-					}
-				}
-				job.setStatus(PaymentBotJob.Status.PROCESSED);
 				break;
 			}
 			case "jar": {

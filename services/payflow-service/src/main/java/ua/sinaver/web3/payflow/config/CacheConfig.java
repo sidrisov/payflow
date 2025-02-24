@@ -26,7 +26,7 @@ import java.util.HashMap;
 @Configuration
 public class CacheConfig {
 	public static final String CACHE_PREFIX_VERSION = "v0.0.11_0:";
-	public static final String CONTACTS_CACHE_NAME = CACHE_PREFIX_VERSION + "contacts-1";
+	public static final String CONTACTS_CACHE_NAME = CACHE_PREFIX_VERSION + "contacts";
 	public static final String CONTACT_LIST_CACHE_NAME = CACHE_PREFIX_VERSION + "contact-list";
 	public static final String FAN_TOKEN_CACHE_NAME = CACHE_PREFIX_VERSION + "moxie-fan-token";
 	public static final String SOCIALS_CACHE_NAME = CACHE_PREFIX_VERSION + "socials";

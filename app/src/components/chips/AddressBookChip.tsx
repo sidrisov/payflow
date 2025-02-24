@@ -28,9 +28,11 @@ const contactTypeLabel = (type: AddressBookType) => {
   }
 };
 
-const contactTypeIcon = (type: AddressBookType, selectedType: AddressBookType) => {
-  const prefersDarkMode = useDarkMode();
-
+const contactTypeIcon = (
+  type: AddressBookType,
+  selectedType: AddressBookType,
+  prefersDarkMode: boolean
+) => {
   const fontSize = selectedType === type ? 'medium' : 'small';
   const avatarSize = selectedType === type ? { width: 22, height: 22 } : { width: 18, height: 18 };
   switch (type) {
@@ -77,7 +79,7 @@ export function AddressBookChip({
   return (
     <Chip
       clickable
-      icon={contactTypeIcon(type, addressBookView)}
+      icon={contactTypeIcon(type, addressBookView, prefersDarkMode)}
       label={
         <Typography
           fontSize={addressBookView === type ? 13 : 12}

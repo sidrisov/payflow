@@ -81,7 +81,7 @@ public class ContactBookService implements IContactBookService {
 	}
 
 	@Override
-	@Cacheable(value = CONTACTS_CACHE_NAME, key = "#user.identity", unless = "#result==null")
+	@Cacheable(value = CONTACTS_CACHE_NAME, key = "#user.identity", unless = "#result==null || #result.contacts.isEmpty()")
 	public ContactsResponseMessage getAllContacts(User user) {
 		log.debug("VIRTUAL {} {} {} {}", Schedulers.DEFAULT_BOUNDED_ELASTIC_ON_VIRTUAL_THREADS,
 				Schedulers.DEFAULT_POOL_SIZE, Schedulers.DEFAULT_BOUNDED_ELASTIC_SIZE,
@@ -117,17 +117,37 @@ public class ContactBookService implements IContactBookService {
 
 		log.debug("Fetched top 3 popular payment recipients: {}", popular);
 
-		val fanTokenContacts = fanTokenService.fetchFanTokenHolders(user.getIdentity());
-		log.debug("Fetched fan token holders: {}", fanTokenContacts);
+		// Temporarily disabled fan token holders
+		/*
+		 * val fanTokenContacts =
+		 * fanTokenService.fetchFanTokenHolders(user.getIdentity());
+		 * log.debug("Fetched fan token holders: {}", fanTokenContacts);
+		 */
+		val fanTokenContacts = Collections.<String>emptyList();
+		log.debug("Fan token holders disabled");
 
-		val alfaFrensContacts = identitySubscriptionsService.fetchAlfaFrensSubscribers(user.getIdentity());
-		log.debug("Fetched alfafrens subs: {}", alfaFrensContacts);
+		// Temporarily disabled alfafrens subscribers
+		/*
+		 * val alfaFrensContacts =
+		 * identitySubscriptionsService.fetchAlfaFrensSubscribers(user.getIdentity());
+		 * log.debug("Fetched alfafrens subs: {}", alfaFrensContacts);
+		 */
+		val alfaFrensContacts = Collections.<String>emptyList();
+		log.debug("Alfafrens subs disabled");
 
 		val fabricContacts = identitySubscriptionsService.fetchFabricSubscribers(user.getIdentity());
 		log.debug("Fetched fabric subs: {}", fabricContacts);
 
-		val paragraphContacts = identitySubscriptionsService.fetchParagraphSubscribers(user.getIdentity());
-		log.debug("Fetched paragraph subs: {}", paragraphContacts);
+		log.debug("Fabric subs disabled");
+
+		// Temporarily disabled paragraph subscribers
+		/*
+		 * val paragraphContacts =
+		 * identitySubscriptionsService.fetchParagraphSubscribers(user.getIdentity());
+		 * log.debug("Fetched paragraph subs: {}", paragraphContacts);
+		 */
+		val paragraphContacts = Collections.<String>emptyList();
+		log.debug("Paragraph subs disabled");
 
 		val favourites = contactRepository.findByUserAndProfileCheckedTrue(user);
 		val tags = new ArrayList<>(List.of("friends"));
@@ -212,26 +232,29 @@ public class ContactBookService implements IContactBookService {
 										.elapsed()
 										.doOnNext(tuple -> log.debug("Total time (including queue) took {}ms for {}",
 												tuple.getT1(), contact))
-										.map(tuple -> tuple.getT2()),
-								Mono.fromCallable(
-										() -> socialGraphService.getSocialInsights(contact, user.getIdentity()))
-										.subscribeOn(Schedulers.boundedElastic())
-										.elapsed()
-										.doOnNext(tuple -> log.debug("Social insights took {}ms for {}", tuple.getT1(),
-												contact))
 										.map(tuple -> tuple.getT2())
-										.onErrorResume(exception -> {
-											log.error("Error fetching social insights" +
-													" for {} - {}",
-													contact,
-													exception.getMessage());
-											return Mono.empty();
-										}))
+						/*
+						 * Mono.fromCallable(
+						 * () -> socialGraphService.getSocialInsights(contact, user.getIdentity()))
+						 * .subscribeOn(Schedulers.boundedElastic())
+						 * .elapsed()
+						 * .doOnNext(tuple -> log.debug("Social insights took {}ms for {}",
+						 * tuple.getT1(),
+						 * contact))
+						 * .map(tuple -> tuple.getT2())
+						 * .onErrorResume(exception -> {
+						 * log.error("Error fetching social insights" +
+						 * " for {} - {}",
+						 * contact,
+						 * exception.getMessage());
+						 * return Mono.empty();
+						 * })
+						 */)
 								.map(tuple -> ContactMessage.convert(
 										tuple.getT1(),
 										tuple.getT2().orElse(null),
 										tuple.getT3(),
-										tuple.getT4(),
+										null,
 										allContacts.get(contact)));
 					})
 					// TODO: fail fast, seems doesn't to work properly with threads
@@ -247,9 +270,7 @@ public class ContactBookService implements IContactBookService {
 				log.debug("Fetched {} contacts for {}", contactMessages.size(), user.getUsername());
 			}
 			return new ContactsResponseMessage(tags, contactMessages);
-		} catch (
-
-		Throwable t) {
+		} catch (Throwable t) {
 			log.error("Failed to fetch contacts", t);
 			return null;
 		}

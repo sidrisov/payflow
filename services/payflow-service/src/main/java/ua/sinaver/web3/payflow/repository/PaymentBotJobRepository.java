@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 @Repository
-public interface PaymentBotJobRepository extends JpaRepository<PaymentBotJob, Long> {
+public interface PaymentBotJobRepository extends JpaRepository<PaymentBotJob, Integer> {
 	// JPA: UPGRADE_SKIPLOCKED - PESSIMISTIC_WRITE
 	@QueryHints(@QueryHint(name = AvailableSettings.JAKARTA_LOCK_TIMEOUT, value = "-2"))
 	@Lock(LockModeType.PESSIMISTIC_WRITE)

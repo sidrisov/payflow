@@ -171,7 +171,7 @@ public class RewardsService {
 						clickedFid, topCastMessage, UUID.randomUUID()));
 				farcasterMessagingService.sendMessage(new DirectCastMessage(
 						clickedFid,
-						linkService.framePaymentLink(payments.get(i), true).toString(),
+						linkService.paymentLink(payments.get(i), false).toString(),
 						UUID.randomUUID()));
 			}
 		});

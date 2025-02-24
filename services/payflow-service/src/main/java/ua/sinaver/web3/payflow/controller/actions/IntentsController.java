@@ -198,7 +198,7 @@ public class IntentsController {
 
 				return ResponseEntity.ok().body(
 						new FrameResponse.ActionFrame("frame",
-								linkService.framePaymentLink(payment).toString()));
+								linkService.paymentLink(payment, false).toString()));
 
 			case "reward_top_casters":
 				val channelId = allParams.getFirst("channel");
@@ -254,7 +254,7 @@ public class IntentsController {
 
 				return ResponseEntity.ok().body(
 						new FrameResponse.ActionFrame("frame",
-								linkService.framePaymentLink(rewardPayment, true).toString()));
+								linkService.paymentLink(rewardPayment, false).toString()));
 		}
 	}
 }
