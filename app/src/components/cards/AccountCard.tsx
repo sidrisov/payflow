@@ -125,11 +125,6 @@ export function AccountCard({
     setOpenSearchIdentity(true);
   };
 
-  const handleShare = (event: React.MouseEvent<HTMLElement>) => {
-    setShareMenuAnchorEl(event.currentTarget);
-    setOpenShareMenu(true);
-  };
-
   const handleSwipe = (direction: 'LEFT' | 'RIGHT') => {
     const totalFlows = orderedFlows.length;
     let newIndex;

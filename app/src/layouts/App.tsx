@@ -5,14 +5,10 @@ import { toast } from 'react-toastify';
 import {
   AppBar,
   Box,
-  Button,
   Container,
   Paper,
   BottomNavigation,
-  BottomNavigationAction,
-  Typography,
-  Stack
-} from '@mui/material';
+  BottomNavigationAction} from '@mui/material';
 
 import { CgProfile } from 'react-icons/cg';
 
@@ -31,8 +27,6 @@ import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useMobile, usePwa } from '../utils/hooks/useMobile';
 
 import { isIOS } from 'react-device-detect';
-import { TbHandClick } from 'react-icons/tb';
-import { green } from '@mui/material/colors';
 
 import FrameV2SDK from '@farcaster/frame-sdk';
 import axios from 'axios';
@@ -170,65 +164,6 @@ export default function App() {
   const {
     needRefresh: [needRefresh]
   } = useRegisterSW();
-
-  useEffect(() => {
-    if (!profile || location.pathname !== '/') {
-      return;
-    }
-
-    const hasUserDismissed = localStorage.getItem('payflow:balance:prompt:dismissed') === 'true';
-    if (
-      !hasUserDismissed &&
-      !profile.flows?.find((f) => !f.archived && (!f.type || f.type === 'REGULAR'))
-    ) {
-      toast(
-        <Stack spacing={1}>
-          <Typography textAlign="start" fontSize={14} fontWeight="bold">
-            Payflow Wallet
-            <Typography variant="caption" display="block" color="text.secondary">
-              1-click gasless payments
-            </Typography>
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => {
-                toast.dismiss();
-                navigate('/~/create-payflow-wallet');
-              }}
-              color="inherit"
-              sx={{
-                borderRadius: 3,
-                border: 1,
-                '&:hover': {
-                  backgroundColor: green.A700,
-                  borderColor: green.A700,
-                  color: 'black'
-                }
-              }}>
-              Create
-            </Button>
-            <Button
-              variant="text"
-              size="small"
-              onClick={() => {
-                localStorage.setItem('payflow:balance:prompt:dismissed', 'true');
-                toast.dismiss();
-              }}
-              color="inherit"
-              sx={{ borderRadius: 3 }}>
-              Dismiss
-            </Button>
-          </Box>
-        </Stack>,
-        {
-          autoClose: false,
-          icon: <TbHandClick size={24} />
-        }
-      );
-    }
-  }, [location.pathname, profile]);
 
   // specify container height,
   // otherwise privy will have an issue displaying the dialog content

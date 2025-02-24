@@ -66,14 +66,23 @@ export default function Accounts() {
   }, [selectedFlow]);
 
   const { isLoading, isFetched, data: balances } = useAssetBalances(assets);
-  const hasZeroBalance =
-    isFetched && balances && Object.values(balances).every((balance) => balance.usdValue === 0);
+  const showTopupPrompt = useMemo(() => {
+    if (!showZeroBalance || !isFetched || !balances) {
+      return false;
+    }
+
+    return Object.values(balances).every((balance) => balance.usdValue === 0);
+  }, [showZeroBalance, isFetched, balances]);
 
   const [activeTab, setActiveTab] = useState(0);
 
-  const handleFabClick = () => {
-    navigate('/payment/create');
-  };
+  const [showPayflowPrompt, setShowPayflowPrompt] = useState(() => {
+    const hasUserDismissed = localStorage.getItem('payflow:balance:prompt:dismissed') === 'true';
+    return (
+      !hasUserDismissed &&
+      !profile?.flows?.find((f) => !f.archived && (!f.type || f.type === 'REGULAR'))
+    );
+  });
 
   return (
     <>
@@ -94,11 +103,67 @@ export default function Accounts() {
                 setBalanceVisible={setBalanceVisible}
               />
 
-              {hasZeroBalance && showZeroBalance && (
+              {showPayflowPrompt && (
                 <Box
                   sx={{
                     textAlign: 'center',
                     maxWidth: 350,
+                    width: '100%',
+                    border: 0.5,
+                    borderColor: 'divider',
+                    borderRadius: '16px',
+                    p: 1.5
+                  }}>
+                  <Typography
+                    sx={{
+                      fontSize: 14,
+                      fontWeight: 'bold',
+                      mb: 0.5
+                    }}>
+                    Create Payflow Wallet
+                  </Typography>
+                  <Typography
+                    color="text.secondary"
+                    sx={{
+                      fontSize: 14,
+                      textWrap: 'pretty',
+                      mb: 1
+                    }}>
+                    • 1-click payments • No gas fees • AI Agent powered automated payments
+                  </Typography>
+                  <Stack direction="row" spacing={1} justifyContent="center">
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => {
+                        navigate('/~/create-payflow-wallet');
+                      }}
+                      sx={{
+                        minWidth: 100
+                      }}>
+                      Create
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      color="inherit"
+                      onClick={() => {
+                        localStorage.setItem('payflow:wallet:prompt:dismissed', 'true');
+                        setShowPayflowPrompt(false);
+                      }}
+                      sx={{ minWidth: 100 }}>
+                      Close
+                    </Button>
+                  </Stack>
+                </Box>
+              )}
+
+              {showTopupPrompt && (
+                <Box
+                  sx={{
+                    textAlign: 'center',
+                    maxWidth: 350,
+                    width: '100%',
                     border: 0.5,
                     borderColor: 'divider',
                     borderRadius: '16px',
@@ -107,6 +172,7 @@ export default function Accounts() {
                   <Typography
                     color="text.secondary"
                     sx={{
+                      textWrap: 'pretty',
                       fontSize: 14,
                       mb: 1
                     }}>
