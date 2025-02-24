@@ -19,8 +19,7 @@ import java.time.temporal.ChronoUnit;
 @NoArgsConstructor
 @Entity
 @Table(uniqueConstraints = {
-		@UniqueConstraint(name = "uc_payment_reference_id", columnNames = {"reference_id"}),
-		@UniqueConstraint(name = "uc_payment_hash", columnNames = {"hash"})
+		@UniqueConstraint(name = "uc_payment_reference_id", columnNames = { "reference_id" })
 })
 public class Payment {
 	@Id

@@ -18,7 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 import ua.sinaver.web3.payflow.entity.Payment;
 import ua.sinaver.web3.payflow.entity.WalletSession;
 import ua.sinaver.web3.payflow.entity.protocol.ClientApiKey;
-import ua.sinaver.web3.payflow.events.CreatedPaymentEvent;
+import ua.sinaver.web3.payflow.events.CreatedPaymentsEvent;
 import ua.sinaver.web3.payflow.message.protocol.CreatePaymentRequest;
 import ua.sinaver.web3.payflow.message.protocol.CreatePaymentResponse;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
@@ -196,7 +196,7 @@ public class ClientPaymentController {
 
 			paymentRepository.saveAndFlush(payment);
 			if (walletSession != null) {
-				eventPublisher.publishEvent(new CreatedPaymentEvent(payment.getId()));
+				eventPublisher.publishEvent(new CreatedPaymentsEvent(List.of(payment.getId())));
 			}
 			log.debug("Saved payment: {}", payment);
 

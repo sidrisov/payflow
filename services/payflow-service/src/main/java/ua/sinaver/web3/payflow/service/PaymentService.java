@@ -13,7 +13,7 @@ import ua.sinaver.web3.payflow.entity.Payment;
 import ua.sinaver.web3.payflow.entity.User;
 import ua.sinaver.web3.payflow.entity.Wallet;
 import ua.sinaver.web3.payflow.events.CastEvent;
-import ua.sinaver.web3.payflow.events.CreatedPaymentEvent;
+import ua.sinaver.web3.payflow.events.CreatedPaymentsEvent;
 import ua.sinaver.web3.payflow.message.FramePaymentMessage;
 import ua.sinaver.web3.payflow.message.Token;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
@@ -74,14 +74,59 @@ public class PaymentService {
 	// parellized
 	// and we need to process them sequentially to avoid safe wallet nonce
 	// collisions
+	@Transactional(Transactional.TxType.REQUIRES_NEW) // specify new transaction since the parent (which trigggered
+														// event) is already in after commit phase
 	@TransactionalEventListener
-	public void handleSessionIntentPayment(CreatedPaymentEvent event) {
+	public void handleCreatedPaymentsEvent(CreatedPaymentsEvent event) {
+		log.debug("Processing created payments event: {}", event);
 		try {
-			paymentRepository.findWithLockById(event.id())
-					.ifPresent(this::processSessionIntentPayment);
+			val payments = paymentRepository.findWithLockByIds(event.ids());
+			processBatchSessionIntentPayments(payments);
 		} catch (Exception e) {
-			log.error("Failed to process session intent payment {}", event.id(), e);
+			log.error("Failed to process created payments event: {}", event, e);
 		}
+	}
+
+	@Transactional(Transactional.TxType.REQUIRES_NEW)
+	protected void processBatchSessionIntentPayments(List<Payment> payments) {
+		if (payments.isEmpty()) {
+			return;
+		}
+
+		try {
+			val response = walletService.processBatchPayment(payments);
+
+			if (response != null && response.status().equals("success")) {
+				// Update all payments in the batch
+				payments.forEach(payment -> {
+					payment.setStatus(Payment.PaymentStatus.COMPLETED);
+					payment.setCompletedAt(Instant.now());
+					payment.setHash(response.txHash());
+				});
+				// Single notification for all completed payments
+				notificationService.notifyPaymentCompletion(payments.get(0), null);
+			} else {
+				handleBatchFailure(payments, "Payment processing failed");
+			}
+
+			paymentRepository.saveAll(payments);
+		} catch (Exception e) {
+			log.error("Failed to process batch payments", e);
+			handleBatchFailure(payments, e.getMessage());
+			paymentRepository.saveAll(payments);
+		}
+	}
+
+	private void handleBatchFailure(List<Payment> payments, String errorMessage) {
+		payments.forEach(payment -> {
+			payment.setStatus(Payment.PaymentStatus.FAILED);
+			payment.recordFailure(errorMessage);
+			eventPublisher.publishEvent(new CastEvent(
+					"❌ Payment failed. Click below to pay manually.",
+					payment.getSourceHash(),
+					List.of(new Cast.Embed(linkService.frameV2PaymentLink(payment).toString()))));
+			notificationService.notifyPaymentCompletion(payment, null);
+		});
 	}
 
 	public List<String> getAllPaymentRecipients(User user) {

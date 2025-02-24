@@ -6,6 +6,9 @@ import ua.sinaver.web3.payflow.entity.User;
 
 import java.util.List;
 
+import org.springframework.stereotype.Repository;
+
+@Repository
 public interface GiftRepository extends CrudRepository<Gift, Integer> {
 
 	List<Gift> findAllByGifter(User gifter);

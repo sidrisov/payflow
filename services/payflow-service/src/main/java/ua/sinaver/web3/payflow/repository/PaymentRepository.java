@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
 import ua.sinaver.web3.payflow.entity.Payment;
 import ua.sinaver.web3.payflow.entity.User;
 
@@ -19,10 +21,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+@Repository
 public interface PaymentRepository extends JpaRepository<Payment, Integer> {
 	@Query("SELECT p FROM Payment p JOIN FETCH p.walletSession WHERE p.id = :id")
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	Optional<Payment> findWithLockById(Integer id);
+
+	@Query("SELECT p FROM Payment p JOIN FETCH p.walletSession WHERE p.id IN :ids")
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	List<Payment> findWithLockByIds(List<Integer> ids);
 
 	@Query("SELECT p FROM Payment p LEFT JOIN p.receiverFlow rf " +
 			"WHERE p.hash IN :hashes AND " +
@@ -52,7 +59,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
 			"((p.expiresAt IS NULL AND p.createdAt < :expiresAt) OR " +
 			"(p.expiresAt IS NOT NULL AND p.expiresAt < CURRENT_TIMESTAMP))")
 	Stream<Payment> findExpiredPaymentsWithLock(@Param("status") Payment.PaymentStatus status,
-	                                            @Param("expiresAt") Instant expiresAt);
+			@Param("expiresAt") Instant expiresAt);
 
 	// TODO: add a time check not to process recently submitted in 5 mins to avoid
 	// lock
@@ -65,7 +72,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
 			"AND p.createdAt <= :tenMinutesAgo " +
 			"ORDER BY p.createdAt ASC")
 	Stream<Payment> findTop5ByStatusInWithLock(@Param("statuses") List<Payment.PaymentStatus> statuses,
-	                                           @Param("tenMinutesAgo") Instant tenMinutesAgo);
+			@Param("tenMinutesAgo") Instant tenMinutesAgo);
 
 	@Query("SELECT count(p) FROM Payment p " +
 			"WHERE (p.sender IN :users " +

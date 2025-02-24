@@ -13,6 +13,9 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.springframework.stereotype.Repository;
+
+@Repository
 public interface StorageNotificationRepository extends JpaRepository<StorageNotification, Integer> {
 	Optional<StorageNotification> findByFid(Integer fid);
 
@@ -20,4 +23,4 @@ public interface StorageNotificationRepository extends JpaRepository<StorageNoti
 	@QueryHints(@QueryHint(name = AvailableSettings.JAKARTA_LOCK_TIMEOUT, value = "-2"))
 	@Query("SELECT sn FROM StorageNotification sn WHERE sn.enabled = TRUE AND (sn.lastCheckedAt IS NULL OR sn.lastCheckedAt < :checkedAt) ORDER BY sn.lastCheckedAt ASC LIMIT 10")
 	Stream<StorageNotification> findTop10StorageNotifications(Instant checkedAt);
-} 
+}

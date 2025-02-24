@@ -2,11 +2,14 @@ package ua.sinaver.web3.payflow.repository;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
+
 import ua.sinaver.web3.payflow.entity.Contact;
 import ua.sinaver.web3.payflow.entity.User;
 
 import java.util.List;
 
+@Repository
 public interface ContactRepository extends CrudRepository<Contact, Integer> {
 
 	List<Contact> findAllByUser(User user);

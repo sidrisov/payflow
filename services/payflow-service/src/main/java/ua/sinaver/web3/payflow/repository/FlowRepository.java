@@ -3,9 +3,11 @@ package ua.sinaver.web3.payflow.repository;
 import org.springframework.data.repository.CrudRepository;
 import ua.sinaver.web3.payflow.entity.Flow;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+@Repository
 public interface FlowRepository extends CrudRepository<Flow, Integer> {
 	Flow findByUuid(String uuid);
 
