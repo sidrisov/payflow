@@ -714,14 +714,16 @@ public class FarcasterBotService {
 						job.setStatus(PaymentBotJob.Status.PROCESSED);
 						return;
 					}
-					case "claim_degen_or_moxie" -> {
+					case "claimables" -> {
 						val input = (Map<String, Object>) content.getInput();
 						val asset = (String) input.get("asset");
 
 						val claimFrameUrl = UriComponentsBuilder
 								.fromUriString(payflowConfig.getDAppServiceUrl())
-								.path("/{asset}")
-								.build(asset).toString();
+								.path("/~/claimables")
+								.queryParam("id", asset)
+								.build()
+								.toString();
 
 						eventPublisher.publishEvent(new CastEvent(
 								textWithReply,
