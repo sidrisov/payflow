@@ -31,7 +31,7 @@ public class FarcasterStorageService {
 	private static final int STORAGE_CAST_CAPACITY = 2000;
 	private static final int STORAGE_REACTION_CAPACITY = 1000;
 	private static final int STORAGE_LINK_CAPACITY = 1000;
-	private static final String PARENT_CAST_HASH = "0xaf870a2d8c0e16500532abdfe14908b2f85d662c";
+	private static final String PARENT_CAST_HASH = "0x38a0051454e27004c6b3bdd182789c09d81f68d4";
 
 	@Autowired
 	private PayflowConfig payflowConfig;
@@ -105,7 +105,7 @@ public class FarcasterStorageService {
 
 															You can also disable or change notification settings in the frame.
 															""",
-													username, 
+													username,
 													storageFrameUrl),
 											UUID.randomUUID()));
 

@@ -8,7 +8,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
-import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -24,9 +23,6 @@ public class IdentityFollowingsService {
 
 	@Autowired
 	private IIdentityService identityService;
-
-	@Autowired
-	private ISocialGraphService socialGraphService;
 
 	@Autowired
 	private FarcasterNeynarService neynarService;

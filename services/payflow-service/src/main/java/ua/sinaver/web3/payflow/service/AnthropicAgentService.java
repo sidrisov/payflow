@@ -170,8 +170,8 @@ public class AnthropicAgentService {
 									.build())
 					.build(),
 			AgentTool.builder()
-					.name("claim_degen_or_moxie")
-					.description("Claim Degen or Moxie")
+					.name("claimables")
+					.description("Claim Degen Monthly Rewards")
 					.inputSchema(AgentTool.InputSchema.builder().type("object").properties(Map.of(
 							"asset", AgentTool.InputSchema.Property.builder().type("string")
 									.description("Asset to claim")
