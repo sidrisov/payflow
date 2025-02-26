@@ -61,23 +61,24 @@ export default function MintDialog({
   closeStateCallback,
   ...props
 }: MintDialogProps) {
-  const { isMiniApp, isFrameV2 } = useContext(ProfileContext);
+  const { isFrameV2 } = useContext(ProfileContext);
+  const chainId = useChainId();
 
+  // State management
   const [selectedFlow, setSelectedFlow] = useState<FlowType>(
     sender.identity.profile?.defaultFlow ?? (sender.identity.profile?.flows?.[0] as FlowType)
   );
-
-  const chainId = useChainId();
-
   const [paymentWallet, setPaymentWallet] = useState<FlowWalletType>();
   const [paymentToken, setPaymentToken] = useState<Token>();
-
   const [mintCount, setMintCount] = useState(1);
   const isGift = payment.receiverAddress !== sender.identity.address;
-
   const [zoraCommentEnabled, setTxCommentEnabled] = useState(false);
   const [comment, setComment] = useState('');
+  const [paymentSuccessData, setPaymentSuccessData] = useState<PaymentSuccess | null>(
+    payment.status === 'COMPLETED' ? { txHash: payment.hash as Hash } : null
+  );
 
+  // Mint data fetching
   const {
     data: mintData,
     isLoading: isMintLoading,
@@ -94,14 +95,14 @@ export default function MintDialog({
   const mintStatus = mintData?.mintStatus;
   const secondary = mintData?.secondary;
 
+  // Handle Zora comment enablement
   useEffect(() => {
     if (mint.provider === 'zora.co' && !zoraCommentEnabled) {
       setTxCommentEnabled(Boolean(mintStatus === 'live' && !secondary));
     }
-  }, [mintStatus, secondary]);
+  }, [mintStatus, secondary, zoraCommentEnabled, mint.provider]);
 
-  console.log('Mint tx: ', paymentTx);
-
+  // Payment options fetching
   const {
     isLoading: isPaymentOptionsLoading,
     data: paymentOptions,
@@ -113,20 +114,19 @@ export default function MintDialog({
     account: selectedFlow.wallets[0].address
   });
 
-  console.log('Payment Options: ', paymentOptions);
-
   const paymentOption = useMemo(
     () => getPaymentOption(paymentOptions, paymentToken),
     [paymentOptions, paymentToken]
   );
 
+  // Compatible wallets handling
   const compatibleWallets = useCompatibleWallets({
     sender: selectedFlow,
     payment,
     paymentOptions: !isPaymentOptionsLoading ? paymentOptions : undefined
   });
 
-  useMemo(async () => {
+  useEffect(() => {
     if (compatibleWallets.length === 0) {
       setPaymentWallet(undefined);
       return;
@@ -134,14 +134,12 @@ export default function MintDialog({
     setPaymentWallet(compatibleWallets.find((w) => w.network === chainId) ?? compatibleWallets[0]);
   }, [compatibleWallets, chainId]);
 
+  // Derived state
   const isLoading = isMintLoading || isPaymentOptionsLoading;
   const hasPaymentOption =
     !isLoading && paymentOption && paymentToken && mintStatus === 'live' && !isMintPaymentTxError;
 
-  const [paymentSuccessData, setPaymentSuccessData] = useState<PaymentSuccess | null>(
-    payment.status === 'COMPLETED' ? { txHash: payment.hash as Hash } : null
-  );
-
+  // Share functionality
   const successMessage = `minted ${mintCount > 1 ? `${mintCount}x ` : ''}"${
     mint.metadata.name
   }" for @${recipientSocial.profileName}`;
@@ -158,6 +156,7 @@ export default function MintDialog({
     copyToClipboard(shareFrameUrl, 'Mint frame link copied!');
   };
 
+  // Share components
   const shareComponents = useMemo(
     () => (
       <>
@@ -167,11 +166,6 @@ export default function MintDialog({
             onClick={() => {
               if (isFrameV2) {
                 FrameV2SDK.actions.openUrl(createComposeCastUrl(text, shareFrameUrl, channelKey));
-              } else if (isMiniApp) {
-                window.parent.postMessage(
-                  createCastPostMessage(text, shareFrameUrl, channelKey),
-                  '*'
-                );
               } else {
                 window.open(createComposeCastUrl(text, shareFrameUrl, channelKey), '_blank');
               }
@@ -213,8 +207,25 @@ export default function MintDialog({
         </Stack>
       </>
     ),
-    [text, shareFrameUrl, channelKey, isFrameV2, isMiniApp]
+    [text, shareFrameUrl, channelKey, isFrameV2]
   );
+
+  // Error handling for payment
+  const handlePaymentError = (error: Error) => {
+    toast.error(`Failed to mint "${mint.metadata.name}":\n"${error.message}"`, {
+      autoClose: false,
+      closeButton: true
+    });
+    console.error(`Failed to mint with error`, error);
+  };
+
+  // Get button text based on mint status
+  const getButtonText = () => {
+    if (mintStatus === 'ended') return 'Mint Ended';
+    if (mintStatus === 'upcoming') return 'Mint Not Started';
+    if (secondary) return 'Buy On Secondary';
+    return 'Mint';
+  };
 
   return paymentSuccessData ? (
     <PaymentSuccessDialog
@@ -234,15 +245,7 @@ export default function MintDialog({
       footerContent={
         <PayButton
           paymentToken={paymentToken}
-          buttonText={
-            mintStatus === 'ended'
-              ? 'Mint Ended'
-              : mintStatus === 'upcoming'
-                ? 'Mint Not Started'
-                : secondary
-                  ? 'Buy On Secondary'
-                  : 'Mint'
-          }
+          buttonText={getButtonText()}
           disabled={!hasPaymentOption}
           paymentTx={paymentTx}
           paymentWallet={paymentWallet!}
@@ -250,13 +253,7 @@ export default function MintDialog({
           payment={{ ...payment, tokenAmount: mintCount, comment }}
           senderFlow={selectedFlow}
           onSuccess={setPaymentSuccessData}
-          onError={(error) => {
-            toast.error(`Failed to mint "${mint.metadata.name}":\n"${error.message}"`, {
-              autoClose: false,
-              closeButton: true
-            });
-            console.error(`Failed to mint with error`, error);
-          }}
+          onError={handlePaymentError}
         />
       }>
       <Box ml={1}>

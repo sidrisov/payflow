@@ -39,15 +39,13 @@ interface PayMeDialogProps {
 }
 
 export function PayMeDialog({ open, onClose, profile, flow }: PayMeDialogProps) {
-  const { isMiniApp } = useContext(ProfileContext);
+  const { isMiniApp, isFrameV2 } = useContext(ProfileContext);
   const [isFiatMode, setIsFiatMode] = useState<boolean>(false);
   const [selectedToken, setSelectedToken] = useState<Token>();
   const [inputValue, setInputValue] = useState<string>('');
   const inputRef = useRef<HTMLInputElement>(null);
   const [mode, setMode] = useState<'default' | 'custom'>('default');
   const [customTitle, setCustomTitle] = useState<string>();
-
-  const { isFrameV2 } = useContext(ProfileContext);
 
   const username = profile?.username;
   const profileImage = profile?.profileImage;

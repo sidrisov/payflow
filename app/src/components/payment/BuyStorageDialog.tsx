@@ -5,7 +5,7 @@ import { useChainId } from 'wagmi';
 import { FarcasterRecipientField } from '../FarcasterRecipientField';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { PaymentType, FlowType, FlowWalletType, SelectedIdentityType } from '@payflow/common';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Token } from '@payflow/common';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
@@ -78,7 +78,7 @@ export default function BuyStorageDialog({
     paymentOptions: !isPaymentOptionsLoading ? paymentOptions : undefined
   });
 
-  useMemo(async () => {
+  useEffect(() => {
     if (compatibleWallets.length === 0) {
       setPaymentWallet(undefined);
       return;

@@ -32,7 +32,7 @@ export default function PaymentSuccessDialog({
   completedAt
 }: PaymentSuccessDialogProps) {
   const navigate = useNavigate();
-  const { isFrameV2, isMiniApp } = useContext(ProfileContext);
+  const { isFrameV2 } = useContext(ProfileContext);
 
   return (
     <ResponsiveDialog open={open} onClose={onClose}>
