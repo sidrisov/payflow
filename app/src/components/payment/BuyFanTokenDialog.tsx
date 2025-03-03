@@ -47,6 +47,8 @@ import { useMobile } from '../../utils/hooks/useMobile';
 import { ProfileContext } from '../../contexts/UserContext';
 import { CommentField } from './CommentField';
 
+import FrameV2SDK from '@farcaster/frame-sdk';
+
 export type BuyFanTokenDialogProps = DialogProps &
   CloseCallbackType & {
     sender: SelectedIdentityType;
@@ -67,7 +69,7 @@ export default function BuyFanTokenDialog({
   closeStateCallback,
   ...props
 }: BuyFanTokenDialogProps) {
-  const { isMiniApp } = useContext(ProfileContext);
+  const { isFrameV2 } = useContext(ProfileContext);
 
   const [selectedFlow, setSelectedFlow] = useState<FlowType>(
     sender.identity.profile?.defaultFlow ?? (sender.identity.profile?.flows?.[0] as FlowType)
@@ -161,8 +163,8 @@ export default function BuyFanTokenDialog({
       <Button
         fullWidth
         onClick={() => {
-          if (isMiniApp) {
-            window.parent.postMessage(createCastPostMessage(text, shareFrameUrl, channelKey), '*');
+          if (isFrameV2) {
+            FrameV2SDK.actions.openUrl(createComposeCastUrl(text, shareFrameUrl, channelKey));
           } else {
             window.open(createComposeCastUrl(text, shareFrameUrl, channelKey), '_blank');
           }

@@ -197,7 +197,7 @@ const SubscriptionsPage = () => {
 
   useEffect(() => {
     if (!profile) {
-      navigate(`/connect?redirect=/subscriptions`);
+      navigate(`/connect?redirect=/~/subscriptions`);
     }
   }, [profile, navigate]);
 

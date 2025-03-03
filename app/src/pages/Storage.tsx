@@ -117,7 +117,7 @@ export default function Storage() {
 
   useEffect(() => {
     if (!profile) {
-      navigate(`/connect?redirect=/farcaster/storage`);
+      navigate(`/connect?redirect=/~/farcaster/storage`);
     }
   }, []);
 

@@ -15,7 +15,7 @@ import { SelectedIdentityType } from '@payflow/common';
 import { FarcasterRecipientField } from '../FarcasterRecipientField';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { PaymentType, FlowType, FlowWalletType } from '@payflow/common';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Token } from '@payflow/common';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
@@ -121,7 +121,7 @@ export default function HypersubDialog({
     paymentOptions: !isPaymentOptionsLoading ? paymentOptions : undefined
   });
 
-  useMemo(async () => {
+  useEffect(() => {
     if (compatibleWallets.length === 0) {
       setPaymentWallet(undefined);
       return;
