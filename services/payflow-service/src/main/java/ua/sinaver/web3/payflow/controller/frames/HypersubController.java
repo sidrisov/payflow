@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ua.sinaver.web3.payflow.config.PayflowConfig;
 import ua.sinaver.web3.payflow.entity.Payment;
 import ua.sinaver.web3.payflow.entity.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
@@ -38,15 +37,11 @@ public class HypersubController {
 	@Autowired
 	private PaymentRepository paymentRepository;
 	@Autowired
-	private PayflowConfig payflowConfig;
-	@Autowired
 	private UserService userService;
 	@Autowired
 	private IdentityService identityService;
 	@Autowired
 	private LinkService linkService;
-	@Autowired
-	private FanTokenService fanTokenService;
 
 	private static Payment getHypersubPayment(ValidatedFrameResponseMessage validateMessage,
 			User user,

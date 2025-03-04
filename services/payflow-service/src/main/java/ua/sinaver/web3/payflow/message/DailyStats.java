@@ -10,6 +10,5 @@ public record DailyStats(
         long p2pPayments,
         long storageUnitsPurchased,
         long mintTokensPurchased,
-        long fanTokensPurchased,
         long hypersubMonthsSubscribed) {
 }

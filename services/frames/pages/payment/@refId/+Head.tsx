@@ -34,8 +34,6 @@ export function Head() {
         return 'Mint';
       case 'storage':
         return 'Buy Storage';
-      case 'fan':
-        return 'Buy Token';
       case 'hypersub':
         return 'Subscribe';
       default:
@@ -47,7 +45,6 @@ export function Head() {
     switch (payment.category) {
       case 'mint':
       case 'fc_storage':
-      case 'fan':
       case 'hypersub':
         return 'https://i.imgur.com/okcGTR2.png';
       default:

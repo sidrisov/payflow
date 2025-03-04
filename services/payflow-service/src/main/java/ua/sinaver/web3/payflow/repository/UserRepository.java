@@ -29,6 +29,8 @@ public interface UserRepository extends CrudRepository<User, Integer> {
 
 	User findByIdentityIgnoreCase(String identity);
 
+	List<User> findAllByIdentityInIgnoreCase(List<String> identities);
+
 	User findByAccessToken(String accessToken);
 
 	User findByIdentityIgnoreCaseAndAllowedTrue(String identity);
@@ -60,11 +62,11 @@ public interface UserRepository extends CrudRepository<User, Integer> {
 			"(u.lastUpdatedContacts < :updateDate" +
 			" OR u.lastUpdatedContacts IS NULL)")
 	Page<User> findByAllowedTrueAndLastUpdatedContactsBeforeAndLastSeenAfter(Date updateDate,
-	                                                                         Date lastSeenDate,
-	                                                                         Pageable pageable);
+			Date lastSeenDate,
+			Pageable pageable);
 
 	default List<User> findTop5ByAllowedTrueAndLastUpdatedContactsBeforeAndLastSeenAfter(Date updateDate,
-	                                                                                     Date lastSeenDate) {
+			Date lastSeenDate) {
 		return this.findByAllowedTrueAndLastUpdatedContactsBeforeAndLastSeenAfter(updateDate,
 				lastSeenDate, PageRequest.of(0, 5)).getContent();
 	}

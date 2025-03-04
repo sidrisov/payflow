@@ -1,21 +1,8 @@
 import { MetaType, ContactType, SocialInfoType, InsightsType } from '@payflow/common';
-import { fetchQuery } from '@airstack/airstack-react';
 import { Address, isAddress } from 'viem';
 import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';
-import { getProfileByAddressOrName, searchByListOfAddressesOrUsernames } from './user';
-import {
-  GetSocialsForAssociatedAddressesQuery,
-  Wallet,
-  GetSocialsQuery,
-  GetSocialsInsightsForAssociatedAddressesQuery,
-  GetSocialsInsightsQuery
-} from '../generated/graphql/types';
-import {
-  QUERY_SOCIALS_INSIGHTS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME,
-  QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME,
-  QUERY_SOCIALS_INSIGHTS,
-  QUERY_SOCIALS
-} from '../utils/airstackQueries';
+import { searchByListOfAddressesOrUsernames } from './user';
+import { Wallet } from '../generated/graphql/types';
 import { getPublicClient } from 'wagmi/actions';
 import { wagmiConfig } from '../utils/wagmiConfig';
 import { degen } from 'viem/chains';
@@ -131,7 +118,7 @@ async function searchBySocialHandle(searchValue: string, me?: string): Promise<C
 
   if (profileName.length === 0) return [];
 
-  const { data: dataInBatch } = me
+  /* const { data: dataInBatch } = me
     ? await fetchQuery<GetSocialsInsightsForAssociatedAddressesQuery>(
         QUERY_SOCIALS_INSIGHTS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME,
         {
@@ -150,9 +137,11 @@ async function searchBySocialHandle(searchValue: string, me?: string): Promise<C
         { cache: true }
       );
 
-  if (!dataInBatch?.Socials?.Social?.length) return [];
+  if (!dataInBatch?.Socials?.Social?.length) return []; */
 
-  const userAssociatedIdentities: ContactType[] = [];
+  return [];
+
+  /* const userAssociatedIdentities: ContactType[] = [];
 
   dataInBatch.Socials.Social.forEach((social: any) => {
     social.userAssociatedAddressDetails
@@ -175,7 +164,7 @@ async function searchBySocialHandle(searchValue: string, me?: string): Promise<C
     identity.data.profile = profile;
   });
 
-  return userAssociatedIdentities;
+  return userAssociatedIdentities; */
 }
 
 // Helper function for domain/address search
@@ -205,13 +194,9 @@ async function searchByDomainOrAddress(searchValue: string, me?: string): Promis
     identity = degenDomainHolderAddress as Address;
   }
 
-  const { data } = me
-    ? await fetchQuery<GetSocialsInsightsQuery>(
-        QUERY_SOCIALS_INSIGHTS,
-        { identity, me },
-        { cache: true }
-      )
-    : await fetchQuery<GetSocialsQuery>(QUERY_SOCIALS, { identity }, { cache: true });
+  return [];
+
+  /* const { data } = await fetchQuery<GetSocialsQuery>(QUERY_SOCIALS, { identity }, { cache: true });
 
   if (!data?.Wallet) return [];
 
@@ -220,7 +205,7 @@ async function searchByDomainOrAddress(searchValue: string, me?: string): Promis
 
   const profile = await getProfileByAddressOrName(identityResult.data.address);
   identityResult.data.profile = profile;
-  return [identityResult];
+  return [identityResult]; */
 }
 
 export function convertSocialResults(wallet: Wallet): ContactType | undefined {
@@ -321,11 +306,6 @@ export function convertSocialResults(wallet: Wallet): ContactType | undefined {
       }
     }
   }
-
-  // todo: airstack api does not return this
-  /* if (wallet.tokenTransfers && wallet.tokenTransfers.length > 0) {
-    meta.insights.sentTxs = wallet.tokenTransfers.length;
-  } */
 
   // @ts-ignore
   if ((wallet.ethTransfers as any) && wallet.ethTransfers.length > 0) {

@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import { Stack, Typography, Grid2, IconButton, Badge } from '@mui/material';
 import PaymentRewardCastActionComposerDialog from '../../dialogs/PaymentRewardCastActionComposerDialog';
-import { AutoAwesome, Interests, Star } from '@mui/icons-material';
+import { AutoAwesome, Interests } from '@mui/icons-material';
 import { GrStorage } from 'react-icons/gr';
 import CastActionButton from '../../buttons/CastActionButton';
 import { FaRegClock } from 'react-icons/fa';
@@ -115,12 +115,6 @@ export default function CastActions() {
       description: 'Mint from cast embeds',
       installUrl: `${BASE_URL}/products/mint`,
       startIcon: <AutoAwesome sx={{ width: 25, height: 25 }} />
-    },
-    {
-      title: 'Fan Token',
-      description: 'Buy fan tokens from cast',
-      installUrl: `${BASE_URL}/products/fan`,
-      startIcon: <Star sx={{ width: 25, height: 25 }} />
     },
     {
       title: 'Subscribe',

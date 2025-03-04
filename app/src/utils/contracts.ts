@@ -13,9 +13,3 @@ export const HIGHLIGHT_MINT_MANAGER_ADDRS: { [chainId: number]: Address } = {
   [arbitrum.id]: '0x41cbab1028984a34c1338f437c726de791695ae8',
   [zora.id]: '0x3ad45858a983d193d98bd4e6c14852a4cadcdbea'
 };
-
-export const FAN_TOKEN_BOND_CURVE_CONTRACT_ADDR: Address =
-  '0x373065e66B32a1C428aa14698dFa99BA7199B55E';
-
-export const FAN_TOKEN_STAKING_CONTRACT_ADDR: Address =
-  '0xcb2513d389354f7ac80f5042bb8948a234a439b2';

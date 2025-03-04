@@ -60,18 +60,6 @@ export interface ContactType {
   tags?: string[];
 }
 
-export interface ContactWithFanTokenAuction {
-  contact: ContactType;
-  auction: FanTokenAuction;
-}
-
-export interface FanTokenAuction {
-  farcasterUsername: String;
-  estimatedStartTimestamp: Date;
-  auctionSupply: number;
-  launchCastUrl?: string;
-}
-
 export interface MetaType {
   ens?: string;
   ensAvatar?: string;

@@ -23,8 +23,6 @@ const contactTypeLabel = (type: AddressBookType) => {
       return 'Hypersubs';
     case 'paragraph':
       return 'Paragraph';
-    case 'moxie':
-      return 'Fans';
   }
 };
 
@@ -58,8 +56,6 @@ const contactTypeIcon = (
           sx={{ ...avatarSize, backgroundColor: prefersDarkMode ? 'inherit' : grey[700] }}
         />
       );
-    case 'moxie':
-      return <Avatar variant="square" src="/moxie.png" sx={{ ...avatarSize }} />;
   }
 };
 
@@ -161,14 +157,6 @@ export function AddressBookToolBar({
         addressBookView={addressBookView}
         setAddressBookView={setAddressBookView}
       />
-      {tags.includes('moxie') && (
-        <AddressBookChip
-          key="moxie"
-          type="moxie"
-          addressBookView={addressBookView}
-          setAddressBookView={setAddressBookView}
-        />
-      )}
       {tags.includes('hypersub') && (
         <AddressBookChip
           key="hypersub"

@@ -143,9 +143,6 @@ public class NotificationService {
 			} else if (payment.getCategory().equals("mint")) {
 				handleMintPaymentNotification(payment, senderFname, receiverFname, receiptUrl, sourceRefText,
 						isSelfPurchase);
-			} else if (payment.getCategory().equals("fan")) {
-				handleFanTokenPaymentNotification(payment, senderFname, receiverFname, receiptUrl, crossChainText,
-						sourceRefText, isSelfPurchase);
 			} else if (payment.getCategory().equals("hypersub")) {
 				handleHypersubPaymentNotification(payment, senderFname, receiverFname,
 						receiptUrl,
@@ -245,15 +242,7 @@ public class NotificationService {
 							"your cast", embeds);
 					break;
 				case "reward_top_reply":
-					var scvText = "";
-					val cast = socialGraphService.getReplySocialCapitalValue(payment.getSourceHash());
-					if (cast != null) {
-						scvText = String.format("with cast score: %s ",
-								formatDouble(cast.getSocialCapitalValue().getFormattedValue()));
-					}
-					sendRewardNotification(payment, senderFname, receiverFname, commentText,
-							sourceRefText,
-							"casting top comment " + scvText, embeds);
+					log.error("Not supported payment category: {}", payment.getCategory());
 					break;
 
 				case "reward_top_casters":
@@ -447,82 +436,6 @@ public class NotificationService {
 					tokenAmountText,
 					authorPart,
 					senderFname,
-					commentText,
-					sourceRefText,
-					receiptUrl);
-		}
-
-		sendDirectMessage(messageText, payment.getReceiverFid().toString());
-	}
-
-	private void handleFanTokenPaymentNotification(Payment payment, String senderFname, String receiverFname,
-			String receiptUrl, String crossChainText, String sourceRefText, boolean isSelfPurchase) {
-		val fanTokenParts = payment.getToken().split(";");
-		var fanTokenName = fanTokenParts[0];
-
-		val frameFanTokenUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
-				.path("/fan")
-				.queryParam("names", fanTokenName)
-				.build()
-				.toUriString();
-
-		if (!fanTokenName.startsWith("/") && !fanTokenName.toLowerCase().startsWith("network:")) {
-			fanTokenName = "@" + fanTokenName;
-		}
-
-		val fanTokensAmount = payment.getTokenAmount() != null ? Double.parseDouble(payment.getTokenAmount()) : "";
-		String castText;
-		if (isSelfPurchase) {
-			castText = String.format("""
-					@%s, you've successfully purchased %s %s fan token(s)%s Ⓜ️""",
-					senderFname,
-					fanTokensAmount,
-					fanTokenName,
-					crossChainText);
-		} else {
-			castText = String.format("""
-					@%s, you've been gifted %s %s fan token(s) by @%s%s Ⓜ️""",
-					receiverFname,
-					fanTokensAmount,
-					fanTokenName,
-					senderFname,
-					crossChainText);
-		}
-
-		val embeds = List.of(new Cast.Embed(frameFanTokenUrl), new Cast.Embed(receiptUrl));
-		sendCastReply(castText, payment.getSourceHash(), embeds);
-
-		val commentText = StringUtils.isNotBlank(payment.getComment())
-				? String.format("\n💬 Comment: %s", payment.getComment())
-				: "";
-
-		String messageText;
-		if (isSelfPurchase) {
-			messageText = String.format("""
-					@%s, you've successfully purchased %s %s fan token(s)%s Ⓜ️
-
-					%s
-					%s
-					🧾 Receipt: %s""",
-					senderFname,
-					fanTokensAmount,
-					fanTokenName,
-					crossChainText,
-					commentText,
-					sourceRefText,
-					receiptUrl);
-		} else {
-			messageText = String.format("""
-					@%s, you've been gifted %s %s fan token(s) by @%s%s Ⓜ️
-
-					%s
-					%s
-					🧾 Receipt: %s""",
-					receiverFname,
-					fanTokensAmount,
-					fanTokenName,
-					senderFname,
-					crossChainText,
 					commentText,
 					sourceRefText,
 					receiptUrl);

@@ -14,7 +14,6 @@ interface DailyStats {
   p2pPayments: number;
   mintTokensPurchased: number;
   storageUnitsPurchased: number;
-  fanTokensPurchased: number;
   hypersubMonthsSubscribed: number;
 }
 
@@ -83,14 +82,6 @@ export default function StatsPage() {
           <StatCard
             title="Storage Units"
             value={stats?.storageUnitsPurchased}
-            subtitle="Purchased"
-            isLoading={isLoading}
-          />
-        </Grid2>
-        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard
-            title="Fan Tokens"
-            value={stats?.fanTokensPurchased}
             subtitle="Purchased"
             isLoading={isLoading}
           />

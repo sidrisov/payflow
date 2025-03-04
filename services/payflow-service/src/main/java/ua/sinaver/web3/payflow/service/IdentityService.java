@@ -41,6 +41,9 @@ public class IdentityService implements IIdentityService {
 	@Autowired
 	private ISocialGraphService socialGraphService;
 
+	@Autowired
+	private FarcasterNeynarService neynarService;
+
 	public IdentityService(WebClient.Builder webClientBuilder) {
 		this.webClient = webClientBuilder.build();
 	}
@@ -73,10 +76,14 @@ public class IdentityService implements IIdentityService {
 
 	@Override
 	public List<String> getFidAddresses(int fid) {
-		val verifications = socialGraphService.getIdentityVerifiedAddresses(
-				"fc_fid:".concat(String.valueOf(fid)));
-		val addresses = verificationsWithoutCustodial(verifications);
-		log.debug("Addresses for {}: {}", fid, addresses);
+		val farcasterUser = neynarService.fetchFarcasterUser(fid);
+		if (farcasterUser == null) {
+			log.warn("No farcaster user found for FID {}", fid);
+			return Collections.emptyList();
+		}
+
+		val addresses = farcasterUser.addressesWithoutCustodialIfAvailable();
+		log.debug("Addresses without custodial for {}: {}", fid, addresses);
 		return addresses;
 	}
 
@@ -119,23 +126,13 @@ public class IdentityService implements IIdentityService {
 
 	@Override
 	public String getFidFname(int fid) {
-		val wallet = socialGraphService.getSocialMetadata(
-				"fc_fid:".concat(String.valueOf(fid)));
-
-		if (wallet == null) {
-			log.warn("Username for {} was not found!", fid);
+		val farcasterUser = neynarService.fetchFarcasterUser(fid);
+		if (farcasterUser == null) {
+			log.warn("No farcaster user found for FID {}", fid);
 			return null;
 		}
 
-		if (wallet.getSocials() == null) {
-			log.warn("Username for {} was not found - no socials!", fid);
-			return null;
-		}
-
-		val username = wallet.getSocials().stream()
-				.filter(social -> social.getDappName().equals(SocialDappName.farcaster)
-						&& social.getUserId().equals(String.valueOf(fid)))
-				.findFirst().map(Social::getProfileName).orElse(null);
+		val username = farcasterUser.username();
 		log.debug("Username for {}: {}", fid, username);
 		return username;
 	}
@@ -234,6 +231,8 @@ public class IdentityService implements IIdentityService {
 		try {
 			val identityMessages = Flux
 					.fromIterable(identities)
+					.parallel()
+					.runOn(Schedulers.boundedElastic())
 					.flatMap(identity -> Mono.zip(
 							Mono.just(identity),
 							Mono.fromCallable(
@@ -272,6 +271,7 @@ public class IdentityService implements IIdentityService {
 									tuple.getT2().orElse(null),
 									tuple.getT3(),
 									tuple.getT4().orElse(null))))
+					.sequential()
 					.timeout(Duration.ofSeconds(10), Mono.empty())
 					.collectList()
 					.block();

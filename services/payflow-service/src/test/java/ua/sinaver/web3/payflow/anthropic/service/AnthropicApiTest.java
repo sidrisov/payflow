@@ -434,7 +434,7 @@ public class AnthropicApiTest {
 	}
 
 	@Test
-	public void testClaimDegenOrMoxie() throws JsonProcessingException {
+	public void testClaimDegen() throws JsonProcessingException {
 		String conversationJson = """
 				{
 				  "conversation": {

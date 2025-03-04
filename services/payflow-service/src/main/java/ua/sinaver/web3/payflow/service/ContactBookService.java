@@ -17,7 +17,6 @@ import ua.sinaver.web3.payflow.message.ContactMessage;
 import ua.sinaver.web3.payflow.message.ContactsResponseMessage;
 import ua.sinaver.web3.payflow.repository.ContactRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
-import ua.sinaver.web3.payflow.service.api.IContactBookService;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
 import java.time.Duration;
@@ -30,8 +29,7 @@ import static ua.sinaver.web3.payflow.config.CacheConfig.CONTACTS_CACHE_NAME;
 
 @Slf4j
 @Service
-@Transactional
-public class ContactBookService implements IContactBookService {
+public class ContactBookService {
 
 	static {
 		System.setProperty("reactor.schedulers.defaultBoundedElasticOnVirtualThreads", "true");
@@ -56,13 +54,11 @@ public class ContactBookService implements IContactBookService {
 	@Autowired
 	private IdentityService identityService;
 	@Autowired
-	private FanTokenService fanTokenService;
-	@Autowired
 	private PaymentService paymentService;
 	@Value("${payflow.airstack.contacts.fetch.timeout:60s}")
 	private Duration contactsFetchTimeout;
 
-	@Override
+	@Transactional
 	@CacheEvict(value = CONTACTS_CACHE_NAME, key = "#user.identity")
 	public void update(ContactMessage contactMessage, User user) {
 		var contact = contactRepository.findByUserAndIdentity(user,
@@ -74,13 +70,11 @@ public class ContactBookService implements IContactBookService {
 		contactRepository.save(contact);
 	}
 
-	@Override
 	@CacheEvict(cacheNames = CONTACTS_CACHE_NAME, key = "#user.identity")
 	public void cleanContactsCache(User user) {
 		log.debug("Evicting socials cache for {} key", user.getIdentity());
 	}
 
-	@Override
 	@Cacheable(value = CONTACTS_CACHE_NAME, key = "#user.identity", unless = "#result==null || #result.contacts.isEmpty()")
 	public ContactsResponseMessage getAllContacts(User user) {
 		log.debug("VIRTUAL {} {} {} {}", Schedulers.DEFAULT_BOUNDED_ELASTIC_ON_VIRTUAL_THREADS,
@@ -117,15 +111,6 @@ public class ContactBookService implements IContactBookService {
 
 		log.debug("Fetched top 3 popular payment recipients: {}", popular);
 
-		// Temporarily disabled fan token holders
-		/*
-		 * val fanTokenContacts =
-		 * fanTokenService.fetchFanTokenHolders(user.getIdentity());
-		 * log.debug("Fetched fan token holders: {}", fanTokenContacts);
-		 */
-		val fanTokenContacts = Collections.<String>emptyList();
-		log.debug("Fan token holders disabled");
-
 		// Temporarily disabled alfafrens subscribers
 		/*
 		 * val alfaFrensContacts =
@@ -137,8 +122,6 @@ public class ContactBookService implements IContactBookService {
 
 		val fabricContacts = identitySubscriptionsService.fetchFabricSubscribers(user.getIdentity());
 		log.debug("Fetched fabric subs: {}", fabricContacts);
-
-		log.debug("Fabric subs disabled");
 
 		// Temporarily disabled paragraph subscribers
 		/*
@@ -180,10 +163,6 @@ public class ContactBookService implements IContactBookService {
 			tags.add("paragraph");
 		}
 
-		if (!fanTokenContacts.isEmpty()) {
-			tags.add("moxie");
-		}
-
 		if (!favourites.isEmpty()) {
 			tags.add("favourites");
 		}
@@ -196,7 +175,6 @@ public class ContactBookService implements IContactBookService {
 				favourites.stream().map(contact -> new AbstractMap.SimpleEntry<>(contact.getIdentity(), "favourites")),
 				followings.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "friends")),
 				efpFollowings.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "efp")),
-				fanTokenContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "moxie")),
 				fabricContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "hypersub")),
 				paragraphContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "paragraph")),
 				alfaFrensContacts.stream().map(identity -> new AbstractMap.SimpleEntry<>(identity, "alfafrens")))
@@ -206,6 +184,13 @@ public class ContactBookService implements IContactBookService {
 						Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
 
 		log.debug("All contacts[{}]: {}", allContacts.size(), allContacts);
+
+		val contactIdentities = new ArrayList<>(allContacts.keySet());
+
+		// Fetch all users in a single query
+		val usersMap = userRepository.findAllByIdentityInIgnoreCase(contactIdentities)
+				.stream()
+				.collect(Collectors.toMap(u -> u.getIdentity().toLowerCase(), u -> u));
 
 		try {
 			val contactMessages = Flux
@@ -219,8 +204,7 @@ public class ContactBookService implements IContactBookService {
 								Thread.currentThread().isVirtual());
 						return Mono.zip(
 								Mono.just(contact),
-								Mono.justOrEmpty(userRepository.findByIdentityIgnoreCase(contact))
-										.singleOptional(),
+								Mono.justOrEmpty(usersMap.get(contact.toLowerCase())).singleOptional(),
 								Mono.fromCallable(() -> {
 									long start = System.currentTimeMillis();
 									var result = socialGraphService.getSocialMetadata(contact);

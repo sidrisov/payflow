@@ -106,9 +106,6 @@ export function RewardAdvancedSection({
                   }
                 }}>
                 <option value="reward">Any Cast</option>
-                <option value="reward_top_reply">
-                  <Typography>Top Comment</Typography>
-                </option>
                 <option value="reward_top_casters">
                   <Typography>Top Casters</Typography>
                 </option>
@@ -123,24 +120,9 @@ export function RewardAdvancedSection({
                 color: 'text.secondary',
                 textWrap: 'balance'
               }}>
-              {type === 'reward' ? (
-                'Rewards selected cast author'
-              ) : type === 'reward_top_reply' ? (
-                <>
-                  Rewards the author of top comment in the selected cast (based on{' '}
-                  <b>
-                    <a
-                      href="https://docs.airstack.xyz/airstack-docs-and-faqs/abstractions/trending-casts/social-capital-value-and-social-capital-scores"
-                      target="_blank"
-                      style={{ color: 'inherit' }}>
-                      Airstack's Cast Scores
-                    </a>
-                  </b>
-                  )
-                </>
-              ) : (
-                'Rewards top casters within 7d period in the channel or globally based on configured user criteria (e.g. hypersub subscriber)'
-              )}
+              {type === 'reward'
+                ? 'Rewards selected cast author'
+                : 'Rewards top casters within 7d period in the channel or globally based on configured user criteria (e.g. hypersub subscriber)'}
             </Typography>
 
             {type === 'reward_top_casters' && (

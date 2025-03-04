@@ -10,7 +10,7 @@ import dotenv from 'dotenv';
 import { PaymentType, tokens } from '@payflow/common';
 import { paymentHtml } from './components/Payment';
 import { Address, Chain } from 'viem';
-import { arbitrum, base, degen, polygon, optimism, worldchain, zora } from 'viem/chains';
+import { arbitrum, base, degen, optimism, worldchain, zora } from 'viem/chains';
 import { fetchTokenPrices } from './utils/prices';
 import { TokenPrices } from '@payflow/common';
 import { normalizeNumberPrecision } from './utils/format';
@@ -19,7 +19,6 @@ import { buyStorageEntryHtml, buyStorageHtml } from './components/BuyStorage';
 import { StorageUsage } from './types/StorageUsageType';
 import { mintHtml } from './components/Mint';
 import { fetchMintData } from './utils/mint';
-import { buyFanTokenEntryHtml } from './components/BuyFanToken';
 import { buyHypersubEntryHtml } from './components/Subsribe';
 import { fetchSubscribers } from '@withfabric/protocol-sdks/stpv2';
 import { configureFabricSDK } from '@withfabric/protocol-sdks';
@@ -322,16 +321,6 @@ async function startServer() {
         );
         res.setHeader('Cache-Control', `max-age=${oneDayInSeconds}`).type('png').send(image);
       }
-    } catch (error) {
-      console.error(error);
-      res.status(500).send('Error retrieving profile data');
-    }
-  });
-
-  app.get('/images/fan.png', async (_, res) => {
-    try {
-      const image = await htmlToImage(buyFanTokenEntryHtml(chains, SUPPORTED_TOKENS), 'landscape');
-      res.setHeader('Cache-Control', `max-age=${oneDayInSeconds}`).type('png').send(image);
     } catch (error) {
       console.error(error);
       res.status(500).send('Error retrieving profile data');

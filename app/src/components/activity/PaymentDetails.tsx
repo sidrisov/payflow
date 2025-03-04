@@ -5,7 +5,6 @@ import { ActivityIcon, ActivityType } from './ActivityIcon';
 import { usePaymentActivityDetails } from '../../utils/hooks/usePaymentAcitivityDetails';
 import { PaymentType } from '@payflow/common';
 import FarcasterAvatar from '../avatars/FarcasterAvatar';
-import MoxieAvatar from '../avatars/MoxieAvatar';
 import { secondsToTimeUnit } from '../../utils/time';
 import TokenNetworkAvatar from '../avatars/TokenNetworkAvatar';
 
@@ -68,17 +67,6 @@ export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
             {formattedTokenAmount} storage unit{formattedTokenAmount !== '1' ? 's' : ''}
           </Typography>
           <FarcasterAvatar size={15} />
-        </Stack>
-      );
-    }
-
-    if (payment.category === 'fan') {
-      return (
-        <Stack direction="row" spacing={0.5} alignItems="center">
-          <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14}>
-            {formattedTokenAmount} {payment.token.split(';')[0]} fan token(s)
-          </Typography>
-          <MoxieAvatar size={15} />
         </Stack>
       );
     }
