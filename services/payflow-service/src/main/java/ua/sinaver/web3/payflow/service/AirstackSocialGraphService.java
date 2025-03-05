@@ -106,56 +106,6 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 	}
 
 	@Override
-	@Cacheable(cacheNames = SOCIALS_INSIGHTS_CACHE_NAME, unless = "#result==null")
-	public Wallet getSocialInsights(String identity, String me) {
-		try {
-			val socialMetadataResponse = airstackGraphQlClient.documentName(
-					"getSocialInsights")
-					.variable("identity", identity)
-					.variable("me", me)
-					.execute()
-					.onErrorResume(exception -> {
-						log.error("Error fetching {} - {}", identity, exception.getMessage());
-						return Mono.empty();
-					})
-					.block();
-
-			if (socialMetadataResponse != null) {
-				if (log.isTraceEnabled()) {
-					log.trace("Fetched socialMetadata for {}: {}", identity, socialMetadataResponse);
-				} else {
-					log.debug("Fetched socialMetadata for {}", identity);
-				}
-
-				val wallet = socialMetadataResponse.field("Wallet").toEntity(Wallet.class);
-
-				if (wallet != null) {
-					val followings = socialMetadataResponse.field("Wallet.socialFollowings.Following")
-							.toEntityList(SocialFollowing.class);
-
-					val followers = socialMetadataResponse.field("Wallet.socialFollowers.Follower")
-							.toEntityList(SocialFollower.class);
-
-					val socialFollowings = new SocialFollowingOutput.Builder().Following(followings).build();
-
-					val socialFollowers = new SocialFollowerOutput.Builder().Follower(followers).build();
-
-					wallet.setSocialFollowings(socialFollowings);
-					wallet.setSocialFollowers(socialFollowers);
-				}
-				return wallet;
-			}
-		} catch (Throwable t) {
-			if (log.isTraceEnabled()) {
-				log.error("Full Error:", t);
-			} else {
-				log.error("Error: {}", t.getMessage());
-			}
-		}
-		return null;
-	}
-
-	@Override
 	public FarcasterChannel getFarcasterChannelByChannelId(String channelId) {
 		try {
 			val response = airstackGraphQlClient.documentName("getFarcasterChannelForChannelId")
