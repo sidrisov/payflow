@@ -9,8 +9,8 @@ export function CustomLoadingButton({
   return (
     <LoadingButton
       fullWidth
-      variant="outlined"
       size="medium"
+      variant="contained"
       {...props}
       loadingIndicator={
         <Stack direction="row" spacing={1} alignItems="center">

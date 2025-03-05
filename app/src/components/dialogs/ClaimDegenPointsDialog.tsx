@@ -1,12 +1,12 @@
 import ResponsiveDialog, { ResponsiveDialogProps } from './ResponsiveDialog';
-import { Box, Divider, Stack, Typography } from '@mui/material';
+import { Box, Divider, Stack, Typography, Button } from '@mui/material';
 import { useEffect } from 'react';
 import { CustomLoadingButton } from '../buttons/LoadingPaymentButton';
 import { red } from '@mui/material/colors';
 import { DegenClaimSeason, DegenPoints, useMerkleProofs } from '../../utils/queries/degen';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
 import { toast } from 'react-toastify';
-import { useAccount, useReadContract, useWriteContract } from 'wagmi';
+import { useAccount, useReadContract, useWriteContract, usePublicClient } from 'wagmi';
 import { LoadingConnectWalletButton } from '../buttons/LoadingConnectWalletButton';
 import { LoadingSwitchChainButton } from '../buttons/LoadingSwitchNetworkButton';
 import { IoIosWallet } from 'react-icons/io';
@@ -14,6 +14,9 @@ import { degenClaimAbi } from '../../utils/abi/degenClaimAbi';
 import { delay } from '../../utils/delay';
 import { useNavigate } from 'react-router';
 import { formatAmountWithSuffix } from '../../utils/formats';
+import { useQuery } from '@tanstack/react-query';
+import { formatUnits } from 'viem';
+import { base } from 'viem/chains';
 
 export function ClaimDegenPointsDialog({
   degenPoints,
@@ -22,6 +25,7 @@ export function ClaimDegenPointsDialog({
 }: { degenPoints: DegenPoints; season: DegenClaimSeason } & ResponsiveDialogProps) {
   const { address, chainId } = useAccount();
   const navigate = useNavigate();
+  const publicClient = usePublicClient({ chainId: season.chainId });
 
   const {
     isFetching: isFetchingMerkleProofs,
@@ -56,6 +60,23 @@ export function ClaimDegenPointsDialog({
   console.log(
     `Claiming status [${season.id}]: isClaiming=${isClaimPending} isError=${isClaimError} - ${claimError}`
   );
+
+  // Replace the balance check query
+  const { data: walletNativeBalance = 0 } = useQuery({
+    enabled: Boolean(degenPoints.wallet_address),
+    queryKey: ['walletNativeBalance', degenPoints.wallet_address],
+    queryFn: async () => {
+      if (!degenPoints.wallet_address) return 0;
+
+      const balance = await publicClient?.getBalance({
+        address: degenPoints.wallet_address as `0x${string}`
+      });
+
+      return Number(formatUnits(balance ?? 0n, 18));
+    }
+  });
+
+  const hasEnoughNative = walletNativeBalance >= (season.chainId === base.id ? 0.0001 : 10);
 
   useEffect(() => {
     if (isClaimedAlready) {
@@ -154,6 +175,19 @@ export function ClaimDegenPointsDialog({
         address?.toLowerCase() === degenPoints.wallet_address.toLowerCase() ? (
           !isClaimCheckPending && chainId !== season.chainId ? (
             <LoadingSwitchChainButton lazy={false} chainId={season.chainId} />
+          ) : !hasEnoughNative ? (
+            <Stack spacing={1} alignItems="center" width="100%">
+              <Typography align="center" color="error" variant="subtitle2">
+                Insufficient {season.chainId === base.id ? 'ETH' : 'DEGEN'} for gas fees <br />
+                (min {season.chainId === base.id ? '0.0001 ETH' : '10 DEGEN'} required)
+              </Typography>
+              <Button
+                fullWidth
+                variant="contained"
+                onClick={() => navigate(`/payment/create?recipient=${degenPoints.wallet_address}`)}>
+                Fund wallet with {season.chainId === base.id ? 'ETH' : 'DEGEN'}
+              </Button>
+            </Stack>
           ) : (
             <CustomLoadingButton
               title="Claim"
