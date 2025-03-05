@@ -31,7 +31,7 @@ export function LoadingSwitchChainButton({
     <LoadingButton
       {...props}
       fullWidth
-      variant="outlined"
+      variant="contained"
       loading={isPending && !isError}
       loadingIndicator={
         <Stack direction="row" spacing={1} alignItems="center">
