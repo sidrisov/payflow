@@ -28,7 +28,6 @@ public class CacheConfig {
 	public static final String CACHE_PREFIX_VERSION = "v0.0.11_0:";
 	public static final String CONTACTS_CACHE_NAME = CACHE_PREFIX_VERSION + "contacts";
 	public static final String CONTACT_LIST_CACHE_NAME = CACHE_PREFIX_VERSION + "contact-list";
-	public static final String FAN_TOKEN_CACHE_NAME = CACHE_PREFIX_VERSION + "moxie-fan-token";
 	public static final String SOCIALS_CACHE_NAME = CACHE_PREFIX_VERSION + "socials";
 	public static final String SOCIALS_INSIGHTS_CACHE_NAME = CACHE_PREFIX_VERSION + "insights";
 	public static final String FARCASTER_VERIFICATIONS_CACHE_NAME = CACHE_PREFIX_VERSION + "1" +
@@ -92,7 +91,6 @@ public class CacheConfig {
 		// Basic configs with different TTLs
 		cacheConfigurations.put(CONTACTS_CACHE_NAME, configuration.entryTtl(contactsExpireAfterWriteDuration));
 		cacheConfigurations.put(CONTACT_LIST_CACHE_NAME, configuration.entryTtl(contactsListExpireAfterWriteDuration));
-		cacheConfigurations.put(FAN_TOKEN_CACHE_NAME, configuration.entryTtl(Duration.ofMinutes(5)));
 		cacheConfigurations.put(SOCIALS_CACHE_NAME, configuration.entryTtl(socialsExpireAfterWriteDuration));
 		cacheConfigurations.put(SOCIALS_INSIGHTS_CACHE_NAME, configuration.entryTtl(socialsExpireAfterWriteDuration));
 		cacheConfigurations.put(NEYNAR_FARCASTER_USER_CACHE,
@@ -144,7 +142,6 @@ public class CacheConfig {
 		val cacheSpecs = new HashMap<String, Cache<Object, Object>>();
 		cacheSpecs.put(CONTACTS_CACHE_NAME, buildCache(contactsExpireAfterWriteDuration));
 		cacheSpecs.put(CONTACT_LIST_CACHE_NAME, buildCache(contactsListExpireAfterWriteDuration));
-		cacheSpecs.put(FAN_TOKEN_CACHE_NAME, buildCache(Duration.ofMinutes(5)));
 		cacheSpecs.put(SOCIALS_CACHE_NAME, buildCache(socialsExpireAfterWriteDuration, socialsMaxSize));
 		cacheSpecs.put(SOCIALS_INSIGHTS_CACHE_NAME, buildCache(socialsExpireAfterWriteDuration, socialsMaxSize));
 		cacheSpecs.put(FARCASTER_VERIFICATIONS_CACHE_NAME,

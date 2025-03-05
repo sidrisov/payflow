@@ -19,7 +19,7 @@ import java.util.List;
 public class StatsController {
 
 	@Autowired
-	private final StatsService statsService;
+	private StatsService statsService;
 
 	@GetMapping("/daily")
 	public DailyStats getDailyStats() {

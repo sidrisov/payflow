@@ -17,7 +17,6 @@ export type Type = 'FRAME' | 'INTENT' | 'APP' | 'BATCH' | 'SESSION_INTENT';
 export type PaymentCategory =
   | 'fc_storage'
   | 'mint'
-  | 'fan'
   | 'hypersub'
   | 'reward'
   | 'reward_top_reply'

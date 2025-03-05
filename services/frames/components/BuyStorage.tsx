@@ -30,7 +30,7 @@ function BuyStorageEntry({ chains, tokens }: { chains: Chain[]; tokens: string[]
         }}>
         <img
           src={assetImageSrc('/assets/apps/farcaster.png')}
-          alt="Buy Fan Tokens"
+          alt="Buy Storage"
           style={{
             width: 60,
             height: 60,
@@ -146,7 +146,7 @@ function BuyStorage({ identity, storage }: { identity: IdentityType; storage: St
         }}>
         <img
           src={assetImageSrc('/assets/apps/farcaster.png')}
-          alt="Buy Fan Tokens"
+          alt="Buy Storage"
           style={{
             width: 60,
             height: 60,

@@ -113,7 +113,7 @@ public class PaymentComposerController {
 					.queryParam("access_token", accessToken)
 					.build()
 					.toUriString();
-			case "degen", "moxie" ->
+			case "degen" ->
 				UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 						.path("/composer")
 						.queryParam("mini")

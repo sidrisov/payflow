@@ -1,41 +1,3 @@
-export const QUERY_SOCIALS_INSIGHTS = /* GraphQL */ `
-  query GetSocialsInsights($identity: Identity!, $me: Identity!) {
-    Wallet(input: { identity: $identity }) {
-      addresses
-      primaryDomain {
-        name
-      }
-      domains(input: { limit: 1 }) {
-        name
-      }
-      socials(input: { limit: 5, filter: { followerCount: { _gt: 0 } } }) {
-        dappName
-        profileName
-        profileDisplayName
-        profileImage
-        profileImageContentValue {
-          image {
-            extraSmall
-          }
-        }
-        followerCount
-      }
-      socialFollowers(input: { filter: { identity: { _eq: $me }, dappName: { _eq: farcaster } } }) {
-        Follower {
-          dappName
-        }
-      }
-      socialFollowings(
-        input: { filter: { identity: { _eq: $me }, dappName: { _eq: farcaster } } }
-      ) {
-        Following {
-          dappName
-        }
-      }
-    }
-  }
-`;
-
 export const QUERY_SOCIALS = /* GraphQL */ `
   query GetSocials($identity: Identity!) {
     Wallet(input: { identity: $identity }) {
@@ -255,59 +217,6 @@ export const QUERY_FARCASTER_PROFILE_BY_IDENTITY = /* GraphQL */ `
         }
         userId
       }
-    }
-  }
-`;
-
-export const QUERY_MOXIE_REWARDS = `
-  query FarcasterUserClaimTransactionDetails($fid: Int!) {
-    FarcasterUserClaimTransactionDetails(input: { fid: $fid }) {
-      fid
-      availableClaimAmount
-      minimumClaimableAmountInWei
-      availableClaimAmountInWei
-      claimedAmount
-      claimedAmountInWei
-      processingAmount
-      processingAmountInWei
-    }
-  }
-`;
-
-export const QUERY_CLAIM_MOXIE_REWARDS = `
-  mutation FarcasterUserClaimMoxie($fid: Int!, $preferredConnectedWallet: String!) {
-    FarcasterUserClaimMoxie(
-      input: {fid: $fid, preferredConnectedWallet: $preferredConnectedWallet}
-    ) {
-      fid
-      availableClaimAmount
-      minimumClaimableAmountInWei
-      availableClaimAmountInWei
-      claimedAmount
-      claimedAmountInWei
-      processingAmount
-      processingAmountInWei
-      tokenAddress
-      chainId
-      transactionId
-      transactionStatus
-      transactionAmount
-      transactionAmountInWei
-      rewardsLastEarnedTimestamp
-    }
-  }
-`;
-
-export const QUERY_CHECK_STATUS_CLAIM_MOXIE_REWARDS = `
-  query FarcasterUserClaimTransactionDetails($fid: Int!, $transactionId: String) {
-    FarcasterUserClaimTransactionDetails(
-      input: {fid: $fid, transactionId: $transactionId}
-    ) {
-      transactionId
-      transactionStatus
-      transactionAmount
-      transactionAmountInWei
-      rewardsLastEarnedTimestamp
     }
   }
 `;

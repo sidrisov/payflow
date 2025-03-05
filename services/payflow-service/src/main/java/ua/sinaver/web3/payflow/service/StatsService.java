@@ -57,7 +57,6 @@ public class StatsService {
 				stats.totalPayments());
 		log.info("P2P Payments (including rewards): {}", stats.p2pPayments());
 		log.info("Storage Units Purchased: {}", stats.storageUnitsPurchased());
-		log.info("Fan Tokens Purchased: {}", stats.fanTokensPurchased());
 		log.info("Mint Tokens Purchased: {}", stats.mintTokensPurchased());
 		log.info("Hyper Subscriptions: {}", stats.hypersubMonthsSubscribed());
 	}
@@ -76,7 +75,6 @@ public class StatsService {
 				"reward_top_reply", "reward_top_casters"));
 		val storageUnitsPurchased = paymentRepository.countPurchasedAmountByCategory("fc_storage");
 		val mintTokensPurchased = paymentRepository.countPurchasedAmountByCategory("mint");
-		val fanTokensPurchased = paymentRepository.countPurchasedAmountByCategory("fan");
 		val hyperSubscriptions = paymentRepository.countPurchasedAmountByCategory("hypersub");
 
 		return new DailyStats(
@@ -89,7 +87,6 @@ public class StatsService {
 				p2pPayments,
 				storageUnitsPurchased,
 				mintTokensPurchased,
-				fanTokensPurchased,
 				hyperSubscriptions);
 	}
 

@@ -15,7 +15,6 @@ import { green } from '@mui/material/colors';
 import { TbProgressCheck } from 'react-icons/tb';
 import { getReceiptUrl } from '../../utils/receipts';
 import { FaTag } from 'react-icons/fa6';
-import { fanTokenUrl } from '../../utils/moxie';
 import { HiOutlineReceiptRefund } from 'react-icons/hi2';
 
 function getDomainFromUrl(url: string): string {
@@ -79,21 +78,6 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
                         : `View on ${targetDomain}`}
               <Typography variant="caption" display="block" color="text.secondary">
                 {targetDomain}
-              </Typography>
-            </Typography>
-            <OpenInNew fontSize="small" sx={{ marginLeft: 'auto', paddingLeft: 1 }} />
-          </MenuItem>
-        )}
-
-        {payment.category === 'fan' && (
-          <MenuItem component="a" href={fanTokenUrl(payment.token.split(';')[0])} target="_blank">
-            <ListItemIcon>
-              <FaTag size={20} />
-            </ListItemIcon>
-            <Typography variant="body2">
-              Fan Token
-              <Typography variant="caption" display="block" color="text.secondary">
-                {payment.token.split(';')[0]}
               </Typography>
             </Typography>
             <OpenInNew fontSize="small" sx={{ marginLeft: 'auto', paddingLeft: 1 }} />

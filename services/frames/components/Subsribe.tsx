@@ -22,7 +22,7 @@ function BuyHypersub({ chains, tokens }: { chains: Chain[]; tokens: string[] }) 
         }}>
         <img
           src={assetImageSrc('/assets/apps/fabric.png')}
-          alt="Buy Fan Tokens"
+          alt="Buy Subscription"
           style={{
             width: 60,
             height: 60,

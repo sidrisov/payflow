@@ -90,7 +90,6 @@ public class AnthropicAgentPrompt {
 			3. Additional Services:
 			   - Storage management
 			   - Collectibles
-			   - Moxie fan tokens
 			   - Hypersub
 			   - Claimables
 

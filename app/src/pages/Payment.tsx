@@ -23,7 +23,6 @@ import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 import { fetchHypersubData, HypersubData } from '../utils/hooks/useHypersub';
 
 const LazyMintDialog = lazy(() => import('../components/payment/MintDialog'));
-const LazyBuyFanTokenDialog = lazy(() => import('../components/payment/BuyFanTokenDialog'));
 const LazySubscribeToHypersubDialog = lazy(() => import('../components/payment/HypersubDialog'));
 const LazyGiftStorageDialog = lazy(() => import('../components/payment/BuyStorageDialog'));
 const LazyPaymentDialog = lazy(() => import('../components/payment/PaymentDialog'));
@@ -201,20 +200,6 @@ export default function Payment() {
                   senderSocial={senderSocial}
                   recipientSocial={recipientSocial}
                   mint={mintData}
-                  closeStateCallback={async () => {
-                    navigate('/');
-                  }}
-                />
-              )) ||
-              (payment.category === 'fan' && senderSocial && recipientSocial && (
-                <LazyBuyFanTokenDialog
-                  alwaysShowBackButton
-                  title="Complete Payment"
-                  open={payment != null}
-                  payment={payment}
-                  sender={sender}
-                  senderSocial={senderSocial}
-                  recipientSocial={recipientSocial}
                   closeStateCallback={async () => {
                     navigate('/');
                   }}

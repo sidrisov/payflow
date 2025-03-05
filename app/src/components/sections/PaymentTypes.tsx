@@ -27,7 +27,6 @@ const StyledTypography = styled(Typography)(() => ({
 const PAYMENT_TITLES: { [key: string]: string } = {
   fc_storage: 'Buy Storage',
   mint: 'Mint',
-  fan: 'Buy Token',
   hypersub: 'Hypersub',
   reward: 'Reward',
   reward_top_reply: 'Top Reply Reward',
@@ -167,30 +166,6 @@ export const GiftStoragePayment: React.FC<PaymentComponentProps> = ({ payment })
   );
 };
 
-export const FanTokenPayment: React.FC<PaymentComponentProps> = ({ payment }) => {
-  const { social, isMobile, loading } = usePaymentData(payment);
-
-  return (
-    <PaymentContentWrapper payment={payment} loading={loading}>
-      {social && (
-        <>
-          <RecipientInfo payment={payment} social={social} />
-          <Typography
-            textAlign="center"
-            variant="subtitle2"
-            fontWeight="bold"
-            fontSize={isMobile ? 12 : 13}>
-            {payment.tokenAmount
-              ? `${formatAmountWithSuffix(payment.tokenAmount.toString())} `
-              : ''}
-            {payment.token.split(';')[0]}
-          </Typography>
-        </>
-      )}
-    </PaymentContentWrapper>
-  );
-};
-
 export const MintPayment: React.FC<PaymentComponentProps> = ({ payment }) => {
   const { social, mintData, isMobile, loading } = usePaymentData(payment);
   const mintCount = payment.tokenAmount ?? 1;
@@ -290,8 +265,6 @@ export const PaymentItem: React.FC<PaymentComponentProps> = ({ payment, ...props
         return GiftStoragePayment;
       case 'mint':
         return MintPayment;
-      case 'fan':
-        return FanTokenPayment;
       case 'hypersub':
         return HypersubPayment;
       default:

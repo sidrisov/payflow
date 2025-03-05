@@ -3,6 +3,7 @@ package ua.sinaver.web3.payflow.service;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
+import org.checkerframework.checker.units.qual.s;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -13,12 +14,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import ua.sinaver.web3.payflow.config.PayflowConfig;
+import ua.sinaver.web3.payflow.entity.User;
 import ua.sinaver.web3.payflow.message.ConnectedAddresses;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.message.alfafrens.ChannelSubscribersAndStakesResponseMessage;
 import ua.sinaver.web3.payflow.message.alfafrens.UserByFidResponseMessage;
 import ua.sinaver.web3.payflow.message.subscription.SubscriberMessage;
 import ua.sinaver.web3.payflow.message.subscription.SubscribersMessage;
+import ua.sinaver.web3.payflow.repository.UserRepository;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
@@ -44,6 +47,9 @@ public class IdentitySubscriptionsService {
 	@Autowired
 	private FarcasterNeynarService neynarService;
 
+	@Autowired
+	private UserRepository userRepository;
+
 	@Value("${payflow.hypersub.contacts.limit:10}")
 	private int hypersubContactsLimit;
 
@@ -51,7 +57,7 @@ public class IdentitySubscriptionsService {
 	private int paragraphContactsLimit;
 
 	public IdentitySubscriptionsService(WebClient.Builder builder,
-	                                    PayflowConfig payflowConfig) {
+			PayflowConfig payflowConfig) {
 		webClient = builder
 				.baseUrl("https://www.alfafrens.com/api/v0")
 				.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -69,73 +75,86 @@ public class IdentitySubscriptionsService {
 	public List<String> fetchAlfaFrensSubscribers(String identity) {
 		log.debug("Fetching alfa frens subscribers for identity: {}", identity);
 
-		try {
-			val fid = identityService.getIdentityFid(identity);
+		return Collections.emptyList();
 
-			log.debug("Fetched fid: {} for identity: {}", fid, identity);
-			if (StringUtils.isBlank(fid)) {
-				log.error("No fid found for identity: {}", identity);
-				return Collections.emptyList();
-			}
-
-			val userResponse = webClient.get()
-					.uri(uriBuilder -> uriBuilder.path("/getUserByFid")
-							.queryParam("fid", fid)
-							.build())
-					.retrieve().bodyToMono(UserByFidResponseMessage.class).block();
-
-			if (userResponse == null || StringUtils.isBlank(userResponse.channelAddress())) {
-				log.error("No alfa frens user found for fid or not channel: {}, response: {}",
-						fid, userResponse);
-				return Collections.emptyList();
-			}
-
-			log.debug("Fetched alfa frens user response: {} for fid: {}", userResponse, fid);
-
-			val channelAddress = userResponse.channelAddress();
-			val channelResponse = webClient.get()
-					.uri(uriBuilder -> uriBuilder.path("/getChannelSubscribersAndStakes")
-							.queryParam("channelAddress", channelAddress)
-							.build())
-					.retrieve().bodyToMono(ChannelSubscribersAndStakesResponseMessage.class).block();
-
-			if (channelResponse == null) {
-				log.error("Channel not found for address: {}", channelAddress);
-				return Collections.emptyList();
-			}
-
-			log.debug("Fetched alfa frens channel response: {} for channel address: {}",
-					channelResponse, channelAddress);
-
-			val subscribers = channelResponse.members()
-					.stream().filter(s -> s.isSubscribed() || s.isStaked())
-					.map(s -> String.format(
-							"fc_fid:%s", s.fid()))
-					.toList();
-			log.debug("Fetched alfa frens subscribers: {} for identity: {}", subscribers, identity);
-
-			val subscribersVerifiedAddresses = subscribers.stream()
-					.map(s -> identityService.getIdentitiesInfo(
-									verificationsWithoutCustodial(
-											socialGraphService.getIdentityVerifiedAddresses(s)))
-							.stream()
-							.max(Comparator.comparingInt(IdentityMessage::score))
-							.map(IdentityMessage::address)
-							.orElse(null))
-					.filter(Objects::nonNull)
-					.collect(Collectors.toList());
-
-			log.debug("Fetched alfa frens subscribers subscribersVerifiedAddresses: {} for identity: {}",
-					subscribersVerifiedAddresses,
-					identity);
-
-			return subscribersVerifiedAddresses;
-		} catch (Throwable t) {
-			log.error("Exception fetching alfa frens subscribers for identity: {}, error: {}",
-					identity, t.getMessage());
-
-			throw t;
-		}
+		/*
+		 * try {
+		 * val fid = identityService.getIdentityFid(identity);
+		 * 
+		 * log.debug("Fetched fid: {} for identity: {}", fid, identity);
+		 * if (StringUtils.isBlank(fid)) {
+		 * log.error("No fid found for identity: {}", identity);
+		 * return Collections.emptyList();
+		 * }
+		 * 
+		 * val userResponse = webClient.get()
+		 * .uri(uriBuilder -> uriBuilder.path("/getUserByFid")
+		 * .queryParam("fid", fid)
+		 * .build())
+		 * .retrieve().bodyToMono(UserByFidResponseMessage.class).block();
+		 * 
+		 * if (userResponse == null ||
+		 * StringUtils.isBlank(userResponse.channelAddress())) {
+		 * log.error("No alfa frens user found for fid or not channel: {}, response: {}"
+		 * ,
+		 * fid, userResponse);
+		 * return Collections.emptyList();
+		 * }
+		 * 
+		 * log.debug("Fetched alfa frens user response: {} for fid: {}", userResponse,
+		 * fid);
+		 * 
+		 * val channelAddress = userResponse.channelAddress();
+		 * val channelResponse = webClient.get()
+		 * .uri(uriBuilder -> uriBuilder.path("/getChannelSubscribersAndStakes")
+		 * .queryParam("channelAddress", channelAddress)
+		 * .build())
+		 * .retrieve().bodyToMono(ChannelSubscribersAndStakesResponseMessage.class).
+		 * block();
+		 * 
+		 * if (channelResponse == null) {
+		 * log.error("Channel not found for address: {}", channelAddress);
+		 * return Collections.emptyList();
+		 * }
+		 * 
+		 * log.debug("Fetched alfa frens channel response: {} for channel address: {}",
+		 * channelResponse, channelAddress);
+		 * 
+		 * val subscribers = channelResponse.members()
+		 * .stream().filter(s -> s.isSubscribed() || s.isStaked())
+		 * .map(s -> String.format(
+		 * "fc_fid:%s", s.fid()))
+		 * .toList();
+		 * log.debug("Fetched alfa frens subscribers: {} for identity: {}", subscribers,
+		 * identity);
+		 * 
+		 * val subscribersVerifiedAddresses = subscribers.stream()
+		 * .map(s -> identityService.getIdentitiesInfo(
+		 * verificationsWithoutCustodial(
+		 * socialGraphService.getIdentityVerifiedAddresses(s)))
+		 * .stream()
+		 * .max(Comparator.comparingInt(IdentityMessage::score))
+		 * .map(IdentityMessage::address)
+		 * .orElse(null))
+		 * .filter(Objects::nonNull)
+		 * .collect(Collectors.toList());
+		 * 
+		 * log.
+		 * debug("Fetched alfa frens subscribers subscribersVerifiedAddresses: {} for identity: {}"
+		 * ,
+		 * subscribersVerifiedAddresses,
+		 * identity);
+		 * 
+		 * return subscribersVerifiedAddresses;
+		 * } catch (Throwable t) {
+		 * log.
+		 * error("Exception fetching alfa frens subscribers for identity: {}, error: {}"
+		 * ,
+		 * identity, t.getMessage());
+		 * 
+		 * throw t;
+		 * }
+		 */
 	}
 
 	@Cacheable(value = CONTACT_LIST_CACHE_NAME, key = "'fabric-list:' + #identity", unless = "#result.isEmpty()")
@@ -175,15 +194,22 @@ public class IdentitySubscriptionsService {
 
 			log.debug("Total fabric subscribers: {} for fid: {}", subscribers.size(), fid);
 
+			val allAddresses = subscribers.stream()
+					.flatMap(subscriber -> subscriber.addressesWithoutCustodialIfAvailable().stream())
+					.distinct()
+					.collect(Collectors.toList());
+
+			// Fetch all users in a single query
+			val usersMap = userRepository.findAllByIdentityInIgnoreCase(allAddresses)
+					.stream()
+					.collect(Collectors.toMap(u -> u.getIdentity().toLowerCase(), u -> u));
+
 			val subscribersScoredAddresses = subscribers.stream()
-					.limit(hypersubContactsLimit)
-					.map(user -> identityService.getIdentitiesInfo(user.addressesWithoutCustodialIfAvailable())
-							.stream()
-							.max(Comparator.comparingInt(IdentityMessage::score))
-							.map(IdentityMessage::address)
-							.orElse(null))
+					.map(subscriber -> determinePreferredAddress(subscriber.addressesWithoutCustodialIfAvailable(),
+							usersMap))
 					.filter(Objects::nonNull)
 					.collect(Collectors.toList());
+
 			log.debug("Fetched fabric subscribers scored address: {} for fid: {} ({})",
 					subscribers,
 					fid,
@@ -259,7 +285,7 @@ public class IdentitySubscriptionsService {
 	}
 
 	public List<SubscriberMessage> fetchHypersubSubscribers(int chainId, String contractAddress,
-	                                                        List<String> accounts) {
+			List<String> accounts) {
 		return onchainServiceClient.get()
 				.uri(uriBuilder -> uriBuilder
 						.path("/hypersub/subscribers")
@@ -279,5 +305,14 @@ public class IdentitySubscriptionsService {
 							contractAddress, chainId, e);
 					return Mono.just(Collections.emptyList());
 				}).blockOptional().orElse(Collections.emptyList());
+	}
+
+	private String determinePreferredAddress(List<String> addresses, Map<String, User> usersMap) {
+		return addresses.stream()
+				.max(Comparator.<String, Integer>comparing(address -> {
+					val positionScore = addresses.indexOf(address);
+					val profileBonus = usersMap.containsKey(address.toLowerCase()) ? 10 : 0;
+					return positionScore + profileBonus;
+				})).orElse(null);
 	}
 }

@@ -17,10 +17,6 @@ import ua.sinaver.web3.payflow.service.*;
 import ua.sinaver.web3.payflow.utils.FrameResponse;
 
 import java.text.DecimalFormat;
-import java.util.List;
-
-import static ua.sinaver.web3.payflow.service.TokenService.BASE_CHAIN_NAME;
-import static ua.sinaver.web3.payflow.service.TokenService.PAYMENT_CHAIN_NAMES;
 
 @RestController
 @RequestMapping("/farcaster/actions/pay")
@@ -36,9 +32,6 @@ public class IntentsController {
 
 	@Autowired
 	private PaymentRepository paymentRepository;
-
-	@Autowired
-	private AirstackSocialGraphService socialGraphService;
 
 	@Autowired
 	private TokenService tokenService;
@@ -74,21 +67,10 @@ public class IntentsController {
 
 		CastActionMeta castActionMeta;
 
-		val chain = PAYMENT_CHAIN_NAMES.getOrDefault(chainId, BASE_CHAIN_NAME);
 		String amountStr = tokenAmount != null ? formatDouble(tokenAmount) : String.format("$%s", formatDouble(amount));
 		String tokenStr = StringUtils.upperCase(token);
-		String chainStr = StringUtils.capitalize(chain);
 
 		switch (type) {
-			case "reward_top_reply":
-				castActionMeta = new CastActionMeta(
-						String.format("%s %s Top Comment Reward", amountStr, tokenStr),
-						"gift",
-						"Use this action to submit Top Comment Reward",
-						"https://payflow.me/actions",
-						new CastActionMeta.Action("post"));
-				break;
-
 			case "reward":
 			default:
 				String title = String.format("%s %s Cast Reward", amountStr, tokenStr);
@@ -172,34 +154,6 @@ public class IntentsController {
 		val sourceApp = validateMessage.action().signer().client().displayName();
 
 		switch (type) {
-			case "reward_top_reply":
-				val parentHash = validateMessage.action().cast().hash();
-				val topReply = socialGraphService.getTopCastReply(parentHash,
-						List.of(String.valueOf(validateMessage.action().cast().author().fid()),
-								String.valueOf(clickedFid)));
-				if (topReply == null) {
-					log.error("Failed to fetch top comment for: {}", parentHash);
-					return ResponseEntity.badRequest().body(
-							new FrameResponse.FrameMessage("Failed to identify top comment!"));
-				}
-				int casterFid = Integer.parseInt(topReply.getFid());
-				val castHash = topReply.getHash();
-				val payment = rewardsService.createRewardPayment(clickedProfile, casterFid,
-						castHash,
-						"reward_top_reply",
-						amount, tokenAmount, token, chainId, sourceApp, topReply.getUrl());
-				if (payment == null) {
-					return ResponseEntity.badRequest().body(
-							new FrameResponse.FrameMessage("Failed to create reward intent. " +
-									"Contact @sinaver.eth"));
-				}
-				paymentRepository.save(payment);
-				log.debug("Top reply reward intent saved: {}", payment);
-
-				return ResponseEntity.ok().body(
-						new FrameResponse.ActionFrame("frame",
-								linkService.paymentLink(payment, false).toString()));
-
 			case "reward_top_casters":
 				val channelId = allParams.getFirst("channel");
 				val hypersubContractAddress = allParams.getFirst("hypersub");

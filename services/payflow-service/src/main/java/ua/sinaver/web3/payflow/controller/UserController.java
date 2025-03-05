@@ -19,11 +19,10 @@ import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 import ua.sinaver.web3.payflow.message.*;
 import ua.sinaver.web3.payflow.message.farcaster.StorageUsage;
 import ua.sinaver.web3.payflow.message.subscription.Subscription;
-import ua.sinaver.web3.payflow.message.subscription.SubscribersMessage.SubscribedTo;
+import ua.sinaver.web3.payflow.service.ContactBookService;
 import ua.sinaver.web3.payflow.service.FarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.FlowService;
 import ua.sinaver.web3.payflow.service.UserService;
-import ua.sinaver.web3.payflow.service.api.IContactBookService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
 import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
@@ -44,7 +43,7 @@ public class UserController {
 	private FlowService flowService;
 
 	@Autowired
-	private IContactBookService contactBookService;
+	private ContactBookService contactBookService;
 
 	@Autowired
 	private ISocialGraphService socialGraphService;

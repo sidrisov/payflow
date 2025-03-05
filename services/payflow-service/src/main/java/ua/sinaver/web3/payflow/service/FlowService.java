@@ -277,7 +277,7 @@ public class FlowService {
 	}
 
 	public void createWalletSession(String uuid, String address, Integer chainId,
-	                                WalletSessionMessage session, User user) throws Exception {
+			WalletSessionMessage session, User user) throws Exception {
 		val flow = flowRepository.findByUuid(uuid);
 		if (flow == null) {
 			throw new Exception("Flow doesn't exist");
@@ -299,7 +299,7 @@ public class FlowService {
 	}
 
 	public List<WalletSessionMessage> getWalletSessions(String uuid, String address,
-	                                                    Integer chainId, User user) throws Exception {
+			Integer chainId, User user) throws Exception {
 		val flow = flowRepository.findByUuid(uuid);
 		if (flow == null) {
 			throw new Exception("Flow doesn't exist");
@@ -319,7 +319,7 @@ public class FlowService {
 	}
 
 	public void updateWalletSession(String uuid, String address, Integer chainId,
-	                                String sessionId, WalletSessionMessage sessionUpdate, User user) throws Exception {
+			String sessionId, WalletSessionMessage sessionUpdate, User user) throws Exception {
 		val flow = flowRepository.findByUuid(uuid);
 		if (flow == null) {
 			throw new Exception("Flow doesn't exist");
@@ -347,7 +347,7 @@ public class FlowService {
 	}
 
 	public void deactivateWalletSession(String uuid, String address, Integer chainId,
-	                                    String sessionId, User user) throws Exception {
+			String sessionId, User user) throws Exception {
 		val flow = flowRepository.findByUuid(uuid);
 		if (flow == null) {
 			throw new Exception("Flow doesn't exist");
