@@ -14,7 +14,5 @@ public interface ISocialGraphService {
 
 	Wallet getSocialMetadata(String identity);
 
-	Wallet getSocialInsights(String identity, String me);
-
 	FarcasterChannel getFarcasterChannelByChannelId(String channelId);
 }

@@ -1,11 +1,13 @@
 import { MetaType, ContactType, SocialInfoType, InsightsType } from '@payflow/common';
 import { Address, isAddress } from 'viem';
 import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';
-import { searchByListOfAddressesOrUsernames } from './user';
-import { Wallet } from '../generated/graphql/types';
+import { getProfileByAddressOrName, searchByListOfAddressesOrUsernames } from './user';
+import { GetSocialsQuery, Wallet } from '../generated/graphql/types';
 import { getPublicClient } from 'wagmi/actions';
 import { wagmiConfig } from '../utils/wagmiConfig';
 import { degen } from 'viem/chains';
+import { fetchQuery } from '@airstack/airstack-react';
+import { QUERY_SOCIALS } from '../utils/airstackQueries';
 
 const FOLLOWING = 7;
 const FOLLOWER = 3;
@@ -194,9 +196,7 @@ async function searchByDomainOrAddress(searchValue: string, me?: string): Promis
     identity = degenDomainHolderAddress as Address;
   }
 
-  return [];
-
-  /* const { data } = await fetchQuery<GetSocialsQuery>(QUERY_SOCIALS, { identity }, { cache: true });
+  const { data } = await fetchQuery<GetSocialsQuery>(QUERY_SOCIALS, { identity }, { cache: true });
 
   if (!data?.Wallet) return [];
 
@@ -205,7 +205,7 @@ async function searchByDomainOrAddress(searchValue: string, me?: string): Promis
 
   const profile = await getProfileByAddressOrName(identityResult.data.address);
   identityResult.data.profile = profile;
-  return [identityResult]; */
+  return [identityResult];
 }
 
 export function convertSocialResults(wallet: Wallet): ContactType | undefined {
@@ -272,20 +272,9 @@ export function convertSocialResults(wallet: Wallet): ContactType | undefined {
     meta.socials = [];
   }
 
-  // todo: airstack api does not return this
-  /*   if (wallet.primaryDomain && wallet.primaryDomain.tokenNft) {
-    meta.ensAvatar = wallet.primaryDomain.tokenNft.contentValue?.image?.small as string;
-  } */
-
   if (!meta.ensAvatar && meta.socials.length > 0) {
     meta.ensAvatar = meta.socials[0].profileImage;
   }
-
-  /*   if (wallet.xmtp && wallet.xmtp[0].isXMTPEnabled) {
-    meta.xmtp = true;
-  } else {
-    meta.xmtp = false;
-  } */
 
   meta.insights = {} as InsightsType;
 

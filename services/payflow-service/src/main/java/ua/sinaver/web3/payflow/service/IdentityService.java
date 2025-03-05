@@ -253,24 +253,12 @@ public class IdentityService implements IIdentityService {
 												identity,
 												exception.getMessage());
 										return Mono.empty();
-									}),
-							Mono.fromCallable(
-									() -> Optional.ofNullable(StringUtils.isNotBlank(me)
-											? socialGraphService.getSocialInsights(identity, me)
-											: null))
-									.subscribeOn(Schedulers.boundedElastic())
-									.onErrorResume(exception -> {
-										log.error("Error fetching social insights" +
-												" for {} - {}",
-												identity,
-												exception.getMessage());
-										return Mono.empty();
 									}))
 							.map(tuple -> IdentityMessage.convert(
 									identity,
 									tuple.getT2().orElse(null),
 									tuple.getT3(),
-									tuple.getT4().orElse(null))))
+									null)))
 					.sequential()
 					.timeout(Duration.ofSeconds(10), Mono.empty())
 					.collectList()
