@@ -62,7 +62,7 @@ export function ClaimDegenPointsDialog({
   );
 
   // Replace the balance check query
-  const { data: walletNativeBalance = 0 } = useQuery({
+  const { data: walletNativeBalance = 0, isPending: isWalletNativeBalancePending } = useQuery({
     enabled: Boolean(degenPoints.wallet_address),
     queryKey: ['walletNativeBalance', degenPoints.wallet_address],
     queryFn: async () => {
@@ -175,7 +175,7 @@ export function ClaimDegenPointsDialog({
         address?.toLowerCase() === degenPoints.wallet_address.toLowerCase() ? (
           !isClaimCheckPending && chainId !== season.chainId ? (
             <LoadingSwitchChainButton lazy={false} chainId={season.chainId} />
-          ) : !hasEnoughNative ? (
+          ) : !isWalletNativeBalancePending && !hasEnoughNative ? (
             <Stack spacing={1} alignItems="center" width="100%">
               <Typography align="center" color="error" variant="subtitle2">
                 Insufficient {season.chainId === base.id ? 'ETH' : 'DEGEN'} for gas fees <br />
@@ -192,8 +192,17 @@ export function ClaimDegenPointsDialog({
             <CustomLoadingButton
               title="Claim"
               disabled={!merkleProofs}
-              loading={isFetchingMerkleProofs || isClaimCheckPending || isClaimPending}
-              status={isFetchingMerkleProofs || isClaimCheckPending ? 'Checking' : 'Claiming'}
+              loading={
+                isFetchingMerkleProofs ||
+                isClaimCheckPending ||
+                isClaimPending ||
+                isWalletNativeBalancePending
+              }
+              status={
+                isFetchingMerkleProofs || isClaimCheckPending || isWalletNativeBalancePending
+                  ? 'Checking'
+                  : 'Claiming'
+              }
               onClick={handleClaimPoints}
             />
           )
