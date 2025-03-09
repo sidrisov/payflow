@@ -8,7 +8,8 @@ import {
   Container,
   Paper,
   BottomNavigation,
-  BottomNavigationAction} from '@mui/material';
+  BottomNavigationAction
+} from '@mui/material';
 
 import { CgProfile } from 'react-icons/cg';
 
@@ -53,6 +54,7 @@ export default function App() {
   })();
 
   const [isFrameV2, setIsFrameV2] = useState(false);
+  const [safeAreaInsets, setSafeAreaInsets] = useState({ bottom: 0 });
 
   const fetchingStatusRef = useRef(false);
   const [loading, setLoading] = useState<boolean>(true);
@@ -103,6 +105,7 @@ export default function App() {
 
       if (context) {
         FrameV2SDK.actions.ready();
+        setSafeAreaInsets(context.client.safeAreaInsets || { bottom: 0 });
 
         if (!context.client.added) {
           const lastChecked = localStorage.getItem('payflow:frame:checked');
@@ -241,6 +244,11 @@ export default function App() {
                     height: 'auto',
                     paddingTop: '8px',
                     paddingBottom: 'calc(env(safe-area-inset-bottom) * 0.65)'
+                  }),
+                  ...(isFrameV2 && {
+                    height: 'auto',
+                    paddingTop: '8px',
+                    paddingBottom: safeAreaInsets.bottom
                   })
                 }}>
                 <BottomNavigationAction
