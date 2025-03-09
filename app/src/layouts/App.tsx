@@ -54,7 +54,7 @@ export default function App() {
   })();
 
   const [isFrameV2, setIsFrameV2] = useState(false);
-  const [safeAreaInsets, setSafeAreaInsets] = useState({ bottom: 0 });
+  const [safeAreaInsets, setSafeAreaInsets] = useState<{ top: string; bottom: string }>();
 
   const fetchingStatusRef = useRef(false);
   const [loading, setLoading] = useState<boolean>(true);
@@ -105,7 +105,12 @@ export default function App() {
 
       if (context) {
         FrameV2SDK.actions.ready();
-        setSafeAreaInsets(context.client.safeAreaInsets || { bottom: 0 });
+        if (context.client.safeAreaInsets) {
+          setSafeAreaInsets({
+            top: `${context.client.safeAreaInsets.top}px`,
+            bottom: `${context.client.safeAreaInsets.bottom}px`
+          });
+        }
 
         if (!context.client.added) {
           const lastChecked = localStorage.getItem('payflow:frame:checked');
@@ -245,9 +250,9 @@ export default function App() {
                     paddingTop: '8px',
                     paddingBottom: 'calc(env(safe-area-inset-bottom) * 0.65)'
                   }),
-                  ...(isFrameV2 && {
+                  ...(safeAreaInsets && {
                     height: 'auto',
-                    paddingTop: '8px',
+                    paddingTop: safeAreaInsets.top,
                     paddingBottom: safeAreaInsets.bottom
                   })
                 }}>
