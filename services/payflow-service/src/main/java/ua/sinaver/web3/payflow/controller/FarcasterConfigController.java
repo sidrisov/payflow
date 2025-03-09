@@ -21,7 +21,7 @@ import java.security.Principal;
 @RequestMapping("/farcaster/config")
 @Slf4j
 @Transactional
-@CrossOrigin(origins = {"${payflow.dapp.url}"}, allowCredentials = "true")
+@CrossOrigin(origins = { "${payflow.dapp.url}" }, allowCredentials = "true")
 public class FarcasterConfigController {
 	@Autowired
 	private UserService userService;
@@ -35,7 +35,7 @@ public class FarcasterConfigController {
 	@PutMapping("/client")
 	@ResponseStatus(HttpStatus.OK)
 	public void updatePreferred(Principal principal,
-	                            @RequestBody User.FarcasterClient farcasterClient) {
+			@RequestBody User.FarcasterClient farcasterClient) {
 		if (principal == null) {
 			throw new BadCredentialsException("No authentication provided!");
 		}
@@ -68,7 +68,8 @@ public class FarcasterConfigController {
 			return ResponseEntity.notFound().build();
 		}
 
-		return ResponseEntity.ok(storageNotificationRepository.findByFid(Integer.parseInt(fid)).orElse(new StorageNotification(Integer.parseInt(fid))));
+		return ResponseEntity.ok(storageNotificationRepository
+				.findByFid(fid).orElse(new StorageNotification(fid)));
 	}
 
 	@PutMapping("/storage/notification")
@@ -91,8 +92,8 @@ public class FarcasterConfigController {
 			return ResponseEntity.notFound().build();
 		}
 
-		val notification = storageNotificationRepository.findByFid(Integer.parseInt(fid))
-				.orElseGet(() -> new StorageNotification(Integer.parseInt(fid)));
+		val notification = storageNotificationRepository.findByFid(fid)
+				.orElseGet(() -> new StorageNotification(fid));
 
 		notification.setEnabled(settings.isEnabled());
 		notification.setNotifyWithMessage(settings.isNotifyWithMessage());

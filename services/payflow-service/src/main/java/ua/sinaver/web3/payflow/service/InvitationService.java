@@ -16,14 +16,9 @@ public class InvitationService {
 	private IdentityService identityService;
 
 	public boolean isWhitelistedByIdentityFid(String identity) {
-		String fidString = identityService.getIdentityFid(identity);
-		if (fidString != null && !fidString.isEmpty()) {
-			try {
-				int fid = Integer.parseInt(fidString);
-				return fid <= payflowConfig.getWhitelistedFidUpperRange();
-			} catch (NumberFormatException e) {
-				log.error("Invalid FID format for identity {}: {}", identity, fidString);
-			}
+		Integer fid = identityService.getIdentityFid(identity);
+		if (fid != null) {
+			return fid <= payflowConfig.getWhitelistedFidUpperRange();
 		}
 		return false;
 	}

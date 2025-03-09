@@ -135,7 +135,8 @@ public class JarContributionController {
 
 		val title = validateMessage.action().input() != null ? validateMessage.action().input().text() : null;
 
-		val clickedProfile = identityService.getProfiles(castInteractor.addressesWithoutCustodialIfAvailable()).stream()
+		val clickedProfile = identityService
+				.getProfilesByAddresses(castInteractor.addressesWithoutCustodialIfAvailable()).stream()
 				.findFirst().orElse(null);
 		if (clickedProfile == null) {
 			log.error("Clicked fid {} is not on payflow", castInteractor);
@@ -437,7 +438,7 @@ public class JarContributionController {
 				new String(Base64.getDecoder().decode(state)),
 				FramePaymentMessage.class);
 
-		val profiles = identityService.getProfiles(clickedProfileAddresses);
+		val profiles = identityService.getProfilesByAddresses(clickedProfileAddresses);
 
 		val jar = flowService.findJarByUUID(uuid);
 
@@ -590,7 +591,7 @@ public class JarContributionController {
 		paymentState = gson.fromJson(
 				new String(Base64.getDecoder().decode(state)),
 				FramePaymentMessage.class);
-		val profiles = identityService.getProfiles(clickedProfileAddresses);
+		val profiles = identityService.getProfilesByAddresses(clickedProfileAddresses);
 		val jar = flowService.findJarByUUID(uuid);
 
 		if (jar != null && state != null) {

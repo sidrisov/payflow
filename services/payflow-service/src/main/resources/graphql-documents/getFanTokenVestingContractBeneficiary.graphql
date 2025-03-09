@@ -1,6 +1,0 @@
-query GetFanTokenVestingContractBeneficiary($addresses: [ID!]) {
-    tokenLockWallets(where: {id_in: $addresses}, first: 200) {
-        beneficiary
-        address: id
-    }
-}

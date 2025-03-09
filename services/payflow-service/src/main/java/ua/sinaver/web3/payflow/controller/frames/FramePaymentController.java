@@ -447,7 +447,7 @@ public class FramePaymentController {
 					try {
 						// fetch by identity, hence it will work for both dcs and feed frames
 						val receiverFid = identityService.getIdentityFid(paymentIdentity);
-						val receiverFname = identityService.getIdentityFname(paymentIdentity);
+						val receiverFname = identityService.getFarcasterUsernameByAddress(paymentIdentity);
 						val senderFname = senderFarcasterUser.username();
 
 						val messageText = String.format("""
@@ -468,7 +468,7 @@ public class FramePaymentController {
 										payment.getSourceRef()) : "",
 								receiptUrl);
 						val response = farcasterMessagingService.sendMessage(
-								new DirectCastMessage(String.valueOf(receiverFid), messageText,
+								new DirectCastMessage(receiverFid, messageText,
 										UUID.randomUUID()));
 
 						if (StringUtils.isBlank(response.result().messageId())) {

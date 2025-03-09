@@ -17,7 +17,7 @@ import ua.sinaver.web3.payflow.message.ContactMessage;
 import ua.sinaver.web3.payflow.message.ContactsResponseMessage;
 import ua.sinaver.web3.payflow.repository.ContactRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
-import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
+import ua.sinaver.web3.payflow.service.AirstackSocialGraphService;
 
 import java.time.Duration;
 import java.time.Period;
@@ -44,7 +44,7 @@ public class ContactBookService {
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
-	private ISocialGraphService socialGraphService;
+	private AirstackSocialGraphService socialGraphService;
 	@Autowired
 	private IdentitySubscriptionsService identitySubscriptionsService;
 	@Autowired
@@ -81,7 +81,7 @@ public class ContactBookService {
 				Schedulers.DEFAULT_POOL_SIZE, Schedulers.DEFAULT_BOUNDED_ELASTIC_SIZE,
 				Schedulers.DEFAULT_BOUNDED_ELASTIC_QUEUESIZE);
 
-		val wallets = new ArrayList<>(identityService.getIdentityAddresses(user.getIdentity()));
+		val wallets = new ArrayList<>(identityService.getFarcasterAddressesByAddress(user.getIdentity()));
 
 		log.debug("Fetched user's wallets: {}", wallets);
 

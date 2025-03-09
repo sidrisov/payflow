@@ -1,8 +1,0 @@
-query CheckMoxiePassStatus($address: String!) {
-    FarcasterMoxieMintStatus(
-        input: {preferredConnectedWallet: $address}
-    ) {
-        walletAddress
-        status
-    }
-}

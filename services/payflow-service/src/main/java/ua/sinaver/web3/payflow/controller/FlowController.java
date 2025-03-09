@@ -107,7 +107,7 @@ class FlowController {
 			user.setDefaultFlow(flow);
 			user.setDefaultReceivingAddress(null);
 		} else {
-			val receivingAddress = identityService.getIdentityAddresses(user.getIdentity()).stream()
+			val receivingAddress = identityService.getFarcasterAddressesByAddress(user.getIdentity()).stream()
 					.filter(v -> v.equals(uuid)).findFirst().orElse(null);
 
 			if (receivingAddress == null) {

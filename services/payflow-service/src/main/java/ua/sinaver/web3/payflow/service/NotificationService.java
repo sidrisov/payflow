@@ -107,14 +107,14 @@ public class NotificationService {
 	public void notifyPaymentCompletion(Payment payment, User user) {
 		if (!StringUtils.isBlank(payment.getHash()) || !StringUtils.isBlank(payment.getRefundHash())) {
 			val receiverFname = identityService
-					.getIdentityFname(payment.getReceiver() != null ? payment.getReceiver().getIdentity()
+					.getFarcasterUsernameByAddress(payment.getReceiver() != null ? payment.getReceiver().getIdentity()
 							: payment.getReceiverAddress() != null ? payment.getReceiverAddress()
 									: "fc_fid:" + payment.getReceiverFid());
 			if (StringUtils.isBlank(receiverFname)) {
 				log.warn("Can't notify user, since farcaster name wasn't found: {}", payment);
 				return;
 			}
-			val senderFname = identityService.getIdentityFname(user != null ? user.getIdentity()
+			val senderFname = identityService.getFarcasterUsernameByAddress(user != null ? user.getIdentity()
 					: payment.getSender() != null ? payment.getSender().getIdentity() : payment.getSenderAddress());
 
 			val receiptUrl = receiptService.getReceiptUrl(payment, false,
@@ -158,7 +158,7 @@ public class NotificationService {
 		}
 	}
 
-	private void sendDirectMessage(String messageText, String receiverFid) {
+	private void sendDirectMessage(String messageText, Integer receiverFid) {
 		try {
 			val response = farcasterMessagingService.sendMessage(
 					new DirectCastMessage(receiverFid, messageText, UUID.randomUUID()));
@@ -200,7 +200,7 @@ public class NotificationService {
 
 			val receiverFid = identityService.getIdentityFid(
 					payment.getReceiver() != null ? payment.getReceiver().getIdentity() : payment.getReceiverAddress());
-			if (StringUtils.isNotBlank(receiverFid)) {
+			if (receiverFid != null) {
 				val messageText = String.format("""
 						You received %s %s%s %s
 
@@ -229,7 +229,7 @@ public class NotificationService {
 									commentText).trim(),
 							frameV2ReceiptUrl);
 
-					hubService.notify(notification, Collections.singletonList(Integer.parseInt(receiverFid)));
+					hubService.notify(notification, Collections.singletonList(receiverFid));
 				} catch (Throwable t) {
 					log.error("Failed to notify user with frame v2 notification: ", t);
 				}
@@ -277,7 +277,7 @@ public class NotificationService {
 		val embeds = List.of(new Cast.Embed(storageFrameUrl), new Cast.Embed(receiptUrl));
 		sendCastReply(castText, payment.getSourceHash(), embeds);
 
-		if (StringUtils.isNotBlank(receiverFid)) {
+		if (receiverFid != null) {
 			val commentText = StringUtils.isNotBlank(payment.getComment())
 					? String.format("\n💬 Comment: %s", payment.getComment())
 					: "";
@@ -315,7 +315,7 @@ public class NotificationService {
 
 		var authorPart = "";
 		if (mintUrlMessage != null && mintUrlMessage.author() != null) {
-			val author = identityService.getIdentityFname(mintUrlMessage.author());
+			val author = identityService.getFarcasterUsernameByAddress(mintUrlMessage.author());
 			if (author != null) {
 				authorPart = String.format("@%s's ", author);
 			}
@@ -377,7 +377,7 @@ public class NotificationService {
 					receiptUrl);
 		}
 
-		sendDirectMessage(messageText, payment.getReceiverFid().toString());
+		sendDirectMessage(messageText, payment.getReceiverFid());
 	}
 
 	private void handleHypersubPaymentNotification(Payment payment, String senderFname,
@@ -441,7 +441,7 @@ public class NotificationService {
 					receiptUrl);
 		}
 
-		sendDirectMessage(messageText, payment.getReceiverFid().toString());
+		sendDirectMessage(messageText, payment.getReceiverFid());
 	}
 
 	private void handleRefundNotification(Payment payment, String senderFname,
@@ -455,7 +455,7 @@ public class NotificationService {
 		sendCastReply(castText, payment.getSourceHash(), Collections.singletonList(new Cast.Embed(refundReceipt)));
 		if (payment.getSender() != null) {
 			val senderFid = identityService.getIdentityFid(payment.getSender().getIdentity());
-			if (StringUtils.isNotBlank(senderFid)) {
+			if (senderFid != null) {
 				val messageText = String.format("""
 						@%s, you've been refunded for "%s" payment initiated from the cast above 🔄💸
 
@@ -475,7 +475,7 @@ public class NotificationService {
 			String commentText, String sourceRefText, String rewardReason) {
 		val receiverFid = identityService.getIdentityFid(
 				payment.getReceiver() != null ? payment.getReceiver().getIdentity() : payment.getReceiverAddress());
-		if (StringUtils.isNotBlank(receiverFid)) {
+		if (receiverFid != null) {
 			val messageText = String.format("""
 					You received %s %s reward%s for %s 🎁
 

@@ -142,7 +142,7 @@ public class MintController {
 				Integer receiverFid;
 				String receiverAddress;
 				if (StringUtils.isNotBlank(recipientText)) {
-					val addresses = identityService.getFnameAddresses(recipientText);
+					val addresses = identityService.getFarcasterAddressesByUsername(recipientText);
 					val identity = identityService.getHighestScoredIdentityInfo(addresses);
 					if (identity == null) {
 						log.error("Farcaster user identity not found: {}", recipientText);

@@ -6,31 +6,31 @@ import ua.sinaver.web3.payflow.message.IdentityMessage;
 import java.util.List;
 
 public interface IIdentityService {
-	User getFidProfile(int fid, String identity);
+	User getProfileByFid(int fid, String identity);
 
-	User getFidProfile(String fname, String identity);
+	User getProfileByFname(String fname, String identity);
 
-	List<User> getProfiles(int fid);
+	List<User> getProfilesByFid(int fid);
 
-	List<User> getProfiles(String fname);
+	List<User> getProfilesByFname(String fname);
 
-	List<String> getFidAddresses(int fid);
+	List<String> getFarcasterAddressesByFid(int fid);
 
-	List<String> getIdentityAddresses(String identity);
+	List<String> getFarcasterAddressesByAddress(String address);
 
 	String getENSAddress(String ens);
 
-	List<String> getFnameAddresses(String fname);
+	List<String> getFarcasterAddressesByUsername(String fname);
 
-	List<User> getProfiles(List<String> addresses);
+	List<User> getProfilesByAddresses(List<String> addresses);
 
 	String getFidFname(int fid);
 
-	String getIdentityFname(String identity);
+	String getFarcasterUsernameByAddress(String identity);
 
-	String getFnameFid(String fname);
+	Integer getFnameFid(String fname);
 
-	String getIdentityFid(String identity);
+	Integer getIdentityFid(String identity);
 
 	IdentityMessage getIdentityInfo(String identity);
 

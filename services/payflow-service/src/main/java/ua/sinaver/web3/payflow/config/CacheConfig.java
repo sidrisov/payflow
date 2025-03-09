@@ -30,8 +30,6 @@ public class CacheConfig {
 	public static final String CONTACT_LIST_CACHE_NAME = CACHE_PREFIX_VERSION + "contact-list";
 	public static final String SOCIALS_CACHE_NAME = CACHE_PREFIX_VERSION + "socials";
 	public static final String SOCIALS_INSIGHTS_CACHE_NAME = CACHE_PREFIX_VERSION + "insights";
-	public static final String FARCASTER_VERIFICATIONS_CACHE_NAME = CACHE_PREFIX_VERSION + "1" +
-			"verifications";
 	public static final String NEYNAR_FARCASTER_USER_CACHE = CACHE_PREFIX_VERSION + "farcaster-users";
 	public static final String NEYNAR_STORAGE_USAGE_CACHE = CACHE_PREFIX_VERSION + "farcaster-storage-usage";
 	public static final String NEYNAR_STORAGE_ALLOCATION_CACHE = CACHE_PREFIX_VERSION + "farcaster-storage-allocation";
@@ -95,8 +93,6 @@ public class CacheConfig {
 		cacheConfigurations.put(SOCIALS_INSIGHTS_CACHE_NAME, configuration.entryTtl(socialsExpireAfterWriteDuration));
 		cacheConfigurations.put(NEYNAR_FARCASTER_USER_CACHE,
 				configuration.entryTtl(verificationsExpireAfterWriteDuration));
-		cacheConfigurations.put(FARCASTER_VERIFICATIONS_CACHE_NAME,
-				configuration.entryTtl(verificationsExpireAfterWriteDuration));
 		cacheConfigurations.put(USERS_CACHE_NAME, configuration);
 		cacheConfigurations.put(INVITATIONS_CACHE_NAME, configuration);
 
@@ -144,8 +140,6 @@ public class CacheConfig {
 		cacheSpecs.put(CONTACT_LIST_CACHE_NAME, buildCache(contactsListExpireAfterWriteDuration));
 		cacheSpecs.put(SOCIALS_CACHE_NAME, buildCache(socialsExpireAfterWriteDuration, socialsMaxSize));
 		cacheSpecs.put(SOCIALS_INSIGHTS_CACHE_NAME, buildCache(socialsExpireAfterWriteDuration, socialsMaxSize));
-		cacheSpecs.put(FARCASTER_VERIFICATIONS_CACHE_NAME,
-				buildCache(verificationsExpireAfterWriteDuration, socialsMaxSize));
 		cacheSpecs.put(NEYNAR_FARCASTER_USER_CACHE, buildCache(verificationsExpireAfterWriteDuration, socialsMaxSize));
 		cacheSpecs.put(USERS_CACHE_NAME, buildCache(Duration.ofHours(24)));
 		cacheSpecs.put(INVITATIONS_CACHE_NAME, buildCache(Duration.ofHours(24)));
