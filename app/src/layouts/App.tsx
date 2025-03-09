@@ -54,7 +54,7 @@ export default function App() {
   })();
 
   const [isFrameV2, setIsFrameV2] = useState(false);
-  const [safeAreaInsets, setSafeAreaInsets] = useState<{ top: string; bottom: string }>();
+  const [safeAreaInsets, setSafeAreaInsets] = useState<{ top: number; bottom: number }>();
 
   const fetchingStatusRef = useRef(false);
   const [loading, setLoading] = useState<boolean>(true);
@@ -105,12 +105,6 @@ export default function App() {
 
       if (context) {
         FrameV2SDK.actions.ready();
-        if (context.client.safeAreaInsets) {
-          setSafeAreaInsets({
-            top: `${context.client.safeAreaInsets.top}px`,
-            bottom: `${context.client.safeAreaInsets.bottom}px`
-          });
-        }
 
         if (!context.client.added) {
           const lastChecked = localStorage.getItem('payflow:frame:checked');
@@ -123,6 +117,7 @@ export default function App() {
           }
         }
         setIsFrameV2(true);
+        setSafeAreaInsets(context.client.safeAreaInsets);
       }
     };
 
@@ -250,11 +245,12 @@ export default function App() {
                     paddingTop: '8px',
                     paddingBottom: 'calc(env(safe-area-inset-bottom) * 0.65)'
                   }),
-                  ...(safeAreaInsets && {
-                    height: 'auto',
-                    paddingTop: safeAreaInsets.top,
-                    paddingBottom: safeAreaInsets.bottom
-                  })
+                  ...(safeAreaInsets &&
+                    safeAreaInsets.bottom !== 0 && {
+                      height: 'auto',
+                      paddingTop: `${safeAreaInsets.top || 8}px`,
+                      paddingBottom: `${safeAreaInsets.bottom}px`
+                    })
                 }}>
                 <BottomNavigationAction
                   disableRipple
