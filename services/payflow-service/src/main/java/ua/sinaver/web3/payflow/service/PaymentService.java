@@ -130,7 +130,7 @@ public class PaymentService {
 	}
 
 	public List<String> getAllPaymentRecipients(User user) {
-		val verifications = identityService.getIdentityAddresses(user.getIdentity()).stream()
+		val verifications = identityService.getFarcasterAddressesByAddress(user.getIdentity()).stream()
 				.map(String::toLowerCase).toList();
 
 		return paymentRepository.findBySenderOrSenderAddressInAndStatusInAndTypeInOrderByCreatedAtDesc(

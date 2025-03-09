@@ -167,7 +167,7 @@ public class WebhooksController {
 			return ResponseEntity.badRequest().body(new MembershipResponseMessage("No verified address connected"));
 		}
 
-		val users = identityService.getProfiles(verifications);
+		val users = identityService.getProfilesByAddresses(verifications);
 		if (users == null || users.isEmpty()) {
 			log.error("Profile not found for {}", fid);
 			sendMembershipDeniedMessage(fid, "Payflow profile not found", minNumberOfPayments);
@@ -208,7 +208,7 @@ public class WebhooksController {
 	}
 
 	public void sendMembershipDeniedMessage(int fid, String reason, Integer minNumberOfPayments) {
-		farcasterMessagingService.sendMessageAsync(new DirectCastMessage(String.valueOf(fid),
+		farcasterMessagingService.sendMessageAsync(new DirectCastMessage(fid,
 				String.format("""
 						Thanks for requesting to join /payflow! 🙏
 

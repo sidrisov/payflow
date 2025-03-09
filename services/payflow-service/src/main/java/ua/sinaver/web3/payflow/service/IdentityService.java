@@ -13,16 +13,15 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import ua.sinaver.web3.payflow.client.NeynarClient;
 import ua.sinaver.web3.payflow.entity.User;
-import ua.sinaver.web3.payflow.graphql.generated.types.Social;
-import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
 import ua.sinaver.web3.payflow.message.ConnectedAddresses;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
 import ua.sinaver.web3.payflow.message.farcaster.bankr.BankrWalletResponse;
 import ua.sinaver.web3.payflow.message.farcaster.rodeo.RodeoResponse;
 import ua.sinaver.web3.payflow.repository.UserRepository;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
-import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
+import ua.sinaver.web3.payflow.service.AirstackSocialGraphService;
 
 import java.time.Duration;
 import java.util.*;
@@ -39,43 +38,46 @@ public class IdentityService implements IIdentityService {
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
-	private ISocialGraphService socialGraphService;
+	private AirstackSocialGraphService socialGraphService;
 
 	@Autowired
 	private FarcasterNeynarService neynarService;
+
+	@Autowired
+	private NeynarClient neynarClient;
 
 	public IdentityService(WebClient.Builder webClientBuilder) {
 		this.webClient = webClientBuilder.build();
 	}
 
 	@Override
-	public User getFidProfile(int fid, String identity) {
-		val profiles = getProfiles(fid);
+	public User getProfileByFid(int fid, String identity) {
+		val profiles = getProfilesByFid(fid);
 		return profiles.stream()
 				.filter(p -> StringUtils.isBlank(identity) || p.getIdentity().equals(identity))
 				.findFirst().orElse(null);
 	}
 
 	@Override
-	public User getFidProfile(String fname, String identity) {
-		val profiles = getProfiles(fname);
+	public User getProfileByFname(String username, String identity) {
+		val profiles = getProfilesByFname(username);
 		return profiles.stream()
 				.filter(p -> StringUtils.isBlank(identity) || p.getIdentity().equals(identity))
 				.findFirst().orElse(null);
 	}
 
 	@Override
-	public List<User> getProfiles(int fid) {
-		return getProfiles(getFidAddresses(fid));
+	public List<User> getProfilesByFid(int fid) {
+		return getProfilesByAddresses(getFarcasterAddressesByFid(fid));
 	}
 
 	@Override
-	public List<User> getProfiles(String fname) {
-		return getProfiles(getFnameAddresses(fname));
+	public List<User> getProfilesByFname(String fname) {
+		return getProfilesByAddresses(getFarcasterAddressesByUsername(fname));
 	}
 
 	@Override
-	public List<String> getFidAddresses(int fid) {
+	public List<String> getFarcasterAddressesByFid(int fid) {
 		val farcasterUser = neynarService.fetchFarcasterUser(fid);
 		if (farcasterUser == null) {
 			log.warn("No farcaster user found for FID {}", fid);
@@ -88,11 +90,25 @@ public class IdentityService implements IIdentityService {
 	}
 
 	@Override
-	public List<String> getIdentityAddresses(String identity) {
-		val verifications = socialGraphService.getIdentityVerifiedAddresses(identity);
-		val addresses = verificationsWithoutCustodial(verifications);
-		log.debug("Addresses for {}: {}", identity, addresses);
-		return addresses;
+	public List<String> getFarcasterAddressesByAddress(String address) {
+
+		val response = neynarClient.getUsersByAddresses(address.toLowerCase());
+
+		log.debug("Response for {}: {}", address, response);
+		if (response == null || response.isEmpty()) {
+			log.warn("No response from Neynar for {}", address);
+			return Collections.emptyList();
+		}
+
+		val user = response.get(address.toLowerCase()).getFirst();
+		if (user == null) {
+			log.warn("No user found for {}", address);
+			return Collections.emptyList();
+		}
+
+		val verifications = user.addressesWithoutCustodialIfAvailable();
+		log.debug("Addresses for {}: {}", address, verifications);
+		return verifications;
 	}
 
 	@Override
@@ -110,16 +126,28 @@ public class IdentityService implements IIdentityService {
 	}
 
 	@Override
-	public List<String> getFnameAddresses(String fname) {
-		val verifications = socialGraphService.getIdentityVerifiedAddresses(
-				"fc_fname:".concat(fname));
-		val addresses = verificationsWithoutCustodial(verifications);
-		log.debug("Addresses for {}: {}", fname, addresses);
-		return addresses;
+	public List<String> getFarcasterAddressesByUsername(String username) {
+		val response = neynarClient.getUserByUsername(username);
+
+		log.debug("Response for {}: {}", username, response);
+		if (response == null) {
+			log.warn("No response from Neynar for {}", username);
+			return Collections.emptyList();
+		}
+
+		val user = response.user();
+		if (user == null) {
+			log.warn("No user found for {}", username);
+			return Collections.emptyList();
+		}
+
+		val verifications = user.addressesWithoutCustodialIfAvailable();
+		log.debug("Addresses for {}: {}", username, verifications);
+		return verifications;
 	}
 
 	@Override
-	public List<User> getProfiles(List<String> addresses) {
+	public List<User> getProfilesByAddresses(List<String> addresses) {
 		return addresses.stream().map(address -> userRepository.findByIdentityIgnoreCaseAndAllowedTrue(address))
 				.filter(Objects::nonNull).limit(3).toList();
 	}
@@ -138,59 +166,70 @@ public class IdentityService implements IIdentityService {
 	}
 
 	@Override
-	public String getIdentityFname(String identity) {
-		val wallet = socialGraphService.getSocialMetadata(identity);
+	public String getFarcasterUsernameByAddress(String address) {
+		log.debug("Fetching username for: {}", address);
 
-		if (wallet == null) {
-			log.warn("Username for {} was not found!", identity);
+		val response = neynarClient.getUsersByAddresses(address.toLowerCase());
+
+		log.debug("Response for {}: {}", address, response);
+		if (response == null || response.isEmpty()) {
+			log.warn("No response from Neynar for {}", address);
 			return null;
 		}
 
-		if (wallet.getSocials() == null) {
-			log.warn("Username for {} was not found - no socials!", identity);
+		val user = response.get(address.toLowerCase()).getFirst();
+		if (user == null) {
+			log.warn("No user found for {}", address);
 			return null;
 		}
 
-		val username = wallet.getSocials().stream()
-				.filter(social -> social.getDappName().equals(SocialDappName.farcaster))
-				.min(/*
-						 * Comparator.comparing(Social::getIsFarcasterPowerUser).reversed()
-						 * .thenComparing(
-						 */Comparator.comparingInt(Social::getFollowerCount).reversed())
-				.map(Social::getProfileName).orElse(null);
-		log.debug("Username for {}: {}", identity, username);
+		val username = user.username();
+		log.debug("Username for {}: {}", address, username);
 		return username;
 	}
 
 	@Override
-	public String getFnameFid(String fname) {
-		return getIdentityFid("fc_fname:".concat(fname));
+	public Integer getFnameFid(String username) {
+
+		val response = neynarClient.getUserByUsername(username);
+
+		log.debug("Response for {}: {}", username, response);
+		if (response == null) {
+			log.warn("No response from Neynar for {}", username);
+			return null;
+		}
+
+		val user = response.user();
+		if (user == null) {
+			log.warn("No user found for {}", username);
+			return null;
+		}
+
+		val fid = user.fid();
+		log.debug("Fid for {}: {}", username, fid);
+		return fid;
 	}
 
 	@Override
-	public String getIdentityFid(String identity) {
-		log.debug("Fetching fid for: {}", identity);
+	public Integer getIdentityFid(String address) {
+		log.debug("Fetching fid for: {}", address);
 
-		val wallet = socialGraphService.getSocialMetadata(identity);
+		val response = neynarClient.getUsersByAddresses(address.toLowerCase());
 
-		if (wallet == null) {
-			log.warn("Fid for {} was not found!", identity);
+		log.debug("Response for {}: {}", address, response);
+		if (response == null || response.isEmpty()) {
+			log.warn("No response from Neynar for {}", address);
 			return null;
 		}
 
-		if (wallet.getSocials() == null) {
-			log.warn("Fid for {} was not found - no socials!", identity);
+		val user = response.get(address.toLowerCase()).getFirst();
+		if (user == null) {
+			log.warn("No user found for {}", address);
 			return null;
 		}
 
-		val fid = wallet.getSocials().stream()
-				.filter(social -> social.getDappName().equals(SocialDappName.farcaster))
-				.min(/*
-						 * Comparator.comparing(Social::getIsFarcasterPowerUser).reversed()
-						 * .thenComparing(
-						 */Comparator.comparingInt(Social::getFollowerCount).reversed())
-				.map(Social::getUserId).orElse(null);
-		log.debug("Fid for {}: {}", identity, fid);
+		val fid = user.fid();
+		log.debug("Fid for {}: {}", address, fid);
 		return fid;
 	}
 
@@ -202,7 +241,7 @@ public class IdentityService implements IIdentityService {
 
 	@Override
 	public List<IdentityMessage> getIdentitiesInfo(int fid) {
-		val identities = getFidAddresses(fid);
+		val identities = getFarcasterAddressesByFid(fid);
 		return getIdentitiesInfo(identities, null);
 	}
 
@@ -278,7 +317,7 @@ public class IdentityService implements IIdentityService {
 	public String getBankrWalletByIdentity(String identity) {
 		val fid = getIdentityFid(identity);
 		if (fid != null) {
-			return getBankrWalletByFid(Integer.parseInt(fid));
+			return getBankrWalletByFid(fid);
 		}
 		return null;
 	}
@@ -308,7 +347,7 @@ public class IdentityService implements IIdentityService {
 	public String getRodeoWalletByIdentity(String identity) {
 		val fid = getIdentityFid(identity);
 		if (fid != null) {
-			return getRodeoWalletByFid(Integer.parseInt(fid));
+			return getRodeoWalletByFid(fid);
 		}
 		return null;
 	}

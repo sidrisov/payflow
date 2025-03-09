@@ -61,7 +61,8 @@ public class JarController {
 					new FrameResponse.FrameMessage("Use only for your casts!"));
 		}
 
-		val clickedProfile = identityService.getProfiles(castInteractor.addressesWithoutCustodialIfAvailable()).stream()
+		val clickedProfile = identityService
+				.getProfilesByAddresses(castInteractor.addressesWithoutCustodialIfAvailable()).stream()
 				.findFirst().orElse(null);
 		if (clickedProfile == null) {
 			log.error("Clicked fid {} is not on payflow", castInteractor);

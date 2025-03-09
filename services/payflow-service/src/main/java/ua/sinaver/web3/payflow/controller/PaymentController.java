@@ -53,7 +53,7 @@ public class PaymentController {
 
 	@GetMapping
 	public List<PaymentMessage> payments(@RequestParam(value = "hashes") List<String> hashes,
-	                                     Principal principal) {
+			Principal principal) {
 
 		val username = principal != null ? principal.getName() : null;
 		log.debug("{} fetching payments info for {}", username, hashes);
@@ -74,7 +74,7 @@ public class PaymentController {
 
 	@PostMapping
 	public ResponseEntity<PaymentReferenceMessage> submitPayment(@RequestBody PaymentMessage paymentMessage,
-	                                                             Principal principal) {
+			Principal principal) {
 		val username = principal != null ? principal.getName() : null;
 
 		log.debug("Saving completed payment {} for {}", paymentMessage, username);
@@ -98,7 +98,7 @@ public class PaymentController {
 		payment.setReceiverAddress(paymentMessage.receiverAddress());
 		payment.setSender(user);
 		payment.setTokenAmount(paymentMessage.tokenAmount().toString());
-		
+
 		payment.setCategory(paymentMessage.category());
 		payment.setReceiverFid(paymentMessage.receiverFid());
 
@@ -128,9 +128,9 @@ public class PaymentController {
 
 	@GetMapping("/completed")
 	public Page<PaymentMessage> completedPayments(Principal principal,
-	                                              @RequestParam(required = false) String identity,
-	                                              @RequestParam(defaultValue = "0") int page,
-	                                              @RequestParam(defaultValue = "20") int size) {
+			@RequestParam(required = false) String identity,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int size) {
 		val loggedIdentity = principal != null ? principal.getName() : null;
 
 		log.debug("Fetching completed payments for identity: {}, logged user: {}", identity, loggedIdentity);
@@ -146,15 +146,14 @@ public class PaymentController {
 			return Page.empty();
 		}
 
-		val verifications = identityService.getIdentityAddresses(user.getIdentity()).stream()
+		val verifications = identityService.getFarcasterAddressesByAddress(user.getIdentity()).stream()
 				.map(String::toLowerCase)
 				.toList();
 
 		val fid = identityService.getIdentityFid(user.getIdentity());
 
 		val paymentsPage = paymentRepository.findAllCompletedOrderByCompletedAtDesc(user,
-				verifications, fid != null ? Integer.parseInt(fid) : null, PageRequest.of(page,
-						size));
+				verifications, fid, PageRequest.of(page, size));
 
 		// Check if we should include comments (when logged user is viewing their own
 		// payments)
@@ -164,9 +163,9 @@ public class PaymentController {
 
 	@GetMapping("/outbound")
 	public Page<PaymentMessage> outbound(Principal principal,
-	                                     @RequestParam List<Payment.PaymentStatus> statuses,
-	                                     @RequestParam(defaultValue = "0") int page,
-	                                     @RequestParam(defaultValue = "5") int size) {
+			@RequestParam List<Payment.PaymentStatus> statuses,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "5") int size) {
 		val username = principal != null ? principal.getName() : null;
 		log.debug("Fetching pending payments for {} ", username);
 
@@ -174,7 +173,7 @@ public class PaymentController {
 		if (user == null) {
 			return Page.empty();
 		}
-		val verifications = identityService.getIdentityAddresses(user.getIdentity()).stream()
+		val verifications = identityService.getFarcasterAddressesByAddress(user.getIdentity()).stream()
 				.map(String::toLowerCase).toList();
 
 		val paymentsPage = paymentRepository.findOutboundByStatusAndSenderOrderDesc(user,
@@ -198,7 +197,7 @@ public class PaymentController {
 	@PutMapping("/{referenceId}")
 	@ResponseStatus(HttpStatus.OK)
 	public void updatePayment(@PathVariable String referenceId,
-	                          @RequestBody PaymentUpdateMessage paymentUpdateMessage, Principal principal) {
+			@RequestBody PaymentUpdateMessage paymentUpdateMessage, Principal principal) {
 		log.debug("Received update {} for payment {} by user {}",
 				paymentUpdateMessage,
 				referenceId,

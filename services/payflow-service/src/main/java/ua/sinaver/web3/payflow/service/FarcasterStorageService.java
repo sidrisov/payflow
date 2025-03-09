@@ -94,7 +94,7 @@ public class FarcasterStorageService {
 								// Send direct message if enabled
 								if (storageNotification.isNotifyWithMessage()) {
 									val response = messagingService.sendMessage(new DirectCastMessage(
-											fid.toString(),
+											fid,
 											String.format(
 													"""
 															@%s, you're reaching or over your farcaster storage capacity!
@@ -157,8 +157,8 @@ public class FarcasterStorageService {
 				log.info("Storage notification for {}", user.getIdentity());
 				try {
 					val fid = identityService.getIdentityFid(user.getIdentity());
-					if (fid != null && storageNotificationRepository.findByFid(Integer.parseInt(fid)).isEmpty()) {
-						storageNotificationRepository.save(new StorageNotification(Integer.parseInt(fid)));
+					if (fid != null && storageNotificationRepository.findByFid(fid).isEmpty()) {
+						storageNotificationRepository.save(new StorageNotification(fid));
 					}
 				} catch (Throwable t) {
 					log.error("Failed to configure notification for {}", user.getIdentity(), t);

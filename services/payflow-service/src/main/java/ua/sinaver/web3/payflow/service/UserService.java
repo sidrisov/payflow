@@ -83,7 +83,7 @@ public class UserService implements IUserService {
 	public User getOrCreateUserFromFarcasterProfile(FarcasterUser farcasterUser,
 			boolean forceWhitelist) {
 		val verifications = farcasterUser.addressesWithoutCustodialIfAvailable();
-		var profile = identityService.getProfiles(verifications)
+		var profile = identityService.getProfilesByAddresses(verifications)
 				.stream().findFirst().orElse(null);
 		if (profile == null && (forceWhitelist || farcasterUser.fid() <= payflowConfig.getWhitelistedFidUpperRange()
 				|| farcasterUser.username().endsWith(".eth"))) {

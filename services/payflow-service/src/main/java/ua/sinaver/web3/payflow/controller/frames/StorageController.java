@@ -146,7 +146,7 @@ public class StorageController {
 		// TODO: refactor this!
 		var receiverFid = (Integer) null;
 		if (StringUtils.isNotBlank(recipientText)) {
-			val addresses = identityService.getFnameAddresses(recipientText);
+			val addresses = identityService.getFarcasterAddressesByUsername(recipientText);
 			val identity = identityService.getHighestScoredIdentityInfo(addresses);
 			if (identity == null) {
 				log.error("Farcaster user not found: {}", recipientText);

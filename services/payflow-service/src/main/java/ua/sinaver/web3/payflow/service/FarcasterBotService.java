@@ -364,7 +364,7 @@ public class FarcasterBotService {
 
 							log.debug("Receiver: {} - addresses: {}", recipient.username(), receiverAddresses);
 
-							val receiverProfile = identityService.getProfiles(receiverAddresses)
+							val receiverProfile = identityService.getProfilesByAddresses(receiverAddresses)
 									.stream().findFirst().orElse(null);
 
 							log.debug("Found receiver profile for receiver {} - {}",
@@ -873,7 +873,7 @@ public class FarcasterBotService {
 					job.setStatus(PaymentBotJob.Status.REJECTED);
 					return;
 				}
-				val receiverProfile = identityService.getProfiles(receiverAddresses)
+				val receiverProfile = identityService.getProfilesByAddresses(receiverAddresses)
 						.stream().findFirst().orElse(null);
 				log.debug("Found receiver profile for receiver {} - {}",
 						receiverName, receiverProfile);
@@ -1000,7 +1000,7 @@ public class FarcasterBotService {
 
 				val addresses = cast.author().verifications();
 				addresses.add(cast.author().custodyAddress());
-				val profile = identityService.getProfiles(addresses).stream().findFirst().orElse(null);
+				val profile = identityService.getProfilesByAddresses(addresses).stream().findFirst().orElse(null);
 
 				if (profile == null) {
 					rejectJob(job, "Caster doesn't have payflow profile",

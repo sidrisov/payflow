@@ -144,7 +144,7 @@ public class IntentsController {
 		}
 
 		val clickedFid = validateMessage.action().interactor().fid();
-		val clickedProfile = identityService.getProfiles(clickedFid).stream().findFirst().orElse(null);
+		val clickedProfile = identityService.getProfilesByFid(clickedFid).stream().findFirst().orElse(null);
 		if (clickedProfile == null) {
 			log.error("Clicked fid {} is not on payflow", clickedFid);
 			return ResponseEntity.badRequest().body(

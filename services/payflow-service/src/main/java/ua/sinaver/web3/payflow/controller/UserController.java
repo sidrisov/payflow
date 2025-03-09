@@ -24,7 +24,7 @@ import ua.sinaver.web3.payflow.service.FarcasterNeynarService;
 import ua.sinaver.web3.payflow.service.FlowService;
 import ua.sinaver.web3.payflow.service.UserService;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
-import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
+import ua.sinaver.web3.payflow.service.AirstackSocialGraphService;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -46,7 +46,7 @@ public class UserController {
 	private ContactBookService contactBookService;
 
 	@Autowired
-	private ISocialGraphService socialGraphService;
+	private AirstackSocialGraphService socialGraphService;
 
 	@Autowired
 	private IIdentityService identityService;
@@ -221,7 +221,7 @@ public class UserController {
 					if (user != null && user.isAllowed()) {
 						identities.add(user.getIdentity());
 					} else {
-						val fnameAddresses = identityService.getFnameAddresses(usernameOrAddress);
+						val fnameAddresses = identityService.getFarcasterAddressesByUsername(usernameOrAddress);
 						if (fnameAddresses != null && !fnameAddresses.isEmpty()) {
 							identities.addAll(fnameAddresses);
 						} else {
@@ -230,7 +230,7 @@ public class UserController {
 					}
 				}
 			} else {
-				val fidAddresses = identityService.getFidAddresses(fid);
+				val fidAddresses = identityService.getFarcasterAddressesByFid(fid);
 				if (fidAddresses != null && !fidAddresses.isEmpty()) {
 					identities.addAll(fidAddresses);
 				} else {
@@ -304,8 +304,8 @@ public class UserController {
 		}
 
 		try {
-			val storageUsage = neynarService.fetchStorageUsage(Integer.parseInt(fid));
-			val storageAllocations = neynarService.fetchStorageAllocations(Integer.parseInt(fid));
+			val storageUsage = neynarService.fetchStorageUsage(fid);
+			val storageAllocations = neynarService.fetchStorageAllocations(fid);
 			if (storageUsage != null && storageAllocations != null) {
 				val storageUsageWithSoonExpireUnits = storageUsage.withSoonExpireUnits(storageAllocations);
 				log.debug("Fetched storage usage & allocations for {}: {}", fid, storageUsageWithSoonExpireUnits);

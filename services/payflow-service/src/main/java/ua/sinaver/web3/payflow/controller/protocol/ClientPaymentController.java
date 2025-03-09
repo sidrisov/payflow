@@ -116,8 +116,9 @@ public class ClientPaymentController {
 					}
 				} else if (social.type().equals("farcaster")) {
 					var addresses = social.identifier().startsWith(
-							"fid:") ? identityService.getFidAddresses(Integer.parseInt(social.identifier().replace(
-							"fid:", ""))) : identityService.getFnameAddresses(social.identifier());
+							"fid:") ? identityService.getFarcasterAddressesByFid(Integer.parseInt(social.identifier().replace(
+									"fid:", "")))
+									: identityService.getFarcasterAddressesByUsername(social.identifier());
 
 					if (addresses == null || addresses.isEmpty()) {
 						throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -162,12 +163,12 @@ public class ClientPaymentController {
 
 			payment.setName(request.name());
 			payment.setReceiverAddress(recipientAddress);
-			payment.setReceiverFid(recipientFid != null ? Integer.parseInt(recipientFid) : null);
+			payment.setReceiverFid(recipientFid);
 			payment.setTokenAmount(request.payment().amount());
 			payment.setStatus(Payment.PaymentStatus.CREATED);
 			payment.setExpiresAt(request.expiresAt() != null ? request.expiresAt()
 					: Instant.now().plus(7,
-					ChronoUnit.DAYS));
+							ChronoUnit.DAYS));
 			if (StringUtils.isNotBlank(request.recipient().comment())) {
 				payment.setComment(request.recipient().comment());
 			}

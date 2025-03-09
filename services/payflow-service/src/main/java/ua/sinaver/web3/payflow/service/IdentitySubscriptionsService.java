@@ -3,7 +3,6 @@ package ua.sinaver.web3.payflow.service;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
-import org.checkerframework.checker.units.qual.s;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -15,15 +14,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import ua.sinaver.web3.payflow.config.PayflowConfig;
 import ua.sinaver.web3.payflow.entity.User;
-import ua.sinaver.web3.payflow.message.ConnectedAddresses;
 import ua.sinaver.web3.payflow.message.IdentityMessage;
-import ua.sinaver.web3.payflow.message.alfafrens.ChannelSubscribersAndStakesResponseMessage;
-import ua.sinaver.web3.payflow.message.alfafrens.UserByFidResponseMessage;
 import ua.sinaver.web3.payflow.message.subscription.SubscriberMessage;
 import ua.sinaver.web3.payflow.message.subscription.SubscribersMessage;
 import ua.sinaver.web3.payflow.repository.UserRepository;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
-import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -42,7 +37,7 @@ public class IdentitySubscriptionsService {
 	private IIdentityService identityService;
 
 	@Autowired
-	private ISocialGraphService socialGraphService;
+	private AirstackSocialGraphService socialGraphService;
 
 	@Autowired
 	private FarcasterNeynarService neynarService;
@@ -165,7 +160,7 @@ public class IdentitySubscriptionsService {
 			val fid = identityService.getIdentityFid(identity);
 
 			log.debug("Fetched fid: {} for identity: {}", fid, identity);
-			if (StringUtils.isBlank(fid)) {
+			if (fid == null) {
 				log.error("No fid found for identity: {}", identity);
 				return Collections.emptyList();
 			}
@@ -181,7 +176,7 @@ public class IdentitySubscriptionsService {
 			 * subscriptions, fid);
 			 */
 
-			val subscribers = neynarService.subscribers(Integer.parseInt(fid), true)
+			val subscribers = neynarService.subscribers(fid, true)
 					.stream()
 					.map(SubscribersMessage.Subscriber::user)
 					.distinct()
@@ -230,12 +225,12 @@ public class IdentitySubscriptionsService {
 			val fid = identityService.getIdentityFid(identity);
 
 			log.debug("Fetched fid: {} for identity: {}", fid, identity);
-			if (StringUtils.isBlank(fid)) {
+			if (fid == null) {
 				log.error("No fid found for identity: {}", identity);
 				return Collections.emptyList();
 			}
 
-			val subscribers = neynarService.subscribers(Integer.parseInt(fid), false)
+			val subscribers = neynarService.subscribers(fid, false)
 					.stream()
 					.map(SubscribersMessage.Subscriber::user)
 					.distinct()
@@ -266,21 +261,6 @@ public class IdentitySubscriptionsService {
 			log.error("Exception paragraph fabric subscribers for identity: {}, error: {}",
 					identity, t.getMessage());
 			throw t;
-		}
-	}
-
-	private List<String> verificationsWithoutCustodial(ConnectedAddresses verifications) {
-		if (verifications == null) {
-			return Collections.emptyList();
-		}
-
-		val addresses = verifications.connectedAddresses();
-		if (addresses.size() > 1) {
-			val updatedAddresses = new ArrayList<>(addresses);
-			updatedAddresses.remove(verifications.userAddress());
-			return updatedAddresses;
-		} else {
-			return addresses;
 		}
 	}
 

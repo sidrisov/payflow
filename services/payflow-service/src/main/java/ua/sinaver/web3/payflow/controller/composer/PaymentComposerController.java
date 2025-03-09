@@ -195,7 +195,7 @@ public class PaymentComposerController {
 				.stream().sorted(Comparator.comparingInt(IdentityMessage::score))
 				.map(IdentityMessage::address).toList();
 		// check if profile exist
-		val paymentProfile = identityService.getProfiles(paymentAddresses).stream().findFirst().orElse(null);
+		val paymentProfile = identityService.getProfilesByAddresses(paymentAddresses).stream().findFirst().orElse(null);
 		if (paymentProfile == null || (paymentProfile.getDefaultFlow() == null
 				&& paymentProfile.getDefaultReceivingAddress() == null)) {
 			if (!paymentAddresses.isEmpty()) {

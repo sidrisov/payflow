@@ -5,7 +5,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import ua.sinaver.web3.payflow.message.farcaster.CastConversationData;
+import ua.sinaver.web3.payflow.message.farcaster.FarcasterUser;
+import ua.sinaver.web3.payflow.message.farcaster.FarcasterUserResponse;
 import ua.sinaver.web3.payflow.message.subscription.SubscribedToResponse;
+
+import java.util.List;
+import java.util.Map;
 
 @FeignClient(name = "neynar", url = "https://api.neynar.com/v2/farcaster", configuration = NeynarClientConfig.class)
 public interface NeynarClient {
@@ -23,11 +28,20 @@ public interface NeynarClient {
 
     @GetMapping("/user/subscribed_to")
     SubscribedToResponse getSubscribedTo(
-            @RequestParam String fid,
+            @RequestParam Integer fid,
             @RequestParam(name = "subscription_provider") String subscriptionProvider);
 
-    default SubscribedToResponse getSubscribedTo(String fid) {
+    default SubscribedToResponse getSubscribedTo(Integer fid) {
         return getSubscribedTo(fid, "fabric_stp");
     }
 
+    @GetMapping("/user/bulk-by-address")
+    Map<String, List<FarcasterUser>> getUsersByAddresses(@RequestParam String addresses);
+
+    @GetMapping("/user/by_username")
+    FarcasterUserResponse getUserByUsername(@RequestParam String username);
+
+    default Map<String, List<FarcasterUser>> getUsersByAddresses(List<String> addresses) {
+        return getUsersByAddresses(String.join(",", addresses));
+    }
 }

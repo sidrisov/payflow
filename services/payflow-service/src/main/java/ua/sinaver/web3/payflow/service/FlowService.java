@@ -10,6 +10,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
+import ua.sinaver.web3.payflow.client.NeynarClient;
 import ua.sinaver.web3.payflow.dto.FlowMessage;
 import ua.sinaver.web3.payflow.dto.JarMessage;
 import ua.sinaver.web3.payflow.dto.WalletMessage;
@@ -106,7 +108,7 @@ public class FlowService {
 			flows.addAll(nativeFlows);
 		}
 
-		val verifications = identityService.getIdentityAddresses(user.getIdentity());
+		val verifications = identityService.getFarcasterAddressesByAddress(user.getIdentity());
 		if (verifications != null && !verifications.isEmpty()) {
 			val verificationFlows = verifications.stream()
 					.map(v -> FlowMessage.convertFarcasterVerification(v, user))

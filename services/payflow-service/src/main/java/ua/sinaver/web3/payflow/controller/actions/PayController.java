@@ -66,7 +66,7 @@ public class PayController {
 				.map(IdentityMessage::address).stream().toList();
 
 		// check if profile exist
-		val paymentProfile = identityService.getProfiles(paymentAddresses).stream().findFirst().orElse(null);
+		val paymentProfile = identityService.getProfilesByAddresses(paymentAddresses).stream().findFirst().orElse(null);
 		if (paymentProfile == null) {
 			log.warn("Caster fid {} is not on Payflow", castAuthor);
 		}

@@ -25,6 +25,7 @@ import { configureFabricSDK } from '@withfabric/protocol-sdks';
 import { wagmiConfig } from './utils/wagmi';
 import { API_URL } from './utils/constants';
 import cors from 'cors';
+import compression from 'compression';
 
 dotenv.config();
 
@@ -74,6 +75,9 @@ startServer();
 
 async function startServer() {
   const app = express();
+
+  app.use(compression());
+
   app.use(
     cors({
       origin: '*',

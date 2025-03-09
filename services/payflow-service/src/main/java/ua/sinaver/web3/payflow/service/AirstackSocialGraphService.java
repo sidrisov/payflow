@@ -13,14 +13,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import ua.sinaver.web3.payflow.graphql.generated.types.*;
-import ua.sinaver.web3.payflow.message.ConnectedAddresses;
-import ua.sinaver.web3.payflow.service.api.ISocialGraphService;
 
 import static ua.sinaver.web3.payflow.config.CacheConfig.*;
 
 @Service
 @Slf4j
-public class AirstackSocialGraphService implements ISocialGraphService {
+public class AirstackSocialGraphService {
 
 	private final GraphQlClient airstackGraphQlClient;
 
@@ -36,44 +34,11 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 				.build();
 	}
 
-	@Override
-	@CacheEvict(value = FARCASTER_VERIFICATIONS_CACHE_NAME)
-	public void cleanIdentityVerifiedAddressesCache(String identity) {
-		log.debug("Cleared verification cache for {}", identity);
-	}
-
-	@Override
-	@Cacheable(value = FARCASTER_VERIFICATIONS_CACHE_NAME, unless = "#result==null")
-	public ConnectedAddresses getIdentityVerifiedAddresses(String identity) {
-		val verifiedAddressesResponse = airstackGraphQlClient.documentName("getFarcasterVerifications")
-				.variable("identity", identity)
-				.execute().block();
-
-		if (verifiedAddressesResponse == null) {
-			log.error("No connected addresses for {}", identity);
-			return null;
-		}
-
-		val verifiedAddresses = verifiedAddressesResponse.field("Socials.Social")
-				.toEntityList(Social.class).stream()
-				.limit(1).findFirst()
-				.map(s -> new ConnectedAddresses(s.getUserAddress(),
-						s.getConnectedAddresses().stream()
-								.map(ConnectedAddress::getAddress)
-								.filter(address -> address.startsWith("0x"))
-								.toList()))
-				.orElse(null);
-		log.debug("Found verified addresses for {} - {}", verifiedAddresses, identity);
-		return verifiedAddresses;
-	}
-
-	@Override
 	@CacheEvict(cacheNames = SOCIALS_CACHE_NAME)
 	public void cleanCache(String identity) {
 		log.debug("Evicting socials cache for {} key", identity);
 	}
 
-	@Override
 	@Cacheable(cacheNames = SOCIALS_CACHE_NAME, unless = "#result==null")
 	public Wallet getSocialMetadata(String identity) {
 		try {
@@ -105,7 +70,6 @@ public class AirstackSocialGraphService implements ISocialGraphService {
 		return null;
 	}
 
-	@Override
 	public FarcasterChannel getFarcasterChannelByChannelId(String channelId) {
 		try {
 			val response = airstackGraphQlClient.documentName("getFarcasterChannelForChannelId")

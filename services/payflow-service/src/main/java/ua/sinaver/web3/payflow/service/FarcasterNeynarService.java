@@ -246,7 +246,7 @@ public class FarcasterNeynarService {
 					log.error("404 error when calling Neynar User API by fid {}", fid);
 					return Mono.empty();
 				})
-				.bodyToMono(FarcasterUsersResponseMessage.class)
+				.bodyToMono(FarcasterUsersResponse.class)
 				.onErrorResume(WebClientResponseException.class, e -> {
 					if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
 						log.error("404 error calling Neynar User API by fid {} - {}",
@@ -263,7 +263,7 @@ public class FarcasterNeynarService {
 					return Mono.empty();
 				})
 				.blockOptional()
-				.map(FarcasterUsersResponseMessage::users)
+				.map(FarcasterUsersResponse::users)
 				.filter(users -> !users.isEmpty())
 				.map(List::getFirst) // Get only the first user
 				.orElse(null);
@@ -281,7 +281,7 @@ public class FarcasterNeynarService {
 					log.error("404 error when calling Neynar User API by custodyAddress {}", custodyAddress);
 					return Mono.empty();
 				})
-				.bodyToMono(FarcasterUserResponseMessage.class)
+				.bodyToMono(FarcasterUserResponse.class)
 				.onErrorResume(WebClientResponseException.class, e -> {
 					if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
 						log.error("404 error calling Neynar User API by custodyAddress {} - {}",
@@ -298,7 +298,7 @@ public class FarcasterNeynarService {
 					return Mono.empty();
 				})
 				.blockOptional()
-				.map(FarcasterUserResponseMessage::user)
+				.map(FarcasterUserResponse::user)
 				.orElse(null);
 	}
 

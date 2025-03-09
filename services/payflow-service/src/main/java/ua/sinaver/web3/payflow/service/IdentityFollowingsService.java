@@ -40,7 +40,7 @@ public class IdentityFollowingsService {
 			val fid = identityService.getIdentityFid(identity);
 
 			log.debug("Fetched fid: {} for identity: {}", fid, identity);
-			if (StringUtils.isBlank(fid)) {
+			if (fid == null) {
 				log.error("No fid found for identity: {}", identity);
 				return Collections.emptyList();
 			}
