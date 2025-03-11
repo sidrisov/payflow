@@ -205,7 +205,13 @@ export default function Accounts() {
                 value={activeTab}
                 centered
                 onChange={(_, newValue) => setActiveTab(newValue)}
-                TabIndicatorProps={{ sx: { display: 'none' } }}
+                slotProps={{
+                  indicator: {
+                    sx: {
+                      display: 'none'
+                    }
+                  }
+                }}
                 sx={{
                   maxWidth: 375,
                   '& .MuiTab-root': {

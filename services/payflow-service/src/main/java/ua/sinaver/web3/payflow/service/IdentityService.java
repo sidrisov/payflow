@@ -21,7 +21,6 @@ import ua.sinaver.web3.payflow.message.farcaster.bankr.BankrWalletResponse;
 import ua.sinaver.web3.payflow.message.farcaster.rodeo.RodeoResponse;
 import ua.sinaver.web3.payflow.repository.UserRepository;
 import ua.sinaver.web3.payflow.service.api.IIdentityService;
-import ua.sinaver.web3.payflow.service.AirstackSocialGraphService;
 
 import java.time.Duration;
 import java.util.*;
@@ -91,24 +90,28 @@ public class IdentityService implements IIdentityService {
 
 	@Override
 	public List<String> getFarcasterAddressesByAddress(String address) {
+		try {
+			val response = neynarClient.getUsersByAddresses(address.toLowerCase());
 
-		val response = neynarClient.getUsersByAddresses(address.toLowerCase());
+			log.debug("Response for {}: {}", address, response);
+			if (response == null || response.isEmpty()) {
+				log.warn("No response from Neynar for {}", address);
+				return Collections.emptyList();
+			}
 
-		log.debug("Response for {}: {}", address, response);
-		if (response == null || response.isEmpty()) {
-			log.warn("No response from Neynar for {}", address);
+			val user = response.get(address.toLowerCase()).getFirst();
+			if (user == null) {
+				log.warn("No user found for {}", address);
+				return Collections.emptyList();
+			}
+
+			val verifications = user.addressesWithoutCustodialIfAvailable();
+			log.debug("Addresses for {}: {}", address, verifications);
+			return verifications;
+		} catch (feign.FeignException.NotFound e) {
+			log.warn("User not found for address {}: {}", address, e.getMessage());
 			return Collections.emptyList();
 		}
-
-		val user = response.get(address.toLowerCase()).getFirst();
-		if (user == null) {
-			log.warn("No user found for {}", address);
-			return Collections.emptyList();
-		}
-
-		val verifications = user.addressesWithoutCustodialIfAvailable();
-		log.debug("Addresses for {}: {}", address, verifications);
-		return verifications;
 	}
 
 	@Override
@@ -127,23 +130,28 @@ public class IdentityService implements IIdentityService {
 
 	@Override
 	public List<String> getFarcasterAddressesByUsername(String username) {
-		val response = neynarClient.getUserByUsername(username);
+		try {
+			val response = neynarClient.getUserByUsername(username);
 
-		log.debug("Response for {}: {}", username, response);
-		if (response == null) {
-			log.warn("No response from Neynar for {}", username);
+			log.debug("Response for {}: {}", username, response);
+			if (response == null) {
+				log.warn("No response from Neynar for {}", username);
+				return Collections.emptyList();
+			}
+
+			val user = response.user();
+			if (user == null) {
+				log.warn("No user found for {}", username);
+				return Collections.emptyList();
+			}
+
+			val verifications = user.addressesWithoutCustodialIfAvailable();
+			log.debug("Addresses for {}: {}", username, verifications);
+			return verifications;
+		} catch (feign.FeignException.NotFound e) {
+			log.warn("User not found for username {}: {}", username, e.getMessage());
 			return Collections.emptyList();
 		}
-
-		val user = response.user();
-		if (user == null) {
-			log.warn("No user found for {}", username);
-			return Collections.emptyList();
-		}
-
-		val verifications = user.addressesWithoutCustodialIfAvailable();
-		log.debug("Addresses for {}: {}", username, verifications);
-		return verifications;
 	}
 
 	@Override
@@ -167,70 +175,84 @@ public class IdentityService implements IIdentityService {
 
 	@Override
 	public String getFarcasterUsernameByAddress(String address) {
-		log.debug("Fetching username for: {}", address);
+		try {
+			log.debug("Fetching username for: {}", address);
 
-		val response = neynarClient.getUsersByAddresses(address.toLowerCase());
+			val response = neynarClient.getUsersByAddresses(address.toLowerCase());
 
-		log.debug("Response for {}: {}", address, response);
-		if (response == null || response.isEmpty()) {
-			log.warn("No response from Neynar for {}", address);
+			log.debug("Response for {}: {}", address, response);
+			if (response == null || response.isEmpty()) {
+				log.warn("No response from Neynar for {}", address);
+				return null;
+			}
+
+			val user = response.get(address.toLowerCase()).getFirst();
+			if (user == null) {
+				log.warn("No user found for {}", address);
+				return null;
+			}
+
+			val username = user.username();
+			log.debug("Username for {}: {}", address, username);
+			return username;
+		} catch (feign.FeignException.NotFound e) {
+			log.warn("User not found for address {}: {}", address, e.getMessage());
 			return null;
 		}
-
-		val user = response.get(address.toLowerCase()).getFirst();
-		if (user == null) {
-			log.warn("No user found for {}", address);
-			return null;
-		}
-
-		val username = user.username();
-		log.debug("Username for {}: {}", address, username);
-		return username;
 	}
 
 	@Override
 	public Integer getFnameFid(String username) {
+		try {
+			val response = neynarClient.getUserByUsername(username);
 
-		val response = neynarClient.getUserByUsername(username);
+			log.debug("Response for {}: {}", username, response);
+			if (response == null) {
+				log.warn("No response from Neynar for {}", username);
+				return null;
+			}
 
-		log.debug("Response for {}: {}", username, response);
-		if (response == null) {
-			log.warn("No response from Neynar for {}", username);
+			val user = response.user();
+			if (user == null) {
+				log.warn("No user found for {}", username);
+				return null;
+			}
+
+			val fid = user.fid();
+			log.debug("Fid for {}: {}", username, fid);
+			return fid;
+		} catch (feign.FeignException.NotFound e) {
+			log.warn("User not found for username {}: {}", username, e.getMessage());
 			return null;
 		}
-
-		val user = response.user();
-		if (user == null) {
-			log.warn("No user found for {}", username);
-			return null;
-		}
-
-		val fid = user.fid();
-		log.debug("Fid for {}: {}", username, fid);
-		return fid;
 	}
 
 	@Override
 	public Integer getIdentityFid(String address) {
-		log.debug("Fetching fid for: {}", address);
+		try {
+			log.debug("Fetching fid for: {}", address);
 
-		val response = neynarClient.getUsersByAddresses(address.toLowerCase());
+			val response = neynarClient.getUsersByAddresses(address.toLowerCase());
 
-		log.debug("Response for {}: {}", address, response);
-		if (response == null || response.isEmpty()) {
-			log.warn("No response from Neynar for {}", address);
+			log.debug("Response for {}: {}", address, response);
+			if (response == null || response.isEmpty()) {
+				log.warn("No response from Neynar for {}", address);
+				return null;
+			}
+
+			val user = response.get(address.toLowerCase()).getFirst();
+			if (user == null) {
+				log.warn("No user found for {}", address);
+				return null;
+			}
+
+			val fid = user.fid();
+			log.debug("Fid for {}: {}", address, fid);
+			return fid;
+		} catch (feign.FeignException.NotFound e) {
+			log.warn("User not found for address {}: {}", address, e.getMessage());
 			return null;
 		}
-
-		val user = response.get(address.toLowerCase()).getFirst();
-		if (user == null) {
-			log.warn("No user found for {}", address);
-			return null;
-		}
-
-		val fid = user.fid();
-		log.debug("Fid for {}: {}", address, fid);
-		return fid;
 	}
 
 	@Override
