@@ -24,7 +24,7 @@
     "@nestjs/config": "^3.3.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
-    "@payflow/core": "file:../../packages/common",
+    "@payflow/common": "file:../../packages/common",
     "@rhinestone/module-sdk": "^0.2.0",
     "@wagmi/core": "^2.15.0",
     "dotenv": "^16.4.7",

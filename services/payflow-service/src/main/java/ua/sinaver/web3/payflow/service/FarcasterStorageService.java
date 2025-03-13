@@ -139,10 +139,13 @@ public class FarcasterStorageService {
 							} else {
 								storageNotification.setLastCheckedAt(Instant.now());
 							}
+						} else {
+							// delay check by 1 day
+							storageNotification.setLastCheckedAt(Instant.now().minus(6, ChronoUnit.DAYS));
 						}
 					} catch (Throwable t) {
 						log.error("Failed to check storage for {}", fid, t);
-						// small hack to delay check by 1 day
+						// delay check by 1 day
 						storageNotification.setLastCheckedAt(Instant.now().minus(6, ChronoUnit.DAYS));
 					}
 				});

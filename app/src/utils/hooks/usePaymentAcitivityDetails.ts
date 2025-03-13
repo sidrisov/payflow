@@ -1,9 +1,9 @@
 import { useTokenPrices } from '../queries/prices';
-import { useMintData } from '../hooks/useMintData';
+import { useMintData } from './useMintData';
 import { PaymentType } from '@payflow/common';
 import { tokens as SUPPORTED_TOKENS, Token } from '@payflow/common';
-import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
-import { getNetworkDefaultBlockExplorerUrl } from '../../utils/networks';
+import { formatAmountWithSuffix, normalizeNumberPrecision } from '../formats';
+import { getNetworkDefaultBlockExplorerUrl } from '../networks';
 import { useHypersubData } from './useHypersub';
 
 export const usePaymentActivityDetails = (payment: PaymentType) => {

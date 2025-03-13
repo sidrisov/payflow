@@ -8,7 +8,7 @@ export default function CustomToastContainer() {
     <ToastContainer
       position={isMobile ? 'top-center' : 'top-right'}
       hideProgressBar
-      autoClose={1000}
+      autoClose={10000}
       icon={false}
       limit={3}
       newestOnTop
@@ -25,7 +25,8 @@ export default function CustomToastContainer() {
         borderRadius: '12px',
         textAlign: 'center',
         textWrap: 'balance',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        fontWeight: 550
       }}
     />
   );
