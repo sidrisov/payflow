@@ -29,6 +29,7 @@ import { GetFarcasterProfileByIdentityQuery, Social } from '../generated/graphql
 import { QUERY_FARCASTER_PROFILE_BY_IDENTITY } from '../utils/airstackQueries';
 import { fetchQuery } from '@airstack/airstack-react';
 import { optimism } from 'viem/chains';
+import { delay } from '../utils/delay';
 
 export type CapacityType = 'ALL' | 'CASTS_ONLY';
 export type StorageNotificationType = {
@@ -85,7 +86,7 @@ type StorageData = {
   };
 };
 
-export async function storageLoader() {
+export async function loader() {
   try {
     const [notificationResponse, storageResponse] = await Promise.all([
       axios.get(`${API_URL}/api/farcaster/config/storage/notification`, {
