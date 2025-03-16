@@ -8,7 +8,7 @@ import ProfileOnboardingDialog from '../components/dialogs/ProfileOnboardingDial
 import { ProfileType } from '@payflow/common';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 import { useDarkMode } from '../utils/hooks/useDarkMode';
-import { useMiniApp, useMobile, usePwa } from '../utils/hooks/useMobile';
+import { useMobile, usePwa } from '../utils/hooks/useMobile';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { UpdateVersionPrompt } from '../components/UpdateVersionPrompt';
@@ -24,7 +24,7 @@ export default function Login() {
   const redirect = searchParams.get('redirect');
   const isMobile = useMobile();
   const navigate = useNavigate();
-  const enablePullToRefresh = usePwa() || useMiniApp();
+  const enablePullToRefresh = usePwa();
 
   const {
     needRefresh: [needRefresh]

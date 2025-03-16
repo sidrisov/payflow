@@ -39,16 +39,6 @@ export default function App() {
   const navigate = useNavigate();
   const { profile } = useLoaderData<{ profile: ProfileType | undefined }>();
 
-  const [searchParams] = useSearchParams();
-  const isMiniApp = (() => {
-    const miniParam = searchParams.get('mini');
-    if (miniParam !== null) {
-      localStorage.setItem('payflow.mini', 'true');
-      return true;
-    }
-    return localStorage.getItem('payflow.mini') === 'true';
-  })();
-
   const [isFrameV2, setIsFrameV2] = useState(false);
   const [safeAreaInsets, setSafeAreaInsets] = useState<{ top: number; bottom: number }>();
 
@@ -81,7 +71,7 @@ export default function App() {
     }
   }, [isFrameV2]);
 
-  const enablePullToRefresh = usePwa() || isMiniApp || isFrameV2;
+  const enablePullToRefresh = usePwa() || isFrameV2;
 
   const bottomToolbarEnabled =
     location.pathname !== '/composer' &&
@@ -130,7 +120,6 @@ export default function App() {
       value={{
         isAuthenticated: authorized,
         profile,
-        isMiniApp,
         isFrameV2
       }}>
       <PullToRefresh

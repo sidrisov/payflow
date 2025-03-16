@@ -32,7 +32,7 @@ import { SiFarcaster } from 'react-icons/si';
 import { TbCopy } from 'react-icons/tb';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { createShareUrls } from '../../utils/mint';
-import { createCastPostMessage, createComposeCastUrl } from '../../utils/warpcast';
+import { createComposeCastUrl } from '../../utils/warpcast';
 import { QuantitySelector } from './QuantitySelector';
 import { BasePaymentDialog } from './BasePaymentDialog';
 import { FlowSelector } from './FlowSelector';

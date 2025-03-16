@@ -21,7 +21,7 @@ import ResponsiveDialog from './ResponsiveDialog';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { DAPP_URL } from '../../utils/urlConstants';
 import { TbCopy } from 'react-icons/tb';
-import { createCastPostMessage, createComposeCastUrl } from '../../utils/warpcast';
+import { createComposeCastUrl } from '../../utils/warpcast';
 import { ProfileContext } from '../../contexts/UserContext';
 import { ProfileType, FlowType } from '@payflow/common';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
@@ -39,7 +39,7 @@ interface PayMeDialogProps {
 }
 
 export function PayMeDialog({ open, onClose, profile, flow }: PayMeDialogProps) {
-  const { isMiniApp, isFrameV2 } = useContext(ProfileContext);
+  const { isFrameV2 } = useContext(ProfileContext);
   const [isFiatMode, setIsFiatMode] = useState<boolean>(false);
   const [selectedToken, setSelectedToken] = useState<Token>();
   const [inputValue, setInputValue] = useState<string>('');
@@ -280,11 +280,6 @@ export function PayMeDialog({ open, onClose, profile, flow }: PayMeDialogProps) 
               onClick={() => {
                 if (isFrameV2) {
                   FrameV2SDK.actions.openUrl(createComposeCastUrl(shareFrameText, paymentFrameUrl));
-                } else if (isMiniApp) {
-                  window.parent.postMessage(
-                    createCastPostMessage(shareFrameText, paymentFrameUrl),
-                    '*'
-                  );
                 } else {
                   window.open(createComposeCastUrl(shareFrameText, paymentFrameUrl), '_blank');
                 }

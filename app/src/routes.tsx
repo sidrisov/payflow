@@ -178,6 +178,7 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import LoadingPayflowEntryLogo from './components/LoadingPayflowEntryLogo';
 import sortAndFilterFlows from './utils/sortAndFilterFlows';
 import { me } from './services/user';
+import Page404 from './pages/Page404';
 
 // Dynamically import all pages
 const LazyLoginWithProviders = lazy(() => import('./layouts/LoginWithProviders'));
@@ -194,7 +195,6 @@ const LazyComposer = lazy(() => import('./pages/Composer'));
 const LazyCreatePayment = lazy(() => import('./pages/CreatePayment'));
 const LazyPayment = lazy(() => import('./pages/Payment'));
 const LazyServices = lazy(() => import('./pages/PaymentServices'));
-const LazyPage404 = lazy(() => import('./pages/Page404'));
 const LazyPreferredFlow = lazy(() => import('./pages/settings/PreferredFlowPage'));
 const LazyPreferredTokens = lazy(() => import('./pages/settings/PreferredTokensPage'));
 const LazyFarcasterClientPage = lazy(() => import('./pages/settings/FarcasterClientPage'));
@@ -220,7 +220,7 @@ export const routes = createBrowserRouter([
   {
     path: '/connect',
     element: <LazyWrapper component={LazyLoginWithProviders} />,
-    errorElement: <LazyWrapper component={LazyPage404} />,
+    errorElement: <Page404 />,
     loader: async ({ request }) => {
       try {
         const url = new URL(request.url);
@@ -237,7 +237,7 @@ export const routes = createBrowserRouter([
   {
     path: '/',
     element: <LazyWrapper component={LazyApp} />,
-    errorElement: <LazyWrapper component={LazyPage404} />,
+    errorElement: <Page404 />,
     loader: async ({ request }) => {
       try {
         const url = new URL(request.url);
@@ -276,37 +276,37 @@ export const routes = createBrowserRouter([
       {
         path: '/search',
         element: <LazyWrapper component={LazyPublicProfile} />,
-        errorElement: <LazyWrapper component={LazyPage404} />
+        errorElement: <Page404 />
       },
       {
         path: '/leaderboard',
         element: <LazyWrapper component={LazyLeaderboard} />,
-        errorElement: <LazyWrapper component={LazyPage404} />
+        errorElement: <Page404 />
       },
       {
         path: '/payment/:refId',
         element: <LazyWrapper component={LazyPayment} />,
-        errorElement: <LazyWrapper component={LazyPage404} />
+        errorElement: <Page404 />
       },
       {
         path: '/payment/create',
         element: <LazyWrapper component={LazyCreatePayment} />,
-        errorElement: <LazyWrapper component={LazyPage404} />
+        errorElement: <Page404 />
       },
       {
         path: '/:username',
         element: <LazyWrapper component={LazyPublicProfile} />,
-        errorElement: <LazyWrapper component={LazyPage404} />
+        errorElement: <Page404 />
       },
       {
         path: '/fid/:fid',
         element: <LazyWrapper component={LazyPublicProfile} />,
-        errorElement: <LazyWrapper component={LazyPage404} />
+        errorElement: <Page404 />
       },
       {
         path: '/jar/:uuid',
         element: <LazyWrapper component={LazyJar} />,
-        errorElement: <LazyWrapper component={LazyPage404} />
+        errorElement: <Page404 />
       },
       {
         path: '/~/create-payflow-wallet',
@@ -324,13 +324,23 @@ export const routes = createBrowserRouter([
         path: '/~/cast-actions',
         element: <LazyWrapper component={LazyCastActionsPage} />
       },
-      { path: '/farcaster/storage', element: <LazyWrapper component={LazyStorage} /> },
-      { path: '/~/farcaster/storage', element: <LazyWrapper component={LazyStorage} /> },
+      {
+        path: '/~/farcaster/storage',
+        lazy: async () => {
+          const { default: Component, storageLoader } = await import('./pages/Storage');
+          return {
+            Component,
+            loader: storageLoader
+          };
+        },
+        errorElement: <Page404 />,
+        hydrateFallbackElement: <LoadingPayflowEntryLogo />
+      },
       {
         path: '/~/subscriptions',
         element: <LazyWrapper component={LazySubscriptionsPage} />
       },
-      { path: '404', element: <LazyWrapper component={LazyPage404} /> },
+      { path: '404', element: <Page404 /> },
       { path: '*', element: <Navigate to="/404" replace /> }
     ]
   },
