@@ -3,7 +3,7 @@ import { Stack, Typography, Grid2, Card } from '@mui/material';
 import { TbGiftFilled, TbSend } from 'react-icons/tb';
 import { HiOutlineSquares2X2 } from 'react-icons/hi2';
 import { GrStorage } from 'react-icons/gr';
-import { useNavigate } from 'react-router';
+import { Link } from 'react-router';
 import { FaRegClock } from 'react-icons/fa';
 import PayflowPage from '../components/PayflowPage';
 
@@ -11,7 +11,7 @@ interface Service {
   title: string;
   description: string;
   icon: React.ReactNode;
-  onClick?: () => void;
+  to: string;
   disabled?: boolean;
 }
 
@@ -42,17 +42,20 @@ const ServiceCategory: React.FC<ServiceCategoryProps> = ({ services }) => {
             '&:hover': {
               bgcolor: service.disabled ? 'inherit' : 'action.hover'
             }
-          }}
-          onClick={service.onClick}
-          display="flex"
-          justifyContent="center"
-          alignItems="center">
-          <Stack spacing={1} alignItems="center" justifyContent="center">
-            {service.icon}
-            <Typography textAlign="center" variant="subtitle2" fontWeight="medium">
-              {service.title}
-            </Typography>
-          </Stack>
+          }}>
+          <Link
+            to={service.to}
+            style={{
+              textDecoration: 'none',
+              color: 'inherit'
+            }}>
+            <Stack spacing={1} alignItems="center" justifyContent="center">
+              {service.icon}
+              <Typography textAlign="center" variant="subtitle2" fontWeight="medium">
+                {service.title}
+              </Typography>
+            </Stack>
+          </Link>
         </Grid2>
       ))}
     </Grid2>
@@ -60,38 +63,36 @@ const ServiceCategory: React.FC<ServiceCategoryProps> = ({ services }) => {
 };
 
 export default function PaymentServices() {
-  const navigate = useNavigate();
-
   const services = [
     {
       title: 'New Payment',
       description: 'Create a new payment',
       icon: <TbSend size={24} />,
-      onClick: () => navigate('/payment/create')
+      to: '/payment/create'
     },
     {
       title: 'Claimables',
       description: 'View your claimables',
       icon: <TbGiftFilled size={24} />,
-      onClick: () => navigate('/~/claimables')
+      to: '/~/claimables'
     },
     {
       title: 'Farcaster Storage',
       description: 'Manage farcaster storage',
       icon: <GrStorage size={24} />,
-      onClick: () => navigate('/farcaster/storage')
+      to: '/~/farcaster/storage'
     },
     {
       title: 'Subscriptions',
       description: 'Manage subscriptions',
       icon: <FaRegClock size={24} />,
-      onClick: () => navigate('/~/subscriptions')
+      to: '/~/subscriptions'
     },
     {
       title: 'Cast Actions',
       description: 'Manage cast actions',
       icon: <HiOutlineSquares2X2 size={24} />,
-      onClick: () => navigate('/~/cast-actions')
+      to: '/~/cast-actions'
     }
   ];
 

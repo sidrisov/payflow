@@ -155,7 +155,7 @@ export function ProfileMenu({
           <MenuItem
             onClick={async () => {
               closeStateCallback();
-              navigate('/farcaster/storage');
+              navigate('/~/farcaster/storage');
             }}>
             <ListItemIcon>
               <GrStorage size={20} />

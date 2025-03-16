@@ -4,13 +4,11 @@ import {
   CardContent,
   Stack,
   Typography,
-  CircularProgress,
   Avatar,
   Button,
   Container
 } from '@mui/material';
-import { useState, useEffect, useContext, useMemo } from 'react';
-import { toast } from 'react-toastify';
+import { useEffect, useContext, useMemo } from 'react';
 import axios from 'axios';
 import { API_URL } from '../utils/urlConstants';
 import { useNavigate } from 'react-router';
@@ -22,7 +20,7 @@ import { normalizeNumberPrecision } from '../utils/formats';
 import { getTokenByAddress } from '@payflow/common';
 import TokenNetworkAvatar from '../components/avatars/TokenNetworkAvatar';
 import { fetchState } from '@withfabric/protocol-sdks/stpv2';
-import CenteredCircularProgress from '../components/CenteredCircularProgress';
+import { useLoaderData } from 'react-router';
 
 interface FarcasterUser {
   fid: number;
@@ -174,15 +172,56 @@ const SubscriptionCard = ({ subscription }: { subscription: Subscription }) => {
   );
 };
 
+export async function loader() {
+  const response = await axios.get(`${API_URL}/api/user/me/subscribedTo`, {
+    withCredentials: true
+  });
+
+  const subscriptionsWithMetadata = await Promise.all(
+    response.data.map(async (subscription: Subscription) => {
+      try {
+        const state = await fetchState({
+          contractAddress: subscription.contract_address as `0x${string}`,
+          chainId: subscription.chain_id
+        });
+
+        let external_link;
+        if (state.contractURI) {
+          try {
+            const metadataResponse = await axios.get(state.contractURI);
+            external_link = metadataResponse.data.external_link.replace('collection', 's');
+          } catch (error) {
+            console.error('Error fetching contract metadata:', error);
+          }
+        }
+
+        return {
+          ...subscription,
+          metadata: {
+            ...subscription.metadata,
+            external_link: external_link
+          }
+        };
+      } catch (error) {
+        console.error('Error fetching contract state:', error);
+        return subscription;
+      }
+    })
+  );
+
+  return { subscriptions: subscriptionsWithMetadata };
+}
+
 const SubscriptionsPage = () => {
   const { profile } = useContext(ProfileContext);
   const navigate = useNavigate();
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { subscriptions } = useLoaderData<typeof loader>();
 
   const { activeSubscriptions, expiredSubscriptions } = useMemo(() => {
-    const activeSubscriptions = [];
-    const expiredSubscriptions = [];
+    const activeSubscriptions: Subscription[] = [];
+    const expiredSubscriptions: Subscription[] = [];
+
+    if (!subscriptions) return { activeSubscriptions, expiredSubscriptions };
 
     for (const subscription of subscriptions) {
       if (new Date(subscription.expires_at).getTime() <= new Date().getTime()) {
@@ -201,98 +240,37 @@ const SubscriptionsPage = () => {
     }
   }, [profile, navigate]);
 
-  useEffect(() => {
-    const fetchSubscriptions = async () => {
-      if (!profile) return;
-
-      setLoading(true);
-      try {
-        const response = await axios.get(`${API_URL}/api/user/me/subscribedTo`, {
-          withCredentials: true
-        });
-
-        const subscriptionsWithMetadata = await Promise.all(
-          response.data.map(async (subscription: Subscription) => {
-            try {
-              const state = await fetchState({
-                contractAddress: subscription.contract_address as `0x${string}`,
-                chainId: subscription.chain_id
-              });
-
-              let external_link;
-              if (state.contractURI) {
-                try {
-                  const metadataResponse = await axios.get(state.contractURI);
-                  console.log('metadataResponse', metadataResponse);
-                  external_link = metadataResponse.data.external_link.replace('collection', 's');
-                } catch (error) {
-                  console.error('Error fetching contract metadata:', error);
-                }
-              }
-
-              console.log('external_link', external_link);
-
-              return {
-                ...subscription,
-                metadata: {
-                  ...subscription.metadata,
-                  external_link: external_link
-                }
-              };
-            } catch (error) {
-              console.error('Error fetching contract state:', error);
-              return subscription;
-            }
-          })
-        );
-
-        setSubscriptions(subscriptionsWithMetadata);
-      } catch (error) {
-        console.error('Failed to fetch subscriptions:', error);
-        toast.error('Failed to load subscriptions');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSubscriptions();
-  }, [profile]);
-
   return (
     <Container maxWidth="sm">
-      {loading ? (
-        <CenteredCircularProgress />
-      ) : (
-        <Stack spacing={3}>
-          {activeSubscriptions.length > 0 && (
-            <Box>
-              <Typography textAlign="center" variant="h6" sx={{ mb: 2 }}>
-                Active Hypersub Subscriptions
-              </Typography>
-              {activeSubscriptions.map((subscription) => (
-                <SubscriptionCard key={subscription.contract_address} subscription={subscription} />
-              ))}
-            </Box>
-          )}
-
-          {expiredSubscriptions.length > 0 && (
-            <Box>
-              <Typography textAlign="center" variant="h6" sx={{ mb: 2 }}>
-                Expired Hypersub Subscriptions
-              </Typography>
-              {expiredSubscriptions.map((subscription) => (
-                <SubscriptionCard key={subscription.contract_address} subscription={subscription} />
-              ))}
-            </Box>
-          )}
-
-          {subscriptions.length === 0 && (
-            <Typography variant="body1" color="text.secondary" align="center">
-              No subscriptions found
+      <Stack spacing={3}>
+        {activeSubscriptions.length > 0 && (
+          <Box>
+            <Typography textAlign="center" variant="h6" sx={{ mb: 2 }}>
+              Active Hypersub Subscriptions
             </Typography>
-          )}
-        </Stack>
-      )}
+            {activeSubscriptions.map((subscription) => (
+              <SubscriptionCard key={subscription.contract_address} subscription={subscription} />
+            ))}
+          </Box>
+        )}
+
+        {expiredSubscriptions.length > 0 && (
+          <Box>
+            <Typography textAlign="center" variant="h6" sx={{ mb: 2 }}>
+              Expired Hypersub Subscriptions
+            </Typography>
+            {expiredSubscriptions.map((subscription) => (
+              <SubscriptionCard key={subscription.contract_address} subscription={subscription} />
+            ))}
+          </Box>
+        )}
+
+        {subscriptions.length === 0 && (
+          <Typography variant="body1" color="text.secondary" align="center">
+            No subscriptions found
+          </Typography>
+        )}
+      </Stack>
     </Container>
   );
 };
