@@ -130,7 +130,7 @@
           "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot|got).*"
         }
       ],
-      "destination": "https://frames.payflow.me/v2"
+      "destination": "https://frames.payflow.me"
     },
     {
       "source": "/~/create-payflow-wallet",

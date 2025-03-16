@@ -27,13 +27,6 @@ export const useMobile = () => {
   return useMediaQuery(theme.breakpoints.down('sm'));
 };
 
-export const useMiniApp = () => {
-  // Check if the app is loaded in an iframe
-  const isInIframe = window !== window.parent || window.self !== window.top;
-
-  return isInIframe || useInWebView();
-};
-
 export function usePwa() {
   const [isPwa, setPwa] = useState(false);
 

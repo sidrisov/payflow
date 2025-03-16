@@ -1,8 +1,21 @@
-import { API_URL, DAPP_URL } from '../../utils/constants';
+import { DAPP_URL } from '../../utils/constants';
 
 export function Head() {
-  const miniAppUrl = `${API_URL}/api/farcaster/composer/pay?action=app`;
-  const miniAppDeeplink = `https://warpcast.com/~/composer-action?url=${encodeURIComponent(miniAppUrl)}&view=prompt`;
+  const frame = {
+    version: 'next',
+    imageUrl: 'https://i.imgur.com/okcGTR2.png',
+    button: {
+      title: 'Open App',
+      action: {
+        type: 'launch_frame',
+        name: 'Payflow',
+        url: DAPP_URL,
+        splashImageUrl: 'https://app.payflow.me/apple-touch-icon.png',
+        splashBackgroundColor: '#f7f7f7'
+      }
+    }
+  };
+
   return (
     <>
       <head>
@@ -15,41 +28,23 @@ export function Head() {
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
 
-        <title>Payflow | Frames</title>
-        <meta
-          name="description"
-          content="Onchain Social Payments across Farcaster, Lens, and Ens."
-        />
+        <title>Payflow</title>
+        <meta name="description" content="Onchain Social Payments" />
 
         <meta property="og:url" content={DAPP_URL} />
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Payflow | App" />
-        <meta
-          property="og:description"
-          content="Onchain Social Payments across Farcaster, Lens, and Ens."
-        />
-        <meta property="og:image" content="https://imgur.com/PymCibp.png" />
+        <meta property="og:description" content="Onchain Social Payments" />
+        <meta property="og:image" content="https://i.imgur.com/okcGTR2.png" />
 
         <meta name="twitter:card" content="summary_large_image" />
         <meta property="twitter:domain" content="app.payflow.me" />
         <meta property="twitter:url" content={DAPP_URL} />
         <meta name="twitter:title" content="Payflow | App" />
-        <meta
-          name="twitter:description"
-          content="Onchain Social Payments across Farcaster, Lens, and Ens."
-        />
-        <meta name="twitter:image" content="https://imgur.com/PymCibp.png" />
+        <meta name="twitter:description" content="Onchain Social Payments" />
+        <meta name="twitter:image" content="https://i.imgur.com/okcGTR2.png" />
 
-        <meta property="of:accepts:xmtp" content="2024-02-01" />
-        <meta property="of:accepts:lens" content="1.1" />
-        <meta property="fc:frame" content="vNext" />
-
-        <meta property="fc:frame:image" content="https://imgur.com/PymCibp.png" />
-        <meta property="fc:frame:image:aspect_ratio" content="1:1" />
-
-        <meta property="fc:frame:button:1" content="Open App" />
-        <meta property="fc:frame:button:1:action" content="link" />
-        <meta property="fc:frame:button:1:target" content={miniAppDeeplink} />
+        <meta property="fc:frame" content={JSON.stringify(frame)} />
       </head>
     </>
   );
