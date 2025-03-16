@@ -70,7 +70,6 @@
     "@graphql-codegen/typescript": "^4.0.1",
     "@graphql-codegen/typescript-operations": "^4.0.1",
     "@parcel/watcher": "^2.4.0",
-    "@react-router/dev": "^7.2.0",
     "@types/express": "^5.0.0",
     "@types/react": "^18.2.20",
     "@types/react-blockies": "^1.4.1",
