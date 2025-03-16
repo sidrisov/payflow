@@ -176,6 +176,8 @@ export const routes = createBrowserRouter([
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router';
 import LoadingPayflowEntryLogo from './components/LoadingPayflowEntryLogo';
+import sortAndFilterFlows from './utils/sortAndFilterFlows';
+import { me } from './services/user';
 
 // Dynamically import all pages
 const LazyLoginWithProviders = lazy(() => import('./layouts/LoginWithProviders'));
@@ -218,12 +220,43 @@ export const routes = createBrowserRouter([
   {
     path: '/connect',
     element: <LazyWrapper component={LazyLoginWithProviders} />,
-    errorElement: <LazyWrapper component={LazyPage404} />
+    errorElement: <LazyWrapper component={LazyPage404} />,
+    loader: async ({ request }) => {
+      try {
+        const url = new URL(request.url);
+        const accessToken = url.searchParams.get('access_token');
+        const profile = await me(accessToken ?? undefined);
+
+        return { profile };
+      } catch (error) {
+        console.error('Failed to load profile:', error);
+        return { profile: null, error: error instanceof Error ? error.message : 'Unknown error' };
+      }
+    }
   },
   {
     path: '/',
     element: <LazyWrapper component={LazyApp} />,
     errorElement: <LazyWrapper component={LazyPage404} />,
+    loader: async ({ request }) => {
+      try {
+        const url = new URL(request.url);
+        const accessToken = url.searchParams.get('access_token');
+        const profile = await me(accessToken ?? undefined);
+
+        if (profile) {
+          if (profile.flows) {
+            profile.flows = sortAndFilterFlows(profile.flows);
+          }
+          return { profile };
+        } else {
+          return { redirect: '/connect' };
+        }
+      } catch (error) {
+        console.error('Failed to load profile:', error);
+        return { profile: null, error: error instanceof Error ? error.message : 'Unknown error' };
+      }
+    },
     children: [
       { element: <LazyWrapper component={LazyAccounts} />, index: true },
       { path: 'profile', element: <LazyWrapper component={LazyProfile} /> },

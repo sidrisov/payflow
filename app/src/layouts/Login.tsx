@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Box, Container } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useLoaderData, useNavigate, useSearchParams } from 'react-router';
 import { useEffect } from 'react';
 import ProfileOnboardingDialog from '../components/dialogs/ProfileOnboardingDialog';
 import { ProfileType } from '@payflow/common';
@@ -15,13 +15,8 @@ import { UpdateVersionPrompt } from '../components/UpdateVersionPrompt';
 
 const ConnectCard = lazy(() => import('../components/cards/ConnectCard'));
 
-export default function Login({
-  authStatus,
-  profile
-}: {
-  authStatus: string;
-  profile: ProfileType | undefined;
-}) {
+export default function Login() {
+  const { profile } = useLoaderData<{ profile: ProfileType | undefined }>();
   const prefersDarkMode = useDarkMode();
   const [searchParams] = useSearchParams();
   const username = searchParams.get('username');
@@ -36,15 +31,11 @@ export default function Login({
   } = useRegisterSW();
 
   useEffect(() => {
-    console.debug(profile, authStatus);
-
-    if (profile && authStatus === 'authenticated') {
-      if (profile.username) {
-        console.debug('redirecting to: ', redirect ?? '/');
-        navigate(redirect ?? '/');
-      }
+    if (profile && profile.username) {
+      console.debug('redirecting to: ', redirect ?? '/');
+      navigate(redirect ?? '/');
     }
-  }, [authStatus, profile]);
+  }, [profile]);
 
   const handleRefresh = async () => {
     // Implement your refresh logic here
@@ -60,22 +51,18 @@ export default function Login({
       <PullToRefresh onRefresh={handleRefresh} isPullable={enablePullToRefresh}>
         <Container maxWidth="sm" sx={{ height: '80vh' }}>
           {needRefresh && <UpdateVersionPrompt />}
-          {authStatus === 'loading' ? (
-            <LoadingPayflowEntryLogo />
-          ) : (
-            !profile && (
-              <Box
-                position="fixed"
-                display="flex"
-                alignItems="center"
-                boxSizing="border-box"
-                justifyContent="center"
-                sx={{ inset: 0 }}>
-                <Suspense fallback={<LoadingPayflowEntryLogo />}>
-                  <ConnectCard />
-                </Suspense>
-              </Box>
-            )
+          {!profile && (
+            <Box
+              position="fixed"
+              display="flex"
+              alignItems="center"
+              boxSizing="border-box"
+              justifyContent="center"
+              sx={{ inset: 0 }}>
+              <Suspense fallback={<LoadingPayflowEntryLogo />}>
+                <ConnectCard />
+              </Suspense>
+            </Box>
           )}
           {profile && !profile.username && (
             <ProfileOnboardingDialog

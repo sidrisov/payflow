@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router';
-import { toast } from 'react-toastify';
+import { useEffect, useState } from 'react';
+import { Outlet, useLocation, useNavigate, useSearchParams, useLoaderData } from 'react-router';
 
 import {
   AppBar,
@@ -30,10 +29,6 @@ import { useMobile, usePwa } from '../utils/hooks/useMobile';
 import { isIOS } from 'react-device-detect';
 
 import FrameV2SDK from '@farcaster/frame-sdk';
-import axios from 'axios';
-import { me } from '../services/user';
-import sortAndFilterFlows from '../utils/sortAndFilterFlows';
-import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 import { usePimlicoInit } from '../utils/hooks/usePimlicoInit';
 import { MdContacts } from 'react-icons/md';
 import { SiLightning } from 'react-icons/si';
@@ -42,6 +37,7 @@ export default function App() {
   const location = useLocation();
   const isMobile = useMobile();
   const navigate = useNavigate();
+  const { profile } = useLoaderData<{ profile: ProfileType | undefined }>();
 
   const [searchParams] = useSearchParams();
   const isMiniApp = (() => {
@@ -55,47 +51,6 @@ export default function App() {
 
   const [isFrameV2, setIsFrameV2] = useState(false);
   const [safeAreaInsets, setSafeAreaInsets] = useState<{ top: number; bottom: number }>();
-
-  const fetchingStatusRef = useRef(false);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [profile, setProfile] = useState<ProfileType>();
-
-  const accessToken = useSearchParams()[0].get('access_token') ?? undefined;
-
-  // Fetch user when:
-  useEffect(() => {
-    const fetchStatus = async () => {
-      if (fetchingStatusRef.current) {
-        return;
-      }
-
-      fetchingStatusRef.current = true;
-      try {
-        const profile = await me(accessToken);
-        if (profile) {
-          if (profile.flows) {
-            profile.flows = sortAndFilterFlows(profile.flows);
-          }
-          setProfile(profile);
-        }
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          toast.error(`🤷🏻‍♂️ ${error.message}`);
-        }
-        console.error(error);
-      } finally {
-        setLoading(false);
-        fetchingStatusRef.current = false;
-      }
-    };
-
-    // 1. page loads
-    fetchStatus();
-
-    // 2. window is focused (in case user logs out of another window)
-    window.addEventListener('focus', fetchStatus);
-    return () => window.removeEventListener('focus', fetchStatus);
-  }, []);
 
   usePimlicoInit();
 
@@ -121,10 +76,10 @@ export default function App() {
       }
     };
 
-    if (FrameV2SDK && !isFrameV2 && !loading) {
+    if (FrameV2SDK && !isFrameV2) {
       initiateFrameV2();
     }
-  }, [isFrameV2, loading]);
+  }, [isFrameV2]);
 
   const enablePullToRefresh = usePwa() || isMiniApp || isFrameV2;
 
@@ -170,9 +125,7 @@ export default function App() {
 
   // specify container height,
   // otherwise privy will have an issue displaying the dialog content
-  return loading ? (
-    <LoadingPayflowEntryLogo />
-  ) : (
+  return (
     <ProfileContext.Provider
       value={{
         isAuthenticated: authorized,
