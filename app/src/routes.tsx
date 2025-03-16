@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import LoadingPayflowEntryLogo from './components/LoadingPayflowEntryLogo';
 import sortAndFilterFlows from './utils/sortAndFilterFlows';
 import { me } from './services/user';
-import Page404 from './pages/Page404';
+import ErrorBoundary from './pages/ErrorBoundary';
 
 function convert(m: any) {
   let { loader, action, default: Component, ...rest } = m;
@@ -30,7 +30,8 @@ export const routes = createBrowserRouter([
         return { profile: null, error: error instanceof Error ? error.message : 'Unknown error' };
       }
     },
-    hydrateFallbackElement: <LoadingPayflowEntryLogo />
+    hydrateFallbackElement: <LoadingPayflowEntryLogo />,
+    errorElement: <ErrorBoundary />
   },
   {
     path: '/',
@@ -55,6 +56,7 @@ export const routes = createBrowserRouter([
       }
     },
     hydrateFallbackElement: <LoadingPayflowEntryLogo />,
+    errorElement: <ErrorBoundary />,
     children: [
       {
         index: true,
@@ -149,7 +151,7 @@ export const routes = createBrowserRouter([
         path: '/~/subscriptions',
         lazy: () => import('./pages/SubscriptionsPage').then(convert)
       },
-      { path: '404', element: <Page404 /> },
+      { path: '404', element: <ErrorBoundary /> },
       { path: '*', element: <Navigate to="/404" replace /> }
     ]
   },
