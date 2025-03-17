@@ -1,5 +1,4 @@
 import { queryClient } from './query';
-import { AirstackProvider, init } from '@airstack/airstack-react';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import CustomToastContainer from '../components/toasts/CustomToastContainer';
 import { PrivyClientConfig, PrivyProvider } from '@privy-io/react-auth';
@@ -9,9 +8,6 @@ import { SUPPORTED_CHAINS } from './networks';
 import { useDarkMode } from './hooks/useDarkMode';
 import { configureFabricSDK } from '@withfabric/protocol-sdks';
 import { QueryClientProvider } from '@tanstack/react-query';
-
-const AIRSTACK_API_KEY = import.meta.env.VITE_AIRSTACK_API_KEY;
-init(AIRSTACK_API_KEY);
 
 configureFabricSDK({ wagmiConfig });
 
@@ -85,11 +81,9 @@ function PrivyAppProviders({
 
 function CommonProviders({ children, darkMode }: { children: React.ReactNode; darkMode: boolean }) {
   return (
-    <AirstackProvider apiKey={AIRSTACK_API_KEY}>
-      <>
-        <CustomThemeProvider darkMode={darkMode}>{children}</CustomThemeProvider>
-        <CustomToastContainer />
-      </>
-    </AirstackProvider>
+    <>
+      <CustomThemeProvider darkMode={darkMode}>{children}</CustomThemeProvider>
+      <CustomToastContainer />
+    </>
   );
 }

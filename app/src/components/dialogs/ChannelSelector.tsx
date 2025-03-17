@@ -14,14 +14,10 @@ import {
 import { IoIosArrowDown } from 'react-icons/io';
 import { TbWorld } from 'react-icons/tb';
 import ResponsiveDialog from './ResponsiveDialog';
-import {
-  QUERY_FARCASTER_CHANNELS_FOR_USER,
-  QUERY_FARCASTER_CHANNELS_FOR_CHANNEL_ID
-} from '../../utils/airstackQueries';
 import { ProfileContext } from '../../contexts/UserContext';
-import { useLazyQuery, useQuery } from '@airstack/airstack-react';
 import { Clear, Search } from '@mui/icons-material';
 import { useDebounce } from 'use-debounce';
+import { useModeratedChannels, useSearchChannels } from '../../utils/hooks/useSocials';
 
 export type ChannelType = {
   channelId: string;
@@ -46,45 +42,29 @@ export const ChannelSelector: React.FC<ChannelSelectorProps> = ({ onChannelSelec
   console.log('search', searchTerm);
 
   const {
-    loading: loadingModerated,
-    error: errorModerated,
-    data: moderatedChannels
-  } = useQuery<ChannelType[]>(
-    QUERY_FARCASTER_CHANNELS_FOR_USER,
-    { identity: userIdentity },
-    {
-      cache: true,
-      dataFormatter(data) {
-        return data?.FarcasterChannels?.FarcasterChannel || [];
-      }
-    }
-  );
+    data: moderatedChannels,
+    isLoading: loadingModerated,
+    isError: errorModerated
+  } = useModeratedChannels(userIdentity ?? '');
 
-  const [
-    fetchSearchedChannels,
-    { loading: loadingSearched, error: errorSearched, data: searchedChannels }
-  ] = useLazyQuery<ChannelType[]>(
-    QUERY_FARCASTER_CHANNELS_FOR_CHANNEL_ID,
-    { channelId: `^${searchTerm}` },
-    {
-      cache: true,
-      dataFormatter(data) {
-        return data?.FarcasterChannels?.FarcasterChannel || [];
-      }
-    }
-  );
+  const {
+    mutateAsync: searchChannels,
+    isPending: loadingSearched,
+    isError: errorSearched,
+    data: searchedChannels
+  } = useSearchChannels();
 
   // Update search term
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
 
-  // Use debouncedSearchTerm for fetching
+  // Replace the existing search effect with this one
   useEffect(() => {
-    if (debouncedSearchTerm) {
-      fetchSearchedChannels();
+    if (searchTerm) {
+      searchChannels(searchTerm);
     }
-  }, [debouncedSearchTerm, fetchSearchedChannels]);
+  }, [searchTerm]);
 
   const handleChannelSelect = (channel: ChannelType | undefined) => {
     setSelectedChannel(channel);

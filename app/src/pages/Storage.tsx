@@ -25,11 +25,10 @@ import FrameV2SDK from '@farcaster/frame-sdk';
 import { ProfileContext } from '../contexts/UserContext';
 import { useLoaderData, useNavigate } from 'react-router';
 import BuyStorageDialog from '../components/payment/BuyStorageDialog';
-import { GetFarcasterProfileByIdentityQuery, Social } from '../generated/graphql/types';
+import { Social } from '../generated/graphql/types';
 import { QUERY_FARCASTER_PROFILE_BY_IDENTITY } from '../utils/airstackQueries';
-import { fetchQuery } from '@airstack/airstack-react';
 import { optimism } from 'viem/chains';
-import { delay } from '../utils/delay';
+import { fetchFarcasterUser } from '@/utils/hooks/useSocials';
 
 export type CapacityType = 'ALL' | 'CASTS_ONLY';
 export type StorageNotificationType = {
@@ -150,15 +149,12 @@ export default function Storage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data: recipientData } = await fetchQuery<GetFarcasterProfileByIdentityQuery>(
-          QUERY_FARCASTER_PROFILE_BY_IDENTITY,
-          { identity: profile?.identity },
-          { cache: true }
-        );
+        const recipientData = await fetchFarcasterUser(QUERY_FARCASTER_PROFILE_BY_IDENTITY, {
+          identity: profile?.identity
+        });
 
-        const recipientSocial = recipientData?.Socials?.Social?.[0];
-        if (recipientSocial) {
-          setRecipientSocial(recipientSocial as Social);
+        if (recipientData) {
+          setRecipientSocial(recipientData);
         }
       } catch (error) {
         console.error('Error fetching data:', error);

@@ -7,7 +7,7 @@ import { IdentityType, ProfileType, PaymentType } from '@payflow/common';
 
 import { useEnsData } from '../../utils/hooks/useEnsData';
 import { useMobile } from '../../utils/hooks/useMobile';
-import { useSocialData } from '../../utils/hooks/useSocials';
+import { useFarcasterUser } from '../../utils/hooks/useSocials';
 
 import { PublicProfileDetailsPopover } from '../menu/PublicProfileDetailsPopover';
 import { PaymentMenu } from '../menu/PaymentMenu';
@@ -33,12 +33,12 @@ export default function PublicProfileActivityFeedSection(
   const { ensName: ensNameFrom, ensAvatar: avatarFrom } = useEnsData(payment.senderAddress);
   const { ensName: ensNameTo, ensAvatar: avatarTo } = useEnsData(payment.receiverAddress);
 
-  const { social: senderSocial, isLoading: isLoadingSenderSocial } = useSocialData(
+  const { social: senderSocial, isLoading: isLoadingSenderSocial } = useFarcasterUser(
     undefined,
     payment.senderAddress ?? payment.sender?.identity
   );
 
-  const { social: receiverSocial, isLoading: isLoadingReceiverSocial } = useSocialData(
+  const { social: receiverSocial, isLoading: isLoadingReceiverSocial } = useFarcasterUser(
     payment.receiverFid?.toString(),
     payment.receiverAddress ?? payment.receiver?.identity
   );

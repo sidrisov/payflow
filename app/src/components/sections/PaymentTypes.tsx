@@ -1,7 +1,7 @@
 import React from 'react';
 import { Avatar, BoxProps, Skeleton, Stack, Typography, styled } from '@mui/material';
 import { PaymentType } from '@payflow/common';
-import { useSocialData } from '../../utils/hooks/useSocials';
+import { useFarcasterUser } from '../../utils/hooks/useSocials';
 import { FarcasterProfileSection } from '../FarcasterProfileSection';
 import { ProfileSection } from '../ProfileSection';
 import { AddressSection } from '../AddressSection';
@@ -79,7 +79,7 @@ interface UsePaymentDataResult {
 }
 
 const usePaymentData = (payment: PaymentType): UsePaymentDataResult => {
-  const { social, isLoading: loadingSocials } = useSocialData(payment.receiverFid?.toString());
+  const { social, isLoading: loadingSocials } = useFarcasterUser(payment.receiverFid?.toString());
   const { mintData, loading: loadingMintData } = useMintData(payment);
   const { hypersubData, loading: loadingHypersubData } = useHypersubData(payment);
   const isMobile = useMobile();
