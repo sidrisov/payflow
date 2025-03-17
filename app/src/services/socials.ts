@@ -2,12 +2,11 @@ import { MetaType, ContactType, SocialInfoType, InsightsType } from '@payflow/co
 import { Address, isAddress } from 'viem';
 import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';
 import { getProfileByAddressOrName, searchByListOfAddressesOrUsernames } from './user';
-import { GetSocialsQuery, Wallet } from '../generated/graphql/types';
+import { Wallet } from '../generated/graphql/types';
 import { getPublicClient } from 'wagmi/actions';
 import { wagmiConfig } from '../utils/wagmiConfig';
 import { degen } from 'viem/chains';
-import { fetchQuery } from '@airstack/airstack-react';
-import { QUERY_SOCIALS } from '../utils/airstackQueries';
+import { fetchSocialInfo } from '@/utils/hooks/useSocials';
 
 const FOLLOWING = 7;
 const FOLLOWER = 3;
@@ -196,7 +195,7 @@ async function searchByDomainOrAddress(searchValue: string, me?: string): Promis
     identity = degenDomainHolderAddress as Address;
   }
 
-  const { data } = await fetchQuery<GetSocialsQuery>(QUERY_SOCIALS, { identity }, { cache: true });
+  const data = await fetchSocialInfo(identity);
 
   if (!data?.Wallet) return [];
 

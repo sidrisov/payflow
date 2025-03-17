@@ -5,22 +5,18 @@ import { ProfileContext } from '../contexts/UserContext';
 import { useNavigate, useParams } from 'react-router';
 import { PaymentType } from '@payflow/common';
 import { fetchPayment } from '../services/payments';
-import { fetchQuery } from '@airstack/airstack-react';
 import {
   QUERY_FARCASTER_PROFILE,
   QUERY_FARCASTER_PROFILE_BY_IDENTITY
 } from '../utils/airstackQueries';
-import {
-  GetFarcasterProfileByIdentityQuery,
-  GetFarcasterProfileQuery,
-  Social
-} from '../generated/graphql/types';
+import { Social } from '../generated/graphql/types';
 import { IdentityType, SelectedIdentityType } from '@payflow/common';
 import { toast } from 'react-toastify';
 import { statusToToastType } from '../components/Toasts';
 import { fetchMintData, MintMetadata, parseMintToken } from '../utils/mint';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 import { fetchHypersubData, HypersubData } from '../utils/hooks/useHypersub';
+import { fetchFarcasterUser } from '@/utils/hooks/useSocials';
 
 const LazyMintDialog = lazy(() => import('../components/payment/MintDialog'));
 const LazySubscribeToHypersubDialog = lazy(() => import('../components/payment/HypersubDialog'));
@@ -75,26 +71,20 @@ export default function Payment() {
 
             if (paymentData.receiverFid) {
               // TODO: fetch from server instead
-              const { data: recipientData } = await fetchQuery<GetFarcasterProfileQuery>(
-                QUERY_FARCASTER_PROFILE,
-                { fid: paymentData.receiverFid.toString() },
-                { cache: true }
-              );
+              const recipientSocial = await fetchFarcasterUser(QUERY_FARCASTER_PROFILE, {
+                fid: paymentData.receiverFid.toString()
+              });
 
-              const recipientSocial = recipientData?.Socials?.Social?.[0];
               if (recipientSocial) {
-                setRecipientSocial(recipientSocial as Social);
+                setRecipientSocial(recipientSocial);
               }
 
-              const { data: senderData } = await fetchQuery<GetFarcasterProfileByIdentityQuery>(
-                QUERY_FARCASTER_PROFILE_BY_IDENTITY,
-                { identity: profile?.identity },
-                { cache: true }
-              );
+              const senderSocial = await fetchFarcasterUser(QUERY_FARCASTER_PROFILE_BY_IDENTITY, {
+                identity: profile?.identity
+              });
 
-              const senderSocial = senderData?.Socials?.Social?.[0];
               if (senderSocial) {
-                setSenderSocial(senderSocial as Social);
+                setSenderSocial(senderSocial);
               }
 
               if (paymentData.category === 'mint') {

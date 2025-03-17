@@ -23,11 +23,10 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
 import { isAlphanumericPlusFewSpecialChars } from '../utils/regex';
 import { green } from '@mui/material/colors';
-import { QUERY_SOCIALS } from '../utils/airstackQueries';
-import { useQuery } from '@airstack/airstack-react';
 import { convertSocialResults, normalizeUsername } from '../services/socials';
 import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';
 import { useMobile } from '../utils/hooks/useMobile';
+import { useSocialInfo } from '@/utils/hooks/useSocials';
 
 export default function Profile() {
   const isMobile = useMobile();
@@ -46,13 +45,7 @@ export default function Profile() {
   const navigate = useNavigate();
 
   // TODO: fetch only on sync click event
-  const { data: socialInfo, loading: loadingSocials } = useQuery(
-    QUERY_SOCIALS,
-    { identity: profile?.identity },
-    {
-      cache: true
-    }
-  );
+  const { data: socialInfo, isLoading: loadingSocials } = useSocialInfo(profile?.identity ?? '');
 
   useMemo(async () => {
     if (username) {

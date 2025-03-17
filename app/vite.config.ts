@@ -7,6 +7,7 @@ import { defineConfig, loadEnv } from 'vite';
 import { addSeconds, addMinutes, addHours, addDays, addWeeks, format } from 'date-fns';
 import { WorkboxPlugin } from 'workbox-core/types';
 import { execSync } from 'child_process';
+import path from 'path';
 
 // pass empty url if .env not available (for prodcution build should be poluted)
 const env = loadEnv('all', process.cwd());
@@ -101,7 +102,6 @@ export default defineConfig(({ isSsrBuild }) => {
               // Visualization and media
               media: ['react-blockies', 'react-qr-code', 'react-icons'],
               // Third-party services
-              airstack: ['@airstack/airstack-react'],
               glide: ['@paywithglide/glide-js']
             },
             experimentalMinChunkSize: 30 * 1024 // 30kb
@@ -278,6 +278,12 @@ export default defineConfig(({ isSsrBuild }) => {
 
     define: {
       __BUILD_INFO__: JSON.stringify(getVersionInfo())
+    },
+
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src')
+      }
     }
   };
 });

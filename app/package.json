@@ -17,7 +17,6 @@
     "serve": "NODE_ENV=production node server"
   },
   "dependencies": {
-    "@airstack/airstack-react": "^0.6.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@farcaster/auth-kit": "^0.6.0",
@@ -63,7 +62,8 @@
     "url": "^0.11.1",
     "use-debounce": "^10.0.0",
     "viem": "2.21.57",
-    "wagmi": "^2.9.0"
+    "wagmi": "^2.9.0",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.0",
