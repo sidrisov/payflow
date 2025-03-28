@@ -47,9 +47,6 @@ public class NotificationService {
 	private IIdentityService identityService;
 
 	@Autowired
-	private AirstackSocialGraphService socialGraphService;
-
-	@Autowired
 	private ReceiptService receiptService;
 
 	@Autowired
@@ -106,10 +103,7 @@ public class NotificationService {
 
 	public void notifyPaymentCompletion(Payment payment, User user) {
 		if (!StringUtils.isBlank(payment.getHash()) || !StringUtils.isBlank(payment.getRefundHash())) {
-			val receiverFname = identityService
-					.getFarcasterUsernameByAddress(payment.getReceiver() != null ? payment.getReceiver().getIdentity()
-							: payment.getReceiverAddress() != null ? payment.getReceiverAddress()
-									: "fc_fid:" + payment.getReceiverFid());
+			val receiverFname = getReceiverUsername(payment);
 			if (StringUtils.isBlank(receiverFname)) {
 				log.warn("Can't notify user, since farcaster name wasn't found: {}", payment);
 				return;
@@ -198,8 +192,7 @@ public class NotificationService {
 
 			sendCastReply(castText, payment.getSourceHash(), embeds);
 
-			val receiverFid = identityService.getIdentityFid(
-					payment.getReceiver() != null ? payment.getReceiver().getIdentity() : payment.getReceiverAddress());
+			val receiverFid = getReceiverFid(payment);
 			if (receiverFid != null) {
 				val messageText = String.format("""
 						You received %s %s%s %s
@@ -258,12 +251,11 @@ public class NotificationService {
 	private void handleStoragePaymentNotification(Payment payment, String senderFname, String receiverFname,
 			String receiptUrl, String crossChainText,
 			String sourceRefText) {
-		val receiverFid = identityService.getIdentityFid(
-				payment.getReceiver() != null ? payment.getReceiver().getIdentity() : payment.getReceiverAddress());
+		val receiverFid = payment.getReceiverFid();
 
 		val storageFrameUrl = UriComponentsBuilder.fromHttpUrl(payflowConfig.getDAppServiceUrl())
 				.path("/~/farcaster/storage?fid={fid}&{version}")
-				.buildAndExpand(payment.getReceiverFid(), FrameVersions.STORAGE_VERSION)
+				.buildAndExpand(receiverFid, FrameVersions.STORAGE_VERSION)
 				.toUriString();
 
 		val numberOfUnits = payment.getTokenAmount() != null ? payment.getTokenAmount() : 1;
@@ -377,7 +369,7 @@ public class NotificationService {
 					receiptUrl);
 		}
 
-		sendDirectMessage(messageText, payment.getReceiverFid());
+		sendDirectMessage(messageText, getReceiverFid(payment));
 	}
 
 	private void handleHypersubPaymentNotification(Payment payment, String senderFname,
@@ -441,7 +433,7 @@ public class NotificationService {
 					receiptUrl);
 		}
 
-		sendDirectMessage(messageText, payment.getReceiverFid());
+		sendDirectMessage(messageText, getReceiverFid(payment));
 	}
 
 	private void handleRefundNotification(Payment payment, String senderFname,
@@ -473,8 +465,7 @@ public class NotificationService {
 
 	private void sendRewardDirectMessage(Payment payment, String receiverFname, String senderFname,
 			String commentText, String sourceRefText, String rewardReason) {
-		val receiverFid = identityService.getIdentityFid(
-				payment.getReceiver() != null ? payment.getReceiver().getIdentity() : payment.getReceiverAddress());
+		val receiverFid = getReceiverFid(payment);
 		if (receiverFid != null) {
 			val messageText = String.format("""
 					You received %s %s reward%s for %s 🎁
@@ -514,6 +505,28 @@ public class NotificationService {
 
 	private String formatFromPart(String senderFname) {
 		return StringUtils.isNotBlank(senderFname) ? String.format(" from @%s", senderFname) : "";
+	}
+
+	private String getReceiverUsername(Payment payment) {
+		if (payment.getReceiver() != null) {
+			return identityService.getFarcasterUsernameByAddress(payment.getReceiver().getIdentity());
+		} else if (payment.getReceiverAddress() != null) {
+			return identityService.getFarcasterUsernameByAddress(payment.getReceiverAddress());
+		} else if (payment.getReceiverFid() != null) {
+			return identityService.getFidFname(payment.getReceiverFid());
+		}
+		return null;
+	}
+
+	private Integer getReceiverFid(Payment payment) {
+		if (payment.getReceiverFid() != null) {
+			return payment.getReceiverFid();
+		} else if (payment.getReceiver() != null) {
+			return identityService.getIdentityFid(payment.getReceiver().getIdentity());
+		} else if (payment.getReceiverAddress() != null) {
+			return identityService.getIdentityFid(payment.getReceiverAddress());
+		}
+		return null;
 	}
 
 	@Async
