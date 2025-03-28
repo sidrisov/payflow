@@ -10,9 +10,9 @@ import { getPublicClient } from 'wagmi/actions';
 import { ProfileType } from '@payflow/common';
 import { FARCASTER_DAPP } from './dapps';
 import { Social } from '../generated/graphql/types';
-import { fetchNFTMetadataFromSimpleHash } from './simpleHash';
+import { fetchNFTMetadata } from './nft';
 
-export const SIMPLE_HASH_API_KEY = import.meta.env.VITE_SIMPLE_HASH_API_KEY;
+export const ALCHEMY_API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY;
 
 type ParsedMintData = {
   provider: MintProvider;
@@ -55,12 +55,7 @@ export async function fetchMintData(
   tokenId?: number,
   referral?: Address
 ): Promise<MintMetadata | undefined> {
-  const metadata = await fetchNFTMetadataFromSimpleHash(
-    chainId,
-    contract,
-    tokenId ?? 1,
-    SIMPLE_HASH_API_KEY
-  );
+  const metadata = await fetchNFTMetadata(chainId, contract, tokenId ?? 1, ALCHEMY_API_KEY);
   if (!metadata) {
     return;
   }
@@ -110,7 +105,7 @@ export async function fetchMintData(
         metadata: {
           name: metadata.name,
           description: metadata.description ?? '',
-          image: metadata.previews.image_large_url
+          image: metadata.image.thumbnailUrl
         },
         owner,
         mintType: token.mintType,
@@ -161,14 +156,14 @@ export async function fetchMintData(
       contract,
       tokenId,
       referral,
-      collectionName: metadata.collection.name + (tokenId ? ` #${tokenId}` : ''),
+      collectionName: metadata.name + (tokenId ? ` #${tokenId}` : ''),
       metadata: {
         name: metadata.name,
         description: metadata.description ?? '',
         image:
-          tokenId || metadata.collection.image_properties.mime_type === 'image/gif'
-            ? metadata.previews.image_small_url
-            : metadata.collection.image_url
+          tokenId || metadata.image.contentType === 'image/gif'
+            ? metadata.image.thumbnailUrl
+            : metadata.image.cachedUrl
       },
       owner: identity,
       mintType

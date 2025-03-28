@@ -6,11 +6,11 @@ import axios from 'axios';
 import { IdentityType } from '../types/ProfleType';
 
 import dotenv from 'dotenv';
-import { fetchNFTMetadataFromSimpleHash } from './simpleHash';
+import { fetchNFTMetadata } from './nft';
 dotenv.config();
 
 const API_URL = process.env.VITE_PAYFLOW_SERVICE_API_URL;
-const SIMPLE_HASH_API_KEY = process.env.VITE_SIMPLE_HASH_API_KEY;
+const ALCHEMY_API_KEY = process.env.VITE_ALCHEMY_API_KEY;
 
 export interface MintUrlParams {
   provider: string;
@@ -36,12 +36,7 @@ export async function fetchMintData(
   contract: Address,
   tokenId?: number
 ): Promise<MintMetadata | undefined> {
-  const metadata = await fetchNFTMetadataFromSimpleHash(
-    chainId,
-    contract,
-    tokenId ?? 1,
-    SIMPLE_HASH_API_KEY!
-  );
+  const metadata = await fetchNFTMetadata(chainId, contract, tokenId ?? 1, ALCHEMY_API_KEY!);
   if (!metadata) {
     return;
   }
@@ -86,13 +81,13 @@ export async function fetchMintData(
 
     return {
       provider,
-      collectionName: metadata.collection.name + (tokenId ? ` #${tokenId}` : ''),
+      collectionName: metadata.contract.name + (tokenId ? ` #${tokenId}` : ''),
       metadata: {
-        name: metadata.name,
+        name: metadata.name ?? '',
         image:
-          tokenId || metadata.collection.image_properties.mime_type === 'image/gif'
-            ? metadata.previews.image_medium_url
-            : metadata.collection.image_url
+          tokenId || metadata.image.contentType === 'image/gif'
+            ? metadata.image.thumbnailUrl
+            : metadata.image.originalUrl
       },
       identity
     };
