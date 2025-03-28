@@ -3,7 +3,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { RuntimeCaching } from 'workbox-build';
-import { ConfigEnv, defineConfig, loadEnv } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import { addSeconds, addMinutes, addHours, addDays, addWeeks, format } from 'date-fns';
 import { WorkboxPlugin } from 'workbox-core/types';
 import { execSync } from 'child_process';
@@ -123,7 +123,7 @@ export default defineConfig(({ isSsrBuild }) => {
     plugins: [
       react({
         babel: {
-          plugins: [['babel-plugin-react-compiler', { reactVersion: '18' }]]
+          //plugins: [['babel-plugin-react-compiler', { reactVersion: '18' }]]
         }
       }),
       nodePolyfills(),
