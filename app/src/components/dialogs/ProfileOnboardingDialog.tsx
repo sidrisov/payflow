@@ -23,11 +23,10 @@ import { updateProfile } from '../../services/user';
 import { useNavigate } from 'react-router';
 import { API_URL } from '../../utils/urlConstants';
 import { convertSocialResults, normalizeUsername } from '../../services/socials';
-import { useQuery } from '@airstack/airstack-react';
+import { useSocialInfo } from '../../utils/hooks/useSocials';
 import { isAlphanumericPlusFewSpecialChars as isAlphanumericWithSpecials } from '../../utils/regex';
 import { green, lightGreen, red } from '@mui/material/colors';
 import { FARCASTER_DAPP, LENS_DAPP } from '../../utils/dapps';
-import { QUERY_SOCIALS } from '../../utils/airstackQueries';
 import { BackDialogTitle } from './BackDialogTitle';
 import LoadingPayflowEntryLogo from '../LoadingPayflowEntryLogo';
 import { useMobile } from '../../utils/hooks/useMobile';
@@ -63,13 +62,7 @@ export default function ProfileOnboardingDialog({
 
   const navigate = useNavigate();
 
-  const { data: socialInfo, loading: loadingSocials } = useQuery(
-    QUERY_SOCIALS,
-    { identity: profile.identity },
-    {
-      cache: true
-    }
-  );
+  const { data: socialInfo, isLoading: loadingSocials } = useSocialInfo(profile.identity);
 
   function handleCloseCampaignDialog() {
     closeStateCallback();
@@ -78,11 +71,7 @@ export default function ProfileOnboardingDialog({
   // make a best effort to pull social info for the user
   useMemo(async () => {
     if (socialInfo) {
-      console.log(loadingSocials, socialInfo);
-
       const identity = convertSocialResults(socialInfo.Wallet);
-
-      console.log(identity);
 
       if (identity) {
         if (identity.data.meta?.socials && identity.data.meta?.socials.length > 0) {
@@ -114,11 +103,6 @@ export default function ProfileOnboardingDialog({
             }
           }
         } else {
-          // TODO: allow .eth, .xyz, etc in the username?
-          if (!displayName && identity.data.meta?.ens) {
-            //setDisplayName(meta.ens);
-          }
-
           if ((!username || username === profile.identity) && identity.data.meta?.ens) {
             setUsername(normalizeUsername(identity.data.meta.ens));
           }

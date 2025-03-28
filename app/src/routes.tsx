@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from 'react-router';
+import { createBrowserRouter, Navigate, redirect } from 'react-router';
 import LoadingPayflowEntryLogo from './components/LoadingPayflowEntryLogo';
 import sortAndFilterFlows from './utils/sortAndFilterFlows';
 import { me } from './services/user';
@@ -48,7 +48,7 @@ export const routes = createBrowserRouter([
           }
           return { profile };
         } else {
-          return { redirect: '/connect' };
+          return redirect('/connect?redirect=' + url.pathname);
         }
       } catch (error) {
         console.error('Failed to load profile:', error);
