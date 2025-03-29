@@ -42,7 +42,7 @@ public record FarcasterUser(
 	@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 	public record Bio(
 			String text,
-			List<String> mentionedProfiles) {
+			List<FarcasterUser> mentionedProfiles) {
 	}
 
 	@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)

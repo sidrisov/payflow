@@ -87,7 +87,7 @@ export async function fetchMintData(
         image:
           tokenId || metadata.image.contentType === 'image/gif'
             ? metadata.image.thumbnailUrl
-            : metadata.image.originalUrl
+            : metadata.image.cachedUrl
       },
       identity
     };
