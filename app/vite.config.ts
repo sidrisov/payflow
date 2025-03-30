@@ -276,7 +276,8 @@ export default defineConfig(({ isSsrBuild }) => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src')
-      }
+      },
+      conditions: ['mui-modern', 'module', 'browser', 'development|production']
     }
   };
 });

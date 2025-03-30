@@ -28,7 +28,7 @@ public class LinkService {
 					.toUriString();
 
 			val paymentFrameLauncherUri = UriComponentsBuilder.fromHttpUrl("https://warpcast.com")
-					.path("/~/frames/launch")
+					.path("/~/mini-apps/launch")
 					.queryParam("url", paymentUrl)
 					.encode()
 					.build().toUri();

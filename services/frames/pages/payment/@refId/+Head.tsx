@@ -22,7 +22,7 @@ export function Head() {
     getReceiptUrl(payment.chainId, payment.hash ?? payment.fulfillmentHash);
 
   const paymentUrl = `${DAPP_URL}/payment/${refId}`;
-  const launchFrameLink = `https://warpcast.com/~/frames/launch?url=${encodeURIComponent(paymentUrl)}`;
+  const launchFrameLink = `https://warpcast.com/~/mini-apps/launch?url=${encodeURIComponent(paymentUrl)}`;
 
   const getButtonTitle = (payment: Data) => {
     if (payment.status === 'COMPLETED') {

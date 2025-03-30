@@ -153,7 +153,7 @@ export default function Home() {
           <Button
             variant="contained"
             size="large"
-            href="https://warpcast.com/~/frames/launch?domain=app.payflow.me"
+            href="https://warpcast.com/~/mini-apps/launch?domain=app.payflow.me"
             target="_blank"
             startIcon={<SiFarcaster size={20} />}
             sx={{

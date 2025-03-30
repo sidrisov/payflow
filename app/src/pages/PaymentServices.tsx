@@ -1,5 +1,5 @@
 import React from 'react';
-import { Stack, Typography, Grid2, Card } from '@mui/material';
+import { Stack, Typography, Card, Grid } from '@mui/material';
 import { TbGiftFilled, TbSend } from 'react-icons/tb';
 import { HiOutlineSquares2X2 } from 'react-icons/hi2';
 import { GrStorage } from 'react-icons/gr';
@@ -23,14 +23,14 @@ interface ServiceCategoryProps {
 
 const ServiceCategory: React.FC<ServiceCategoryProps> = ({ services }) => {
   return (
-    <Grid2
+    <Grid
       width="100%"
       container
       spacing={2}
       columns={{ xs: 2, sm: 2, md: 2 }}
       justifyContent="center">
       {services.map((service, index) => (
-        <Grid2
+        <Grid
           key={index}
           component={Card}
           elevation={5}
@@ -56,9 +56,9 @@ const ServiceCategory: React.FC<ServiceCategoryProps> = ({ services }) => {
               </Typography>
             </Stack>
           </Link>
-        </Grid2>
+        </Grid>
       ))}
-    </Grid2>
+    </Grid>
   );
 };
 
