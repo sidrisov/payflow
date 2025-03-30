@@ -123,7 +123,7 @@ export default defineConfig(({ isSsrBuild }) => {
     plugins: [
       react({
         babel: {
-          //plugins: [['babel-plugin-react-compiler', { reactVersion: '18' }]]
+          plugins: [['babel-plugin-react-compiler']]
         }
       }),
       nodePolyfills(),
