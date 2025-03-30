@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { Stack, Typography, Grid2, IconButton, Badge } from '@mui/material';
+import { Stack, Typography, Grid, IconButton, Badge } from '@mui/material';
 import PaymentRewardCastActionComposerDialog from '../../dialogs/PaymentRewardCastActionComposerDialog';
 import { AutoAwesome, Interests } from '@mui/icons-material';
 import { GrStorage } from 'react-icons/gr';
@@ -61,22 +61,22 @@ const ActionCategory: React.FC<ActionCategoryProps> = ({ title, icon, actions })
           </IconButton>
         </Badge>
       </Stack>
-      <Grid2
+      <Grid
         container
         rowSpacing={{ xs: 1, sm: 2 }}
         columnSpacing={{ xs: 1, sm: 2 }}
         justifyContent="center">
         {actions.map((action, index) => (
-          <Grid2
+          <Grid
             component="span"
             key={index}
             size={{ xs: 6 }}
             display="flex"
             justifyContent="center">
             <CastActionButton {...action} />
-          </Grid2>
+          </Grid>
         ))}
-      </Grid2>
+      </Grid>
     </Stack>
   );
 };

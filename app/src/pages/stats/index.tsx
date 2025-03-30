@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { Box, Container, Grid2, Typography, Skeleton, CardContent, Card } from '@mui/material';
+import { Box, Container, Grid, Typography, Skeleton, CardContent, Card } from '@mui/material';
 import { API_URL } from '../../utils/urlConstants';
 import { LineChart } from '@mui/x-charts/LineChart';
 
@@ -47,11 +47,11 @@ export default function StatsPage() {
         Payflow Stats Dashboard
       </Typography>
 
-      <Grid2 container spacing={3}>
-        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+      <Grid container spacing={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard title="Users" value={stats?.totalUsers} isLoading={isLoading} />
-        </Grid2>
-        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
             title="Active Users"
             value={
@@ -61,48 +61,48 @@ export default function StatsPage() {
             subtitle="DAU/WAU/MAU"
             isLoading={isLoading}
           />
-        </Grid2>
-        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
             title="All Payments"
             value={stats && `${stats.completedPayments}/${stats.totalPayments}`}
             subtitle="Completed/Total"
             isLoading={isLoading}
           />
-        </Grid2>
-        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
             title="P2P + Rewards Payments"
             value={stats?.p2pPayments}
             subtitle="Completed"
             isLoading={isLoading}
           />
-        </Grid2>
-        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
             title="Storage Units"
             value={stats?.storageUnitsPurchased}
             subtitle="Purchased"
             isLoading={isLoading}
           />
-        </Grid2>
-        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
             title="Collectibles"
             value={stats?.mintTokensPurchased}
             subtitle="Minted"
             isLoading={isLoading}
           />
-        </Grid2>
-        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
             title="Hypersub"
             value={stats?.hypersubMonthsSubscribed}
             subtitle="Months Subscribed"
             isLoading={isLoading}
           />
-        </Grid2>
-      </Grid2>
+        </Grid>
+      </Grid>
 
       <Box sx={{ mt: 4, height: 400 }}>
         <Typography variant="h6" gutterBottom>

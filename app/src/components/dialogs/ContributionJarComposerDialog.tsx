@@ -71,8 +71,10 @@ export default function ContributionJarComposerDialog({
               fullWidth
               value={jarTitle}
               label="Title"
-              InputLabelProps={{
-                sx: { fontSize: 16 }
+              slotProps={{
+                inputLabel: {
+                  sx: { fontSize: 16 }
+                }
               }}
               InputProps={{
                 inputProps: { maxLength: 24, inputMode: 'text' },

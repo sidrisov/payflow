@@ -21,9 +21,9 @@
     "@emotion/styled": "^11.11.0",
     "@farcaster/auth-kit": "^0.6.0",
     "@farcaster/frame-sdk": "^0.0.31",
-    "@mui/icons-material": "^6.3.1",
-    "@mui/lab": "^6.0.0-beta.22",
-    "@mui/material": "^6.3.1",
+    "@mui/icons-material": "^7.0.1",
+    "@mui/lab": "^7.0.0-beta.10",
+    "@mui/material": "^7.0.1",
     "@mui/x-charts": "^7.23.0",
     "@payflow/common": "file:../packages/common",
     "@paywithglide/glide-js": "^0.11.7",
@@ -87,7 +87,7 @@
     "typescript": "^5.1.6",
     "vite": "^6.2.2",
     "vite-plugin-node-polyfills": "^0.23.0",
-    "vite-plugin-pwa": "^0.21.0",
+    "vite-plugin-pwa": "^1.0.0",
     "workbox-window": "^7.1.0"
   },
   "overrides": {
