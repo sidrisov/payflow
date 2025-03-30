@@ -67,7 +67,7 @@ export default function App() {
     };
 
     if (FrameV2SDK && !isFrameV2) {
-      //initiateFrameV2();
+      initiateFrameV2();
     }
   }, [isFrameV2]);
 
