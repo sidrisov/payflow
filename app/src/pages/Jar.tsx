@@ -10,7 +10,7 @@ import { AssetType } from '../types/AssetType';
 import { useAssetBalances } from '../utils/queries/balances';
 import { lightGreen } from '@mui/material/colors';
 import { Add, ArrowOutward } from '@mui/icons-material';
-import { PaymentSenderType } from '../components/payment/PaymentDialog';
+import PaymentDialog, { PaymentSenderType } from '../components/payment/PaymentDialog';
 import { useAccount } from 'wagmi';
 import { ProfileContext } from '../contexts/UserContext';
 import ChoosePaymentOptionDialog from '../components/dialogs/ChoosePaymentOptionDialog';
@@ -19,8 +19,6 @@ import ProfileAvatar from '../components/avatars/ProfileAvatar';
 import { ProfileDisplayNameWithLink } from '../components/activity/ProfileDisplayNameWithLink';
 import { PublicProfileDetailsPopover } from '../components/menu/PublicProfileDetailsPopover';
 import { useMobile } from '../utils/hooks/useMobile';
-
-const LazyPaymentDialog = lazy(() => import('../components/payment/PaymentDialog'));
 
 export default function Jar() {
   const isMobile = useMobile();
@@ -169,7 +167,7 @@ export default function Jar() {
         )}
         {openPayDialog && jar && (
           <>
-            <LazyPaymentDialog
+            <PaymentDialog
               open={openPayDialog && (!loggedProfile || paymentType !== 'none')}
               paymentType={paymentType}
               sender={{

@@ -5,7 +5,7 @@ import { useAccount } from 'wagmi';
 import { MoreVert } from '@mui/icons-material';
 import { ProfileSection } from '../ProfileSection';
 import { Address } from 'viem';
-import { PaymentSenderType } from '../payment/PaymentDialog';
+import PaymentDialog, { PaymentSenderType } from '../payment/PaymentDialog';
 import { ProfileContext } from '../../contexts/UserContext';
 import ChoosePaymentOptionDialog from './ChoosePaymentOptionDialog';
 import { AddressSection } from '../AddressSection';
@@ -13,7 +13,6 @@ import { ActionButton } from '../buttons/ActionButton';
 import { TbSend } from 'react-icons/tb';
 import { IdentityMenu } from '../menu/SearchIdenitityMenu';
 import { SocialLinksPopover } from './SocialLinksPopover';
-const LazyPaymentDialog = lazy(() => import('../payment/PaymentDialog'));
 
 export function PublicProfileDetails({
   openPayDialogParam = false,
@@ -77,7 +76,7 @@ export function PublicProfileDetails({
 
       {openPayDialog && paymentType !== 'none' && (
         <>
-          <LazyPaymentDialog
+          <PaymentDialog
             open={openPayDialog}
             paymentType={paymentType}
             sender={{

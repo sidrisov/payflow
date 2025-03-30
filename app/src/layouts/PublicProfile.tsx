@@ -15,7 +15,7 @@ import { useIdentity } from '../utils/queries/profiles';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 import { useMobile } from '../utils/hooks/useMobile';
 import ActivityFeed from '../components/activity/ActivityFeed';
-const LazyPaymentDialog = lazy(() => import('../components/payment/PaymentDialog'));
+import PaymentDialog from '@/components/payment/PaymentDialog';
 
 export default function PublicProfile() {
   const isMobile = useMobile();
@@ -96,7 +96,7 @@ export default function PublicProfile() {
         }}
       />
       {selectedRecipient && (
-        <LazyPaymentDialog
+        <PaymentDialog
           paymentType={loggedProfile ? 'payflow' : 'wallet'}
           open={selectedRecipient !== undefined}
           sender={{

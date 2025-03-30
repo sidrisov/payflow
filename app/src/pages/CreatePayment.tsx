@@ -1,19 +1,23 @@
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Container } from '@mui/material';
 import { useSearchParams, useNavigate } from 'react-router';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import { ProfileContext } from '../contexts/UserContext';
-import { SelectedIdentityType } from '@payflow/common';
+import { PaymentType, SelectedIdentityType } from '@payflow/common';
 import { Address } from 'viem';
 import { useIdentity } from '../utils/queries/profiles';
 import PaymentDialog from '../components/payment/PaymentDialog';
+import { base } from 'viem/chains';
 
 export default function Composer() {
   const navigate = useNavigate();
 
   const [searchParams] = useSearchParams();
   const recipientIdentity = searchParams.get('recipient');
+  const chainId = searchParams.get('chainId');
+  const token = searchParams.get('token');
+  const tokenAmount = searchParams.get('tokenAmount');
 
   const { isLoading: isRecipientFetchingLoading, data: fetchedRecipientIdentity } = useIdentity(
     recipientIdentity as string
@@ -65,6 +69,19 @@ export default function Composer() {
           <PaymentDialog
             open={recipient != null}
             paymentType="payflow"
+            payment={
+              {
+                referenceId: '123',
+                type: 'APP',
+                status: 'CREATED',
+                category: 'fc_storage',
+                receiver: recipient.identity.profile,
+                receiverAddress: recipient.identity.address,
+                chainId: chainId ?? base.id,
+                token: token ?? 'usdc',
+                tokenAmount: tokenAmount ? parseInt(tokenAmount) : 10
+              } as PaymentType
+            }
             sender={{
               type: 'profile',
               identity: {

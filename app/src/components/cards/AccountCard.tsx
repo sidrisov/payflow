@@ -7,9 +7,19 @@ import {
   Stack,
   Tooltip,
   Typography,
-  SxProps
+  SxProps,
+  CircularProgress
 } from '@mui/material';
-import { useContext, useMemo, useState, useCallback, useRef, lazy, useEffect } from 'react';
+import {
+  useContext,
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+  lazy,
+  useEffect,
+  Suspense
+} from 'react';
 import { useAccount } from 'wagmi';
 import { Address } from 'viem';
 import { TbSend, TbPlus } from 'react-icons/tb';
@@ -30,8 +40,7 @@ import { ActionButton } from '../buttons/ActionButton';
 import { PayMeDialog } from '../dialogs/PayMeDialog';
 import { GoArrowSwitch } from 'react-icons/go';
 import CopyToClipboardIconButton from '../buttons/CopyToClipboardIconButton';
-
-const LazyPaymentDialog = lazy(() => import('../payment/PaymentDialog'));
+import PaymentDialog from '../payment/PaymentDialog';
 
 const nonSelectableText: SxProps = {
   userSelect: 'none',
@@ -48,6 +57,13 @@ export type AccountCardProps = CardProps & {
   balanceVisible: boolean;
   setBalanceVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
+
+// Add a loading component for the payment dialog
+const PaymentDialogFallback = () => (
+  <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+    <CircularProgress />
+  </Box>
+);
 
 export function AccountCard({
   flows,
@@ -263,32 +279,34 @@ export function AccountCard({
         </Card>
 
         {recipient && (
-          <LazyPaymentDialog
-            open={recipient != null}
-            paymentType={paymentType}
-            sender={{
-              type: paymentType === 'payflow' ? 'profile' : 'address',
-              identity: {
-                address:
-                  paymentType === 'payflow'
-                    ? profile.identity
-                    : (address?.toLowerCase() as Address),
-                ...(paymentType === 'payflow' && {
-                  profile
-                })
+          <Suspense fallback={<PaymentDialogFallback />}>
+            <PaymentDialog
+              open={recipient != null}
+              paymentType={paymentType}
+              sender={{
+                type: paymentType === 'payflow' ? 'profile' : 'address',
+                identity: {
+                  address:
+                    paymentType === 'payflow'
+                      ? profile.identity
+                      : (address?.toLowerCase() as Address),
+                  ...(paymentType === 'payflow' && {
+                    profile
+                  })
+                }
+              }}
+              recipient={recipient}
+              setOpenSearchIdentity={setOpenSearchIdentity}
+              flow={
+                selectedFlow.type !== 'BANKR' && selectedFlow.type !== 'RODEO'
+                  ? selectedFlow
+                  : undefined
               }
-            }}
-            recipient={recipient}
-            setOpenSearchIdentity={setOpenSearchIdentity}
-            flow={
-              selectedFlow.type !== 'BANKR' && selectedFlow.type !== 'RODEO'
-                ? selectedFlow
-                : undefined
-            }
-            closeStateCallback={async () => {
-              setRecipient(undefined);
-            }}
-          />
+              closeStateCallback={async () => {
+                setRecipient(undefined);
+              }}
+            />
+          </Suspense>
         )}
 
         {openSearchIdentity && (
