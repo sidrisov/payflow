@@ -9,7 +9,6 @@ import { useRegularTransfer } from './useRegularTransfer';
 import { useSafeTransfer } from './useSafeTransfer';
 import { FlowType, FlowWalletType } from '@payflow/common';
 import { Address, Hash } from 'viem';
-import { useFarcasterTransfer } from './useFarcasterTransfer';
 
 export const usePayflowTransaction = (isNativeFlow: boolean) => {
   const chainId = useChainId();
@@ -36,16 +35,6 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
     status: statusRegular,
     txHash: txHashRegular
   } = useRegularTransfer();
-
-  const {
-    sendTransactionAsync: sendTransactionFarcaster,
-    reset: resetFarcaster,
-    loading: loadingFarcaster,
-    confirmed: confirmedFarcaster,
-    error: errorFarcaster,
-    status: statusFarcaster,
-    txHash: txHashFarcaster
-  } = useFarcasterTransfer();
 
   const [paymentTxStatus, setPaymentTxStatus] = useState<PaymentTxStatus>({
     isPending: false,
@@ -116,10 +105,6 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
     senderFlow: FlowType
   ): Promise<Hash> => {
     if (!profile) throw new Error('Profile not found. Please ensure you are logged in.');
-
-    if (!isNativeFlow && isFrameV2) {
-      return (await sendTransactionFarcaster(tx)) as Hash;
-    }
 
     if (!publicClient)
       throw new Error('Client not initialized. Please check your network connection.');
@@ -195,7 +180,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
       if (isNativeFlow) {
         resetSafe();
       } else {
-        resetFarcaster();
+        resetRegular();
       }
 
       const commissionUSD = getCommissionUSD(payment);
@@ -259,17 +244,6 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
 
   useEffect(() => {
     const transferStatus = (() => {
-      if (!isNativeFlow && isFrameV2) {
-        return {
-          isPending: Boolean(
-            loadingFarcaster || (txHashFarcaster && !confirmedFarcaster && !errorFarcaster)
-          ),
-          isConfirmed: Boolean(confirmedFarcaster),
-          error: Boolean(errorFarcaster),
-          txHash: txHashFarcaster,
-          status: statusFarcaster
-        };
-      }
       return isNativeFlow
         ? {
             isPending: Boolean(loadingSafe || (txHashSafe && !confirmedSafe && !errorSafe)),
@@ -309,11 +283,6 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
     confirmedRegular,
     errorRegular,
     statusRegular,
-    loadingFarcaster,
-    txHashFarcaster,
-    confirmedFarcaster,
-    errorFarcaster,
-    statusFarcaster,
     glideStatus
   ]);
 
