@@ -11,7 +11,7 @@ import {
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { getCommissionUSD, getPaymentOption } from '../../utils/glide';
 import { useChainId } from 'wagmi';
-import { SelectedIdentityType } from '@payflow/common';
+import { SelectedIdentityType, SocialInfoType } from '@payflow/common';
 import { FarcasterRecipientField } from '../FarcasterRecipientField';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
 import { PaymentType, FlowType, FlowWalletType } from '@payflow/common';
@@ -20,7 +20,6 @@ import { Token } from '@payflow/common';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
 import { toast } from 'react-toastify';
-import { Social } from '../../generated/graphql/types';
 import { red } from '@mui/material/colors';
 import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
 import { HypersubData } from '../../utils/hooks/useHypersub';
@@ -44,8 +43,8 @@ export type HypersubDialogProps = DialogProps &
   CloseCallbackType & {
     sender: SelectedIdentityType;
     payment: PaymentType;
-    senderSocial: Social;
-    recipientSocial: Social;
+    senderSocial: SocialInfoType;
+    recipientSocial: SocialInfoType;
     hypersub: HypersubData;
     alwaysShowBackButton?: boolean;
   };

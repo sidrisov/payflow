@@ -64,8 +64,6 @@ export interface MetaType {
   ens?: string;
   ensAvatar?: string;
   socials: SocialInfoType[];
-  xmtp: boolean;
-  insights?: InsightsType;
 }
 
 export interface InsightsType {

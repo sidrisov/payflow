@@ -4,13 +4,12 @@ import { getCommissionUSD, getPaymentOption } from '../../utils/glide';
 import { useChainId } from 'wagmi';
 import { FarcasterRecipientField } from '../FarcasterRecipientField';
 import { NetworkTokenSelector } from '../NetworkTokenSelector';
-import { PaymentType, FlowType, FlowWalletType, SelectedIdentityType } from '@payflow/common';
+import { PaymentType, FlowType, FlowWalletType, SelectedIdentityType, SocialInfoType } from '@payflow/common';
 import { useMemo, useState, useEffect } from 'react';
 import { Token } from '@payflow/common';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/formats';
 import { useGlidePaymentOptions } from '../../utils/hooks/useGlidePayment';
 import { toast } from 'react-toastify';
-import { Social } from '../../generated/graphql/types';
 import { red } from '@mui/material/colors';
 import { useCompatibleWallets } from '../../utils/hooks/useCompatibleWallets';
 import { PayButton, PaymentSuccess } from '../buttons/PayButton';
@@ -27,7 +26,7 @@ export type BuyStorageDialogProps = DialogProps &
   CloseCallbackType & {
     sender: SelectedIdentityType;
     payment: PaymentType;
-    recipientSocial: Social;
+    recipientSocial: SocialInfoType;
     alwaysShowBackButton?: boolean;
   };
 

@@ -2,25 +2,33 @@ package ua.sinaver.web3.payflow.service;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.graphql.client.ClientGraphQlResponse;
 import org.springframework.graphql.client.GraphQlClient;
 import org.springframework.graphql.client.HttpGraphQlClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import ua.sinaver.web3.payflow.client.NeynarClient;
 import ua.sinaver.web3.payflow.graphql.generated.types.*;
+import ua.sinaver.web3.payflow.message.SocialMetadata;
+import ua.sinaver.web3.payflow.message.SocialInfo;
 
 import static ua.sinaver.web3.payflow.config.CacheConfig.*;
+
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class AirstackSocialGraphService {
 
 	private final GraphQlClient airstackGraphQlClient;
+
+	@Autowired
+	private NeynarClient neynarClient;
 
 	public AirstackSocialGraphService(WebClient.Builder builder,
 			@Value("${payflow.airstack.api.url}") String airstackUrl,
@@ -40,25 +48,17 @@ public class AirstackSocialGraphService {
 	}
 
 	@Cacheable(cacheNames = SOCIALS_CACHE_NAME, unless = "#result==null")
-	public Wallet getSocialMetadata(String identity) {
+	public SocialMetadata getSocialMetadata(String identity) {
 		try {
-			ClientGraphQlResponse socialMetadataResponse = airstackGraphQlClient.documentName(
-					"getSocialMetadata")
-					.variable("identity", identity)
-					.execute()
-					.onErrorResume(exception -> {
-						log.error("Error fetching {} - {}", identity, exception.getMessage());
-						return Mono.empty();
-					})
-					.block();
-
-			if (socialMetadataResponse != null) {
-				if (log.isTraceEnabled()) {
-					log.trace("Fetched socialMetadata for {}: {}", identity, socialMetadataResponse);
-				} else {
-					log.debug("Fetched socialMetadata for {}", identity);
-				}
-				return socialMetadataResponse.field("Wallet").toEntity(Wallet.class);
+			val users = neynarClient.getUsersByAddresses(identity.toLowerCase());
+			log.debug("Users: {}", users);
+			if (users != null && !users.isEmpty()) {
+				val socials = users.get(identity.toLowerCase())
+						.stream()
+						.map(user -> new SocialInfo("farcaster", user.username(), user.displayName(), user.fid(),
+								user.pfpUrl(), user.followerCount()))
+						.collect(Collectors.toList());
+				return new SocialMetadata(null, null, socials);
 			}
 		} catch (Throwable t) {
 			if (log.isTraceEnabled()) {

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Avatar, BoxProps, Skeleton, Stack, Typography, styled } from '@mui/material';
-import { PaymentType } from '@payflow/common';
-import { useFarcasterUser } from '../../utils/hooks/useSocials';
+import { PaymentType, SocialInfoType } from '@payflow/common';
 import { FarcasterProfileSection } from '../FarcasterProfileSection';
 import { ProfileSection } from '../ProfileSection';
 import { AddressSection } from '../AddressSection';
@@ -12,6 +11,7 @@ import { PaymentCard } from '../cards/PaymentCard';
 import { useMintData } from '../../utils/hooks/useMintData';
 import { HypersubData, useHypersubData } from '../../utils/hooks/useHypersub';
 import TokenNetworkAvatar from '../avatars/TokenNetworkAvatar';
+import { useFarcasterSocial } from '@/hooks/useFarcasterSocial';
 
 const StyledTypography = styled(Typography)(() => ({
   textAlign: 'start',
@@ -59,18 +59,18 @@ interface PaymentContentProps {
   loading: boolean;
 }
 
-const PaymentContent: React.FC<PaymentContentProps> = ({ children, loading }) => {
+const PaymentContent = ({ children, loading }: PaymentContentProps) => {
   return loading ? (
     <Skeleton variant="rounded" sx={{ width: '100%', height: '100%', minHeight: 80 }} />
   ) : (
     <Stack width="100%" direction="row" spacing={1} justifyContent="space-between">
-      {children}
+      <>{children}</>
     </Stack>
   );
 };
 
 interface UsePaymentDataResult {
-  social: any;
+  social: SocialInfoType | undefined;
   mintData: any | null;
   hypersubData: HypersubData | null | undefined;
   isMobile: boolean;
@@ -79,7 +79,7 @@ interface UsePaymentDataResult {
 }
 
 const usePaymentData = (payment: PaymentType): UsePaymentDataResult => {
-  const { social, isLoading: loadingSocials } = useFarcasterUser(payment.receiverFid?.toString());
+  const { social, isLoading: loadingSocials } = useFarcasterSocial(payment.receiverFid?.toString());
   const { mintData, loading: loadingMintData } = useMintData(payment);
   const { hypersubData, loading: loadingHypersubData } = useHypersubData(payment);
   const isMobile = useMobile();

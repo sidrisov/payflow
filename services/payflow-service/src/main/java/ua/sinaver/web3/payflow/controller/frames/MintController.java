@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import ua.sinaver.web3.payflow.entity.Payment;
 import ua.sinaver.web3.payflow.entity.User;
 import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
+import ua.sinaver.web3.payflow.message.SocialInfo;
 import ua.sinaver.web3.payflow.message.farcaster.FrameMessage;
 import ua.sinaver.web3.payflow.message.farcaster.ValidatedFrameResponseMessage;
 import ua.sinaver.web3.payflow.repository.PaymentRepository;
@@ -150,13 +151,7 @@ public class MintController {
 					}
 					receiverFid = identity.meta().socials().stream()
 							.filter(s -> SocialDappName.farcaster.name().equals(s.dappName()))
-							.map(s -> {
-								try {
-									return Integer.parseInt(s.profileId());
-								} catch (NumberFormatException e) {
-									return null;
-								}
-							})
+							.map(SocialInfo::profileId)
 							.findFirst()
 							.orElse(null);
 					if (receiverFid == null) {

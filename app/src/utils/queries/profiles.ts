@@ -24,7 +24,7 @@ export const useProfile = (addressOrName: string | undefined) => {
 };
 
 export const useIdentity = (addressOrName?: string, fid?: string) => {
-  const identity = addressOrName ?? fid;
+  const identity = fid ?? addressOrName;
   return useQuery({
     enabled: Boolean(identity),
     queryKey: ['identity', { identity }],

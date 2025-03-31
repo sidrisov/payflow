@@ -3,20 +3,15 @@ import { lazy, useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ProfileContext } from '../contexts/UserContext';
 import { useNavigate, useParams } from 'react-router';
-import { PaymentType } from '@payflow/common';
+import { PaymentType, SocialInfoType } from '@payflow/common';
 import { fetchPayment } from '../services/payments';
-import {
-  QUERY_FARCASTER_PROFILE,
-  QUERY_FARCASTER_PROFILE_BY_IDENTITY
-} from '../utils/airstackQueries';
-import { Social } from '../generated/graphql/types';
 import { IdentityType, SelectedIdentityType } from '@payflow/common';
 import { toast } from 'react-toastify';
 import { statusToToastType } from '../components/Toasts';
 import { fetchMintData, MintMetadata, parseMintToken } from '../utils/mint';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 import { fetchHypersubData, HypersubData } from '../utils/hooks/useHypersub';
-import { fetchFarcasterUser } from '@/utils/hooks/useSocials';
+import { useFarcasterSocial } from '@/hooks/useFarcasterSocial';
 
 const LazyMintDialog = lazy(() => import('../components/payment/MintDialog'));
 const LazySubscribeToHypersubDialog = lazy(() => import('../components/payment/HypersubDialog'));
@@ -30,8 +25,6 @@ export default function Payment() {
   const { profile } = useContext(ProfileContext);
 
   const [payment, setPayment] = useState<PaymentType>();
-  const [senderSocial, setSenderSocial] = useState<Social>();
-  const [recipientSocial, setRecipientSocial] = useState<Social>();
   const [mintData, setMintData] = useState<MintMetadata>();
   const [hypersubData, setHypersubData] = useState<HypersubData | null>(null);
 
@@ -70,23 +63,6 @@ export default function Payment() {
             }
 
             if (paymentData.receiverFid) {
-              // TODO: fetch from server instead
-              const recipientSocial = await fetchFarcasterUser(QUERY_FARCASTER_PROFILE, {
-                fid: paymentData.receiverFid.toString()
-              });
-
-              if (recipientSocial) {
-                setRecipientSocial(recipientSocial);
-              }
-
-              const senderSocial = await fetchFarcasterUser(QUERY_FARCASTER_PROFILE_BY_IDENTITY, {
-                identity: profile?.identity
-              });
-
-              if (senderSocial) {
-                setSenderSocial(senderSocial);
-              }
-
               if (paymentData.category === 'mint') {
                 const parsedMintData = parseMintToken(paymentData.token);
                 const mintData = await fetchMintData(
@@ -115,6 +91,12 @@ export default function Payment() {
     };
     fetchData();
   }, [refId, payment]);
+
+  const { social: recipientSocial } = useFarcasterSocial(
+    profile?.identity ?? payment?.receiverAddress,
+    payment?.receiverFid?.toString()
+  );
+  const { social: senderSocial } = useFarcasterSocial(profile?.identity ?? payment?.senderAddress);
 
   // specify height, otherwise the privy dialog won't be properly displayed
   return (

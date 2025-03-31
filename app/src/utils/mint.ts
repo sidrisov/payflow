@@ -1,7 +1,7 @@
 import { readContract } from '@wagmi/core';
 import axios from 'axios';
 import { Address, erc721Abi, PublicClient } from 'viem';
-import { IdentityType } from '@payflow/common';
+import { IdentityType, SocialInfoType } from '@payflow/common';
 import { API_URL, DAPP_URL } from './urlConstants';
 import { wagmiConfig } from './wagmiConfig';
 import { zoraErc1155Abi } from './abi/zoraErc1155Abi';
@@ -9,7 +9,6 @@ import { createCollectorClient } from '@zoralabs/protocol-sdk';
 import { getPublicClient } from 'wagmi/actions';
 import { ProfileType } from '@payflow/common';
 import { FARCASTER_DAPP } from './dapps';
-import { Social } from '../generated/graphql/types';
 import { fetchNFTMetadata } from './nft';
 
 export const ALCHEMY_API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY;
@@ -311,7 +310,7 @@ export function createShareUrls({
   tokenAmount
 }: {
   mint: MintMetadata;
-  recipientSocial: Social;
+  recipientSocial: SocialInfoType;
   profile: ProfileType;
   isGift: boolean;
   tokenAmount: number;

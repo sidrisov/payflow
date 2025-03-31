@@ -84,8 +84,6 @@ public class FrameResponse {
 				<html>
 				<head>
 				<meta property="fc:frame" content="vNext" />
-				<meta property="of:accepts:xmtp" content="2024-02-01" />
-				<meta property="of:accepts:lens" content="1.1" />
 				<meta property="fc:frame:image" content="%s"/>
 				%s
 				%s

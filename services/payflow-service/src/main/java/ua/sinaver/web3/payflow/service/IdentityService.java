@@ -116,14 +116,14 @@ public class IdentityService implements IIdentityService {
 
 	@Override
 	public String getENSAddress(String ens) {
-		val wallet = socialGraphService.getSocialMetadata(ens);
+		val socialMetadata = socialGraphService.getSocialMetadata(ens);
 
-		if (wallet == null || wallet.getAddresses() == null) {
+		if (socialMetadata == null || socialMetadata.ens() == null) {
 			log.warn("ENS Address for {} was not found!", ens);
 			return null;
 		}
 
-		String ensAddress = wallet.getAddresses().stream().findFirst().orElse(null);
+		String ensAddress = socialMetadata.ens();
 		log.debug("ENS Address for {}: {}", ens, ensAddress);
 		return ensAddress;
 	}
@@ -264,12 +264,7 @@ public class IdentityService implements IIdentityService {
 	@Override
 	public List<IdentityMessage> getIdentitiesInfo(int fid) {
 		val identities = getFarcasterAddressesByFid(fid);
-		return getIdentitiesInfo(identities, null);
-	}
-
-	@Override
-	public List<IdentityMessage> getIdentitiesInfo(List<String> identities) {
-		return getIdentitiesInfo(identities, null);
+		return getIdentitiesInfo(identities);
 	}
 
 	@Override
@@ -287,7 +282,7 @@ public class IdentityService implements IIdentityService {
 	}
 
 	@Override
-	public List<IdentityMessage> getIdentitiesInfo(List<String> identities, String me) {
+	public List<IdentityMessage> getIdentitiesInfo(List<String> identities) {
 		log.debug("Fetching {} identities", identities);
 		try {
 			val identityMessages = Flux
@@ -318,8 +313,7 @@ public class IdentityService implements IIdentityService {
 							.map(tuple -> IdentityMessage.convert(
 									identity,
 									tuple.getT2().orElse(null),
-									tuple.getT3(),
-									null)))
+									tuple.getT3())))
 					.sequential()
 					.timeout(Duration.ofSeconds(10), Mono.empty())
 					.collectList()

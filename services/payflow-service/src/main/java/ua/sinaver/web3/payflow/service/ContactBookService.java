@@ -17,10 +17,8 @@ import ua.sinaver.web3.payflow.message.ContactMessage;
 import ua.sinaver.web3.payflow.message.ContactsResponseMessage;
 import ua.sinaver.web3.payflow.repository.ContactRepository;
 import ua.sinaver.web3.payflow.repository.UserRepository;
-import ua.sinaver.web3.payflow.service.AirstackSocialGraphService;
 
 import java.time.Duration;
-import java.time.Period;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -35,10 +33,6 @@ public class ContactBookService {
 		System.setProperty("reactor.schedulers.defaultBoundedElasticOnVirtualThreads", "true");
 	}
 
-	@Value("${payflow.airstack.contacts.update.duration:24h}")
-	private Duration contactsUpdateDuration;
-	@Value("${payflow.airstack.contacts.update.last-seen-period:3d}")
-	private Period contactsUpdateLastSeenPeriod;
 	@Autowired
 	private ContactRepository contactRepository;
 	@Autowired
@@ -216,29 +210,11 @@ public class ContactBookService {
 										.elapsed()
 										.doOnNext(tuple -> log.debug("Total time (including queue) took {}ms for {}",
 												tuple.getT1(), contact))
-										.map(tuple -> tuple.getT2())
-						/*
-						 * Mono.fromCallable(
-						 * () -> socialGraphService.getSocialInsights(contact, user.getIdentity()))
-						 * .subscribeOn(Schedulers.boundedElastic())
-						 * .elapsed()
-						 * .doOnNext(tuple -> log.debug("Social insights took {}ms for {}",
-						 * tuple.getT1(),
-						 * contact))
-						 * .map(tuple -> tuple.getT2())
-						 * .onErrorResume(exception -> {
-						 * log.error("Error fetching social insights" +
-						 * " for {} - {}",
-						 * contact,
-						 * exception.getMessage());
-						 * return Mono.empty();
-						 * })
-						 */)
+										.map(tuple -> tuple.getT2()))
 								.map(tuple -> ContactMessage.convert(
 										tuple.getT1(),
 										tuple.getT2().orElse(null),
 										tuple.getT3(),
-										null,
 										allContacts.get(contact)));
 					})
 					// TODO: fail fast, seems doesn't to work properly with threads

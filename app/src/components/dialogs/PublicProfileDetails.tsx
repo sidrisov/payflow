@@ -12,7 +12,6 @@ import { AddressSection } from '../AddressSection';
 import { ActionButton } from '../buttons/ActionButton';
 import { TbSend } from 'react-icons/tb';
 import { IdentityMenu } from '../menu/SearchIdenitityMenu';
-import { SocialLinksPopover } from './SocialLinksPopover';
 
 export function PublicProfileDetails({
   openPayDialogParam = false,
@@ -60,11 +59,7 @@ export function PublicProfileDetails({
       <Stack width="100%" direction="row" alignItems="center" justifyContent="space-between">
         <ProfileInfo />
         <Stack direction="row" spacing={1}>
-          <ActionButton
-            icon={<TbSend />}
-            title="Pay"
-            onClick={handlePayButtonClick}
-          />
+          <ActionButton icon={<TbSend />} title="Pay" onClick={handlePayButtonClick} />
           <Divider variant="middle" flexItem orientation="vertical" />
           <ActionButton
             ref={identityMenuAnchorRef}
@@ -119,16 +114,6 @@ export function PublicProfileDetails({
           onSocilLinksClick={handleSocialLinksClick}
         />
       )}
-
-      <SocialLinksPopover
-        open={openSocialLinksPopover}
-        anchorEl={identityMenuAnchorRef.current}
-        onClose={handleSocialLinksPopoverClose}
-        identity={identity}
-        profile={loggedProfile}
-        address={address}
-        view={identity.profile ? 'profile' : 'address'}
-      />
     </>
   );
 }

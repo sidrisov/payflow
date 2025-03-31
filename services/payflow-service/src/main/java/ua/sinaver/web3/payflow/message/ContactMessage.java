@@ -6,7 +6,6 @@ import ua.sinaver.web3.payflow.dto.ProfileMessage;
 import ua.sinaver.web3.payflow.entity.Contact;
 import ua.sinaver.web3.payflow.entity.PreferredTokens;
 import ua.sinaver.web3.payflow.entity.User;
-import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,14 +34,14 @@ public record ContactMessage(
 		}
 	}
 
-	public static ContactMessage convert(Contact contact, Wallet socials, Wallet insights, List<String> tags) {
-		val data = IdentityMessage.convert(contact.getIdentity(), contact.getProfile(), socials, insights);
+	public static ContactMessage convert(Contact contact, SocialMetadata socialMetadata, List<String> tags) {
+		val data = IdentityMessage.convert(contact.getIdentity(), contact.getProfile(), socialMetadata);
 		return new ContactMessage(data, tags);
 	}
 
-	public static ContactMessage convert(String identity, User profile, Wallet socials,
-			Wallet insights, List<String> tags) {
-		val data = IdentityMessage.convert(identity, profile, socials, insights);
+	public static ContactMessage convert(String identity, User profile, SocialMetadata socials,
+			List<String> tags) {
+		val data = IdentityMessage.convert(identity, profile, socials);
 		return new ContactMessage(data, tags);
 	}
 }

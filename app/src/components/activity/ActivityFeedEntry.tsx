@@ -7,7 +7,6 @@ import { IdentityType, ProfileType, PaymentType } from '@payflow/common';
 
 import { useEnsData } from '../../utils/hooks/useEnsData';
 import { useMobile } from '../../utils/hooks/useMobile';
-import { useFarcasterUser } from '../../utils/hooks/useSocials';
 
 import { PublicProfileDetailsPopover } from '../menu/PublicProfileDetailsPopover';
 import { PaymentMenu } from '../menu/PaymentMenu';
@@ -16,6 +15,7 @@ import { PaymentDetails } from './PaymentDetails';
 import { UserAvatar } from './UserAvatar';
 import { UserDisplayName } from './UserDisplayName';
 import { getActivityName, getActivityType } from './ActivityIcon';
+import { useFarcasterSocial } from '@/hooks/useFarcasterSocial';
 
 export default function PublicProfileActivityFeedSection(
   props: BoxProps & { identity: IdentityType; payment: PaymentType }
@@ -33,12 +33,11 @@ export default function PublicProfileActivityFeedSection(
   const { ensName: ensNameFrom, ensAvatar: avatarFrom } = useEnsData(payment.senderAddress);
   const { ensName: ensNameTo, ensAvatar: avatarTo } = useEnsData(payment.receiverAddress);
 
-  const { social: senderSocial, isLoading: isLoadingSenderSocial } = useFarcasterUser(
-    undefined,
+  const { social: senderSocial, isLoading: isLoadingSenderSocial } = useFarcasterSocial(
     payment.senderAddress ?? payment.sender?.identity
   );
 
-  const { social: receiverSocial, isLoading: isLoadingReceiverSocial } = useFarcasterUser(
+  const { social: receiverSocial, isLoading: isLoadingReceiverSocial } = useFarcasterSocial(
     payment.receiverFid?.toString(),
     payment.receiverAddress ?? payment.receiver?.identity
   );

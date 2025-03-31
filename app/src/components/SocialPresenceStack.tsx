@@ -41,7 +41,6 @@ const renderSocialPresenceAvatars = ({ meta }: { meta: MetaType }) => {
               dappName={s.dappName as dAppType}
             />
           ))}
-      {meta.xmtp && <SocialPresenceAvatar dappName="xmtp" />}
     </>
   );
 };
@@ -60,7 +59,6 @@ const renderSocialPresenceAvatarsWithMeta = ({ meta }: { meta: MetaType }) => (
             followerCount={s.followerCount}
           />
         ))}
-    {meta.xmtp && <SocialPresenceAvatarWithMeta dappName="xmtp" />}
   </>
 );
 

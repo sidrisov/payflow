@@ -11,13 +11,11 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import ua.sinaver.web3.payflow.client.NeynarClient;
 import ua.sinaver.web3.payflow.dto.FlowMessage;
 import ua.sinaver.web3.payflow.dto.JarMessage;
 import ua.sinaver.web3.payflow.dto.WalletMessage;
 import ua.sinaver.web3.payflow.dto.WalletSessionMessage;
 import ua.sinaver.web3.payflow.entity.*;
-import ua.sinaver.web3.payflow.graphql.generated.types.SocialDappName;
 import ua.sinaver.web3.payflow.mapper.WalletSessionMapper;
 import ua.sinaver.web3.payflow.repository.FlowRepository;
 import ua.sinaver.web3.payflow.repository.JarRepository;
@@ -254,7 +252,7 @@ public class FlowService {
 						return null;
 
 					val socialEntry = identityInfo.meta().socials().stream()
-							.filter(s -> s.dappName().equals(SocialDappName.farcaster.name()))
+							.filter(s -> s.dappName().equals("farcaster"))
 							.findFirst()
 							.map(s -> new SimpleEntry<>(s.profileName(), s.profileId()))
 							.orElse(null);

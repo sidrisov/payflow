@@ -1,5 +1,5 @@
 import { Stack, StackProps, Typography } from '@mui/material';
-import { LENS_DAPP, XMPT_DAPP, dAppType } from '../../utils/dapps';
+import { LENS_DAPP, dAppType } from '../../utils/dapps';
 import SocialPresenceAvatar from './SocialPresenceAvatar';
 
 export type SocialPresenceAvatarProps = StackProps & {
@@ -15,11 +15,7 @@ export default function SocialPresenceAvatarWithMeta({
   ...props
 }: SocialPresenceAvatarProps) {
   const normalizedProfileName =
-    XMPT_DAPP === dappName
-      ? 'enabled'
-      : LENS_DAPP === dappName
-      ? profileName?.replace('lens/@', '')
-      : profileName;
+    LENS_DAPP === dappName ? profileName?.replace('lens/@', '') : profileName;
 
   return (
     <Stack {...props} spacing={1} direction="row" alignItems="center">

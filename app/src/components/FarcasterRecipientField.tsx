@@ -1,7 +1,7 @@
 import { Box, Button, Typography } from '@mui/material';
 import { FarcasterProfileSection } from './FarcasterProfileSection';
-import { Social } from '../generated/graphql/types';
 import { useMobile } from '../utils/hooks/useMobile';
+import { SocialInfoType } from '@payflow/common';
 
 export function FarcasterRecipientField({
   social,
@@ -9,7 +9,7 @@ export function FarcasterRecipientField({
   variant = 'outlined'
 }: {
   variant?: 'outlined' | 'text';
-  social: Social;
+  social: SocialInfoType;
   setOpenSearchIdentity?: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const isMobile = useMobile();
