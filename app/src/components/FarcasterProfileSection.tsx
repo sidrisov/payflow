@@ -1,6 +1,6 @@
 import { Avatar, Badge, Stack, Typography } from '@mui/material';
-import { Social } from '../generated/graphql/types';
 import FarcasterAvatar from './avatars/FarcasterAvatar';
+import { SocialInfoType } from '@payflow/common';
 
 export function FarcasterProfileSection({
   social,
@@ -8,7 +8,7 @@ export function FarcasterProfileSection({
   fontSize,
   maxWidth
 }: {
-  social: Social;
+  social: SocialInfoType;
   avatarSize?: number;
   fontSize?: number;
   maxWidth?: number;
@@ -23,7 +23,7 @@ export function FarcasterProfileSection({
         overlap="circular"
         badgeContent={<FarcasterAvatar size={16} />}>
         <Avatar
-          src={social.profileImageContentValue?.image?.extraSmall ?? ''}
+          src={social.profileImage}
           sx={{ width: avatarSize, height: avatarSize }}
         />
       </Badge>

@@ -41,6 +41,4 @@ public interface IIdentityService {
 	String getHighestScoredIdentity(List<String> identities);
 
 	IdentityMessage getHighestScoredIdentityInfo(List<String> identities);
-
-	List<IdentityMessage> getIdentitiesInfo(List<String> identities, String me);
 }

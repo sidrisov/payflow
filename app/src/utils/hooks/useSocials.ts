@@ -2,13 +2,11 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { Social } from '@/generated/graphql/types';
 import {
-  QUERY_FARCASTER_PROFILE,
-  QUERY_FARCASTER_PROFILE_BY_IDENTITY,
-  QUERY_SOCIALS,
   QUERY_FARCASTER_CHANNELS_FOR_USER,
   QUERY_FARCASTER_CHANNELS_FOR_CHANNEL_ID
 } from '@/utils/airstackQueries';
 import { ChannelType } from '@/components/dialogs/ChannelSelector';
+import { API_URL } from '../urlConstants';
 
 const AIRSTACK_API_URL = 'https://api.airstack.xyz/gql';
 const AIRSTACK_API_KEY = import.meta.env.VITE_AIRSTACK_API_KEY;
@@ -35,44 +33,13 @@ export async function fetchFarcasterUser(
   return data.data.Socials?.Social?.[0];
 }
 
-export function useFarcasterUser(fid?: string, address?: string) {
-  const query = fid ? QUERY_FARCASTER_PROFILE : QUERY_FARCASTER_PROFILE_BY_IDENTITY;
-  const variables = fid ? { fid: fid.toString() } : { identity: address };
-
-  const { data, isLoading } = useQuery<Social | undefined>({
-    queryKey: ['social', fid, address],
-    queryFn: () => fetchFarcasterUser(query, variables),
-    enabled: Boolean(fid || address),
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    staleTime: Infinity,
-    gcTime: 5 * 60 * 1000
+export async function fetchSocialInfo(identity?: string) {
+  const { data } = await axios.get(`${API_URL}/api/socials?identity=${identity}`, {
+    headers: { 'Content-Type': 'application/json' },
+    validateStatus: (status) => status >= 200 && status < 300
   });
 
-  return {
-    social: data,
-    isLoading
-  };
-}
-
-export async function fetchSocialInfo(identity?: string) {
-  const { data } = await axios.post(
-    AIRSTACK_API_URL,
-    {
-      query: QUERY_SOCIALS,
-      variables: { identity }
-    },
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': AIRSTACK_API_KEY
-      },
-      validateStatus: (status) => status >= 200 && status < 300
-    }
-  );
-
-  return data.data;
+  return data.social;
 }
 
 export function useSocialInfo(identity?: string) {

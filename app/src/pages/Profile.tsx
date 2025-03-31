@@ -23,10 +23,9 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
 import { isAlphanumericPlusFewSpecialChars } from '../utils/regex';
 import { green } from '@mui/material/colors';
-import { convertSocialResults, normalizeUsername } from '../services/socials';
-import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';
+import { normalizeUsername } from '../services/socials';
 import { useMobile } from '../utils/hooks/useMobile';
-import { useSocialInfo } from '@/utils/hooks/useSocials';
+import { useFarcasterSocial } from '@/hooks/useFarcasterSocial';
 
 export default function Profile() {
   const isMobile = useMobile();
@@ -44,8 +43,7 @@ export default function Profile() {
 
   const navigate = useNavigate();
 
-  // TODO: fetch only on sync click event
-  const { data: socialInfo, isLoading: loadingSocials } = useSocialInfo(profile?.identity ?? '');
+  const { social, isLoading: loadingSocials } = useFarcasterSocial(profile?.identity);
 
   useMemo(async () => {
     if (username) {
@@ -77,40 +75,12 @@ export default function Profile() {
 
   async function sync() {
     if (!loadingSocials && profile) {
-      const identity = convertSocialResults(socialInfo.Wallet);
+      console.log('Social', social);
 
-      console.log('Identity', identity);
-
-      if (identity) {
-        if (identity.data.meta?.socials && identity.data.meta?.socials.length > 0) {
-          const socialInfo =
-            identity.data.meta?.socials.find((s) => s.dappName === FARCASTER_DAPP) ??
-            identity.data.meta?.socials.find((s) => s.dappName === LENS_DAPP) ??
-            identity.data.meta?.socials[0];
-
-          if (socialInfo.profileDisplayName) {
-            setDisplayName(socialInfo.profileDisplayName);
-          }
-
-          const username = normalizeUsername(
-            (socialInfo.dappName === LENS_DAPP
-              ? socialInfo.profileName.replace('lens/@', '')
-              : socialInfo.profileName) ?? identity.data.meta?.ens
-          );
-
-          if (username) {
-            setUsername(username);
-          }
-
-          if (
-            socialInfo.dappName === FARCASTER_DAPP ||
-            !socialInfo.profileImage.includes('ipfs://')
-          ) {
-            setProfileImage(socialInfo.profileImage);
-          }
-        } else if (identity.data.meta?.ensAvatar) {
-          setProfileImage(identity.data.meta?.ensAvatar);
-        }
+      if (social) {
+        setDisplayName(social.profileDisplayName);
+        setUsername(normalizeUsername(social.profileName));
+        setProfileImage(social.profileImage);
       }
     }
   }

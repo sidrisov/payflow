@@ -1,6 +1,6 @@
-import { MetaType, ContactType, SocialInfoType, InsightsType } from '@payflow/common';
+import { MetaType, ContactType, SocialInfoType } from '@payflow/common';
 import { Address, isAddress } from 'viem';
-import { FARCASTER_DAPP, LENS_DAPP } from '../utils/dapps';
+import { FARCASTER_DAPP } from '../utils/dapps';
 import { getProfileByAddressOrName, searchByListOfAddressesOrUsernames } from './user';
 import { Wallet } from '../generated/graphql/types';
 import { getPublicClient } from 'wagmi/actions';
@@ -8,15 +8,9 @@ import { wagmiConfig } from '../utils/wagmiConfig';
 import { degen } from 'viem/chains';
 import { fetchSocialInfo } from '@/utils/hooks/useSocials';
 
-const FOLLOWING = 7;
-const FOLLOWER = 3;
-const TRANSACTED_BASE = 10;
-const PER_TRANSACTION = 1;
-
 const ENS_SCORE = 5;
 const FARCASTER_SCORE = 4;
 const LENS_SCORE = 4;
-const XMTP_SCORE = 2;
 
 export function sortBySocialScore(identities: ContactType[]): ContactType[] {
   return identities.sort((left, right) => calculateScore(right) - calculateScore(left));
@@ -29,10 +23,6 @@ function calculateScore(identity: ContactType): number {
       score += ENS_SCORE;
     }
 
-    if (identity.data.meta.xmtp) {
-      score += XMTP_SCORE;
-    }
-
     identity.data.meta.socials?.forEach((s) => {
       if (s.dappName === 'farcaster') {
         score += FARCASTER_SCORE;
@@ -42,28 +32,6 @@ function calculateScore(identity: ContactType): number {
         score += LENS_SCORE;
       }
     });
-
-    if (identity.data.meta.insights) {
-      if (identity.data.meta.insights.farcasterFollow === 'following') {
-        score += FOLLOWING;
-      }
-
-      if (identity.data.meta.insights.farcasterFollow === 'mutual') {
-        score += FOLLOWING + FOLLOWER;
-      }
-
-      if (identity.data.meta.insights.lensFollow === 'following') {
-        score += FOLLOWING;
-      }
-
-      if (identity.data.meta.insights.lensFollow === 'mutual') {
-        score += FOLLOWING + FOLLOWER;
-      }
-
-      if (identity.data.meta.insights.sentTxs > 0) {
-        score += TRANSACTED_BASE + identity.data.meta.insights.sentTxs * PER_TRANSACTION;
-      }
-    }
   }
   return score;
 }
@@ -254,7 +222,7 @@ export function convertSocialResults(wallet: Wallet): ContactType | undefined {
             profileDisplayName: s.profileDisplayName,
             profileImage: s.profileImageContentValue?.image?.small ?? s.profileImage,
             followerCount: s.followerCount,
-            profileId: s.userId
+            profileId: s.userId ?? -1
           } as SocialInfoType);
         }
         return acc;
@@ -273,38 +241,6 @@ export function convertSocialResults(wallet: Wallet): ContactType | undefined {
 
   if (!meta.ensAvatar && meta.socials.length > 0) {
     meta.ensAvatar = meta.socials[0].profileImage;
-  }
-
-  meta.insights = {} as InsightsType;
-
-  if (wallet.socialFollowers && wallet.socialFollowings && wallet.socialFollowings.Following) {
-    if (wallet.socialFollowings.Following?.find((f: any) => f.dappName === FARCASTER_DAPP)) {
-      if (wallet.socialFollowers.Follower?.find((f: any) => f.dappName === FARCASTER_DAPP)) {
-        meta.insights.farcasterFollow = 'mutual';
-      } else {
-        meta.insights.farcasterFollow = 'following';
-      }
-    }
-
-    if (wallet.socialFollowings.Following?.find((f: any) => f.dappName === LENS_DAPP)) {
-      if (wallet.socialFollowers.Follower?.find((f: any) => f.dappName === LENS_DAPP)) {
-        meta.insights.lensFollow = 'mutual';
-      } else {
-        meta.insights.lensFollow = 'following';
-      }
-    }
-  }
-
-  // @ts-ignore
-  if ((wallet.ethTransfers as any) && wallet.ethTransfers.length > 0) {
-    // @ts-ignore
-    meta.insights.sentTxs = wallet.ethTransfers.length;
-  }
-
-  // @ts-ignore
-  if (wallet.baseTransfers && wallet.baseTransfers.length > 0) {
-    // @ts-ignore
-    meta.insights.sentTxs = (meta.insights.sentTxs ?? 0) + wallet.baseTransfers.length;
   }
 
   return { data: { meta, address: wallet.addresses?.[0] ?? '0x' } } as ContactType;

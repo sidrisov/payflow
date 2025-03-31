@@ -25,10 +25,8 @@ import FrameV2SDK from '@farcaster/frame-sdk';
 import { ProfileContext } from '../contexts/UserContext';
 import { useLoaderData, useNavigate } from 'react-router';
 import BuyStorageDialog from '../components/payment/BuyStorageDialog';
-import { Social } from '../generated/graphql/types';
-import { QUERY_FARCASTER_PROFILE_BY_IDENTITY } from '../utils/airstackQueries';
 import { optimism } from 'viem/chains';
-import { fetchFarcasterUser } from '@/utils/hooks/useSocials';
+import { useFarcasterSocial } from '@/hooks/useFarcasterSocial';
 
 export type CapacityType = 'ALL' | 'CASTS_ONLY';
 export type StorageNotificationType = {
@@ -107,8 +105,10 @@ export async function loader() {
 }
 
 export default function Storage() {
-  const { isFrameV2, profile } = useContext(ProfileContext);
   const navigate = useNavigate();
+
+  const { isFrameV2, profile } = useContext(ProfileContext);
+  const { social: recipientSocial } = useFarcasterSocial(profile?.identity);
 
   const { storage, notification: loadedNotification } = useLoaderData<{
     notification: StorageNotificationType | null;
@@ -126,7 +126,6 @@ export default function Storage() {
   );
 
   const [isBuyDialogOpen, setIsBuyDialogOpen] = useState(false);
-  const [recipientSocial, setRecipientSocial] = useState<Social | null>(null);
 
   const shareComposeDeeplink = useMemo(() => {
     if (!storage?.user?.fid) return '';
@@ -145,24 +144,6 @@ export default function Storage() {
       navigate(`/connect?redirect=/~/farcaster/storage`);
     }
   }, []);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const recipientData = await fetchFarcasterUser(QUERY_FARCASTER_PROFILE_BY_IDENTITY, {
-          identity: profile?.identity
-        });
-
-        if (recipientData) {
-          setRecipientSocial(recipientData);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    fetchData();
-  }, [profile]);
 
   const handleNotificationUpdate = async () => {
     try {
@@ -426,7 +407,7 @@ export default function Storage() {
         </Card>
       </Box>
 
-      {isBuyDialogOpen && profile && recipientSocial && recipientSocial.userId && (
+      {isBuyDialogOpen && profile && recipientSocial && (
         <BuyStorageDialog
           open={isBuyDialogOpen}
           onClose={() => setIsBuyDialogOpen(false)}
@@ -445,7 +426,7 @@ export default function Storage() {
               category: 'fc_storage',
               receiver: profile,
               receiverAddress: profile.identity,
-              receiverFid: parseInt(recipientSocial.userId),
+              receiverFid: parseInt(recipientSocial.profileId),
               chainId: optimism.id,
               token: 'eth',
               tokenAmount: 1

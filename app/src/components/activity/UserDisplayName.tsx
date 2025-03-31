@@ -1,16 +1,15 @@
 import { Link, Typography } from '@mui/material';
-import { ProfileType } from '@payflow/common';
+import { ProfileType, SocialInfoType } from '@payflow/common';
 import { ProfileDisplayNameWithLink } from './ProfileDisplayNameWithLink';
 import { AddressOrEnsWithLink } from './AddressOrEnsWithLink';
 import { Address } from 'viem';
-import { Social } from '../../generated/graphql/types';
 import { useMobile } from '../../utils/hooks/useMobile'; // Add this import
 
 interface UserDisplayNameProps {
   profile?: ProfileType;
   address?: Address;
   ens?: string;
-  social?: Social;
+  social?: SocialInfoType;
   onMouseEnter?: (event: React.MouseEvent<HTMLElement>) => void;
   onMouseLeave?: () => void;
 }

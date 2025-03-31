@@ -84,9 +84,6 @@ public class JarContributionController {
 	private FlowRepository flowRepository;
 
 	@Autowired
-	private XmtpValidationService xmtpValidationService;
-
-	@Autowired
 	private ReceiptService receiptService;
 
 	@Autowired
@@ -221,33 +218,16 @@ public class JarContributionController {
 		log.debug("Received contribute jar {} in frame message request: {}",
 				uuid, frameMessage);
 
-		ValidatedFrameResponseMessage validatedFarcasterMessage = null;
-		ValidatedXmtpFrameMessage validatedXmtpFrameMessage = null;
+		val validatedFarcasterMessage = neynarService.validaFrameRequest(
+				frameMessage.trustedData().messageBytes());
 
-		if (frameMessage.clientProtocol() != null &&
-				frameMessage.clientProtocol().startsWith("xmtp")) {
-			validatedXmtpFrameMessage = xmtpValidationService.validateMessage(frameMessage);
-			log.debug("Validation xmtp frame message response {} received on url: {}  ",
-					validatedXmtpFrameMessage,
-					validatedXmtpFrameMessage.actionBody().frameUrl());
+		log.debug("Validation farcaster frame message response {} received on url: {}  ",
+				validatedFarcasterMessage,
+				validatedFarcasterMessage.action().url());
 
-			if (StringUtils.isBlank(validatedXmtpFrameMessage.verifiedWalletAddress())) {
-				log.error("Xmtp frame message failed validation (missing verifiedWalletAddress) {}",
-						validatedXmtpFrameMessage);
-				return DEFAULT_HTML_RESPONSE;
-			}
-		} else {
-			validatedFarcasterMessage = neynarService.validaFrameRequest(
-					frameMessage.trustedData().messageBytes());
-
-			log.debug("Validation farcaster frame message response {} received on url: {}  ",
-					validatedFarcasterMessage,
-					validatedFarcasterMessage.action().url());
-
-			if (!validatedFarcasterMessage.valid()) {
-				log.error("Frame message failed validation {}", validatedFarcasterMessage);
-				return DEFAULT_HTML_RESPONSE;
-			}
+		if (!validatedFarcasterMessage.valid()) {
+			log.error("Frame message failed validation {}", validatedFarcasterMessage);
+			return DEFAULT_HTML_RESPONSE;
 		}
 
 		val jar = flowService.findJarByUUID(uuid);
@@ -286,40 +266,19 @@ public class JarContributionController {
 		log.debug("Received contribute jar {} in frame message request: {}",
 				uuid, frameMessage);
 
-		ValidatedFrameResponseMessage validatedFarcasterMessage;
-		ValidatedXmtpFrameMessage validatedXmtpFrameMessage;
+		val validatedFarcasterMessage = neynarService.validaFrameRequest(
+				frameMessage.trustedData().messageBytes());
 
-		int buttonIndex;
+		log.debug("Validation farcaster frame message response {} received on url: {}  ",
+				validatedFarcasterMessage,
+				validatedFarcasterMessage.action().url());
 
-		if (frameMessage.clientProtocol() != null &&
-				frameMessage.clientProtocol().startsWith("xmtp")) {
-			validatedXmtpFrameMessage = xmtpValidationService.validateMessage(frameMessage);
-			log.debug("Validation xmtp frame message response {} received on url: {}  ",
-					validatedXmtpFrameMessage,
-					validatedXmtpFrameMessage.actionBody().frameUrl());
-
-			if (StringUtils.isBlank(validatedXmtpFrameMessage.verifiedWalletAddress())) {
-				log.error("Xmtp frame message failed validation (missing verifiedWalletAddress) {}",
-						validatedXmtpFrameMessage);
-				return DEFAULT_HTML_RESPONSE;
-			}
-
-			buttonIndex = validatedXmtpFrameMessage.actionBody().buttonIndex();
-		} else {
-			validatedFarcasterMessage = neynarService.validaFrameRequest(
-					frameMessage.trustedData().messageBytes());
-
-			log.debug("Validation farcaster frame message response {} received on url: {}  ",
-					validatedFarcasterMessage,
-					validatedFarcasterMessage.action().url());
-
-			if (!validatedFarcasterMessage.valid()) {
-				log.error("Frame message failed validation {}", validatedFarcasterMessage);
-				return DEFAULT_HTML_RESPONSE;
-			}
-
-			buttonIndex = validatedFarcasterMessage.action().tappedButton().index();
+		if (!validatedFarcasterMessage.valid()) {
+			log.error("Frame message failed validation {}", validatedFarcasterMessage);
+			return DEFAULT_HTML_RESPONSE;
 		}
+
+		val buttonIndex = validatedFarcasterMessage.action().tappedButton().index();
 
 		val jar = flowService.findJarByUUID(uuid);
 		if (jar == null) {
@@ -384,55 +343,32 @@ public class JarContributionController {
 		String sourceApp;
 		String sourceRef;
 
-		ValidatedFrameResponseMessage validatedFarcasterMessage;
-		ValidatedXmtpFrameMessage validatedXmtpFrameMessage;
+		val validatedFarcasterMessage = neynarService.validaFrameRequest(
+				frameMessage.trustedData().messageBytes());
 
-		if (frameMessage.clientProtocol() != null &&
-				frameMessage.clientProtocol().startsWith("xmtp")) {
-			validatedXmtpFrameMessage = xmtpValidationService.validateMessage(frameMessage);
-			log.debug("Validation xmtp frame message response {} received on url: {}  ",
-					validatedXmtpFrameMessage,
-					validatedXmtpFrameMessage.actionBody().frameUrl());
+		log.debug("Validation farcaster frame message response {} received on url: {}  ",
+				validatedFarcasterMessage,
+				validatedFarcasterMessage.action().url());
 
-			if (StringUtils.isBlank(validatedXmtpFrameMessage.verifiedWalletAddress())) {
-				log.error("Xmtp frame message failed validation (missing verifiedWalletAddress) {}",
-						validatedXmtpFrameMessage);
-				return DEFAULT_HTML_RESPONSE;
-			}
-			clickedProfileAddresses = Collections.singletonList(validatedXmtpFrameMessage.verifiedWalletAddress());
-			buttonIndex = validatedXmtpFrameMessage.actionBody().buttonIndex();
-			inputText = validatedXmtpFrameMessage.actionBody().inputText();
-			sourceApp = "Xmtp";
-			sourceRef = null; // maybe link the chat of the user who paid? or conversation?
-			state = validatedXmtpFrameMessage.actionBody().state();
-		} else {
-			validatedFarcasterMessage = neynarService.validaFrameRequest(
-					frameMessage.trustedData().messageBytes());
-
-			log.debug("Validation farcaster frame message response {} received on url: {}  ",
-					validatedFarcasterMessage,
-					validatedFarcasterMessage.action().url());
-
-			if (!validatedFarcasterMessage.valid()) {
-				log.error("Frame message failed validation {}", validatedFarcasterMessage);
-				return DEFAULT_HTML_RESPONSE;
-			}
-
-			clickedProfileAddresses = validatedFarcasterMessage.action().interactor()
-					.addressesWithoutCustodialIfAvailable();
-			buttonIndex = validatedFarcasterMessage.action().tappedButton().index();
-			inputText = validatedFarcasterMessage.action().input() != null
-					? validatedFarcasterMessage.action().input().text()
-					: null;
-
-			sourceApp = validatedFarcasterMessage.action().signer().client().displayName();
-			val casterFcName = validatedFarcasterMessage.action().cast().author().username();
-			// maybe would make sense to reference top cast instead (if it's a bot cast)
-			sourceRef = String.format("https://warpcast.com/%s/%s",
-					casterFcName, validatedFarcasterMessage.action().cast().hash().substring(0,
-							10));
-			state = validatedFarcasterMessage.action().state().serialized();
+		if (!validatedFarcasterMessage.valid()) {
+			log.error("Frame message failed validation {}", validatedFarcasterMessage);
+			return DEFAULT_HTML_RESPONSE;
 		}
+
+		clickedProfileAddresses = validatedFarcasterMessage.action().interactor()
+				.addressesWithoutCustodialIfAvailable();
+		buttonIndex = validatedFarcasterMessage.action().tappedButton().index();
+		inputText = validatedFarcasterMessage.action().input() != null
+				? validatedFarcasterMessage.action().input().text()
+				: null;
+
+		sourceApp = validatedFarcasterMessage.action().signer().client().displayName();
+		val casterFcName = validatedFarcasterMessage.action().cast().author().username();
+		// maybe would make sense to reference top cast instead (if it's a bot cast)
+		sourceRef = String.format("https://warpcast.com/%s/%s",
+				casterFcName, validatedFarcasterMessage.action().cast().hash().substring(0,
+						10));
+		state = validatedFarcasterMessage.action().state().serialized();
 
 		paymentState = gson.fromJson(
 				new String(Base64.getDecoder().decode(state)),
@@ -548,45 +484,25 @@ public class JarContributionController {
 		String transactionId = null;
 		String state;
 
-		ValidatedFrameResponseMessage validatedFarcasterMessage;
-		ValidatedXmtpFrameMessage validatedXmtpFrameMessage;
+		val validatedFarcasterMessage = neynarService.validaFrameRequest(
+				frameMessage.trustedData().messageBytes());
 
-		if (frameMessage.clientProtocol() != null &&
-				frameMessage.clientProtocol().startsWith("xmtp")) {
-			validatedXmtpFrameMessage = xmtpValidationService.validateMessage(frameMessage);
-			log.debug("Validation xmtp frame message response {} received on url: {}  ",
-					validatedXmtpFrameMessage,
-					validatedXmtpFrameMessage.actionBody().frameUrl());
+		log.debug("Validation farcaster frame message response {} received on url: {}  ",
+				validatedFarcasterMessage,
+				validatedFarcasterMessage.action().url());
 
-			if (StringUtils.isBlank(validatedXmtpFrameMessage.verifiedWalletAddress())) {
-				log.error("Xmtp frame message failed validation (missing verifiedWalletAddress) {}",
-						validatedXmtpFrameMessage);
-				return DEFAULT_HTML_RESPONSE;
-			}
-			clickedProfileAddresses = Collections.singletonList(validatedXmtpFrameMessage.verifiedWalletAddress());
-			buttonIndex = validatedXmtpFrameMessage.actionBody().buttonIndex();
-			state = validatedXmtpFrameMessage.actionBody().state();
-		} else {
-			validatedFarcasterMessage = neynarService.validaFrameRequest(
-					frameMessage.trustedData().messageBytes());
-
-			log.debug("Validation farcaster frame message response {} received on url: {}  ",
-					validatedFarcasterMessage,
-					validatedFarcasterMessage.action().url());
-
-			if (!validatedFarcasterMessage.valid()) {
-				log.error("Frame message failed validation {}", validatedFarcasterMessage);
-				return DEFAULT_HTML_RESPONSE;
-			}
-
-			clickedProfileAddresses = validatedFarcasterMessage.action().interactor()
-					.addressesWithoutCustodialIfAvailable();
-			buttonIndex = validatedFarcasterMessage.action().tappedButton().index();
-			state = validatedFarcasterMessage.action().state().serialized();
-			transactionId = validatedFarcasterMessage.action().transaction() != null
-					? validatedFarcasterMessage.action().transaction().hash()
-					: null;
+		if (!validatedFarcasterMessage.valid()) {
+			log.error("Frame message failed validation {}", validatedFarcasterMessage);
+			return DEFAULT_HTML_RESPONSE;
 		}
+
+		clickedProfileAddresses = validatedFarcasterMessage.action().interactor()
+				.addressesWithoutCustodialIfAvailable();
+		buttonIndex = validatedFarcasterMessage.action().tappedButton().index();
+		state = validatedFarcasterMessage.action().state().serialized();
+		transactionId = validatedFarcasterMessage.action().transaction() != null
+				? validatedFarcasterMessage.action().transaction().hash()
+				: null;
 
 		paymentState = gson.fromJson(
 				new String(Base64.getDecoder().decode(state)),

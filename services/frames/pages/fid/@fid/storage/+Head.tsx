@@ -46,8 +46,6 @@ export function Head() {
         <meta name="twitter:image" content="https://i.imgur.com/Vs0loYg.png" />
 
         <meta property="of:version" content="vNext" />
-        <meta property="of:accepts:xmtp" content="2024-02-01" />
-        <meta property="of:accepts:lens" content="1.1" />
 
         <meta property="fc:frame" content="vNext" />
 

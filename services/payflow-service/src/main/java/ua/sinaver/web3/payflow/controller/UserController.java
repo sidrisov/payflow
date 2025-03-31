@@ -15,7 +15,6 @@ import ua.sinaver.web3.payflow.dto.ProfileMessage;
 import ua.sinaver.web3.payflow.dto.ProfileMetaMessage;
 import ua.sinaver.web3.payflow.entity.PreferredTokens;
 import ua.sinaver.web3.payflow.entity.User;
-import ua.sinaver.web3.payflow.graphql.generated.types.Wallet;
 import ua.sinaver.web3.payflow.message.*;
 import ua.sinaver.web3.payflow.message.farcaster.StorageUsage;
 import ua.sinaver.web3.payflow.message.subscription.Subscription;
@@ -106,19 +105,6 @@ public class UserController {
 		return new ContactsResponseMessage(Collections.emptyList(), Collections.emptyList());
 	}
 
-	@GetMapping("/me/contacts/{identity}")
-	public Wallet contact(@PathVariable String identity, @AuthenticationPrincipal String authenticatedIdentity) {
-		log.trace("{} fetching contact identity {}", authenticatedIdentity, identity);
-		val user = userService.findByIdentity(authenticatedIdentity);
-		if (user != null) {
-			val metadata = socialGraphService.getSocialMetadata(identity);
-			log.trace("Social Metadata for {}: {}", identity, metadata);
-			return metadata;
-		} else {
-			throw new Error("User doesn't exist");
-		}
-	}
-
 	@PostMapping("/me/favourites")
 	public void updateFavouriteContact(@AuthenticationPrincipal String identity,
 			@RequestBody ContactMessage contactMessage) {
@@ -196,8 +182,8 @@ public class UserController {
 
 	@GetMapping({ "/identities/{usernameOrAddress}", "/identities/fid/{fid}" })
 	public ResponseEntity<IdentityMessage> getIdentity(@AuthenticationPrincipal String identity,
-			@PathVariable(value = "usernameOrAddress", required = false) String usernameOrAddress,
-			@PathVariable(value = "fid", required = false) Integer fid) {
+			@PathVariable(required = false) String usernameOrAddress,
+			@PathVariable(required = false) Integer fid) {
 		log.debug("Fetching identity info: {} or {}", usernameOrAddress, fid);
 
 		if (StringUtils.isBlank(usernameOrAddress) && fid == null) {
@@ -238,15 +224,7 @@ public class UserController {
 				}
 			}
 
-			String loggedIdentity = null;
-			if (identity != null) {
-				val user = userService.findByIdentity(identity);
-				if (user != null) {
-					loggedIdentity = user.getIdentity();
-				}
-			}
-
-			val identityInfo = identityService.getIdentitiesInfo(identities, loggedIdentity)
+			val identityInfo = identityService.getIdentitiesInfo(identities)
 					.stream()
 					.max(Comparator.comparingInt(IdentityMessage::score))
 					.orElse(null);
@@ -259,10 +237,16 @@ public class UserController {
 	}
 
 	@GetMapping("/storage/fid/{fid}")
-	public ResponseEntity<StorageUsage> getFidStorageUsage(@PathVariable(value = "fid") Integer fid) {
+	public ResponseEntity<StorageUsage> getFidStorageUsage(@PathVariable Integer fid) {
 		log.debug("Fetching storage usage for {}", fid);
 
 		if (fid == null) {
+			return ResponseEntity.badRequest().build();
+		}
+
+		// Validate that FID is a positive number and not too large
+		if (fid <= 0 || fid > 10_000_000) { // Assuming reasonable FID range
+			log.error("Invalid FID value: {}", fid);
 			return ResponseEntity.badRequest().build();
 		}
 

@@ -12,7 +12,6 @@ import { UpdateIdentityCallbackType } from './dialogs/SearchIdentityDialog';
 import { MoreVert } from '@mui/icons-material';
 import { IdentityMenu } from './menu/SearchIdenitityMenu';
 import { useSearchParams } from 'react-router';
-import { SocialLinksPopover } from './dialogs/SocialLinksPopover';
 
 function addToFavourites(tags: string[]): string[] {
   const updatedTags = tags ?? [];
@@ -149,16 +148,6 @@ export function SearchIdentityListItem(
           }}
         />
       )}
-      <SocialLinksPopover
-        open={openSocialLinksPopover}
-        anchorEl={identityMenuAnchorEl}
-        onClose={() => setOpenSocialLinksPopover(false)}
-        identity={identity}
-        profile={profile}
-        address={address}
-        view={view}
-        tags={tags}
-      />
     </>
   );
 }

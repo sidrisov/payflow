@@ -1,16 +1,15 @@
-import { IdentityType, PaymentType } from '@payflow/common';
+import { IdentityType, PaymentType, SocialInfoType } from '@payflow/common';
 import ArrowUpwardIcon from '@mui/icons-material/NorthEast';
 import ArrowDownwardIcon from '@mui/icons-material/SouthEast';
 import { green, red } from '@mui/material/colors';
-import { Social } from '../../generated/graphql/types';
 
 export type ActivityType = 'self' | 'inbound' | 'outbound';
 
 export function getActivityType(
   identity: IdentityType,
   payment: PaymentType,
-  senderSocial?: Social,
-  receiverSocial?: Social
+  senderSocial?: SocialInfoType,
+  receiverSocial?: SocialInfoType
 ) {
   const isSelfTransaction =
     (payment.senderAddress &&
@@ -19,7 +18,7 @@ export function getActivityType(
     (payment.sender?.identity &&
       payment.receiver?.identity &&
       payment.sender.identity === payment.receiver.identity) ||
-    (senderSocial && receiverSocial && senderSocial.userId === receiverSocial.userId);
+    (senderSocial && receiverSocial && senderSocial.profileId === receiverSocial.profileId);
 
   const isOutbound =
     (payment.sender?.identity &&
