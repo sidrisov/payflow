@@ -24,13 +24,13 @@ export const useProfile = (addressOrName: string | undefined) => {
 };
 
 export const useIdentity = (addressOrName?: string, fid?: string) => {
-  const identity = fid ?? addressOrName;
+  const identity = addressOrName ?? fid;
   return useQuery({
     enabled: Boolean(identity),
     queryKey: ['identity', { identity }],
     staleTime: Infinity,
     queryFn: () =>
-      axios.get(`${API_URL}/api/user/identities/${fid ? 'fid/' : ''}${identity}`).then((res) => {
+      axios.get(`${API_URL}/api/user/identities/${!addressOrName ? 'fid/' : ''}${identity}`).then((res) => {
         const identity = res.data as IdentityType;
         const defaultFlow = identity?.profile?.defaultFlow
           ? sortAndFilterFlowWallets(identity.profile.defaultFlow)
