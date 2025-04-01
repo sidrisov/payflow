@@ -24,26 +24,31 @@ export const useProfile = (addressOrName: string | undefined) => {
 };
 
 export const useIdentity = (addressOrName?: string, fid?: string) => {
-  const identity = addressOrName ?? fid;
+  // Prioritize fid if both are passed
+  const identity = fid ?? addressOrName;
+  const isFidQuery = Boolean(fid);
+
   return useQuery({
     enabled: Boolean(identity),
-    queryKey: ['identity', { identity }],
+    queryKey: ['identity', { identity, isFidQuery }],
     staleTime: Infinity,
     queryFn: () =>
-      axios.get(`${API_URL}/api/user/identities/${!addressOrName ? 'fid/' : ''}${identity}`).then((res) => {
-        const identity = res.data as IdentityType;
-        const defaultFlow = identity?.profile?.defaultFlow
-          ? sortAndFilterFlowWallets(identity.profile.defaultFlow)
-          : undefined;
-        return {
-          ...identity,
-          ...(identity.profile && {
-            profile: {
-              ...identity.profile,
-              defaultFlow
-            }
-          })
-        } as IdentityType;
-      })
+      axios
+        .get(`${API_URL}/api/user/identities/${isFidQuery ? 'fid/' : ''}${identity}`)
+        .then((res) => {
+          const identity = res.data as IdentityType;
+          const defaultFlow = identity?.profile?.defaultFlow
+            ? sortAndFilterFlowWallets(identity.profile.defaultFlow)
+            : undefined;
+          return {
+            ...identity,
+            ...(identity.profile && {
+              profile: {
+                ...identity.profile,
+                defaultFlow
+              }
+            })
+          } as IdentityType;
+        })
   });
 };

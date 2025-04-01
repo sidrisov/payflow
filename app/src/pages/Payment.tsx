@@ -93,7 +93,7 @@ export default function Payment() {
   }, [refId, payment]);
 
   const { social: recipientSocial } = useFarcasterSocial(
-    profile?.identity ?? payment?.receiverAddress,
+    payment?.receiver?.identity ?? payment?.receiverAddress,
     payment?.receiverFid?.toString()
   );
   const { social: senderSocial } = useFarcasterSocial(profile?.identity ?? payment?.senderAddress);
