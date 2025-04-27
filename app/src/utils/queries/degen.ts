@@ -89,7 +89,12 @@ export const DEGEN_CLAIM_SEASONS: DegenClaimSeason[] = [
     chainId: base.id,
     contract: '0x41a76c8FEA906Dc11A825E3B1a3Fb9deef5B7521'
   },
-
+  {
+    id: 'season15',
+    name: 'Season 15',
+    chainId: base.id,
+    contract: '0x0ecd33f5d802a260f256f5d33256e284e8b1e562'
+  },
   { id: 'current', name: 'New Season', chainId: base.id }
 ];
 
