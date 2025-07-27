@@ -47,12 +47,7 @@ const MOCK_SPEND_SESSIONS: WalletSessionType[] = [
         limit: '500000000', // 5000 USDC
         spent: '400000000' // 1000 USDC spent
       },
-      {
-        type: 'spend',
-        token: '0x4ed4e862860bed51a9570b96d89af5e1b0efefed', // Degen (18 decimals)
-        limit: '1000000000000000000000', // 1 Degen
-        spent: '100000000000000000000' // 0.25 Degen spent
-      }
+
     ]
   } */
 ];
