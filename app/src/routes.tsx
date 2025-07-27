@@ -135,10 +135,7 @@ export const routes = createBrowserRouter([
         path: '/~/create-wallet-session/:address',
         lazy: () => import('./pages/CreateWalletSession').then(convert)
       },
-      {
-        path: '/~/claimables',
-        lazy: () => import('./pages/ClaimablesPage').then(convert)
-      },
+
       {
         path: '/~/cast-actions',
         lazy: () => import('./pages/CastActionsPage').then(convert)
