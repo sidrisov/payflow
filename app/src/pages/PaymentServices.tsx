@@ -1,10 +1,7 @@
 import React from 'react';
 import { Stack, Typography, Card, Grid } from '@mui/material';
-import { TbGiftFilled, TbSend } from 'react-icons/tb';
-import { HiOutlineSquares2X2 } from 'react-icons/hi2';
 import { GrStorage } from 'react-icons/gr';
 import { Link } from 'react-router';
-import { FaRegClock } from 'react-icons/fa';
 import PayflowPage from '../components/PayflowPage';
 
 interface Service {
@@ -65,43 +62,19 @@ const ServiceCategory: React.FC<ServiceCategoryProps> = ({ services }) => {
 export default function PaymentServices() {
   const services = [
     {
-      title: 'New Payment',
-      description: 'Create a new payment',
-      icon: <TbSend size={24} />,
-      to: '/payment/create'
-    },
-    {
-      title: 'Claimables',
-      description: 'View your claimables',
-      icon: <TbGiftFilled size={24} />,
-      to: '/~/claimables'
-    },
-    {
       title: 'Farcaster Storage',
       description: 'Manage farcaster storage',
       icon: <GrStorage size={24} />,
       to: '/~/farcaster/storage'
-    },
-    {
-      title: 'Subscriptions',
-      description: 'Manage subscriptions',
-      icon: <FaRegClock size={24} />,
-      to: '/~/subscriptions'
-    },
-    {
-      title: 'Cast Actions',
-      description: 'Manage cast actions',
-      icon: <HiOutlineSquares2X2 size={24} />,
-      to: '/~/cast-actions'
     }
   ];
 
   return (
-    <PayflowPage title="Payment Services" pageTitle="Payment Services">
+    <PayflowPage title="Services" pageTitle="Services">
       <Stack alignItems="center" mt={3} mb={2} p={2} spacing={3}>
         <ServiceCategory
           title="Services"
-          icon={<HiOutlineSquares2X2 size={30} />}
+          icon={<GrStorage size={30} />}
           services={services}
         />
       </Stack>

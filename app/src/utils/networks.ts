@@ -1,15 +1,9 @@
 import {
   base,
   optimism,
-  degen,
   arbitrum,
-  zora,
-  zksync,
   mainnet,
-  baseSepolia,
-  sepolia,
-  polygon,
-  worldchain,
+  polygon
 } from 'viem/chains';
 
 const ENABLED_CHAINS = JSON.parse(import.meta.env.VITE_ENABLED_CHAINS) as string[];
@@ -19,17 +13,10 @@ const DEFAULT_FLOW_ENABLED_CHAINS = JSON.parse(
 
 export const SUPPORTED_CHAINS = [
   base,
-  degen,
   optimism,
   arbitrum,
-  worldchain,
-  zora,
-  zksync,
   mainnet,
-  sepolia,
-  baseSepolia,
-  polygon,
-  worldchain
+  polygon
 ].filter((c) => ENABLED_CHAINS.includes(c.name));
 
 export const DEFAULT_FLOW_WALLET_CHAINS = SUPPORTED_CHAINS.filter((c) =>
@@ -43,38 +30,17 @@ export function getNetworkShortName(chainId: number): string {
     case mainnet.id:
       shortName = 'ethereum';
       break;
-    case sepolia.id:
-      shortName = 'sepolia';
-      break;
     case base.id:
-      shortName = 'base';
-      break;
-    case baseSepolia.id:
       shortName = 'base';
       break;
     case optimism.id:
       shortName = 'optimism';
       break;
-    case worldchain.id:
-      shortName = 'world';
-      break;
-    case zksync.id:
-      shortName = 'zksync-era';
-      break;
     case arbitrum.id:
       shortName = 'arbitrum';
       break;
-    case zora.id:
-      shortName = 'zora';
-      break;
-    case degen.id:
-      shortName = 'degen';
-      break;
     case polygon.id:
       shortName = 'polygon';
-      break;
-    case worldchain.id:
-      shortName = 'world';
       break;
   }
 
@@ -90,36 +56,19 @@ export default function getNetworkImageSrc(chainId: number): string {
 
   switch (chainId) {
     case mainnet.id:
-    case sepolia.id:
       fileName = 'ethereum';
       break;
     case base.id:
-    case baseSepolia.id:
       fileName = 'base';
       break;
     case optimism.id:
       fileName = 'optimism';
       break;
-    case worldchain.id:
-      fileName = 'world';
-      break;
-    case zksync.id:
-      fileName = 'zksync-era';
-      break;
     case arbitrum.id:
       fileName = 'arbitrum';
       break;
-    case zora.id:
-      fileName = 'zora';
-      break;
     case polygon.id:
       fileName = 'polygon';
-      break;
-    case degen.id:
-      fileName = 'degen';
-      break;
-    case worldchain.id:
-      fileName = 'world';
       break;
   }
 

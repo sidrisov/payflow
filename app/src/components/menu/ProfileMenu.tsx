@@ -13,9 +13,7 @@ import {
   Groups,
   Help,
   InfoOutlined,
-  LeaderboardRounded,
-  Logout,
-  PersonAdd
+  Logout
 } from '@mui/icons-material';
 import { GiTwoCoins } from 'react-icons/gi';
 
@@ -28,14 +26,12 @@ import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { usePrivy } from '@privy-io/react-auth';
 import { DeviceInfoDialog } from '../DeviceInfoDialog';
 import { useState } from 'react';
-import { SiFarcaster } from 'react-icons/si';
 import { MdSecurityUpdateGood, MdSecurityUpdate } from 'react-icons/md';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { green } from '@mui/material/colors';
 import { IoChatbubbleEllipses } from 'react-icons/io5';
 import { GrStorage } from 'react-icons/gr';
 import { FaRegHeart } from 'react-icons/fa';
-import { FcApproval } from 'react-icons/fc';
 import ResponsiveDialog from '../dialogs/ResponsiveDialog';
 import { useMobile } from '../../utils/hooks/useMobile';
 
@@ -98,18 +94,6 @@ export function ProfileMenu({
             <ProfileSection maxWidth={150} profile={profile} />
           </MenuItem>
           <Divider />
-          {showHiddenMenuOptions && (
-            <MenuItem
-              onClick={async () => {
-                closeStateCallback();
-                navigate('/invite');
-              }}>
-              <ListItemIcon>
-                <PersonAdd fontSize="small" />
-              </ListItemIcon>
-              Invite
-            </MenuItem>
-          )}
           <MenuItem
             onClick={async () => {
               closeStateCallback();
@@ -130,28 +114,6 @@ export function ProfileMenu({
             </ListItemIcon>
             Preferred Tokens
           </MenuItem>
-          <MenuItem
-            onClick={async () => {
-              closeStateCallback();
-              navigate('/settings/farcaster/client');
-            }}>
-            <ListItemIcon>
-              <SiFarcaster size={20} />
-            </ListItemIcon>
-            Farcaster Client
-          </MenuItem>
-          {showHiddenMenuOptions && (
-            <MenuItem
-              onClick={async () => {
-                closeStateCallback();
-                navigate('/leaderboard');
-              }}>
-              <ListItemIcon>
-                <LeaderboardRounded fontSize="small" />
-              </ListItemIcon>
-              Users
-            </MenuItem>
-          )}
           <MenuItem
             onClick={async () => {
               closeStateCallback();
@@ -202,16 +164,6 @@ export function ProfileMenu({
               <FaRegHeart />
             </ListItemIcon>
             Tip
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              closeStateCallback();
-              window.open('https://hypersub.xyz/s/payflow-pro-17zbymgz59atc', '_blank');
-            }}>
-            <ListItemIcon>
-              <FcApproval size={18} />
-            </ListItemIcon>
-            Payflow Pro
           </MenuItem>
           <Divider />
           <MenuItem
