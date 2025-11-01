@@ -23,6 +23,10 @@ export const DEFAULT_FLOW_WALLET_CHAINS = SUPPORTED_CHAINS.filter((c) =>
   DEFAULT_FLOW_ENABLED_CHAINS.includes(c.name)
 );
 
+export function isSupportedChain(chainId: number): boolean {
+  return SUPPORTED_CHAINS.some((chain) => chain.id === chainId);
+}
+
 export function getNetworkShortName(chainId: number): string {
   let shortName;
 

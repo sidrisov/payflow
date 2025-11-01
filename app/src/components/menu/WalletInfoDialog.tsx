@@ -3,6 +3,7 @@ import { WalletSection } from '../WalletSection';
 import { FlowType, FlowWalletType } from '@payflow/common';
 import { BalanceFetchResultType } from '../../types/BalanceFetchResultType';
 import ResponsiveDialog from '../dialogs/ResponsiveDialog';
+import { isSupportedChain } from '../../utils/networks';
 
 export function WalletBalanceDialog({
   open,
@@ -39,13 +40,15 @@ export function WalletBalanceDialog({
       }
       width={360}>
       <Stack spacing={0.5} direction="column">
-        {flow.wallets.map((wallet) => (
-          <WalletSection
-            key={`wallet_popover_list_${wallet.network}`}
-            wallet={wallet}
-            balance={calculateBalance(wallet)}
-          />
-        ))}
+        {flow.wallets
+          .filter((wallet) => wallet.network && isSupportedChain(wallet.network))
+          .map((wallet) => (
+            <WalletSection
+              key={`wallet_popover_list_${wallet.network}`}
+              wallet={wallet}
+              balance={calculateBalance(wallet)}
+            />
+          ))}
       </Stack>
     </ResponsiveDialog>
   );

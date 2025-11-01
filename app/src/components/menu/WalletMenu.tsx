@@ -28,6 +28,7 @@ import { socialLink, ZAPPER } from '../../utils/dapps';
 import { ProfileContext } from '../../contexts/UserContext';
 import { useWallets } from '@privy-io/react-auth';
 import { usePrivy } from '@privy-io/react-auth';
+import { isSupportedChain } from '../../utils/networks';
 import { useSetActiveWallet } from '@privy-io/wagmi';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
 import { HiOutlineDownload, HiOutlineSwitchHorizontal } from 'react-icons/hi';
@@ -220,7 +221,7 @@ export function WalletMenu({
               <AvatarGroup
                 max={4}
                 color="inherit"
-                total={flow.wallets.length}
+                total={flow.wallets.filter((w) => w.network && isSupportedChain(w.network)).length}
                 sx={{
                   ml: 1,
                   alignItems: 'center',
@@ -235,12 +236,15 @@ export function WalletMenu({
                     fontSize: 10
                   }
                 }}>
-                {[...Array(Math.min(4, flow.wallets.length))].map((_item, i) => (
-                  <NetworkAvatar
-                    key={`account_card_wallet_list_${flow.wallets[i].network}`}
-                    chainId={flow.wallets[i].network}
-                  />
-                ))}
+                {flow.wallets
+                  .filter((w) => w.network && isSupportedChain(w.network))
+                  .slice(0, 4)
+                  .map((wallet) => (
+                    <NetworkAvatar
+                      key={`account_card_wallet_list_${wallet.network}`}
+                      chainId={wallet.network}
+                    />
+                  ))}
               </AvatarGroup>
             </Stack>
           </MenuItem>

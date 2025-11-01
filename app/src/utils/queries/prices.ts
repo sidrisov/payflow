@@ -1,21 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { tokens as SUPPORTED_TOKENS, Token, TokenPrices } from '@payflow/common';
-import { base, degen, zora } from 'viem/chains';
 import { SUPPORTED_CHAINS } from '../networks';
 
 const PRICE_API = 'https://api.coingecko.com/api/v3/simple/price';
-const tokens = ['ethereum', 'degen-base'];
+const tokens = ['ethereum'];
 
 const TOKEN_PRICE_API = 'https://api.geckoterminal.com/api/v2/simple/networks';
-
-const chainNameMap: { [key: number]: string } = {
-  [zora.id]: 'zora-network'
-};
-
-function getPriceChainName(chainId: number, chainName: string): string {
-  return chainNameMap[chainId] || chainName;
-}
 
 export const useTokenPrices = () => {
   return useQuery<TokenPrices>({
@@ -33,8 +24,6 @@ export const useTokenPrices = () => {
 
       if (response.data.hasOwnProperty('ethereum')) {
         tokenPrices['eth'] = response.data.ethereum.usd;
-      } else if (response.data.hasOwnProperty('degen-base')) {
-        tokenPrices['degen'] = response.data['degen-base'].usd;
       }
 
       for (const chain of SUPPORTED_CHAINS) {
@@ -57,7 +46,7 @@ export const useTokenPrices = () => {
           continue;
         }
 
-        const chainName = getPriceChainName(chainId, tokensToFetch[0].chain);
+        const chainName = tokensToFetch[0].chain;
 
         // Fetch token prices for the tokens to fetch
         const response = await axios.get(
@@ -99,21 +88,13 @@ export const useTokenPrice = (token?: Token) => {
         return response.data.ethereum.usd;
       }
 
-      // Special handling for DEGEN
-      if (token.id === 'degen' || token.underlyingToken?.id === 'degen') {
-        const response = await axios.get(PRICE_API, {
-          params: { ids: 'degen-base', vs_currencies: 'usd' }
-        });
-        return response.data['degen-base'].usd;
-      }
-
       if (!token.tokenAddress) return null;
 
       const chain = SUPPORTED_CHAINS.find((c) => c.id === token.chainId);
       if (!chain) return null;
 
       try {
-        const chainName = getPriceChainName(token.chainId, token.chain);
+        const chainName = token.chain;
         const response = await axios.get(
           `${TOKEN_PRICE_API}/${chainName}/token_price/${token.tokenAddress}`
         );
