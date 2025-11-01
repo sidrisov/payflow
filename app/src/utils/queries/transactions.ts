@@ -5,7 +5,7 @@ import { API_URL } from '../urlConstants';
 import { TxInfo } from '../../types/ActivityFetchResultType';
 import { PaymentType } from '@payflow/common';
 import axios from 'axios';
-import { baseSepolia, base, optimism, zora, degen, mode } from 'viem/chains';
+import { base, optimism } from 'viem/chains';
 import { tokens as SUPPORTED_TOKENS } from '@payflow/common';
 
 export const useTransactions = (wallets: FlowWalletType[]) => {
@@ -340,23 +340,11 @@ function getBlockscoutBaseUrl(chainId: number) {
   let baseUrl;
 
   switch (chainId) {
-    case baseSepolia.id:
-      baseUrl = 'https://base-sepolia.blockscout.com';
-      break;
     case base.id:
       baseUrl = 'https://base.blockscout.com';
       break;
     case optimism.id:
       baseUrl = 'https://optimism.blockscout.com';
-      break;
-    case zora.id:
-      baseUrl = 'https://explorer.zora.energy';
-      break;
-    case degen.id:
-      baseUrl = 'https://explorer.degen.tips';
-      break;
-    case mode.id:
-      baseUrl = 'https://explorer.mode.network';
       break;
   }
 

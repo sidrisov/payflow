@@ -10,7 +10,6 @@ import { useNavigate } from 'react-router';
 import { useAssetBalances } from '../utils/queries/balances';
 import getFlowAssets from '../utils/assets';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
-import { PaymentSection } from '../components/sections/PaymentSection';
 import ActivityFeed from '../components/activity/ActivityFeed';
 import { useMobile } from '../utils/hooks/useMobile';
 
@@ -220,9 +219,8 @@ export default function Accounts() {
                     borderRadius: 5
                   }
                 }}>
-                <Tab label="Activity" />
-                <Tab label="Intents" />
                 <Tab label="Tokens" />
+                <Tab label="History" />
               </Tabs>
 
               <Box
@@ -230,14 +228,13 @@ export default function Accounts() {
                 maxWidth={375}
                 overflow="auto"
                 height={`calc(100vh - ${isMobile ? 255 : 265}px)`}>
-                {activeTab === 0 && <ActivityFeed identity={{ address: profile?.identity! }} />}
-                {activeTab === 1 && <PaymentSection width="100%" type="intent" />}
-                {activeTab === 2 && (
+                {activeTab === 0 && (
                   <Assets
                     assetBalancesResult={{ isLoading, isFetched, balances }}
                     balanceVisible={balanceVisible}
                   />
                 )}
+                {activeTab === 1 && <ActivityFeed identity={{ address: profile?.identity! }} />}
               </Box>
             </Stack>
           </>

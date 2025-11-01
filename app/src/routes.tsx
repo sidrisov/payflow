@@ -80,10 +80,6 @@ export const routes = createBrowserRouter([
           {
             path: 'tokens',
             lazy: () => import('./pages/settings/PreferredTokensPage').then(convert)
-          },
-          {
-            path: 'farcaster/client',
-            lazy: () => import('./pages/settings/FarcasterClientPage').then(convert)
           }
         ]
       },
@@ -96,16 +92,8 @@ export const routes = createBrowserRouter([
         lazy: () => import('./pages/Composer').then(convert)
       },
       {
-        path: 'invite',
-        lazy: () => import('./pages/Invite').then(convert)
-      },
-      {
         path: '/search',
         lazy: () => import('./layouts/PublicProfile').then(convert)
-      },
-      {
-        path: '/leaderboard',
-        lazy: () => import('./layouts/Leadearboard').then(convert)
       },
       {
         path: '/payment/:refId',

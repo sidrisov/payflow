@@ -30,7 +30,6 @@ import { isIOS } from 'react-device-detect';
 
 import FrameV2SDK from '@farcaster/frame-sdk';
 import { usePimlicoInit } from '../utils/hooks/usePimlicoInit';
-import { MdContacts } from 'react-icons/md';
 import { SiLightning } from 'react-icons/si';
 
 export default function App() {
@@ -75,15 +74,14 @@ export default function App() {
 
   const bottomToolbarEnabled =
     location.pathname !== '/composer' &&
-    location.pathname !== '/contacts' &&
     !location.pathname.startsWith('/payment');
 
   const defaultToolbarAction = (() => {
     switch (location.pathname) {
       case '/services':
-        return 2;
+        return 1;
       case `/${profile?.username}`:
-        return profile ? 3 : 2;
+        return profile ? 2 : 1;
       default:
         return 0;
     }
@@ -211,24 +209,9 @@ export default function App() {
                 />
                 <BottomNavigationAction
                   disableRipple
-                  label="Contacts"
-                  icon={
-                    bottonToolbarActionValue === 1 ? (
-                      <MdContacts size={22} />
-                    ) : (
-                      <MdContacts size={20} />
-                    )
-                  }
-                  onClick={async () => {
-                    navigate('/');
-                    setOpenSearchIdentity(true);
-                  }}
-                />
-                <BottomNavigationAction
-                  disableRipple
                   label="Services"
                   icon={
-                    bottonToolbarActionValue === 2 ? (
+                    bottonToolbarActionValue === 1 ? (
                       <SiLightning size={22} />
                     ) : (
                       <SiLightning size={20} />
@@ -243,7 +226,7 @@ export default function App() {
                   <BottomNavigationAction
                     disableRipple
                     label="Profile"
-                    icon={<CgProfile size={bottonToolbarActionValue === 4 ? 22 : 20} />}
+                    icon={<CgProfile size={bottonToolbarActionValue === 2 ? 22 : 20} />}
                     onClick={async () => {
                       setOpenProfileMenu(true);
                       setOpenSearchIdentity(false);
