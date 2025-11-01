@@ -1,17 +1,7 @@
 import { http } from 'viem';
 import { entryPoint06Address, entryPoint07Address } from 'viem/account-abstraction';
 import { createPimlicoClient } from 'permissionless/clients/pimlico';
-import {
-  arbitrum,
-  base,
-  baseSepolia,
-  degen,
-  polygon,
-  optimism,
-  worldchain,
-  zksync,
-  zora
-} from 'viem/chains';
+import { arbitrum, base, polygon, optimism } from 'viem/chains';
 
 export const PIMLICO_SPONSORED_ENABLED = import.meta.env.VITE_PIMLICO_SPONSORED_ENABLED === 'true';
 
@@ -39,29 +29,14 @@ const pimlicoRpcNetworkName = (chainId: number) => {
     case base.id:
       network = 'base';
       break;
-    case baseSepolia.id:
-      network = 'base-sepolia';
-      break;
     case optimism.id:
       network = 'optimism';
-      break;
-    case zksync.id:
-      network = 'zksync-era';
       break;
     case arbitrum.id:
       network = 'arbitrum';
       break;
-    case zora.id:
-      network = 'zora';
-      break;
-    case degen.id:
-      network = 'degen';
-      break;
     case polygon.id:
       network = 'polygon';
-      break;
-    case worldchain.id:
-      network = 'worldchain';
       break;
   }
   return network;
@@ -80,12 +55,8 @@ export const pimlicoSponsorshipPolicyIds = (chainId: number) => {
       return MAINNET_POLICIES.slice(0, 1);
     case arbitrum.id:
     case optimism.id:
-    case degen.id:
     case polygon.id:
-    case worldchain.id:
       return MAINNET_POLICIES.slice(1, 2);
-    case baseSepolia.id:
-      return TESTNET_POLICIES;
     default:
       return [];
   }

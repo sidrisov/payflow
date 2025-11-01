@@ -1,11 +1,11 @@
 import { createGlideConfig, PaymentOption } from '@paywithglide/glide-js';
-import { base, optimism, degen, arbitrum, polygon, zora } from 'wagmi/chains';
+import { base, optimism, arbitrum, polygon } from 'wagmi/chains';
 import { Token } from '@payflow/common';
 import { PaymentType } from '@payflow/common';
 
 export const glideConfig = createGlideConfig({
   projectId: import.meta.env.VITE_GLIDE_API_KEY,
-  chains: [base, optimism, zora, degen, arbitrum, polygon]
+  chains: [base, optimism, arbitrum, polygon]
 });
 
 export const getPaymentOption = (
@@ -17,11 +17,7 @@ export const getPaymentOption = (
     (option) =>
       option.paymentCurrency.toLowerCase() ===
       `eip155:${paymentToken.chainId}/${
-        paymentToken.tokenAddress
-          ? `erc20:${paymentToken.tokenAddress}`
-          : paymentToken.chainId === degen.id
-            ? 'slip44:33436'
-            : 'slip44:60'
+        paymentToken.tokenAddress ? `erc20:${paymentToken.tokenAddress}` : 'slip44:60'
       }`.toLowerCase()
   );
 };
