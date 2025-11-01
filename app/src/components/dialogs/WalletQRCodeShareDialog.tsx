@@ -4,7 +4,7 @@ import QRCode from 'react-qr-code';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
 import { FlowWalletType } from '@payflow/common';
 import NetworkAvatar from '../avatars/NetworkAvatar';
-import { getNetworkDisplayName } from '../../utils/networks';
+import { getNetworkDisplayName, isSupportedChain } from '../../utils/networks';
 import CopyToClipboardIconButton from '../buttons/CopyToClipboardIconButton';
 import ResponsiveDialog from './ResponsiveDialog';
 
@@ -49,21 +49,23 @@ export default function WalletQRCodeShareDialog({
           Note: Deposit only on the following networks!
         </Typography>
         <Stack direction="row" flexWrap="wrap" alignItems="center" justifyContent="center" gap={1}>
-          {wallets.map((wallet) => (
-            <Box
-              key={wallet.network}
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 0.5,
-                p: 1,
-                minWidth: 80
-              }}>
-              <NetworkAvatar chainId={wallet.network} sx={{ width: 32, height: 32 }} />
-              <Typography variant="caption">{getNetworkDisplayName(wallet.network)}</Typography>
-            </Box>
-          ))}
+          {wallets
+            .filter((wallet) => wallet.network && isSupportedChain(wallet.network))
+            .map((wallet) => (
+              <Box
+                key={wallet.network}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  p: 1,
+                  minWidth: 80
+                }}>
+                <NetworkAvatar chainId={wallet.network} sx={{ width: 32, height: 32 }} />
+                <Typography variant="caption">{getNetworkDisplayName(wallet.network)}</Typography>
+              </Box>
+            ))}
         </Stack>
       </Stack>
     </ResponsiveDialog>
