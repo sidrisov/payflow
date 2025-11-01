@@ -4,7 +4,7 @@ import { Check } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import NetworkAvatar from '../avatars/NetworkAvatar';
 import { green } from '@mui/material/colors';
-import { getNetworkDisplayName } from '../../utils/networks';
+import { getNetworkDisplayName, isSupportedChain } from '../../utils/networks';
 
 export type ChooseWalletMenuProps = MenuProps &
   CloseCallbackType & {
@@ -37,36 +37,38 @@ export function ChooseWalletMenu({
         </MenuItem>
         <Stack mt={1}>
           {wallets &&
-            wallets.map((wallet) => (
-              <MenuItem
-                key={wallet.network}
-                selected={wallet === selectedWallet}
-                onClick={async () => {
-                  setSelectedWallet(wallet);
-                  closeStateCallback();
-                }}>
-                <Box
-                  width={160}
-                  display="flex"
-                  flexDirection="row"
-                  alignItems="center"
-                  justifyContent="space-between">
-                  <Stack
-                    direction="row"
-                    justifyContent="flex-start"
+            wallets
+              .filter((wallet) => wallet.network && isSupportedChain(wallet.network))
+              .map((wallet) => (
+                <MenuItem
+                  key={wallet.network}
+                  selected={wallet === selectedWallet}
+                  onClick={async () => {
+                    setSelectedWallet(wallet);
+                    closeStateCallback();
+                  }}>
+                  <Box
+                    width={160}
+                    display="flex"
+                    flexDirection="row"
                     alignItems="center"
-                    spacing={1}>
-                    <NetworkAvatar
-                      tooltip
-                      chainId={wallet.network}
-                      sx={{ width: 24, height: 24 }}
-                    />
-                    <Typography>{getNetworkDisplayName(wallet.network)}</Typography>
-                  </Stack>
-                  {wallet === selectedWallet && <Check sx={{ color: green.A700 }} />}
-                </Box>
-              </MenuItem>
-            ))}
+                    justifyContent="space-between">
+                    <Stack
+                      direction="row"
+                      justifyContent="flex-start"
+                      alignItems="center"
+                      spacing={1}>
+                      <NetworkAvatar
+                        tooltip
+                        chainId={wallet.network}
+                        sx={{ width: 24, height: 24 }}
+                      />
+                      <Typography>{getNetworkDisplayName(wallet.network)}</Typography>
+                    </Stack>
+                    {wallet === selectedWallet && <Check sx={{ color: green.A700 }} />}
+                  </Box>
+                </MenuItem>
+              ))}
         </Stack>
       </MenuList>
     </Menu>

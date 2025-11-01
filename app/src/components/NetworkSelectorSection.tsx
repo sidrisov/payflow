@@ -2,6 +2,7 @@ import { Stack, StackProps } from '@mui/material';
 import NetworkSelectorChip from './chips/NetworkSelectorChip';
 import { WalletType } from '@payflow/common';
 import { Chain } from 'viem';
+import { isSupportedChain } from '../utils/networks';
 
 export default function NetworkSelectorSection({
   wallets,
@@ -28,16 +29,18 @@ export default function NetworkSelectorSection({
         selectedNetwork={selectedNetwork}
         setSelectedNetwork={setSelectedNetwork}
       />
-      {wallets.map((wallet) => {
-        return (
-          <NetworkSelectorChip
-            key={`network_selector_section_${wallet.network}`}
-            wallet={wallet}
-            selectedNetwork={selectedNetwork}
-            setSelectedNetwork={setSelectedNetwork}
-          />
-        );
-      })}
+      {wallets
+        .filter((wallet) => wallet.network && isSupportedChain(wallet.network))
+        .map((wallet) => {
+          return (
+            <NetworkSelectorChip
+              key={`network_selector_section_${wallet.network}`}
+              wallet={wallet}
+              selectedNetwork={selectedNetwork}
+              setSelectedNetwork={setSelectedNetwork}
+            />
+          );
+        })}
     </Stack>
   );
 }

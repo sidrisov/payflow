@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import { FlowType, FlowWalletType } from '@payflow/common';
 import { SelectedIdentityType } from '@payflow/common';
 import { Address, isAddress } from 'viem';
-import { SUPPORTED_CHAINS } from '../networks';
+import { SUPPORTED_CHAINS, isSupportedChain } from '../networks';
 import { PaymentType } from '@payflow/common';
 import { PaymentOption } from '@paywithglide/glide-js';
 
@@ -64,9 +64,10 @@ export function useCompatibleWallets({
       }
     }
 
-    // filter by passed chainId if available
-    return compatibleSenderWallets.filter((w) =>
-      payment?.chainId ? w.network === payment.chainId : true
+    // filter by passed chainId if available and ensure only supported chains
+    return compatibleSenderWallets.filter(
+      (w) =>
+        isSupportedChain(w.network) && (payment?.chainId ? w.network === payment.chainId : true)
     );
   }, [sender, recipient, paymentOptions]);
 }
