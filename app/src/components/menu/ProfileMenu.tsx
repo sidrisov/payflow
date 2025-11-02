@@ -9,28 +9,19 @@ import {
 } from '@mui/material';
 import { ProfileType } from '@payflow/common';
 import { useNavigate } from 'react-router';
-import {
-  Groups,
-  Help,
-  InfoOutlined,
-  Logout
-} from '@mui/icons-material';
-import { GiTwoCoins } from 'react-icons/gi';
+import { Groups, Logout } from '@mui/icons-material';
 
-import { HiOutlineDownload } from 'react-icons/hi';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ProfileSection } from '../ProfileSection';
 import { API_URL } from '../../utils/urlConstants';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { usePrivy } from '@privy-io/react-auth';
-import { DeviceInfoDialog } from '../DeviceInfoDialog';
 import { useState } from 'react';
 import { MdSecurityUpdateGood, MdSecurityUpdate } from 'react-icons/md';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { green } from '@mui/material/colors';
 import { IoChatbubbleEllipses } from 'react-icons/io5';
-import { GrStorage } from 'react-icons/gr';
 import { FaRegHeart } from 'react-icons/fa';
 import ResponsiveDialog from '../dialogs/ResponsiveDialog';
 import { useMobile } from '../../utils/hooks/useMobile';
@@ -48,24 +39,12 @@ export function ProfileMenu({
   const navigate = useNavigate();
   const { logout } = usePrivy();
 
-  const [openDeviceInfo, setOpenDeviceInfo] = useState(false);
   const [needRefresh, setNeedRefresh] = useState(false);
   const { updateServiceWorker } = useRegisterSW({
     onNeedRefresh() {
       setNeedRefresh(true);
     }
   });
-
-  const handleShowDeviceInfo = () => {
-    setOpenDeviceInfo(true);
-    closeStateCallback();
-  };
-
-  const handleCloseDeviceInfo = () => {
-    setOpenDeviceInfo(false);
-  };
-
-  const showHiddenMenuOptions = profile.username === 'sinaver';
 
   return (
     <>
@@ -94,37 +73,6 @@ export function ProfileMenu({
             <ProfileSection maxWidth={150} profile={profile} />
           </MenuItem>
           <Divider />
-          <MenuItem
-            onClick={async () => {
-              closeStateCallback();
-              navigate('/settings/preferred-flow');
-            }}>
-            <ListItemIcon>
-              <HiOutlineDownload size={20} />
-            </ListItemIcon>
-            Preferred Wallet
-          </MenuItem>
-          <MenuItem
-            onClick={async () => {
-              closeStateCallback();
-              navigate('/settings/tokens');
-            }}>
-            <ListItemIcon>
-              <GiTwoCoins size={20} />
-            </ListItemIcon>
-            Preferred Tokens
-          </MenuItem>
-          <MenuItem
-            onClick={async () => {
-              closeStateCallback();
-              navigate('/~/farcaster/storage');
-            }}>
-            <ListItemIcon>
-              <GrStorage size={20} />
-            </ListItemIcon>
-            Farcaster Storage
-          </MenuItem>
-          <Divider />
           <MenuItem component="a" href="https://warpcast.com/~/inbox/create/19129" target="_blank">
             <ListItemIcon>
               <IoChatbubbleEllipses size={20} />
@@ -137,23 +85,6 @@ export function ProfileMenu({
             </ListItemIcon>
             Community
           </MenuItem>
-          <MenuItem
-            component="a"
-            href="https://payflowlabs.notion.site/Payflow-FAQs-20593cf7734e4d78ad0dc91c8e8982e5"
-            target="_blank">
-            <ListItemIcon>
-              <Help fontSize="small" />
-            </ListItemIcon>
-            FAQ
-          </MenuItem>
-          {showHiddenMenuOptions && (
-            <MenuItem onClick={handleShowDeviceInfo}>
-              <ListItemIcon>
-                <InfoOutlined fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>Device Info</ListItemText>
-            </MenuItem>
-          )}
           <Divider />
           <MenuItem
             onClick={() => {
@@ -228,10 +159,6 @@ export function ProfileMenu({
           </MenuItem>
         </MenuList>
       </ResponsiveDialog>
-
-      {profile.username === 'sinaver' && (
-        <DeviceInfoDialog open={openDeviceInfo} onClose={handleCloseDeviceInfo} />
-      )}
     </>
   );
 }

@@ -23,7 +23,7 @@ import NetworkAvatar from '../avatars/NetworkAvatar';
 import { WalletBalanceDialog } from './WalletInfoDialog';
 import getFlowAssets from '../../utils/assets';
 import { useAssetBalances } from '../../utils/queries/balances';
-import { IoMdSquare, IoMdKey } from 'react-icons/io';
+import { IoMdKey } from 'react-icons/io';
 import { socialLink, ZAPPER } from '../../utils/dapps';
 import { ProfileContext } from '../../contexts/UserContext';
 import { useWallets } from '@privy-io/react-auth';
@@ -32,7 +32,6 @@ import { isSupportedChain } from '../../utils/networks';
 import { useSetActiveWallet } from '@privy-io/wagmi';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
 import { HiOutlineDownload, HiOutlineSwitchHorizontal } from 'react-icons/hi';
-import { PayMeDialog } from '../dialogs/PayMeDialog';
 import { AutoMode } from '@mui/icons-material';
 import { WalletPermissionsDialog } from '../dialogs/WalletPermissionsDialog';
 import { isBrowser } from 'react-device-detect';
@@ -40,7 +39,7 @@ import { formatAmountWithSuffix } from '../../utils/formats';
 import { IoWallet } from 'react-icons/io5';
 import { EditFlowDialog } from '../dialogs/EditFlowDialog';
 
-type DialogType = 'none' | 'payMe' | 'balanceInfo' | 'sessions' | 'edit';
+type DialogType = 'none' | 'balanceInfo' | 'sessions' | 'edit';
 
 export function WalletMenu({
   showOnlySigner,
@@ -252,19 +251,6 @@ export function WalletMenu({
             <>
               {flow.type !== 'BANKR' && flow.type !== 'RODEO' && (
                 <>
-                  {(flow.type === 'FARCASTER_VERIFICATION' || defaultFlow) && (
-                    <MenuItem onClick={() => openDialog('payMe')}>
-                      <ListItemIcon>
-                        <IoMdSquare />
-                      </ListItemIcon>
-                      <Stack>
-                        <Typography>Pay Me</Typography>
-                        <Typography variant="caption" color="text.secondary" noWrap>
-                          Copy & embed frame in socials
-                        </Typography>
-                      </Stack>
-                    </MenuItem>
-                  )}
                   {flow.type !== 'CONNECTED' && !defaultFlow && !flow.archived && (
                     <MenuItem
                       onClick={async () => {
@@ -327,13 +313,6 @@ export function WalletMenu({
           )}
         </MenuList>
       </Menu>
-
-      <PayMeDialog
-        open={activeDialog === 'payMe'}
-        onClose={() => setActiveDialog('none')}
-        flow={flow}
-        profile={profile}
-      />
 
       <WalletBalanceDialog
         open={activeDialog === 'balanceInfo'}

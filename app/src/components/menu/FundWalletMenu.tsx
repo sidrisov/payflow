@@ -3,23 +3,18 @@ import {
   Menu,
   MenuItem,
   MenuList,
-  MenuProps,
-  Typography,
-  Stack
+  MenuProps
 } from '@mui/material';
 import { QrCode } from '@mui/icons-material';
-import { IoMdSquare } from 'react-icons/io';
 import { IoWallet } from 'react-icons/io5';
 
 export function FundWalletMenu({
   qrClickCallback,
   depositClickCallback,
-  frameClickCallback,
   ...props
 }: MenuProps & {
   qrClickCallback: () => void;
   depositClickCallback: () => void;
-  frameClickCallback: () => void;
 }) {
   return (
     <Menu
@@ -47,17 +42,6 @@ export function FundWalletMenu({
             <QrCode />
           </ListItemIcon>
           QR Code
-        </MenuItem>
-        <MenuItem onClick={frameClickCallback}>
-          <ListItemIcon>
-            <IoMdSquare />
-          </ListItemIcon>
-          <Stack>
-            Pay Me
-            <Typography variant="caption" color="text.secondary" noWrap>
-              Copy & embed frame
-            </Typography>
-          </Stack>
         </MenuItem>
       </MenuList>
     </Menu>

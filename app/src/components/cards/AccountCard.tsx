@@ -37,7 +37,6 @@ import { ShareFlowMenu } from '../menu/ShareFlowMenu';
 import { PaymentFlowSection } from '../PaymentFlowSection';
 import { formatAmountWithSuffix } from '../../utils/formats';
 import { ActionButton } from '../buttons/ActionButton';
-import { PayMeDialog } from '../dialogs/PayMeDialog';
 import { GoArrowSwitch } from 'react-icons/go';
 import CopyToClipboardIconButton from '../buttons/CopyToClipboardIconButton';
 import PaymentDialog from '../payment/PaymentDialog';
@@ -79,7 +78,6 @@ export function AccountCard({
   const [openSelectFlow, setOpenSelectFlow] = useState(false);
   const [openTopUpMenu, setOpenTopUpMenu] = useState(false);
   const [openShareMenu, setOpenShareMenu] = useState(false);
-  const [openPayMeDialog, setOpenPayMeDialog] = useState(false);
 
   const [openFlowReceiveQRCode, setOpenFlowReceiveQRCode] = useState(false);
 
@@ -342,7 +340,6 @@ export function AccountCard({
               identity: { profile: { ...profile, defaultFlow: selectedFlow } } as IdentityType
             });
           }}
-          frameClickCallback={() => setOpenPayMeDialog(true)}
           qrClickCallback={() => setOpenFlowReceiveQRCode(true)}
           onClose={() => setOpenTopUpMenu(false)}
           onClick={() => setOpenTopUpMenu(false)}
@@ -359,12 +356,6 @@ export function AccountCard({
           open={openFlowReceiveQRCode}
           wallets={selectedFlow.wallets}
           closeStateCallback={() => setOpenFlowReceiveQRCode(false)}
-        />
-        <PayMeDialog
-          open={openPayMeDialog}
-          onClose={() => setOpenPayMeDialog(false)}
-          flow={selectedFlow}
-          profile={profile}
         />
       </>
     )
