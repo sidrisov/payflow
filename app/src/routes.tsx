@@ -71,25 +71,8 @@ export const routes = createBrowserRouter([
         lazy: () => import('./pages/Advanced').then(convert)
       },
       {
-        path: 'settings',
-        children: [
-          {
-            path: 'preferred-flow',
-            lazy: () => import('./pages/settings/PreferredFlowPage').then(convert)
-          },
-          {
-            path: 'tokens',
-            lazy: () => import('./pages/settings/PreferredTokensPage').then(convert)
-          }
-        ]
-      },
-      {
         path: 'services',
         lazy: () => import('./pages/PaymentServices').then(convert)
-      },
-      {
-        path: 'composer',
-        lazy: () => import('./pages/Composer').then(convert)
       },
       {
         path: '/search',
@@ -123,18 +106,9 @@ export const routes = createBrowserRouter([
         path: '/~/create-wallet-session/:address',
         lazy: () => import('./pages/CreateWalletSession').then(convert)
       },
-
-      {
-        path: '/~/cast-actions',
-        lazy: () => import('./pages/CastActionsPage').then(convert)
-      },
       {
         path: '/~/farcaster/storage',
         lazy: () => import('./pages/Storage').then(convert)
-      },
-      {
-        path: '/~/subscriptions',
-        lazy: () => import('./pages/SubscriptionsPage').then(convert)
       },
       { path: '404', element: <ErrorBoundary /> },
       { path: '*', element: <Navigate to="/404" replace /> }
