@@ -5,11 +5,11 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
     application
-    id("org.springframework.boot") version "3.3.6"
-    id("io.spring.dependency-management") version "1.1.4"
-    id("com.google.cloud.artifactregistry.gradle-plugin") version "2.2.1"
-    id("io.freefair.lombok") version "8.4"
-    id("com.netflix.dgs.codegen") version "7.0.3"
+    id("org.springframework.boot") version "3.5.7"
+    id("io.spring.dependency-management") version "1.1.7"
+    id("com.google.cloud.artifactregistry.gradle-plugin") version "2.2.5"
+    id("io.freefair.lombok") version "9.0.0"
+    id("com.netflix.dgs.codegen") version "8.1.1"
 }
 
 application {
@@ -17,36 +17,34 @@ application {
 }
 
 group = "ua.sinaver.web3.payflow"
-version = "0.1.0"
+version = "1.0.0"
 
-java.sourceCompatibility = JavaVersion.VERSION_21
+java.sourceCompatibility = JavaVersion.VERSION_25
 
 repositories {
     mavenCentral()
 }
 
-extra["springCloudVersion"] = "2024.0.0"
-extra["flywayVersion"] = "11.2.0"
-extra["springCloudGcpVersion"] = "5.10.0"
-extra["hypersistenceVersion"] = "3.9.0"
-extra["jjwtVersion"] = "0.12.6"
-extra["mysqlConnectorVersion"] = "9.2.0"
-extra["commonsLangVersion"] = "3.17.0"
-extra["guavaVersion"] = "33.4.0-jre"
-extra["gsonVersion"] = "2.11.0"
+extra["springCloudVersion"] = "2025.0.0"
+extra["flywayVersion"] = "11.16.0"
+extra["springCloudGcpVersion"] = "7.4.1"
+extra["hypersistenceVersion"] = "3.11.0"
+extra["jjwtVersion"] = "0.13.0"
+extra["mysqlConnectorVersion"] = "9.5.0"
+extra["commonsLangVersion"] = "3.19.0"
+extra["guavaVersion"] = "33.5.0-jre"
+extra["gsonVersion"] = "2.13.2"
 extra["reactorCoreVersion"] = "3.7.2"
-extra["nettyResolverVersion"] = "4.1.117.Final"
-extra["bouncyCastleVersion"] = "1.80"
+extra["nettyResolverVersion"] = "4.2.7.Final"
+extra["bouncyCastleVersion"] = "1.82"
 extra["web3jVersion"] = "4.12.3"
-extra["siweVersion"] = "1.0.7"
-extra["lombokVersion"] = "1.18.36"
-extra["shedlockVersion"] = "6.2.0"
+extra["siweVersion"] = "1.0.8"
+extra["lombokVersion"] = "1.18.42"
+extra["shedlockVersion"] = "6.10.0"
 extra["mapstructVersion"] = "1.6.3"
 
 dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-
-
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -67,7 +65,7 @@ dependencies {
         implementation("com.google.cloud:spring-cloud-gcp-starter")
         implementation("com.google.cloud:spring-cloud-gcp-starter-sql-mysql")
         implementation("com.google.cloud:google-cloud-redis")
-        implementation("com.google.cloud:spring-cloud-gcp-logging:5.10.0")
+        implementation("com.google.cloud:spring-cloud-gcp-logging:${property("springCloudGcpVersion")}")
     } else {
         // local
         //runtimeOnly ("com.h2database:h2")
@@ -93,7 +91,7 @@ dependencies {
     implementation("com.google.guava:guava:${property("guavaVersion")}")
     implementation("com.google.code.gson:gson:${property("gsonVersion")}")
 
-    implementation("com.github.victools:jsonschema-generator:4.34.0")
+    implementation("com.github.victools:jsonschema-generator:4.38.0")
 
     // java.lang.NoSuchMethodError: 'reactor.core.publisher.Mono reactor.core.publisher.Mono.onErrorComplete()'
     implementation("io.projectreactor:reactor-core:${property("reactorCoreVersion")}")
@@ -257,7 +255,11 @@ tasks.withType<BootRun> {
 // --publishImage
 // TODO: permissions are not picked up for publishing - https://cloud.google.com/artifact-registry/docs/java/authentication#gcloud
 tasks.named<BootBuildImage>("bootBuildImage") {
-    environment.put("BP_JVM_VERSION", "21")
+
+    builder.set("paketobuildpacks/builder-jammy-base")
+    environment.put("BP_JVM_VERSION", "25")
+    imagePlatform.set("linux/amd64")
+
 
     if (project.hasProperty("gcp-image-name")) {
         imageName.set("${project.property("gcp-image-name")}:${project.version}")
