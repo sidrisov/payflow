@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import ua.sinaver.web3.payflow.config.PayflowConfig;
 import ua.sinaver.web3.payflow.entity.StorageNotification;
 import ua.sinaver.web3.payflow.message.farcaster.Cast;
@@ -49,7 +48,7 @@ public class FarcasterStorageService {
 	private StorageNotificationRepository storageNotificationRepository;
 
 	private static boolean isShouldNotify(StorageNotification storageNotification,
-			StorageUsage storageUsageWithSoonExpireUnits) {
+	                                      StorageUsage storageUsageWithSoonExpireUnits) {
 		val threshold = storageNotification.getThreshold() / 100.0;
 
 		val remainingCasts = storageUsageWithSoonExpireUnits.casts().capacity() -
@@ -70,7 +69,8 @@ public class FarcasterStorageService {
 
 	@Scheduled(cron = "* */15 * * * *")
 	void notifyWithStorageExpiring() {
-		storageNotificationRepository.findTop10StorageNotifications(Instant.now().minus(14, ChronoUnit.DAYS))
+		storageNotificationRepository.findTop10StorageNotifications(Instant.now().minus(7,
+						ChronoUnit.DAYS))
 				.forEach(storageNotification -> {
 					val fid = storageNotification.getFid();
 					try {
@@ -98,11 +98,11 @@ public class FarcasterStorageService {
 											String.format(
 													"""
 															@%s, you're reaching or over your farcaster storage capacity!
-
-															1 unit costs ~$2, you can purchase more with any token balance on @payflow 👇
-
+															
+															1 unit costs ~$0.2, you can purchase more with any token balance on @payflow 👇
+															
 															%s
-
+															
 															You can also disable or change notification settings in the frame.
 															""",
 													username,
@@ -120,14 +120,14 @@ public class FarcasterStorageService {
 								if (storageNotification.isNotifyWithCast()) {
 									try {
 										notificationService.reply(String.format(
-												"""
-														@%s, you're reaching or over your farcaster storage capacity!
-
-														1 unit costs ~$2, you can purchase more with any token balance using @payflow 👇
-
-														You can also disable or change notification settings in the frame.
-														""",
-												username), PARENT_CAST_HASH,
+														"""
+																@%s, you're reaching or over your farcaster storage capacity!
+																
+																1 unit costs ~$0.2, you can purchase more with any token balance using @payflow 👇
+																
+																You can also disable or change notification settings in the frame.
+																""",
+														username), PARENT_CAST_HASH,
 												List.of(new Cast.Embed(storageFrameUrl)));
 									} catch (Throwable t) {
 										log.error("Failed to cast storage notification for {}", fid, t);
@@ -151,11 +151,11 @@ public class FarcasterStorageService {
 				});
 	}
 
-	@Scheduled(cron = "0 0 0 * * MON")
+	@Scheduled(cron = "0 0 0 * * *")
 	@SchedulerLock(name = "scheduleStorageNotification", lockAtLeastFor = "PT1M", lockAtMostFor = "PT5M")
 	void scheduleStorageNotification() {
-		val twoWeeksAgo = Instant.now().minus(14, ChronoUnit.DAYS);
-		userRepository.findByCreatedDateAfter(twoWeeksAgo).forEach(user -> {
+		val oneWeekAgo = Instant.now().minus(1, ChronoUnit.DAYS);
+		userRepository.findByCreatedDateAfter(oneWeekAgo).forEach(user -> {
 			if (user.isAllowed()) {
 				log.info("Storage notification for {}", user.getIdentity());
 				try {

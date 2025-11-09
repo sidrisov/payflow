@@ -245,50 +245,6 @@ public class RewardsService {
 		return fidToPayment;
 	}
 
-	@Transactional
-	@Scheduled(cron = "0 */5 * * * *")
-	public void processSchedules() {
-		log.debug("Processing reward schedules...");
-		List<TopCasterRewardSchedule> schedules = rewardScheduleRepository
-				.findTop10ByStatus(TopCasterRewardSchedule.ScheduleStatus.ACTIVE);
-
-		val now = Instant.now();
-		val schedulesToProcess = schedules.stream()
-				.filter(s -> {
-					try {
-						// Skip if last attempt was less than 4 minutes ago (allowing for next 5-min
-						// check)
-						if (s.getLastAttempt() != null && s.getLastAttempt().isAfter(
-								now.minus(4, ChronoUnit.MINUTES))) {
-							log.debug("Schedule {}: Skipping, last attempt too recent: {}", s.getId(),
-									s.getLastAttempt());
-							return false;
-						}
-
-						val cronExpression = CronExpression.parse(s.getCronExpression());
-						val baseTime = s.getLastSuccess() != null
-								? s.getLastSuccess().atZone(ZoneOffset.UTC).toLocalDateTime()
-								:
-						// If never succeeded, look from the start of the current day
-								now.atZone(ZoneOffset.UTC).toLocalDateTime().withHour(0).withMinute(0).withSecond(0);
-
-						val nextExecution = cronExpression.next(baseTime);
-						log.debug("Schedule {}: lastSuccess={}, baseTime={}, nextExecution={}, currentTime={}",
-								s.getId(), s.getLastSuccess(), baseTime, nextExecution, now);
-
-						return nextExecution != null &&
-								nextExecution.atZone(ZoneOffset.UTC).toInstant().isBefore(now);
-					} catch (IllegalArgumentException e) {
-						log.error("Invalid cron expression for schedule {}: {}", s.getId(), e.getMessage());
-						return false;
-					}
-				})
-				.toList();
-
-		log.info("Found {} schedules ready to process", schedulesToProcess.size());
-		schedulesToProcess.forEach(this::processRewardSchedule);
-	}
-
 	@Transactional(Transactional.TxType.REQUIRES_NEW)
 	public void processRewardSchedule(TopCasterRewardSchedule rewardSchedule) {
 		try {

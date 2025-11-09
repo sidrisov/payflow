@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Outlet, useLocation, useNavigate, useSearchParams, useLoaderData } from 'react-router';
+import { Outlet, useLocation, useNavigate, useLoaderData } from 'react-router';
 
 import {
   AppBar,
