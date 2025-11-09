@@ -21,6 +21,7 @@
     "@emotion/styled": "^11.11.0",
     "@farcaster/auth-kit": "^0.8.0",
     "@farcaster/frame-sdk": "^0.0.53",
+    "@farcaster/miniapp-wagmi-connector": "^1.1.0",
     "@mui/icons-material": "^7.0.1",
     "@mui/lab": "^7.0.0-beta.10",
     "@mui/material": "^7.0.1",

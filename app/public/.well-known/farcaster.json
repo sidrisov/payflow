@@ -5,12 +5,14 @@
     "signature": "MHg5YTZhNTM1MjA2NTJmNGZlODBlNzRiMGJmMWE1ZGNiNThkNjVmNTZiNTkzODllZGIzNDg3YjFkMDVhZmNiODJhNTFlYmFmYmQyMjkyMWQwNmRkY2VhZWE4ZTUyMjFhNDg4MjFkNjU1NzFhZTI4ODk5NTQwZTZiNTc4MzA1ZmE1NzFj"
   },
   "frame": {
-    "version": "next",
+    "version": "1",
     "name": "Payflow",
     "iconUrl": "https://app.payflow.me/apple-touch-icon.png",
     "splashImageUrl": "https://app.payflow.me/apple-touch-icon.png",
     "splashBackgroundColor": "#f7f7f7",
     "homeUrl": "https://app.payflow.me",
+    "primaryCategory": "finance",
+    "tags": ["crypto", "defi", "wallet", "utility", "services"],
     "webhookUrl": "https://api.neynar.com/f/app/c70143f7-4d75-48b5-b3cc-bdc4bb3314ba/event"
   }
 }
