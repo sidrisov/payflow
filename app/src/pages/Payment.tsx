@@ -3,18 +3,16 @@ import { lazy, useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ProfileContext } from '../contexts/UserContext';
 import { useNavigate, useParams } from 'react-router';
-import { PaymentType, SocialInfoType } from '@payflow/common';
+import { PaymentType } from '@payflow/common';
 import { fetchPayment } from '../services/payments';
 import { IdentityType, SelectedIdentityType } from '@payflow/common';
 import { toast } from 'react-toastify';
 import { statusToToastType } from '../components/Toasts';
 import { fetchMintData, MintMetadata, parseMintToken } from '../utils/mint';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
-import { fetchHypersubData, HypersubData } from '../utils/hooks/useHypersub';
 import { useFarcasterSocial } from '@/hooks/useFarcasterSocial';
 
 const LazyMintDialog = lazy(() => import('../components/payment/MintDialog'));
-const LazySubscribeToHypersubDialog = lazy(() => import('../components/payment/HypersubDialog'));
 const LazyGiftStorageDialog = lazy(() => import('../components/payment/BuyStorageDialog'));
 const LazyPaymentDialog = lazy(() => import('../components/payment/PaymentDialog'));
 
@@ -26,7 +24,6 @@ export default function Payment() {
 
   const [payment, setPayment] = useState<PaymentType>();
   const [mintData, setMintData] = useState<MintMetadata>();
-  const [hypersubData, setHypersubData] = useState<HypersubData | null>(null);
 
   const sender = {
     identity: {
@@ -73,11 +70,6 @@ export default function Payment() {
                   parsedMintData.referral
                 );
                 setMintData(mintData);
-              }
-
-              if (paymentData.category === 'hypersub') {
-                const hypersubData = await fetchHypersubData(paymentData);
-                setHypersubData(hypersubData);
               }
             }
 
@@ -161,7 +153,7 @@ export default function Payment() {
                   navigate('/');
                 }}
               />
-            )) ||
+              )) ||
               (payment.category === 'mint' && mintData && (
                 <LazyMintDialog
                   alwaysShowBackButton
@@ -176,25 +168,7 @@ export default function Payment() {
                     navigate('/');
                   }}
                 />
-              )) ||
-              (payment.category === 'hypersub' &&
-                hypersubData &&
-                senderSocial &&
-                recipientSocial && (
-                  <LazySubscribeToHypersubDialog
-                    alwaysShowBackButton
-                    title="Complete Payment"
-                    open={payment != null}
-                    payment={payment}
-                    sender={sender}
-                    senderSocial={senderSocial}
-                    recipientSocial={recipientSocial}
-                    hypersub={hypersubData}
-                    closeStateCallback={async () => {
-                      navigate('/');
-                    }}
-                  />
-                )))
+              )))
           ))}
       </Container>
     </>

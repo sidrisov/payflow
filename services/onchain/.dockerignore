@@ -1,8 +1,0 @@
-**/node_modules/
-**/dist
-.git
-npm-debug.log
-.prettierignore
-.pre
-.env
-.env.local

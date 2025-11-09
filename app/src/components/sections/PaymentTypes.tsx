@@ -9,7 +9,6 @@ import { formatAmountWithSuffix, normalizeNumberPrecision } from '../../utils/fo
 import { useMobile } from '../../utils/hooks/useMobile';
 import { PaymentCard } from '../cards/PaymentCard';
 import { useMintData } from '../../utils/hooks/useMintData';
-import { HypersubData, useHypersubData } from '../../utils/hooks/useHypersub';
 import TokenNetworkAvatar from '../avatars/TokenNetworkAvatar';
 import { useFarcasterSocial } from '@/hooks/useFarcasterSocial';
 
@@ -27,7 +26,6 @@ const StyledTypography = styled(Typography)(() => ({
 const PAYMENT_TITLES: { [key: string]: string } = {
   fc_storage: 'Buy Storage',
   mint: 'Mint',
-  hypersub: 'Hypersub',
   reward: 'Reward',
   reward_top_reply: 'Top Reply Reward',
   reward_top_casters: 'Top Caster Reward',
@@ -72,7 +70,6 @@ const PaymentContent = ({ children, loading }: PaymentContentProps) => {
 interface UsePaymentDataResult {
   social: SocialInfoType | undefined;
   mintData: any | null;
-  hypersubData: HypersubData | null | undefined;
   isMobile: boolean;
   token: Token | undefined;
   loading: boolean;
@@ -81,7 +78,6 @@ interface UsePaymentDataResult {
 const usePaymentData = (payment: PaymentType): UsePaymentDataResult => {
   const { social, isLoading: loadingSocials } = useFarcasterSocial(payment.receiverFid?.toString());
   const { mintData, loading: loadingMintData } = useMintData(payment);
-  const { hypersubData, loading: loadingHypersubData } = useHypersubData(payment);
   const isMobile = useMobile();
   const token = SUPPORTED_TOKENS.find(
     (t) => t.chainId === payment.chainId && t.id === payment.token
@@ -90,10 +86,9 @@ const usePaymentData = (payment: PaymentType): UsePaymentDataResult => {
   return {
     social,
     mintData,
-    hypersubData,
     isMobile,
     token,
-    loading: loadingSocials || loadingMintData || loadingHypersubData
+    loading: loadingSocials || loadingMintData
   };
 };
 
@@ -217,36 +212,6 @@ export const MintPayment: React.FC<PaymentComponentProps> = ({ payment }) => {
   );
 };
 
-export const HypersubPayment: React.FC<PaymentComponentProps> = ({ payment }) => {
-  const { social, hypersubData, isMobile, loading } = usePaymentData(payment);
-
-  return (
-    <PaymentContentWrapper payment={payment} loading={loading}>
-      {social && hypersubData && hypersubData.metadata && (
-        <>
-          <>
-            <RecipientInfo payment={payment} social={social} />
-            <Stack direction="row" alignItems="center" justifyContent="center" spacing={0.5}>
-              <Avatar
-                variant="rounded"
-                src={hypersubData.metadata.image}
-                sx={{ width: 25, height: 25 }}
-              />
-              <Typography
-                textAlign="center"
-                variant="subtitle2"
-                fontWeight="bold"
-                fontSize={isMobile ? 12 : 13}>
-                {hypersubData.state.name}
-              </Typography>
-            </Stack>
-          </>
-        </>
-      )}
-    </PaymentContentWrapper>
-  );
-};
-
 export const GenericPayment: React.FC<PaymentComponentProps> = ({ payment }) => {
   const { social, isMobile, token, loading } = usePaymentData(payment);
 
@@ -265,8 +230,6 @@ export const PaymentItem: React.FC<PaymentComponentProps> = ({ payment, ...props
         return GiftStoragePayment;
       case 'mint':
         return MintPayment;
-      case 'hypersub':
-        return HypersubPayment;
       default:
         return GenericPayment;
     }

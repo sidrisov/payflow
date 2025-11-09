@@ -89,8 +89,7 @@ export default function FarcasterClientPage() {
         </Stack>
 
         <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-          Choose your preferred farcaster client for installing cast actions and other client
-          specific operations
+          Choose your preferred farcaster client for client specific operations
         </Typography>
 
         <Stack spacing={1}>
