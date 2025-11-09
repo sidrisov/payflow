@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import { ProfileType } from '@payflow/common';
 import { useNavigate } from 'react-router';
-import { Groups, Logout } from '@mui/icons-material';
+import { Logout } from '@mui/icons-material';
 
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -78,12 +78,6 @@ export function ProfileMenu({
               <IoChatbubbleEllipses size={20} />
             </ListItemIcon>
             Get Support
-          </MenuItem>
-          <MenuItem component="a" href="https://warpcast.com/~/channel/payflow" target="_blank">
-            <ListItemIcon>
-              <Groups fontSize="small" />
-            </ListItemIcon>
-            Community
           </MenuItem>
           <Divider />
           <MenuItem

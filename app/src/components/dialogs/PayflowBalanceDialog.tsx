@@ -26,7 +26,7 @@ import { useAccount } from 'wagmi';
 import { green, grey } from '@mui/material/colors';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
 import NetworkAvatar from '../avatars/NetworkAvatar';
-import { Add, AutoMode, Info } from '@mui/icons-material';
+import { Add, Info } from '@mui/icons-material';
 import ProfileAvatar from '../avatars/ProfileAvatar';
 import { usePrivy } from '@privy-io/react-auth';
 import { BackDialogTitle } from './BackDialogTitle';
@@ -369,25 +369,6 @@ export default function PayflowBalanceDialog({
               borderColor: 'divider'
             }}>
             Top Up
-          </Button>
-          <Button
-            fullWidth
-            variant="outlined"
-            size="small"
-            color="inherit"
-            startIcon={<AutoMode />}
-            onClick={() => {
-              window.location.href =
-                '/~/create-wallet-session/' + createdFlow?.wallets?.[0].address;
-            }}
-            sx={{
-              height: 45,
-              fontSize: 14,
-              fontWeight: 'normal',
-              '&:hover': { backgroundColor: 'action.hover' },
-              borderColor: 'divider'
-            }}>
-            Session Key
           </Button>
         </Stack>
       </Stack>

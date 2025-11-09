@@ -32,14 +32,12 @@ import { isSupportedChain } from '../../utils/networks';
 import { useSetActiveWallet } from '@privy-io/wagmi';
 import { shortenWalletAddressLabel2 } from '../../utils/address';
 import { HiOutlineDownload, HiOutlineSwitchHorizontal } from 'react-icons/hi';
-import { AutoMode } from '@mui/icons-material';
-import { WalletPermissionsDialog } from '../dialogs/WalletPermissionsDialog';
 import { isBrowser } from 'react-device-detect';
 import { formatAmountWithSuffix } from '../../utils/formats';
 import { IoWallet } from 'react-icons/io5';
 import { EditFlowDialog } from '../dialogs/EditFlowDialog';
 
-type DialogType = 'none' | 'balanceInfo' | 'sessions' | 'edit';
+type DialogType = 'none' | 'balanceInfo' | 'edit';
 
 export function WalletMenu({
   showOnlySigner,
@@ -182,8 +180,8 @@ export function WalletMenu({
                     {flow.type === 'CONNECTED'
                       ? 'Switch Wallet'
                       : isConnected
-                        ? `Re-connect ${flow.signerProvider === 'privy' ? 'Signer' : 'Wallet'}`
-                        : `Connect ${flow.signerProvider === 'privy' ? 'Signer' : 'Wallet'}`}
+                      ? `Re-connect ${flow.signerProvider === 'privy' ? 'Signer' : 'Wallet'}`
+                      : `Connect ${flow.signerProvider === 'privy' ? 'Signer' : 'Wallet'}`}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     {getSignerInfo()}
@@ -268,19 +266,6 @@ export function WalletMenu({
                       <Typography>Make default for receiving</Typography>
                     </MenuItem>
                   )}
-                  {flow.type !== 'CONNECTED' && flow.wallets[0].version?.endsWith('_0.7') && (
-                    <MenuItem onClick={() => openDialog('sessions')}>
-                      <ListItemIcon>
-                        <AutoMode sx={{ fontSize: 20 }} />
-                      </ListItemIcon>
-                      <Stack>
-                        <Typography>Session Keys</Typography>
-                        <Typography variant="caption" color="text.secondary" noWrap>
-                          Spending limits, access, and automation
-                        </Typography>
-                      </Stack>
-                    </MenuItem>
-                  )}
                   <Divider />
                 </>
               )}
@@ -319,12 +304,6 @@ export function WalletMenu({
         onClose={() => setActiveDialog('none')}
         flow={flow}
         balanceFetchResult={{ isLoading, isFetched, balances }}
-      />
-
-      <WalletPermissionsDialog
-        open={activeDialog === 'sessions'}
-        onClose={() => setActiveDialog('none')}
-        flow={flow}
       />
 
       <EditFlowDialog

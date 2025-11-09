@@ -3,8 +3,7 @@
     "packages/common",
     "app",
     "home",
-    "services/frames",
-    "services/onchain"
+    "services/frames"
   ],
   "private": true
 }

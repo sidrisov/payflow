@@ -5,7 +5,6 @@ import { ActivityIcon, ActivityType } from './ActivityIcon';
 import { usePaymentActivityDetails } from '../../utils/hooks/usePaymentAcitivityDetails';
 import { PaymentType } from '@payflow/common';
 import FarcasterAvatar from '../avatars/FarcasterAvatar';
-import { secondsToTimeUnit } from '../../utils/time';
 import TokenNetworkAvatar from '../avatars/TokenNetworkAvatar';
 
 interface PaymentDetailsProps {
@@ -56,7 +55,7 @@ const ActivityWrapper: React.FC<{
 
 export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
   const isMobile = useMobile();
-  const { token, formattedTokenAmount, formattedUsdAmount, mintData, hypersubData } =
+  const { token, formattedTokenAmount, formattedUsdAmount, mintData } =
     usePaymentActivityDetails(payment);
 
   const renderContent = () => {
@@ -111,48 +110,6 @@ export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
                 textOverflow="ellipsis"
                 overflow="hidden">
                 {mintData.collectionName}
-              </Typography>
-            </Typography>
-          </>
-        );
-      }
-    }
-
-    if (payment.category === 'hypersub') {
-      if (hypersubData === undefined) {
-        return (
-          <>
-            <Skeleton variant="rounded" width={25} height={25} />
-            <Skeleton variant="text" width={120} />
-          </>
-        );
-      }
-
-      if (hypersubData) {
-        return (
-          <>
-            <Avatar
-              variant="rounded"
-              src={hypersubData.metadata?.image}
-              sx={{ width: 35, height: 35 }}
-            />
-            <Typography
-              noWrap
-              maxWidth={180}
-              variant="caption"
-              fontWeight="bold"
-              fontSize={isMobile ? 12 : 14}
-              textOverflow="ellipsis"
-              overflow="hidden">
-              {hypersubData.state.name}
-              <Typography
-                variant="caption"
-                display="block"
-                color="text.secondary"
-                textOverflow="ellipsis"
-                overflow="hidden">
-                subscription: {payment.tokenAmount}{' '}
-                {secondsToTimeUnit(hypersubData.state.tier1.params.periodDurationSeconds).timeUnit}
               </Typography>
             </Typography>
           </>

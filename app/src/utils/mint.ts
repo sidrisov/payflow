@@ -348,7 +348,7 @@ export function createShareUrls({
     text += `to @${recipientSocial.profileName} `;
   }
 
-  text += `\n\n@payflow cast action lets you mint or gift collectibles with 30+ tokens cross-chain! cc: @sinaver.eth /payflow`;
+  text += `\n\n@payflow lets you mint or gift collectibles with 30+ tokens cross-chain! cc: @sinaver.eth /payflow`;
 
   const channelKey = providerFarcasterChannelMap[mint.provider] || 'nft';
 

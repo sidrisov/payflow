@@ -12,72 +12,6 @@
       "destination": "https://frames.payflow.me/payment/:path*"
     },
     {
-      "source": "/fan",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot|got).*"
-        }
-      ],
-      "destination": "https://frames.payflow.me/fan"
-    },
-    {
-      "source": "/degen",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot|got).*"
-        }
-      ],
-      "destination": "https://frames.payflow.me/~/claimables"
-    },
-    {
-      "source": "/~/claimables",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot|got).*"
-        }
-      ],
-      "destination": "https://frames.payflow.me/~/claimables"
-    },
-    {
-      "source": "/hypersub",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot|got).*"
-        }
-      ],
-      "destination": "https://frames.payflow.me/hypersub"
-    },
-    {
-      "source": "/jar/create",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot|got).*"
-        }
-      ],
-      "destination": "https://frames.payflow.me/jar/create"
-    },
-    {
-      "source": "/jar/:uuid",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot|got).*"
-        }
-      ],
-      "destination": "https://frames.payflow.me/jar/:uuid"
-    },
-    {
       "source": "/fid/:fid/storage",
       "has": [
         {
@@ -87,17 +21,6 @@
         }
       ],
       "destination": "https://frames.payflow.me/fid/:fid/storage"
-    },
-    {
-      "source": "/mint",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot|got).*"
-        }
-      ],
-      "destination": "https://frames.payflow.me/mint"
     },
     {
       "source": "/~/farcaster/storage",
@@ -131,28 +54,6 @@
         }
       ],
       "destination": "https://frames.payflow.me"
-    },
-    {
-      "source": "/~/create-payflow-wallet",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot|got).*"
-        }
-      ],
-      "destination": "https://frames.payflow.me/~/create-payflow-wallet"
-    },
-    {
-      "source": "/~/create-wallet-session/:address",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*(bot|spider|crawler|curl|httpie|insomnia|postman|wget|axios|fcbot|got).*"
-        }
-      ],
-      "destination": "https://frames.payflow.me/~/create-wallet-session/:address"
     },
     {
       "source": "/(.*)",

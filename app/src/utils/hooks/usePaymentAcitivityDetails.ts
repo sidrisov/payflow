@@ -4,20 +4,16 @@ import { PaymentType } from '@payflow/common';
 import { tokens as SUPPORTED_TOKENS, Token } from '@payflow/common';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../formats';
 import { getNetworkDefaultBlockExplorerUrl } from '../networks';
-import { useHypersubData } from './useHypersub';
 
 export const usePaymentActivityDetails = (payment: PaymentType) => {
   const { data: tokenPrices } = useTokenPrices();
   const { mintData } = useMintData(payment);
-  const { hypersubData } = useHypersubData(payment);
 
   let token, formattedTokenAmount, formattedUsdAmount;
 
   if (payment.category === 'mint') {
     formattedTokenAmount = '1';
   } else if (payment.category === 'fc_storage') {
-    formattedTokenAmount = formatAmountWithSuffix(payment.tokenAmount.toString());
-  } else if (payment.category === 'hypersub') {
     formattedTokenAmount = formatAmountWithSuffix(payment.tokenAmount.toString());
   } else {
     token = SUPPORTED_TOKENS.find(
@@ -44,7 +40,6 @@ export const usePaymentActivityDetails = (payment: PaymentType) => {
     formattedTokenAmount,
     formattedUsdAmount,
     defaultBlockExplorerUrl: getNetworkDefaultBlockExplorerUrl(payment.chainId),
-    mintData,
-    hypersubData
+    mintData
   };
 };

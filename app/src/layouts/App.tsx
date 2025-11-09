@@ -16,7 +16,6 @@ import { ProfileContext } from '../contexts/UserContext';
 
 import { ProfileType } from '@payflow/common';
 import { ProfileMenu } from '../components/menu/ProfileMenu';
-import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
 import { useTokenPrices } from '../utils/queries/prices';
 import { IoHomeOutline, IoHomeSharp } from 'react-icons/io5';
 
@@ -30,7 +29,7 @@ import { isIOS } from 'react-device-detect';
 
 import FrameV2SDK from '@farcaster/frame-sdk';
 import { usePimlicoInit } from '../utils/hooks/usePimlicoInit';
-import { SiLightning } from 'react-icons/si';
+import { GrStorage } from 'react-icons/gr';
 
 export default function App() {
   const location = useLocation();
@@ -72,13 +71,11 @@ export default function App() {
 
   const enablePullToRefresh = usePwa() || isFrameV2;
 
-  const bottomToolbarEnabled =
-    location.pathname !== '/composer' &&
-    !location.pathname.startsWith('/payment');
+  const bottomToolbarEnabled = !location.pathname.startsWith('/payment');
 
   const defaultToolbarAction = (() => {
     switch (location.pathname) {
-      case '/services':
+      case '/~/farcaster/storage':
         return 1;
       case `/${profile?.username}`:
         return profile ? 2 : 1;
@@ -92,7 +89,6 @@ export default function App() {
   const [authorized, setAuthorized] = useState<boolean>(false);
 
   const [openProfileMenu, setOpenProfileMenu] = useState(false);
-  const [openSearchIdentity, setOpenSearchIdentity] = useState(false);
 
   const { isLoading, isFetched, data: prices } = useTokenPrices();
   console.log('prices: ', isLoading, isFetched, prices);
@@ -159,7 +155,7 @@ export default function App() {
                 zIndex: 1400
               }}>
               <BottomNavigation
-                showLabels
+                showLabels={false}
                 elevation={10}
                 component={Paper}
                 value={bottonToolbarActionValue}
@@ -171,14 +167,18 @@ export default function App() {
                     ? { width: '100%', borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }
                     : { minWidth: 350, mb: 1 }),
                   '& .MuiBottomNavigationAction-root': {
-                    minWidth: 'auto'
+                    minWidth: 'auto',
+                    flex: 1,
+                    maxWidth: 'none',
+                    padding: '6px 12px'
                   },
                   '& .MuiBottomNavigationAction-root.Mui-selected': {
                     color: 'inherit',
-                    fontWeight: '500'
+                    fontWeight: '500',
+                    padding: '6px 12px'
                   },
                   '& .MuiBottomNavigationAction-label': {
-                    fontSize: 14
+                    display: 'none !important'
                   },
                   ...(Boolean(isIOS) && {
                     height: 'auto',
@@ -204,22 +204,14 @@ export default function App() {
                   }
                   onClick={async () => {
                     navigate('/');
-                    setOpenSearchIdentity(false);
                   }}
                 />
                 <BottomNavigationAction
                   disableRipple
-                  label="Services"
-                  icon={
-                    bottonToolbarActionValue === 1 ? (
-                      <SiLightning size={22} />
-                    ) : (
-                      <SiLightning size={20} />
-                    )
-                  }
+                  label="Storage"
+                  icon={<GrStorage size={bottonToolbarActionValue === 1 ? 22 : 20} />}
                   onClick={async () => {
-                    navigate('/services');
-                    setOpenSearchIdentity(false);
+                    navigate('/~/farcaster/storage');
                   }}
                 />
                 {profile && (
@@ -229,7 +221,6 @@ export default function App() {
                     icon={<CgProfile size={bottonToolbarActionValue === 2 ? 22 : 20} />}
                     onClick={async () => {
                       setOpenProfileMenu(true);
-                      setOpenSearchIdentity(false);
                     }}
                   />
                 )}
@@ -249,19 +240,6 @@ export default function App() {
           }}
           closeStateCallback={() => {
             setOpenProfileMenu(false);
-            setBottonToolbarActionValue(0);
-          }}
-        />
-      )}
-      {openSearchIdentity && (
-        <SearchIdentityDialog
-          // TODO: doesn't work properly on IOS, navigation is hidden
-          //showOnTopOfNavigation={false}
-          address={profile?.identity}
-          profileRedirect={true}
-          open={openSearchIdentity}
-          closeStateCallback={() => {
-            setOpenSearchIdentity(false);
             setBottonToolbarActionValue(0);
           }}
         />

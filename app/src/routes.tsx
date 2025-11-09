@@ -71,10 +71,6 @@ export const routes = createBrowserRouter([
         lazy: () => import('./pages/Advanced').then(convert)
       },
       {
-        path: 'services',
-        lazy: () => import('./pages/PaymentServices').then(convert)
-      },
-      {
         path: '/search',
         lazy: () => import('./layouts/PublicProfile').then(convert)
       },
@@ -95,16 +91,8 @@ export const routes = createBrowserRouter([
         lazy: () => import('./layouts/PublicProfile').then(convert)
       },
       {
-        path: '/jar/:uuid',
-        lazy: () => import('./pages/Jar').then(convert)
-      },
-      {
         path: '/~/create-payflow-wallet',
         lazy: () => import('./pages/CreatePayflowWallet').then(convert)
-      },
-      {
-        path: '/~/create-wallet-session/:address',
-        lazy: () => import('./pages/CreateWalletSession').then(convert)
       },
       {
         path: '/~/farcaster/storage',
