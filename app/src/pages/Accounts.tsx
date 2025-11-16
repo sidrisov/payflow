@@ -75,13 +75,6 @@ export default function Accounts() {
 
   const [activeTab, setActiveTab] = useState(0);
 
-  const [showPayflowPrompt, setShowPayflowPrompt] = useState(() => {
-    const hasUserDismissed = localStorage.getItem('payflow:balance:prompt:dismissed') === 'true';
-    return (
-      !hasUserDismissed &&
-      !profile?.flows?.find((f) => !f.archived && (!f.type || f.type === 'REGULAR'))
-    );
-  });
 
   return (
     <>
@@ -101,104 +94,6 @@ export default function Accounts() {
                 balanceVisible={balanceVisible}
                 setBalanceVisible={setBalanceVisible}
               />
-
-              {showPayflowPrompt && (
-                <Box
-                  sx={{
-                    textAlign: 'center',
-                    maxWidth: 350,
-                    width: '100%',
-                    border: 0.5,
-                    borderColor: 'divider',
-                    borderRadius: '16px',
-                    p: 1.5
-                  }}>
-                  <Typography
-                    sx={{
-                      fontSize: 14,
-                      fontWeight: 'bold',
-                      mb: 0.5
-                    }}>
-                    Create Payflow Wallet
-                  </Typography>
-                  <Typography
-                    color="text.secondary"
-                    sx={{
-                      fontSize: 14,
-                      textWrap: 'pretty',
-                      mb: 1
-                    }}>
-                    • 1-click payments • No gas fees • AI Agent powered automated payments
-                  </Typography>
-                  <Stack direction="row" spacing={1} justifyContent="center">
-                    <Button
-                      variant="contained"
-                      size="small"
-                      onClick={() => {
-                        navigate('/~/create-payflow-wallet');
-                      }}
-                      sx={{
-                        minWidth: 100
-                      }}>
-                      Create
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      color="inherit"
-                      onClick={() => {
-                        localStorage.setItem('payflow:wallet:prompt:dismissed', 'true');
-                        setShowPayflowPrompt(false);
-                      }}
-                      sx={{ minWidth: 100 }}>
-                      Close
-                    </Button>
-                  </Stack>
-                </Box>
-              )}
-
-              {showTopupPrompt && (
-                <Box
-                  sx={{
-                    textAlign: 'center',
-                    maxWidth: 350,
-                    width: '100%',
-                    border: 0.5,
-                    borderColor: 'divider',
-                    borderRadius: '16px',
-                    p: 1.5
-                  }}>
-                  <Typography
-                    color="text.secondary"
-                    sx={{
-                      textWrap: 'pretty',
-                      fontSize: 14,
-                      mb: 1
-                    }}>
-                    Empty balance. Top up your account to get started!
-                  </Typography>
-                  <Stack direction="row" spacing={1} justifyContent="center">
-                    <Button
-                      variant="contained"
-                      size="small"
-                      onClick={() => {
-                        window.location.href =
-                          '/payment/create?recipient=' + selectedFlow?.wallets?.[0].address;
-                      }}
-                      sx={{ minWidth: 100 }}>
-                      Top Up
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      color="inherit"
-                      onClick={handleHideZeroBalance}
-                      sx={{ minWidth: 100 }}>
-                      Close
-                    </Button>
-                  </Stack>
-                </Box>
-              )}
 
               <Tabs
                 value={activeTab}

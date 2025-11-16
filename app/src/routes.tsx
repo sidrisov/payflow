@@ -91,10 +91,6 @@ export const routes = createBrowserRouter([
         lazy: () => import('./layouts/PublicProfile').then(convert)
       },
       {
-        path: '/~/create-payflow-wallet',
-        lazy: () => import('./pages/CreatePayflowWallet').then(convert)
-      },
-      {
         path: '/~/farcaster/storage',
         lazy: () => import('./pages/Storage').then(convert)
       },

@@ -9,7 +9,7 @@ import {
   Collapse
 } from '@mui/material';
 import { FlowType } from '@payflow/common';
-import { ExpandMore, ExpandLess, MoreVert, Add } from '@mui/icons-material';
+import { ExpandMore, ExpandLess, MoreVert } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
@@ -93,11 +93,6 @@ export function ChooseFlowDialog({
   // Separate the flows
   const { regular, farcaster, bankr, rodeo, legacy, archived } = useMemo(
     () => separateFlows(flows),
-    [flows]
-  );
-
-  const hasPayflowBalance = useMemo(
-    () => flows.some((flow) => flow.wallets.some((w) => w.version === '1.4.1_0.7')),
     [flows]
   );
 
@@ -245,24 +240,6 @@ export function ChooseFlowDialog({
                 <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
                   Payflow Wallets
                 </Typography>
-                {configurable && !hasPayflowBalance && (
-                  <IconButton
-                    size="small"
-                    onClick={() => {
-                      navigate('/~/create-payflow-wallet');
-                    }}
-                    sx={{
-                      border: 1,
-                      borderColor: 'divider',
-                      borderRadius: 3,
-                      '&:hover': {
-                        backgroundColor: 'action.hover',
-                        borderColor: green.A700
-                      }
-                    }}>
-                    <Add fontSize="small" />
-                  </IconButton>
-                )}
               </Stack>
               {regular && regular.length > 0 ? (
                 regular.map(renderMenuItem)

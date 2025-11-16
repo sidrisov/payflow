@@ -82,58 +82,8 @@ async function searchByUsername(searchValue: string, me?: string): Promise<Conta
 
 // Helper function for social handle search
 async function searchBySocialHandle(searchValue: string, me?: string): Promise<ContactType[]> {
-  const dappName = FARCASTER_DAPP;
-  const profileName = searchValue;
-
-  if (profileName.length === 0) return [];
-
-  /* const { data: dataInBatch } = me
-    ? await fetchQuery<GetSocialsInsightsForAssociatedAddressesQuery>(
-        QUERY_SOCIALS_INSIGHTS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME,
-        {
-          dappName,
-          profileName: '^'.concat(profileName.toLowerCase()),
-          me
-        },
-        { cache: true }
-      )
-    : await fetchQuery<GetSocialsForAssociatedAddressesQuery>(
-        QUERY_SOCIALS_IN_BATCH_FOR_ASSOCIATED_ADDRESSES_BY_PROFILE_NAME,
-        {
-          dappName,
-          profileName: '^'.concat(profileName.toLowerCase())
-        },
-        { cache: true }
-      );
-
-  if (!dataInBatch?.Socials?.Social?.length) return []; */
-
+  // Social handle search currently disabled - returns empty results
   return [];
-
-  /* const userAssociatedIdentities: ContactType[] = [];
-
-  dataInBatch.Socials.Social.forEach((social: any) => {
-    social.userAssociatedAddressDetails
-      .filter((userAssociatedAddress: any) => isAddress(userAssociatedAddress.addresses[0]))
-      .forEach((userAssociatedAddress: any) => {
-        const identity = convertSocialResults(userAssociatedAddress);
-        if (identity) {
-          userAssociatedIdentities.push(identity);
-        }
-      });
-  });
-
-  const addresses = userAssociatedIdentities.map((identity) => identity.data.address);
-  const profiles = await searchByListOfAddressesOrUsernames(addresses as string[]);
-
-  userAssociatedIdentities.forEach((identity) => {
-    const profile = profiles.find(
-      (p) => p.identity.toLowerCase() === identity.data.address.toLowerCase()
-    );
-    identity.data.profile = profile;
-  });
-
-  return userAssociatedIdentities; */
 }
 
 // Helper function for domain/address search
