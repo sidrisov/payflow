@@ -28,7 +28,6 @@ import { useMobile, usePwa } from '../utils/hooks/useMobile';
 import { isIOS } from 'react-device-detect';
 
 import FrameV2SDK from '@farcaster/frame-sdk';
-import { usePimlicoInit } from '../utils/hooks/usePimlicoInit';
 import { GrStorage } from 'react-icons/gr';
 
 export default function App() {
@@ -39,8 +38,6 @@ export default function App() {
 
   const [isFrameV2, setIsFrameV2] = useState(false);
   const [safeAreaInsets, setSafeAreaInsets] = useState<{ top: number; bottom: number }>();
-
-  usePimlicoInit();
 
   useEffect(() => {
     const initiateFrameV2 = async () => {

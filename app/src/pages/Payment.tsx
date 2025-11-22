@@ -8,11 +8,8 @@ import { fetchPayment } from '../services/payments';
 import { IdentityType, SelectedIdentityType } from '@payflow/common';
 import { toast } from 'react-toastify';
 import { statusToToastType } from '../components/Toasts';
-import { fetchMintData, MintMetadata, parseMintToken } from '../utils/mint';
 import LoadingPayflowEntryLogo from '../components/LoadingPayflowEntryLogo';
 import { useFarcasterSocial } from '@/hooks/useFarcasterSocial';
-
-const LazyMintDialog = lazy(() => import('../components/payment/MintDialog'));
 const LazyGiftStorageDialog = lazy(() => import('../components/payment/BuyStorageDialog'));
 const LazyPaymentDialog = lazy(() => import('../components/payment/PaymentDialog'));
 
@@ -23,7 +20,6 @@ export default function Payment() {
   const { profile } = useContext(ProfileContext);
 
   const [payment, setPayment] = useState<PaymentType>();
-  const [mintData, setMintData] = useState<MintMetadata>();
 
   const sender = {
     identity: {
@@ -59,19 +55,7 @@ export default function Payment() {
               return;
             }
 
-            if (paymentData.receiverFid) {
-              if (paymentData.category === 'mint') {
-                const parsedMintData = parseMintToken(paymentData.token);
-                const mintData = await fetchMintData(
-                  parsedMintData.provider,
-                  paymentData.chainId,
-                  parsedMintData.contract,
-                  parsedMintData.tokenId,
-                  parsedMintData.referral
-                );
-                setMintData(mintData);
-              }
-            }
+
 
             // Update payment state
             setPayment(paymentData);
@@ -141,7 +125,7 @@ export default function Payment() {
           ) : (
             senderSocial &&
             recipientSocial &&
-            ((payment.category === 'fc_storage' && (
+            payment.category === 'fc_storage' && (
               <LazyGiftStorageDialog
                 alwaysShowBackButton
                 title="Complete Payment"
@@ -153,22 +137,7 @@ export default function Payment() {
                   navigate('/');
                 }}
               />
-              )) ||
-              (payment.category === 'mint' && mintData && (
-                <LazyMintDialog
-                  alwaysShowBackButton
-                  title="Complete Payment"
-                  open={payment != null}
-                  payment={payment}
-                  sender={sender}
-                  senderSocial={senderSocial}
-                  recipientSocial={recipientSocial}
-                  mint={mintData}
-                  closeStateCallback={async () => {
-                    navigate('/');
-                  }}
-                />
-              )))
+            )
           ))}
       </Container>
     </>

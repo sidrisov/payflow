@@ -264,14 +264,12 @@ export function AccountCard({
                 onClick={handleReceive}
                 icon={<TbPlus />}
               />
-              {selectedFlow.type !== 'BANKR' && selectedFlow.type !== 'RODEO' && (
-                <ActionButton
-                  title="Pay"
-                  tooltip="Pay with wallet"
-                  onClick={handleSend}
-                  icon={<TbSend />}
-                />
-              )}
+              <ActionButton
+                title="Pay"
+                tooltip="Pay with wallet"
+                onClick={handleSend}
+                icon={<TbSend />}
+              />
             </Stack>
           </Box>
         </Card>
@@ -295,11 +293,7 @@ export function AccountCard({
               }}
               recipient={recipient}
               setOpenSearchIdentity={setOpenSearchIdentity}
-              flow={
-                selectedFlow.type !== 'BANKR' && selectedFlow.type !== 'RODEO'
-                  ? selectedFlow
-                  : undefined
-              }
+              flow={selectedFlow}
               closeStateCallback={async () => {
                 setRecipient(undefined);
               }}

@@ -5,11 +5,10 @@ import {
   MenuList,
   Stack,
   Tooltip,
-  Typography,
-  Collapse
+  Typography
 } from '@mui/material';
 import { FlowType } from '@payflow/common';
-import { ExpandMore, ExpandLess, MoreVert } from '@mui/icons-material';
+import { MoreVert } from '@mui/icons-material';
 import { CloseCallbackType } from '../../types/CloseCallbackType';
 import { useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import { ProfileContext } from '../../contexts/UserContext';
@@ -50,7 +49,6 @@ export function ChooseFlowDialog({
   const { wallets } = useWallets();
   const [openFlowSettingsMenu, setOpenFlowSettingsMenu] = useState<boolean>(false);
   const [flowAnchorEl, setFlowAnchorEl] = useState<null | HTMLElement>(null);
-  const [archivedExpanded, setArchivedExpanded] = useState<boolean>(false);
   const [selectedElement, setSelectedElement] = useState<HTMLLIElement | null>(null);
   const [menuFlow, setMenuFlow] = useState<FlowType | null>(null);
   const navigate = useNavigate();
@@ -66,32 +64,21 @@ export function ChooseFlowDialog({
     }
   }, [flows]);
 
-  // Update this function to separate flows into four categories
+  // Separate flows into categories
   const separateFlows = (flows: FlowType[]) => {
     const regular = flows.filter(
       (flow) =>
-        !flow.archived &&
         flow.wallets.length > 0 &&
-        !flow.wallets.some((w) => w.version === '1.3.0') &&
-        flow.type !== 'FARCASTER_VERIFICATION' &&
-        flow.type !== 'BANKR' &&
-        flow.type !== 'RODEO'
+        flow.type !== 'FARCASTER_VERIFICATION'
     );
     const farcaster = flows.filter(
-      (flow) => !flow.archived && flow.type === 'FARCASTER_VERIFICATION'
+      (flow) => flow.type === 'FARCASTER_VERIFICATION'
     );
-    const bankr = !paymentView && flows.find((flow) => flow.type === 'BANKR');
-    const rodeo = !paymentView && flows.find((flow) => flow.type === 'RODEO');
-    const legacy = flows.filter(
-      (flow) =>
-        !flow.archived && flow.wallets.length > 0 && flow.wallets.some((w) => w.version === '1.3.0')
-    );
-    const archived = flows.filter((flow) => flow.archived);
-    return { regular, farcaster, bankr, rodeo, legacy, archived };
+    return { regular, farcaster };
   };
 
   // Separate the flows
-  const { regular, farcaster, bankr, rodeo, legacy, archived } = useMemo(
+  const { regular, farcaster } = useMemo(
     () => separateFlows(flows),
     [flows]
   );
@@ -114,9 +101,7 @@ export function ChooseFlowDialog({
         onClick={async () => {
           if (!flow.archived) {
             setSelectedFlow(flow);
-            if (flow.type !== 'RODEO' && flow.type !== 'BANKR') {
-              localStorage.setItem('payflow:flow:selected:uuid', flow.uuid);
-            }
+            localStorage.setItem('payflow:flow:selected:uuid', flow.uuid);
             if (closeOnSelect) {
               closeStateCallback();
             }
@@ -232,22 +217,7 @@ export function ChooseFlowDialog({
                 scrollbarWidth: 'thin'
               }}>
               {renderConnectedWalletItems()}
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-                sx={{ px: 2, py: 1 }}>
-                <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
-                  Payflow Wallets
-                </Typography>
-              </Stack>
-              {regular && regular.length > 0 ? (
-                regular.map(renderMenuItem)
-              ) : (
-                <MenuItem disabled key="payment_flow_not_available">
-                  <Typography>Not available.</Typography>
-                </MenuItem>
-              )}
+
 
               {farcaster && farcaster.length > 0 && (
                 <>
@@ -256,40 +226,11 @@ export function ChooseFlowDialog({
                 </>
               )}
 
-              {(bankr || rodeo) && (
-                <>
-                  <WalletSectionHeader>Read-Only Wallets</WalletSectionHeader>
-                  {bankr && renderMenuItem(bankr)}
-                  {rodeo && renderMenuItem(rodeo)}
-                </>
-              )}
 
-              {legacy && legacy.length > 0 && (
-                <>
-                  <WalletSectionHeader>Legacy</WalletSectionHeader>
-                  {legacy.map(renderMenuItem)}
-                </>
-              )}
 
-              {archived && archived.length > 0 && (
-                <>
-                  <MenuItem onClick={() => setArchivedExpanded(!archivedExpanded)}>
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      justifyContent="space-between"
-                      width="100%">
-                      <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
-                        Archived
-                      </Typography>
-                      {archivedExpanded ? <ExpandLess /> : <ExpandMore />}
-                    </Stack>
-                  </MenuItem>
-                  <Collapse in={archivedExpanded} timeout="auto" unmountOnExit>
-                    {archived.map(renderMenuItem)}
-                  </Collapse>
-                </>
-              )}
+
+
+
             </Stack>
           </MenuList>
         </ResponsiveDialog>

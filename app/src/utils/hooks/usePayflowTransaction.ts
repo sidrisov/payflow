@@ -6,26 +6,16 @@ import { submitPayment, updatePayment } from '../../services/payments';
 import { PaymentTxStatus, PaymentType } from '@payflow/common';
 import { getCommissionUSD, glideConfig } from '../glide';
 import { useRegularTransfer } from './useRegularTransfer';
-import { useSafeTransfer } from './useSafeTransfer';
 import { FlowType, FlowWalletType } from '@payflow/common';
-import { Address, Hash } from 'viem';
+import { Hash } from 'viem';
 
-export const usePayflowTransaction = (isNativeFlow: boolean) => {
+export const usePayflowTransaction = () => {
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
   const { data: signer } = useWalletClient();
   const publicClient = usePublicClient();
   const { profile, isFrameV2 } = useContext(ProfileContext);
 
-  const {
-    transfer,
-    reset: resetSafe,
-    loading: loadingSafe,
-    confirmed: confirmedSafe,
-    error: errorSafe,
-    status: statusSafe,
-    txHash: txHashSafe
-  } = useSafeTransfer();
   const {
     sendTransactionAsync,
     reset: resetRegular,
@@ -55,12 +45,12 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
   const checkDependencies = useCallback(() => {
     if (!profile) throw new Error('Profile not found. Please ensure you are logged in.');
 
-    if (isNativeFlow || isFrameV2) {
+    if (isFrameV2) {
       if (!publicClient)
         throw new Error('Client not initialized. Please check your network connection.');
       if (!signer) throw new Error('Signer not available. Please connect your wallet.');
     }
-  }, [profile, publicClient, signer, isFrameV2, isNativeFlow]);
+  }, [profile, publicClient, signer, isFrameV2]);
 
   const createGlideSession = useCallback(
     async (paymentTx: any, paymentOption: PaymentOption, commissionUSD: number) => {
@@ -101,8 +91,8 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
 
   const handlePayment = async (
     tx: any,
-    paymentWallet: FlowWalletType,
-    senderFlow: FlowType
+    _paymentWallet: FlowWalletType,
+    _senderFlow: FlowType
   ): Promise<Hash> => {
     if (!profile) throw new Error('Profile not found. Please ensure you are logged in.');
 
@@ -110,36 +100,7 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
       throw new Error('Client not initialized. Please check your network connection.');
     if (!signer) throw new Error('Signer not available. Please connect your wallet.');
 
-    if (isNativeFlow) {
-      const owners: Address[] = [];
-      if (
-        senderFlow.signerProvider &&
-        senderFlow.signer.toLowerCase() !== profile.identity.toLowerCase()
-      ) {
-        owners.push(profile.identity);
-      }
-      owners.push(senderFlow.signer);
-
-      const saltNonce = senderFlow.saltNonce as string;
-      const [safeVersion, entryPointVersion = '0.6'] = paymentWallet.version.split('_');
-
-      return (await transfer(
-        publicClient,
-        signer,
-        {
-          from: paymentWallet.address,
-          to: tx.to,
-          data: tx.data && tx.data.length ? tx.data : undefined,
-          value: tx.value
-        },
-        owners,
-        safeVersion,
-        saltNonce,
-        entryPointVersion as '0.6' | '0.7'
-      )) as Hash;
-    } else {
-      return (await sendTransactionAsync(tx)) as Hash;
-    }
+    return (await sendTransactionAsync(tx)) as Hash;
   };
 
   const handleDirectPayment = async (
@@ -177,18 +138,14 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
     try {
       checkDependencies();
 
-      if (isNativeFlow) {
-        resetSafe();
-      } else {
-        resetRegular();
-      }
+      resetRegular();
 
       const commissionUSD = getCommissionUSD(payment);
       const session = await createGlideSession(paymentTx, paymentOption, commissionUSD);
 
       const glideResponse = await executeSession(glideConfig, {
         session,
-        currentChainId: isNativeFlow || isFrameV2 ? (chainId as any) : paymentTx.chainId,
+        currentChainId: isFrameV2 ? (chainId as any) : paymentTx.chainId,
         switchChainAsync,
         sendTransactionAsync: async (tx) => {
           console.log('Glide tnxs: ', tx);
@@ -243,25 +200,15 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
   };
 
   useEffect(() => {
-    const transferStatus = (() => {
-      return isNativeFlow
-        ? {
-            isPending: Boolean(loadingSafe || (txHashSafe && !confirmedSafe && !errorSafe)),
-            isConfirmed: Boolean(confirmedSafe),
-            error: Boolean(errorSafe),
-            txHash: txHashSafe,
-            status: statusSafe
-          }
-        : {
-            isPending: Boolean(
-              loadingRegular || (txHashRegular && !confirmedRegular && !errorRegular)
-            ),
-            isConfirmed: Boolean(confirmedRegular),
-            error: Boolean(errorRegular),
-            txHash: txHashRegular,
-            status: statusRegular
-          };
-    })();
+    const transferStatus = {
+      isPending: Boolean(
+        loadingRegular || (txHashRegular && !confirmedRegular && !errorRegular)
+      ),
+      isConfirmed: Boolean(confirmedRegular),
+      error: Boolean(errorRegular),
+      txHash: txHashRegular,
+      status: statusRegular
+    };
 
     setPaymentTxStatus({
       isPending: transferStatus.isPending || glideStatus.isPending,
@@ -272,12 +219,6 @@ export const usePayflowTransaction = (isNativeFlow: boolean) => {
     });
   }, [
     isFrameV2,
-    isNativeFlow,
-    loadingSafe,
-    txHashSafe,
-    confirmedSafe,
-    errorSafe,
-    statusSafe,
     loadingRegular,
     txHashRegular,
     confirmedRegular,

@@ -94,11 +94,11 @@ export default defineConfig(({ isSsrBuild }) => {
               viem: ['viem'],
               wagmi: ['wagmi'],
               walletconnect: ['@walletconnect/core'],
-              permissionless: ['permissionless'],
+
               'privy-auth': ['@privy-io/react-auth'],
               'privy-wagmi': ['@privy-io/wagmi'],
               // Data fetching and state management
-              data: ['@tanstack/react-query', 'axios', 'graphql', 'graphql-request'],
+              data: ['@tanstack/react-query', 'axios'],
               // Visualization and media
               media: ['react-blockies', 'react-qr-code', 'react-icons'],
               // Third-party services

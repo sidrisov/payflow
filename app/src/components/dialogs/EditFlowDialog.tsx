@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, Stack, Typography, Box, Divider, TextField } from '@mui/material';
 import ResponsiveDialog from './ResponsiveDialog';
 import { FlowType } from '@payflow/common';
-import { archiveFlow, renameFlow } from '../../services/flow';
+import { renameFlow } from '../../services/flow';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
 import { delay } from '../../utils/delay';
@@ -41,20 +41,8 @@ export const EditFlowDialog: React.FC<EditFlowDialogProps> = ({
     setIsSubmitting(false);
   };
 
-  const handleArchive = async () => {
-    setIsSubmitting(true);
-    if (await archiveFlow(flow.uuid)) {
-      toast.success('Archived! Refreshing');
-      await delay(1000);
-      navigate(0);
-    } else {
-      toast.error('Failed!');
-    }
-    setIsSubmitting(false);
-  };
-
   return (
-    <ResponsiveDialog open={open} onClose={onClose} width={360} height={375} title={'Edit Wallet'}>
+    <ResponsiveDialog open={open} onClose={onClose} width={360} height={300} title={'Edit Wallet'}>
       <Box sx={{ p: 2 }}>
         <Box sx={{ mb: 2 }}>
           <TextField
@@ -85,23 +73,6 @@ export const EditFlowDialog: React.FC<EditFlowDialogProps> = ({
               ${totalBalance}
             </Typography>
           </Stack>
-        </Box>
-
-        <Divider />
-
-        {/* Archive Section */}
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="body2" color="error" gutterBottom>
-            Archive this wallet?
-          </Typography>
-          <Button
-            fullWidth
-            variant="contained"
-            color="error"
-            onClick={handleArchive}
-            disabled={isSubmitting}>
-            Archive
-          </Button>
         </Box>
       </Box>
     </ResponsiveDialog>

@@ -3,7 +3,6 @@ import { ProfileType, FlowType } from '@payflow/common';
 import { Person } from '@mui/icons-material';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { DAPP_URL } from '../../utils/urlConstants';
-import { PiTipJar } from 'react-icons/pi';
 
 export function ShareFlowMenu({
   profile,
@@ -30,19 +29,7 @@ export function ShareFlowMenu({
           Profile link
         </MenuItem>
 
-        {selectedFlow && selectedFlow.type === 'JAR' && (
-          <MenuItem
-            onClick={() => {
-              const link = `${DAPP_URL}/jar/${selectedFlow.uuid}`;
-              copyToClipboard(link, 'Jar link copied!');
-            }}
-            sx={{ fontSize: '10' }}>
-            <ListItemIcon>
-              <PiTipJar size={20} />
-            </ListItemIcon>
-            Jar link
-          </MenuItem>
-        )}
+
       </MenuList>
     </Menu>
   );

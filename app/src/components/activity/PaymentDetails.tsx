@@ -55,7 +55,7 @@ const ActivityWrapper: React.FC<{
 
 export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
   const isMobile = useMobile();
-  const { token, formattedTokenAmount, formattedUsdAmount, mintData } =
+  const { token, formattedTokenAmount, formattedUsdAmount } =
     usePaymentActivityDetails(payment);
 
   const renderContent = () => {
@@ -70,54 +70,7 @@ export const PaymentDetails = ({ activity, payment }: PaymentDetailsProps) => {
       );
     }
 
-    if (payment.category === 'mint') {
-      if (mintData === undefined) {
-        return (
-          <>
-            <Skeleton variant="rounded" width={25} height={25} />
-            <Skeleton variant="text" width={120} />
-          </>
-        );
-      }
-
-      if (mintData) {
-        const mintCount = payment.tokenAmount || 1;
-        return (
-          <>
-            {mintCount > 1 && (
-              <Typography variant="caption" fontWeight="bold" fontSize={isMobile ? 12 : 14} ml={1}>
-                {mintCount}x
-              </Typography>
-            )}
-            <Avatar
-              variant="rounded"
-              src={mintData.metadata.image}
-              sx={{ width: 35, height: 35 }}
-            />
-            <Typography
-              noWrap
-              maxWidth={180}
-              variant="caption"
-              fontWeight="bold"
-              fontSize={isMobile ? 12 : 14}
-              textOverflow="ellipsis"
-              overflow="hidden">
-              {mintData.metadata.name}
-              <Typography
-                variant="caption"
-                display="block"
-                color="text.secondary"
-                textOverflow="ellipsis"
-                overflow="hidden">
-                {mintData.collectionName}
-              </Typography>
-            </Typography>
-          </>
-        );
-      }
-    }
-
-    // Default case (for regular payments)
+    // Default case (for regular payments and deprecated mint category)
     return (
       token && (
         <Stack direction="row" spacing={0.5} alignItems="center">

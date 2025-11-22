@@ -11,13 +11,10 @@ export default defineConfig({
       formats: ['es', 'cjs']
     },
     rollupOptions: {
-      external: ['viem', 'permissionless', '@rhinestone/module-sdk', '@wagmi/core'],
+      external: ['viem'],
       output: {
         globals: {
-          viem: 'viem',
-          permissionless: 'permissionless',
-          '@rhinestone/module-sdk': '@rhinestone/module-sdk',
-          '@wagmi/core': '@wagmi/core'
+          viem: 'viem'
         }
       }
     }

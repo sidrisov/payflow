@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Typography, Chip, Box, Avatar } from '@mui/material';
 import { FlowType } from '@payflow/common';
 import { ChooseFlowDialog } from '../dialogs/ChooseFlowDialog';
-import { PiTipJar } from 'react-icons/pi';
 import { IoIosArrowDown, IoIosWallet } from 'react-icons/io';
 
 import FarcasterAvatar from '../avatars/FarcasterAvatar';
@@ -35,14 +34,8 @@ export const FlowSelector: React.FC<FlowSelectorProps> = ({
         ) : (
           <IoIosWallet size={24} />
         );
-      case 'JAR':
-        return <PiTipJar size={24} />;
       case 'FARCASTER_VERIFICATION':
         return <FarcasterAvatar size={24} />;
-      case 'LINKED':
-        return (
-          <Box src="/coinbase_smart_wallet.svg" component="img" sx={{ width: 24, height: 24 }} />
-        );
       default:
         return <Avatar src="/payflow.png" sx={{ width: 24, height: 24 }} />;
     }
