@@ -33,8 +33,6 @@ export function getActivityName(activity: ActivityType, payment: PaymentType): s
   if (activity === 'self') {
     if (payment.category === 'fc_storage' || payment.category === 'hypersub') {
       return 'bought';
-    } else if (payment.category === 'mint') {
-      return 'minted';
     }
     return 'moved funds';
   }

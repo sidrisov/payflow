@@ -23,7 +23,6 @@ import NetworkAvatar from '../avatars/NetworkAvatar';
 import { WalletBalanceDialog } from './WalletInfoDialog';
 import getFlowAssets from '../../utils/assets';
 import { useAssetBalances } from '../../utils/queries/balances';
-import { IoMdKey } from 'react-icons/io';
 import { socialLink, ZAPPER } from '../../utils/dapps';
 import { ProfileContext } from '../../contexts/UserContext';
 import { useWallets } from '@privy-io/react-auth';
@@ -52,7 +51,7 @@ export function WalletMenu({
   const { isLoading, isFetched, data: balances } = useAssetBalances(getFlowAssets(flow));
 
   const { wallets } = useWallets();
-  const { login, logout, authenticated, ready, connectWallet, linkPasskey } = usePrivy();
+  const { login, logout, authenticated, ready, connectWallet } = usePrivy();
   const { setActiveWallet } = useSetActiveWallet();
 
   const menuRef = useRef<HTMLDivElement>(null);
@@ -169,9 +168,8 @@ export function WalletMenu({
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
         {...props}>
         <MenuList dense disablePadding>
-          {flow.type !== 'BANKR' && flow.type !== 'RODEO' && (
-            <>
-              <MenuItem onClick={handleConnectWallet}>
+          <>
+            <MenuItem onClick={handleConnectWallet}>
                 <ListItemIcon>
                   {flow.type === 'CONNECTED' ? <HiOutlineSwitchHorizontal /> : <AiFillSignature />}
                 </ListItemIcon>
@@ -189,26 +187,8 @@ export function WalletMenu({
                 </Stack>
               </MenuItem>
 
-              {(!isFrameV2 || isBrowser) && flow.signerProvider === 'privy' && isConnected && (
-                <MenuItem
-                  onClick={() => {
-                    linkPasskey();
-                    props.onClose?.({}, 'backdropClick');
-                  }}>
-                  <ListItemIcon>
-                    <IoMdKey />
-                  </ListItemIcon>
-                  <Stack>
-                    <Typography>Manage Passkeys</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Secure flow with passkeys
-                    </Typography>
-                  </Stack>
-                </MenuItem>
-              )}
               {!showOnlySigner && <Divider />}
             </>
-          )}
           <MenuItem onClick={() => openDialog('balanceInfo')}>
             <ListItemIcon>
               <IoWallet />
@@ -247,28 +227,24 @@ export function WalletMenu({
           </MenuItem>
           {!showOnlySigner && (
             <>
-              {flow.type !== 'BANKR' && flow.type !== 'RODEO' && (
-                <>
-                  {flow.type !== 'CONNECTED' && !defaultFlow && !flow.archived && (
-                    <MenuItem
-                      onClick={async () => {
-                        if (await setReceivingFlow(flow.uuid)) {
-                          toast.success('Saved! Refreshing', { isLoading: true });
-                          await delay(1000);
-                          navigate(0);
-                        } else {
-                          toast.error('Something went wrong!');
-                        }
-                      }}>
-                      <ListItemIcon>
-                        <HiOutlineDownload size={20} />
-                      </ListItemIcon>
-                      <Typography>Make default for receiving</Typography>
-                    </MenuItem>
-                  )}
-                  <Divider />
-                </>
+              {flow.type !== 'CONNECTED' && !defaultFlow && !flow.archived && (
+                <MenuItem
+                  onClick={async () => {
+                    if (await setReceivingFlow(flow.uuid)) {
+                      toast.success('Saved! Refreshing', { isLoading: true });
+                      await delay(1000);
+                      navigate(0);
+                    } else {
+                      toast.error('Something went wrong!');
+                    }
+                  }}>
+                  <ListItemIcon>
+                    <HiOutlineDownload size={20} />
+                  </ListItemIcon>
+                  <Typography>Make default for receiving</Typography>
+                </MenuItem>
               )}
+              <Divider />
               <MenuItem
                 component="a"
                 href={socialLink(ZAPPER, flow.wallets[0].address)}
@@ -278,7 +254,7 @@ export function WalletMenu({
                 </ListItemIcon>
                 <Typography>More on Zapper</Typography>
               </MenuItem>
-              {!showOnlySigner && (!flow.type || flow.type === 'REGULAR') && !flow.archived && (
+              {(!flow.type || flow.type === 'REGULAR') && !flow.archived && (
                 <>
                   <Divider />
                   <MenuItem onClick={() => openDialog('edit')}>

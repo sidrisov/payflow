@@ -148,14 +148,13 @@ export function SearchResultView({
 
   const myWallets = showExtra
     ? (profile?.flows
-        ?.filter((flow) => !flow.archived)
         ?.map((flow) => ({
           data: {
             address: profile?.identity,
             profile: {
               ...profile,
               username:
-                !flow.type || flow.type === 'REGULAR' || flow.type === 'JAR'
+                !flow.type
                   ? flow.title
                   : formatFlowType(flow.type),
               defaultFlow: flow

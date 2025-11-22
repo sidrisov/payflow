@@ -65,17 +65,15 @@ export function PaymentMenu({ payment, ...props }: MenuProps & { payment: Paymen
               <FaTag size={20} />
             </ListItemIcon>
             <Typography variant="body2">
-              {payment.category === 'mint'
-                ? 'Mint Collection'
-                : payment.category === 'hypersub'
-                  ? 'Hypersub Subscription'
-                  : payment.category === 'reward'
-                    ? 'Cast'
-                    : payment.category === 'reward_top_casters'
-                      ? 'Top Cast'
-                      : payment.category === 'reward_top_reply'
-                        ? 'Top Reply Cast'
-                        : `View on ${targetDomain}`}
+              {payment.category === 'hypersub'
+                ? 'Hypersub Subscription'
+                : payment.category === 'reward'
+                  ? 'Cast'
+                  : payment.category === 'reward_top_casters'
+                    ? 'Top Cast'
+                    : payment.category === 'reward_top_reply'
+                      ? 'Top Reply Cast'
+                      : `View on ${targetDomain}`}
               <Typography variant="caption" display="block" color="text.secondary">
                 {targetDomain}
               </Typography>

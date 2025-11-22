@@ -52,16 +52,12 @@ export const PayButton: React.FC<PayButtonProps> = ({
   const { address } = useAccount();
   const [openConnectSignerDrawer, setOpenConnectSignerDrawer] = useState(false);
 
-  const isNativeFlow =
-    senderFlow.type !== 'FARCASTER_VERIFICATION' &&
-    senderFlow.type !== 'LINKED' &&
-    senderFlow.type !== 'CONNECTED';
   const { handleDirectPayment, handleCrossChainPayment, paymentTxStatus } =
-    usePayflowTransaction(isNativeFlow);
+    usePayflowTransaction();
 
   const handleClick = async () => {
     if (
-      (isNativeFlow || isFrameV2) &&
+      isFrameV2 &&
       address?.toLowerCase() !== senderFlow.signer.toLowerCase()
     ) {
       setOpenConnectSignerDrawer(true);
@@ -96,7 +92,7 @@ export const PayButton: React.FC<PayButtonProps> = ({
   return (
     <>
       {!paymentToken ||
-      (!isNativeFlow && isFrameV2) ||
+      isFrameV2 ||
       chainId === paymentToken?.chainId ? (
         <CustomLoadingButton
           title={buttonText}

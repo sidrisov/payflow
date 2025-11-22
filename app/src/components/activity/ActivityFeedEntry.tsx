@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Box, BoxProps, IconButton, Stack, Typography, Skeleton } from '@mui/material';
-import { MoreHoriz, AutoMode } from '@mui/icons-material';
+import { MoreHoriz } from '@mui/icons-material';
 import { useNavigate } from 'react-router';
 
 import { IdentityType, ProfileType, PaymentType } from '@payflow/common';
@@ -161,22 +161,6 @@ export default function PublicProfileActivityFeedSection(
           <PaymentDetails activity={activityType} payment={payment} />
 
           {payment.comment && <CommentBubble comment={payment.comment} />}
-
-          {payment.type === 'SESSION_INTENT' && (
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-                justifyContent: 'flex-end',
-                pr: '5px'
-              }}>
-              <AutoMode sx={{ fontSize: 14, color: 'text.secondary' }} />
-              <Typography variant="caption" color="text.secondary">
-                Automated
-              </Typography>
-            </Box>
-          )}
         </Stack>
       </Stack>
       {popoverProfile !== undefined && (

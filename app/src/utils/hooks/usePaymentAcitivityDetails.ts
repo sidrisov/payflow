@@ -1,5 +1,4 @@
 import { useTokenPrices } from '../queries/prices';
-import { useMintData } from './useMintData';
 import { PaymentType } from '@payflow/common';
 import { tokens as SUPPORTED_TOKENS, Token } from '@payflow/common';
 import { formatAmountWithSuffix, normalizeNumberPrecision } from '../formats';
@@ -7,13 +6,10 @@ import { getNetworkDefaultBlockExplorerUrl } from '../networks';
 
 export const usePaymentActivityDetails = (payment: PaymentType) => {
   const { data: tokenPrices } = useTokenPrices();
-  const { mintData } = useMintData(payment);
 
   let token, formattedTokenAmount, formattedUsdAmount;
 
-  if (payment.category === 'mint') {
-    formattedTokenAmount = '1';
-  } else if (payment.category === 'fc_storage') {
+  if (payment.category === 'fc_storage') {
     formattedTokenAmount = formatAmountWithSuffix(payment.tokenAmount.toString());
   } else {
     token = SUPPORTED_TOKENS.find(
@@ -39,7 +35,6 @@ export const usePaymentActivityDetails = (payment: PaymentType) => {
     token,
     formattedTokenAmount,
     formattedUsdAmount,
-    defaultBlockExplorerUrl: getNetworkDefaultBlockExplorerUrl(payment.chainId),
-    mintData
+    defaultBlockExplorerUrl: getNetworkDefaultBlockExplorerUrl(payment.chainId)
   };
 };

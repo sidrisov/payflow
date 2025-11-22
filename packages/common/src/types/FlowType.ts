@@ -10,12 +10,7 @@ export interface FlowType {
   icon?: string;
   type:
     | 'CONNECTED'
-    | 'JAR'
-    | 'REGULAR'
-    | 'LINKED'
     | 'FARCASTER_VERIFICATION'
-    | 'BANKR'
-    | 'RODEO'
     | undefined;
   uuid: string;
   walletProvider: string;
