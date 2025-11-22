@@ -22,11 +22,9 @@ import { toast } from 'react-toastify';
 import { updateProfile } from '../../services/user';
 import { useNavigate } from 'react-router';
 import { API_URL } from '../../utils/urlConstants';
-import { convertSocialResults, normalizeUsername } from '../../services/socials';
-import { useSocialInfo } from '../../utils/hooks/useSocials';
+import { normalizeUsername } from '../../services/socials';
 import { isAlphanumericPlusFewSpecialChars as isAlphanumericWithSpecials } from '../../utils/regex';
 import { green, lightGreen, red } from '@mui/material/colors';
-import { FARCASTER_DAPP, LENS_DAPP } from '../../utils/dapps';
 import { BackDialogTitle } from './BackDialogTitle';
 import LoadingPayflowEntryLogo from '../LoadingPayflowEntryLogo';
 import { useMobile } from '../../utils/hooks/useMobile';
@@ -62,58 +60,11 @@ export default function ProfileOnboardingDialog({
 
   const navigate = useNavigate();
 
-  const { data: socialInfo, isLoading: loadingSocials } = useSocialInfo(profile.identity);
-
   function handleCloseCampaignDialog() {
     closeStateCallback();
   }
 
-  // make a best effort to pull social info for the user
-  useMemo(async () => {
-    if (socialInfo) {
-      const identity = convertSocialResults(socialInfo.Wallet);
-
-      if (identity) {
-        if (identity.data.meta?.socials && identity.data.meta?.socials.length > 0) {
-          const socialInfo =
-            identity.data.meta?.socials.find((s) => s.dappName === FARCASTER_DAPP) ??
-            identity.data.meta?.socials.find((s) => s.dappName === LENS_DAPP) ??
-            identity.data.meta?.socials[0];
-
-          if (!displayName) {
-            setDisplayName(socialInfo.profileDisplayName);
-          }
-
-          if (!username || username === profile.identity) {
-            setUsername(
-              normalizeUsername(
-                socialInfo.dappName === LENS_DAPP
-                  ? socialInfo.profileName.replace('lens/@', '')
-                  : socialInfo.profileName
-              )
-            );
-          }
-
-          if (!profileImage) {
-            if (
-              socialInfo.dappName === FARCASTER_DAPP ||
-              !socialInfo.profileImage.includes('ipfs://')
-            ) {
-              setProfileImage(socialInfo.profileImage);
-            }
-          }
-        } else {
-          if ((!username || username === profile.identity) && identity.data.meta?.ens) {
-            setUsername(normalizeUsername(identity.data.meta.ens));
-          }
-
-          if (!profile.profileImage && identity.data.meta?.ensAvatar) {
-            setProfileImage(identity.data.meta?.ensAvatar);
-          }
-        }
-      }
-    }
-  }, [socialInfo]);
+  // Social info auto-population removed - Airstack service no longer supported
 
   useMemo(async () => {
     const response = await axios.get(`${API_URL}/api/invitations/identity/${profile.identity}`, {
@@ -194,9 +145,7 @@ export default function ProfileOnboardingDialog({
     }
   }
 
-  return loadingSocials ? (
-    <LoadingPayflowEntryLogo />
-  ) : (
+  return (
     <Dialog
       onClose={handleCloseCampaignDialog}
       {...props}
