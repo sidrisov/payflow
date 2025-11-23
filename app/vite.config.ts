@@ -82,7 +82,7 @@ export default defineConfig(({ isSsrBuild }) => {
           ...(!isSsrBuild && {
             manualChunks: {
               // Core React dependencies
-              'react-core': ['react', 'react-dom', 'react-router', 'react-helmet-async'],
+              'react-core': ['react', 'react-dom', 'react-router'],
               // UI and styling related
               ui: [
                 '@emotion/react',

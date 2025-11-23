@@ -1,5 +1,4 @@
 import { Container, Typography } from '@mui/material';
-import { Helmet } from 'react-helmet-async';
 import { useContext, ReactNode } from 'react';
 import { ProfileContext } from '../contexts/UserContext';
 import LoadingPayflowEntryLogo from './LoadingPayflowEntryLogo';
@@ -15,9 +14,7 @@ export default function PayflowPage({ title, children, pageTitle }: PayflowPageP
 
   return (
     <>
-      <Helmet>
-        <title> {title ? `Payflow | ${title}` : 'Payflow'} </title>
-      </Helmet>
+      <title>{title ? `Payflow | ${title}` : 'Payflow'}</title>
       <Container maxWidth="xs" sx={{ height: '100vh' }}>
         {isAuthenticated ? (
           <>

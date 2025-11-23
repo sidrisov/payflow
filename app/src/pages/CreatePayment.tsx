@@ -1,5 +1,4 @@
 import { useContext, useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { Container } from '@mui/material';
 import { useSearchParams, useNavigate } from 'react-router';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
@@ -60,9 +59,7 @@ export default function Composer() {
 
   return (
     <>
-      <Helmet>
-        <title> Payflow | New Payment </title>
-      </Helmet>
+      <title>Payflow | New Payment</title>
 
       <Container maxWidth="md" sx={{ height: '80vh' }}>
         {recipient && profile && (

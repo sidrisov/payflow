@@ -5,5 +5,8 @@
     "home",
     "services/frames"
   ],
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "ajv": "^8.17.1"
+  }
 }

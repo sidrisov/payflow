@@ -1,6 +1,5 @@
 import { Container } from '@mui/material';
 import { lazy, useContext, useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { ProfileContext } from '../contexts/UserContext';
 import { useNavigate, useParams } from 'react-router';
 import { PaymentType } from '@payflow/common';
@@ -77,9 +76,7 @@ export default function Payment() {
   // specify height, otherwise the privy dialog won't be properly displayed
   return (
     <>
-      <Helmet>
-        <title> Payflow | Payment </title>
-      </Helmet>
+      <title>Payflow | Payment</title>
       <Container maxWidth="md" sx={{ height: '100vh' }}>
         <LoadingPayflowEntryLogo />
         {profile &&

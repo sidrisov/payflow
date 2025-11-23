@@ -1,6 +1,5 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { lazy, useContext, useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router';
 import { SelectedIdentityType } from '@payflow/common';
 import SearchIdentityDialog from '../components/dialogs/SearchIdentityDialog';
@@ -35,9 +34,7 @@ export default function PublicProfile() {
 
   return (
     <>
-      <Helmet>
-        <title> Payflow {displayName ? '| ' + displayName : ''} </title>
-      </Helmet>
+      <title>Payflow {displayName ? '| ' + displayName : ''}</title>
       <Box
         display="flex"
         flexDirection="column"

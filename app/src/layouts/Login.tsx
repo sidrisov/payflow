@@ -1,6 +1,5 @@
 import { lazy, Suspense } from 'react';
 import { Box, Container } from '@mui/material';
-import { Helmet } from 'react-helmet-async';
 import CustomThemeProvider from '../theme/CustomThemeProvider';
 import { useLoaderData, useNavigate, useSearchParams } from 'react-router';
 import { useEffect } from 'react';
@@ -45,9 +44,7 @@ export default function Login() {
 
   return (
     <CustomThemeProvider darkMode={prefersDarkMode}>
-      <Helmet>
-        <title> Payflow | Connect </title>
-      </Helmet>
+      <title>Payflow | Connect</title>
       <PullToRefresh onRefresh={handleRefresh} isPullable={enablePullToRefresh}>
         <Container maxWidth="sm" sx={{ height: '80vh' }}>
           {needRefresh && <UpdateVersionPrompt />}
