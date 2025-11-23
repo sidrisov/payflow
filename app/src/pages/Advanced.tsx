@@ -1,5 +1,4 @@
 import { useContext } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { ProfileContext } from '../contexts/UserContext';
 import { Box, Container, Divider, Stack, Typography } from '@mui/material';
 import { AddressSection } from '../components/AddressSection';
@@ -13,9 +12,7 @@ export default function Advanced() {
   return (
     profile && (
       <>
-        <Helmet>
-          <title> Payflow | Advanced </title>
-        </Helmet>
+        <title>Payflow | Advanced</title>
         <Container maxWidth="xs" sx={{ height: '100%' }}>
           <Box
             height="100%"

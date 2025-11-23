@@ -1,6 +1,5 @@
 import { Box, Stack, Tabs, Tab, Typography, Button } from '@mui/material';
 import { useContext, useEffect, useMemo, useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { AccountCard } from '../components/cards/AccountCard';
 import { ProfileContext } from '../contexts/UserContext';
 import Assets from '../components/Assets';
@@ -78,9 +77,7 @@ export default function Accounts() {
 
   return (
     <>
-      <Helmet>
-        <title> Payflow | Home </title>
-      </Helmet>
+      <title>Payflow | Home</title>
       <Box display="flex" flexDirection="column" height="100%" width="100%" p={1}>
         {isAuthenticated && flows && selectedFlow ? (
           <>

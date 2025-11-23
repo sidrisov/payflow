@@ -24,18 +24,14 @@ const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 const privyConfig = (darkMode: boolean): PrivyClientConfig => {
   return {
     embeddedWallets: {
-      createOnLogin: 'users-without-wallets',
-      requireUserPasswordOnCreate: false,
+      ethereum: {
+        createOnLogin: 'users-without-wallets'
+      },
       showWalletUIs: false
     },
     appearance: {
       theme: darkMode ? 'dark' : 'light',
       walletList: ['detected_wallets', 'metamask', 'coinbase_wallet', 'rainbow', 'wallet_connect']
-    },
-    externalWallets: {
-      coinbaseWallet: {
-        connectionOptions: 'all'
-      }
     },
     walletConnectCloudProjectId: WALLET_CONNECT_PROJECT_ID,
     supportedChains: SUPPORTED_CHAINS
@@ -55,21 +51,6 @@ function PrivyAppProviders({
       clientId={PRIVY_CLIENT_ID_KEY}
       config={privyConfig(darkMode)}>
       <QueryClientProvider client={queryClient}>
-        {/* <PersistQueryClientProvider
-          client={queryClient}
-          persistOptions={{
-            persister: queryPersister,
-            dehydrateOptions: {
-            shouldDehydrateQuery: (query) => {
-              return ![
-                'listPaymentOptions',
-                'estimateGlidePayment',
-                'prices',
-                'tokenPrice'
-              ].includes(query.queryKey[0] as string);
-            }
-          }
-        }} */}
         <PrivyWagmiProvider config={wagmiConfig}>
           <CommonProviders darkMode={darkMode}>{children}</CommonProviders>
           <CustomToastContainer />

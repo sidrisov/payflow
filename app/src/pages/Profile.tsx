@@ -1,5 +1,4 @@
 import { useContext, useMemo, useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { ProfileContext } from '../contexts/UserContext';
 import {
   Avatar,
@@ -112,9 +111,7 @@ export default function Profile() {
   return (
     profile && (
       <>
-        <Helmet>
-          <title> Payflow | Profile </title>
-        </Helmet>
+        <title>Payflow | Profile</title>
         <Container maxWidth="xs" sx={{ height: '100%' }}>
           <Box
             height="100%"
