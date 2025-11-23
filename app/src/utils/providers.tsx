@@ -6,10 +6,7 @@ import { WagmiProvider as PrivyWagmiProvider } from '@privy-io/wagmi';
 import { wagmiConfig } from './wagmiConfig';
 import { SUPPORTED_CHAINS } from './networks';
 import { useDarkMode } from './hooks/useDarkMode';
-import { configureFabricSDK } from '@withfabric/protocol-sdks';
 import { QueryClientProvider } from '@tanstack/react-query';
-
-configureFabricSDK({ wagmiConfig });
 
 const PRIVY_API_KEY = import.meta.env.VITE_PRIVY_API_KEY;
 const PRIVY_CLIENT_ID_KEY = import.meta.env.VITE_PRIVY_CLIENT_ID_KEY;
@@ -31,10 +28,10 @@ const privyConfig = (darkMode: boolean): PrivyClientConfig => {
     },
     appearance: {
       theme: darkMode ? 'dark' : 'light',
-      walletList: ['detected_wallets', 'metamask', 'coinbase_wallet', 'rainbow', 'wallet_connect']
     },
     walletConnectCloudProjectId: WALLET_CONNECT_PROJECT_ID,
-    supportedChains: SUPPORTED_CHAINS
+    supportedChains: SUPPORTED_CHAINS,
+    allowOAuthInEmbeddedBrowsers: true
   };
 };
 

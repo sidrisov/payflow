@@ -3,7 +3,6 @@ import { http, fallback } from 'viem';
 import { mainnet, base, optimism, arbitrum, polygon } from 'viem/chains';
 
 import { createConfig } from '@privy-io/wagmi';
-import { farcasterMiniApp as miniAppConnector } from '@farcaster/miniapp-wagmi-connector';
 
 const createOptimizedTransport = (url: string) =>
   http(url, {
@@ -15,7 +14,6 @@ const createOptimizedTransport = (url: string) =>
 
 const ALCHEMY_API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY;
 const BASE_RPC_API_KEY = import.meta.env.VITE_BASE_RPC_API_KEY;
-const INFURA_API_KEY = import.meta.env.VITE_INFURA_API_KEY;
 
 export const wagmiConfig = createConfig({
   chains: SUPPORTED_CHAINS as any,
@@ -36,6 +34,4 @@ export const wagmiConfig = createConfig({
       createOptimizedTransport(`https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`)
     ]),
     [polygon.id]: createOptimizedTransport(polygon.rpcUrls.default.http[0])
-  } as any,
-  connectors: [miniAppConnector()]
-});
+  }});

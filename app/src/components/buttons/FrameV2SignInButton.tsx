@@ -1,7 +1,6 @@
 import { ButtonProps } from '@mui/material';
 
-import FrameV2SDK from '@farcaster/frame-sdk';
-import { SignInResult } from '@farcaster/frame-core/dist/actions/SignIn';
+import { sdk } from '@farcaster/miniapp-sdk';
 import { Address } from 'viem';
 import FarcasterAvatar from '../avatars/FarcasterAvatar';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -9,9 +8,21 @@ import { useCallback, useEffect, useState } from 'react';
 
 export type FrameV2SignInError = Error;
 
-export interface FrameV2AuthResponse extends SignInResult {
+// Define SignInResult based on the SDK response
+export interface SignInResult {
+  message: string;
+  signature: `0x${string}`;
+  fid: number;
   username?: string;
-  fid?: number;
+  bio?: string;
+  displayName?: string;
+  pfpUrl?: string;
+  authMethod: 'custody' | 'authAddress';
+}
+
+export interface FrameV2AuthResponse extends Omit<SignInResult, 'fid' | 'username'> {
+  username?: string;
+  fid: number;
   verifications?: Address[];
 }
 
@@ -32,12 +43,13 @@ export function FrameV2SignInButton({
   const signIn = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await FrameV2SDK.actions.signIn({
+      const result = await sdk.actions.signIn({
         nonce
       });
-      const user = (await FrameV2SDK.context).user;
+      const user = (await sdk.context).user;
       onSuccess({
         ...result,
+        signature: result.signature as `0x${string}`,
         username: user.username,
         fid: user.fid
       });

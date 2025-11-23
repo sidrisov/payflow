@@ -7,7 +7,7 @@ import { HiOutlineCheckCircle } from 'react-icons/hi2';
 import { useNavigate } from 'react-router';
 import { FcApproval } from 'react-icons/fc';
 import { FaRegHeart } from 'react-icons/fa6';
-import FrameV2SDK from '@farcaster/frame-sdk';
+import { sdk } from '@farcaster/miniapp-sdk';
 import { ProfileContext } from '../../contexts/UserContext';
 
 interface PaymentSuccessDialogProps {
@@ -82,7 +82,7 @@ export default function PaymentSuccessDialog({
           <Link
             {...(isFrameV2
               ? {
-                  onClick: () => FrameV2SDK.actions.openUrl(receiptUrl)
+                  onClick: () => sdk.actions.openUrl(receiptUrl)
                 }
               : {
                   href: receiptUrl,
@@ -132,7 +132,7 @@ export default function PaymentSuccessDialog({
               fullWidth
               {...(isFrameV2
                 ? {
-                    onClick: () => FrameV2SDK.actions.openUrl(hyperSubUrl)
+                    onClick: () => sdk.actions.openUrl(hyperSubUrl)
                   }
                 : {
                     href: hyperSubUrl,

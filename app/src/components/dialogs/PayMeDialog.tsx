@@ -29,7 +29,7 @@ import TokenAvatar from '../avatars/TokenAvatar';
 import NetworkAvatar from '../avatars/NetworkAvatar';
 import { HiMiniPencilSquare } from 'react-icons/hi2';
 import { green } from '@mui/material/colors';
-import FrameV2SDK from '@farcaster/frame-sdk';
+import { sdk } from '@farcaster/miniapp-sdk';
 
 interface PayMeDialogProps {
   open: boolean;
@@ -279,7 +279,7 @@ export function PayMeDialog({ open, onClose, profile, flow }: PayMeDialogProps) 
               fullWidth
               onClick={() => {
                 if (isFrameV2) {
-                  FrameV2SDK.actions.openUrl(createComposeCastUrl(shareFrameText, paymentFrameUrl));
+                  sdk.actions.openUrl(createComposeCastUrl(shareFrameText, paymentFrameUrl));
                 } else {
                   window.open(createComposeCastUrl(shareFrameText, paymentFrameUrl), '_blank');
                 }

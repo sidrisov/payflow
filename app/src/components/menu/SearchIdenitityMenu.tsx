@@ -23,7 +23,7 @@ import { SiFarcaster } from 'react-icons/si';
 import { IoIosChatbubbles } from 'react-icons/io';
 import { DAPP_URL } from '../../utils/urlConstants';
 import { FaSquare } from 'react-icons/fa6';
-import FrameV2SDK from '@farcaster/frame-sdk';
+import { sdk } from '@farcaster/miniapp-sdk';
 
 export function IdentityMenu({
   identity,
@@ -66,7 +66,7 @@ export function IdentityMenu({
         {...(isFrameV2 && social.profileId
           ? {
               onClick: () =>
-                FrameV2SDK.actions.viewProfile({
+                sdk.actions.viewProfile({
                   fid: Number(social.profileId)
                 })
             }
