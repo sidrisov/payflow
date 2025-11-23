@@ -21,7 +21,7 @@ import { API_URL } from '../utils/urlConstants';
 import { SiFarcaster } from 'react-icons/si';
 import { green, grey, orange, red } from '@mui/material/colors';
 import { BUY_STORAGE_FRAME_VERSION, PaymentType } from '@payflow/common';
-import FrameV2SDK from '@farcaster/frame-sdk';
+import { sdk } from '@farcaster/miniapp-sdk';
 import { ProfileContext } from '../contexts/UserContext';
 import { useLoaderData, useNavigate } from 'react-router';
 import BuyStorageDialog from '../components/payment/BuyStorageDialog';
@@ -208,7 +208,7 @@ export default function Storage() {
                 disabled={!shareComposeDeeplink}
                 onClick={() => {
                   if (isFrameV2) {
-                    FrameV2SDK.actions.openUrl(shareComposeDeeplink);
+                    sdk.actions.openUrl(shareComposeDeeplink);
                   } else {
                     window.open(shareComposeDeeplink, '_blank');
                   }

@@ -27,7 +27,7 @@ import { useMobile, usePwa } from '../utils/hooks/useMobile';
 
 import { isIOS } from 'react-device-detect';
 
-import FrameV2SDK from '@farcaster/frame-sdk';
+import { sdk } from '@farcaster/miniapp-sdk';
 import { GrStorage } from 'react-icons/gr';
 
 export default function App() {
@@ -41,10 +41,10 @@ export default function App() {
 
   useEffect(() => {
     const initiateFrameV2 = async () => {
-      const context = await FrameV2SDK.context;
+      const context = await sdk.context;
 
       if (context) {
-        FrameV2SDK.actions.ready();
+        sdk.actions.ready();
 
         if (!context.client.added) {
           const lastChecked = localStorage.getItem('payflow:frame:checked');
@@ -52,7 +52,7 @@ export default function App() {
             !lastChecked || Date.now() - parseInt(lastChecked) > 7 * 24 * 60 * 60 * 1000;
 
           if (shouldCheck) {
-            await FrameV2SDK.actions.addFrame();
+            await sdk.actions.addFrame();
             localStorage.setItem('payflow:frame:checked', Date.now().toString());
           }
         }
@@ -61,7 +61,7 @@ export default function App() {
       }
     };
 
-    if (FrameV2SDK && !isFrameV2) {
+    if (sdk && !isFrameV2) {
       initiateFrameV2();
     }
   }, [isFrameV2]);

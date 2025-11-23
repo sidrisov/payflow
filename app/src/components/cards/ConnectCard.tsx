@@ -11,14 +11,14 @@ import { API_URL } from '../../utils/urlConstants';
 import { FarcasterAccountsCard } from './FarcasterAccountsCard';
 import { useSetActiveWallet } from '@privy-io/wagmi';
 import { createSiweMessage, parseSiweMessage } from 'viem/siwe';
-import { SignInResult } from '@farcaster/frame-core/dist/actions/SignIn';
-import { FrameContext } from '@farcaster/frame-core/dist/context';
-
-import FrameV2SDK from '@farcaster/frame-sdk';
+import { sdk } from '@farcaster/miniapp-sdk';
+import { SignInResult } from '../buttons/FrameV2SignInButton';
 import { FrameV2SignInButton, FrameV2SignInError } from '../buttons/FrameV2SignInButton';
 const FARCASTER_CONNECT_ENABLED = import.meta.env.VITE_FARCASTER_CONNECT_ENABLED === 'true';
 
 export type AuthenticationStatus = 'loading' | 'unauthenticated' | 'authenticated';
+
+type SDKContext = Awaited<typeof sdk.context>;
 
 export default function ConnectCard() {
   const [siwfNonce, setSiwfNonce] = useState<string>();
@@ -52,19 +52,19 @@ export default function ConnectCard() {
   }, [wallets, ready, setActiveWallet]);
 
   const [isFrameV2, setIsFrameV2] = useState(false);
-  const [frameV2Context, setFrameV2Context] = useState<FrameContext>();
+  const [frameV2Context, setFrameV2Context] = useState<SDKContext>();
 
   useEffect(() => {
     const initiateFrameV2 = async () => {
-      const context = await FrameV2SDK.context;
+      const context = await sdk.context;
 
       if (context) {
-        FrameV2SDK.actions.ready();
+        sdk.actions.ready();
         setIsFrameV2(true);
         setFrameV2Context(context);
       }
     };
-    if (FrameV2SDK && !isFrameV2) {
+    if (sdk && !isFrameV2) {
       initiateFrameV2();
     }
   }, [isFrameV2]);
