@@ -271,34 +271,36 @@ public class FarcasterNeynarService {
 
 	@Cacheable(value = NEYNAR_FARCASTER_USER_CACHE, unless = "#result==null")
 	public FarcasterUser fetchFarcasterUser(String custodyAddress) {
-		log.debug("Calling Neynar User API to fetch by custodyAddress {}", custodyAddress);
+		log.debug("Calling Neynar User API to fetch by address {}", custodyAddress);
 		return webClient.get()
-				.uri(uriBuilder -> uriBuilder.path("/user/custody-address")
-						.queryParam("custody_address", custodyAddress.toLowerCase())
+				.uri(uriBuilder -> uriBuilder.path("/user/bulk-by-address")
+						.queryParam("addresses", custodyAddress.toLowerCase())
 						.build())
 				.retrieve()
 				.onStatus(HttpStatus.NOT_FOUND::equals, clientResponse -> {
-					log.error("404 error when calling Neynar User API by custodyAddress {}", custodyAddress);
+					log.debug("404 error when calling Neynar User API by address {}", custodyAddress);
 					return Mono.empty();
 				})
-				.bodyToMono(FarcasterUserResponse.class)
+				.bodyToMono(
+						new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, List<FarcasterUser>>>() {
+						})
 				.onErrorResume(WebClientResponseException.class, e -> {
 					if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-						log.error("404 error calling Neynar User API by custodyAddress {} - {}",
+						log.debug("404 error calling Neynar User API by address {} - {}",
 								custodyAddress, e);
 						return Mono.empty();
 					}
-					log.error("Exception calling Neynar User API by custodyAddress {} - {}",
+					log.error("Exception calling Neynar User API by address {} - {}",
 							custodyAddress, e);
 					return Mono.error(e);
 				})
 				.onErrorResume(Throwable.class, e -> {
-					log.error("Exception calling Neynar User API by custodyAddress {} - {}",
+					log.error("Exception calling Neynar User API by address {} - {}",
 							custodyAddress, e);
 					return Mono.empty();
 				})
 				.blockOptional()
-				.map(FarcasterUserResponse::user)
+				.map(map -> map.values().stream().flatMap(List::stream).findFirst().orElse(null))
 				.orElse(null);
 	}
 

@@ -30,7 +30,7 @@ public class CacheConfig {
 	public static final String CONTACT_LIST_CACHE_NAME = CACHE_PREFIX_VERSION + "contact-list";
 	public static final String SOCIALS_CACHE_NAME = CACHE_PREFIX_VERSION + "socials";
 	public static final String SOCIALS_INSIGHTS_CACHE_NAME = CACHE_PREFIX_VERSION + "insights";
-	public static final String NEYNAR_FARCASTER_USER_CACHE = CACHE_PREFIX_VERSION + "farcaster-users";
+	public static final String NEYNAR_FARCASTER_USER_CACHE = CACHE_PREFIX_VERSION + "farcaster-users:1";
 	public static final String NEYNAR_STORAGE_USAGE_CACHE = CACHE_PREFIX_VERSION + "farcaster-storage-usage";
 	public static final String NEYNAR_STORAGE_ALLOCATION_CACHE = CACHE_PREFIX_VERSION + "farcaster-storage-allocation";
 	public static final String RODEO_WALLETS_CACHE = CACHE_PREFIX_VERSION + "rodeo-wallets";
