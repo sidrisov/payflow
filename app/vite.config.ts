@@ -9,9 +9,9 @@ import { WorkboxPlugin } from 'workbox-core/types';
 import { execSync } from 'child_process';
 import path from 'path';
 
-// pass empty url if .env not available (for prodcution build should be poluted)
+// pass empty url if .env not available (for production build should be populated)
 const env = loadEnv('all', process.cwd());
-const API_URL_HOST = env ? env.VITE_PAYFLOW_SERVICE_API_URL.replace(/^(http|https):\/\/+/, '') : '';
+const API_URL_HOST = env?.VITE_PAYFLOW_SERVICE_API_URL?.replace(/^(http|https):\/\/+/, '') ?? '';
 
 const Time = {
   seconds: (n: number) => Math.floor((addSeconds(new Date(), n).getTime() - Date.now()) / 1000),
